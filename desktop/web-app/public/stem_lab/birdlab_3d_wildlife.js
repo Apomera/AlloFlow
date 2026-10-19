@@ -1,6 +1,7 @@
 /* Small woodland residents, built locally for Three.js r128.
  * Fieldmarks/proportions: Cornell Lab, allaboutbirds.org/guide/american_robin/id
- * and allaboutbirds.org/guide/black-capped_chickadee/overview.
+ * and allaboutbirds.org/guide/black-capped_chickadee/overview. Shared residents
+ * cite their own fieldmarks in avian_woodland_birds.js.
  * Guided observations are seekable; free mode chooses short actions at runtime.
  * Both are illustrative rather than a validated ecological model.
  */
@@ -309,13 +310,27 @@
       return { id: id, name: name, scientificName: scientificName, root: bird, body: body, head: head, wings: wings, tail: tail, feet: feet,
         originX: x, originZ: z, phase: phase, scale: scale, baseYaw: chickadee ? -.82 : .46, behavior: 'Scanning', altitude: 0 };
     }
-    var birds = [makeBird('robin', 'American robin', 'Turdus migratorius', 1.65, -.75, 0, 1),
+    // With the shared factory the robin and chickadee use its feathered anatomy;
+    // the local builder remains for hosts that load an older factory.
+    var factory = global.AvianWoodlandBirds;
+    var sharedRobinChickadee = !!(factory && factory.supports('mourningDove') && factory.supports('grouse') &&
+      factory.supports('americanRobin') && factory.supports('blackCappedChickadee'));
+    var birds = sharedRobinChickadee ? [] : [makeBird('robin', 'American robin', 'Turdus migratorius', 1.65, -.75, 0, 1),
       makeBird('chickadee', 'Black-capped chickadee', 'Poecile atricapillus', -1.45, 1.3, 7.3, .57)];
     // Both labs instantiate this same species factory. Only the observation
     // course belongs here; threat response belongs to Raptor Lab's controller.
     var sharedBirds = [];
-    function addSharedBird(id, name, scientific, x, z, yaw, course) {
-      var model = global.AvianWoodlandBirds.create(THREE, id, {quality: detailed ? 'high' : 'low'});
+    // Guided flight height, wingbeat rate and feeding times for the hopping
+    // songbirds; they also take the cardinal's paired-hop ground course.
+    var RESIDENT_TUNING = {
+      robin: {lift: .47, beat: 6.4, forage: [7.1, 9.1]},
+      chickadee: {lift: .36, beat: 8.0, forage: [5.4, 7.2], hop: true},
+      darkEyedJunco: {lift: .40, beat: 7.2, forage: [10.6, 12.1], hop: true},
+      tuftedTitmouse: {lift: .42, beat: 7.0, forage: [9.2, 10.9], hop: true},
+      easternTowhee: {lift: .34, beat: 6.2, forage: [6.4, 8.0], hop: true}
+    };
+    function addSharedBird(id, name, scientific, x, z, yaw, course, factoryId) {
+      var model = global.AvianWoodlandBirds.create(THREE, factoryId || id, {quality: detailed ? 'high' : 'low'});
       model.root.name = 'woodland-' + id; root.add(model.root);
       var resident = {id:id, name:name, scientificName:scientific, root:model.root, body:model.body,
         model:model, originX:x, originZ:z, baseYaw:yaw, course:course, behavior:'Scanning', altitude:0,
@@ -327,6 +342,24 @@
       sharedBirds.push(resident);
     }
     if (global.AvianWoodlandBirds && global.AvianWoodlandBirds.supports('mourningDove') && global.AvianWoodlandBirds.supports('grouse')) {
+      // Robin and chickadee lead the resident list, so every free-roam seed holds.
+      // The robin keeps its former running course; local models faced -Z, hence +PI.
+      if (sharedRobinChickadee) {
+        addSharedBird('robin', 'American robin', 'Turdus migratorius', 1.65, -.75, .46 + Math.PI, [
+          {start:2.7,end:3.35,x:.10,z:-.09,kind:'ground'},
+          {start:4.2,end:4.8,x:.18,z:-.16,kind:'ground'},
+          {start:13.7,end:14.9,x:.44,z:.08,kind:'flight'},
+          {start:22.1,end:22.7,x:.32,z:.14,kind:'ground'},
+          {start:24.2,end:24.8,x:.21,z:.12,kind:'ground'},
+          {start:32,end:33.15,x:0,z:0,kind:'flight'}
+        ], 'americanRobin');
+        addSharedBird('chickadee', 'Black-capped chickadee', 'Poecile atricapillus', -1.45, 1.3, -.82 + Math.PI, [
+          {start:3.0,end:3.8,x:.08,z:.04,kind:'ground',hops:2},
+          {start:11.0,end:11.9,x:.40,z:.30,kind:'flight'},
+          {start:19.0,end:19.8,x:.34,z:.26,kind:'ground',hops:2},
+          {start:30.5,end:31.4,x:0,z:0,kind:'flight'}
+        ], 'blackCappedChickadee');
+      }
       addSharedBird('mourningDove', 'Mourning dove', 'Zenaida macroura', -.7, -1.6, -.65, [
         {start:3.8,end:6.2,x:.18,z:.04,kind:'ground'},
         {start:12,end:13.4,x:2.05,z:-.28,kind:'flight'},
@@ -352,6 +385,25 @@
         {start:22,end:23.4,x:1.34,z:-.30,kind:'ground',hops:2},
         {start:31,end:32.3,x:0,z:0,kind:'flight'}
       ]);
+      if (global.AvianWoodlandBirds.supports('darkEyedJunco')) addSharedBird('darkEyedJunco', 'Dark-eyed junco', 'Junco hyemalis', .85, -1.35, -.5, [
+        {start:3.2,end:4.5,x:.16,z:.06,kind:'ground',hops:2},
+        {start:16.5,end:17.6,x:.30,z:1.0,kind:'flight'},
+        {start:26,end:27.3,x:.26,z:.93,kind:'ground',hops:2},
+        {start:37,end:38.1,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('tuftedTitmouse')) addSharedBird('tuftedTitmouse', 'Tufted titmouse', 'Baeolophus bicolor', 1.15, .95, 2.4, [
+        {start:6,end:7.2,x:-.14,z:.07,kind:'ground',hops:2},
+        {start:20.2,end:21.4,x:-.95,z:.45,kind:'flight'},
+        {start:28.6,end:29.8,x:-.81,z:.39,kind:'ground',hops:2},
+        {start:34.5,end:35.7,x:0,z:0,kind:'flight'}
+      ]);
+      // The towhee rakes the litter with backward double-scratch hops.
+      if (global.AvianWoodlandBirds.supports('easternTowhee')) addSharedBird('easternTowhee', 'Eastern towhee', 'Pipilo erythrophthalmus', -2.0, .35, 1.2, [
+        {start:2.6,end:3.9,x:.10,z:.05,kind:'ground',hops:2},
+        {start:14.6,end:15.6,x:1.15,z:-.30,kind:'flight'},
+        {start:24.5,end:25.8,x:1.01,z:-.25,kind:'ground',hops:2},
+        {start:33.5,end:34.5,x:0,z:0,kind:'flight'}
+      ]);
     }
     function sampleCardinalHop(bird,move,u,startX,startZ) {
       var out=bird.hopSample,hops=move.hops||2,index=Math.min(hops-1,Math.floor(u*hops));
@@ -371,6 +423,7 @@
     function updateSharedBird(bird, time) {
       var autonomous = mode === 'free', t = autonomous ? bird.free.elapsed : ((time % PERIOD) + PERIOD) % PERIOD;
       var grouse = bird.id === 'grouse', jay = bird.id === 'blueJay', cardinal = bird.id === 'northernCardinal';
+      var extra = RESIDENT_TUNING[bird.id] || null, hopper = cardinal || !!(extra && extra.hop);
       var course = autonomous ? bird.free.course : bird.course;
       var x=0,z=0,lift=0,opening=0,walking=0,stride=0,bank=0,pitch=0,yaw=bird.baseYaw,behavior='Scanning';
       var effort=grouse?.86:.72,tailFan=0,landing=0,scanReady=1,groundMove=null,groundU=0,startX=0,startZ=0,freeFlight=null;
@@ -405,11 +458,11 @@
               // sine arc, both the lift and its acceleration join the floor.
               var crest=grouse?.40:.43,arc=smooth(u/crest)*smooth((1-u)/(1-crest));
               var climb=1-smooth(u/.45);
-              lift=arc*(grouse?.48:cardinal?.46:.68);z+=arc*(grouse?.035:.055);
+              lift=arc*(extra?extra.lift:grouse?.48:cardinal?.46:.68);z+=arc*(grouse?.035:.055);
               bank=-(grouse?.095:.14)*Math.sin(TAU*u)*arc;
               pitch=arc*(-.13*climb+.055*(1-climb)-.18*approach);
               behavior=u<.18?'Taking flight':u>.78?'Alighting':grouse?'Short woodland flight':'Flying across the clearing';
-            } else if(cardinal) {
+            } else if(hopper) {
               hop=sampleCardinalHop(bird,move,u,previousX,previousZ);
               x=hop.x;z=hop.z;lift=hop.lift;walking=hop.gait;
               scanReady=1-smooth(u/.10)*smooth((1-u)/.10);
@@ -443,17 +496,17 @@
         behavior='Turning to move';
       } else if(autonomous&&course.length&&t<course[0].start&&course[0].turnSteps)yaw=bird.free.heading;
       var forage=autonomous ? (bird.free.kind==='forage'?Math.max(pulse(t,.65,.8),pulse(t,1.85,.75)):0) :
-        Math.max(pulse(t,grouse?10.1:jay?10.4:8.1,.86),pulse(t,grouse?12.2:jay?11.8:9.5,.72),pulse(t,38.2,.9),pulse(t,40.2,.8));
+        Math.max(pulse(t,extra?extra.forage[0]:grouse?10.1:jay?10.4:8.1,.86),pulse(t,extra?extra.forage[1]:grouse?12.2:jay?11.8:9.5,.72),pulse(t,38.2,.9),pulse(t,40.2,.8));
       var peck=(hop?0:1)*(1-walking)*(1-opening)*forage;
       var pose=bird.pose;
-      pose.flight=opening;pose.phase=autonomous?TAU*((grouse?8.5:jay?5.8:cardinal?6.4:6.8)*freeTime+bird.free.beatOffset+(freeFlight?freeFlight.beat:0)):TAU*(grouse?8.5:jay?5.8:cardinal?6.4:6.8)*t;pose.effort=effort;pose.bank=bank;
+      pose.flight=opening;pose.phase=autonomous?TAU*((extra?extra.beat:grouse?8.5:jay?5.8:cardinal?6.4:6.8)*freeTime+bird.free.beatOffset+(freeFlight?freeFlight.beat:0)):TAU*(extra?extra.beat:grouse?8.5:jay?5.8:cardinal?6.4:6.8)*t;pose.effort=effort;pose.bank=bank;
       pose.lookYaw=scanReady*(1-opening)*(1-peck)*(1-walking)*residentGaze(bird,scanYaw(autonomous?freeTime%PERIOD:t));
       pose.lookPitch=-pitch*.82;pose.peck=peck;pose.stride=stride;pose.walking=walking;
       pose.tailSpread=opening*tailFan;pose.landing=landing;
       // The shared cardinal rig coordinates the chest, stable head, tail and
       // paired feet inside the existing route without altering its timing.
+      if(hopper)pose.hopPhase=hop?hop.phase:-1;
       if(cardinal) {
-        pose.hopPhase=hop?hop.phase:-1;
         // Wings prepare before departure, but the toes still support the
         // bird. Separate that opening from actual airborne leg gathering.
         // These analytic loads compress the rig over fixed soles, leaving
@@ -565,7 +618,7 @@
         modelState[3]=modelFoot.rotation.x;modelState[4]=modelFoot.rotation.y;modelState[5]=modelFoot.rotation.z;
       }
       bird.root.position.set(bird.originX+x,height(bird.originX+x,bird.originZ+z)+lift,bird.originZ+z);
-      bird.root.rotation.set(pitch,yaw,bank,'YXZ');bird.altitude=cardinal?Math.max(0,lift):lift;
+      bird.root.rotation.set(pitch,yaw,bank,'YXZ');bird.altitude=hopper?Math.max(0,lift):lift;
       if(!groundMove&&!pivot&&!hop) {
         for(var restingIndex=0;restingIndex<2;restingIndex++) {
           var restingFoot=bird.model.feet[restingIndex];
@@ -790,13 +843,14 @@
       }
       if(escape)state.cooldown=2.2;
       if(kind==='ground'||kind==='flight') {
-        var flying=kind==='flight',chickadee=bird.id==='chickadee',cardinal=bird.id==='northernCardinal';
+        var flying=kind==='flight',chickadee=bird.id==='chickadee',cardinal=bird.id==='northernCardinal',hopper=cardinal||!!(RESIDENT_TUNING[bird.id]&&RESIDENT_TUNING[bird.id].hop);
+        var localChickadee=chickadee&&!bird.model;
         var angle=bird.baseYaw+(bird.model?0:Math.PI),found=false,dx=0,dz=0;
         if(escape&&observer&&observer.position)angle=Math.atan2(bird.originX-observer.position.x,bird.originZ-observer.position.z);
         for(var attempt=0;attempt<24;attempt++) {
           var bearing=angle+(randomChoice(state)-.5)*(attempt<8?(escape?.75:flying?3.2:1.3):TAU);
-          var distance=flying?(escape?2.4:cardinal?.95:1.3)+randomChoice(state)*(cardinal&&!escape?.85:1.5):
-            chickadee?.055+randomChoice(state)*.045:cardinal?.14+randomChoice(state)*.12:.13+randomChoice(state)*.10;
+          var distance=flying?(escape?2.4:hopper?.95:1.3)+randomChoice(state)*(hopper&&!escape?.85:1.5):
+            localChickadee?.055+randomChoice(state)*.045:hopper?.14+randomChoice(state)*.12:.13+randomChoice(state)*.10;
           dx=Math.sin(bearing)*distance;dz=Math.cos(bearing)*distance;
           if(escape&&observer&&observer.position) {
             var awayX=bird.originX-observer.position.x,awayZ=bird.originZ-observer.position.z;
@@ -808,12 +862,12 @@
         }
         if(found) {
           var travel=Math.hypot(dx,dz),pace=bird.id==='grouse'?4:bird.id==='mourningDove'?3.5:3;
-          var duration=flying?Math.max(.9,travel/pace):chickadee?.36:cardinal?1.3+randomChoice(state)*.35:bird.model?1.8+randomChoice(state)*.6:1.1+randomChoice(state)*.4;
+          var duration=flying?Math.max(.9,travel/pace):localChickadee?.36:hopper?1.3+randomChoice(state)*.35:bird.model?1.8+randomChoice(state)*.6:1.1+randomChoice(state)*.4;
           state.heading=Math.atan2(dx,dz)+(bird.model?0:Math.PI);
           var turning=Math.abs(Math.atan2(Math.sin(state.heading-bird.baseYaw),Math.cos(state.heading-bird.baseYaw)));
           var preparation=Math.max(.45,turning/2.8);
           var move={start:preparation,end:preparation+duration,x:dx,z:dz,kind:kind};
-          if(cardinal&&!flying)move.hops=2;
+          if(hopper&&!flying)move.hops=2;
           if(bird.model) {
             // Use the shared anatomy's reach: a longer foraging route earns
             // another pair of steps rather than stretching a fixed stride.
@@ -837,7 +891,7 @@
             move.height=(bird.id==='grouse'?.48:bird.id==='mourningDove'?.68:bird.id==='blueJay'?.59:chickadee?.36:.47)*
               Math.max(.84,Math.min(1.12,travel/2.2))*(escape?1.08:1);
             move.effortBoost=(bird.id==='grouse'?.16:.20)*(escape?1.12:1);
-            move.beatBoost=(bird.id==='grouse'?.8:chickadee?1.1:cardinal?1.4:bird.id==='blueJay'?.55:.65)*(escape?1.15:1);
+            move.beatBoost=(bird.id==='grouse'?.8:chickadee?1.1:hopper?1.4:bird.id==='blueJay'?.55:.65)*(escape?1.15:1);
           }
           state.course.push(move);
           state.duration=duration+preparation+.63;
@@ -1014,7 +1068,9 @@
       sharedBirds.forEach(function(bird) { bird.model.dispose(); });
     }
     update(0);
-    return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, dispose: dispose };
+    // True when the resident uses the shared model (it faces +Z, unlike the local fallback).
+    function isShared(id) { return sharedBirds.some(function(bird) { return bird.id === id; }); }
+    return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
 }(window));

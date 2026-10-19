@@ -16,6 +16,70 @@
 // no-op fallback keeps the modal working on hosts that predate the hook.
 const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
+// "Where to get expert help" (2026-10-16): a neutral directory in place of the single-vendor
+// Knowbility panels (there is no partnership; the old panels also claimed a document-remediation
+// service Knowbility does not list, and carried referral tracking tags). The entries, links and
+// English text come from the pipeline (createDocPipeline.helpDirectory) so the app and the exported
+// reports list the same organizations. Literal t() keys so the i18n gates see every one.
+function _helpDirectoryDescs(t) {
+  return {
+    ada_gov: t('pdf_audit.help_directory.ada_gov_desc'), ada_network: t('pdf_audit.help_directory.ada_network_desc'),
+    cast: t('pdf_audit.help_directory.cast_desc'), maine_cite: t('pdf_audit.help_directory.maine_cite_desc'),
+    ncademi: t('pdf_audit.help_directory.ncademi_desc'), section508: t('pdf_audit.help_directory.section508_desc'),
+    at_programs: t('pdf_audit.help_directory.at_programs_desc'), webaim: t('pdf_audit.help_directory.webaim_desc'),
+    aph: t('pdf_audit.help_directory.aph_desc'), bookshare: t('pdf_audit.help_directory.bookshare_desc'),
+    dcmp: t('pdf_audit.help_directory.dcmp_desc'), nimac: t('pdf_audit.help_directory.nimac_desc'),
+    deque: t('pdf_audit.help_directory.deque_desc'), fable: t('pdf_audit.help_directory.fable_desc'),
+    knowbility: t('pdf_audit.help_directory.knowbility_desc'), allyant: t('pdf_audit.help_directory.allyant_desc'),
+    continual_engine: t('pdf_audit.help_directory.continual_engine_desc'), equidox: t('pdf_audit.help_directory.equidox_desc'),
+    gt_cidi: t('pdf_audit.help_directory.gt_cidi_desc'), level_access: t('pdf_audit.help_directory.level_access_desc'),
+  };
+}
+function _helpDirectoryGroupTitles(t) {
+  return {
+    free: t('pdf_audit.help_directory.group_free'), formats: t('pdf_audit.help_directory.group_formats'),
+    testing: t('pdf_audit.help_directory.group_testing'), paid: t('pdf_audit.help_directory.group_paid'),
+  };
+}
+function AlloHelpDirectory({ t, idBase, intro }) {
+  const P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+  const dir = P && P.helpDirectory;
+  if (!dir || !Array.isArray(dir.groups)) return null;
+  const tt = typeof t === 'function' ? t : () => '';
+  const sortByName = typeof P.helpDirectorySorted === 'function' ? P.helpDirectorySorted : (entries) => entries || [];
+  const descs = _helpDirectoryDescs(tt);
+  const titles = _helpDirectoryGroupTitles(tt);
+  const headingId = (idBase || 'allo-help-directory') + '-h';
+  return (
+    <section aria-labelledby={headingId} className="space-y-2 text-left">
+      <h4 id={headingId} className="text-sm font-bold text-slate-800">{tt('pdf_audit.help_directory.heading') || 'Where to get expert help'}</h4>
+      {intro !== false && <p className="text-[11px] text-slate-700 leading-relaxed">{tt('pdf_audit.help_directory.intro') || 'Automated remediation cannot finish every document. These organizations offer free guidance, accessible formats, testing with disabled users, or paid remediation.'}</p>}
+      <div className="grid grid-cols-1 gap-2">
+        {dir.groups.map((g) => (
+          <div key={g.id} className="bg-white rounded-lg border border-slate-200 p-2.5">
+            <h5 className="text-[11px] font-black text-slate-800 mb-1">{titles[g.id] || g.title}</h5>
+            <ul className="space-y-1 list-none">
+              {sortByName(g.entries).map((e) => (
+                <li key={e.id} className="text-[11px] text-slate-700 leading-snug">
+                  <a href={e.url} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 hover:text-indigo-950 underline">
+                    {e.id === 'at_programs' ? (tt('pdf_audit.help_directory.at_programs_name') || e.name) : e.name}
+                    <span className="sr-only"> {tt('pdf_audit.help_directory.new_tab') || '(opens in a new tab)'}</span>
+                  </a>
+                  {': '}{descs[e.id] || e.desc}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] text-slate-700 italic leading-relaxed">
+        {tt('pdf_audit.help_directory.disclaimer') || dir.disclaimer}{' '}
+        {(tt('pdf_audit.help_directory.checked') || 'Checked {date}.').replace('{date}', dir.checked)}
+      </p>
+    </section>
+  );
+}
+
 // Static PDF-tour copy lives with the lazy PDF surface that owns its anchors.
 // The root keeps only the three-setter bridge that starts the shared tour UI.
 function buildPdfPipelineTourSteps(kind, translate) {
@@ -3925,12 +3989,24 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
     pdfRunHistory, setPdfRunHistory, openRemediationBuilder, _remediationMode
   } = props;
+  // Keyed text with its English inside the call: an older cached English bank may lack a newer key.
+  const __t = (key, english) => t(key) || english;
   const [batchActionBusy, setBatchActionBusy] = useState(false);
   const _batchActionBusyRef = useRef(false);
   const [batchQueueFilter, setBatchQueueFilter] = useState('all');
   const [batchStopSignal, setBatchStopSignal] = useState(null);
   useEffect(() => { setBatchQueueFilter('all'); }, [pdfDocumentEpoch, pdfBatchMode, pdfBatchQueue.length === 0]);
   useEffect(() => { if (!pdfBatchProcessing) setBatchStopSignal(null); }, [pdfBatchProcessing]);
+  // A person's stylesheet confirmations ride the saved result (2026-10-16). Re-register them so a
+  // reopened project's next Equal Access run honours them; each still applies only to the exact
+  // document it was made for (SHA-256 of the chrome-stripped html).
+  const _stylesheetSignoffsForRegistry = pdfFixResult && pdfFixResult.stylesheetSignoffs;
+  useEffect(() => {
+    try {
+      const P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+      if (P && typeof P.registerStylesheetSignoffs === 'function' && Array.isArray(_stylesheetSignoffsForRegistry)) P.registerStylesheetSignoffs(_stylesheetSignoffsForRegistry);
+    } catch (_) {}
+  }, [_stylesheetSignoffsForRegistry]);
   const [workspaceDestination, setWorkspaceDestination] = useState(null);
   useEffect(() => {
     if (!workspaceDestination) return;
@@ -10241,25 +10317,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
                 <style>{`@keyframes auditSweep { 0% { left: -34%; } 100% { left: 100%; } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-                {/* ── Knowbility Partner Introduction — shown during audit wait ── */}
+                {/* ── Shown during audit wait: why accessibility matters + where to get expert help
+                    (2026-10-16: replaced the single-vendor Knowbility "partner" panel; no partnership exists) ── */}
                 <div className="mt-6 text-left bg-gradient-to-br from-white via-indigo-50/50 to-violet-50/40 border border-indigo-200/70 rounded-2xl p-5 space-y-3 mx-auto max-w-lg" style={{ animation: 'fadeInUp 0.9s ease-out 3s both' }}>
-                  <div className="flex items-start gap-3">
-                    <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center shadow-lg shadow-indigo-200">
-                      <span className="text-white font-black text-base">K</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                        <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
-                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed mt-1.5">
-                        <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_lead') || 'Creating an inclusive digital world for people with disabilities'}</strong> — Knowbility is
-                        a nonprofit organization based in Austin, TX, and an award-winning leader in accessible information technology since 1999.
-                      </p>
-                    </div>
-                  </div>
-
                   {/* ── Why Accessibility Matters ── */}
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
                     <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
@@ -10290,54 +10350,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <p className="text-[11px] text-amber-700 italic leading-relaxed">{t('pdf_audit.knowbility.italic_callout') || "WCAG 2.2 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being."}</p>
                   </div>
 
-                  {/* Services Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🔍 Auditing & Testing</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.audit_service_desc') || 'Expert WCAG audits and document remediation by certified professionals'}</div>
-                    </div>
-                    <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">♿ AccessWorks</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.usability_service_desc') || 'Real-world usability testing by people who use assistive technology daily'}</div>
-                    </div>
-                    <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">📄 Document Remediation</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.docrem_service_desc') || 'Specialist team for PDF and MS Office docs — full usability with assistive technology'}</div>
-                    </div>
-                    <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5 space-y-0.5">
-                      <div className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">🎓 Training & AccessU</div>
-                      <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.training_service_desc') || 'Annual conference and on-demand courses — beginner to advanced accessibility skills'}</div>
-                    </div>
-                  </div>
-
-                  {/* Contact Info */}
-                  <div className="bg-white/70 rounded-lg border border-indigo-100 p-2.5">
-                    <div className="flex gap-4 justify-center text-center">
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-600 uppercase">Web</div>
-                        <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-600 uppercase">Email</div>
-                        <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-600 uppercase">Phone</div>
-                        <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                      <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
-                        Request a Project Inquiry →
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 border-t border-indigo-100"></div>
-                    <span className="text-[11px] text-indigo-600 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
-                    <div className="flex-1 border-t border-indigo-100"></div>
-                  </div>
+                  <AlloHelpDirectory t={t} idBase="allo-help-dir-audit-wait" />
                 </div>
               </div>
             ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null && !pdfFixResult ? ( /* C5: a successful Audit & Remediate sets only pdfFixResult — never let the failed-audit screen hide the remediation results */
@@ -12779,80 +12792,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         )}
 
-                        {/* ── Knowbility Partner Panel — shown during processing wait time ── */}
-                        <div className="mt-3 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-50/30 border border-indigo-200/60 rounded-2xl p-5 space-y-3" style={{ animation: 'fadeInUp 0.9s ease-out 7s both' }}>
-                          <div className="flex items-start gap-3">
-                            <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center shadow-lg shadow-indigo-200">
-                              <span className="text-white font-black text-base">K</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-bold text-slate-800">Knowbility</span>
-                                <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
-                                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
-                              </div>
-                              <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
-                                <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_strong') || 'Mission: Create an inclusive digital world for people with disabilities.'}</strong>{' '}
-                                Founded in 1999 in Austin, TX, Knowbility is an award-winning nonprofit that helps organizations ensure
-                                their technology meets the highest accessibility benchmarks through expert testing, training, and remediation.
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Services grid */}
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🔍 Testing & Auditing</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.testing_desc') || 'Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents'}</div>
-                            </div>
-                            <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">📄 Document Remediation</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.docrem_full_desc') || 'Specialist team for PDF and MS Office documents — ensuring full usability with assistive technology'}</div>
-                            </div>
-                            <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">♿ AccessWorks</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.accessworks_desc') || 'Real-world usability testing by people with disabilities who use assistive technology daily'}</div>
-                            </div>
-                            <div className="bg-white/80 rounded-lg border border-indigo-100 p-2.5">
-                              <div className="text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5">🎓 Training & AccessU</div>
-                              <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.training_full_desc') || 'Annual conference and on-demand courses — from beginner to advanced accessibility skills'}</div>
-                            </div>
-                          </div>
-
-                          {/* Contact info */}
-                          <div className="bg-white/80 rounded-lg border border-indigo-100 p-3">
-                            <div className="grid grid-cols-3 gap-2 text-center">
-                              <div>
-                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Web</div>
-                                <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility.org</a>
-                              </div>
-                              <div>
-                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Email</div>
-                                <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300">knowbility@knowbility.org</a>
-                              </div>
-                              <div>
-                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Phone</div>
-                                <a href="tel:+15125273138" className="text-[11px] font-bold text-slate-700 hover:text-indigo-700">512-527-3138</a>
-                              </div>
-                            </div>
-                            <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                              <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
-                                Request a Project Inquiry →
-                              </a>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 border-t border-indigo-100"></div>
-                            <span className="text-[11px] text-indigo-600 font-medium uppercase tracking-wider">W3C/WAI · IAAP-Certified · Clinton White House Recognized · FCC Innovation Award</span>
-                            <div className="flex-1 border-t border-indigo-100"></div>
-                          </div>
-
-                          <p className="text-[11px] text-slate-600 text-center leading-relaxed italic">
-                            While AlloFlow handles automated fixes, Knowbility's team ensures documents are
-                            fully usable by people with disabilities — not just technically compliant. Serving
-                            corporations, government agencies, educational institutions, and nonprofits since 1999.
-                          </p>
+                        {/* ── Where to get expert help — shown during processing wait time (2026-10-16:
+                            replaced the single-vendor Knowbility "partner" panel; no partnership exists) ── */}
+                        <div className="mt-3 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-50/30 border border-indigo-200/60 rounded-2xl p-5" style={{ animation: 'fadeInUp 0.9s ease-out 7s both' }}>
+                          <AlloHelpDirectory t={t} idBase="allo-help-dir-processing" />
                         </div>
                         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
                       </div>
@@ -13164,7 +13107,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // moment rounds take over. Events remain the only live source during the FIRST
                     // run, when nothing is committed yet. Deriving from the committed audits also
                     // means this queue and the engine-evidence panels below can never disagree.
-                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '', details: (f && Array.isArray(f.details)) ? f.details.slice(0, 5) : [], where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '').filter(Boolean).slice(0, 3) });
+                    const _rfMapC = (engine, bucket) => (f) => ({ engine, bucket, id: (f && f.id) || 'unknown-rule', description: (f && f.description) || '', nodes: (f && f.nodes) || 0, wcagCriteria: (f && Array.isArray(f.wcagCriteria)) ? f.wcagCriteria : [], helpUrl: (f && f.helpUrl) || '', checkReasons: (f && Array.isArray(f.checkReasons)) ? f.checkReasons.slice(0, 5) : [], details: (f && Array.isArray(f.details)) ? f.details.slice(0, 5) : [], where: (f && Array.isArray(f.details) ? f.details : []).map((d) => d && d.snippet ? String(d.snippet).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '').filter(Boolean).slice(0, 3) });
                     const _rfEaAudit = pdfFixResult && (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit);
                     const _rfSource = (pdfFixResult && (pdfFixResult.axeAudit || _rfEaAudit))
                       ? { committed: true, findings: [].concat(
@@ -13172,7 +13115,50 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           ((_rfEaAudit && _rfEaAudit.potentialFindings) || []).map(_rfMapC('equalAccess', 'potential')),
                           ((_rfEaAudit && _rfEaAudit.manualFindings) || []).map(_rfMapC('equalAccess', 'manual'))) }
                       : (_reviewFindingsLive ? { committed: false, findings: _reviewFindingsLive.findings, passNumber: _reviewFindingsLive.passNumber } : null);
-                    if (!_rfSource || _rfSource.findings.length === 0) return null;
+                    // Stylesheet-wide Equal Access prompts (2026-10-16): asked of EVERY document with CSS.
+                    // The pipeline answers the high-contrast one with a stylesheet check; a person can
+                    // confirm either one for this exact document, which then counts toward verification.
+                    const _rfP = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline) || null;
+                    const _rfSheetRules = (_rfP && Array.isArray(_rfP.STYLESHEET_REVIEW_RULES)) ? _rfP.STYLESHEET_REVIEW_RULES : [];
+                    const _rfIsSheet = (f) => !!(f && f.engine === 'equalAccess' && _rfSheetRules.indexOf(f.id) !== -1);
+                    const _rfSheetAnswered = (_rfEaAudit && Array.isArray(_rfEaAudit.answeredByCheck)) ? _rfEaAudit.answeredByCheck : [];
+                    const _rfSheetConfirmed = (_rfEaAudit && Array.isArray(_rfEaAudit.confirmedByPerson)) ? _rfEaAudit.confirmedByPerson : [];
+                    const _rfCanConfirmSheet = !!(pdfFixResult && _rfSource && _rfSource.committed && _rfP
+                      && typeof _rfP.confirmStylesheetReview === 'function' && typeof _rfP.applyStylesheetReview === 'function');
+                    if (!_rfSource || (_rfSource.findings.length === 0 && !_rfSheetAnswered.length && !_rfSheetConfirmed.length)) return null;
+                    const _confirmStylesheet = async (ruleId, confirmed) => {
+                      const snapshot = pdfFixResult;
+                      const token = _captureAsyncHtmlToken();
+                      const changedMsg = __t('pdf_audit.sheet_review.changed', 'The document changed before this could be recorded. Check the current findings and try again.');
+                      if (!snapshot || !token || token.html !== snapshot.accessibleHtml) { addToast(changedMsg, 'info'); return; }
+                      try {
+                        const rec = await _rfP.confirmStylesheetReview(snapshot.accessibleHtml, [ruleId], confirmed);
+                        if (!rec) { addToast(__t('pdf_audit.sheet_review.no_fingerprint', 'This browser cannot fingerprint the document, so nothing was recorded.'), 'error'); return; }
+                        const ea = snapshot.secondEngineAudit || snapshot.equalAccessAudit;
+                        const nextEa = _rfP.applyStylesheetReview(ea, { signoffs: rec.signoffs, digest: rec.digest });
+                        // Re-derive through the pipeline's ONE round reducer (audit-only: same html,
+                        // same AI and axe evidence, updated Equal Access evidence).
+                        const ai = snapshot.verificationAudit;
+                        const derived = (_docPipeline && typeof _docPipeline.finalizeRemediationRound === 'function' && ai && Number.isFinite(ai.score))
+                          ? await _docPipeline.finalizeRemediationRound(snapshot, { html: snapshot.accessibleHtml, aiAudit: ai, axeAudit: snapshot.axeAudit, eaAudit: nextEa, auditOnly: true })
+                          : null;
+                        const changes = { stylesheetSignoffs: (Array.isArray(snapshot.stylesheetSignoffs) ? snapshot.stylesheetSignoffs : []).filter((s) => s && s.digest !== rec.digest).concat(rec.list) };
+                        if (derived) Object.keys(derived).forEach((k) => { if (derived[k] !== snapshot[k]) changes[k] = derived[k]; });
+                        else if (snapshot.secondEngineAudit) changes.secondEngineAudit = nextEa; else changes.equalAccessAudit = nextEa;
+                        const live = !!(derived && _viewIsLiveVerificationHtmlBound(derived, snapshot.accessibleHtml, _docPipeline));
+                        const ok = _commitAsyncHtmlIfCurrent(token, (prev) => {
+                          const next = Object.assign({}, prev, changes);
+                          if (live) _viewAttachRuntimeBindingProof(next, snapshot.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+                          return next;
+                        });
+                        if (!ok) { addToast(changedMsg, 'info'); return; }
+                        addToast(confirmed === false
+                          ? __t('pdf_audit.sheet_review.withdrawn', 'Confirmation withdrawn.')
+                          : __t('pdf_audit.sheet_review.recorded', 'Recorded for this exact document. Any later change to the document asks again.'), 'success');
+                      } catch (_) {
+                        addToast(__t('pdf_audit.sheet_review.failed', 'The confirmation could not be recorded.'), 'error');
+                      }
+                    };
                     const _rfKey = (f) => f.engine + '|' + f.bucket + '|' + f.id;
                     const _rfAll = _rfSource.findings;
                     // Effective reviewed-set = persisted attestations (survive save/restore, ride the
@@ -13263,15 +13249,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {f.description && <span className="block mt-0.5 opacity-90">{f.description}</span>}
                                   {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
                                   {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">{_triageLabel(_triageFor(f))}</span>}
+                                  {_rfIsSheet(f) && _rfCanConfirmSheet && (
+                                    <span className="block mt-1 text-[11px] text-amber-950">
+                                      {f.id === 'style_color_misuse'
+                                        ? (t('pdf_audit.sheet_review.colour_question') || 'Equal Access asks this of every document with colour in its stylesheet. Check: is colour ever the ONLY way this document shows something (for example "answers in red" or a colour key with no labels)? If not, confirm it for this document.')
+                                        : (f.checkReasons || []).length
+                                          ? (t('pdf_audit.sheet_review.contrast_question_reasons') || 'AlloFlow\'s stylesheet check could not answer this because the document uses: {reasons}. If those are decorative only, confirm it for this document.').replace('{reasons}', f.checkReasons.join('; '))
+                                          : (t('pdf_audit.sheet_review.contrast_question') || 'Check that nothing meaningful disappears in Windows high contrast mode, then confirm it for this document.')}
+                                    </span>
+                                  )}
                                   {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
                                 </div>
                                 <div className="pdf-workspace-review-actions shrink-0 flex gap-1">
+                                  {_rfIsSheet(f) && _rfCanConfirmSheet && (
+                                    <button type="button" onClick={() => _confirmStylesheet(f.id, true)} data-review-action="confirm-stylesheet" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-bold transition-colors" title={t('pdf_audit.sheet_review.confirm_title') || 'I checked this myself. Recorded for this exact document and counted toward verification; any change to the document asks again.'} aria-label={(t('pdf_audit.sheet_review.confirm_aria') || 'Confirm for this document:') + ' ' + f.id}>{t('pdf_audit.sheet_review.confirm') || 'Confirm for this document'}</button>
+                                  )}
                                   <button type="button" onClick={() => _reviewToWorkbench(f)} data-review-action="workbench" data-review-key={_rfKey(f)} aria-label={'Open Workbench for ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>Workbench</button>
                                   <button type="button" onClick={event => _setReviewAttestation(event, _rfKey(f), true)} data-review-action="mark" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={pdfFixResult ? (t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.') : 'Mark as reviewed in this workspace. No saved result is available yet.'} aria-label={'Mark reviewed: ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id}>Mark reviewed</button>
                                 </div>
                               </li>
                             ))}
                           </ul>
+                        )}
+                        {(_rfSheetAnswered.length > 0 || _rfSheetConfirmed.length > 0) && (
+                          <div data-stylesheet-settled className="rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] text-emerald-950 space-y-1">
+                            <p className="font-bold">{t('pdf_audit.sheet_review.settled_heading') || 'Stylesheet questions settled'}</p>
+                            {_rfSheetAnswered.map((f) => (
+                              <p key={'answered-' + f.id}>✓ <span className="font-mono">{f.id}</span>: {t('pdf_audit.sheet_review.answered_by_check') || 'answered by AlloFlow\'s stylesheet check'}. {t('pdf_audit.sheet_review.contrast_answer') || f.answer}</p>
+                            ))}
+                            {_rfSheetConfirmed.map((f) => (
+                              <div key={'confirmed-' + f.id} className="flex items-start gap-2">
+                                <p className="flex-1">✓ <span className="font-mono">{f.id}</span>: {t('pdf_audit.sheet_review.confirmed_by_person') || 'confirmed by a person for this exact document (a human attestation, not an automated check)'}</p>
+                                {_rfCanConfirmSheet && <button type="button" onClick={() => _confirmStylesheet(f.id, false)} data-review-action="withdraw-stylesheet" className="rounded border border-emerald-700 px-2 py-0.5 font-bold" aria-label={(t('pdf_audit.sheet_review.undo_aria') || 'Withdraw confirmation:') + ' ' + f.id}>{t('pdf_audit.sheet_review.undo') || 'Undo'}</button>}
+                              </div>
+                            ))}
+                          </div>
                         )}
                         {_rfDone > 0 && <details className="pdf-workspace-reviewed">
                           <summary className="cursor-pointer text-xs font-semibold">Reviewed findings ({_rfDone})</summary>
@@ -14623,7 +14635,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       })()}
 
                       {/* Expert Referral Panel - reason-specific: an accessibility-barrier concern is an
-                          a11y-expertise problem (Knowbility referral); a content-fidelity concern is a
+                          a11y-expertise problem (expert-help directory); a content-fidelity concern is a
                           "verify the text carried over" problem (review the Diff). They are not the same ask. */}
                       {(pdfFixResult.needsExpertReview || _pdfWorkspaceHasPreservationConcern(pdfFixResult)) && (() => {
                         const reason = pdfFixResult.expertReviewReason || 'accessibility';
@@ -14642,28 +14654,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 Complex elements (forms, multi-column layouts, interactive content, or deeply nested structures) require
                                 manual evaluation by certified accessibility professionals using screen readers and assistive technology.
                               </p>
-                              <p className="text-xs text-amber-700 mt-2 font-medium">
-                                We recommend contacting an expert accessibility service provider:
-                              </p>
-                              <div className="mt-2 bg-white rounded-lg border border-amber-200 p-3 flex items-center gap-3">
-                                <div className="shrink-0 text-center">
-                                  <div className="text-lg font-black text-amber-800">K</div>
-                                  <div className="text-[11px] text-amber-600 font-bold">EST. 1999</div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xs font-bold text-slate-800">Knowbility</div>
-                                  <div className="text-[11px] text-slate-600">W3C/WAI accredited, IAAP-certified testers, 25+ years of digital accessibility leadership</div>
-                                  <div className="flex gap-2 mt-1.5 flex-wrap">
-                                    <a href="https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility.org</a>
-                                    <a href="mailto:knowbility@knowbility.org" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline">knowbility@knowbility.org</a>
-                                    <span className="text-[11px] text-slate-600">512-527-3138</span>
-                                  </div>
-                                </div>
+                              <div className="mt-3 bg-white/70 rounded-lg border border-amber-200 p-3">
+                                <AlloHelpDirectory t={t} idBase="allo-help-dir-expert" intro={false} />
                               </div>
-                              <p className="text-[11px] text-amber-600 mt-2 italic">
-                                AlloFlow handled the automated remediation. For the remaining barriers, expert human evaluation ensures
-                                the document is fully usable by people with disabilities, not just technically compliant.
-                              </p>
                             </div>
                           </div>
                           )}
@@ -15867,8 +15860,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               _a.href = _url; _a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-veraPDF-fixed.pdf';
                                               document.body.appendChild(_a); _a.click(); document.body.removeChild(_a); URL.revokeObjectURL(_url);
                                               addToast(_rem.compliant
-                                                ? ((t("pdf_audit.verapdf.fixed_checks_pass") || "Applied veraPDF auto-fixes; the fixed file had no failures in veraPDF's automated checks. Downloaded it."))
-                                                : (t('pdf_audit.verapdf.fixed_partial') || 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
+                                                ? __t("pdf_audit.verapdf.fixed_checks_pass", "Applied veraPDF auto-fixes; the fixed file had no failures in veraPDF's automated checks. Downloaded it.")
+                                                : __t('pdf_audit.verapdf.fixed_partial', 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
                                                 _rem.compliant ? 'success' : 'warning');
                                               // Integrity: surface any content-altering repair (font substitution, Artifact-marking) so a
                                               // "PASSES PDF/UA-1" verdict never silently hides a change that needs human review.
@@ -20341,7 +20334,7 @@ Return ONLY the plain-language summary.`, false));
               <button onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('a11y-compliance-statement');
-                if (existing) { existing.remove(); addToast((t("toasts.provenance_note_removed") || "Accessibility tools and review note removed"), 'info'); return; }
+                if (existing) { existing.remove(); addToast(__t("toasts.provenance_note_removed", "Accessibility tools and review note removed"), 'info'); return; }
                 const imgs = doc.querySelectorAll('img');
                 const imgsWithAlt = Array.from(imgs).filter(i => i.alt && i.alt.trim()).length;
                 const headings = doc.querySelectorAll('h1,h2,h3,h4,h5,h6').length;
@@ -20389,7 +20382,7 @@ Return ONLY the plain-language summary.`, false));
                   </div>
                 `;
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
-                addToast((t("toasts.provenance_note_added") || "Accessibility tools and review note added"), 'success');
+                addToast(__t("toasts.provenance_note_added", "Accessibility tools and review note added"), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
                 ♿ Insert Accessibility Statement
               </button>

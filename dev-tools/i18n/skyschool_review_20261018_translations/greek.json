@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Προηγούμενες προσπάθειες κουίζ",
+  "stem.flightsim.quiz_history_scope": "Η έναρξη νέας προσπάθειας αποθηκεύει έως τέσσερις προηγούμενες προσπάθειες με καταγεγραμμένες πρώτες απαντήσεις. Η ανασκόπησή τους δεν αλλάζει το τρέχον κουίζ σας.",
+  "stem.flightsim.quiz_history_empty": "Δεν έχουν αποθηκευτεί ακόμη προηγούμενες προσπάθειες κουίζ.",
+  "stem.flightsim.quiz_history_attempt": "Αποθηκεύτηκε στις {date} · {score}/{answered} σωστές πρώτες απαντήσεις",
+  "stem.flightsim.quiz_history_progress": "Καταγράφηκαν {answered} από {total} ερωτήσεις · {unanswered} αναπάντητες",
+  "stem.flightsim.quiz_history_question": "Ερώτηση {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Σωστή απάντηση: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} αποθηκευμένες ερωτήσεις δεν αντιστοιχούν πλέον σε αυτό το κουίζ. Οι βαθμολογίες χρησιμοποιούν μόνο τις αντίστοιχες καταγραφές ερωτήσεων."
+}

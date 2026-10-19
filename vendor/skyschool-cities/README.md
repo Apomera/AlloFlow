@@ -51,7 +51,7 @@ node dev-tools/embed_skyschool_cities.cjs --check
 node dev-tools/verify_skyschool_cities.cjs
 ```
 
-The simulator embeds the Portland pack. City search and automatic approach downloads are described below. Credits are visible in the menu and Controls and help, plus a compact scenery-corner attribution for the mapped district actually rendered. Automatic offline Portland gets the same credit without requiring a selected destination. Empty or rejected scenery and the illustrative Canvas fallback show no mapped-scenery footer.
+The simulator ships the Portland pack in `stem_lab/stem_data_skyschool_geo.js`, its loader dependency. City search and automatic approach downloads are described below. Credits are visible in the menu and Controls and help, plus a compact scenery-corner attribution for the mapped district actually rendered. Automatic offline Portland gets the same credit without requiring a selected destination. Empty or rejected scenery and the illustrative Canvas fallback show no mapped-scenery footer.
 
 ## Worldwide city explorer
 

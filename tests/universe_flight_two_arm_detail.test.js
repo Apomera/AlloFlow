@@ -20,7 +20,9 @@ const ATLAS = {
   ],
   core: '866eb88a1fa2586bb956b6ffc7d3192cc8b5180a515c6236ff1fca12a5dde00d',
   gutter: 'ca8a4b28e8b434e231027bf5d9952a7d32014111151ed7e3e2efc0b6fe934a0a',
-  cloud: 'b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88',
+  // Enhancement72 (10-10) filled the cloud atlas's unused green channel; red/alpha/blue
+  // are pinned by the nebula detail suite. Pre-72 atlas: b57c6fd38bbb173b...
+  cloud: '04221a7f74fd18ad4be28fdf04966498031ccc88b5929db2d30822b59eb78218',
 };
 // Enhancement57 moves a small smooth RGB component to its projected disk.
 // ATLAS retains every historical pin. Independently captured current RGB

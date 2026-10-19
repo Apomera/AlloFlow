@@ -96,7 +96,8 @@ describe('Teacher review tools', () => {
   });
   it('flags answer-position patterns and spreads them without changing any answer', () => {
     const board = e.prepareBoard(makeBoard(), source);
-    expect(q.boardQuality(board, source).map(item => item.code)).toEqual(['position']);
+    // The fixture's sequence stop names its own order, which the giveaway check also reports.
+    expect(q.boardQuality(board, source).map(item => item.code)).toEqual(['position', 'giveaway']);
     const spread = q.balanceAnswerPositions(board);
     expect(e.validateBoard(spread, source)).toEqual([]);
     for (const node of board.locations.filter(item => item.kind === 'choice')) {
@@ -104,7 +105,7 @@ describe('Teacher review tools', () => {
       expect(next.options[next.answer]).toBe(node.options[node.answer]);
       expect([...next.options].sort()).toEqual([...node.options].sort());
     }
-    expect(q.boardQuality(spread, source).map(item => item.code)).toEqual([]);
+    expect(q.boardQuality(spread, source).map(item => item.code)).toEqual(['giveaway']);
     expect(q.balanceAnswerPositions(spread)).toEqual(q.balanceAnswerPositions(spread));
   });
   it('flags length cues, repeated instructions, heavy reading and validation problems by stop', () => {

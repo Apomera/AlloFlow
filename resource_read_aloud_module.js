@@ -35,19 +35,20 @@
       if (options.cardId && card.id !== options.cardId) return;
       const base = 'card/' + token(card.id || index);
       const extra = { cardId: card.id };
-      const cue = card.aiExample || card.example || card.scaffoldStarter;
+      const cue = card.cueNeedsReview ? '' : card.aiExample || card.example || card.scaffoldStarter;
       if (options.mode === 'cue') { add(base + '/cue', cue, extra); return; }
       add(base + '/target', card.target, extra);
       if (card.factVerified === true && card.factLocked !== false) {
         (card.essentialFacts || []).forEach((fact, i) => add(base + '/fact/' + token(fact?.id || i), typeof fact === 'string' ? fact : fact?.text, extra));
-        add(base + '/mapping', card.mapping, extra);
+        if (!card.cueNeedsReview) add(base + '/mapping', card.mapping, extra);
       }
+      if (card.cueNeedsReview) return;
       add(base + '/cue', cue, extra);
       add(base + '/prompt', card.studentPrompt, extra);
       add(base + '/reasoning-prompt', card.reasoningPrompt, extra);
       (card.scaffoldSteps || []).forEach((step, i) => add(base + '/support/' + i, step, extra));
       (card.coachPrompts || []).forEach((prompt, i) => add(base + '/coach/' + i, prompt, extra));
-      if (card.visualReview?.status === 'approved') add(base + '/visual-description', card.visualAlt, extra);
+      if (!card.visualNeedsReview && card.visualReview?.status === 'approved') add(base + '/visual-description', card.visualAlt, extra);
     });
   });
   register('applied-challenge', (resource, add) => {

@@ -9,8 +9,20 @@ describe('Circular stirring input',()=>{
 });
 describe('Recorded mixing decisions',()=>{
  it('requires produce, known input methods, and an unfinished cook',()=>{const s=R.start();expect(R.act(s,'stirSweep','gesture').log.at(-1).accepted).toBe(false);for(const v of [null,undefined,'unknown',3,{}])expect(R.act(s,'stirSweep',v)).toBe(s);const finished=cook().state;expect(R.act(finished,'stirSweep','button')).toBe(finished);});
- it('gives pointer and button the same cooking effect without adding moisture, heat, or time',()=>{const s=ready(),before=JSON.stringify(s),a=R.act(s,'stirSweep','gesture'),b=R.act(s,'stirSweep','button');expect(a.pan).toEqual(b.pan);expect(a.pan.lastStir).toBe(s.time);expect(a.pan.moisture).toBe(s.pan.moisture);expect(a.pan.damage).toBe(s.pan.damage);expect(a.pan.temp).toBe(s.pan.temp);expect(a.time).toBe(s.time);expect(JSON.stringify(s)).toBe(before);expect(R.mixing(a).lastMethod).toBe('gesture');expect(R.mixing(b).lastMethod).toBe('button');});
+ it('gives pointer and button the same completed operation while both vessels keep changing',()=>{
+  const s=ready(),before=JSON.stringify(s),a=R.act(s,'stirSweep','gesture'),b=R.act(s,'stirSweep','button'),elapsed=R.act(s,'advance',6);
+  expect(a.pan).toEqual(b.pan);expect(a.pot).toEqual(b.pot);expect(a.pan.lastStir).toBe(a.time);expect(a.time).toBe(s.time+6);
+  for(const key of ['moisture','temp','absorbedWaterMl','evaporatedWaterMl'])expect(a.pan[key]).toBe(elapsed.pan[key]);
+  expect(a.pot).toEqual(elapsed.pot);expect(a.pan.damage).toBeGreaterThanOrEqual(s.pan.damage);expect(JSON.stringify(s)).toBe(before);
+  expect(R.mixing(a).lastMethod).toBe('gesture');expect(R.mixing(b).lastMethod).toBe('button');
+ });
  it('records saved water since the last mix and resets that observation when folded through',()=>{let s=R.act(ready(),'water');expect(R.mixing(s).waterSinceMix).toBe(50);s=R.act(s,'combine');expect(R.mixing(s).waterSinceMix).toBe(0);s=R.act(R.act(s,'taste'),'pour',20);expect(R.mixing(s).waterSinceMix).toBe(20);s=R.act(s,'taste');s=R.act(s,'stirSweep','button');expect(s.pan.tasted).toBe(false);expect(R.mixing(s).waterSinceMix).toBe(0);expect(R.act(s,'plate').log.at(-1).accepted).toBe(false);});
- it('does not let mixing repair scorching or remove excess sauce liquid',()=>{const s=ready();const damaged={...s,pan:{...s.pan,damage:1,moisture:220}},n=R.act(damaged,'stirSweep','gesture');expect(n.pan.damage).toBe(1);expect(n.pan.moisture).toBe(220);expect(n.feedback).toContain('cannot undo');const wet=R.act({...s,pan:{...s.pan,moisture:220}},'stirSweep','button');expect(wet.feedback).toContain('does not remove');});
+ it('does not erase scorching or give mixing an extra water-removal effect',()=>{
+  const s=ready(),damaged={...s,pan:{...s.pan,damage:1,moisture:220}},n=R.act(damaged,'stirSweep','gesture');
+  expect(n.pan.damage).toBeGreaterThanOrEqual(1);expect(n.pan.moisture).toBe(R.act(damaged,'advance',6).pan.moisture);expect(n.feedback).toContain('cannot undo');
+  const wetStart={...s,pan:{...s.pan,moisture:220}},wet=R.act(wetStart,'stirSweep','button');
+  expect(wet.pan.moisture).toBe(R.act(wetStart,'advance',6).pan.moisture);expect(R.sauceChemistry(wet).type).toBe('watery');
+  expect(wet.feedback).toContain('Inspect the food after the mix');
+ });
  for(const id of ['mushroom','tomato'])it('completes '+id+' with sweep controls and restores its evidence and replay',()=>{let s=R.start(id,2,'demonstrate');for(const[a,v]of cook(id).steps)s=R.act(s,a==='stirPan'?'stirSweep':a,a==='stirPan'?'gesture':v);expect(R.criteria(s).every(c=>c.met)).toBe(true);s=R.submit({...s,answers:[0,R.recipe(id).correct]});expect(R.restore(s)).toEqual(s);expect(R.evidence(s).status).toBe('Recipe completed independently');expect(R.evidence(s).mixing.sweeps).toBeGreaterThan(0);const i=s.log.findIndex(a=>a.action==='stirSweep')+1;expect(R.replay(s,i).changes.some(c=>c.startsWith('Ingredients redistributed'))).toBe(true);expect(R.review(s).timeline.some(e=>e.event==='Ingredients mixed with a complete sweep')).toBe(true);});
 });

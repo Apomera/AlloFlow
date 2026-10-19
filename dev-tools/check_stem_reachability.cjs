@@ -227,6 +227,7 @@ const shellRecoveryMarkers = [
   'loadStemModuleWithDependencies',
   'stemModuleDependencies',
   'stem_data_cellatlas_muraro.js',
+  "'stem_lab/stem_tool_flightsim.js': ['stem_lab/stem_data_skyschool_geo.js']",
   'data_kernel_loader.js',
   'stem_tool_dataplot.js',
   'stem_tool_statslab.js',

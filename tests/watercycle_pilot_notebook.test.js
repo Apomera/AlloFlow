@@ -103,7 +103,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water Journey Notebook kernel (%s)', (f
     expect(record.reflection).toHaveLength(1200);
     expect(record.evidence.changes).toHaveLength(24);
     expect(record.evidence.prediction).toBe('runoff');
-    expect(N.MAX_COMPARISONS).toBe(4);
+    expect(N.MAX_COMPARISONS).toBe(5);
     expect(Object.keys(record.evidence.comparisons)).toEqual(['tropicalOcean', 'mountainWinter']);
     expect(record.evidence.comparisons.tropicalOcean).toEqual({
       scenario: 'tropicalOcean', form: 'rain', altitudeM: 1400,

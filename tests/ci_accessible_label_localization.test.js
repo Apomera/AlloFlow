@@ -48,7 +48,9 @@ describe('CI accessible label localization', () => {
 
   it('preserves readable Maine SLD fallbacks when translation is absent, missing or throws', () => {
     const source = read('maine_sld_practice_source.jsx');
-    const helperSource = sliceBetween(source, 'function msldAccessibleText(', 'function MaineSldPracticePanel(', {
+    // End at the next top-level function: JSX record/worked-example components now sit
+    // between this helper and MaineSldPracticePanel (91652c2fe), and Function() cannot parse JSX.
+    const helperSource = sliceBetween(source, 'function msldAccessibleText(', '\nfunction ', {
       file: 'maine_sld_practice_source.jsx', label: 'Maine SLD accessible text helper',
     });
     const text = Function(helperSource + '; return msldAccessibleText;')();

@@ -863,13 +863,13 @@ const createReadAloudAudioService = (dependencies = {}) => {
     return { forResource };
 };
 
-// Resolutionâ†’capture provenance (2026-07-19). Hosts recreate the legacy
+// Resolution→capture provenance (2026-07-19). Hosts recreate the legacy
 // bridge for every global call, so this registry lives at module scope. It
 // maps a resolved playback URL to the exact synthesis profile and segment
 // identity that produced it; capturePlayed prefers it over the live profile,
 // so a voice change while generation/startup is pending can never persist
 // one voice's audio under another voice's metadata. Bounded FIFO: an evicted
-// entry only means capture falls back to the live profile â€” never a wrong
+// entry only means capture falls back to the live profile — never a wrong
 // match, because cached URLs are keyed by text+voice+speed+language.
 const READ_ALOUD_PROVENANCE_LIMIT = 64;
 const readAloudUrlProvenance = new Map();
@@ -887,7 +887,7 @@ const readAloudProvenanceForUrl = (url) => (
 
 // Diagnostics: bridge resolution events land in the same window.__alloTtsTrace
 // ring the TTS module and karaoke overlay write, so one snapshot shows where a
-// stuck read-aloud actually stalled (overlay â†’ bridge â†’ provider).
+// stuck read-aloud actually stalled (overlay → bridge → provider).
 const READ_ALOUD_TRACE_MAX = 150;
 const readAloudTrace = (event, detail) => {
     try {
@@ -1233,7 +1233,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const binding = bindingFor([sentence], options.lane || 'reference', options.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return null;
-        // Snapshot {url â†’ profile, segment} at the moment of resolution: the
+        // Snapshot {url → profile, segment} at the moment of resolution: the
         // controller's 'resolved' event carries the exact merged profile it
         // matched or synthesized with, so a later capture persists the clip
         // under the voice the learner actually heard even if the settings
@@ -1631,7 +1631,7 @@ const formatGlossaryDefinitionSpeech = (termValue, definitionValue) => {
     const definition = String(definitionValue == null ? '' : definitionValue).replace(/\s+/g, ' ').trim();
     if (!term || !definition) return definition;
     const prefix = definition.slice(0, term.length).toLocaleLowerCase();
-    if (prefix === term.toLocaleLowerCase() && (definition.length === term.length || /^[\s:ï¼š,.!?â€¦;â€”â€“-]/.test(definition.slice(term.length)))) return definition;
+    if (prefix === term.toLocaleLowerCase() && (definition.length === term.length || /^[\s:：,.!?…;—–-]/.test(definition.slice(term.length)))) return definition;
     return term + ': ' + definition;
 };
 

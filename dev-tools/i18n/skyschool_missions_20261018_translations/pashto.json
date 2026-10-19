@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "د ماموریت مشاهدې",
+  "stem.flightsim.mission_journal_targets": "انځور اخیستل شوي هدفونه: له {total} څخه {captured}.",
+  "stem.flightsim.mission_journal_complete": "د ماموریت ټولې موخې او بېرته راګرځېدو ناسته ثبت شول.",
+  "stem.flightsim.mission_journal_ended": "ماموریت د بشپړېدو د ټولو شواهدو تر ثبتېدو مخکې پای ته ورسېد.",
+  "stem.flightsim.mission_journal_recovery": "د ژوندي پاتې شوي کس د ژغورنې ثبت: {value}.",
+  "stem.flightsim.mission_journal_return": "اډې ته د بېرته ستنېدو د ناستې ثبت: {value}.",
+  "stem.flightsim.mission_guidance_title": "د ماموریت لارښوونه",
+  "stem.flightsim.mission_route": "{target} · د لوري زاویه {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "د الوتنې د پیل ځای",
+  "stem.flightsim.mission_read_status": "د ماموریت حالت ولولئ",
+  "stem.flightsim.mission_return_criterion": "له {target} څخه د {distance} nm په واټن کې کښینئ؛ د ځمکې په نسبت سرعت له {speed} kt او د ښکته کېدو کچه له {fpm} fpm څخه کمه وساتئ.",
+  "stem.flightsim.mission_unavailable": "د ماموریت د هدف معلومات نشته. دا الوتنه پای ته ورسوئ او نوی ماموریت پیل کړئ.",
+  "stem.flightsim.mission_capture_criterion": "د {distance} ft په واټن کې، له ځمکې څخه تر {min} ft پورته او تر {max} ft لاندې پاتې شئ، د ځمکې په نسبت سرعت تر {speed} kt کم د {hold} s لپاره وساتئ."
+}

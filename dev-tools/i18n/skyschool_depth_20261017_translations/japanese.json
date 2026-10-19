@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "現在の飛行状態を維持",
+  "stem.flightsim.flight_assistance_targets": "機首方位 {hdg}° · 高度 {alt} ft MSL · 速度 {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "機首方位 {hdg}° · 高度 {alt} ft MSL · 前進速度 {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} に向けて左に {degrees}° 旋回してください。",
+  "stem.flightsim.challenge_turn_right": "{airport} に向けて右に {degrees}° 旋回してください。",
+  "stem.flightsim.challenge_course_aligned": "{airport} に向かっています。コースマーカーに従ってください。",
+  "stem.flightsim.challenge_runway_reference": "訓練用滑走路 {runway}：機首方位 {heading}°。着陸のために降下する前に、滑走路に正対してください。"
+}

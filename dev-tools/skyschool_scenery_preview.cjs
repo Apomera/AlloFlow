@@ -29,6 +29,7 @@ const routes = new Map([
   ['/react.js', path.join(root, 'desktop/web-app/node_modules/react/umd/react.production.min.js')],
   ['/react-dom.js', path.join(root, 'desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js')],
   ['/three.js', path.join(root, 'vendor/three-r128/three.min.js')],
+  ['/skyschool-geo.js', path.join(root, 'stem_lab/stem_data_skyschool_geo.js')],
   ['/skyschool.js', path.join(root, 'stem_lab/stem_tool_flightsim.js')],
   ['/baseline.js', baselinePath],
 ]);
@@ -208,6 +209,8 @@ window.AlloPostFXEnabled=false;
 if(params.get('online')!=='1')window.SkySchoolCityServices={enabled:false};
 window.__RR_TEST_EXPORTS__={};window.__testHooks={};
 window.StemLab={registerTool:function(id,config){window.skyTool=config;},isRegistered:function(){return false;},ensureThree:function(){return window.THREE?Promise.resolve(window.THREE):new Promise(function(){});},loadScriptResilient:function(){return new Promise(function(){});}};
+// The simulator's geography loads first, as the STEM loader does (stemModuleDependencies).
+document.write('<script src="/skyschool-geo.js">'+'</'+'script>');
 document.write('<script src="/'+(params.get('baseline')==='1'?'baseline':'skyschool')+'.js">'+'</'+'script>');
 </script>
 <script>

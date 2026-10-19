@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ਮੌਜੂਦਾ ਉਡਾਣ ਦੀ ਸਥਿਤੀ ਕਾਇਮ ਰੱਖੋ",
+  "stem.flightsim.flight_assistance_targets": "ਦਿਸ਼ਾ {hdg}° · ਉਚਾਈ {alt} ft MSL · ਰਫ਼ਤਾਰ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ਦਿਸ਼ਾ {hdg}° · ਉਚਾਈ {alt} ft MSL · ਅੱਗੇ ਵਧਣ ਦੀ ਰਫ਼ਤਾਰ {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} ਵੱਲ ਖੱਬੇ ਪਾਸੇ {degrees}° ਮੁੜੋ।",
+  "stem.flightsim.challenge_turn_right": "{airport} ਵੱਲ ਸੱਜੇ ਪਾਸੇ {degrees}° ਮੁੜੋ।",
+  "stem.flightsim.challenge_course_aligned": "{airport} ਵੱਲ ਜਾ ਰਹੇ ਹੋ। ਉਡਾਣ ਮਾਰਗ ਦੇ ਨਿਸ਼ਾਨ ਦੀ ਪਾਲਣਾ ਕਰੋ।",
+  "stem.flightsim.challenge_runway_reference": "ਸਿਖਲਾਈ ਰਨਵੇ {runway}: ਦਿਸ਼ਾ {heading}°। ਉਤਰਨ ਲਈ ਉਚਾਈ ਘਟਾਉਣ ਤੋਂ ਪਹਿਲਾਂ ਜਹਾਜ਼ ਨੂੰ ਰਨਵੇ ਦੀ ਸਿੱਧ ਵਿੱਚ ਲਿਆਓ।"
+}

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Jide ọnọdụ ụgbọelu dị ugbu a",
+  "stem.flightsim.flight_assistance_targets": "Ntụziaka {hdg}° · Ịdị elu {alt} ft MSL · Ọsọ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Ntụziaka {hdg}° · Ịdị elu {alt} ft MSL · Ọsọ ịga n'ihu {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Tụgharịa aka ekpe {degrees}° gaa n'ebe {airport} nọ.",
+  "stem.flightsim.challenge_turn_right": "Tụgharịa aka nri {degrees}° gaa n'ebe {airport} nọ.",
+  "stem.flightsim.challenge_course_aligned": "Ị na-aga n'ebe {airport} nọ. Soro akara ụzọ ụgbọelu.",
+  "stem.flightsim.challenge_runway_reference": "Ụzọ ọdịda ụgbọelu maka ọzụzụ {runway}: ntụziaka {heading}°. Dozie ụgbọelu ka ọ kwụ n'otu ahịrị na ụzọ ọdịda tupu i wedata ya ka ọ daa."
+}

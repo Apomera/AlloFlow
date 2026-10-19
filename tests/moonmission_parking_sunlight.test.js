@@ -70,15 +70,31 @@ function expectOpaqueStops(gradient) {
   expect(gradient.stops.at(-1)[0]).toBe(1);
 }
 
-// Captured from the accepted pass54 renderer before pass55 source edits.
-// These cover launch stages, the legacy parking/TLI stack, and a spent stage.
+// Recaptured after pass76 added hull ribs, joints, fairings and curved engine bells.
+// Before/after renders and the returned section and nozzle geometry were compared
+// against the pass76 baseline; only the detail layer changed. These cover launch
+// stages, the legacy parking/TLI stack, and a spent stage.
 const legacyCases = [
-  ['full stack', 1, undefined, '9f38826622d40f17f3b335f0512db3d3d953847129fb393551b1668460fd9230'],
-  ['second stage', 2, undefined, '8688ebcd1b80b8ccdf4fdbb87528eef128b75f2ce6daa390d848e1aace642b8a'],
-  ['third stage', 3, undefined, 'a0aecd9776bb85a9b76d2315da2ce12f8baf5b1d75dfb4720c97218c890d9940'],
-  ['tower jettisoned', 3, { les: false }, 'df9a810fce35f23adc5048ede00abf726eeeda4934c1e9c1d7a7695e471cd3f7'],
-  ['spent first stage', 1, { only: ['s1is', 's1'] }, 'b6756d56ad0999902f4f855c22ba53a19cb84583e70d8418e064ff243912c032'],
+  ['full stack', 1, undefined, '6074ef91b3c54e4301f7d89a6a774087704874dcea33e16a2ee5c41f1fc602e1'],
+  ['second stage', 2, undefined, 'e6db5e84ae5ebb233c155efdbab3ba67c9ad3b9bb0a29dd0155bda34b14ef26f'],
+  ['third stage', 3, undefined, 'e42e7fe311476d12a38d25cd4f5324520d363bfd87d27124e3987338e51263f9'],
+  ['tower jettisoned', 3, { les: false }, 'e50bdeb9f4f01e2f25528aa0ca05356ea68189255161e3e90fec5f41e6067c2e'],
+  ['spent first stage', 1, { only: ['s1is', 's1'] }, '404857705254c9f3c8a8d18382f824f22b17f6c1244fe21ba3ba4117191c6ccf'],
 ];
+// Replay save/restore and count opaque hull material (a gradient fill) painted while
+// globalAlpha is below 1. The faint detail strokes may fade; the hull may not.
+function hullFillsUnderPartialAlpha(rec) {
+  let state = { alpha: 1, fill: null }; const stack = []; let count = 0;
+  for (const [kind, key, value] of rec.commands) {
+    if (kind === 'set' && key === 'globalAlpha') state.alpha = value;
+    if (kind === 'set' && key === 'fillStyle') state.fill = value;
+    if (kind === 'call' && key === 'save') stack.push({ ...state });
+    if (kind === 'call' && key === 'restore') state = stack.pop() || { alpha: 1, fill: null };
+    if (kind === 'call' && (key === 'fill' || key === 'fillRect') && state.alpha < 1 && state.fill && typeof state.fill === 'object') count++;
+  }
+  return count;
+}
+const opacityWrites = rec => rec.commands.filter(command => command[0] === 'set' && ['globalAlpha', 'globalCompositeOperation'].includes(command[1]));
 
 describe('Saturn surface geometry', () => {
   it('returns unit normals perpendicular to both surface tangents for cones and cylinders', () => {
@@ -252,7 +268,9 @@ describe('Saturn renderer compatibility', () => {
         const light = Object.freeze({ ...sun, fraction });
         expect(P.saturnV(rec.ctx, 20, 7, 221, stage, { ...opts, orbitLight: light })).toEqual(geometry);
         expect(rec.commands.filter(command => command[0] === 'call')).toEqual(baseline.commands.filter(command => command[0] === 'call'));
-        expect(rec.commands.some(command => command[0] === 'set' && command[1] === 'globalAlpha')).toBe(false);
+        // Sunlight never changes opacity: every alpha the detail layer sets is the unlit one.
+        expect(opacityWrites(rec)).toEqual(opacityWrites(baseline));
+        expect(hullFillsUnderPartialAlpha(rec), 'opaque hull under partial alpha').toBe(0);
         expect(rec.gradients.length).toBeGreaterThan(0);
         rec.gradients.forEach(expectOpaqueStops);
       }

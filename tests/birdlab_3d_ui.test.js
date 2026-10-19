@@ -1,15 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const { act } = React;
 const source = readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
-const componentSource = source.slice(source.indexOf('  function Birdlab3DObservatory('), source.indexOf('  // ── Reduced motion CSS'));
+const componentSource = sliceBetween(source, '  function Birdlab3DObservatory(', '  // ── Reduced motion CSS', { file: 'stem_tool_birdlab.js' });
 let root, host, previousMedia;
 const state = { ready: true, paused: false, camera: 'orbit', lighting: 'daylight', speed: 1, phase: 'gliding', label: 'Gliding through the clearing', altitude: 6, airspeed: 8.3, wingbeat: 0, time: 12 };
 
 function controller() {
-  return Object.fromEntries(['setPaused', 'setSpeed', 'setCamera', 'setLighting', 'setRepeatFlights', 'setMode', 'setBinoculars', 'setCrouching', 'recordSighting', 'lockPointer', 'setMove', 'stepMove', 'seek', 'resetView', 'restart', 'dispose', 'getState'].map(name => [name, vi.fn()]));
+  return Object.fromEntries(['setStudyOverlay', 'setPaused', 'setSpeed', 'setCamera', 'setLighting', 'setRepeatFlights', 'setMode', 'setBinoculars', 'setCrouching', 'recordSighting', 'lockPointer', 'setMove', 'stepMove', 'seek', 'resetView', 'restart', 'dispose', 'getState'].map(name => [name, vi.fn()]));
 }
 function button(label) { return [...host.querySelectorAll('button')].find(el => el.textContent === label); }
 async function mount(load, props = {}) {
@@ -35,6 +36,28 @@ afterEach(async () => {
 });
 
 describe('BirdLab optional 3D view lifecycle', () => {
+  it('offers a hawk course overlay without starting playback or recording a sighting', async () => {
+    const scene=controller(); let publish;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,paused:true,studyOverlay:false});return scene;})};
+    await mount(()=>Promise.resolve());
+    expect(button('Flight study overlay').getAttribute('aria-pressed')).toBe('false');
+    await act(async()=>button('Flight study overlay').click());
+    expect(scene.setStudyOverlay).toHaveBeenCalledWith(true);
+    await act(async()=>publish({studyOverlay:true,studyOverlayVisible:true}));
+    expect(host.querySelector('[data-birdlab-3d-study-key]').textContent).toContain('illustrative course');
+    expect(host.querySelector('[data-birdlab-3d-study-key]').textContent).toContain('not a force');
+    await act(async()=>button('See whole route').click());
+    expect(scene.setCamera).toHaveBeenCalledWith('wide');
+    expect(scene.setPaused).not.toHaveBeenCalled();
+    expect(scene.seek).not.toHaveBeenCalled();
+    expect(scene.recordSighting).not.toHaveBeenCalled();
+    await act(async()=>publish({camera:'robin',studyOverlayVisible:false}));
+    expect(button('Flight study overlay')).toBeUndefined();
+    expect(host.querySelector('[data-birdlab-3d-study-key]')).toBeNull();
+    await act(async()=>publish({camera:'orbit',studyOverlayVisible:true}));
+    expect(button('Flight study overlay').getAttribute('aria-pressed')).toBe('true');
+    expect(window.BirdLab3D.mount).toHaveBeenCalledTimes(1);
+  });
   it('identifies and records a mammal in the same notebook without revealing an unobserved species', async () => {
     const scene=controller(); let publish;
     const squirrel={id:'graySquirrel',category:'mammal',name:'Eastern gray squirrel',scientificName:'Sciurus carolinensis',behavior:'Handling a seed',distance:3.2,progress:.4,identified:false};
@@ -205,7 +228,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await act(async()=>button('Ruffed grouse').click());expect(button('Repeat flights').getAttribute('aria-pressed')).toBe('false');
     await act(async()=>root.unmount());root=null;expect(scene.dispose).toHaveBeenCalledTimes(1);
   });
-  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
+  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6],['darkEyedJunco','Dark-eyed junco',17.05],['tuftedTitmouse','Tufted titmouse',20.8],['easternTowhee','Eastern towhee',15.1]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
     const scene = controller();
     window.BirdLab3D = { mount: vi.fn((canvas, options) => { options.onState({...state,wildlife:[{id,name:label,behavior:'Foraging'}]}); return scene; }) };
     await mount(() => Promise.resolve());
@@ -345,6 +368,18 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await act(async () => publish({ lighting: 'daylight' }));
     expect(button('Daylight').getAttribute('aria-pressed')).toBe('true');
     expect(button('Golden hour').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('names its controls through the host translator', async () => {
+    window.BirdLab3D = { mount: vi.fn((canvas, options) => { options.onState(state); return controller(); }) };
+    await mount(() => Promise.resolve(), { t: (key, fallback) => '[' + key + '] ' + fallback });
+    for (const key of ['a11y_observation_mode', 'a11y_interactive_3d_woodland', 'a11y_flight_playback', 'a11y_flight_playback_speed',
+      'a11y_camera_view', 'a11y_woodland_lighting', 'a11y_observe_woodland_birds', 'a11y_study_a_flight_moment']) {
+      expect(host.querySelector('[aria-label^="[stem.birdlab.' + key + '] "]'), key).not.toBeNull();
+    }
+    expect(host.querySelector('[aria-label="Camera view"]')).toBeNull();
+    // The tool passes its own translator in; without it the labels stay English.
+    expect(source.includes('h(Birdlab3DObservatory, {React:React, t:__alloT,'), 'render passes __alloT').toBe(true);
   });
 
   it('provides a retry and a working 2D exit after a load failure', async () => {

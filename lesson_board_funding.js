@@ -10,6 +10,15 @@ export function fundingCost(board, project, id = 'standard') {
   return cost;
 }
 
+// True when some mix of each project's legal funding fits within the supplies.
+export function fundableTogether(board, projects, supplies) {
+  const fits = (index, left) => index >= projects.length || ['standard', 'research', 'build'].some(id => {
+    const cost = fundingCost(board, projects[index], id);
+    return !!cost && cost.every((value, i) => left[i] >= value) && fits(index + 1, left.map((value, i) => value - cost[i]));
+  });
+  return fits(0, supplies.slice());
+}
+
 export function fundingOptions(board, project, balance = [0, 0]) {
   return ['standard', 'research', 'build'].flatMap(id => {
     const cost = fundingCost(board, project, id);

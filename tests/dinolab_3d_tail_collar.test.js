@@ -14,7 +14,8 @@ function section(start, end) { const a = source.indexOf(start), b = source.index
 const chainCode = section('function addSoftTissueChain(', 'function addContourGroup(meshes)');
 const torsoCode = section('var cladeName = String(dn.clade', 'function dorsalSurfacePoint(t)');
 const tailCode = section('var tailMidA =', 'var tailSurfaceCurve =');
-const blendCode = section('// Match the exposed tail collar', '// Frame anatomy, not sprites');
+// 91652c2fe added the cranial beak closure after this blend; it is not part of the tail collar.
+const blendCode = section('// Match the exposed tail collar', '// Resolve the buried beak closure');
 const evaluate = (code, result, context) => new Function('context', 'with (context) {' + code + '\nreturn ' + result + ';}')(context);
 function build(id, scale = 1, transformed = false) {
   const dn = art.DINOS.find(d => d.id === id), model = new THREE.Group(), material = new THREE.MeshPhongMaterial();

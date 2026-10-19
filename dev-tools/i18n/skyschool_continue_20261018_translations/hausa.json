@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "An ga cewa an cika manufofin ƙalubalen. Yanzu, a atisayen sarrafa makamashi, kwatanta saukar tsawo da injin ke aiki a hankali da hawan tsawo da ƙarfin injin.",
+  "stem.flightsim.coaching_energy_complete": "An ga cewa an cika manufofin sarrafa makamashi. Yanzu ka yi atisayen sarrafa makamashi yayin gajeriyar kusantar filin jirgi, sannan ka kwatanta saurin saukar tsawo da taɓa ƙasa.",
+  "stem.flightsim.drone_battery_low": "Batiri ya yi ƙasa: {pct}% ya rage. Koma wurin tashin jirgin ka sauka nan da nan.",
+  "stem.flightsim.drone_battery_depleted_title": "Batirin jirgin marar matuƙi ya ƙare",
+  "stem.flightsim.drone_battery_depleted_body": "An dakatar da tafiyar jirgin na ɗan lokaci saboda batiri ya kai 0%. Kammala aikin don nazarin wannan yunƙurin, sannan ka fara sabon aiki da cikakken batiri.",
+  "stem.flightsim.end_drone_mission": "Kammala aikin ka nazarta",
+  "stem.flightsim.geoq_nearest_place": "Wane wuri ne ya fi kusa da inda kake yanzu?",
+  "stem.flightsim.geoq_paused": "An dakatar da tafiyar jirgin na ɗan lokaci saboda wannan tambayar. Rufe gwajin, sannan ka zaɓi Ci gaba idan ka shirya tashi.",
+  "stem.flightsim.geoq_close": "Rufe gwajin",
+  "stem.flightsim.geoq_unavailable": "Babu tambayar ilimin ƙasa game da wurin da ke kusa. Ci gaba da bincike ka sake gwadawa.",
+  "stem.flightsim.geoq_answer_feedback": "Amsarka: {answer}. Amsa daidai: {expected}."
+}

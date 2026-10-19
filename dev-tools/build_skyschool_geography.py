@@ -19,6 +19,10 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'vendor' / 'skyschool-geography'
+# --embed writes the mask into the simulator's geography data file (both copies).
+DATA_SOURCES = (ROOT / 'stem_lab' / 'stem_data_skyschool_geo.js',
+                ROOT / 'desktop' / 'web-app' / 'public' / 'stem_lab' / 'stem_data_skyschool_geo.js')
+SIMULATOR_SOURCE = ROOT / 'stem_lab' / 'stem_tool_flightsim.js'
 SOURCES = {
     'land': {'version': '5.1.1', 'sha256': 'e547d749445eaa0964aba76738090ec88f5e63c4585122170f98c67a7ea922dc'},
     'lakes': {'version': '5.0.0', 'sha256': '0803a06f9c3cb4671d89b68c48b142aad9366ba40f665245e12a913fbc61722a'},
@@ -263,7 +267,11 @@ def fixture_report(land, lakes, rows, resolution):
     return fixtures
 
 def embedding_plan(data):
-    """Preflight both production copies. This function never writes files."""
+    """Preflight both geography data copies and the simulator's decoder bounds.
+
+    The mask is written to stem_data_skyschool_geo.js (the simulator's loader
+    dependency); the simulator itself is only read. This function never writes files.
+    """
     if data['format'] != 'skyschool-land-water-rle-v1' or data['resolutionDegrees'] != .01 or data['width'] != 36000 or data['height'] != 18000:
         raise ValueError('--embed supports only the 0.01-degree v1 mask')
     rle = data['rle']
@@ -276,8 +284,7 @@ def embedding_plan(data):
         runs = encoded_row.split(',')
         if any(not run for run in runs) or sum(int(run, 36) for run in runs) != data['width']:
             raise ValueError('Generated RLE row width mismatch')
-    sources = [ROOT / 'stem_lab' / 'stem_tool_flightsim.js',
-               ROOT / 'desktop' / 'web-app' / 'public' / 'stem_lab' / 'stem_tool_flightsim.js']
+    sources = list(DATA_SOURCES)
     originals = []
     for source in sources:
         resolved = source.resolve(strict=True)
@@ -287,31 +294,33 @@ def embedding_plan(data):
             raise ValueError('Missing production source: ' + str(source))
         originals.append(source.read_bytes())
     if originals[0] != originals[1]:
-        raise ValueError('Canonical and mirrored simulator sources differ; refusing --embed')
+        raise ValueError('Canonical and mirrored geography data differ; refusing --embed')
     source = originals[0].decode('utf-8')
-    if len(re.findall(r'\bvar\s+LAND_MASK_RLE\s*=', source)) != 1:
-        raise ValueError('Expected exactly one LAND_MASK_RLE declaration')
-    # The single runtime assignment that releases the RLE string is allowed.
-    if len(re.findall(r'\bLAND_MASK_RLE\s*=', source)) != 2 or len(re.findall(r'\bLAND_MASK_RLE\s*=\s*null\s*;', source)) != 1:
-        raise ValueError('Unexpected LAND_MASK_RLE assignment outside its declaration')
-    for name in ('LAND_MASK_RESOLUTION', 'LAND_MASK_WIDTH', 'LAND_MASK_HEIGHT'):
-        if len(re.findall(r'\b' + name + r'\s*=', source)) != 1:
-            raise ValueError('Unexpected assignment count for ' + name)
+    if len(re.findall(r'\bLAND_MASK_RLE\s*=', source)) != 1:
+        raise ValueError('Expected exactly one LAND_MASK_RLE declaration in the geography data')
     rle_pattern = r'\bvar LAND_MASK_RLE = "[0-9a-z,;]+";'
-    resolution_pattern = r'\bvar LAND_MASK_RESOLUTION = ([0-9.]+);'
-    dimensions_pattern = r'\bvar LAND_MASK_WIDTH = ([0-9]+), LAND_MASK_HEIGHT = ([0-9]+);'
     hash_pattern = r'(?m)^  // RLE SHA256: [0-9a-f]{64}$'
-    for pattern in (rle_pattern, resolution_pattern, dimensions_pattern, hash_pattern):
+    for pattern in (rle_pattern, hash_pattern):
         if len(re.findall(pattern, source)) != 1:
             raise ValueError('Expected exactly one embedded mask declaration or hash comment')
-    old_resolution = float(re.search(resolution_pattern, source).group(1))
-    old_dimensions = tuple(map(int, re.search(dimensions_pattern, source).groups()))
+    # The simulator decodes the rows, so its bounds must match this format.
+    simulator = SIMULATOR_SOURCE.read_text(encoding='utf-8')
+    if len(re.findall(r'\bvar LAND_MASK_RLE = FLIGHT_GEO\.LAND_MASK_RLE;', simulator)) != 1:
+        raise ValueError('The simulator no longer reads LAND_MASK_RLE from its geography data')
+    for name in ('LAND_MASK_RESOLUTION', 'LAND_MASK_WIDTH', 'LAND_MASK_HEIGHT'):
+        if len(re.findall(r'\b' + name + r'\s*=', simulator)) != 1:
+            raise ValueError('Unexpected assignment count for ' + name)
+    resolution_pattern = r'\bvar LAND_MASK_RESOLUTION = ([0-9.]+);'
+    dimensions_pattern = r'\bvar LAND_MASK_WIDTH = ([0-9]+), LAND_MASK_HEIGHT = ([0-9]+);'
+    for pattern in (resolution_pattern, dimensions_pattern):
+        if len(re.findall(pattern, simulator)) != 1:
+            raise ValueError('Expected exactly one simulator mask bound declaration')
+    old_resolution = float(re.search(resolution_pattern, simulator).group(1))
+    old_dimensions = tuple(map(int, re.search(dimensions_pattern, simulator).groups()))
     if old_resolution != .01 or old_dimensions != (36000, 18000):
         raise ValueError('Production decoder bounds differ from the supported 0.01-degree format')
-    candidate = re.sub(rle_pattern, 'var LAND_MASK_RLE = ' + json.dumps(rle) + ';', source)
-    candidate = re.sub(resolution_pattern, 'var LAND_MASK_RESOLUTION = 0.01;', candidate)
-    candidate = re.sub(dimensions_pattern, 'var LAND_MASK_WIDTH = 36000, LAND_MASK_HEIGHT = 18000;', candidate)
-    candidate = re.sub(hash_pattern, '  // RLE SHA256: ' + data['rleSha256'], candidate).encode('utf-8')
+    candidate = re.sub(rle_pattern, lambda match: 'var LAND_MASK_RLE = ' + json.dumps(rle) + ';', source)
+    candidate = re.sub(hash_pattern, lambda match: '  // RLE SHA256: ' + data['rleSha256'], candidate).encode('utf-8')
     return dict(sources=sources, original=originals[0], candidate=candidate)
 
 def staged_source(path, content):
@@ -370,11 +379,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--resolution', type=float, default=.01)
     parser.add_argument('--output', type=Path, default=ASSETS / 'land-water-mask.json')
-    parser.add_argument('--embed', action='store_true', help='also update the embedded 0.01-degree mask in identical canonical and mirrored simulator sources')
+    parser.add_argument('--embed', action='store_true', help='also update the 0.01-degree mask in both identical copies of stem_data_skyschool_geo.js')
     args = parser.parse_args()
     args.output = args.output.resolve()
     protected = [(ROOT / 'stem_lab' / 'stem_tool_flightsim.js').resolve(),
                  (ROOT / 'desktop' / 'web-app' / 'public' / 'stem_lab' / 'stem_tool_flightsim.js').resolve()]
+    protected += [source.resolve() for source in DATA_SOURCES]
     if args.output in protected:
         raise ValueError('--output cannot overwrite simulator source')
     resolution = args.resolution

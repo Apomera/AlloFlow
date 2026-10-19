@@ -226,7 +226,7 @@ test('the same patch completes or fails on mowing date alone, and only a matched
  await season.locator('#bf-season-guess').selectOption('complete');
  await season.getByRole('button',{name:'Run the season',exact:true}).click();
  await expect(season.locator('.bf-season-feedback')).toContainText('Different from your prediction.');
- await expect(season.locator('.bf-season-feedback')).toContainText('before week 3');
+ await expect(season.locator('.bf-season-feedback')).toContainText('cut in week 2, while that stage still needed it');
  await expect(season.locator('[data-season-record="milkweed-early"] td').nth(2)).toContainText('Stopped early');
  await expect(season.locator('[data-bf-timing-pair]')).toHaveCount(1);
  // Now the pair exists, the timing claim becomes judgeable from it.
@@ -248,6 +248,15 @@ test('the week track shows why a stage failed, and season records survive a rest
  await expect(season.locator('[data-season-record="milkweed-never"]')).toBeVisible();
  await season.locator('#bf-season-site').selectOption('milkweed');
  await season.locator('#bf-season-mow').selectOption('mid');
+ // Before a run the track shows only the plan, so it cannot answer the
+ // prediction for the learner: no stage is marked cleared or failed yet.
+ await expect(season.locator('.bf-weeks li[data-stage="caterpillar"]')).toHaveAttribute('data-state','pending');
+ await expect(season.locator('.bf-weeks li[data-stage="chrysalis"]')).toHaveAttribute('data-state','pending');
+ await expect(season.locator('.bf-weeks li[data-stage="chrysalis"]')).toContainText('cut before this stage is finished');
+ await expect(season.locator('[data-bf-timeline="mid"]')).toHaveAttribute('data-bf-reveal','false');
+ await season.locator('#bf-season-guess').selectOption('stop');
+ await season.getByRole('button',{name:'Run the season',exact:true}).click();
+ await expect(season.locator('[data-bf-timeline="mid"]')).toHaveAttribute('data-bf-reveal','true');
  // The track must name the CUT as the reason, not a missing plant.
  await expect(season.locator('.bf-weeks li[data-stage="caterpillar"]')).toHaveAttribute('data-state','cleared');
  await expect(season.locator('.bf-weeks li[data-stage="chrysalis"]')).toHaveAttribute('data-state','cut');
@@ -256,6 +265,9 @@ test('the week track shows why a stage failed, and season records survive a rest
  await visit(page,'Wild bergamot');
  await season.locator('#bf-season-site').selectOption('bergamot');
  await season.locator('#bf-season-mow').selectOption('never');
+ await expect(season.locator('.bf-weeks li[data-stage="caterpillar"]')).toHaveAttribute('data-state','pending');
+ await season.locator('#bf-season-guess').selectOption('stop');
+ await season.getByRole('button',{name:'Run the season',exact:true}).click();
  await expect(season.locator('.bf-weeks li[data-stage="caterpillar"]')).toHaveAttribute('data-state','missing');
  await expect(season.locator('.bf-weeks li[data-stage="caterpillar"]')).toContainText('Nothing here');
  await page.evaluate(()=>{const w=window as any;w.__ctx.isDark=true;w.__ctx.isContrast=true;w.__rerender();});
@@ -312,7 +324,11 @@ test('the glossary is collapsed by default, opens to real definitions, and audit
  await expect(entry).toContainText('does not feed');
  await expect(entry).toContainText('assumes mowing removes its support');
  await expect(entry).toContainText('often leave their milkweed plant');
- await expect(gloss.locator('[data-gloss-term]')).toHaveCount(12);
+ // The summary states the count; the list must agree with it (the glossary
+ // grew from 12 to 17 terms with the pollination work, and a fixed 12 went stale).
+ const stated=Number(((await gloss.locator('summary').textContent())||'').match(/(\d+) words used/)?.[1]);
+ expect(stated).toBeGreaterThanOrEqual(12);
+ await expect(gloss.locator('[data-gloss-term]')).toHaveCount(stated);
  // Axe with the panel OPEN: a collapsed details hides its contents from the
  // audit, so checking only the closed state would prove nothing.
  await audit(page);

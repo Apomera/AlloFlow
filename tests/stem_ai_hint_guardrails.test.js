@@ -24,8 +24,11 @@ beforeAll(() => {
     head: { appendChild() {} },
     body: { classList: { contains: () => false } },
     querySelector: () => null,
+    addEventListener() {},
+    removeEventListener() {},
   };
-  const win = { AlloModules: {} };
+  // The module now registers window/document listeners at load, ahead of the capture anchor.
+  const win = { AlloModules: {}, addEventListener() {}, removeEventListener() {} };
   try {
     // eslint-disable-next-line no-new-func
     new Function('window', 'document', src)(win, doc);

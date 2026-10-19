@@ -1,8 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 
+const require = createRequire(import.meta.url);
 const root = process.cwd();
+// Question-quality waves 35-39 (2026-08-20) re-authored most of these items with the same keys.
+// Each records itself as both the wording and option-feedback refinement wave, and its data file
+// holds the revision the item must match.
+const laterRevisionFor = (item) => {
+  const match = /^eppp-native-quality-wave-(\d+)$/.exec(item.wordingReviewWave || '');
+  if (!match || item.optionFeedbackRefinementWave !== item.wordingReviewWave) return null;
+  const data = require(`../dev-tools/eppp_native_quality_wave_${match[1]}_data.cjs`);
+  return data.revisions.find((revision) => revision.id === item.id) || null;
+};
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
 const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const catalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
@@ -45,8 +56,16 @@ describe('EPPP incorrect-option explanation repair wave 07', () => {
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(item.optionFeedbackReviewWave).toBe('eppp-option-feedback-wave-01');
-      expect(item.optionFeedbackRefinementWave).toBe('eppp-option-feedback-wave-07');
-      expect(item.optionFeedbackRefinedAt).toBe('2026-07-18');
+      const later = laterRevisionFor(item);
+      if (later) {
+        expect(later.expectedAnswerIndex, id).toBe(expectedKeys[index]);
+        expect(item.prompt, id).toBe(later.prompt);
+        expect(item.choices, id).toEqual(later.choices);
+        expect(item.optionFeedbackRefinedAt > '2026-07-18', id).toBe(true);
+      } else {
+        expect(item.optionFeedbackRefinementWave, id).toBe('eppp-option-feedback-wave-07');
+        expect(item.optionFeedbackRefinedAt, id).toBe('2026-07-18');
+      }
       expect(item.choices).toHaveLength(4);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales[item.answerIndex]).toBe(item.rationale);

@@ -380,7 +380,9 @@ window.StemLab = window.StemLab || {
           var lnp = posXPts.length;
           logB = (lnp * slnXY - slnX * lspY) / (lnp * slnX2 - slnX * slnX || 1);
           logA = (lspY - logB * slnX) / lnp;
-          var ssTotL = allY.reduce(function(s, y) { return s + (y - meanY)*(y - meanY); }, 0);
+          // SStot over the same points the fit used: points with x <= 0 have no ln(x).
+          var lMeanY = lspY / lnp;
+          var ssTotL = posXPts.reduce(function(s, p) { return s + (p.y - lMeanY)*(p.y - lMeanY); }, 0);
           var ssResL = posXPts.reduce(function(s, p) { return s + Math.pow(p.y - (logA + logB * Math.log(p.x)), 2); }, 0);
           logR2 = ssTotL > 0 ? 1 - ssResL / ssTotL : 0;
         }
@@ -418,8 +420,10 @@ window.StemLab = window.StemLab || {
       var yMedian = median(sortedY);
       var yMin_ = sortedY[0] || 0, yMax_ = sortedY[sortedY.length-1] || 0;
       var yRange = yMax_ - yMin_;
-      var q1 = median(sortedY.slice(0, Math.floor(sortedY.length / 2)));
-      var q3 = median(sortedY.slice(Math.ceil(sortedY.length / 2)));
+      // A single value has no lower or upper half: its quartiles are the value itself.
+      // median([]) = 0 made Q1 = Q3 = 0 and flagged the lone point as an outlier.
+      var q1 = sortedY.length < 2 ? yMedian : median(sortedY.slice(0, Math.floor(sortedY.length / 2)));
+      var q3 = sortedY.length < 2 ? yMedian : median(sortedY.slice(Math.ceil(sortedY.length / 2)));
       var iqr = q3 - q1;
       var stdDev = n > 0 ? Math.sqrt(allY.reduce(function(s, y) { return s + (y - meanY)*(y - meanY); }, 0) / n) : 0;
 
@@ -444,7 +448,9 @@ window.StemLab = window.StemLab || {
         var binWidth = yRange / binCount || 1;
         for (var bi = 0; bi < binCount; bi++) {
           var bLow = yMin_ + bi * binWidth;
-          var bHigh = bLow + binWidth;
+          // Shared edges come from one expression, and the last bin ends exactly at the
+          // maximum: bLow + binWidth rounded below it and dropped the largest value.
+          var bHigh = (bi === binCount - 1 && yRange > 0) ? yMax_ : yMin_ + (bi + 1) * binWidth;
           var bCount = visiblePoints.filter(function(p) { return p.y >= bLow && (bi === binCount-1 ? p.y <= bHigh : p.y < bHigh); }).length;
           histBins.push({ low: bLow, high: bHigh, count: bCount });
         }
@@ -456,17 +462,29 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var spearmanR = 0;
       if (n >= 3) {
+        // Tied values share their average rank, and rho is Pearson r of the ranks.
+        // The 1 - 6*sum(d^2) shortcut assumes no ties: constant y read as rho = +1.
         var rankArr = function(arr) {
           var sorted = arr.map(function(v, i) { return { v: v, i: i }; }).sort(function(a, b) { return a.v - b.v; });
           var ranks = new Array(arr.length);
-          for (var ri = 0; ri < sorted.length; ri++) ranks[sorted[ri].i] = ri + 1;
+          for (var ri = 0; ri < sorted.length; ) {
+            var rj = ri;
+            while (rj + 1 < sorted.length && sorted[rj + 1].v === sorted[ri].v) rj++;
+            for (var rk = ri; rk <= rj; rk++) ranks[sorted[rk].i] = (ri + rj) / 2 + 1;
+            ri = rj + 1;
+          }
           return ranks;
         };
         var xRanks = rankArr(allX);
         var yRanks = rankArr(allY);
-        var dSqSum = 0;
-        for (var sri = 0; sri < n; sri++) dSqSum += Math.pow(xRanks[sri] - yRanks[sri], 2);
-        spearmanR = 1 - (6 * dSqSum) / (n * (n * n - 1));
+        var rankMean = (n + 1) / 2, rSxy = 0, rSxx = 0, rSyy = 0;
+        for (var sri = 0; sri < n; sri++) {
+          rSxy += (xRanks[sri] - rankMean) * (yRanks[sri] - rankMean);
+          rSxx += (xRanks[sri] - rankMean) * (xRanks[sri] - rankMean);
+          rSyy += (yRanks[sri] - rankMean) * (yRanks[sri] - rankMean);
+        }
+        // No spread in either ranking (all x or all y equal): no rank association.
+        spearmanR = rSxx > 0 && rSyy > 0 ? rSxy / Math.sqrt(rSxx * rSyy) : 0;
       }
       var pearsonR = n >= 2 ? (slope >= 0 ? 1 : -1) * Math.sqrt(Math.max(0, Math.abs(r2))) : 0;
 
@@ -479,7 +497,13 @@ window.StemLab = window.StemLab || {
         seRegression = Math.sqrt(ssResCI / (n - 2));
         sxDevSq = allX.reduce(function(s, x) { return s + (x - meanX) * (x - meanX); }, 0);
       }
-      var tValue = n > 30 ? 1.96 : n > 10 ? 2.228 : n > 5 ? 2.571 : 4.303;
+      // Two-sided 95% t critical value for df = n - 2: exact table to df 30, then the
+      // Cornish-Fisher expansion (within 0.001 of the exact value for df > 30).
+      var tDf = n - 2;
+      var T975 = [12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.160, 2.145, 2.131,
+        2.120, 2.110, 2.101, 2.093, 2.086, 2.080, 2.074, 2.069, 2.064, 2.060, 2.056, 2.052, 2.048, 2.045, 2.042];
+      var tValue = tDf < 1 ? T975[0] : tDf <= 30 ? T975[tDf - 1]
+        : 1.959964 + (Math.pow(1.959964, 3) + 1.959964) / (4 * tDf) + (5 * Math.pow(1.959964, 5) + 16 * Math.pow(1.959964, 3) + 3 * 1.959964) / (96 * tDf * tDf);
 
       // ══════════════════════════════════════════════════════════════
       // ── Cumulative Frequency ──
@@ -1167,9 +1191,12 @@ window.StemLab = window.StemLab || {
             (function() {
               var bx = function(v) { return pad + ((v - yMin_) / (yRange || 1)) * (W - 2*pad); };
               return h('g', null,
-                h('line', { x1: bx(yMin_), y1: 80, x2: bx(yMax_), y2: 80, stroke: '#94a3b8', strokeWidth: 1.5 }),
-                h('line', { x1: bx(yMin_), y1: 60, x2: bx(yMin_), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 }),
-                h('line', { x1: bx(yMax_), y1: 60, x2: bx(yMax_), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                // Whiskers stop at the most extreme values that are not flagged outliers.
+                (function(inner) { var wLo = inner.length ? Math.min.apply(null, inner) : yMin_, wHi = inner.length ? Math.max.apply(null, inner) : yMax_; return [
+                  h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                  h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 60, x2: bx(wLo), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                  h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 60, x2: bx(wHi), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 })
+                ]; })(visiblePoints.filter(function(p) { return outliers.indexOf(p) < 0; }).map(function(p) { return p.y; })),
                 h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: pal.fill, fillOpacity: 0.3, stroke: pal.fill, strokeWidth: 2, rx: 4 }),
                 h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: '#ef4444', strokeWidth: 2.5 }),
                 h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, 'Min: ' + yMin_.toFixed(1)),
@@ -1354,12 +1381,13 @@ window.StemLab = window.StemLab || {
                     { name: t('stem.dataplot.linear', 'Linear'), eq: 'y = ' + slope.toFixed(2) + 'x + ' + intercept.toFixed(2), r2: r2 },
                     n >= 3 ? { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
                     expA ? { name: t('stem.dataplot.exponential', 'Exponential'), eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
-                    logB ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
+                    // A log fit drops every x <= 0 point, so it is not ranked against fits of all points.
+                    logB && allX.every(function(x) { return x > 0; }) ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
                   // Sort and color by RAW R\u00B2, not |R\u00B2|: a negative R\u00B2 means the fit is
                   // WORSE than the mean line \u2014 abs() ranked catastrophic fits first
                   // and painted them green.
                   ].filter(Boolean).sort(function(a, b) { return b.r2 - a.r2; }).map(function(reg) {
-                    var best = reg.r2 === Math.max(r2, quadR2, expR2, logR2);
+                    var best = reg.r2 === Math.max(r2, quadR2, expR2, allX.every(function(x) { return x > 0; }) ? logR2 : -Infinity);
                     return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
                       best && h('span', { className: 'text-[0.6875rem] font-bold text-emerald-600' }, t('stem.dataplot.best', '\u2B50 Best')),
                       h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
@@ -1686,8 +1714,10 @@ window.StemLab = window.StemLab || {
           var xs = [], ys = [];
           for (var i = 0; i < iq.n; i++) {
             var x = rng() * 10 - 5;
-            var noise = (rng() + rng() + rng() - 1.5) * iq.noiseSD;
-            var y = iq.trueR * x + Math.sqrt(1 - iq.trueR * iq.trueR) * noise;
+            // x ~ U(-5, 5) has SD 10/sqrt(12) = 2.8867513 and the three-uniform sum has SD 0.5.
+            // Standardize both so the population r equals the slider at noise SD 1.
+            var noise = (rng() + rng() + rng() - 1.5) * 2 * iq.noiseSD;
+            var y = iq.trueR * (x / 2.8867513) + Math.sqrt(1 - iq.trueR * iq.trueR) * noise;
             xs.push(x); ys.push(y);
           }
           for (var oi = 0; oi < iq.outlierCount; oi++) {

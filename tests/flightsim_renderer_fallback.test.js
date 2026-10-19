@@ -102,7 +102,7 @@ describe('SkySchool WebGL failure fallback', () => {
     expect(hooks().timeRef.current).toBe(pausedTime);
     await click('End challenge');
     expect(latest.lastDebrief.samples.length).toBeGreaterThan(0);
-    await click('Retry challenge');
+    await click('🔁 Try the challenge again');
     await frame(); await frame();
     expect(WebGLRenderer).toHaveBeenCalledTimes(2);
     expect(warnings).toHaveBeenCalledTimes(2);
@@ -286,6 +286,53 @@ describe('SkySchool viewport and chase camera rendering', () => {
     if (mode === 'WebGL') expect(renderer.render).toHaveBeenCalledTimes(renders + 1);
     expect(errors).not.toHaveBeenCalled();
   });
+
+  it.each(['Canvas', 'WebGL'].flatMap(mode => ['camera', 'forces', 'weather', 'details'].map(action => [mode, action])))
+    ('repaints a held %s frame once after a %s deck change, then holds without advancing the flight', async (mode, action) => {
+      const renderer = workingRenderer();
+      const WebGLRenderer = mode === 'Canvas' ? function() { throw new Error('No WebGL'); } : function() { return renderer; };
+      await mount({ ...Three, WebGLRenderer }, { thirdPerson: true });
+      await frame();
+      await click('⏸ Pause'); await frame(); await frame();
+      const before = {
+        time: hooks().timeRef.current,
+        flight: JSON.stringify(hooks().flightRef.current),
+        controls: JSON.stringify(hooks().controlsRef.current),
+        evidence: JSON.stringify(hooks().getLogRef().current),
+        challenge: JSON.stringify(latest.flightChallenge),
+      };
+      const renders = renderer.render.mock.calls.length;
+      context.fillRect.mockClear();
+      const control = action === 'camera' ? host.querySelector('[aria-label="Switch to Cockpit View"]')
+        : action === 'forces' ? host.querySelector('[aria-label="Forces — show force vectors"]')
+        : action === 'details' ? [...host.querySelectorAll('button')].find(item => item.textContent.trim() === 'More information')
+        : [...host.querySelectorAll('button')].find(item => item.textContent.startsWith('🌤️'));
+      expect(control).toBeTruthy();
+      await act(async () => control.click());
+      await frame();
+      expect(context.fillRect.mock.calls.length).toBeGreaterThan(0);
+      if (mode === 'WebGL') {
+        expect(renderer.render).toHaveBeenCalledTimes(renders + 1);
+        if (action === 'camera') {
+          const scene = renderer.render.mock.calls.at(-1)[0];
+          const ownAircraft = scene.children.find(item => item.userData.type === 'cessna172');
+          expect(ownAircraft.visible).toBe(false);
+        }
+      }
+      expect(hooks().timeRef.current).toBe(before.time);
+      expect(JSON.stringify(hooks().flightRef.current)).toBe(before.flight);
+      expect(JSON.stringify(hooks().controlsRef.current)).toBe(before.controls);
+      expect(JSON.stringify(hooks().getLogRef().current)).toBe(before.evidence);
+      expect(JSON.stringify(latest.flightChallenge)).toBe(before.challenge);
+      const fills = context.fillRect.mock.calls.length;
+      // Bookkeeping unrelated to deliberate weather settings cannot turn
+      // a held pause into a continuous redraw.
+      hooks().getWeatherRef().current._gustPhase = 9;
+      await frame(); await frame();
+      expect(context.fillRect.mock.calls.length).toBe(fills);
+      if (mode === 'WebGL') expect(renderer.render).toHaveBeenCalledTimes(renders + 1);
+      expect(errors).not.toHaveBeenCalled();
+    });
 
   it('places the first parked chase camera above the airport instead of lerping from underground', async () => {
     const renderer = workingRenderer();

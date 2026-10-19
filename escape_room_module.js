@@ -803,7 +803,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       escapeRoomRequests.room = null;
       warnLog('Escape room generation failed:', e);
       addToast(e && e.unusable
-        ? (t('escape_room.generation_unusable') || 'The AI returned puzzles that could not be played, even after a repair attempt. Try again, or use a shorter source text.')
+        ? t('escape_room.generation_unusable')
         : t('errors.generation_failed'), 'error');
       setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, isGenerating: false }); });
     };
@@ -883,7 +883,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       // A room the teacher already reviewed opens again instead of being replaced.
       if (!(options && options.fresh) && hasEscapeRoomDraftIn(state.escapeRoomState)) {
         setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: true, previewTarget: 'live', confirmDiscard: false, showSettings: false }); });
-        addToast(t('escape_room.preview_reopened') || 'Your reviewed room is open again. Choose New room to generate a different one.', 'info');
+        addToast(t('escape_room.preview_reopened'), 'info');
         return;
       }
       if (!inputText || !inputText.trim()) {
@@ -956,13 +956,13 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         return false;
       }
       if ((live.escapeRoomState && live.escapeRoomState.isActive) || (live.quizState && live.quizState.isActive)) {
-        addToast(t('escape_room.end_live_activity_first') || 'End the current live activity before launching this room.', 'error');
+        addToast(t('escape_room.end_live_activity_first'), 'error');
         return false;
       }
       if (room.isPublishing) return false;
       var prepared = prepareEscapeRoomData(savedEscapeRoomFrom(room), { requireObjects: true });
       if (!prepared.ok) {
-        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
+        addToast(t('escape_room.invalid_save'), 'error');
         return false;
       }
       // Firestore rejects undefined values; a JSON round trip drops them.
@@ -995,7 +995,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         });
       } catch (e) {
         warnLog('Collaborative escape room launch failed:', e);
-        addToast(t('escape_room.launch_failed') || 'The room could not be sent to the class. Check the connection and try again.', 'error');
+        addToast(t('escape_room.launch_failed'), 'error');
         setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPublishing: false }); });
         return false;
       }
@@ -1649,7 +1649,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         return withEscapeRoomEdits(prev, { puzzles: puzzles, regeneratingPuzzleId: null, previewNotes: Object.assign({ room: [] }, prev.previewNotes, { byId: byId }) });
       });
       if (fresh) playSound('correct');
-      else addToast(t('escape_room.regenerate_failed') || 'A new version could not be made. The current puzzle is unchanged.', 'error');
+      else addToast(t('escape_room.regenerate_failed'), 'error');
       return !!fresh;
     };
 
@@ -1685,7 +1685,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         return Object.assign({}, prev, { isPreview: false, isActive: true, isTrial: true, timerPaused: true, confirmDiscard: false,
           previewNotes: room.previewNotes || null, previewTarget: room.previewTarget || null });
       });
-      addToast(t('escape_room.trial_started') || 'Trial run: play as a student would. No XP is awarded. Choose Back to preview when you are done.', 'info');
+      addToast(t('escape_room.trial_started'), 'info');
     };
     var endEscapeRoomTrial = function() {
       var room = getState().escapeRoomState || {};
@@ -1747,7 +1747,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       // existed (e.g. with a mismatched object link) are repaired instead of refused.
       var prepared = isPlainObject(config) && config.room ? prepareEscapeRoomData(config, { requireObjects: true }) : null;
       if (!prepared || !prepared.ok) {
-        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
+        addToast(t('escape_room.invalid_save'), 'error');
         return false;
       }
       var processedPuzzles = processEscapeRoomPuzzles(prepared.puzzles, prepared.objects);

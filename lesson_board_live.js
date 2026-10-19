@@ -1,15 +1,22 @@
 import { runOf, stepOf, validAction, validValue } from './lesson_board_engine.js';
 
-// Only current, usable responses from roster members can delay resolution.
-export function receivedBoardResponses(state, roster = {}) {
+// The action each learner has waiting for the current window: a private answer document wins over the
+// shared slot when private answers are on (see lesson_board_private.js); votes always use the shared slot.
+export function boardRequests(state, roster = {}, privateActions = {}) {
   if (state?.mode !== 'lesson-board' || !state.isActive) return [];
-  const run = runOf(state), step = stepOf(run), node = state.board?.locations?.find(item => item.id === step.targetId);
+  const run = runOf(state), step = stepOf(run), kind = step.phase === 'choose' ? 'vote' : step.phase === 'answer' ? 'answer' : '';
+  if (!kind) return [];
+  const shared = state.teamProgress?.All?.boardActions || {}, own = state.privateAnswers === true && kind === 'answer' ? privateActions || {} : {};
+  return [...new Set([...Object.keys(shared), ...Object.keys(own)])].map(uid => {
+    const usable = action => action && action.kind === kind && validAction(action, state.attemptId, run.turn, step.retryRound || 0) && step.seen?.[uid]?.requestId !== action.requestId;
+    return [uid, usable(own[uid]) ? own[uid] : usable(shared[uid]) ? shared[uid] : null];
+  }).filter(([uid, action]) => action && Object.prototype.hasOwnProperty.call(roster, uid) && state.teams?.[uid] === 'All');
+}
+// Only current, usable responses from roster members can delay resolution.
+export function receivedBoardResponses(state, roster = {}, privateActions = {}) {
+  const run = runOf(state), step = stepOf(run), node = state?.board?.locations?.find(item => item.id === step.targetId);
   if (step.phase !== 'answer' || !node) return [];
-  return Object.entries(state.teamProgress?.All?.boardActions || {}).filter(([uid, action]) =>
-    Object.prototype.hasOwnProperty.call(roster, uid) && state.teams?.[uid] === 'All' && !step.answers?.[uid] &&
-    validAction(action, state.attemptId, run.turn, step.retryRound || 0) && action.kind === 'answer' && action.targetId === step.targetId &&
-    step.seen?.[uid]?.requestId !== action.requestId && validValue(node, action.value)
-  ).map(([uid]) => uid);
+  return boardRequests(state, roster, privateActions).filter(([uid, action]) => !step.answers?.[uid] && action.targetId === step.targetId && validValue(node, action.value)).map(([uid]) => uid);
 }
 
 // Board control writes use a fresh document and an atomic update when provided by the transport.

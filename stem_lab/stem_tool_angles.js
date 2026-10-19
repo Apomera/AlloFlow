@@ -182,7 +182,7 @@ window.StemLab = window.StemLab || {
       var showSecondRay = d.showSecondRay || false;
       var secondAngle = (typeof d.secondAngle === 'number' && isFinite(d.secondAngle)) ? d.secondAngle : 120;
       // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
-      var anglePins = Array.isArray(d.anglePins) ? d.anglePins : []; // saved angle markers on protractor
+      var anglePins = Array.isArray(d.anglePins) ? d.anglePins.filter(function(p) { return p && typeof p.deg === 'number' && isFinite(p.deg); }) : []; // saved angle markers on protractor
       var snapEnabled = d.snapEnabled != null ? d.snapEnabled : false; // snap to 15° increments
 
       // AI Tutor state
@@ -212,7 +212,7 @@ window.StemLab = window.StemLab || {
       var showBadges = d.showBadges || false;
 
       // Angle history log
-      var angleHistory = d.angleHistory || [];
+      var angleHistory = Array.isArray(d.angleHistory) ? d.angleHistory.filter(function(e) { return e && typeof e.deg === 'number' && isFinite(e.deg); }) : [];
 
       // Polygon explorer
       var selectedPolygon = (typeof d.selectedPolygon === 'number' && isFinite(d.selectedPolygon)) ? d.selectedPolygon : 3;
@@ -241,19 +241,21 @@ window.StemLab = window.StemLab || {
       var classifyAngle = function(a) {
         if (a === 0) return 'Zero';
         if (a < 90) return 'Acute';
-        if (a === 90) return t('stem.angles.right') || 'Right';
+        if (a === 90) return 'Right';
         if (a < 180) return 'Obtuse';
         if (a === 180) return 'Straight';
         if (a < 360) return 'Reflex';
         return 'Full';
       };
       var angleClass = classifyAngle(angleValue);
+      // An open classify question or estimate must not print its own answer.
+      var hideClass = !!(angleChallenge && angleChallenge.type === 'classify' && !angleFeedback && !angleChallenge.done) || (estimateActive && !estimateResult);
 
       // ── Class colors ──
       var classColors = {};
       classColors['Zero'] = { text: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200' };
       classColors['Acute'] = { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
-      classColors[t('stem.angles.right') || 'Right'] = { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' };
+      classColors['Right'] = { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' };
       classColors['Obtuse'] = { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' };
       classColors['Straight'] = { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' };
       classColors['Reflex'] = { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' };
@@ -388,7 +390,8 @@ window.StemLab = window.StemLab || {
       };
       // Keyboard equivalent for the pointer-only ray handles (WCAG 2.1.1 / 2.5.7).
       var handleAngleKey = function(e, current, setter, afterChange) {
-        var step = e.shiftKey ? 15 : 5;
+        // With snap on, a 5-degree step rounded straight back to where it started.
+        var step = (e.shiftKey || snapEnabled) ? 15 : 5;
         var next;
         if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(0, current - step);
         else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(360, current + step);
@@ -426,7 +429,7 @@ window.StemLab = window.StemLab || {
         check('streak_10', curStreak >= 10);
         check('speed_demon', curSpeedScore >= 10);
         check('estimator', curEstCount >= 3);
-        check('all_types', (curTypesSeen['Acute'] || 0) >= 1 && ((curTypesSeen[t('stem.angles.right') || 'Right'] || 0) >= 1 || (curTypesSeen['Right'] || 0) >= 1) && (curTypesSeen['Obtuse'] || 0) >= 1 && (curTypesSeen['Straight'] || 0) >= 1 && (curTypesSeen['Reflex'] || 0) >= 1);
+        check('all_types', (curTypesSeen['Acute'] || 0) >= 1 && ((curTypesSeen['Right'] || 0) >= 1 || (curTypesSeen['Right'] || 0) >= 1) && (curTypesSeen['Obtuse'] || 0) >= 1 && (curTypesSeen['Straight'] || 0) >= 1 && (curTypesSeen['Reflex'] || 0) >= 1);
         check('polygon_pro', Object.keys(curPolygons).length >= 5);
         check('century', curTotal >= 100);
 
@@ -479,7 +482,9 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C You made ' + angleValue + '\u00B0. Target is ' + angleChallenge.target + '\u00B0. (within ' + tolerance + '\u00B0)' }
           );
           setExploreScore(function(prev) { return { correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }; });
-          if (ok) { awardXP('protractor', 5, 'create angle'); recordCorrect(classifyAngle(angleChallenge.target)); }
+          // Moving the ray clears the feedback, which re-opened Check on a scored
+          // challenge; marking it done makes one answer count once.
+          if (ok) { setAngleChallenge(Object.assign({}, angleChallenge, { done: true })); awardXP('protractor', 5, 'create angle'); recordCorrect(classifyAngle(angleChallenge.target)); }
           else recordWrong();
         } else if (angleChallenge.type === 'classify') {
           var correctClass = classifyAngle(angleChallenge.target);
@@ -504,7 +509,10 @@ window.StemLab = window.StemLab || {
 
       var checkEstimate = function() {
         if (angleSubmissionPending || estimateResult) return;
-        var guess = Number(String(estimateGuess == null ? '' : estimateGuess).trim());
+        // A blank box is not a guess of 0; a decimal guess rounds to a whole degree.
+        var guessText = String(estimateGuess == null ? '' : estimateGuess).trim();
+        if (guessText === '') return;
+        var guess = Math.round(Number(guessText));
         if (!Number.isSafeInteger(guess)) return;
         angleSubmissionPending = true;
         var diff = Math.abs(guess - estimateTarget);
@@ -567,7 +575,7 @@ window.StemLab = window.StemLab || {
       var extendSpeedRound = function() { if (speedActive && window.__anglesSpeedAddTime) window.__anglesSpeedAddTime(15); };
 
       var answerSpeed = function(cls) {
-        if (!speedTarget) return;
+        if (!speedTarget || speedPaused) return;
         var ok = cls === speedTarget.type;
         if (ok) {
           var newScore = speedScore + 1;
@@ -579,6 +587,9 @@ window.StemLab = window.StemLab || {
         } else {
           if (soundEnabled) sfxWrong();
           setExploreScore(function(prev) { return { correct: prev.correct, total: prev.total + 1 }; });
+          // A miss moves on; otherwise pressing every button scored each target.
+          var missNext = targetAngles[Math.floor(Math.random() * targetAngles.length)];
+          upd({ speedTarget: { angle: missNext, type: classifyAngle(missNext) } });
         }
       };
 
@@ -739,7 +750,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
                   { label: 'Focus', value: angleTabLabel },
-                  { label: 'Angle', value: String(convertedAngle) },
+                  { label: 'Angle', value: estimateActive ? '?' : String(convertedAngle) },
                   { label: 'Pins', value: String(anglePins.length) }
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
@@ -853,7 +864,7 @@ window.StemLab = window.StemLab || {
           activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
-            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, viewBox: '0 0 400 420', preserveAspectRatio: 'xMidYMid meet', className: 'select-none', role: 'group', 'aria-label': convertedAngle + ' ' + angleClass + ' interactive protractor', 'data-protractor-svg': true, style: { width: '100%', height: 'auto', maxWidth: 400, minWidth: 0, flex: '1 1 400px' } },
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (estimateActive ? '' : convertedAngle + (hideClass ? '' : ', ' + angleClass + ' angle'))), h('svg', { width: 400, height: 420, viewBox: '0 0 400 420', preserveAspectRatio: 'xMidYMid meet', className: 'select-none', role: 'group', 'aria-label': (estimateActive ? '' : convertedAngle + ' ') + (hideClass ? '' : angleClass + ' ') + 'interactive protractor', 'data-protractor-svg': true, style: { width: '100%', height: 'auto', maxWidth: 400, minWidth: 0, flex: '1 1 400px' } },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
               // Filled angle wedge
@@ -871,7 +882,7 @@ window.StemLab = window.StemLab || {
               h('line', { x1: cx, y1: cy, x2: rayEndX, y2: rayEndY, stroke: '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
               // Bisector ray (dashed)
               showBisector && h('line', { x1: cx, y1: cy, x2: bisEndX, y2: bisEndY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,3', strokeLinecap: 'round' }),
-              showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[0.6875rem] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
+              showBisector && !estimateActive && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[0.6875rem] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
               showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': __alloT('stem.angles.a11y_second_angle_ray_handle', 'Second angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
@@ -888,14 +899,14 @@ window.StemLab = window.StemLab || {
                 estimateActive ? '?' : convertedAngle
               ),
               // Draggable handle
-              h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': __alloT('stem.angles.a11y_angle_ray_handle', 'Angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
+              h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': __alloT('stem.angles.a11y_angle_ray_handle', 'Angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': estimateActive ? '?' : convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
               h('text', { x: cx - 12, y: cy + 5, className: 'text-[0.6875rem] fill-slate-500 font-mono select-none' }, 'V')
             ),
             // Overlay: type badge
-            h('div', { className: 'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ' + cc.bg + ' ' + cc.text + ' ' + cc.border + ' border' }, angleClass)
+            h('div', { className: 'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ' + cc.bg + ' ' + cc.text + ' ' + cc.border + ' border' }, hideClass ? '?' : angleClass)
           ),
 
           // ── Controls row ──
@@ -906,7 +917,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.type', 'Type')),
-              h('div', { className: 'text-base font-bold ' + cc.text }, angleClass)
+              h('div', { className: 'text-base font-bold ' + cc.text }, hideClass ? '?' : angleClass)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.explement', 'Explement')),
@@ -925,7 +936,7 @@ window.StemLab = window.StemLab || {
 
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
-            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': convertedAngle, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
+            h('input', { type: 'range', min: 0, max: 360, step: snapEnabled ? 15 : undefined, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': estimateActive ? '?' : convertedAngle, disabled: estimateActive, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
             h('div', { className: 'flex justify-between mt-1' },
               h('span', { className: 'text-[0.6875rem] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
@@ -949,8 +960,8 @@ window.StemLab = window.StemLab || {
           // Quick angle buttons + Pin
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
-              return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': angleValue === a, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
-                className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
+              return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': !estimateActive && angleValue === a, disabled: estimateActive, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
+                className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (!estimateActive && angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
             h('button', { 'aria-label': __alloT('stem.angles.a11y_pin', 'Pin'), onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
@@ -967,7 +978,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Supplementary / Complementary / Relationships ──
-          h('div', { className: 'flex gap-2 flex-wrap' },
+          !estimateActive && h('div', { className: 'flex gap-2 flex-wrap' },
             complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[0.6875rem] font-bold text-blue-700 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
               h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
@@ -986,7 +997,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Real-world examples ──
-          h('div', { className: cc.bg + ' rounded-xl p-3 border ' + cc.border },
+          !hideClass && h('div', { className: cc.bg + ' rounded-xl p-3 border ' + cc.border },
             h('div', { className: 'text-[0.6875rem] font-bold ' + cc.text + ' uppercase mb-1.5' }, '\uD83C\uDF0D Real-World ' + angleClass + ' Angles'),
             h('div', { className: 'space-y-1' },
               (realWorldExamples[angleClass] || []).map(function(ex, i) {
@@ -1072,8 +1083,8 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-xs text-red-500' }, t('stem.angles.what_type_of_angle_is_this', 'What type of angle is this?'))
               ),
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
-                ['Acute', t('stem.angles.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
-                  return h('button', { 'aria-label': t('stem.angles.answer_speed', 'Answer Speed'), key: cls, onClick: function() { answerSpeed(cls); },
+                ['Acute', 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
+                  return h('button', { key: cls, onClick: function() { answerSpeed(cls); },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-600 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
                   }, cls);
                 })
@@ -1112,10 +1123,10 @@ window.StemLab = window.StemLab || {
             ),
             angleChallenge.type === 'create' && h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-purple-600' }, t('stem.angles.your_angle', 'Your angle: '), h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
-              h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, disabled: !!(angleFeedback && angleFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all disabled:opacity-50' }, t('stem.angles.check_4', '\u2714 Check'))
+              h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, disabled: !!(angleFeedback && angleFeedback.correct) || !!angleChallenge.done, className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all disabled:opacity-50' }, t('stem.angles.check_4', '\u2714 Check'))
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
-              ['Acute', t('stem.angles.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
+              ['Acute', 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                 return h('button', { key: cls,
                   onClick: function() {
                     if (angleSubmissionPending || angleFeedback) return;
@@ -1127,18 +1138,19 @@ window.StemLab = window.StemLab || {
                       ? { correct: true, msg: '\u2705 Correct! ' + angleChallenge.target + '\u00B0 is ' + correctClass + '.' }
                       : { correct: false, msg: '\u274C ' + angleChallenge.target + '\u00B0 is ' + correctClass + ', not ' + cls + '.' }
                     );
+                    setAngleChallenge(Object.assign({}, angleChallenge, { done: true }));
                     setExploreScore(function(prev) { return { correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }; });
                     if (ok) { awardXP('protractor', 5, 'classify angle'); recordCorrect(correctClass); }
                     else recordWrong();
                   },
-                  disabled: !!angleFeedback,
+                  disabled: !!angleFeedback || !!angleChallenge.done,
                   className: 'px-3 py-2 rounded-lg text-sm font-bold transition-all border disabled:cursor-default ' +
                     (angleFeedback ? (cls === classifyAngle(angleChallenge.target) ? 'bg-green-100 border-green-400 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600') : 'bg-white border-purple-600 text-purple-700 hover:bg-purple-100 hover:border-purple-400 cursor-pointer')
                 }, cls);
               })
             ),
             angleFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (angleFeedback.correct ? 'text-green-600' : 'text-red-600') }, angleFeedback.msg),
-            angleFeedback && h('button', { 'aria-label': t('stem.angles.next_challenge', 'Next Challenge'),
+            (angleFeedback || angleChallenge.done) && h('button', { 'aria-label': t('stem.angles.next_challenge', 'Next Challenge'),
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
                 setAngleChallenge({ type: angleChallenge.type, target: ta });
@@ -1390,9 +1402,9 @@ window.StemLab = window.StemLab || {
             : streak >= 5 ? '\u26A1 ' + streak + ' in a row! Keep the streak alive!'
             : exploreScore.total === 0 ? '\uD83D\uDCD0 Welcome! Drag the purple ray to explore angles, or try a Challenge!'
             : exploreScore.correct > 0 && exploreScore.correct === exploreScore.total ? '\u2B50 Perfect score! Try the Speed Round for an extra challenge!'
-            : angleClass === (t('stem.angles.right') || 'Right') ? '\uD83D\uDC4D A right angle (90\u00B0) is everywhere \u2014 corners of books, screens, and buildings!'
-            : angleClass === 'Obtuse' ? '\uD83E\uDD14 Obtuse angles are wider than 90\u00B0. A clock at 4:00 shows \u2248120\u00B0!'
-            : angleClass === 'Reflex' ? '\uD83D\uDD04 Reflex angles go past 180\u00B0 \u2014 they wrap more than halfway around!'
+            : !hideClass && angleClass === ('Right') ? '\uD83D\uDC4D A right angle (90\u00B0) is everywhere \u2014 corners of books, screens, and buildings!'
+            : !hideClass && angleClass === 'Obtuse' ? '\uD83E\uDD14 Obtuse angles are wider than 90\u00B0. A clock at 4:00 shows \u2248120\u00B0!'
+            : !hideClass && angleClass === 'Reflex' ? '\uD83D\uDD04 Reflex angles go past 180\u00B0 \u2014 they wrap more than halfway around!'
             : '\uD83D\uDCA1 Tip: Architects use precise angles to design buildings. The Eiffel Tower has a 54\u00B0 incline!'
         )
       );
@@ -1891,8 +1903,11 @@ window.StemLab = window.StemLab || {
           var triApexX = triLeft;
           var triApexY = triBase - opp * scale * (40 / Math.max(adj, 1));
           // Constrain to visible space
-          var visAdj = Math.min(180, adj * 3);
-          var visOpp = Math.min(140, opp * 3);
+          // One scale for both legs keeps the drawn angle equal to theta; clamping
+          // each leg alone drew 23.3 deg for a labelled 15 deg.
+          var visK = Math.min(3, 180 / Math.max(adj, 1e-9), 140 / Math.max(opp, 1e-9));
+          var visAdj = adj * visK;
+          var visOpp = opp * visK;
           var rb_x = triLeft + visAdj;
           var rt_x = triLeft;
           var rt_y = triBase - visOpp;

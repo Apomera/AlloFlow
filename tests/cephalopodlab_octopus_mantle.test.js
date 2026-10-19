@@ -12,13 +12,18 @@ const hash=s=>createHash('sha256').update(s).digest('hex');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Mantle refinement consumed dive RNG');}});
 function factory(s){const a=s.indexOf('function createCLHuntAnimal('),b=s.indexOf('// Compact, individually owned prey rig.',a);assert.ok(a>=0&&b>a);return new Function('T','species','Math',s.slice(a,b)+';return createCLHuntAnimal(T,species);');}
 const build=factory(source),oldBuild=factory(prior);
-function rig(id='commonOcto',old=false){const r=(old?oldBuild:build)(T,{id,bodyColor:0xbc6048},noRandom);owned.push(r);return r;}
+// Pass74 reshapes reef heads, eyes and arm tips behind reefMantle gates, covered by its own tests.
+// The anatomy isolation check below turns only those gates off and compares the rest live.
+const gatedBuild=factory(require('./helpers/cephalopod_pass74_reference.cjs').withoutPass74ReefAnatomy(source));
+function rig(id='commonOcto',old=false,gated=false){const r=(old?oldBuild:gated?gatedBuild:build)(T,{id,bodyColor:0xbc6048},noRandom);owned.push(r);return r;}
 const pose=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',reducedMotion:false,...extra});
 const point=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.position,i),normal=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.normal,i);
 function snapshot(r,omitMantleGeometry=false){
   const h=createHash('sha256');
   function array(a){h.update(Buffer.from(a.buffer,a.byteOffset,a.byteLength));}
   r.root.traverse(o=>{
+    // Pass73 re-parents benthic parts under one refuge frame; outside a crevice it must stay identity.
+    if(o.name==='cl-crevice-body'){assert.ok(o.matrix.equals(new T.Matrix4()),'Ordinary refuge frame is identity');return;}
     h.update(JSON.stringify([o.type,o.name,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.visible]));
     if(o.material)h.update(JSON.stringify([o.material.type,o.material.name,o.material.color?.toArray(),o.material.roughness,o.material.opacity,o.material.transparent,o.material.side,o.material.depthWrite]));
     if(o.geometry&&!(omitMantleGeometry&&o.name==='cl-mantle')){for(const [n,a]of Object.entries(o.geometry.attributes)){h.update(n);array(a.array);}if(o.geometry.index)array(o.geometry.index.array);}
@@ -61,7 +66,7 @@ describe('Larger reef octopus mantle silhouette',()=>{
   });
 
   it('leaves head, eyes, arms, cups, web and all attachment transforms exact through movement and grabs',()=>{
-    for(const id of ids){const live=rig(id),old=rig(id,true);assert.equal(snapshot(live,true),snapshot(old,true));
+    for(const id of ids){const live=rig(id,false,true),old=rig(id,true);assert.equal(snapshot(live,true),snapshot(old,true));
       for(let frame=0;frame<12;frame++){const s=pose({moving:frame<4,jet:frame>=4&&frame<8,strike:frame===9?.7:0,strikeBrace:frame===9?.6:0,strikeRadius:.22,strikeAim:frame===9?new T.Vector3(.2,-.1,1.5):null,squeezeBlend:frame===10?.8:0,camo:.7,substrate:frame>8?'rock':'sand',reducedMotion:frame===11});live.update(2+frame*.05,.05,s);old.update(2+frame*.05,.05,s);assert.equal(snapshot(live,true),snapshot(old,true),id+' original anatomy and motions');}
     }
   });

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Huidige vluchtinstellingen vasthouden",
+  "stem.flightsim.flight_assistance_targets": "Vliegrichting {hdg}° · Hoogte {alt} ft MSL · Snelheid {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Vliegrichting {hdg}° · Hoogte {alt} ft MSL · Voorwaartse snelheid {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Draai {degrees}° naar links richting {airport}.",
+  "stem.flightsim.challenge_turn_right": "Draai {degrees}° naar rechts richting {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Je vliegt richting {airport}. Volg de koersmarkering.",
+  "stem.flightsim.challenge_runway_reference": "Oefenbaan {runway}: vliegrichting {heading}°. Lijn het vliegtuig uit met de baan voordat je daalt om te landen."
+}

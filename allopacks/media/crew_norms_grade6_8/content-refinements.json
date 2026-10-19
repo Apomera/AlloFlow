@@ -1,0 +1,98 @@
+[
+  {
+    "resourceId": "cn-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "A RULE",
+      "bullets": [
+        "Comes from someone in charge",
+        "Is the same for every group",
+        "Example: Be respectful"
+      ],
+      "iconPrompt": "a clipboard with an empty checklist"
+    },
+    "to": {
+      "label": "A RULE",
+      "bullets": [
+        "Comes from someone in charge",
+        "Is the same for every group",
+        "Example: Be respectful"
+      ],
+      "iconPrompt": "a clipboard with an empty checklist",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cn-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "A NORM",
+      "bullets": [
+        "Comes from the group",
+        "Can be seen happening or not",
+        "Example: One voice at a time, hand signal to add"
+      ],
+      "iconPrompt": "a circle of chairs with one raised hand"
+    },
+    "to": {
+      "label": "A NORM",
+      "bullets": [
+        "Comes from the group",
+        "Can be seen happening or not",
+        "Example: One voice at a time, hand signal to add"
+      ],
+      "iconPrompt": "a circle of chairs with one raised hand",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cn-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "THREE PARTS OF A GOOD NORM",
+      "bullets": [
+        "Specific: you can catch it",
+        "Shared: everyone helped choose it",
+        "Revisited: the group checks it"
+      ],
+      "iconPrompt": "three connected puzzle pieces"
+    },
+    "to": {
+      "label": "THREE PARTS OF A GOOD NORM",
+      "bullets": [
+        "Specific: you can catch it",
+        "Shared: everyone helped choose it",
+        "Revisited: the group checks it"
+      ],
+      "iconPrompt": "three connected puzzle pieces",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cn-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "NORMS PROTECT PARTICIPATION",
+      "bullets": [
+        "A way to pass",
+        "A way to think first",
+        "A way to join later"
+      ],
+      "iconPrompt": "an open door with a small welcome mat"
+    },
+    "to": {
+      "label": "NORMS PROTECT PARTICIPATION",
+      "bullets": [
+        "A way to pass",
+        "A way to think first",
+        "A way to join later"
+      ],
+      "iconPrompt": "an open door with a small welcome mat",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

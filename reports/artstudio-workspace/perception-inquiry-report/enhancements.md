@@ -26,7 +26,7 @@ Reports use safe text DOM APIs for notes and translations, unique SVG accessibil
 - [Regression summary](regression-summary.json)
 - [Browser results](browser-results.json)
 - [Sample inquiry report](necker-multiple.html)
-- [Desktop report](report-1440-16.png)
+- [Desktop report](dark.png)
 - [Phone report at 200% text](report-390-32.png)
 - [Short-window export action at 200% text](app-action-760-32.png)
 - [Forced dark colors](forced-dark.png)

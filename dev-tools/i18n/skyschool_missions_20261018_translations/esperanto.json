@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Observaĵoj de la misio",
+  "stem.flightsim.mission_journal_targets": "Registritaj celoj: {captured} el {total}.",
+  "stem.flightsim.mission_journal_complete": "Ĉiuj misiaj celoj kaj la surteriĝo post reveno estis registritaj.",
+  "stem.flightsim.mission_journal_ended": "La misio finiĝis antaŭ ol ĉiuj pruvoj de plenumo estis registritaj.",
+  "stem.flightsim.mission_journal_recovery": "Savo de la postvivanto registrita: {value}.",
+  "stem.flightsim.mission_journal_return": "Revena surteriĝo ĉe la bazo registrita: {value}.",
+  "stem.flightsim.mission_guidance_title": "Misia gvidado",
+  "stem.flightsim.mission_route": "{target} · azimuto {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Ekflugpunkto",
+  "stem.flightsim.mission_read_status": "Legi la misian staton laŭte",
+  "stem.flightsim.mission_return_criterion": "Surteriĝu ene de {distance} nm de {target}, kun grundrapido sub {speed} kt kaj malsuprenira rapido sub {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "La datumoj pri la misia celo ne disponeblas. Finu ĉi tiun flugon kaj komencu novan mision.",
+  "stem.flightsim.mission_capture_criterion": "Restu dum {hold} s ene de {distance} ft, pli alte ol {min} kaj pli malalte ol {max} ft super la grundo, kun grundrapido sub {speed} kt."
+}

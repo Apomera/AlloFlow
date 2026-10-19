@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Arama sonuçları: {topics} konuda {cards} kart.",
+  "stem.flightsim.learn_library_counts": "{cards} kart · {topics} konu",
+  "stem.flightsim.learn_search_clear": "Aramayı temizle",
+  "stem.flightsim.learn_search_empty": "“{query}” ile eşleşen öğrenme kartı bulunamadı. Başka bir terim deneyin veya aramayı temizleyin.",
+  "stem.flightsim.learn_search_none": "Eşleşen öğrenme kartı yok",
+  "stem.flightsim.learn_search_cards": "{count} öğrenme kartı",
+  "stem.flightsim.quiz_review_progress": "{total} sorudan {answered} tanesi yanıtlandı · {missed} yanlış",
+  "stem.flightsim.quiz_review_missed": "Yanlış yanıtları gözden geçir",
+  "stem.flightsim.quiz_next_unanswered": "Sonraki yanıtsız soru",
+  "stem.flightsim.quiz_review_all_answered": "Her soruya ilk yanıt verildi. Puan almadan alıştırma yapmak için yanlış yanıtlanan soruları gözden geçirin veya yeni bir deneme başlatın.",
+  "stem.flightsim.planner_drone_agl": "Yerden {ft} fit yükseklikte",
+  "stem.flightsim.sprint_native_title": "Hızlı coğrafya turu",
+  "stem.flightsim.sprint_timed_hint": "Siz yanıtlarken rota ilerler. Okumak için duraklatın; yanıt seçmeden önce devam edin.",
+  "stem.flightsim.sprint_warp_reference": "Bu coğrafya etkinliği için yolculuk hızlandırılmıştır. Hız göstergeleri belirtilen seyir hızını gösterir; bu rota uçağın performansını ölçmez.",
+  "stem.flightsim.sprint_save_menu": "Turu kaydet ve menüye dön",
+  "stem.flightsim.sprint_next_stop": "Sonraki durak: {place}",
+  "stem.flightsim.geoq_approaching_city": "Hangi şehre yaklaşıyorsunuz?",
+  "stem.flightsim.sprint_time_remaining": "Kalan süre: {seconds} saniye"
+}

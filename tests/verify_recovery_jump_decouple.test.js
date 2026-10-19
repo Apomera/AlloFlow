@@ -29,7 +29,26 @@ describe('#3 _jump no longer dead-ends on a missing Verify/Recovery anchor', () 
     expect(body).toContain("scrollIntoView({ behavior: 'smooth', block: 'start' })");
   });
 
+  // b4d7ed714 (2026-09-13): a present anchor goes through the shared workspace jump, which opens
+  // every enclosing disclosure (not only the target) before scrolling. Run it.
   it('still opens + scrolls a present anchor (the happy path is unchanged)', () => {
-    expect(body).toContain("if (el.tagName === 'DETAILS') el.open = true;");
+    expect(body).toContain("_pdfWorkspaceJump(pdfModalRef.current, '#' + id);");
+    const ws = readFileSync(resolve(process.cwd(), 'remediation_workspace_component.jsx'), 'utf8');
+    const start = ws.indexOf('function _pdfWorkspaceJump(root, selector) {');
+    expect(start).toBeGreaterThan(-1);
+    const jump = new Function(ws.slice(start, ws.indexOf('\nfunction ', start + 1)) + '\nreturn _pdfWorkspaceJump;')();
+    const root = document.createElement('div');
+    root.innerHTML = '<details id="outer"><summary>Results</summary><details id="allo-sec-verify"><summary>Verify</summary><p>Report</p></details></details>';
+    document.body.append(root);
+    const scrolled = [];
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function () { scrolled.push(this.id); };
+    try {
+      expect(jump(root, '#allo-sec-verify')).toBe(true);
+      expect(root.querySelector('#allo-sec-verify').open).toBe(true);
+      expect(root.querySelector('#outer').open).toBe(true);
+      expect(scrolled).toEqual(['allo-sec-verify']);
+      expect(jump(root, '#allo-sec-recovery')).toBe(false);
+    } finally { Element.prototype.scrollIntoView = original; root.remove(); }
   });
 });

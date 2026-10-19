@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "کوئز کی سابقہ کوششیں",
+  "stem.flightsim.quiz_history_scope": "نئی کوشش شروع کرنے سے پہلی بار دیے گئے جوابات والی زیادہ سے زیادہ چار سابقہ کوششیں محفوظ ہو جاتی ہیں۔ ان کا جائزہ لینے سے آپ کی موجودہ کوئز تبدیل نہیں ہوتی۔",
+  "stem.flightsim.quiz_history_empty": "ابھی کوئز کی کوئی سابقہ کوشش محفوظ نہیں ہے۔",
+  "stem.flightsim.quiz_history_attempt": "{date} کو محفوظ کیا گیا · پہلے جوابات میں سے {score}/{answered} درست",
+  "stem.flightsim.quiz_history_progress": "{total} میں سے {answered} سوالات درج · {unanswered} بلاجواب",
+  "stem.flightsim.quiz_history_question": "سوال {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "درست جواب: {answer}",
+  "stem.flightsim.quiz_history_changed": "محفوظ کردہ {count} سوالات اب اس کوئز سے مطابقت نہیں رکھتے۔ اسکور کے لیے صرف مطابقت رکھنے والے سوالات کے ریکارڈ استعمال ہوتے ہیں۔"
+}

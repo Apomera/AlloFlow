@@ -50,8 +50,8 @@ describe('Studio count preview uses selected or identified audio', () => {
     const oldClip = clip(1, gb), latestClip = clip(2, gb), approvedClip = clip(3, gb);
     const processed = [{ word: 'apple', _ttsAssets: { apple: approvedClip } }, { word: 'football', _ttsAssets: { apple: latestClip, football: oldClip } }];
     const pack = slice(setup, '             const packedTtsAssets =', '             // ── Bank-first packing');
-    const packed = new Function('WS_CORE', 'processed', 'reviewedCountAudio', 'syllableCountReviewKey', pack + ';return packedTtsAssets;')(
-      core, processed, { 'en-gb:apple': approvedClip }, word => 'en-gb:' + core.packAudioKey(word));
+    const packed = new Function('WS_CORE', 'processed', 'reviewedCountAudio', 'syllableCountReviewKey', 'preloadedWords', pack + ';return packedTtsAssets;')(
+      core, processed, { 'en-gb:apple': approvedClip }, word => 'en-gb:' + core.packAudioKey(word), processed);
     expect(packed.apple).toBe(approvedClip);
     expect(packed.football).toBe(oldClip);
     expect(processed.every(item => !item._ttsAssets)).toBe(true);

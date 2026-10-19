@@ -71,14 +71,35 @@ function frontSample(mesh, fraction) {
 function sectionWidth(mesh, fraction) {
   const limits = bounds(mesh), centre = (limits.min.x + limits.max.x) / 2;
   const halfWidth = (limits.max.x - limits.min.x) / 2, positions = mesh.geometry.attributes.position;
+  // The brow finish lays latitude rings along the arch (one x per ring), so
+  // measure the actual ring nearest this station rather than a fixed x band.
+  let ringX = NaN, offset = Infinity;
+  for (let i = 0; i < positions.count; i++) {
+    const next = Math.abs((positions.getX(i) - centre) / halfWidth - fraction);
+    if (next < offset) { offset = next; ringX = positions.getX(i); }
+  }
+  expect(offset, 'a brow ring lies near the section station').toBeLessThan(.1);
   let min = Infinity, max = -Infinity;
   for (let i = 0; i < positions.count; i++) {
-    if (Math.abs((positions.getX(i) - centre) / halfWidth - fraction) < .02) {
-      min = Math.min(min, positions.getZ(i)); max = Math.max(max, positions.getZ(i));
-    }
+    if (positions.getX(i) === ringX) { min = Math.min(min, positions.getZ(i)); max = Math.max(max, positions.getZ(i)); }
   }
   expect(Number.isFinite(min) && Number.isFinite(max), 'brow section contains actual vertices').toBe(true);
   return max - min;
+}
+// The closed-eye crease is a fitted ribbon (no TubeGeometry path), so cut its
+// actual triangles at an eye station, inner corner (0) to outer corner (1).
+function seamCentre(mesh, fraction, side) {
+  const limits = box(mesh);
+  const x = side === 'left' ? limits.max.x + (limits.min.x - limits.max.x) * fraction : limits.min.x + (limits.max.x - limits.min.x) * fraction;
+  const indices = mesh.geometry.index.array, cuts = [];
+  for (let i = 0; i < indices.length; i += 3) for (let edge = 0; edge < 3; edge++) {
+    const a = point(mesh, indices[i + edge]), b = point(mesh, indices[i + (edge + 1) % 3]);
+    if ((a.x < x && b.x > x) || (a.x > x && b.x < x)) cuts.push(a.lerp(b, (x - a.x) / (b.x - a.x)));
+  }
+  expect(cuts.length, mesh.name + ' actual triangles cross the eye station').toBeGreaterThan(0);
+  const range = axis => [Math.min(...cuts.map(p => p[axis])), Math.max(...cuts.map(p => p[axis]))];
+  const [minY, maxY] = range('y'), [minZ, maxZ] = range('z');
+  return new THREE.Vector3(x, (minY + maxY) / 2, (minZ + maxZ) / 2);
 }
 function vertexKey(position) { return position.toArray().map(value => Math.round(value * 1e8)).join(','); }
 function weldedShell(mesh) {
@@ -152,10 +173,13 @@ describe('fitted manikin brow surfaces', () => {
       expect(Math.max(...tails), name + ' endpoints settle beneath the skin').toBeLessThan(-.0008);
       expect(Math.min(...tails), name + ' endpoint joins remain close to skin').toBeGreaterThan(-.004);
       expect(Math.max(...tails), name + ' outward relief diminishes at the ends').toBeLessThan(Math.max(...middle) * .5);
-      // The source sphere's Y equator marks the front/rear join around the entire fitted shell.
-      const { widthSegments, heightSegments } = mesh.geometry.parameters, equator = heightSegments / 2 * (widthSegments + 1);
-      const joins = Array.from({ length: 24 }, (_, i) => surfaceGap(mesh,
-        equator + Math.round(i * widthSegments / 24), fixture.head, fixture));
+      // The brow finish maps the source sphere's -X to outward relief (its Y now runs
+      // along the arch), so the sphere's X = 0 vertices mark the front/rear join.
+      const { widthSegments, heightSegments } = mesh.geometry.parameters;
+      const native = new THREE.SphereGeometry(1, widthSegments, heightSegments).attributes.position;
+      const boundary = Array.from({ length: native.count }, (_, i) => i).filter(i => Math.abs(native.getX(i)) < 1e-7);
+      expect(boundary.length, name + ' front/rear join found on the source sphere').toBeGreaterThan(2 * heightSegments);
+      const joins = boundary.map(index => surfaceGap(mesh, index, fixture.head, fixture));
       // Mirrored brows use the lower skull facet on either side. The boundary
       // remains buried while allowing the two triangulated sides to differ.
       expect(Math.max(...joins), name + ' complete brow boundary remains beneath actual skull triangles').toBeLessThan(-.0008);
@@ -181,7 +205,7 @@ describe('fitted manikin brow surfaces', () => {
       expect(browBounds.min.x * (side === 'left' ? -1 : 1) > 0 && browBounds.max.x * (side === 'left' ? -1 : 1) > 0,
         side + ' brow remains on its own side of the face').toBe(true);
       for (const fraction of [.25, .5, .75]) {
-        const local = seam.geometry.parameters.path.getPoint(fraction), world = local.clone().applyMatrix4(seam.matrixWorld);
+        const local = seamCentre(seam, fraction, side), world = local.clone().applyMatrix4(seam.matrixWorld);
         const ray = frontRay(world, fixture), eyeHit = ray.intersectObject(seam, false)[0];
         expect(eyeHit, side + ' actual closed eye seam remains visible').toBeTruthy();
         const hit = ray.intersectObject(brow, false)[0];

@@ -43,7 +43,7 @@ function runtime(initialItem, { language = 'en', voice = '', core = createCore({
   const localHelpers = makeHelpers(core, {});
   const env = {
     React, ...localHelpers, WS_CORE: core, wordSoundsActivity: 'syllable_counting', wordSoundsLanguage: language, selectedVoice: voice,
-    currentWordSoundsWord: initialItem.word, wordSoundsPhonemes: initialItem, preloadedWords: [initialItem],
+    currentWordSoundsWord: initialItem.word, wordSoundsPhonemes: initialItem, preloadedWords: [initialItem], itemPresentation: 0,
     syllableData: null, syllableDataRef: { current: null }, lastWordForSyllable: { current: null },
     syllableGenInFlightRef: { current: null }, syllableCountContextRef: { current: null }, syllableCountAudioRef: { current: null }, isMountedRef: { current: true },
     syllableCountDelivery: null, syllableCountDeliveryRef: { current: null }, syllableCountAttemptRef: { current: 0 },

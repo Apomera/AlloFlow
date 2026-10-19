@@ -171,12 +171,13 @@ describe('SkySchool simultaneous touch controls', () => {
     expect(controls()).toMatchObject({ pitch: 15, bank: 45, throttle: 0 });
   });
 
-  it('cancels one owner without dropping the other and clears all owners on blur', () => {
+  it('cancels one owner without dropping the other and clears all owners on blur', async () => {
     const { stick, power } = deflect();
     touch('touchcancel', [power], [stick]);
     touch('touchmove', [finger(0, 380, 270)], [finger(0, 380, 270)]);
     expect(controls()).toMatchObject({ pitch: 15, bank: 45, throttle: 0.3 });
-    window.dispatchEvent(new Event('blur'));
+    await act(async () => { window.dispatchEvent(new Event('blur')); });
+    expect(hooks().pausedRef.current).toBe(true);
     expect(controls()).toMatchObject({ pitch: 0, bank: 0, throttle: 0.3 });
     touch('touchmove', [finger(0, 340, 310)], [finger(0, 340, 310)]);
     expect(controls()).toMatchObject({ pitch: 0, bank: 0, throttle: 0.3 });
@@ -184,11 +185,23 @@ describe('SkySchool simultaneous touch controls', () => {
 
   it('clears owners when the document is hidden and when the flight view unmounts', async () => {
     deflect();
-    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
-    document.dispatchEvent(new Event('visibilitychange'));
+    await act(async () => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(hooks().pausedRef.current).toBe(true);
     expect(controls()).toMatchObject({ pitch: 0, bank: 0, throttle: 0.3 });
-    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    await act(async () => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(hooks().pausedRef.current).toBe(true);
     deflect();
+    expect(controls()).toMatchObject({ pitch: 0, bank: 0, throttle: 0.3 });
+    await act(async () => { flightButton('Resume flight').click(); });
+    expect(hooks().pausedRef.current).toBe(false);
+    deflect();
+    expect(controls()).toMatchObject({ pitch: 7.5, bank: 22.5, throttle: 0.6 });
     const ref = hooks().controlsRef;
     await act(async () => { setData(previous => ({ ...previous, flightSim: { ...previous.flightSim, view: 'menu' } })); });
     expect(ref.current).toMatchObject({ pitch: 0, bank: 0, throttle: 0.6 });

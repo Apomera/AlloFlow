@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 let host, root, cfg, latest;
@@ -1638,7 +1638,12 @@ describe('Nuclear Lab experiment studio', () => {
     const keys = [...new Set([...source.matchAll(/\bnt\('([^']+)'/g)].map(match => 'studio_' + match[1]))];
     expect(keys.length).toBeGreaterThan(80);
     const english = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.nuclearlab;
-    for (const prefix of ['', 'desktop/web-app/public/', 'desktop/app-build/', 'desktop/web-app/build/']) {
+    // The two build copies are untracked outputs: present on a dev machine, absent
+    // from a CI checkout. The tracked source and public mirror are always checked.
+    const copies = ['', 'desktop/web-app/public/', 'desktop/app-build/', 'desktop/web-app/build/']
+      .filter((prefix, index) => index < 2 || existsSync(prefix + 'ui_strings.js'));
+    expect(copies.length).toBeGreaterThanOrEqual(2);
+    for (const prefix of copies) {
       const values = JSON.parse(readFileSync(prefix + 'ui_strings.js', 'utf8')).stem.nuclearlab;
       for (const key of keys) {
         expect(typeof english[key], key).toBe('string');

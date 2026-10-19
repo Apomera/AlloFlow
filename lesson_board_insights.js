@@ -91,7 +91,7 @@ export function learningSummary(board, run, roster) {
   for (let index = 0; index <= Math.min(run.turn, MAX_TURNS - 1); index++) {
     const step = run.steps?.['t' + index], location = board.locations.find(item => item.id === step?.targetId);
     if (!location || !step.result && !step.retryStats) continue;
-    for (const [uid, stats] of Object.entries(attemptRecords(step))) {
+    for (const [uid, stats] of Object.entries(attemptRecords(step, run.members))) {
       const learner = byUid.get(uid); if (!learner) continue;
       const item = learner.locations.find(item => item.id === location.id);
       if (!item.answered) item.firstCorrect = stats.firstCorrect;

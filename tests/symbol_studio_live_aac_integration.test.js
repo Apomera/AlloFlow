@@ -516,12 +516,18 @@ describe('Symbol Studio live AAC source contracts', () => {
 
   it('restores AAC History resources into the same runtime with the default title and icon', () => {
     const restoreStart = restoreSource.indexOf('function handleRestoreView(item, options = {}, deps = {})');
-    const restore = restoreSource.slice(restoreStart, restoreStart + 2_900);
+    // Whole function (to its column-0 closing brace): the deps prologue grew past the old
+    // fixed 2,900-character window, which hid the AAC branch that is still there.
+    const restoreEnd = restoreSource.indexOf('\n}\n', restoreStart);
+    expect(restoreStart).toBeGreaterThan(-1);
+    expect(restoreEnd).toBeGreaterThan(restoreStart);
+    const restore = restoreSource.slice(restoreStart, restoreEnd);
     expect(restore).toContain(`item.type === 'aac-board'`);
     expect(restore).toContain('_alloBuildLocalAacPayload(item.data, item.id, Date.now())');
     expect(restore).toContain('setVisualSupportsPayload(localAacPayload)');
     expect(restore).toContain('_alloFollowResourceLive(item)');
-    expect(source).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
+    // f5b045fc9 (2026-09-20): the host strips its own preservePendingAssignment flag first.
+    expect(source).toContain('moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps())');
     expect(source).toContain(`case 'aac-board': return 'AAC Board';`);
     expect(source).toContain(`case 'aac-board': return <Layout size={16} />;`);
   });

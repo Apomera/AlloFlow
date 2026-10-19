@@ -72,9 +72,11 @@ describe('Gemini request-shape regression fixtures', () => {
     });
     expect(result.text).toBe('{"ok":true}');
     expect(calls).toHaveLength(1);
+    // 50a4a67f8 (2026-09-19): the key travels in x-goog-api-key, never in the URL (kept out of logs).
     expect(calls[0].url).toBe(fixture.text.url);
+    expect(calls[0].url).not.toContain('fixture-key');
     expect(calls[0].options.method).toBe('POST');
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json', 'x-goog-api-key': 'fixture-key' });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.text.body);
   });
 
@@ -131,7 +133,8 @@ describe('Gemini request-shape regression fixtures', () => {
     );
     expect(result).toBe('data:image/png;base64,ZWRpdGVk');
     expect(calls[0].url).toBe(fixture.imageEditing.url);
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].url).not.toContain('fixture-key');
+    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json', 'x-goog-api-key': 'fixture-key' });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.imageEditing.body);
   });
 });

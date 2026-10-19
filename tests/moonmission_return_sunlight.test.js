@@ -47,10 +47,9 @@ function recorder() {
   });
   return { ctx, calls };
 }
+// One assertion per scene: an expect() per number made the camera test exceed 5 s.
 function finiteCalls(calls) {
-  for (const row of calls) for (const value of row) if (typeof value === 'number') {
-    expect(Number.isFinite(value), String(row[0])).toBe(true);
-  }
+  expect(calls.filter(row => row.some(value => typeof value === 'number' && !Number.isFinite(value))), 'Canvas calls with non-finite numbers').toEqual([]);
 }
 const geometry = calls => calls.filter(row => !['set', 'gradient', 'stop'].includes(row[0]));
 const alpha = calls => calls.filter(row => row[0] === 'set' && ['globalAlpha', 'globalCompositeOperation'].includes(row[1]));

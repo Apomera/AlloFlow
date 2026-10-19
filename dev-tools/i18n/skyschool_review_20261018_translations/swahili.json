@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Majaribio ya awali ya maswali",
+  "stem.flightsim.quiz_history_scope": "Kuanza jaribio jipya huhifadhi hadi majaribio manne ya awali yenye majibu ya kwanza yaliyorekodiwa. Kuyapitia hakubadilishi jaribio lako la sasa.",
+  "stem.flightsim.quiz_history_empty": "Bado hakuna majaribio ya awali yaliyohifadhiwa.",
+  "stem.flightsim.quiz_history_attempt": "Limehifadhiwa {date} · Majibu ya kwanza {score}/{answered} ni sahihi",
+  "stem.flightsim.quiz_history_progress": "Maswali {answered} kati ya {total} yamerekodiwa · {unanswered} hayajajibiwa",
+  "stem.flightsim.quiz_history_question": "Swali la {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Jibu sahihi: {answer}",
+  "stem.flightsim.quiz_history_changed": "Maswali {count} yaliyohifadhiwa hayalingani tena na jaribio hili. Alama hutumia rekodi za maswali yanayolingana tu."
+}

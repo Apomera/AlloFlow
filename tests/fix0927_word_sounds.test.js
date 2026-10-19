@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { setupWordSounds } from './helpers/word_sounds_harness.js';
 import { studentProps, installCanvasStub, makePackItem } from './helpers/word_sounds_pack_fixture.js';
 import { core, compileWords } from './helpers/word_sounds_core.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const SOURCE_PATH = process.env.WS_FIX0927_SOURCE || 'word_sounds_module.js';
 const source = readFileSync(SOURCE_PATH, 'utf8');
@@ -170,7 +171,11 @@ describe('Medium: an unresolved word family is reported, never replaced by -at',
 });
 
 describe('Medium: Missing Letter uses a prepared board only when it is consistent', () => {
-  const span = between('const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);', 'const renderActivityContent = () => {');
+  // The board validation moved above the microphone-answer block (79e3e5eae),
+  // which needs correctLetter; the letter choices stay beside the scramble.
+  const span = sliceBetween(source, 'const preparedMissingLetter = React.useMemo(', 'const correctLetter =', { label: 'Missing Letter board' }) +
+    sliceBetween(source, 'const correctLetter =', '\n', { label: 'Missing Letter answer line' }) + '\n' +
+    between('const letterOptions = React.useMemo(', 'const renderActivityContent = () => {');
   const board = (prepared, word = 'cat') => new Function('React', 'packForCurrentWord', 'currentWordSoundsWord', 'wordSoundsPhonemes',
     span + ';return {hiddenIndex,correctLetter,letterOptions};')(
     { useMemo: fn => fn(), useState: v => [v, () => {}] }, prepared ? { missing_letter: prepared } : null, word, {});
@@ -233,19 +238,61 @@ describe('Medium: delayed transitions and scoring belong to the activity that sc
     expect(run(call, false).spy.setShowSessionComplete).toEqual([true]);
     expect(run(call, true).spy.setShowSessionComplete).toEqual([]);
   });
-  const scoring = {
-    spelling_bee: '+ streakBonus,',
-    word_scramble: 'ts("word_sounds.scramble_correct")',
-    missing_letter: 'ts("word_sounds.ml_correct")',
-    letter_tracing: 'checkAnswer("correct", "correct", { formationScore })',
+  // 79e3e5eae removed the 1.5 s success timers: construction answers grade at
+  // once through submitConstructionAnswer, so no timer can outlive the item.
+  const construction = between('// BEGIN WORD SOUNDS CONSTRUCTION ANSWERS', '// END WORD SOUNDS CONSTRUCTION ANSWERS');
+  const callSites = {
+    spelling_bee: 'const checkSpellingBee = () => submitConstructionAnswer(currentWordSoundsWord);',
+    word_scramble: 'if (submitConstructionAnswer(currentWordSoundsWord) && !submissionLockRef.current) {',
+    missing_letter: 'const checkMissingLetter = () => submitConstructionAnswer(correctLetter);',
   };
-  it.each(Object.entries(scoring))('%s delayed scoring is dropped after a manual activity change', (_name, marker) => {
-    const m = source.indexOf(marker);
-    expect(m).toBeGreaterThan(0);
-    const st = marker.startsWith('checkAnswer') ? source.lastIndexOf('setTimeout(', m) : source.indexOf('setTimeout(', m);
-    const call = timeoutCall(st);
-    expect(call).toContain('checkAnswer("correct", "correct"');
-    expect(run(call, false).spy.checkAnswer).toHaveLength(1);
-    expect(run(call, true).spy.checkAnswer).toEqual([]);
+  it.each(Object.entries(callSites))('%s grades at once and leaves no delayed scoring behind', (activity, callSite) => {
+    expect(source.includes(callSite), callSite).toBe(true);
+    const timers = [], checks = [];
+    const env = { React: { useRef: v => ({ current: v }) }, isMountedRef: { current: true }, submissionLockRef: { current: false },
+      useMicInput: false, wordSoundsActivity: activity, userAnswer: ' CAT ', advanceEpochRef: { current: 5 }, currentWordSoundsWord: 'cat',
+      isProbeMode: false, recordSpellingSupport: () => {}, checkAnswer: (...a) => checks.push(a), setUserAnswer: () => {},
+      setWordSoundsFeedback: () => {}, setTimeout: fn => timers.push(fn) };
+    const names = Object.keys(env);
+    const submit = new Function(...names, construction + ';return submitConstructionAnswer;')(...names.map(n => env[n]));
+    expect(submit('cat')).toBe(true);
+    expect(checks).toEqual([['correct', 'correct']]);
+    expect(timers).toEqual([]);
+    expect(submit('cat')).toBe(false);
+    env.advanceEpochRef.current++;
+    env.submissionLockRef.current = true;
+    expect(submit('cat')).toBe(false);
+    expect(checks).toHaveLength(1);
+  });
+  it('letter_tracing completion is dropped after a manual activity change', async () => {
+    const tracing = between('// BEGIN WORD SOUNDS TRACING COMPLETION', '// END WORD SOUNDS TRACING COMPLETION');
+    const load = (phase, extra = {}) => {
+      const spy = { checkAnswer: [], phase: [] };
+      const env = { React: { useRef: v => ({ current: v }) }, advanceEpochRef: { current: 5 }, wordSoundsActivity: 'letter_tracing',
+        currentWordSoundsWord: 'cat', tracingPhase: phase, isMountedRef: { current: true }, submissionLockRef: { current: false },
+        checkAnswer: (...a) => spy.checkAnswer.push(a), playSound: () => {}, beginIsolationPlayback: () => 1,
+        audioCancelledRef: { current: false }, audioRunIdRef: { current: 1 }, handleAudio: async () => ({ ok: true }),
+        warnLog: () => {}, setTracingPhase: p => spy.phase.push(p), window: { __ALLO_INSTRUCTION_AUDIO: {} }, ...extra };
+      const names = Object.keys(env);
+      const api = new Function(...names, tracing + ';return { completeTracing, skipLowercaseTracing };')(...names.map(n => env[n]));
+      return { api, env, spy };
+    };
+    const live = load('lower');
+    await live.api.completeTracing(true, 0.8);
+    expect(live.spy.checkAnswer).toEqual([['correct', 'correct', { formationScore: 0.8 }]]);
+    const changed = load('lower');
+    changed.env.advanceEpochRef.current++;
+    await changed.api.completeTracing(true, 0.8);
+    changed.api.skipLowercaseTracing();
+    expect(changed.spy.checkAnswer).toEqual([]);
+    let release;
+    const upper = load('upper', { window: { __ALLO_INSTRUCTION_AUDIO: { fb_great_job: 'data:audio/wav;base64,AA==' } },
+      handleAudio: () => new Promise(r => { release = r; }) });
+    const pending = upper.api.completeTracing(true, 0.8);
+    upper.env.advanceEpochRef.current++;
+    release({ ok: true });
+    await pending;
+    expect(upper.spy.phase).toEqual([]);
+    expect(upper.spy.checkAnswer).toEqual([]);
   });
 });

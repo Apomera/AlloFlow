@@ -242,7 +242,10 @@ describe('Geometry World display stability controls', function() {
     closeSettings(view);
     expect(view.container.querySelector('#gw-progress-hud')).toBeFalsy();
     expect(view.container.querySelector('#gw-inventory-panel')).toBeTruthy();
-    expect(view.container.querySelector('#gw-inventory-panel').textContent).toContain('None yet');
+    // 79e3e5eae replaced "None yet" with a counted summary and an explicit empty state.
+    const inventoryPanel = view.container.querySelector('#gw-inventory-panel');
+    expect(inventoryPanel.querySelector('[data-geometry-inventory-pieces]').textContent).toBe('0 pieces');
+    expect(inventoryPanel.querySelector('.gw-inventory-empty').textContent).toBe('No student-placed pieces yet.');
 
     dialog = openSettings(view);
     const minimal = dialog.querySelector('[data-geometry-hud-preset="minimal"]');

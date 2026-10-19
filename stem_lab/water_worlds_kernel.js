@@ -123,7 +123,49 @@
     return { selected: selected, minutes: STEP, before: before, after: after, transfers: transfers, incoming: incoming, outgoing: outgoing,
       balance: { beforeMm: stored(before), inputsMm: inputs, outputsMm: outputs, afterMm: stored(after), errorMm: stored(before) + inputs - outputs - stored(after) } };
   }
-  function initial() { return { version: VERSION, world: create(35), settings: settings(), level: 'investigate', selected: 44, lens: 'water', running: false, run: null, baseline: null, prediction: '', reflection: '', question: 'free', differenceStore: 'surface', editHistory: [], observations: [], observationSequence: 0 }; }
+  // Continue the same watershed through a dry interval using the storm solver.
+  // There is no temperature control or climate feedback: evaporative demand is
+  // the same mild constant demand used during each rainfall experiment.
+  function recoveryTimeSafe(start, hours) {
+    var end = start.minutes + hours * 60;
+    return isFinite(end) && Math.abs(start.minutes + STEP - start.minutes - STEP) < 1e-9 && Math.abs(end - start.minutes - hours * 60) < 1e-7;
+  }
+  function recoverySnapshot(start, hours) {
+    var w = copy(start), end = start.minutes + hours * 60, before = measure(start);
+    while (w.minutes < end - 1e-9) w = step(w, 0, Math.min(STEP, end - w.minutes));
+    var after = measure(w);
+    function stores(m) { return { surfaceM3: m.surfaceM3, soilM3: m.soilM3, groundM3: m.groundM3, storedM3: m.storedM3 }; }
+    var outflow = after.outM3 - before.outM3, evaporation = after.evapM3 - before.evapM3;
+    return { world: w, receipt: { durationHours: hours, durationMinutes: hours * 60, startMinute: start.minutes, endMinute: w.minutes,
+      before: stores(before), after: stores(after), outflowM3: outflow, evaporationM3: evaporation,
+      errorM3: before.storedM3 - outflow - evaporation - after.storedM3,
+      provenance: { start: copy(start), end: copy(w) } } };
+  }
+  function recover(s, hours) {
+    if (s.run && !s.run.complete) return s;
+    hours = number(hours, 1, 72, 6);
+    if (!validWorld(s.world) || !recoveryTimeSafe(s.world, hours)) return s;
+    var recovered = recoverySnapshot(s.world, hours);
+    return Object.assign({}, s, { world: recovered.world, recovery: recovered.receipt, run: null, running: false, editHistory: [] });
+  }
+  // Covers may be edited after a dry interval. The water endpoint, terrain,
+  // model time, and cumulative boundary transfers must still agree exactly.
+  // The receipt retains the cover that actually operated during the interval.
+  function recoveryFits(receipt, w) {
+    var end = receipt && receipt.provenance && receipt.provenance.end;
+    return !!(validWorld(end) && w && ['minutes', 'rainM3', 'outM3', 'evapM3', 'initialM3'].every(function (key) { return w[key] === end[key]; }) &&
+      w.cells.every(function (c, i) { return ['x', 'y', 'elevation', 'surface', 'soil', 'ground'].every(function (key) { return c[key] === end.cells[i][key]; }); }));
+  }
+  function restoreRecovery(receipt, w) {
+    if (!receipt || !receipt.provenance || !validWorld(receipt.provenance.start) ||
+      typeof receipt.durationHours !== 'number' || !isFinite(receipt.durationHours) || receipt.durationHours < 1 || receipt.durationHours > 72) return null;
+    if (!recoveryTimeSafe(receipt.provenance.start, receipt.durationHours)) return null;
+    // Only the bounded duration and captured starting world are inputs. Rebuild
+    // all claimed readings and the endpoint before accepting saved evidence.
+    var rebuilt = recoverySnapshot(receipt.provenance.start, receipt.durationHours).receipt;
+    return recoveryFits(rebuilt, w) ? rebuilt : null;
+  }
+  function initial() { return { version: VERSION, world: create(35), settings: settings(), level: 'investigate', selected: 44, lens: 'water', running: false, run: null, baseline: null, recovery: null, prediction: '', reflection: '', question: 'free', differenceStore: 'surface', editHistory: [], observations: [], observationSequence: 0 }; }
   function validRun(run, world) { return !!(run && validWorld(run.start) && Array.isArray(run.samples) && run.samples.length > 0 && run.samples.length <= 241 && run.samples[0] && run.samples[0].t === 0 &&
     typeof run.complete === 'boolean' && typeof run.paired === 'boolean' &&
     run.samples.every(function (sample, i) { return sample && (!i || sample.t > run.samples[i - 1].t); }) &&
@@ -141,7 +183,7 @@
     if (!['surface','soil','ground'].includes(s.differenceStore)) s.differenceStore = 'surface';
     s.prediction = typeof s.prediction === 'string' ? s.prediction.slice(0, 1000) : '';
     s.reflection = typeof s.reflection === 'string' ? s.reflection.slice(0, 2000) : '';
-    if (!['free','cover','retention','memory','timing'].includes(s.question)) s.question = 'free';
+    if (!['free','cover','retention','memory','timing','recovery'].includes(s.question)) s.question = 'free';
     var seenObservations = {};
     s.observations = (Array.isArray(s.observations) ? s.observations.slice(0, OBSERVATION_LIMIT) : []).map(restoreObservation).filter(function (entry) {
       if (!entry || seenObservations[entry.id]) return false; seenObservations[entry.id] = true; return true;
@@ -150,6 +192,9 @@
     s.editHistory = []; // Undo is scoped to edits since opening this view or starting a storm.
     if (!validRun(s.run, s.world)) s.run = null;
     if (!s.baseline || !validWorld(s.baseline.world) || !validRun(s.baseline.run, s.baseline.world) || !s.baseline.run.complete) s.baseline = null;
+    if (s.run) s.run.recovery = restoreRecovery(s.run.recovery, s.run.start);
+    if (s.baseline) s.baseline.run.recovery = restoreRecovery(s.baseline.run.recovery, s.baseline.run.start);
+    s.recovery = s.run ? copy(s.run.recovery) : restoreRecovery(s.recovery, s.world);
     return s;
   }
   function begin(s, replay) {
@@ -158,9 +203,11 @@
     var timing=replay==='timing'&&!!base;
     if(timing)forcing.pattern=pattern(s.settings);
     if (base&&!timing) w.cells.forEach(function (c, i) { c.cover = s.world.cells[i].cover; });
+    var antecedent = base ? base.recovery : s.recovery;
+    var recovery = recoveryFits(antecedent, w) ? copy(antecedent) : null;
     w.peak = 0; w.discharge = 0;
-    return Object.assign({}, s, { world: w, settings: settings(forcing), running: true, editHistory: [],
-      run: { start: copy(w), forcing: forcing, paired: !!base&&!timing, timingTest: timing, complete: false,
+    return Object.assign({}, s, { world: w, settings: settings(forcing), running: true, editHistory: [], recovery: recovery,
+      run: { start: copy(w), forcing: forcing, paired: !!base&&!timing, timingTest: timing, complete: false, recovery: recovery ? copy(recovery) : null,
         samples: [{ t: 0, q: 0, surface: measure(w).surfaceM3, soil: measure(w).soilM3 }] } });
   }
   function advance(s, minutes) {
@@ -343,9 +390,16 @@
     return { minute:t, definition:'Current minus pinned baseline at the same elapsed model minute; differences are water depth over each equal-area cell.', totalsM3:totals, cells:cells };
   }
   function report(s) {
-    var e=evidence(s),lines=[e.title,'Learning lens: '+s.level,'Investigation focus: '+({free:'My own question',cover:'Changing ground cover',retention:'Retention gardens',memory:'Consecutive storms',timing:'Rainfall timing'}[s.question]||'My own question'),'','Prediction: '+(s.prediction||'(not recorded)'),'Explanation: '+(s.reflection||'(not recorded)'),''];
-    function runLines(label,run,result){if(!run)return;lines.push(label+(run.complete?' — completed':' — in progress'),'Mean rainfall: '+run.forcing.rain+' mm/h for '+run.forcing.duration+' min','Pattern: '+PATTERNS[pattern(run.forcing)],'First / second half: '+rainAt(run.forcing,0)+' / '+rainAt(run.forcing,run.forcing.duration/2)+' mm/h','Observation: '+result.elapsedMinutes.toFixed(1)+' min','Rain in: '+result.rainfallM3.toFixed(2)+' m³','Outflow: '+result.outflowM3.toFixed(2)+' m³','Peak flow: '+result.peakM3s.toFixed(4)+' m³/s','Storage change: '+result.storageChangeM3.toFixed(2)+' m³','Evaporation: '+result.evaporationM3.toFixed(2)+' m³','');}
+    var e=evidence(s),lines=[e.title,'Learning lens: '+s.level,'Investigation focus: '+({free:'My own question',cover:'Changing ground cover',retention:'Retention gardens',memory:'Consecutive storms',timing:'Rainfall timing',recovery:'Dry weather between storms'}[s.question]||'My own question'),'','Prediction: '+(s.prediction||'(not recorded)'),'Explanation: '+(s.reflection||'(not recorded)'),''];
+    function recoveryLines(label,r){if(!r)return;lines.push(label+': '+r.durationHours+' h without rain ('+r.durationMinutes+' min); model minute '+r.startMinute+' to '+r.endMinute,
+      'Surface water before / after: '+r.before.surfaceM3.toFixed(3)+' / '+r.after.surfaceM3.toFixed(3)+' m³',
+      'Soil water before / after: '+r.before.soilM3.toFixed(3)+' / '+r.after.soilM3.toFixed(3)+' m³',
+      'Delayed storage before / after: '+r.before.groundM3.toFixed(3)+' / '+r.after.groundM3.toFixed(3)+' m³',
+      'Dry-interval outflow: '+r.outflowM3.toFixed(3)+' m³; evaporation: '+r.evaporationM3.toFixed(3)+' m³; balance error: '+r.errorM3.toExponential(3)+' m³',
+      'Dry weather uses the same mild constant evaporative demand, with no climate feedback.','');}
+    function runLines(label,run,result){if(!run)return;lines.push(label+(run.complete?' — completed':' — in progress'),'Mean rainfall: '+run.forcing.rain+' mm/h for '+run.forcing.duration+' min','Pattern: '+PATTERNS[pattern(run.forcing)],'First / second half: '+rainAt(run.forcing,0)+' / '+rainAt(run.forcing,run.forcing.duration/2)+' mm/h','Observation: '+result.elapsedMinutes.toFixed(1)+' min','Rain in: '+result.rainfallM3.toFixed(2)+' m³','Outflow: '+result.outflowM3.toFixed(2)+' m³','Peak flow: '+result.peakM3s.toFixed(4)+' m³/s','Storage change: '+result.storageChangeM3.toFixed(2)+' m³','Evaporation: '+result.evaporationM3.toFixed(2)+' m³','');recoveryLines(label+' antecedent dry interval',run.recovery);}
     runLines('Current run',s.run,e.result);if(s.baseline)runLines('Pinned baseline',s.baseline.run,e.baselineResult);
+    if(!s.run)recoveryLines('Latest dry interval',e.recovery);
     if (e.observations.length) {
       lines.push('Saved observations (cell depths in mm; valley volumes in m³)');
       e.observations.forEach(function (entry) {
@@ -371,6 +425,7 @@
       question: s.question, learningLevel: s.level, designChanges: comparison(s).changedCells,
       observations: copy(s.observations || []),
       prediction: s.prediction, explanation: s.reflection, run: s.run ? copy(s.run) : null,
+      recovery: s.recovery ? copy(s.recovery) : null,
       finalWorld: copy(s.world), result: s.run ? result(s.world, s.run) : null,
       baseline: s.baseline ? copy(s.baseline) : null,
       baselineResult: s.baseline ? result(s.baseline.world, s.baseline.run) : null,
@@ -380,5 +435,5 @@
   root.WaterWorldsKernel = { version: VERSION, cols: COLS, rows: ROWS, area: AREA, covers: COVERS, patterns: PATTERNS, rainAt: rainAt, rainDuring: rainDuring, timingComparison: timingComparison,
     create: create, validWorld: validWorld, total: total, measure: measure, step: step, diagnose: diagnose, cellBudget: cellBudget, settings: settings,
     observationLimit: OBSERVATION_LIMIT, observe: observe, removeObservation: removeObservation, updateObservationNote: updateObservationNote, observationContext: observationContext, observationBudget: observationBudget,
-    initial: initial, restore: restore, begin: begin, advance: advance, landPlan: landPlan, edit: edit, undo: undo, record: record, result: result, atTime: atTime, comparison: comparison, spatialDifference: spatialDifference, report: report, evidence: evidence };
+    initial: initial, restore: restore, begin: begin, advance: advance, recover: recover, landPlan: landPlan, edit: edit, undo: undo, record: record, result: result, atTime: atTime, comparison: comparison, spatialDifference: spatialDifference, report: report, evidence: evidence };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "શોધનાં પરિણામો: {topics} વિષયોમાં {cards} કાર્ડ.",
+  "stem.flightsim.learn_library_counts": "{cards} કાર્ડ · {topics} વિષયો",
+  "stem.flightsim.learn_search_clear": "શોધ સાફ કરો",
+  "stem.flightsim.learn_search_empty": "“{query}” સાથે કોઈ શીખવાનું કાર્ડ મેળ ખાતું નથી. બીજો શબ્દ અજમાવો અથવા શોધ સાફ કરો.",
+  "stem.flightsim.learn_search_none": "કોઈ મેળ ખાતાં શીખવાનાં કાર્ડ નથી",
+  "stem.flightsim.learn_search_cards": "{count} શીખવાનાં કાર્ડ",
+  "stem.flightsim.quiz_review_progress": "{total} પ્રશ્નોમાંથી {answered}ના જવાબ આપ્યા · {missed} ખોટા",
+  "stem.flightsim.quiz_review_missed": "ખોટા જવાબોની સમીક્ષા કરો",
+  "stem.flightsim.quiz_next_unanswered": "આગળનો અનુત્તરિત પ્રશ્ન",
+  "stem.flightsim.quiz_review_all_answered": "દરેક પ્રશ્નનો પ્રથમ જવાબ નોંધાયેલો છે. ગુણ વગરની પ્રેક્ટિસ માટે ખોટા જવાબોની સમીક્ષા કરો અથવા નવો પ્રયાસ શરૂ કરો.",
+  "stem.flightsim.planner_drone_agl": "જમીનથી {ft} ફૂટ ઉપર",
+  "stem.flightsim.sprint_native_title": "ભૂગોળની ઝડપી પડકાર પ્રવૃત્તિ",
+  "stem.flightsim.sprint_timed_hint": "તમે જવાબ આપો ત્યારે પણ માર્ગ પર આગળ વધવાનું ચાલુ રહે છે. વાંચવા માટે થોભાવો; જવાબ પસંદ કરતાં પહેલાં ફરી ચાલુ કરો.",
+  "stem.flightsim.sprint_warp_reference": "આ ભૂગોળ પ્રવૃત્તિ માટે મુસાફરી ઝડપી કરવામાં આવી છે. ઝડપનાં માપ નિર્ધારિત ક્રૂઝ ઝડપ બતાવે છે; આ માર્ગ વિમાનની કામગીરી માપતો નથી.",
+  "stem.flightsim.sprint_save_menu": "પડકાર સાચવો અને મેનૂ પર પાછા ફરો",
+  "stem.flightsim.sprint_next_stop": "આગલું સ્થળ: {place}",
+  "stem.flightsim.geoq_approaching_city": "તમે કયા શહેરની નજીક પહોંચી રહ્યા છો?",
+  "stem.flightsim.sprint_time_remaining": "બાકી સમય: {seconds} સેકન્ડ"
+}

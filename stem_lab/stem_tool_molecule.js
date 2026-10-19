@@ -3258,7 +3258,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   summaryStats.map(function(stat) {
                     return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.625rem] text-slate-600 shadow-sm" },
                       React.createElement("span", { className: "font-bold" }, stat[0]),
-                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : stat[2], wordBreak: 'break-word' } }, stat[1])
+                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : (isDark ? stat[3] : stat[2]), wordBreak: 'break-word' } }, stat[1])
                     );
                   })
                 ),

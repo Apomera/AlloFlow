@@ -254,7 +254,8 @@ describe('Universe rounded spiral bulges', () => {
     const elliptical = new Uint8Array(512 * 512 * 4);
     for (let y = 0; y < 512; y++) elliptical.set(map.subarray((y * 2048 + 1536) * 4, (y * 2048 + 2048) * 4), y * 512 * 4);
     expect(hash(elliptical)).toBe('08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38');
-    expect(hash(helpers.cloudPixels())).toBe('b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88');
+    // Enhancement72 filled only the cloud atlas's green channel (pre-72: b57c6fd38bbb173b...).
+    expect(hash(helpers.cloudPixels())).toBe('04221a7f74fd18ad4be28fdf04966498031ccc88b5929db2d30822b59eb78218');
     expect(helpers.galaxyPixels(512)).toBe(map);
   });
 

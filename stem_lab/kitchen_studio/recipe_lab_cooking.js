@@ -6,15 +6,17 @@
   function describe(s){
     var p=s.pot,n=s.pan,portion=R.serving(s),inPan=n.produce&&!s.plated&&(!n.combined||portion.remaining>0);
     var covered=p.lid==='covered',wet=p.water>0,boil=wet&&p.temp>=96,simmer=wet&&p.temp>=80;
-    var loose=R.mixing(s).liquidSinceMix>0,type=!n.produce?'empty':n.damage>=1?'scorched':loose?'unmixed':n.moisture<20?'dry':n.moisture>180*s.servings/2?'watery':'coating';
+    var layered=s.sauceObservationModel===2,mixing=R.mixing(s),loose=s.mixingModel===2?mixing.needsMixing:mixing.liquidSinceMix>0,chemistry=(s.sauceModel===1||s.sauceModel===2||s.sauceModel===3)&&n.combined?R.sauceChemistry(s):null,type=!n.produce?'empty':n.damage>=1?'scorched':loose?'unmixed':chemistry?chemistry.type:n.moisture<20?'dry':n.moisture>180*s.servings/2?'watery':'coating';
     var cloudy=p.pasta?clamp(p.progress):0,steam=inPan&&n.moisture>12&&n.temp>90;
     var panNote={scorched:'Dark patches remain in the sauce.',unmixed:'Liquid pools around the pieces. Fold it through.',dry:'Little liquid remains between the pieces.',watery:'A loose pool surrounds the pasta and pieces.',coating:'A glossy layer coats the food.'}[type];
+    if(chemistry&&type!=='unmixed'&&type!=='scorched')panNote=chemistry.observation;
+    if(layered&&type==='scorched')panNote='Dark patches remain in the sauce. '+(loose?'Separate liquid pools around the pieces until it is folded through.':chemistry?chemistry.flowText+' '+chemistry.coatingText:'Changing the liquid does not remove the scorched residue.');
     if(type==='coating'&&!n.combined)panNote='Moisture glistens between the pieces.';
     if(type==='watery'&&!n.combined)panNote='A loose pool surrounds the pieces.';
     if(!n.produce)panNote=n.oil?'A thin film of oil covers the pan.':'The pan surface is bare.';
     else if(!inPan)panNote=s.plated?'On the plates · '+panNote:portion.started?'The pan is empty. All portions are on plates.':panNote;
     return {pot:{wet:wet,cloudy:cloudy,activity:boil?1:simmer?.25:0,steam:(boil?1:simmer?.25:0)*(covered?.12:1),note:!wet?'No water in the pot.':(cloudy>.1?'Cloudy cooking water':'Clear water')+(covered?' under the lid · steam gathers on the glass':'')+' · '+(boil?'rolling bubbles.':simmer?'fine bubbles at the edge.':'still surface.')},
-      pan:{visible:inPan,type:type,steam:steam?clamp((n.temp-85)/25):0,shimmer:!n.produce&&n.oil&&n.temp>80&&!s.plated,loose:inPan&&loose,note:panNote}};
+      pan:Object.assign({visible:inPan,type:type,steam:steam?clamp((n.temp-85)/25):0,shimmer:!n.produce&&n.oil&&n.temp>80&&!s.plated,loose:inPan&&loose,oilDroplets:inPan&&(layered||type!=='scorched')&&(chemistry?!!chemistry.oilDroplets:type==='separated'),note:panNote},chemistry&&chemistry.bodyType?{bodyType:layered&&loose||type==='unmixed'?'unmixed':chemistry.bodyType}:{},layered?{observationModel:2,scorched:n.damage>=1}:{},s.mixingModel===2?{mixingModel:2,pendingFraction:mixing.pendingFraction,baseBodyType:chemistry?chemistry.bodyType:n.moisture<20?'dry':n.moisture>180*s.servings/2?'watery':'coating'}:{})};
   }
   function mount(h){
     var T=h.THREE,frame=null,last=0,phase=0,active=false,disposed=false,cues=null;
@@ -34,6 +36,9 @@
     for(var b=0;b<6;b++){var a=b*2.399,o=decoration(h.ball(.026,'#e8cba1',Math.cos(a)*.43,1.449,Math.sin(a)*.43,h.pan));o.material.transparent=true;o.material.opacity=.36;o.material.depthWrite=false;panBubbles.push(o);}
     var pools=[];for(var p=0;p<2;p++){var pool=decoration(h.mesh(new T.CircleGeometry(.16,32),'#dccd99',p?-.2:.36,1.44,p?.4:.16,h.pan,{transparent:true,opacity:.65,depthWrite:false,roughness:.15}));pool.rotation.x=-Math.PI/2;pool.scale.set(1.25,.75,1);pool.renderOrder=2;pools.push(pool);}
     var oilGlints=[];for(var g=0;g<2;g++){var glint=decoration(h.mesh(new T.RingGeometry(.24+g*.14,.246+g*.14,40,1,g*3,1.3),'#ffe3ac',0,1.44,0,h.pan,{transparent:true,opacity:.28,depthWrite:false,side:T.DoubleSide,roughness:.1}));glint.rotation.x=-Math.PI/2;oilGlints.push(glint);}
+    var oilDrops=[];for(var od=0;od<7;od++){var drop=decoration(h.mesh(new T.CircleGeometry(.025+(od%3)*.012,20),'#efc85e',Math.cos(od*2.4)*(.22+od%2*.2),1.447,Math.sin(od*2.4)*(.22+od%2*.2),h.pan,{roughness:.1,side:T.DoubleSide}));drop.rotation.x=-Math.PI/2;drop.scale.y=.7;drop.renderOrder=3;oilDrops.push(drop);}
+    var oilHighlights=oilDrops.map(function(drop){var light=decoration(h.mesh(new T.CircleGeometry(.008,12),'#fff4c3',-.007,.007,.001,drop,{roughness:.15,side:T.DoubleSide}));light.scale.set(1,.5,1);light.renderOrder=4;return light;});
+    var residue=[];for(var speck=0;speck<12;speck++){var a=speck*2.399,rad=.1+(speck%4)*.115,mark=decoration(h.mesh(new T.CircleGeometry(.017+(speck%3)*.006,7),speck%3?'#39251c':'#68422d',Math.cos(a)*rad,1.449,Math.sin(a)*rad,h.pan,{roughness:.95,side:T.DoubleSide}));mark.rotation.x=-Math.PI/2;mark.rotation.z=a;mark.scale.set(1.5,.65,1);mark.renderOrder=4;residue.push(mark);}
     var waterline=decoration(h.mesh(new T.TorusGeometry(.501,.005,6,64),'#d2e9d8',0,0,0,h.pot,{transparent:true,opacity:.5,depthWrite:false,roughness:.15}));waterline.rotation.x=Math.PI/2;waterline.renderOrder=2;
     var clear=new T.Color('#79b6af').convertSRGBToLinear(),cloud=new T.Color('#e5d4ab').convertSRGBToLinear();
     function pose(){
@@ -45,6 +50,8 @@
       rings.forEach(function(o,i){var pot=i<6,t=(phase*.7+i*.193)%1,strength=pot?cues.pot.activity:cues.pan.steam;o.visible=strength>0;o.position.y=pot?h.water.position.y+.012:1.445;o.scale.setScalar(.35+t*1.25);o.material.opacity=(1-t)*.26*strength;});
       panBubbles.forEach(function(o,i){var t=(phase*.5+i*.217)%1;o.visible=cues.pan.steam>0;o.scale.set(.35+t*.65,.15+t*.25,.35+t*.65);o.material.opacity=(1-t)*.36;});
       oilGlints.forEach(function(o,i){o.visible=cues.pan.shimmer;o.rotation.z=Math.sin(phase*.4+i)*.25;o.material.opacity=.19+Math.sin(phase*.8+i)*.06;});
+      oilDrops.forEach(function(o){o.visible=cues.pan.oilDroplets;});
+      oilHighlights.forEach(function(o){o.visible=cues.pan.observationModel===2;});residue.forEach(function(o){o.visible=cues.pan.visible&&cues.pan.scorched===true;});
     }
     function moving(){return active&&!disposed&&!document.hidden&&!motion.matches&&cues&&(cues.pot.activity>0||cues.pan.steam>0||cues.pan.shimmer);}
     function stop(){if(frame!==null)cancelAnimationFrame(frame);frame=null;last=0;}
@@ -53,16 +60,17 @@
     function update(s){
       cues=describe(s);if(!active)phase=s.time*.035;h.water.material.color.copy(clear).lerp(cloud,Math.sqrt(cues.pot.cloudy)*.9);h.water.material.roughness=.2;h.water.material.opacity=.8+cues.pot.cloudy*.18;
       waterline.visible=cues.pot.wet;waterline.position.y=h.water.position.y+.015;
-      var dry=cues.pan.type==='dry'||cues.pan.type==='scorched',wet=s.pan.produce&&!dry,red=s.id==='tomato';
+      var body=cues.pan.mixingModel===2&&cues.pan.loose?cues.pan.baseBodyType:cues.pan.bodyType||cues.pan.type,dry=body==='dry'||body==='thick'||body==='scorched',wet=s.pan.produce&&!dry,red=s.id==='tomato';
       h.sauce.material.roughness=dry?.8:.2;h.sauce.scale.set(dry?.65:1,1,dry?.65:1);
-      pools.forEach(function(o){o.visible=cues.pan.loose;o.material.color.set(red?'#dcb073':'#e0d2a0').convertSRGBToLinear();});
+      pools.forEach(function(o,i){var current=cues.pan.mixingModel===2;o.visible=cues.pan.loose;var size=current?Math.sqrt(clamp(cues.pan.pendingFraction)):1;o.position.set(current?(i?-.38:.43):(i?-.2:.36),current?1.47:1.44,current?(i?.29:.22):(i?.4:.16));o.scale.set(1.25*size,.75*size,1);o.material.opacity=current?.9:.65;o.material.color.set(current?(red?'#f3dfb2':'#f1e9bf'):(red?'#dcb073':'#e0d2a0')).convertSRGBToLinear();});
       h.food.forEach(function(o){o.material.roughness=wet?(red?.3:.43):(red?.55:.8);});
-      var tint=new T.Color(cues.pan.type==='scorched'?'#71513a':red?'#c77740':'#c49e53').convertSRGBToLinear(),pasta=new T.Color('#edce83').convertSRGBToLinear();
-      h.noodles.forEach(function(o){o.material.color.copy(pasta).lerp(tint,cues.pan.type==='coating'?.65:cues.pan.type==='scorched'?.8:.28);o.material.roughness=wet?.3:.72;});
+      var tint=new T.Color(cues.pan.type==='scorched'&&cues.pan.observationModel!==2?'#71513a':red?'#c77740':'#c49e53').convertSRGBToLinear(),pasta=new T.Color('#edce83').convertSRGBToLinear();
+      h.noodles.forEach(function(o){o.material.color.copy(pasta).lerp(tint,body==='coating'?.65:body==='scorched'?.8:.28);o.material.roughness=wet?.3:.72;});
+      if(h.canvas){if(cues.pan.observationModel===2){h.canvas.dataset.sauceBody=cues.pan.visible?(cues.pan.bodyType||body):'empty';h.canvas.dataset.sauceResidue=cues.pan.visible&&cues.pan.scorched?'scorched':'none';h.canvas.dataset.sauceOil=cues.pan.oilDroplets?'separated':'dispersed';}else{delete h.canvas.dataset.sauceBody;delete h.canvas.dataset.sauceResidue;delete h.canvas.dataset.sauceOil;}if(cues.pan.mixingModel===2)h.canvas.dataset.saucePool=cues.pan.loose?'partial':'none';else delete h.canvas.dataset.saucePool;}
       pose();sync();
     }
     document.addEventListener('visibilitychange',sync);motion.addEventListener('change',sync);
-    return {update:update,setActive:function(value){active=!!value;sync();},dispose:function(){disposed=true;stop();document.removeEventListener('visibilitychange',sync);motion.removeEventListener('change',sync);sprites.forEach(function(o){if(o.parent)o.parent.remove(o);o.material.dispose();});steamMap.dispose();}};
+    return {update:update,setActive:function(value){active=!!value;sync();},dispose:function(){disposed=true;stop();document.removeEventListener('visibilitychange',sync);motion.removeEventListener('change',sync);sprites.forEach(function(o){if(o.parent)o.parent.remove(o);o.material.dispose();});oilHighlights.concat(oilDrops,residue).forEach(function(o){if(o.parent)o.parent.remove(o);o.geometry.dispose();o.material.dispose();});steamMap.dispose();}};
   }
   var api={describe:describe,mount:mount};root.KitchenCooking=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

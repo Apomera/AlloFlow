@@ -3542,7 +3542,7 @@ const handleSaveReflection = async (deps) => {
           // open panel so the student can just press Submit again.
           warnLog("Reflection save failed", err);
           const wasCancelled = err?.name === 'AbortError' || /cancelled|aborted/i.test(err?.message || '');
-          if (reflectionIsCurrent() && !wasCancelled) addToast(t('toasts.reflection_save_failed') || 'Your reflection was not saved. Please submit it again.', "error");
+          if (reflectionIsCurrent() && !wasCancelled) addToast(t('toasts.reflection_save_failed'), "error");
       } finally {
           if (gradingTimeout) clearTimeout(gradingTimeout);
           if (gradingAbortRef?.current === gradingHandle) gradingAbortRef.current = null;

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Mission completion and the return landing were recorded. Try this mission again with one deliberate control or route change, then compare the saved observations.",
+  "stem.flightsim.coaching_mission_depleted": "The drone ran out of charge. Start a fresh mission, use short routes, and plan a return before the battery is low.",
+  "stem.flightsim.coaching_mission_unknown": "This mission has incomplete or conflicting evidence. Review what was recorded, then start a fresh attempt.",
+  "stem.flightsim.coaching_mission_capture": "Some targets remain uncaptured. On a fresh mission, approach one target at a time and hold within the displayed height and ground-speed limits until capture is recorded.",
+  "stem.flightsim.coaching_mission_recovery": "The survivor was not recovered. On a fresh rescue, practice a stable hover within the displayed height, drift, and vertical-speed limits before returning to base.",
+  "stem.flightsim.coaching_mission_return": "Pickup or capture objectives were recorded; the return landing remains. Start a fresh mission, then reserve time and battery for returning to base.",
+  "stem.flightsim.mission_reflection_prompt": "Which target, hover, or return decision would you change? Use the mission observations to explain your choice and plan one change for a fresh attempt. Your explanation saves with this flight.",
+  "stem.flightsim.journal_different_airport": "These approaches used different airports. Review their observations separately; measurement changes are not calculated.",
+  "stem.flightsim.journal_approach_airport": "Approach airport: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "MISSION EVIDENCE",
+  "stem.flightsim.challenge_brake_release": "Release X and turn off Wheel Brakes in Deck before adding power."
+}

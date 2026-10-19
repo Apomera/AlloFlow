@@ -41,8 +41,9 @@ describe('orchestrator copies never evaluate fetched text', () => {
       expect(src).not.toMatch(/\beval\s*\(\s*(text|hsText)\b/);
       // HELP_STRINGS refresh, pack loader, and the translation-init help strings.
       expect((src.match(/_alloParseUntrustedObject\(/g) || []).length).toBeGreaterThanOrEqual(4);
-      // Every pack that reaches state is sanitized (PR #4's eight sites minus the two null resets).
-      expect((src.match(/setLanguagePack\(sanitizeLanguagePack\(/g) || []).length).toBe(7);
+      // Every pack that reaches state is sanitized (PR #4's eight sites minus the two null resets,
+      // plus the 2026-10-16 background refresh of a cached pack: tests/language_pack_refresh.test.js).
+      expect((src.match(/setLanguagePack\(sanitizeLanguagePack\(/g) || []).length).toBe(8);
       expect(src).not.toMatch(/setLanguagePack\((json|cachedPack|pack|finalPack|partialPack|accumulatedPack)\);/);
     });
   }

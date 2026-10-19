@@ -12,6 +12,7 @@
 //   node dev-tools/i18n/audit_runtime_pack_coverage.cjs --namespace=tour
 //   node dev-tools/i18n/audit_runtime_pack_coverage.cjs --quiet --json
 //   node dev-tools/i18n/audit_runtime_pack_coverage.cjs --gate
+//   node dev-tools/i18n/audit_runtime_pack_coverage.cjs --ratchet   (verify:gate; see coverage_ratchet.cjs)
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -265,6 +266,30 @@ if (BY_NAMESPACE && !JSON_OUTPUT) {
   for (const [group, stats] of Object.entries(report.byNamespace)) {
     console.log(`  ${group.padEnd(26)}${String(stats.runtimeKeys).padStart(8)}${String(stats.missing).padStart(10)}${String(stats.invalidType).padStart(10)}${String(stats.mirrorMissing).padStart(10)}${String(stats.passthrough).padStart(13)}${String(stats.translated).padStart(12)}${String(stats.placeholderMismatch || 0).padStart(13)}`);
   }
+}
+
+// verify:gate runs --ratchet: zero-tolerance for errors (including runtime keys
+// absent from ui_strings.js), invalid types, placeholder mismatches and mirror
+// drift; root missing entries may only go down (see coverage_ratchet.cjs). With
+// zero drift the mirror's missing set is the root's, so only root is ratcheted.
+if (argv.includes('--ratchet') || argv.includes('--update-ratchet')) {
+  if (namespace) {
+    console.error('audit_runtime_pack_coverage: --ratchet covers every runtime key; drop --namespace.');
+    process.exit(1);
+  }
+  const hard = report.errors.length > 0 || totalInvalidType > 0 || totalMirrorInvalidType > 0 || totalPlaceholderMismatches > 0 || totalMirrorPlaceholderMismatches > 0 || mirrorDrift > 0;
+  if (hard) console.error(`❌ audit_runtime_pack_coverage: errors=${report.errors.length} invalidType=${totalInvalidType}/${totalMirrorInvalidType} placeholderMismatches=${totalPlaceholderMismatches}/${totalMirrorPlaceholderMismatches} mirrorDrift=${mirrorDrift} (all must be 0).${report.errors.length ? ' ' + report.errors.slice(0, 5).join('; ') : ''}`);
+  const code = require('./coverage_ratchet.cjs').run({
+    argv,
+    tool: 'audit_runtime_pack_coverage',
+    defaultBaseline: path.join(__dirname, 'runtime_pack_coverage_ratchet.json'),
+    current: {
+      perPack: Object.fromEntries(rows.map((row) => [row.slug, row.missing])),
+      perNamespace: Object.fromEntries(Object.entries(namespaceSummary).map(([group, stats]) => [group, stats.missing])),
+    },
+    missingSamples: Object.fromEntries(rows.map((row) => [row.slug, row.missingSample])),
+  });
+  process.exit(hard || code ? 1 : 0);
 }
 
 if (report.errors.length || (GATE && (totalMissing > 0 || totalInvalidType > 0 || totalMirrorMissing > 0 || totalMirrorInvalidType > 0 || totalPlaceholderMismatches > 0 || totalMirrorPlaceholderMismatches > 0 || mirrorDrift > 0))) process.exit(1);

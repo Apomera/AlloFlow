@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Kukamilika kwa misheni na kutua baada ya kurudi vimerekodiwa. Jaribu misheni hii tena ukibadilisha kwa makusudi jambo moja la udhibiti au njia, kisha linganisha uchunguzi uliohifadhiwa.",
+  "stem.flightsim.coaching_mission_depleted": "Chaji ya droni imekwisha. Anza misheni mpya, tumia njia fupi na panga kurudi kabla betri haijapungua.",
+  "stem.flightsim.coaching_mission_unknown": "Ushahidi wa misheni hii haujakamilika au unakinzana. Kagua yaliyorekodiwa, kisha anza jaribio jipya.",
+  "stem.flightsim.coaching_mission_capture": "Baadhi ya malengo bado hayajapigwa picha. Katika misheni mpya, karibia lengo moja kwa wakati na udumishe kimo na kasi kulingana na ardhi ndani ya mipaka iliyoonyeshwa hadi upigaji picha urekodiwe.",
+  "stem.flightsim.coaching_mission_recovery": "Aliyenusurika hakuchukuliwa. Katika misheni mpya ya uokoaji, jizoeze kuelea hewani bila kuyumba ndani ya mipaka iliyoonyeshwa ya kimo, kusogea pembeni na kasi ya wima kabla ya kurudi kituoni.",
+  "stem.flightsim.coaching_mission_return": "Malengo ya kuchukua aliyenusurika au kupiga picha yamerekodiwa; kutua baada ya kurudi kunabaki. Anza misheni mpya, kisha hifadhi muda na chaji kwa ajili ya kurudi kituoni.",
+  "stem.flightsim.mission_reflection_prompt": "Ungebadilisha uamuzi gani kuhusu lengo, kuelea hewani au kurudi? Tumia uchunguzi wa misheni kueleza chaguo lako na kupanga badiliko moja kwa jaribio jipya. Maelezo yako yanahifadhiwa pamoja na safari hii ya ndege.",
+  "stem.flightsim.journal_different_airport": "Mikaribio hii ya kutua ilitumia viwanja vya ndege tofauti. Kagua uchunguzi wake kila mmoja kando; tofauti za vipimo hazihesabiwi.",
+  "stem.flightsim.journal_approach_airport": "Uwanja wa ndege wa kukaribia kutua: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "USHAHIDI WA MISHENI",
+  "stem.flightsim.challenge_brake_release": "Achia kitufe X na uzime breki za magurudumu kwenye paneli ya udhibiti kabla ya kuongeza nguvu."
+}

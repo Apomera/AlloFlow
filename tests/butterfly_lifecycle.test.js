@@ -140,7 +140,7 @@ describe('Butterfly life cycle investigation',()=>{
    expect(s.lifecycle.broods).toHaveLength(1);
    expect(BF.broodFor(s,'milkweed').prediction).toBe('complete');
    const saved=BF.save(s),restored=BF.freshState(saved);
-   expect(saved.version).toBe(5);
+   expect(saved.version).toBe(6);
    expect(restored.lifecycle).toEqual(s.lifecycle);
    saved.lifecycle.broods[0].result='stalls';
    expect(s.lifecycle.broods[0].result).toBe('complete');

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Tantativ egzamen anvan yo",
+  "stem.flightsim.quiz_history_scope": "Lè w kòmanse yon nouvo tantativ, sa konsève jiska kat tantativ anvan ki gen premye repons yo anrejistre. Lè w revize yo, egzamen w ap fè a pa chanje.",
+  "stem.flightsim.quiz_history_empty": "Pa gen okenn tantativ egzamen anvan ki konsève ankò.",
+  "stem.flightsim.quiz_history_attempt": "Konsève nan dat {date} · {score}/{answered} premye repons kòrèk",
+  "stem.flightsim.quiz_history_progress": "{answered} sou {total} kesyon anrejistre · {unanswered} san repons",
+  "stem.flightsim.quiz_history_question": "Kesyon {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Repons kòrèk: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} kesyon ki konsève pa koresponn ak egzamen sa a ankò. Nòt yo itilize sèlman dosye kesyon ki koresponn yo."
+}

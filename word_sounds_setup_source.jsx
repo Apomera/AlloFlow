@@ -435,7 +435,9 @@ function createWordSoundsCore(options = {}) {
     "zoo": ["z","oo"]
   };
   const normalize = value => String(value || '').normalize('NFC').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
-  const aliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
+  // Generated English packs use macrons; the edge dictionary and audio bank
+  // use ay/ee/ie/oa/oo. Compare those spellings as the same sound everywhere.
+  const aliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
   const soundKey = value => { const v=normalize(value); return aliases[v] || v; };
   const edgeSound = (word, position, phonemes) => {
     const w=normalize(word), last=position==='last';
@@ -1671,6 +1673,7 @@ const WS_CORE = createWordSoundsCore();
         const setPackById = (id, updater) => setLib((prev) => Object.assign({}, prev, { packs: prev.packs.map((p) => p.id === id ? (typeof updater === 'function' ? updater(p) : Object.assign({}, p, updater)) : p) }));
         const [recordingKey, setRecordingKey] = React.useState(null);
         const [status, setStatus] = React.useState('');
+        const [confirmStudentExport, setConfirmStudentExport] = React.useState(false);
         const [aiCheckOn, setAiCheckOn] = React.useState(false);
         const [cleanOn, setCleanOn] = React.useState(true); // auto trim-silence + normalize on record
         const [checks, setChecks] = React.useState({}); // { key: { state:'checking'|'done'|'error', match, clipped, note } }
@@ -1919,9 +1922,13 @@ const WS_CORE = createWordSoundsCore();
                 const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                const safe = String(pack.name || 'voice').replace(/[^a-z0-9]+/gi, '_');
+                // Letters in any script survive (a Cyrillic or Arabic name used
+                // to become "phoneme_pack__.json"); revoking in the same tick can
+                // cancel the download in some browsers.
+                const safe = String(pack.name || '').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'voice';
                 a.href = url; a.download = 'phoneme_pack_' + (isStudent ? 'CONFIDENTIAL_' : '') + safe + '.json';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
                 setStatus(isStudent
                     ? T('word_sounds.voice_pack_msg_exported_student', '⬇️ Exported "{name}" (confidential student voice).', { name: (pack.name || 'My Voice Pack') })
                     : T('word_sounds.voice_pack_msg_exported', '⬇️ Exported "{name}".', { name: (pack.name || 'My Voice Pack') }));
@@ -2122,10 +2129,19 @@ const WS_CORE = createWordSoundsCore();
                         )}
                     </div>
                     {status ? <div className="px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100" role="status" aria-live="polite">{status}</div> : null}
+                    {/* A student-voice file is a child's recordings and practice log:
+                        confirm in the page (confirm() is ignored inside Canvas). */}
+                    {confirmStudentExport && isStudent ? (
+                        <div role="alert" data-voice-pack-student-export-confirm="true" className="flex items-center gap-2 px-5 py-3 border-t border-amber-200 bg-amber-50 flex-wrap">
+                            <span className="flex-1 min-w-[200px] text-sm font-semibold text-amber-900">{T('word_sounds.voice_pack_student_export_warning', "This file holds a child's voice recordings and practice history. Save it only to a school-approved location.")}</span>
+                            <button type="button" autoFocus onClick={() => { setConfirmStudentExport(false); exportPack(); }} className="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-colors">{T('word_sounds.voice_pack_student_export_confirm', 'Export file')}</button>
+                            <button type="button" onClick={() => setConfirmStudentExport(false)} className="px-3 py-1.5 rounded-lg bg-white text-slate-700 border border-slate-300 font-bold text-sm hover:bg-slate-50 transition-colors">{T('common.cancel', 'Cancel')}</button>
+                        </div>
+                    ) : null}
                     <div className="flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap">
                         <input type="text" value={pack.name} onChange={(e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value }))} aria-label={T('word_sounds.voice_pack_name_label', 'Pack name')} className="flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold" placeholder={T('word_sounds.voice_pack_name_label', 'Pack name')} />
                         <button type="button" onClick={savePack} className="px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors">{T('word_sounds.voice_pack_save', 'Save & Use')}</button>
-                        <button type="button" onClick={exportPack} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors">⬇️ {T('word_sounds.voice_pack_export', 'Export')}</button>
+                        <button type="button" onClick={isStudent ? () => setConfirmStudentExport(true) : exportPack} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors">⬇️ {T('word_sounds.voice_pack_export', 'Export')}</button>
                         <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()} className="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors">📥 {T('word_sounds.voice_pack_import', 'Import')}</button>
                         <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={importPack} className="hidden" aria-hidden="true" />
                     </div>
@@ -2914,7 +2930,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       const text = library.exportSet(board, word, language);
       url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
       link = document.createElement('a'); link.href = url;
-      link.download = 'syllables-' + library.identity(word, language).targetWord.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 60) + '.json';
+      // Language in the name, and letters in any script kept: "мама" and
+      // "مرحبا" both used to download as "syllables--.json".
+      const match = library.identity(word, language);
+      const part = value => String(value || '').replace(/[^\p{L}\p{N}-]+/gu, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+      link.download = ['syllables', part(match.languageKey), part(match.targetWord)].filter(Boolean).join('-') + '.json';
       link.hidden = true; document.body.appendChild(link); link.click();
       setLibraryStatus('Download prepared from the recordings saved in this lesson. Import the file for the same word and recording language on another device.');
     } catch (error) { setLibraryStatus(error?.message || 'The recording set could not be downloaded. Save reviewed syllables first and try again.'); }
@@ -3454,8 +3474,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         return { ...data, word: selectedWord.trim() };
     }
 
-    function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRange, callGemini, warnLog }) {
-        const [result, setResult] = React.useState({ contextKey: null, terms: [] });
+    function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRange, callGemini, warnLog, authoringSession }) {
+        const [result, setResult] = React.useState(() => authoringSession?.aiResult || { contextKey: null, terms: [] });
         const [busy, setBusy] = React.useState(false);
         const [failed, setFailed] = React.useState(false);
         const emptyTerms = React.useRef([]);
@@ -3498,7 +3518,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 const words = (english ? response.replace(/[^a-zA-Z,\s-]/g, '') : response.replace(/[^\p{L}\p{M}'’,\s-]/gu, ''))
                     .split(',').map(word => word.trim()).filter(Boolean);
                 if (!words.length) throw new Error('No words were returned.');
-                setResult({ contextKey: operation.contextKey, terms: words });
+                const nextResult = { contextKey: operation.contextKey, terms: words };
+                if (authoringSession) authoringSession.aiResult = nextResult;
+                setResult(nextResult);
             } catch (error) {
                 if (current()) { warnLog('AI Gen Failed', error); setFailed(true); }
             } finally {
@@ -3511,6 +3533,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], syllableReviewSession, onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
         const localReviewSession = React.useRef({});
         const reviewSession = syllableReviewSession || localReviewSession.current;
+        // Keep the complete setup with the host's authoring session, alongside
+        // approved syllable work. Review navigation unmounts this component.
+        // The host gives a replaced/new resource a fresh session.
+        const setupDraft = reviewSession.setupDraft || (reviewSession.setupDraft = {});
+        const useSetupState = (field, initial) => useWordSoundsSetupReviewState(setupDraft, field, initial);
         // A voice selected while preparation is running applies to missing
         // clips and the next retry, including the Kokoro offer.
         const generationVoiceRef = React.useRef(selectedVoice);
@@ -3531,7 +3558,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             return v;
         };
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
-        const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+        const [imageVisibilityMode, setImageVisibilityMode] = useSetupState('imageVisibilityMode', () => 'smart');
         React.useEffect(() => {
             if (isProbeMode) setImageVisibilityMode('off');
         }, [isProbeMode]);
@@ -3550,24 +3577,24 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             'word_scramble':  'afterCompletion',
             'missing_letter': 'afterCompletion'
         };
-        const [includeGlossary, setIncludeGlossary] = React.useState(true);
-        const [includeFamily, setIncludeFamily] = React.useState(false);
-        const [includeCustom, setIncludeCustom] = React.useState(false);
-        const [includeAI, setIncludeAI] = React.useState(false);
-        const [wordCount, setWordCount] = React.useState(10);
-        const [selectedFamily, setSelectedFamily] = React.useState('');
-    const [includeSightWords, setIncludeSightWords] = React.useState(false);
-    const [selectedSightWordList, setSelectedSightWordList] = React.useState('');
-        const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30);
-        const [orthoSessionGoal, setOrthoSessionGoal] = React.useState(0);
+        const [includeGlossary, setIncludeGlossary] = useSetupState('includeGlossary', () => true);
+        const [includeFamily, setIncludeFamily] = useSetupState('includeFamily', () => false);
+        const [includeCustom, setIncludeCustom] = useSetupState('includeCustom', () => false);
+        const [includeAI, setIncludeAI] = useSetupState('includeAI', () => false);
+        const [wordCount, setWordCount] = useSetupState('wordCount', () => 10);
+        const [selectedFamily, setSelectedFamily] = useSetupState('selectedFamily', () => '');
+    const [includeSightWords, setIncludeSightWords] = useSetupState('includeSightWords', () => false);
+    const [selectedSightWordList, setSelectedSightWordList] = useSetupState('selectedSightWordList', () => '');
+        const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useSetupState('wordSoundsSessionGoal', () => 30);
+        const [orthoSessionGoal, setOrthoSessionGoal] = useSetupState('orthoSessionGoal', () => 0);
     const includeOrthographic = orthoSessionGoal > 0;
-        const [customText, setCustomText] = React.useState('');
+        const [customText, setCustomText] = useSetupState('customText', () => '');
         // Practice vs Assessment (probe). Reflects the host's isProbeMode when the
         // teacher arrived from an assessment launch; otherwise defaults to practice
         // and the teacher can flip it here. A probe is a single timed skill, so it
         // is mutually exclusive with the multi-activity lesson plan below.
-        const [sessionType, setSessionType] = React.useState(isProbeMode ? 'assessment' : 'practice');
-        const [probeActivitySel, setProbeActivitySel] = React.useState(
+        const [sessionType, setSessionType] = useSetupState('sessionType', () => isProbeMode ? 'assessment' : 'practice');
+        const [probeActivitySel, setProbeActivitySel] = useSetupState('probeActivitySel', () =>
             probeActivity && probeActivity !== 'orf' ? probeActivity : 'segmentation'
         );
         const probeActivityLabel = tf(`word_sounds.act_${probeActivitySel}`, ({
@@ -3586,18 +3613,18 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         // opens a second bucket for the same child. The datalist below offers
         // the names that already have probe data, which is what makes picking
         // an existing child a click instead of a re-typing exercise.
-        const [probeStudent, setProbeStudent] = React.useState('');
+        const [probeStudent, setProbeStudent] = useSetupState('probeStudent', () => '');
         const probeStudentTrimmed = String(probeStudent || '').trim();
-        const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
-        const [prepareScope, setPrepareScope] = React.useState('all');
+        const [includeLessonPlan, setIncludeLessonPlan] = useSetupState('includeLessonPlan', () => false);
+        const [prepareScope, setPrepareScope] = useSetupState('prepareScope', () => 'all');
         React.useEffect(() => { if (!includeLessonPlan) setPrepareScope('all'); }, [includeLessonPlan]);
-        const [taughtPatternsText, setTaughtPatternsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(', '));
-        const [knownWordsText, setKnownWordsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(', '));
+        const [taughtPatternsText, setTaughtPatternsText] = useSetupState('taughtPatternsText', () => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(', '));
+        const [knownWordsText, setKnownWordsText] = useSetupState('knownWordsText', () => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(', '));
         const instructionalProfile = React.useMemo(() => ({
             taughtPatterns: taughtPatternsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
             knownWords: knownWordsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
         }), [taughtPatternsText, knownWordsText]);
-        const [lessonPlan, setLessonPlan] = React.useState({
+        const [lessonPlan, setLessonPlan] = useSetupState('lessonPlan', () => ({
             isolation: { enabled: false, count: 5 },
             blending: { enabled: false, count: 5 },
             segmentation: { enabled: false, count: 5 },
@@ -3618,8 +3645,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             read_sentence: { enabled: false, count: 5 },
             read_passage: { enabled: false, count: 5 },
             sentence_match: { enabled: false, count: 5 },
-        });
-        const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
+        }));
+        const [lessonPlanOrder, setLessonPlanOrder] = useSetupState('lessonPlanOrder', () => [
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
             'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage', 'sentence_match'
@@ -3635,18 +3662,18 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             setLessonPlanOrder(next);
             setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
         };
-        const [imageTheme, setImageTheme] = React.useState('');
-        const [imageThemeMode, setImageThemeMode] = React.useState('inherit');
+        const [imageTheme, setImageTheme] = useSetupState('imageTheme', () => '');
+        const [imageThemeMode, setImageThemeMode] = useSetupState('imageThemeMode', () => 'inherit');
         const effectiveImageTheme = imageThemeMode === 'override' && imageTheme.trim()
             ? imageTheme.trim()
             : String(universalImageStyle || '').trim();
-        const [includeAacImages, setIncludeAacImages] = React.useState(false);
-        const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
-        const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
-        const [includeSyllableWords, setIncludeSyllableWords] = React.useState(false);
-        const [includeSyllableCountWords, setIncludeSyllableCountWords] = React.useState(false);
-        const [aiTopic, setAiTopic] = React.useState('');
-        const aiSuggestions = useWordSoundsAiTopic({ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage, gradeLevel, syllableRange, callGemini, warnLog });
+        const [includeAacImages, setIncludeAacImages] = useSetupState('includeAacImages', () => false);
+        const [aacDefaultOn, setAacDefaultOn] = useSetupState('aacDefaultOn', () => false);
+        const [syllableRange, setSyllableRange] = useSetupState('syllableRange', () => ({ min: 1, max: 4 }));
+        const [includeSyllableWords, setIncludeSyllableWords] = useSetupState('includeSyllableWords', () => false);
+        const [includeSyllableCountWords, setIncludeSyllableCountWords] = useSetupState('includeSyllableCountWords', () => false);
+        const [aiTopic, setAiTopic] = useSetupState('aiTopic', () => '');
+        const aiSuggestions = useWordSoundsAiTopic({ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage, gradeLevel, syllableRange, callGemini, warnLog, authoringSession: setupDraft });
         const { terms: aiTerms, busy: isAiGenerating, generate: handleAiGenerate } = aiSuggestions;
         const [isProcessing, setIsProcessing] = React.useState(false);
         const [isMinimized, setIsMinimized] = React.useState(false);
@@ -4811,19 +4838,24 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                          .filter(Boolean)
                  );
                  processed.forEach((item) => {
-                     const candidates = [
-                         item.rhymeWord,
-                         ...(item.rhymes || []),
-                         ...(item.familyMembers || []),
-                         ...(item.rhymeDistractors || []),
-                         ...(item.sentenceDistractors || []),
-                     ].filter(Boolean);
-                     const unverified = [...new Set(
-                         candidates
+                     // Grouped by the boards that show them, so the review panel
+                     // lists only the words the selected activities actually use.
+                     const sources = {
+                         rhyme: [item.rhymeWord, ...(item.rhymes || []), ...(item.rhymeDistractors || [])],
+                         family: item.familyMembers || [],
+                         blending: item.blendingDistractors || [],
+                         sentence: item.sentenceDistractors || [],
+                     };
+                     const bySource = {};
+                     Object.entries(sources).forEach(([source, words]) => {
+                         const flagged = [...new Set(words.filter(Boolean)
                              .map((w) => String(w).trim().toLowerCase())
-                             .filter((w) => isUnverifiedK2Word(w, sessionWords))
-                     )];
+                             .filter((w) => isUnverifiedK2Word(w, sessionWords)))];
+                         if (flagged.length) bySource[source] = flagged;
+                     });
+                     const unverified = [...new Set(Object.values(bySource).flat())];
                      if (unverified.length) item._unverifiedWords = unverified;
+                     if (unverified.length) item._unverifiedBySource = bySource;
                  });
              }
              compileActivityItems(processed);
@@ -4837,23 +4869,30 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // the teacher device, then store one shared image manifest.
              const decodingAssets = {};
              const aacAssets = {};
-             processed.forEach((item) => {
+             // Shared manifests can live on an unselected first item. Seed
+             // from the complete pack, retaining its normal last-bucket wins
+             // precedence even when that newer bucket is on a deselected row.
+             preloadedWords.forEach((item) => {
                  const key = normalizePackKey(item.targetWord || item.word || item.term);
                  if (key && item.image) decodingAssets[key] = item.image;
-                 if (item._decodingAssets) Object.assign(decodingAssets, item._decodingAssets);
-                 delete item._decodingAssets;
-                 if (item._aacAssets) Object.assign(aacAssets, item._aacAssets);
-                 delete item._aacAssets;
+                 Object.entries(item._decodingAssets || {}).forEach(([word, image]) => { decodingAssets[normalizePackKey(word)] = image; });
+                 Object.entries(item._aacAssets || {}).forEach(([word, image]) => { aacAssets[normalizePackKey(word)] = image; });
              });
+             processed.forEach(item => {
+                 const key = normalizePackKey(item.targetWord || item.word || item.term);
+                 if (key && item.image && !decodingAssets[key]) decodingAssets[key] = item.image;
+                 delete item._decodingAssets; delete item._aacAssets;
+             });
+             const decodingWords = [...new Set(processed.flatMap((item) => [
+                 item.targetWord || item.word || item.term,
+                 ...(item.activityItems?.decoding?.choices || []),
+                 ...(item.activityItems?.sentence_match?.sequence || []),
+                 ...(item.activityItems?.sentence_match?.extras || []),
+             ]).map(normalizePackKey).filter(Boolean))];
              if (typeof callImagen === 'function') {
                  // Picture the Sentence tiles ride the same manifest — its
                  // sequence/extras are pack words, so most already have
                  // images; this backfills any that do not.
-                 const decodingWords = [...new Set(processed.flatMap((item) => [
-                     ...(item.activityItems?.decoding?.choices || []),
-                     ...(item.activityItems?.sentence_match?.sequence || []),
-                     ...(item.activityItems?.sentence_match?.extras || []),
-                 ]))];
                  for (const word of decodingWords) {
                      if (!isGenerationActive()) return;
                      if (decodingAssets[word]) continue;
@@ -4872,7 +4911,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // AAC overlay imagery (opt-in): pre-generate a picture for every
              // word that can appear as an answer choice so the AAC symbol
              // overlay works on student devices, where Imagen is unavailable.
-             if (includeAacImages && typeof callImagen === 'function') {
+             {
                  // Isolation shows Jolly-Phonics KEY-WORD pictures for each
                  // sound option — same table the player module uses.
                  const AAC_PHONEME_KEYWORDS = {
@@ -4896,8 +4935,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                          ...((boards.isolation?.options || []).map((sound) => AAC_PHONEME_KEYWORDS[String(sound || '').replace(/\//g, '').toLowerCase()])),
                      ];
                  }).map((value) => normalizePackKey(value)).filter(Boolean))];
-                 setPrewarmTotal((prev) => prev + aacWords.length);
-                 for (const word of aacWords) {
+                 if (includeAacImages && typeof callImagen === 'function') {
+                  setPrewarmTotal((prev) => prev + aacWords.length);
+                  for (const word of aacWords) {
                      if (!isGenerationActive()) return;
                      try {
                          if (aacAssets[word] || decodingAssets[word]) continue;
@@ -4911,13 +4951,19 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      } finally {
                          if (isGenerationActive()) setPrewarmCount((prev) => prev + 1);
                      }
+                  }
                  }
+                 // Keep only supports used by this subset, including old AAC
+                 // pictures when no image provider is available to regenerate.
+                 const aacKeys = new Set(aacWords), decodingKeys = new Set([...decodingWords, ...aacWords]);
+                 Object.keys(aacAssets).forEach(key => { if (!aacKeys.has(key)) delete aacAssets[key]; });
+                 Object.keys(decodingAssets).forEach(key => { if (!decodingKeys.has(key)) delete decodingAssets[key]; });
              }
 
              // Convert teacher-generated blob URLs into portable JSON audio
              // assets. The student player reconstructs data URLs from this map
              // and never calls TTS.
-             const packedTtsAssets = WS_CORE.packAudioAssets(processed);
+             const packedTtsAssets = WS_CORE.packAudioAssets(preloadedWords);
              // Persist the exact clip contract alongside the pack. Readiness
              // used to count only target words, which could report "ready"
              // while a choice, sentence, story, or spoken prompt was absent.
@@ -4929,6 +4975,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  const approved = reviewedCountAudio[syllableCountReviewKey(word)];
                  if (approved) packedTtsAssets[WS_CORE.packAudioKey(word)] = approved;
                  delete item._ttsAssets;
+                 delete item._ttsRequiredKeys;
+                 delete item._aacDefaultOn;
              });
              // ── Bank-first packing (2026-08-23) ──
              // The recorded word bank (word_audio_kokoro_bank.json, Kokoro
@@ -4995,6 +5043,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      ...(boards.sound_sort?.distractors || []),
                      ...(boards.word_families?.options || []),
                      ...(boards.word_families?.distractors || []),
+                     ...(boards.decoding?.choices || []),
                      ...(boards.read_sentence?.options || []),
                      ...(boards.read_passage?.options || []),
                  ].forEach((value) => value && tasks.add(String(value)));
@@ -5113,6 +5162,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
                  item._ttsFailed = !item.ttsReady && !teacherSpoken;
              }
+             // Drop media that belongs only to deselected words/activities,
+             // after collecting every dependency of the rebuilt boards.
+             Object.keys(packedTtsAssets).forEach(key => { if (!requiredTtsKeys.has(key)) delete packedTtsAssets[key]; });
              finalizeSyllableCountAudio(processed, packedTtsAssets, generationVoiceRef.current || '');
              if (processed[0]) {
                  processed[0]._studentPackVersion = 2;

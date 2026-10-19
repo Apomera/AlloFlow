@@ -93,15 +93,14 @@ The Hub has a **safety layer** that watches for language suggesting a student ma
 - The current US-oriented resource panels include **988** (Suicide & Crisis Lifeline, call or text) and **741741** (Crisis Text Line, text HOME); verify local relevance before classroom use.
 
 **What you, the teacher, can and cannot do:**
-- The teacher safety summary is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.
-- **In a live web session** (students joined with your session code, not the Canvas build): your dashboard shows a **count-based safety alert** per student — a flag total and a "critical" indicator, **never the student's words**. Treat a critical indicator as a prompt to check in personally.
-- **In solo mode or the Canvas build**: nothing reaches you, administrators, or the vendor — no alert, no list of which students saw the modal. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
+- There is no teacher safety summary, and a flag is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.
+- **In every mode, including a live web session**: nothing reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. (The live-session sync once meant to carry a flag count is not delivered.) The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
 - For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. Treat those excerpts as sensitive data on a shared device. Closing the tab does not clear browser storage; review the current Data & privacy controls and your deployment retention procedures.
-- The in-app consent screen tells students the same story for their mode — in solo/Canvas it explicitly says **no adult is automatically notified** and urges them to tell a trusted adult directly.
+- The in-app consent screen tells students the same story in every mode: the app **cannot notify an adult on its own**, and they should tell a trusted adult directly.
 
 **What you should do:**
 - If a student tells you the modal appeared, treat that as a disclosure and follow your building's standard crisis-response protocol — typically: stay with the student, contact the counselor or designated mental health staff, do not leave them alone, document per your district's reporting requirements.
-- Do **not** rely on the Hub to surface at-risk students for you. Even the live-session alert is a blunt count that depends on the AI being reachable; in solo/Canvas there is no alert at all. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.
+- Do **not** rely on the Hub to surface at-risk students for you. It sends you no alert in any mode. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.
 - Before launching the Hub with a class, confirm you know who to call when a student is in crisis and how fast they can respond.
 
 ---

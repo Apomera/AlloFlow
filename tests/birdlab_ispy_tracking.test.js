@@ -417,10 +417,9 @@ describe('BirdLab I-Spy binocular tracking', () => {
   it('defines habitat light gradients and layers condition light before clouds and terrain', () => {
     birdLabRenderSource();
     const rawSource = fs.readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
-    expect(rawSource).toContain("id: prefix + '-light'");
-    expect(rawSource).toContain("id: prefix + '-dawn-light'");
-    expect(rawSource).toContain('function renderHabitatClouds');
-    expect(rawSource).toContain('clouds: renderHabitatClouds(h, habitatId)');
+    expect(rawSource.includes("id: prefix + '-light'"), 'habitat light gradient').toBe(true);
+    expect(rawSource.includes("id: prefix + '-dawn-light'"), 'dawn light gradient').toBe(true);
+    expect(rawSource.includes('function renderHabitatClouds'), 'cloud renderer').toBe(true);
 
     const dawnHtml = renderTool('birdLab', {
       birdLab: { view: 'ispy', activeHabitat: 'forest', blFieldCondition: 'dawn' },
@@ -429,6 +428,11 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(dawnHtml).toContain('id="blScene-forest-dawn-light"');
     expect(dawnHtml).toContain('data-birdlab-condition-sky="dawn"');
     expect(dawnHtml).toContain('data-birdlab-cloud-layer="foreground-of-sky"');
+    // Paint order: condition light, then clouds, then the first illustrated terrain layer.
+    const skyAt = dawnHtml.indexOf('data-birdlab-condition-sky="dawn"');
+    const cloudAt = dawnHtml.indexOf('data-birdlab-cloud-layer="foreground-of-sky"');
+    expect(cloudAt).toBeGreaterThan(skyAt);
+    expect(dawnHtml.indexOf('class="birdlab-illustrated-habitat"', cloudAt)).toBeGreaterThan(cloudAt);
   });
 
   it('ships a hovering kingfisher, a grouped eider raft, and crisp far actors', () => {

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Antaŭaj kvizprovoj",
+  "stem.flightsim.quiz_history_scope": "Komenci novan provon konservas ĝis kvar antaŭajn provojn kun registritaj unuaj respondoj. Revizii ilin ne ŝanĝas vian nunan kvizon.",
+  "stem.flightsim.quiz_history_empty": "Ankoraŭ ne estas konservitaj antaŭaj kvizprovoj.",
+  "stem.flightsim.quiz_history_attempt": "Konservita je {date} · {score}/{answered} unuaj respondoj ĝustaj",
+  "stem.flightsim.quiz_history_progress": "{answered} el {total} demandoj registritaj · {unanswered} neresponditaj",
+  "stem.flightsim.quiz_history_question": "Demando {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Ĝusta respondo: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} konservitaj demandoj ne plu kongruas kun ĉi tiu kvizo. Poentaroj uzas nur kongruajn demandoregistrojn."
+}

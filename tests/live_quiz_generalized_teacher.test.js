@@ -267,11 +267,12 @@ describe('teacher and dashboard integration guards', () => {
 
   it('renders unscored poll metadata without a false 0%-correct signal', () => {
     const view = readFileSync(resolve(root, 'view_quiz_source.jsx'), 'utf8');
-    expect(view).toContain("bar.unscored ? 'Unscored' : bar.percentCorrect + '%'");
+    expect(view).toContain("bar.unscored || bar.scorePercent == null ? 'Unscored'");
     expect(view).toContain("card.unscored ? 'Unscored poll'");
     expect(view).toContain("item.unscored ? 'Unscored'");
-    expect(view).toContain('!cell.unscored && p.activeSessionCode');
-    expect(view).toContain('b.total > 0 && !b.unscored');
+    expect(view).toContain('var versionReview = cell && (cell.versionMismatch || cell.versionUnverified);');
+    expect(view).toContain('!cell.unscored && !versionReview && p.activeSessionCode');
+    expect(view).toContain('b.totalPossible > 0 && !b.unscored');
   });
 
   it('keeps generated and deployed copies synchronized', () => {

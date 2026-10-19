@@ -645,22 +645,35 @@
     branch([-0.44, 3.115, -0.025], [0.58, 3.14, 0.015], 0.083, true);
     branch([-1.18, 2.30, -0.35], [-1.94, 2.88, -0.73], 0.078, true);
     branch([-1.94, 2.88, -0.73], [-2.37, 3.04, -0.69], 0.036, true);
-    branch([-1.03, 2.89, -0.20], [-1.11, 3.91, -0.48], 0.052, true);
-    branch([-1.11, 3.91, -0.48], [-1.01, 4.09, -0.51], 0.032, true);
-    branch([-1.01, 4.09, -0.51], [-0.95, 4.18, -0.52], 0.021, true);
-    branch([-0.95, 4.18, -0.52], [-0.935, 4.235, -0.535], 0.0085, true);
+    branch([-1.03, 2.89, -0.20], [-1.11, 3.91, -0.48], 0.105, true);
+    branch([-1.11, 3.91, -0.48], [-1.01, 4.09, -0.51], 0.069, true);
+    branch([-1.01, 4.09, -0.51], [-0.95, 4.18, -0.52], 0.045, true);
+    branch([-0.95, 4.18, -0.52], [-0.935, 4.235, -0.535], 0.026, true);
     branch([-1.075, 3.98, -0.495], [-1.20, 4.07, -0.56], 0.010, true);
-    branch([-1.45, 0.18, -0.62], [-2.03, 0.025, -0.91], 0.11, true);
-    branch([-1.42, 0.18, -0.59], [-1.13, 0.015, -1.18], 0.10, true);
+    // Buttress roots dive into the soil close to the trunk; long ones lying
+    // on the surface read as planks crossing the clearing.
+    branch([-1.45, 0.20, -0.62], [-1.86, -0.05, -0.83], 0.11, true);
+    branch([-1.42, 0.20, -0.59], [-1.24, -0.05, -0.99], 0.10, true);
+    branch([-1.47, 0.17, -0.60], [-1.10, -0.04, -0.45], 0.075, true);
     // Fallen weathered branches make the foreground legible at close range.
     branch([-5.3, groundHeight(-5.3, -3) + 0.2, -3], [-2.8, groundHeight(-2.8, -3.8) + 0.09, -3.8], 0.19, true);
     branch([-4.6, groundHeight(-4.6, -3.2) + 0.21, -3.2], [-4.8, groundHeight(-4.8, -4.4) + 0.08, -4.4], 0.072, true);
     // Additional lookout limbs give free-ranging birds real landing surfaces.
-    [[-5.8,-4.4,2.7],[6.2,-5.8,3.0]].forEach(function(site) {
-      var x=site[0], z=site[1], y=groundHeight(x,z), top=y+site[2];
+    [[-5.8,-4.4,2.7,1],[6.2,-5.8,3.0,-1]].forEach(function(site) {
+      var x=site[0], z=site[1], y=groundHeight(x,z), top=y+site[2], s=site[3];
       branch([x-.5,y-.1,z],[x-.35,top-.1,z],.18,true);
       branch([x-.35,top-.1,z],[x+.48,top-.1,z],.10,true);
       observationPerches.push(new THREE.Vector3(x+.1,top-.0184,z));
+      // A snag, not a signpost: the trunk continues to a broken crown, the
+      // limb tapers out instead of ending in a sawn face, and a stub and two
+      // root flares break the straight post. The landing span is unchanged.
+      branch([x-.35,top-.1,z],[x-.29,top+.62,z+.06*s],.12,true);
+      branch([x-.29,top+.62,z+.06*s],[x-.255,top+.88,z+.04*s],.079,true);
+      branch([x+.48,top-.1,z],[x+.80,top-.03,z-.05*s],.066,true);
+      branch([x+.80,top-.03,z-.05*s],[x+.98,top+.07,z-.07*s],.036,true);
+      branch([x-.40,top-.72,z],[x-.72,top-.44,z+.24*s],.05,true);
+      branch([x-.49,y+.14,z],[x-.93,y-.03,z+.22*s],.088,true);
+      branch([x-.47,y+.14,z],[x-.22,y-.04,z-.36*s],.078,true);
     });
     branches.forEach(function(entry) {
       var floor=groundHeight((entry.a[0]+entry.b[0])*.5,(entry.a[2]+entry.b[2])*.5);

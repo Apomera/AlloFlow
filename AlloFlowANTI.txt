@@ -17,7 +17,7 @@ import React, { useState, useEffect, useRef, useCallback, useContext, useMemo, u
 import ReactDOM from 'react-dom';
 import { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ArrowUpRight, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Move, ExternalLink, DoorOpen, Link } from 'lucide-react';
 import { CheckCircle, CheckCircle2, CheckSquare, Check, AlertCircle, AlertTriangle, XCircle, Info, Lightbulb, ShieldCheck, Loader2, Ban, Octagon, X } from 'lucide-react';
-import { Save, SaveAll, Download, Upload, Copy, Send, Search, Plus, Trash2, Pencil, Edit, Edit2, PenTool, Bold, Italic, Highlighter, RefreshCw, Filter, Lock, Unlock, Wrench, Wand2, Scissors, GripVertical, GripHorizontal } from 'lucide-react';
+import { Save, SaveAll, Download, Upload, Copy, Send, Search, Plus, Trash2, Pencil, Edit, Edit2, PenTool, Bold, Italic, Highlighter, RefreshCw, Filter, Lock, Unlock, Wrench, Wand2, Scissors, GripVertical, GripHorizontal, Undo2 } from 'lucide-react';
 import { Volume2, VolumeX, StopCircle, Mic, MicOff, Play, PlayCircle, Pause, Music, Headphones, Shuffle, Ear, MonitorPlay } from 'lucide-react';
 import { Activity, Inbox, BookOpen, Globe, Layers, Sparkles, FileText, Layout, HelpCircle, CircleHelp,
   Image as ImageIcon, Quote, FileDown, Palette, Printer, History, Heart, Code, Clock, Settings2,
@@ -180,7 +180,7 @@ function _alloLanConfig() {
       // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
       // demo cloud) on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
-        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '' };
+        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '', uid: typeof parsed.lanUid === 'string' ? parsed.lanUid : '' };
       }
     }
   } catch (_) { cfg = null; }
@@ -189,10 +189,12 @@ function _alloLanConfig() {
   return cfg;
 }
 function _alloLanBridgeUser() {
-  if (!_alloLanConfig()) return null;
+  var cfg = _alloLanConfig();
+  if (!cfg) return null;
   var storageKey = 'alloflow_lan_participant_uid';
-  var uid = '';
-  try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {}
+  var uid = /^lan-[a-z0-9_-]{6,80}$/i.test(cfg.uid || '') ? cfg.uid : '';
+  if (uid) { try { window.sessionStorage.setItem(storageKey, uid); } catch (_) {} }
+  else { try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {} }
   if (!/^lan-[a-z0-9_-]{6,80}$/i.test(uid)) {
     var isStudent = false;
     try { isStudent = new URLSearchParams(window.location.search || '').has('allo_lan_join'); } catch (_) {}
@@ -723,7 +725,8 @@ function _alloMbColSnap(st, watch, changes) {
 async function _alloLessonBoardConditionalUpdate(ref, plan) {
   const bridge = _alloMbBridgeState;
   if (!bridge || !bridge.isTeacher || ref?.__alloMbRef !== 'session' || ref.code !== bridge.code) throw new Error('This board connection has changed.');
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt) await new Promise(resolve => setTimeout(resolve, 120 * 2 ** Math.min(attempt, 4) + Math.random() * 160));
     const snapshot = await _alloMbDocCall({ a: 'dget', ps: [{ p: ref.p }] });
     if (_alloMbBridgeState !== bridge) throw new Error('This board connection has changed.');
     const entry = (snapshot.docs || []).find(item => item.p === ref.p && !item.missing);
@@ -741,7 +744,8 @@ async function _alloLessonBoardConditionalUpdate(ref, plan) {
       }
       return;
     } catch (error) {
-      if (!String(error.code || '').includes('conflict') || attempt === 2) throw error;
+      if (!String(error.code || '').includes('conflict')) throw error;
+      if (attempt === 5) { const busy = new Error('The live board is busy. This change was not saved yet; try again in a moment.'); busy.code = error.code; throw busy; }
     }
   }
 }
@@ -1439,8 +1443,8 @@ function _buildAlloPackShareUrl(encodedPack, aiPolicy = 'off') {
 // Canvas and online sessions; the compact gzip fallback preserves first-use
 // offline/Desktop copying without keeping 2,590 lines of Apps Script inline.
 const ALLO_MB_SCRIPT_VERSION = 24;
-const ALLO_MB_SCRIPT_SHA256 = 'c8e001ff0a8321262a1a2adf12a7b787db84e8f6d00576919b0d792c3db1c41f';
-const ALLO_MB_SCRIPT_BYTES = 145187;
+const ALLO_MB_SCRIPT_SHA256 = '92cdf9f59f337c4516e2f6c38ee259851e63cc1e8703fb14371fc5550cacc0f3';
+const ALLO_MB_SCRIPT_BYTES = 147425;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -3067,34 +3071,34 @@ const _ALLO_STEM_DEEP_LINK_MAP = {
   'calculus': 'calculus', 'cell': 'cell', 'cellatlaslab': 'cellAtlasLab', 'cellularlab': 'cellularLab',
   'cephalopodlab': 'cephalopodLab', 'chembalance': 'chemBalance', 'circuit': 'circuit', 'circuitshelf': 'circuitShelf',
   'citylab': 'cityLab', 'climateexplorer': 'climateExplorer', 'coasterlab': 'coasterLab', 'codingplayground': 'codingPlayground',
-  'companionplanting': 'companionPlanting', 'consciousnesslab': 'consciousnessLab', 'coordinate': 'coordinate', 'cyberdefense': 'cyberDefense',
-  'datalab': 'dataLab', 'dataplot': 'dataPlot', 'datastudio': 'dataStudio', 'decomposer': 'decomposer',
-  'dinolab': 'dinoLab', 'dissection': 'dissection', 'dnalab': 'dnaLab', 'echotrainer': 'echoTrainer',
-  'echolocation': 'echolocation', 'economicslab': 'economicsLab', 'ecosystem': 'ecosystem', 'epidemicsim': 'epidemicSim',
-  'evolab': 'evoLab', 'fieldjourneys': 'fieldJourneys', 'fireecology': 'fireEcology', 'firstresponse': 'firstResponse',
-  'fisherlab': 'fisherLab', 'flightsim': 'flightSim', 'forge': 'forge', 'fractionviz': 'fractionViz',
-  'freeforms': 'freeForms', 'funcgrapher': 'funcGrapher', 'galaxy': 'galaxy', 'gamestudio': 'gameStudio',
-  'geoquiz': 'geoQuiz', 'geosandbox': 'geoSandbox', 'geologyexplorer': 'geologyExplorer', 'geometryprover': 'geometryProver',
-  'geometryworld': 'geometryWorld', 'gisstudio': 'gisStudio', 'graphcalc': 'graphCalc', 'heatlab': 'heatLab',
-  'inequality': 'inequality', 'kitchenlab': 'kitchenLab', 'lawnavigator': 'lawNavigator', 'learninglab': 'learningLab',
-  'lifeskills': 'lifeSkills', 'llmliteracy': 'llmLiteracy', 'logiclab': 'logicLab', 'lumen': 'lumen',
-  'machinelab': 'machineLab', 'magnetism': 'magnetism', 'microbiology': 'microbiology', 'migration': 'migration',
-  'molecule': 'molecule', 'moleculeshelf': 'moleculeShelf', 'moneymath': 'moneyMath', 'moonmission': 'moonMission',
-  'multtable': 'multtable', 'musicsynth': 'musicSynth', 'nuclearlab': 'nuclearLab', 'numberline': 'numberline',
-  'nutritionlab': 'nutritionLab', 'openbim': 'openBim', 'opticslab': 'opticsLab', 'oratory': 'oratory',
-  'organismid': 'organismId', 'papertrail': 'paperTrail', 'parentinglab': 'parentingLab', 'particlelab3d': 'particleLab3d',
-  'perceptionlab': 'perceptionLab', 'petslab': 'petsLab', 'physics': 'physics', 'platetectonics': 'plateTectonics',
-  'playlab': 'playlab', 'printlab': 'printLab', 'printingpress': 'printingPress', 'probability': 'probability',
-  'protractor': 'protractor', 'punnett': 'punnett', 'raptorhunt': 'raptorHunt', 'ratiolab': 'ratioLab',
-  'renewableslab': 'renewablesLab', 'roadready': 'roadReady', 'rockcycle': 'rockCycle', 'rocks': 'rocks',
-  'scaleexplorer': 'scaleExplorer', 'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor', 'simshelf': 'simShelf',
-  'singing': 'singing', 'skatelab': 'skatelab', 'solarsystem': 'solarSystem', 'sourcebook': 'sourcebook',
-  'spacecolony': 'spaceColony', 'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation', 'statslab': 'statsLab',
-  'stewardshiphub': 'stewardshipHub', 'swimlab': 'swimLab', 'throwlab': 'throwlab', 'timeschedule': 'timeSchedule',
-  'timelinestudio': 'timelineStudio', 'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing', 'treelab': 'treeLab',
-  'typingpractice': 'typingPractice', 'unitconvert': 'unitConvert', 'universe': 'universe', 'volume': 'volume',
-  'watercycle': 'waterCycle', 'wave': 'wave', 'weathersystems': 'weatherSystems', 'weldlab': 'weldLab',
-  'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
+  'companionplanting': 'companionPlanting', 'consciousnesslab': 'consciousnessLab', 'coordinate': 'coordinate', 'coralreef': 'coralReef',
+  'cyberdefense': 'cyberDefense', 'datalab': 'dataLab', 'dataplot': 'dataPlot', 'datastudio': 'dataStudio',
+  'decomposer': 'decomposer', 'dinolab': 'dinoLab', 'dissection': 'dissection', 'dnalab': 'dnaLab',
+  'echotrainer': 'echoTrainer', 'echolocation': 'echolocation', 'economicslab': 'economicsLab', 'ecosystem': 'ecosystem',
+  'epidemicsim': 'epidemicSim', 'evolab': 'evoLab', 'fieldjourneys': 'fieldJourneys', 'fireecology': 'fireEcology',
+  'firstresponse': 'firstResponse', 'fisherlab': 'fisherLab', 'flightsim': 'flightSim', 'forge': 'forge',
+  'fractionviz': 'fractionViz', 'freeforms': 'freeForms', 'funcgrapher': 'funcGrapher', 'galaxy': 'galaxy',
+  'gamestudio': 'gameStudio', 'geoquiz': 'geoQuiz', 'geosandbox': 'geoSandbox', 'geologyexplorer': 'geologyExplorer',
+  'geometryprover': 'geometryProver', 'geometryworld': 'geometryWorld', 'gisstudio': 'gisStudio', 'graphcalc': 'graphCalc',
+  'heatlab': 'heatLab', 'inequality': 'inequality', 'kitchenlab': 'kitchenLab', 'lawnavigator': 'lawNavigator',
+  'learninglab': 'learningLab', 'lifeskills': 'lifeSkills', 'llmliteracy': 'llmLiteracy', 'logiclab': 'logicLab',
+  'lumen': 'lumen', 'machinelab': 'machineLab', 'magnetism': 'magnetism', 'microbiology': 'microbiology',
+  'migration': 'migration', 'molecule': 'molecule', 'moleculeshelf': 'moleculeShelf', 'moneymath': 'moneyMath',
+  'moonmission': 'moonMission', 'multtable': 'multtable', 'musicsynth': 'musicSynth', 'nuclearlab': 'nuclearLab',
+  'numberline': 'numberline', 'nutritionlab': 'nutritionLab', 'openbim': 'openBim', 'opticslab': 'opticsLab',
+  'oratory': 'oratory', 'organismid': 'organismId', 'papertrail': 'paperTrail', 'parentinglab': 'parentingLab',
+  'particlelab3d': 'particleLab3d', 'perceptionlab': 'perceptionLab', 'petslab': 'petsLab', 'physics': 'physics',
+  'platetectonics': 'plateTectonics', 'playlab': 'playlab', 'printlab': 'printLab', 'printingpress': 'printingPress',
+  'probability': 'probability', 'protractor': 'protractor', 'punnett': 'punnett', 'raptorhunt': 'raptorHunt',
+  'ratiolab': 'ratioLab', 'renewableslab': 'renewablesLab', 'roadready': 'roadReady', 'rockcycle': 'rockCycle',
+  'rocks': 'rocks', 'scaleexplorer': 'scaleExplorer', 'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor',
+  'simshelf': 'simShelf', 'singing': 'singing', 'skatelab': 'skatelab', 'solarsystem': 'solarSystem',
+  'sourcebook': 'sourcebook', 'spacecolony': 'spaceColony', 'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation',
+  'statslab': 'statsLab', 'stewardshiphub': 'stewardshipHub', 'swimlab': 'swimLab', 'throwlab': 'throwlab',
+  'timeschedule': 'timeSchedule', 'timelinestudio': 'timelineStudio', 'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing',
+  'treelab': 'treeLab', 'typingpractice': 'typingPractice', 'unitconvert': 'unitConvert', 'universe': 'universe',
+  'volume': 'volume', 'watercycle': 'waterCycle', 'wave': 'wave', 'weathersystems': 'weatherSystems',
+  'weldlab': 'weldLab', 'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
 };
 // __ALLO_STEM_DEEP_LINKS_END__
 // Cloudflare shell deep links (2026-08-15, generalized 2026-08-16): the static
@@ -3928,8 +3932,30 @@ const safeDownloadBlob = (blob, filename) => {
         try { URL.revokeObjectURL(url); } catch(_) { /* noop */ }
     }
 };
+// __ALLO_SANITIZE_HTML_BEGIN__
+// The regex pass alone missed <svg/onload=...>, " javascript:" with a leading space and
+// entity-encoded schemes. With a DOM, parse inertly and strip by element and attribute;
+// the regex remains the fallback where no DOMParser exists.
+const _ALLO_UNSAFE_TAGS = 'script,iframe,frame,frameset,object,embed,form,link,meta,base,noscript';
+const _ALLO_URL_ATTRS = /^(?:href|xlink:href|src|action|formaction|data|poster|background|cite|lowsrc|dynsrc)$/;
+const _alloUnsafeUrl = (name, value) => {
+    const v = String(value || '').replace(/[\x00-\x20\x7f-\xa0]+/g, '').toLowerCase();
+    return /^(?:javascript|vbscript):/.test(v) || (name !== 'src' && name !== 'poster' && v.startsWith('data:'));
+};
+const _alloSanitizeHtmlDom = (html) => {
+    const doc = new DOMParser().parseFromString('<!DOCTYPE html><body>' + html, 'text/html');
+    doc.body.querySelectorAll(_ALLO_UNSAFE_TAGS).forEach(node => node.remove());
+    doc.body.querySelectorAll('*').forEach(el => {
+        Array.from(el.attributes).forEach(attr => {
+            const name = attr.name.toLowerCase();
+            if (name.startsWith('on') || name === 'srcdoc' || (_ALLO_URL_ATTRS.test(name) && _alloUnsafeUrl(name, attr.value))) el.removeAttribute(attr.name);
+        });
+    });
+    return doc.body.innerHTML;
+};
 const sanitizeHtml = (html) => {
     if (!html || typeof html !== 'string') return '';
+    if (typeof DOMParser !== 'undefined') { try { return _alloSanitizeHtmlDom(html); } catch (_) { /* regex fallback below */ } }
     let clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
     clean = clean.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
     clean = clean.replace(/\s+on\w+\s*=\s*\S+/gi, '');
@@ -3938,6 +3964,7 @@ const sanitizeHtml = (html) => {
     clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
     return clean;
 };
+// __ALLO_SANITIZE_HTML_END__
 if (typeof window !== 'undefined') { window.sanitizeHtml = sanitizeHtml; }
 
 // Presentation-only adapter for the lazy Directions result view. Raw history,
@@ -5640,6 +5667,48 @@ try {
     const cachedHelpStrings = localStorage.getItem("alloflow_help_strings_cache");
     if (cachedHelpStrings) { HELP_STRINGS = JSON.parse(cachedHelpStrings); }
 } catch (e) { console.warn("HELP_STRINGS cache read failed:", e.message); }
+// __ALLO_UI_STRINGS_IDB_BEGIN__
+// ui_strings.js (~11 MB) is over the ~5 MB localStorage quota, so that cache never saved
+// and every visit waited on the network with labels blank. Its cache lives in IndexedDB.
+const _alloUiStringsIdb = (mode, op) => new Promise(resolve => {
+    let done = false;
+    const finish = value => { if (!done) { done = true; resolve(value); } };
+    setTimeout(() => finish(null), 4000);
+    try {
+        const req = indexedDB.open('alloflow_ui_strings', 1);
+        req.onupgradeneeded = () => { try { req.result.createObjectStore('kv'); } catch (_) {} };
+        req.onerror = () => finish(null);
+        req.onsuccess = () => {
+            const db = req.result;
+            const close = () => { try { db.close(); } catch (_) {} };
+            try {
+                const tx = db.transaction('kv', mode);
+                const request = op(tx.objectStore('kv'));
+                tx.oncomplete = () => { close(); finish(mode === 'readonly' ? request.result : true); };
+                tx.onerror = tx.onabort = () => { close(); finish(null); };
+            } catch (_) { close(); finish(null); }
+        };
+    } catch (_) { finish(null); }
+});
+let _alloUiStringsApplied = false;
+let _alloUiStringsText = null;
+let _alloUiStringsRevision = 0;
+const _alloApplyUiStrings = (parsed, text) => {
+    UI_STRINGS = parsed;
+    _alloUiStringsApplied = true;
+    _alloUiStringsText = text;
+    _alloUiStringsRevision++;
+    try { window.dispatchEvent(new Event('alloflow:ui-strings-updated')); } catch (_) {}
+};
+const _alloUiStringsCacheRead = (typeof indexedDB === 'undefined' ? Promise.resolve(null)
+    : _alloUiStringsIdb('readonly', store => store.get('ui_strings'))).then(text => {
+    if (_alloUiStringsApplied || typeof text !== 'string') return;
+    try {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) _alloApplyUiStrings(parsed, text);
+    } catch (e) { console.warn("UI_STRINGS IndexedDB cache unreadable:", e.message); }
+});
+// __ALLO_UI_STRINGS_IDB_END__
 async function _fetchFirstOkStringsText(urls) {
     for (const url of urls) {
         try {
@@ -5661,21 +5730,35 @@ const _refreshRemoteStrings = async () => {
             'https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js'
         ]);
         if (text !== null) {
-            try {
-                UI_STRINGS = JSON.parse(text);
-            } catch (parseErr) {
-                console.warn("UI_STRINGS: JSON.parse failed, trying regex cleanup...", parseErr.message);
-                let cleaned = text.replace(/^[^{]*/, "").replace(/[^}]*$/, "");
-                cleaned = cleaned.replace(/`([^`]*)`/g, (_, inner) => JSON.stringify(inner.replace(/\r?\n/g, "\\n")));
-                cleaned = cleaned.replace(/'([^']*)'/g, '"$1"');
-                cleaned = cleaned.replace(/(?<=[\{,\n\r])\s*([a-zA-Z_]\w*)\s*:/g, ' "$1":');
-                cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
-                try { UI_STRINGS = JSON.parse(cleaned); console.log("[AlloFlow] UI_STRINGS parsed via enhanced cleanup"); } catch (e2) { console.error("UI_STRINGS: All parse methods failed", e2.message, "First 300 chars:", cleaned.substring(0, 300)); }
+            await _alloUiStringsCacheRead;
+            if (text === _alloUiStringsText) {
+                console.log("[AlloFlow] UI_STRINGS unchanged since the cached copy");
+            } else {
+                let parsed = null;
+                let storedText = text;
+                try {
+                    parsed = JSON.parse(text);
+                } catch (parseErr) {
+                    console.warn("UI_STRINGS: JSON.parse failed, trying regex cleanup...", parseErr.message);
+                    let cleaned = text.replace(/^[^{]*/, "").replace(/[^}]*$/, "");
+                    cleaned = cleaned.replace(/`([^`]*)`/g, (_, inner) => JSON.stringify(inner.replace(/\r?\n/g, "\\n")));
+                    cleaned = cleaned.replace(/'([^']*)'/g, '"$1"');
+                    cleaned = cleaned.replace(/(?<=[\{,\n\r])\s*([a-zA-Z_]\w*)\s*:/g, ' "$1":');
+                    cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+                    try { parsed = JSON.parse(cleaned); storedText = cleaned; console.log("[AlloFlow] UI_STRINGS parsed via enhanced cleanup"); } catch (e2) { console.error("UI_STRINGS: All parse methods failed", e2.message, "First 300 chars:", cleaned.substring(0, 300)); }
+                }
+                if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                    _alloApplyUiStrings(parsed, storedText);
+                    // A stale, smaller copy left in localStorage only eats its quota now.
+                    if (await _alloUiStringsIdb('readwrite', store => store.put(storedText, 'ui_strings'))) {
+                        try { localStorage.removeItem("alloflow_ui_strings_cache"); } catch (_) { }
+                    } else {
+                        try { localStorage.setItem("alloflow_ui_strings_cache", storedText); } catch (_) { }
+                    }
+                    console.log("[AlloFlow] UI_STRINGS loaded:", Object.keys(parsed).length, "top-level keys");
+                }
             }
-            if (UI_STRINGS && Object.keys(UI_STRINGS).length > 0) {
-                try { localStorage.setItem("alloflow_ui_strings_cache", JSON.stringify(UI_STRINGS)); } catch { }
-                console.log("[AlloFlow] UI_STRINGS loaded:", Object.keys(UI_STRINGS).length, "top-level keys");
-            }
+            _alloUiStringsText = null;
         }
     } catch (e) {
         console.warn("UI_STRINGS fetch failed, using cache or defaults:", e.message);
@@ -5706,8 +5789,10 @@ const _refreshRemoteStrings = async () => {
     }
 };
 const _scheduleRemoteStringsRefresh = () => {
-    if (typeof requestIdleCallback === 'function') requestIdleCallback(_refreshRemoteStrings, { timeout: 10000 });
-    else setTimeout(_refreshRemoteStrings, 4000);
+    // With nothing cached the labels are blank, so do not wait up to 10 s for idle time.
+    const waitMs = Object.keys(UI_STRINGS || {}).length ? 10000 : 2000;
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(_refreshRemoteStrings, { timeout: waitMs });
+    else setTimeout(_refreshRemoteStrings, Math.min(4000, waitMs));
 };
 if (typeof document !== 'undefined' && document.readyState === 'complete') _scheduleRemoteStringsRefresh();
 else if (typeof window !== 'undefined') window.addEventListener('load', _scheduleRemoteStringsRefresh, { once: true });
@@ -5812,6 +5897,46 @@ function _translationAbortableDelay(ms, signal) {
     if (signal) signal.addEventListener('abort', aborted, { once: true });
   });
 }
+// __ALLO_PACK_REFRESH_BEGIN__
+// A cached pack applied forever (TRANSLATION_VERSION never changes), so fixes never reached
+// returning users. Once per release, re-check the CDN copy in the background and replace the
+// cache only when it differs. Languages with no CDN pack (AI-built) are left alone.
+const _alloLanguagePackUrls = slug => [
+  'https://alloflow-cdn.pages.dev/lang/' + slug + '.js',
+  'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/' + slug + '.js'
+];
+async function _alloRefreshCachedLanguagePack(o) {
+  const metaKey = o.storageKey + '_meta';
+  let meta = null;
+  try { meta = await o.read(metaKey); } catch (_) {}
+  if (meta && meta.release && meta.release === o.release()) return 'current';
+  await o.wait();
+  const release = o.release();
+  if (!release) return 'skipped';
+  if (meta && meta.release === release) return 'current';
+  const target = meta && meta.slug ? { slug: meta.slug, trusted: true } : await o.resolveSlug();
+  if (!target || !target.slug) return 'skipped';
+  const urls = _alloLanguagePackUrls(target.slug);
+  let missing = 0;
+  for (const url of urls) {
+    let resp;
+    try { resp = await o.fetchPack(url); } catch (e) { if (e && e.name === 'AbortError') throw e; continue; }
+    if (!resp || !resp.ok) { if (resp && resp.status === 404) missing++; continue; }
+    const pack = _alloParseUntrustedObject(await resp.text());
+    _translationThrowIfAborted(o.signal);
+    if (!pack || Object.keys(pack).length <= 10) continue;
+    const nextMeta = { source: 'cdn', slug: target.slug, release };
+    if (JSON.stringify(pack) === JSON.stringify(o.cachedPack)) { await o.write(metaKey, nextMeta); return 'unchanged'; }
+    o.apply(pack);
+    await o.write(o.storageKey, pack);
+    await o.write(metaKey, nextMeta);
+    return 'updated';
+  }
+  // Only a matcher-confirmed slug that 404s everywhere means "no CDN pack"; a network error retries next visit.
+  if (missing === urls.length && target.trusted) await o.write(metaKey, { source: 'none', slug: target.slug, release });
+  return 'missing';
+}
+// __ALLO_PACK_REFRESH_END__
 function _alloQueueSequencedWrite(owner, sequence, task) {
   const previous = owner && owner.chain ? owner.chain : Promise.resolve();
   const run = previous.catch(() => undefined).then(() => {
@@ -6188,6 +6313,15 @@ const useTranslation = (targetLanguage, apiKey) => {
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const [trigger, setTrigger] = useState(0);
+  // Strings can land after first paint. Re-render the provider so consumers read
+  // them; t keeps its identity so effects keyed on t do not re-run.
+  const [, setUiStringsRevision] = useState(_alloUiStringsRevision);
+  useEffect(() => {
+    const sync = () => setUiStringsRevision(_alloUiStringsRevision);
+    window.addEventListener('alloflow:ui-strings-updated', sync);
+    sync();
+    return () => window.removeEventListener('alloflow:ui-strings-updated', sync);
+  }, []);
   const translationRunRef = useRef({ generation: 0, identity: '', controller: null });
   const regenerateLanguage = useCallback(() => {
       const activeRun = translationRunRef.current;
@@ -6290,6 +6424,16 @@ const useTranslation = (targetLanguage, apiKey) => {
         if (ownsRun()) run.controller.abort();
       };
     }
+    // The CDN slug for this language; trusted only when the matcher answered.
+    const resolvePackSlug = async () => {
+      const raw = targetLanguage.toLowerCase().replace(/\s+/g, '_');
+      const matcher = window.AlloLangMatcher;
+      if (!matcher || typeof matcher.match !== 'function') return { slug: raw, trusted: false };
+      const matched = await matcher.match(targetLanguage);
+      _translationThrowIfAborted(signal);
+      return { slug: (matched && matched.slug) || raw, trusted: true };
+    };
+    const packRelease = () => String((window.__alloBuildStamp && window.__alloBuildStamp.hash) || '');
     const loadLanguage = async (forceRefresh = false) => {
       const storageKey = `allo_lang_${targetLanguage}_${TRANSLATION_VERSION}`;
       try {
@@ -6302,6 +6446,13 @@ const useTranslation = (targetLanguage, apiKey) => {
                         debugLog(`[useTranslation] Loaded ${targetLanguage} from local device.`);
                         setLanguagePack(sanitizeLanguagePack(cachedPack));
                         setIsTranslating(false);
+                        _alloRefreshCachedLanguagePack({
+                            storageKey, cachedPack, signal, release: packRelease, resolveSlug: resolvePackSlug,
+                            read: key => storageDB.get(key), write: setOwnedStorage,
+                            fetchPack: url => _translationFetchWithTimeout(url, {}, signal, 60000),
+                            apply: pack => setLanguagePack(sanitizeLanguagePack(pack)),
+                            wait: () => { try { window.__alloPromoteModule?.('LanguageMatcher'); } catch (_) {} return _translationAbortableDelay(8000, signal); },
+                        }).catch(e => { if (e?.name !== 'AbortError') warnLog('Language pack refresh skipped:', e?.message || e); });
                         return;
                     }
                 }
@@ -6356,7 +6507,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                     debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
                     setLanguagePack(sanitizeLanguagePack(pack));
                     setIsTranslating(false);
-                    try { await setOwnedStorage(storageKey, pack); } catch(e) { if (e?.name !== 'AbortError') warnLog('Cache save error:', e?.message || e); }
+                    try { await setOwnedStorage(storageKey, pack); await setOwnedStorage(storageKey + '_meta', { source: 'cdn', slug: langSlug, release: packRelease() }); } catch(e) { if (e?.name !== 'AbortError') warnLog('Cache save error:', e?.message || e); }
                     loaded = true;
                     break;
                 }
@@ -9222,7 +9373,7 @@ const mergeLiveQuizEvidenceResponse = (existing, activityId, uid, questionIndex,
     const safeQuestionIndex = Number(questionIndex);
     const itemType = response && typeof response === 'object' ? String(response.itemType || '') : '';
     if (!safeActivityId || !safeUid || !Number.isInteger(safeQuestionIndex) || safeQuestionIndex < 0 || safeQuestionIndex > 9999) return existing || {};
-    if (itemType === 'assessment-complete' || itemType === 'reflection') return existing || {};
+    if (itemType === 'assessment-complete' || itemType === 'assessment-start' || itemType === 'reflection') return existing || {};
     const source = existing && typeof existing === 'object' && !Array.isArray(existing) ? existing : {};
     const activity = source[safeActivityId] && typeof source[safeActivityId] === 'object' && !Array.isArray(source[safeActivityId]) ? source[safeActivityId] : {};
     const uidQuestions = activity[safeUid] && typeof activity[safeUid] === 'object' && !Array.isArray(activity[safeUid]) ? activity[safeUid] : {};
@@ -9293,9 +9444,14 @@ const generateSessionCode = () => {
   // 5 chars over the 31-symbol confusable-stripped alphabet ≈ 28.6M codes
   // (was 4 ≈ 923k) — raises the enumeration bar for drive-by join attempts
   // while staying easy to read aloud. See LIVE_SESSION_HARDENING_PROPOSAL §5.
+  // A code gates joining a class, so it comes from crypto, with no modulo bias.
+  const cryptoObj = typeof crypto !== 'undefined' && crypto.getRandomValues ? crypto : (typeof window !== 'undefined' ? window.crypto : null);
+  const limit = 256 - (256 % chars.length);
   let result = '';
-  for (let i = 0; i < 5; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  while (result.length < 5) {
+    if (!cryptoObj || !cryptoObj.getRandomValues) { result += chars.charAt(Math.floor(Math.random() * chars.length)); continue; }
+    const bytes = cryptoObj.getRandomValues(new Uint8Array(8));
+    for (let i = 0; i < bytes.length && result.length < 5; i++) if (bytes[i] < limit) result += chars.charAt(bytes[i] % chars.length);
   }
   return result;
 };
@@ -13215,14 +13371,59 @@ const AlloFlowContent = () => {
   // Completing an empty restore must reschedule edits skipped while unloaded.
   const [studentWorkLoadRevision, setStudentWorkLoadRevision] = useState(0);
   const studentWorkHydrationGenerationRef = useRef(0);
-  const studentWorkSaveQueue = useRef(Promise.resolve());
+  const studentWorkSessionRef = useRef(null);
+  const studentWorkLatestRef = useRef(studentResponses);
+  const studentWorkActorRef = useRef('');
+  const studentWorkEligibleRef = useRef(false);
+  const studentWorkResetRequestedRef = useRef(false);
+  const studentWorkSignalOwnerRef = useRef('learner-work-' + Math.random().toString(36).slice(2));
+  const [studentWorkConflict, setStudentWorkConflict] = useState(null);
+  studentWorkLatestRef.current = studentResponses;
+  studentWorkEligibleRef.current = lzLoaded && !isStorageDisabled
+      && !_alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
+  if (studentWorkSessionRef.current && studentWorkEligibleRef.current) studentWorkSessionRef.current.stage(studentResponses);
+  const ensureStudentWorkSession = () => {
+      if (studentWorkSessionRef.current) return studentWorkSessionRef.current;
+      const api = window.AlloModules?.UtilsPure;
+      if (typeof api?.createLearnerWorkSession !== 'function') throw new Error('Coordinated device storage is not ready yet.');
+      studentWorkSessionRef.current = api.createLearnerWorkSession({
+          storage: storageDB,
+          onChange: state => {
+              setStudentResponses(previous => {
+                  const merged = api.mergeLearnerWorkSnapshots(state.previous, previous, state.snapshot).snapshot;
+                  return JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged;
+              });
+              setStudentWorkStatus(state.status);
+              setStudentWorkConflict(state.status === 'conflict' ? { conflicts: state.conflicts, reason: state.reason } : null);
+          },
+          onSaved: () => {
+              const signal = { owner: studentWorkSignalOwnerRef.current, revision: Date.now() + '-' + Math.random() };
+              window.dispatchEvent(new CustomEvent('alloflow:learner-work-saved', { detail: signal }));
+              try { localStorage.setItem('allo_student_work_changed', JSON.stringify(signal)); } catch (_) {}
+          },
+      });
+      return studentWorkSessionRef.current;
+  };
+  const studentWorkOperationOwner = () => {
+      const generation = studentWorkHydrationGenerationRef.current, actor = studentWorkActorRef.current;
+      return () => isStudentWorkLoaded.current && studentWorkEligibleRef.current
+          && studentWorkHydrationGenerationRef.current === generation && studentWorkActorRef.current === actor;
+  };
   const retryStudentWorkSave = useCallback(() => setStudentWorkSaveAttempt(value => value + 1), []);
+  const resolveStudentWorkConflict = choice => {
+      const session = studentWorkSessionRef.current;
+      if (!session || !studentWorkEligibleRef.current) return;
+      setStudentWorkStatus('saving');
+      session.save(studentWorkOperationOwner(), choice).catch(error => warnLog('Student work conflict recovery failed', error));
+  };
   const isStudentWorkLoaded = useRef(false);
   useEffect(() => {
       const eligible = () => lzLoaded && !isStorageDisabled
           && !_alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
       if (!eligible()) {
           isStudentWorkLoaded.current = false;
+          studentWorkSessionRef.current = null;
+          setStudentWorkConflict(null);
           setStudentWorkStatus('idle');
           return;
       }
@@ -13230,25 +13431,31 @@ const AlloFlowContent = () => {
           setStudentWorkStatus(status => status === 'error' ? 'error' : 'idle');
           return;
       }
+      const known = studentWorkSessionRef.current?.state();
+      if (known?.initialized && !known.conflicts.length && JSON.stringify(known.snapshot) === JSON.stringify(known.baseline)) {
+          setStudentWorkStatus('saved');
+          return;
+      }
       // Only explicit workspace resets retire learner ownership. History
       // hydration setup/cleanup must not strand this learner save.
       const hydrationGeneration = studentWorkHydrationGenerationRef.current;
+      const actor = studentWorkActorRef.current;
       let active = true;
       const isCurrent = () => active && isStudentWorkLoaded.current && eligible()
-          && studentWorkHydrationGenerationRef.current === hydrationGeneration;
-      setStudentWorkStatus('saving');
+          && studentWorkHydrationGenerationRef.current === hydrationGeneration && studentWorkActorRef.current === actor;
+      if (!studentWorkConflict) setStudentWorkStatus('saving');
       const handler = setTimeout(async () => {
           try {
-              const write = async () => {
-                  if (!isCurrent()) return { status: 'superseded', verified: false };
-                  const persist = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
-                  if (typeof persist !== 'function') throw new Error('Verified device storage is not ready yet.');
-                  return persist(storageDB, 'allo_student_work', studentResponses, isCurrent);
-              };
-              const queued = studentWorkSaveQueue.current.catch(() => {}).then(write);
-              studentWorkSaveQueue.current = queued;
-              const receipt = await queued;
-              if (isCurrent() && receipt?.status === 'saved' && receipt.verified === true) setStudentWorkStatus('saved');
+              if (!isCurrent()) return;
+              const session = ensureStudentWorkSession();
+              if (!session.state().initialized) {
+                  const saved = await storageDB.get('allo_student_work', { throwOnError: true, localOnly: true });
+                  if (!isCurrent()) return;
+                  session.hydrate(saved || {}, studentWorkResetRequestedRef.current ? (saved || {}) : studentWorkLatestRef.current);
+                  session.stage(studentWorkLatestRef.current);
+                  studentWorkResetRequestedRef.current = false;
+              }
+              await session.save(studentWorkOperationOwner());
           } catch (e) {
               if (isCurrent()) setStudentWorkStatus('error');
               warnLog("Student work save failed", e);
@@ -13256,6 +13463,22 @@ const AlloFlowContent = () => {
       }, 1000);
       return () => { active = false; clearTimeout(handler); };
   }, [studentResponses, isTeacherMode, showStudentEntry, activeSessionCode, lzLoaded, isStorageDisabled, studentWorkSaveAttempt, studentWorkLoadRevision]);
+  useEffect(() => {
+      const refresh = event => {
+          if (!studentWorkEligibleRef.current || !isStudentWorkLoaded.current || !studentWorkSessionRef.current) return;
+          if (event?.type === 'storage' && event.key !== 'allo_student_work_changed') return;
+          if (event?.detail?.owner === studentWorkSignalOwnerRef.current) return;
+          studentWorkSessionRef.current.refresh(studentWorkOperationOwner()).catch(error => warnLog('Student work refresh failed', error));
+      };
+      window.addEventListener('storage', refresh);
+      window.addEventListener('focus', refresh);
+      window.addEventListener('alloflow:learner-work-saved', refresh);
+      return () => {
+          window.removeEventListener('storage', refresh);
+          window.removeEventListener('focus', refresh);
+          window.removeEventListener('alloflow:learner-work-saved', refresh);
+      };
+  }, []);
   const generationViewOwnerRef = useRef(null);
   const [generatedContent, _setGeneratedContent] = useState(null);
   const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
@@ -13866,7 +14089,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       ImageIcon, Info, Languages, Layout, Layers, Lightbulb, List, ListOrdered, Lock, MapIcon, Maximize, Maximize2,
       MessageCircleQuestion, Mic, MicOff, Minimize, Minimize2, Monitor, MonitorPlay, Moon, Music, Palette, Pause, Pencil, Play, PlayCircle,
       Plus, Presentation, Printer, Quote, RefreshCw, Save, Search, Settings, Settings2, ShieldCheck, Smile,
-      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Unplug, Unlock, Upload, User, Users,
+      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Undo2, Unplug, Unlock, Upload, User, Users,
       Volume2, VolumeX, Wand2, Wifi, WifiOff, Wrench, X, XCircle, Zap, ZapOff,
       GraduationCap, School, Brain, Calendar, TrendingUp, BarChart2,
       BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
@@ -13891,7 +14114,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       AlertTriangle, ArrowUpRight, ChevronUp, CircleHelp, Copy, Cpu, Ear, Edit,
       FileText, Flag, FolderDown, GalleryHorizontal, GitCompare, Headphones, Info,
       ListChecks, Monitor, MousePointerClick, PenTool, Save, Scale, Shuffle, Smile,
-      User, UserCheck, Wand2, Wifi, WifiOff
+      User, UserCheck, Wand2, Wifi, WifiOff, Minimize2, Undo2
     };
   }
   React.useEffect(() => {
@@ -13908,7 +14131,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       ImageIcon, Info, Languages, Layout, Layers, Lightbulb, List, ListOrdered, Lock, MapIcon, Maximize, Maximize2,
       MessageCircleQuestion, Mic, MicOff, Minimize, Minimize2, Monitor, MonitorPlay, Moon, Music, Palette, Pause, Pencil, Play, PlayCircle,
       Plus, Presentation, Printer, Quote, RefreshCw, Save, Search, Settings, Settings2, ShieldCheck, Smile,
-      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Unplug, Unlock, Upload, User, Users,
+      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Undo2, Unplug, Unlock, Upload, User, Users,
       Volume2, VolumeX, Wand2, Wifi, WifiOff, Wrench, X, XCircle, Zap, ZapOff,
       GraduationCap, School, Brain, Calendar, TrendingUp, BarChart2,
       BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
@@ -13928,7 +14151,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       ImageIcon, Info, Languages, Layout, Layers, Lightbulb, List, ListOrdered, Lock, MapIcon, Maximize, Maximize2,
       MessageCircleQuestion, Mic, MicOff, Minimize, Minimize2, Monitor, MonitorPlay, Moon, Music, Palette, Pause, Pencil, Play, PlayCircle,
       Plus, Presentation, Printer, Quote, RefreshCw, Save, Search, Settings, Settings2, ShieldCheck, Smile,
-      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Unplug, Unlock, Upload, User, Users,
+      Sparkles, Star, StopCircle, Sun, Terminal, Trash2, Trophy, Type, Undo2, Unplug, Unlock, Upload, User, Users,
       Volume2, VolumeX, Wand2, Wifi, WifiOff, Wrench, X, XCircle, Zap, ZapOff,
       GraduationCap, School, Brain, Calendar, TrendingUp, BarChart2,
       BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
@@ -13953,7 +14176,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       AlertTriangle, ArrowUpRight, ChevronUp, CircleHelp, Copy, Cpu, Ear, Edit,
       FileText, Flag, FolderDown, GalleryHorizontal, GitCompare, Headphones, Info,
       ListChecks, Monitor, MousePointerClick, PenTool, Save, Scale, Shuffle, Smile,
-      User, UserCheck, Wand2, Wifi, WifiOff
+      User, UserCheck, Wand2, Wifi, WifiOff, Minimize2, Undo2
     };
   }, []);
   React.useEffect(() => {
@@ -14842,7 +15065,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=f2f2a4ee');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=da49be9a');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=4a23d7b91');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=4a23d7b91');
@@ -14866,7 +15089,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=2a8d292216');
     window.__alloLazyConnectedEscape();
     window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=cd4f892415');
-    window.__alloLazyLessonBoard();
     window.__alloLessonBoardConditionalUpdate = _alloLessonBoardConditionalUpdate;
     window.__alloLessonBoardMailboxVersion = () => _alloMbBridgeState?.isTeacher ? Number(alloReadMailboxConfigCache()?.v || 0) : null;
     window.__alloLazyMathJs = (function() { var started=false; return function() {
@@ -14897,6 +15119,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       var PUMP_STARVE_MS = 8000;
       var pumpDispatched = Object.create(null);
       var starvedSince = 0;
+      // What a door's first clicks wait on (Load Project, Quick Start, Generate, the
+      // sidebar). These go first, and only these trickle in behind the launch pad.
+      var FIRST_ACTION_MODULES = ['MiscHandlersModule', 'PhaseOHandlersModule', 'PureHelpersModule',
+        'TextPipelineHelpersModule', 'TextUtilityHelpersModule', 'PhaseKHelpersModule', 'PhaseNHelpersModule',
+        'PromptsLibraryModule', 'CmapHandlersModule', 'GenerationHelpersModule', 'GenDispatcherModule',
+        'ContentEngineModule', 'QuickStartWizard', 'SidebarPanels', 'ViewRenderersModule', 'AudioHelpersModule',
+        'GlossaryHelpersModule', 'MathHelpersModule'];
+      var firstActionRank = Object.create(null);
+      FIRST_ACTION_MODULES.forEach(function(name, rank) { firstActionRank[name] = rank; });
+      var rankOf = function(entry) { var rank = firstActionRank[entry.name]; return rank === undefined ? FIRST_ACTION_MODULES.length : rank; };
+      var ordered = false;
+      var nextLive = function() {
+        while (__alloDeferredModuleQueue.length) {
+          var head = __alloDeferredModuleQueue[0];
+          if (__alloDeferredModuleNames[head.name] === head) return head;
+          __alloDeferredModuleQueue.shift();
+        }
+        return null;
+      };
       var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       var slowBackground = !!(connection && (connection.saveData || /(^|-)2g$/.test(String(connection.effectiveType || ''))));
       var markInteraction = function() { pauseUntil = performance.now() + 3000; };
@@ -14918,17 +15159,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
       var pump = function(deadline) {
         if (!__alloDeferredModuleQueue.length) return;
-        // The launch path is its own complete surface. Do not parse or execute
-        // workspace features behind it, or while a background tab is hidden.
+        if (!ordered) { ordered = true; __alloDeferredModuleQueue.sort(function(a, b) { return rankOf(a) - rankOf(b); }); }
+        // The launch path is its own surface: behind it only the first-action tier
+        // loads, one at a time and never under input. Nothing loads in a hidden tab.
         // A user-opened feature still promotes its own module immediately.
         var body = document.body;
-        var workspaceConcealed = !body || body.classList.contains('alloflow-workspace-concealed')
-          || body.classList.contains('alloflow-launchpad-active');
-        if (document.hidden || workspaceConcealed) { schedule(300); return; }
+        var launchPad = !!body && body.classList.contains('alloflow-launchpad-active');
+        var workspaceConcealed = !body || launchPad || body.classList.contains('alloflow-workspace-concealed');
+        var head = launchPad ? nextLive() : null;
+        var trickle = !!head && head.name in firstActionRank;
+        if (document.hidden || (workspaceConcealed && !trickle)) { schedule(300); return; }
         var inputPending = navigator.scheduling && typeof navigator.scheduling.isInputPending === 'function'
           && navigator.scheduling.isInputPending();
         var nowMs = performance.now();
         var blocked = nowMs < pauseUntil || inputPending;
+        if (trickle && blocked) { schedule(600); return; }
         if (blocked) {
           if (!starvedSince) starvedSince = nowMs;
           if (nowMs - starvedSince < PUMP_STARVE_MS) { schedule(220); return; }
@@ -14951,10 +15196,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
         // Data Saver / 2G keeps the single-file cooldown, and so does a pump that
         // is only running because continuous input has starved it.
-        var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;
+        var budget = (trickle || blocked || slowBackground) ? 1 : PUMP_PARALLEL;
         var available = Math.max(0, budget - inFlight);
         while (available > 0 && __alloDeferredModuleQueue.length
           && (deadline.didTimeout || deadline.timeRemaining() > 10)) {
+          var nextHead = trickle ? nextLive() : null;
+          if (trickle && !(nextHead && nextHead.name in firstActionRank)) break;
           var queued = __alloDeferredModuleQueue.shift();
           if (__alloDeferredModuleNames[queued.name] !== queued) continue;
           delete __alloDeferredModuleNames[queued.name];
@@ -14962,11 +15209,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           __alloLoadModuleNow(queued.name, queued.url);
           available--;
         }
-        schedule(slowBackground ? 1200 : (available > 0 ? 180 : 360));
+        schedule(trickle ? 600 : slowBackground ? 1200 : (available > 0 ? 180 : 360));
       };
 
-      // The first attempt waits for startup; pump() then remains parked until
-      // the person leaves the splash/launch pad for the actual workspace.
+      // The first attempt waits for startup; pump() then loads only the first-action
+      // tier until the person leaves the splash/launch pad for the workspace.
       setTimeout(function() { schedule(0); }, 1400);
     })();
     // -- STEAM Lab / SEL Hub / AlloHaven plugin lazy-loading (May 11 2026) --
@@ -15033,6 +15280,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_spacestation.js',
         'stem_lab/stem_tool_coasterlab.js',
         'stem_lab/stem_tool_worldbuilder.js',
+        // SkySchool's offline geography (~10 MB); must load before the simulator.
+        'stem_lab/stem_data_skyschool_geo.js',
         'stem_lab/stem_tool_flightsim.js',
         'stem_lab/stem_tool_atctower.js',
         'stem_lab/stem_tool_throwlab.js',
@@ -15082,6 +15331,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // caught 5 more siblings: astronomy, bridgelab, kitchenlab,
         // microbiology, raptorhunt.
         'stem_lab/stem_tool_cephalopodlab.js',
+        'stem_lab/stem_tool_coralreef.js',
         'stem_lab/stem_tool_astronomy.js',
         'stem_lab/stem_tool_bridgelab.js',
         'stem_lab/stem_tool_kitchenlab.js',
@@ -15262,6 +15512,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         var states = window[stateKey] || {};
         window[stateKey] = states;
         var loadTimeoutMs = 20000;
+        // Large plugin data keeps one content-hash URL across deploys (build.js rewrites it).
+        var pluginContentPins = { 'stem_lab/stem_data_skyschool_geo.js': 'f168e90d' };
         // How long a STEM plugin script is held back for stem_lab_module.js (see
         // loadOne). Generous because the module is ~560 KB behind the deferred
         // pump on a cold load; bounded so a module that never arrives still ends
@@ -15403,6 +15655,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           var s = document.createElement('script');
           var retrySuffix = attempt > 1 ? '&retry=' + Date.now() : '';
           var modeVersion = mod === 'arcade_mode_concept_pictionary.js' ? 'a225e174ea' : pluginCdnVersion;
+          if (pluginContentPins[mod]) modeVersion = pluginContentPins[mod];
           s.src = pluginCdnBase + mod + '?v=' + modeVersion + retrySuffix;
           s.setAttribute('data-allo-plugin-module', mod);
           s.setAttribute('data-allo-plugin-attempt', String(attempt));
@@ -15507,6 +15760,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             'stem_lab/stem_tool_butterfly.js': ['stem_lab/stem_sim_meadow.js'],
             'stem_lab/stem_tool_fieldjourneys.js': ['stem_lab/stem_tool_treelab.js'],
             'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js'],
+            'stem_lab/stem_tool_flightsim.js': ['stem_lab/stem_data_skyschool_geo.js'],
             'stem_lab/stem_tool_dataplot.js': ['data_kernel_loader.js'],
             'stem_lab/stem_tool_statslab.js': ['data_kernel_loader.js'],
             // Regression mode embeds Data Plotter, which in turn owns the kernel.
@@ -16428,7 +16682,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (!preserveSetupReviews && next !== previous) latestWordSoundsSetupReviewRef.current = null;
     const currentReview = latestWordSoundsSetupReviewRef.current;
     retainedWordSoundsSetupReview.current = preserveSetupReviews && currentReview
-      ? { words: next, resourceId: currentReview.resourceId, session: currentReview.session }
+      ? { words: next, resourceId: options.resourceId ?? currentReview.resourceId, session: currentReview.session }
       : null;
     latestWsPreloadedWordsRef.current = Array.isArray(next) ? next : [];
     wsDispatch({ type: 'WS_SET', field: 'wsPreloadedWords', value: next });
@@ -17155,6 +17409,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [rosterKey]);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState('');
+  studentWorkActorRef.current = JSON.stringify([selectedProfileId, isTeacherMode, showStudentEntry, activeSessionCode]);
+  useEffect(() => { setStudentWorkLoadRevision(value => value + 1); }, [selectedProfileId]);
   const readingProfileScope = (isTeacherMode === false ? 'learner' : 'teacher') + '|' + (selectedProfileId ? 'profile:' + String(selectedProfileId) + '|' : '') + String(studentNickname || 'default');
   const [newProfileName, setNewProfileName] = useState('');
   const profileInputRef = useRef(null);
@@ -18925,7 +19181,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (pollId === '__mastery__') return true;
               const gate = quizResponseGateRef.current || {};
               if (payload.response?.assessmentActivityId && payload.response.assessmentActivityId !== gate.activityId) return false;
-              if (payload.response?.itemType === 'assessment-complete') return payload.response.assessmentActivityId === gate.activityId && payload.pollId === gate.questionCount;
+              if (payload.response?.itemType === 'assessment-complete' || payload.response?.itemType === 'assessment-start') return payload.response.assessmentActivityId === gate.activityId && payload.pollId === gate.questionCount;
               if (typeof pollId === 'string' && pollId === 'boss:' + gate.currentQuestionIndex + (gate.roundId ? ':' + gate.roundId : '') && gate.phase === 'answering') return true;
               const questionIndex = Number.isInteger(pollId)
                   ? pollId
@@ -18945,9 +19201,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       ? { qIdx, byUid: { ...prev.byUid, [uid]: payload.response } }
                       : { qIdx, byUid: { [uid]: payload.response } });
               } else {
-                  setLiveQuizAnswers(prev => ({ ...prev, [uid]: { ...(prev[uid] || {}), [payload.pollId]: payload.response } }));
                   const questionIndex = Number(payload.pollId);
-                  if (Number.isInteger(questionIndex) && questionIndex >= 0 && questionIndex <= 9999) recordLiveQuizEvidence(quizActivityIdRef.current, uid, questionIndex, payload.response);
+                  const prior = liveQuizAnswersRef.current || {};
+                  const merged = LP.mergeAssessmentResponse(prior[uid], questionIndex, payload.response);
+                  if (!merged.accepted) return false;
+                  const next = { ...prior, [uid]: merged.responses };
+                  liveQuizAnswersRef.current = next;
+                  setLiveQuizAnswers(next);
+                  if (Number.isInteger(questionIndex) && questionIndex >= 0 && questionIndex < quizResponseGateRef.current.questionCount) recordLiveQuizEvidence(quizActivityIdRef.current, uid, questionIndex, payload.response);
               }
           },
       });
@@ -18982,7 +19243,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const liveUids = Object.keys(liveQuizAnswers);
       if (liveUids.length === 0) return fsAll;
       const merged = { ...fsAll };
-      liveUids.forEach(uid => { merged[uid] = { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
+      liveUids.forEach(uid => { merged[uid] = liveQuizAnswers[uid].__assessmentAttempt ? liveQuizAnswers[uid] : { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
       return merged;
   }, [sessionData, liveQuizAnswers]);
   const liveQuizResponseCountsByUid = React.useMemo(() => {
@@ -20614,6 +20875,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // launcher and URL field, as it does for the evaluation portal.
   const [recognitionLogVersion, setRecognitionLogVersion] = useState(0);
   useEffect(() => { if (recordSchoolRewardsRecognition(sessionData && sessionData.roster, activeSessionCode)) setRecognitionLogVersion((value) => value + 1); }, [sessionData, activeSessionCode]);
+  useEffect(() => { if (isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.mode === 'lesson-board' && sessionData.escapeRoomState.isActive) window.__alloLazyLessonBoard?.(); }, [isTeacherMode, activeSessionCode, sessionData?.escapeRoomState?.mode, sessionData?.escapeRoomState?.isActive]);
   const schoolRewardsRecognition = React.useMemo(() => buildSchoolRewardsRecognitionWorksheet(sessionData && sessionData.roster, activeSessionCode, readSchoolRewardsRecognitionLog()), [sessionData, activeSessionCode, recognitionLogVersion]);
   const handleOpenSchoolRewards = React.useCallback(() => {
     setSchoolRewardsGuide(current => ({ path: null, serial: current.serial + 1 }));
@@ -21523,6 +21785,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const renderInteractiveMap = () => {
     const _m = window.AlloModules && window.AlloModules.ViewRenderers;
     if (_m && typeof _m.renderInteractiveMap === "function") return _m.renderInteractiveMap(_alloViewRenderersDeps());
+    if (!_m) { try { window.__alloPromoteModule?.('ViewRenderersModule'); } catch (_) {} return null; }
     throw new Error("[renderInteractiveMap] ViewRenderers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -21818,6 +22081,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const invalidateLocalDataHydration = (options = {}) => {
       localDataHydrationGenerationRef.current += 1;
       studentWorkHydrationGenerationRef.current += 1;
+      studentWorkResetRequestedRef.current = true;
       if (!options.preserveStudentEntryLoad) workspaceReplacementGenerationRef.current += 1;
       canvasRecoveryVaultSyncRequestRef.current = null;
       const pendingVaultAction = canvasRecoveryVaultActionRequestRef.current;
@@ -28713,7 +28977,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!lzLoaded || isStorageDisabled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
       let cancelled = false;
       const hydrationGeneration = studentWorkHydrationGenerationRef.current;
+      const hydrationActor = studentWorkActorRef.current;
       const shouldStop = () => cancelled || studentWorkHydrationGenerationRef.current !== hydrationGeneration
+          || studentWorkActorRef.current !== hydrationActor
           || !lzLoaded || isStorageDisabled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
       const initLocalData = async () => {
           try {
@@ -28733,7 +28999,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (savedWork !== null && (typeof savedWork !== 'object' || Array.isArray(savedWork))) {
                       throw new Error('Saved student work is not a response map.');
                   }
-                  setStudentResponses(current => shouldStop() ? current : { ...(savedWork || {}), ...current });
+                  ensureStudentWorkSession().hydrate(savedWork || {}, studentWorkLatestRef.current);
+                  studentWorkResetRequestedRef.current = false;
                   isStudentWorkLoaded.current = true;
                   setStudentWorkLoadRevision(value => value + 1);
               }
@@ -28775,7 +29042,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       initLocalData();
       return () => { cancelled = true; };
-  }, [lzLoaded, isStorageDisabled, isTeacherMode, showStudentEntry, activeSessionCode, studentWorkSaveAttempt]);
+  }, [lzLoaded, isStorageDisabled, isTeacherMode, showStudentEntry, activeSessionCode, studentWorkSaveAttempt, selectedProfileId]);
   // Reading Ruler input lifecycle: pointer, touch and keyboard focus share one position.
   useEffect(() => {
     if (!readingRuler) { setRulerSuspended(false); return; }
@@ -30947,6 +31214,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const formatInlineText = (text, enableGlossary = true, isDarkBg = false) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.formatInlineText === "function") return _m.formatInlineText(text, enableGlossary, isDarkBg, _alloPhaseKHelpersDeps());
+    // Rendered before the helper landed: plain text now, formatted on the next render.
+    if (!_m) { try { window.__alloPromoteModule?.('PhaseKHelpersModule'); } catch (_) {} return text == null ? null : String(text); }
     throw new Error("[formatInlineText] PhaseKHelpers module not loaded - reload the page");
   };
   const renderFormattedText = (text, enableGlossary = true, isDarkBg = false) => {
@@ -36606,7 +36875,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       if (!isCurrent()) return cancelled;
       const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
       if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
-      return await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
+      const result = await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
+      if (result && result.ok === true) { try { window.dispatchEvent(new CustomEvent('alloflow-project-saved')); } catch (_) {} }
+      return result;
     } catch (error) {
       warnLog('Project save failed:', error);
       return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
@@ -36738,15 +37009,15 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       try { if (typeof unregister === 'function') unregister(); } catch (_) {}
     };
   }, [showSaveModal, saveType]);
-  const initiateSaveTeacherProject = () => {
-    if (history.length === 0) return;
+  const initiateSaveTeacherProject = (options) => {
+    if (history.length === 0 && !(options && options.allowEmpty === true)) return;
     setSaveType('teacher');
     setSaveEncryptPassword('');
     setSaveFileName(`${t('export.filenames.project_teacher')}-${new Date().toISOString().split('T')[0]}`);
     setShowSaveModal(true);
   };
-  const initiateSaveStudentProject = () => {
-      if (history.length === 0) return;
+  const initiateSaveStudentProject = (options) => {
+      if (history.length === 0 && !(options && options.allowEmpty === true)) return;
       setSaveType('student');
       setSaveEncryptPassword('');
       let filenamePrefix = t('export.filenames.project_student');
@@ -36756,6 +37027,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       }
       setSaveFileName(`${filenamePrefix}_${new Date().toISOString().replace(/[:.]/g, '-')}`);
       setShowSaveModal(true);
+  };
+  // SEL Hub Save/Export: the project file carries SEL tool data, even with no resources.
+  const handleSelExportRequested = () => {
+      if (isTeacherMode) initiateSaveTeacherProject({ allowEmpty: true }); else initiateSaveStudentProject({ allowEmpty: true });
+      return true;
   };
   const handleLoadProject = (e) => {
     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
@@ -36958,6 +37234,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           }
           return result;
       }
+      // Header and Guided buttons can fire before MiscHandlers lands; the history
+      // opener waits for it, then calls back here.
+      if (!moduleApi) return handleOpenHistoryResource(item, options);
       try { window.__alloRetryFailedModules?.(); } catch (_) {}
       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
   };
@@ -37851,7 +38130,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   };
   const handleGenerateLessonPlan = async (switchView = true, configOverride = {}) => {
     const sourceScope = generationSourceChoiceContextRef.current;
-    await _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers'], ['GenDispatcherModule', 'GenDispatcher']], 'this tool');
+    await _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers'], ['GenDispatcherModule', 'GenDispatcher'], ['PromptsLibraryModule', 'PromptsLibrary']], 'this tool');
     if (sourceScope && ['history', 'inputText', 'activeUnitId', 'activeView', 'isTeacherMode']
       .some(key => generationSourceChoiceContextRef.current?.[key] !== sourceScope[key])) return;
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
@@ -38594,6 +38873,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleReflectionChange = (...__a) => _alloHostHandlers().handleReflectionChange(...__a);
   const handleFactCheck = async (...__a) => _alloHostHandlers().handleFactCheck(...__a);
   const handleSettingsIntent = (intentData) => {
+      if (!(window.AlloModules && window.AlloModules.GlossaryHelpers)) return _alloAwaitModules([['GlossaryHelpersModule', 'GlossaryHelpers']], 'this tool').then(() => handleSettingsIntent(intentData), () => {});
       const changes = applyAIConfig(intentData);
       const responseText = changes.length > 0
           ? t('chat.settings_updated').replace('{changes}', changes.join('\n- '))
@@ -38970,6 +39250,8 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
   // step, and so a "just chat" reply can re-send the original text as normal chat.
   const _sendUdlToChat = (manualText = null) => {
+    // A voice turn can arrive here before the chat module; wait instead of dropping it.
+    if (!(window.AlloModules && window.AlloModules.UdlChat)) return _alloAwaitModules([['UdlChatModule', 'UdlChat']], 'this tool').then(() => _sendUdlToChat(manualText));
     // §15.6 tier 2. The one delivery path into the chat module, so a single
     // edit covers every route a student takes to the bot. Logged as 'guided'
     // rather than 'model': AlloBot is Socratic by design, and recording it at
@@ -39384,7 +39666,8 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   };
   const handleExecuteBlueprint = async () => {
     const _adapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
-    if (!_adapterModule || typeof _adapterModule.createUIAdapter !== 'function') {
+    if (!_adapterModule) return _alloAwaitModules([['AgentCoreUIAdapter', 'AgentCoreUIAdapter']], 'this tool').then(() => handleExecuteBlueprint());
+    if (typeof _adapterModule.createUIAdapter !== 'function') {
       throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
     }
     const _knownTools = Array.isArray(window.TOOL_CATALOG)
@@ -40131,6 +40414,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         organizerLearnerWork: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.organizerWork || null),
         callImagen,
       });
+    if (!_m) { try { window.__alloPromoteModule?.('ViewRenderersModule'); } catch (_) {} return null; }
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };
   const launchInteractiveFlashcards = (...__a) => _alloHostHandlers().launchInteractiveFlashcards(...__a);
@@ -43010,6 +43294,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         </div>
                     );
                 })()}
+                {!isTeacherMode && studentWorkConflict && !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(activeView) && window.AlloModules?.StudioResponse?.WorkConflict && React.createElement(window.AlloModules.StudioResponse.WorkConflict, {
+                    conflict: studentWorkConflict, status: studentWorkStatus, onResolve: resolveStudentWorkConflict, resource: generatedContent, t,
+                })}
                 {activeView === 'glossary' && window.AlloModules && window.AlloModules.GlossaryView && React.createElement(window.AlloModules.GlossaryView, {
                     t, generatedContent, history, selectedLanguages, displayLanguages,
                     leveledTextLanguage, currentUiLanguage, activeView,
@@ -43472,7 +43759,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 {activeView === 'note-taking' && generatedContent?.type === 'note-taking' && window.AlloModules?.NoteTakingView && window.AlloModules?.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
                     key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode,
                     View: window.AlloModules.NoteTakingView, generatedContent, isTeacherMode, isProcessing,
-                    studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    studentResponses, studentWorkStatus, studentWorkConflict, onResolveWorkConflict: resolveStudentWorkConflict, activeProfileId: selectedProfileId,
                     onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
                     onRetrySave: retryStudentWorkSave, allowRuntimeAi: !studentAiFeaturesHidden,
                     handleNoteUpdate, onUpdateResource, handleGenerate,
@@ -43482,7 +43769,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 {activeView === 'anchor-chart' && generatedContent?.type === 'anchor-chart' && window.AlloModules?.AnchorChartView && window.AlloModules?.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
                     key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode,
                     View: window.AlloModules.AnchorChartView, generatedContent, isTeacherMode, isProcessing,
-                    studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    studentResponses, studentWorkStatus, studentWorkConflict, onResolveWorkConflict: resolveStudentWorkConflict, activeProfileId: selectedProfileId,
                     onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
                     onRetrySave: retryStudentWorkSave, allowRuntimeAi: !studentAiFeaturesHidden,
                     handleNoteUpdate, onUpdateResource,
@@ -43495,7 +43782,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 })}
                 {activeView === 'memory-aid' && window.AlloModules && window.AlloModules.MemoryAidView && window.AlloModules.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
                     key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode + ':' + (accessibilityReviewSession?.itemId === generatedContent.id ? 'a11y' : ''),
-                    View: window.AlloModules.MemoryAidView, studentResponses, studentWorkStatus,
+                    View: window.AlloModules.MemoryAidView, studentResponses, studentWorkStatus, studentWorkConflict, onResolveWorkConflict: resolveStudentWorkConflict,
                     stopPlayback, voiceSpeed, voiceVolume,
                     onRetrySave: retryStudentWorkSave,
                     startInPreview: accessibilityReviewSession?.itemId === generatedContent.id,
@@ -43514,7 +43801,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 })}
                 {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && window.AlloModules.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
                     key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode + ':' + (accessibilityReviewSession?.itemId === generatedContent.id ? 'a11y' : ''),
-                    View: window.AlloModules.AppliedChallengeView, studentResponses, studentWorkStatus, activeProfileId: selectedProfileId,
+                    View: window.AlloModules.AppliedChallengeView, studentResponses, studentWorkStatus, studentWorkConflict,
+                    onResolveWorkConflict: resolveStudentWorkConflict, activeProfileId: selectedProfileId,
                     stopPlayback, voiceSpeed, voiceVolume,
                     onRetrySave: retryStudentWorkSave,
                     startInPreview: accessibilityReviewSession?.itemId === generatedContent.id,
@@ -43788,6 +44076,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               t={t}
               gradeLevel={gradeLevel || 'K-2'}
               onStartGame={(words, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig) => {
+                   // A completion from a setup that no longer owns this pack
+                   // must not replace the current resource or its draft.
+                   if (latestWordSoundsSetupReviewRef.current?.session !== wordSoundsSetupReviewSession) return;
                    // Optional fifth/sixth args carry the Practice/Assessment
                    // choice and the exact session contract.
                    // A probe is a single timed skill, so it ignores any lesson-plan
@@ -43861,7 +44152,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                    // synchronous mode ref makes this false -> true transition
                    // reliable even when both updates happen in one event turn.
                    setIsWordSoundsMode(false);
-                   setWsPreloadedWords(words);
+                   // Preparing the draft creates a resource ID but continues
+                   // this authoring session through Review -> Back to Setup.
+                   setWsPreloadedWords(words, { preserveSetupReviews: true, resourceId });
                    setWsActivitySequence(Array.isArray(sequence) ? sequence : []);
                    setIsProbeMode(_isProbe);
                    // Whose record this probe belongs in. probeTargetStudent is a
@@ -43909,6 +44202,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               callTTS={callTTS}
               preloadedWords={wsPreloadedWords || []}
               onShowReview={(reviewedWords) => {
+                  if (latestWordSoundsSetupReviewRef.current?.session !== wordSoundsSetupReviewSession) return;
                   if (Array.isArray(reviewedWords)) setWsPreloadedWords(reviewedWords, { preserveSetupReviews: true });
                   setIsWordSoundsMode(false);
                   setTimeout(() => {
@@ -44593,7 +44887,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           addToast,
         })}
       </CDNModuleGate>
-      <CDNModuleGate moduleKey="MaineSldPractice.MaineSldPracticePanel" loaderName="__alloLazyMaineSldPractice" modalZIndex={270} accessibleModal={true} hostedUrl="https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" isOpen={isMaineSldPracticeOpen} onClose={() => setIsMaineSldPracticeOpen(false)} icon="📚" displayName="Maine SLD Case Lab" t={t}>
+      <CDNModuleGate moduleKey="MaineSldPractice.MaineSldPracticePanel" loaderName="__alloLazyMaineSldPractice" modalZIndex={270} accessibleModal={true} hostedUrl="https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" isOpen={isMaineSldPracticeOpen} onClose={() => setIsMaineSldPracticeOpen(false)} icon="📂" displayName="Maine SLD Case Lab" t={t}>
         {(MaineSldPracticePanel) => React.createElement(MaineSldPracticePanel, {
           isOpen: true,
           onClose: () => setIsMaineSldPracticeOpen(false),
@@ -44760,7 +45054,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           submissionContext={mbStudent ? 'mailbox-live' : mbHostedAssignment ? 'mailbox-homework' : activeSessionCode ? 'standard-live' : 'file'}
       />
       {showSaveModal && (
-        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-save-project-backdrop>
+        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" style={showSelHub ? { zIndex: 10050 } : undefined} data-save-project-backdrop>
             <div ref={saveModalRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="save-project-title" onClick={e => e.stopPropagation()}>
                 <button
                     aria-label={t('common.close_save_dialog')}
@@ -44809,7 +45103,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         {t('modals.save_project.cancel_btn')}
                     </button>
                     <button
-                        aria-label={t('common.save')}
                         onClick={executeSaveFile}
                         disabled={!saveFileName.trim() || isProjectSaving}
                         aria-busy={isProjectSaving}
@@ -45581,7 +45874,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                   activeStation, setActiveStation,
                   theme,
                   activeProfileId: selectedProfileId,
-                  activeSessionCode, studentNickname, isTeacherMode
+                  activeSessionCode, studentNickname, isTeacherMode, isIndependentMode, isParentMode
             })}
         </CDNModuleGate>
         {/* Math Studio — the former STEM Lab Create tab, math-owned
@@ -46522,6 +46815,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     selectedVoice,
                     activeSessionCode,
                     t, ArrowLeft, X, Sparkles, Heart, GripVertical,
+                    isTeacherMode, isIndependentMode, isParentMode,
+                    onExportRequested: handleSelExportRequested,
                     activeStation: activeSelStation,
                     onSaveStation: (station) => {
                         setActiveSelStation(station);

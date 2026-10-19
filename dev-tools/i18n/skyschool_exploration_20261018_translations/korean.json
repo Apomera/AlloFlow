@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "검색 결과: {topics}개 주제에 카드 {cards}개가 있습니다.",
+  "stem.flightsim.learn_library_counts": "카드 {cards}개 · 주제 {topics}개",
+  "stem.flightsim.learn_search_clear": "검색 지우기",
+  "stem.flightsim.learn_search_empty": "“{query}”와 일치하는 학습 카드가 없습니다. 다른 단어를 입력하거나 검색을 지워 보세요.",
+  "stem.flightsim.learn_search_none": "일치하는 학습 카드 없음",
+  "stem.flightsim.learn_search_cards": "학습 카드 {count}개",
+  "stem.flightsim.quiz_review_progress": "{total}문제 중 {answered}문제 답변 완료 · 오답 {missed}개",
+  "stem.flightsim.quiz_review_missed": "틀린 문제 복습",
+  "stem.flightsim.quiz_next_unanswered": "다음 미응답 문제",
+  "stem.flightsim.quiz_review_all_answered": "모든 문제의 첫 답변이 기록되었습니다. 틀린 문제를 점수에 반영되지 않는 연습으로 복습하거나 새 도전을 시작하세요.",
+  "stem.flightsim.planner_drone_agl": "지상 {ft}피트",
+  "stem.flightsim.sprint_native_title": "지리 스프린트",
+  "stem.flightsim.sprint_timed_hint": "답하는 동안에도 경로를 따라 이동합니다. 읽을 때는 일시 정지하고 답을 고르기 전에 다시 시작하세요.",
+  "stem.flightsim.sprint_warp_reference": "이 지리 활동에서는 이동을 가속합니다. 속도 표시는 설정된 순항 속도를 나타내며 이 경로는 항공기 성능을 측정하지 않습니다.",
+  "stem.flightsim.sprint_save_menu": "스프린트를 저장하고 메뉴로 돌아가기",
+  "stem.flightsim.sprint_next_stop": "다음 지점: {place}",
+  "stem.flightsim.geoq_approaching_city": "어느 도시에 가까워지고 있나요?",
+  "stem.flightsim.sprint_time_remaining": "남은 시간: {seconds}초"
+}

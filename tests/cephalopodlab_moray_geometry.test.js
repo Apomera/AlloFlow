@@ -119,7 +119,7 @@ describe('Cephalopod Hunter moray surface anatomy', () => {
       assert.equal(item.scene.children.length, 1); assert.equal(mesh.name, 'cl-moray-home'); assert.deepEqual(mesh.position.toArray(), [14, .15, 11]); assert.equal(mesh.rotation.x, Math.PI / 2);
       assert.equal(p.count, 880); assert.equal(g.index.count / 3, 400); assert.equal(g.groups.length, 0); assert.equal(g.userData.clMorayHomeParts.length, 5);
       assert.equal(mesh.material.name, 'cl-moray-home-material'); assert.equal(mesh.material.vertexColors, true); assert.equal(mesh.material.transparent, false); assert.equal(mesh.material.roughness, .9); assert.ok(!Object.values(mesh.material).some(value => value?.isTexture));
-      assert.equal(mesh.material.onBeforeCompile, derivatives ? item.shader : item.fallback); if (derivatives) assert.equal(mesh.material.customProgramCacheKey(), 'cl-rock-surface-v1');
+      assert.equal(mesh.material.onBeforeCompile, derivatives ? item.shader : item.fallback); if (derivatives) assert.equal(mesh.material.customProgramCacheKey(), 'cl-rock-minerals-v2');
       assert.deepEqual(Object.keys(g.attributes).sort(), ['color', 'normal', 'position']); assert.ok(Object.values(g.attributes).every(attr => Array.from(attr.array).every(Number.isFinite)));
       for (let i = 0; i < p.count; i++) { const point = new THREE.Vector3().fromBufferAttribute(p, i); assert.ok(g.boundingBox.distanceToPoint(point) < 1e-7); assert.ok(point.distanceTo(g.boundingSphere.center) <= g.boundingSphere.radius + 1e-7); assert.ok(Math.abs(new THREE.Vector3().fromBufferAttribute(n, i).length() - 1) < 1e-5); }
       mesh.updateMatrixWorld(true); const markerBounds = new THREE.Box3().setFromObject(mesh), headBounds = new THREE.Box3().setFromObject(root.children[1]);

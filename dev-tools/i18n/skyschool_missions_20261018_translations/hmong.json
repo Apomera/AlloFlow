@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Cov kev soj ntsuam ntawm txoj haujlwm",
+  "stem.flightsim.mission_journal_targets": "Cov chaw uas thaij tau lawm: {captured} ntawm {total}.",
+  "stem.flightsim.mission_journal_complete": "Tau sau tseg txhua lub hom phiaj ntawm txoj haujlwm thiab kev tsaws thaum rov qab los lawm.",
+  "stem.flightsim.mission_journal_ended": "Txoj haujlwm xaus ua ntej sau tau txhua yam pov thawj tias ua tiav lawm.",
+  "stem.flightsim.mission_journal_recovery": "Tau sau tseg kev cawm tus neeg dim: {value}.",
+  "stem.flightsim.mission_journal_return": "Tau sau tseg kev rov qab tsaws ntawm lub hauv paus: {value}.",
+  "stem.flightsim.mission_guidance_title": "Kev qhia txoj haujlwm",
+  "stem.flightsim.mission_route": "{target} · kev taw qhia {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Qhov chaw ya tawm",
+  "stem.flightsim.mission_read_status": "Nyeem txoj haujlwm qhov xwm txheej nrov",
+  "stem.flightsim.mission_return_criterion": "Tsaws tsis pub deb tshaj {distance} nm ntawm {target}, nrog ceev piv rau hauv av qis dua {speed} kt thiab ceev nqis qis dua {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Tsis muaj ntaub ntawv txog txoj haujlwm lub chaw phiaj. Xaus qhov kev ya no thiab pib txoj haujlwm tshiab.",
+  "stem.flightsim.mission_capture_criterion": "Nyob tsis pub deb tshaj {distance} ft, siab tshaj {min} thiab qis dua {max} ft ntawm av, nrog kev ceev piv rau hauv av qis dua {speed} kt ntev li {hold} s."
+}

@@ -44,11 +44,12 @@ const PROP = /window\.(innerWidth|innerHeight)/;
 // Reviewed exemptions. Each is a real read that is NOT a stale render branch,
 // where no syntactic rule above catches it reliably. Keep the reason with the
 // entry; an entry that no longer matches a viewport read is reported as stale.
+// (The flightsim `var narrowScreen` entry was dropped 2026-10-16: 91652c2fe removed that read.)
 const ALLOWLIST = [
   {
-    file: 'stem_lab/stem_tool_flightsim.js',
-    match: 'var narrowScreen = typeof window',
-    reason: 'Runs in an event handler; seeds railCollapsed as a DEFAULT the student can override, documented in place.',
+    file: 'stem_lab/stem_tool_solarsystem.js',
+    match: 'var barBudget = Math.min(barNatural, Math.max(150, Math.round(window.innerHeight / 5)));',
+    reason: 'Inside resizeDroneCanvas(), the drone fullscreen/resize handler; a long comment puts the function header past the 14-line lookback.',
   },
 ];
 

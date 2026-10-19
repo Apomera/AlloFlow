@@ -168,6 +168,8 @@ const MEMORY_AID_MESSAGE_KEYS = Object.freeze({
   'At least one required fact is needed before recall practice.': 'msg_need_fact',
   'Recall practice opens once your teacher finishes editing these facts.': 'msg_lock_facts_first',
   'Recall practice opens once your teacher finishes checking these facts.': 'msg_verify_facts_first',
+  'The facts changed. Your teacher needs to review the earlier memory cue before recall practice.': 'msg_review_cue_first',
+  'Recheck your earlier cue against the current facts before recall practice.': 'msg_review_own_cue_first',
   'Create a written or visual memory cue before recall practice.': 'msg_need_cue',
   'Add a specific image description before using a visual-only cue for accessible recall practice.': 'msg_need_alt_for_visual_cue',
   'Ready to practice with the facts hidden.': 'msg_ready_to_practice',
@@ -417,6 +419,12 @@ function memoryAidAudioFilename(card) {
   return 'memory-aid-' + (slug || 'card');
 }
 
+function memoryAidCueReviewMessage(card, tr) {
+  return card.studentCueNeedsReview && !card.teacherCueNeedsReview
+    ? tr('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.')
+    : tr('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.');
+}
+
 function buildMemoryAidReadAloudText(card, tr) {
   const T = typeof tr === 'function' ? tr : (key, fallback) => fallback;
   const normalized = normalizeMemoryAidCard(card, 0, { authorshipMode: 'student-authored' });
@@ -426,6 +434,10 @@ function buildMemoryAidReadAloudText(card, tr) {
       ? (normalized.factVerified ? T('speech_facts_verified', 'Facts to remember. ') : T('speech_facts_pending', 'Facts your teacher is still checking. ')) + normalized.essentialFacts.join(' ')
       : '',
   ];
+  if (normalized.cueNeedsReview) {
+    sections.push(memoryAidCueReviewMessage(normalized, T));
+    return sections.filter(Boolean).join('\n\n');
+  }
   if (normalized.mode === 'generated' && normalized.aiExample) {
     sections.push(T('speech_ai_example', 'AI example. ') + normalized.aiExample);
   } else if (normalized.mode === 'scaffolded') {
@@ -435,7 +447,7 @@ function buildMemoryAidReadAloudText(card, tr) {
     sections.push(T('speech_coach_questions', 'Coach questions. ') + normalized.coachPrompts.join(' '));
   }
   if (normalized.hookFact) sections.push(T('speech_hook_fact', 'Did you know? ') + normalized.hookFact.text);
-  if (normalized.visualImage && normalized.visualAlt) sections.push(T('speech_visual_description', 'Visual cue description. ') + normalized.visualAlt);
+  if (!normalized.visualNeedsReview && normalized.visualImage && _maVisualAltIsTrustworthy(normalized)) sections.push(T('speech_visual_description', 'Visual cue description. ') + normalized.visualAlt);
   if (normalized.mapping) sections.push(T('speech_mapping', 'How the cue connects. ') + normalized.mapping);
   if (normalized.studentDraft) sections.push(T('speech_student_aid', 'Student memory aid. ') + normalized.studentDraft);
   if (normalized.studentReasoning) sections.push(T('speech_student_explanation', 'Student explanation. ') + normalized.studentReasoning);
@@ -476,11 +488,12 @@ function memoryAidPracticeCue(card) {
 // projected slide and the spoken card say the same thing.
 function memoryAidCueBlock(card) {
   const normalized = normalizeMemoryAidCard(card, 0, { authorshipMode: 'student-authored' });
+  if (normalized.cueNeedsReview) return { mode: normalized.mode, cue: '', steps: [], visualDescription: '', prompts: [], needsReview: true };
   const cue = memoryAidPracticeCue(normalized);
   const steps = !cue && normalized.mode === 'scaffolded' ? normalized.scaffoldSteps.slice(0, 6) : [];
   // Only worth describing a picture a lane cannot print when nothing else cues
   // the target; otherwise it is a second description of the same idea.
-  const visualDescription = !cue && !steps.length && normalized.visualImage && _maVisualAltIsTrustworthy(normalized)
+  const visualDescription = !cue && !steps.length && !normalized.visualNeedsReview && normalized.visualImage && _maVisualAltIsTrustworthy(normalized)
     ? normalized.visualAlt
     : '';
   const prompts = !cue && !steps.length && !visualDescription ? normalized.coachPrompts.slice(0, 6) : [];
@@ -540,6 +553,45 @@ function memoryAidPracticeBasis(card) {
     raw.factLocked === false ? 'facts-unlocked' : 'facts-locked',
     raw.factVerified === true ? 'facts-verified' : 'facts-unverified',
   ].join('\n---\n'));
+}
+
+function _maApplicationRecord(value) {
+  const raw = value && typeof value === 'object' ? value : {};
+  return {
+    applicationQuestion: _maString(raw.applicationQuestion, 1600),
+    applicationResponse: _maString(raw.applicationResponse, 3000),
+    applicationRevealed: raw.applicationRevealed === true,
+    applicationCheck: ['connected', 'revisit'].includes(raw.applicationCheck) ? raw.applicationCheck : '',
+  };
+}
+
+const _MA_FOLLOWUP_FIELDS = ['nextReviewDate', 'reviewSchedule', 'applicationQuestion', 'applicationResponse', 'applicationRevealed', 'applicationCheck', 'applicationHistory', 'revisionDraft', 'revisionPlan'];
+function _maMergeApplicationHistory(...lists) {
+  const seen = new Set();
+  return lists.flat().map(_maApplicationRecord).filter(item => {
+    const key = JSON.stringify(item);
+    if (!item.applicationQuestion || !item.applicationResponse || seen.has(key)) return false;
+    seen.add(key); return true;
+  }).slice(-8);
+}
+function _maFollowUpSession(session, attempt, controller) {
+  const next = { ...session, attempt };
+  _MA_FOLLOWUP_FIELDS.forEach(key => { delete next[key]; });
+  Object.entries(controller?.pending || {}).forEach(([key, entry]) => { next[key] = entry.value; });
+  if (controller) {
+    const pending = Object.keys(controller.pending || {}).length > 0;
+    next.followUpSaving = !!controller.running;
+    next.followUpSaved = !pending && !controller.running && !controller.conflict;
+    next.followUpError = pending && !controller.running && !controller.conflict;
+    next.followUpConflict = _maFollowUpConflictView(controller.conflict);
+  }
+  return next;
+}
+function _maFollowUpConflictView(conflict) {
+  return conflict ? {
+    savedText: conflict.fields.map(field => String(conflict.latest?.[field] ?? '')).filter(Boolean).join(' · '),
+    changedAgain: conflict.changedAgain === true,
+  } : null;
 }
 
 function normalizeMemoryAidPracticeAttempt(value, card, index) {
@@ -610,6 +662,7 @@ function normalizeMemoryAidPracticeAttempt(value, card, index) {
     applicationResponse: _maString(raw.applicationResponse, 3000),
     applicationRevealed: raw.applicationRevealed === true,
     applicationCheck: ['connected', 'revisit'].includes(raw.applicationCheck) ? raw.applicationCheck : '',
+    applicationHistory: (Array.isArray(raw.applicationHistory) ? raw.applicationHistory : []).map(_maApplicationRecord).filter(item => item.applicationQuestion && item.applicationResponse).slice(-8),
     response,
     confidence,
     facts,
@@ -643,6 +696,10 @@ function memoryAidPracticeReady(card) {
   }
   if (raw.factVerified !== true) {
     return { ok: false, reason: 'Recall practice opens once your teacher finishes checking these facts.' };
+  }
+  if (raw.cueNeedsReview === true) {
+    if (raw.studentCueNeedsReview && !raw.teacherCueNeedsReview) return { ok: false, reason: 'Recheck your earlier cue against the current facts before recall practice.' };
+    return { ok: false, reason: 'The facts changed. Your teacher needs to review the earlier memory cue before recall practice.' };
   }
   const cue = memoryAidPracticeCue(raw);
   const image = raw.visualNeedsReview ? '' : normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
@@ -1123,8 +1180,22 @@ function _maApplyPrivatePracticeMutation(current, mutation, cards, writeVersion)
     if (removed.has(_maPracticeTombstoneIdentity(cardId, id))) return { applied: false, reason: 'attempt-tombstoned', state };
     if (!old) return { applied: false, reason: 'attempt-missing', state };
     const patch = action === 'patch-self-check' ? { factChecks: mutation.factChecks } : mutation.patch && typeof mutation.patch === 'object' ? mutation.patch : {};
-    const allowed = action === 'patch-self-check' ? ['factChecks'] : ['nextReviewDate','reviewSchedule','applicationQuestion','applicationResponse','applicationRevealed','applicationCheck','revisionDraft','revisionPlan'];
-    const next = normalizeMemoryAidPracticeAttempt({ ...old, ...Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, patch[key]])) }, card, 0);
+    const allowed = action === 'patch-self-check' ? ['factChecks'] : _MA_FOLLOWUP_FIELDS;
+    const fields = allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key));
+    const expected = mutation.expected && typeof mutation.expected === 'object' ? mutation.expected : null;
+    const conflicts = expected ? fields.filter(key => key !== 'applicationHistory' && Object.prototype.hasOwnProperty.call(expected, key)
+      && JSON.stringify(old[key] ?? null) !== JSON.stringify(expected[key] ?? null)
+      && JSON.stringify(old[key] ?? null) !== JSON.stringify(patch[key] ?? null)) : [];
+    if (conflicts.length) return { applied: false, reason: 'followup-conflict', conflicts, state };
+    const changes = Object.fromEntries(fields.map(key => [key, patch[key]]));
+    if ('applicationHistory' in changes) changes.applicationHistory = _maMergeApplicationHistory(old.applicationHistory || [], changes.applicationHistory || []);
+    if ('applicationQuestion' in changes && changes.applicationQuestion !== old.applicationQuestion) {
+      changes.applicationHistory = _maMergeApplicationHistory(old.applicationHistory || [], changes.applicationHistory || [], [old]);
+      for (const key of ['applicationResponse', 'applicationRevealed', 'applicationCheck']) {
+        if (!(key in changes)) changes[key] = key === 'applicationRevealed' ? false : '';
+      }
+    }
+    const next = normalizeMemoryAidPracticeAttempt({ ...old, ...changes }, card, 0);
     if (!next || !memoryAidPracticeSummary(next, card).complete) return { applied: false, reason: 'invalid-attempt', state };
     nextCards[cardId] = existing.map(item => item.id === id ? next : item);
     return { applied: true, reason: action === 'patch-self-check' ? 'self-check-updated' : 'followup-updated', state: { ...state, cards: nextCards } };
@@ -1138,6 +1209,7 @@ function _maApplyPrivatePracticeMutation(current, mutation, cards, writeVersion)
       return { applied: false, reason: 'attempt-tombstoned', state };
     }
     const existingIndex = existing.findIndex(item => item.id === attempt.id);
+    if (existingIndex >= 0 && mutation.createOnly) return { applied: false, reason: 'attempt-exists', state };
     // A first save can be retried, while later self-check edits preserve
     // newer follow-up fields already in the store. Tombstones are checked above.
     const updatedAttempt = existingIndex >= 0 && mutation.selfCheckOnly === true
@@ -1261,11 +1333,12 @@ function mutateMemoryAidPrivatePractice(resourceKey, mutation, cards, profileId)
         updatedAt: read.state.updatedAt,
       };
     }
-    if (['attempt-tombstoned', 'attempt-missing'].includes(applied.reason)) {
+    if (['attempt-tombstoned', 'attempt-missing', 'attempt-exists', 'followup-conflict'].includes(applied.reason)) {
       return {
         ok: true,
         applied: false,
         reason: applied.reason,
+        conflicts: applied.conflicts || [],
         cards: read.state.cards,
         scope: memoryAidLastPracticeSaveScope(),
         updatedAt: read.state.updatedAt,
@@ -1371,13 +1444,15 @@ function memoryAidPracticeRevisionState(value, card) {
   };
 }
 
-function buildMemoryAidPracticeCueText(card, tr) {
+function buildMemoryAidPracticeCueText(card, tr, options) {
   const T = typeof tr === 'function' ? tr : (key, fallback) => fallback;
   const raw = card && typeof card === 'object' ? card : {};
+  if (raw.cueNeedsReview) return '';
   const target = _maString(raw.target || raw.concept, 1000).trim() || 'this memory target';
-  const cue = memoryAidPracticeCue(raw);
+  const cue = memoryAidCueBlock(raw).cue;
   const image = raw.visualNeedsReview ? '' : normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
-  const visualAlt = image ? _maString(raw.visualAlt, 800).trim() : '';
+  const visualAlt = image && _maVisualAltIsTrustworthy(raw) ? _maString(raw.visualAlt, 800).trim() : '';
+  if (options && options.cueOnly) return cue || visualAlt;
   return [
     T('speech_memory_target', 'Memory target. ') + target + '.',
     cue ? T('speech_memory_cue', 'Memory cue. ') + cue : '',
@@ -1435,6 +1510,11 @@ const MEMORY_AID_FACT_CHECK_VERDICTS = Object.freeze({
   disputed: { label: 'Disputed' },
   unverified: { label: 'Could not verify' },
 });
+
+function memoryAidHasUnresolvedFactDisputes(card) {
+  return !!(card && card.factCheck && Array.isArray(card.factCheck.verdicts)
+    && card.factCheck.verdicts.some(entry => entry && entry.verdict === 'disputed'));
+}
 
 // Advisory result of the teacher's "Check facts with web search" action. It
 // informs the teacher's own verification click and never sets factVerified.
@@ -1542,6 +1622,11 @@ function normalizeMemoryAidCard(card, index, defaults) {
     // survives edit round trips, reloads, resource switches and cloud sync.
     // Done editing and the schema upgrade both skip a held card.
     factReviewHold: factLocked && essentialFacts.length > 0 && raw.factReviewHold === true,
+    cueNeedsReview: raw.cueNeedsReview === true,
+    teacherCueNeedsReview: raw.teacherCueNeedsReview === true || (raw.cueNeedsReview === true && raw.studentCueNeedsReview !== true),
+    studentCueNeedsReview: raw.studentCueNeedsReview === true,
+    cueFactBasis: _maString(raw.cueFactBasis, 80),
+    visualReviewBasis: _maString(raw.visualReviewBasis, 160),
     type,
     mode,
     aiExample: _maString(raw.aiExample || raw.example, 4000),
@@ -1661,6 +1746,10 @@ function _maMeaningHash(card) {
   return _maStableHash([fold(card && (card.target || card.concept))].concat(_maList(card && (card.essentialFacts || card.facts), 10, 600).map(fold)).join('\n'));
 }
 
+function memoryAidCueFactBasis(card) {
+  return 'memory-cue-facts-v1:' + _maMeaningHash(card);
+}
+
 // What a target or fact edit clears (below). The editor keeps this copy so the
 // teacher can restore it instead of losing it on the first keystroke.
 function memoryAidDerivedSnapshot(card) {
@@ -1679,6 +1768,11 @@ function applyMemoryAidCardPatch(card, patch) {
   const safePatch = resolvedPatch && typeof resolvedPatch === 'object' ? resolvedPatch : {};
   const next = Object.assign({}, current, safePatch);
   const changesFactMeaning = ['target', 'essentialFacts'].some(key => Object.prototype.hasOwnProperty.call(safePatch, key));
+  const substantiveFactChange = changesFactMeaning && _maMeaningHash(current) !== _maMeaningHash(next);
+  const hasEarlierCue = !!(memoryAidPracticeCue(current) || _maString(current.mapping || current.explanation).trim()
+    || _maList(current.scaffoldSteps).length || (Array.isArray(current.connections) && current.connections.length));
+  if (substantiveFactChange && hasEarlierCue) { next.cueNeedsReview = true; next.teacherCueNeedsReview = true; }
+  else if (Object.prototype.hasOwnProperty.call(safePatch, 'cueNeedsReview')) { next.cueNeedsReview = safePatch.cueNeedsReview === true; next.teacherCueNeedsReview = next.cueNeedsReview; }
   const hasFacts = _maList(next.essentialFacts || next.facts, 10, 600).length > 0;
   if (Object.prototype.hasOwnProperty.call(safePatch, 'factReviewHold')) next.factReviewHold = safePatch.factReviewHold === true;
   else if (safePatch.factVerified === true) next.factReviewHold = false; // an explicit verify releases the hold
@@ -1802,7 +1896,7 @@ function _maMemoryAidAsyncInputSnapshot(task, card, options) {
   if (task === 'visual') {
     return {
       text: buildMemoryAidVisualPrompt(card, context.imageStyle, card && card.visualPrompt),
-      image: '',
+      image: normalizeMemoryAidImage(card && (card.visualImage || card.imageUrl)),
       policy: '',
     };
   }
@@ -1969,7 +2063,13 @@ function memoryAidRecallQuestion(card) {
   const text = fold(question);
   // Catch direct answer copies. This cannot certify the meaning of a question;
   // teachers can review and edit it beside the facts.
-  const answers = [card?.target, memoryAidPracticeCue(card), ...(card?.essentialFacts || [])].map(fold).filter(value => value.length >= 18);
+  // Short facts can be complete answers (H2O, Paris, 42). Compare whole
+  // normalized tokens so a short answer does not match part of another word.
+  // A short topic/cue is still allowed inside a genuine question about it.
+  const facts = (card?.essentialFacts || []).map(fold).filter(Boolean);
+  const labels = [card?.target, memoryAidPracticeCue(card)].map(fold).filter(Boolean);
+  if (labels.includes(text)) return '';
+  const answers = [...facts, ...labels.filter(value => value.length >= 18)];
   return text && !answers.some(answer => text === answer || (' ' + text + ' ').includes(' ' + answer + ' ')) ? question : '';
 }
 
@@ -1990,6 +2090,7 @@ function normalizeMemoryAidStudentConnections(value) {
 }
 
 function memoryAidActiveConnections(card) {
+  if (card?.cueNeedsReview) return [];
   const facts = _maList(card?.essentialFacts, 10, 600), keys = memoryAidConnectionFactKeys(card);
   const learner = normalizeMemoryAidStudentConnections(card?.studentConnections).filter(row => row.cue.trim() && row.cueKey === memoryAidConnectionKey(card) && keys.includes(row.factKey));
   if (learner.length) return learner.map(row => ({ ...row, factIndex: keys.indexOf(row.factKey), learnerIdentified: true }));
@@ -2063,7 +2164,7 @@ function MemoryAidReviewDate({ value, onChange, tr, target }) {
     {!value && <p className="text-xs text-slate-600">{tr('review_date_off', 'No review date set. You can still practice whenever you want.')}</p>}
   </fieldset>;
 }
-function MemoryAidFollowUp({ card, session, onChange, onSave, tr, saveEvidence }) {
+function MemoryAidFollowUp({ card, session, onChange, onSave, onResolveConflict, tr, saveEvidence }) {
   const attempt = session.attempt;
   const applicationRef = React.useRef(null);
   React.useEffect(() => {
@@ -2077,18 +2178,24 @@ function MemoryAidFollowUp({ card, session, onChange, onSave, tr, saveEvidence }
   const plan = memoryAidReviewPlan(card, [attempt]);
   const application = card.applicationQuestion || tr('application_fallback', 'Give a new example of {target}. Explain how the facts help you predict or explain what happens.', { target: card.target });
   const sameApplication = attempt.applicationQuestion === application;
-  const response = session.applicationResponse ?? (attempt.applicationQuestion === application ? attempt.applicationResponse : '') ?? '';
+  const sessionApplication = session.applicationQuestion === application;
+  const response = (sessionApplication ? session.applicationResponse : undefined) ?? (sameApplication ? attempt.applicationResponse : '') ?? '';
+  const revealed = (sessionApplication ? session.applicationRevealed : undefined) ?? (sameApplication && attempt.applicationRevealed);
+  const check = (sessionApplication ? session.applicationCheck : undefined) ?? (sameApplication ? attempt.applicationCheck : '') ?? '';
+  const earlierApplications = _maMergeApplicationHistory(attempt.applicationHistory || [], session.applicationHistory || [], [attempt], session.applicationQuestion && session.applicationResponse ? [session] : []).filter(item => item.applicationQuestion !== application);
   const date = session.nextReviewDate ?? plan.date;
   const disabled = session.followUpSaving === true;
   return <section className="mt-4 space-y-4 rounded-xl border border-teal-200 bg-white p-4" aria-label={tr('followup_region', 'Apply and revisit')}>
-    {!sameApplication && attempt.applicationResponse && <details><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold">{tr('application_earlier', 'My explanation for the earlier question')}</summary><p className="mt-2 text-sm">{attempt.applicationQuestion}</p><p className="mt-2 whitespace-pre-wrap text-sm">{attempt.applicationResponse}</p></details>}
+    {earlierApplications.map((earlier, index) => <details key={index}><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold">{tr('application_earlier', 'My explanation for the earlier question')}</summary><p className="mt-2 text-sm">{earlier.applicationQuestion}</p><p className="mt-2 whitespace-pre-wrap text-sm">{earlier.applicationResponse}</p></details>)}
     <details ref={applicationRef} data-memory-application><summary className="min-h-11 cursor-pointer py-2 font-bold text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('application_title', 'Use it in a new situation')}</summary>
       <p className="mt-2 text-sm leading-relaxed text-slate-800">{application}</p>
       <label className="mt-3 block text-sm font-bold text-slate-800">{tr('application_response', 'Your explanation')}<textarea aria-label={tr('application_response', 'Your explanation')} rows={3} maxLength={3000} value={response} onChange={e => onChange({ applicationResponse: e.target.value, applicationRevealed: false, applicationCheck: '' })} className="mt-1 w-full rounded-xl border border-slate-300 p-3 font-normal" /></label>
       <button type="button" disabled={!response.trim()} onClick={() => onChange({ applicationRevealed: true })} className="mt-2 min-h-11 rounded-xl border border-teal-300 px-3 py-2 text-sm font-bold text-teal-900 disabled:opacity-50">{tr('application_compare', 'Compare my explanation')}</button>
-      {(session.applicationRevealed ?? (sameApplication && attempt.applicationRevealed)) && <div className="mt-3 space-y-2 rounded-xl bg-teal-50 p-3 text-sm"><p className="font-bold">{tr('application_guidance', 'Check your reasoning')}</p><p>{card.applicationGuidance || tr('application_guidance_fallback', 'Check that your example follows every fact below. Explain the connection in your own words.')}</p><ul className="list-disc space-y-1 pl-5">{card.essentialFacts.map((fact, i) => <li key={i}>{fact}</li>)}</ul><label className="block font-bold">{tr('application_selfcheck', 'How did your explanation connect?')}<select aria-label={tr('application_selfcheck', 'How did your explanation connect?')} value={session.applicationCheck ?? (sameApplication ? attempt.applicationCheck : '') ?? ''} onChange={e => onChange({ applicationCheck: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 font-normal"><option value="">{tr('application_choose', 'Choose a self-check')}</option><option value="connected">{tr('application_connected', 'I explained the connection')}</option><option value="revisit">{tr('application_revisit', 'I want to revisit the connection')}</option></select></label></div>}
+      {revealed && <div className="mt-3 space-y-2 rounded-xl bg-teal-50 p-3 text-sm"><p className="font-bold">{tr('application_guidance', 'Check your reasoning')}</p><p>{card.applicationGuidance || tr('application_guidance_fallback', 'Check that your example follows every fact below. Explain the connection in your own words.')}</p><ul className="list-disc space-y-1 pl-5">{card.essentialFacts.map((fact, i) => <li key={i}>{fact}</li>)}</ul><label className="block font-bold">{tr('application_selfcheck', 'How did your explanation connect?')}<select aria-label={tr('application_selfcheck', 'How did your explanation connect?')} value={check} onChange={e => onChange({ applicationCheck: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 font-normal"><option value="">{tr('application_choose', 'Choose a self-check')}</option><option value="connected">{tr('application_connected', 'I explained the connection')}</option><option value="revisit">{tr('application_revisit', 'I want to revisit the connection')}</option></select></label></div>}
     </details>
-    {saveEvidence && <><MemoryAidReviewDate value={date} onChange={nextReviewDate => onChange({ nextReviewDate })} tr={tr} /><p className="text-xs text-slate-600">{tr('review_date_note', 'Tomorrow is a starting suggestion. Change or clear the date to suit your learning. This appears when you return; it does not send a notification.')}</p><button type="button" disabled={disabled} onClick={() => onSave({ revisionDraft: session.revisionDraft ?? attempt.revisionDraft, nextReviewDate: date, reviewSchedule: date ? 'date' : 'off', applicationQuestion: application, applicationResponse: response, applicationRevealed: session.applicationRevealed ?? (sameApplication && attempt.applicationRevealed), applicationCheck: session.applicationCheck ?? (sameApplication ? attempt.applicationCheck : '') })} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{disabled ? tr('followup_saving', 'Saving…') : tr('followup_save', 'Save private practice plan')}</button><p role="status" className="text-sm text-teal-900">{session.followUpSaving ? tr('followup_autosaving', 'Saving private changes…') : session.followUpError ? tr('followup_error', 'Could not save these changes. Keep this view open and use Save private practice plan to retry.') : session.followUpSaved ? tr('followup_saved', 'Private practice plan saved.') : tr('followup_autosave_note', 'Changes to this explanation and plan save privately in this browser.')}</p></>}
+    {saveEvidence && <><MemoryAidReviewDate value={date} onChange={nextReviewDate => onChange({ nextReviewDate })} tr={tr} /><p className="text-xs text-slate-600">{tr('review_date_note', 'Tomorrow is a starting suggestion. Change or clear the date to suit your learning. This appears when you return; it does not send a notification.')}</p><button type="button" disabled={disabled || !!session.followUpConflict} onClick={() => onSave()} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{disabled ? tr('followup_saving', 'Saving…') : tr('followup_save', 'Save private practice plan')}</button><p role="status" className="text-sm text-teal-900">{session.followUpSaving ? tr('followup_autosaving', 'Saving private changes…') : session.followUpError ? tr('followup_error', 'Could not save these changes. Keep this view open and use Save private practice plan to retry.') : session.followUpSaved ? tr('followup_saved', 'Private practice plan saved.') : tr('followup_autosave_note', 'Changes to this explanation and plan save privately in this browser.')}</p>
+      {session.followUpConflict && <div role="alert" className="space-y-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm"><p>{session.followUpConflict.changedAgain ? tr('followup_conflict_changed_again', 'The saved plan changed again. Review the updated saved version, then choose which changes to keep.') : tr('followup_conflict', 'This part of your plan changed in another tab. Your changes are still here. Choose which version to keep.')}</p><p className="whitespace-pre-wrap">{tr('followup_saved_version', 'Saved version:')} {session.followUpConflict.savedText}</p><div className="flex flex-wrap gap-2"><button type="button" className="min-h-11 rounded-xl border px-3 py-2" onClick={() => onResolveConflict(false)}>{tr('followup_use_saved', 'Use saved plan')}</button><button type="button" className="min-h-11 rounded-xl border px-3 py-2" onClick={() => onResolveConflict(true)}>{tr('followup_keep_mine', 'Keep my changes')}</button></div></div>}
+    </>}
   </section>;
 }
 function MemoryAidOverview({ cards, attemptsByCard, selectedId, onSelect, onAdjustDate, tr }) {
@@ -2107,14 +2214,14 @@ function renderMemoryAidPreset(data, preset, tr) {
     const title = hidden ? T('card_target_n', 'Memory target {n}', {n:position}) : card.target;
     const open = '<article style="break-inside:avoid;margin:16px 0;padding:20px;border:1px solid #99f6e4;border-radius:12px"><h2 style="font-size:20px;margin:0 0 14px">'+esc(title)+'</h2>';
     if (hidden) return open + (!memoryAidPracticeReady(card).ok ? '<p>'+esc(T('export_hold_short','This target is not ready for recall. Finish preparing it first.'))+'</p>' : '<p>'+esc(memoryAidRecallQuestion(card) || T('recall_legacy_print', 'No recall question was saved for this older target. Identify its topic with your teacher before starting; keep the study card out of view.'))+'</p><div aria-label="'+esc(T('export_recall_response_lines','Recall response'))+'" style="height:180px;background:repeating-linear-gradient(white,white 29px,#cbd5e1 30px)"></div>') + '</article>';
-    const cue = memoryAidPracticeCue(card), image = !card.visualNeedsReview && card.visualImage;
+    const cue = card.cueNeedsReview ? '' : memoryAidPracticeCue(card), image = !card.cueNeedsReview && !card.visualNeedsReview && card.visualImage;
     if (preset === 'recall') {
       if (!memoryAidPracticeReady(card).ok) return open + '<p>'+esc(T('export_hold_short','This target is not ready for recall. Finish preparing it first.'))+'</p></article>';
       return open + '<p style="font-size:23px;font-weight:bold;white-space:pre-wrap">'+esc(cue)+'</p>' + (image && _maVisualAltIsTrustworthy(card) ? '<img src="'+esc(image)+'" alt="'+esc(card.visualAlt)+'" style="max-width:100%;max-height:240px;object-fit:contain" />' : '') + '<p>'+esc(T('export_with_cue_prompt','Use your cue to recall the facts. Record what you remember before checking them.'))+'</p><div aria-label="'+esc(T('export_recall_response_lines','Recall response'))+'" style="height:180px;background:repeating-linear-gradient(white,white 29px,#cbd5e1 30px)"></div></article>';
     }
     const connections = memoryAidActiveConnections(card);
-    const links = connections.length ? '<dl>'+connections.map(row=>'<dt style="font-weight:bold;margin-top:8px">'+esc(row.cue)+'</dt><dd>'+esc(card.essentialFacts[row.factIndex])+(row.explanation ? ' '+esc(row.explanation) : '')+'</dd>').join('')+'</dl>' : card.mapping && !memoryAidCustomCue(card) ? '<p>'+esc(card.mapping)+'</p>' : '';
-    return open + '<p style="font-size:23px;font-weight:bold;white-space:pre-wrap">'+esc(cue || T('export_no_cue_yet','No cue yet. Create yours below.'))+'</p>'+(image ? '<img src="'+esc(image)+'" alt="'+esc(_maVisualAltIsTrustworthy(card) ? card.visualAlt : buildMemoryAidVisualAlt(card))+'" style="max-width:100%;max-height:260px;object-fit:contain" />' : '') + '<h3>'+esc(T('facts_student_heading','Facts to remember'))+'</h3><ul>'+card.essentialFacts.map(fact=>'<li>'+esc(fact)+'</li>').join('')+'</ul>'+links+(!card.factVerified ? '<p>'+esc(T('export_hold_short','This target is awaiting teacher review. Skip it for now.'))+'</p>' : '')+(preset==='teacher' ? '<p>'+esc(card.factReviewedAt ? T('facts_reviewed_by_you','Reviewed by you') : card.factVerified ? T('facts_ready','Ready to study') : T('facts_pending','Facts awaiting teacher review'))+'</p>'+(card.applicationQuestion ? '<h3>'+esc(T('application_title','Use it in a new situation'))+'</h3><p>'+esc(card.applicationQuestion)+'</p><p>'+esc(card.applicationGuidance)+'</p>' : '') : '')+'</article>';
+    const links = connections.length ? '<dl>'+connections.map(row=>'<dt style="font-weight:bold;margin-top:8px">'+esc(row.cue)+'</dt><dd>'+esc(card.essentialFacts[row.factIndex])+(row.explanation ? ' '+esc(row.explanation) : '')+'</dd>').join('')+'</dl>' : !card.cueNeedsReview && card.mapping && !memoryAidCustomCue(card) ? '<p>'+esc(card.mapping)+'</p>' : '';
+    return open + '<p style="font-size:23px;font-weight:bold;white-space:pre-wrap">'+esc(card.cueNeedsReview ? memoryAidCueReviewMessage(card, T) : cue || T('export_no_cue_yet','No cue yet. Create yours below.'))+'</p>'+(image ? '<img src="'+esc(image)+'" alt="'+esc(_maVisualAltIsTrustworthy(card) ? card.visualAlt : buildMemoryAidVisualAlt(card))+'" style="max-width:100%;max-height:260px;object-fit:contain" />' : '') + '<h3>'+esc(T('facts_student_heading','Facts to remember'))+'</h3><ul>'+card.essentialFacts.map(fact=>'<li>'+esc(fact)+'</li>').join('')+'</ul>'+links+(!card.factVerified ? '<p>'+esc(T('export_hold_short','This target is awaiting teacher review. Skip it for now.'))+'</p>' : '')+(preset==='teacher' ? '<p>'+esc(card.cueNeedsReview ? T('cue_review_required','Cue review required') : card.factReviewedAt ? T('facts_reviewed_by_you','Reviewed by you') : card.factVerified ? T('facts_ready','Ready to study') : T('facts_pending','Facts awaiting teacher review'))+'</p>'+(card.applicationQuestion ? '<h3>'+esc(T('application_title','Use it in a new situation'))+'</h3><p>'+esc(card.applicationQuestion)+'</p><p>'+esc(card.applicationGuidance)+'</p>' : '') : '')+'</article>';
   }).join('');
   return '<section class="memory-aid-export memory-aid-preset" style="max-width:900px;margin:auto;font-family:system-ui;color:#0f172a;overflow-wrap:anywhere"><h1>'+esc(label)+'</h1>'+(!hidden ? '<p>'+esc(normalized.title)+'</p>' : '')+articles+'</section>';
 }
@@ -2126,6 +2233,7 @@ const MEMORY_AID_EXPORT_RULES = Object.freeze({
   recallQuestion: memoryAidRecallQuestion,
   activeConnections: memoryAidActiveConnections,
   customCue: memoryAidCustomCue,
+  cueFactBasis: memoryAidCueFactBasis,
   // Generation-time helpers for the dispatcher (it cannot import module
   // functions): the per-card visual prompt and the hook-fact normalizer.
   visualPrompt: (card, style, direction) => buildMemoryAidVisualPrompt(card, style, direction),
@@ -2160,10 +2268,10 @@ function normalizeMemoryAidConnections(value, facts) {
 }
 
 function MemoryAidStudyCard({ card, attempts, busy, isProcessing, isTeacherMode, canGenerate, onGenerate, onPersonalize, onRecall, onResume, tr }) {
-  const cue = memoryAidPracticeCue(card);
+  const cue = card.cueNeedsReview ? '' : memoryAidPracticeCue(card);
   const customized = memoryAidCustomCue(card);
   const connections = memoryAidActiveConnections(card);
-  const visualMatches = !card.visualNeedsReview;
+  const visualMatches = !card.cueNeedsReview && !card.visualNeedsReview;
   const unmappedFacts = card.essentialFacts.filter((fact, index) => !connections.some(row => row.factIndex === index));
   const diagram = card.visualStatus !== 'off' && !customized && !card.visualImage && connections.length > 0 && ['letters', 'sequence', 'groups', 'comparison'].includes(card.visualKind);
   const ready = memoryAidPracticeReady(card);
@@ -2175,8 +2283,8 @@ function MemoryAidStudyCard({ card, attempts, busy, isProcessing, isTeacherMode,
       <div className={'grid items-start gap-6 ' + ((card.visualImage && visualMatches) || diagram ? 'md:grid-cols-2' : '')}>
         <div className="min-w-0 py-2">
           <p className="text-xs font-bold uppercase tracking-wide text-teal-800">{tr('study_cue', 'Your memory cue')}</p>
-          {cue ? <p className="mt-3 whitespace-pre-wrap break-words text-2xl font-bold leading-relaxed text-slate-900 sm:text-3xl">{cue}</p> : <div className="mt-3 space-y-3"><p className="text-base text-slate-700">{tr('study_create_invitation', 'Build a cue that connects these facts to something familiar.')}</p><button type="button" onClick={onPersonalize} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 font-bold text-white">{tr('study_create', 'Create my cue')}</button></div>}
-          {card.mode === 'scaffolded' && !customized && <p className="mt-3 text-sm text-slate-600">{tr('study_scaffold_note', 'This is a starter. Make it yours when you are ready.')}</p>}
+          {card.cueNeedsReview ? <p role="status" data-memory-cue-review className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{memoryAidCueReviewMessage(card, tr)}</p> : cue ? <p className="mt-3 whitespace-pre-wrap break-words text-2xl font-bold leading-relaxed text-slate-900 sm:text-3xl">{cue}</p> : <div className="mt-3 space-y-3"><p className="text-base text-slate-700">{tr('study_create_invitation', 'Build a cue that connects these facts to something familiar.')}</p><button type="button" onClick={onPersonalize} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 font-bold text-white">{tr('study_create', 'Create my cue')}</button></div>}
+          {!card.cueNeedsReview && card.mode === 'scaffolded' && !customized && <p className="mt-3 text-sm text-slate-600">{tr('study_scaffold_note', 'This is a starter. Make it yours when you are ready.')}</p>}
           {lastAttempt && <p className="mt-4 text-sm text-slate-600">{revisit ? tr('study_revisit', 'Ready for another practice? Try recalling this again today.') : reviewPlan.date ? tr('study_review_date', 'Your next practice is planned for {date}.', { date: new Date(reviewPlan.date + 'T12:00:00').toLocaleDateString() }) : tr('study_recent_practice', 'You practiced this recently. Return later to see what you remember.')}</p>}
         </div>
         {card.visualImage && visualMatches && <figure className="rounded-2xl bg-teal-50 p-3"><img src={card.visualImage} alt={_maVisualAltIsTrustworthy(card) ? card.visualAlt : buildMemoryAidVisualAlt(card)} className="mx-auto max-h-72 w-full rounded-xl object-contain" /><figcaption className="mt-2 text-xs text-slate-600">{tr('study_visual_caption', 'Picture cue — connect it to the facts below.')}</figcaption></figure>}
@@ -2192,10 +2300,10 @@ function MemoryAidStudyCard({ card, attempts, busy, isProcessing, isTeacherMode,
         {canGenerate && !isProcessing && !busy && !['queued', 'generating', 'off', 'student'].includes(card.visualStatus) && <button type="button" onClick={onGenerate} className="min-h-11 rounded-xl border border-teal-300 bg-white px-3 py-2 font-bold text-teal-900">{card.visualStatus === 'failed' ? tr('study_visual_retry', 'Retry picture') : tr('study_visual_add', 'Add picture')}</button>}
       </div>}
       <section aria-label={tr('facts_student_aria', 'Facts to remember')}>
-        <h3 className="text-base font-bold text-slate-900">{customized ? tr('study_custom_facts', 'Facts to keep in your cue') : tr('mapping_heading', 'How the cue connects')}</h3>
+        <h3 className="text-base font-bold text-slate-900">{card.cueNeedsReview ? tr('facts_student_heading', 'Facts to remember') : customized ? tr('study_custom_facts', 'Facts to keep in your cue') : tr('mapping_heading', 'How the cue connects')}</h3>
         {connections.length > 0 && !diagram ? <dl className="mt-2 divide-y divide-slate-200">{connections.map((row, i) => <div key={i} className="grid gap-1 py-3 sm:grid-cols-[minmax(6rem,1fr)_3fr]"><dt className="break-words font-bold text-teal-800">{row.cue}</dt><dd className="text-sm leading-relaxed text-slate-700">{card.essentialFacts[row.factIndex]}{row.explanation && <span className="mt-1 block text-slate-600">{row.explanation}</span>}</dd></div>)}</dl> : <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">{card.essentialFacts.map((fact, i) => <li key={i}>{fact}</li>)}</ul>}
         {connections.length > 0 && !diagram && unmappedFacts.length > 0 && <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">{unmappedFacts.map((fact, i) => <li key={i}>{fact}</li>)}</ul>}
-        {!customized && !connections.length && card.mapping && <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{card.mapping}</p>}
+        {!card.cueNeedsReview && !customized && !connections.length && card.mapping && <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{card.mapping}</p>}
         {!ready.ok && <p className="mt-3 text-sm text-slate-600">{_maTrMsg(tr, ready.reason)}</p>}
       </section>
       {card.hookFact && <details className="text-sm"><summary className="min-h-11 cursor-pointer py-2 font-bold text-teal-800">{tr('study_explore', 'Explore more')}</summary><h4 className="mt-2 font-bold text-slate-800">{tr('hook_heading', 'Did you know?')}</h4>{!card.hookFact.webVerified && <p className="mt-2 text-xs text-slate-600">{tr('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.')}</p>}<p className="mt-2 text-slate-700">{card.hookFact.text}</p>{card.hookFact.webVerified && card.hookFact.sourceUrl && <a href={card.hookFact.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-teal-800 underline">{card.hookFact.sourceTitle || card.hookFact.sourceHost}</a>}</details>}
@@ -2280,7 +2388,7 @@ function MemoryAidPracticePanel(props) {
   const {
     card, domIdBase, session, attempts, isProcessing, canSpeak, blockedByOtherPractice, saveEvidence, storageWarning,
     onStart, onChange, onReveal, onFactCheck, onRepeat, onClose, onSpeak, readAloudControl,
-    onDeleteAttempt, onClearHistory, onSaveRevision, onSaveFollowUp, onFollowUpChange, onResume, recallReadAloud, t,
+    onDeleteAttempt, onClearHistory, onSaveRevision, onSaveFollowUp, onResolveFollowUpConflict, onFollowUpChange, onResume, recallReadAloud, t,
   } = props;
   const tr = _maMakeTr(t);
   const trMeta = (prefix, id, field, table) => _maTrMeta(tr, prefix, id, field, table);
@@ -2452,7 +2560,7 @@ function MemoryAidPracticePanel(props) {
             <button type="button" onClick={() => onSaveRevision(revisionStrategy)} disabled={!revisionStrategy.trim() || session.followUpSaving || session.revisionSaving} className="mt-3 min-h-11 rounded-xl bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2">{tr('review_save_goal', 'Save goal and revise cue')}</button>
           </section>
         )}
-        {summary.complete && <MemoryAidFollowUp card={card} session={session} onChange={onFollowUpChange || onChange} onSave={onSaveFollowUp} tr={tr} saveEvidence={saveEvidence} />}
+        {summary.complete && <MemoryAidFollowUp card={card} session={session} onChange={onFollowUpChange || onChange} onSave={onSaveFollowUp} onResolveConflict={onResolveFollowUpConflict} tr={tr} saveEvidence={saveEvidence} />}
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={() => onRepeat()} disabled={!summary.complete} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">{tr('review_practice_again', 'Practice again')}</button><button type="button" onClick={() => onRepeat('none')} disabled={!summary.complete} className="min-h-11 rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-teal-900">{tr('practice_try_without', 'Try without hints')}</button>
           <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{summary.needsPractice ? tr('review_return_revise', 'Return to revise the aid') : tr('review_return_card', 'Return to card')}</button>
@@ -2758,10 +2866,10 @@ function MemoryAidView(props) {
     if (!resourceActive || !isTeacherMode || typeof handleNoteUpdate !== 'function' || data.schemaVersion >= 2) return;
     if (migratedResourceRef.current === resourceKey) return;
     migratedResourceRef.current = resourceKey;
-    const needsUpgrade = cards.some(card => !card.factVerified && !card.factReviewHold && card.factLocked && card.essentialFacts.length > 0);
+    const needsUpgrade = cards.some(card => !card.factVerified && !card.factReviewHold && !memoryAidHasUnresolvedFactDisputes(card) && card.factLocked && card.essentialFacts.length > 0);
     if (needsUpgrade) {
       commitField('cards', current => normalizeMemoryAidCards(Array.isArray(current) ? current : cards, data.authorshipMode)
-        .map(normalized => (normalized.factVerified || normalized.factReviewHold || !normalized.factLocked || normalized.essentialFacts.length === 0)
+        .map(normalized => (normalized.factVerified || normalized.factReviewHold || memoryAidHasUnresolvedFactDisputes(normalized) || !normalized.factLocked || normalized.essentialFacts.length === 0)
           ? normalized
           : applyMemoryAidCardPatch(normalized, { factVerified: true })));
     }
@@ -2820,6 +2928,13 @@ function MemoryAidView(props) {
         ownerIdentity: ownerAtRegistration,
         cards: read.state.cards,
       });
+      setPracticeByCard(previous => Object.fromEntries(Object.entries(previous).map(([cardId, session]) => {
+        const saved = read.state.cards[cardId]?.find(item => item.id === session.attempt?.id);
+        if (!saved) return [cardId, session];
+        const controller = followUpWriteRef.current[ownerAtRegistration + '|' + saved.id];
+        if (controller) { controller.baseline = saved; controller.persisted = true; }
+        return [cardId, _maFollowUpSession(session, saved, controller)];
+      })));
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -2962,13 +3077,13 @@ function MemoryAidView(props) {
   const finishEditing = () => {
     // Count from the CURRENT snapshot: the updater below runs later, inside the
     // host's state update, so a counter incremented in it is still zero here.
-    const verifiedCount = cards.filter(item => !item.factVerified && !item.factReviewHold && item.factLocked && item.essentialFacts.length > 0).length;
-    const heldCount = cards.filter(item => item.factReviewHold).length;
+    const verifiedCount = cards.filter(item => !item.factVerified && !item.factReviewHold && !memoryAidHasUnresolvedFactDisputes(item) && item.factLocked && item.essentialFacts.length > 0).length;
+    const heldCount = cards.filter(item => item.factReviewHold || (!item.factVerified && memoryAidHasUnresolvedFactDisputes(item))).length;
     commitField('cards', current => normalizeMemoryAidCards(
       Array.isArray(current) ? current : cards,
       data.authorshipMode
     ).map(normalized => {
-      if (normalized.factVerified || normalized.factReviewHold || !normalized.factLocked || normalized.essentialFacts.length === 0) return normalized;
+      if (normalized.factVerified || normalized.factReviewHold || memoryAidHasUnresolvedFactDisputes(normalized) || !normalized.factLocked || normalized.essentialFacts.length === 0) return normalized;
       return applyMemoryAidCardPatch(normalized, { factVerified: true });
     }));
     const summary = verifiedCount === 0 && heldCount === 0
@@ -3102,6 +3217,12 @@ function MemoryAidView(props) {
       return false;
     }
     setPrivatePracticeState({ ownerIdentity: ownerAtStart, cards: result.cards });
+    if (result.applied) {
+      const key = ownerAtStart + '|' + attempt.id;
+      const controller = followUpWriteRef.current[key] || (followUpWriteRef.current[key] = { pending: {}, running: null, conflict: null });
+      controller.persisted = true;
+      controller.baseline = result.cards?.[card.id]?.find(item => item.id === attempt.id) || attempt;
+    }
     reportPracticeStorageScope(result.scope);
     if (!result.applied && ['attempt-tombstoned', 'attempt-missing'].includes(result.reason)) {
       setPracticeStorageWarning(tr('warn_attempt_removed_elsewhere', 'This attempt was removed in another tab and was not restored. Start a new recall attempt if you want to save new evidence.'));
@@ -3111,47 +3232,131 @@ function MemoryAidView(props) {
     return true;
   };
 
-  const patchPrivateFollowUp = async (card, attemptId, patch) => {
+  const patchPrivateFollowUp = async (card, attemptId, patch, expected) => {
     if (isTeacherMode || previewMode || learnerReadOnly) return null;
     const owner = currentPracticeOwnerIdentity;
     let result;
-    try { result = await mutateMemoryAidPrivatePractice(resourceKey, { action: 'patch-followup', cardId: card.id, attemptId, patch }, cards, activePracticeProfileId); }
+    try { result = await mutateMemoryAidPrivatePractice(resourceKey, { action: 'patch-followup', cardId: card.id, attemptId, patch, expected }, cards, activePracticeProfileId); }
     catch (_) { result = { ok: false, applied: false, scope: 'failed', reason: 'storage-unavailable' }; }
     if (!practiceMutationCanCommit(owner)) return null;
     if (result.ok) { setPrivatePracticeState({ ownerIdentity: owner, cards: result.cards }); const scopeKey = owner + '|' + result.scope; if (followUpScopeRef.current !== scopeKey) { followUpScopeRef.current = scopeKey; reportPracticeStorageScope(result.scope); } }
-    if (!result.ok || !result.applied) setPracticeStorageWarning(result.reason === 'attempt-tombstoned' || result.reason === 'attempt-missing' ? tr('followup_removed', 'This private attempt is no longer saved. Your current text is still here to copy; saving will not recreate a removed attempt.') : tr('followup_error', 'Could not save these changes. Keep this view open and use Save private practice plan to retry.'));
+    if (result.reason === 'followup-conflict') setPracticeStorageWarning(tr('followup_conflict', 'This part of your plan changed in another tab. Your changes are still here. Choose which version to keep.'));
+    else if (!result.ok || !result.applied) setPracticeStorageWarning(result.reason === 'attempt-tombstoned' || result.reason === 'attempt-missing' ? tr('followup_removed', 'This private attempt is no longer saved. Your current text is still here to copy; saving will not recreate a removed attempt.') : tr('followup_error', 'Could not save these changes. Keep this view open and use Save private practice plan to retry.'));
     return result;
   };
   const saveFollowUp = async (card, patch) => {
-    const session = visiblePracticeByCard[card.id];
+    const session = latestPracticeSessionRef.current[card.id];
     if (!session?.attempt || isTeacherMode || previewMode || learnerReadOnly) return;
     const attemptId = session.attempt.id, owner = currentPracticeOwnerIdentity, key = owner + '|' + attemptId;
-    const serial = (followUpWriteRef.current[key] || 0) + 1; followUpWriteRef.current[key] = serial;
+    const controller = followUpWriteRef.current[key] || (followUpWriteRef.current[key] = {
+      baseline: session.attempt, pending: {}, persisted: !!session.resumeFollowUp || !!privatePracticeByCard[card.id]?.some(item => item.id === attemptId), running: null, conflict: null,
+    });
+    if (patch) {
+      const next = { ...patch };
+      const local = { ...controller.baseline, ...Object.fromEntries(Object.entries(controller.pending).map(([field, entry]) => [field, entry.value])) };
+      if (next.applicationQuestion && next.applicationQuestion !== local.applicationQuestion && local.applicationResponse) {
+        next.applicationHistory = _maMergeApplicationHistory(local.applicationHistory || [], [local]);
+      }
+      for (const field of _MA_FOLLOWUP_FIELDS) if (Object.prototype.hasOwnProperty.call(next, field)) {
+        controller.pending[field] = { value: next[field], before: controller.pending[field]?.before ?? controller.baseline[field] };
+      }
+    }
+    if (controller.conflict) return { ok: true, applied: false, reason: 'followup-conflict' };
+    if (controller.running) return controller.running;
     updatePracticeSession(card.id, { followUpSaving: true, followUpSaved: false, followUpError: false });
-    const result = await patchPrivateFollowUp(card, attemptId, patch);
-    if (!practiceMutationCanCommit(owner) || followUpWriteRef.current[key] !== serial || !result) return;
-    const saved = result.ok && result.applied, attempt = result.cards?.[card.id]?.find(item => item.id === attemptId);
-    setPracticeByCard(previous => previous[card.id]?.attempt?.id !== attemptId ? previous : ({ ...previous, [card.id]: { ...previous[card.id], ...(saved && attempt ? { attempt } : {}), followUpSaving: false, followUpSaved: saved, followUpError: !saved } }));
+    const run = async () => {
+      let result;
+      do {
+        const sent = { ...controller.pending };
+        const changes = Object.fromEntries(Object.entries(sent).map(([field, entry]) => [field, entry.value]));
+        const expected = Object.fromEntries(Object.entries(sent).map(([field, entry]) => [field, entry.before]));
+        result = await patchPrivateFollowUp(card, attemptId, changes, expected);
+        if (!result || !practiceMutationCanCommit(owner)) return result;
+        // Only an attempt that has never reached storage may be created here.
+        // Tombstones still win, and createOnly cannot replace another writer's record.
+        if (result.reason === 'attempt-missing' && !controller.persisted && !session.resumeFollowUp) {
+          const recovery = normalizeMemoryAidPracticeAttempt({ ...session.attempt, ...changes }, card, 0);
+          result = await mutateMemoryAidPrivatePractice(resourceKey, { action: 'upsert-attempt', cardId: card.id, attempt: recovery, createOnly: true }, cards, activePracticeProfileId);
+          if (!practiceMutationCanCommit(owner)) return result;
+          if (result.reason === 'attempt-exists') result = await patchPrivateFollowUp(card, attemptId, changes, expected);
+          if (result?.ok) setPrivatePracticeState({ ownerIdentity: owner, cards: result.cards });
+          else setPracticeStorageWarning(tr('followup_error', 'Could not save these changes. Keep this view open and use Save private practice plan to retry.'));
+        }
+        const latest = result?.cards?.[card.id]?.find(item => item.id === attemptId);
+        if (result?.reason === 'followup-conflict') {
+          controller.conflict = { fields: result.conflicts || [], latest };
+          break;
+        }
+        if (!result?.ok || !result.applied || !latest) break;
+        controller.persisted = true; controller.baseline = latest;
+        for (const [field, entry] of Object.entries(sent)) {
+          if (controller.pending[field] === entry) delete controller.pending[field];
+          else if (controller.pending[field]) controller.pending[field].before = latest[field];
+        }
+        setPracticeStorageWarning(memoryAidPracticeStorageWarning(result.scope));
+      } while (Object.keys(controller.pending).length && practiceMutationCanCommit(owner));
+      if (!practiceMutationCanCommit(owner)) return result;
+      const saved = !!result?.ok && result.applied && !Object.keys(controller.pending).length;
+      const conflict = controller.conflict;
+      setPracticeByCard(previous => previous[card.id]?.attempt?.id !== attemptId ? previous : ({ ...previous, [card.id]: {
+        ..._maFollowUpSession(previous[card.id], controller.baseline, controller), followUpSaving: false, followUpSaved: saved, followUpError: !saved && !conflict,
+        followUpConflict: _maFollowUpConflictView(conflict),
+      } }));
+      return result;
+    };
+    controller.running = run().finally(() => { controller.running = null; });
+    return controller.running;
   };
   const changeFollowUp = (card, patch) => {
-    if (isTeacherMode || previewMode) { updatePracticeSession(card.id, patch); return; }
     if (learnerReadOnly) return;
     const next = { ...patch };
     if ('nextReviewDate' in next) next.reviewSchedule = next.nextReviewDate ? 'date' : 'off';
     if (Object.keys(next).some(key => key.startsWith('application'))) {
       next.applicationQuestion = card.applicationQuestion || tr('application_fallback', 'Give a new example of {target}. Explain how the facts help you predict or explain what happens.', { target: card.target });
+      const current = latestPracticeSessionRef.current[card.id];
+      const currentQuestion = current?.applicationQuestion ?? current?.attempt?.applicationQuestion;
+      if (currentQuestion !== next.applicationQuestion) Object.assign(next, { applicationResponse: '', applicationRevealed: false, applicationCheck: '', ...patch });
     }
     updatePracticeSession(card.id, next);
+    if (isTeacherMode || previewMode) return;
     void saveFollowUp(card, next);
   };
-  const adjustReviewDate = async (card, attempt, date) => { await patchPrivateFollowUp(card, attempt.id, { nextReviewDate: date, reviewSchedule: date ? 'date' : 'off' }); };
+  const resolveFollowUpConflict = async (card, keepMine) => {
+    const session = latestPracticeSessionRef.current[card.id], owner = currentPracticeOwnerIdentity;
+    const controller = session?.attempt && followUpWriteRef.current[owner + '|' + session.attempt.id];
+    if (!controller?.conflict) return;
+    const latest = _maReadPrivatePracticeState(resourceKey, cards, activePracticeProfileId).state.cards[card.id]?.find(item => item.id === session.attempt.id);
+    if (!latest) { controller.conflict = null; return saveFollowUp(card); }
+    const compared = controller.conflict;
+    if (keepMine && compared.fields.some(field => JSON.stringify(latest[field] ?? null) !== JSON.stringify(compared.latest?.[field] ?? null))) {
+      // Approval applies to the saved values displayed in the comparison.
+      // A later edit needs a fresh comparison, even if a storage event already
+      // refreshed the controller's baseline while this conflict was open.
+      controller.baseline = latest;
+      controller.conflict = { ...compared, latest, changedAgain: true };
+      setPracticeByCard(previous => previous[card.id]?.attempt?.id !== latest.id ? previous : ({ ...previous, [card.id]: _maFollowUpSession(previous[card.id], latest, controller) }));
+      setPracticeStorageWarning(tr('followup_conflict_changed_again', 'The saved plan changed again. Review the updated saved version, then choose which changes to keep.'));
+      return;
+    }
+    const conflictFields = !keepMine && controller.conflict.fields.some(field => field.startsWith('application'))
+      ? _MA_FOLLOWUP_FIELDS.filter(field => field.startsWith('application') && field !== 'applicationHistory') : controller.conflict.fields;
+    for (const field of conflictFields) {
+      if (keepMine && controller.pending[field]) controller.pending[field].before = compared.latest?.[field];
+      else delete controller.pending[field];
+    }
+    controller.baseline = latest; controller.conflict = null;
+    setPracticeByCard(previous => previous[card.id]?.attempt?.id !== latest.id ? previous : ({ ...previous, [card.id]: { ..._maFollowUpSession(previous[card.id], latest, controller), followUpConflict: null } }));
+    return saveFollowUp(card);
+  };
+  const adjustReviewDate = async (card, attempt, date) => { await patchPrivateFollowUp(card, attempt.id, { nextReviewDate: date, reviewSchedule: date ? 'date' : 'off' }, { nextReviewDate: attempt.nextReviewDate, reviewSchedule: attempt.reviewSchedule }); };
   const resumeFollowUp = (card, attemptId) => {
     const attempts = privatePracticeByCard[card.id] || [];
     const candidates = typeof attemptId === 'string' ? attempts.filter(attempt => attempt.id === attemptId) : attempts;
     const latest = memoryAidReviewPlan(card, candidates).latest;
     if (!latest || isTeacherMode || previewMode || learnerReadOnly) return;
+    const controller = followUpWriteRef.current[currentPracticeOwnerIdentity + '|' + latest.id];
     setPracticeOwnerIdentity(currentPracticeOwnerIdentity);
-    setPracticeByCard({ [card.id]: { stage: 'review', cardKey: memoryAidPracticeBasis(card), supportMode: latest.supportMode, attempt: latest, followUpSaved: true, resumeFollowUp: true } });
+    setPracticeByCard({ [card.id]: _maFollowUpSession({ stage: 'review', cardKey: memoryAidPracticeBasis(card), supportMode: latest.supportMode, followUpSaved: true, resumeFollowUp: true }, latest, controller) });
     navigateStudy(card.id, 'recall', false);
   };
 
@@ -3296,15 +3501,7 @@ function MemoryAidView(props) {
     }), card, 0);
     if (!attempt) return;
     updatePracticeSession(card.id, { revisionSaving: true });
-    let result = await patchPrivateFollowUp(card, currentAttempt.id, { revisionDraft: revisionStrategy, revisionPlan: attempt.revisionPlan });
-    // Explicitly committing a goal can retry the first save of a new attempt.
-    // Resumed records stay patch-only, and upsert still rejects tombstones.
-    if (result?.reason === 'attempt-missing' && !session.resumeFollowUp) {
-      const pendingFields = ['applicationQuestion','applicationResponse','applicationRevealed','applicationCheck','nextReviewDate','reviewSchedule'];
-      const pending = Object.fromEntries(pendingFields.filter(key => Object.prototype.hasOwnProperty.call(session, key)).map(key => [key, session[key]]));
-      const recovery = normalizeMemoryAidPracticeAttempt({ ...attempt, ...pending, revisionDraft: revisionStrategy }, card, 0);
-      if (await persistPracticeAttempt(card, recovery)) result = { ok: true, applied: true };
-    }
+    const result = await saveFollowUp(card, { revisionDraft: revisionStrategy, revisionPlan: attempt.revisionPlan });
     if (!result || latestPracticeSessionRef.current[card.id]?.attempt?.id !== currentAttempt.id) return;
     updatePracticeSession(card.id, { revisionSaving: false, followUpError: !result.ok || !result.applied });
     if (!result.ok || !result.applied) return;
@@ -3571,6 +3768,12 @@ function MemoryAidView(props) {
     const visualSource = editor && editor.sourceKind === 'uploaded'
       ? 'uploaded'
       : normalizeMemoryAidVisualSource(card.visualSource, true);
+    const pendingVisual = asyncOperationRef.current.byCard[card.id];
+    if (pendingVisual && ['visual', 'visual-edit', 'visual-check'].includes(pendingVisual.task)) {
+      // A manual choice wins even if the provider ignores abort or the pixels match.
+      finishAsyncOperation(pendingVisual);
+      try { pendingVisual.controller?.abort(); } catch (_) {}
+    }
     updateCard(card.id, {
       visualImage,
       visualSource,
@@ -3912,11 +4115,12 @@ function MemoryAidView(props) {
                   onRepeat={(supportMode) => repeatPractice(card, supportMode)}
                   onClose={() => closePractice(card.id, practiceReviewSummary && practiceReviewSummary.needsPractice ? 'draft' : 'start')}
                   onSpeak={() => speakPracticeCue(card)}
-                  readAloudControl={CueReadAloud ? <CueReadAloud resource={props.referenceResource || generatedContent} cardId={card.id} text={memoryAidPracticeCue(card)} allowRuntimeAi={allowRuntimeAi} t={tProp} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} /> : null}
+                  readAloudControl={CueReadAloud ? <CueReadAloud resource={props.referenceResource || generatedContent} cardId={card.id} text={buildMemoryAidPracticeCueText(card, tr, { cueOnly: true })} allowRuntimeAi={allowRuntimeAi} t={tProp} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} /> : null}
                   onDeleteAttempt={(attemptId) => deletePracticeAttempt(card, attemptId)}
                   onClearHistory={() => clearPracticeHistory(card)}
                   onSaveRevision={(strategy) => savePracticeRevision(card, strategy)}
-                  onSaveFollowUp={(patch) => saveFollowUp(card, patch)}
+                  onSaveFollowUp={() => saveFollowUp(card)}
+                  onResolveFollowUpConflict={(keepMine) => resolveFollowUpConflict(card, keepMine)}
                   onFollowUpChange={patch => changeFollowUp(card, patch)}
                   onResume={!isTeacherMode && !previewMode && !learnerReadOnly ? attemptId => resumeFollowUp(card, attemptId) : null}
                   recallReadAloud={LocalReadAloud && memoryAidRecallQuestion(card) ? <LocalReadAloud text={memoryAidRecallQuestion(card)} t={tProp} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} /> : null}
@@ -3928,7 +4132,8 @@ function MemoryAidView(props) {
                 </nav>}
                 <div hidden={isEditing || activity !== 'study'}><MemoryAidStudyCard card={!hostIsProcessing && ['queued', 'generating'].includes(card.visualStatus) ? { ...card, visualStatus: 'failed' } : card} attempts={practiceAttempts} busy={busy} isProcessing={isProcessing} isTeacherMode={isTeacherMode} canGenerate={canManageVisual && !!callImagen} onGenerate={() => requestVisual(card)} onPersonalize={() => navigateStudy(card.id, 'personalize')} onRecall={() => navigateStudy(card.id, 'recall', false)} onResume={!isTeacherMode && !previewMode && !learnerReadOnly ? () => resumeFollowUp(card) : null} tr={tr} /></div>
                 <div hidden={!isEditing && activity !== 'personalize'} className="memory-aid-personalize space-y-4">
-                {!isEditing && memoryAidPracticeCue(card) && <section className="rounded-xl border border-teal-200 bg-teal-50 p-4"><h3 className="text-sm font-bold text-teal-900">{tr('personalize_current', 'Current memory cue')}</h3><p className="mt-2 whitespace-pre-wrap text-lg font-bold text-slate-900">{memoryAidPracticeCue(card)}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => navigateStudy(card.id)} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">{tr('personalize_keep', 'Use this cue')}</button>{!card.studentDraft.trim() && <button type="button" onClick={() => { updateCard(card.id, { studentDraft: memoryAidPracticeCue(card), visualNeedsReview: card.visualNeedsReview }); const draft = document.getElementById(domIdBase + '-draft'); if (draft) draft.focus(); }} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-900">{tr('personalize_copy', 'Edit a copy')}</button>}</div><p className="mt-2 text-xs text-slate-600">{tr('personalize_choice', 'Keep this cue, edit a copy, or write your own below. Explaining your connection is optional unless your teacher requires it.')}</p></section>}
+                {!isEditing && !card.cueNeedsReview && memoryAidPracticeCue(card) && <section className="rounded-xl border border-teal-200 bg-teal-50 p-4"><h3 className="text-sm font-bold text-teal-900">{tr('personalize_current', 'Current memory cue')}</h3><p className="mt-2 whitespace-pre-wrap text-lg font-bold text-slate-900">{memoryAidPracticeCue(card)}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => navigateStudy(card.id)} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">{tr('personalize_keep', 'Use this cue')}</button>{!card.studentDraft.trim() && <button type="button" onClick={() => { updateCard(card.id, { studentDraft: memoryAidPracticeCue(card), visualNeedsReview: card.visualNeedsReview }); const draft = document.getElementById(domIdBase + '-draft'); if (draft) draft.focus(); }} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-900">{tr('personalize_copy', 'Edit a copy')}</button>}</div><p className="mt-2 text-xs text-slate-600">{tr('personalize_choice', 'Keep this cue, edit a copy, or write your own below. Explaining your connection is optional unless your teacher requires it.')}</p></section>}
+                {card.cueNeedsReview && <section data-memory-cue-review className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p>{card.studentCueNeedsReview ? tr('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.') : isTeacherMode ? tr('cue_review_teacher', 'The target or facts changed. Review the earlier cue, scaffold, and explanation below. They stay out of study and recall until you confirm that they match the current facts.') : tr('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.')}</p>{isTeacherMode && isEditing && <button type="button" disabled={!card.factVerified || !card.factLocked} onClick={() => updateCard(card.id, { cueNeedsReview: false })} className="mt-2 min-h-11 rounded-xl border border-amber-500 bg-white px-3 py-2 font-bold disabled:opacity-50">{tr('cue_review_confirm', 'I reviewed the cue against these facts')}</button>}{card.studentCueNeedsReview && !isTeacherMode && !previewMode && !learnerReadOnly && <button type="button" disabled={card.teacherCueNeedsReview || !card.factVerified || !card.factLocked} onClick={() => updateCard(card.id, { cueFactBasis: memoryAidCueFactBasis(card) })} className="mt-2 min-h-11 rounded-xl border border-amber-500 bg-white px-3 py-2 font-bold disabled:opacity-50">{tr('cue_review_own_confirm', 'My cue matches the current facts')}</button>}</section>}
                 {isEditing && derivedSnapshots[card.id] && <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p>{tr('derived_cleared_note', 'Changing the target or facts cleared this card\'s recall question, application question, cue connections, or fun fact, because they may no longer match. Restore them to review and edit, or keep them cleared.')}</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={() => restoreDerived(card.id)} className="min-h-11 rounded-xl border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950">{tr('derived_restore', 'Restore for review')}</button><button type="button" onClick={() => setDerivedSnapshot(card.id, null)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">{tr('derived_keep_cleared', 'Keep them cleared')}</button></div></div>}
                 {isEditing && <section className="rounded-xl border border-teal-200 p-3"><label className="block text-sm font-bold">{tr('recall_question_editor', 'Question for recall without hints')}<textarea aria-label={tr('recall_question_aria', 'Recall question for {target}', { target: card.target })} value={card.recallQuestion} rows={2} maxLength={1600} onChange={e => updateCard(card.id, { recallQuestion: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label><p className="mt-2 text-sm text-slate-600">{tr('recall_question_help', 'Identify the topic or situation without including the facts, mnemonic, or answer. This question also appears on the worksheet without hints.')}</p>{card.recallQuestion.trim() && !memoryAidRecallQuestion(card) && <p role="status" className="mt-2 text-sm text-amber-950">{tr('recall_question_copy', 'This question appears to copy an answer or cue. Rewrite it before using it in recall without hints.')}</p>}</section>}
                 {isEditing && <details className="rounded-xl border border-slate-200 p-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold">{tr('application_editor', 'Application question and guidance')}</summary><label className="mt-2 block text-sm font-bold">{tr('application_question', 'Application question')}<textarea aria-label={tr('application_question', 'Application question')} value={card.applicationQuestion} maxLength={1600} rows={2} onChange={e => updateCard(card.id, { applicationQuestion: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label><label className="mt-2 block text-sm font-bold">{tr('application_guidance', 'Check your reasoning')}<textarea aria-label={tr('application_guidance', 'Check your reasoning')} value={card.applicationGuidance} maxLength={2000} rows={2} onChange={e => updateCard(card.id, { applicationGuidance: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label></details>}
@@ -4004,7 +4209,7 @@ function MemoryAidView(props) {
                   </section>
                 )}
 
-                {card.mode === 'scaffolded' && (
+                {card.mode === 'scaffolded' && (!card.cueNeedsReview || isTeacherMode && isEditing) && (
                   <section className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
                     <h3 className="text-sm font-black text-indigo-950">{tr('scaffold_heading', 'Build it with support')}</h3>
                     {isTeacherMode && isEditing ? <textarea aria-label={tr('scaffold_starter_aria', 'Scaffold starter for {target}', { target: card.target })} value={card.scaffoldStarter} onChange={(event) => updateCard(card.id, { scaffoldStarter: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" /> : <p className="mt-2 whitespace-pre-wrap text-sm font-bold text-slate-900">{card.scaffoldStarter}</p>}

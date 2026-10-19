@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "任務觀察紀錄",
+  "stem.flightsim.mission_journal_targets": "已擷取目標：{captured}/{total}。",
+  "stem.flightsim.mission_journal_complete": "已記錄所有任務目標的完成情況與返航降落。",
+  "stem.flightsim.mission_journal_ended": "任務結束時，尚未記錄全部完成證據。",
+  "stem.flightsim.mission_journal_recovery": "已記錄倖存者救援：{value}。",
+  "stem.flightsim.mission_journal_return": "已記錄返回基地降落：{value}。",
+  "stem.flightsim.mission_guidance_title": "任務引導",
+  "stem.flightsim.mission_route": "{target} · 方位 {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "起飛點",
+  "stem.flightsim.mission_read_status": "朗讀任務狀態",
+  "stem.flightsim.mission_return_criterion": "在距離{target} {distance} nm以內降落，地速低於{speed} kt，下降率低於{fpm} fpm。",
+  "stem.flightsim.mission_unavailable": "無法取得任務目標資料。請結束本次飛行並開始新任務。",
+  "stem.flightsim.mission_capture_criterion": "保持在{distance} ft以內，離地高度高於{min} ft且低於{max} ft，地速低於{speed} kt，持續{hold} s。"
+}

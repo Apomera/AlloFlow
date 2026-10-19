@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Αποτελέσματα αναζήτησης: {cards} κάρτες σε {topics} θέματα.",
+  "stem.flightsim.learn_library_counts": "{cards} κάρτες · {topics} θέματα",
+  "stem.flightsim.learn_search_clear": "Εκκαθάριση αναζήτησης",
+  "stem.flightsim.learn_search_empty": "Καμία εκπαιδευτική κάρτα δεν ταιριάζει με το «{query}». Δοκιμάστε άλλον όρο ή εκκαθαρίστε την αναζήτηση.",
+  "stem.flightsim.learn_search_none": "Δεν βρέθηκαν αντίστοιχες εκπαιδευτικές κάρτες",
+  "stem.flightsim.learn_search_cards": "{count} εκπαιδευτικές κάρτες",
+  "stem.flightsim.quiz_review_progress": "Απαντήθηκαν {answered} από {total} ερωτήσεις · {missed} λανθασμένες",
+  "stem.flightsim.quiz_review_missed": "Επανάληψη λανθασμένων απαντήσεων",
+  "stem.flightsim.quiz_next_unanswered": "Επόμενη αναπάντητη ερώτηση",
+  "stem.flightsim.quiz_review_all_answered": "Κάθε ερώτηση έχει μια πρώτη απάντηση. Επανεξετάστε τις λανθασμένες ερωτήσεις για εξάσκηση χωρίς βαθμολογία ή ξεκινήστε νέα προσπάθεια.",
+  "stem.flightsim.planner_drone_agl": "{ft} πόδια πάνω από το έδαφος",
+  "stem.flightsim.sprint_native_title": "Αγώνας γεωγραφίας",
+  "stem.flightsim.sprint_timed_hint": "Η διαδρομή συνεχίζεται όσο απαντάτε. Κάντε παύση για να διαβάσετε και συνεχίστε πριν επιλέξετε απάντηση.",
+  "stem.flightsim.sprint_warp_reference": "Το ταξίδι επιταχύνεται για αυτή τη δραστηριότητα γεωγραφίας. Οι ενδείξεις ταχύτητας δείχνουν την αναφερόμενη ταχύτητα πλεύσης· αυτή η διαδρομή δεν μετρά τις επιδόσεις του αεροσκάφους.",
+  "stem.flightsim.sprint_save_menu": "Αποθήκευση αγώνα και επιστροφή στο μενού",
+  "stem.flightsim.sprint_next_stop": "Επόμενη στάση: {place}",
+  "stem.flightsim.geoq_approaching_city": "Ποια πόλη πλησιάζετε;",
+  "stem.flightsim.sprint_time_remaining": "Χρόνος που απομένει: {seconds} δευτερόλεπτα"
+}

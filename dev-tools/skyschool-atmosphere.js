@@ -31,8 +31,15 @@ function getFlightFogFrame(solarHour, weather, environment) {
     ? Math.max(0.25, Math.min(1, environment.visibilityFactor)) : 1;
   // Cap the clear range first, then apply weather. Capping after multiplying
   // visibility made overcast and clear skies share the same noon fog range.
-  var base = Math.min(95000, 240000 * (0.35 + 0.65 * lighting.brightness) * region);
-  var far = base * appearance.visibility;
+  // The distant terrain ring reaches past 100 nm, so a clear day can show
+  // about 74 nm of horizon (450,000 ft) instead of stopping at the near mesh:
+  // enough to see Mount Rainier from Seattle, 45 nm away, as people do.
+  var base = Math.min(450000, 1140000 * (0.35 + 0.65 * lighting.brightness) * region);
+  // Murky air keeps its short ranges (overcast about 11 nm, storm 6, fog 4);
+  // only clean air above about 0.7 visibility opens out to the clear-day range.
+  var visibility = appearance.visibility;
+  var clean = Math.max(0, Math.min(1, (visibility - 0.7) / 0.3));
+  var far = base / 450000 * (95000 * visibility + 355000 * clean * clean * (3 - 2 * clean));
   return { near: far * 0.25, far: far };
 }
 

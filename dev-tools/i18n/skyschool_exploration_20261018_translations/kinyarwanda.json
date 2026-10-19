@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Ibyavuye mu gushakisha: amakarita {cards} mu ngingo {topics}.",
+  "stem.flightsim.learn_library_counts": "Amakarita {cards} · ingingo {topics}",
+  "stem.flightsim.learn_search_clear": "Hanagura ibyo washakishije",
+  "stem.flightsim.learn_search_empty": "Nta makarita yo kwiga ahuye na “{query}”. Gerageza irindi jambo cyangwa uhanagure ibyo washakishije.",
+  "stem.flightsim.learn_search_none": "Nta makarita yo kwiga ahuye n’ibyashakishijwe",
+  "stem.flightsim.learn_search_cards": "Amakarita yo kwiga {count}",
+  "stem.flightsim.quiz_review_progress": "Hasubijwe ibibazo {answered} kuri {total} · ibyashubijwe nabi {missed}",
+  "stem.flightsim.quiz_review_missed": "Subiramo ibyashubijwe nabi",
+  "stem.flightsim.quiz_next_unanswered": "Ikibazo gikurikira kitarasubizwa",
+  "stem.flightsim.quiz_review_all_answered": "Buri kibazo gifite igisubizo cya mbere. Subiramo ibibazo washubije nabi mu myitozo itabarirwa amanota, cyangwa utangire irindi gerageza.",
+  "stem.flightsim.planner_drone_agl": "Futi {ft} hejuru y’ubutaka",
+  "stem.flightsim.sprint_native_title": "Irushanwa ryihuse rya geografiya",
+  "stem.flightsim.sprint_timed_hint": "Urugendo rukomeza mu gihe usubiza. Ruhagarike by’agateganyo kugira ngo usome; ukomeze mbere yo guhitamo igisubizo.",
+  "stem.flightsim.sprint_warp_reference": "Urugendo rurihutishwa muri iki gikorwa cya geografiya. Ibipimo by’umuvuduko byerekana umuvuduko w’urugendo watangajwe; iyi nzira ntipima imikorere y’indege.",
+  "stem.flightsim.sprint_save_menu": "Bika irushanwa usubire kuri menu",
+  "stem.flightsim.sprint_next_stop": "Aho guhagarara hakurikira: {place}",
+  "stem.flightsim.geoq_approaching_city": "Ni uwuhe mujyi wegereye?",
+  "stem.flightsim.sprint_time_remaining": "Igihe gisigaye: amasegonda {seconds}"
+}

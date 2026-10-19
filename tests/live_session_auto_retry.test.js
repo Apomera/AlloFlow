@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { sliceBetween } from './helpers/anchored_slice.js';
 const host=readFileSync('AlloFlowANTI.txt','utf8');
 function slice(start,end){const a=host.indexOf(start),b=host.indexOf(end,a);if(a<0||b<a)throw Error(start);return host.slice(a,b);}
 const createRetry=new Function('window',slice('function createLiveSessionRetryController(', 'const enqueueLiveSessionResourcePublish =')+';return createLiveSessionRetryController;')(window);
 const enqueue=new Function(slice('const enqueueLiveSessionResourcePublish =','const resolveRosterCodenamesToLiveUids =')+';return enqueueLiveSessionResourcePublish;')();
+// The pack effect filters teacher review copies through this host helper (real body, not a stub).
+const withoutReviewCopies=new Function(sliceBetween(host,'const _alloWithoutTeacherReviewCopies =','\n',{file:'AlloFlowANTI.txt',label:'_alloWithoutTeacherReviewCopies'})+';return _alloWithoutTeacherReviewCopies;')();
 let ST;const controllers=[];
 beforeAll(()=>{const win={};new Function('window',readFileSync('session_transport_module.js','utf8'))(win);ST=win.AlloModules.SessionTransport;});
 afterEach(()=>{controllers.splice(0).forEach(c=>c.dispose());vi.useRealTimers();});
@@ -90,7 +93,7 @@ describe('actual host retry and chunk wiring',()=>{
  it('retries the actual mailbox effect without any new history change',async()=>{
   vi.useFakeTimers();let cleanup;
   const push=vi.fn().mockRejectedValueOnce(new Error('temporary')).mockResolvedValue({rtcCount:0});
-  const values={useEffect:fn=>{cleanup=fn();},mbLive:{code:'class-a'},mbConfig:{url:'local',admin:'test'},isTeacherMode:true,activeSessionAppId:'test-app',history:[{id:'a',type:'quiz'}],mailboxResourcePublishQueuesRef:{current:{}},mbPackItemsRef:{current:[]},mbSentPacksRef:{current:{}},mbHostedPackFpRef:{current:''},mbLivePackRef:{current:null},createLiveSessionRetryController:createRetry,enqueueLiveSessionResourcePublish:enqueue,window:{AlloModules:{SessionTransport:ST}},_alloStudentSafeResources:r=>r,TEACHER_ONLY_TYPES:[],_alloProjectStudentActivityResource:r=>r,_alloQuickHash:s=>s,_alloSerializeResourceForStudentPack:r=>r,prepareMailboxResourceImages:async r=>r,_mbPushOneResource:push,_alloMailboxCallWithRetry:vi.fn(async()=>{}),generateUUID:()=> 'id',_alloRandomToken:()=> 'key',stripUndefined:r=>r,_alloEncodeAlloPack:async s=>s,_alloSplitPackChunks:s=>[s],doc:()=>({}),db:{},updateDoc:vi.fn(async()=>{}),warnLog:vi.fn(),_alloSessionSyncTrace:vi.fn()};
+  const values={useEffect:fn=>{cleanup=fn();},mbLive:{code:'class-a'},mbConfig:{url:'local',admin:'test'},isTeacherMode:true,activeSessionAppId:'test-app',history:[{id:'a',type:'quiz'}],mailboxResourcePublishQueuesRef:{current:{}},mbPackItemsRef:{current:[]},mbSentPacksRef:{current:{}},mbHostedPackFpRef:{current:''},mbLivePackRef:{current:null},createLiveSessionRetryController:createRetry,enqueueLiveSessionResourcePublish:enqueue,window:{AlloModules:{SessionTransport:ST}},_alloStudentSafeResources:r=>r,TEACHER_ONLY_TYPES:[],_alloProjectStudentActivityResource:r=>r,_alloQuickHash:s=>s,_alloSerializeResourceForStudentPack:r=>r,prepareMailboxResourceImages:async r=>r,_mbPushOneResource:push,_alloMailboxCallWithRetry:vi.fn(async()=>{}),generateUUID:()=> 'id',_alloRandomToken:()=> 'key',stripUndefined:r=>r,_alloEncodeAlloPack:async s=>s,_alloSplitPackChunks:s=>[s],doc:()=>({}),db:{},updateDoc:vi.fn(async()=>{}),warnLog:vi.fn(),_alloSessionSyncTrace:vi.fn(),_alloWithoutTeacherReviewCopies:withoutReviewCopies};
   const anchor=host.indexOf('// Firestore-parity: the class pack syncs AUTOMATICALLY');const start=host.indexOf('  useEffect(() => {',anchor),end=host.indexOf('  useEffect(() => {',start+10);
   new Function(...Object.keys(values),host.slice(start,end))(...Object.values(values));
   controllers.push({dispose:()=>cleanup()});await tick(1500);expect(push).toHaveBeenCalledOnce();await tick(2000);expect(push).toHaveBeenCalledTimes(2);

@@ -72,7 +72,12 @@ const dynamicPairs = () => {
     while ((m = re.exec(block))) {
       // eslint-disable-next-line no-eval
       let v; try { v = eval(m[2]); } catch (e) { continue; }
-      pairs.push({ key: `${m[1]}${suffix}`, source: v, from: `${name}.${field}` });
+      // A corrected entry names a fresh key stem (descId / nameId) so stale
+      // translations of the old text stop rendering; the call site then looks
+      // up that stem, so that is the key whose value must match.
+      const entry = block.slice(m.index, block.indexOf('\n', m.index + m[0].length));
+      const stem = new RegExp(`\\b${field}Id:\\s*'([A-Za-z0-9_]+)'`).exec(entry);
+      pairs.push({ key: `${stem ? stem[1] : m[1]}${suffix}`, source: v, from: `${name}.${field}` });
     }
   }
   // Every lesson entry opens with `short:`, not `title:` — an earlier version of
@@ -84,7 +89,9 @@ const dynamicPairs = () => {
   while ((m = lre.exec(src))) {
     // eslint-disable-next-line no-eval
     let v; try { v = eval(m[2]); } catch (e) { continue; }
-    pairs.push({ key: `${m[1]}_content`, source: v, from: 'LESSONS' });
+    const rest = src.slice(lre.lastIndex, src.indexOf('\n', lre.lastIndex));
+    const stem = /^,\s*contentId:\s*'([A-Za-z0-9_]+)'/.exec(rest);
+    pairs.push({ key: `${stem ? stem[1] : m[1]}_content`, source: v, from: 'LESSONS' });
   }
   return pairs;
 };

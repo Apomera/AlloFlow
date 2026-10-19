@@ -4,17 +4,17 @@
   "clientWidth": 318,
   "choices": [
     {
-      "height": 147.59375,
+      "height": 189.59375,
       "scrollWidth": 294,
       "clientWidth": 294
     },
     {
-      "height": 147.59375,
+      "height": 189.59375,
       "scrollWidth": 294,
       "clientWidth": 294
     },
     {
-      "height": 147.59375,
+      "height": 162.59375,
       "scrollWidth": 294,
       "clientWidth": 294
     }
@@ -67,17 +67,17 @@
     },
     {
       "text": "Confirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.",
-      "size": 16,
+      "size": 18,
       "clipped": false
     },
     {
       "text": "Open at the deepest-looking region first; the shallow ventral midline corridor can be re-established once the first opening is made.",
-      "size": 16,
+      "size": 18,
       "clipped": false
     },
     {
       "text": "Select a cutting instrument first and let the opening incision reveal where Heart (3-chamber), Liver (3 lobes), Lungs sit.",
-      "size": 16,
+      "size": 18,
       "clipped": false
     },
     {

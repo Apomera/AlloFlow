@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { readFileSync as readHostFile } from './helpers/host_source.js';
+import { loadAlloModule } from './setup.js';
 
 // A translation setting that half the generators ignore is worse than none,
 // because the teacher will trust it. This file is the standing proof that the
@@ -15,13 +17,16 @@ const mathHelpers = read('math_helpers_source.jsx');
 const personas = read('personas_source.jsx');
 const cmap = read('concept_map_handlers_source.jsx');
 const panel = read('view_sidebar_panels_source.jsx');
-const anti = read('AlloFlowANTI.txt');
+// The host with its moved bodies put back (profile/project restore now live in
+// host_handlers_source.jsx, the panel prop pass in view_sidebar_panels_source.jsx).
+const anti = readHostFile('AlloFlowANTI.txt', 'utf8');
 
 describe('the setting reaches every emitting path in the audit', () => {
   // Each entry: audit row -> a fragment that only exists because that path now
   // reads the resolved policy. Asserting the gate, not the prose.
   const DISPATCHER_PATHS = {
-    'glossary (translation language list)': `if (!_xlate.enabled) {`,
+    // ca07a6a91 (2026-09-03): the policy can only ADD its language to the glossary columns.
+    'glossary (translation language list)': `if (_xlate.enabled && _xlate.target && !langsReq.some(`,
     'adapted text (per-chunk gloss round trip)': `if (_xlate.enabled) {\n              if (isMultiChunk) setGenerationStatus(\`Translating section`,
     'adapted text (bilingual compose)': `_xlate.enabled && bilingualTranslationValid`,
     'adapted text (length-repair gloss)': `if (_xlate.enabled) {\n                  setGenerationStatus(t('status_steps.translating')`,
@@ -65,12 +70,15 @@ describe('the setting reaches every emitting path in the audit', () => {
 
   it('both lesson-plan entry points send the OUTPUT language, not the UI language', () => {
     // The split that made lesson plans look inconsistent (audit row 17/18).
-    expect(cmap).toContain('const planLanguage = leveledTextLanguage || currentUiLanguage');
+    // Now resolved by the shared UtilsPure.resolvePlanOutputLanguage (output language first).
+    expect(cmap).toContain('window.AlloModules.UtilsPure.resolvePlanOutputLanguage(leveledTextLanguage, currentUiLanguage)');
+    expect(cmap).toContain(": (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? leveledTextLanguage : (currentUiLanguage || 'English'));");
     for (const fn of ['buildStudyGuidePrompt', 'buildParentGuidePrompt', 'buildLessonPlanPrompt']) {
       expect(cmap, `${fn} no longer passes currentUiLanguage`).not.toContain(`${fn}(context, currentUiLanguage`);
       expect(cmap).not.toContain(`${fn}(context, assetManifest, currentUiLanguage`);
     }
-    expect(dispatcher).toContain('buildLessonPlanPrompt(context, assetManifest, effectiveLanguage');
+    // The dispatcher appends its Unit Path block to the context (a50636825); the language is unchanged.
+    expect(dispatcher).toMatch(/buildLessonPlanPrompt\(context(?: \+ _unitPathBlock)?, assetManifest, effectiveLanguage/);
   });
 
   it('the analysis path no longer reads the app UI language', () => {
@@ -79,8 +87,17 @@ describe('the setting reaches every emitting path in the audit', () => {
     expect(dispatcher).toContain('const targetUiLang = _xlate.target || effectiveLanguage;');
   });
 
-  it('the shared bilingual pipeline spends no second call when translations are off', () => {
-    expect(pipeline).toContain('if (!policy.enabled) return targetResult;');
+  it('the shared bilingual pipeline spends no second call when translations are off', async () => {
+    // Behavioral: run the real pipeline with a counting model stub.
+    loadAlloModule('text_pipeline_helpers_module.js');
+    const api = window.AlloModules.TextPipelineHelpers;
+    const offCalls = vi.fn(async () => 'Texto en espanol.');
+    await api.generateBilingualText('Write a passage.', 'Spanish', offCalls, api.resolveTranslationPolicy('off', 'Spanish', 'English'));
+    expect(offCalls).toHaveBeenCalledTimes(1);
+    const onCalls = vi.fn(async () => 'Texto en espanol.');
+    await api.generateBilingualText('Write a passage.', 'Spanish', onCalls, api.resolveTranslationPolicy('auto', 'Spanish', 'English'));
+    expect(onCalls.mock.calls.length, 'auto still asks for the translation').toBeGreaterThan(1);
+    expect(pipeline).toContain('if (!translationEnabled) return targetResult;');
     expect(anti).toContain('const getBilingualPromptInstruction = (targetLang, policy)');
     expect(anti).toContain('SINGLE LANGUAGE OUTPUT REQUIRED');
   });
@@ -90,7 +107,8 @@ describe('the setting reaches every emitting path in the audit', () => {
       expect(src, `${name} resolves a policy`).toContain('const _xlate = (typeof resolveTranslationPolicy === \'function\')');
       expect(src, `${name} uses the resolved target`).toContain("_xlate.target + ' translation in parentheses.'");
     }
-    expect(genHelpers).toContain('generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)');
+    // 14a2d9cfa (2026-09-26): the policy is spread into a 4th argument that also carries adaptation controls.
+    expect(genHelpers).toMatch(/generateBilingualText\(prompt, effectiveLanguage, callGemini, \{\s*\.\.\._xlate,/);
   });
 
   it('persona dialogue turns honour it', () => {

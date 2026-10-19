@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ಕಾರ್ಯಾಚರಣೆಯ ಅವಲೋಕನಗಳು",
+  "stem.flightsim.mission_journal_targets": "ದಾಖಲಿಸಿದ ಗುರಿಗಳು: {total}ರಲ್ಲಿ {captured}.",
+  "stem.flightsim.mission_journal_complete": "ಕಾರ್ಯಾಚರಣೆಯ ಎಲ್ಲಾ ಉದ್ದೇಶಗಳು ಮತ್ತು ಹಿಂದಿರುಗಿ ಇಳಿಯುವುದನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ.",
+  "stem.flightsim.mission_journal_ended": "ಪೂರ್ಣಗೊಳಿಸುವ ಎಲ್ಲಾ ಸಾಕ್ಷ್ಯಗಳನ್ನು ದಾಖಲಿಸುವ ಮೊದಲು ಕಾರ್ಯಾಚರಣೆ ಮುಗಿದಿದೆ.",
+  "stem.flightsim.mission_journal_recovery": "ಬದುಕುಳಿದ ವ್ಯಕ್ತಿಯ ರಕ್ಷಣೆ ದಾಖಲಾಗಿದೆ: {value}.",
+  "stem.flightsim.mission_journal_return": "ನೆಲೆಗೆ ಹಿಂದಿರುಗಿ ಇಳಿದದ್ದು ದಾಖಲಾಗಿದೆ: {value}.",
+  "stem.flightsim.mission_guidance_title": "ಕಾರ್ಯಾಚರಣೆಯ ಮಾರ್ಗದರ್ಶನ",
+  "stem.flightsim.mission_route": "{target} · ದಿಕ್ಕು {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "ಹಾರಾಟ ಆರಂಭಿಸಿದ ಸ್ಥಳ",
+  "stem.flightsim.mission_read_status": "ಕಾರ್ಯಾಚರಣೆಯ ಸ್ಥಿತಿಯನ್ನು ಓದಿ ಹೇಳಿ",
+  "stem.flightsim.mission_return_criterion": "{target}ನಿಂದ {distance} nm ವ್ಯಾಪ್ತಿಯೊಳಗೆ ಇಳಿಯಿರಿ; ನೆಲಕ್ಕೆ ಹೋಲಿಸಿದ ವೇಗವನ್ನು {speed} ktಗಿಂತ ಕಡಿಮೆ ಮತ್ತು ಇಳಿಯುವ ದರವನ್ನು {fpm} fpmಗಿಂತ ಕಡಿಮೆ ಇರಿಸಿ.",
+  "stem.flightsim.mission_unavailable": "ಕಾರ್ಯಾಚರಣೆಯ ಗುರಿಯ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ಈ ಹಾರಾಟವನ್ನು ಕೊನೆಗೊಳಿಸಿ ಹೊಸ ಕಾರ್ಯಾಚರಣೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ.",
+  "stem.flightsim.mission_capture_criterion": "{hold} s ಕಾಲ {distance} ft ವ್ಯಾಪ್ತಿಯೊಳಗೆ ಇರಿ, ನೆಲದ ಮೇಲಿನ ಎತ್ತರವನ್ನು {min} ftಗಿಂತ ಹೆಚ್ಚು ಮತ್ತು {max} ftಗಿಂತ ಕಡಿಮೆ ಹಾಗೂ ನೆಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ವೇಗವನ್ನು {speed} ktಗಿಂತ ಕಡಿಮೆ ಇರಿಸಿ."
+}

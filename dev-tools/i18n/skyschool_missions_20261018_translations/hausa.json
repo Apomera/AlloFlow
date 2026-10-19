@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Abubuwan da aka lura a aikin",
+  "stem.flightsim.mission_journal_targets": "Maƙasudan da aka ɗauka: {captured} cikin {total}.",
+  "stem.flightsim.mission_journal_complete": "An rubuta dukkan manufofin aikin da saukar komawa gida.",
+  "stem.flightsim.mission_journal_ended": "Aikin ya ƙare kafin a rubuta dukkan shaidun kammalawa.",
+  "stem.flightsim.mission_journal_recovery": "An rubuta ceton wanda ya tsira: {value}.",
+  "stem.flightsim.mission_journal_return": "An rubuta saukar komawa sansani: {value}.",
+  "stem.flightsim.mission_guidance_title": "Jagorar aikin",
+  "stem.flightsim.mission_route": "{target} · alkibla {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Wurin tashi",
+  "stem.flightsim.mission_read_status": "Karanta matsayin aikin da murya",
+  "stem.flightsim.mission_return_criterion": "Sauka cikin nisan {distance} nm daga {target}, da saurin tafiya dangane da ƙasa ƙasa da {speed} kt da saurin gangarowa ƙasa da {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Bayanan maƙasudin aikin ba sa samuwa. Ƙare wannan jirgi sannan ka fara sabon aiki.",
+  "stem.flightsim.mission_capture_criterion": "Ka kasance cikin nisan {distance} ft, sama da {min} kuma ƙasa da {max} ft daga ƙasa, da gudun dangane da ƙasa ƙasa da {speed} kt na tsawon {hold} s."
+}

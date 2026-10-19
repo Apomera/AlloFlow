@@ -1,6 +1,8 @@
 import {beforeAll,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -48,7 +50,7 @@ describe('One-time deliveries on the tabletop',()=>{
       expect(find('[data-location="heater"]').dataset.deliveryStation).toBe('true');expect(find('[data-delivery-detail="heater"]').textContent).toContain('Passing through does not deliver');
       expect(find('[data-spatial-selection]').textContent).toContain('does not award its base supplies again');
       if(view==='list'){expect(find('[data-tabletop-delivery-marker]')).toBeNull();expect(find('[data-delivery-list="heater"]').textContent).toContain('Delivery station');}
-      else{expect(find('[data-tabletop-delivery-marker="heater"]').getAttribute('aria-hidden')).toBe('true');expect(find('[data-location="heater"]').getAttribute('aria-label')).toContain('One-time reward after a later travel move ends here');}
+      else{expect(find('[data-tabletop-delivery-marker="heater"]').getAttribute('aria-hidden')).toBe('true');expect(spoken(find('[data-location="heater"]'))).toContain('One-time reward after a later travel move ends here');}
       await click('[data-inspect-tabletop-delivery="heater"]');await click('[data-open-tabletop-deck]');
     }
     expect(onSelect).toHaveBeenCalledTimes(3);expect(onSelect).toHaveBeenLastCalledWith('heater');expect(onOpenEncounter).toHaveBeenCalledTimes(3);expect(random).not.toHaveBeenCalled();expect(JSON.stringify({b,run})).toBe(before);

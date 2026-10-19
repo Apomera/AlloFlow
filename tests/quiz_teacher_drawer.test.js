@@ -90,9 +90,11 @@ describe('a student', () => {
     await act(async () => first.click());
     expect(document.activeElement.id).toMatch(/^assessment-question-/);
   });
-  it('has one "Review & submit" in a timed attempt', async () => {
+  it('has review controls above and below the questions, with only one timer', async () => {
     await render(props({}, { deliverySettings: { feedbackTiming: 'after-submit', timeLimitMinutes: 10, pacing: 'all-at-once' } }));
     expect(node('[aria-label="Assessment timer"]')).not.toBeNull();
-    expect([...host.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Review & submit')).toHaveLength(1);
+    expect(host.querySelectorAll('[aria-label="Assessment timer"]')).toHaveLength(1);
+    expect([...host.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Review & submit')).toHaveLength(2);
+    expect(node('[data-assessment-submit-footer] button').textContent).toBe('Review & submit');
   });
 });

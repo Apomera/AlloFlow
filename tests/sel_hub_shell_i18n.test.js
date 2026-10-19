@@ -152,7 +152,8 @@ describe('SEL hub shell reads its text through the translator', () => {
     const tr = await counts(opaque);
     expect(Object.values(en).every((n) => n > 0)).toBe(true);
     expect(tr).toEqual(en);
-  });
+    // Two hub mounts and 44 chip clicks: about 16 s on a loaded machine, past the 5 s default.
+  }, 120000);
 
   it('focus targets are found by attribute, not by English label', async () => {
     const el = await mount({ t: markTranslator });
@@ -253,5 +254,6 @@ describe('keys and English stay in step', () => {
     expect(Object.keys(want2).length).toBeGreaterThan(480);
     const drift = Object.entries(want2).filter(([k, v]) => registered(k) !== v).map(([k]) => k);
     expect(drift).toEqual([]);
-  });
+    // Babel parses the whole hub module (~6k lines) here; past the 5 s default under load.
+  }, 120000);
 });

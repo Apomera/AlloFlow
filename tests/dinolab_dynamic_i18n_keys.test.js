@@ -40,6 +40,9 @@ function expectedKeys() {
   const atlas = SRC.slice(SRC.indexOf('var ANATOMY = ['), SRC.indexOf('// Evidence workbench:'));
   for (const match of atlas.matchAll(/\{ id: '([^']+)'/g)) for (const field of ['name', 'tag', 'what', 'tells', 'limit', 'question', 'diagram', 'source']) need.add('stem.dinolab.atlas_' + match[1] + '_' + field);
   for (const match of SRC.matchAll(/\b(?:bt|et)\('([^']+)',/g)) need.add('stem.dinolab.bench_' + match[1]);
+  for (const match of SRC.matchAll(/\bit\('([^']+)',/g)) need.add('stem.dinolab.specimen_inquiry_' + match[1]);
+  for (const match of SRC.matchAll(/\blt\('([^']+)',/g)) need.add('stem.dinolab.model_lens_' + match[1]);
+  for (const match of SRC.matchAll(/\bti\('([^']+)',/g)) need.add('stem.dinolab.inquiry_' + match[1]);
   for (const match of SRC.matchAll(/\bdt\('([^']+)',/g)) need.add('stem.dinolab.dig_' + match[1]);
   for (const match of SRC.matchAll(/\b(?:st|dst)\('([^']+)',/g)) need.add('stem.dinolab.section_' + match[1]);
   for (const match of SRC.matchAll(/\bpt\('([^']+)',/g)) need.add('stem.dinolab.plan_' + match[1]);

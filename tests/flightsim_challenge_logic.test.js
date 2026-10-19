@@ -33,6 +33,23 @@ function touchdown(record, airport = 'kpwm', distance = 0.2, fpm = 150) {
 }
 
 describe('flight challenge records', () => {
+  it('distinguishes a repeated airport approach from a touchdown completed on this leg', () => {
+    let first = frames(FS.createFlightChallenge('world_tour', state()), 10);
+    first = touchdown(first);
+    expect(first.arrivals).toEqual(['kpwm']);
+    expect(first.legArrivalId).toBe('kpwm');
+    expect(FS.getFlightChallengeDestination(first, 'kpwm')).toBeNull();
+    let repeated = FS.createFlightChallenge('world_tour', state(), { previousRecord: first });
+    expect(repeated.legArrivalId).toBeNull();
+    expect(repeated.airborneSeconds).toBe(0);
+    expect(FS.getFlightChallengeDestination(repeated, 'kpwm').id).toBe('kpwm');
+    repeated = touchdown(frames(repeated, 10));
+    expect(repeated.arrivals).toEqual(['kpwm']);
+    expect(repeated.legArrivalId).toBe('kpwm');
+    expect(FS.getFlightChallengeDestination(repeated, 'kpwm')).toBeNull();
+    expect(repeated.tourElapsedSeconds).toBeGreaterThan(first.tourElapsedSeconds);
+  });
+
   it('creates only known challenges with empty observable goals', () => {
     for (const id of ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour']) {
       const record = FS.createFlightChallenge(id, state());
@@ -121,6 +138,29 @@ describe('first flight and mountain goals', () => {
     expect(record.status).toBe('complete');
   });
 
+  it.each([
+    ['first_flight', 76, 3000, 30, 'kpwm'],
+    ['mountain_flying', 5431, 8500, 10, 'kden'],
+  ])('%s requires its final landing after the climb and hold, including old premature landing flags', (id, elevation, target, holdSeconds, airport) => {
+    const low = state({ altitude: elevation + 200, fieldElev: elevation });
+    const ground = state({ altitude: elevation, fieldElev: elevation, onGround: true });
+    const contact = { landingScored: true, touchdownFPM: 180, nearestAirportId: airport, nearestAirportDistance: 0.2 };
+    let record = frames(FS.createFlightChallenge(id, low), 10, low);
+    record = advance(record, ground, controls(), 1, contact);
+    expect(record.objectives.landing).toBe(false);
+
+    // A previous version persisted this exact early touchdown as an objective.
+    const saved = JSON.parse(JSON.stringify(record));
+    saved.objectives.landing = true;
+    expect(FS.flightChallengeSummary(saved).done).toBe(0);
+    const high = state({ altitude: target, fieldElev: elevation });
+    record = frames(saved, holdSeconds, high);
+    expect(record).toMatchObject({ status: 'active', objectives: { climb: true, steady: true, landing: false } });
+    record = advance(record, ground, controls(), 1, contact);
+    expect(record.status).toBe('complete');
+    expect(FS.flightChallengeBestSeconds(record)).toBe(holdSeconds + 12);
+  });
+
   it('does not count a short bounce even with a claimed landing event', () => {
     let record = frames(FS.createFlightChallenge('first_flight', state()), 9);
     record = touchdown(record);
@@ -189,6 +229,30 @@ describe('cross-country navigation', () => {
     const record = advance(FS.createFlightChallenge('cross_country', state()), state({ lat: Infinity, lon: NaN }));
     expect(record.objectives.arrival).toBe(false);
     expect(record.streakSeconds).toBe(0);
+  });
+
+  it('cannot reuse an early JFK landing after the missing heading objective is later observed', () => {
+    const jfk = FS.WAYPOINTS.find(wp => wp.id === 'kjfk');
+    const near = state({ lat: jfk.lat, lon: jfk.lon, altitude: 500, fieldElev: jfk.alt });
+    const ground = { ...near, altitude: jfk.alt, onGround: true };
+    const contact = { landingScored: true, touchdownFPM: 180, nearestAirportId: 'kjfk', nearestAirportDistance: 0.2 };
+    let record = frames(FS.createFlightChallenge('cross_country', near), 10, near);
+    expect(record.objectives).toEqual({ heading: false, arrival: true, landing: false });
+    record = advance(record, ground, controls(), 1, contact);
+    expect(record.objectives.landing).toBe(false);
+    const saved = JSON.parse(JSON.stringify(record));
+    saved.objectives.landing = true;
+    record = frames(saved, 10, departure());
+    expect(record).toMatchObject({ status: 'active', objectives: { heading: true, arrival: true, landing: false } });
+    record = advance(record, ground, controls(), 1, contact);
+    expect(record.status).toBe('complete');
+  });
+
+  it('requires the airborne arrival objective before accepting the destination touchdown', () => {
+    const sample = departure();
+    const record = frames(FS.createFlightChallenge('cross_country', sample), 10, sample);
+    expect(record.objectives).toEqual({ heading: true, arrival: false, landing: false });
+    expect(touchdown(record, 'kjfk').objectives.landing).toBe(false);
   });
 });
 
@@ -283,5 +347,70 @@ describe('verified airport tour', () => {
     const malicious = Object.assign({}, record, { arrivals: [...FS.WAYPOINTS.map((wp) => wp.id), ...Array(1000).fill('kpwm')] });
     const bounded = FS.createFlightChallenge('world_tour', state(), { previousRecord: malicious });
     expect(bounded.arrivals).toHaveLength(5);
+  });
+
+  it('times the entire tour across serialized legs while each leg needs fresh flight evidence', () => {
+    let record = null;
+    for (const [index, airport] of ['kpwm', 'kjfk', 'kord', 'kden', 'ksfo'].entries()) {
+      const saved = record && JSON.parse(JSON.stringify(record));
+      const leg = FS.createFlightChallenge('world_tour', state(), { previousRecord: saved });
+      expect(leg).toMatchObject({ elapsedSeconds: 0, airborneSeconds: 0, tourTimingValid: true, tourElapsedSeconds: index * 11 });
+      expect(FS.flightChallengeBestSeconds(leg)).toBeNull();
+      record = touchdown(frames(leg, 10), airport);
+      expect(record.elapsedSeconds).toBe(11);
+      expect(record.tourElapsedSeconds).toBe((index + 1) * 11);
+    }
+    expect(FS.flightChallengeBestSeconds(record)).toBe(55);
+    expect(advance(record, state(), controls(), 1).tourElapsedSeconds).toBe(55);
+    const fresh = FS.createFlightChallenge('world_tour', state());
+    expect(fresh).toMatchObject({ tourTimingValid: true, tourElapsedSeconds: 0, arrivals: [] });
+  });
+
+  it('includes unsuccessful and repeated approach time without granting another arrival', () => {
+    let record = arrival(null, 'kpwm');
+    record = arrival(record, 'kpwm');
+    expect(record).toMatchObject({ arrivals: ['kpwm'], elapsedSeconds: 11, tourElapsedSeconds: 22 });
+    record = FS.createFlightChallenge('world_tour', state(), { previousRecord: record });
+    const paused = advance(record, state(), controls(), 0);
+    expect(paused).toBe(record);
+    record = advance(record, state(), controls(), 100);
+    expect(record).toMatchObject({ elapsedSeconds: 1, airborneSeconds: 1, tourElapsedSeconds: 23 });
+  });
+
+  it.each([
+    {},
+    { tourTimingValid: false, tourElapsedSeconds: 50 },
+    { tourTimingValid: true, tourElapsedSeconds: null },
+    { tourTimingValid: true, tourElapsedSeconds: Infinity },
+    { tourTimingValid: true, tourElapsedSeconds: -1 },
+    { tourTimingValid: true, tourElapsedSeconds: 604801 },
+    { tourTimingValid: true, tourElapsedSeconds: 5 },
+  ])('keeps arrivals from an untrusted or legacy partial tour without inventing total timing: %j', timing => {
+    let legacy = arrival(null, 'kpwm');
+    delete legacy.tourTimingValid;
+    delete legacy.tourElapsedSeconds;
+    Object.assign(legacy, timing);
+    let record = FS.createFlightChallenge('world_tour', state(), { previousRecord: JSON.parse(JSON.stringify(legacy)) });
+    expect(record).toMatchObject({ arrivals: ['kpwm'], elapsedSeconds: 0, airborneSeconds: 0, tourTimingValid: false, tourElapsedSeconds: null });
+    for (const airport of ['kjfk', 'kord', 'kden', 'ksfo']) record = arrival(record, airport);
+    expect(record.status).toBe('complete');
+    expect(record.arrivals).toHaveLength(5);
+    expect(record.tourElapsedSeconds).toBeNull();
+    expect(FS.flightChallengeBestSeconds(record)).toBeNull();
+  });
+
+  it('replaces unproven legacy leg bests once, then compares only whole-tour records', () => {
+    const legacy = { challenges: { world_tour: 11, first_flight: 200 }, rescueSeconds: 80 };
+    expect(FS.recordFlightPersonalBests(legacy, { challengeId: 'world_tour', challengeSeconds: 8 }).bests).toEqual(legacy);
+    const first = FS.recordFlightPersonalBests(legacy, { challengeId: 'world_tour', challengeSeconds: 55, challengeTiming: 'tour-total-v1' });
+    expect(first.bests).toMatchObject({ challenges: { world_tour: 55, first_flight: 200 }, challengeTimings: { world_tour: 'tour-total-v1' }, rescueSeconds: 80 });
+    expect(first.improved.challenge).toBeUndefined();
+    expect(legacy.challenges.world_tour).toBe(11);
+    const slower = FS.recordFlightPersonalBests(first.bests, { challengeId: 'world_tour', challengeSeconds: 75, challengeTiming: 'tour-total-v1' });
+    expect(slower.bests.challenges.world_tour).toBe(55);
+    expect(slower.improved.challenge).toBeUndefined();
+    const faster = FS.recordFlightPersonalBests(slower.bests, { challengeId: 'world_tour', challengeSeconds: 50, challengeTiming: 'tour-total-v1' });
+    expect(faster.bests.challenges.world_tour).toBe(50);
+    expect(faster.improved.challenge).toBe(true);
   });
 });

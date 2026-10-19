@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Osservazioni della missione",
+  "stem.flightsim.mission_journal_targets": "Obiettivi acquisiti: {captured} su {total}.",
+  "stem.flightsim.mission_journal_complete": "Sono stati registrati tutti gli obiettivi della missione e l’atterraggio al ritorno.",
+  "stem.flightsim.mission_journal_ended": "La missione è terminata prima che fossero registrate tutte le prove del completamento.",
+  "stem.flightsim.mission_journal_recovery": "Recupero del superstite registrato: {value}.",
+  "stem.flightsim.mission_journal_return": "Atterraggio di ritorno alla base registrato: {value}.",
+  "stem.flightsim.mission_guidance_title": "Guida alla missione",
+  "stem.flightsim.mission_route": "{target} · rilevamento {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Punto di decollo",
+  "stem.flightsim.mission_read_status": "Leggi lo stato della missione ad alta voce",
+  "stem.flightsim.mission_return_criterion": "Atterra entro {distance} nm da {target}, con velocità al suolo inferiore a {speed} kt e rateo di discesa inferiore a {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "I dati dell’obiettivo della missione non sono disponibili. Termina questo volo e inizia una nuova missione.",
+  "stem.flightsim.mission_capture_criterion": "Rimani entro {distance} ft, sopra {min} e sotto {max} ft dal suolo, con velocità al suolo inferiore a {speed} kt per {hold} s."
+}

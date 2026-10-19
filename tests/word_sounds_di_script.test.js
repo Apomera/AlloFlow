@@ -307,7 +307,9 @@ describe('language gating', () => {
 
 describe('source shape', () => {
   it('does not hand-type macron letters, which every pack gate is blind to', () => {
-    const src = fs.readFileSync(LOADER, 'utf8');
+    // The generated shared core owns canonical Unicode sound labels. This
+    // guard applies to the hand-authored script text, not managed core data.
+    const src = fs.readFileSync(LOADER, 'utf8').replace(/\/\/ BEGIN GENERATED WORD SOUNDS CORE[\s\S]*?\/\/ END GENERATED WORD SOUNDS CORE/, '');
     const nonAscii = new Set([...src].filter((c) => c.charCodeAt(0) > 0x7f));
     // Box-drawing, arrow and middot are decoration in comments and separators.
     // Any *letter* above ASCII would mean a literal was typed rather than built
@@ -319,9 +321,11 @@ describe('source shape', () => {
 
   it('every activity in the setup screen lesson plan has a skill entry', () => {
     const setup = fs.readFileSync(path.join(ROOT, 'word_sounds_setup_source.jsx'), 'utf8');
-    const start = setup.indexOf('const [lessonPlan, setLessonPlan] = React.useState({');
+    const start = setup.indexOf('const [lessonPlan, setLessonPlan] =');
     expect(start).toBeGreaterThan(-1);
-    const block = setup.slice(start, setup.indexOf('});', start));
+    const end = setup.indexOf('const [lessonPlanOrder, setLessonPlanOrder] =', start);
+    expect(end).toBeGreaterThan(start);
+    const block = setup.slice(start, end);
     const ids = [...block.matchAll(/^\s{12}([a-z_]+):\s*\{ enabled/gm)].map((m) => m[1]);
     expect(ids.length).toBeGreaterThan(10);
     ids.forEach((id) => {

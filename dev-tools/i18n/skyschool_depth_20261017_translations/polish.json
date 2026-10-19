@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Utrzymaj obecny stan lotu",
+  "stem.flightsim.flight_assistance_targets": "Kurs {hdg}° · Wysokość {alt} ft MSL · Prędkość {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Kurs {hdg}° · Wysokość {alt} ft MSL · Prędkość postępowa {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Skręć w lewo o {degrees}° w kierunku {airport}.",
+  "stem.flightsim.challenge_turn_right": "Skręć w prawo o {degrees}° w kierunku {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Lecisz w kierunku {airport}. Podążaj za znacznikiem kursu.",
+  "stem.flightsim.challenge_runway_reference": "Szkoleniowa droga startowa {runway}: kurs {heading}°. Ustaw się w osi drogi startowej, zanim rozpoczniesz zniżanie do lądowania."
+}

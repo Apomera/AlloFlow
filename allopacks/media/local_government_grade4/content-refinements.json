@@ -1,0 +1,122 @@
+[
+  {
+    "resourceId": "lg-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "NATIONAL",
+      "bullets": [
+        "The army, the money, post offices",
+        "Farthest from your street",
+        "Hardest for one person to reach"
+      ],
+      "iconPrompt": "a large domed building seen from far away"
+    },
+    "to": {
+      "label": "NATIONAL",
+      "bullets": [
+        "The army, the money, post offices",
+        "Farthest from your street",
+        "Hardest for one person to reach"
+      ],
+      "iconPrompt": "a large domed building seen from far away",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "lg-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "STATE",
+      "bullets": [
+        "Driver's licences, most school rules",
+        "Highways between cities",
+        "In the middle, in every sense"
+      ],
+      "iconPrompt": "a state capitol building at middle distance"
+    },
+    "to": {
+      "label": "STATE",
+      "bullets": [
+        "Driver's licences, most school rules",
+        "Highways between cities",
+        "In the middle, in every sense"
+      ],
+      "iconPrompt": "a state capitol building at middle distance",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "lg-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "LOCAL",
+      "bullets": [
+        "Parks, libraries, rubbish, crosswalks",
+        "Closest to your street",
+        "The one you can actually walk into"
+      ],
+      "iconPrompt": "a small town hall with steps and open doors"
+    },
+    "to": {
+      "label": "LOCAL",
+      "bullets": [
+        "Parks, libraries, rubbish, crosswalks",
+        "Closest to your street",
+        "The one you can actually walk into"
+      ],
+      "iconPrompt": "a small town hall with steps and open doors",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "lg-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "HOW THINGS CHANGE",
+      "bullets": [
+        "Speak at a meeting — they are open to the public",
+        "Sign or start a petition",
+        "Vote: slowest tool, strongest tool"
+      ],
+      "iconPrompt": "a microphone on a stand facing a row of chairs"
+    },
+    "to": {
+      "label": "HOW THINGS CHANGE",
+      "bullets": [
+        "Speak at a meeting — they are open to the public",
+        "Sign or start a petition",
+        "Vote: slowest tool, strongest tool"
+      ],
+      "iconPrompt": "a microphone on a stand facing a row of chairs",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "lg-anchor",
+    "path": "data.sections.4",
+    "from": {
+      "label": "THE BUDGET IS THE DECISION",
+      "bullets": [
+        "A town has only so much money",
+        "Choosing one service means not choosing another",
+        "Ask what got left out, not just what got funded"
+      ],
+      "iconPrompt": "a pie divided into uneven slices"
+    },
+    "to": {
+      "label": "THE BUDGET IS THE DECISION",
+      "bullets": [
+        "A town has only so much money",
+        "Choosing one service means not choosing another",
+        "Ask what got left out, not just what got funded"
+      ],
+      "iconPrompt": "a pie divided into uneven slices",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

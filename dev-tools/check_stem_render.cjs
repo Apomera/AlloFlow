@@ -208,9 +208,17 @@ if (!window.StemLab) {
 }
 
 const loadErrors = [];
+// Data a plugin declares in stemModuleDependencies loads first, as in the app.
+const { stemDataPrerequisites } = require('./stem_plugin_prerequisites.cjs');
+const loadedPrerequisites = new Set();
 targets.forEach(function (p) {
   const f = path.basename(p);
   try {
+    stemDataPrerequisites(f).forEach(function (dependency) {
+      if (loadedPrerequisites.has(dependency)) return;
+      loadedPrerequisites.add(dependency);
+      new Function(fs.readFileSync(path.join(ROOT, dependency), 'utf8'))(); // eslint-disable-line no-new-func
+    });
     const src = fs.readFileSync(p, 'utf8');
     new Function(src)(); // eslint-disable-line no-new-func
   } catch (e) {

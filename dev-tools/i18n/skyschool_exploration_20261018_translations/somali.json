@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Natiijooyinka raadinta: {cards} kaarar oo ku jira {topics} mowduuc.",
+  "stem.flightsim.learn_library_counts": "{cards} kaarar · {topics} mowduuc",
+  "stem.flightsim.learn_search_clear": "Tirtir raadinta",
+  "stem.flightsim.learn_search_empty": "Ma jiraan kaarar waxbarasho oo ku habboon “{query}”. Isku day eray kale ama tirtir raadinta.",
+  "stem.flightsim.learn_search_none": "Ma jiraan kaarar waxbarasho oo ku habboon",
+  "stem.flightsim.learn_search_cards": "{count} kaarar waxbarasho",
+  "stem.flightsim.quiz_review_progress": "Waxaa laga jawaabay {answered} ka mid ah {total} su’aalood · {missed} jawaabood oo khaldan",
+  "stem.flightsim.quiz_review_missed": "Dib u eeg kuwa la khalday",
+  "stem.flightsim.quiz_next_unanswered": "Su’aasha xigta ee aan laga jawaabin",
+  "stem.flightsim.quiz_review_all_answered": "Su’aal kasta waxay leedahay jawaab koowaad. Dib u eeg su’aalihii aad khaladday si aad u tababarto dhibco la’aan, ama bilow isku day cusub.",
+  "stem.flightsim.planner_drone_agl": "{ft} fuudh ka sarreeya dhulka",
+  "stem.flightsim.sprint_native_title": "Tartanka juqraafiga ee degdegga ah",
+  "stem.flightsim.sprint_timed_hint": "Jidku wuu socdaa intaad jawaabayso. Hakad geli si aad u akhrido; dib u socodsii ka hor intaadan dooran jawaab.",
+  "stem.flightsim.sprint_warp_reference": "Safarka waa la dedejiyey hawshan juqraafiga ah. Tirooyinka xawaaruhu waxay muujinayaan xawaaraha socdaalka ee la sheegay; jidkani ma cabbiro waxqabadka diyaaradda.",
+  "stem.flightsim.sprint_save_menu": "Kaydi tartanka oo ku noqo liiska",
+  "stem.flightsim.sprint_next_stop": "Joogsiga xiga: {place}",
+  "stem.flightsim.geoq_approaching_city": "Magaaladee ayaad ku soo dhowaanaysaa?",
+  "stem.flightsim.sprint_time_remaining": "Waqtiga haray: {seconds} ilbiriqsi"
+}

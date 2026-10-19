@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "હાલની ઉડાનની સ્થિતિ જાળવો",
+  "stem.flightsim.flight_assistance_targets": "દિશા {hdg}° · ઊંચાઈ {alt} ft MSL · ઝડપ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "દિશા {hdg}° · ઊંચાઈ {alt} ft MSL · આગળ વધવાની ઝડપ {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} તરફ જવા માટે ડાબે {degrees}° વળો.",
+  "stem.flightsim.challenge_turn_right": "{airport} તરફ જવા માટે જમણે {degrees}° વળો.",
+  "stem.flightsim.challenge_course_aligned": "તમે {airport} તરફ જઈ રહ્યા છો. માર્ગના સૂચક ચિહ્નને અનુસરો.",
+  "stem.flightsim.challenge_runway_reference": "તાલીમ માટેનો રનવે {runway}: દિશા {heading}°. ઉતરાણ માટે નીચે આવતાં પહેલાં વિમાનને રનવેની સીધી રેખામાં ગોઠવો."
+}

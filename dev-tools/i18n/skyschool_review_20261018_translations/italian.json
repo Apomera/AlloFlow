@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Tentativi precedenti del quiz",
+  "stem.flightsim.quiz_history_scope": "Avviare un nuovo tentativo salva fino a quattro tentativi precedenti con le prime risposte registrate. Consultarli non modifica il quiz attuale.",
+  "stem.flightsim.quiz_history_empty": "Non sono ancora stati salvati tentativi precedenti del quiz.",
+  "stem.flightsim.quiz_history_attempt": "Salvato il {date} · {score}/{answered} prime risposte corrette",
+  "stem.flightsim.quiz_history_progress": "{answered} domande registrate su {total} · {unanswered} senza risposta",
+  "stem.flightsim.quiz_history_question": "Domanda {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Risposta corretta: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} domande salvate non corrispondono più a questo quiz. I punteggi usano solo le registrazioni delle domande corrispondenti."
+}

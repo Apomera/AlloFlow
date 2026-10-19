@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Hold current flight",
+  "stem.flightsim.flight_assistance_targets": "Heading {hdg}° · Altitude {alt} ft MSL · Speed {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Heading {hdg}° · Altitude {alt} ft MSL · Forward speed {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Turn left {degrees}° toward {airport}.",
+  "stem.flightsim.challenge_turn_right": "Turn right {degrees}° toward {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Heading toward {airport}. Follow the course marker.",
+  "stem.flightsim.challenge_runway_reference": "Training runway {runway}: heading {heading}°. Line up with the runway before descending to land."
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "resourceId": "cteam-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "THE TRAP",
+      "bullets": [
+        "The work is the group's, so no piece is anyone's",
+        "Everyone assumes someone else has it",
+        "It gets made badly Thursday night"
+      ],
+      "iconPrompt": "four figures around an empty table looking at each other"
+    },
+    "to": {
+      "label": "THE TRAP",
+      "bullets": [
+        "The work is the group's, so no piece is anyone's",
+        "Everyone assumes someone else has it",
+        "It gets made badly Thursday night"
+      ],
+      "iconPrompt": "four figures around an empty table looking at each other",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cteam-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "THE SENTENCE",
+      "bullets": [
+        "What: the two graphs",
+        "Where: the shared slide",
+        "By when: Wednesday",
+        "With a name on it"
+      ],
+      "iconPrompt": "a single puzzle piece with a small name tag"
+    },
+    "to": {
+      "label": "THE SENTENCE",
+      "bullets": [
+        "What: the two graphs",
+        "Where: the shared slide",
+        "By when: Wednesday",
+        "With a name on it"
+      ],
+      "iconPrompt": "a single puzzle piece with a small name tag",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

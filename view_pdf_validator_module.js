@@ -294,7 +294,14 @@
     pass('MarkInfo /Marked true', String(markedRaw) === 'true');
     pass('Primary language set (/Lang)', !!langRaw, langRaw ? String(langRaw) : '');
     pass('Structure tree has content (rootK not null)', elems.length > 0, elems.length + ' elements');
-    pass('At least one heading present', elems.some(function (e) { return /^H[1-6]$/.test(e.role); }));
+    // A page with no printed heading (a one-page letter) has none to tag: AlloFlow's tagger marks that
+    // case (it found only AI-written headings, none on the page, and left them out) and the title in
+    // the document properties stands in. PDF/UA does not require headings. (2026-10-17, Aaron)
+    var noPrintedHeadings = false;
+    try { noPrintedHeadings = String(stRoot && stRoot.get ? stRoot.get(nm('AlloFlowNoPrintedHeadings')) : '') === 'true'; } catch (_) {}
+    if (elems.some(function (e) { return /^H[1-6]$/.test(e.role); })) pass('At least one heading present', true);
+    else if (noPrintedHeadings && docTitle) pass('At least one heading present', true, 'not applicable: the printed page has no headings; the document title is set in its properties');
+    else pass('At least one heading present', false);
     pass('Every TH has /Scope', thElems.length === 0 || thElems.every(function (e) { return e.hasScope; }), thElems.length + ' TH cells');
     pass('Every TH/TD has /ActualText', cellElems.length === 0 || cellElems.every(function (e) { return e.hasActualText; }), cellElems.length + ' cells');
     pass('Every Figure has /Alt', figures.length === 0 || figures.every(function (e) { return e.hasAlt; }), figures.length + ' figures');

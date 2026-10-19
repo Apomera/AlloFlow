@@ -339,7 +339,10 @@ describe('BirdLab field progression and scene engagement', () => {
 
     const holdInitialStart = renderSource.indexOf('var savedBinocularHoldMode');
     expect(holdInitialStart).toBeGreaterThan(-1);
-    const holdInitialSource = renderSource.slice(holdInitialStart, holdInitialStart + 700);
+    // Read to the end of the hold-mode block; the QA override lengthened it past 700 chars.
+    const holdInitialEnd = renderSource.indexOf('var qaLifecycleMs', holdInitialStart);
+    expect(holdInitialEnd).toBeGreaterThan(holdInitialStart);
+    const holdInitialSource = renderSource.slice(holdInitialStart, holdInitialEnd);
     expect(holdInitialSource).toContain('d.blBinocularHoldMode && BINOCULAR_HOLD_DURATIONS[d.blBinocularHoldMode]');
     expect(holdInitialSource).toContain('birdLabWindowSnapshot.binocularHoldMode');
     expect(holdInitialSource).toContain('d.blBinocularHoldMode === undefined');

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ಪ್ರಸ್ತುತ ಹಾರಾಟದ ಸ್ಥಿತಿಯನ್ನು ಕಾಯ್ದುಕೊಳ್ಳಿ",
+  "stem.flightsim.flight_assistance_targets": "ದಿಕ್ಕು {hdg}° · ಎತ್ತರ {alt} ft MSL · ವೇಗ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ದಿಕ್ಕು {hdg}° · ಎತ್ತರ {alt} ft MSL · ಮುಂದಕ್ಕೆ ಚಲಿಸುವ ವೇಗ {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} ಕಡೆಗೆ ಎಡಕ್ಕೆ {degrees}° ತಿರುಗಿ.",
+  "stem.flightsim.challenge_turn_right": "{airport} ಕಡೆಗೆ ಬಲಕ್ಕೆ {degrees}° ತಿರುಗಿ.",
+  "stem.flightsim.challenge_course_aligned": "ನೀವು {airport} ಕಡೆಗೆ ಸಾಗುತ್ತಿದ್ದೀರಿ. ಮಾರ್ಗ ಸೂಚಕವನ್ನು ಅನುಸರಿಸಿ.",
+  "stem.flightsim.challenge_runway_reference": "ತರಬೇತಿಯ ಓಡುದಾರಿ {runway}: ದಿಕ್ಕು {heading}°. ಇಳಿಯಲು ಎತ್ತರವನ್ನು ಕಡಿಮೆ ಮಾಡುವ ಮೊದಲು ವಿಮಾನವನ್ನು ಓಡುದಾರಿಯ ನೇರಕ್ಕೆ ಹೊಂದಿಸಿ."
+}

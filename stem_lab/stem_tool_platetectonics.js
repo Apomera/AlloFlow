@@ -7301,7 +7301,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         ),
         h('div', { className: 'flex flex-wrap gap-2 my-3' },
           h('button', { type: 'button', 'data-pt-depth-record': s.mode, disabled: !trial,
-            className: 'min-h-10 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (trial ? 'bg-cyan-700 text-white border-cyan-800' : (isDark ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-300')),
+            className: 'min-h-10 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (trial ? 'bg-cyan-700 text-white border-cyan-800' : (isDark ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-300')),
             onClick: recordDepthSample }, currentSaved ? __alloT('stem.platetectonics.depth_replace_button', 'Replace saved {type} sample').replace('{type}', BOUNDARY[s.mode].name) : __alloT('stem.platetectonics.depth_record_button', 'Record this depth sample')),
           typeof props.onClearDepths === 'function' && h('button', { type: 'button', 'data-pt-depth-clear': 'true', disabled: !Object.keys(records).length,
             className: 'min-h-10 px-3 py-2 rounded-lg text-sm border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 text-slate-200 border-slate-600' : 'bg-white text-slate-700 border-slate-400'),

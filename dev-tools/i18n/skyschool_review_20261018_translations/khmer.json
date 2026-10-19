@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ការសាកល្បងកម្រងសំណួរមុនៗ",
+  "stem.flightsim.quiz_history_scope": "ការចាប់ផ្តើមសាកល្បងថ្មីរក្សាទុកការសាកល្បងមុនៗរហូតដល់បួនដង ដែលមានចម្លើយលើកដំបូងបានកត់ត្រា។ ការពិនិត្យមើលវាមិនផ្លាស់ប្តូរកម្រងសំណួរបច្ចុប្បន្នរបស់អ្នកទេ។",
+  "stem.flightsim.quiz_history_empty": "មិនទាន់មានការសាកល្បងកម្រងសំណួរមុនៗត្រូវបានរក្សាទុកទេ។",
+  "stem.flightsim.quiz_history_attempt": "រក្សាទុកនៅ {date} · ចម្លើយលើកដំបូងត្រឹមត្រូវ {score}/{answered}",
+  "stem.flightsim.quiz_history_progress": "បានកត់ត្រា {answered} សំណួរក្នុងចំណោម {total} · {unanswered} មិនទាន់បានឆ្លើយ",
+  "stem.flightsim.quiz_history_question": "សំណួរ {number}៖ {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ចម្លើយត្រឹមត្រូវ៖ {answer}",
+  "stem.flightsim.quiz_history_changed": "សំណួរដែលបានរក្សាទុកចំនួន {count} លែងត្រូវគ្នានឹងកម្រងសំណួរនេះហើយ។ ពិន្ទុប្រើតែកំណត់ត្រាសំណួរដែលត្រូវគ្នាប៉ុណ្ណោះ។"
+}

@@ -3,10 +3,10 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-let tool, FS, host, root, latest, frameCallback, wallTime, canvasContext, errors;
+let tool, FS, host, root, latest, refreshSaved, frameCallback, wallTime, canvasContext, errors;
 const hooks = () => window.__testHooks.flightSim;
 const sprint = () => hooks().getSprintRef().current;
-const ordinaryQuizDrawn = () => canvasContext.fillText.mock.calls.some(([text]) => String(text).includes('GEOGRAPHY QUIZ'));
+const ordinaryQuizDrawn = () => !!host.querySelector('[data-flight-geography-quiz]');
 
 async function mount(kind = 'sprint', aircraft = 'cessna172') {
   host = document.createElement('div'); document.body.appendChild(host);
@@ -15,6 +15,7 @@ async function mount(kind = 'sprint', aircraft = 'cessna172') {
     const [data, setData] = React.useState({ flightSim: { view: 'menu', aircraft, railCollapsed: true,
       takeoffTutorialDismissed: true, landingTutorialDismissed: true, menuSections: { sprints: true } } });
     latest = data.flightSim;
+    refreshSaved = () => setData(old => ({ ...old, flightSim: { ...old.flightSim } }));
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
       update: (id, key, value) => setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })),
       updateMulti: (id, patch) => setData(old => ({ ...old, [id]: { ...old[id], ...patch } })),
@@ -34,6 +35,7 @@ async function frame(elapsed = 34) {
   wallTime += elapsed;
   canvasContext.fillText.mockClear();
   expect(frameCallback, 'The production simulation RAF must be scheduled').toBeTypeOf('function');
+  await act(async () => { refreshSaved(); });
   await act(async () => frameCallback());
   expect(errors).not.toHaveBeenCalled();
 }
@@ -148,7 +150,8 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     expect(ordinaryQuizDrawn()).toBe(true);
     await press('2');
     expect(ordinaryQuizDrawn()).toBe(true);
-    expect(canvasContext.fillText.mock.calls.some(([text]) => String(text).includes('Press Q for next question'))).toBe(true);
+    expect(host.querySelector('[data-geoq-next]')).toBeTruthy();
+    expect(host.querySelector('[data-geoq-feedback]').textContent).toContain('Correct answer:');
     await press('Escape');
     expect(latest.view).toBe('flying');
     expect(hooks().flyingRef.current).toBe(true);
@@ -166,5 +169,128 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     expect(hooks().flightRef.current.heading).toBeLessThan(90);
     expect(ordinaryQuizDrawn()).toBe(false);
     expect(hooks().keysRef.current.q).toBe(false);
+  });
+
+  it('retains a quick Q tap, focuses the readable question and pauses before physics advances', async () => {
+    await mount('free');
+    const before = hooks().timeRef.current;
+    key('keydown', 'q'); key('keyup', 'q');
+    await frame();
+    expect(ordinaryQuizDrawn()).toBe(true);
+    expect(hooks().pausedRef.current).toBe(true);
+    expect(hooks().timeRef.current).toBe(before);
+    expect(document.activeElement.id).toBe('skyschool-geoq-question');
+    expect([...host.querySelectorAll('[data-geoq-answer]')]).toHaveLength(4);
+    expect(host.querySelector('[data-flight-geography-quiz]').textContent).toContain('Close the quiz, then choose Resume');
+  });
+
+  it('uses one canonical country for Hawaii and removes regional variants from country answers', async () => {
+    await mount('free');
+    const hawaii = FS.GEO_PLACES.find(place => place.country === 'United States (Hawaii)');
+    expect(hawaii).toBeTruthy();
+    Object.assign(hooks().flightRef.current, { lat: hawaii.lat, lon: hawaii.lon });
+    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Choose the country question.
+    await press('q');
+    const quiz = hooks().getGeoQuizRef().current;
+    expect(quiz.correct).toBe('United States');
+    expect(quiz.options.filter(option => option === 'United States')).toHaveLength(1);
+    const excluded = ['United States (Hawaii)', 'United States (Alaska)', 'Africa', 'Arctic', 'International', 'Atlantic Ocean', 'Pacific Ocean'];
+    expect(quiz.options.some(option => excluded.includes(option) || option.includes('/'))).toBe(false);
+    expect(new Set(quiz.options).size).toBe(quiz.options.length);
+  });
+
+  it('supports touch-style answer buttons, guards rapid double answers and offers a real next question', async () => {
+    await mount('free');
+    await act(async () => host.querySelector('button[aria-label="Expand the flight deck controls"]').click());
+    await act(async () => host.querySelector('[data-flight-open-quiz]').click());
+    const options = [...host.querySelectorAll('[data-geoq-answer]')];
+    const first = options[0].textContent.replace(/^1\. /, '');
+    await act(async () => { options[0].click(); options[1].click(); });
+    expect(options[0].getAttribute('aria-pressed')).toBe('true');
+    expect(options.every(item => item.disabled)).toBe(true);
+    expect(host.querySelector('[data-geoq-feedback]').textContent).toContain('Your answer: ' + first);
+    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/1/);
+    await act(async () => host.querySelector('[data-geoq-next]').click());
+    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/2/);
+    expect(host.querySelector('[data-geoq-feedback]')).toBeNull();
+    expect(document.activeElement.id).toBe('skyschool-geoq-question');
+  });
+
+  it('answers with digits while paused, keeps Space from resuming behind the quiz, and requires explicit resume after close', async () => {
+    await mount('free'); await press('q');
+    const heldTime = hooks().timeRef.current;
+    await press(' ');
+    expect(hooks().pausedRef.current).toBe(true);
+    await press('1');
+    expect(host.querySelector('[data-geoq-feedback]')).toBeTruthy();
+    await frame(500);
+    expect(hooks().timeRef.current).toBe(heldTime);
+    await press('q');
+    expect(host.querySelector('[data-geoq-feedback]')).toBeNull();
+    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/\/2/);
+    const close = [...host.querySelectorAll('[data-flight-geography-quiz] button')].find(button => button.textContent === 'Close quiz');
+    await act(async () => close.click());
+    expect(ordinaryQuizDrawn()).toBe(false);
+    expect(document.activeElement).toBe(host.querySelector('canvas[role="application"]'));
+    expect(latest.view).toBe('flying');
+    expect(hooks().pausedRef.current).toBe(true);
+    await press(' ');
+    expect(hooks().pausedRef.current).toBe(false);
+    expect(hooks().timeRef.current).toBeGreaterThan(heldTime);
+  });
+
+  it('closes through Escape from an answer widget without ending the flight', async () => {
+    await mount('free'); await press('q');
+    const answer = host.querySelector('[data-geoq-answer]');
+    await act(async () => {
+      answer.focus();
+      answer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    });
+    expect(ordinaryQuizDrawn()).toBe(false);
+    expect(latest.view).toBe('flying');
+    expect(latest.lastDebrief).toBeUndefined();
+    expect(hooks().pausedRef.current).toBe(true);
+    await frame();
+    expect(latest.view).toBe('flying');
+  });
+
+  it('does not pause or open an empty card when no question is nearby', async () => {
+    await mount('free');
+    Object.assign(hooks().flightRef.current, { lat: 0, lon: -140, altitude: 10000,
+      fieldElev: 0, speed: 180, vsi: 0, onGround: false, stalling: false, lowAirspeed: false });
+    Object.assign(hooks().controlsRef.current, { throttle: 0.6, pitch: 0, bank: 0 });
+    await press('q');
+    await act(async () => vi.advanceTimersByTime(100));
+    expect(ordinaryQuizDrawn()).toBe(false);
+    expect(hooks().pausedRef.current).toBe(false);
+    expect(document.getElementById('skyschool-a11y-live').textContent).toContain('No geography question is available nearby');
+  });
+
+  it('retains the tenth correct-answer badge when ending without resume, without inventing ocean travel during quiz checks', async () => {
+    await mount('free'); await press('q');
+    const state = hooks().flightRef.current;
+    const pose = { lat: state.lat, lon: state.lon, speed: state.speed, onGround: state.onGround };
+    const beforeTime = hooks().timeRef.current;
+    const beforeOcean = hooks().getOceanDistance();
+    for (let index = 0; index < 10; index++) {
+      const quiz = hooks().getGeoQuizRef().current;
+      const correct = quiz.options.indexOf(quiz.correct);
+      // A zero-time observation must not fabricate movement, even at high speed.
+      Object.assign(state, { lat: 0, lon: -140, speed: 1e9, onGround: false });
+      await act(async () => host.querySelector(`[data-geoq-answer="${correct}"]`).click());
+      expect(hooks().getOceanDistance()).toBe(beforeOcean);
+      Object.assign(state, pose);
+      if (index < 9) await act(async () => host.querySelector('[data-geoq-next]').click());
+    }
+    expect(latest.earnedBadges.quiz_10).toBe(true);
+    expect(hooks().timeRef.current).toBe(beforeTime);
+    expect(hooks().pausedRef.current).toBe(true);
+    const close = [...host.querySelectorAll('[data-flight-geography-quiz] button')].find(button => button.textContent === 'Close quiz');
+    await act(async () => close.click());
+    await act(async () => host.querySelector('button[aria-label="Expand the flight deck controls"]').click());
+    await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent === '✕ Exit').click());
+    expect(latest.view).toBe('debrief');
+    expect(latest.earnedBadges.quiz_10).toBe(true);
+    expect(latest.lastDebrief.sessionTime).toBe(Math.round(beforeTime));
   });
 });

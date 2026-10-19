@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ውጽኢት ድለያ፦ {cards} ካርድታት ኣብ {topics} ኣርእስትታት።",
+  "stem.flightsim.learn_library_counts": "{cards} ካርድታት · {topics} ኣርእስትታት",
+  "stem.flightsim.learn_search_clear": "ድለያ ደምስስ",
+  "stem.flightsim.learn_search_empty": "ምስ “{query}” ዝሰማማዕ ናይ ትምህርቲ ካርድ የለን። ካልእ ቃል ፈትን ወይ ድለያ ደምስስ።",
+  "stem.flightsim.learn_search_none": "ዝሰማምዑ ናይ ትምህርቲ ካርድታት የለዉን",
+  "stem.flightsim.learn_search_cards": "{count} ናይ ትምህርቲ ካርድታት",
+  "stem.flightsim.quiz_review_progress": "ካብ {total} ሕቶታት {answered} ተመሊሶም · {missed} ተጋግዮም",
+  "stem.flightsim.quiz_review_missed": "ዝተጋገዩ መልስታት ከልስ",
+  "stem.flightsim.quiz_next_unanswered": "ዝቕጽል ዘይተመለሰ ሕቶ",
+  "stem.flightsim.quiz_review_all_answered": "ነፍሲ ወከፍ ሕቶ ቀዳማይ መልሲ ኣለዎ። ነቶም ዝተጋገኻዮም ሕቶታት ብዘይ ነጥቢ ንምልምማድ ከልስ፣ ወይ ሓድሽ ፈተነ ጀምር።",
+  "stem.flightsim.planner_drone_agl": "ካብ መሬት {ft} እግሪ ንላዕሊ",
+  "stem.flightsim.sprint_native_title": "ቅልጡፍ ውድድር ጂኦግራፊ",
+  "stem.flightsim.sprint_timed_hint": "መልሲ እናሃብካ መንገዲ ይቕጽል። ንምንባብ ንግዚኡ ኣቋርጽ፤ መልሲ ቅድሚ ምምራጽካ እንደገና ቀጽል።",
+  "stem.flightsim.sprint_warp_reference": "ኣብዚ ናይ ጂኦግራፊ ንጥፈት ጉዕዞ ተቀላጢፉ እዩ። መለክዒ ፍጥነት ነቲ ዝተገልጸ ናይ ጉዕዞ ፍጥነት የርኢ፤ እዚ መንገዲ ብቕዓት ነፋሪት ኣይልክዕን።",
+  "stem.flightsim.sprint_save_menu": "ውድድር ዓቅብ እሞ ናብ ዝርዝር ተመለስ",
+  "stem.flightsim.sprint_next_stop": "ዝቕጽል መዕረፊ፦ {place}",
+  "stem.flightsim.geoq_approaching_city": "ናብ ኣየነይቲ ከተማ ትቐርብ ኣለኻ?",
+  "stem.flightsim.sprint_time_remaining": "ዝተረፈ ግዜ፦ {seconds} ካልኢታት"
+}

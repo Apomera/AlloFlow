@@ -52,15 +52,15 @@ test('the Labels toggle hides default labels on its first click and restores the
   await mount(page, { specimen: 'frog', _dissLoadedSpec: 'frog', toolbarViewOpen: true });
   const button = page.getByRole('button', { name: 'Toggle organ name labels', exact: true });
   await expect(button).toHaveAttribute('aria-pressed', 'true');
-  expect((await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(true);
+  await expect.poll(async () => (await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(true);
   await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'false');
   await page.locator('[data-diss-canvas]').scrollIntoViewIfNeeded();
-  expect((await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(false);
+  await expect.poll(async () => (await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(false);
   await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-diss-canvas]').scrollIntoViewIfNeeded();
-  expect((await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(true);
+  await expect.poll(async () => (await paintedLabels(page)).some(label => label.text === 'Dorsal Skin')).toBe(true);
 });
 
 test.describe('touchscreen labels', () => {

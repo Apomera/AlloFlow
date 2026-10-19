@@ -124,10 +124,10 @@ describe('EPPP distractor-quality repair wave 19', () => {
       },
       status: 'pass',
     });
-    expect(audit.summary.warningCountsAfter).toMatchObject({
-      asymmetricExtremeDistractorCandidates: 120,
-      advancedDirectRecallCandidates: 7,
-    });
+    // The full replay re-runs wave 19 on the near-final bank, so later waves can only lower these
+    // global after-state counts; hold them at or below the wave-19 floor.
+    expect(audit.summary.warningCountsAfter.asymmetricExtremeDistractorCandidates).toBeLessThanOrEqual(120);
+    expect(audit.summary.warningCountsAfter.advancedDirectRecallCandidates).toBeLessThanOrEqual(7);
     expect(audit.summary.warningCountsAfter.uniqueKeyStemLexicalLeakageCandidates).toBeLessThanOrEqual(67);
     expect(audit.summary.warningCountsAfter.semanticConceptDuplicatePairs).toBeLessThanOrEqual(98);
     expect(audit.summary.warningCountsAfter.semanticConceptDuplicateClusters).toBeLessThanOrEqual(57);
@@ -145,10 +145,8 @@ describe('EPPP distractor-quality repair wave 19', () => {
     expect(diagnostics.semanticConceptDuplicates.pairs.some(
       (pair) => selected.has(pair.leftId) || selected.has(pair.rightId),
     )).toBe(false);
-    expect(diagnostics.summary).toMatchObject({
-      asymmetricExtremeDistractorCandidates: 120,
-      advancedDirectRecallCandidates: 7,
-    });
+    expect(diagnostics.summary.asymmetricExtremeDistractorCandidates).toBeLessThanOrEqual(120);
+    expect(diagnostics.summary.advancedDirectRecallCandidates).toBeLessThanOrEqual(7);
     expect(diagnostics.summary.uniqueKeyStemLexicalLeakageCandidates).toBeLessThanOrEqual(65);
     expect(diagnostics.summary.semanticConceptDuplicatePairs).toBeLessThanOrEqual(95);
     expect(diagnostics.summary.semanticConceptDuplicateClusters).toBeLessThanOrEqual(54);

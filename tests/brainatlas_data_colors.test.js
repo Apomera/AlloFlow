@@ -47,7 +47,8 @@ describe('brainAtlas — canvas-drawn data colours are concrete', () => {
 
   it('the hypnogram really does feed these colours to canvas', () => {
     // guards the premise: if the drawing changes, this test should be revisited
-    expect(src).toContain('ctx.fillStyle = sl.color;');
+    // f7b4d993f darkens four label colours for text contrast; every other stage still draws sl.color.
+    expect(src.includes("ctx.fillStyle = ({ '#94a3b8': '#475569', '#a855f7': '#7e22ce', '#38bdf8': '#0369a1', '#3b82f6': '#1d4ed8' })[sl.color] || sl.color;"), 'labels fill from sl.color').toBe(true);
     expect(src).toMatch(/ctx\.strokeStyle = sl\.color \+ '20'/);
   });
 });

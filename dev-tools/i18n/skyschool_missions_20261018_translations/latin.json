@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Observationes missionis",
+  "stem.flightsim.mission_journal_targets": "Scopi photographati: {captured} ex {total}.",
+  "stem.flightsim.mission_journal_complete": "Omnia proposita missionis et reditus cum appulsu ad terram relata sunt.",
+  "stem.flightsim.mission_journal_ended": "Missio finita est antequam omnia testimonia perfectionis relata essent.",
+  "stem.flightsim.mission_journal_recovery": "Recuperatio superstitis relata: {value}.",
+  "stem.flightsim.mission_journal_return": "Appulsus ad terram in basi post reditum relatus: {value}.",
+  "stem.flightsim.mission_guidance_title": "Ductio missionis",
+  "stem.flightsim.mission_route": "{target} · directio {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Locus profectionis",
+  "stem.flightsim.mission_read_status": "Statum missionis recita",
+  "stem.flightsim.mission_return_criterion": "Ad terram descende intra {distance} nm a {target}, celeritate respectu soli minore quam {speed} kt et celeritate descendendi minore quam {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Notitiae scopi missionis desunt. Hunc volatum fini et novam missionem incipe.",
+  "stem.flightsim.mission_capture_criterion": "Mane intra {distance} ft, supra {min} et infra {max} ft a solo, celeritate ad solum infra {speed} kt per {hold} s."
+}

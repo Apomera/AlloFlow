@@ -1,0 +1,90 @@
+[
+  {
+    "resourceId": "ca-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "DESCRIBE",
+      "bullets": [
+        "The facts, no blame",
+        "\"The last three sets had word problems I got wrong.\""
+      ],
+      "iconPrompt": "a plain magnifying glass over a page"
+    },
+    "to": {
+      "label": "DESCRIBE",
+      "bullets": [
+        "The facts, no blame",
+        "\"The last three sets had word problems I got wrong.\""
+      ],
+      "iconPrompt": "a plain magnifying glass over a page",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "ca-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "EXPRESS",
+      "bullets": [
+        "How it affects you, one sentence",
+        "\"I am getting frustrated because...\""
+      ],
+      "iconPrompt": "a simple heart outline"
+    },
+    "to": {
+      "label": "EXPRESS",
+      "bullets": [
+        "How it affects you, one sentence",
+        "\"I am getting frustrated because...\""
+      ],
+      "iconPrompt": "a simple heart outline",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "ca-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "ASK",
+      "bullets": [
+        "Exactly what you want, small",
+        "\"Could you show me two examples, then watch me try one?\""
+      ],
+      "iconPrompt": "an open hand, palm up"
+    },
+    "to": {
+      "label": "ASK",
+      "bullets": [
+        "Exactly what you want, small",
+        "\"Could you show me two examples, then watch me try one?\""
+      ],
+      "iconPrompt": "an open hand, palm up",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "ca-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "REINFORCE",
+      "bullets": [
+        "Why it helps, for both",
+        "\"Then the rest of the homework will go faster.\""
+      ],
+      "iconPrompt": "two arrows pointing toward each other"
+    },
+    "to": {
+      "label": "REINFORCE",
+      "bullets": [
+        "Why it helps, for both",
+        "\"Then the rest of the homework will go faster.\""
+      ],
+      "iconPrompt": "two arrows pointing toward each other",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

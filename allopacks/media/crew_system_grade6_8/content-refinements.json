@@ -1,0 +1,74 @@
+[
+  {
+    "resourceId": "cs-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "CAPTURE SPOT",
+      "bullets": [
+        "One place, always",
+        "Every assignment, the moment you hear it",
+        "Paper or screen, your choice"
+      ],
+      "iconPrompt": "a single open notebook with an arrow pointing into it"
+    },
+    "to": {
+      "label": "CAPTURE SPOT",
+      "bullets": [
+        "One place, always",
+        "Every assignment, the moment you hear it",
+        "Paper or screen, your choice"
+      ],
+      "iconPrompt": "a single open notebook with an arrow pointing into it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cs-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "LAUNCH CHECK",
+      "bullets": [
+        "Last two minutes of the day",
+        "Look at tomorrow",
+        "Pack the bag tonight, not at 8:04"
+      ],
+      "iconPrompt": "a backpack with a small clock beside it"
+    },
+    "to": {
+      "label": "LAUNCH CHECK",
+      "bullets": [
+        "Last two minutes of the day",
+        "Look at tomorrow",
+        "Pack the bag tonight, not at 8:04"
+      ],
+      "iconPrompt": "a backpack with a small clock beside it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cs-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "WEEKLY RESET",
+      "bullets": [
+        "Ten minutes, once a week",
+        "See the big things coming",
+        "Split them into chunks"
+      ],
+      "iconPrompt": "a week calendar grid with one block split into three"
+    },
+    "to": {
+      "label": "WEEKLY RESET",
+      "bullets": [
+        "Ten minutes, once a week",
+        "See the big things coming",
+        "Split them into chunks"
+      ],
+      "iconPrompt": "a week calendar grid with one block split into three",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

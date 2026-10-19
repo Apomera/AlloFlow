@@ -19,7 +19,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
  * unnoticed — a wrong number is argued about, a missing one is reported, but a stray
  * `undefined` in a heading just looks like the tool is broken.
  */
-const MODES = ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz',
+const MODES = ['observe', 'interior', 'microdissection', 'processes', 'play', 'quiz', 'stemcells',
   'encyclopedia', 'filter', 'compare', 'history', 'biologists', 'lab', 'disease',
   'ecology', 'glossary', 'library', 'finale'];
 

@@ -701,8 +701,16 @@ function loadTools() {
   const dir = path.join(ROOT, 'stem_lab');
   const files = fs.readdirSync(dir).filter(function (f) { return /^stem_tool_.*\.js$/.test(f); }).sort();
   const loadErrors = [];
+  // Data a plugin declares in stemModuleDependencies loads first, as in the app.
+  const { stemDataPrerequisites } = require('./stem_plugin_prerequisites.cjs');
+  const loadedPrerequisites = new Set();
   files.forEach(function (f) {
     try {
+      stemDataPrerequisites(f).forEach(function (dependency) {
+        if (loadedPrerequisites.has(dependency)) return;
+        loadedPrerequisites.add(dependency);
+        new Function('require', fs.readFileSync(path.join(ROOT, dependency), 'utf8'))(require); // eslint-disable-line no-new-func
+      });
       const src = fs.readFileSync(path.join(dir, f), 'utf8');
       new Function('require', src)(require); // eslint-disable-line no-new-func
     } catch (e) {

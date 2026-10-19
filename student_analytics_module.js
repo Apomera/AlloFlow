@@ -2684,7 +2684,9 @@ try {
       importedStudents.forEach(s => {
         (s.screeningHistory || []).forEach(h => {
           const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
-          rows.push([s.nickname || s.name, h.grade || '', h.form || '', h.timestamp ? new Date(h.timestamp).toLocaleDateString() : '', h.activity || '', h.correct || 0, h.total || 0, h.accuracy || 0, h.itemsPerMin || 0, risk]);
+          // Word Sounds probe results carry `date`, not `timestamp`.
+          const when = h.timestamp || h.date;
+          rows.push([s.nickname || s.name, h.grade || '', h.form || '', when ? new Date(when).toLocaleDateString() : '', h.activity || '', h.correct || 0, h.total || 0, h.accuracy || 0, h.itemsPerMin || 0, risk]);
         });
       });
       const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
@@ -2694,11 +2696,12 @@ try {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'screening_results_' + new Date().toISOString().slice(0, 10) + '.csv';
+      const today = new Date();
+      a.download = 'screening_results_' + today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0') + '.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       addToast(t('toasts.screening_csv_exported'), 'success');
     };
     const generateRTICSV = async () => {
@@ -8161,10 +8164,11 @@ try {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-3xl font-bold text-slate-800 mb-6 tracking-wider"
-      }, problem.sequence.map((item, i) => /*#__PURE__*/React.createElement("span", {
+      }, // The shipped bank items are {display: "7 + __ = 12"}; an older shape carried a sequence array.
+      (Array.isArray(problem.sequence) ? problem.sequence : String(problem.display || '').split(/\s+/).filter(Boolean)).map((item, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
-        className: `mx-1 ${item === '___' ? 'inline-block w-16 border-b-4 border-purple-400 text-purple-600' : ''}`
-      }, item === '___' ? mnProbeAnswer || '?' : item))), /*#__PURE__*/React.createElement("div", {
+        className: `mx-1 ${/^_{2,}$/.test(String(item)) ? 'inline-block w-16 border-b-4 border-purple-400 text-purple-600' : ''}`
+      }, /^_{2,}$/.test(String(item)) ? mnProbeAnswer || '?' : item))), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-3"
       }, /*#__PURE__*/React.createElement("input", {
         ref: mnProbeInputRef,
@@ -8407,7 +8411,7 @@ try {
         className: "text-sm text-slate-600 mb-4 font-medium"
       }, "Which number is bigger?"), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-8"
-      }, [problem.a, problem.b].map((num, i) => /*#__PURE__*/React.createElement("button", {
+      }, [problem.left ?? problem.a, problem.right ?? problem.b].map((num, i) => /*#__PURE__*/React.createElement("button", {
         key: i,
         onClick: () => {
           const chosen = num;

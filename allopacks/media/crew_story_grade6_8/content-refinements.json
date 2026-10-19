@@ -1,0 +1,98 @@
+[
+  {
+    "resourceId": "cy-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "A CLAIM",
+      "bullets": [
+        "\"I am pretty responsible\"",
+        "\"I try hard\"",
+        "An adjective about yourself"
+      ],
+      "iconPrompt": "a speech bubble holding a single star"
+    },
+    "to": {
+      "label": "A CLAIM",
+      "bullets": [
+        "\"I am pretty responsible\"",
+        "\"I try hard\"",
+        "An adjective about yourself"
+      ],
+      "iconPrompt": "a speech bubble holding a single star",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cy-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "EVIDENCE",
+      "bullets": [
+        "A count: four mornings of five",
+        "A date: Tuesday, in science",
+        "A thing you did: the ask in ELA"
+      ],
+      "iconPrompt": "a small calendar page with a checkmark and a tally"
+    },
+    "to": {
+      "label": "EVIDENCE",
+      "bullets": [
+        "A count: four mornings of five",
+        "A date: Tuesday, in science",
+        "A thing you did: the ask in ELA"
+      ],
+      "iconPrompt": "a small calendar page with a checkmark and a tally",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cy-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "THE STORY",
+      "bullets": [
+        "One level per HOWL",
+        "One piece of evidence per HOWL",
+        "One gap",
+        "Two minutes"
+      ],
+      "iconPrompt": "three cards in a row with a small clock"
+    },
+    "to": {
+      "label": "THE STORY",
+      "bullets": [
+        "One level per HOWL",
+        "One piece of evidence per HOWL",
+        "One gap",
+        "Two minutes"
+      ],
+      "iconPrompt": "three cards in a row with a small clock",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cy-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "WHY THE GAP",
+      "bullets": [
+        "A story with no gap is not believed",
+        "The gap is where next trimester starts"
+      ],
+      "iconPrompt": "a path with one visible step missing and a footprint beyond it"
+    },
+    "to": {
+      "label": "WHY THE GAP",
+      "bullets": [
+        "A story with no gap is not believed",
+        "The gap is where next trimester starts"
+      ],
+      "iconPrompt": "a path with one visible step missing and a footprint beyond it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

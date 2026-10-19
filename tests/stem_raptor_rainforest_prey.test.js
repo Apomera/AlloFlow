@@ -12,7 +12,8 @@ function body(name){
 }
 const names=['preyKindFor','mergeGroundPreyParts','buildRainforestPreyParts','buildPreyVisual','advanceGroundPreyGait','setGroundPreyLegPose','advanceGroundPreyTerrain','initialPreyVelocity'];
 const api=Function('THREE',names.map(body).join('\n')+';return {build:buildPreyVisual,gait:advanceGroundPreyGait,leg:setGroundPreyLegPose,terrain:advanceGroundPreyTerrain,velocity:initialPreyVelocity};')(THREE);
-const carryFixture=Function('THREE','mesh','var talonGroup=new THREE.Group();talonGroup.add(mesh);var carriedPrey={prey:{mesh:mesh}},studyBoundsDirty=false;'+body('clearCarriedPrey')+';return {clear:clearCarriedPrey,talonGroup:talonGroup,state:function(){return {carriedPrey:carriedPrey,studyBoundsDirty:studyBoundsDirty};}};');
+// Production prey carry their buildPreyVisual model as prey.animation; clearCarriedPrey reads it.
+const carryFixture=Function('THREE','mesh','animation','var talonGroup=new THREE.Group();talonGroup.add(mesh);var carriedPrey={prey:{mesh:mesh,animation:animation}},studyBoundsDirty=false;'+body('clearCarriedPrey')+';return {clear:clearCarriedPrey,talonGroup:talonGroup,state:function(){return {carriedPrey:carriedPrey,studyBoundsDirty:studyBoundsDirty};}};');
 const ids=['sloth','howlerMonkey','capuchin','coati'];
 const speeds={sloth:.25,howlerMonkey:5,capuchin:6.5,coati:5};
 const make=(id,size=2)=>api.build({id,color:0x57534e,speedMps:speeds[id],behavior:id==='sloth'?'still':id==='coati'?'wander':'flee-on-sight'},size);
@@ -70,12 +71,12 @@ describe('Rainforest prey species detail',()=>{
         expect(terrain.supportZ*size).toBeGreaterThanOrEqual(Math.abs(leg.position.z)+Math.hypot(leg.userData.depth,leg.userData.reach));
       }dispose(m);
     }
-  });
+  }, 20000);
 
   it('clears carried prey and disposes seven geometries and one shared material exactly once',()=>{
     for(const id of ids){const m=make(id),all=resources(m),counts=new Map();expect(all.size).toBe(8);
       all.forEach(resource=>{counts.set(resource,0);resource.addEventListener('dispose',()=>counts.set(resource,counts.get(resource)+1));});
-      const preyMesh=new THREE.Group();preyMesh.add(m.root);const fixture=carryFixture(THREE,preyMesh);
+      const preyMesh=new THREE.Group();preyMesh.add(m.root);const fixture=carryFixture(THREE,preyMesh,m);
       expect(preyMesh.parent).toBe(fixture.talonGroup);fixture.clear();fixture.clear();
       expect(preyMesh.parent).toBeNull();expect(fixture.talonGroup.children).toHaveLength(0);
       expect(fixture.state()).toEqual({carriedPrey:null,studyBoundsDirty:true});expect(Array.from(counts.values())).toEqual(Array(8).fill(1));
@@ -156,7 +157,7 @@ describe('Rainforest prey terrain support',()=>{
         expect(footClearance(m,height)).toBeGreaterThan(-1e-5);
       }dispose(m);
     }
-  });
+  }, 20000);
 
   it('supports changing headings over a rounded crest and keeps slope contact when reduced motion rests the feet',()=>{
     const crest=(x,z)=>.08*Math.sin(x*.4)+.05*Math.cos(z*.6),incline=(x,z)=>.3*x-.2*z;

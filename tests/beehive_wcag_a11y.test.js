@@ -6,6 +6,11 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const source = fs.readFileSync('stem_lab/stem_tool_beehive.js', 'utf8');
+// Target size now comes from the tool's scoped stylesheet (79e3e5eae / f7b4d993f moved off
+// Tailwind min-h-[44px] classes), so read the cascaded min-height that jsdom resolves.
+const minHeightPx = (element) => parseFloat(window.getComputedStyle(element).minHeight) || 0;
+// "N/M views opened" text that a pathway button points at through aria-describedby.
+const describedCount = (element) => document.getElementById(element.getAttribute('aria-describedby').split(' ').find((id) => id.endsWith('-count'))).textContent;
 
 describe('Beehive WCAG 2.2 accessibility', () => {
   let config;
@@ -752,7 +757,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.visitedBeeViews).toEqual(expect.arrayContaining(['scene', 'castes', 'pollination', 'equipment']));
     expect(new Set(latest.beehive.visitedBeeViews).size).toBe(4);
     expect(host.querySelector('[data-topic-progress="true"]').getAttribute('aria-valuenow')).toBe('4');
-    expect(host.querySelector('[data-topic-pathway="ecology"]').getAttribute('aria-label')).toContain('2 of 5 topics explored');
+    // 79e3e5eae: the pathway name is its label; the count is its description ("views opened").
+    expect(describedCount(host.querySelector('[data-topic-pathway="ecology"]'))).toBe('2/5 views opened');
   });
 
   it('persists science exploration and provides a clear, accessible next topic', async () => {
@@ -764,15 +770,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(progress.getAttribute('aria-valuenow')).toBe('1');
 
     const continueButton = host.querySelector('[data-topic-continue="lifecycle"]');
-    expect(continueButton.getAttribute('aria-label')).toBe('Continue exploring with Lifecycle');
+    // Visible text is the accessible name (no aria-label override since 79e3e5eae).
+    expect(continueButton.hasAttribute('aria-label')).toBe(false);
+    expect(continueButton.textContent).toBe('Open next: Lifecycle');
     await act(async () => { continueButton.click(); await Promise.resolve(); });
 
     expect(latest.beehive.beeView).toBe('lifecycle');
     expect(latest.beehive.visitedBeeViews).toEqual(['scene', 'lifecycle']);
     expect(host.querySelector('[data-topic-progress="true"]').getAttribute('aria-valuenow')).toBe('2');
-    expect(host.querySelector('[data-topic-pathway="colony"]').getAttribute('aria-label')).toContain('2 of 5 topics explored');
+    expect(describedCount(host.querySelector('[data-topic-pathway="colony"]'))).toBe('2/5 views opened');
     expect(host.querySelector('[data-beehive-view-tab="lifecycle"]').getAttribute('data-topic-explored')).toBe('true');
-    expect(document.getElementById('allo-live-beehive').textContent).toContain('Exploration progress updated');
+    // 79e3e5eae: opening a view is announced as a visit, not as "exploration progress".
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Opened Lifecycle.');
   });
 
   it('lets learners switch between overview-first and stage-first layouts without losing content', async () => {
@@ -780,7 +789,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     let layoutButton = host.querySelector('[data-beehive-focus-layout="true"]');
     let pulse = host.querySelector('[data-beehive-pulse="true"]');
     let stage = document.getElementById('beehive-canvas-wrap');
-    expect(layoutButton.className).toContain('min-h-[44px]');
+    expect(minHeightPx(layoutButton)).toBeGreaterThanOrEqual(44);
     expect(layoutButton.getAttribute('aria-pressed')).toBe('false');
     expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-layout')).toBe('overview-first');
     expect(Boolean(pulse.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
@@ -815,7 +824,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       expect(nav.getAttribute('aria-label')).toBe('Bee simulation learning flow');
       const links = Array.from(nav.querySelectorAll('a[data-beehive-flow-step]'));
       expect(links).toHaveLength(5);
-      expect(links.every((link) => link.className.includes('min-h-[48px]'))).toBe(true);
+      // Was a 48px Tailwind class; the scoped .bee-flow-links rule sets 44px (WCAG 2.5.5 AAA size).
+      expect(links.map(minHeightPx).every((px) => px >= 44)).toBe(true);
       for (const link of links) {
         const target = document.getElementById(link.getAttribute('href').slice(1));
         expect(target).toBeTruthy();
@@ -941,18 +951,20 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const eventAction = host.querySelector('[data-beehive-coach-action="review-event"] button');
     const eventPanel = document.getElementById('beehive-active-event');
     eventPanel.scrollIntoView = vi.fn();
-    expect(eventAction.className).toContain('min-h-[44px]');
+    expect(minHeightPx(eventAction)).toBeGreaterThanOrEqual(44);
     await act(async () => { eventAction.click(); await Promise.resolve(); });
     expect(eventPanel.scrollIntoView).toHaveBeenCalled();
     expect(document.activeElement).toBe(eventPanel);
 
     await mountDroneFlight({ paused: true });
     const resume = host.querySelector('[data-beehive-coach-action="resume-flight"] button');
-    expect(resume.className).toContain('min-h-[44px]');
+    expect(minHeightPx(resume)).toBeGreaterThanOrEqual(44);
     expect(resume.getAttribute('aria-keyshortcuts')).toBe('P');
     const watchCue = host.querySelector('[data-beehive-coach-action="resume-flight"] [data-beehive-coach-watch="true"]');
     expect(watchCue.getAttribute('role')).toBe('note');
-    expect(watchCue.getAttribute('aria-label')).toBe('What to watch after Resume flight');
+    // 79e3e5eae: the cue is introduced by visible text and tied to the button by aria-describedby.
+    expect(watchCue.textContent.startsWith('What to observe: ')).toBe(true);
+    expect(resume.getAttribute('aria-describedby').split(' ')).toContain(watchCue.id);
     expect(watchCue.textContent).toContain('energy, altitude, distance, and time resume');
     await act(async () => { resume.click(); await Promise.resolve(); });
     expect(latest.beehive.drone.paused).toBe(false);
@@ -1603,7 +1615,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     }
 
     await mount({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
-    expect(leafContaining('Arrow keys / WASD').className).toContain('text-slate-700');
+    // f7b4d993f rebuilt the drone briefing on scoped .bfd tokens: the control caption is
+    // .bfd-caption (14px, --bf-muted). Check the light-theme token pair, not a class name.
+    expect(leafContaining('After launch:').className).toContain('bfd-caption');
+    expect(source.includes('.bfd small,.bfd-caption {font-size:.875rem;color:var(--bf-muted);}'), 'caption uses the muted token').toBe(true);
+    const bfd = source.match(/\.bfd \{--bf-paper:(#[0-9a-f]{6}|#[0-9a-f]{3});--bf-ink:#[0-9a-f]+;--bf-muted:(#[0-9a-f]{6}|#[0-9a-f]{3});/i);
+    const luminance = (hex) => {
+      const full = hex.length === 4 ? '#' + [...hex.slice(1)].map((c) => c + c).join('') : hex;
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    expect(bfd, 'light .bfd token block').toBeTruthy();
+    expect((luminance(bfd[1]) + 0.05) / (luminance(bfd[2]) + 0.05)).toBeGreaterThanOrEqual(4.5);
 
     await mountDroneFlight({ paused: true });
     expect(leafContaining('Keep flying to discover facts').className).toContain('text-slate-600');
@@ -1825,12 +1848,18 @@ describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
   const SRC = source;   // the module source this suite already reads at the top of the file
 
   it('keeps drone replay moments tied to the maneuver and preserves the first sample', () => {
-    const replay = SRC.slice(SRC.indexOf('function droneReplayChart'));
-    expect(replay).toMatch(/replayIndexValue = droneData\.replayIndex == null/);
-    expect(replay).toMatch(/selectedAction = selectedSample\.action \|\| 'Not recorded'/);
-    expect(replay).toMatch(/'Control: ' \+ selectedAction/);
-    expect(replay).toMatch(/action: ds\.lastManeuver/);
-    expect(replay).toMatch(/impact: ds\.lastManeuver/);
+    // f7b4d993f moved replay selection into the exported bhDroneReplayModel; run it.
+    resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
+    const replayModel = window.__RR_TEST_EXPORTS__.beehive.bhDroneReplayModel;
+    const samples = [{ t: 0, action: 'Climb', impact: 'Altitude rose after the climb.' }, { t: 1, action: 'Glide' }, { t: 2 }];
+    const first = replayModel(samples, {}, 0);
+    expect(first.index).toBe(0);
+    expect(first.action).toBe('Climb');
+    expect(first.advice).toBe('Altitude rose after the climb.');
+    expect(replayModel(samples, {}, null).index).toBe(2);
+    expect(replayModel(samples, {}, 2).action).toBe('Not recorded');
+    expect(SRC.includes("h('strong', null, 'Recorded control: '), model.action)"), 'chart shows the recorded control').toBe(true);
+    expect(/action: ds\.lastManeuver/.test(SRC) && /impact: ds\.lastManeuver/.test(SRC), 'samples record the maneuver').toBe(true);
   });
 
   it('has no aria-label stranded on a role-less div or span', () => {

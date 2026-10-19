@@ -385,8 +385,8 @@
   var dispatchHud = '<div id="clab-dispatch" role="status" aria-live="polite" aria-atomic="true" hidden>';
   CLAB_HTML = CLAB_HTML.replace(dispatchHud, '<div id="clab-lapHud" role="group" aria-label="Ride progress" hidden><div class="clab-lap-head"><b id="clab-lapSection">Station</b><span id="clab-lapPct">0%</span></div><div id="clab-lapRail" class="clab-lap-rail" role="progressbar" aria-label="Distance around the coaster circuit" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="clab-lapFill"></i><span id="clab-lapTicks" class="clab-lap-ticks" aria-hidden="true"></span></div><span id="clab-lapAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></span></div>\n      ' + dispatchHud);
   CLAB_HTML = CLAB_HTML.replace('Cycle camera: orbit, onboard, chase', 'Cycle camera: orbit, onboard, chase, scenic');
-  CLAB_HTML = CLAB_HTML.replace('camera: orbit ? onboard ? chase, and pick', 'camera: orbit ? onboard ? chase ? scenic, and pick');
-  CLAB_HTML = CLAB_HTML.replace('Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.', 'Interactive 3-D coaster track visualization. Direction arrows point around the circuit and illuminated rings mark major ride sections. Section portals remain visible during runs and carry distinct crown shapes for lift, launch, drop, inversion, turn, valley, and brake landmarks. The next portal grows as the train approaches and settles after passage. A tapered hoop trail and arrow identify the train position and direction in orbit and scenic views. The lead car carries a raised forward arrow and casts a tapered beam across the track in darker environments. Visible couplers show how the cars articulate through curves, and the rear lamp brightens on the brake run. High-contrast wheel markers rotate with each car?s traveled distance and remain still in reduced-motion mode. Theme-aware side light strips outline every car and brighten with speed. Numbered row plates identify front, middle, and back positions directly on the 3-D train. The active row gains a diamond marker and enlarged number plate, so selection is not conveyed by color alone. A side catwalk marks the lift hill, while center fins and paired lamps mark the brake run. Brake fins rise and paired lamps brighten when the train enters the brake run. Moving chain dogs climb the lift beside the train in chain mode. Launch mode uses paired stator banks with a repeating three-phase energy pattern. Platform edge lights sweep toward the exit during dispatch, while loading gates open before departure. The station pairs a three-aspect signal with an overhead word-and-number dispatch board. Use the Build panel controls to select and edit track nodes.');
+  CLAB_HTML = CLAB_HTML.replace('camera: orbit → onboard → chase, and pick', 'camera: orbit → onboard → chase → scenic, and pick');
+  CLAB_HTML = CLAB_HTML.replace('Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.', 'Interactive 3-D coaster track visualization. Direction arrows point around the circuit and illuminated rings mark major ride sections. Section portals remain visible during runs and carry distinct crown shapes for lift, launch, drop, inversion, turn, valley, and brake landmarks. The next portal grows as the train approaches and settles after passage. A tapered hoop trail and arrow identify the train position and direction in orbit and scenic views. The lead car carries a raised forward arrow and casts a tapered beam across the track in darker environments. Visible couplers show how the cars articulate through curves, and the rear lamp brightens on the brake run. High-contrast wheel markers rotate with each car’s traveled distance and remain still in reduced-motion mode. Theme-aware side light strips outline every car and brighten with speed. Numbered row plates identify front, middle, and back positions directly on the 3-D train. The active row gains a diamond marker and enlarged number plate, so selection is not conveyed by color alone. A side catwalk marks the lift hill, while center fins and paired lamps mark the brake run. Brake fins rise and paired lamps brighten when the train enters the brake run. Moving chain dogs climb the lift beside the train in chain mode. Launch mode uses paired stator banks with a repeating three-phase energy pattern. Platform edge lights sweep toward the exit during dispatch, while loading gates open before departure. The station pairs a three-aspect signal with an overhead word-and-number dispatch board. Use the Build panel controls to select and edit track nodes.');
 
   function bootCoasterLab(rootEl, THREE, bridge){
 'use strict';
@@ -403,8 +403,15 @@ const __clabResources = {
   bannerTimerId: null,
   audioCtx: null,
   xrSession: null,
-  sceneRoot: null
+  sceneRoot: null,
+  listeners: null
 };
+/* listeners on objects that outlive the tool (document, window) — removed on
+   teardown, or every open/close keeps the previous instance alive */
+function __clabListen(target, type, fn){
+  target.addEventListener(type, fn);
+  (__clabResources.listeners || (__clabResources.listeners = [])).push([target, type, fn]);
+}
 function __clabIgnoreRejection(result){
   if(result && typeof result.catch === 'function') result.catch(() => {});
 }
@@ -442,6 +449,9 @@ function __clabDestroy(){
   try{ if(resources.rideResumeId != null) clearTimeout(resources.rideResumeId); }catch(_e){}
   try{ if(resources.rideBurstId != null) clearTimeout(resources.rideBurstId); }catch(_e){}
   try{ if(resources.bannerTimerId != null) clearTimeout(resources.bannerTimerId); }catch(_e){}
+  (resources.listeners || []).forEach(([target, type, fn]) => {
+    try{ target.removeEventListener(type, fn); }catch(_e){}
+  });
   try{
     if(resources.xrSession && typeof resources.xrSession.end === 'function'){
       __clabIgnoreRejection(resources.xrSession.end());
@@ -480,6 +490,7 @@ const LIFT_V = 3.5;              // chain release speed, m/s
 const MU_ROLL = 0.0065;          // rolling resistance coeff (scaled by normal force)
 const K_DRAG = 0.00045;          // quadratic drag, 1/m
 const BRAKE_LEN = 55, STOP_AT = 4;   // brake run starts before the final turn (m from lap end)
+const BRAKE_DECEL = 8;               // m/s² the brakes pull — the sim AND the Ride & Solve brake questions
 const CAR_GAP = 2.6;                 // a real train is a LENGTH, not a point
 let TRAIN_CARS = 5;                  // how many cars THIS design runs — see design.cars
 const LIM = { gvMax: 6.0, gvMin: -1.5, glat: 1.3 };  // comfort limits (ASTM-ish)
@@ -3570,19 +3581,24 @@ function renderSafetyCoach(){
   });
   safetyGroup.visible = !sim.running && !__clabGet('clab-tab-build').hidden;
 }
-function focusSafetyFinding(index){
-  const f = safetyFindings[index];
-  if(!f || sim.running) return;
+/* select a node, aim the orbit camera at it and bring its edit card into view */
+function focusNode(idx, message, tone = ''){
+  const p = design.points[idx];
+  if(!p || sim.running) return;
   camMode = 'orbit';
   __clabGet('clab-btnCam').textContent = 'Camera: Orbit';
-  selectPoint(f.nodeIdx);
-  const p = design.points[f.nodeIdx];
+  selectPoint(idx);
   orbitAutoFit = false;
   orbit.target.set(p.x, p.y, p.z);
   orbit.radius = Math.min(orbit.radius, 105);
   userTouched = true;
   try{ ptCard.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' }); }catch(_e){}
-  banner(`Node ${f.nodeIdx} selected — ${f.title.toLowerCase()}.`, f.severity === 'bad' ? 'fail' : '', 3200);
+  if(message) banner(message, tone, 3200);
+}
+function focusSafetyFinding(index){
+  const f = safetyFindings[index];
+  if(!f) return;
+  focusNode(f.nodeIdx, `Node ${f.nodeIdx} selected — ${f.title.toLowerCase()}.`, f.severity === 'bad' ? 'fail' : '');
 }
 
 /* ---------------- certification analysis ---------------- */
@@ -3758,17 +3774,53 @@ function renderProblems(){
       <p class="eyebrow">Concept check 4 · Banked turn ⚑</p>
       <div class="given">flagged turn D: h = ${fmt(a.D.h)} m, turn radius r = ${fmt(a.D.r)} m</div>
       <p class="ask">What bank angle makes the turn feel like <b>zero</b> sideways force?
-        (Then set node ${design.certTurnIdx}'s bank to your answer in Build.)</p>
+        Then bank node ${design.certTurnIdx} to your answer — the inspection measures the turn you built.</p>
       <div class="ansrow"><input type="number" step="1" id="inP4" inputmode="decimal" aria-label="ideal bank angle"><span class="unit">deg</span><span class="verdict" id="vP4"></span></div>
+      <p class="hint" id="clab-certBankNow" style="margin:6px 0 0">Node ${design.certTurnIdx} is banked ${fmt((design.points[design.certTurnIdx] || {}).bank || 0, 0)}° right now.</p>
+      <div class="btnrow" style="margin-top:6px">
+        <button type="button" id="clab-btnApplyCertBank">Bank node ${design.certTurnIdx} to my answer</button>
+        <button type="button" id="clab-btnShowCertTurn">Show node ${design.certTurnIdx}</button>
+      </div>
       <details class="work"><summary>Show the physics</summary><div>
         speed there: v_D = √(v_A² + 2g·(h_A − h_D))<br>
         ideal bank: tan θ = v_D²/(g·r)
       </div></details>
     </div>`;
   }
+  /* Any design change re-renders these cards (check 4's own instruction — bank
+     the node — runs fullRebuild). Keep what the student typed, and re-check it
+     against the new givens if they had already checked, instead of wiping it. */
+  const typed = {};
+  problemsEl.querySelectorAll('input[id^="inP"]').forEach(el => { if(el.value !== '') typed[el.id] = el.value; });
+  const hadChecked = Object.keys(preds).length > 0;
   problemsEl.innerHTML = html;
   certResultEl.innerHTML = '';
   preds = {};
+  for(const id of Object.keys(typed)){ const el = __clabGet(id); if(el) el.value = typed[id]; }
+  if(hadChecked && Object.keys(typed).length) checkPredictions();
+  const applyBank = __clabGet('clab-btnApplyCertBank');
+  if(applyBank) applyBank.addEventListener('click', applyCertBankAnswer);
+  const showTurn = __clabGet('clab-btnShowCertTurn');
+  if(showTurn) showTurn.addEventListener('click', showCertTurn);
+}
+/* Check 4 asks the student to bank node N to their answer: do it from the card,
+   so they are not sent hunting through Build for node N. */
+function applyCertBankAnswer(){
+  if(designLocked()) return;
+  const el = __clabGet('inP4');
+  const deg = el ? parseFloat(el.value) : NaN;
+  const p = design.points[design.certTurnIdx];
+  if(!p) return;
+  if(!isFinite(deg)){ banner('Type your bank angle in check 4 first.', 'fail', 2600); if(el) el.focus(); return; }
+  p.bank = Math.max(-180, Math.min(180, deg));
+  fullRebuild(); saveDesign();
+  banner(`Node ${design.certTurnIdx} is now banked ${fmt(p.bank, 0)}°. Run the inspection to measure the turn.`, 'pass', 3200);
+}
+function showCertTurn(){
+  const i = design.certTurnIdx;
+  if(!design.points[i] || designLocked()) return;
+  activateTab(rootEl.querySelector('[data-tab="build"]'));
+  focusNode(i, `Node ${i} is the flagged turn ⚑ — its bank slider is in this card.`);
 }
 
 /* ---------------- Explore level: ungraded pre-ride hypotheses ------------ */
@@ -3786,7 +3838,7 @@ function renderExplore(){
   if(a.D) q1opts.push(['D', 'In the banked turn (D)']);
   html += card('q1', 'Hypothesis 1 · Speed', 'Where will the train be moving <b>fastest</b>?', q1opts);
   html += card('q2', 'Hypothesis 2 · Energy',
-    'Watch the energy bar: as the train <b>climbs</b> a hill, the blue <b>kinetic</b> part…',
+    'Watch the energy bar: as the train <b>coasts up</b> a hill after the chain lets go, the blue <b>kinetic</b> part…',
     [['grows', 'Grows — climbing speeds you up'], ['shrinks', 'Shrinks — speed trades for height'],
      ['same', 'Stays the same']]);
   const q3opts = [['A', 'Cresting the first hill (A)'], ['B', 'At the bottom of the valley (B)']];
@@ -3807,7 +3859,7 @@ function renderExplore(){
      ['ratchet', 'A lap bar that locks shut, plus a seat belt'],
      ['harness', 'A harness over the shoulders']]);
   html += card('q6', 'Hypothesis 6 · Where you sit',
-    'Your train is five rows long. Which row gets pulled <b>hardest out of its seat</b>?',
+    `Your train is ${TRAIN_CARS} rows long. Which row gets pulled <b>hardest out of its seat</b>?`,
     [['front', 'The front row'], ['mid', 'Somewhere in the middle'],
      ['back', 'The back row'], ['same', 'About the same in every row']]);
   html += '<div class="btnrow"><button id="btnExploreRun" class="primary">🎢 Run &amp; compare evidence</button></div>';
@@ -3873,7 +3925,9 @@ function gradeExplore(tele){
       : (seats.worstIdx === 0 ? 'front' : (seats.worstIdx === seats.n - 1 ? 'back' : 'mid'));
     judge('q6', truth, truth === 'same'
       ? `Every row measured within ${fmt(seats.gSpread, 2)} g of the others — your hills are close to symmetrical, so the ride is the same wherever you sit.`
-      : `The ${seatLabel(seats.worstIdx, seats.n).toLowerCase()} measured ${fmt(seats.worstMin, 2)} g against ${fmt(rows[0].minGV, 2)} g in the front. Lopsided hills pull the rows apart.`);
+      : seats.worstIdx === 0
+        ? `The front row measured ${fmt(seats.worstMin, 2)} g against ${fmt(rows[seats.n - 1].minGV, 2)} g in the back. Lopsided hills pull the rows apart.`
+        : `The ${seatLabel(seats.worstIdx, seats.n).toLowerCase()} measured ${fmt(seats.worstMin, 2)} g against ${fmt(rows[0].minGV, 2)} g in the front. Lopsided hills pull the rows apart.`);
   }
   const matched = rows.filter(r => r.matched).length;
   let html = '<div class="card" data-clab-explore-inquiry="commit-test-explain-revise"><p class="eyebrow">Hypothesis → measured evidence</p>';
@@ -3914,8 +3968,10 @@ function checkPredictions(){
   if(!analysis) return;
   const a = analysis.ans;
   const grade = (id, truth, tolAbs, tolRel) => {
-    const el = __clabGet('clab-in' + id);
-    const v = __clabGet('clab-v' + id);
+    // renderProblems writes these unprefixed (inP1 / vP1); a 'clab-' lookup
+    // found nothing, so no answer was ever graded and certification never passed.
+    const el = __clabGet('in' + id);
+    const v = __clabGet('v' + id);
     if(!el || truth == null) return null;
     const x = parseFloat(el.value);
     if(!isFinite(x)){ v.textContent = 'enter a value'; v.className = 'verdict no'; return null; }
@@ -3929,7 +3985,16 @@ function checkPredictions(){
   preds.p1  = grade('P1',  a.vB,    null, TOL.v);
   preds.p2a = grade('P2a', a.vCmin, null, TOL.v);
   preds.p2b = grade('P2b', a.vC,    null, TOL.v);
-  preds.p3  = grade('P3',  a.gB,    TOL.g, null);
+  /* n = 1 + v²/(gr) builds on check 1. A v_B inside its 6% tolerance can still
+     push n past ±0.35 g on a steep valley, so carry the student's own accepted
+     v_B forward rather than fail a correct method. */
+  let gTruth = a.gB;
+  if(preds.p1 && preds.p1.ok && a.gB != null && a.vB > 0){
+    const ecf = 1 + (a.gB - 1) * (preds.p1.x / a.vB) ** 2;
+    const x3 = parseFloat((__clabGet('inP3') || {}).value);
+    if(isFinite(x3) && Math.abs(x3 - ecf) < Math.abs(x3 - a.gB)) gTruth = ecf;
+  }
+  preds.p3  = grade('P3',  gTruth,  TOL.g, null);
   preds.p4  = grade('P4',  a.bankD, TOL.bank, null);
 }
 
@@ -3948,13 +4013,30 @@ function gradeCertRun(tele){
   if(a.L) row('v after launch', preds.p0, cap.L && cap.L.v, 'm/s', null, TOL.v);
   row('v at B',      preds.p1,  cap.B && cap.B.v,  'm/s', null, TOL.v);
   if(a.C) row('v at C (apex)', preds.p2b, cap.C && cap.C.v, 'm/s', null, TOL.v);
-  row('seat g at B', preds.p3,  cap.B && cap.B.gV, 'g',   TOL.g, null);
-  if(a.D && preds.p4 && cap.D){
-    rows.push({ name: 'side g at D', pred: 0, meas: cap.D.gLat, unit: 'g',
-                ok: Math.abs(cap.D.gLat) <= TOL.g });
+  // seat g at B builds on v_B: carry the student's accepted v_B forward, as Check does
+  const gBMeas = cap.B && cap.B.gV;
+  if(preds.p3 && gBMeas != null){
+    const vBMeas = cap.B.v;
+    const p1ok = preds.p1 && vBMeas > 0 && Math.abs(preds.p1.x - vBMeas) / vBMeas <= TOL.v;
+    const ecf = p1ok ? 1 + (gBMeas - 1) * (preds.p1.x / vBMeas) ** 2 : gBMeas;
+    rows.push({ name: 'seat g at B', pred: preds.p3.x, meas: gBMeas, unit: 'g',
+                ok: Math.abs(preds.p3.x - gBMeas) <= TOL.g || Math.abs(preds.p3.x - ecf) <= TOL.g });
+  }
+  /* Check 4 is two things: the calculated angle, and the turn as built. Grade
+     both and say which one is off — the row used to show "0.00 g" as the
+     student's calculation and grade only the build. */
+  const certIdx = design.certTurnIdx;
+  const bankNow = (design.points[certIdx] || {}).bank || 0;
+  const sideOk = !!(cap.D && Math.abs(cap.D.gLat) <= TOL.g);
+  if(a.D && preds.p4){
+    rows.push({ name: 'bank angle at D', pred: preds.p4.x, meas: a.ans.bankD, unit: '°', dp: 0, ok: !!preds.p4.ok });
+  }
+  if(a.D && cap.D){
+    rows.push({ name: `side g at D (node ${certIdx} banked ${fmt(bankNow, 0)}°)`, predText: 'goal ≈ 0 g',
+                meas: cap.D.gLat, unit: 'g', ok: sideOk });
   }
 
-  const anyMissing = ['p1', 'p3'].some(k => !preds[k]) || (a.C && !preds.p2b) || (a.L && !preds.p0);
+  const anyMissing = ['p1', 'p3'].some(k => !preds[k]) || (a.C && !preds.p2b) || (a.L && !preds.p0) || (a.D && !preds.p4);
   const loopSafe = !a.C || (cap.C && cap.C.v >= Math.sqrt(G0 * a.C.r) - 0.05);
   const completed = tele.status === 'complete';
   const comfy = tele.violations.length === 0;
@@ -3967,11 +4049,16 @@ function gradeCertRun(tele){
   let html = '<div class="card"><p class="eyebrow">Inspection report</p>';
   html += '<table class="cert"><tr><th>concept check</th><th>your calculation</th><th>modeled value</th><th></th></tr>';
   for(const r of rows){
-    html += `<tr><td>${r.name}</td><td>${fmt(r.pred, 2)} ${r.unit}</td><td>${fmt(r.meas, 2)} ${r.unit}</td>
+    const dp = r.dp == null ? 2 : r.dp;
+    html += `<tr><td>${r.name}</td><td>${r.predText || (fmt(r.pred, dp) + ' ' + r.unit)}</td><td>${fmt(r.meas, dp)} ${r.unit}</td>
              <td style="color:var(--${r.ok ? 'good' : 'bad'})">${r.ok ? '✓' : '✗'}</td></tr>`;
   }
   html += '</table>';
   if(anyMissing) html += '<p class="hint" style="margin-top:8px">Some calculations were never checked — fill them in and press “Check calculations”.</p>';
+  if(a.D && cap.D && preds.p4){
+    if(preds.p4.ok && !sideOk) html += `<p class="hint" style="margin-top:8px">Your bank angle is right, but node ${certIdx} is still banked ${fmt(bankNow, 0)}° on the track. Press “Bank node ${certIdx} to my answer” in check 4, then inspect again.</p>`;
+    else if(!preds.p4.ok && sideOk) html += '<p class="hint" style="margin-top:8px">The turn rides level as built, but your calculated angle is off — recheck tan θ = v²/(g·r) using the speed at D.</p>';
+  }
   if(!completed) html += `<p class="hint" style="margin-top:8px">The train never made it home (${tele.status}).</p>`;
   if(!loopSafe)  html += '<p class="hint" style="margin-top:8px">The train crossed the loop apex below the weightless limit. Its upstop wheels grip the underside of the rail, so the train stays on — but riders hang in their restraints over the top. Raise the crest or shrink the loop.</p>';
   if(!comfy)     html += `<p class="hint" style="margin-top:8px">Comfort limits exceeded: ${tele.violations.join('; ')}.</p>`;
@@ -3986,7 +4073,10 @@ function gradeCertRun(tele){
     spawnFireworks();
     missionEvent('cert', {});
     bridgeReport({ event: 'cert' });
-    try{ localStorage.setItem('coaster_lab_certified', new Date().toISOString().slice(0, 10)); }catch(_e){}
+    // the student's LOCAL date — toISOString is UTC, which reads tomorrow on US evenings
+    const now = new Date();
+    const localDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    try{ localStorage.setItem('coaster_lab_certified', localDay); }catch(_e){}
   }
 }
 
@@ -3995,6 +4085,14 @@ const sim = {
   running: false, cert: false, S: 2, v: 0, t: 0,
   sMax: 0, tAtMax: 0, prevS: 2, done: true, tele: null
 };
+/* Editing the track under a moving train swaps the geometry beneath it, leaves
+   Ride & Solve checkpoints stale and lets a run be rescored mid-ride (switching
+   to Launch mid-run used to earn "Rocket start"). Every design edit waits. */
+function designLocked(){
+  if(!sim.running) return false;
+  banner('Stop the ride before changing the track.', 'fail', 2400);
+  return true;
+}
 function freshTele(){
   return {
     maxV: 0, maxGV: -Infinity, minGV: Infinity, maxLat: 0,
@@ -4119,7 +4217,13 @@ function stepSim(dtFrame){
       }
       sim.v += a * h;
     }
-    if(sim.S > t.L - brakeLen() && sim.v > 3.0) sim.v = Math.max(3.0, sim.v - 8 * h);
+    if(sim.S > t.L - brakeLen() && sim.v > 3.0){
+      /* the brakes turn motion into heat — book it, or the energy bar shows
+         energy vanishing on every ideal run (friction is the only other source) */
+      const vIn = sim.v;
+      sim.v = Math.max(3.0, sim.v - BRAKE_DECEL * h);
+      tele.heat += 0.5 * (vIn * vIn - sim.v * sim.v);
+    }
 
     sim.prevS = sim.S;
     sim.S += sim.v * h;
@@ -4498,7 +4602,7 @@ function applyTelemetryFrame(index){
     scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour, ${(point.g >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.g), 2)} vertical g, ${(point.gl >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.gl), 2)} lateral g`);
   }
   const out = __clabGet('clab-replayReadout');
-  if(out) out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
+  if(out) out.textContent = `${fmt(point.s, 0)} m · ${fmt(point.v * 3.6, 0)} km/h · ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g · side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
   if(__clabGet('chV')) drawTraces(tele);
 }
 function telemetryIndexAtDistance(pts, targetS){
@@ -4557,7 +4661,7 @@ function bindTelemetryReplay(tele){
   scrub.max = String(tele.trace.length - 1);
   scrub.value = String(telemetryReplay.index);
   const point = tele.trace[telemetryReplay.index];
-  out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
+  out.textContent = `${fmt(point.s, 0)} m · ${fmt(point.v * 3.6, 0)} km/h · ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g · side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
   scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour, ${(point.g >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.g), 2)} vertical g, ${(point.gl >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.gl), 2)} lateral g`);
   btn.textContent = 'Replay ride';
   scrub.addEventListener('input', () => {
@@ -5066,7 +5170,7 @@ function guidedCurrentTelemetry(){
   const peakG = tele && Number.isFinite(Number(tele.maxGV)) ? Number(tele.maxGV) : null;
   if(stage === 'safety' || peakG != null && peakG > LIM.gvMax){
     const zone = guidedPeakZone(tele);
-    return 'Inspect the ' + zone + ' near ' + fmt(Number(peak.s), 0) + ' m, where the vertical-force trace reaches about ' + fmt(peakG == null ? Number(peak.g) : peakG, 1) + ' g.';
+    return 'Inspect the ' + zone + ' about ' + fmt(Number(peak.s), 0) + ' m along the track, where the vertical-force trace reaches about ' + fmt(peakG == null ? Number(peak.g) : peakG, 1) + ' g.';
   }
   if(goal === 'airtime3') return 'Inspect the crest and compare the airtime trace before and after the next revision.';
   if(goal === 'hill20') return 'Inspect the highest editable node and compare the measured hill height with the 20 m target.';
@@ -5212,8 +5316,8 @@ function renderGuidedEvidenceStory(tele){
   const measured = guidedEvidenceValueText(model.value, model.unit);
   const target = model.comparison + ' ' + guidedEvidenceValueText(model.target, model.unit);
   const focusText = model.startS != null && model.endS != null && Math.abs(model.endS - model.startS) > 1
-    ? model.focusLabel + ' from ' + fmt(model.startS, 0) + ' to ' + fmt(model.endS, 0) + ' m'
-    : model.focusS != null ? model.focusLabel + ' near ' + fmt(model.focusS, 0) + ' m' : model.focusLabel;
+    ? model.focusLabel + ' from ' + fmt(model.startS, 0) + ' to ' + fmt(model.endS, 0) + ' m along the track'
+    : model.focusS != null ? model.focusLabel + ', about ' + fmt(model.focusS, 0) + ' m along the track' : model.focusLabel;
   const stepHtml = model.steps.map(step =>
     '<li class="clab-story-step"><small>' + guidedHtmlEscape(step.label) + '</small><b>' +
     guidedHtmlEscape(fmt(step.value, step.decimals) + ' ' + step.unit) + '</b><p>' + guidedHtmlEscape(step.note) + '</p></li>'
@@ -7384,6 +7488,7 @@ __clabGet('clab-btnZMinus').addEventListener('click', () => nudgeSelectedNode(0,
 __clabGet('clab-btnZPlus').addEventListener('click', () => nudgeSelectedNode(0, 1));
 function syncGroundPositionFromControls(){
   if(selIdx < 0) return;
+  if(designLocked()){ syncPointCard(); return; }
   const p = design.points[selIdx];
   p.x = Math.max(-260, Math.min(260, parseFloat(slX.value)));
   p.z = Math.max(-260, Math.min(260, parseFloat(slZ.value)));
@@ -7396,19 +7501,21 @@ slX.addEventListener('input', syncGroundPositionFromControls);
 slZ.addEventListener('input', syncGroundPositionFromControls);
 slHeight.addEventListener('input', () => {
   if(selIdx < 0) return;
+  if(designLocked()){ syncPointCard(); return; }
   design.points[selIdx].y = parseFloat(slHeight.value);
   handleGroup.children[selIdx].position.y = design.points[selIdx].y;
   syncPointCard(); throttledRebuild();
 });
 slBank.addEventListener('input', () => {
   if(selIdx < 0) return;
+  if(designLocked()){ syncPointCard(); return; }
   design.points[selIdx].bank = parseFloat(slBank.value);
   syncPointCard(); throttledRebuild();
 });
-for(const sl of [slX, slZ, slHeight, slBank]) sl.addEventListener('change', () => { fullRebuild(); saveDesign(); });
+for(const sl of [slX, slZ, slHeight, slBank]) sl.addEventListener('change', () => { if(sim.running) return; fullRebuild(); saveDesign(); });
 
 __clabGet('clab-btnAddPt').addEventListener('click', () => {
-  if(selIdx < 0) return;
+  if(selIdx < 0 || designLocked()) return;
   const K = design.points.length;
   const mid = track.curve.getPoint(((selIdx + 0.5) / K) % 1);
   const b = (design.points[selIdx].bank + design.points[(selIdx + 1) % K].bank) / 2;
@@ -7418,6 +7525,7 @@ __clabGet('clab-btnAddPt').addEventListener('click', () => {
   fullRebuild(); syncPointCard(); saveDesign();
 });
 __clabGet('clab-btnDelPt').addEventListener('click', () => {
+  if(designLocked()) return;
   if(selIdx < 0 || design.points.length <= 6){ banner('A circuit needs at least 6 nodes.', 'fail'); return; }
   design.points.splice(selIdx, 1);
   if(design.certTurnIdx >= design.points.length) design.certTurnIdx = 0;
@@ -7426,7 +7534,7 @@ __clabGet('clab-btnDelPt').addEventListener('click', () => {
   fullRebuild(); syncPointCard(); saveDesign();
 });
 __clabGet('clab-btnFlagPt').addEventListener('click', () => {
-  if(selIdx < 0) return;
+  if(selIdx < 0 || designLocked()) return;
   design.certTurnIdx = selIdx;
   fullRebuild(); syncPointCard(); saveDesign();
 });
@@ -7666,16 +7774,19 @@ function syncPropUI(){
   }
 }
 __clabGet('clab-btnChain').addEventListener('click', () => {
+  if(designLocked()){ syncPropUI(); return; }
   if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; }
   design.propulsion.mode = 'chain';
   fullRebuild(); syncPropUI(); saveDesign();
 });
 __clabGet('clab-btnLaunch').addEventListener('click', () => {
+  if(designLocked()){ syncPropUI(); return; }
   if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; }
   design.propulsion.mode = 'launch';
   fullRebuild(); syncPropUI(); saveDesign();
 });
 slLaunch.addEventListener('input', () => {
+  if(designLocked()){ syncPropUI(); return; }
   if(guidedConditionsLocked()){
     slLaunch.value = String(Number(guidedRecord.conditions.accel) || 0);
     __clabGet('clab-slLaunchV').textContent = fmt(Number(guidedRecord.conditions.accel) || 0) + ' m/s²';
@@ -7684,7 +7795,7 @@ slLaunch.addEventListener('input', () => {
   design.propulsion.accel = parseFloat(slLaunch.value);
   __clabGet('clab-slLaunchV').textContent = fmt(design.propulsion.accel) + ' m/s²';
 });
-slLaunch.addEventListener('change', () => { if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; } fullRebuild(); syncPropUI(); saveDesign(); });
+slLaunch.addEventListener('change', () => { if(sim.running){ syncPropUI(); return; } if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; } fullRebuild(); syncPropUI(); saveDesign(); });
 
 /* ---------------- sound (synthesized, off by default) ---------------- */
 const audio = { enabled: false, ctx: null, master: null, windFilt: null, windGain: null,
@@ -7755,7 +7866,7 @@ function updateAudio(dt){
   if(!audio.enabled || !audio.ctx) return;
   try{
     const v = Math.abs(sim.v);
-    const windTarget = sim.running ? Math.min(0.5, Math.pow(v / 40, 1.4)) : 0;
+    const windTarget = sim.running && !sim.paused ? Math.min(0.5, Math.pow(v / 40, 1.4)) : 0;
     const wg = audio.windGain.gain;
     wg.value += (windTarget - wg.value) * Math.min(1, dt * 5);
     audio.windFilt.frequency.value = 220 + v * 52;
@@ -7770,14 +7881,28 @@ function updateAudio(dt){
     }
   }catch(_e){ audio.enabled = false; }
 }
+/* The wind noise and launch hum are looping sources whose gains updateAudio
+   steers each frame. Flipping the flag alone froze them at their last level, so
+   "Sound off" kept playing — silence them and suspend the context instead. */
+function silenceAudio(){
+  if(!audio.ctx) return;
+  try{ audio.windGain.gain.value = 0; audio.humGain.gain.value = 0; }catch(_e){}
+  if(audio.ctx.state === 'running') __clabIgnoreRejection(audio.ctx.suspend());
+}
 __clabGet('clab-btnSound').addEventListener('click', e => {
   audio.enabled = !audio.enabled;
   if(audio.enabled && !audio.ctx){
     try{ initAudio(); }catch(_err){ audio.enabled = false; }
   }
-  if(audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
+  if(audio.enabled){ if(audio.ctx && audio.ctx.state === 'suspended') __clabIgnoreRejection(audio.ctx.resume()); }
+  else silenceAudio();
   e.target.textContent = audio.enabled ? '🔊 Sound' : '🔇 Sound';
   e.target.setAttribute('aria-pressed', String(audio.enabled));
+});
+// a hidden tab stops the frame loop, which would leave the wind droning on
+__clabListen(document, 'visibilitychange', () => {
+  if(document.hidden) silenceAudio();
+  else if(audio.enabled && audio.ctx && audio.ctx.state === 'suspended') __clabIgnoreRejection(audio.ctx.resume());
 });
 
 /* ---------------- top-bar UI ---------------- */
@@ -8164,6 +8289,7 @@ __clabGet('clab-btnExport').addEventListener('click', async () => {
   if(value !== null) done();
 });
 __clabGet('clab-btnImport').addEventListener('click', async () => {
+  if(designLocked()) return;
   const s = await clabPrompt('Paste a Coaster Lab design:', '', { title: 'Import coaster design', placeholder: 'Paste JSON design data', confirmText: 'Import design', cancelText: 'Cancel', multiline: true }, 'Design import is unavailable.');
   if(!s) return;
   try{ importDesign(s); banner('Design imported!', 'pass', 2500); }
@@ -8198,7 +8324,9 @@ __clabGet('clab-btnPacketImport').addEventListener('click', async () => {
 });
 
 /* ---------------- FX quality toggle ---------------- */
-let fxLite = localStorage.getItem('coaster_lab_fx') === 'lite';
+// guarded like every other storage read: a throwing localStorage (blocked
+// third-party storage, managed devices) must not stop the tool from opening
+let fxLite = (() => { try{ return localStorage.getItem('coaster_lab_fx') === 'lite'; }catch(_e){ return false; } })();
 const themeSelect = __clabGet('clab-visualTheme');
 const vectorButton = __clabGet('clab-btnVectors');
 const vectorLegend = __clabGet('clab-vectorLegend');
@@ -8410,8 +8538,8 @@ function onCoasterFullscreenChange(){
   banner('Editing panels restored.', '', 2400);
 }
 try {
-  document.addEventListener('fullscreenchange', onCoasterFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', onCoasterFullscreenChange);
+  __clabListen(document, 'fullscreenchange', onCoasterFullscreenChange);
+  __clabListen(document, 'webkitfullscreenchange', onCoasterFullscreenChange);
 } catch (e) {}
 themeSelect.value = visualTheme;
 themeSelect.addEventListener('change', () => applyVisualTheme(themeSelect.value));
@@ -8460,6 +8588,7 @@ __clabGet('clab-btnFx').addEventListener('click', () => {
 
 for(const b of rootEl.querySelectorAll('button.tpl')){
   b.addEventListener('click', async () => {
+    if(designLocked()) return;
     if(!(await clabConfirm(`Load the “${b.textContent.trim()}” template? Your current design will be replaced.`, { title: 'Load template', confirmText: 'Replace design', cancelText: 'Keep design', tone: 'warning' }, 'Template confirmation is unavailable, so your design was kept.'))) return;
     design = normalizeDesign(TEMPLATES[b.dataset.tpl]());
     selIdx = -1;
@@ -8468,6 +8597,7 @@ for(const b of rootEl.querySelectorAll('button.tpl')){
   });
 }
 __clabGet('clab-btnResetDesign').addEventListener('click', async () => {
+  if(designLocked()) return;
   if(!(await clabConfirm('Restore the starter layout? Your current design will be lost.', { title: 'Restore starter layout', confirmText: 'Restore layout', cancelText: 'Keep design', tone: 'warning' }, 'Starter-layout confirmation is unavailable, so your design was kept.'))) return;
   design = normalizeDesign(defaultDesign());
   selIdx = -1;
@@ -9110,12 +9240,18 @@ function genElementMath(topic, band, f, avoid){
       'The train\'s <b>' + cars + '</b> cars each seat <b>' + seats + '</b> (<b>' + cap + '</b> seats). Only <b>' + boarded + '</b> riders boarded. How many empty seats?', 'seats');
   }
   if(wantAdd){
-    if(has(f.liveV)){ const boost = rp(); add('add-speed', '+', f.liveV, boost, f.liveV + boost,
-      'You\'re moving <b>' + f.liveV + ' m/s</b> and this drop will add about <b>' + boost + ' m/s</b>. How fast at the bottom?', 'm/s'); }
-    if(has(f.crestH)){ const climb = rp(); add('add-climb', '+', f.crestH, climb, f.crestH + climb,
-      'This crest is <b>' + f.crestH + ' m</b> high. The next hill climbs <b>' + climb + ' m</b> higher. How tall is that next crest?', 'm'); }
-    if(has(f.turnH)){ const rise = rp(); add('add-turn', '+', f.turnH, rise, f.turnH + rise,
-      'The banked turn sits at <b>' + f.turnH + ' m</b>. A new hill after it climbs <b>' + rise + ' m</b> more. How high is that?', 'm'); }
+    // the gain is the MODEL's (speed at the valley ahead minus speed now), never
+    // an invented number — speeds only add like this because it is a difference
+    if(has(f.liveV) && has(f.valleyV) && f.valleyV > f.liveV){ const gain = f.valleyV - f.liveV; add('add-speed', '+', f.liveV, gain, f.valleyV,
+      'You\'re moving <b>' + f.liveV + ' m/s</b>. By the bottom of the drop ahead the train will have gained <b>' + gain + ' m/s</b>. How fast at the bottom?', 'm/s'); }
+    // a later hill must stay below the first crest, or the train would stall on it
+    if(has(f.valleyH) && has(f.crestH) && f.crestH - f.valleyH - 1 >= cfg.partner[0]){
+      const climb = _ri(cfg.partner[0], Math.min(cfg.partner[1], f.crestH - f.valleyH - 1));
+      add('add-climb', '+', f.valleyH, climb, f.valleyH + climb,
+        'The valley floor is at <b>' + f.valleyH + ' m</b>. The next hill rises <b>' + climb + ' m</b> above it, still lower than the first crest so the train can coast over. How tall is that hill?', 'm'); }
+    if(has(f.turnH)){ const room = has(f.crestH) ? f.crestH - f.turnH - 1 : cfg.partner[1];
+      if(room >= cfg.partner[0]){ const rise = _ri(cfg.partner[0], Math.min(cfg.partner[1], room)); add('add-turn', '+', f.turnH, rise, f.turnH + rise,
+        'The banked turn sits at <b>' + f.turnH + ' m</b>. A new hill after it climbs <b>' + rise + ' m</b> more. How high is that?', 'm'); } }
     if(has(f.crestH) && has(f.loopH))
       add('add-tops', '+', f.crestH, f.loopH, f.crestH + f.loopH,
         'The first crest is <b>' + f.crestH + ' m</b> up and the loop tops out at <b>' + f.loopH + ' m</b>. Stack those two heights: how tall together?', 'm');
@@ -9128,7 +9264,7 @@ function genElementMath(topic, band, f, avoid){
     const laps = rp(), capL = cars * _ri(2, 5); add('mul-laps', '×', capL, laps, capL * laps,
       'Each full ride carries <b>' + capL + '</b> riders and the coaster runs <b>' + laps + '</b> rides tonight. How many riders in all?', 'riders');
     if(hereR) add('mul-diam', '×', hereR, 2, hereR * 2,
-      'This ' + feat + ' curves with a <b>' + hereR + ' m</b> radius. How wide is it right across (2 × radius)?', 'm');
+      'This ' + feat + ' bends along a curve of radius <b>' + hereR + ' m</b>. If that curve kept going all the way round into a circle, how wide would the circle be (2 × radius)?', 'm');
     if(has(f.trackLen)){ const laps = _ri(2, 6); add('mul-lap', '×', f.trackLen, laps, f.trackLen * laps,
       'One lap of this circuit is <b>' + f.trackLen + ' m</b>. How far does the train travel in <b>' + laps + '</b> laps?', 'm'); }
   }
@@ -9192,6 +9328,9 @@ function _coasterFacts(live, stop){
     liveH: R(live && live.h),
     liveV: R(live && live.v),
     liveS: R(live && live.s),
+    // speed at the valley AHEAD, from energy (ideal ride) — only while it is still ahead
+    valleyV: (a.B && live && live.s < a.B.s && live.h > a.B.h)
+      ? R(Math.sqrt(Math.max(0, live.v * live.v + 2 * G0 * (live.h - a.B.h)))) : null,
     cars: TRAIN_CARS,
     trackLen: (typeof track !== 'undefined' && track) ? Math.round(track.L) : null,
     feat: feat, hereR: hereR,
@@ -9294,6 +9433,12 @@ function buildRideStops(){
   const eng = level === 'engineer';
   const g2 = x => fmt(x, 1);
   const vAt = (live, h) => Math.sqrt(Math.max(0, live.v ** 2 + 2 * G0 * (live.h - h)));
+  /* speed arriving at the brake run, so brake questions use the model's own
+     numbers (BRAKE_DECEL, brakeLen) rather than invented ones */
+  const brakeEntryV = live => {
+    const sIn = track.L - brakeLen();
+    return live.s >= sIn ? live.v : vAt(live, trackAt(sIn).y);
+  };
 
   /* L: just past the LSM launch — only exists on launched designs */
   if(a.L && a.L.s + 2.5 < a.A.s - 8){
@@ -9468,24 +9613,20 @@ function buildRideStops(){
        ask about the drop instead so the question's premise stays true */
     const lateTurn = a.D.s > a.B.s;
     stops.push({ s: a.D.s + 1.5, tag: 'Checkpoint · the turn', make: live => eng
-      ? (lateTurn ? [
-        { key: 'brk-a', text: `Brake run ahead: it takes you from <b>${g2(live.v)} m/s</b> down to 3 m/s
-             over about 45 m. What average deceleration is that?`,
-          unit: 'm/s²', answer: Math.max(0, (live.v ** 2 - 9) / (2 * 45)), tolRel: 0.09,
-          explain: 'v² = v₀² − 2ad → a = (v₀² − 9)/(2·45).' },
-        { key: 'brk-d', text: `If the brakes ahead pull a steady <b>6 m/s²</b>, what distance do they need
-             to take you from <b>${g2(live.v)} m/s</b> down to 3 m/s?`,
-          unit: 'm', answer: Math.max(0, (live.v ** 2 - 9) / 12), tolRel: 0.09,
-          explain: 'v² = v₀² − 2ad → d = (v₀² − 9)/(2·6).' },
-        { key: 'brk-t', text: `The brakes ahead pull a steady <b>6 m/s²</b>. How many seconds to go from
-             <b>${g2(live.v)} m/s</b> down to 3 m/s?`,
-          unit: 's', answer: Math.max(0, (live.v - 3) / 6), tolRel: 0.09,
+      ? (lateTurn ? (vIn => [
+        { key: 'brk-d', text: `You'll reach the brake run at about <b>${g2(vIn)} m/s</b>. The brakes pull a steady
+             <b>${BRAKE_DECEL} m/s²</b>. What distance do they need to slow you to 3 m/s?`,
+          unit: 'm', answer: Math.max(0, (vIn ** 2 - 9) / (2 * BRAKE_DECEL)), tolRel: 0.09,
+          explain: `v² = v₀² − 2ad → d = (v₀² − 9)/(2·${BRAKE_DECEL}).` },
+        { key: 'brk-t', text: `The brakes ahead pull a steady <b>${BRAKE_DECEL} m/s²</b>, and you'll reach them at about
+             <b>${g2(vIn)} m/s</b>. How many seconds to slow down to 3 m/s?`,
+          unit: 's', answer: Math.max(0, (vIn - 3) / BRAKE_DECEL), tolRel: 0.09,
           explain: 'Steady deceleration: t = (v₀ − v)/a.' },
-        { key: 'brk-pct', text: `You're doing <b>${g2(live.v)} m/s</b> and the brakes have to get you to 3 m/s.
-             What percentage of your kinetic energy do they have to soak up as heat?`,
-          unit: '%', answer: Math.max(0, 100 * (1 - 9 / Math.max(live.v ** 2, 1e-6))), tolAbs: 7, timerLen: 34,
-          explain: 'KE goes as v², so the fraction left is 3²/v² — the rest becomes heat.' }
-      ] : [
+        { key: 'brk-pct', text: `You'll reach the brakes at about <b>${g2(vIn)} m/s</b>, and they slow you to 3 m/s.
+             What percentage of your kinetic energy do they turn into heat?`,
+          unit: '%', answer: Math.max(0, 100 * (1 - 9 / Math.max(vIn ** 2, 1e-6))), tolAbs: 7, timerLen: 34,
+          explain: 'KE goes as v², so the fraction left is 3²/v² — the rest becomes heat. Watch the orange heat bar grow.' }
+      ])(brakeEntryV(live)) : [
         { key: 'd-vB', text: `The big drop ahead bottoms out at <b>h = ${g2(a.B.h)} m</b>. From here
              (${g2(live.v)} m/s at h = ${g2(live.h)} m), how fast at the bottom?`,
           unit: 'm/s', answer: vAt(live, a.B.h), tolRel: 0.07,
@@ -9511,7 +9652,33 @@ function buildRideStops(){
           explain: 'Height is being spent to buy speed.' }
       ]) });
   }
-  return stops.filter(st => st.s > 4 && st.s < track.L - STOP_AT - 2).sort((p, q) => p.s - q.s);
+  /* Chain lift. Without a loop or a launch a ride had only three checkpoints
+     (crest, valley, turn), so the four-answer mission and quest could never be
+     earned on the starter or any generated coaster. Those rides get a stop on
+     the lift — the one place a motor, not gravity, is changing the energy. */
+  const onTrack = st => st.s > 4 && st.s < track.L - STOP_AT - 2;
+  if(stops.filter(onTrack).length < 4 && design.propulsion.mode !== 'launch' && a.A.s > 24){
+    stops.push({ s: Math.max(10, a.A.s * 0.5), tag: 'Checkpoint · lift hill', make: live => eng
+      ? [
+        { key: 'lift-time', text: `The chain hauls you at a steady <b>${g2(live.v)} m/s</b>, and the crest is
+             ${g2(a.A.s - live.s)} m of track ahead. How many seconds until you reach it?`,
+          unit: 's', answer: Math.max(0, a.A.s - live.s) / Math.max(live.v, 0.1), tolRel: 0.08,
+          explain: 'Steady speed: t = distance ÷ speed.' },
+        { key: 'lift-gain', text: `The chain will lift you from h = ${g2(live.h)} m to the crest at h = ${g2(a.A.h)} m.
+             How much energy does that store in each kilogram of train?`,
+          unit: 'J/kg', answer: G0 * Math.max(0, a.A.h - live.h), tolRel: 0.07,
+          explain: 'Lifting stores gravitational energy: g·Δh, about 9.8 J per kilogram for every metre.' }
+      ]
+      : [
+        { key: 'lift-x-speed', text: 'All the way up the chain lift, the train\'s speed will…',
+          choices: [['grow', 'Keep growing'], ['same', 'Stay the same'], ['drop', 'Keep dropping']], correct: 'same',
+          explain: 'The chain hauls the train at one steady speed until it lets go at the crest.' },
+        { key: 'lift-x-source', text: 'On the lift the purple POTENTIAL part of the energy bar keeps growing. Where does that energy come from?',
+          choices: [['gravity', 'Gravity, pulling it up the hill'], ['motor', 'The chain motor'], ['speed', 'The train\'s own speed']],
+          correct: 'motor', explain: 'The chain motor does work lifting the train, and that work is stored as height.' }
+      ] });
+  }
+  return stops.filter(onTrack).sort((p, q) => p.s - q.s);
 }
 
 function startRide(){
@@ -9626,7 +9793,13 @@ function pauseForQuestion(){
   }, 60);
   blip(660, 0.1); blip(880, 0.14);
   clearRideQuestionTimer();
+  ride.lastTick = performance.now();
   ride.timerId = setInterval(() => {
+    // the clock stands still while the tab is hidden: slide the start forward
+    // instead of auto-submitting "Time!" to a student who switched tabs
+    const tickNow = performance.now();
+    if(document.hidden){ ride.qStart += tickNow - ride.lastTick; ride.lastTick = tickNow; return; }
+    ride.lastTick = tickNow;
     const left = 1 - (performance.now() - ride.qStart) / (ride.timerLen * 1000);
     const pct = Math.max(0, left * 100);
     rq.fill.style.width = pct + '%';

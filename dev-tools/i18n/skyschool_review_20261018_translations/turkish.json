@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Önceki bilgi yarışması denemeleri",
+  "stem.flightsim.quiz_history_scope": "Yeni bir deneme başlatıldığında ilk yanıtları kaydedilmiş en fazla dört önceki deneme saklanır. Bunları incelemek mevcut bilgi yarışmanızı değiştirmez.",
+  "stem.flightsim.quiz_history_empty": "Henüz önceki bilgi yarışması denemesi kaydedilmedi.",
+  "stem.flightsim.quiz_history_attempt": "{date} tarihinde kaydedildi · {score}/{answered} ilk yanıt doğru",
+  "stem.flightsim.quiz_history_progress": "{total} sorunun {answered} tanesi kaydedildi · {unanswered} yanıtsız",
+  "stem.flightsim.quiz_history_question": "Soru {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Doğru yanıt: {answer}",
+  "stem.flightsim.quiz_history_changed": "Kaydedilen {count} soru artık bu bilgi yarışmasıyla eşleşmiyor. Puanlarda yalnızca eşleşen soru kayıtları kullanılır."
+}

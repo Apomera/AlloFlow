@@ -111,6 +111,8 @@ function readSource(file) {
  */
 export function loadTool(file, toolId) {
   if (toolId === 'beehive' || toolId === 'butterfly') new Function(readFileSync(resolve(process.cwd(), 'stem_lab/stem_sim_meadow.js'), 'utf8'))();
+  // The STEM loader fetches SkySchool's geography first (stemModuleDependencies).
+  if (toolId === 'flightSim') new Function(readSource(file.replace(/stem_tool_flightsim\.js$/, 'stem_data_skyschool_geo.js')))();
   const src = readSource(file);
   // eslint-disable-next-line no-new-func
   new Function(src)();

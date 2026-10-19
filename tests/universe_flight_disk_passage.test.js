@@ -121,15 +121,16 @@ describe('Universe spiral disk passage', () => {
   });
 
   it('appends detached disk metadata and keeps the original route order and regional catalogs', () => {
-    const catalog = flight.flybys(), disk = catalog.at(-1), original = structuredClone(disk);
-    expect(catalog.map(item => item.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk']);
+    // The cluster passage (10-10) is appended after the disk; earlier routes keep their order.
+    const catalog = flight.flybys(), disk = catalog.find(item => item.id === 'disk'), original = structuredClone(disk);
+    expect(catalog.map(item => item.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk', 'cluster']);
     expect(flight.flybys('galaxy').map(item => item.id)).toEqual(['halo', 'disk']);
-    expect(flight.flybys('neighborhood').map(item => item.id)).toEqual(['nebula', 'stellar']);
+    expect(flight.flybys('neighborhood').map(item => item.id)).toEqual(['nebula', 'stellar', 'cluster']);
     expect(flight.flybys('cosmic').map(item => item.id)).toEqual(['group']);
     expect(disk).toMatchObject({ id: 'disk', name: 'Spiral disk passage', region: 'galaxy', durationSeconds: 44, position: world(NODES[0]), aim: [-20170, 10020, -4410], fov: 64, targetId: 'inner-arm' });
     expect(disk.highlights.map(item => [item.id, item.seconds, item.targetId])).toEqual([['arms', 10, 'inner-arm'], ['crossing', 17, 'inner-arm'], ['panorama', 40, 'galactic-center']]);
     disk.name = 'Changed'; disk.position[0] = 1e20; disk.aim[1] = 1e20; disk.highlights[0].seconds = 1e20; disk.highlights.splice(1);
-    expect(flight.flybys().at(-1)).toEqual(original);
+    expect(flight.flybys().find(item => item.id === 'disk')).toEqual(original);
   });
 
   it('starts a fresh route, survives the settings echo and freezes travel during pause and free look', () => {

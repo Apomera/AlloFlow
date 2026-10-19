@@ -15,6 +15,7 @@ const APP_BUILD = path.join(APP_ROOT, 'build');
 const DESKTOP_APP_BUILD = path.join(DESKTOP_ROOT, 'app-build');
 const GOOGLE_API_KEY_PATTERN = /AIza[0-9A-Za-z_-]{20,}/g;
 const BUILD_INPUT_FINGERPRINT_FILE = '.alloflow-desktop-build-input.json';
+const DESKTOP_REACT_BUILD_RUNNER = path.join(__dirname, 'run-desktop-react-build.cjs');
 const BUILD_INPUT_SCHEMA = 1;
 const BUILD_INPUT_ROOTS = [
   path.join(APP_ROOT, 'src'),
@@ -25,6 +26,7 @@ const BUILD_INPUT_FILES = [
   path.join(APP_ROOT, 'package-lock.json'),
   path.join(APP_ROOT, 'postbuild.js'),
   __filename,
+  DESKTOP_REACT_BUILD_RUNNER,
   path.join(__dirname, 'check-desktop-app-build.cjs'),
 ];
 const BUILD_INPUT_ENV = Object.freeze({
@@ -299,6 +301,7 @@ function copyDesktopPublicAssets(buildOutputDir, publicDir = path.join(APP_ROOT,
 function buildAndStage({ buildOutputDir, inputFingerprint }) {
   const env = {
     ...process.env,
+    ALLOFLOW_DESKTOP_BUILD_INPUT_FINGERPRINT: inputFingerprint.sha256,
     BUILD_PATH: buildOutputDir,
     BROWSER: 'none',
     CI: 'false',
@@ -340,7 +343,7 @@ function buildAndStage({ buildOutputDir, inputFingerprint }) {
     throw new Error('react-scripts is not installed in desktop/web-app/node_modules.');
   }
 
-  const buildResult = spawnSync(process.execPath, [reactScripts, 'build'], {
+  const buildResult = spawnSync(process.execPath, [DESKTOP_REACT_BUILD_RUNNER], {
     cwd: APP_ROOT,
     env,
     stdio: 'inherit',
@@ -348,10 +351,11 @@ function buildAndStage({ buildOutputDir, inputFingerprint }) {
   });
 
   if (buildResult.status !== 0) {
-    if (buildResult.error) {
-      throw new Error('AlloFlow web build failed: ' + buildResult.error.message);
-    }
-    throw new Error('AlloFlow web build failed.');
+    throw new Error('AlloFlow web build failed: ' + JSON.stringify({
+      status: buildResult.status,
+      signal: buildResult.signal || null,
+      error: buildResult.error ? { code: buildResult.error.code || null, message: buildResult.error.message } : null,
+    }));
   }
 
   copyDesktopPublicAssets(buildOutputDir);
@@ -365,10 +369,11 @@ function buildAndStage({ buildOutputDir, inputFingerprint }) {
       windowsHide: true,
     });
     if (postbuildResult.status !== 0) {
-      if (postbuildResult.error) {
-        throw new Error('AlloFlow postbuild failed: ' + postbuildResult.error.message);
-      }
-      throw new Error('AlloFlow postbuild failed.');
+      throw new Error('AlloFlow postbuild failed: ' + JSON.stringify({
+        status: postbuildResult.status,
+        signal: postbuildResult.signal || null,
+        error: postbuildResult.error ? { code: postbuildResult.error.code || null, message: postbuildResult.error.message } : null,
+      }));
     }
   }
 

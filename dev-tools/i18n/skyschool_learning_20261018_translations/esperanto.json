@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "La plenumo de la misio kaj la revena surteriĝo estis registritaj. Provu la mision denove kun unu intenca ŝanĝo de stirado aŭ itinero, poste komparu la konservitajn observaĵojn.",
+  "stem.flightsim.coaching_mission_depleted": "La baterio de la senpilota aviadilo elĉerpiĝis. Komencu novan mision, uzu mallongajn itinerojn kaj planu revenon antaŭ ol la baterio malfortiĝos.",
+  "stem.flightsim.coaching_mission_unknown": "Ĉi tiu misio havas nekompletajn aŭ kontraŭdirajn pruvojn. Reviziu tion, kio estis registrita, poste komencu novan provon.",
+  "stem.flightsim.coaching_mission_capture": "Kelkaj celoj ankoraŭ ne estas registritaj. En nova misio alproksimiĝu al po unu celo kaj restu inter la montrataj limoj de alteco kaj grundrapido ĝis la registrado estas konfirmita.",
+  "stem.flightsim.coaching_mission_recovery": "La postvivanto ne estis savita. En nova savmisio praktiku stabilan ŝvebadon inter la montrataj limoj de alteco, drivo kaj vertikala rapido antaŭ ol reveni al la bazo.",
+  "stem.flightsim.coaching_mission_return": "La celoj pri savado aŭ registrado estis registritaj; la revena surteriĝo ankoraŭ mankas. Komencu novan mision, poste rezervu tempon kaj baterian energion por reveni al la bazo.",
+  "stem.flightsim.mission_reflection_prompt": "Kiun decidon pri celo, ŝvebado aŭ reveno vi ŝanĝus? Uzu la misiajn observaĵojn por klarigi vian elekton kaj plani unu ŝanĝon por nova provo. Via klarigo konserviĝas kun ĉi tiu flugo.",
+  "stem.flightsim.journal_different_airport": "Ĉi tiuj alproksimiĝoj uzis malsamajn flughavenojn. Reviziu iliajn observaĵojn aparte; ŝanĝoj de mezuroj ne estas kalkulataj.",
+  "stem.flightsim.journal_approach_airport": "Flughaveno de alproksimiĝo: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "MISIAJ PRUVOJ",
+  "stem.flightsim.challenge_brake_release": "Lasu X kaj malŝaltu la radbremsojn en Deck antaŭ ol pliigi la motoran potencon."
+}

@@ -308,7 +308,8 @@ async function mountQuiet(seed = {}) {
   });
   holdFlightState();
 }
-const cruise = { lat: 40, lon: -40, altitude: 19000, fieldElev: 0, speed: 190, vsi: 0,
+// 240 ft/s is about 142 kt true, 103 kt indicated at 19,000 ft: every milestone at once.
+const cruise = { lat: 40, lon: -40, altitude: 19000, fieldElev: 0, speed: 240, vsi: 0,
   heading: 90, onGround: false, stalling: false, lowAirspeed: false, hitCeiling: false };
 const levelControls = { throttle: 0.6, pitch: 0, bank: 0, flaps: 0, brake: 0 };
 const milestoneTitles = ['Liftoff', '100 knots', '5,000 ft', '10,000 ft', 'Flight Level 180'];

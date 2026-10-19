@@ -130,6 +130,21 @@ describe('SkySchool keyboard input ownership', () => {
     expect(keys().shift).toBe(false);
   });
 
+  it('treats the taught + and − keys as power whichever character the layout sends', () => {
+    // Shift+= sends "+", and a numpad or non-US "+" key sends "+" alone.
+    expect(press(cockpit, '+', { shiftKey: true }).defaultPrevented).toBe(true);
+    expect(keys()['=']).toBe(true);
+    // Shift released first: the key comes back up as "=", and must still let go.
+    release(cockpit, '=');
+    expect(keys()['=']).toBe(false);
+    expect(press(cockpit, '_', { shiftKey: true }).defaultPrevented).toBe(true);
+    expect(keys()['-']).toBe(true);
+    release(cockpit, '-');
+    expect(keys()['-']).toBe(false);
+    expect(keys()['+']).toBeUndefined();
+    expect(keys()._).toBeUndefined();
+  });
+
   it('releases held keys when keyup arrives from a field or an outside surface', () => {
     const field = addWidget('<input />');
     for (const target of [field, document.body]) {
@@ -151,8 +166,8 @@ describe('SkySchool keyboard input ownership', () => {
     expect(keys()).toEqual({});
   });
 
-  it('retains fast pause/autopilot/flap taps until a frame consumes them and ignores repeats', () => {
-    for (const key of [' ', 'b', '[', ']', '1']) {
+  it('retains fast pause/autopilot/flap/quiz taps until a frame consumes them and ignores repeats', () => {
+    for (const key of [' ', 'b', '[', ']', '1', 'q']) {
       press(cockpit, key);
       release(cockpit, key);
       expect(keys()[key]).toBe(true);
@@ -160,9 +175,14 @@ describe('SkySchool keyboard input ownership', () => {
       press(cockpit, key, { repeat: true });
       expect(keys()[key]).toBe(false);
     }
+  });
+
+  it.each(['rescue_heli', 'drone'])('releases Q as a held yaw pedal for %s', async aircraft => {
+    await act(async () => { setData(previous => ({ ...previous, flightSim: { ...previous.flightSim, aircraft } })); });
     press(cockpit, 'q');
+    expect(keys().q).toBe(true);
     release(cockpit, 'q');
-    expect(keys().q).toBe(false); // Q remains a held rotorcraft yaw pedal.
+    expect(keys().q).toBe(false);
   });
 
   it('ignores events already handled by a widget and composition events', () => {

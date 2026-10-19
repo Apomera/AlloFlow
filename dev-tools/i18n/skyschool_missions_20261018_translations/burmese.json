@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "မစ်ရှင် လေ့လာတွေ့ရှိချက်များ",
+  "stem.flightsim.mission_journal_targets": "မှတ်တမ်းတင်ပြီးသော ပစ်မှတ်များ — {total} ခုအနက် {captured} ခု။",
+  "stem.flightsim.mission_journal_complete": "မစ်ရှင် ရည်မှန်းချက်အားလုံးနှင့် ပြန်လာဆင်းသက်မှုကို မှတ်တမ်းတင်ပြီးပါပြီ။",
+  "stem.flightsim.mission_journal_ended": "ပြီးမြောက်ကြောင်း အထောက်အထားအားလုံး မမှတ်တမ်းတင်ရသေးမီ မစ်ရှင် ပြီးဆုံးသွားသည်။",
+  "stem.flightsim.mission_journal_recovery": "အသက်ရှင်ကျန်ရစ်သူကို ကယ်ဆယ်မှု မှတ်တမ်းတင်ထားခြင်း — {value}။",
+  "stem.flightsim.mission_journal_return": "အခြေစိုက်စခန်းသို့ ပြန်လာဆင်းသက်မှု မှတ်တမ်းတင်ထားခြင်း — {value}။",
+  "stem.flightsim.mission_guidance_title": "မစ်ရှင် လမ်းညွှန်ချက်",
+  "stem.flightsim.mission_route": "{target} · ဦးတည်ရာ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "စတင်ပျံတက်ရာနေရာ",
+  "stem.flightsim.mission_read_status": "မစ်ရှင် အခြေအနေကို ဖတ်ပြရန်",
+  "stem.flightsim.mission_return_criterion": "{target} မှ {distance} nm အတွင်း ဆင်းသက်ပါ။ မြေပြင်နှိုင်းယှဉ်အမြန်နှုန်းကို {speed} kt အောက်နှင့် အနိမ့်သို့ဆင်းနှုန်းကို {fpm} fpm အောက်ထားပါ။",
+  "stem.flightsim.mission_unavailable": "မစ်ရှင် ပစ်မှတ်အချက်အလက် မရရှိနိုင်ပါ။ ယခု ပျံသန်းမှုကို အဆုံးသတ်ပြီး မစ်ရှင်အသစ် စတင်ပါ။",
+  "stem.flightsim.mission_capture_criterion": "{hold} s ကြာအောင် {distance} ft အကွာအဝေးအတွင်းနေ၍ မြေပြင်အထက် {min} ft ထက်မြင့်ပြီး {max} ft ထက်နိမ့်သော အမြင့်နှင့် မြေပြင်နှိုင်းယှဉ်အမြန်နှုန်း {speed} kt အောက်တွင် ထိန်းထားပါ။"
+}

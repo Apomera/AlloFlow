@@ -23,7 +23,11 @@ describe('STEM theme follow-up contract', () => {
   it('wires Plate Tectonics host contrast through both interactive canvases', () => {
     const source = read('stem_lab/stem_tool_platetectonics.js');
     expect(source).toContain('darkMode: !!ctx.isDark || !!ctx.isContrast');
-    expect(source).toContain('isContrastRef.current');
+    // 09-30 replaced the isContrastRef/isDarkRef mirrors with a repaint that calls the
+    // current render's draw (closing over isContrast) after every render.
+    expect(source.includes('drawRef.current(ctx, sRef.current);'), 'repaint draws with the current render').toBe(true);
+    expect(source.includes('useEffect(function() { if (repaintRef.current) repaintRef.current(); });'), 'a theme change repaints').toBe(true);
+    expect(source.includes("ctx.strokeStyle = isContrast ? palette.border : (isDark ? 'rgba(148,163,184,0.18)'"), 'canvas strokes follow contrast').toBe(true);
     expect(source).toContain('bg.addColorStop(0, palette.bg)');
     expect(source).toContain('ctx.pal || null');
     expect(source).toContain("'data-plate-theme': isContrast ? 'contrast'");
@@ -51,7 +55,11 @@ describe('companion live theme synchronization', () => {
   it.each(launchers)('%s sends live host-theme changes to its open popup', (name) => {
     const source = read('stem_lab/stem_tool_' + name + '.js');
     expect(source).toContain("type: 'alloflow-theme-change'");
-    expect(source).toContain('[ctx.theme]');
+    // The post runs in an effect keyed on the host theme: ctx.theme itself, or (Zoom
+    // Gallery v2) a value normalized directly from ctx.theme.
+    const effect = source.match(/postMessage\(\{ type: 'alloflow-theme-change', theme: \w+ \}, '\*'\); \} catch \(_\) \{\}\r?\n\s*\}, \[([\w.]+)\]\);/);
+    expect(effect, 'theme post must live in an effect keyed on the theme').not.toBeNull();
+    expect(effect[1] === 'ctx.theme' || new RegExp('var ' + effect[1] + ' = ctx\\.theme ').test(source), effect[1] + ' must derive from ctx.theme').toBe(true);
   });
 
   it.each(pages)('%s validates the opener and applies live theme messages', (file) => {

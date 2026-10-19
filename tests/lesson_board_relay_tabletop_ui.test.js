@@ -2,6 +2,8 @@ import {beforeAll,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
 import {assignmentItineraries} from '../lesson_board_assignments.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -44,8 +46,8 @@ describe('Saved relay stages on the tabletop',()=>{
     expect(find('[data-tabletop-relay] .lb-event-relay-heading')).toBeNull();
     expect(find('[data-tabletop-relay-marker="'+first.targetId+'"]').dataset.relayStopStatus).toBe('next');
     expect(find('[data-tabletop-relay-marker="'+second.targetId+'"]').dataset.relayStopStatus).toBe('later');
-    expect(find('[data-location="'+first.targetId+'"]').getAttribute('aria-label')).toContain('Relay stop 1 of 2 · Next');
-    expect(find('[data-location="'+second.targetId+'"]').getAttribute('aria-label')).toContain('Arriving here early or passing through does not pay');
+    expect(spoken(find('[data-location="'+first.targetId+'"]'))).toContain('Relay stop 1 of 2 · Next');
+    expect(spoken(find('[data-location="'+second.targetId+'"]'))).toContain('Arriving here early or passing through does not pay');
     expect(find('[data-relay-detail]').textContent).toContain('Complete stop 1');
     expect(find('[data-relay-detail] [data-delivery-route]')).toBeNull();
     await click('[data-inspect-tabletop-relay]');expect(onSelect).toHaveBeenCalledExactlyOnceWith(first.targetId);
@@ -96,7 +98,7 @@ describe('Saved relay stages on the tabletop',()=>{
     await render({b,run,selected:relay.stops[0].targetId,projection:true,onSelect});
     expect(find('[data-tabletop-relay-marker]')).toBeNull();expect(find('[data-relay-detail]')).toBeNull();
     expect(find('[data-tabletop-relay]')).toBeNull();expect(find('[data-inspect-tabletop-relay]')).toBeNull();
-    expect(find('[data-location="'+relay.stops[0].targetId+'"]').getAttribute('aria-label')).not.toContain('Relay stop');
+    expect(spoken(find('[data-location="'+relay.stops[0].targetId+'"]'))).not.toContain('Relay stop');
     await render({b,run,progress:{...engine.derive(b,run),complete:true}});expect(find('[data-tabletop-relay-marker]')).toBeNull();expect(find('[data-tabletop-relay]')).toBeNull();
     await render({b:{...b,chance:false},run,progress:engine.derive(b,run)});expect(find('[data-tabletop-relay-marker]')).toBeNull();expect(find('[data-tabletop-relay]')).toBeNull();
     await render({b,run});expect(find('[data-inspect-tabletop-relay]').disabled).toBe(true);

@@ -24,6 +24,30 @@
       "nowrap": false
     },
     {
+      "text": "🐷 Fetal Pig (Sus scrofa) · Visceral Organs · 1/27 structures viewed",
+      "font": 16,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Go to specimen",
+      "font": 16,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Structures and notes",
+      "font": 16,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Continue activity",
+      "font": 16,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
       "text": "1Orient",
       "font": 16,
       "clipped": false,
@@ -97,24 +121,6 @@
     },
     {
       "text": "Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.",
-      "font": 16,
-      "clipped": false,
-      "nowrap": false
-    },
-    {
-      "text": "Go to specimen",
-      "font": 16,
-      "clipped": false,
-      "nowrap": false
-    },
-    {
-      "text": "Structures and notes",
-      "font": 16,
-      "clipped": false,
-      "nowrap": false
-    },
-    {
-      "text": "Continue activity",
       "font": 16,
       "clipped": false,
       "nowrap": false

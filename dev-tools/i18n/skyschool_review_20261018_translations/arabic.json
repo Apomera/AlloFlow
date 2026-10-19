@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "محاولات الاختبار السابقة",
+  "stem.flightsim.quiz_history_scope": "يحفظ بدء محاولة جديدة ما يصل إلى أربع محاولات سابقة سُجّلت فيها الإجابات الأولى. لا تؤثر مراجعتها على اختبارك الحالي.",
+  "stem.flightsim.quiz_history_empty": "لم تُحفظ أي محاولات اختبار سابقة بعد.",
+  "stem.flightsim.quiz_history_attempt": "حُفظت في {date} · {score}/{answered} من الإجابات الأولى صحيحة",
+  "stem.flightsim.quiz_history_progress": "سُجّلت إجابات عن {answered} من أصل {total} سؤالًا · {unanswered} دون إجابة",
+  "stem.flightsim.quiz_history_question": "السؤال {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "الإجابة الصحيحة: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} من الأسئلة المحفوظة لم تعد تطابق هذا الاختبار. تُحسب الدرجات باستخدام سجلات الأسئلة المطابقة فقط."
+}

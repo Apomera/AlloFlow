@@ -1,7 +1,7 @@
 {
  "note": "Raw source.slice(source.indexOf(...)) uses per test file. Ratchet: counts may only go DOWN. Use tests/helpers/anchored_slice.js in new tests.",
- "updated": "2026-10-10",
- "totalUses": 4179,
+ "updated": "2026-10-16",
+ "totalUses": 4180,
  "files": {
   "tests/active_content_scan_bookmarks_forms.test.js": 2,
   "tests/active_content_scan_completeness.test.js": 4,
@@ -1673,6 +1673,7 @@
   "tests/word_sounds_review_messages_i18n.test.js": 1,
   "tests/word_sounds_rhyme_variety.test.js": 1,
   "tests/word_sounds_runtime_audio_status.test.js": 2,
-  "tests/word_sounds_syllable_runtime.test.js": 7
+  "tests/word_sounds_syllable_runtime.test.js": 7,
+  "tests/_laneA_tmp_coral_surface.test.js": 1
  }
 }

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ניסיונות קודמים בבוחן",
+  "stem.flightsim.quiz_history_scope": "התחלת ניסיון חדש שומרת עד ארבעה ניסיונות קודמים שבהם תועדו תשובות ראשונות. עיון בהם אינו משנה את הבוחן הנוכחי.",
+  "stem.flightsim.quiz_history_empty": "עדיין לא נשמרו ניסיונות קודמים בבוחן.",
+  "stem.flightsim.quiz_history_attempt": "נשמר ב־{date} · {score}/{answered} תשובות ראשונות נכונות",
+  "stem.flightsim.quiz_history_progress": "תועדו {answered} מתוך {total} שאלות · {unanswered} ללא תשובה",
+  "stem.flightsim.quiz_history_question": "שאלה {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "התשובה הנכונה: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} שאלות שמורות אינן תואמות עוד לבוחן הזה. הציונים מחושבים רק לפי רשומות של שאלות תואמות."
+}

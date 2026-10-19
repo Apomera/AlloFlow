@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "A conclusão da missão e o pouso de retorno foram registrados. Faça esta missão novamente com uma mudança intencional nos controles ou na rota e depois compare as observações salvas.",
+  "stem.flightsim.coaching_mission_depleted": "A bateria do drone acabou. Inicie uma nova missão, use rotas curtas e planeje o retorno antes que a bateria fique fraca.",
+  "stem.flightsim.coaching_mission_unknown": "Esta missão tem evidências incompletas ou contraditórias. Revise o que foi registrado e depois inicie uma nova tentativa.",
+  "stem.flightsim.coaching_mission_capture": "Alguns alvos ainda não foram fotografados. Em uma nova missão, aproxime-se de um alvo por vez e mantenha-se dentro dos limites exibidos de altura e velocidade em relação ao solo até a captura ser registrada.",
+  "stem.flightsim.coaching_mission_recovery": "O sobrevivente não foi recolhido. Em uma nova missão de resgate, pratique um voo pairado estável dentro dos limites exibidos de altura, deriva e velocidade vertical antes de voltar à base.",
+  "stem.flightsim.coaching_mission_return": "Os objetivos de recolhimento ou captura foram registrados; falta o pouso de retorno. Inicie uma nova missão e reserve tempo e bateria para voltar à base.",
+  "stem.flightsim.mission_reflection_prompt": "Qual decisão sobre um alvo, o voo pairado ou o retorno você mudaria? Use as observações da missão para explicar sua escolha e planejar uma mudança para uma nova tentativa. Sua explicação é salva com este voo.",
+  "stem.flightsim.journal_different_airport": "Estas aproximações usaram aeroportos diferentes. Revise suas observações separadamente; as diferenças entre as medições não são calculadas.",
+  "stem.flightsim.journal_approach_airport": "Aeroporto de aproximação: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "EVIDÊNCIAS DA MISSÃO",
+  "stem.flightsim.challenge_brake_release": "Solte a tecla X e desligue os Freios das Rodas no painel de controles antes de aumentar a potência."
+}

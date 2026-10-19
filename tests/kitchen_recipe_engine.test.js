@@ -29,7 +29,9 @@ describe('Whole-recipe cooking model',()=>{
   it('cannot undo scorched food by cooling or adding water',()=>{
     let s=act(R.start(),[['wash'],['rinse'],['cut'],['dry'],['garlicPrep'],['oil'],['produce'],['garlic'],['panHeat',3]]);
     for(let i=0;i<15;i++)s=R.act(s,'advance',60);
-    expect(s.pan.damage).toBeGreaterThanOrEqual(1);expect(R.evidence(s).corrections).toBeGreaterThan(0);
+    expect(s.pan.damage).toBeGreaterThanOrEqual(1);expect(R.evidence(s).corrections).toBe(0);
+    expect(s.log.filter(e=>e.action==='advance').every(e=>e.accepted)).toBe(true);expect(s.log.some(e=>e.observation.includes('The pan has scorched.'))).toBe(true);
+    expect(R.criteria(s).find(c=>c.label.includes('without scorching')).met).toBe(false);
     s=R.act(s,'panHeat',0);for(let i=0;i<10;i++)s=R.act(s,'advance',60);expect(R.inspect(s).burned).toBe(true);
   });
   it('counts early draining, incorrect portions, and wrong explanations in the outcome',()=>{
@@ -77,7 +79,7 @@ describe('Whole-recipe cooking model',()=>{
   });
   it('connects an imperfect dish to a specific next practice',()=>{
     const base=cook().state,s={...base,prep:{...base.prep,pasta:80},pot:{...base.pot,progress:1.5},pan:{...base.pan,damage:1,moisture:0}};
-    const r=R.review(s);expect(r.findings[0].observation).toContain('80 g');expect(r.findings[1].nextPractice).toContain('drain sooner');expect(r.findings[2].nextPractice).toContain('cannot reverse');expect(r.findings[3].nextPractice).toContain('small splash');
+    const r=R.review(s);expect(r.findings[0].observation).toContain('80 g');expect(r.findings[1].nextPractice).toContain('drain sooner');expect(r.findings[2].nextPractice).toContain('cannot reverse');expect(r.findings[3].nextPractice).toContain('Scorching cannot be undone');
   });
   it('ships the recipe workspace alongside the studio',()=>{
     for(const file of ['recipe_lab.html','recipe_lab.css','recipe_lab.js','recipe_lab_engine.js'])expect(readFileSync('desktop/web-app/public/stem_lab/kitchen_studio/'+file,'utf8')).toBe(readFileSync('stem_lab/kitchen_studio/'+file,'utf8'));

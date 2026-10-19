@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Joogtee xaaladda duulimaadka ee hadda",
+  "stem.flightsim.flight_assistance_targets": "Jihada {hdg}° · Joogga {alt} ft MSL · Xawaaraha {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Jihada {hdg}° · Joogga {alt} ft MSL · Xawaaraha hore loo socdo {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Bidix u leexo {degrees}° dhanka {airport}.",
+  "stem.flightsim.challenge_turn_right": "Midig u leexo {degrees}° dhanka {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Waxaad u socotaa dhanka {airport}. Raac calaamadda jidka duulimaadka.",
+  "stem.flightsim.challenge_runway_reference": "Jidka diyaaradaha ee tababarka {runway}: jihada {heading}°. Diyaaradda ku aaddi xariiqda jidka diyaaradaha ka hor intaadan hoos ugu degin si aad u fariisato."
+}

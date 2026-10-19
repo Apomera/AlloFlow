@@ -43,6 +43,14 @@ async function audit(page:any){
  })).toEqual([]);
 }
 
+async function meadowMotion(page:any){
+ return page.evaluate(()=>{
+  const w=window as any,scene=w.__immersiveScene;
+  const visitors=scene.children.filter((object:any)=>object.name!=='player-monarch'&&object.children.some((part:any)=>part.name==='monarch-body'));
+  return {frame:w.__immersiveRenderer.info.render.frame,visitors:visitors.map((visitor:any)=>({position:visitor.matrixWorld.toArray(),wings:['monarch-wing-left','monarch-wing-right'].map(name=>visitor.getObjectByName(name).matrixWorld.toArray())}))};
+ });
+}
+
 test('the monarch is framed inside a live meadow and flight stops exactly when paused',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',message=>{if(message.type()==='error'&&/shader|webglprogram|validate_status|three\./i.test(message.text()))errors.push(message.text());});await mount(page);
  const stage=page.locator('.bf-stage');
@@ -56,16 +64,32 @@ test('the monarch is framed inside a live meadow and flight stops exactly when p
  expect(framing.meadow).toHaveLength(3);
  expect(Math.abs(framing.center[0])).toBeLessThan(.9);expect(Math.abs(framing.center[1])).toBeLessThan(.9);
  expect(framing.center[2]).toBeGreaterThan(-1);expect(framing.center[2]).toBeLessThan(1);
+ // The meadow has its own clock: watching it must never start the player's flight.
+ await expect(stage).toHaveAttribute('data-bf-paused','true');await expect(stage).toHaveAttribute('data-bf-motion-paused','false');
+ const idlePosition=await stage.getAttribute('data-position'),idleFlightClock=await stage.getAttribute('data-clock'),idleMeadowClock=await stage.getAttribute('data-bf-meadow-clock'),idleMotion=await meadowMotion(page);
+ expect(idleMotion.visitors).toHaveLength(4);
+ await expect.poll(()=>stage.getAttribute('data-bf-meadow-clock')).not.toBe(idleMeadowClock);
+ await expect.poll(async()=>JSON.stringify((await meadowMotion(page)).visitors)).not.toBe(JSON.stringify(idleMotion.visitors));
+ expect(await stage.getAttribute('data-position')).toBe(idlePosition);expect(await stage.getAttribute('data-clock')).toBe(idleFlightClock);
+ await page.getByRole('button',{name:'Pause all motion',exact:true}).click();
+ await expect(stage).toHaveAttribute('data-bf-motion-paused','true');
+ const idlePausedClock=await stage.getAttribute('data-bf-meadow-clock'),idlePausedMotion=await meadowMotion(page);
+ await page.waitForTimeout(250);
+ expect(await stage.getAttribute('data-bf-meadow-clock')).toBe(idlePausedClock);expect(await meadowMotion(page)).toEqual(idlePausedMotion);
+ await page.getByRole('button',{name:'Resume motion',exact:true}).click();
+ await expect(stage).toHaveAttribute('data-bf-motion-paused','false');await expect(stage).toHaveAttribute('data-bf-paused','true');
+ await expect.poll(()=>stage.getAttribute('data-bf-meadow-clock')).not.toBe(idlePausedClock);
+ expect(await stage.getAttribute('data-position')).toBe(idlePosition);expect(await stage.getAttribute('data-clock')).toBe(idleFlightClock);
  await stage.screenshot({path:shots+'/desktop-meadow.png'});
  await page.getByRole('button',{name:'Take flight',exact:true}).click();await stage.focus();
  await page.keyboard.down('ArrowUp');await expect.poll(async()=>Number(await stage.getAttribute('data-bf-speed'))).toBeGreaterThan(1);
  await page.keyboard.down('ArrowRight');await expect.poll(async()=>Math.abs(Number(await stage.getAttribute('data-bf-bank')))).toBeGreaterThan(.01);
  await page.keyboard.up('ArrowRight');await page.keyboard.up('ArrowUp');await page.keyboard.press('Space');
- await expect(stage).toHaveAttribute('data-bf-paused','true');
- const snapshot=await stage.getAttribute('data-position'),clock=await stage.getAttribute('data-clock');
+ await expect(stage).toHaveAttribute('data-bf-paused','true');await expect(stage).toHaveAttribute('data-bf-motion-paused','true');
+ const snapshot=await stage.getAttribute('data-position'),clock=await stage.getAttribute('data-clock'),meadowClock=await stage.getAttribute('data-bf-meadow-clock'),pausedMeadow=await meadowMotion(page);
  const visual=await page.evaluate(()=>{const w=window as any;return {frame:w.__immersiveRenderer.info.render.frame,player:w.__immersiveScene.getObjectByName('player-monarch').matrixWorld.toArray(),camera:w.__immersiveCamera.matrixWorld.toArray()};});
  await page.waitForTimeout(400);
- expect(await stage.getAttribute('data-position')).toBe(snapshot);expect(await stage.getAttribute('data-clock')).toBe(clock);
+ expect(await stage.getAttribute('data-position')).toBe(snapshot);expect(await stage.getAttribute('data-clock')).toBe(clock);expect(await stage.getAttribute('data-bf-meadow-clock')).toBe(meadowClock);expect(await meadowMotion(page)).toEqual(pausedMeadow);
  expect(await page.evaluate(()=>{const w=window as any;return {frame:w.__immersiveRenderer.info.render.frame,player:w.__immersiveScene.getObjectByName('player-monarch').matrixWorld.toArray(),camera:w.__immersiveCamera.matrixWorld.toArray()};})).toEqual(visual);
  await audit(page);expect(errors).toEqual([]);
 });
@@ -109,8 +133,9 @@ test('reduced-motion mobile fieldwork stays readable with the immersive scene',a
  await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await mount(page);
  const stage=page.locator('.bf-stage');await visitWithoutFlight(page,'Wild bergamot');
  await page.getByRole('button',{name:'Wide view',exact:true}).click();
- const frames=await page.evaluate(()=>(window as any).__immersiveRenderer.info.render.frame);await page.waitForTimeout(350);
+ const frames=await page.evaluate(()=>(window as any).__immersiveRenderer.info.render.frame),meadowClock=await stage.getAttribute('data-bf-meadow-clock');await page.waitForTimeout(350);
  expect(await page.evaluate(()=>(window as any).__immersiveRenderer.info.render.frame)).toBe(frames);
+ expect(await stage.getAttribute('data-bf-meadow-clock')).toBe(meadowClock);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
  await stage.screenshot({path:shots+'/mobile-bergamot.png'});await audit(page);
  await page.getByRole('button',{name:'Examine patch',exact:true}).click();

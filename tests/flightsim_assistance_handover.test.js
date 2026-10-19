@@ -36,9 +36,9 @@ afterEach(async () => {
 
 function configure() {
   const aircraft = FS.AIRCRAFT.find(item => item.id === 'cessna172');
-  Object.assign(FS.Physics, { WING_AREA: aircraft.wingArea, WEIGHT: aircraft.weight, MAX_THRUST: aircraft.maxThrust,
-    CL0: aircraft.cl0, CL_PER_AOA: aircraft.clPerAoa, CD0: aircraft.cd0, CD_INDUCED_K: aircraft.cdK,
-    IS_HELICOPTER: false, IS_DRONE: false, MAX_SPEED_KTS: aircraft.maxSpeed, AGL_CEILING: null, SPRINT_MODE: false });
+  // The same engine and speed-limit model the cockpit configures for this aircraft.
+  FS.Physics.configureAircraft(aircraft);
+  Object.assign(FS.Physics, { AGL_CEILING: null, SPRINT_MODE: false });
   return aircraft;
 }
 function bisect(residual, low, high) {
@@ -53,7 +53,7 @@ function cruiseTrim(current) {
   const powerAt = pitch => bisect(throttle =>
     FS.Physics.step(current, 1 / 60, input({ pitch, throttle })).speed - current.speed, 0, 1);
   const pitch = bisect(angle =>
-    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 4);
+    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 3); // propeller thrust falls with speed: full power cannot hold 100 KIAS at 4 degrees
   return input({ pitch, throttle: powerAt(pitch) });
 }
 function assisted(current, command, ap, dt) {

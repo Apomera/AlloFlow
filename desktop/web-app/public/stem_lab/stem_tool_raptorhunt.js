@@ -205,7 +205,7 @@
     '.rh-mystery-decision{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;padding:14px;border:1px solid rgba(100,116,139,.54);border-radius:16px;background:rgba(15,23,42,.74);}.rh-mystery-suspect-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}.rh-mystery-suspect{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;min-height:50px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:rgba(30,41,59,.8);color:#cbd5e1;text-align:left;transition:transform .15s,border-color .15s,background-color .15s;}.rh-mystery-suspect:hover:not(:disabled){transform:translateY(-1px);border-color:var(--rh-mystery-accent);color:#fff;}.rh-mystery-suspect[aria-pressed="true"]{border-color:#fff;background:rgba(76,29,149,.58);outline:2px solid var(--rh-mystery-accent);outline-offset:1px;color:#fff;}.rh-mystery-suspect[data-answer="correct"]{border-color:#34d399;background:rgba(6,78,59,.45);}.rh-mystery-suspect[data-answer="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.36);}.rh-mystery-suspect:disabled{cursor:default;}.rh-mystery-suspect-code{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#020617;color:var(--rh-mystery-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-mystery-suspect-label{font-size:10px;font-weight:850;line-height:1.28;}.rh-mystery-confidence{padding:11px;border:1px solid rgba(139,92,246,.34);border-radius:11px;background:rgba(2,6,23,.34);}.rh-mystery-confidence>span{display:block;color:#c4b5fd;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-mystery-confidence-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px;}.rh-mystery-confidence button{min-height:39px;padding:5px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#94a3b8;font-size:8px;font-weight:850;}.rh-mystery-confidence button[aria-pressed="true"]{border-color:var(--rh-mystery-accent);background:rgba(76,29,149,.58);color:#fff;}.rh-mystery-submit{width:100%;min-height:43px;margin-top:8px;border:1px solid #e9d5ff;border-radius:10px;background:linear-gradient(110deg,#6d28d9,#a21caf);color:#fff;font-size:10px;font-weight:950;box-shadow:0 8px 24px rgba(88,28,135,.28);}.rh-mystery-submit:disabled{cursor:not-allowed;filter:saturate(.3);opacity:.42;}.rh-mystery-submit:not(:disabled):hover{filter:brightness(1.12);}',
     '.rh-mystery-result{margin-top:11px;padding:11px;border:1px solid #64748b;border-radius:11px;background:rgba(2,6,23,.42);}.rh-mystery-result[data-result="correct"]{border-color:#34d399;background:rgba(6,78,59,.28);}.rh-mystery-result[data-result="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.24);}.rh-mystery-result-kicker{color:#cbd5e1;font:900 8px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.09em;}.rh-mystery-result strong{display:block;margin-top:5px;color:#f8fafc;font-size:13px;line-height:1.3;}.rh-mystery-result p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.48;}.rh-mystery-score-head{display:flex;justify-content:space-between;gap:8px;margin-top:9px;color:#cbd5e1;font-size:8px;font-weight:850;}.rh-mystery-score-head b{color:#fff;font-family:ui-monospace,Menlo,monospace;}.rh-mystery-score-track{height:7px;margin-top:5px;border-radius:999px;background:#020617;overflow:hidden;}.rh-mystery-score-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8b5cf6,#34d399);}.rh-mystery-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px;}.rh-mystery-result-actions button{min-height:35px;padding:6px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-mystery-result-actions button:hover{border-color:var(--rh-mystery-accent);color:#fff;}.rh-mystery-note{padding:11px 13px;border:1px solid rgba(139,92,246,.38);border-radius:11px;background:rgba(46,16,101,.22);color:#ddd6fe;font-size:9px;line-height:1.5;}.rh-mystery-note strong{color:#f3e8ff;}',
     '@media(max-width:980px){.rh-mystery-workbench,.rh-mystery-decision{grid-template-columns:1fr;}.rh-mystery-clue-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:720px){.rh-mystery-hero{grid-template-columns:1fr;padding:16px;}.rh-mystery-summary{max-width:320px;}.rh-mystery-scene-stage{min-height:250px;}.rh-mystery-scene-head{align-items:flex-start;}.rh-mystery-difficulty{max-width:48%;white-space:normal;text-align:center;}.rh-mystery-suspect-grid{grid-template-columns:1fr;}}@media(max-width:460px){.rh-mystery-summary{grid-template-columns:1fr 1fr;}.rh-mystery-stat:last-child{grid-column:1/-1;}.rh-mystery-scene-stage{min-height:220px;}.rh-mystery-clue-grid,.rh-mystery-meta,.rh-mystery-result-actions{grid-template-columns:1fr;}.rh-mystery-hud{display:none;}}@media(prefers-reduced-motion:reduce){.rh-mystery-case-tab,.rh-mystery-suspect{transition:none!important;}.rh-mystery-case-tab:hover,.rh-mystery-suspect:hover{transform:none!important;}}@media(forced-colors:active){.rh-mystery-hero,.rh-mystery-stat,.rh-mystery-case-tab,.rh-mystery-scene-panel,.rh-mystery-dossier,.rh-mystery-meta div,.rh-mystery-evidence,.rh-mystery-clue,.rh-mystery-decision,.rh-mystery-confidence,.rh-mystery-result,.rh-mystery-note,.rh-mystery-observation,.rh-mystery-hud span{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-mystery-kicker,.rh-mystery-title,.rh-mystery-copy,.rh-mystery-stat strong,.rh-mystery-stat span,.rh-mystery-case-level,.rh-mystery-case-name,.rh-mystery-case-number,.rh-mystery-scene-title,.rh-mystery-difficulty,.rh-mystery-observation span,.rh-mystery-observation p,.rh-mystery-dossier-kicker,.rh-mystery-dossier h3,.rh-mystery-case-chip,.rh-mystery-meta span,.rh-mystery-meta strong,.rh-mystery-section-kicker,.rh-mystery-section-head h3,.rh-mystery-section-head>span,.rh-mystery-clue-index,.rh-mystery-clue p,.rh-mystery-confidence>span,.rh-mystery-result-kicker,.rh-mystery-result strong,.rh-mystery-result p,.rh-mystery-note{color:CanvasText}.rh-mystery-case-tab[aria-pressed="true"],.rh-mystery-suspect[aria-pressed="true"],.rh-mystery-confidence button[aria-pressed="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-mystery-scene-stage{border:1px solid CanvasText;background:Canvas}.rh-mystery-bird-fill,.rh-mystery-bird-detail,.rh-mystery-branch,.rh-mystery-wire,.rh-mystery-horizon,.rh-mystery-water-line{fill:none;stroke:CanvasText}.rh-mystery-case-tab,.rh-mystery-reveal-clue,.rh-mystery-suspect,.rh-mystery-confidence button,.rh-mystery-submit,.rh-mystery-result-actions button{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-mystery-progress-track,.rh-mystery-score-track{border:1px solid CanvasText;background:Canvas}.rh-mystery-progress-track span,.rh-mystery-score-track span{background:Highlight;}}',
-    '.rh-fossil-lab{--rh-fossil-accent:#fbbf24;display:grid;gap:14px;}.rh-fossil-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.48);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(68,64,60,.82) 55%,rgba(120,53,15,.54));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-fossil-hero::after{content:"";position:absolute;z-index:-1;right:-76px;top:-112px;width:304px;height:304px;border:1px solid rgba(251,191,36,.24);border-radius:50%;box-shadow:0 0 0 34px rgba(245,158,11,.04),0 0 0 70px rgba(168,162,158,.025);}.rh-fossil-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-fossil-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(251,191,36,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#fef3c7;font:950 11px/1.1 ui-monospace,Menlo,monospace;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-fossil-kicker,.rh-fossil-section-kicker,.rh-fossil-detail-kicker{color:var(--rh-fossil-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-fossil-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-fossil-copy{max-width:790px;margin:7px 0 0;color:#e7e5e4;font-size:12px;line-height:1.55;}.rh-fossil-summary{display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:7px;}.rh-fossil-stat{min-width:82px;padding:10px;border:1px solid rgba(251,191,36,.34);border-radius:11px;background:rgba(2,6,23,.5);text-align:center;}.rh-fossil-stat strong{display:block;color:#fffbeb;font:900 17px/1 ui-monospace,Menlo,monospace;}.rh-fossil-stat span{display:block;margin-top:5px;color:#fde68a;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}',
+    '.rh-fossil-lab{--rh-fossil-accent:#fbbf24;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;}.rh-fossil-lab>*{min-width:0;}.rh-fossil-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.48);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(68,64,60,.82) 55%,rgba(120,53,15,.54));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-fossil-hero::after{content:"";position:absolute;z-index:-1;right:-76px;top:-112px;width:304px;height:304px;border:1px solid rgba(251,191,36,.24);border-radius:50%;box-shadow:0 0 0 34px rgba(245,158,11,.04),0 0 0 70px rgba(168,162,158,.025);}.rh-fossil-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-fossil-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(251,191,36,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#fef3c7;font:950 11px/1.1 ui-monospace,Menlo,monospace;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-fossil-kicker,.rh-fossil-section-kicker,.rh-fossil-detail-kicker{color:var(--rh-fossil-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-fossil-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-fossil-copy{max-width:790px;margin:7px 0 0;color:#e7e5e4;font-size:12px;line-height:1.55;}.rh-fossil-summary{display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:7px;}.rh-fossil-stat{min-width:82px;padding:10px;border:1px solid rgba(251,191,36,.34);border-radius:11px;background:rgba(2,6,23,.5);text-align:center;}.rh-fossil-stat strong{display:block;color:#fffbeb;font:900 17px/1 ui-monospace,Menlo,monospace;}.rh-fossil-stat span{display:block;margin-top:5px;color:#fde68a;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}',
     '.rh-fossil-modebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:7px;border:1px solid rgba(100,116,139,.52);border-radius:14px;background:rgba(15,23,42,.7);}.rh-fossil-mode{min-height:43px;padding:8px 12px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#cbd5e1;font-size:10px;font-weight:900;}.rh-fossil-mode:hover{border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-mode[aria-pressed="true"]{border-color:var(--rh-fossil-accent);background:rgba(120,53,15,.62);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.08);}.rh-fossil-filters{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-fossil-filter{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-fossil-filter:hover{transform:translateY(-1px);border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-filter[aria-pressed="true"]{border-color:var(--rh-fossil-accent);background:rgba(120,53,15,.62);color:#fff;}.rh-fossil-filter-code{display:grid;place-items:center;min-width:28px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-fossil-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}',
     '.rh-fossil-chronology,.rh-fossil-compare,.rh-fossil-directory,.rh-fossil-challenge,.rh-fossil-events{padding:14px;border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.22),inset 0 1px rgba(255,255,255,.04);}.rh-fossil-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-fossil-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:900;}.rh-fossil-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right;}.rh-fossil-time-window{position:relative;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;}.rh-fossil-time-nodes{display:grid;grid-template-columns:repeat(14,minmax(72px,1fr));gap:5px;min-width:1080px;}.rh-fossil-time-node{position:relative;min-height:82px;padding:9px 6px 7px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.36);color:#94a3b8;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-fossil-time-node::before{content:"";position:absolute;left:9px;right:9px;top:0;height:3px;border-radius:0 0 99px 99px;background:var(--node-accent,#64748b);opacity:.72;}.rh-fossil-time-node:hover{transform:translateY(-2px);border-color:var(--node-accent,var(--rh-fossil-accent));}.rh-fossil-time-node[data-in-filter="false"]{opacity:.38;}.rh-fossil-time-node[aria-pressed="true"]{border-color:var(--node-accent,var(--rh-fossil-accent));background:rgba(120,53,15,.32);box-shadow:inset 0 0 0 1px var(--node-accent,var(--rh-fossil-accent));color:#fff;}.rh-fossil-time-code{display:block;color:var(--node-accent,var(--rh-fossil-accent));font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-fossil-time-age{display:block;margin-top:8px;color:#f8fafc;font:900 9px/1.2 ui-monospace,Menlo,monospace;}.rh-fossil-time-name{display:block;margin-top:5px;font-size:8px;line-height:1.25;}.rh-fossil-scrubber{display:block;margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.28);color:#cbd5e1;font-size:9px;font-weight:800;}.rh-fossil-scrubber-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;}.rh-fossil-scrubber-head strong{color:var(--rh-fossil-accent);font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-fossil-scrubber input{display:block;width:100%;accent-color:var(--rh-fossil-accent);}.rh-fossil-scrubber-labels{display:flex;justify-content:space-between;margin-top:5px;color:#64748b;font:800 7px/1 ui-monospace,Menlo,monospace;text-transform:uppercase;}',
     '.rh-fossil-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.45fr);gap:12px;align-items:stretch;}.rh-fossil-plate,.rh-fossil-detail{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-fossil-plate{overflow:hidden;}.rh-fossil-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.92),rgba(41,37,36,.8));}.rh-fossil-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-fossil-age-badge{padding:6px 9px;border:1px solid var(--rh-fossil-accent);border-radius:999px;background:rgba(120,53,15,.4);color:#fef3c7;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-fossil-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#0c0a09;}.rh-fossil-stage svg,.rh-fossil-mystery-plate svg{display:block;width:100%;height:100%;}.rh-fossil-grid{opacity:.28;}.rh-fossil-bone,.rh-fossil-bone-thin,.rh-fossil-callout-line,.rh-fossil-strata{vector-effect:non-scaling-stroke;}.rh-fossil-bone{fill:none;stroke:#f5f5f4;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}.rh-fossil-bone-thin{fill:none;stroke:#d6d3d1;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}.rh-fossil-feather{fill:var(--rh-fossil-accent);fill-opacity:.13;stroke:var(--rh-fossil-accent);stroke-width:2;stroke-linejoin:round;}.rh-fossil-slab-shadow{fill:#0c0a09;opacity:.28;}.rh-fossil-strata{fill:none;stroke:#d6d3d1;stroke-width:1.4;opacity:.14;}.rh-fossil-callout-line{fill:none;stroke:#a8a29e;stroke-width:1.5;stroke-dasharray:4 4;}.rh-fossil-callout-dot{fill:#1c1917;stroke:#e7e5e4;stroke-width:2;}.rh-fossil-evidence-callout[data-active="true"] .rh-fossil-callout-line{stroke:var(--rh-fossil-accent);stroke-width:3;stroke-dasharray:none;}.rh-fossil-evidence-callout[data-active="true"] .rh-fossil-callout-dot{fill:var(--rh-fossil-accent);stroke:#fff;}.rh-fossil-callout-label{fill:#e7e5e4;font:850 10px/1 ui-sans-serif,system-ui;paint-order:stroke;stroke:#0c0a09;stroke-width:4;stroke-linejoin:round;}.rh-fossil-svg-label{fill:#d6d3d1;font:850 10px/1 ui-monospace,Menlo,monospace;}.rh-fossil-svg-accent{fill:var(--rh-fossil-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;}.rh-fossil-stage-legend{position:absolute;left:12px;bottom:10px;padding:7px 9px;border:1px solid rgba(168,162,158,.42);border-radius:9px;background:rgba(12,10,9,.82);color:#e7e5e4;font-size:9px;font-weight:800;}.rh-fossil-lenses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.38);}.rh-fossil-lens{min-height:43px;padding:6px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;}.rh-fossil-lens span{display:block;margin-bottom:4px;color:var(--rh-fossil-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-fossil-lens:hover{border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-lens[aria-pressed="true"]{border-color:#fff;background:#78350f;color:#fff;outline:2px solid var(--rh-fossil-accent);outline-offset:2px;}',
@@ -511,6 +511,202 @@
 @container(max-width:850px){.rh-hero-habitat{display:none;}.rh-command-deck{grid-template-columns:1fr;}.rh-inquiry-grid{gap:10px;}.rh-inquiry-card-copy{padding:14px;}.rh-inquiry-card h4{font-size:18px;}.rh-journal-grid{grid-template-columns:1fr;}.rh-journal-top{align-items:start;}}
 @container(max-width:600px){.rh-inquiry-heading,.rh-journal-top{display:block;}.rh-inquiry-heading h3{font-size:25px;}.rh-inquiry-grid{grid-template-columns:1fr;}.rh-inquiry-art{height:112px;}.rh-inquiry-card-copy{padding:18px;}.rh-inquiry-card h4{font-size:23px;}.rh-journal{padding:16px;}.rh-journal-top>.rh-journal-actions{margin-top:12px;}.rh-journal-phases{gap:6px;}.rh-journal-phases li{padding:6px 8px;}.rh-journal-actions .rh-inquiry-button{flex:1;}.rh-journal-stations button{padding:10px;}.rh-journal-stations .rh-journal-count{display:none;}}
 @media(forced-colors:active){.rh-inquiry-card,.rh-journal,.rh-journal-note,.rh-journal-reading,.rh-journal-comparison,.rh-journal-review,.rh-journal-phases li,.rh-journal-empty,.rh-journal-count{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none;}.rh-inquiry-choices *,.rh-journal *{color:CanvasText!important;}.rh-inquiry-button,.rh-journal textarea{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-inquiry-card[data-selected=true],.rh-journal-stations button[aria-current=step]{outline:2px solid Highlight;}.rh-journal-compare-bar{border:1px solid CanvasText;}.rh-journal-compare-bar span{background:Highlight;}.rh-inquiry-art,.rh-hero-habitat{display:none;}}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Flight collection: deliberate interaction, offline artwork, and a readable
+// field-guide gallery. Motion starts only when the learner requests it.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('raptorhunt-field-plates-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-field-plates-css';
+  st.textContent = `
+.rh-command-deck{grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:16px 28px;padding:24px!important;background:radial-gradient(ellipse at 0 0,#23474666,transparent 65%),linear-gradient(125deg,#142c35,#101c30 78%)!important;}
+.rh-command-deck>.rh-hero-grid{min-width:0;}
+.rh-command-deck>.rh-hero-grid .rh-stat-grid{margin-top:12px;}
+.rh-command-deck .rh-hero-title{font-size:clamp(42px,5vw,64px)!important;line-height:1!important;}
+.rh-command-deck .rh-hero-lede{margin-top:14px!important;max-width:510px;font-size:15px!important;line-height:1.6!important;}
+.rh-command-deck>div:first-child{display:block;}
+.rh-command-deck .rh-station-mark{display:none!important;}
+.rh-command-deck .rh-profile-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px;}
+.rh-command-deck .rh-profile-summary .rh-stat-card{min-height:66px!important;padding:8px 11px!important;}
+.rh-flight-spotlight{overflow:hidden;border:1px solid #6c8b92;border-radius:15px;background:#102530;box-shadow:0 15px 35px #02061733;}
+.rh-spotlight-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;color:#bfe3db;font:750 9px/1.4 ui-sans-serif,system-ui;letter-spacing:.12em;}
+[data-raptorhunt-root] .rh-spotlight-motion{padding:5px 8px;min-height:32px;border:1px solid #607e88;border-radius:6px;background:#193846;color:#d9eee9;font:650 11px/1.3 ui-sans-serif,system-ui;letter-spacing:0;white-space:nowrap;}
+.rh-spotlight-stage{position:relative;overflow:hidden;height:220px;min-height:0;aspect-ratio:auto;background:#204b60;}
+.rh-field-art{display:block;width:100%;height:100%;}
+.rh-field-wing{transform-origin:0 0;transition:transform .65s cubic-bezier(.22,.68,.3,1);}
+.rh-spotlight-caption{position:absolute;bottom:0;left:0;right:0;padding:25px 15px 12px;background:linear-gradient(transparent,#0b2434e8);color:#f3f6ec;text-shadow:0 1px 3px #102534;pointer-events:none;}
+.rh-spotlight-caption strong{display:block;font:750 20px/1.2 ui-sans-serif,system-ui;letter-spacing:-.025em;}
+.rh-spotlight-caption span{display:block;margin-top:4px;font:italic 12px/1.3 ui-sans-serif,system-ui;color:#d1e0dc;}
+.rh-spotlight-profile-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:10px 10px 7px;}
+[data-raptorhunt-root] .rh-spotlight-profile-tabs button{min-width:0;min-height:42px;padding:6px;border:1px solid #5b7480;border-radius:7px;background:#183543;color:#cbdce0;font:650 11px/1.3 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-spotlight-profile-tabs button[aria-pressed=true]{background:#c4dfd0;color:#18372f;border-color:#c4dfd0;}
+[data-raptorhunt-root] .rh-spotlight-profile-tabs button:hover{border-color:#e4d5a5;}
+.rh-spotlight-posture{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:0 10px 8px;}
+[data-raptorhunt-root] .rh-spotlight-posture button{min-height:34px;padding:6px 8px;border:1px solid #637f89;border-radius:6px;background:transparent;color:#d7e4e5;font:600 11px/1.3 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-spotlight-posture button[aria-pressed=true]{border-color:#e4cd96;color:#ffe4ac;background:#65533244;}
+.rh-spotlight-posture>span{flex:1 1 130px;color:#c3d6d5;font:400 11px/1.4 ui-sans-serif,system-ui;text-align:right;}
+.rh-spotlight-note{margin:0;padding:0 10px 10px;color:#9fb8c0;font:400 10px/1.5 ui-sans-serif,system-ui;}
+@keyframes rh-field-glide{0%,100%{transform:translate(0,0) rotate(-1deg)}50%{transform:translate(3px,-7px) rotate(2deg)}}
+@keyframes rh-field-current{to{stroke-dashoffset:-60}}
+.rh-field-art[data-animate=true] .rh-field-bird{animation:rh-field-glide 5s ease-in-out infinite;}
+.rh-field-art[data-animate=true] .rh-field-airflow{animation:rh-field-current 5s linear infinite;}
+.rh-roster-discovery{display:grid;grid-template-columns:minmax(190px,1fr) auto;align-items:center;gap:14px;padding:16px;border:1px solid #58747f;border-radius:14px;background:#132b36;}
+.rh-roster-search-label{display:block;margin-bottom:6px;color:#d1e3df;font:650 12px/1.4 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-roster-search{width:100%;min-height:44px;padding:10px 12px;border:1px solid #718a95;border-radius:8px;background:#0c1e2b;color:#f1f6f2;font-size:14px;}
+.rh-roster-search::placeholder{color:#a3bac4;}
+.rh-roster-filters{display:flex;flex-wrap:wrap;gap:6px;}
+[data-raptorhunt-root] .rh-roster-filters button{min-height:40px;padding:8px 13px;border:1px solid #6a8591;border-radius:999px;background:#1b3442;color:#d3e5e3;font:650 12px/1.3 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-roster-filters button[aria-pressed=true]{background:#c4dfd0;color:#18372f;border-color:#c4dfd0;}
+.rh-roster-match-count{grid-column:1/-1;margin:-5px 0 0;color:#b7cfd2;font:400 12px/1.4 ui-sans-serif,system-ui;}
+.rh-roster-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+[data-raptorhunt-root] .rh-roster-specimen{display:flex;flex-direction:column;overflow:hidden;min-width:0;padding:0!important;border:1px solid #536d7b;border-radius:16px;background:#152b39!important;text-align:left;transition:transform .2s,border-color .2s;}
+[data-raptorhunt-root] .rh-roster-specimen:hover{transform:translateY(-3px);border-color:#bedacd;}
+[data-raptorhunt-root] .rh-roster-specimen[aria-pressed=true]{border-color:#e5d39d;box-shadow:0 0 0 2px #e5d39d66;}
+.rh-roster-specimen-art{display:block;width:100%;height:150px;overflow:hidden;border-bottom:1px solid #58717b;}
+.rh-roster-specimen-art .rh-field-art{transition:transform .4s;}
+.rh-roster-specimen:hover .rh-field-art{transform:scale(1.035);}
+.rh-roster-specimen-body{display:block;padding:16px;flex:1;}
+.rh-roster-specimen-body>.flex{height:100%;}
+.rh-roster-specimen-body .flex-1{min-width:0;}
+.rh-roster-specimen-body .font-bold.text-amber-200{font-size:18px;line-height:1.25;color:#f1eee0;}
+.rh-roster-specimen-body .text-xs{font-size:12px;line-height:1.5;}
+.rh-roster-specimen-body .mt-2.grid{margin-top:12px;}
+.rh-roster-specimen-body .rh-roster-profile{margin-top:12px;}
+.rh-roster-specimen-body .rh-roster-profile-row{font-size:10px;}
+.rh-roster-empty{padding:30px 20px;border:1px dashed #7b939b;border-radius:14px;background:#132b36;color:#d4e5e2;text-align:center;font:400 15px/1.6 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-roster-empty button{display:block;margin:14px auto 0;min-height:42px;padding:9px 16px;border:1px solid #b8d8ca;border-radius:8px;background:#29483f;color:#e9f4eb;font-weight:650;}
+.rh-roster-table-select{min-height:38px;text-align:left;color:#ede1bd;font-weight:700;}
+@container(max-width:1050px){.rh-roster-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-command-deck{gap:20px;padding:22px!important;}.rh-command-deck .rh-hero-title{font-size:48px!important;}.rh-command-deck .rh-station-mark{margin-bottom:12px;}.rh-spotlight-stage{min-height:205px;}.rh-spotlight-caption strong{font-size:18px;}.rh-roster-discovery{grid-template-columns:1fr;}}
+@container(max-width:850px){.rh-command-deck{grid-template-columns:1fr;}.rh-command-deck>div:first-child{display:flex;}.rh-command-deck .rh-profile-summary{grid-template-columns:repeat(4,minmax(0,1fr));}.rh-spotlight-stage{height:220px;aspect-ratio:auto;min-height:0;}.rh-spotlight-profile-tabs{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@container(max-width:600px){.rh-command-deck .rh-hero-title{font-size:48px!important;}.rh-command-deck .rh-hero-lede{font-size:15px!important;}.rh-command-deck .rh-profile-summary{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-spotlight-stage{height:190px;aspect-ratio:auto;min-height:0;}.rh-spotlight-profile-tabs{gap:4px;padding:8px 8px 6px;}.rh-spotlight-profile-tabs button{font-size:10px!important;}.rh-roster-gallery{grid-template-columns:1fr;}.rh-roster-specimen-art{height:180px;}.rh-spotlight-heading{font-size:8px;gap:8px;padding:8px;}.rh-spotlight-posture>span{flex-basis:100%;text-align:left;margin-top:3px;}.rh-roster-filters button{flex:1 1 auto;}.rh-roster-discovery{padding:13px;}}
+@media(prefers-reduced-motion:reduce){.rh-field-art .rh-field-bird,.rh-field-art .rh-field-airflow{animation:none!important;}.rh-field-wing,.rh-roster-specimen,.rh-roster-specimen-art .rh-field-art{transition:none!important;}.rh-roster-specimen:hover,.rh-roster-specimen:hover .rh-field-art{transform:none!important;}}
+@media(forced-colors:active){.rh-flight-spotlight,.rh-roster-discovery,.rh-roster-specimen,.rh-roster-empty{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}.rh-spotlight-caption{background:Canvas;color:CanvasText;text-shadow:none;}.rh-spotlight-caption span,.rh-spotlight-heading,.rh-spotlight-note,.rh-spotlight-posture>span,.rh-roster-match-count,.rh-roster-search-label,.rh-roster-specimen-body *{color:CanvasText!important;}.rh-spotlight-motion,.rh-spotlight-profile-tabs button,.rh-spotlight-posture button,.rh-roster-filters button,.rh-roster-search,.rh-roster-empty button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-spotlight-profile-tabs button[aria-pressed=true],.rh-spotlight-posture button[aria-pressed=true],.rh-roster-filters button[aria-pressed=true],.rh-roster-specimen[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px;}}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// The wing atlas lets learners inspect the same plotted profiles by keyboard or
+// pointer. Native species menus remain available when scatter points overlap.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('raptorhunt-wing-atlas-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-wing-atlas-css';
+  st.textContent = `
+.rh-wing-atlas{color:#e8f0ec;overflow:hidden;border:1px solid #66818b;border-radius:19px;background:linear-gradient(130deg,#15333b,#122435 65%);box-shadow:0 16px 36px #02061733;font:400 14px/1.55 ui-sans-serif,system-ui;}
+.rh-wing-atlas-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 24px 16px;}
+.rh-wing-atlas-kicker{color:#a8ddcc;font:750 10px/1.4 ui-sans-serif,system-ui;letter-spacing:.15em;}
+.rh-wing-atlas h3{margin:6px 0 8px;font:750 clamp(26px,3vw,36px)/1.12 ui-sans-serif,system-ui;letter-spacing:-.035em;color:#f0f5ed;}
+.rh-wing-atlas-intro p{max-width:690px;margin:0;color:#c1d3d4;font-size:14px;line-height:1.6;}
+.rh-wing-atlas-badge{flex-shrink:0;padding:8px 11px;border:1px solid #66818b;border-radius:999px;color:#e8d5a6;font:650 11px/1.4 ui-sans-serif,system-ui;}
+.rh-wing-atlas-presets{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 20px;}
+[data-raptorhunt-root] .rh-wing-atlas-presets button{min-height:42px;padding:9px 14px;border:1px solid #718994;border-radius:9px;background:#203d49;color:#dcebe7;font:650 13px/1.35 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-wing-atlas-presets button[aria-pressed=true]{background:#c8e1d2;color:#19392f;border-color:#c8e1d2;}
+.rh-wing-atlas-workbench{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(250px,.75fr);gap:16px;padding:0 24px 22px;align-items:stretch;}
+.rh-wing-atlas-map-panel{min-width:0;overflow:hidden;border:1px solid #4f6b78;border-radius:14px;background:#0e2531;}
+.rh-wing-atlas-map-head{display:flex;justify-content:space-between;gap:12px;padding:16px 16px 10px;flex-wrap:wrap;}
+.rh-wing-atlas-map-head strong{font-size:16px;color:#edf4ec;}.rh-wing-atlas-map-head>span{font-size:11px;color:#b2cad0;align-self:center;}
+.rh-wing-atlas-filter{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px;}
+[data-raptorhunt-root] .rh-wing-atlas-filter button{min-height:36px;padding:7px 10px;border:1px solid #637f8a;border-radius:999px;background:#1c3443;color:#cee0df;font:600 11px/1.25 ui-sans-serif,system-ui;}
+[data-raptorhunt-root] .rh-wing-atlas-filter button[aria-pressed=true]{background:#c8e1d2;color:#19392f;border-color:#c8e1d2;}
+.rh-wing-atlas-map{position:relative;padding-top:2px;}
+.rh-wing-atlas-plot{position:relative;height:350px;margin:16px 28px 32px 50px;background:radial-gradient(ellipse at 15% 15%,#30745c35,transparent 60%),radial-gradient(ellipse at 85% 85%,#62566c25,transparent 65%),#102635;border:1px solid #77929c;border-radius:2px;}
+.rh-wing-atlas-plot>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.rh-wing-atlas-y-title{position:absolute;left:8px;top:47%;transform:translate(-36%,-50%) rotate(-90deg);color:#c8dedc;font:650 11px/1 ui-sans-serif,system-ui;white-space:nowrap;}
+.rh-wing-atlas-x-title{text-align:center;color:#c8dedc;font:650 12px/1.4 ui-sans-serif,system-ui;padding:0 15px 12px;}
+.rh-wing-atlas-tick{position:absolute;color:#b3cbd0;font:500 11px/1 ui-monospace,monospace;pointer-events:none;}.rh-wing-atlas-tick-x{bottom:-20px;transform:translateX(-50%);}.rh-wing-atlas-tick-y{left:-9px;transform:translate(-100%,50%);}
+[data-raptorhunt-root] .rh-wing-atlas-point{position:absolute;z-index:1;display:grid;place-items:center;width:26px;height:26px;min-width:0;min-height:0;padding:0;border:1px solid var(--wing-point-color);border-radius:50%;background:#142e3a;transform:translate(-50%,-50%);box-shadow:0 2px 5px #02061766;color:var(--wing-point-color);font:800 12px/1 ui-sans-serif,system-ui;cursor:pointer;transition:background-color .15s,box-shadow .15s;}
+.rh-wing-atlas-point span:empty{width:7px;height:7px;border-radius:50%;background:var(--wing-point-color);}
+[data-raptorhunt-root] .rh-wing-atlas-point[data-map-selected=true]{z-index:5;width:36px;height:36px;background:#c5e3d1;color:#163b31;border:2px solid #eef9ed;box-shadow:0 0 0 5px #99dfb82b;}
+[data-raptorhunt-root] .rh-wing-atlas-point[data-map-compare=true]{z-index:4;width:34px;height:34px;background:#e7d4a5;color:#3a301b;border:2px solid #fff3cf;}
+[data-raptorhunt-root] .rh-wing-atlas-point:hover,[data-raptorhunt-root] .rh-wing-atlas-point:focus-visible{z-index:8;box-shadow:0 0 0 4px #e4f4e866;}
+.rh-wing-atlas-map-note{margin:0;padding:12px 16px;border-top:1px solid #4f6b78;color:#aec9cd;font-size:11px;line-height:1.5;}
+.rh-wing-atlas-profiles{display:grid;grid-template-rows:1fr 1fr;gap:12px;min-width:0;}
+.rh-wing-atlas-profile{min-width:0;overflow:hidden;border:1px solid #74968c;border-radius:13px;background:#142e39;}
+.rh-wing-atlas-profile[data-wing-profile=B]{border-color:#a39471;}
+.rh-wing-atlas-profile>label{display:flex;align-items:center;gap:8px;padding:11px 12px 6px;color:#d2e6df;font:650 12px/1.4 ui-sans-serif,system-ui;}
+.rh-wing-atlas-letter{display:grid;place-items:center;width:23px;height:23px;border-radius:6px;background:#c5e3d1;color:#163b31;font-weight:850;}.rh-wing-atlas-profile[data-wing-profile=B] .rh-wing-atlas-letter{background:#e7d4a5;color:#3a301b;}
+[data-raptorhunt-root] .rh-wing-atlas-profile>select{display:block;box-sizing:border-box;max-width:calc(100% - 24px);width:calc(100% - 24px);margin:0 12px 10px;min-height:42px;padding:8px;border:1px solid #80959b;border-radius:7px;background:#0c202b;color:#f0f5ed;font:600 12px/1.4 ui-sans-serif,system-ui;}
+.rh-wing-atlas-portrait{height:92px;overflow:hidden;}.rh-wing-atlas-portrait svg{width:100%;height:100%;}
+.rh-wing-atlas-profile-meta{padding:10px 12px 0;}.rh-wing-atlas-profile-meta strong{display:block;color:#f0f5ed;font-size:15px;line-height:1.25;}.rh-wing-atlas-profile-meta>span{display:block;margin-top:3px;color:#abc7cd;font:italic 11px/1.35 ui-sans-serif,system-ui;}
+.rh-wing-atlas-values{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0;padding:9px 12px 11px;}.rh-wing-atlas-values dt{color:#abc7cd;font-size:10px;}.rh-wing-atlas-values dd{margin:3px 0 0;color:#ede3c9;font:700 14px/1.3 ui-monospace,monospace;}
+.rh-wing-atlas-evidence{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px;padding:22px 24px;background:#0c2531;border-top:1px solid #587581;}
+.rh-wing-atlas-question>span{color:#cbdcb3;font:750 9px/1.4 ui-sans-serif,system-ui;letter-spacing:.12em;}.rh-wing-atlas h4{margin:6px 0 8px;color:#edf4ec;font:700 22px/1.18 ui-sans-serif,system-ui;letter-spacing:-.02em;}.rh-wing-atlas-question p{margin:0;color:#b8cfd0;font-size:12px;line-height:1.6;}
+.rh-wing-atlas-metrics{display:grid;gap:12px;}.rh-wing-atlas-metric{padding:12px;border:1px solid #4e6c79;border-radius:10px;background:#17313d;}.rh-wing-atlas-metric-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:12px;color:#e8f1e8;}.rh-wing-atlas-metric-head>span{color:#e9d8ae;font:650 11px/1.4 ui-monospace,monospace;}
+.rh-wing-atlas-bar-row{display:grid;grid-template-columns:15px minmax(0,1fr) 35px;align-items:center;gap:8px;margin-top:7px;color:#c7dcd9;font:650 11px/1 ui-monospace,monospace;}.rh-wing-atlas-bar-row>strong{text-align:right;}.rh-wing-atlas-bar{height:8px;border-radius:999px;background:#091c29;overflow:hidden;}.rh-wing-atlas-bar>span{display:block;height:100%;border-radius:inherit;background:#b8dfc8;transition:width .25s;}.rh-wing-atlas-bar>span[data-comparison-bar=B]{background:#e7d4a5;}
+.rh-wing-atlas-foot{padding:13px 24px;border-top:1px solid #4b6977;color:#bcd0d2;font-size:11px;line-height:1.6;}.rh-wing-atlas-foot strong{color:#e6ece2;}
+@container(max-width:900px){.rh-wing-atlas-workbench{grid-template-columns:1fr;}.rh-wing-atlas-profiles{grid-template-columns:1fr 1fr;grid-template-rows:none;}.rh-wing-atlas-plot{height:300px;}.rh-wing-atlas-portrait{height:115px;}.rh-wing-atlas-intro{align-items:flex-start;}.rh-wing-atlas-badge{display:none;}}
+@container(max-width:600px){.rh-wing-atlas-intro{padding:18px 16px 14px;}.rh-wing-atlas h3{font-size:28px;}.rh-wing-atlas-intro p{font-size:13px;}.rh-wing-atlas-presets{padding:0 16px 16px;gap:6px;}.rh-wing-atlas-presets button{flex:1 1 auto;font-size:12px!important;}.rh-wing-atlas-workbench{padding:0 12px 16px;gap:12px;}.rh-wing-atlas-map-head{padding:13px 12px 9px;}.rh-wing-atlas-map-head>span{font-size:11px;}.rh-wing-atlas-filter{padding:0 12px 8px;}.rh-wing-atlas-plot{height:270px;margin-left:43px;margin-right:20px;}.rh-wing-atlas-y-title{left:3px;}.rh-wing-atlas-profiles{grid-template-columns:1fr;}.rh-wing-atlas-portrait{height:110px;}.rh-wing-atlas-values{grid-template-columns:1fr 1fr;}.rh-wing-atlas-evidence{grid-template-columns:1fr;padding:18px 16px;gap:16px;}.rh-wing-atlas-foot{padding:13px 16px;}.rh-wing-atlas-metric-head{flex-wrap:wrap;}}
+@media(prefers-reduced-motion:reduce){.rh-wing-atlas-point,.rh-wing-atlas-bar>span{transition:none!important;}}
+@media(forced-colors:active){.rh-wing-atlas,.rh-wing-atlas-map-panel,.rh-wing-atlas-plot,.rh-wing-atlas-profile,.rh-wing-atlas-evidence,.rh-wing-atlas-metric{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}.rh-wing-atlas h3,.rh-wing-atlas h4,.rh-wing-atlas p,.rh-wing-atlas strong,.rh-wing-atlas span,.rh-wing-atlas label,.rh-wing-atlas dt,.rh-wing-atlas dd,.rh-wing-atlas-x-title,.rh-wing-atlas-y-title{color:CanvasText!important;}.rh-wing-atlas button,.rh-wing-atlas select{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-wing-atlas-point[data-map-selected=true],.rh-wing-atlas-point[data-map-compare=true],.rh-wing-atlas button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px;}.rh-wing-atlas-plot svg line{stroke:CanvasText;}.rh-wing-atlas-bar{border:1px solid CanvasText;}.rh-wing-atlas-bar>span,.rh-wing-atlas-point span:empty{background:Highlight!important;}}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Quantitative fieldwork: preserved reference ranges and learner-owned working.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('raptorhunt-quant-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-quant-css';
+  st.textContent = `
+.rh-quant-explorer{container-type:inline-size;overflow:hidden;color:#e8f0eb;border:1px solid #6c898c;border-radius:18px;background:radial-gradient(ellipse at 100% 0,#285d552b,transparent 55%),#122a33;font:400 14px/1.55 ui-sans-serif,system-ui;box-shadow:0 16px 36px #02061725;}
+.rh-quant-heading{padding:25px 24px 18px;}.rh-quant-kicker{color:#afd7c5;font:750 10px/1.5 ui-sans-serif,system-ui;letter-spacing:.13em;}.rh-quant-heading h3{margin:7px 0 9px;color:#f1f1e5;font:760 clamp(25px,3vw,36px)/1.12 ui-sans-serif,system-ui;letter-spacing:-.035em;}.rh-quant-heading p{max-width:750px;margin:0;color:#c0d4d4;font-size:14px;line-height:1.6;}
+.rh-quant-lenses{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 20px;}[data-raptorhunt-root] .rh-quant-lenses button,[data-raptorhunt-root] .rh-math-actions button{min-height:44px;padding:10px 14px;border:1px solid #7e9799;border-radius:8px;background:#1d3a44;color:#dceae6;font:650 13px/1.35 ui-sans-serif,system-ui;}[data-raptorhunt-root] .rh-quant-lenses button[aria-pressed=true],[data-raptorhunt-root] .rh-math-actions .rh-math-next,[data-raptorhunt-root] .rh-math-actions button[aria-pressed=true]{background:#d0e5cf;color:#173c32;border-color:#d0e5cf;}
+.rh-life-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0 24px 24px;}.rh-life-card{min-width:0;border:1px solid #739188;border-radius:13px;background:#16343b;padding:17px;}.rh-life-card[data-life-profile=B]{border-color:#a09371;background:#2b3434;}.rh-life-card>label{display:flex;align-items:center;gap:8px;color:#d5e5da;font-size:12px;font-weight:650;}.rh-quant-letter{display:inline-grid;place-items:center;flex-shrink:0;min-width:25px;height:25px;padding:0 4px;border-radius:6px;background:#c0ddc6;color:#183b31;font:800 12px/1 ui-monospace,monospace;}.rh-life-card[data-life-profile=B] .rh-quant-letter{background:#e4d1a2;color:#3a301a;}
+[data-raptorhunt-root] .rh-life-card select,[data-raptorhunt-root] .rh-math-selectors select{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:44px;margin-top:9px;border:1px solid #7b9699;border-radius:7px;padding:9px;background:#10262f;color:#f0f4e9;font:600 13px/1.4 ui-sans-serif,system-ui;}.rh-life-card h4{margin:20px 0 0;color:#f2f0df;font:720 21px/1.2 ui-sans-serif,system-ui;letter-spacing:-.02em;}
+.rh-life-timeline{padding:0 5px;}.rh-life-stage-icons{display:flex;align-items:center;gap:12px;margin:14px 0 18px;padding:8px 10px;border:1px solid #4f6e6b;border-radius:7px;background:#102b32;}.rh-life-stage-icons>span{flex:1;min-width:0;color:#bed1c6;font-size:10px;line-height:1.5;}.rh-life-stage-icons svg{flex:0 0 48%;width:48%;height:45px;}.rh-life-timeline-axis{position:relative;height:23px;margin:0 6px;}.rh-life-timeline-axis span{position:absolute;transform:translateX(-50%);font:600 10px/1.4 ui-monospace,monospace;color:#bacdcb;}.rh-life-range-track{position:relative;margin:0 6px;height:29px;border:1px solid #728d90;border-radius:4px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),#57767b88 calc(25% - 1px),#57767b88 25%),#0e252d;}.rh-life-range-body{position:absolute;inset:0 auto 0 0;background:#83ad96;border-radius:3px 0 0 3px;}.rh-life-range-uncertainty{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#dbede177 0,#dbede177 3px,#244d4155 3px,#244d4155 7px);border-left:1px solid #dcebd3;}.rh-life-maturity-band{position:absolute;top:-5px;bottom:-5px;background:#efd08c;border:1px solid #604a23;border-radius:2px;}.rh-life-open-range{position:absolute;right:-2px;top:-11px;font:800 30px/1.5 ui-sans-serif,system-ui;color:#f3e2b0;}.rh-quant-caption{margin:12px 0 0;color:#bfd1d0;font-size:11px;line-height:1.55;}.rh-life-timeline-key{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;color:#e0d4b2;font-size:10px;}
+.rh-life-records{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 18px;margin:21px 0 0;padding-top:17px;border-top:1px solid #617c7b;}.rh-life-records dt{color:#bed3cf;font-size:11px;}.rh-life-records dd{margin:4px 0 0;color:#f0ead5;font-size:13px;font-weight:650;line-height:1.5;}.rh-life-note{margin:16px 0 0;padding:11px 12px;border-left:2px solid #9abcb0;background:#102b32;color:#cadbd3;font-size:12px;line-height:1.55;}.rh-life-cohort{padding-top:13px;}.rh-life-mortality-number{display:block;margin-bottom:12px;color:#f0dcc1;font:760 30px/1.2 ui-monospace,monospace;letter-spacing:-.04em;}.rh-life-percent-grid{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:4px;}.rh-life-percent-grid span{aspect-ratio:1;border:1px solid #70938c;border-radius:2px;background:#102b32;}.rh-life-percent-grid [data-cohort-band=mortality]{background:#dba69e;border-color:#efc1b8;}.rh-life-percent-grid [data-cohort-band=range]{background:repeating-linear-gradient(135deg,#dba69e 0,#dba69e 2px,#203b41 2px,#203b41 5px);border-color:#efc1b8;}.rh-life-variable{display:flex;align-items:center;min-height:90px;padding:15px;border:1px dashed #a0b3ae;border-radius:8px;color:#d6dfcd;line-height:1.6;}
+.rh-quant-source-note{margin:0;padding:15px 24px;border-top:1px solid #57757c;background:#0e2530;color:#bdd0d1;font-size:11px;line-height:1.6;}.rh-life-table-disclosure{margin-top:14px;border:1px solid #667e83;border-radius:11px;background:#132d37;color:#dce7dc;}.rh-life-table-disclosure summary{padding:16px;cursor:pointer;font-size:13px;font-weight:650;}.rh-life-table-disclosure>div{padding:0 12px 12px;}
+.rh-math-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;}.rh-math-tally{display:grid;gap:5px;flex-shrink:0;text-align:center;padding:15px;border:1px solid #789495;border-radius:12px;background:#1b3842;}.rh-math-tally strong{color:#e9d7ae;font:750 26px/1 ui-monospace,monospace;}.rh-math-tally span{font-size:11px;color:#c6dad6;}.rh-math-selectors{display:grid;grid-template-columns:1fr 1.3fr;gap:16px;padding:0 24px 20px;}.rh-math-selectors>div{min-width:0;}.rh-math-selectors label{font-size:12px;color:#cedfd7;font-weight:650;}
+.rh-math-step-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;margin:0;padding:0 24px 24px;gap:9px;}.rh-math-step-rail li{min-width:0;display:flex;align-items:center;gap:9px;padding:11px 10px;background:#0c232e;border:1px solid #607a82;border-radius:7px;font-size:12px;color:#bbcecf;font-weight:650;}.rh-math-step-rail li>span{font:650 11px/1 ui-monospace,monospace;color:#bfd5ce;}.rh-math-step-rail li[data-step-open=true]{background:#29483e;border-color:#8aaf96;color:#e4eacc;}.rh-math-step-rail li[aria-current=step]{box-shadow:inset 0 -3px 0 #e8cb8c;}
+.rh-math-bench{display:grid;grid-template-columns:1fr 1.15fr;gap:18px;padding:0 24px 24px;}.rh-math-question{min-width:0;border:1px solid #66828b;border-radius:12px;padding:20px;background:radial-gradient(ellipse at 0 100%,#23495888,transparent 75%),#112c38;}.rh-math-bench h4{margin:12px 0;color:#f0eadb;font:700 18px/1.3 ui-sans-serif,system-ui;}.rh-math-problem-copy{margin:0;color:#e0e9e0;font-size:16px;line-height:1.75;}.rh-math-diagram{display:flex;align-items:center;justify-content:center;gap:10px;margin:23px 0 10px;color:#a7cdc1;}.rh-math-diagram>span{display:grid;place-items:center;width:52px;height:52px;border:1px solid #6b9390;border-radius:12px;color:#ebd7a7;font:italic 32px/1 Georgia,serif;background:#1b3b44;}.rh-math-diagram svg{width:140px;height:54px;}
+.rh-math-notebook{min-width:0;border:1px solid #8b8b71;border-radius:12px;padding:19px;background:#303a36;}.rh-math-notebook h4{margin:0 0 17px;}.rh-math-notebook label{display:block;margin:13px 0 7px;color:#e2e2c9;font-size:12px;font-weight:650;}[data-raptorhunt-root] .rh-math-notebook textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;resize:vertical;border:1px solid #a09e83;border-radius:7px;padding:11px;background:repeating-linear-gradient(transparent,transparent 27px,#53605b44 27px,#53605b44 28px),#172d31;color:#f0f2dc;font:400 14px/28px ui-sans-serif,system-ui;}.rh-math-notebook .rh-quant-caption{color:#c7d2c1;}
+.rh-math-scaffold{display:grid;gap:10px;padding:0 24px;}.rh-math-scaffold:empty{display:none;}.rh-math-scaffold article{display:flex;gap:13px;padding:17px;border:1px solid #63837f;border-radius:10px;background:#18373e;}.rh-math-scaffold article>div{min-width:0;}.rh-math-scaffold h4{margin:0 0 8px;color:#e0e9d4;font-size:13px;font-weight:700;}.rh-math-scaffold p{margin:0;color:#d1dfd9;font-size:13px;line-height:1.65;overflow-wrap:anywhere;}.rh-math-scaffold .rh-math-equation{color:#f1dda7;font:550 15px/1.7 ui-monospace,monospace;}.rh-math-answer{display:block;margin:8px 0 17px;color:#eed39d;font-size:20px;line-height:1.4;}.rh-math-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:20px 24px;}[data-raptorhunt-root] .rh-math-actions button:disabled{opacity:1;color:#aebfbe;background:#1b3038;border-color:#53686e;cursor:not-allowed;}
+.rh-quant-explorer button:focus-visible,.rh-quant-explorer select:focus-visible,.rh-quant-explorer textarea:focus-visible,.rh-life-table-disclosure summary:focus-visible{outline:3px solid #f4d794!important;outline-offset:3px!important;}
+@container(max-width:620px){.rh-quant-heading{padding:20px 16px 16px;}.rh-quant-lenses{padding:0 16px 16px;}.rh-life-pair{grid-template-columns:1fr;padding:0 16px 18px;gap:12px;}.rh-life-card{padding:15px;}.rh-life-percent-grid{gap:4px;}.rh-math-heading{align-items:flex-start;}.rh-math-tally{padding:10px;}.rh-math-tally strong{font-size:21px;}.rh-math-selectors{grid-template-columns:1fr;padding:0 16px 16px;gap:12px;}.rh-math-step-rail{padding:0 16px 18px;gap:5px;}.rh-math-step-rail li{flex-direction:column;align-items:flex-start;padding:9px 7px;gap:5px;font-size:11px;}.rh-math-bench{grid-template-columns:1fr;padding:0 16px 18px;gap:12px;}.rh-math-question{padding:17px;}.rh-math-diagram{margin-top:17px;}.rh-math-scaffold{padding:0 16px;}.rh-math-actions{padding:17px 16px;}.rh-quant-source-note{padding:14px 16px;}.rh-math-problem-copy{font-size:15px;}}
+@media(forced-colors:active){.rh-quant-explorer,.rh-life-card,.rh-life-note,.rh-life-variable,.rh-quant-source-note,.rh-math-tally,.rh-math-step-rail li,.rh-math-question,.rh-math-notebook,.rh-math-scaffold article,.rh-life-table-disclosure{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}.rh-quant-explorer *{color:CanvasText!important;}.rh-quant-explorer button,.rh-quant-explorer select,.rh-quant-explorer textarea{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-quant-explorer button[aria-pressed=true],.rh-math-step-rail li[aria-current=step]{outline:2px solid Highlight;outline-offset:2px;}.rh-life-range-track,.rh-life-percent-grid span{border-color:CanvasText;}.rh-life-range-body,.rh-life-percent-grid [data-cohort-band=mortality]{background:Highlight;forced-color-adjust:none;}.rh-life-range-uncertainty,.rh-life-percent-grid [data-cohort-band=range]{background:repeating-linear-gradient(135deg,Highlight 0,Highlight 2px,Canvas 2px,Canvas 5px);forced-color-adjust:none;}.rh-life-maturity-band{background:CanvasText;forced-color-adjust:none;}.rh-life-percent-grid [data-cohort-band=remainder]{background:Canvas;}}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Habitat nodes describe grouped relationships, never inferred species diets.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('raptorhunt-community-css')) return;
+  var st = document.createElement('style'); st.id = 'raptorhunt-community-css';
+  st.textContent = `
+.rh-habitat-community{container-type:inline-size;overflow:hidden;border:1px solid #708b82;border-radius:18px;background:radial-gradient(ellipse at 95% 0,#3b665333,transparent 50%),#142d32;color:#e0e9dc;font:400 14px/1.55 ui-sans-serif,system-ui;box-shadow:0 16px 36px #02061725;}.rh-community-heading{padding:25px 24px 16px;}.rh-community-heading h3{margin:7px 0 9px;color:#f0efdc;font:760 clamp(26px,3vw,36px)/1.12 ui-sans-serif,system-ui;letter-spacing:-.035em;}.rh-community-heading p{max-width:760px;margin:0;color:#bfd2ce;font-size:14px;line-height:1.6;}.rh-community-selector{padding:0 24px 21px;max-width:620px;}.rh-community-selector label{display:block;color:#d1e0d1;font-size:12px;font-weight:650;}[data-raptorhunt-root] .rh-community-selector select{display:block;box-sizing:border-box;min-height:44px;margin-top:8px;width:100%;max-width:100%;min-width:0;padding:9px;border:1px solid #849b94;border-radius:7px;background:#0f272e;color:#eff3e3;font:600 13px/1.4 ui-sans-serif,system-ui;}
+.rh-community-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(245px,1fr);gap:16px;padding:0 24px 24px;align-items:stretch;}.rh-community-map-panel{min-width:0;overflow:hidden;border:1px solid #68867e;border-radius:12px;background:#11292f;}.rh-community-map-title{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #4c6c68;flex-wrap:wrap;}.rh-community-map-title strong{font-size:15px;color:#e6e8d3;}.rh-community-map-title>span{font-size:10px;color:#b5cebf;}.rh-community-map{position:relative;height:340px;background:radial-gradient(ellipse at 100% 0,var(--community-land),transparent 70%),#0b252d;}.rh-community-landscape,.rh-community-connectors{position:absolute;inset:0;height:100%;width:100%;pointer-events:none;}
+[data-raptorhunt-root] .rh-community-node{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:90px;padding:12px 10px;background:#193a3a;color:#d6e4cf;border:1px solid #8ca998;border-radius:12px;box-shadow:0 6px 18px #061a2380;font:650 12px/1.4 ui-sans-serif,system-ui;text-align:center;}.rh-community-node svg{width:54px;height:43px;color:#c5d9ba;}[data-raptorhunt-root] .rh-community-node[aria-pressed=true]{background:#d2e3bd;color:#1d3c31;border:2px solid #f0e7bd;box-shadow:0 0 0 5px #adc79630,0 8px 20px #061a2366;}.rh-community-node[aria-pressed=true] svg{color:#35553d;}.rh-community-map .rh-community-node{position:absolute;width:39%;}.rh-community-raptors{top:15px;left:30.5%;}.rh-community-prey{bottom:18px;left:4%;}.rh-community-competitors{bottom:18px;right:4%;}
+.rh-community-legend{display:grid;gap:9px;padding:15px 16px;border-top:1px solid #58756f;color:#c7dacb;font-size:11px;}.rh-community-legend>span{display:flex;align-items:center;gap:10px;}.rh-community-legend i{display:inline-block;position:relative;flex-shrink:0;width:23px;height:1px;}.rh-community-energy-key{border-top:2px solid #e9ce8d;}.rh-community-energy-key:after{content:'›';position:absolute;right:-1px;top:-13px;color:#e9ce8d;font:24px/1 ui-sans-serif,system-ui;}.rh-community-competition-key{border-top:2px dashed #b8cbd1;}.rh-community-context{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px;}[data-raptorhunt-root] .rh-community-context .rh-community-node{min-height:65px;box-shadow:none;padding:10px;flex-direction:row;gap:10px;}.rh-community-context .rh-community-node svg{flex-shrink:0;width:28px;height:28px;}.rh-community-context .rh-community-threats{border-color:#ae9181;color:#efc9b0;background:#3a3734;}.rh-community-context .rh-community-threats svg{color:#e0af8c;}
+.rh-community-detail{min-width:0;border:1px solid #879679;border-radius:12px;padding:20px;background:linear-gradient(145deg,#2e4037,#243c38);}.rh-community-detail-icon{display:grid;place-items:center;width:65px;height:58px;margin-bottom:20px;border:1px solid #9aae86;border-radius:12px;background:#142f31;color:#d1deb0;}.rh-community-detail-icon svg{width:45px;height:43px;}.rh-community-detail h4{margin:8px 0 16px;color:#f0ebd7;font:720 25px/1.14 ui-sans-serif,system-ui;letter-spacing:-.025em;}.rh-community-detail-copy{margin:0;color:#d9e5d4;font-size:14px;line-height:1.8;}.rh-community-species{list-style:none;display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;}.rh-community-species li{padding:6px 9px;border:1px solid #718c77;border-radius:7px;background:#17332f;color:#dde8cb;font-size:12px;line-height:1.5;}.rh-community-question{margin-top:22px;padding:15px;border-left:2px solid #d6c790;border-radius:0 7px 7px 0;background:#142f31;}.rh-community-question strong{color:#e6d9af;font-size:12px;}.rh-community-question p{margin:7px 0 0;color:#c7d9ca;font-size:12px;line-height:1.7;}.rh-community-note{margin:0;padding:15px 24px;border-top:1px solid #58736d;background:#0e272e;color:#bed2c7;font-size:11px;line-height:1.65;}
+[data-raptorhunt-root] .rh-community-node:focus-visible,.rh-community-selector select:focus-visible{outline:3px solid #f4d794!important;outline-offset:3px!important;}
+@container(max-width:760px){.rh-community-workbench{grid-template-columns:1fr;}.rh-community-map{height:310px;}.rh-community-detail-icon{float:right;margin:0 0 12px 12px;width:50px;height:48px;}.rh-community-detail-icon svg{width:36px;height:36px;}.rh-community-detail h4{font-size:23px;}.rh-community-question{clear:both;}}
+@container(max-width:480px){.rh-community-heading{padding:20px 16px 16px;}.rh-community-selector{padding:0 16px 17px;}.rh-community-workbench{padding:0 12px 18px;gap:12px;}.rh-community-map-title{padding:13px 12px;gap:5px;}.rh-community-map-title>span{width:100%;}.rh-community-map{height:290px;}[data-raptorhunt-root] .rh-community-node{font-size:11px;padding:10px 6px;min-height:91px;}.rh-community-node svg{width:46px;height:36px;}.rh-community-map .rh-community-node{width:42%;}.rh-community-raptors{left:29%;}.rh-community-prey{left:3%;}.rh-community-competitors{right:3%;}.rh-community-legend{padding:13px 12px;font-size:10px;}.rh-community-context{padding:0 10px 12px;gap:7px;}.rh-community-context .rh-community-node svg{width:23px;height:23px;}[data-raptorhunt-root] .rh-community-context .rh-community-node{padding:9px 6px;gap:6px;}.rh-community-detail{padding:18px 16px;}.rh-community-note{padding:14px 16px;}}
+@media(forced-colors:active){.rh-habitat-community,.rh-community-map-panel,.rh-community-map,.rh-community-detail,.rh-community-question,.rh-community-detail-icon,.rh-community-note,.rh-community-species li{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}.rh-habitat-community *{color:CanvasText!important;}.rh-habitat-community button,.rh-habitat-community select{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none!important;}.rh-habitat-community button[aria-pressed=true]{outline:3px solid Highlight;outline-offset:2px;}.rh-community-landscape{opacity:.15;}.rh-community-connectors path{stroke:CanvasText;}.rh-community-legend i{border-color:CanvasText;}}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Evidence-led comparisons, qualitative strategies, and hypothetical timing.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('raptorhunt-investigations-css')) return;
+  var st = document.createElement('style'); st.id = 'raptorhunt-investigations-css';
+  st.textContent = `
+.rh-investigation-select{padding:0 24px 20px;max-width:760px;}.rh-investigation-select label{display:block;color:#d4e3d6;font-size:12px;font-weight:650;}[data-raptorhunt-root] .rh-investigation-select select{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:44px;margin-top:8px;padding:9px;border:1px solid #879c92;border-radius:8px;background:#102930;color:#eef0de;font:600 13px/1.4 ui-sans-serif,system-ui;}
+.rh-compare-traits{display:flex;flex-wrap:wrap;gap:7px;padding:0 24px 20px;}[data-raptorhunt-root] .rh-compare-traits button,[data-raptorhunt-root] .rh-compare-current button,[data-raptorhunt-root] .rh-climate-evidence-tabs button{min-height:42px;padding:9px 12px;border:1px solid #7c9690;border-radius:8px;background:#1a3840;color:#dce8d9;font:650 12px/1.4 ui-sans-serif,system-ui;}[data-raptorhunt-root] .rh-compare-traits button[aria-pressed=true],[data-raptorhunt-root] .rh-compare-current button[aria-pressed=true],[data-raptorhunt-root] .rh-climate-evidence-tabs button[aria-pressed=true]{background:#d0e2c8;color:#1d3b30;border-color:#d0e2c8;}.rh-compare-traits button>span{margin-left:5px;}
+.rh-compare-size-panel{margin:0 24px 20px;padding:17px 20px;border:1px solid #708b7c;border-radius:11px;background:#1d393b;}.rh-compare-size-panel h4{margin:0 0 15px;color:#e7e7d0;font-size:14px;font-weight:700;}.rh-compare-size-axis{position:relative;height:23px;margin:0 5px;}.rh-compare-size-axis span{position:absolute;transform:translateX(-50%);color:#bad0c4;font:600 11px/1.4 ui-monospace,monospace;}.rh-compare-size-row{margin-bottom:14px;}.rh-compare-size-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}.rh-compare-size-label strong{font-size:12px;color:#d6e5d1;}.rh-compare-size-label span{font-size:11px;color:#e6d1a5;}.rh-compare-size-track{position:relative;height:15px;margin:0 5px;border:1px solid #729085;border-radius:3px;background:repeating-linear-gradient(90deg,transparent,transparent calc(25% - 1px),#5d7b7166 calc(25% - 1px),#5d7b7166 25%),#102b32;}.rh-compare-size-track>span{position:absolute;top:-1px;bottom:-1px;border:1px solid #e0e8ca;background:#a5c9a8;border-radius:3px;}.rh-compare-size-row[data-size-range=B] .rh-compare-size-track>span{background:#d7bd83;border-color:#efe0b1;}.rh-compare-size-panel>div>p,.rh-compare-size-panel>p{margin:11px 0 0;color:#bfd4c5;font-size:11px;line-height:1.6;}
+.rh-compare-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 24px;}.rh-compare-specimen{min-width:0;border:1px solid #819981;border-radius:13px;overflow:hidden;background:#17363a;}.rh-compare-specimen[data-comparative-side=B]{border-color:#a79473;background:#303b37;}.rh-compare-specimen-head{display:flex;gap:9px;align-items:center;padding:16px;}.rh-compare-specimen h4{margin:0;color:#edeedc;font:700 20px/1.2 ui-sans-serif,system-ui;letter-spacing:-.02em;}.rh-compare-specimen[data-comparative-side=B] .rh-quant-letter{background:#e2ce9e;color:#3d321e;}.rh-compare-art{display:grid;place-items:center;height:238px;background:radial-gradient(ellipse at 50% 50%,#4e75604d,transparent 70%),#102c32;border-top:1px solid #4e6e67;border-bottom:1px solid #4e6e67;}.rh-compare-art svg{width:100%;max-width:330px;height:100%;}.rh-compare-observation{padding:16px;}.rh-compare-observation>span{color:#b8d5c0;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}.rh-compare-observation p{margin:7px 0 0;color:#efe6c7;font-size:16px;font-weight:600;line-height:1.55;}
+.rh-compare-evidence{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:22px 24px;border-top:1px solid #58766e;background:#0e2a31;}.rh-compare-current>strong,.rh-compare-basket h4{margin:0;color:#e6e7cf;font-size:16px;font-weight:700;}.rh-compare-current p,.rh-compare-basket>p{margin:9px 0 16px;color:#c3d6ce;font-size:12px;line-height:1.75;}.rh-compare-basket{min-width:0;padding:16px;border:1px solid #698575;border-radius:10px;background:#203c37;}.rh-compare-basket ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:10px;}.rh-compare-basket li{padding:9px 0 0;border-top:1px solid #5c796b;}.rh-compare-basket li strong{display:block;color:#e4d2a6;font-size:12px;}.rh-compare-basket li span{display:block;margin-top:4px;color:#cadccf;font-size:11px;line-height:1.5;}
+.rh-investigation-reference{margin:0 24px 20px;border:1px solid #678078;border-radius:10px;background:#173037;color:#d9e3d2;overflow:hidden;}.rh-investigation-reference summary{padding:15px;cursor:pointer;font-size:12px;font-weight:650;}.rh-investigation-table-scroll{overflow-x:auto;padding:0 13px 13px;}.rh-investigation-reference table{border-collapse:collapse;width:100%;font-size:12px;line-height:1.5;}.rh-investigation-reference th,.rh-investigation-reference td{padding:10px 9px;text-align:left;border-top:1px solid #59766d;vertical-align:top;}.rh-investigation-reference th{color:#ddceaa;}.rh-investigation-reference td{color:#cfdfd4;}
+.rh-hunt-phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 24px 22px;}[data-raptorhunt-root] .rh-hunt-phases button{display:flex;align-items:center;gap:9px;min-height:52px;padding:11px;border:1px solid #77938b;border-radius:9px;background:#19363e;color:#d3e4d6;font:650 12px/1.4 ui-sans-serif,system-ui;text-align:left;}.rh-hunt-phases button>span{font:650 12px/1 ui-monospace,monospace;color:#d6c89f;}[data-raptorhunt-root] .rh-hunt-phases button[aria-pressed=true]{background:#d7e3c1;border-color:#d7e3c1;color:#233d32;}.rh-hunt-phases button[aria-pressed=true]>span{color:#4f5233;}
+.rh-hunt-bench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(230px,1fr);gap:16px;padding:0 24px 22px;}.rh-hunt-scene{min-width:0;overflow:hidden;border:1px solid #718e80;border-radius:12px;background:#102a32;}.rh-hunt-scene-head{padding:16px;}.rh-hunt-scene-head h4{margin:0;color:#eee6ce;font:700 18px/1.25 ui-sans-serif,system-ui;}.rh-hunt-scene-head p{margin:7px 0 0;color:#bfd1bc;font-size:11px;line-height:1.6;}.rh-hunt-scene>svg{display:block;width:100%;height:auto;}.rh-hunt-legend{display:grid;gap:7px;padding:13px 16px;border-top:1px solid #55726c;color:#c7d8c9;font-size:10px;line-height:1.6;}.rh-hunt-reading{min-width:0;border:1px solid #909477;border-radius:12px;padding:21px 18px;background:linear-gradient(130deg,#344239,#233a35);}.rh-hunt-reading h4{margin:9px 0 14px;color:#eee9d4;font:700 24px/1.17 ui-sans-serif,system-ui;letter-spacing:-.025em;}.rh-hunt-reading>p{margin:0;color:#d5e2d5;font-size:13px;line-height:1.8;}.rh-hunt-question{margin-top:20px;padding:14px;border-left:2px solid #d4c18e;border-radius:0 7px 7px 0;background:#142f31;}.rh-hunt-question strong{color:#e0d2aa;font-size:12px;}.rh-hunt-question p{margin:7px 0 0;color:#c8d8c9;font-size:12px;line-height:1.7;}.rh-hunt-resources{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 22px;}.rh-hunt-resources article{min-width:0;padding:15px;border:1px solid #5d7e71;border-radius:9px;background:#19383b;}.rh-hunt-resources h4,.rh-hunt-reference-grid h4{margin:0 0 8px;color:#e1d5ad;font-size:12px;font-weight:700;}.rh-hunt-resources p,.rh-hunt-reference-grid p{margin:0;color:#c6dbcf;font-size:12px;line-height:1.65;}.rh-hunt-reference-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:0 16px 16px;}
+.rh-climate-bench{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(230px,.85fr);gap:16px;padding:0 24px 24px;}.rh-climate-chart-panel{min-width:0;overflow:hidden;border:1px solid #759188;border-radius:12px;background:#102b34;}.rh-climate-chart-head{display:grid;gap:4px;padding:17px 17px 7px;}.rh-climate-chart-head strong{color:#e6e8d4;font-size:15px;}.rh-climate-chart-head span{color:#b7cec7;font-size:10px;}.rh-climate-chart-panel svg{display:block;width:100%;height:auto;}.rh-climate-chart-panel svg>text{display:none;}.rh-climate-axis-note{margin:-15px 12px 12px;text-align:center;color:#c9d9cd;font-size:11px;line-height:1.5;}.rh-climate-legend{display:flex;flex-wrap:wrap;gap:9px 18px;border-top:1px solid #55726e;padding:13px 16px;color:#c9ddcd;font-size:10px;}.rh-climate-legend>span{display:flex;align-items:center;gap:8px;}.rh-climate-legend>span:last-child{width:100%;font-size:10px;line-height:1.5;}.rh-climate-legend i{display:inline-block;width:25px;height:1px;}.rh-climate-key-prey{border-top:3px solid #9cd8c5;}.rh-climate-key-demand{border-top:3px dashed #edd291;}.rh-climate-controls{min-width:0;padding:18px;border:1px solid #8e9075;border-radius:12px;background:#2a3c37;}.rh-climate-slider{display:grid;grid-template-columns:1fr auto;gap:10px 12px;padding-bottom:18px;}.rh-climate-slider+ .rh-climate-slider{padding-top:18px;border-top:1px solid #71816e;}.rh-climate-slider label{color:#dce4cf;font-size:12px;font-weight:650;line-height:1.5;}.rh-climate-slider output{font:700 20px/1.2 ui-monospace,monospace;color:#ead29a;}[data-raptorhunt-root] .rh-climate-slider input{width:100%;min-width:0;margin:0;grid-column:1/-1;accent-color:#c8ddb4;cursor:pointer;height:26px;}.rh-climate-range-labels{grid-column:1/-1;display:flex;justify-content:space-between;color:#bdcec0;font-size:10px;}.rh-climate-gap{padding:16px;border:1px solid #8d9a7d;border-radius:9px;background:#183234;}.rh-climate-gap>span{display:block;color:#c8d8c0;font-size:11px;}.rh-climate-gap strong{display:block;margin-top:7px;color:#edd6a4;font:750 30px/1.1 ui-monospace,monospace;letter-spacing:-.04em;}.rh-climate-gap p{margin:10px 0 0;color:#c6dac9;font-size:11px;line-height:1.6;}.rh-climate-evidence{padding:21px 24px;border-top:1px solid #59776b;background:#173338;}.rh-climate-evidence h4{margin:0 0 14px;color:#e7e4cd;font:700 20px/1.25 ui-sans-serif,system-ui;}.rh-climate-evidence-tabs{display:flex;flex-wrap:wrap;gap:8px;}.rh-climate-evidence>p{max-width:840px;margin:15px 0 0;color:#c8dacf;font-size:13px;line-height:1.8;}.rh-climate-reference{margin:0;}.rh-climate-reference>div{padding:0 16px 16px;}
+.rh-compare-workbench :is(button,select,summary):focus-visible,.rh-hunt-workbench :is(button,select,summary):focus-visible,.rh-climate-workbench :is(button,input):focus-visible,.rh-climate-reference summary:focus-visible{outline:3px solid #f4d794!important;outline-offset:3px!important;}
+@container(max-width:760px){.rh-hunt-bench,.rh-climate-bench{grid-template-columns:1fr;}.rh-hunt-reading{padding:18px;}.rh-hunt-reading h4{font-size:22px;}.rh-climate-controls{display:grid;grid-template-columns:1fr 1fr;gap:18px;}.rh-climate-slider{padding:0;}.rh-climate-slider+ .rh-climate-slider{padding:0;border-top:0;}.rh-climate-gap{grid-column:1/-1;}.rh-climate-chart-panel svg text{font-size:16px;}}
+@container(max-width:620px){.rh-compare-size-panel{margin:0 16px 18px;padding:16px;}.rh-investigation-select{padding:0 16px 17px;}.rh-compare-traits{padding:0 16px 17px;gap:6px;}.rh-compare-pair{grid-template-columns:1fr;padding:0 16px 20px;gap:13px;}.rh-compare-art{height:220px;}.rh-compare-evidence{grid-template-columns:1fr;padding:18px 16px;}.rh-investigation-reference{margin:0 16px 18px;}.rh-climate-reference{margin:0;}.rh-hunt-phases{padding:0 16px 18px;gap:6px;}[data-raptorhunt-root] .rh-hunt-phases button{flex-direction:column;align-items:flex-start;font-size:11px;gap:7px;padding:10px 8px;}.rh-hunt-bench{padding:0 16px 18px;}.rh-hunt-resources{grid-template-columns:1fr;padding:0 16px 18px;gap:10px;}.rh-hunt-reference-grid{grid-template-columns:1fr;}.rh-climate-bench{padding:0 14px 20px;}.rh-climate-controls{grid-template-columns:1fr;padding:16px;gap:20px;}.rh-climate-slider+ .rh-climate-slider{border-top:1px solid #71816e;padding-top:18px;}.rh-climate-chart-panel svg text{font-size:20px;}.rh-climate-axis-note{font-size:10px;margin-top:-7px;}.rh-climate-evidence{padding:18px 16px;}.rh-climate-evidence>p{font-size:12px;}}
+@media(forced-colors:active){.rh-compare-specimen,.rh-compare-art,.rh-compare-evidence,.rh-compare-basket,.rh-investigation-reference,.rh-hunt-scene,.rh-hunt-reading,.rh-hunt-question,.rh-hunt-resources article,.rh-climate-chart-panel,.rh-climate-controls,.rh-climate-gap,.rh-climate-evidence{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}.rh-compare-workbench *,.rh-hunt-workbench *,.rh-climate-workbench *{color:CanvasText!important;}.rh-compare-workbench button,.rh-compare-workbench select,.rh-hunt-workbench button,.rh-hunt-workbench select,.rh-climate-workbench button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}.rh-compare-workbench button[aria-pressed=true],.rh-hunt-workbench button[aria-pressed=true],.rh-climate-workbench button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px;}.rh-climate-chart-panel svg{forced-color-adjust:none;background:#102b34;}.rh-climate-legend i{border-color:CanvasText;}.rh-hunt-scene>svg,.rh-compare-art svg{forced-color-adjust:none;}}
 `;
   if (document.head) document.head.appendChild(st);
 })();
@@ -925,6 +1121,18 @@
     ,'.rh-stoop-impact-panel{gap:12px;padding:14px 16px;}.rh-stoop-impact-kicker{font-size:11px;}.rh-stoop-impact-title{font-size:15px;margin-top:4px;}.rh-stoop-impact-value{font-size:18px;}.rh-stoop-impact-track{height:58px;margin:28px 0 28px;overflow:visible;}.rh-stoop-impact-track::before{inset:0;}.rh-stoop-impact-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(251,191,36,.06),rgba(249,115,22,.30) 72%,rgba(239,68,68,.46));pointer-events:none;}.rh-stoop-impact-current{top:-6px;bottom:-6px;}.rh-stoop-impact-current-dot{top:50%;width:14px;height:14px;}.rh-stoop-impact-current-label{top:-26px;padding:3px 9px;border-radius:999px;background:#f97316;color:#1c0a02;font:900 11px/1 ui-sans-serif,system-ui;letter-spacing:.06em;box-shadow:0 2px 8px rgba(0,0,0,.45);}.rh-stoop-impact-marker{bottom:0;height:100%;background:rgba(148,163,184,.75);}.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{bottom:auto;top:calc(100% + 7px);font:800 11px/1.1 ui-sans-serif,system-ui;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% - 3px));}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{transform:translateX(3px);}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% + 1px));}.rh-stoop-impact-axis{font-size:11px;}.rh-stoop-impact-note{font-size:12px;font-weight:600;line-height:1.4;}@media(max-width:430px){.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{font-size:10px;}.rh-stoop-impact-axis{font-size:10px;}.rh-stoop-impact-title{font-size:13px;}.rh-stoop-impact-value{font-size:15px;}}@media(forced-colors:active){.rh-stoop-impact-fill{background:Highlight;opacity:.35;}.rh-stoop-impact-current-label{background:Canvas;color:CanvasText;border:1px solid CanvasText;}}'
   ].join('');
   st.textContent += `
+.rh-motion-panel{container-name:rh-motion;container-type:inline-size;border-top:1px solid #526d7c;padding:14px;background:#0e2230;color:#edf6f8}.rh-motion-panel[hidden]{display:none!important}.rh-motion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;align-items:center}.rh-motion-map-frame{min-width:0;border:1px solid #608291;border-radius:12px;overflow:hidden;background:#0a202e}.rh-motion-map-frame canvas[data-raptor-motion-map]{display:block;width:100%!important;height:auto!important;aspect-ratio:3/2}.rh-motion-map-caption{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;color:#c1d9e2;font:11px/1.4 system-ui}.rh-motion-copy{min-width:0}.rh-motion-copy h3{margin:0;color:#f5e6bf;font:700 18px/1.3 system-ui}.rh-motion-copy p{margin:7px 0;color:#c5dce4;font:12px/1.55 system-ui}.rh-motion-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}.rh-motion-readouts>div{min-width:0;border:1px solid #4b6b7e;border-radius:8px;padding:8px;background:#102a39}.rh-motion-readouts dt{font:600 11px/1.4 system-ui;color:#d2e4ec}.rh-motion-readouts dd{margin:4px 0 0;color:#fff;font:700 14px/1.3 ui-monospace,monospace;white-space:normal;overflow-wrap:anywhere}.rh-motion-readouts b{display:block;font-size:15px}.rh-motion-readouts [data-motion-kind=air] b{color:#67e8f9}.rh-motion-readouts [data-motion-kind=wind] b{color:#fcd34d}.rh-motion-readouts [data-motion-kind=ground] b{color:#c4b5fd}.rh-motion-copy [data-motion-constraint]{border-left:3px solid #fcd34d;padding-left:9px}.rh-stoop-inspector{container-name:rh-stoop-inspector;container-type:inline-size;border:1px solid #688b9c;border-radius:14px;background:#0d2431;color:#eef5f7;padding:16px;margin:16px 0}.rh-stoop-inspector-grid{display:grid;grid-template-columns:minmax(160px,.65fr) minmax(0,1.35fr);gap:20px;align-items:center}.rh-stoop-drop-scene{display:block;width:100%;height:260px;background:#0a202e;border:1px solid #496e7b;border-radius:12px}.rh-stoop-inspector h3{font:700 19px/1.35 system-ui;margin:0;color:#ffdf9c}.rh-stoop-inspector p{font:12px/1.55 system-ui;color:#cadde3;margin:8px 0}.rh-stoop-inspector label{display:block;font:600 13px/1.4 system-ui;color:#f4f8fa;margin-top:12px}.rh-stoop-inspector input{display:block;width:100%;min-height:42px;accent-color:#f5c979}.rh-stoop-inspector input:focus-visible,.rh-stoop-inspector button:focus-visible{outline:3px solid #e7f5ff;outline-offset:3px}.rh-stoop-sample-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.rh-stoop-sample-values>div{border:1px solid #597682;border-radius:8px;padding:9px}.rh-stoop-sample-values dt{font:11px/1.4 system-ui;color:#cfdee5}.rh-stoop-sample-values dd{margin:4px 0 0;color:#ffdf9c;font:700 16px/1.3 ui-monospace,monospace;overflow-wrap:anywhere}.rh-stoop-scrub-actions{display:flex;flex-wrap:wrap;gap:8px}.rh-stoop-scrub-actions button{min-height:42px;padding:8px 12px;border:1px solid #7a9aa6;border-radius:8px;background:#1e3c4a;color:#f2f7f9;font:600 12px/1.4 system-ui;cursor:pointer}.rh-stoop-scrub-actions button:hover{background:#315365}.rh-stoop-inspector [data-stoop-window-note]{border-left:3px solid #f0c779;padding-left:10px;color:#f5dfb2}@container rh-motion (max-width:620px){.rh-motion-grid{grid-template-columns:minmax(0,1fr)}.rh-motion-map-frame{max-width:440px;width:100%;justify-self:center}.rh-motion-copy h3{font-size:17px}}@container rh-stoop-inspector (max-width:540px){.rh-stoop-inspector-grid{grid-template-columns:minmax(0,1fr);gap:14px}.rh-stoop-drop-scene{height:220px}.rh-stoop-sample-values{gap:5px}.rh-stoop-sample-values>div{padding:7px}.rh-stoop-sample-values dd{font-size:14px}}@media(forced-colors:active){.rh-motion-panel,.rh-motion-map-frame,.rh-motion-readouts>div,.rh-stoop-inspector,.rh-stoop-sample-values>div,.rh-stoop-scrub-actions button{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-motion-copy h3,.rh-motion-copy p,.rh-motion-readouts dt,.rh-motion-readouts dd,.rh-motion-readouts b,.rh-motion-map-caption,.rh-stoop-inspector h3,.rh-stoop-inspector p,.rh-stoop-inspector label,.rh-stoop-sample-values dt,.rh-stoop-sample-values dd{color:CanvasText!important}.rh-stoop-inspector input:focus-visible,.rh-stoop-inspector button:focus-visible{outline-color:Highlight}}
+.rh-stoop-compare{container-name:rh-stoop-compare;container-type:inline-size;padding:20px;border:1px solid #6b9295;border-radius:16px;background:linear-gradient(135deg,#17383d,#102934 68%);color:#edf5f4;box-shadow:inset 0 1px rgba(228,245,231,.08)}
+.rh-stoop-compare-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.rh-stoop-compare-heading>div:first-child{max-width:560px;min-width:0}.rh-stoop-compare-kicker{display:block;margin-bottom:7px;color:#bcddd5;font:700 11px/1.4 system-ui;letter-spacing:.12em;text-transform:uppercase}.rh-stoop-compare h3{margin:0;color:#fae2a9;font:750 24px/1.2 system-ui}.rh-stoop-compare p{margin:8px 0;color:#d0e3e2;font:12px/1.6 system-ui}.rh-stoop-compare-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.rh-stoop-compare button{min-height:44px;padding:9px 12px;border:1px solid #91b2b5;border-radius:9px;background:#244a50;color:#f1f7f3;font:650 12px/1.35 system-ui;cursor:pointer}.rh-stoop-compare button:hover:not(:disabled){background:#38626a;border-color:#d3ebe1}.rh-stoop-compare button[data-stoop-compare-pin]{background:#f1d392;border-color:#f1d392;color:#172e33}.rh-stoop-compare button:disabled{color:#adbfbd;background:#203e46;border-color:#5e797c;cursor:not-allowed}.rh-stoop-compare :is(button,input):focus-visible{outline:3px solid #f9e5b3;outline-offset:3px}.rh-stoop-compare-empty{display:flex;align-items:center;gap:20px;margin-top:18px;padding:16px;border:1px dashed #729392;border-radius:12px;background:#102d36}.rh-stoop-compare-empty svg{flex:0 0 150px}.rh-stoop-compare-empty p{max-width:550px;font-size:14px}.rh-stoop-compare-content{margin-top:18px}.rh-stoop-compare-experiments{margin:0 0 18px;padding:14px;border:1px solid #60858a;border-radius:12px;min-width:0}.rh-stoop-compare-experiments legend{padding:0 8px;color:#e7eedf;font:650 12px/1.5 system-ui}.rh-stoop-compare-experiments p{margin-bottom:0}.rh-stoop-compare-visuals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;align-items:center}.rh-stoop-compare-scene-frame{border:1px solid #6b9097;border-radius:14px;overflow:hidden;background:#102d39}.rh-stoop-compare-scene-frame svg,.rh-stoop-compare-chart-frame svg{display:block;width:100%;height:auto}.rh-stoop-compare-chart-frame{min-width:0}.rh-stoop-compare-chart-frame>svg{background:#102d39;border:1px solid #577c87;border-radius:12px}.rh-stoop-compare-legend{display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:10px;font:650 12px/1.4 system-ui}.rh-stoop-compare-legend [data-run=reference]{color:#f4d187}.rh-stoop-compare-legend [data-run=current]{color:#7de4dc}.rh-stoop-compare-clock{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;margin-top:14px}.rh-stoop-compare-clock label{color:#eff5ed;font:650 12px/1.5 system-ui}.rh-stoop-compare-clock output{color:#fae2a9;font:750 20px/1.4 ui-monospace,monospace}.rh-stoop-compare-clock input{grid-column:1/-1;min-height:44px;width:100%;accent-color:#f1d392}.rh-stoop-compare-clock .rh-stoop-compare-actions{grid-column:1/-1}.rh-stoop-compare-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.rh-stoop-compare-readings>div{min-width:0;padding:13px;border:1px solid #61868a;border-radius:12px;background:#133039}.rh-stoop-compare-readings strong{display:block;font:700 13px/1.45 system-ui;color:#e5f2ea}.rh-stoop-compare-readings [data-run=reference] strong{color:#f4d187}.rh-stoop-compare-readings [data-run=current] strong{color:#7de4dc}.rh-stoop-compare-readings dl{display:flex;flex-wrap:wrap;gap:12px 20px;margin:10px 0 0}.rh-stoop-compare-readings dt{font:11px/1.4 system-ui;color:#c7dddf}.rh-stoop-compare-readings dd{margin:3px 0 0;font:700 17px/1.4 ui-monospace,monospace;color:#eff6f3;overflow-wrap:anywhere}.rh-stoop-compare-difference p{margin:7px 0 0}.rh-stoop-compare p.rh-stoop-compare-boundary{border-left:3px solid #edcf8e;padding-left:12px;margin:16px 0;color:#e5e7ce}.rh-stoop-compare-parameters{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:16px;font:12px/1.5 system-ui}.rh-stoop-compare-parameters caption{text-align:left;color:#e4f0e8;font-weight:700;margin-bottom:9px}.rh-stoop-compare-parameters th,.rh-stoop-compare-parameters td{padding:9px 8px;border-bottom:1px solid #57777d;overflow-wrap:anywhere}.rh-stoop-compare-parameters th{text-align:left;color:#d4e5e6;font-weight:550}.rh-stoop-compare-parameters th:first-child{width:45%}.rh-stoop-compare-parameters td{font-family:ui-monospace,monospace;color:#eef6f3}.rh-stoop-compare-parameters [data-changed=true]{background:#21434a}.rh-stoop-compare-parameters [data-changed=true] td:last-child{font-weight:750;color:#99f1e5;box-shadow:inset 3px 0 #7de4dc}
+@container rh-stoop-compare (max-width:620px){.rh-stoop-compare-heading{display:block}.rh-stoop-compare-heading>.rh-stoop-compare-actions{margin-top:13px}.rh-stoop-compare-visuals{grid-template-columns:minmax(0,1fr)}.rh-stoop-compare-scene-frame{width:100%;max-width:440px;justify-self:center}.rh-stoop-compare-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-stoop-compare-difference{grid-column:1/-1}.rh-stoop-compare-empty{display:block}.rh-stoop-compare h3{font-size:22px}.rh-stoop-compare-parameters th,.rh-stoop-compare-parameters td{padding:9px 5px}.rh-stoop-compare-parameters th:first-child{width:41%}.rh-stoop-compare-parameters{font-size:11px}}
+@media(forced-colors:active){.rh-stoop-compare,.rh-stoop-compare-empty,.rh-stoop-compare-experiments,.rh-stoop-compare-readings>div,.rh-stoop-compare-scene-frame,.rh-stoop-compare-chart-frame>svg{background:Canvas;border-color:CanvasText;color:CanvasText;box-shadow:none}.rh-stoop-compare :is(h3,p,span,label,output,legend,strong,dt,dd,th,td,caption){color:CanvasText!important}.rh-stoop-compare button,.rh-stoop-compare button[data-stoop-compare-pin]{background:ButtonFace;color:ButtonText;border-color:ButtonText}.rh-stoop-compare :is(button,input):focus-visible{outline-color:Highlight}.rh-stoop-compare-parameters [data-changed=true]{background:Canvas}.rh-stoop-compare-parameters [data-changed=true] td:last-child{box-shadow:inset 3px 0 Highlight}.rh-stoop-compare svg text{fill:CanvasText}.rh-stoop-compare svg :is(path,line,circle){stroke:CanvasText}.rh-stoop-compare svg rect{fill:Canvas}.rh-stoop-compare svg [data-stoop-compare-curve=reference]{stroke:LinkText}.rh-stoop-compare svg [data-stoop-compare-curve=current]{stroke:CanvasText}}
+.rh-path-panel{container-name:rh-path;container-type:inline-size;padding:18px;border-top:1px solid #6f8b9c;background:linear-gradient(135deg,#153743,#142638);color:#ecf5f5}.rh-path-panel[hidden]{display:none!important}.rh-path-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}.rh-path-head h3{margin:0;color:#ffdfa4;font:750 21px/1.3 system-ui}.rh-path-panel p{margin:9px 0;color:#cbe0e6;font:12px/1.6 system-ui}.rh-path-panel button,.rh-path-panel select{min-height:44px;border:1px solid #8aacba;border-radius:9px;background:#234651;color:#f2f7f4;padding:9px 12px;font:650 12px/1.4 system-ui}.rh-path-panel button:hover{background:#315e6d}.rh-path-panel button[aria-pressed=true]{background:#f4d493;color:#19323c;border-color:#f4d493}.rh-path-panel :is(button,input,select):focus-visible{outline:3px solid #f8dda7;outline-offset:3px}.rh-path-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,1fr);gap:18px;margin-top:12px}.rh-path-plot{min-width:0;padding:12px;border:1px solid #5e8595;border-radius:12px;background:#0d2837}.rh-path-plot label{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;color:#d8e9ec;font:650 12px/1.5 system-ui}.rh-path-plot canvas{display:block;width:100%;height:auto;aspect-ratio:13/5;margin-top:10px}.rh-path-controls{min-width:0}.rh-path-actions{display:flex;gap:8px;flex-wrap:wrap}.rh-path-views{margin:0 0 13px;padding:0;border:0}.rh-path-views legend,.rh-path-controls>label{display:block;margin-bottom:8px;color:#e7f1f2;font:650 12px/1.5 system-ui}.rh-path-controls input{width:100%;min-height:44px;accent-color:#f4d493}.rh-path-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.rh-path-readings div{min-width:0;border:1px solid #527b8d;border-radius:9px;background:#153242;padding:9px}.rh-path-readings dt{color:#d0e4ea;font:11px/1.4 system-ui}.rh-path-readings dd{margin:5px 0 0;color:#ffe3af;font:700 15px/1.4 ui-monospace,monospace;overflow-wrap:anywhere}.rh-path-note{padding-left:11px;border-left:3px solid #7de4dc}.rh-path-panel [data-flight-path-range]{font:650 12px/1.5 ui-monospace,monospace;color:#dcebec}
+[data-raptor-path-review=true]>:not(canvas){visibility:hidden!important;pointer-events:none!important}[data-raptor-path-review=true]::after{content:'PAUSED · RECORDED FLIGHT';position:absolute;left:12px;top:12px;border:1px solid #80a7b4;border-radius:8px;background:#102b39e8;color:#f5e4bb;padding:8px 11px;font:700 11px/1.4 system-ui;letter-spacing:.05em;pointer-events:none}
+.rh-path-compare{margin-top:16px;padding:16px;border:1px solid #8b9278;border-radius:12px;background:#142e39}.rh-path-compare[hidden]{display:none}.rh-path-compare h4{margin:0;color:#ffe3af;font:700 16px/1.4 system-ui}.rh-path-compare .rh-path-readings{grid-template-columns:repeat(3,minmax(0,1fr))}.rh-path-panel button:disabled{opacity:.6;cursor:default}.rh-path-compare-key{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;color:#dcebec;font:650 12px/1.5 system-ui}.rh-path-compare-key span:first-child{color:#f4ce7c}.rh-path-compare-key span:last-child{color:#b2f3ea}
+.rh-path-panel [data-flight-path-terrain-key]{margin-top:12px;padding-top:8px;border-top:1px solid #6f8b9c}.rh-path-panel [data-flight-path-terrain-key][hidden]{display:none!important}.rh-path-panel [data-terrain-value=ground]{color:#f1ce98}.rh-path-panel [data-terrain-value=clearance]{color:#b2f3ea}
+@container rh-path (max-width:660px){.rh-path-grid{grid-template-columns:minmax(0,1fr)}.rh-path-readings dd{font-size:14px}.rh-path-head h3{font-size:19px}.rh-path-plot{padding:9px}.rh-path-compare{padding:12px}.rh-path-compare .rh-path-readings{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(forced-colors:active){.rh-path-panel,.rh-path-plot,.rh-path-readings div{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-path-panel :is(h3,p,dt,dd,label,legend){color:CanvasText}.rh-path-panel button,.rh-path-panel select{background:ButtonFace;color:ButtonText;border-color:ButtonText}.rh-path-panel button[aria-pressed=true]{background:Highlight;color:HighlightText}.rh-path-panel :is(button,input,select):focus-visible{outline-color:Highlight}}
+[data-raptor-sim-shell]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active=true]) :is(.rh-motion-panel,.rh-path-panel){max-height:32vh;overflow:auto;flex:0 1 auto;overscroll-behavior:contain;}
 /* Keep the aiming cue distinct from the larger frame around the animal. */
 .rh-flight-reticle{width:60px;height:60px;filter:drop-shadow(0 1px 1px #020617);}
 .rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%) scale(.93);}
@@ -2085,30 +2293,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
 
   // ── Talon Mechanics ──
-  var TALON_FACTS = {
-    header: 'Talons: The Business End',
-    overview: 'A raptor\'s talon is the killing surface — a hyper-keratinized claw on each toe, curved to penetrate, and driven by some of the strongest grip muscles in the vertebrate world. Grip force varies enormously across species and tracks prey size: harpy eagles crush monkey skulls (~530 psi), golden eagles compress wolf vertebrae (~750 psi), great horned owls dispatch rabbits in a single squeeze (~500 psi). For comparison: human grip ~80 psi, German shepherd bite ~238 psi, jaguar bite ~1,500 psi (whole-skull crush), peregrine falcon talon strike ~230 psi (but applied as a fist-blow at 200+ mph — kinetic energy, not grip).',
-    keyPoints: [
-      { title: 'Hallux vs digits', text: 'Most birds have 4 toes (3 forward, 1 back = anisodactyl). Raptors use a heavily-developed hallux (rear toe) as the primary kill weapon — it punctures vital organs. Owls + osprey can rotate the outer toe so 2 forward + 2 back (zygodactyl/semi-zygodactyl) — better grip on round prey or wriggling fish.' },
-      { title: 'Grip lock mechanism', text: 'A passive flexor-tendon ratchet means the talons stay clenched without active muscle work. Once they close on prey, they stay closed — energy-efficient for long flights with a load.' },
-      { title: 'Talon length scales with prey size', text: 'Insectivores: short, blunt talons. Bird-hunters: medium, sharp, curved. Mammal-hunters: longest + most curved (harpy + golden). Fish-hunters (osprey): short but with barbed scales on the foot pad to lock onto slippery scales.' },
-      { title: 'Why kestrels and falcons don\'t need monster grip', text: 'Falconid raptors kill mostly with a high-speed strike to the head or back, then sever the cervical vertebrae with a special "tomial tooth" on the upper beak. Accipitrids (hawks/eagles) kill more often by sustained grip — so they evolved heavier talons.' },
-      { title: 'Talon force isn\'t pressure — it\'s pressure × area × time', text: 'A peregrine\'s 230 psi strike lasts ~10 ms but delivers ~5 J of kinetic energy. A harpy\'s 530 psi grip lasts 30+ seconds and compresses the entire skull. Different killing strategies, both lethal.' }
-    ],
-    psiComparison: [
-      { name: 'Human grip', psi: 80, color: 'slate' },
-      { name: 'Peregrine falcon (strike)', psi: 230, color: 'amber' },
-      { name: 'German shepherd bite', psi: 238, color: 'slate' },
-      { name: 'Red-tailed hawk', psi: 200, color: 'amber' },
-      { name: 'Cooper\'s hawk', psi: 220, color: 'amber' },
-      { name: 'Bald eagle', psi: 400, color: 'orange' },
-      { name: 'Great horned owl', psi: 500, color: 'orange' },
-      { name: 'Harpy eagle', psi: 530, color: 'orange' },
-      { name: 'Golden eagle', psi: 750, color: 'red' },
-      { name: 'Jaguar bite (whole skull)', psi: 1500, color: 'slate' }
-    ]
-  };
-
   // ── Vision Lab ──
   var VISION_FACTS = {
     header: 'Vision: Why Raptors See Better Than You',
@@ -2135,14 +2319,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ── Flight Physics ──
   var FLIGHT_FACTS = {
     header: 'Flight: Wing Geometry Tells Hunt Strategy',
-    overview: 'You can predict almost everything about a raptor\'s hunt style from two numbers: wing loading (mass / wing area, in kg/m²) and aspect ratio (wingspan² / wing area). High wing loading = fast, fast-stalling, dive-specialized — falcons. Low wing loading = slow, agile, can soar — vultures + buteos. High aspect ratio = efficient long-distance soaring (eagles, albatrosses). Low aspect ratio = short turning radius (accipiters in forest). Designers don\'t need to draw the wing — these two numbers determine 90% of flight behavior.',
+    overview: 'Wing loading describes how much mass each unit of wing area supports. Aspect ratio describes wing proportions. These measures help us compare flight designs, but a bird\'s body, feather structure, wing motion, and environment also influence how it flies.',
     keyPoints: [
       { title: 'Wing loading drives stall speed', text: 'Higher loading = higher stall speed. A peregrine (8.8 kg/m²) stalls at ~25 mph; a vulture (3 kg/m²) stalls at ~15 mph. This is why falcons need long takeoff runs and vultures can lift off from a flap or two.' },
       { title: 'Aspect ratio drives glide efficiency', text: 'Soaring birds have long thin wings (AR 8-12). Forest birds have short broad wings (AR 4-6). High AR = lower induced drag = longer glides per altitude lost. The albatross (AR ~15) holds the avian record.' },
       { title: 'Slot wing primary feathers', text: 'Eagles and buteos spread their wingtip primaries during slow soaring. Each gap acts as a mini high-AR wing — reducing induced drag at the wingtip vortex. It\'s why their wingtips look "fingered." Falcons + accipiters lack this slotting.' },
       { title: 'Buteos kite into headwinds', text: 'A red-tail facing a 30 mph wind can hold absolutely stationary in the air while scanning a field — wings angled to balance lift + weight + thrust. This is "kiting." Kestrels are even better at it (hovering with active wing-beat).' },
       { title: 'Stoop posture vs glide posture', text: 'In a peregrine\'s stoop, wings tuck close, body becomes a tear-drop, drag coefficient drops to ~0.18 (worse than a sphere). In glide, wings extend, drag coefficient is ~0.04. The wing shape is the speed brake.' },
-      { title: 'Why owls fly silently', text: 'Owl primaries have a serrated leading edge (breaks up the turbulence that normally generates noise at the wing\'s front), a soft trailing edge fringe (absorbs trailing edge vortex sound), and velvety dorsal feathers (absorb friction noise). See the Silent Flight module.' }
+      { title: 'Feather structures and quiet flight', text: 'Comb-like tips on some outer feathers, vane fringes, and a velvety upper surface are associated with quiet flight. Experiments distinguish airflow-related sound from feather-rubbing sound; their contributions depend on conditions. Explore the structures and evidence in Silent Flight.' }
     ],
     flightTypes: [
       { type: 'Falcon stoop', loading: 'High', ar: 'Med-High', desc: 'Pointed wings, fast level + lethal dive, terrible at slow soaring. Peregrine, prairie falcon.' },
@@ -2156,43 +2340,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
   // ── Stoop Calculator ──
   var STOOP_FACTS = {
-    header: 'The Stoop: How a Falcon Becomes a Bullet',
-    overview: 'The peregrine\'s stoop is one of the most studied feats of biological engineering. Starting at 500-3000 ft altitude, the bird folds wings + body into a teardrop, accelerates at near-g until reaching terminal velocity (~242 mph confirmed by Cornell radar 2005). At that speed, kinetic energy per kilogram is ~5,500 J — equivalent to a pistol bullet. The kill is a punch with clenched feet, not a grab; the prey is decapitated by impact or stunned + retrieved seconds later as it tumbles. The pullout requires 25+ G acceleration; the bird\'s circulatory system has special features to keep blood pressure controlled. Drag coefficient in stoop posture is ~0.18 — better than a soccer ball, worse than a smooth sphere, comparable to a teardrop pendant.',
+    header: 'The stoop: height becomes speed',
+    overview: 'A peregrine changes its wing and body posture during a dive, changing the aerodynamic forces it experiences. This calculator isolates one idea: how gravity and quadratic drag shape a vertical fall. Its fixed posture and still-air assumptions are teaching simplifications, not a reconstruction of a particular bird or a speed record.',
     formula: 'v_terminal = √(2·m·g / (ρ·A·Cd))',
     formulaVars: 'm=mass, g=9.81 m/s², ρ=air density (1.225 kg/m³ sea level), A=cross-section area, Cd=drag coefficient',
     keyPoints: [
-      { title: 'Terminal velocity is reached in ~5-7 seconds', text: 'Falling from rest, a peregrine reaches 95% terminal in 5.5 seconds. Higher altitude starts = more time at terminal speed = more kinetic energy delivered.' },
-      { title: 'Stoop posture: drag coefficient ~0.18', text: 'Wings tucked, head pulled in, body rigid. This is verified by wind-tunnel taxidermy + later by drone-mounted cameras. For comparison: human freefaller in dive position Cd ≈ 0.7; sphere Cd ≈ 0.47; ideal teardrop Cd ≈ 0.04.' },
-      { title: 'Mass scaling problem', text: 'A goshawk has 90% of a peregrine\'s mass but only ~60% of its stoop speed. Why? Higher aspect ratio + larger cross-section + steeper "lean" angle in the goshawk. Stoop speed isn\'t just about mass — drag area dominates.' },
-      { title: 'The pullout', text: 'Yanking out of a 200 mph dive requires arresting ~25 G in 1-2 seconds. Bird heart + arterial structure handles this; humans black out at 5-6 G. Tom Cade (1969 paper) measured pullout G-loads in trained peregrines.' },
-      { title: 'Why falcons aim, then strike', text: 'The bird lines up trajectory in advance — it can\'t maneuver finely at terminal velocity. Computer models (Tucker 1998) show falcons fly a spiral logarithmic approach that keeps prey at a constant viewing angle, identical to how some military missiles approach.' },
-      { title: 'Pre-strike vs post-strike', text: 'At impact: clenched feet (talons closed into a club). Within 200 ms after: re-grip with talons + secure carcass. The strike + re-grip cycle is so fast it\'s nearly invisible — high-speed cameras only resolved it in the 1990s.' }
+      { title: 'A limit, not a finish line', text: 'From rest, speed approaches terminal gradually. The time to reach a chosen fraction depends on mass, drag coefficient and frontal area. More starting height can allow more acceleration, but a finite fall need not get close to terminal.' },
+      { title: 'Posture changes drag', text: 'A real falcon changes wing posture throughout the dive. Here Cd = 0.18 is an adjustable illustrative input held constant. It is not a universal measured coefficient for every bird, angle or speed.' },
+      { title: 'Separate mass from frontal area', text: 'Holding everything else fixed, greater mass raises this model’s terminal speed, while greater frontal area lowers it. Real birds change several of these properties together; comparing one slider does not rank species.' },
+      { title: 'A real pull-up changes the problem', text: 'A falcon redirects its flight before or after an interception. Lift, turning radius and changing posture matter during that maneuver. This vertical-fall model ends at the ground or the time limit and does not simulate a pull-up.' },
+      { title: 'Energy depends on the sampled speed', text: 'Kinetic energy is one half of mass times speed squared. The upper energy display uses terminal speed; the scrubber shows the speed actually sampled during this modeled fall. Neither directly measures energy transferred to prey.' },
+      { title: 'Read the observation window', text: 'The graph samples every 0.05 seconds for up to 12 seconds, stopping sooner if it reaches the ground. A graph that ends aloft is a partial flight, not a collision or a completed dive.' }
     ]
   };
 
   // ── Silent Flight (Owls) ──
   var SILENT_FACTS = {
-    header: 'Silent Flight: How Owls Move Without Sound',
-    overview: 'A barn owl flies past your face and you don\'t hear it. This is biological engineering at the limits of physics — three independent silencing mechanisms working together. Modern wind turbine, drone, and HVAC design teams openly copy owl feather structure to reduce noise (the 2020 Caltech/Bonn studies on owl feathers are cited in dozens of engineering patents). Most other raptors aren\'t silent — peregrines whistle in stoop, eagles thump in slow flight. Owls evolved silence because their prey (mice, voles) have ear sensitivity that makes them notice even faint wing-rustle from above.',
+    header: 'Silent Flight: Feather Structures and Quiet Movement',
+    overview: 'Comb-like leading-edge tips, loose vane fringes, and a velvety upper surface are associated with quiet flight in owls. Their form varies across species and feather positions. Microscopy, wind-tunnel studies, and feather-rubbing experiments address different parts of the explanation; quiet flight does not mean an absence of sound.',
     keyPoints: [
-      { title: 'Mechanism 1: Comb-edged leading primaries', text: 'The leading edge of each primary feather has a tiny comb-like serration (~0.5-1 mm tooth width). This breaks up the laminar-to-turbulent flow transition that creates rushing noise on a normal wing. The comb scatters the noise into much higher frequencies that prey ears can\'t hear well.' },
-      { title: 'Mechanism 2: Fringed trailing edge', text: 'The trailing edge of owl primaries has a soft fringe (~2-3 mm) that absorbs the trailing-edge turbulent vortex sound. Most aerodynamic noise is generated at the trailing edge — this fringe is the primary noise reducer.' },
-      { title: 'Mechanism 3: Velvety dorsal surface', text: 'The upper feather surface has a soft velvet-like microstructure (tiny pile, ~0.5 mm tall). It dampens feather-on-feather friction noise during wing folding/unfolding.' },
-      { title: 'Frequency shift', text: 'Owl wing noise: peaks at ~16 kHz (above mouse hearing range). Hawk wing noise: peaks at ~2-4 kHz (right in mouse hearing range). The silencing is achieved by shifting the noise frequency out of prey\'s ear sensitivity, not just lowering amplitude.' },
-      { title: 'Cost: slower max speed', text: 'Silent-flight feathers add drag. Owls top out around 40-55 mph; hawks of similar size hit 80+. The silence is a hunt-strategy trade-off — owls don\'t need speed, they need surprise.' },
-      { title: 'Modern engineering applications', text: 'NASA + Caltech + Bonn University ran detailed studies (Bachmann + Wagner 2017, 2020) on owl feather microstructure. The findings now appear in: drone propeller designs, wind turbine blade edges, HVAC vent geometry, jet aircraft trailing edge serrations. The owl is the most-imitated bird in modern engineering.' }
+      { title: 'Comb-edged outer feathers', text: 'Curved barb tips form a comb on the leading edge of some outer wing feathers. In prepared barn owl wings, removing the comb changed aerodynamic performance and modestly increased gliding noise at high angles of attack (Geyer et al., 2017).' },
+      { title: 'Vane fringes', text: 'Loose barb ends form fringes at feather margins, including more than the trailing edge. Microscopy establishes their form; it does not establish a universal ranking of sound-reduction mechanisms (Bachmann et al., 2007).' },
+      { title: 'Velvety upper surface', text: 'Elongated filaments form a soft upper surface. Controlled feather-rubbing experiments support a role in reducing contact sound; this is distinct from measuring the sound of an entire flying owl (Liu & Clark, 2025).' },
+      { title: 'Sound level and source', text: 'Air passing a wing and feathers sliding against one another can produce different sound sources. The velvet rubbing experiment concerns sound level, not a simple shift of owl noise beyond prey hearing.' },
+      { title: 'Conditions matter', text: 'The effect of a feather feature depends on the experiment, airflow, wing posture, and species. A schematic feather cannot predict a flight speed, hearing threshold, or noise level.' },
+      { title: 'From biology to engineering', text: 'Owl-inspired structures are tested in aerodynamic models. Results from an engineered surface must be distinguished from measurements of a real bird.' }
     ]
   };
 
   // ── Senses Tradeoffs ──
   var SENSES_FACTS = {
     header: 'Senses: Day Eye vs Night Eye',
-    overview: 'Hawks + eagles + falcons hunt by day. Their retinas are cone-heavy (high acuity, full color). Owls hunt by night. Their retinas are rod-heavy (extreme low-light sensitivity, near-monochromatic vision). The same evolutionary toolkit (the avian eye) has been reshaped in opposite directions for opposite niches. Owls also pair vision with ear asymmetry — the left ear opening sits higher on the skull than the right, so the same sound arrives at the two ears at different vertical angles. The brain reads the timing difference as elevation cue. Combined with horizontal ear timing, the owl gets full 3D acoustic localization — accurate to ~1° in pitch black.',
+    overview: 'Hawks + eagles + falcons hunt by day. Their retinas are cone-heavy (high acuity, full color). Owls hunt by night. Their retinas are rod-heavy (extreme low-light sensitivity, near-monochromatic vision). The same evolutionary toolkit (the avian eye) has been reshaped in opposite directions for opposite niches. Barn owls also use differences between the ears in sound timing and level. Timing is strongly related to horizontal direction; level cues shaped by the head and facial ruff provide additional spatial information, including elevation. These cues interact, and performance depends on the conditions of the task.',
     keyPoints: [
       { title: 'Cones vs rods', text: 'Cones detect color + need bright light. Rods are monochrome + work in starlight. Diurnal raptors: ~80% cones, 20% rods (reverse of human eye!). Nocturnal raptors (owls): ~5% cones, 95% rods. The retina geometry encodes the hunt time.' },
       { title: 'Tubular eyes (owls)', text: 'Owls evolved tubular (not spherical) eye shape — packs more rod surface area in the same skull volume. Cost: eyes cannot rotate. Owls compensate with 270° head rotation (special neck vertebrae + cervical artery routing prevents stroke during the turn).' },
-      { title: 'Ear asymmetry (owls)', text: 'The bony skull openings for the ears are placed asymmetrically — left ear higher than right by ~1 cm in barn owls. Sound timing + amplitude differences let the owl pinpoint elevation as well as azimuth. Verified in famous Roger Payne (1962) sound-only mouse kills in total darkness.' },
-      { title: 'Facial disc as parabolic dish', text: 'Owls\' flat facial disc isn\'t cosmetic — stiff feathers funnel sound to the ear openings. Acts as a parabolic reflector + boosts effective ear sensitivity by ~10 dB. This is why barn owls + great-grey owls have such pronounced flat faces.' },
+      { title: 'Timing and level cues', text: 'Experiments with barn owls separate arrival-time differences from sound-level differences between the ears. Timing strongly influences horizontal localization; level cues also contribute. A timing-only diagram does not establish elevation or a universal localization accuracy (Poganiatz et al., 2001; Kettler et al., 2017).' },
+      { title: 'Facial ruff and directional hearing', text: 'The facial ruff changes the sound reaching the ears from different directions. Virtual-ruff-removal experiments test its contribution by changing these acoustic cues while observing localization behavior. It is not a simple parabolic reflector with one fixed gain (Hausmann et al., 2009).' },
       { title: 'Olfaction (raptors barely use it)', text: 'Raptors have small olfactory bulbs — they hunt by sight, not smell. The one exception: turkey vultures + king vultures have huge olfactory bulbs and can locate carrion by smell from 1+ miles. Their "raptor" classification has been debated for decades.' },
       { title: 'Tactile bill (raptors don\'t really)', text: 'Unlike sandpipers + parrots + woodpeckers, raptors don\'t use their bill for sensing. Their bill is purely a kill + butchering tool (falcon tomial tooth severs cervical vertebrae, eagles tear large prey, owls swallow small prey whole + cast indigestible pellets).' }
     ]
@@ -2585,20 +2769,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { id: 'q4', difficulty: 'easy', q: 'You see a hawk hovering with active wingbeats over a roadside field. The most likely species is:',
       options: ['Red-tailed hawk', 'American kestrel', 'Bald eagle', 'Cooper\'s hawk (accipiter)'], correctIdx: 1,
       explanation: 'Active hovering over open ground = American kestrel (or, in winter, rough-legged hawk). Red-tails kite but don\'t actively hover; eagles don\'t hover; Cooper\'s hawks don\'t hover.' },
-    { id: 'q5', difficulty: 'easy', q: 'Which sense is MOST important to a great horned owl hunting at midnight?',
+    { id: 'q5', difficulty: 'easy', q: 'Which sense allowed barn owls to locate prey in the dark in controlled acoustic-localization experiments?',
       options: ['Night vision', 'Hearing', 'Smell', 'Touch'], correctIdx: 1,
-      explanation: 'Owl ear asymmetry + facial-disc sound funneling enable 3D acoustic localization accurate to ~1° in total darkness (Payne 1962). Vision is supplementary at full dark; smell is barely used; touch via beak is for prey processing, not detection.' },
+      explanation: 'Hearing. Payne studied barn owls locating prey using sound in darkness (1971). This demonstrates acoustic localization under the tested conditions; it does not establish one accuracy for every owl, sound, or environment.' },
 
     // MEDIUM (combinations + science)
     { id: 'q6', difficulty: 'medium', q: 'A peregrine falcon\'s stoop reaches ~242 mph. What single anatomical adaptation lets the bird keep its eyes open during the dive?',
       options: ['Tinted iris', 'Telescoping eye lens that flattens at speed', 'Nictitating membrane (third eyelid)', 'Cornea hardening'], correctIdx: 2,
       explanation: 'A clear nictitating membrane (third eyelid) slides over the eye during high-speed dive, protecting against debris + drying airflow while still letting light through. All birds have one; peregrines depend on it.' },
-    { id: 'q7', difficulty: 'medium', q: 'Owls fly silently because their feathers have THREE silencing mechanisms. Which is NOT one of them?',
+    { id: 'q7', difficulty: 'medium', q: 'Which is NOT one of the three distinctive feather structures commonly studied in owl quiet flight?',
       options: ['Comb-edged leading primaries', 'Fringed trailing edge', 'Velvety dorsal surface', 'Hollow feather shafts'], correctIdx: 3,
-      explanation: 'Hollow feather shafts are universal in birds and have nothing to do with silence. The three actual silencing mechanisms are (1) comb leading edge, (2) fringe trailing edge, (3) velvet dorsal surface.' },
-    { id: 'q8', difficulty: 'medium', q: 'Which raptor has the HIGHEST documented talon grip force in psi?',
-      options: ['Bald eagle (400 psi)', 'Harpy eagle (530 psi)', 'Golden eagle (750 psi)', 'Great horned owl (500 psi)'], correctIdx: 2,
-      explanation: 'Golden eagle ~750 psi — the highest documented grip strength for any raptor. They\'re trained by Mongolian Berkutchi hunters to take wolves from horseback, a tradition dating to Genghis Khan.' },
+      explanation: 'The studied structures are comb-like leading-edge tips, vane fringes, and a velvety upper surface. Hollow feather shafts are not one of this set. Their acoustic contributions must be tested under specific conditions.' },
+    { id: 'q8', difficulty: 'medium', q: 'The same normal force is applied over half the contact area. What happens to mean pressure?',
+      options: ['It halves', 'It stays the same', 'It doubles', 'It becomes a species grip-force measurement'], correctIdx: 2,
+      explanation: 'Mean pressure is normal force divided by contact area. Halving the area while keeping force fixed doubles the mean pressure. This relationship does not measure an animal\'s grip force or predict injury.' },
     { id: 'q9', difficulty: 'medium', q: 'A bird perched at a forest edge, with short broad wings and a very long banded tail, "flap-flap-glides" through the trees after a songbird. What family?',
       options: ['Falcon', 'Buteo (soaring) Hawk', 'Accipiter Hawk', 'Eagle'], correctIdx: 2,
       explanation: 'Short wings + very long tail + forest-interior chase = accipiter (Cooper\'s, sharp-shinned, or northern goshawk). Falcons hunt in open air; buteos perch-and-pounce; eagles soar.' },
@@ -2669,9 +2853,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { id: 'q29', difficulty: 'easy', q: 'What is the "tomial tooth" on a falcon\'s upper beak used for?',
       options: ['Eating seeds', 'Severing the cervical vertebrae of prey in a single bite', 'Cracking open eggs', 'Tearing tendons from the leg bones of larger prey before eating'], correctIdx: 1,
       explanation: 'The tomial tooth is a pointed projection on the upper beak of falcons (Falconidae) that fits into a notch on the lower beak. Falcons kill prey by gripping it + severing the cervical (neck) vertebrae with one precise bite. Hawks + eagles + owls lack this — they kill by squeezing with talons.' },
-    { id: 'q30', difficulty: 'easy', q: 'A barn owl in pitch darkness can pinpoint a mouse to about how many degrees of accuracy by sound alone?',
-      options: ['~30°', '~10°', '~5°', '~1°'], correctIdx: 3,
-      explanation: 'Roger Payne\'s 1962 classic experiment: barn owls in total darkness struck mice on leaf litter with ~1° accuracy in both elevation + azimuth. The asymmetric ear placement (left ear higher than right) provides elevation cues; combined with horizontal timing differences, this gives full 3D acoustic localization unique among birds.' },
+    { id: 'q30', difficulty: 'easy', q: 'What does the sound-arrival studio show when one receiver has a shorter direct path from the source?',
+      options: ['The source must be above the head', 'The owl will catch its prey', 'The shorter path must be louder', 'At the same propagation speed, the pulse arrives there first'], correctIdx: 3,
+      explanation: 'At one constant propagation speed, a shorter path takes less travel time. This geometric comparison does not calculate loudness, vertical direction, hearing accuracy, or hunting success.' },
     { id: 'q31', difficulty: 'easy', q: 'Which raptor family has the highest aspect-ratio wings?',
       options: ['Accipiters (forest hawks)', 'Falcons (Falconidae)', 'Buteos (broad-winged hawks)', 'Owls (Strigidae)'], correctIdx: 1,
       explanation: 'Falcons have the highest aspect ratio (long thin wings) of the raptor families — peregrines around AR 10. High AR = efficient glide + low induced drag = the streamlined silhouette suited for high-speed level flight + stoop. Owls + accipiters have the lowest AR (short broad wings = high maneuverability).' },
@@ -2690,9 +2874,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { id: 'q36', difficulty: 'medium', q: 'A peregrine falcon eats a pigeon weighing 350g. Roughly how many kilocalories does this provide?',
       options: ['~50 kcal', '~150 kcal', '~450 kcal', '~1500 kcal'], correctIdx: 2,
       explanation: 'Fresh meat ≈ 1300 kcal/kg. 350g × 1.3 = ~455 kcal. This is roughly 3-4 days of basal calories for a 0.95 kg peregrine. After a successful hunt, peregrines often spend a full day perched + digesting, not hunting again until hungry.' },
-    { id: 'q37', difficulty: 'medium', q: 'Which is NOT one of the three owl-feather silent-flight mechanisms?',
+    { id: 'q37', difficulty: 'medium', q: 'Which is NOT one of the feather structures commonly studied in owl quiet flight?',
       options: ['Comb-edged leading primaries', 'Fringed trailing edge', 'Velvety dorsal surface', 'Iridescent ventral coating'], correctIdx: 3,
-      explanation: 'The three silencing mechanisms (Bachmann + Wagner studies): (1) comb-edged leading primaries break laminar-to-turbulent transition, (2) fringed trailing edge absorbs trailing-edge vortex noise, (3) velvety dorsal surface dampens feather-on-feather friction. Iridescent coating is a peacock-style display trait, not a silencing mechanism.' },
+      explanation: 'Comb-like leading-edge tips, vane fringes, and the velvety upper surface are the three structures studied here. An iridescent ventral coating is not part of this set. Microscopy identifies structure; airflow and rubbing experiments test different possible sound sources.' },
     { id: 'q38', difficulty: 'medium', q: 'A red-tailed hawk female weighs 1.4 kg; the male weighs 0.95 kg. The female-to-male ratio (1.47) is an example of:',
       options: ['Normal sexual size dimorphism (males larger), which in raptors is masked by the female carrying eggs', 'Reverse sexual size dimorphism (females larger) — characteristic of raptors', 'Genetic abnormality', 'Age-based difference'], correctIdx: 1,
       explanation: 'Reverse SSD. In raptors, females are CONSISTENTLY larger than males — opposite of most birds + mammals. The pattern is most extreme in accipiters + falcons. Current consensus: niche-divergence — male takes smaller agile prey, female takes larger; pair harvests more biomass than either gender alone could.' },
@@ -2702,9 +2886,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { id: 'q40', difficulty: 'hard', q: 'What is the kinetic energy delivered by a peregrine in a 242 mph stoop (mass 0.95 kg)?',
       options: ['~500 J', '~2000 J', '~5500 J', '~15000 J'], correctIdx: 2,
       explanation: 'KE = ½mv² = 0.5 × 0.95 × (108 m/s)² = 0.5 × 0.95 × 11664 ≈ 5540 J. For context: a .22 caliber bullet at muzzle = ~150 J. A peregrine impact = ~37× a .22 bullet, concentrated into a 5ms strike — peregrines deliver pistol-bullet-class kinetic energy with clenched feet.' },
-    { id: 'q41', difficulty: 'hard', q: 'The harpy eagle\'s talon grip force is ~530 psi. Why does it have such powerful talons compared to other raptors?',
-      options: ['Heavier wings need more grip so the bird can hang from branches while it rests between flights', 'It hunts canopy mammals (sloths, monkeys) that require crushing strikes to immobilize', 'It eats hard shells', 'Display purpose only'], correctIdx: 1,
-      explanation: 'Harpies hunt sloths + monkeys in the rainforest canopy — large strong mammals that fight back. The 530 psi grip can crush a sloth\'s skull instantly + immobilize a monkey before it can grab a branch. Talons are 12.5 cm long (longer than a grizzly\'s claws). Specialized for catching + holding heavy struggling prey, not just gripping.' },
+    { id: 'q41', difficulty: 'hard', q: 'Why is a pressure value alone insufficient to compare the total grip forces of two raptors?',
+      options: ['Pressure and force are the same physical quantity', 'The actual contact area and measurement conditions are also needed', 'A larger bird must always have a larger contact pressure', 'Pressure gives the exact time needed to restrain prey'], correctIdx: 1,
+      explanation: 'Pressure is force per contact area. Two different total forces can produce the same mean pressure when their contact areas differ. Real talon contacts are curved and nonuniform, and force measurements also depend on experimental conditions.' },
     { id: 'q42', difficulty: 'hard', q: 'Why do peregrines fly a LOGARITHMIC SPIRAL during a stoop instead of a straight line to the prey?',
       options: ['The spiral is shorter in flight time because gravity pulls the bird along the curve faster than a straight dive at the same launch height', 'It keeps prey at a CONSTANT retinal angle so head doesn\'t need to turn at terminal velocity (no drag penalty)', 'It conserves energy', 'To confuse the prey'], correctIdx: 1,
       explanation: 'Tucker 1998 (J Exp Biol). The logarithmic spiral maintains a constant angle between the falcon\'s body axis + the prey\'s position. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined. This is the SAME proportional-navigation algorithm used by AIM-9 Sidewinder air-to-air missiles, derived for the same physics-based reason.' },
@@ -2737,8 +2921,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       options: ['Peregrine falcon', 'Gyrfalcon', 'Sparrowhawk', 'Goshawk'], correctIdx: 1,
       explanation: 'Gyrfalcon. The Iceland gyrfalcon was the most prized falconry bird — exclusive to monarchs by law. Iceland gyrfalcons were valuable trade goods to European royalty for centuries. The medieval hierarchy went: emperor=eagle, king=gyrfalcon, earl=peregrine, knight=sparrowhawk, lady=merlin, knave=kestrel.' },
     { id: 'q52', difficulty: 'medium', q: 'A barn owl\'s heart-shaped facial disc serves what purpose?',
-      options: ['Just for cuteness', 'Funnels sound to the asymmetric ear openings — like a parabolic dish', 'Camouflage', 'Eye protection: the stiff disc feathers shield the eyes from twigs during silent low flight through brush'], correctIdx: 1,
-      explanation: 'The flat facial disc is a parabolic sound collector. It funnels sound waves to the asymmetric ear openings — boosts effective ear sensitivity by ~10 dB. Combined with ear asymmetry (left higher than right), this allows owls to localize sound in 3D to ~1° accuracy in total darkness (Payne 1962).' },
+      options: ['Just for cuteness', 'Shapes the direction-dependent sound reaching the ears', 'Camouflage', 'Eye protection: the stiff disc feathers shield the eyes from twigs during silent low flight through brush'], correctIdx: 1,
+      explanation: 'The facial ruff contributes to directional acoustic cues. Virtual-ruff-removal experiments tested how changing those cues affects localization. A fixed sensitivity gain or universal angular accuracy cannot be assigned from the visible shape alone (Hausmann et al., 2009).' },
     { id: 'q53', difficulty: 'medium', q: 'Why do peregrines have a small bony tubercle inside their nostril (nare)?',
       options: ['Smell enhancement: the tubercle swirls incoming air across the olfactory membrane to pick up scent of prey on the ground', 'Disrupts airflow at 200+ mph stoop so high-pressure wind doesn\'t collapse the lungs', 'Salt excretion', 'Decoration'], correctIdx: 1,
       explanation: 'The nasal tubercle disrupts airflow at high speed. At 200+ mph stoop, atmospheric pressure on the open nostril would literally collapse the bird\'s lungs. The tubercle creates turbulence that prevents direct pressurization. Similar tubercles exist in some swifts that also fly at extreme speeds.' },
@@ -2772,9 +2956,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     { id: 'q63', difficulty: 'hard', q: 'Why do diurnal raptors have TWO foveas per eye (one central, one temporal)?',
       options: ['Genetic redundancy', 'Forward fovea for prey tracking + lateral fovea for kleptoparasite + threat watching — simultaneously', 'Color separation', 'Backup if one fails, so an injury to one fovea does not blind the bird to prey; the second fovea takes over the same forward field of view'], correctIdx: 1,
       explanation: 'Two foveas per eye allow simultaneous high-acuity vision in 2 directions. Central fovea = forward gaze (prey targeting during stoop). Temporal fovea = lateral gaze (scan for kleptoparasites + threats while focused forward). A peregrine in stoop can resolve fine detail on its target AND on its 45° periphery simultaneously. No mammal can do this.' },
-    { id: 'q64', difficulty: 'hard', q: 'The "asymmetric ear" theory of owl hearing was confirmed by which experiment?',
-      options: ['Computer simulation of sound arrival times at two offset ears, run on 1960s mainframes to reproduce the strike angles', 'Payne 1962 — total-darkness barn owl strikes on leaf-litter mouse, recorded with infrared camera', 'Microscopy', 'Genetics'], correctIdx: 1,
-      explanation: 'Roger Payne (1962) placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. With infrared camera, he recorded ~17 silent strikes — all were kills, accurate to ~1° elevation + azimuth. This proved that barn owls can localize sound in 3D in total darkness. Subsequent anatomy showed the asymmetric ear placement + the brain circuits that compute elevation from time-of-arrival differences.' },
+    { id: 'q64', difficulty: 'hard', q: 'Which experiment most directly tests how arrival-time differences influence an owl\'s localization?',
+      options: ['Compare the visible shape of the two ear openings', 'Change interaural timing in virtual acoustic stimuli and measure head turns', 'Count feathers in the facial disc', 'Measure the length of the wing'], correctIdx: 1,
+      explanation: 'Manipulating timing while controlling the acoustic stimulus and recording head turns tests its behavioral contribution. Virtual-space experiments found a strong relation to horizontal localization. Timing alone does not explain the full spatial hearing system (Poganiatz et al., 2001).' },
     { id: 'q65', difficulty: 'hard', q: 'The 1947-1972 DDT era killed millions of raptors. The specific mechanism was:',
       options: ['DDT poisoned the adult birds directly: sprayed insects and treated water carried lethal doses into roosting raptors, which died within days of the seasonal spraying campaigns', 'DDT bioaccumulated through the food chain + DDE (its breakdown product) interfered with calcium metabolism → eggshell thinning', 'DDT made birds sterile', 'DDT damaged organs'], correctIdx: 1,
       explanation: 'DDT (and its persistent breakdown product DDE) bioaccumulated up the food chain. At the top, raptors had concentrations 100,000× the environmental levels. DDE interfered with calcium metabolism — the eggshells became so thin they cracked under brooding parents. Adults survived; eggs failed. By 1965, peregrine populations collapsed entirely east of the Rockies. The 1972 US DDT ban started the recovery.' },
@@ -3952,174 +4136,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.37: HUNTING STRATEGIES — 14 distinct strategies + species
   // ───────────────────────────────────────────────────────────
   var HUNTING_STRATEGIES = {
-    intro: 'Raptors evolved at least 14 distinct hunting strategies, each suited to specific prey, habitat, + body plan. Understanding the strategy explains the bird\'s morphology + ecology. Each strategy here is paired with the species that practice it + the physics that make it work.',
+    intro: 'Explore 14 hunting and foraging patterns. These categories overlap, and a bird may use more than one strategy depending on food and conditions.',
     strategies: [
       {
         name: 'High-altitude stoop',
         usedBy: 'Peregrine falcon, gyrfalcon, prairie falcon',
-        description: 'Bird climbs to high altitude (300-1500 m), spots prey, folds wings, dives at 200+ km/h. Strikes at apex of dive.',
-        physics: 'Wing folding reduces drag coefficient by ~95% vs gliding. Terminal velocity in dive ~390 km/h theoretical; ~390 km/h actually measured (Cornell 2005). Eye motion stabilized by ~14g of head compensation.',
+        description: 'A falcon gains height, locates airborne prey, and may fold its wings during a descending approach. It can also use pursuit or other tactics.',
+        physics: 'Wing posture changes the aerodynamic forces during the descent. Speed depends on posture, path, air conditions, and the bird; this diagram does not assign a universal drag reduction or terminal speed.',
         prey: 'Birds in mid-flight — ducks, shorebirds, pigeons, songbirds.',
         countermeasures: 'Prey may flock-pack (starlings), drop vertically to ground, or take cover in dense brush.',
-        kill: 'Closed-foot strike at the back of the prey\'s neck breaks spine. Talon tomial-tooth severs vertebrae.',
-        successRate: '~20% of attacks succeed.',
-        energetics: 'Climb costs 30+ kcal; stoop itself ~5 kcal. Successful kill = 200-500 kcal. ROI: 5-10× input.',
+        kill: 'A falcon may strike or grasp prey with its feet. Falcons also have a tomial tooth on the upper beak, used with the lower-beak notch; this structure is not part of a talon.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Climbing and powered flight require energy. The return depends on whether food is obtained and its usable energy; no fixed calorie cost or return is assumed.',
         species: 'peregrine'
       },
       {
         name: 'Low-altitude horizontal pursuit',
         usedBy: 'Cooper\'s hawk, sharp-shinned hawk, northern goshawk',
-        description: 'Bird flies through dense forest canopy with rapid wingbeats, intercepting prey mid-flight or pursuing through obstacles.',
-        physics: 'Short broad wings + long tail = high maneuverability. Wing loading ~5 kg/m². Can turn 360° in <0.5 seconds.',
+        description: 'A hawk pursues or intercepts prey through or around vegetation, changing direction as openings and escape routes change.',
+        physics: 'Relatively short wings and a long tail support maneuvering in confined habitat. Turning performance depends on speed and surroundings; no single turning radius or time is assumed.',
         prey: 'Songbirds, doves, small rodents.',
-        countermeasures: 'Prey dives into dense cover. Many backyard birds have specific escape paths to feeders.',
-        kill: 'Talons grip + squeeze. Death by crushing or asphyxiation; bird sometimes plucks before kill.',
-        successRate: '~15% of attacks succeed. Backyard feeders raise this to ~40% because prey is concentrated.',
-        energetics: 'Each pursuit costs ~10 kcal. Songbird = 50-100 kcal. ROI: 5-10× per successful kill.',
+        countermeasures: 'Prey may change direction, enter cover, or use obstacles that limit the pursuer\'s path.',
+        kill: 'The hawk grasps prey with its feet and talons. Contact may fail, and prey can escape.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Powered pursuit has an energy cost. A successful catch does not imply that every approach has the same cost or food return.',
         species: 'coopersHawk'
       },
       {
         name: 'Perched ambush',
         usedBy: 'Red-tailed hawk, red-shouldered hawk, ferruginous hawk',
-        description: 'Bird perches on tree, telephone pole, or fencepost for hours scanning ground for movement. When prey appears, single direct attack with wings tucked.',
-        physics: 'High-aspect-ratio wing not needed. Reliance on still patience + sudden acceleration. Body mass + thermal soaring during patrol periods compensate.',
+        description: 'A bird watches from an elevated perch, then launches an approach when a potential food opportunity appears.',
+        physics: 'A perch provides a view while limiting continuous flight. Launch position, terrain, and the prey\'s cover influence the approach.',
         prey: 'Voles, mice, rabbits, snakes, large insects.',
         countermeasures: 'Prey freezes in place. Rabbits use cover. Voles dive into runways.',
-        kill: 'Foot strike with both feet, talons driven through ribs. Death by exsanguination + organ damage.',
-        successRate: '~30% of attacks succeed (efficient).',
-        energetics: 'Low energy input — 2-5 kcal per attack. Rodent = 30-80 kcal. ROI: 10-15× per kill.',
+        kill: 'The bird may seize prey with its feet. The approach can be abandoned or unsuccessful.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Waiting can reduce time spent in powered search flight, but prey availability and unsuccessful attempts still matter.',
         species: 'redTail'
       },
       {
         name: 'Hovering hunt',
         usedBy: 'American kestrel, rough-legged hawk, white-tailed kite',
-        description: 'Bird hovers stationary in mid-air over open ground, scanning UV trails (kestrel) or movement, then drops vertically on prey.',
-        physics: 'Active flapping into headwind allows ground-speed zero. Energy cost is high — ~1.0 kcal/s. Limited hover time before bird must rest.',
+        description: 'A bird can hold its position over open ground while scanning for movement, then descend toward potential prey.',
+        physics: 'Facing the wind, changing wingbeats, and adjusting the tail help maintain a position relative to the ground. Hovering effort changes with wind and body mechanics.',
         prey: 'Voles, mice, large insects, lizards.',
-        countermeasures: 'Voles freeze in runways. Movement = death.',
-        kill: 'Foot strike. Many kestrels prefer multiple voles + return to perch between catches.',
-        successRate: '~25% of attacks succeed.',
-        energetics: 'Hover cost ~30 kcal/30 min. Vole = 15-30 kcal. ROI: ~1:1 if 1 catch per session.',
+        countermeasures: 'Prey may remain still, use vegetation, or retreat into cover. Detection does not guarantee capture.',
+        kill: 'The bird descends and attempts to grasp prey with its feet, often returning to a perch afterward.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Active hovering requires powered flight. Wind support and the duration of hovering affect the cost; no universal calorie rate is assigned.',
         species: 'kestrel'
       },
       {
         name: 'Plunge-dive (water surface)',
-        usedBy: 'Osprey, bald eagle (occasionally)',
-        description: 'Bird hovers or glides 10-30 m above water, then folds wings + plunges feet-first into water with eyes closed by nictitating membrane. Wing-pulls itself + prey back up to surface.',
-        physics: 'Wings semi-folded reduce drag at impact. Plunge to ~1 m below surface. Feet grasp slippery fish thanks to spicules (sharp scales) + reversible outer toe (zygodactyl when wet).',
+        usedBy: 'Osprey',
+        description: 'An osprey searches above water, sometimes hovering briefly, then dives feet-first toward a fish and attempts to lift it out.',
+        physics: 'The osprey\'s reversible outer toe and rough gripping surfaces help hold fish. Toe rotation is a flexible foot configuration, not something activated by getting wet.',
         prey: 'Fish — surface-swimming + near-surface (perch, pike, salmon, mullet, kahawai).',
         countermeasures: 'Fish dive deeper. Schooling. Some fish swim in turbid water where vision is limited.',
-        kill: 'Grip kills via talons. Fish suffocates in air during transport. Osprey may also bite the head.',
-        successRate: '~25-40% of plunges succeed.',
-        energetics: 'Plunge cost ~5 kcal. Fish = 100-500 kcal. ROI: 20-100× per successful catch.',
+        kill: 'The feet grasp the fish. The bird must then leave the water and transport the catch; either part can be difficult.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Searching, diving, and leaving the water all require energy. Conditions and fish size affect the effort and the return.',
         species: 'osprey'
       },
       {
         name: 'Carrion-feeding',
         usedBy: 'Turkey vulture, black vulture, California condor, bald eagle (winter)',
-        description: 'Bird scavenges dead animals. Locates by sight (most species) or smell (turkey vulture). Wades into carcass + tears with beak.',
-        physics: 'Lower wing loading + slot-tip primaries enable efficient soaring at low energy cost. Strong digestive acid + immune system handle high bacterial loads.',
+        description: 'A scavenger searches for dead animals using sight and, in species such as the turkey vulture, smell.',
+        physics: 'Soaring can reduce the need for powered flight while searching. Scavenging adaptations differ among species.',
         prey: 'Dead mammals + birds. Some carrion eaters eat fresh kills if available.',
-        countermeasures: 'No prey defense; bird only competes with other scavengers.',
-        kill: 'No kill required.',
-        successRate: 'Effectively 100% — bird finds carcass or not.',
-        energetics: 'Soaring is ~0.05 kcal/s. Single feeding can sustain bird for 1-2 days. ROI: high.',
+        countermeasures: 'The food does not evade capture, but access can be limited by competitors, disturbance, or the condition of the carcass.',
+        kill: 'No new capture or killing is required to feed on an existing carcass.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Searching and competing for food still have costs. Finding a carcass does not guarantee access or a full meal.',
         species: 'baldEagle'
       },
       {
-        name: 'Cooperative pair hunting',
-        usedBy: 'Harris\'s hawk, golden eagle (occasionally), peregrine falcon (mated pairs)',
-        description: 'Two or more birds coordinate attack. One bird flushes prey from cover; second bird captures. Roles may switch.',
-        physics: 'Energy efficiency improves — each bird does less work per catch. Coordinates with vocal cues.',
+        name: 'Cooperative hunting',
+        usedBy: 'Harris\'s hawk; cooperation is also reported in some other raptors',
+        description: 'Several birds may coordinate a pursuit, surround prey, or use one bird to flush prey while another approaches. Harris\'s hawks also hunt alone.',
+        physics: 'Different positions and coordinated roles can change which escape routes remain available. The benefit depends on habitat, prey, and group behavior.',
         prey: 'Rabbits, hares, ground squirrels.',
-        countermeasures: 'Prey reads coordination + may use multi-direction escape.',
-        kill: 'Lead bird grabs; trailing bird stabilizes. Death by squeeze + bite.',
-        successRate: '~50% — much higher than solo.',
-        energetics: 'Shared energy cost. Each bird gets ~50% of meal but uses ~50% energy of solo attempt.',
+        countermeasures: 'Prey may use cover or change escape direction. Cooperation is not a guarantee of capture.',
+        kill: 'One or more birds may grasp prey; the sequence and sharing of food vary.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Group effort and food sharing change the costs and benefits. Neither a fixed energy saving nor an equal share is assumed.',
         species: 'goldenEagle'
       },
       {
         name: 'Bone-cracking (Lammergeier specialty)',
         usedBy: 'Lammergeier (bearded vulture)',
-        description: 'Bird picks up bones from cliff carrion, flies to height, drops on rocky ledge to crack open. Eats marrow.',
-        physics: 'Drop height calibrated to bone size + density. Marrow is ~6,000 kcal/kg — densest natural food known. Bird\'s digestive acid (~pH 1) dissolves bone.',
+        description: 'A bearded vulture may carry a bone upward and drop it onto a rocky surface to break it into smaller pieces. Bones are an important food resource for this species.',
+        physics: 'A falling bone gains speed before impact. Breakage depends on the bone, height, and landing surface; the diagram does not calculate a success threshold.',
         prey: 'Dead mammals\' bones — usually ungulates.',
-        countermeasures: 'None — strategy depends on bone availability.',
-        kill: 'No kill.',
-        successRate: '~80% of attempts succeed at cracking the bone.',
-        energetics: 'High input — many drops per session. ROI: ~3× because marrow is so calorie-dense.',
+        countermeasures: 'A bone may fail to break or land in an inaccessible place; suitable food and dropping surfaces must be available.',
+        kill: 'No live prey capture is needed. The interaction is processing an existing food resource.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Carrying and repeated drops require energy. This model does not assign a calorie return or claim that bone marrow is the most energy-dense food.',
         species: 'goldenEagle'
       },
       {
         name: 'Acoustic localization (nocturnal)',
-        usedBy: 'Barn owl, great horned owl, eastern screech, barred owl',
-        description: 'Bird perches on quiet vantage. Locates prey by ear asymmetry (vertical) + interaural time difference (horizontal). Silently glides to capture in pitch dark.',
-        physics: 'Asymmetric ear openings (vertical asymmetry up to 10 mm). Owl can resolve sound source within 1° in 3D space. Silent flight feathers eliminate any acoustic signal to prey.',
+        usedBy: 'Barn owl and great gray owl are well-studied examples',
+        description: 'An owl can use sounds to locate hidden prey, then approach the estimated location. Hearing and vision can both contribute.',
+        physics: 'Differences in sound timing and level help localize a source. Ear asymmetry contributes in species such as barn owls; this anatomy is not identical across all owls. Feather adaptations reduce flight noise rather than eliminate it.',
         prey: 'Voles, mice, shrews, small mammals.',
-        countermeasures: 'Voles freeze in deep snow tunnels — barn owls may attempt punch-through.',
-        kill: 'Talon strike. Owl swallows prey whole.',
-        successRate: '~70% in lab conditions. Field rates harder to measure.',
-        energetics: 'Glide cost is low. Hunt typically 100-300 kcal expense; vole = 20-30 kcal. Multiple hunts per night required.',
+        countermeasures: 'Cover, snow, vegetation, background noise, and prey movement can complicate localization.',
+        kill: 'The owl attempts to grasp prey with its feet. A sound can reveal an approximate location without guaranteeing capture.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Listening, searching, and flying all contribute to effort. Field conditions differ from controlled laboratory tasks.',
         species: 'greatHorned'
       },
       {
         name: 'Tree-canopy stalking',
         usedBy: 'Harpy eagle, crested eagle',
-        description: 'Bird perches high in tree canopy + ambushes mammals climbing through branches. Massive talons crush spine.',
-        physics: 'Foot loading (per unit body weight) is highest of any raptor — harpy can apply 530+ psi at talon tips. Talons are 9-12 cm long — same length as grizzly bear claws.',
+        description: 'A forest eagle watches from within the canopy and may approach mammals or other prey moving among branches.',
+        physics: 'Wings, tail, legs, and feet contribute to maneuvering and grasping in forest habitat. This diagram does not assign a measured talon pressure or a universal kill time.',
         prey: 'Sloths, monkeys, opossums, anteaters, large lizards.',
         countermeasures: 'Sloths freeze + rely on camouflage. Monkeys use group alarm calls.',
-        kill: 'Foot strike on spine. Most prey dies in seconds.',
-        successRate: '~30-40% — but each attempt is high-stakes.',
-        energetics: 'Single sloth = 5000+ kcal. Lasts harpy 4-7 days. ROI: 100× per successful catch.',
+        kill: 'The bird attempts to grasp prey among vegetation, where branches and the prey\'s movement constrain the interaction.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'The effort and food return vary with searching, prey size, access, and handling. No fixed return per attempt is assumed.',
         species: 'harpyEagle'
       },
       {
         name: 'Tall-grass quartering (ground-level)',
-        usedBy: 'Northern harrier, snail kite, swallow-tailed kite',
-        description: 'Bird flies low (1-3 m) over open grassland in regular crisscross pattern. Listens + watches for prey movement in dense cover.',
-        physics: 'Low wing loading + facial disc (harrier — unique among hawks). Hearing-aided hunting.',
+        usedBy: 'Northern harrier',
+        description: 'A harrier courses low over open habitat, searching across patches of cover with changes in direction.',
+        physics: 'Harriers use hearing as well as vision when searching. Their facial structure can help direct sound; the schematic route is not a measured patrol pattern.',
         prey: 'Voles, mice, snakes, large insects, small ducks.',
-        countermeasures: 'Prey freezes deep in cover.',
-        kill: 'Stoop attack from low altitude. Talons strike. Quick.',
-        successRate: '~25-35%.',
-        energetics: 'Flap-glide patrol is moderate cost. Vole = 20 kcal. Multiple hunts per session.',
+        countermeasures: 'Prey can remain hidden in cover or move away before the bird reaches it.',
+        kill: 'The bird may make a short descent toward a detected prey location and attempt to grasp it.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Flight mode, wind, and time spent searching affect the effort; catches are not guaranteed on each circuit.',
         species: 'redTail'
       },
       {
         name: 'Snake-eating specialist',
         usedBy: 'Snake eagle, secretary bird, laughing falcon',
-        description: 'Bird targets snakes. Has thick scaled legs to resist bite. Stomps or grabs head.',
-        physics: 'Tarsi (legs) are thicker + scaled for bite protection. Reflex speed at strike rivals snake\'s.',
+        description: 'Some raptors specialize in or regularly include snakes in their diet. They may approach from a perch, from the air, or on foot, depending on the species.',
+        physics: 'Legs, feet, movement, and handling tactics differ among snake-eating species. Protective scales do not make every bird immune to snakebite.',
         prey: 'Vipers, cobras, kraits, mambas, other snakes.',
         countermeasures: 'Snake strikes back.',
-        kill: 'Strike to head + spinal column. Quick kill.',
-        successRate: '~40-60%.',
-        energetics: 'High-stakes hunting — risk of envenomation in failure mode. Long lifespan adapted.',
+        kill: 'The bird may use its feet and beak to restrain or strike the snake; tactics differ among species.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Searching and handling have costs, and a dangerous prey item can pose a risk. No common success rate is assigned across these species.',
         species: 'redTail'
       },
       {
         name: 'Insect-hawking (aerial)',
         usedBy: 'Mississippi kite, swallow-tailed kite, hobby falcon',
-        description: 'Bird snatches large flying insects in mid-air. Cicadas, dragonflies, beetles.',
-        physics: 'Excellent aerial agility, high wingbeat rate. Mouth wide open for capture.',
+        description: 'A bird intercepts flying insects and may transfer a captured insect from its feet to its beak while airborne.',
+        physics: 'Control of speed and direction allows interception of moving food. Capture and handling methods vary among species.',
         prey: 'Large flying insects.',
         countermeasures: 'Insect evasion in air.',
-        kill: 'Eaten in flight. No kill processing.',
-        successRate: '~70% of attempts succeed (very high).',
-        energetics: 'Low input per attempt (~0.5 kcal). Insect = ~5 kcal. ROI: 10× per catch.',
+        kill: 'The bird catches and consumes or carries the insect; not every interception succeeds.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Food return depends on insect size and density as well as flight effort. This diagram does not assign a calorie value to each insect.',
         species: 'missKite'
       },
       {
         name: 'Kleptoparasitism (theft from other raptors)',
         usedBy: 'Bald eagle (chronic), magnificent frigatebird, peregrine falcon (occasional)',
-        description: 'Bird intercepts another raptor + forces it to drop its kill. Aerial chase + intimidation.',
-        physics: 'Larger bird + faster pursuit. Mature bald eagles will harass adult ospreys until they drop fish — accounts for 30-40% of bald eagle diet in some areas.',
+        description: 'A bird may pursue or harass another bird carrying food, creating an opportunity to take a dropped or released item.',
+        physics: 'Relative position, speed, and the food carrier\'s behavior affect the interaction. The proportion of food obtained this way varies among places and individuals.',
         prey: 'Other raptors\' catches.',
-        countermeasures: 'Smaller raptor swallows fast or carries to safety.',
-        kill: 'No new kill — just theft.',
-        successRate: '~60-80% — high.',
-        energetics: 'Less energy than catching fresh prey. Free meal.',
+        countermeasures: 'The food carrier may evade the pursuer, move to cover, or retain or swallow the food.',
+        kill: 'A successful theft obtains food already caught by another animal; it does not require a new prey capture.',
+        successRate: 'Success varies with species, food, habitat, conditions, and study methods; no universal rate is assumed here.',
+        energetics: 'Pursuit still costs energy and may fail. A stolen meal is not an energy-free meal.',
         species: 'baldEagle'
       }
     ]
@@ -4337,46 +4521,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.37: CLIMATE CHANGE IMPACTS ON RAPTORS
   // ─────────────────────────────────────────────────────────────────────────────
   var CLIMATE_IMPACT = {
-    intro: 'Climate change is the largest 21st-century threat to many raptor species. Range shifts, timing decoupling, prey crashes, + extreme weather are accelerating. Below is the current state of knowledge — what we know, what we suspect, + what conservation action might preserve species.',
-    rangeShifts: [
-      { species: 'Snowy owl', shift: 'Breeding range contracting north as Arctic warms. Decreasing lemming populations + ice melt disrupt food chain.', status: 'IUCN uplisted Vulnerable 2017. 30% population decline forecast.' },
-      { species: 'Gyrfalcon', shift: 'Range pushed into northern fringes. Arctic warming reduces winter survival.', status: 'Stable population but indices declining.' },
-      { species: 'Bald eagle', shift: 'Range expansion southward. Earlier nesting. Some pairs nesting in winter year-round in Florida.', status: 'Population stable + growing — beneficiary of warmer winters.' },
-      { species: 'Red-tailed hawk', shift: 'Northern expansion. Now common in interior Alaska + northern Canada.', status: 'Stable population, but ecological displacement of native species.' },
-      { species: 'Black vulture', shift: 'Major northern expansion since 1990s. Now common in PA + NY.', status: 'Booming.' },
-      { species: 'Cooper\'s hawk', shift: 'Adapting to urban environment. Winter range expanded.', status: 'Stable.' },
-      { species: 'Northern goshawk', shift: 'Boreal forest contraction reduces breeding habitat. Spruce-bark beetle outbreaks driven by warmth destroy nest trees.', status: 'Declining slowly.' },
-      { species: 'Peregrine falcon', shift: 'Stable in temperate ranges. Tropic shifts affect migratory population.', status: 'Stable.' },
-      { species: 'Golden eagle', shift: 'Range stable but stressed. Western US drought reduces prey populations.', status: 'Slight decline.' },
-      { species: 'Osprey', shift: 'Spring migration earlier. Some nests in cool regions becoming heat-stressed.', status: 'Stable.' }
+    "intro": "Climate can affect habitats, food, seasonal timing, and exposure to weather. Effects differ among species, populations, and places. These notes describe mechanisms and monitoring questions, not current population forecasts.",
+    "rangeShifts": [
+      {
+        "species": "Snowy owl",
+        "shift": "Track Arctic breeding habitat, prey availability, and snow conditions alongside breeding observations. A change in sightings alone does not identify its cause.",
+        "status": "Monitoring focus: separate breeding distribution, food cycles, and winter movements."
+      },
+      {
+        "species": "Gyrfalcon",
+        "shift": "Compare Arctic habitat and prey records with breeding and movement observations across years.",
+        "status": "Monitoring focus: local responses may differ; a single trend should not be generalized to the whole species."
+      },
+      {
+        "species": "Bald eagle",
+        "shift": "Track access to fish and other food, open water, nesting conditions, and human disturbance. Seasonal nesting patterns differ among regions.",
+        "status": "Monitoring focus: existing winter nesting in a warm region is not by itself evidence of a recent climate effect."
+      },
+      {
+        "species": "Red-tailed hawk",
+        "shift": "Compare repeated distribution records with land use, food availability, and climate conditions.",
+        "status": "Monitoring focus: changes in habitat or observation effort can accompany apparent range changes."
+      },
+      {
+        "species": "Black vulture",
+        "shift": "Document where birds occur through repeated surveys and compare those records with weather, food, and habitat.",
+        "status": "Monitoring focus: distinguish evidence of a distribution change from evidence about its cause."
+      },
+      {
+        "species": "Cooper's hawk",
+        "shift": "Urban habitats, food sources, land cover, and winter conditions can all be relevant when examining distribution.",
+        "status": "Monitoring focus: account for urban adaptation and observation effort alongside climate."
+      },
+      {
+        "species": "Northern goshawk",
+        "shift": "Compare forest structure and nesting habitat with repeated occupancy and breeding records.",
+        "status": "Monitoring focus: forest management, disturbance, prey, and climate may interact."
+      },
+      {
+        "species": "Peregrine falcon",
+        "shift": "Responses vary among populations. Research in the Canadian Arctic links heavy rain with exposed nestling survival; Cape Peninsula research shows different local weather and nest-site relationships.",
+        "status": "Monitoring focus: do not assume the same prey-timing mismatch in every population."
+      },
+      {
+        "species": "Golden eagle",
+        "shift": "Record food access, habitat condition, nesting activity, and weather across breeding areas.",
+        "status": "Monitoring focus: evaluate interacting pressures rather than assigning a universal range or population response."
+      },
+      {
+        "species": "Osprey",
+        "shift": "Compare migration, nesting dates, fish access, and local water conditions over repeated years.",
+        "status": "Monitoring focus: timing changes require local observations; they do not automatically imply food shortage."
+      }
     ],
-    timingDecoupling: 'Many raptors lay eggs based on photoperiod (day length), not temperature. As warmer springs cause prey peaks to advance, raptors may miss the prey peak. Example: peregrine fledglings need peak songbird abundance; if songbirds advance 2 weeks but peregrines do not, fledglings face food shortage.',
-    extremeWeather: [
-      { event: 'Heat waves', impact: 'Adults heat-stressed, chicks dehydrate in unshaded nests, especially on metal surfaces.', mitigation: 'Tree planting, water sources, shade for nest sites.' },
-      { event: 'Severe storms', impact: 'Nest destruction. 2017 Hurricane Harvey destroyed dozens of bald eagle nests in Texas.', mitigation: 'Building nest platforms in protected areas.' },
-      { event: 'Late freezes', impact: 'Kills emerging insects + early prey populations.', mitigation: 'Habitat diversification.' },
-      { event: 'Drought', impact: 'Reduces vole + rodent populations. Western US drought 2000-2024 reduces raptor reproduction 20-40%.', mitigation: 'Water management, prey base preservation.' },
-      { event: 'Wildfires', impact: 'Direct mortality + habitat destruction. 2020 western fires destroyed ~10 million acres of habitat.', mitigation: 'Forest management. Indigenous fire stewardship.' }
+    "timingDecoupling": "Food availability and breeding demand can respond differently to seasonal cues. A mismatch is possible when the timing of a resource changes differently from the timing of demand. The effect depends on the population, food source, flexibility, and local conditions. The interactive curves are a hypothetical example, not an observed two-week shift for a particular raptor.",
+    "extremeWeather": [
+      {
+        "event": "Heat waves",
+        "impact": "Exposure to heat can create thermal stress for adults or nestlings; nest-site shelter and local conditions matter.",
+        "mitigation": "Study shelter and habitat conditions, and work with qualified conservation teams on appropriate nest-site protection."
+      },
+      {
+        "event": "Heavy rain and storms",
+        "impact": "Rain can expose nestlings to cold and wet conditions, and storms can damage nests. A Canadian Arctic peregrine study found benefits from experimental shelter during heavy rain.",
+        "mitigation": "Use population-specific evidence when considering nest protection; one study does not prescribe a universal intervention."
+      },
+      {
+        "event": "Late freezes",
+        "impact": "A freeze may change food availability or breeding conditions. Effects depend on timing, habitat, and the species involved.",
+        "mitigation": "Monitor food and breeding conditions through the event and retain habitat diversity."
+      },
+      {
+        "event": "Drought",
+        "impact": "Changes in water and vegetation can affect food and habitat. The direction and size of a breeding response require local evidence.",
+        "mitigation": "Protect habitat and water systems using regional conservation evidence; do not assume a fixed reproduction loss."
+      },
+      {
+        "event": "Wildfires",
+        "impact": "Fire can change nesting cover and food access, with immediate and longer-term effects that vary by habitat and fire characteristics.",
+        "mitigation": "Use locally appropriate land stewardship and assess both short-term disturbance and longer-term habitat change."
+      }
     ],
-    preyShifts: [
-      { prey: 'Voles', impact: 'Cycles becoming less predictable. 4-year vole cycle becoming 3-5 year unpredictable.', raptors: 'Snowy owl, rough-legged hawk, kestrel' },
-      { prey: 'Lemmings (Arctic)', impact: 'Population collapse due to early snowmelt.', raptors: 'Snowy owl, gyrfalcon' },
-      { prey: 'Pacific salmon', impact: 'Run sizes declining; some runs lost.', raptors: 'Bald eagle, osprey' },
-      { prey: 'Coastal fish', impact: 'Warming oceans push some prey species north.', raptors: 'Osprey' }
+    "preyShifts": [
+      {
+        "prey": "Voles",
+        "impact": "Compare local population cycles and habitat conditions with hunting and breeding records. A single cycle length should not be assumed everywhere.",
+        "raptors": "Rodent-eating raptors, depending on location and diet"
+      },
+      {
+        "prey": "Lemmings",
+        "impact": "Monitor snow conditions, prey availability, and Arctic breeding observations together rather than inferring a universal population collapse.",
+        "raptors": "Arctic raptors that depend on or use these prey"
+      },
+      {
+        "prey": "Salmon",
+        "impact": "Run timing and access to fish can affect a food opportunity. Trends differ among runs and waterways.",
+        "raptors": "Fish-eating and scavenging raptors where salmon are available"
+      },
+      {
+        "prey": "Coastal fish",
+        "impact": "Record local fish distribution and availability alongside raptor foraging observations.",
+        "raptors": "Osprey and other fish-eating raptors"
+      }
     ],
-    conservationActions: [
-      'Tree planting in urban areas for nest sites + heat refuge.',
-      'Climate-resilient prey base preservation (vole habitat, fish runs).',
-      'Citizen science (eBird) monitors range shifts in real time.',
-      'Continued lead-ammo phase-out — climate stresses + lead synergize.',
-      'Renewable-energy + wildlife policy integration (wind farm siting).',
-      'Carbon mitigation as the ultimate conservation tool.'
+    "conservationActions": [
+      "Protect diverse nesting and foraging habitat using local evidence.",
+      "Support monitoring of food resources and breeding conditions over repeated years.",
+      "Contribute careful bird observations with dates, locations, and consistent survey effort.",
+      "Reduce established pressures such as harmful disturbance and pollution alongside climate-related work.",
+      "Integrate wildlife evidence into land-use and energy planning.",
+      "Work with regional conservation organizations on habitat resilience and emissions reduction."
     ],
-    indicators: [
-      'eBird citizen science is now THE primary climate-impact monitor for raptors.',
-      'Hawk Mountain 80-year dataset shows clear earlier-migration shift.',
-      'Audubon Climate Watch app tracks bird-shift evidence.',
-      'IUCN updates species status every 4 years incorporating climate evidence.'
+    "indicators": [
+      "Repeated surveys can show distribution or timing changes; account for changing observation effort.",
+      "Breeding and food records help test whether seasonal changes create a mismatch locally.",
+      "Nest temperature, shelter, rain, and exposure records can help evaluate weather effects.",
+      "Read the date, geographic scope, methods, and uncertainty of any population or conservation assessment."
     ]
   };
 
@@ -7159,14 +7419,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         b: 'Sharp-shinned Hawk',
         features: [
           { feature: 'Size', a: '40-50 cm length', b: '25-35 cm length' },
-          { feature: 'Tail shape', a: 'Rounded — outer feathers shorter', b: 'Squared — outer feathers similar length' },
+          { feature: 'Tail shape', a: 'Often rounded; outer feathers usually shorter', b: 'Often square or notched; can look rounded when spread' },
           { feature: 'Head', a: 'Larger; protrudes from shoulders', b: 'Smaller; head appears tucked' },
           { feature: 'Wing beats', a: 'Slow + heavy', b: 'Quick + light' },
           { feature: 'Behavior', a: 'Powerful pursuit', b: 'Agile darting' },
           { feature: 'Habitat', a: 'Forest + suburb', b: 'Forest + open country' },
           { feature: 'Prey', a: 'Doves, pigeons, songbirds (medium)', b: 'Songbirds (small)' }
         ],
-        keyDiagnostic: 'Tail tip shape — rounded = Cooper\'s, squared = sharp-shinned.'
+        keyDiagnostic: 'Combine head projection, tail-feather lengths, and proportions. Tail-tip shape changes with posture; size overlaps between the sexes.'
       },
       {
         a: 'Bald Eagle',
@@ -7177,9 +7437,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           { feature: 'Range', a: 'Lakes + coasts', b: 'Mountains + open' },
           { feature: 'Behavior', a: 'Scavenger + kleptoparasite', b: 'Active hunter' },
           { feature: 'Wing shape', a: 'Broad + planks', b: 'Slimmer + slightly narrower' },
-          { feature: 'Maturity age', a: '4-5 years for white head', b: 'Younger maturity' }
+          { feature: 'Maturity age', a: 'White head develops over several years', b: 'Adult plumage develops over several years' }
         ],
-        keyDiagnostic: 'Head color (adult only) — white = bald, dark = golden.'
+        keyDiagnostic: 'An adult bald eagle has a white head; a golden eagle has a golden nape. Immature bald eagles require other clues, including proportions and plumage pattern.'
       },
       {
         a: 'Red-tailed Hawk',
@@ -7200,12 +7460,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         features: [
           { feature: 'Ear tufts', a: 'Prominent ear tufts', b: 'No ear tufts' },
           { feature: 'Eye color', a: 'Yellow', b: 'Dark brown' },
-          { feature: 'Belly pattern', a: 'Streaked vertically', b: 'Barred horizontally' },
+          { feature: 'Belly pattern', a: 'Horizontal barring', b: 'Vertical belly streaks; horizontal bars on upper breast' },
           { feature: 'Size', a: 'Larger', b: 'Slightly smaller' },
           { feature: 'Call', a: 'Hoo-Hoo-HOO-Hoo-Hoo (5 notes)', b: 'Who-cooks-for-you (8 notes)' },
           { feature: 'Habitat', a: 'Wide', b: 'Forest + swamp' }
         ],
-        keyDiagnostic: 'Eye color — yellow = great horned, dark = barred. (Also barring vs streaking pattern.)'
+        keyDiagnostic: 'Compare ear tufts, eye color, and body pattern together. Great horned owls have yellow eyes and horizontal belly barring; barred owls have dark eyes and vertical belly streaks below a barred upper breast.'
       },
       {
         a: 'Peregrine Falcon',
@@ -7242,7 +7502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           { feature: 'Hunting', a: 'Low flight over open marsh', b: 'Fast pursuit through forest' },
           { feature: 'Habitat', a: 'Marsh, open field, prairie', b: 'Forest + suburb' },
           { feature: 'White rump patch', a: 'Diagnostic in flight', b: 'Absent' },
-          { feature: 'Sexual dimorphism', a: 'M (gray) vs F (brown)', b: 'M + F brown' }
+          { feature: 'Sexual dimorphism', a: 'Adult male gray; female brown', b: 'Sexes have similar plumage; females generally larger' }
         ],
         keyDiagnostic: 'Wing carriage — V-shape = harrier, flat = Cooper\'s. White rump in flight = harrier.'
       }
@@ -7697,7 +7957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         approach: 'Wing loading = mass / wing area',
         calc: '0.9 ÷ 0.1 = 9.0',
         answer: '9.0 kg/m²',
-        interpretation: 'High wing loading enables fast diving + stoop. Compare to vulture (~3 kg/m²) for soaring efficiency.'
+        interpretation: 'The supplied mass and area give 9 kg/m². Compare with the vulture exercise at 3 kg/m²; wing loading is one influence on flight, not a complete prediction of diving or soaring performance.'
       },
       {
         category: 'Wing Loading',
@@ -7705,15 +7965,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         approach: 'WL = mass / area',
         calc: '1.5 ÷ 0.5 = 3.0',
         answer: '3.0 kg/m²',
-        interpretation: 'Low WL = soaring efficient. Vulture\'s 3 vs peregrine\'s 9 = 3× difference. Explains soaring vs diving strategies.'
+        interpretation: 'The peregrine example has three times this wing loading. Lower loading can support slower flight; wing shape, behavior, and air conditions also affect soaring.'
       },
       {
         category: 'Stoop Physics',
-        problem: 'A peregrine falcon stoops from 1000m. If it accelerates at 9.8 m/s², how long to reach the ground (ignoring drag)?',
+        problem: 'In a simplified vertical-fall model, a peregrine starts from rest 1000 m above the ground and accelerates at 9.8 m/s². How long to reach the ground, ignoring drag?',
         approach: 't = sqrt(2h/g)',
         calc: 'sqrt(2 × 1000 / 9.8) = 14.3 seconds',
         answer: '~14.3 seconds',
-        interpretation: 'Real stoops factor air drag; actual time is 10-20 seconds. Max velocity ~110 m/s (242 mph) at terminal.'
+        interpretation: 'This is a constant-acceleration model starting from rest. Real flight involves air resistance, lift, an initial velocity, and a chosen path; the result is not a measured stoop duration.'
       },
       {
         category: 'Stoop Physics',
@@ -7729,15 +7989,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         approach: '1 / 2 × 1 = 0.5 arc-min',
         calc: '0.5 arc-min',
         answer: '0.5 arc-minute',
-        interpretation: 'The hawk can see twice as fine detail. From 1 km, the hawk can spot a 7mm object (human: 14mm).'
+        interpretation: 'At 1 km, 0.5 arc-minute spans about 145 mm; 1 arc-minute spans about 291 mm. This is a geometric resolution example, not a guarantee that a bird will detect an object.'
       },
       {
         category: 'Caloric Energy',
-        problem: 'A bald eagle weighs 5 kg. Its daily caloric need = body mass × 120 = 600 kcal/day. How many 30 kcal voles does it need daily?',
+        problem: 'In a simplified energy exercise, assume a 5 kg eagle needs 120 kcal per kg each day. If each prey item supplies 30 kcal, how many prey items would supply 600 kcal?',
         approach: 'kcal needed / kcal per prey',
         calc: '600 ÷ 30 = 20',
-        answer: '20 voles per day',
-        interpretation: 'Eagles can\'t live on voles. They need larger prey: 1-2 ducks (200-400 kcal each) suffice.'
+        answer: '20 prey items under these assumptions',
+        interpretation: 'The division gives an energy equivalent. Actual diets, prey sizes, energy absorption, and daily needs vary; this exercise does not prescribe an eagle\'s diet.'
       },
       {
         category: 'Population Math',
@@ -7749,19 +8009,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       },
       {
         category: 'Population Math',
-        problem: 'California condor at 22 (1980). Lambda must be > 1 for recovery. If condors took 25 years to reach 200, what was lambda?',
+        problem: 'In a simplified condor recovery example, a population grows from 22 to 200 over 25 years. What constant annual multiplier lambda would give the same change?',
         approach: 'λ = (N(t)/N0)^(1/t)',
         calc: '(200/22)^(1/25) = 1.092',
         answer: '~9.2% annual growth',
-        interpretation: 'Captive breeding can achieve high lambda. Wild reintroductions typically have lower lambda.'
+        interpretation: 'Lambda is about 1.092, equivalent to about 9.2% annual growth in this constant-rate model. Actual annual changes can vary; this calculation does not identify their causes.'
       },
       {
         category: 'Talon Force',
-        problem: 'A harpy eagle\'s talon delivers 530 psi. Convert to Pa (Pascals).',
+        problem: 'For a unit-conversion exercise, assume a talon contact pressure of 530 psi. Convert this pressure to Pa (pascals).',
         approach: '1 psi = 6895 Pa',
         calc: '530 × 6895 = 3,654,350 Pa',
         answer: '~3.7 MPa',
-        interpretation: 'For comparison, human bite force ~2.3 MPa. Harpy talon ~1.6× human bite.'
+        interpretation: 'Pascals measure pressure: force per area. A pressure value alone does not give total grip force, and the supplied value is an exercise assumption.'
       },
       {
         category: 'Wing Span Calculation',
@@ -7773,55 +8033,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       },
       {
         category: 'Migration Energy',
-        problem: 'A broad-winged hawk migrates 4,000 km. If it uses 30 kcal/km, total energy cost?',
+        problem: 'For a multiplication exercise, assume a 4,000 km migration and a hypothetical energy use of 30 kcal/km. What total follows from these inputs?',
         approach: 'energy = distance × kcal/km',
         calc: '4000 × 30 = 120,000',
         answer: '120,000 kcal',
-        interpretation: 'Equal to ~40 days of normal feeding for a hawk that size. Requires careful pre-migration fueling.'
+        interpretation: 'The arithmetic follows from the supplied rate. That rate is hypothetical; this is not a measured migration cost or a prediction of the bird\'s food requirements.'
       },
       {
         category: 'Reproductive Math',
         problem: 'A snowy owl pair lays 11 eggs (max during high-lemming years). Fledging rate is 50%. How many fledglings?',
         approach: 'eggs × fledging rate',
         calc: '11 × 0.5 = 5.5',
-        answer: '5-6 fledglings',
-        interpretation: 'Variable with prey. Low lemming years: 2-3 eggs, 1-2 fledglings.'
+        answer: 'Expected value: 5.5 fledglings per nest',
+        interpretation: 'An expected value is an average over repeated nests. A single nest has a whole number of fledglings; its outcome is not guaranteed by this simplified rate.'
       },
       {
         category: 'Surface Area-to-Volume',
-        problem: 'A baby owl (50g) vs adult owl (1500g). The baby has 30× higher surface area per gram. Why does this matter for incubation?',
-        approach: 'Heat loss ∝ surface area; heat production ∝ volume',
-        calc: 'Baby has 30× more surface per gram → loses heat 30× faster per gram',
-        answer: 'Baby is much more vulnerable to cold',
-        interpretation: 'Why parents brood chicks. Why owls breed in winter when food (rodents) is abundant.'
+        problem: 'Compare a 50 g chick with a 1500 g adult. Assuming similar shape and density, how much larger is the chick\'s surface area per unit mass?',
+        approach: 'For similar shapes, surface area ∝ mass^(2/3), so surface area / mass ∝ mass^(-1/3).',
+        calc: '(1500 / 50)^(1/3) = 30^(1/3) ≈ 3.1',
+        answer: 'About 3.1× the surface area per unit mass',
+        interpretation: 'More exposed surface per unit mass can increase cooling. Insulation, shape, posture, and conditions also matter; this model does not directly predict a heat-loss rate.'
       },
       {
         category: 'Hunting Success',
         problem: 'A Cooper\'s hawk attempts 12 hunts/day. Success rate is 15%. How many catches/day?',
         approach: 'attempts × success rate',
         calc: '12 × 0.15 = 1.8',
-        answer: '1-2 catches/day',
-        interpretation: 'Songbird = 30 kcal. 1.8 × 30 = 54 kcal — about 1/3 daily need. Need to hunt all day.'
+        answer: 'Expected value: 1.8 catches/day',
+        interpretation: 'This is an average, not a guaranteed daily catch. Using a hypothetical 30 kcal per catch gives an expected 54 kcal; actual prey and energy needs vary.'
       },
       {
         category: 'Light Sensitivity',
-        problem: 'Owl eye is 30× larger than human eye proportionally. Photon capture ∝ area = π × r². If owl pupil diameter is 1.5 cm vs human 0.5 cm, light captured?',
+        problem: 'In an aperture model, compare pupil diameters of 1.5 cm and 0.5 cm. Assuming equal illumination and light transmission, what is the ratio of light entering through their areas?',
         approach: 'Light ∝ pupil radius²',
         calc: '(1.5/2)² / (0.5/2)² = 9× more light',
-        answer: '~9× more light reaches retina',
-        interpretation: 'Combined with retina density + tapetum lucidum, owls see ~100× better in low light than humans.'
+        answer: '9× the light through the larger aperture',
+        interpretation: 'Tripling the diameter multiplies area by nine. Retinal sensitivity, optics, and neural processing also affect vision; aperture area alone does not establish how much better an animal sees.'
       },
       {
         category: 'Statistics',
-        problem: 'Hawk Mountain count 2023: 18,000 birds recorded. Species breakdown: 60% broad-winged, 15% sharp-shinned, 15% red-tailed, 10% other. How many broad-wings?',
+        problem: 'A hypothetical migration count records 18,000 birds: 60% broad-winged, 15% sharp-shinned, 15% red-tailed, and 10% other. How many broad-wings are in this example?',
         approach: 'total × proportion',
         calc: '18,000 × 0.60 = 10,800',
         answer: '10,800 broad-wings',
-        interpretation: 'Broad-winged migration is one of nature\'s great spectacles. Kettles of 1000s common in PA.'
+        interpretation: 'The proportions sum to 100%. The broad-winged count is 60% of this example total; these supplied numbers are not an actual count for a particular site or year.'
       },
       {
         category: 'Probability',
-        problem: 'A peregrine has 20% stoop success. What\'s the chance of at least one catch in 5 attempts?',
+        problem: 'A hypothetical peregrine has 20% success on each independent stoop. What\'s the chance of at least one catch in 5 attempts?',
         approach: 'P(at least 1) = 1 - P(0)',
         calc: '1 - 0.8^5 = 1 - 0.328 = 0.672',
         answer: '~67% chance of success',
@@ -7829,19 +8089,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       },
       {
         category: 'Conservation Math',
-        problem: 'Mauritius kestrel: 4 (1974) to 800 (peak 2005). Average annual growth rate?',
+        problem: 'In a simplified kestrel recovery exercise, a population rises from 4 to 800 over 31 years. What constant annual growth rate gives the same change?',
         approach: '(800/4)^(1/31) - 1',
-        calc: '(200)^(1/31) - 1 = 1.181 - 1 = 0.181',
-        answer: '~18.1% annual growth',
-        interpretation: 'Among the fastest-recovering raptors ever, due to intensive intervention.'
+        calc: '(200)^(1/31) - 1 ≈ 1.1864 - 1 = 0.1864',
+        answer: '~18.6% annual growth',
+        interpretation: 'This is a compound average across 31 years, not a claim that every year grew at that rate. The endpoint calculation alone does not identify the causes of recovery.'
       },
       {
         category: 'Ecological Math',
-        problem: 'Red-tailed hawk territory = 4 km². Lower 48 area = 7.5M km². Theoretical max population?',
+        problem: 'Assume a hypothetical area of 7.5 million km² is divided into non-overlapping 4 km² territories, with one pair per territory. How many pairs fit in this area-only model?',
         approach: 'area ÷ territory',
         calc: '7,500,000 ÷ 4 = 1,875,000',
         answer: '~1.875 million pairs',
-        interpretation: 'Actually ~1.5-2M pairs in lower 48. Population at carrying capacity.'
+        interpretation: 'This counts hypothetical territories only. Habitat suitability, food, overlap, and unoccupied space are omitted, so it is neither an actual population estimate nor a measured carrying capacity.'
       },
       {
         category: 'Heat Math',
@@ -7849,7 +8109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         approach: 'mass × power per kg',
         calc: '1.5 × 5 = 7.5 watts',
         answer: '7.5 watts continuous',
-        interpretation: 'Same as small bulb. Owl converts ~25 kcal/day (a vole) into this thermal output.'
+        interpretation: 'Maintaining 7.5 watts for 24 hours gives 7.5 × 86400 = 648000 joules, or about 155 kcal (using 4184 J/kcal). This is the exercise\'s thermal output, not a complete dietary-energy estimate.'
       }
     ]
   };
@@ -8381,7 +8641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       { q: 'Do raptors mate for life?', a: 'Many species (eagles, ospreys) maintain long-term pair bonds. But "mate for life" overstates it. Most raptors pair-bond for breeding season + may re-pair if mate dies. Some species (Cooper\'s hawks) pair seasonally only.' },
       { q: 'How long do raptors live?', a: 'Wild raptors live 10-30 years typically. Captive birds 30-60+ years. Condor record is 60+ wild. Most don\'t reach max lifespan due to mortality.' },
       { q: 'Why are raptors\' eyes so big?', a: 'Visual acuity scales with eye diameter. Larger eyes = more photoreceptors = sharper vision. Raptor eyes are ~30% of skull volume vs human ~5%. The trade-off: less brain volume.' },
-      { q: 'Can owls fly silently?', a: 'YES. Owl feathers have THREE silencing mechanisms: serrated leading edge of primaries, fringed trailing edge, velvety dorsal surface. This makes them aerodynamically silent to prey + lets them hear their own prey.' },
+      { q: 'Can owls fly silently?', a: 'Many owls fly quietly, but quiet flight is not an absence of sound. Comb-like tips on some outer feathers, vane fringes, and a velvety upper surface are associated with it. Their contributions depend on conditions; the feather studio distinguishes evidence about airflow from evidence about feather rubbing.' },
       { q: 'Why are female raptors larger than males?', a: 'Reverse sexual size dimorphism — common in raptors. Females 20-50% larger. Theories: females can defend larger prey while incubating; females can defend nest against larger predators; size hierarchy reduces intra-pair competition.' },
       { q: 'Can I keep a raptor as a pet?', a: 'NO. Federal Migratory Bird Treaty Act + Bald + Golden Eagle Protection Act make possession illegal without permit. Falconry is legal in most states but requires apprenticeship + permits. Don\'t even keep a "rescued" raptor — transfer to licensed rehab within 24 hours.' },
       { q: 'What\'s the smallest US raptor?', a: 'Tie: American kestrel + Elf owl, both ~100-150g. The kestrel is the smallest US falcon. The elf owl is the smallest US owl + smallest US raptor overall.' },
@@ -9386,6 +9646,597 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ═══════════════════════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════
+  // A planar, stationary-target geometry study. This is not a flight-physics
+  // integrator or a model of proportional navigation/retinal anatomy.
+  function RaptorSpiralStudy(props) {
+    var React = props.React, h = React.createElement;
+    var raw = props.settings && props.settings.version === 2 ? props.settings : {};
+    function bounded(value, fallback, min, max) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
+    var bearing = bounded(raw.bearing, 40, 0, 70), progress = bounded(raw.progress, 0, 0, 1000);
+    var direction = raw.direction === -1 ? -1 : 1, fan = raw.fan === true;
+    var playState = React.useState(false), playing = playState[0], setPlaying = playState[1];
+    var live = React.useRef(null);
+    var settings = { version: 2, bearing: bearing, progress: progress, direction: direction, fan: fan };
+    live.current = { settings: settings, change: props.onChange };
+    function change(patch) { setPlaying(false); props.onChange(Object.assign({}, settings, patch)); }
+    React.useEffect(function() {
+      if (!playing) return;
+      var frame = 0, last = null;
+      function tick(now) {
+        var current = live.current, step = last === null ? 0 : Math.max(0, Math.min(100, now - last));
+        last = now;
+        var next = Math.min(1000, current.settings.progress + step / 8);
+        current.change(Object.assign({}, current.settings, { progress: next }));
+        if (next < 1000) frame = requestAnimationFrame(tick); else setPlaying(false);
+      }
+      frame = requestAnimationFrame(tick);
+      function hide() { if (document.hidden) setPlaying(false); }
+      document.addEventListener('visibilitychange', hide);
+      return function() { cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', hide); };
+    }, [playing]);
+
+    var beta = bearing * Math.PI / 180, theta0 = -2.5, r0 = 220, endRadius = 22;
+    var target = { x: 330, y: 280 };
+    // Linear radial closure gives a uniform path speed for each fixed angle.
+    // The eight-second playback is presentation pacing, never physical time.
+    function point(fraction, degrees) {
+      var angle = degrees * Math.PI / 180, radius = r0 - (r0 - endRadius) * fraction;
+      var theta = theta0 + direction * Math.tan(angle) * Math.log(r0 / radius);
+      return { x: target.x + radius * Math.cos(theta), y: target.y + radius * Math.sin(theta),
+        radius: radius, theta: theta, heading: theta + Math.PI - direction * angle };
+    }
+    function path(end, degrees) {
+      var rows = [];
+      for (var index = 0; index <= 200; index++) {
+        var p = point(end * index / 200, degrees);
+        rows.push((index ? 'L' : 'M') + p.x.toFixed(4) + ' ' + p.y.toFixed(4));
+      }
+      return rows.join(' ');
+    }
+    var p = point(progress / 1000, bearing), heading = p.heading;
+    var sightAngle = p.theta + Math.PI;
+    var sweep = Math.log(r0 / endRadius) * Math.tan(beta) * 180 / Math.PI;
+    var relativeLength = 1 / Math.cos(beta);
+    var arcRadius = 48, startArc = { x: p.x + arcRadius * Math.cos(heading), y: p.y + arcRadius * Math.sin(heading) };
+    var endArc = { x: p.x + arcRadius * Math.cos(sightAngle), y: p.y + arcRadius * Math.sin(sightAngle) };
+    var arc = 'M' + startArc.x + ' ' + startArc.y + ' A48 48 0 0 ' + (direction === 1 ? 1 : 0) + ' ' + endArc.x + ' ' + endArc.y;
+    function button(label, patch, pressed) { return h('button', { type: 'button', 'aria-pressed': pressed, onClick: function() { change(patch); } }, label); }
+    return h('section', { className: 'rh-spiral-study', 'data-raptor-spiral-study': 'true', 'data-playing': String(playing), 'data-progress': progress, 'aria-labelledby': 'rh-spiral-title' },
+      h('style', null, [
+        '.rh-spiral-study{container-type:inline-size;color:#e6f3ee;font:14px/1.6 ui-sans-serif,system-ui,sans-serif;background:#132e35;border:1px solid #527b80;border-radius:18px;padding:clamp(14px,2.2vw,26px);}',
+        '.rh-spiral-study *{box-sizing:border-box}.rh-spiral-study h2{font:500 clamp(27px,3vw,36px)/1.1 Georgia,serif;color:#ffe0a0;margin:7px 0 12px}.rh-spiral-study h3{font:500 22px/1.2 Georgia,serif;color:#ffe0a0;margin:0 0 12px}.rh-spiral-study p{margin:8px 0}.rh-spiral-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;color:#a4ded7}.rh-spiral-lede{max-width:790px;color:#d3e7e2}',
+        '.rh-spiral-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr);gap:18px;margin-top:20px;align-items:start}.rh-spiral-layout>*{min-width:0}.rh-spiral-study figure{margin:0}.rh-spiral-map{display:block;width:100%;height:auto;border-radius:12px;border:1px solid #527b80;background:#0d252c}.rh-spiral-study figcaption{color:#c2dcd7;font-size:12px;margin-top:10px}.rh-spiral-controls{padding:18px;border:1px solid #527b80;border-radius:12px;background:#193940}.rh-spiral-study label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:700;color:#f1f8ee;margin-top:14px}.rh-spiral-study output{color:#ffe0a0;font-family:ui-monospace,monospace}.rh-spiral-study input{display:block;width:100%;min-width:0;height:40px;accent-color:#f0cb7b}',
+        '.rh-spiral-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.rh-spiral-study button{min-height:44px;max-width:100%;padding:9px 13px;border:1px solid #75969a;border-radius:8px;background:#244a51;color:#eff8f1;font-size:12px;font-weight:700}.rh-spiral-study button:hover{background:#325e64}.rh-spiral-study button[aria-pressed="true"],.rh-spiral-study button.rh-spiral-play{background:#efd08d;color:#112c33;border-color:#efd08d}.rh-spiral-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:9px;margin-top:16px}.rh-spiral-reading{padding:13px;border:1px solid #527b80;border-radius:10px;background:#102b33}.rh-spiral-reading span{display:block;font-size:11px;color:#c2dcd7}.rh-spiral-reading strong{font:600 22px/1.3 ui-monospace,monospace;color:#ffe0a0}.rh-spiral-small{font-size:12px;color:#c2dcd7}.rh-spiral-explain{margin-top:18px;padding-top:14px;border-top:1px solid #527b80}.rh-spiral-study a{color:#9eede6;text-decoration:underline}.rh-spiral-study details{margin-top:15px;font-size:12px;color:#d3e7e2}.rh-spiral-study summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:700;color:#ffe0a0}.rh-spiral-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;margin-top:10px}.rh-spiral-legend span:before{content:"";display:inline-block;width:20px;border-top:3px solid #f0cb7b;margin-right:7px;vertical-align:middle}.rh-spiral-legend span+span:before{border-top:2px dashed #82e3db}',
+        '@container(max-width:780px){.rh-spiral-layout{grid-template-columns:minmax(0,1fr)}.rh-spiral-controls{padding:14px}}',
+        '@container(max-width:450px){.rh-spiral-map text{font-size:18px;letter-spacing:0}}'
+      ].join('')),
+      h('div', { className: 'rh-spiral-kicker' }, 'FLIGHT GEOMETRY / STATIONARY TARGET'),
+      h('h2', { id: 'rh-spiral-title' }, 'Hold an angle. Trace a spiral.'),
+      h('p', { className: 'rh-spiral-lede' }, 'Turn the path while keeping the target at a fixed angle to the direction of travel. Scrub the approach to see the heading and sightline rotate together.'),
+      h('div', { className: 'rh-spiral-layout' },
+        h('figure', null,
+          h('svg', { className: 'rh-spiral-map', viewBox: '0 0 660 560', role: 'img', 'aria-label': 'Plan view of a geometric approach: gold path and tangent heading, dashed turquoise sightline to a stationary target. Bearing ' + bearing + ' degrees; ' + Math.round(progress / 10) + ' percent through the approach.', 'data-spiral-map': 'true' },
+            h('defs', null,
+              h('linearGradient', { id: 'rh-spiral-field', x1: '0', x2: '1', y1: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#183b42' }), h('stop', { offset: '100%', stopColor: '#294d45' })),
+              h('pattern', { id: 'rh-spiral-grid', width: 44, height: 44, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M44 0H0V44', fill: 'none', stroke: '#90b5ad', strokeOpacity: .09 }))),
+            h('rect', { width: 660, height: 560, fill: 'url(#rh-spiral-field)' }),
+            h('path', { d: 'M-40 455C180 210 290 560 700 340L700 600H-40Z', fill: '#153631', opacity: .6 }),
+            h('path', { d: 'M-40 495C180 250 290 600 700 380M-40 475C180 230 290 580 700 360M-40 55C180 320 410 -80 700 130M-40 75C180 340 410 -60 700 150', fill: 'none', stroke: '#91b6a5', strokeOpacity: .12, strokeWidth: 2 }),
+            h('rect', { width: 660, height: 560, fill: 'url(#rh-spiral-grid)' }),
+            h('text', { x: 24, y: 33, fontSize: 13, fill: '#d8ece4', letterSpacing: 2 }, 'PLAN VIEW · RELATIVE DISTANCE'),
+            [220, 110, 22].map(function(radius, index) { return h('g', { key: radius },
+              h('circle', { cx: target.x, cy: target.y, r: radius, fill: 'none', stroke: '#b5d0be', strokeOpacity: .27, strokeDasharray: index === 2 ? '3 5' : '2 9' }),
+              h('text', { x: target.x + radius + 6, y: target.y + 5, fontSize: 11, fill: '#c3dacf' }, [100, 50, 10][index] + '%')); }),
+            fan && [20, 40, 60].map(function(degrees) { return h('path', { key: degrees, 'data-spiral-fan': degrees, d: path(1, degrees), fill: 'none', stroke: '#b4d7cc', strokeOpacity: .5, strokeWidth: 1.5, strokeDasharray: '3 7' }); }),
+            h('path', { d: path(1, bearing), 'data-spiral-route': 'true', fill: 'none', stroke: '#f0cb7b', strokeOpacity: .34, strokeWidth: 2 }),
+            h('path', { d: path(progress / 1000, bearing), 'data-spiral-flown': 'true', fill: 'none', stroke: '#f0cb7b', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('circle', { cx: point(0, bearing).x, cy: point(0, bearing).y, r: 5, fill: '#f0cb7b' }),
+            h('text', { x: point(0, bearing).x - 12, y: point(0, bearing).y - 18, fontSize: 13, fill: '#ffe5ae' }, 'START'),
+            h('line', { x1: p.x, y1: p.y, x2: target.x, y2: target.y, 'data-spiral-sightline': 'true', stroke: '#82e3db', strokeWidth: 2, strokeDasharray: '7 5' }),
+            h('path', { d: arc, fill: 'none', stroke: '#fff1cb', strokeWidth: 2, 'data-spiral-angle-arc': 'true' }),
+            h('g', { transform: 'translate(' + p.x + ' ' + p.y + ') rotate(' + heading * 180 / Math.PI + ')', 'data-spiral-bird': 'true' },
+              h('line', { x1: 0, y1: 0, x2: 78, y2: 0, stroke: '#f0cb7b', strokeWidth: 2, 'data-spiral-heading': 'true' }),
+              h('path', { d: 'M78 0L69 -5V5Z', fill: '#f0cb7b' }),
+              h('path', { d: 'M17 0Q5 -8 -8 -5L-24 -8L-19 0L-24 8L-8 5Q5 8 17 0Z', fill: '#dce4d4', stroke: '#122b33', strokeWidth: 2 }),
+              h('path', { d: 'M7 -3L-15 -20L-10 -4M7 3L-15 20L-10 4', fill: '#72948d', stroke: '#122b33', strokeWidth: 1.5 }),
+              h('ellipse', { cx: 13, cy: 0, rx: 6, ry: 4, fill: '#253e48' }), h('path', { d: 'M18 -2L23 0L18 2Z', fill: '#f0cb7b' })),
+            h('g', { 'data-spiral-target': 'true', transform: 'translate(330 280)' }, h('circle', { r: 8, fill: '#82e3db', stroke: '#12333b', strokeWidth: 3 }), h('path', { d: 'M-13 0H13M0 -13V13', stroke: '#d9fff5', strokeWidth: 1 })),
+            h('text', { x: 24, y: 523, fontSize: 13, fill: '#d8ece4' }, 'Target stays fixed. Rings show distance from target.'),
+            h('text', { x: 24, y: 544, fontSize: 12, fill: '#b9d6ce' }, 'The approach stops at 10% of the initial distance.')),
+          h('div', { className: 'rh-spiral-legend', 'aria-hidden': 'true' }, h('span', null, 'Path + tangent heading'), h('span', null, 'Sightline to target')),
+          h('figcaption', null, 'A schematic view from above. The bird is enlarged; arrow length shows direction, not speed. This is not a vertical dive or a capture prediction.')),
+        h('div', { className: 'rh-spiral-controls' },
+          h('h3', null, 'Shape the approach'),
+          h('label', { htmlFor: 'rh-spiral-bearing' }, 'Heading-to-target angle', h('output', { htmlFor: 'rh-spiral-bearing' }, bearing + '°')),
+          h('input', { id: 'rh-spiral-bearing', type: 'range', min: 0, max: 70, step: 1, value: bearing, onChange: function(event) { change({ bearing: Number(event.target.value) }); } }),
+          h('div', { className: 'rh-spiral-buttons' }, [0, 20, 40, 60].map(function(degrees) { return h('button', { key: degrees, type: 'button', 'data-spiral-bearing-preset': degrees, 'aria-pressed': bearing === degrees, onClick: function() { change({ bearing: degrees }); } }, degrees ? degrees + '°' : 'Straight · 0°'); })),
+          h('p', { className: 'rh-spiral-small' }, 'The angle is between travel direction and the target sightline. It does not measure a head, eye, or retinal angle.'),
+          h('div', { className: 'rh-spiral-buttons', role: 'group', 'aria-label': 'Turn direction' }, button('Clockwise', { direction: 1 }, direction === 1), button('Counterclockwise', { direction: -1 }, direction === -1)),
+          h('div', { className: 'rh-spiral-buttons' }, button(fan ? 'Hide angle fan' : 'Show angle fan', { fan: !fan }, fan)),
+          fan && h('p', { className: 'rh-spiral-small' }, 'Dotted paths compare 20°, 40°, and 60° with the same start and final distance. They are geometric alternatives, not species tracks.'),
+          h('label', { htmlFor: 'rh-spiral-progress' }, 'Approach progress', h('output', { htmlFor: 'rh-spiral-progress' }, Math.round(progress / 10) + '%')),
+          h('input', { id: 'rh-spiral-progress', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress), 'aria-valuetext': Math.round(progress / 10) + ' percent; ' + (p.radius / r0 * 100).toFixed(1) + ' percent of initial distance remains', onChange: function(event) { change({ progress: Number(event.target.value) }); } }),
+          h('div', { className: 'rh-spiral-buttons' }, h('button', { type: 'button', className: 'rh-spiral-play', onClick: function() { if (!playing && progress >= 1000) props.onChange(Object.assign({}, settings, { progress: 0 })); setPlaying(!playing); } }, playing ? 'Pause approach' : progress >= 1000 ? 'Replay approach' : 'Play approach'), button('Back to start', { progress: 0 })),
+          h('p', { className: 'rh-spiral-small', role: 'status' }, playing ? 'Playing the geometric approach. Pause to inspect any point.' : progress >= 1000 ? 'End of the study window. The bird remains short of the target.' : 'Paused. Change an angle or inspect any point.'),
+          h('p', { className: 'rh-spiral-small' }, 'One playback takes eight seconds for observation. It does not assign physical time or speed to the path.'))),
+      h('div', { className: 'rh-spiral-readings' },
+        h('div', { className: 'rh-spiral-reading' }, h('span', null, 'Distance remaining'), h('strong', { 'data-spiral-distance': 'true' }, (p.radius / r0 * 100).toFixed(1) + '%')),
+        h('div', { className: 'rh-spiral-reading' }, h('span', null, 'Angle swept over full path'), h('strong', { 'data-spiral-sweep': 'true' }, sweep.toFixed(1) + '°')),
+        h('div', { className: 'rh-spiral-reading' }, h('span', null, 'Path length / radial closure'), h('strong', { 'data-spiral-length': 'true' }, relativeLength.toFixed(2) + '×'))),
+      h('div', { className: 'rh-spiral-explain' }, h('h3', null, 'What changes when the angle grows?'),
+        h('p', null, 'Try 20° and 60° at the same progress. The bird is equally far from the target, but a larger angle produces more turning and a longer path for the same radial closure. At 0°, the approach is straight.'),
+        h('details', null, h('summary', null, 'Geometry and research context'),
+          h('p', null, 'For a fixed angle β and a stationary target, the curve obeys r = r₀ exp(−|Δθ| / tan β), where |Δθ| is the angle swept in either direction. Here r falls from 100% to 10% of the starting distance. The displayed path-length ratio is 1 / cos β. At 0° we use the straight-line limit.'),
+          h('p', null, 'Early research proposed spiral paths in relation to falcon vision. Later tracked attacks were better described by proportional navigation, which changes turning in response to sightline motion. This simple geometric study does not implement that guidance law or establish a universal hunting path.'),
+          h('a', { href: 'https://scholars.duke.edu/publication/842264', target: '_blank', rel: 'noopener noreferrer' }, 'Tucker et al., 2000 · curved flight paths'), ' · ',
+          h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/29203660/', target: '_blank', rel: 'noopener noreferrer' }, 'Brighton et al., 2017 · tracked attack guidance'))));
+  }
+
+
+  // Feather structures are enlarged schematics. Particle paths and contact motion
+  // are visual explanations, never acoustics/CFD or a measured owl performance model.
+  function RaptorFeatherLab(props) {
+    var React = props.React, h = React.createElement;
+    var selectedState = React.useState('comb'), selected = selectedState[0], setSelected = selectedState[1];
+    var shownState = React.useState({ comb: true, fringe: true, velvet: true }), shown = shownState[0], setShown = shownState[1];
+    var phaseState = React.useState(320), phase = phaseState[0], setPhase = phaseState[1];
+    var playingState = React.useState(false), playing = playingState[0], setPlaying = playingState[1];
+    var compareState = React.useState(false), compare = compareState[0], setCompare = compareState[1];
+    var seenState = React.useState({ comb: true }), seen = seenState[0], setSeen = seenState[1];
+    var answerState = React.useState(null), answer = answerState[0], setAnswer = answerState[1];
+    var phaseRef = React.useRef(phase); phaseRef.current = phase;
+    var features = [
+      { id: 'comb', number: '01', label: 'Comb edge', color: '#f8cf83', short: 'Curved tips along the leading edge',
+        title: 'Look at the edge that meets the air',
+        copy: 'A comb of curved barb tips extends from the leading edge of some outer wing feathers. Switch the structure off to reveal the smooth reference edge.',
+        motion: 'Dots trace an illustrative air path past the edge. Their spacing and speed do not measure airflow or noise.',
+        evidence: 'A wind-tunnel experiment compared prepared barn owl wings with and without the leading-edge comb. The comb reduced gliding noise modestly at high angles of attack; the effect depended on conditions.',
+        source: 'Geyer et al., 2017 · prepared-wing experiment', url: 'https://doi.org/10.1177/1475472X17706131',
+        question: 'Which comparison could test an aerodynamic role for the comb?', correct: 0,
+        options: ['The same wing in a wind tunnel, with and without its comb', 'Two feathers rubbed together outside an airflow'],
+        feedback: 'Hold the flow and wing conditions constant while changing the comb. A rubbing test addresses contact sound instead.' },
+      { id: 'fringe', number: '02', label: 'Vane fringe', color: '#91e9d4', short: 'Loose ends at the feather margin',
+        title: 'Follow the soft feather margin',
+        copy: 'The fringe consists of loose barb ends at a feather margin. It can occur on more than the trailing edge. Here its size and spacing are exaggerated so you can inspect it.',
+        motion: 'The ribbon shows an illustrative direction of passing air. It does not calculate a wake, turbulence, or sound reduction.',
+        evidence: 'Microscopy documents the fringe as a distinct feather structure. Finding a structure establishes its form; controlled sound and flow experiments are needed to separate its contributions during flight.',
+        source: 'Bachmann et al., 2007 · comparative feather morphology', url: 'https://doi.org/10.1186/1742-9994-4-23',
+        question: 'What can a microscope image establish by itself?', correct: 1,
+        options: ['How many decibels the fringe removes in flight', 'The shape and arrangement of the feather margin'],
+        feedback: 'A micrograph reveals structure. It does not supply a noise reduction or show which sound source dominates a flying bird.' },
+      { id: 'velvet', number: '03', label: 'Velvet surface', color: '#d8b4fe', short: 'Fine filaments above the vane',
+        title: 'Slide one feather across another',
+        copy: 'Fine filaments form a soft upper surface. Move the illustration slider to follow the overlap between two feather surfaces; toggle the filaments to inspect their location.',
+        motion: 'This contact motion illustrates a possible sound source. No sound level or friction force is computed.',
+        evidence: 'A feather-rubbing experiment across bird species compared untreated feathers, velvet impaired with hairspray, and a removal treatment. The results support velvet reducing rubbing sound. This is evidence about feather contact, not a measurement of an entire flying owl.',
+        source: 'Liu & Clark, 2025 · feather-rubbing experiment', url: 'https://pubmed.ncbi.nlm.nih.gov/39670422/',
+        question: 'Which evidence most directly tests the contact-sound explanation?', correct: 0,
+        options: ['Record rubbing feathers before and after impairing their velvet', 'Count how many feathers are on the wing'],
+        feedback: 'Manipulating the velvet while comparing controlled rubbing sounds tests its proposed contact role more directly than counting feathers.' }
+    ];
+    var feature = features.filter(function(item) { return item.id === selected; })[0];
+    function choose(id) { setPlaying(false); setSelected(id); setAnswer(null); setSeen(function(previous) { var next = Object.assign({}, previous); next[id] = true; return next; }); }
+    React.useEffect(function() {
+      if (!playing) return undefined;
+      var frame = 0, previous = null;
+      function tick(now) {
+        if (previous !== null) { phaseRef.current = (phaseRef.current + Math.min(100, Math.max(0, now - previous)) / 8) % 1000; setPhase(phaseRef.current); }
+        previous = now; frame = window.requestAnimationFrame(tick);
+      }
+      frame = window.requestAnimationFrame(tick);
+      return function() { window.cancelAnimationFrame(frame); };
+    }, [playing]);
+    React.useEffect(function() {
+      var media = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function hide() { if (document.hidden) setPlaying(false); }
+      function reduce(event) { if (event.matches) setPlaying(false); }
+      document.addEventListener('visibilitychange', hide);
+      if (media && media.addEventListener) media.addEventListener('change', reduce);
+      return function() { document.removeEventListener('visibilitychange', hide); if (media && media.removeEventListener) media.removeEventListener('change', reduce); };
+    }, []);
+    function lines(n, make) { var output = []; for (var i = 0; i < n; i++) output.push(make(i)); return output; }
+    function featherEdge(points, t) {
+      var u = 1 - t;
+      return { x: u * u * u * points[0] + 3 * u * u * t * points[2] + 3 * u * t * t * points[4] + t * t * t * points[6], y: u * u * u * points[1] + 3 * u * u * t * points[3] + 3 * u * t * t * points[5] + t * t * t * points[7] };
+    }
+    function specimen(plain) {
+      var active = plain ? { comb: false, fringe: false, velvet: false } : shown;
+      var id = plain ? 'plain' : 'study';
+      return h('figure', { className: 'rh-feather-specimen', 'data-feather-specimen': id },
+        h('figcaption', null, h('strong', null, plain ? 'Plain structure reference' : 'Your feather study'), h('span', null, plain ? 'Same silhouette · features hidden' : 'Enlarged top view · schematic')),
+        h('svg', { viewBox: '0 0 520 340', role: 'img', 'aria-label': plain ? 'Same schematic feather without comb, fringe or velvet' : 'Schematic feather with ' + features.filter(function(item) { return active[item.id]; }).map(function(item) { return item.label.toLowerCase(); }).join(', ') },
+          h('defs', null, h('linearGradient', { id: 'rh-feather-fill-' + id, x1: '0%', y1: '0%', x2: '80%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#e9c58c' }), h('stop', { offset: '45%', stopColor: '#ae795a' }), h('stop', { offset: '100%', stopColor: '#352d44' })), h('radialGradient', { id: 'rh-feather-halo-' + id }, h('stop', { offset: '0%', stopColor: '#7c5c9c', stopOpacity: '.24' }), h('stop', { offset: '100%', stopColor: '#10202b', stopOpacity: '0' }))),
+          h('ellipse', { cx: 265, cy: 185, rx: 250, ry: 154, fill: 'url(#rh-feather-halo-' + id + ')' }),
+          lines(8, function(i) { return h('path', { key: 'grid' + i, d: 'M 25 ' + (40 + i * 40) + ' H 495', stroke: '#253347', strokeWidth: '.6', opacity: '.7' }); }),
+          h('path', { d: 'M 84 217 C 134 104 281 74 391 133 Q 451 159 465 185 C 434 233 291 300 158 271 Q 116 255 84 217 Z', fill: 'url(#rh-feather-fill-' + id + ')', stroke: '#efd5a7', strokeWidth: '1.5' }),
+          lines(28, function(i) { var t = i / 27, x = 103 + t * 335, y = 219 - t * 29; return h('path', { key: 'barb' + i, d: 'M ' + x + ' ' + y + ' Q ' + (x + 2) + ' ' + (y - 35) + ' ' + (x + 29) + ' ' + (y - 70 * Math.sin(Math.PI * t) - 20) + ' M ' + x + ' ' + y + ' Q ' + (x + 15) + ' ' + (y + 45) + ' ' + (x + 35) + ' ' + (y + 60 * Math.sin(Math.PI * t) + 5), fill: 'none', stroke: i % 4 === 0 ? '#463449' : '#f4d4a2', strokeOpacity: i % 4 === 0 ? '.7' : '.38', strokeWidth: i % 4 === 0 ? '6' : '1' }); }),
+          active.comb && h('g', { 'data-feather-structure': 'comb', fill: 'none', stroke: '#f8cf83', strokeWidth: '2.4', strokeLinecap: 'round' }, lines(21, function(i) { var edge = featherEdge([84,217,134,104,281,74,391,133], .22 + i / 20 * .7), x = edge.x, y = edge.y; return h('path', { key: i, d: 'M ' + x + ' ' + y + ' Q ' + (x - 7) + ' ' + (y - 16) + ' ' + (x + 4) + ' ' + (y - 25) }); })),
+          active.fringe && h('g', { 'data-feather-structure': 'fringe', fill: 'none', stroke: '#91e9d4', strokeWidth: '1.5', strokeLinecap: 'round' }, lines(34, function(i) { var edge = featherEdge([465,185,434,233,291,300,158,271], .25 + i / 33 * .75), x = edge.x, y = edge.y; return h('path', { key: i, d: 'M ' + x + ' ' + y + ' Q ' + (x + 4) + ' ' + (y + 13) + ' ' + (x + 13) + ' ' + (y + 19) }); })),
+          active.velvet && h('g', { 'data-feather-structure': 'velvet', fill: 'none', stroke: '#e4c7ff', strokeWidth: '1.5', strokeOpacity: '.8', strokeLinecap: 'round' }, lines(56, function(i) { var x = 170 + i % 14 * 14, y = 155 + Math.floor(i / 14) * 16; return h('path', { key: i, d: 'M ' + x + ' ' + y + ' q -5 -8 2 -13' }); })),
+          h('path', { d: 'M 35 247 Q 170 205 465 185', stroke: '#fff0cd', strokeWidth: '4', fill: 'none', strokeLinecap: 'round' }),
+          !plain && h('g', { 'data-feather-selection': selected, fill: 'none', stroke: feature.color, strokeWidth: '2', strokeDasharray: '5 5' }, h('ellipse', { cx: selected === 'comb' ? 245 : selected === 'fringe' ? 275 : 270, cy: selected === 'comb' ? 113 : selected === 'fringe' ? 265 : 180, rx: selected === 'velvet' ? 102 : 130, ry: selected === 'velvet' ? 52 : 26 })),
+          h('text', { x: 32, y: 37, fill: '#d4deec', fontSize: '15' }, 'OUTER FLIGHT FEATHER'),
+          h('text', { x: 32, y: 317, fill: '#a9bbce', fontSize: '14' }, 'Structures enlarged; proportions are illustrative')));
+    }
+    var p = phase / 1000, overlap = 42 + 105 * (1 - Math.cos(p * Math.PI * 2)) / 2;
+    function closeup() {
+      return h('svg', { viewBox: '0 0 460 260', 'data-feather-closeup': selected, role: 'img', 'aria-label': selected === 'velvet' ? 'Side view of overlapping feather surfaces with enlarged velvet filaments' : 'Enlarged ' + feature.label.toLowerCase() + ' with an illustrative air path' },
+        h('rect', { x: 0, y: 0, width: 460, height: 260, rx: 16, fill: '#0b1725' }),
+        lines(7, function(i) { return h('path', { key: 'grid' + i, d: 'M 20 ' + (30 + i * 32) + ' H 440', stroke: '#213347', strokeWidth: '.7' }); }),
+        selected === 'velvet' ? h('g', null,
+          h('rect', { x: 32, y: 171, width: 360, height: 17, rx: 6, fill: '#9d745b', stroke: '#e5c395', strokeWidth: '2' }),
+          shown.velvet && h('g', { 'data-feather-detail-structure': 'velvet', fill: 'none', stroke: '#d8b4fe', strokeWidth: '2.5', strokeLinecap: 'round' }, lines(27, function(i) { var x = 45 + i * 12; return h('path', { key: i, d: 'M ' + x + ' 170 q -11 -28 2 -38' }); })),
+          h('g', { 'data-feather-contact': 'true', transform: 'translate(' + overlap.toFixed(3) + ' 0)' }, h('rect', { x: 0, y: 119, width: 225, height: 14, rx: 5, fill: '#e3c9a8', stroke: '#ffeed6', strokeWidth: '2' }), lines(16, function(i) { return h('path', { key: i, d: 'M ' + (i * 14) + ' 121 l 16 8', stroke: '#8a6654', strokeWidth: '1' }); }), h('path', { d: 'M 70 84 H 153 M 70 84 l 9 -6 M 70 84 l 9 6 M 153 84 l -9 -6 M 153 84 l -9 6', fill: 'none', stroke: '#d8b4fe', strokeWidth: '2' })),
+          h('text', { x: 25, y: 35, fill: '#e4c7ff', fontSize: '16' }, 'FEATHER CONTACT · SIDE VIEW'), h('text', { x: 25, y: 226, fill: '#bacbdf', fontSize: '15' }, 'Upper feather slides across the lower surface')) : h('g', null,
+          h('path', { d: selected === 'comb' ? 'M 155 225 L 155 110 Q 240 95 430 110 L 430 225 Z' : 'M 30 115 Q 115 110 240 130 L 240 225 L 30 225 Z', fill: '#98775c', stroke: '#e4c498', strokeWidth: '2' }),
+          shown[selected] && h('g', { 'data-feather-detail-structure': selected, fill: 'none', stroke: feature.color, strokeWidth: selected === 'comb' ? '5' : '3', strokeLinecap: 'round' }, lines(selected === 'comb' ? 10 : 14, function(i) { return selected === 'comb' ? h('path', { key: i, d: 'M 160 ' + (115 + i * 10) + ' Q 111 ' + (105 + i * 10) + ' 124 ' + (81 + i * 10) }) : h('path', { key: i, d: 'M 235 ' + (132 + i * 6) + ' Q 277 ' + (120 + i * 6) + ' ' + (290 + (i % 3) * 7) + ' ' + (135 + i * 6) }); })),
+          lines(3, function(i) { var base = 54 + i * 18; return h('g', { key: 'flow' + i }, h('path', { d: 'M 20 ' + base + ' Q 230 ' + (base - 15) + ' 440 ' + base, fill: 'none', stroke: '#4c7c96', strokeWidth: '1.5', strokeDasharray: '6 8' }), lines(4, function(j) { var u = (p + j / 4 + i * .11) % 1; return h('circle', { key: j, 'data-feather-air-particle': 'true', cx: (20 + u * 420).toFixed(3), cy: (base - 30 * u * (1 - u)).toFixed(3), r: j === 0 ? 4 : 2.5, fill: '#8ed7ed' }); })); }),
+          h('text', { x: 25, y: 30, fill: feature.color, fontSize: '16' }, selected === 'comb' ? 'CURVED BARB TIPS · ENLARGED' : 'LOOSE BARB ENDS · ENLARGED')));
+    }
+    return h('section', { className: 'rh-feather-lab', 'data-raptor-feather-lab': 'true', 'data-playing': String(playing), 'data-phase': phase.toFixed(3), 'data-feature': selected, 'aria-label': 'Silent flight feather studio' },
+      h('style', null, '.rh-feather-lab{container-type:inline-size;color:#e5edf7;font-size:14px;line-height:1.55;--feather-accent:#d8b4fe}.rh-feather-lab *{box-sizing:border-box}.rh-feather-lab h2,.rh-feather-lab h3,.rh-feather-lab p,.rh-feather-lab figure{margin:0}.rh-feather-lab button,.rh-feather-lab summary{cursor:pointer}.rh-feather-lab button{min-height:42px;border:1px solid #52657b;border-radius:10px;padding:8px 12px;background:#17283a;color:#e5edf7;font:inherit;font-size:13px;text-align:left}.rh-feather-lab button[aria-pressed=true]{background:#39304d;border-color:#dfbdf7;color:#f9efff}.rh-feather-lab button:focus-visible,.rh-feather-lab input:focus-visible,.rh-feather-lab summary:focus-visible,.rh-feather-lab a:focus-visible{outline:3px solid #f9d487;outline-offset:3px}.rh-feather-lab input{width:100%;accent-color:#d8b4fe;min-height:32px}.rh-feather-lab a{color:#b9e4ff;text-decoration:underline}.rh-feather-head{display:flex;justify-content:space-between;gap:20px;padding:24px;background:radial-gradient(ellipse at 100% 0,#4c355e 0,transparent 60%),#142433;border:1px solid #49536e;border-radius:18px}.rh-feather-head h2{font-size:25px;color:#f7edff;letter-spacing:-.6px}.rh-feather-kicker{font-size:11px;letter-spacing:2px;color:#e6c8fb;text-transform:uppercase}.rh-feather-head p{color:#c1cedd;max-width:670px;margin-top:8px}.rh-feather-trail{display:flex;gap:6px;align-items:flex-start;flex-shrink:0}.rh-feather-trail span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #566578;border-radius:50%;font-size:12px;color:#bdc9da}.rh-feather-trail span[data-seen=true]{background:#d8b4fe;border-color:#d8b4fe;color:#20182c}.rh-feather-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.rh-feather-tabs button{display:flex;gap:10px;align-items:center}.rh-feather-tabs b{font-size:17px;color:#e7caff}.rh-feather-tabs strong,.rh-feather-tabs small{display:block}.rh-feather-tabs small{color:#c1cedd;font-size:11px}.rh-feather-main{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:14px}.rh-feather-specimens{display:grid;gap:14px;align-content:start;min-width:0}.rh-feather-specimen{background:#101e2c;border:1px solid #405067;border-radius:16px;overflow:hidden;min-width:0}.rh-feather-specimen figcaption{display:flex;justify-content:space-between;gap:12px;padding:15px 16px;border-bottom:1px solid #34455a;font-size:12px}.rh-feather-specimen figcaption span{color:#b5c6d9;font-size:11px}.rh-feather-lab svg{display:block;width:100%;height:auto}.rh-feather-detail{padding:18px;background:linear-gradient(145deg,#22273c,#132330);border:1px solid #48536c;border-radius:16px;min-width:0}.rh-feather-detail h3{font-size:18px;color:#f1ddff;margin:4px 0 8px}.rh-feather-detail p{color:#c7d4e3;font-size:13px;margin:8px 0 12px}.rh-feather-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.rh-feather-phase{display:block;margin-top:12px;color:#e7d7f4;font-size:12px}.rh-feather-motion-note{font-size:11px!important;line-height:1.5;color:#b5c8da!important}.rh-feather-evidence{margin-top:14px;padding:20px;border:1px solid #40566b;border-radius:16px;background:#102331}.rh-feather-evidence h3{font-size:17px;color:#cfebef}.rh-feather-evidence p{margin:8px 0;color:#c8d7e5;font-size:13px}.rh-feather-evidence a{font-size:12px}.rh-feather-question{border-top:1px solid #354c60;margin-top:16px;padding-top:16px}.rh-feather-question .rh-feather-actions{margin-bottom:6px}.rh-feather-feedback{padding:10px 12px;border-left:3px solid #a7e4d3;background:#193740;border-radius:0 8px 8px 0}.rh-feather-limit{margin-top:14px!important;padding:14px 16px;color:#bdcddd;font-size:12px;border:1px dashed #495a70;border-radius:12px}.rh-feather-lab details{margin-top:14px;font-size:12px}.rh-feather-lab summary{color:#d6e8fc;min-height:38px;padding:6px 0}@container(max-width:760px){.rh-feather-main{grid-template-columns:1fr}.rh-feather-head{padding:18px}.rh-feather-head h2{font-size:23px}.rh-feather-tabs{gap:7px}.rh-feather-tabs button{padding:10px;display:block}.rh-feather-tabs small{display:none}.rh-feather-tabs b{font-size:12px}.rh-feather-tabs strong{font-size:12px}.rh-feather-head{display:block}.rh-feather-trail{margin-top:13px}.rh-feather-specimen figcaption{flex-wrap:wrap;gap:4px}.rh-feather-detail{padding:15px}.rh-feather-evidence{padding:16px}}@container(max-width:450px){.rh-feather-specimen svg text{font-size:18px}.rh-feather-detail svg text{font-size:17px}}'),
+      h('header', { className: 'rh-feather-head' }, h('div', null, h('span', { className: 'rh-feather-kicker' }, 'Raptor micro lab · quiet flight'), h('h2', null, 'Inside an owl feather'), h('p', null, 'Zoom in on three structures associated with quiet flight. Explore their form, move the illustration, and connect each idea to evidence.')), h('div', { className: 'rh-feather-trail', 'aria-label': Object.keys(seen).length + ' of 3 structures explored' }, features.map(function(item) { return h('span', { key: item.id, 'data-seen': String(!!seen[item.id]), title: item.label }, item.number); }))),
+      h('div', { className: 'rh-feather-tabs', role: 'group', 'aria-label': 'Choose a feather structure' }, features.map(function(item) { return h('button', { key: item.id, type: 'button', 'data-feather-feature': item.id, 'aria-pressed': selected === item.id, onClick: function() { choose(item.id); } }, h('b', null, item.number), h('span', null, h('strong', null, item.label), h('small', null, item.short))); })),
+      h('div', { className: 'rh-feather-main' }, h('div', { className: 'rh-feather-specimens' }, specimen(false), compare && specimen(true), h('button', { type: 'button', 'data-feather-compare': 'true', 'aria-pressed': compare, onClick: function() { setCompare(!compare); } }, compare ? 'Hide plain reference' : 'Compare with a plain reference'), h('p', { className: 'rh-feather-motion-note' }, 'The plain reference isolates visible structures; it is not another species or a measured noise comparison.')),
+        h('div', { className: 'rh-feather-detail' }, h('span', { className: 'rh-feather-kicker' }, 'Structure ' + feature.number + ' · magnified view'), h('h3', null, feature.title), h('p', null, feature.copy), closeup(),
+          h('div', { className: 'rh-feather-actions' }, h('button', { type: 'button', 'data-feather-toggle': selected, 'aria-pressed': shown[selected], onClick: function() { setShown(function(previous) { var next = Object.assign({}, previous); next[selected] = !previous[selected]; return next; }); } }, (shown[selected] ? 'Hide ' : 'Show ') + feature.label.toLowerCase()), h('button', { type: 'button', 'data-feather-play': 'true', onClick: function() { setPlaying(!playing); } }, playing ? 'Pause illustration' : 'Play illustration')),
+          h('label', { className: 'rh-feather-phase', htmlFor: 'rh-feather-phase' }, 'Illustration position · ' + Math.round(phase / 10) + '%'), h('input', { id: 'rh-feather-phase', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(phase), onChange: function(event) { setPlaying(false); setPhase(Math.max(0, Math.min(1000, Number(event.target.value) || 0))); } }), h('p', { className: 'rh-feather-motion-note' }, feature.motion))),
+      h('section', { className: 'rh-feather-evidence', 'aria-label': 'Evidence for ' + feature.label.toLowerCase() }, h('span', { className: 'rh-feather-kicker' }, 'From structure to evidence'), h('h3', null, 'What has actually been tested?'), h('p', { 'data-feather-evidence': selected }, feature.evidence), h('a', { href: feature.url, target: '_blank', rel: 'noopener noreferrer' }, feature.source),
+        h('div', { className: 'rh-feather-question' }, h('h3', null, feature.question), h('div', { className: 'rh-feather-actions' }, feature.options.map(function(option, index) { return h('button', { key: selected + index, type: 'button', 'data-feather-answer': index, 'aria-pressed': answer === index, onClick: function() { setAnswer(index); } }, option); })), answer !== null && h('p', { className: 'rh-feather-feedback', role: 'status' }, h('strong', null, answer === feature.correct ? 'That comparison fits. ' : 'Look at the type of evidence. '), feature.feedback)),
+        h('details', null, h('summary', null, 'What this studio can and cannot show'), h('p', null, 'Feather structures vary across owl species and across a wing. These enlarged drawings combine features for inspection; they are not a scaled reconstruction of a particular feather. The moving dots are illustration cues, and the sliding surfaces show contact. Neither computes airflow, sound pressure, hearing sensitivity, or hunting success.'), h('p', null, 'Quiet flight involves multiple sound sources and conditions. A feature cannot be assigned a universal noise reduction from its appearance. The feather-rubbing result concerns sound level; it does not establish that owl sounds simply shift beyond prey hearing.'))),
+      h('p', { className: 'rh-feather-limit' }, 'Anatomy is visible; acoustic performance needs measurement. No decibels, flight speeds, or prey-hearing predictions are assigned by this illustration.'));
+  }
+
+
+  // Authored point-receiver geometry: direct path lengths at one constant speed.
+  // This is not an owl HRTF, a sound rendering, or an animal-performance model.
+  function RaptorSoundArrivalStudy(props) {
+    var React = props.React, h = React.createElement;
+    var sourceState = React.useState(40), bearing = sourceState[0], setBearing = sourceState[1];
+    var headState = React.useState(0), head = headState[0], setHead = headState[1];
+    var phaseState = React.useState(210), phase = phaseState[0], setPhase = phaseState[1];
+    var playState = React.useState(false), playing = playState[0], setPlaying = playState[1];
+    var pinState = React.useState(null), pinned = pinState[0], setPinned = pinState[1];
+    var guideState = React.useState(true), guides = guideState[0], setGuides = guideState[1];
+    var trialState = React.useState(null), trial = trialState[0], setTrial = trialState[1];
+    var trialIndex = React.useRef(0), phaseRef = React.useRef(phase); phaseRef.current = phase;
+    var hidden = trial && !trial.revealed, colors = ['#9ce5de', '#f5cc84'];
+    function geometry(b, yaw) {
+      var theta = b * Math.PI / 180, turn = yaw * Math.PI / 180;
+      var source = { x: 320 + Math.sin(theta) * 220, y: 280 - Math.cos(theta) * 220 };
+      var ears = [-1, 1].map(function(side) { return { x: 320 + side * 38 * Math.cos(turn), y: 280 + side * 38 * Math.sin(turn) }; });
+      return { source: source, ears: ears, distances: ears.map(function(ear) { return Math.hypot(source.x - ear.x, source.y - ear.y); }) };
+    }
+    var geo = geometry(bearing, head), difference = geo.distances[1] - geo.distances[0];
+    var first = Math.abs(difference) < .001 ? 'equal' : difference > 0 ? 'left' : 'right';
+    var direction = first === 'equal' ? 'ahead' : first;
+    var cue = first === 'equal' ? 'Both receivers at once' : (first === 'left' ? 'Left' : 'Right') + ' receiver first';
+    var reached = geo.distances.map(function(distance) { return phase + .0001 >= distance; });
+    function stopForChange(setter, value) { setPlaying(false); setTrial(null); setter(value); }
+    function preset(b, yaw) { setPlaying(false); setTrial(null); setBearing(b); setHead(yaw); setPhase(210); }
+    function challenge() {
+      var cases = [[-55, 10], [20, 20], [65, -15], [-10, 35], [45, 45], [35, -20]];
+      var next = cases[trialIndex.current % cases.length]; trialIndex.current += 1;
+      setPlaying(false); setBearing(next[0]); setHead(next[1]); setPhase(280);
+      setTrial({ number: trialIndex.current, answer: null, revealed: false });
+    }
+    function answer(value) { setTrial(function(previous) { return Object.assign({}, previous, { answer: value, revealed: true }); }); }
+    React.useEffect(function() {
+      if (!playing) return undefined;
+      var frame = 0, previous = null;
+      function tick(now) {
+        if (previous !== null) {
+          phaseRef.current = Math.min(320, phaseRef.current + Math.min(100, Math.max(0, now - previous)) * .064);
+          setPhase(phaseRef.current);
+          if (phaseRef.current >= 320) { setPlaying(false); return; }
+        }
+        previous = now; frame = window.requestAnimationFrame(tick);
+      }
+      frame = window.requestAnimationFrame(tick);
+      return function() { window.cancelAnimationFrame(frame); };
+    }, [playing]);
+    React.useEffect(function() {
+      var media = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function hide() { if (document.hidden) setPlaying(false); }
+      function reduce(event) { if (event.matches) setPlaying(false); }
+      document.addEventListener('visibilitychange', hide);
+      if (media && media.addEventListener) media.addEventListener('change', reduce);
+      return function() { document.removeEventListener('visibilitychange', hide); if (media && media.removeEventListener) media.removeEventListener('change', reduce); };
+    }, []);
+    function many(count, make) { return Array.from({ length: count }, function(_, index) { return make(index); }); }
+    function timeline(data, small) {
+      return h('svg', { viewBox: '0 0 600 180', role: 'img', 'data-arrival-timeline': small ? 'pinned' : 'current', 'aria-label': 'Path lengths: left ' + data.distances[0].toFixed(1) + ', right ' + data.distances[1].toFixed(1) + ' diagram units. Arrival is proportional to path length.' },
+        many(5, function(index) { var x = 96 + index * 112; return h('g', { key: index }, h('path', { d: 'M ' + x + ' 20 V 141', stroke: '#35505d', strokeDasharray: '3 5' }), h('text', { x: x, y: 164, textAnchor: 'middle', fill: '#c1d3db', fontSize: '16' }, String(index * 80))); }),
+        data.distances.map(function(distance, index) { var y = 49 + index * 61, x = 96 + distance * 1.4; return h('g', { key: index },
+          h('text', { x: 17, y: y + 6, fill: colors[index], fontSize: '18', fontWeight: '700' }, index ? 'R' : 'L'),
+          h('line', { x1: 96, y1: y, x2: 544, y2: y, stroke: '#29414f', strokeWidth: '14', strokeLinecap: 'round' }),
+          h('line', { 'data-arrival-bar': index ? 'right' : 'left', x1: 96, y1: y, x2: x, y2: y, stroke: colors[index], strokeWidth: '7', strokeLinecap: 'round' }),
+          h('path', { d: 'M ' + x + ' ' + (y - 14) + ' v 28', stroke: colors[index], strokeWidth: '3' }),
+          h('text', { x: x, y: y - 23, textAnchor: 'middle', fill: colors[index], fontSize: '16' }, distance.toFixed(1)));
+        }),
+        !small && h('g', { 'data-arrival-playhead': 'true', transform: 'translate(' + (96 + phase * 1.4).toFixed(3) + ' 0)' }, h('path', { d: 'M 0 14 V 133', stroke: '#f0f4f5', strokeWidth: '2' }), h('path', { d: 'M -6 12 L 6 12 L 0 20 Z', fill: '#f0f4f5' })));
+    }
+    return h('section', { className: 'rh-sound-study', 'data-raptor-sound-study': 'true', 'data-playing': String(playing), 'data-phase': phase.toFixed(3), 'data-source-hidden': String(!!hidden), 'aria-label': 'Owl sound arrival studio' },
+      h('style', null, `
+.rh-sound-study{container-type:inline-size;color:#edf3f1;font:400 14px/1.6 ui-sans-serif,system-ui;--sound-cyan:#9ce5de;--sound-gold:#f5cc84}.rh-sound-study *{box-sizing:border-box}.rh-sound-study h2,.rh-sound-study h3,.rh-sound-study p,.rh-sound-study figure{margin:0}.rh-sound-study button{cursor:pointer;min-height:44px;padding:10px 13px;border:1px solid #76929a;border-radius:9px;background:#1b3642;color:#edf3f1;font:650 12px/1.45 ui-sans-serif,system-ui;text-align:left}.rh-sound-study button:hover{background:#294b55}.rh-sound-study button[aria-pressed=true]{border-color:#b7e9df;background:#c2e7de;color:#12352f}.rh-sound-study :is(button,input,summary,a):focus-visible{outline:3px solid #f5cc84;outline-offset:4px}.rh-sound-study a{color:#bae5f4;text-decoration:underline}.rh-sound-study input{width:100%;min-height:32px;accent-color:#a9e1da}.rh-sound-head{padding:25px;border:1px solid #526b7d;border-radius:18px;background:radial-gradient(ellipse at 100% 0,#3b4b5b,transparent 60%),#132c36}.rh-sound-kicker{display:block;color:#b6dedb;font-size:10px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase}.rh-sound-head h2{margin-top:6px;color:#f0ead8;font:750 clamp(24px,3vw,32px)/1.15 ui-sans-serif,system-ui;letter-spacing:-.7px}.rh-sound-head p{margin-top:12px;color:#d1dedf;max-width:780px}.rh-sound-presets{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.rh-sound-main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);gap:15px;align-items:start}.rh-sound-map,.rh-sound-controls,.rh-sound-compare,.rh-sound-evidence{min-width:0;border:1px solid #4f6b77;border-radius:15px;background:#102832;overflow:hidden}.rh-sound-map figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px;padding:14px 17px;border-bottom:1px solid #36525f;font-size:12px}.rh-sound-map figcaption span{color:#bfced8;font-size:11px}.rh-sound-study svg{display:block;width:100%;height:auto}.rh-sound-map>svg{background:#0c1f2b}.rh-sound-map-note{padding:13px 16px;border-top:1px solid #36525f;color:#c9d9dc;font-size:11px}.rh-sound-controls{padding:19px}.rh-sound-controls h3,.rh-sound-compare h3,.rh-sound-evidence h3{color:#efdfb7;font:700 19px/1.3 ui-sans-serif,system-ui}.rh-sound-slider{display:block;margin-top:16px;font-size:12px;color:#e0eeec}.rh-sound-slider>span{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px}.rh-sound-slider output{color:#f1d7a2;font-weight:750}.rh-sound-scale{display:flex;justify-content:space-between;font-size:10px;color:#b8cfd3}.rh-sound-cue{margin:18px 0 4px;padding:13px;border:1px solid #607b80;border-radius:10px;background:#1d3c42}.rh-sound-cue strong{display:block;color:#e0f3e6;font-size:17px}.rh-sound-cue span{color:#c6dad9;font-size:12px}.rh-sound-clock{margin-top:13px;padding-top:15px;border-top:1px solid #405c67}.rh-sound-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.rh-sound-small{font-size:11px;color:#c3d3d8}.rh-sound-status{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rh-sound-status>span{padding:8px;border:1px solid #456775;border-radius:8px;color:#c8d6dc;font-size:11px}.rh-sound-status>span[data-arrived=true]{border-color:#b0e0ce;background:#25473f;color:#e0f1e4}.rh-sound-status b{display:block}.rh-sound-compare{margin-top:15px;padding:18px}.rh-sound-compare-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}.rh-sound-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}.rh-sound-compare-grid>div{min-width:0;padding:12px;border:1px solid #46616d;border-radius:10px;background:#0b202c}.rh-sound-compare-grid strong{color:#d7e6e6;font-size:12px}.rh-sound-trial{margin-top:16px;padding:17px;border:1px solid #89937b;border-radius:12px;background:#263a37}.rh-sound-trial p{margin-top:7px;color:#dce4d6;font-size:12px}.rh-sound-trial h3{color:#eadeb9}.rh-sound-feedback{margin-top:13px!important;border-left:3px solid #e6cc8e;padding:10px;background:#19302f;color:#f3ecd8!important}.rh-sound-evidence{padding:20px;margin-top:15px}.rh-sound-evidence p{font-size:12px;color:#cfdddf;margin-top:10px;max-width:940px}.rh-sound-evidence a{font-size:12px}.rh-sound-evidence summary{cursor:pointer;min-height:40px;padding:9px 0;color:#deebe9;font-size:12px}.rh-sound-evidence details p{margin-bottom:9px}.rh-sound-legend{display:flex;gap:13px;flex-wrap:wrap;padding:10px 16px 0;font-size:11px;color:#d0e0df}.rh-sound-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.rh-sound-hidden{display:grid;place-items:center;min-height:150px;padding:18px;text-align:center;border:1px dashed #7d918b;border-radius:10px;background:#1b383d;color:#e4e8d4}.rh-sound-hidden strong{display:block;font-size:19px;color:#f0dfb3}.rh-sound-hidden p{margin-top:9px;color:#d1e2df;font-size:12px}@container(max-width:800px){.rh-sound-main{grid-template-columns:1fr}.rh-sound-compare-grid{grid-template-columns:1fr}.rh-sound-head{padding:19px}.rh-sound-controls{padding:17px}.rh-sound-map svg{max-height:510px}.rh-sound-map figcaption{padding:12px 14px}}@container(max-width:440px){.rh-sound-presets{display:grid;grid-template-columns:1fr 1fr}.rh-sound-presets button{padding:9px;font-size:11px}.rh-sound-head h2{font-size:26px}.rh-sound-head p{font-size:13px}.rh-sound-map svg text{font-size:20px}.rh-sound-map-note{font-size:11px}.rh-sound-compare,.rh-sound-evidence{padding:16px}.rh-sound-study [data-arrival-timeline] text{font-size:19px}}@media(forced-colors:active){.rh-sound-study,.rh-sound-study *{border-color:CanvasText!important;color:CanvasText!important;box-shadow:none!important}.rh-sound-study :is(header,figure,section,aside,.rh-sound-controls,.rh-sound-cue,.rh-sound-trial,.rh-sound-compare-grid>div){background:Canvas!important}.rh-sound-study button{background:ButtonFace!important;color:ButtonText!important}.rh-sound-study svg{forced-color-adjust:none}.rh-sound-study button[aria-pressed=true]{outline:3px solid Highlight}}
+`),
+      h('header', { className: 'rh-sound-head' }, h('span', { className: 'rh-sound-kicker' }, 'Raptor sensory lab · a difference in arrival'), h('h2', null, 'One pulse. Two paths.'), h('p', null, 'Move a sound source, turn the head, and watch the pulse reach two receivers. Pin a comparison, then infer a hidden source from the arrival order. This is a visual investigation; no audio is required.')),
+      h('div', { className: 'rh-sound-presets', role: 'group', 'aria-label': 'Sound geometry presets' }, [[-45,0,'Source left'],[0,0,'Straight ahead'],[45,0,'Source right'],[40,40,'Face the source']].map(function(item) { return h('button', { key: item[2], type: 'button', 'data-sound-preset': item[2], onClick: function() { preset(item[0], item[1]); } }, item[2]); })),
+      h('div', { className: 'rh-sound-main' },
+        h('figure', { className: 'rh-sound-map' }, h('figcaption', null, h('strong', null, 'The sound field'), h('span', null, 'Top view · head faces the arrow')),
+          h('svg', { viewBox: '0 0 640 510', role: 'img', 'data-sound-map': 'true', 'aria-label': hidden ? 'Source concealed. Use the left and right arrival traces to infer its side relative to the head.' : 'Sound source at ' + bearing + ' degrees; head turned ' + head + ' degrees. ' + cue + '.' },
+            h('defs', null, h('radialGradient', { id: 'rh-sound-night' }, h('stop', { offset: '0%', stopColor: '#244956' }), h('stop', { offset: '100%', stopColor: '#0c1f2b' })), h('linearGradient', { id: 'rh-sound-plumage', x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#e2c393' }), h('stop', { offset: '50%', stopColor: '#a58c74' }), h('stop', { offset: '100%', stopColor: '#554e55' })), h('clipPath', { id: 'rh-sound-field-clip' }, h('rect', { width: 640, height: 510 }))),
+            h('rect', { width: 640, height: 510, fill: 'url(#rh-sound-night)' }),
+            many(16, function(index) { return h('path', { key: 'leaf' + index, d: 'M ' + (15 + index * 41) + ' 510 q -18 -36 -4 -72 q 18 25 4 72', fill: '#294247', stroke: '#436059', strokeWidth: '1', opacity: '.65' }); }),
+            h('g', { fill: 'none', stroke: '#375965', strokeWidth: '1', opacity: '.7' }, [90,155,220].map(function(radius) { return h('circle', { key: radius, cx: 320, cy: 280, r: radius }); }), h('path', { d: 'M 70 280 H 570 M 320 34 V 464', strokeDasharray: '4 8' })),
+            !hidden && h('g', { clipPath: 'url(#rh-sound-field-clip)' }, h('circle', { 'data-sound-wave': 'true', cx: geo.source.x, cy: geo.source.y, r: phase, fill: '#b5ddd5', fillOpacity: '.025', stroke: '#bbded8', strokeOpacity: '.7', strokeWidth: '2' }), phase > 20 && h('circle', { cx: geo.source.x, cy: geo.source.y, r: phase - 14, fill: 'none', stroke: '#9ccdc8', strokeOpacity: '.18', strokeWidth: '4' })),
+            !hidden && guides && h('g', { 'data-sound-paths': 'true' }, geo.ears.map(function(ear, index) { return h('line', { key: index, 'data-sound-path': index ? 'right' : 'left', x1: geo.source.x, y1: geo.source.y, x2: ear.x, y2: ear.y, stroke: colors[index], strokeWidth: '2.5', strokeDasharray: index ? '7 5' : undefined }); })),
+            h('g', { 'data-sound-head': 'true', transform: 'translate(320 280) rotate(' + head + ')' },
+              h('ellipse', { cx: 0, cy: 65, rx: 45, ry: 79, fill: 'url(#rh-sound-plumage)', stroke: '#baa689', strokeWidth: '2' }),
+              h('path', { d: 'M -27 22 Q -72 51 -39 133 Q -9 103 -10 45 M 27 22 Q 72 51 39 133 Q 9 103 10 45', fill: '#786d67', stroke: '#cfb58b', strokeWidth: '2' }),
+              many(6, function(index) { return h('path', { key: 'feather' + index, d: 'M -40 ' + (44 + index * 12) + ' l 22 13 M 40 ' + (44 + index * 12) + ' l -22 13', stroke: '#c2ae8d', strokeWidth: '2', opacity: '.75' }); }),
+              h('ellipse', { cx: 0, cy: 0, rx: 49, ry: 45, fill: 'url(#rh-sound-plumage)', stroke: '#f1dbb0', strokeWidth: '2' }),
+              h('path', { d: 'M 0 24 C -59 9 -38 -41 -13 -30 Q 0 -26 0 -15 Q 0 -26 13 -30 C 38 -41 59 9 0 24', fill: '#e1d0af', stroke: '#afa07f', strokeWidth: '2' }),
+              [-1,1].map(function(side) { return h('g', { key: side }, h('ellipse', { cx: side * 17, cy: -8, rx: 8, ry: 11, fill: '#1e2528' }), h('circle', { cx: side * 17 - 2, cy: -12, r: 2, fill: '#f0e6cb' })); }),
+              h('path', { d: 'M -5 4 L 0 16 L 5 4', fill: '#8b7761', stroke: '#665746' }),
+              h('path', { d: 'M 0 -61 V -95 M -8 -86 L 0 -98 L 8 -86', stroke: '#dfe9e5', strokeWidth: '2.5', fill: 'none' })),
+            geo.ears.map(function(ear, index) { return h('g', { key: index }, reached[index] && h('circle', { cx: ear.x, cy: ear.y, r: 19, fill: colors[index], fillOpacity: '.12', stroke: colors[index], strokeWidth: '1.5' }), h('circle', { 'data-sound-ear': index ? 'right' : 'left', cx: ear.x, cy: ear.y, r: 8, fill: colors[index], stroke: '#10232e', strokeWidth: '2' }), h('text', { x: ear.x + (index ? 25 : -25), y: ear.y + 6, textAnchor: index ? 'start' : 'end', fill: colors[index], fontSize: '20', fontWeight: '800' }, index ? 'R' : 'L')); }),
+            !hidden && geo.ears.map(function(ear, index) { var ratio = Math.min(1, phase / geo.distances[index]); return h('circle', { key: index, 'data-sound-pulse': index ? 'right' : 'left', cx: geo.source.x + (ear.x - geo.source.x) * ratio, cy: geo.source.y + (ear.y - geo.source.y) * ratio, r: 4.5, fill: colors[index], stroke: '#08212d', strokeWidth: '1.5' }); }),
+            !hidden && h('g', { 'data-sound-source': 'true', transform: 'translate(' + geo.source.x.toFixed(3) + ' ' + geo.source.y.toFixed(3) + ')' }, h('circle', { r: 22, fill: '#233b3e', stroke: '#ead9a5', strokeWidth: '1.5' }), h('path', { d: 'M -12 3 Q -12 -8 2 -9 Q 15 -7 13 2 L 7 7 L -7 8 Z M -12 3 Q -28 12 -26 -2', fill: '#d3c6a7', stroke: '#eadfc6', strokeWidth: '2' }), h('circle', { cx: 3, cy: -9, r: 5, fill: '#b5a895', stroke: '#eadfc6', strokeWidth: '1.5' }), h('circle', { cx: 10, cy: -2, r: 1.5, fill: '#24302f' })),
+            h('text', { x: 25, y: 32, fill: '#d7e7e3', fontSize: '15', letterSpacing: '2' }, hidden ? 'SOURCE CONCEALED' : 'POINT RECEIVERS · DIRECT PATHS'),
+            h('text', { x: 320, y: 481, fill: '#c2d6dc', fontSize: '16', textAnchor: 'middle' }, 'Receiver spacing and head are illustrative')),
+          h('div', { className: 'rh-sound-legend' }, h('span', null, h('i', { style: { background: colors[0] } }), 'L · left receiver'), h('span', null, h('i', { style: { background: colors[1] } }), 'R · right receiver')),
+          h('p', { className: 'rh-sound-map-note' }, 'The ring and dots share the same travel distance. An arrival lights the receiver when the expanding ring reaches it. The face is a visual orientation cue, not a reconstruction of an owl’s ear openings.')),
+        h('aside', { className: 'rh-sound-controls', 'aria-label': 'Sound arrival controls' }, h('span', { className: 'rh-sound-kicker' }, hidden ? 'Read the evidence' : 'Explore the geometry'), h('h3', null, hidden ? 'Which side of the head?' : 'Move, turn, compare'),
+          hidden ? h('div', { className: 'rh-sound-hidden' }, h('div', null, h('strong', null, 'Source concealed'), h('p', null, 'Compare L and R below. The shorter path arrives first. All challenge sources are within the forward half of the head’s field.'))) : h('div', null,
+            h('label', { className: 'rh-sound-slider', htmlFor: 'rh-sound-bearing' }, h('span', null, 'Source bearing', h('output', null, bearing + '°')), h('input', { id: 'rh-sound-bearing', type: 'range', min: -90, max: 90, step: 1, value: bearing, onChange: function(event) { stopForChange(setBearing, Number(event.target.value)); } }), h('span', { className: 'rh-sound-scale' }, h('span', null, '−90° · left'), h('span', null, '+90° · right'))),
+            h('label', { className: 'rh-sound-slider', htmlFor: 'rh-sound-head' }, h('span', null, 'Head turn', h('output', null, head + '°')), h('input', { id: 'rh-sound-head', type: 'range', min: -60, max: 60, step: 1, value: head, onChange: function(event) { stopForChange(setHead, Number(event.target.value)); } }), h('span', { className: 'rh-sound-scale' }, h('span', null, '−60° · left'), h('span', null, '+60° · right')))),
+          h('div', { className: 'rh-sound-cue', 'data-sound-cue': first }, h('strong', null, cue), h('span', null, Math.abs(difference).toFixed(1) + ' diagram units between arrivals')),
+          timeline(geo, false), h('p', { className: 'rh-sound-small' }, 'Horizontal scale: travel distance in diagram units. At one constant speed, a longer path takes longer.'),
+          h('div', { className: 'rh-sound-status' }, reached.map(function(arrived, index) { return h('span', { key: index, 'data-sound-arrived': index ? 'right' : 'left', 'data-arrived': String(arrived) }, h('b', null, index ? 'Right receiver' : 'Left receiver'), arrived ? 'Pulse arrived' : 'Waiting for pulse'); })),
+          h('div', { className: 'rh-sound-clock' }, h('label', { className: 'rh-sound-slider', htmlFor: 'rh-sound-phase' }, h('span', null, 'Pulse travel', h('output', null, Math.round(phase) + ' units')), h('input', { id: 'rh-sound-phase', type: 'range', min: 0, max: 320, step: 1, value: Math.round(phase), onChange: function(event) { setPlaying(false); setPhase(Number(event.target.value)); } })),
+            h('div', { className: 'rh-sound-actions' }, h('button', { type: 'button', 'data-sound-play': 'true', onClick: function() { if (!playing && phase >= 320) setPhase(0); setPlaying(!playing); } }, playing ? 'Pause pulse' : 'Play pulse'), h('button', { type: 'button', 'data-sound-rewind': 'true', onClick: function() { setPlaying(false); setPhase(0); } }, 'Rewind'), !hidden && h('button', { type: 'button', 'data-sound-guides': 'true', 'aria-pressed': guides, onClick: function() { setGuides(!guides); } }, guides ? 'Hide paths' : 'Show paths')),
+            h('p', { className: 'rh-sound-small', style: { marginTop: '9px' } }, 'Playback is slowed for inspection; it is not real sound speed.')))),
+      h('section', { className: 'rh-sound-compare', 'aria-label': 'Pinned sound comparison' }, h('div', { className: 'rh-sound-compare-title' }, h('div', null, h('span', { className: 'rh-sound-kicker' }, 'Keep one condition fixed'), h('h3', null, 'Compare the paths')), h('div', { className: 'rh-sound-actions', style: { marginTop: 0 } }, h('button', { type: 'button', 'data-sound-pin': 'true', disabled: !!hidden, onClick: function() { setPinned({ bearing: bearing, head: head, distances: geo.distances.slice() }); } }, pinned ? 'Replace pinned view' : 'Pin this view'), pinned && h('button', { type: 'button', 'data-sound-clear-pin': 'true', onClick: function() { setPinned(null); } }, 'Clear pin'))),
+        pinned ? h('div', { className: 'rh-sound-compare-grid' }, h('div', { 'data-sound-pinned': 'true' }, h('strong', null, 'Pinned · source ' + pinned.bearing + '° / head ' + pinned.head + '°'), timeline(pinned, true)), h('div', null, h('strong', null, hidden ? 'Current · source concealed' : 'Current · source ' + bearing + '° / head ' + head + '°'), timeline(geo, true))) : h('p', { className: 'rh-sound-small', style: { marginTop: '12px' } }, 'Pin the current paths, then turn the head toward the same source. Do the two arrival times become more alike?')),
+      h('section', { className: 'rh-sound-trial', 'aria-label': 'Hidden source challenge' }, h('span', { className: 'rh-sound-kicker' }, 'Use the arrival order'), h('h3', null, trial ? 'Hidden-source trial ' + trial.number : 'Can you infer the side?'), h('p', null, 'Use the two path lengths to infer left, ahead, or right relative to the head. This is a reasoning challenge, not a hearing test.'),
+        h('div', { className: 'rh-sound-actions' }, h('button', { type: 'button', 'data-sound-challenge': 'true', onClick: challenge }, trial ? 'Next hidden source' : 'Try a hidden source'), trial && !trial.revealed && ['left', 'ahead', 'right'].map(function(value) { return h('button', { key: value, type: 'button', 'data-sound-answer': value, onClick: function() { answer(value); } }, value === 'ahead' ? 'Straight ahead' : 'To the ' + value); }), trial && h('button', { type: 'button', 'data-sound-explore': 'true', onClick: function() { setTrial(null); } }, 'Return to exploring')),
+        trial && trial.revealed && h('p', { className: 'rh-sound-feedback', role: 'status' }, h('strong', null, trial.answer === direction ? 'Your inference fits. ' : 'Compare the arrival order. '), first === 'equal' ? 'The paths are equal and the source is straight ahead in this trial.' : 'The ' + first + ' receiver has the shorter path. The revealed source is to the ' + first + ' of the head.', ' The source is now visible so you can check the geometry.')),
+      h('section', { className: 'rh-sound-evidence', 'aria-label': 'Owl hearing evidence and model limits' }, h('span', { className: 'rh-sound-kicker' }, 'From a diagram to a living owl'), h('h3', null, 'Timing is one spatial cue'), h('p', null, 'Barn owls use differences between the ears in arrival time and sound level. Experiments link timing strongly to horizontal localization; level differences carry additional spatial information. These cues interact, so a pair of straight lines cannot reproduce the complete hearing system.'),
+        h('p', null, h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/11545146/', target: '_blank', rel: 'noopener noreferrer' }, 'Poganiatz et al., 2001 · virtual-space timing experiment'), ' · ', h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/29379866/', target: '_blank', rel: 'noopener noreferrer' }, 'Kettler et al., 2017 · combined timing and level cues')),
+        h('details', null, h('summary', null, 'Read the model assumptions'), h('p', null, 'The source stays 220 diagram units from the head center; the two point receivers are 76 units apart. We calculate each straight-line distance with Euclidean geometry. Pulse radius and travel distance use the same units. There is no head obstruction, diffraction, reflection, sound-level calculation, vertical dimension, or anatomical scale.'), h('p', null, 'Left and right are relative to the head. Equal paths alone do not distinguish a source in front from one behind; the hidden-source trials deliberately use only the forward half-plane. This studio does not infer elevation, detection range, hearing accuracy, or hunting success.'))));
+  }
+
+
+  // Exact visual-angle geometry paired with a fixed-field perspective display.
+  // No species threshold, retinal simulation, or display calibration is implied.
+  function RaptorVisualAngleStudy(props) {
+    var React = props.React, h = React.createElement;
+    var raw = props.settings && props.settings.version === 2 ? props.settings : {};
+    function bound(value, fallback, min, max) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
+    var distance = bound(raw.distance, 12, 5, 60), span = bound(raw.span, 40, 10, 100), opacity = bound(raw.opacity, 85, 10, 100);
+    var target = raw.target === 'plaque' ? 'plaque' : 'vole', guides = raw.guides !== false;
+    var pinState = React.useState(null), pinned = pinState[0], setPinned = pinState[1];
+    var trialState = React.useState(null), trial = trialState[0], setTrial = trialState[1];
+    var numberRef = React.useRef(0);
+    var current = { distance: distance, span: span, opacity: opacity, target: target };
+    function angle(condition) { return 2 * Math.atan((condition.span / 100) / (2 * condition.distance)); }
+    function degrees(condition) { return angle(condition) * 180 / Math.PI; }
+    function projection(condition) { return 640 * (condition.span / 100) / (2 * condition.distance * Math.tan(10 * Math.PI / 180)); }
+    function change(patch) { props.onChange(Object.assign({ version: 2, distance: distance, span: span, opacity: opacity, target: target, guides: guides }, patch)); }
+    function preset(name) {
+      setTrial(null);
+      if (name === 'meadow') change({ distance: 12, span: 40, opacity: 85, target: 'vole' });
+      if (name === 'near') change({ distance: 6, span: 40, opacity: 85, target: 'vole' });
+      if (name === 'faint') change({ distance: 12, span: 40, opacity: 25, target: 'vole' });
+      if (name === 'calibration') change({ distance: 8, span: 80, opacity: 100, target: 'plaque' });
+    }
+    function experiment(kind) {
+      if (!pinned) return;
+      setTrial(null);
+      change({ distance: pinned.distance * (kind === 'size' ? 1 : 2), span: pinned.span * (kind === 'distance' ? 1 : 2), opacity: pinned.opacity, target: pinned.target });
+    }
+    var trials = [
+      { question: 'Keep the target span fixed and double its distance. What happens to its angular span?', answer: 'smaller', explanation: 'The same span now subtends a smaller angle. At these small angles it is close to half, but the displayed angle uses the exact arctangent.' },
+      { question: 'Double both target span and distance. What happens to its angular span?', answer: 'same', explanation: 'The ratio span ÷ distance stays fixed, so the exact angular span stays the same.' },
+      { question: 'Keep span and distance fixed, then fade the target. What happens to its angular span?', answer: 'same', explanation: 'Only display opacity changes. Geometry stays fixed; detecting detail also depends on contrast and viewing conditions.' }
+    ];
+    function nextTrial() { var index = numberRef.current++ % trials.length; setTrial({ index: index, answer: null }); }
+    function targetShape(condition, key) {
+      var width = projection(condition), opacityValue = condition.opacity / 100;
+      return h('g', { key: key, transform: 'translate(320 247) scale(' + (width / 100) + ')', opacity: opacityValue,
+        'data-angle-target': key, 'data-projected-span': width.toFixed(8), 'data-span': condition.span, 'data-distance': condition.distance },
+        condition.target === 'plaque' ? h('g', null,
+          h('rect', { x: -50, y: -40, width: 100, height: 40, rx: 2, fill: '#eadbc0' }),
+          [0, 1, 2, 3, 4].map(function(i) { return h('rect', { key: i, x: -45 + i * 20, y: -35, width: 10, height: 30, fill: '#352c26' }); }),
+          h('path', { d: 'M -30 0 V 16 M 30 0 V 16', stroke: '#5f4430', strokeWidth: 5 })) : h('g', null,
+          h('path', { d: 'M -50 -7 C -40 -37 -9 -41 15 -29 C 28 -40 43 -33 40 -20 L 50 -11 L 44 -5 L 35 -3 C 11 4 -22 3 -40 -3 L -46 0 Z', fill: '#5b3e2c' }),
+          h('path', { d: 'M -42 -4 Q -62 -2 -68 -13', fill: 'none', stroke: '#7b5840', strokeWidth: 4, strokeLinecap: 'round' }),
+          h('ellipse', { cx: 27, cy: -27, rx: 7, ry: 9, fill: '#9a7555' }),
+          h('circle', { cx: 38, cy: -19, r: 2.3, fill: '#191b17' }),
+          h('path', { d: 'M -20 -1 L -23 4 M 20 -1 L 23 4', stroke: '#5b3e2c', strokeWidth: 5 })));
+    }
+    function meadow(condition, key, label) {
+      var projected = projection(condition);
+      return h('figure', { className: 'rh-angle-meadow', 'data-angle-view': key },
+        h('figcaption', null, h('strong', null, label), h('span', null, condition.span + ' cm · ' + condition.distance + ' m · ' + condition.opacity + '% opacity')),
+        h('svg', { viewBox: '0 0 640 350', role: 'img', 'aria-label': label + ': ' + degrees(condition).toFixed(3) + ' degree target in a fixed 20 degree horizontal field' },
+          h('defs', null,
+            h('linearGradient', { id: 'rh-angle-sky-' + key, x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#bccfc6' }), h('stop', { offset: '1', stopColor: '#e6dac1' })),
+            h('linearGradient', { id: 'rh-angle-land-' + key, x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#8c9d72' }), h('stop', { offset: '1', stopColor: '#526b4f' }))),
+          h('rect', { width: 640, height: 350, fill: 'url(#rh-angle-sky-' + key + ')' }),
+          h('path', { d: 'M0 159 Q90 104 180 147 T380 140 T640 145 V350 H0Z', fill: '#849887' }),
+          h('path', { d: 'M0 183 Q170 139 300 180 T640 160 V350 H0Z', fill: '#647d68' }),
+          h('path', { d: 'M0 214 Q180 173 330 206 T640 191 V350 H0Z', fill: 'url(#rh-angle-land-' + key + ')' }),
+          h('path', { d: 'M0 308 Q140 265 280 302 T640 277', fill: 'none', stroke: '#a9b384', strokeWidth: 14, opacity: .2 }),
+          Array.from({ length: 90 }, function(_, i) { var x = (i * 137.29) % 640, y = 218 + (i * 41.37) % 132; return h('path', { key: i, d: 'M' + x + ' ' + y + 'q-4 -13 -8 -16m8 16q2 -10 7 -12', fill: 'none', stroke: i % 2 ? '#b6ba8b' : '#3f5a42', strokeWidth: 1.3, opacity: .5 }); }),
+          h('ellipse', { cx: 320, cy: 251, rx: Math.max(2, projected * .5), ry: Math.max(1, projected * .07), fill: '#2e4736', opacity: .22 }),
+          targetShape(condition, key),
+          guides && h('g', { 'data-angle-image-guides': key },
+            h('line', { x1: 320 - projected / 2, x2: 320 + projected / 2, y1: 276, y2: 276, stroke: '#fff1c7', strokeWidth: 1.4 }),
+            [-1, 1].map(function(side) { return h('line', { key: side, x1: 320 + side * projected / 2, x2: 320 + side * projected / 2, y1: 268, y2: 284, stroke: '#fff1c7', strokeWidth: 1.4 }); }),
+            h('text', { x: 320, y: 305, textAnchor: 'middle', fill: '#fff3d6', fontSize: 15, fontWeight: 650, paintOrder: 'stroke', stroke: '#3b553e', strokeWidth: 4 }, degrees(condition).toFixed(3) + '°')),
+          h('path', { d: 'M18 30V17H31 M609 17H622V30 M18 320V333H31 M609 333H622V320', fill: 'none', stroke: '#e7e9ce', strokeWidth: 1.5, opacity: .8 }),
+          h('text', { x: 32, y: 42, fill: '#243a32', fontSize: 14, fontWeight: 700 }, '20° horizontal field · fixed frame')),
+        h('p', null, 'The ', condition.target === 'plaque' ? 'plaque face' : 'vole body', ' spans the selected width. ', condition.target === 'vole' ? 'Tail excluded; silhouette proportions are illustrative.' : 'Stripes are a display target, not an acuity threshold.'));
+    }
+    var theta = angle(current), half = theta / 2, rayHeight = 480 * Math.tan(half), radius = 175;
+    var arcX = 80 + radius * Math.cos(half), arcY = radius * Math.sin(half);
+    var arcPath = 'M ' + arcX + ' ' + (150 - arcY) + ' A ' + radius + ' ' + radius + ' 0 0 1 ' + arcX + ' ' + (150 + arcY);
+    function range(name, label, value, min, max, suffix) {
+      return h('label', { className: 'rh-angle-slider', htmlFor: 'rh-angle-' + name }, h('span', null, label, h('output', { htmlFor: 'rh-angle-' + name }, value + suffix)),
+        h('input', { id: 'rh-angle-' + name, type: 'range', min: min, max: max, step: 1, value: value, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
+        h('small', null, min + suffix, h('span', null, max + suffix)));
+    }
+    return h('section', { className: 'rh-angle-study', 'data-raptor-angle-study': 'true', 'data-angle-radians': theta.toFixed(10), 'aria-label': 'Visual angle observation studio' },
+      h('style', null, `
+.rh-angle-study{container-type:inline-size;color:#e2ebe4;font:400 14px/1.6 ui-sans-serif,system-ui;--angle-gold:#f0d09b;--angle-cyan:#a9e1d0}.rh-angle-study *{box-sizing:border-box}.rh-angle-study :is(h2,h3,p,figure){margin:0}.rh-angle-study button{cursor:pointer;min-height:44px;padding:10px 13px;border:1px solid #78918a;border-radius:9px;background:#24433d;color:#eff4e9;font:650 12px/1.4 ui-sans-serif,system-ui;text-align:left}.rh-angle-study button:hover{background:#33554b}.rh-angle-study button[aria-pressed=true]{background:#d2e5ca;color:#1c362e;border-color:#d2e5ca}.rh-angle-study button:disabled{cursor:default;opacity:.58}.rh-angle-study :is(button,input,summary,a):focus-visible{outline:3px solid #f0d09b;outline-offset:4px}.rh-angle-study a{color:#bfe3ed;text-decoration:underline}.rh-angle-study input{width:100%;min-height:34px;accent-color:#b8dec0}.rh-angle-head{padding:25px;border:1px solid #6e8678;border-radius:18px;background:radial-gradient(ellipse at 100% 0,#576452,transparent 65%),#203b33}.rh-angle-kicker{display:block;color:#c8dfc4;font-size:10px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase}.rh-angle-head h2{margin-top:6px;color:#f3ead3;font:750 clamp(24px,3vw,32px)/1.15 ui-sans-serif,system-ui;letter-spacing:-.6px}.rh-angle-head p{margin-top:12px;max-width:790px;color:#d9e5d7}.rh-angle-presets,.rh-angle-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.rh-angle-main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(290px,1fr);gap:15px;align-items:start;margin-top:15px}.rh-angle-map,.rh-angle-controls,.rh-angle-compare,.rh-angle-trial,.rh-angle-evidence{min-width:0;border:1px solid #5f7b6e;border-radius:15px;background:#172e2a;overflow:hidden}.rh-angle-map figcaption{padding:14px 17px;border-bottom:1px solid #446052;color:#e5e9d2;font-size:12px;font-weight:700}.rh-angle-map figcaption span{display:block;font-size:11px;color:#bdd0c2;font-weight:400}.rh-angle-study svg{display:block;width:100%;height:auto}.rh-angle-map>svg{background:#122721}.rh-angle-map>p{padding:12px 17px;border-top:1px solid #446052;color:#c6d7c8;font-size:11px}.rh-angle-controls{padding:19px}.rh-angle-controls h3,.rh-angle-compare h3,.rh-angle-trial h3,.rh-angle-evidence h3{color:#f0d9ac;font:700 19px/1.3 ui-sans-serif,system-ui}.rh-angle-slider{display:block;margin-top:15px;font-size:12px;color:#e3eddf}.rh-angle-slider>span{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.rh-angle-slider output{color:#f4dcae;font-weight:750}.rh-angle-slider small{display:flex;justify-content:space-between;font-size:10px;color:#bacdbf}.rh-angle-reading{padding:14px;margin-top:16px;border:1px solid #8d987a;border-radius:10px;background:#30443a}.rh-angle-reading strong{display:block;color:#f8e6ba;font:700 28px/1.2 ui-monospace,monospace}.rh-angle-reading span{color:#d8e4cf;font-size:11px}.rh-angle-select{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.rh-angle-select button{flex:1}.rh-angle-controls>p{margin-top:13px;color:#c9d8cb;font-size:11px}.rh-angle-meadows{display:grid;grid-template-columns:1fr;gap:14px;margin-top:15px}.rh-angle-meadows[data-compared=true]{grid-template-columns:1fr 1fr}.rh-angle-meadow{min-width:0;border:1px solid #6a8070;border-radius:13px;overflow:hidden;background:#1e352d}.rh-angle-meadow figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:12px 15px;font-size:12px}.rh-angle-meadow figcaption span{color:#c7d8c8;font-size:11px}.rh-angle-meadow>p{padding:11px 15px;color:#c6d7c8;font-size:11px}.rh-angle-compare,.rh-angle-trial,.rh-angle-evidence{padding:20px;margin-top:15px}.rh-angle-compare-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}.rh-angle-compare-head .rh-angle-actions{margin-top:0}.rh-angle-compare>p,.rh-angle-trial>p,.rh-angle-evidence>p{margin-top:10px;color:#d2dfd0;font-size:12px}.rh-angle-readings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}.rh-angle-readings>div{padding:13px;border:1px solid #5f7b6e;border-radius:10px;background:#112820}.rh-angle-readings strong{display:block;color:#f3d69f;font:700 21px/1.3 ui-monospace,monospace}.rh-angle-readings span{color:#cbdbce;font-size:11px}.rh-angle-feedback{padding:12px;border-left:3px solid #efd29e;background:#2b4437;color:#ecedd8!important}.rh-angle-trial{background:#253b30;border-color:#87937b}.rh-angle-evidence summary{cursor:pointer;min-height:40px;padding:10px 0;color:#e0ebd9;font-size:12px}.rh-angle-evidence details p{font-size:12px;color:#ccdacb;margin-top:8px}.rh-angle-evidence a{font-size:12px}.rh-angle-no-pin{padding:15px;margin-top:13px;border:1px dashed #789480;border-radius:10px;color:#d4e3cf;font-size:12px}@container(max-width:800px){.rh-angle-main{grid-template-columns:1fr}.rh-angle-meadows[data-compared=true]{grid-template-columns:1fr}.rh-angle-head{padding:19px}.rh-angle-map figcaption{padding:12px 14px}.rh-angle-controls{padding:17px}}@container(max-width:440px){.rh-angle-presets{display:grid;grid-template-columns:1fr 1fr}.rh-angle-presets button{padding:9px;font-size:11px}.rh-angle-head h2{font-size:26px}.rh-angle-head p{font-size:13px}.rh-angle-map svg text{font-size:18px}.rh-angle-meadow svg text{font-size:20px}.rh-angle-compare,.rh-angle-trial,.rh-angle-evidence{padding:16px}.rh-angle-readings{grid-template-columns:1fr}.rh-angle-study button{max-width:100%}}@media(forced-colors:active){.rh-angle-study,.rh-angle-study *{border-color:CanvasText!important;color:CanvasText!important;box-shadow:none!important}.rh-angle-study :is(header,figure,section,aside,.rh-angle-controls,.rh-angle-reading,.rh-angle-readings>div){background:Canvas!important}.rh-angle-study button{background:ButtonFace!important;color:ButtonText!important}.rh-angle-study svg{forced-color-adjust:none}.rh-angle-study button[aria-pressed=true]{outline:3px solid Highlight}}
+`),
+      h('header', { className: 'rh-angle-head' }, h('span', { className: 'rh-angle-kicker' }, 'Observation studio · vision'), h('h2', null, 'How much of the view does a target fill?'),
+        h('p', null, 'A small nearby target can occupy the same angle as a larger distant one. Change the scene, trace the two edge rays, then pin a view and test one idea at a time.'),
+        h('div', { className: 'rh-angle-presets' }, [['meadow', 'Meadow target'], ['near', 'Move closer'], ['faint', 'Fade the target'], ['calibration', 'Striped plaque']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-angle-preset': item[0], onClick: function() { preset(item[0]); } }, item[1]); }))),
+      h('div', { className: 'rh-angle-main' },
+        h('figure', { className: 'rh-angle-map', 'data-angle-map': 'true' }, h('figcaption', null, 'Two edge rays · one viewing angle', h('span', null, 'Top view · ray diagram auto-fits the distance; angles stay true')),
+          h('svg', { viewBox: '0 0 640 330', role: 'img', 'aria-label': 'Top view: a ' + span + ' centimeter span at ' + distance + ' meters subtends ' + degrees(current).toFixed(3) + ' degrees' },
+            [60, 150, 240].map(function(y) { return h('line', { key: 'h' + y, x1: 25, x2: 610, y1: y, y2: y, stroke: '#345246', strokeWidth: 1 }); }),
+            [80, 200, 320, 440, 560].map(function(x) { return h('line', { key: 'v' + x, x1: x, x2: x, y1: 35, y2: 258, stroke: '#29473c', strokeWidth: 1 }); }),
+            h('path', { d: 'M80 150 L560 ' + (150 - rayHeight) + ' L560 ' + (150 + rayHeight) + ' Z', fill: '#e1c580', fillOpacity: .13 }),
+            [-1, 1].map(function(side) { return h('line', { key: side, 'data-angle-ray': side, x1: 80, y1: 150, x2: 560, y2: 150 + side * rayHeight, stroke: '#aee2cf', strokeWidth: 2 }); }),
+            guides && h('line', { 'data-angle-centerline': 'true', x1: 80, y1: 150, x2: 560, y2: 150, stroke: '#9aaf9f', strokeWidth: 1, strokeDasharray: '5 5' }),
+            h('path', { 'data-angle-arc': 'true', d: arcPath, fill: 'none', stroke: '#f5d8a1', strokeWidth: 4 }),
+            h('line', { 'data-angle-span': 'true', x1: 560, x2: 560, y1: 150 - rayHeight, y2: 150 + rayHeight, stroke: '#f2d7a5', strokeWidth: 5 }),
+            [-1, 1].map(function(side) { return h('circle', { key: side, cx: 560, cy: 150 + side * rayHeight, r: 3.5, fill: '#f2e4c0' }); }),
+            h('circle', { cx: 80, cy: 150, r: 20, fill: '#325546', stroke: '#b9d1bc', strokeWidth: 1.5 }),
+            h('path', { d: 'M65 150 Q80 134 95 150 Q80 166 65 150Z', fill: '#dfe2c3' }), h('circle', { cx: 82, cy: 150, r: 5, fill: '#19382d' }),
+            h('text', { x: 80, y: 199, textAnchor: 'middle', fill: '#cfdfcc', fontSize: 15 }, 'Observer'),
+            h('text', { x: 560, y: 69, textAnchor: 'middle', fill: '#f0d9ae', fontSize: 15 }, span + ' cm span'),
+            h('text', { x: 300, y: 103, textAnchor: 'middle', fill: '#f3ddad', fontSize: 22, fontWeight: 700 }, degrees(current).toFixed(3) + '°'),
+            h('line', { x1: 80, y1: 266, x2: 560, y2: 266, stroke: '#8ba691', strokeWidth: 1.5 }),
+            [80, 560].map(function(x) { return h('line', { key: x, x1: x, x2: x, y1: 258, y2: 274, stroke: '#8ba691', strokeWidth: 1.5 }); }),
+            h('text', { x: 320, y: 298, textAnchor: 'middle', fill: '#dbe5cf', fontSize: 16 }, distance + ' m · perpendicular distance')),
+          h('p', null, 'The target is centered square-on to the observer. Its angle comes from its physical span and distance, using the exact geometry below.')),
+        h('aside', { className: 'rh-angle-controls', 'aria-label': 'Visual angle controls' }, h('span', { className: 'rh-angle-kicker' }, 'Change one condition'), h('h3', null, 'Build the view'),
+          range('distance', 'Distance from observer', distance, 5, 60, ' m'), range('span', 'Target span', span, 10, 100, ' cm'), range('opacity', 'Display opacity', opacity, 10, 100, '%'),
+          h('div', { className: 'rh-angle-reading' }, h('strong', { 'data-angle-reading': 'true' }, degrees(current).toFixed(3) + '°'), h('span', null, 'Angular span · ' + (degrees(current) * 60).toFixed(2) + ' arcmin')),
+          h('div', { className: 'rh-angle-select', 'aria-label': 'Target shape' }, [['vole', 'Vole silhouette'], ['plaque', 'Striped plaque']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-angle-shape': item[0], 'aria-pressed': target === item[0], onClick: function() { change({ target: item[0] }); } }, item[1]); })),
+          h('div', { className: 'rh-angle-actions' }, h('button', { type: 'button', 'data-angle-guides': 'true', 'aria-pressed': guides, onClick: function() { change({ guides: !guides }); } }, guides ? 'Hide scene guides' : 'Show scene guides')),
+          h('p', null, 'Opacity fades the drawing only. It is an illustrative display control; its percentage is not a measured contrast sensitivity.'))),
+      h('div', { className: 'rh-angle-meadows', 'data-compared': String(!!pinned) }, meadow(current, 'current', 'Current view'), pinned && meadow(pinned, 'pinned', 'Pinned reference')),
+      h('section', { className: 'rh-angle-compare', 'aria-label': 'Pinned visual angle comparison' },
+        h('div', { className: 'rh-angle-compare-head' }, h('div', null, h('span', { className: 'rh-angle-kicker' }, 'Keep a reference'), h('h3', null, 'Same angle, different scene?')), h('div', { className: 'rh-angle-actions' }, h('button', { type: 'button', 'data-angle-pin': 'true', onClick: function() { setPinned(Object.assign({}, current)); } }, pinned ? 'Replace pinned view' : 'Pin this view'), pinned && h('button', { type: 'button', 'data-angle-clear-pin': 'true', onClick: function() { setPinned(null); } }, 'Clear pin'))),
+        pinned ? h(React.Fragment, null,
+          h('div', { className: 'rh-angle-readings' }, h('div', null, h('strong', null, degrees(pinned).toFixed(3) + '°'), h('span', null, 'Pinned · ' + pinned.span + ' cm at ' + pinned.distance + ' m')), h('div', null, h('strong', { 'data-angle-ratio': 'true' }, (theta / angle(pinned)).toFixed(3) + '×'), h('span', null, 'Current angular span ÷ pinned angular span'))),
+          h('div', { className: 'rh-angle-actions' }, [['distance', 'Double distance'], ['size', 'Double target span'], ['both', 'Double both · keep angle']].map(function(item) { var disabled = (item[0] !== 'size' && pinned.distance > 30) || (item[0] !== 'distance' && pinned.span > 50); return h('button', { key: item[0], type: 'button', 'data-angle-experiment': item[0], disabled: disabled, onClick: function() { experiment(item[0]); } }, item[1]); })),
+          h('p', null, 'Each experiment starts from the pinned values and preserves its shape and opacity. Actions beyond a slider limit are unavailable. Both meadow frames keep the same field of view.')) : h('p', { className: 'rh-angle-no-pin' }, 'Pin a view to compare its original size, distance, opacity, and silhouette with your next experiment.')),
+      h('section', { className: 'rh-angle-trial', 'aria-label': 'Visual angle reasoning challenge' }, h('span', { className: 'rh-angle-kicker' }, 'Predict, then inspect'), h('h3', null, 'What changes the angle?'),
+        h('p', null, trial ? trials[trial.index].question : 'Try a short reasoning prompt, then use a pinned scene to check the relationship yourself.'),
+        h('div', { className: 'rh-angle-actions' }, h('button', { type: 'button', 'data-angle-challenge': 'true', onClick: nextTrial }, trial ? 'Next question' : 'Try a prediction'), trial && ['smaller', 'same', 'larger'].map(function(answer) { return h('button', { key: answer, type: 'button', 'data-angle-answer': answer, 'aria-pressed': trial.answer === answer, onClick: function() { setTrial({ index: trial.index, answer: answer }); } }, answer === 'same' ? 'Same angle' : answer === 'smaller' ? 'Smaller angle' : 'Larger angle'); })),
+        trial && trial.answer && h('p', { className: 'rh-angle-feedback', role: 'status' }, h('strong', null, trial.answer === trials[trial.index].answer ? 'Your prediction fits. ' : 'Check the span-to-distance ratio. '), trials[trial.index].explanation)),
+      h('section', { className: 'rh-angle-evidence', 'aria-label': 'Visual angle evidence and model limits' }, h('span', { className: 'rh-angle-kicker' }, 'From geometry to vision'), h('h3', null, 'Angular size is one part of seeing'),
+        h('p', null, 'Behavioral experiments measure how birds distinguish patterns under controlled conditions. Reymond tested wedge-tailed eagle acuity across luminances; Potier and colleagues tested spatial resolution and contrast sensitivity in Harris’s hawks. These studies show why a single magnification factor cannot describe every viewing condition.'),
+        h('p', null, h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/4090282/', target: '_blank', rel: 'noopener noreferrer' }, 'Reymond, 1985 · eagle acuity and luminance'), ' · ', h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/30158305/', target: '_blank', rel: 'noopener noreferrer' }, 'Potier et al., 2018 · hawk resolution and contrast')),
+        h('details', null, h('summary', null, 'Read the geometry and display assumptions'),
+          h('p', null, 'For a centered, perpendicular target, θ = 2 × atan(span ÷ (2 × distance)). Span and distance use the same units. The ray diagram auto-fits the observer-to-target distance while preserving the true angle. The meadow has a fixed 20° horizontal field; its projected target width is frame width × span ÷ (2 × distance × tan(10°)).'),
+          h('p', null, 'The vole body defines its selected span; its tail is outside that span. All target detail is always drawn. The display applies no species visibility threshold, blur model, or simulated retinal limit. Screen size, viewing distance, display pixels, and the viewer’s vision affect what can be seen. This is a geometry illustration, not a calibrated acuity test or a prediction of animal detection range.'))));
+  }
+
+
+  // Manual contact bench: P = F / A for equal, uniformly loaded circular patches.
+  // Forces and areas are authored exercise inputs, never species measurements.
+  function RaptorContactPressureStudy(props) {
+    var React = props.React, h = React.createElement;
+    var raw = props.settings && props.settings.version === 1 ? props.settings : {};
+    function bound(value, fallback, low, high) { return typeof value === 'number' && isFinite(value) ? Math.max(low, Math.min(high, Math.round(value))) : fallback; }
+    var force = bound(raw.force, 40, 5, 100), area = bound(raw.area, 20, 2, 40);
+    var count = raw.count === 1 || raw.count === 2 ? raw.count : 4, guides = raw.guides !== false;
+    var pinState = React.useState(null), pinned = pinState[0], setPinned = pinState[1];
+    var answerState = React.useState(null), answer = answerState[0], setAnswer = answerState[1];
+    var questionState = React.useState(0), question = questionState[0], setQuestion = questionState[1];
+    var current = { force: force, area: area, count: count }, pressure = force / area;
+    function change(patch) { props.onChange(Object.assign({ version: 1, force: force, area: area, count: count, guides: guides }, patch)); }
+    function reset() { change({ force: 40, area: 20, count: 4, guides: true }); setAnswer(null); }
+    function experiment(kind) {
+      if (!pinned) return;
+      change({ force: pinned.force * (kind === 'area' ? 1 : 2), area: pinned.area * (kind === 'force' ? 1 : kind === 'area' ? .5 : 2), count: pinned.count });
+    }
+    var questions = [
+      { prompt: 'Keep total force fixed and halve total contact area. What happens to mean pressure?', correct: 'double', explanation: 'The same force acts over half the area, so F ÷ A doubles. The footprint shrinks while the force stays fixed.' },
+      { prompt: 'Divide the same total force and total area into four equal patches. What happens to mean pressure on each patch?', correct: 'same', explanation: 'Each patch has one quarter of the force and one quarter of the area. Their ratio stays F ÷ A.' },
+      { prompt: 'Double total force and total area together. What happens to mean pressure?', correct: 'same', explanation: 'Doubling both parts of F ÷ A leaves the ratio unchanged. Greater total force can produce the same mean pressure.' }
+    ];
+    function color(value) {
+      var t = Math.max(0, Math.min(1, Math.log(value / .125) / Math.log(400)));
+      return 'rgb(' + Math.round(91 + t * 148) + ',' + Math.round(199 - t * 64) + ',' + Math.round(189 - t * 102) + ')';
+    }
+    function contactMap(condition, key, label) {
+      var radius = 17 * Math.sqrt(condition.area / condition.count / Math.PI), p = condition.force / condition.area;
+      var centers = condition.count === 1 ? [[320, 192]] : condition.count === 2 ? [[250, 192], [390, 192]] : [[250, 125], [390, 125], [250, 259], [390, 259]];
+      return h('figure', { className: 'rh-contact-map', 'data-contact-map': key },
+        h('figcaption', null, h('strong', null, label), h('span', null, condition.count + ' equal contact ' + (condition.count === 1 ? 'patch' : 'patches') + ' · same scale')),
+        h('svg', { viewBox: '0 0 640 380', role: 'img', 'aria-label': label + ': ' + condition.area + ' square millimeters total contact area, divided into ' + condition.count + ' equal circles at ' + p.toFixed(3) + ' megapascals mean pressure' },
+          h('defs', null, h('pattern', { id: 'rh-contact-grid-' + key, width: 17, height: 17, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M17 0H0V17', fill: 'none', stroke: '#45635d', strokeWidth: .6 }))),
+          h('rect', { x: 40, y: 25, width: 560, height: 310, rx: 22, fill: '#1b3833', stroke: '#789687', strokeWidth: 1.3 }),
+          guides && h('rect', { 'data-contact-grid': key, x: 41, y: 26, width: 558, height: 308, rx: 21, fill: 'url(#rh-contact-grid-' + key + ')' }),
+          h('text', { x: 62, y: 53, fill: '#cedfce', fontSize: 14 }, 'Top view · uniform mean pressure'),
+          centers.map(function(point, i) { return h('g', { key: i, 'data-contact-patch': key, 'data-patch-force': condition.force / condition.count, 'data-patch-area': condition.area / condition.count },
+            h('circle', { 'data-contact-disk': key, cx: point[0], cy: point[1], r: radius, fill: color(p), stroke: '#e7edcc', strokeWidth: 1.5 }),
+            guides && h('g', { fill: 'none', stroke: '#d8e8d5', strokeWidth: .8 }, h('line', { x1: point[0] - radius - 9, x2: point[0] + radius + 9, y1: point[1], y2: point[1], strokeDasharray: '3 4' }), h('line', { x1: point[0], x2: point[0], y1: point[1] - radius - 9, y2: point[1] + radius + 9, strokeDasharray: '3 4' })),
+            h('circle', { cx: point[0], cy: point[1], r: 2.5, fill: '#17362d' })); }),
+          h('path', { d: 'M67 305V314H152V305', stroke: '#f2dba7', strokeWidth: 2, fill: 'none' }),
+          h('text', { x: 109.5, y: 295, textAnchor: 'middle', fill: '#e9dbb5', fontSize: 15 }, '5 mm'),
+          h('text', { x: 320, y: 362, textAnchor: 'middle', fill: '#dbe7d1', fontSize: 16 }, (condition.area / condition.count).toFixed(2) + ' mm² per patch · ' + (condition.force / condition.count).toFixed(2) + ' N per patch')),
+        h('p', null, 'Circular, flat patches are a teaching abstraction. Color is the uniform mean pressure assigned equally to every patch, with no computed spatial stress field.'));
+    }
+    function slider(name, label, value, min, max, suffix) {
+      return h('label', { className: 'rh-contact-slider', htmlFor: 'rh-contact-' + name }, h('span', null, label, h('output', { htmlFor: 'rh-contact-' + name }, value + suffix)),
+        h('input', { id: 'rh-contact-' + name, type: 'range', min: min, max: max, step: 1, value: value, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
+        h('small', null, min + suffix, h('span', null, max + suffix)));
+    }
+    function xPlot(a) { return 70 + (a - 2) / 38 * 530; }
+    function yPlot(p) { return 235 - Math.log(p / .125) / Math.log(400) * 205; }
+    function curve(f) { return Array.from({ length: 153 }, function(_, i) { var a = 2 + i * .25; return (i ? 'L' : 'M') + xPlot(a).toFixed(6) + ' ' + yPlot(f / a).toFixed(6); }).join(' '); }
+    return h('section', { className: 'rh-contact-study', 'data-raptor-contact-study': 'true', 'data-pressure-mpa': pressure, 'aria-label': 'Talon contact pressure studio' },
+      h('style', null, `
+.rh-contact-study{container-type:inline-size;color:#e4ebe1;font:400 14px/1.6 ui-sans-serif,system-ui}.rh-contact-study *{box-sizing:border-box}.rh-contact-study :is(h2,h3,p,figure){margin:0}.rh-contact-study button{min-height:44px;max-width:100%;padding:10px 13px;border:1px solid #7a9486;border-radius:9px;background:#25483f;color:#f0f2df;font:650 12px/1.4 ui-sans-serif,system-ui;text-align:left;cursor:pointer}.rh-contact-study button:hover{background:#365a4b}.rh-contact-study button[aria-pressed=true]{background:#d6e3c8;color:#203a2d}.rh-contact-study button:disabled{opacity:.54;cursor:default}.rh-contact-study :is(button,input,a,summary):focus-visible{outline:3px solid #f1d59d;outline-offset:4px}.rh-contact-study a{color:#bce3e5;text-decoration:underline}.rh-contact-study input{width:100%;min-height:34px;accent-color:#c9dfb3}.rh-contact-head{padding:25px;border:1px solid #818c70;border-radius:18px;background:radial-gradient(ellipse at 100% 0,#686447,transparent 70%),#294235}.rh-contact-kicker{display:block;color:#d4dfc0;font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}.rh-contact-head h2{margin-top:6px;color:#f3e7c9;font:750 clamp(25px,3vw,33px)/1.15 ui-sans-serif,system-ui;letter-spacing:-.6px}.rh-contact-head>p{max-width:790px;margin-top:12px;color:#dce4d0}.rh-contact-tags,.rh-contact-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.rh-contact-tags span{padding:6px 10px;border:1px solid #8c9576;border-radius:999px;color:#f1e4c4;font-size:11px}.rh-contact-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(275px,1fr);gap:15px;margin-top:15px;align-items:start}.rh-contact-map,.rh-contact-controls,.rh-contact-graph,.rh-contact-comparison,.rh-contact-trial,.rh-contact-evidence{min-width:0;overflow:hidden;border:1px solid #6b8674;border-radius:15px;background:#182f29}.rh-contact-map figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:13px 17px;border-bottom:1px solid #4d6959;font-size:12px}.rh-contact-map figcaption span{color:#c4d5be;font-size:11px}.rh-contact-study svg{display:block;width:100%;height:auto}.rh-contact-map>p{padding:12px 17px;border-top:1px solid #4d6959;color:#c9d6bf;font-size:11px}.rh-contact-controls{padding:20px}.rh-contact-study h3{color:#efd8aa;font:700 19px/1.3 ui-sans-serif,system-ui}.rh-contact-slider{display:block;margin-top:16px;color:#e5ecdc;font-size:12px}.rh-contact-slider>span{display:flex;flex-wrap:wrap;justify-content:space-between;gap:7px}.rh-contact-slider output{color:#f4dfb3;font-weight:700}.rh-contact-slider small{display:flex;justify-content:space-between;color:#c1d1b9;font-size:10px}.rh-contact-reading{margin-top:17px;padding:14px;border:1px solid #909d7b;border-radius:10px;background:#354b37}.rh-contact-reading strong{display:block;color:#f7e2ac;font:700 29px/1.3 ui-monospace,monospace}.rh-contact-reading span{display:block;color:#dce7ce;font-size:11px}.rh-contact-select{display:flex;gap:7px;margin-top:11px}.rh-contact-select button{flex:1;text-align:center}.rh-contact-controls>p{margin-top:13px;color:#cddbc5;font-size:11px}.rh-contact-load{margin-top:15px;padding:13px;border:1px solid #657e68;border-radius:10px;background:#203a2e}.rh-contact-load span{display:block;color:#c5dabd;font-size:11px}.rh-contact-load strong{display:block;color:#ead7ad;font:650 15px/1.5 ui-monospace,monospace}.rh-contact-scale{display:flex;align-items:center;gap:9px;padding:13px 16px;margin-top:15px;border:1px solid #69836f;border-radius:12px;background:#1c342b;font-size:11px;color:#d7dfc3}.rh-contact-scale i{display:block;height:12px;flex:1;min-width:30px;border:1px solid #b8d6bb;border-radius:8px;background:linear-gradient(90deg,rgb(91,199,189),rgb(165,167,138),rgb(239,135,87))}.rh-contact-graph{margin-top:15px}.rh-contact-graph figcaption{padding:14px 18px;border-bottom:1px solid #4d6959;font-size:12px;color:#e7dec2}.rh-contact-graph figcaption span{display:block;color:#c0d2bc;font-size:11px}.rh-contact-graph>p{padding:12px 18px;border-top:1px solid #4d6959;font-size:11px;color:#ccdbc3}.rh-contact-comparison,.rh-contact-trial,.rh-contact-evidence{margin-top:15px;padding:20px}.rh-contact-comparison-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}.rh-contact-comparison-head .rh-contact-actions{margin-top:0}.rh-contact-comparison>p,.rh-contact-trial>p,.rh-contact-evidence>p{margin-top:10px;color:#d6e1cb;font-size:12px}.rh-contact-compared{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.rh-contact-no-pin{padding:14px;border:1px dashed #839880;border-radius:10px}.rh-contact-ratio{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:13px;padding:12px;border:1px solid #6c856d;border-radius:10px;color:#dbe5ca;font-size:12px}.rh-contact-ratio strong{color:#f1daad;font:700 19px/1.3 ui-monospace,monospace}.rh-contact-trial{background:#2b3e2e;border-color:#8e9778}.rh-contact-feedback{padding:12px;border-left:3px solid #efd59a;background:#354b36;color:#f0e9d1!important}.rh-contact-evidence summary{min-height:40px;padding:10px 0;cursor:pointer;color:#e3e8d1;font-size:12px}.rh-contact-evidence details p{margin-top:8px;color:#cedac3;font-size:12px}.rh-contact-evidence a{font-size:12px}@container(max-width:800px){.rh-contact-layout{grid-template-columns:1fr}.rh-contact-compared{grid-template-columns:1fr}.rh-contact-head{padding:19px}}@container(max-width:440px){.rh-contact-head h2{font-size:27px}.rh-contact-head>p{font-size:13px}.rh-contact-controls,.rh-contact-comparison,.rh-contact-trial,.rh-contact-evidence{padding:16px}.rh-contact-map svg text{font-size:19px}.rh-contact-graph svg text{font-size:18px}.rh-contact-graph svg [data-contact-axis-title]{font-size:17px}.rh-contact-scale{font-size:10px;padding:11px}.rh-contact-select button{padding:9px}.rh-contact-study .rh-contact-actions{gap:7px}}@media(forced-colors:active){.rh-contact-study,.rh-contact-study *{color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.rh-contact-study :is(header,figure,aside,section,.rh-contact-reading,.rh-contact-load,.rh-contact-ratio,.rh-contact-scale){background:Canvas!important}.rh-contact-study button{background:ButtonFace!important;color:ButtonText!important}.rh-contact-study button[aria-pressed=true]{outline:3px solid Highlight}.rh-contact-study svg,.rh-contact-scale i{forced-color-adjust:none}}
+`),
+      h('header', { className: 'rh-contact-head' }, h('span', { className: 'rh-contact-kicker' }, 'Contact studio · talon mechanics'), h('h2', null, 'A strong grip is only half the story.'),
+        h('p', null, 'Force describes a push. Pressure describes how that push is spread over contact area. Build a set of contact patches, then keep a reference while you change the load or the footprint.'),
+        h('div', { className: 'rh-contact-tags' }, h('span', null, 'Force · newtons'), h('span', null, 'Area · mm²'), h('span', null, 'Mean pressure · F ÷ A'))),
+      h('div', { className: 'rh-contact-layout' }, contactMap(current, 'current', 'Current contact footprint'),
+        h('aside', { className: 'rh-contact-controls', 'aria-label': 'Contact pressure controls' }, h('span', { className: 'rh-contact-kicker' }, 'Author the experiment'), h('h3', null, 'Load and footprint'),
+          slider('force', 'Total normal force', force, 5, 100, ' N'), slider('area', 'Total contact area', area, 2, 40, ' mm²'),
+          h('div', { className: 'rh-contact-reading' }, h('strong', { 'data-contact-reading': 'true' }, pressure.toFixed(3) + ' MPa'), h('span', null, 'Mean pressure · ' + force + ' N ÷ ' + area + ' mm²'), h('span', null, (pressure * 1000000).toLocaleString('en-US') + ' Pa · 1 N/mm² = 1 MPa')),
+          h('p', null, 'Divide the load and area equally among:'), h('div', { className: 'rh-contact-select', 'aria-label': 'Number of equal contact patches' }, [1, 2, 4].map(function(n) { return h('button', { key: n, type: 'button', 'data-contact-count': n, 'aria-pressed': count === n, onClick: function() { change({ count: n }); } }, n + (n === 1 ? ' patch' : ' patches')); })),
+          h('div', { className: 'rh-contact-load' }, h('span', null, 'At each equal patch'), h('strong', { 'data-contact-per-patch': 'true' }, (force / count).toFixed(2) + ' N ÷ ' + (area / count).toFixed(2) + ' mm²'), h('span', null, 'The same ' + pressure.toFixed(3) + ' MPa mean pressure')),
+          h('div', { className: 'rh-contact-actions' }, h('button', { type: 'button', 'data-contact-guides': 'true', 'aria-pressed': guides, onClick: function() { change({ guides: !guides }); } }, guides ? 'Hide measurement grid' : 'Show measurement grid'), h('button', { type: 'button', 'data-contact-reset': 'true', onClick: reset }, 'Reset experiment')),
+          h('p', null, 'These force and area values are exercise inputs. They are not measurements of a species or a particular talon.'))),
+      h('div', { className: 'rh-contact-scale', 'aria-label': 'Fixed logarithmic mean pressure color scale from 0.125 to 50 megapascals' }, h('span', null, '0.125 MPa'), h('i', { 'aria-hidden': 'true' }), h('span', null, '50 MPa'), h('span', null, 'Fixed log color scale')),
+      h('figure', { className: 'rh-contact-graph', 'data-contact-graph': 'true' }, h('figcaption', null, 'One load, many possible footprints', h('span', null, 'Area axis is linear · pressure axis is logarithmic · dashed curve belongs to the pinned force')),
+        h('svg', { viewBox: '0 0 640 300', role: 'img', 'aria-label': 'Mean pressure against total contact area at a fixed total load of ' + force + ' newtons' },
+          [.125, 1, 5, 50].map(function(p) { return h('g', { key: p }, h('line', { x1: 70, x2: 600, y1: yPlot(p), y2: yPlot(p), stroke: '#456450', strokeWidth: 1 }), h('text', { x: 60, y: yPlot(p) + 5, textAnchor: 'end', fill: '#ccdcc4', fontSize: 14 }, String(p))); }),
+          [2, 10, 20, 30, 40].map(function(a) { return h('g', { key: a }, h('line', { x1: xPlot(a), x2: xPlot(a), y1: 30, y2: 235, stroke: '#35583f', strokeWidth: 1 }), h('text', { x: xPlot(a), y: 258, textAnchor: 'middle', fill: '#ccdcc4', fontSize: 14 }, String(a))); }),
+          h('path', { 'data-contact-curve': 'current', 'data-curve-force': force, d: curve(force), fill: 'none', stroke: '#a6dfc4', strokeWidth: 3 }),
+          pinned && h('path', { 'data-contact-curve': 'pinned', 'data-curve-force': pinned.force, d: curve(pinned.force), fill: 'none', stroke: '#efd3a0', strokeWidth: 2, strokeDasharray: '7 6' }),
+          pinned && h('circle', { 'data-contact-graph-point': 'pinned', cx: xPlot(pinned.area), cy: yPlot(pinned.force / pinned.area), r: 8, fill: '#172f27', stroke: '#f3d59d', strokeWidth: 2.5 }),
+          h('circle', { 'data-contact-graph-point': 'current', cx: xPlot(area), cy: yPlot(pressure), r: 5, fill: '#b8ecd0', stroke: '#17362b', strokeWidth: 1.5 }),
+          h('text', { x: 72, y: 17, fill: '#e4e8cc', fontSize: 14, 'data-contact-axis-title': 'true' }, 'Mean pressure · MPa'), h('text', { x: 335, y: 287, textAnchor: 'middle', fill: '#d4e2c8', fontSize: 15, 'data-contact-axis-title': 'true' }, 'Total contact area · mm²')),
+        h('p', null, 'Turquoise dot and solid curve: current load. Gold ring and dashed curve: pinned load. Equal spacing vertically means equal pressure ratios, so a doubled pressure is the same vertical step anywhere on this graph.')),
+      h('section', { className: 'rh-contact-comparison', 'aria-label': 'Pinned contact experiment' }, h('div', { className: 'rh-contact-comparison-head' }, h('div', null, h('span', { className: 'rh-contact-kicker' }, 'Keep a reference'), h('h3', null, 'Same push, different pressure?')), h('div', { className: 'rh-contact-actions' }, h('button', { type: 'button', 'data-contact-pin': 'true', onClick: function() { setPinned(Object.assign({}, current)); } }, pinned ? 'Replace pinned footprint' : 'Pin this footprint'), pinned && h('button', { type: 'button', 'data-contact-clear-pin': 'true', onClick: function() { setPinned(null); } }, 'Clear pin'))),
+        pinned ? h(React.Fragment, null,
+          h('div', { className: 'rh-contact-ratio' }, h('span', null, h('strong', null, (pinned.force / pinned.area).toFixed(3) + ' MPa'), ' pinned'), h('span', null, h('strong', { 'data-contact-ratio': 'true' }, (pressure / (pinned.force / pinned.area)).toFixed(3) + '×'), ' current ÷ pinned pressure')),
+          h('div', { className: 'rh-contact-actions' }, [['area', 'Halve area · keep force'], ['force', 'Double force · keep area'], ['both', 'Double both · keep pressure']].map(function(item) { var disabled = item[0] === 'area' ? pinned.area % 2 !== 0 || pinned.area < 4 : pinned.force > 50 || (item[0] === 'both' && pinned.area > 20); return h('button', { key: item[0], type: 'button', 'data-contact-experiment': item[0], disabled: disabled, onClick: function() { experiment(item[0]); } }, item[1]); })),
+          h('p', null, 'Each action begins from the pinned values and keeps its patch count. Actions outside the slider range or one-square-millimeter steps are unavailable.'),
+          h('div', { className: 'rh-contact-compared' }, contactMap(pinned, 'pinned', 'Pinned footprint'), contactMap(current, 'comparison', 'Current footprint'))) : h('p', { className: 'rh-contact-no-pin' }, 'Pin a footprint to preserve its force, total area, and patch count. The graph and fixed-scale contact maps make the comparison visible.')),
+      h('section', { className: 'rh-contact-trial', 'aria-label': 'Contact pressure prediction challenge' }, h('span', { className: 'rh-contact-kicker' }, 'Predict · change · explain'), h('h3', null, 'Which relationship survives?'), h('p', { 'data-contact-question': 'true' }, questions[question].prompt),
+        h('div', { className: 'rh-contact-actions' }, [['half', 'Half the pressure'], ['same', 'Same pressure'], ['double', 'Double the pressure']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-contact-answer': item[0], 'aria-pressed': answer === item[0], onClick: function() { setAnswer(item[0]); } }, item[1]); }), h('button', { type: 'button', 'data-contact-next': 'true', onClick: function() { setQuestion((question + 1) % questions.length); setAnswer(null); } }, 'Next prediction')),
+        answer && h('p', { className: 'rh-contact-feedback', role: 'status' }, h('strong', null, answer === questions[question].correct ? 'Your prediction fits. ' : 'Follow the force-to-area ratio. '), questions[question].explanation)),
+      h('section', { className: 'rh-contact-evidence', 'aria-label': 'Contact pressure evidence and model limits' }, h('span', { className: 'rh-contact-kicker' }, 'From a bench to a bird'), h('h3', null, 'Feet have geometry. Evidence has conditions.'),
+        h('p', null, 'Fowler and colleagues compared talon proportions and restraint strategies across raptor families. Sustaita and Hertel measured bite and grip forces in live accipiters and falcons, finding that those forces differed from earlier anatomical predictions. Shape, behavior, and measurement method all matter.'),
+        h('p', null, h('a', { href: 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0007999', target: '_blank', rel: 'noopener noreferrer' }, 'Fowler et al., 2009 · talon form and restraint'), ' · ', h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/20639423/', target: '_blank', rel: 'noopener noreferrer' }, 'Sustaita & Hertel, 2010 · measured bite and grip forces')),
+        h('details', null, h('summary', null, 'Read the force, area, and contact assumptions'), h('p', null, 'Mean normal pressure is total normal force divided by actual contact area: P = F ÷ A. One square millimeter is one millionth of a square meter, so 1 N/mm² = 1,000,000 Pa = 1 MPa. With n equal patches, force per patch is F/n and area per patch is A/n; their ratio is unchanged. Each displayed circle has radius √(A/(nπ)), drawn at 17 SVG units per millimeter.'),
+          h('p', null, 'A real curved talon has a changing contact area and nonuniform pressure. This bench assumes flat circular patches, equal load sharing, and uniform normal pressure. It omits tissue mechanics, penetration, friction, tendon forces, time, and motion. It does not predict injuries, prey condition, hunting success, or species grip force. Its footprint count is an abstract partition of load, not a toe-arrangement model.'))));
+  }
+
   window.StemLab.registerTool('raptorHunt', {
     title: 'Raptor Hunt: Predator Physics + Biology',
     description: 'Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 20-species roster from peregrine to harpy.',
@@ -9729,7 +10580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'falconry', label: __alloT('stem.raptorhunt.falconry_humans', 'Falconry & Humans'), icon: '🤝' },
         { id: 'anatomy', label: __alloT('stem.raptorhunt.anatomy', 'Anatomy'), icon: '🦴' },
         { id: 'lifecycle', label: __alloT('stem.raptorhunt.lifecycle', 'Lifecycle'), icon: '🐣' },
-        { id: 'spiral', label: __alloT('stem.raptorhunt.stoop_trajectory', 'Stoop Trajectory'), icon: '🌀' },
+        { id: 'spiral', label: __alloT('stem.raptorhunt.spiral_approach', 'Spiral Approach'), icon: '🌀' },
         { id: 'acuity', label: __alloT('stem.raptorhunt.vision_acuity_demo', 'Vision Acuity Demo'), icon: '👁️‍🗨️' },
         { id: 'recoveries', label: __alloT('stem.raptorhunt.recovery_case_studies', 'Recovery Case Studies'), icon: '🏆' },
         { id: 'predictor', label: __alloT('stem.raptorhunt.wing_loading_predictor', 'Wing-Loading Predictor'), icon: '🪂' },
@@ -10571,6 +11422,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         );
       }
 
+      // Authored vector field plates stay crisp offline and share the same species
+      // selection as the flight simulator. These are illustrative, not scale models.
+      function raptorFieldArtwork(species, plateId, tucked, motion) {
+        var owl = species.isOwl;
+        var falcon = species.family === 'Falconidae';
+        var snowy = species.id === 'snowyOwl';
+        var night = owl && !snowy;
+        var pale = species.id === 'baldEagle' || species.id === 'osprey';
+        var russet = species.id === 'redTail' || species.id === 'kestrel';
+        var cool = ['northernGoshawk', 'coopersHawk', 'sharpShin', 'missKite', 'harpyEagle'].indexOf(species.id) > -1;
+        var upper = snowy ? '#eeeadd' : species.id === 'gyrfalcon' ? '#d2d6cf' : owl ? '#be9a70' : falcon || cool ? '#7792a2' : '#987253';
+        var lower = snowy ? '#b2b6ae' : species.id === 'gyrfalcon' ? '#7e8b8c' : owl ? '#74614f' : falcon || cool ? '#344d60' : '#463e35';
+        var skyId = 'rh-plate-sky-' + plateId;
+        var featherId = 'rh-plate-feather-' + plateId;
+        return h('svg', { className: 'rh-field-art', viewBox: '0 0 520 260', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': 'true', focusable: 'false', 'data-wing-posture': tucked ? 'tucked' : 'spread', 'data-animate': motion ? 'true' : 'false' },
+          h('defs', null,
+            h('linearGradient', { id: skyId, x1: '0', y1: '0', x2: '0.7', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#101e3f' : '#204b60' }), h('stop', { offset: '65%', stopColor: night ? '#34415b' : '#52777e' }), h('stop', { offset: '100%', stopColor: night ? '#a58783' : '#d7b680' })),
+            h('linearGradient', { id: featherId, x1: '0', y1: '0', x2: '0.4', y2: '1' }, h('stop', { offset: '0%', stopColor: upper }), h('stop', { offset: '100%', stopColor: lower }))),
+          h('rect', { width: 520, height: 260, fill: 'url(#' + skyId + ')' }),
+          h('circle', { cx: 410, cy: 61, r: night ? 24 : 33, fill: night ? '#e3e6d3' : '#f6d7a0', opacity: .88 }),
+          night && h('circle', { cx: 422, cy: 52, r: 22, fill: '#27344f' }),
+          h('g', { fill: '#e5ece5', opacity: night ? .8 : .14 }, [35, 94, 171, 286, 347, 468].map(function(x, i) { return h('circle', { key: x, cx: x, cy: 27 + (i * 31) % 64, r: night ? 1.4 : 2 }); })),
+          h('path', { d: 'M-20 178 L38 133 84 167 151 100 219 171 276 138 342 181 408 117 473 164 548 131 V280 H-20 Z', fill: '#42636b', opacity: .65 }),
+          h('path', { d: 'M-30 204 Q76 140 176 201 T372 197 Q435 158 550 201 V280 H-30 Z', fill: '#274f56' }),
+          h('path', { d: 'M-20 240 Q88 190 177 234 Q287 180 384 233 Q452 197 550 220 V280 H-20 Z', fill: '#143c43' }),
+          h('path', { d: 'M303 208 Q285 221 317 234 Q343 247 286 265', fill: 'none', stroke: '#a8cbc1', strokeWidth: 7, opacity: .35 }),
+          h('g', { className: 'rh-field-airflow', fill: 'none', stroke: '#d0e9e5', strokeWidth: 1, strokeDasharray: '5 10', opacity: .32 },
+            h('path', { d: tucked ? 'M204 14 Q226 116 215 214' : 'M43 78 Q121 44 185 67 M336 67 Q414 38 490 78' }),
+            h('path', { d: tucked ? 'M319 14 Q297 116 310 214' : 'M22 99 Q102 67 162 87 M359 87 Q438 62 510 99' })),
+          // Keep the entire wingspan inside the wide hero crop, including the
+          // peregrine's pointed primaries; gallery plates can use a closer view.
+          h('g', { transform: 'translate(260 130) rotate(-12) scale(' + (plateId === 'hero' ? '.72' : plateId.indexOf('wing-atlas-') === 0 ? '.62' : '.8') + ')' },
+            h('g', { className: 'rh-field-bird' },
+              h('ellipse', { cx: 0, cy: 11, rx: tucked ? 38 : 162, ry: 16, fill: '#102a37', opacity: .2, transform: 'translate(6 12)' }),
+              h('path', { d: owl ? 'M-12 24 L-21 78 Q0 91 21 78 L12 24 Z' : 'M-11 23 L-24 89 Q0 95 24 89 L11 23 Z', fill: russet ? '#bc774d' : lower, stroke: '#d0bc93', strokeWidth: .8 }),
+              [0, 1].map(function(side) {
+                return h('g', { key: side, transform: side ? 'scale(-1 1)' : undefined },
+                  h('g', { className: 'rh-field-wing', style: { transform: tucked ? 'rotate(-57deg) scale(.6,.94)' : 'rotate(0deg)' } },
+                    h('path', { d: falcon ? 'M-4 -25 C-39 -48 -81 -55 -186 -68 Q-147 -16 -96 11 L-19 29 Z' : owl ? 'M-4 -25 C-65 -63 -139 -60 -183 -28 Q-197 9 -139 41 Q-79 54 -18 27 Z' : 'M-4 -25 C-52 -52 -114 -52 -163 -37 L-193 -47 -181 -24 -202 -25 -185 -7 -200 -2 -176 12 -183 22 -157 29 -158 38 Q-79 57 -18 28 Z', fill: 'url(#' + featherId + ')', stroke: '#cabd9c', strokeWidth: .9 }),
+                    [0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+                      var x = -40 - i * 16;
+                      return h('path', { key: i, d: 'M' + x + ' ' + (-27 - Math.sin(i / 7 * Math.PI) * 15) + ' Q' + (x - 10) + ' -2 ' + (x - 12) + ' ' + (falcon ? 23 - i * 9 : 37 - Math.max(0, i - 4) * 9), fill: 'none', stroke: i % 2 ? '#dcc9a6' : '#243642', strokeWidth: owl ? 3 : 2, opacity: .45 });
+                    }),
+                    h('path', { d: 'M-13 -24 Q-71 -49 -142 -32 Q-76 -22 -20 10 Z', fill: upper, opacity: .7 }),
+                    owl && h('path', { d: 'M-48 -28 L-55 23 M-73 -34 L-80 31 M-97 -37 L-104 32 M-121 -34 L-129 27', fill: 'none', stroke: '#3f3b36', strokeWidth: 4, opacity: .36 })));
+              }),
+              h('path', { d: 'M-13 -24 Q-24 5 -12 39 L0 54 12 39 Q24 5 13 -24 Z', fill: 'url(#' + featherId + ')', stroke: '#d4c4a0', strokeWidth: .7 }),
+              [0, 1, 2, 3].map(function(i) { return h('path', { key: i, d: 'M-8 ' + (i * 10) + ' Q0 ' + (6 + i * 10) + ' 8 ' + (i * 10), fill: 'none', stroke: '#d3c5a3', strokeWidth: 1, opacity: .5 }); }),
+              h('ellipse', { cx: 0, cy: -29, rx: owl ? 20 : 13, ry: owl ? 17 : 19, fill: pale || snowy ? '#e6e3d6' : owl ? '#cfb18c' : upper, stroke: '#d2c5a7', strokeWidth: 1 }),
+              species.id === 'greatHorned' && h('path', { d: 'M-18 -32 L-23 -53 -6 -42 M18 -32 L23 -53 6 -42', fill: lower }),
+              h('path', { d: 'M-5 -43 L0 -54 5 -43 0 -39 Z', fill: '#d9b869' }),
+              h('path', { d: 'M-11 -31 L-5 -34 M5 -34 L11 -31', fill: 'none', stroke: '#111f28', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('path', { d: 'M0 56 L0 87 M-8 55 L-10 86 M8 55 L10 86', fill: 'none', stroke: '#c8b28a', strokeWidth: 1, opacity: .5 }))),
+          h('path', { d: 'M25 22 H56 M25 22 V53 M495 22 H464 M495 22 V53 M25 238 H56 M25 238 V207 M495 238 H464 M495 238 V207', fill: 'none', stroke: '#d3e4df', strokeWidth: 1, opacity: .44 }));
+      }
+
+      function renderFlightSpotlight() {
+        var tucked = rh.spotlightPosture === 'tucked';
+        var animated = rh.spotlightMotion === true;
+        var profiles = ['peregrine', 'goldenEagle', 'greatHorned'];
+        return h('div', { className: 'rh-flight-spotlight', 'data-raptor-spotlight': selectedSpecies },
+          h('div', { className: 'rh-spotlight-heading' },
+            h('span', null, __alloT('stem.raptorhunt.spotlight_kicker', 'THE FLIGHT COLLECTION')),
+            h('button', { type: 'button', className: 'rh-spotlight-motion', 'aria-pressed': animated, onClick: function() { setRH({ spotlightMotion: !animated }); } }, animated ? __alloT('stem.raptorhunt.spotlight_pause', 'Pause motion') : __alloT('stem.raptorhunt.spotlight_animate', 'Animate flight'))),
+          h('div', { className: 'rh-spotlight-stage' }, raptorFieldArtwork(sp, 'hero', tucked, animated),
+            h('div', { className: 'rh-spotlight-caption' }, h('strong', null, sp.name), h('span', null, sp.scientific))),
+          h('div', { className: 'rh-spotlight-profile-tabs', role: 'group', 'aria-label': __alloT('stem.raptorhunt.spotlight_profiles', 'Preview a flight profile') }, profiles.map(function(id) {
+            var species = findSpecies(id);
+            return h('button', { key: id, type: 'button', 'aria-pressed': selectedSpecies === id, 'aria-label': __alloFill(__alloT('stem.raptorhunt.spotlight_select', 'Preview {species}'), { species: species.name }), onClick: function() { setRH({ selectedSpecies: id }); } }, species.name);
+          })),
+          h('div', { className: 'rh-spotlight-posture', role: 'group', 'aria-label': __alloT('stem.raptorhunt.spotlight_wing_posture', 'Illustrated wing posture') },
+            h('button', { type: 'button', 'aria-pressed': !tucked, onClick: function() { setRH({ spotlightPosture: 'spread' }); } }, __alloT('stem.raptorhunt.spotlight_spread', 'Wings spread')),
+            h('button', { type: 'button', 'aria-pressed': tucked, onClick: function() { setRH({ spotlightPosture: 'tucked' }); } }, __alloT('stem.raptorhunt.spotlight_tucked', 'Wings tucked')),
+            h('span', { role: 'status' }, tucked ? __alloT('stem.raptorhunt.spotlight_tucked_note', 'Less exposed wing area') : __alloT('stem.raptorhunt.spotlight_spread_note', 'More wing area for lift'))),
+          h('p', { className: 'rh-spotlight-note' }, __alloT('stem.raptorhunt.spotlight_illustration_note', 'Explore a stylized flight posture. Illustrations are not to scale.')));
+      }
+
       function renderHub() {
         var hubVisited = rh.visited || {};
         var hubVisitedCount = Object.keys(hubVisited).filter(function(k) { return k !== 'hub' && findSection(k) && hubVisited[k] > 0; }).length;
@@ -10622,20 +11550,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     className: 'rh-hero-action rh-hero-action-secondary',
                     'aria-label': __alloT('stem.raptorhunt.browse_species_roster', 'Browse Species Roster')
                   }, __alloT('stem.raptorhunt.choose_a_raptor', 'Choose a raptor'))
+                ),
+                h('div', { className: 'rh-stat-grid rh-profile-summary' },
+                  hubStats.map(function(stat, idx) {
+                    return h('div', { key: idx, className: 'rh-stat-card rounded-lg border border-amber-700/35 bg-slate-950/45 p-3 min-h-[86px]' },
+                      h('div', { className: 'text-[10px] font-bold uppercase text-amber-300/70' }, stat.label),
+                      h('div', { className: 'text-sm font-bold text-amber-100 mt-1 leading-snug' }, stat.value),
+                      h('div', { className: 'text-[11px] text-cyan-100/75 mt-1 leading-snug' }, stat.note));
+                  })
                 )
               )
             ),
             h('div', { className: 'rh-hero-grid mt-4' },
-              h('div', { className: 'rh-hero-habitat' }, inquiryArtwork('landscape', true)),
-              h('div', { className: 'rh-stat-grid' },
-                hubStats.map(function(stat, idx) {
-                  return h('div', { key: idx, className: 'rh-stat-card rounded-lg border border-amber-700/35 bg-slate-950/45 p-3 min-h-[86px]' },
-                    h('div', { className: 'text-[10px] font-bold uppercase text-amber-300/70' }, stat.label),
-                    h('div', { className: 'text-sm font-bold text-amber-100 mt-1 leading-snug' }, stat.value),
-                    h('div', { className: 'text-[11px] text-cyan-100/75 mt-1 leading-snug' }, stat.note)
-                  );
-                })
-              ),
+              renderFlightSpotlight(),
               h('div', { className: 'rh-flight-brief rounded-lg border border-cyan-700/35 bg-cyan-950/30 p-3', 'aria-label': __alloT('stem.raptorhunt.flight_briefing_path', 'Flight briefing path') },
                 h('svg', { viewBox: '0 0 420 170', preserveAspectRatio: 'xMidYMid meet', style: { width: '100%', height: 'auto', display: 'block' }, 'aria-hidden': 'true' },
                   h('defs', null,
@@ -10744,7 +11671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('span', { className: 'rh-quick-number', 'aria-hidden': 'true' }, '03'),
               h('div', { className: 'text-3xl mb-2' }, '🪝'),
               h('div', { className: 'font-bold text-orange-200' }, __alloT('stem.raptorhunt.talon_mechanics_3', 'Talon Mechanics')),
-              h('div', { className: 'text-xs text-orange-100/80 mt-1 pr-6' }, __alloT('stem.raptorhunt.grip_force_psi_compared_across_species', 'Grip force PSI compared across species. Why harpy eagles crush monkey skulls while peregrines punch with clenched feet at 200+ mph.')),
+              h('div', { className: 'text-xs text-orange-100/80 mt-1 pr-6' }, 'Change normal force and contact area, inspect the footprint, and test how mean contact pressure changes.'),
               h('span', { className: 'rh-quick-arrow', 'aria-hidden': 'true' }, '→')
             )
           ),
@@ -10780,12 +11707,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var now = new Date();
             var daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
             var challenges = [
-              { icon: '🪝', title: __alloT('stem.raptorhunt.rank_by_talon_force', 'Rank by talon force'), prompt: __alloT('stem.raptorhunt.from_memory_order_these_5_species_by_g', 'From memory: order these 5 species by grip force, weakest to strongest — bald eagle, harpy eagle, golden eagle, great horned owl, peregrine.'), jumpTo: 'talons', answer: __alloT('stem.raptorhunt.peregrine_230_psi_bald_eagle_400_great', 'Peregrine (230 psi) → Bald eagle (400) → Great horned owl (500) → Harpy eagle (530) → Golden eagle (750)') },
+              { icon: '🪝', title: 'Force, area, and pressure', prompt: 'Keep total force fixed and halve contact area. What happens to mean pressure? Why does the result not predict an injury?', jumpTo: 'talons', answer: 'Mean pressure doubles because P = F ÷ A. A real talon has nonuniform contact, and an injury prediction also needs tissue mechanics, motion, and loading conditions.' },
               { icon: '🎯', title: __alloT('stem.raptorhunt.match_silhouette_to_family', 'Match silhouette to family'), prompt: __alloT('stem.raptorhunt.which_family_has_pointed_swept_back_wi', 'Which family has POINTED swept-back wings + a medium tail with a tomial-tooth notch on the upper beak?'), jumpTo: 'fieldid', answer: __alloT('stem.raptorhunt.falconidae_falcons_pointed_wings_the_t', 'Falconidae — falcons. Pointed wings + the tomial tooth (used to sever the cervical vertebrae) are diagnostic.') },
-              { icon: '📐', title: __alloT('stem.raptorhunt.stoop_physics', 'Stoop physics'), prompt: __alloT('stem.raptorhunt.estimate_a_peregrine_at_242_mph_termin', 'Estimate: a peregrine at 242 mph terminal velocity carries roughly how much kinetic energy at impact?'), jumpTo: 'stoop', answer: __alloT('stem.raptorhunt.5_000_j_pistol_bullet_class_ke_0_95_kg', '~5,000 J — pistol-bullet class. KE = ½ × 0.95 kg × (108 m/s)² ≈ 5,540 J.') },
+              { icon: '📐', title: __alloT('stem.raptorhunt.stoop_physics', 'Stoop physics'), prompt: __alloT('stem.raptorhunt.estimate_a_peregrine_at_242_mph_termin', 'In an idealized model, a 0.95 kg body moves at 108 m/s. What is its kinetic energy?'), jumpTo: 'stoop', answer: __alloT('stem.raptorhunt.5_000_j_pistol_bullet_class_ke_0_95_kg', 'About 5,540 J. KE = ½ × 0.95 kg × (108 m/s)². This describes energy at the stated speed, not measured impact energy or a guaranteed terminal speed.') },
               { icon: '👁', title: __alloT('stem.raptorhunt.uv_vision', 'UV vision'), prompt: __alloT('stem.raptorhunt.which_family_of_raptor_can_see_ultravi', 'Which raptor family starred in the famous (now-debated) study claiming it tracks vole urine trails in ultraviolet?'), jumpTo: 'vision', answer: __alloT('stem.raptorhunt.falconidae_kestrels_especially_vole_ur', 'Falconidae (kestrels especially). Vole urine reflects UV strongly; the kestrel sees "glowing highways" of rodent travel routes. Viitala et al 1995 Nature.') },
-              { icon: '🤫', title: __alloT('stem.raptorhunt.silent_flight_mechanism', 'Silent flight mechanism'), prompt: __alloT('stem.raptorhunt.name_the_3_owl_feather_features_that_p', 'Name the 3 owl-feather features that produce silent flight.'), jumpTo: 'silent', answer: __alloT('stem.raptorhunt.comb_leading_edge_serrated_primaries_f', 'Comb leading edge (serrated primaries) + fringed trailing edge + velvety dorsal surface. Shifts noise to ~16 kHz, above prey hearing range.') },
-              { icon: '🦉', title: __alloT('stem.raptorhunt.owl_3d_hearing', 'Owl 3D hearing'), prompt: __alloT('stem.raptorhunt.how_does_an_owl_tell_whether_a_sound_c', 'How does an owl tell whether a sound came from ABOVE or BELOW its head?'), jumpTo: 'senses', answer: __alloT('stem.raptorhunt.ear_asymmetry_left_ear_opening_sits_hi', 'Ear asymmetry: left ear opening sits higher on the skull than the right. Sound from above hits left ear first by ~30 microseconds; from below, right first. Payne 1962.') },
+              { icon: '🤫', title: __alloT('stem.raptorhunt.quiet_flight_structures', 'Quiet-flight structures'), prompt: __alloT('stem.raptorhunt.quiet_flight_structure_prompt', 'Name three feather structures studied in owl quiet flight. Which kind of experiment tests feather-contact sound?'), jumpTo: 'silent', answer: __alloT('stem.raptorhunt.quiet_flight_structure_answer', 'Comb-like leading-edge tips, vane fringes, and a velvety upper surface. Controlled feather-rubbing experiments test contact sound; wind-tunnel experiments address airflow-related effects. Their results depend on conditions.') },
+              { icon: '🦉', title: __alloT('stem.raptorhunt.hearing_cues_title', 'Timing and level cues'), prompt: __alloT('stem.raptorhunt.hearing_cues_question', 'What can two arrival times reveal, and what does the top-view studio leave out?'), jumpTo: 'hearing', answer: __alloT('stem.raptorhunt.hearing_cues_summary', 'Barn owls use differences in timing and sound level between the ears. Timing strongly informs horizontal direction; level cues also provide spatial information, including elevation. These cues interact. Our two-receiver studio compares direct paths; it does not model elevation or guarantee a fixed hearing accuracy.') },
               { icon: '🧭', title: __alloT('stem.raptorhunt.where_the_rivers_meet', 'Where the rivers meet'), prompt: __alloT('stem.raptorhunt.what_is_the_world_s_largest_single_sit', 'What is the world\'s largest single-site raptor migration count? About how many birds pass through each fall?'), jumpTo: 'migration', answer: __alloT('stem.raptorhunt.veracruz_river_of_raptors_mexico_5_mil', 'Veracruz River of Raptors (Mexico) — ~5 million birds per fall. Atlantic + Mississippi + Central flyways all converge before crossing into Central America.') },
               { icon: '🐣', title: __alloT('stem.raptorhunt.why_eagles_are_slow_to_recover', 'Why eagles are slow to recover'), prompt: __alloT('stem.raptorhunt.in_k_selected_raptor_demographics_whic', 'In K-selected raptor demographics, which is the highest-leverage parameter for population growth?'), jumpTo: 'lifecycle', answer: __alloT('stem.raptorhunt.adult_annual_survival_even_small_drops', 'Adult annual survival. Even small drops (e.g., from lead poisoning) flip λ from growing to declining. Adult breeders are worth 5-10× juveniles demographically.') },
               { icon: '🏆', title: __alloT('stem.raptorhunt.ddt_recovery_2', 'DDT recovery'), prompt: __alloT('stem.raptorhunt.roughly_how_many_peregrine_pairs_were_', 'Roughly how many peregrine pairs were left in the lower 48 US at the species\' nadir in 1972?'), jumpTo: 'recoveries', answer: __alloT('stem.raptorhunt.fewer_than_50_the_species_was_function', 'Fewer than 50. The species was functionally extinct east of the Rockies before the 1972 US DDT ban + The Peregrine Fund\'s captive-breeding program restored it to ~3,200 pairs by 2020.') },
@@ -11048,7 +11975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('li', null, __alloT('stem.raptorhunt.force_mass_acceleration_kinetic_energy', 'Force = mass × acceleration: kinetic energy of a 200 mph dive ≈ pistol bullet')),
               h('li', null, __alloT('stem.raptorhunt.pressure_force_area_why_talon_length_g', 'Pressure = force / area: why talon length × grip muscle = lethal precision')),
               h('li', null, __alloT('stem.raptorhunt.fluid_dynamics_drag_coefficient_wing_l', 'Fluid dynamics: drag coefficient + wing loading + terminal velocity')),
-              h('li', null, __alloT('stem.raptorhunt.frequency_domain_acoustics_how_owl_fea', 'Frequency-domain acoustics: how owl feathers shift noise above prey hearing')),
+              h('li', null, __alloT('stem.raptorhunt.feather_acoustics_evidence', 'Feather acoustics: distinguish airflow sound, rubbing sound, and the experiments used to study them')),
               h('li', null, __alloT('stem.raptorhunt.predator_ecology_the_ddt_story_how_sci', 'Predator ecology + the DDT story: how science + policy reversed a near-extinction')),
               h('li', null, __alloT('stem.raptorhunt.field_id_using_gestalt_wing_shape_flig', 'Field ID using gestalt — wing shape + flight pattern over species checklist'))
             )
@@ -11063,6 +11990,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var rosterView = rh.rosterView || 'cards';
         var rosterSort = rh.rosterSort || 'name';
         var rosterDir = rh.rosterDir || 'asc';
+        var rosterQuery = typeof rh.rosterQuery === 'string' ? rh.rosterQuery : '';
+        var rosterFamily = ['all', 'falcons', 'hawks', 'owls'].indexOf(rh.rosterFamily) > -1 ? rh.rosterFamily : 'all';
+        var rosterTerms = rosterQuery.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+        var visibleSpecies = SPECIES.filter(function(species) {
+          var familyMatches = rosterFamily === 'all' || (rosterFamily === 'owls' ? species.isOwl : rosterFamily === 'falcons' ? species.family === 'Falconidae' : !species.isOwl && species.family !== 'Falconidae');
+          var searchable = [species.name, species.scientific, species.family, species.huntStyle].concat(species.habitat).join(' ').toLocaleLowerCase();
+          return familyMatches && rosterTerms.every(function(term) { return searchable.indexOf(term) !== -1; });
+        });
         function setRosterView(v) { setRH({ rosterView: v }); }
         function setRosterSort(s) {
           // Toggle direction if same column
@@ -11076,7 +12011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return Math.max(8, Math.min(100, Math.round((Number(value) / max) * 100)));
         }
         // Sort SPECIES for the table view
-        var sortedSpecies = SPECIES.slice().sort(function(a, b) {
+        var sortedSpecies = visibleSpecies.slice().sort(function(a, b) {
           var va = a[rosterSort], vb = b[rosterSort];
           if (typeof va === 'string') {
             return rosterDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -11087,12 +12022,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var active = rosterSort === key;
           var arrow = active ? (rosterDir === 'asc' ? ' ↑' : ' ↓') : '';
           return h('th', {
-            onClick: function() { setRosterSort(key); },
             className: 'pb-2 px-2 text-left cursor-pointer ' + (active ? 'text-amber-300 font-bold' : 'transition-colors text-slate-400 hover:text-slate-200'),
             scope: 'col',
             'aria-sort': active ? (rosterDir === 'asc' ? 'ascending' : 'descending') : 'none',
             'aria-label': label + (active ? ' (sorted ' + (rosterDir === 'asc' ? 'ascending' : 'descending') + ')' : '')
-          }, label + arrow);
+          }, h('button', { type: 'button', onClick: function() { setRosterSort(key); }, className: 'rh-roster-table-select' }, label + arrow));
         }
         return h('div', { className: 'rh-lab-page rh-lab-page-roster space-y-4' },
           h('div', { className: 'rh-roster-toolbar flex items-center justify-between gap-3 flex-wrap', role: 'toolbar', 'aria-label': __alloT('stem.raptorhunt.a11y_species_roster_display_controls', 'Species roster display controls') },
@@ -11118,6 +12052,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               })
             )
           ),
+
+          rosterView !== 'duel' && h('section', { className: 'rh-roster-discovery', 'aria-label': __alloT('stem.raptorhunt.roster_find', 'Find a raptor') },
+            h('div', null,
+              h('label', { htmlFor: 'rh-roster-search', className: 'rh-roster-search-label' }, __alloT('stem.raptorhunt.roster_search_label', 'Find your flight companion')),
+              h('input', { id: 'rh-roster-search', type: 'search', className: 'rh-roster-search', value: rosterQuery, placeholder: __alloT('stem.raptorhunt.roster_search_hint', 'Search species, habitat, or hunting style'), onChange: function(event) { setRH({ rosterQuery: event.target.value }); }, onKeyDown: function(event) { if (event.key === 'Escape') { event.preventDefault(); setRH({ rosterQuery: '' }); } } })),
+            h('div', { className: 'rh-roster-filters', role: 'group', 'aria-label': __alloT('stem.raptorhunt.roster_filter', 'Filter raptor groups') },
+              [
+                ['all', __alloT('stem.raptorhunt.roster_all', 'All raptors')],
+                ['falcons', __alloT('stem.raptorhunt.roster_falcons', 'Falcons')],
+                ['hawks', __alloT('stem.raptorhunt.roster_hawks', 'Hawks & allies')],
+                ['owls', __alloT('stem.raptorhunt.roster_owls', 'Owls')]
+              ].map(function(group) { return h('button', { key: group[0], type: 'button', 'aria-pressed': rosterFamily === group[0], onClick: function() { setRH({ rosterFamily: group[0] }); } }, group[1]); })),
+            h('p', { className: 'rh-roster-match-count', role: 'status' }, __alloFill(__alloT('stem.raptorhunt.roster_matching', '{count} of {total} species · Choose a card to update your flight profile.'), { count: visibleSpecies.length, total: SPECIES.length }))),
+
+          rosterView !== 'duel' && visibleSpecies.length === 0 && h('div', { className: 'rh-roster-empty' },
+            __alloT('stem.raptorhunt.roster_empty', 'No raptors match this search. Try a habitat such as forest or coast, or choose another group.'),
+            h('button', { type: 'button', onClick: function() { setRH({ rosterQuery: '', rosterFamily: 'all' }); } }, __alloT('stem.raptorhunt.roster_reset', 'Show all raptors'))),
 
           // ── NEW v0.15: Duel Mode ──
           rosterView === 'duel' && (function() {
@@ -11263,8 +12214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       'aria-label': 'Select ' + s.name + (isActive ? ' (currently active)' : '')
                     },
                       h('td', { className: 'py-1.5 px-2' },
-                        h('span', { className: 'mr-1' }, s.emoji),
-                        h('span', { className: 'text-amber-200 font-bold' }, s.name)
+                        h('button', { type: 'button', className: 'rh-roster-table-select', 'aria-pressed': isActive, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_select', 'Select {value1}'), { value1: s.name }), onClick: function(event) { event.stopPropagation(); setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); } }, s.emoji + ' ' + s.name)
                       ),
                       h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.massKg),
                       h('td', { className: 'py-1.5 px-2 font-mono text-amber-300' }, s.wingspanM),
@@ -11284,18 +12234,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-[10px] text-slate-500 italic mt-2' }, __alloT('stem.raptorhunt.try_sorting_by_talon_psi_to_see_who_ha', 'Try sorting by Talon (psi) to see who has the strongest grip (golden eagle), or by Wing loading to see who\'s built for speed (peregrine vs harpy).'))
           ),
 
-          rosterView === 'cards' && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-            SPECIES.map(function(s) {
+          rosterView === 'cards' && h('div', { className: 'rh-roster-gallery' },
+            visibleSpecies.map(function(s) {
               var isActive = s.id === selectedSpecies;
               return h('button', {
                 key: s.id,
                 onClick: function() { setRH({ selectedSpecies: s.id }); rhAnnounce(s.name + ' selected'); },
-                className: 'text-left p-4 rounded-xl border transition-all ' + (isActive
+                type: 'button',
+                'aria-pressed': isActive,
+                className: 'rh-roster-specimen text-left p-4 rounded-xl border transition-all ' + (isActive
                   ? 'bg-gradient-to-br from-amber-800/50 to-orange-800/50 border-amber-400/70 ring-2 ring-amber-400/50'
                   : 'transition-colors bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 active:scale-[0.97]'),
                 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_select', 'Select {value1}'), { value1: s.name })},
-                h('div', { className: 'flex items-start gap-3' },
-                  h('div', { className: 'text-3xl' }, s.emoji),
+                h('span', { className: 'rh-roster-specimen-art', 'aria-hidden': 'true' }, raptorFieldArtwork(s, 'roster-' + s.id, false, false)),
+                h('div', { className: 'rh-roster-specimen-body' }, h('div', { className: 'flex items-start gap-3' },
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'flex items-center justify-between gap-2' },
                       h('div', { className: 'font-bold text-amber-200' }, s.name),
@@ -11331,7 +12283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       })
                     )
                   )
-                )
+                ))
               );
             })
           ),
@@ -11601,7 +12553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           calorieGoal: 0,
           forbidden: ['heavyFlap'],
           required: ['catchN:3'],
-          pedagogy: 'Why owl wing morphology silences flight. The 3 silencing mechanisms (comb leading edge, fringe trailing edge, velvet dorsal) shift the noise spectrum out of mouse hearing range. Heavy flapping defeats the silencing — gliding does not.',
+          pedagogy: 'Explore quiet-flight structures in the feather studio: the leading-edge comb, vane fringes, and velvet surface. This mission uses a fixed flapping-alert rule for practice; it does not compute sound levels or establish a real prey hearing range. Real owls can fly quietly while flapping as well as gliding.',
           successText: 'Silent flight pays off. 3 catches, no panic.'
         },
         {
@@ -11641,14 +12593,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           name: __alloT('stem.raptorhunt.high_stoop', 'High Stoop'),
           icon: '🚀',
           difficulty: 'Hard',
-          intro: __alloT('stem.raptorhunt.drop_from_1000m_altitude_hit_a_moving_', 'Drop from 1000m altitude. Hit a moving pigeon at terminal velocity. One strike to win.'),
+          intro: __alloT('stem.raptorhunt.drop_from_1000m_altitude_hit_a_moving_', 'Begin high above the terrain. Build speed, line up with moving prey, and time a diving catch.'),
           objective: 'Begin high above the terrain. Catch prey while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster within 3 minutes. Speed alone does not complete the mission.',
           timeLimit: 180,
           calorieGoal: 0,
           forbidden: [],
           required: ['stoopAt180mph'],
-          pedagogy: 'Peregrine stoop physics. A 1000m stoop reaches terminal velocity within 7 seconds. Kinetic energy at impact = 0.5 × 0.95 kg × 108² ≈ 5,540 J — pistol-bullet class. Tucker 1998 showed the falcon flies a logarithmic spiral approach to maintain constant retinal angle on prey.',
-          successText: 'Pistol-bullet strike. Tucker would approve.'
+          pedagogy: 'Explore how starting height, drag, and steering affect a simulated dive. Terminal speed is an asymptotic limit of a simplified drag model, not a speed reached after a fixed number of seconds. Use the Stoop calculator to compare controlled vertical falls; this mission also includes steering and moving prey.',
+          successText: 'A well-timed diving catch: speed, alignment, and contact came together.'
         }
       ];
       function missionRouteLabelsFor(missionDef) {
@@ -12316,6 +13268,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     'aria-label': __alloT('stem.raptorhunt.a11y_raptor_flight_controls', 'Raptor flight controls')
                   },
                     h('div', { className: 'rh-flight-controls-group rh-flight-controls-run' },
+                      simToggleButton(__alloT('stem.raptorhunt.motion_lens', 'Motion lens'), 'motionLens', !!simUI.motionLens, __alloT('stem.raptorhunt.motion_lens_toggle', 'Show horizontal motion lens')),
+                      h('button', { type: 'button', className: 'rh-flight-btn', 'data-raptor-path-button': true, disabled: !simUI.ready || !!simUI.studyActive, 'aria-pressed': !!simUI.flightPathActive, onClick: function() { sendHuntCommand('flightPath'); } }, 'Inspect flight path'),
                       h('span', { className: 'rh-flight-control-label' }, 'Run'),
                       h('button', {
                         type: 'button', className: 'rh-flight-btn', disabled: flightResolved || !simUI.ready,
@@ -12511,6 +13465,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         title: strikeHelp || 'Strike when prey is within reach and aligned, or click the prey',
                         'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'strike')
                       }, strikeButtonState || 'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : ''))
+                    )
+                  ),
+                  h('section', { className: 'rh-motion-panel', 'data-raptor-motion-lens': 'true', hidden: !simUI.motionLens || !!simUI.studyActive || !!rh.scenicView, 'aria-labelledby': 'rh-motion-lens-title' },
+                    h('div', { className: 'rh-motion-grid' },
+                      h('div', { className: 'rh-motion-map-frame' },
+                        h('canvas', { width: 420, height: 280, 'data-raptor-motion-map': 'true', role: 'img', 'aria-label': __alloT('stem.raptorhunt.motion_map_label', 'North-up horizontal flight map. The bird stays centered; the dotted line records its recent ground track. A is air-relative motion, W is wind drift, G is ground motion. Values are listed beside the map.') }),
+                        h('div', { className: 'rh-motion-map-caption' }, h('span', null, __alloT('stem.raptorhunt.motion_north_up', 'North up · measured track')), h('span', { 'data-motion-map-scale': 'true' }, '400 m × 267 m'))
+                      ),
+                      h('div', { className: 'rh-motion-copy' },
+                        h('h3', { id: 'rh-motion-lens-title' }, __alloT('stem.raptorhunt.motion_lens_title', 'One bird. Three directions.')),
+                        h('p', null, __alloT('stem.raptorhunt.motion_lens_intro', 'Turn across the wind and compare your heading with the route you actually travel. The white bird points along your heading.')),
+                        h('dl', { className: 'rh-motion-readouts' }, [
+                          ['air', 'A', __alloT('stem.raptorhunt.motion_air', 'Through air')], ['wind', 'W', __alloT('stem.raptorhunt.motion_wind', 'Wind drift')], ['ground', 'G', __alloT('stem.raptorhunt.motion_ground', 'Over ground')]
+                        ].map(function(item) { return h('div', { key: item[0], 'data-motion-kind': item[0] }, h('dt', null, h('b', null, item[1]), item[2]), h('dd', { 'data-motion-value': item[0] }, '0.0 m/s')); })),
+                        h('p', null, __alloT('stem.raptorhunt.motion_lens_scale', 'Horizontal components only. Map arrows show 3 seconds at the current velocity, not a predicted route. The 3D arrows share a scale; wind begins at the air arrow tip.')),
+                        h('p', null, __alloT('stem.raptorhunt.motion_lens_track', 'Dotted track: up to 24 seconds of measured positions. Pause to inspect; scenic view hides this lens.')),
+                        h('p', { 'data-motion-constraint': 'true', hidden: true }, __alloT('stem.raptorhunt.motion_lens_contact', 'A contact or world boundary constrained this step, so the ground arrow differs from air plus wind.'))
+                      )
+                    )
+                  ),
+                  h('section', { className: 'rh-path-panel', 'data-raptor-flight-path': 'true', hidden: !simUI.flightPathActive, 'aria-labelledby': 'rh-flight-path-title', onKeyDown: function(event) { if (event.key === 'Escape') { event.preventDefault(); sendHuntCommand('pathClose'); } } },
+                    h('div', { className: 'rh-path-head' },
+                      h('h3', { id: 'rh-flight-path-title', tabIndex: -1 }, 'Your flight, in three dimensions'),
+                      h('button', { type: 'button', onClick: function() { sendHuntCommand('pathClose'); } }, 'Return to paused flight')
+                    ),
+                    h('p', null, 'Inspect up to 24 seconds of recorded positions. The gold-to-cyan line runs from earlier to later; the white marker selects one sample. Flight stays frozen while you explore.'),
+                    h('div', { className: 'rh-path-grid' },
+                      h('div', { className: 'rh-path-plot' },
+                        h('label', null, 'Profile quantity', h('select', { 'data-flight-path-metric': 'true', defaultValue: 'height', onChange: function(event) { sendHuntCommand('pathMetric', event.target.value); } }, h('option', { value: 'height' }, 'Height above ground'), h('option', { value: 'speed' }, 'Airspeed'), h('option', { value: 'terrain' }, 'Flight + terrain section'))),
+                        h('canvas', { width: 520, height: 200, 'data-flight-path-profile': 'true', role: 'img', 'aria-label': 'Recorded height above terrain against elapsed simulation time. A white cursor marks the selected sample.' }),
+                        h('p', { 'data-flight-path-range': 'true' }, 'Recorded time window'),
+                        h('p', { className: 'rh-path-note' }, 'The vertical tether reaches the terrain below the selected position. The marker is enlarged. This is recorded history, not a predicted route or a replay of bird poses.'),
+                        h('div', { className: 'rh-path-actions' },
+                          h('button', { type: 'button', 'data-flight-path-terrain-toggle': true, 'aria-pressed': false, onClick: function(event) { sendHuntCommand('pathTerrain', event.currentTarget.getAttribute('aria-pressed') !== 'true'); } }, 'Show 3D terrain section'),
+                          h('button', { type: 'button', 'data-flight-path-lowest': true, onClick: function() { sendHuntCommand('pathLowest'); } }, 'Find least clearance')),
+                        h('div', { 'data-flight-path-terrain-key': true, hidden: true },
+                          h('p', null, 'Flight trace = gold to turquoise. Terrain = ochre. The translucent curtain connects each recorded position to the terrain directly beneath it.'),
+                          h('dl', { className: 'rh-path-readings' }, [['bird','World height'],['ground','Terrain height'],['clearance','Vertical clearance']].map(function(item) { return h('div', { key: item[0] }, h('dt', null, item[1]), h('dd', { 'data-terrain-value': item[0] }, '—')); })),
+                          h('p', { className: 'rh-path-note' }, 'World height uses the model’s fixed vertical reference, not sea level. The section follows the curved ground track and joins sampled terrain heights; it does not show every ridge between samples. The terrain mesh excludes trees, buildings, and the water surface: over a lake it shows the basin.'))
+                      ),
+                      h('div', { className: 'rh-path-controls' },
+                        h('fieldset', { className: 'rh-path-views' }, h('legend', null, 'Inspect the route from'), h('div', { className: 'rh-path-actions' }, [['oblique', 'Oblique'], ['top', 'Above'], ['side', 'Side']].map(function(view) { return h('button', { key: view[0], type: 'button', 'data-flight-path-view': view[0], 'aria-pressed': view[0] === 'oblique', onClick: function() { sendHuntCommand('pathView', view[0]); } }, view[1]); }))),
+                        h('dl', { className: 'rh-path-readings' }, [['time', 'Flight time'], ['height', 'Above ground'], ['speed', 'Airspeed']].map(function(reading) { return h('div', { key: reading[0] }, h('dt', null, reading[1]), h('dd', { 'data-flight-path-value': reading[0] }, '—')); })),
+                        h('label', { htmlFor: 'rh-flight-path-sample' }, 'Inspect recorded flight sample'),
+                        h('input', { id: 'rh-flight-path-sample', 'data-flight-path-sample': 'true', type: 'range', min: 0, max: 0, step: 1, defaultValue: 0, onInput: function(event) { sendHuntCommand('pathSample', Number(event.target.value)); } }),
+                        h('div', { className: 'rh-path-actions' }, h('button', { type: 'button', onClick: function() { sendHuntCommand('pathSample', 0); } }, 'Earliest sample'), h('button', { type: 'button', onClick: function() { sendHuntCommand('pathSample', 120); } }, 'Latest sample')),
+                        h('p', null, 'Pin a sample as A, then move the slider to choose B. Compare the highlighted section in the landscape and profile.'),
+                        h('div', { className: 'rh-path-actions' },
+                          h('button', { type: 'button', 'data-flight-path-pin': true, onClick: function() { sendHuntCommand('pathPin'); } }, 'Pin this sample as A'),
+                          h('button', { type: 'button', 'data-flight-path-compare-all': true, onClick: function() { sendHuntCommand('pathCompareAll'); } }, 'Compare full route'),
+                          h('button', { type: 'button', 'data-flight-path-clear': true, onClick: function() { sendHuntCommand('pathClear'); } }, 'Clear comparison')),
+                        h('p', null, 'The current bird stays at the end of the route. Changing the sample or view never moves the bird or changes mission progress.')
+                      )
+                    ),
+                    h('section', { className: 'rh-path-compare', 'data-flight-path-comparison': true, hidden: true, 'aria-label': 'Recorded flight interval comparison' },
+                      h('h4', null, 'Compare a leg of your flight'),
+                      h('div', { className: 'rh-path-compare-key' }, h('span', { 'data-path-anchor-label': true }, 'A · pinned sample'), h('span', { 'data-path-selected-label': true }, 'B · selected sample')),
+                      h('dl', { className: 'rh-path-readings' }, [['elapsed', 'Time between samples'], ['distance', 'Recorded route length'], ['displacement', 'Horizontal separation'], ['altitude', 'World-height change · B − A'], ['clearance', 'Ground-clearance change · B − A'], ['speed', 'Airspeed change · B − A']].map(function(reading) { return h('div', { key: reading[0] }, h('dt', null, reading[1]), h('dd', { 'data-path-comparison-value': reading[0] }, '—')); })),
+                      h('p', { 'data-path-comparison-direction': true }, ''),
+                      h('p', { className: 'rh-path-note' }, 'Route length sums the recorded 3D segments; motion between samples is not resolved. Horizontal separation is the straight map distance. World height uses a fixed vertical reference; ground clearance also changes with the terrain beneath the bird.')
                     )
                   ),
                   simUI.lastStrikeResult && h('section', {
@@ -13509,13 +14523,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           mountain: [0x57534e, 0xd6d3d1],
           cliff: [0x475569, 0xcbd5e1],
           'urban-cliff': [0x334155, 0x93c5fd],
-          tundra: [0x94a3b8, 0xf8fafc],
+          tundra: [0x6f7680, 0xf8fafc],
           lake: [0x626b56, 0x88917c],
           rainforest: [0x14532d, 0x4ade80],
           forest: [0x166534, 0x86efac],
           'forest-night': [0x1c1917, 0x3f6b4f],
           'boreal-forest': [0x1f3a1d, 0xa7f3d0],
-          grassland: [0x4d7c0f, 0xfacc15]
+          grassland: [0x847a6a, 0xd4c08a]
         }[species.biome] || [0x475569, 0xcbd5e1];
         // Flat shading, like every other peak in the scene. These landmarks sit at
         // radius 150-305, nearer than both mountain rings, yet they were the only
@@ -13546,6 +14560,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         landmarkAccentMaterial.color.convertSRGBToLinear();
         landmarkSnowMaterial.color.convertSRGBToLinear();
         detailSnowMaterial(landmarkSnowMaterial);
+        // Bark, weathered snag wood and a natural foliage green for tree landmarks;
+        // the bright accent colour made distant crowns read as mint cones.
+        var landmarkFoliage = { rainforest: 0x2f5a29, forest: 0x2e4f2c, 'forest-night': 0x22382a, 'boreal-forest': 0x284733 }[species.biome] || 0x2e4f2c;
+        var landmarkBarkMaterial = new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 0.95, metalness: 0, flatShading: true, fog: true });
+        var landmarkSnagMaterial = new THREE.MeshStandardMaterial({ color: 0x7a7064, roughness: 0.93, metalness: 0, flatShading: true, fog: true });
+        var landmarkFoliageMaterial = new THREE.MeshStandardMaterial({ color: landmarkFoliage, roughness: 0.9, metalness: 0, flatShading: true, fog: true });
+        landmarkBarkMaterial.color.convertSRGBToLinear();
+        landmarkSnagMaterial.color.convertSRGBToLinear();
+        landmarkFoliageMaterial.color.convertSRGBToLinear();
         var landmarkCount = graphicsQuality === 'high' ? 6 : graphicsQuality === 'low' ? 3 : 4;
         var landmarkMode = species.biome === 'mountain' || species.biome === 'cliff' || species.biome === 'urban-cliff'
           ? 'peaks'
@@ -13567,19 +14590,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               : landmarkMode === 'ice'
                 ? 14 + Math.random() * 28
                 : 10 + Math.random() * 14;
+          // Natural landmarks. Each mode draws the same Math.random() values, in
+          // the same order, as the earlier geometry; added variety is hashed.
+          var landmarkHash = function (k) { var n = Math.sin((landmarkIndex + 1) * 12.9898 + k * 78.233) * 43758.5453; return n - Math.floor(n); };
           if (landmarkMode === 'trees') {
-            var landmarkTrunk = new THREE.Mesh(
-              new THREE.CylinderGeometry(1.1 + Math.random() * 0.7, 1.7 + Math.random() * 0.9, landmarkHeight * 0.52, 6),
-              landmarkMaterial
-            );
-            landmarkTrunk.position.y = landmarkHeight * 0.26;
-            landmark.add(landmarkTrunk);
-            var landmarkCrown = new THREE.Mesh(
-              new THREE.ConeGeometry(landmarkHeight * 0.34, landmarkHeight * 0.82, 7),
-              landmarkAccentMaterial
-            );
-            landmarkCrown.position.y = landmarkHeight * 0.67;
-            landmark.add(landmarkCrown);
+            var trunkTopRadius = 1.1 + Math.random() * 0.7, trunkBaseRadius = 1.7 + Math.random() * 0.9;
+            if (species.biome === 'rainforest') {
+              // An emergent tree: a tall clear bole under a broad, flat umbrella crown.
+              var boleHeight = landmarkHeight * 0.78;
+              var bole = new THREE.Mesh(new THREE.CylinderGeometry(trunkTopRadius * 0.7, trunkBaseRadius, boleHeight, 7), landmarkBarkMaterial);
+              bole.position.y = boleHeight * 0.5;
+              landmark.add(bole);
+              var canopy = new THREE.Mesh(new THREE.IcosahedronGeometry(landmarkHeight * 0.30, 1), landmarkFoliageMaterial);
+              canopy.scale.set(1.25, 0.38, 1.1);
+              canopy.position.y = boleHeight + landmarkHeight * 0.08;
+              landmark.add(canopy);
+              var canopyLobe = new THREE.Mesh(new THREE.IcosahedronGeometry(landmarkHeight * 0.18, 1), landmarkFoliageMaterial);
+              canopyLobe.scale.set(1.2, 0.45, 1.0);
+              canopyLobe.position.set(landmarkHeight * (0.12 + landmarkHash(1) * 0.08), boleHeight + landmarkHeight * 0.13, -landmarkHeight * 0.08);
+              landmark.add(canopyLobe);
+            } else {
+              // A giant conifer: a brown trunk under stacked, overhanging tiers,
+              // drawn as one lathed mesh rather than a single cone.
+              var trunkHeight = landmarkHeight * 0.30;
+              var landmarkTrunk = new THREE.Mesh(new THREE.CylinderGeometry(trunkTopRadius, trunkBaseRadius, trunkHeight, 7), landmarkBarkMaterial);
+              landmarkTrunk.position.y = trunkHeight * 0.5;
+              landmark.add(landmarkTrunk);
+              var crownBase = trunkHeight * 0.82, crownHeight = landmarkHeight - crownBase, tierCount = 5;
+              var tierProfile = [new THREE.Vector2(0.01, crownBase)];
+              for (var tier = 0; tier < tierCount; tier++) {
+                var tierBottom = crownBase + crownHeight * tier / tierCount * 0.92;
+                var tierOuter = landmarkHeight * 0.27 * (1 - tier / tierCount * 0.78) * (0.92 + landmarkHash(tier + 3) * 0.16);
+                tierProfile.push(new THREE.Vector2(tierOuter, tierBottom - (tier ? crownHeight * 0.035 : 0)));
+                tierProfile.push(new THREE.Vector2(tierOuter * 0.42, tierBottom + crownHeight / tierCount * 1.05));
+              }
+              tierProfile.push(new THREE.Vector2(0.01, landmarkHeight));
+              var landmarkCrown = new THREE.Mesh(new THREE.LatheGeometry(tierProfile, 9), landmarkFoliageMaterial);
+              landmark.add(landmarkCrown);
+            }
           } else if (landmarkMode === 'urban-cliff') {
             var landmarkTower = new THREE.Mesh(
               new THREE.BoxGeometry(8 + Math.random() * 8, landmarkHeight, 8 + Math.random() * 8),
@@ -13601,12 +14649,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             shorelineRock.scale.y = 0.6 + Math.random() * 0.45;
             shorelineRock.position.y = landmarkHeight * 0.22;
             landmark.add(shorelineRock);
-            var shorelineMarker = new THREE.Mesh(
-              new THREE.ConeGeometry(1.3, landmarkHeight * 0.8, 5),
-              landmarkAccentMaterial
-            );
-            shorelineMarker.position.y = landmarkHeight * 0.55;
-            landmark.add(shorelineMarker);
+            // A weathered snag beside the rock: the lookout a fishing eagle uses.
+            var snagHeight = landmarkHeight * 1.05, snagX = shorelineRock.geometry.parameters.radius * 0.85;
+            var snag = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 1.0, snagHeight, 6), landmarkSnagMaterial);
+            snag.position.set(snagX, snagHeight * 0.5, 0);
+            snag.rotation.z = (landmarkHash(1) - 0.5) * 0.12;
+            landmark.add(snag);
+            for (var snagLimb = 0; snagLimb < 2; snagLimb++) {
+              var snagLimbLength = snagHeight * (0.20 + landmarkHash(snagLimb + 2) * 0.12);
+              var snagLimbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.30, snagLimbLength, 5), landmarkSnagMaterial);
+              var snagSide = snagLimb ? -1 : 1;
+              snagLimbMesh.position.set(snagX + snagSide * snagLimbLength * 0.38, snagHeight * (0.62 + snagLimb * 0.16), 0);
+              snagLimbMesh.rotation.z = -snagSide * (0.95 + landmarkHash(snagLimb + 5) * 0.25);
+              landmark.add(snagLimbMesh);
+            }
+          } else if (landmarkMode === 'rocks' || landmarkMode === 'ice') {
+            // Grassland tors and tundra outcrops: broad weathered rock, not spires.
+            var outcropIce = landmarkMode === 'ice';
+            var outcropRadius = landmarkHeight * (outcropIce ? 0.55 : 0.75) + Math.random() * landmarkHeight * (outcropIce ? 0.25 : 0.35);
+            var outcropHeight = landmarkHeight * (outcropIce ? 0.7 : 0.8);
+            var outcrop = new THREE.Mesh(sculptMountainGeometry(new THREE.ConeGeometry(outcropRadius, outcropHeight, 22, 8), landmarkIndex * 2.7), landmarkMaterial);
+            outcrop.position.y = outcropHeight * 0.5;
+            outcrop.rotation.y = Math.random() * Math.PI;
+            landmark.add(outcrop);
+            if (outcropIce) {
+              var outcropCap = new THREE.Mesh(sculptMountainGeometry(new THREE.ConeGeometry(outcropRadius * 0.62 * 1.02, outcropHeight * 0.45, 22, 6), landmarkIndex * 2.7, outcropHeight), landmarkSnowMaterial);
+              outcropCap.position.y = outcrop.position.y + outcropHeight * 0.275;
+              outcropCap.rotation.y = outcrop.rotation.y;
+              landmark.add(outcropCap);
+            }
+            // Loose boulders at the foot; the tundra one is a glacial erratic.
+            var boulderSizes = outcropIce ? [3 + Math.random() * 3] : [landmarkHeight * (0.16 + landmarkHash(2) * 0.08), landmarkHeight * (0.11 + landmarkHash(3) * 0.06)];
+            for (var boulderIndex = 0; boulderIndex < boulderSizes.length; boulderIndex++) {
+              var boulder = new THREE.Mesh(new THREE.IcosahedronGeometry(boulderSizes[boulderIndex], 0), landmarkMaterial);
+              var boulderAngle = landmarkHash(boulderIndex + 8) * Math.PI * 2;
+              boulder.scale.y = 0.62 + landmarkHash(boulderIndex + 11) * 0.2;
+              boulder.position.set(Math.cos(boulderAngle) * outcropRadius * 1.08, boulderSizes[boulderIndex] * 0.42, Math.sin(boulderAngle) * outcropRadius * 1.08);
+              landmark.add(boulder);
+            }
           } else {
             var landmarkRock = new THREE.Mesh(
               // Peaks and rocks are broad (height 24-60 m on a 6-14 m radius read as needles); ice stays slimmer.
@@ -14601,21 +15681,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var breastColor = plumageProfile.breast;
         var raptorFieldMarkIds = [];
         // One continuous body surface blends mantle and breast without an overlapping belly shell.
-        function createRaptorBodyGeometry(quality,dorsal,ventral) {
+        function createRaptorBodyGeometry(quality,dorsal,ventral,taper) {
           var geometry=new THREE.SphereGeometry(1,quality==='low'?24:36,quality==='low'?16:24);
           // Put UV poles at the neck and tail, leaving the visible breast free of pinching.
           geometry.rotateX(Math.PI/2);
           var p=geometry.attributes.position,colors=[],back=new THREE.Color(dorsal).convertSRGBToLinear(),chest=new THREE.Color(ventral).convertSRGBToLinear(),shade=new THREE.Color();
           function smooth(a,b,value){var t=Math.max(0,Math.min(1,(value-a)/(b-a)));return t*t*(3-2*t);}
+          // Carve, never inflate: full shoulders and breast narrow through the
+          // waist into a slim tail base, and the back sits flatter than the
+          // breast. An even ellipsoid read as an egg at close range.
+          var rearTaper=typeof taper==='number'?taper:0.40;
           for(var i=0;i<p.count;i++){
             var x=p.getX(i),y=p.getY(i),z=p.getZ(i),shoulder=Math.exp(-Math.pow((z-0.38)/0.55,2));
-            p.setXYZ(i,x*0.245*(0.91+shoulder*0.09),y*0.245+0.016*shoulder*(1-y*y),z*0.63);
+            var rear=smooth(0.10,0.98,-z),girth=(1-rearTaper*rear)*(1-0.08*smooth(0.55,1.0,z));
+            var flatBack=y>0?1-0.12*(1-0.5*rear):1;
+            p.setXYZ(i,x*0.245*(0.91+shoulder*0.09)*girth,(y*0.245+0.016*shoulder*(1-y*y))*girth*flatBack+0.014*rear,z*0.63);
             var breastMix=(1-smooth(-0.24,0.10,y))*smooth(-0.96,-0.55,z);
             shade.copy(back).lerp(chest,breastMix);colors.push(shade.r,shade.g,shade.b);
           }
           geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeVertexNormals();return geometry;
         }
-        var bodyGeo=createRaptorBodyGeometry(graphicsQuality,bodyColor,breastColor);
+        // Owls keep a stockier, rounder torso than the slim falcons and hawks.
+        var bodyGeo=createRaptorBodyGeometry(graphicsQuality,bodyColor,breastColor,species.isOwl?0.22:species.family==='Falconidae'?0.46:0.40);
         // How bright this bird is. A snowy owl and a great horned owl are at opposite
         // ends of this, and which one is flying decides how hard it is to pick out.
         var raptorBodyLuminance = relativeLuminanceOfColor(new THREE.Color(bodyColor));
@@ -18154,6 +19241,365 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           visualYawLast: Math.PI
         };
         var worldEdgeSoft = terrainHalfSize - 70;
+        // An opt-in horizontal-motion lens shares the applied integration vectors.
+        // Its bounded track, arrows and canvas never alter the simulation state.
+        var motionLensEnabled = false;
+        var motionVectors = { air: { x: 0, z: 0 }, wind: { x: 0, z: 0 }, ground: { x: 0, z: 0 } };
+        var motionTrack = [{ x: raptor.x, y: raptor.y, z: raptor.z, t: 0, height: Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)), speed: raptor.speed }];
+        var motionConstrained = false, motionMapRange = 200, motionArrowScale = 0.8, motionMapPaintTime = -Infinity;
+        var motionShell = canvasEl.closest('[data-raptor-sim-shell]');
+        var motionPanel = motionShell && motionShell.querySelector('[data-raptor-motion-lens]');
+        var motionMap = motionPanel && motionPanel.querySelector('[data-raptor-motion-map]');
+        var motionMapContext = motionMap && motionMap.getContext('2d');
+        var motionReadouts = motionPanel ? ['air', 'wind', 'ground'].map(function(kind) { return motionPanel.querySelector('[data-motion-value="' + kind + '"]'); }) : [];
+        var motionScaleReadout = motionPanel && motionPanel.querySelector('[data-motion-map-scale]');
+        var motionConstraintReadout = motionPanel && motionPanel.querySelector('[data-motion-constraint]');
+        var motionLensGroup = new THREE.Group(); motionLensGroup.name = 'raptor-horizontal-motion-lens'; motionLensGroup.visible = false; scene.add(motionLensGroup);
+        var motionLensArrows = [0x67e8f9, 0xfcd34d, 0xc4b5fd].map(function(color, index) {
+          var arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, -1), new THREE.Vector3(), 1, color, 1, 0.5);
+          arrow.name = 'raptor-motion-' + ['air', 'wind', 'ground'][index]; arrow.userData.motionKind = ['air', 'wind', 'ground'][index];
+          arrow.line.material.depthTest = arrow.cone.material.depthTest = false;
+          arrow.line.material.toneMapped = arrow.cone.material.toneMapped = false;
+          arrow.renderOrder = arrow.line.renderOrder = arrow.cone.renderOrder = 15;
+          motionLensGroup.add(arrow); return arrow;
+        });
+        var motionDirection = new THREE.Vector3();
+        function paintMotionLens() {
+          var visible = motionLensEnabled && !studyActive && !flightPathActive && !(canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true');
+          motionLensGroup.visible = visible;
+          if (motionPanel) motionPanel.hidden = !visible;
+          if (!visible) return;
+          var kinds = ['air', 'wind', 'ground'];
+          var magnitudes = kinds.map(function(kind) { return Math.hypot(motionVectors[kind].x, motionVectors[kind].z); });
+          motionArrowScale = Math.min(0.8, 32 / Math.max(1, magnitudes[0], magnitudes[1], magnitudes[2]));
+          motionLensGroup.position.set(raptor.x, raptor.y + 3, raptor.z);
+          motionLensArrows.forEach(function(arrow, index) {
+            var vector = motionVectors[kinds[index]], length = magnitudes[index] * motionArrowScale;
+            arrow.visible = length > 0.05;
+            arrow.position.set(index === 1 ? motionVectors.air.x * motionArrowScale : 0, index === 2 ? -0.12 : 0, index === 1 ? motionVectors.air.z * motionArrowScale : 0);
+            if (arrow.visible) { motionDirection.set(vector.x, 0, vector.z).normalize(); arrow.setDirection(motionDirection); arrow.setLength(length, Math.min(1.5, length * 0.3), Math.min(0.8, length * 0.18)); }
+          });
+          if (!motionMapContext || (!simPaused && motionNow - motionMapPaintTime < 80)) return;
+          motionMapPaintTime = motionNow;
+          // North is -Z, east is +X. A common three-second projection gives all
+          // velocity arrows the same scale; the pale trace is measured history.
+          motionMapRange = Math.ceil(Math.max(200, Math.max.apply(null, magnitudes) * 3 * 1.65) / 50) * 50;
+          var cx = 210, cy = 140, scale = 210 / motionMapRange, context = motionMapContext;
+          context.clearRect(0, 0, 420, 280);
+          var wash = context.createLinearGradient(0, 0, 420, 280); wash.addColorStop(0, '#173947'); wash.addColorStop(1, '#091e2d');
+          context.fillStyle = wash; context.fillRect(0, 0, 420, 280);
+          context.strokeStyle = '#3b5a6b'; context.lineWidth = 0.7;
+          var gridMeters = motionMapRange > 400 ? 100 : 50, step = gridMeters * scale;
+          var gridX = cx - ((raptor.x % gridMeters) + gridMeters) % gridMeters * scale;
+          var gridY = cy - ((raptor.z % gridMeters) + gridMeters) % gridMeters * scale;
+          for (var gx = gridX % step; gx < 420; gx += step) { context.beginPath(); context.moveTo(gx, 0); context.lineTo(gx, 280); context.stroke(); }
+          for (var gy = gridY % step; gy < 280; gy += step) { context.beginPath(); context.moveTo(0, gy); context.lineTo(420, gy); context.stroke(); }
+          context.save(); context.beginPath(); context.rect(8, 8, 404, 264); context.clip();
+          context.strokeStyle = '#c2d1d9'; context.lineWidth = 2; context.setLineDash([2, 4]); context.beginPath();
+          motionTrack.forEach(function(point, index) { var x = cx + (point.x - raptor.x) * scale, y = cy + (point.z - raptor.z) * scale; if (index) context.lineTo(x, y); else context.moveTo(x, y); });
+          context.stroke(); context.setLineDash([]);
+          var motionLabelPositions = [];
+          function mapArrow(x, y, vector, color, letter, dashed) {
+            var dx = vector.x * 3 * scale, dy = vector.z * 3 * scale, length = Math.hypot(dx, dy);
+            if (length < 1) return;
+            var angle = Math.atan2(dy, dx), ex = x + dx, ey = y + dy;
+            context.strokeStyle = color; context.fillStyle = color; context.lineWidth = 2.6; context.setLineDash(dashed ? [6, 4] : []);
+            context.beginPath(); context.moveTo(x, y); context.lineTo(ex, ey); context.stroke(); context.setLineDash([]);
+            context.beginPath(); context.moveTo(ex, ey); context.lineTo(ex - 8 * Math.cos(angle - 0.45), ey - 8 * Math.sin(angle - 0.45)); context.lineTo(ex - 8 * Math.cos(angle + 0.45), ey - 8 * Math.sin(angle + 0.45)); context.closePath(); context.fill();
+            // Wind and ground share an endpoint in unconstrained flight. Put their
+            // letters on opposite sides, and keep A near its shaft. A small collision
+            // search also preserves all three letters when the wind is nearly aligned.
+            var anchorX = letter === 'A' ? x + dx * 0.55 : ex, anchorY = letter === 'A' ? y + dy * 0.55 : ey;
+            var preferredSide = letter === 'W' ? -1 : 1, labelX = anchorX, labelY = anchorY;
+            for (var labelTry = 0; labelTry < 12; labelTry++) {
+              var normalOffset = preferredSide * (17 + Math.floor(labelTry / 3) * 16);
+              var alongOffset = (labelTry % 3 - 1) * 20;
+              labelX = Math.max(12, Math.min(408, anchorX + normalOffset * Math.sin(angle) + alongOffset * Math.cos(angle)));
+              labelY = Math.max(30, Math.min(240, anchorY - normalOffset * Math.cos(angle) + alongOffset * Math.sin(angle)));
+              if (motionLabelPositions.every(function(point) { return Math.hypot(point.x - labelX, point.y - labelY) >= 23; })) break;
+            }
+            motionLabelPositions.push({ x: labelX, y: labelY });
+            context.lineWidth = 1; context.beginPath(); context.moveTo(anchorX, anchorY); context.lineTo(labelX, labelY); context.stroke();
+            context.font = 'bold 12px system-ui'; context.textAlign = 'center'; context.fillStyle = '#071923'; context.beginPath(); context.arc(labelX, labelY, 9, 0, Math.PI * 2); context.fill(); context.fillStyle = color; context.fillText(letter, labelX, labelY + 4);
+          }
+          mapArrow(cx, cy, motionVectors.ground, '#c4b5fd', 'G', true);
+          mapArrow(cx, cy, motionVectors.air, '#67e8f9', 'A', false);
+          mapArrow(cx + motionVectors.air.x * 3 * scale, cy + motionVectors.air.z * 3 * scale, motionVectors.wind, '#fcd34d', 'W', false);
+          context.save(); context.translate(cx, cy); context.rotate(raptor.yaw); context.fillStyle = '#f8fafc'; context.strokeStyle = '#092033'; context.lineWidth = 2;
+          context.beginPath(); context.moveTo(0, -11); context.lineTo(7, 7); context.lineTo(0, 3); context.lineTo(-7, 7); context.closePath(); context.fill(); context.stroke(); context.restore(); context.restore();
+          context.font = 'bold 12px system-ui'; context.fillStyle = '#e5f4fa'; context.textAlign = 'center'; context.fillText('N ↑', 210, 20); context.fillText('E', 404, 145); context.fillText('S', 210, 268); context.fillText('W', 16, 145);
+          context.fillStyle = '#092033'; context.fillRect(12, 242, 95, 25); context.strokeStyle = '#e5f4fa'; context.lineWidth = 2; context.beginPath(); context.moveTo(20, 254); context.lineTo(20 + 50 * scale, 254); context.stroke(); context.textAlign = 'left'; context.font = '11px system-ui'; context.fillStyle = '#e5f4fa'; context.fillText('50 m', 25 + 50 * scale, 258);
+          motionMap.dataset.centerX = String(raptor.x); motionMap.dataset.centerZ = String(raptor.z); motionMap.dataset.range = String(motionMapRange); motionMap.dataset.heading = String(raptor.yaw);
+          motionReadouts.forEach(function(node, index) { if (node) node.textContent = magnitudes[index].toFixed(1) + ' m/s'; });
+          if (motionScaleReadout) motionScaleReadout.textContent = (motionMapRange * 2).toFixed(0) + ' m × ' + (motionMapRange * 4 / 3).toFixed(0) + ' m';
+          if (motionConstraintReadout) motionConstraintReadout.hidden = !motionConstrained;
+        }
+        // A retrospective view of actual integration samples. One bounded buffer,
+        // one selected-position marker, and no animation clock or physics rewind.
+        var flightPathActive = false, flightPathSamples = [], flightPathIndex = 0;
+        var flightPathAnchorIndex = null;
+        var flightPathTerrainEnabled = false, flightPathTerrainSamples = [];
+        var flightPathView = 'oblique', flightPathMetric = 'height', flightPathSavedCamera = null;
+        var pathPanel = motionShell && motionShell.querySelector('[data-raptor-flight-path]');
+        var pathProfile = pathPanel && pathPanel.querySelector('[data-flight-path-profile]');
+        var pathContext = pathProfile && pathProfile.getContext('2d');
+        var pathInput = pathPanel && pathPanel.querySelector('[data-flight-path-sample]');
+        var pathGroup = new THREE.Group(); pathGroup.name = 'raptor-flight-path-review'; pathGroup.visible = false; scene.add(pathGroup);
+        var pathPositions = new Float32Array(121 * 3), pathColors = new Float32Array(121 * 3);
+        var pathGeometry = new THREE.BufferGeometry();
+        pathGeometry.setAttribute('position', new THREE.BufferAttribute(pathPositions, 3));
+        pathGeometry.setAttribute('color', new THREE.BufferAttribute(pathColors, 3)); pathGeometry.setDrawRange(0, 0);
+        var pathLine = new THREE.Line(pathGeometry, new THREE.LineBasicMaterial({ vertexColors: true, fog: false, toneMapped: false }));
+        pathLine.name = 'raptor-flight-path-line'; pathLine.frustumCulled = false; pathGroup.add(pathLine);
+        // WebGL's native line is one pixel wide on many devices. Reuse two small
+        // instanced strokes along the same measured segments for contrast over terrain.
+        // Neither stroke writes depth, so the colored core remains visible inside its
+        // dark backing; both still respect actual terrain and animal occlusion.
+        var pathStrokeGeometry = new THREE.CylinderGeometry(1, 1, 1, 8, 1, true);
+        var pathOutline = new THREE.InstancedMesh(pathStrokeGeometry, new THREE.MeshBasicMaterial({ color: 0x092330, transparent: true, opacity: 0.88, depthWrite: false, fog: false, toneMapped: false }), 120);
+        var pathStroke = new THREE.InstancedMesh(pathStrokeGeometry, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, depthWrite: false, fog: false, toneMapped: false }), 120);
+        // r128's lazy setColorAt allocation uses the current draw count, not the
+        // constructor capacity. A later, longer recording must fit the same buffer.
+        pathStroke.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(120 * 3), 3);
+        pathOutline.name = 'raptor-flight-path-outline'; pathStroke.name = 'raptor-flight-path-stroke';
+        pathOutline.count = pathStroke.count = 0; pathOutline.frustumCulled = pathStroke.frustumCulled = false;
+        pathOutline.renderOrder = 20; pathStroke.renderOrder = 21; pathGroup.add(pathOutline); pathGroup.add(pathStroke);
+        var pathStrokeMatrix = new THREE.Matrix4(), pathStrokeQuaternion = new THREE.Quaternion(), pathStrokeScale = new THREE.Vector3(), pathStrokeMidpoint = new THREE.Vector3(), pathStrokeDirection = new THREE.Vector3(), pathStrokeAxis = new THREE.Vector3(0, 1, 0), pathStrokeColor = new THREE.Color();
+        var pathMarker = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({ color: 0xfff5db, fog: false, toneMapped: false }));
+        pathMarker.name = 'raptor-flight-path-marker'; pathGroup.add(pathMarker);
+        var pathMarkerRing = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.13, 6, 28), new THREE.MeshBasicMaterial({ color: 0x7de4dc, fog: false, toneMapped: false }));
+        pathMarkerRing.name = 'raptor-flight-path-marker-ring'; pathGroup.add(pathMarkerRing);
+        var pathTetherPositions = new Float32Array(6), pathTetherGeometry = new THREE.BufferGeometry();
+        pathTetherGeometry.setAttribute('position', new THREE.BufferAttribute(pathTetherPositions, 3));
+        var pathTether = new THREE.Line(pathTetherGeometry, new THREE.LineBasicMaterial({ color: 0xc3e2e7, transparent: true, opacity: 0.7, fog: false, toneMapped: false }));
+        pathTether.name = 'raptor-flight-path-height'; pathTether.frustumCulled = false; pathGroup.add(pathTether);
+        var pathFoot = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.12, 6, 28), new THREE.MeshBasicMaterial({ color: 0xc3e2e7, fog: false, toneMapped: false }));
+        pathFoot.name = 'raptor-flight-path-ground'; pathFoot.rotation.x = Math.PI / 2; pathGroup.add(pathFoot);
+        // Fixed-capacity comparison geometry follows the same recorded samples.
+        // Dedicated resources keep each new geometry/material owned once at cleanup.
+        var pathInterval = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0xffe6a3, transparent: true, opacity: 1, depthWrite: false, fog: false, toneMapped: false }), 120);
+        pathInterval.name = 'raptor-flight-path-interval'; pathInterval.count = 0; pathInterval.visible = false; pathInterval.frustumCulled = false; pathInterval.renderOrder = 23; pathGroup.add(pathInterval);
+        var pathAnchor = new THREE.Mesh(new THREE.SphereGeometry(1.12, 12, 8), new THREE.MeshBasicMaterial({ color: 0xf4ce7c, fog: false, toneMapped: false }));
+        pathAnchor.name = 'raptor-flight-path-anchor'; pathAnchor.visible = false; pathGroup.add(pathAnchor);
+        var pathAnchorTetherGeometry = new THREE.BufferGeometry(); pathAnchorTetherGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3)); pathAnchorTetherGeometry.setAttribute('lineDistance', new THREE.BufferAttribute(new Float32Array(2), 1));
+        var pathAnchorTether = new THREE.Line(pathAnchorTetherGeometry, new THREE.LineDashedMaterial({ color: 0xf4ce7c, dashSize: 2, gapSize: 1.5, transparent: true, opacity: 0.8, fog: false, toneMapped: false }));
+        pathAnchorTether.name = 'raptor-flight-path-anchor-height'; pathAnchorTether.visible = false; pathAnchorTether.frustumCulled = false; pathGroup.add(pathAnchorTether);
+        // Fixed-capacity geometry through sampled terrain beneath the frozen route.
+        // Each new object owns its geometry and material once at cleanup.
+        var pathTerrainGeometry = new THREE.BufferGeometry(); pathTerrainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(120 * 18), 3)); pathTerrainGeometry.setDrawRange(0, 0);
+        var pathTerrainCurtain = new THREE.Mesh(pathTerrainGeometry, new THREE.MeshBasicMaterial({ color: 0x8ad6ce, side: THREE.DoubleSide, transparent: true, opacity: 0.16, depthWrite: false, fog: false, toneMapped: false }));
+        pathTerrainCurtain.name = 'raptor-flight-terrain-curtain'; pathTerrainCurtain.visible = false; pathTerrainCurtain.frustumCulled = false; pathTerrainCurtain.renderOrder = 17; pathGroup.add(pathTerrainCurtain);
+        var pathGroundGeometry = new THREE.BufferGeometry(); pathGroundGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(121 * 3), 3)); pathGroundGeometry.setDrawRange(0, 0);
+        var pathGroundLine = new THREE.Line(pathGroundGeometry, new THREE.LineBasicMaterial({ color: 0xf1ce98, depthWrite: false, fog: false, toneMapped: false }));
+        pathGroundLine.name = 'raptor-flight-terrain-ground'; pathGroundLine.visible = false; pathGroundLine.frustumCulled = false; pathGroup.add(pathGroundLine);
+        var pathGroundStroke = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0xf1ce98, depthWrite: false, fog: false, toneMapped: false }), 120);
+        pathGroundStroke.name = 'raptor-flight-terrain-stroke'; pathGroundStroke.count = 0; pathGroundStroke.visible = false; pathGroundStroke.frustumCulled = false; pathGroundStroke.renderOrder = 18; pathGroup.add(pathGroundStroke);
+        var pathBounds = new THREE.Box3(), pathPoint = new THREE.Vector3(), pathCenter = new THREE.Vector3(), pathSize = new THREE.Vector3(), pathDirection = new THREE.Vector3();
+        function copyFlightPathPoint(point) { return { x: point.x, y: point.y, z: point.z, t: point.t, height: point.height, speed: point.speed }; }
+        function flightPathComparison() {
+          if (!flightPathActive || flightPathAnchorIndex === null) return null;
+          var a = flightPathSamples[flightPathAnchorIndex], b = flightPathSamples[flightPathIndex];
+          if (!a || !b) return null;
+          var start = Math.min(flightPathAnchorIndex, flightPathIndex), end = Math.max(flightPathAnchorIndex, flightPathIndex), distance = 0;
+          for (var i = start; i < end; i++) { var p = flightPathSamples[i], q = flightPathSamples[i + 1]; distance += Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z); }
+          return { elapsed: Math.abs(b.t - a.t) / 1000, distance: distance, displacement: Math.hypot(b.x - a.x, b.z - a.z), altitudeChange: b.y - a.y, clearanceChange: b.height - a.height, airspeedChange: b.speed - a.speed };
+        }
+        function enterFlightPath() {
+          if (disposed || studyActive) return;
+          if (flightPathActive) { leaveFlightPath(); publishControlState(); repaintPausedFlight(false); return; }
+          flightPathSavedCamera = { position: camera.position.clone(), quaternion: camera.quaternion.clone(), up: camera.up.clone(), fov: camera.fov, far: camera.far, view: camera.view ? Object.assign({}, camera.view) : null, birdVisible: raptorGroup.visible };
+          setPaused(true, false);
+          flightPathSamples = motionTrack.map(copyFlightPathPoint);
+          flightPathTerrainEnabled = false;
+          flightPathTerrainSamples = flightPathSamples.map(function(point) { return { x: point.x, y: terrainHeightAt(point.x, point.z), z: point.z, t: point.t }; });
+          flightPathTerrainSamples.forEach(function(point, index) { pathGroundGeometry.attributes.position.setXYZ(index, point.x, point.y, point.z); });
+          pathGroundGeometry.attributes.position.needsUpdate = true; pathGroundGeometry.setDrawRange(0, flightPathTerrainSamples.length);
+          var terrainPositions = pathTerrainGeometry.attributes.position.array;
+          for (var terrainSegment = 0; terrainSegment < flightPathSamples.length - 1; terrainSegment++) {
+            var terrainA = flightPathTerrainSamples[terrainSegment], terrainB = flightPathTerrainSamples[terrainSegment + 1], flightA = flightPathSamples[terrainSegment], flightB = flightPathSamples[terrainSegment + 1];
+            terrainPositions.set([flightA.x,flightA.y,flightA.z, terrainA.x,terrainA.y,terrainA.z, flightB.x,flightB.y,flightB.z, flightB.x,flightB.y,flightB.z, terrainA.x,terrainA.y,terrainA.z, terrainB.x,terrainB.y,terrainB.z], terrainSegment * 18);
+          }
+          pathTerrainGeometry.attributes.position.needsUpdate = true; pathTerrainGeometry.setDrawRange(0, Math.max(0, flightPathSamples.length - 1) * 6);
+          pathGroundStroke.count = Math.max(0, flightPathSamples.length - 1);
+          flightPathIndex = Math.max(0, flightPathSamples.length - 1); flightPathView = 'oblique'; flightPathAnchorIndex = null;
+          flightPathSamples.forEach(function(point, index) {
+            var offset = index * 3, share = index / Math.max(1, flightPathSamples.length - 1);
+            pathPositions[offset] = point.x; pathPositions[offset + 1] = point.y; pathPositions[offset + 2] = point.z;
+            pathColors[offset] = 0.96 - share * 0.47; pathColors[offset + 1] = 0.80 + share * 0.09; pathColors[offset + 2] = 0.48 + share * 0.38;
+          });
+          pathGeometry.attributes.position.needsUpdate = true; pathGeometry.attributes.color.needsUpdate = true; pathGeometry.setDrawRange(0, flightPathSamples.length);
+          pathOutline.count = pathStroke.count = Math.max(0, flightPathSamples.length - 1);
+          for (var pathSegment = 0; pathSegment < pathStroke.count; pathSegment++) {
+            var pathShare = (pathSegment + 0.5) / Math.max(1, flightPathSamples.length - 1);
+            pathStrokeColor.setRGB(0.96 - pathShare * 0.47, 0.80 + pathShare * 0.09, 0.48 + pathShare * 0.38); pathStroke.setColorAt(pathSegment, pathStrokeColor);
+          }
+          if (pathStroke.instanceColor) pathStroke.instanceColor.needsUpdate = true;
+          flightPathActive = true; pathGroup.visible = true; raptorGroup.visible = true;
+          canvasEl.parentElement.dataset.raptorPathReview = 'true';
+          publishControlState(); repaintPausedFlight(false);
+          window.setTimeout(function() { if (!disposed && flightPathActive && pathPanel) { updateFlightPathReview(); var title = pathPanel.querySelector('h3'); if (title) title.focus({ preventScroll: true }); } }, 0);
+          rhAnnounce('Recorded flight path open. Flight is paused. Choose a view or inspect a recorded sample.');
+        }
+        function leaveFlightPath() {
+          if (!flightPathActive) return;
+          flightPathActive = false; pathGroup.visible = false; flightPathAnchorIndex = null; pathInterval.count = 0; pathInterval.visible = pathAnchor.visible = pathAnchorTether.visible = false;
+          flightPathTerrainEnabled = false; pathTerrainCurtain.visible = pathGroundLine.visible = pathGroundStroke.visible = false;
+          delete canvasEl.parentElement.dataset.raptorPathReview;
+          if (pathPanel) pathPanel.hidden = true;
+          if (flightPathSavedCamera) {
+            camera.position.copy(flightPathSavedCamera.position); camera.quaternion.copy(flightPathSavedCamera.quaternion); camera.up.copy(flightPathSavedCamera.up);
+            camera.fov = flightPathSavedCamera.fov; camera.far = flightPathSavedCamera.far; camera.view = flightPathSavedCamera.view;
+            camera.updateProjectionMatrix(); camera.updateMatrixWorld(true); raptorGroup.visible = flightPathSavedCamera.birdVisible; flightPathSavedCamera = null;
+          }
+          skyDome.position.copy(camera.position); sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance); moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
+          updateTargetFeedback(motionNow, false);
+        }
+        function paintFlightPathProfile() {
+          if (!pathContext || !flightPathSamples.length) return;
+          if (flightPathMetric === 'terrain') { paintFlightTerrainProfile(); return; }
+          var context = pathContext, selected = flightPathSamples[flightPathIndex];
+          var start = flightPathSamples[0].t, end = flightPathSamples[flightPathSamples.length - 1].t;
+          var top = Math.max(10, Math.ceil(Math.max.apply(null, flightPathSamples.map(function(point) { return point[flightPathMetric]; })) / 10) * 10);
+          function xAt(time) { return 46 + (time - start) / Math.max(1, end - start) * 458; }
+          function yAt(value) { return 166 - value / top * 142; }
+          context.clearRect(0, 0, 520, 200); context.fillStyle = '#0d2837'; context.fillRect(0, 0, 520, 200);
+          var anchor = flightPathAnchorIndex === null ? null : flightPathSamples[flightPathAnchorIndex];
+          if (anchor) { context.fillStyle = 'rgba(244,206,124,0.17)'; context.fillRect(Math.min(xAt(anchor.t), xAt(selected.t)), 24, Math.abs(xAt(selected.t) - xAt(anchor.t)), 142); }
+          context.font = '13px system-ui'; context.lineWidth = 1;
+          [0, 0.5, 1].forEach(function(fraction) {
+            var y = yAt(top * fraction); context.strokeStyle = '#446473'; context.beginPath(); context.moveTo(46, y); context.lineTo(504, y); context.stroke();
+            context.fillStyle = '#d8e8ec'; context.textAlign = 'right'; context.fillText((top * fraction).toFixed(0), 38, y + 4);
+          });
+          context.fillStyle = '#d8e8ec'; context.textAlign = 'left'; context.fillText(flightPathMetric === 'height' ? 'm above terrain' : 'm/s through air', 46, 15);
+          context.fillText((start / 1000).toFixed(1) + ' s', 46, 190); context.textAlign = 'right'; context.fillText((end / 1000).toFixed(1) + ' s', 504, 190);
+          var gradient = context.createLinearGradient(46, 0, 504, 0); gradient.addColorStop(0, '#f4ce7c'); gradient.addColorStop(1, '#7de4dc');
+          context.strokeStyle = gradient; context.lineWidth = 3; context.beginPath();
+          flightPathSamples.forEach(function(point, index) { if (index) context.lineTo(xAt(point.t), yAt(point[flightPathMetric])); else context.moveTo(xAt(point.t), yAt(point[flightPathMetric])); }); context.stroke();
+          if (anchor) {
+            var ax = xAt(anchor.t), ay = yAt(anchor[flightPathMetric]);
+            context.strokeStyle = '#f4ce7c'; context.lineWidth = 2; context.setLineDash([3, 4]); context.beginPath(); context.moveTo(ax, 24); context.lineTo(ax, 166); context.stroke(); context.setLineDash([]);
+            context.beginPath(); context.arc(ax, ay, 7, 0, Math.PI * 2); context.fillStyle = '#f4ce7c'; context.fill(); context.strokeStyle = '#102735'; context.lineWidth = 2; context.stroke();
+            context.fillStyle = '#f4ce7c'; context.textAlign = 'center'; context.font = 'bold 13px system-ui'; context.fillText('A', Math.max(53, Math.min(497, ax)), 36);
+          }
+          var x = xAt(selected.t), y = yAt(selected[flightPathMetric]);
+          context.strokeStyle = '#eef6ed'; context.lineWidth = 1.5; context.setLineDash([4, 4]); context.beginPath(); context.moveTo(x, 24); context.lineTo(x, 166); context.stroke(); context.setLineDash([]);
+          context.beginPath(); context.arc(x, y, 5, 0, Math.PI * 2); context.fillStyle = '#fff2d3'; context.fill(); context.strokeStyle = '#102735'; context.lineWidth = 2; context.stroke();
+          if (anchor) { context.fillStyle = '#b2f3ea'; context.textAlign = 'center'; context.font = 'bold 13px system-ui'; context.fillText('B', Math.max(53, Math.min(497, x)), 52); }
+          pathProfile.dataset.metric = flightPathMetric; pathProfile.dataset.min = '0'; pathProfile.dataset.max = String(top); pathProfile.dataset.startTime = String(start); pathProfile.dataset.endTime = String(end); pathProfile.dataset.sampleX = String(x); pathProfile.dataset.sampleY = String(y);
+          pathProfile.setAttribute('aria-label', (flightPathMetric === 'height' ? 'Height above terrain in meters' : 'Airspeed in meters per second') + ' against elapsed simulation time. Selected sample B at ' + (selected.t / 1000).toFixed(2) + ' seconds: ' + selected[flightPathMetric].toFixed(1) + (flightPathMetric === 'height' ? ' meters.' : ' meters per second.') + (anchor ? ' Pinned sample A at ' + (anchor.t / 1000).toFixed(2) + ' seconds. The highlighted band spans A and B.' : ''));
+        }
+        function paintFlightTerrainProfile() {
+          var context = pathContext, selected = flightPathSamples[flightPathIndex], selectedGround = flightPathTerrainSamples[flightPathIndex];
+          var start = flightPathSamples[0].t, end = flightPathSamples[flightPathSamples.length - 1].t;
+          var allHeights = flightPathSamples.map(function(point) { return point.y; }).concat(flightPathTerrainSamples.map(function(point) { return point.y; }));
+          var bottom = Math.floor(Math.min.apply(null, [0].concat(allHeights)) / 10) * 10, top = Math.ceil(Math.max.apply(null, [10].concat(allHeights)) / 10) * 10;
+          function xAt(t) { return 46 + (t - start) / Math.max(1, end - start) * 458; }
+          function yAt(y) { return 166 - (y - bottom) / Math.max(10, top - bottom) * 142; }
+          context.clearRect(0, 0, 520, 200); context.fillStyle = '#0d2837'; context.fillRect(0, 0, 520, 200);
+          var anchor = flightPathAnchorIndex === null ? null : flightPathSamples[flightPathAnchorIndex];
+          if (anchor) { context.fillStyle = 'rgba(244,206,124,0.17)'; context.fillRect(Math.min(xAt(anchor.t), xAt(selected.t)), 24, Math.abs(xAt(selected.t) - xAt(anchor.t)), 142); }
+          context.font = '13px system-ui'; context.lineWidth = 1;
+          [0, .5, 1].forEach(function(fraction) { var value = bottom + (top - bottom) * fraction, y = yAt(value); context.strokeStyle = '#446473'; context.beginPath(); context.moveTo(46, y); context.lineTo(504, y); context.stroke(); context.fillStyle = '#d8e8ec'; context.textAlign = 'right'; context.fillText(value.toFixed(0), 38, y + 4); });
+          context.textAlign = 'left'; context.fillStyle = '#d8e8ec'; context.fillText('m · model world height', 46, 15); context.fillText((start / 1000).toFixed(1) + ' s', 46, 190); context.textAlign = 'right'; context.fillText((end / 1000).toFixed(1) + ' s', 504, 190);
+          context.beginPath(); context.moveTo(46, 166); flightPathTerrainSamples.forEach(function(point) { context.lineTo(xAt(point.t), yAt(point.y)); }); context.lineTo(xAt(end), 166); context.closePath(); context.fillStyle = 'rgba(190,144,88,0.35)'; context.fill();
+          context.beginPath(); flightPathTerrainSamples.forEach(function(point, index) { if (index) context.lineTo(xAt(point.t), yAt(point.y)); else context.moveTo(xAt(point.t), yAt(point.y)); }); context.strokeStyle = '#f1ce98'; context.lineWidth = 2; context.stroke();
+          var gradient = context.createLinearGradient(46, 0, 504, 0); gradient.addColorStop(0, '#f4ce7c'); gradient.addColorStop(1, '#7de4dc');
+          context.beginPath(); flightPathSamples.forEach(function(point, index) { if (index) context.lineTo(xAt(point.t), yAt(point.y)); else context.moveTo(xAt(point.t), yAt(point.y)); }); context.strokeStyle = gradient; context.lineWidth = 3; context.stroke();
+          if (anchor) { var ax = xAt(anchor.t), ay = yAt(anchor.y), ag = yAt(flightPathTerrainSamples[flightPathAnchorIndex].y); context.setLineDash([3, 4]); context.strokeStyle = '#f4ce7c'; context.lineWidth = 1.5; context.beginPath(); context.moveTo(ax, ay); context.lineTo(ax, ag); context.stroke(); context.setLineDash([]); context.beginPath(); context.arc(ax, ay, 7, 0, Math.PI * 2); context.fillStyle = '#f4ce7c'; context.fill(); context.textAlign = 'center'; context.fillText('A', Math.max(53, Math.min(497, ax)), 36); }
+          var x = xAt(selected.t), y = yAt(selected.y), gy = yAt(selectedGround.y);
+          context.strokeStyle = '#eef6ed'; context.lineWidth = 2; context.beginPath(); context.moveTo(x, y); context.lineTo(x, gy); context.stroke();
+          context.beginPath(); context.arc(x, gy, 5, 0, Math.PI * 2); context.fillStyle = '#f1ce98'; context.fill();
+          context.beginPath(); context.arc(x, y, 5, 0, Math.PI * 2); context.fillStyle = '#fff2d3'; context.fill(); context.strokeStyle = '#102735'; context.lineWidth = 2; context.stroke();
+          context.textAlign = 'center'; context.fillStyle = '#b2f3ea'; context.fillText('B', Math.max(53, Math.min(497, x)), 52);
+          pathProfile.dataset.metric = 'terrain'; pathProfile.dataset.min = String(bottom); pathProfile.dataset.max = String(top); pathProfile.dataset.startTime = String(start); pathProfile.dataset.endTime = String(end); pathProfile.dataset.sampleX = String(x); pathProfile.dataset.sampleY = String(y);
+          pathProfile.setAttribute('aria-label', 'Recorded flight and sampled terrain heights against elapsed simulation time. Model world-height scale ' + bottom + ' to ' + top + ' meters. Selected sample B at ' + (selected.t / 1000).toFixed(2) + ' seconds: flight ' + selected.y.toFixed(1) + ', terrain ' + selectedGround.y.toFixed(1) + ', vertical clearance ' + (selected.y - selectedGround.y).toFixed(1) + ' meters.' + (anchor ? ' Pinned sample A at ' + (anchor.t / 1000).toFixed(2) + ' seconds.' : ''));
+        }
+        function updateFlightPathReview() {
+          if (!flightPathActive || !flightPathSamples.length) return;
+          flightPathIndex = Math.max(0, Math.min(flightPathSamples.length - 1, flightPathIndex));
+          var selected = flightPathSamples[flightPathIndex];
+          pathBounds.makeEmpty();
+          flightPathSamples.forEach(function(point, index) { pathPoint.set(point.x, point.y, point.z); pathBounds.expandByPoint(pathPoint); pathPoint.y = flightPathTerrainSamples[index].y; pathBounds.expandByPoint(pathPoint); });
+          pathBounds.getCenter(pathCenter); pathBounds.getSize(pathSize);
+          var radius = Math.max(12, pathSize.length() * 0.5 + 5);
+          var halfVertical = camera.fov * Math.PI / 360, halfHorizontal = Math.atan(Math.tan(halfVertical) * camera.aspect);
+          var distance = radius / Math.sin(Math.max(0.02, Math.min(halfVertical, halfHorizontal))) * 1.12;
+          pathDirection.set(flightPathView === 'top' ? 0 : 1, flightPathView === 'top' ? 1 : flightPathView === 'side' ? 0.18 : 0.8, flightPathView === 'oblique' ? 1 : 0).normalize();
+          camera.position.copy(pathCenter).addScaledVector(pathDirection, distance);
+          camera.position.y = Math.max(camera.position.y, terrainHeightAt(camera.position.x, camera.position.z) + 12);
+          camera.up.set(0, flightPathView === 'top' ? 0 : 1, flightPathView === 'top' ? -1 : 0);
+          camera.lookAt(pathCenter); camera.far = Math.max(flightPathSavedCamera ? flightPathSavedCamera.far : camera.far, distance + radius * 2); camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+          var pathMetersPerPixel = 2 * camera.position.distanceTo(pathCenter) * Math.tan(halfVertical) / Math.max(1, H);
+          var pathAnchorPoint = flightPathAnchorIndex === null ? null : flightPathSamples[flightPathAnchorIndex];
+          pathTerrainCurtain.visible = pathGroundLine.visible = pathGroundStroke.visible = flightPathTerrainEnabled;
+          for (var groundSegment = 0; groundSegment < pathGroundStroke.count; groundSegment++) {
+            var groundFrom = flightPathTerrainSamples[groundSegment], groundTo = flightPathTerrainSamples[groundSegment + 1];
+            pathStrokeDirection.set(groundTo.x - groundFrom.x, groundTo.y - groundFrom.y, groundTo.z - groundFrom.z); var groundLength = pathStrokeDirection.length();
+            pathStrokeQuaternion.setFromUnitVectors(pathStrokeAxis, groundLength > 1e-8 ? pathStrokeDirection.multiplyScalar(1 / groundLength) : pathStrokeAxis);
+            pathStrokeMidpoint.set((groundFrom.x + groundTo.x) / 2, (groundFrom.y + groundTo.y) / 2, (groundFrom.z + groundTo.z) / 2); pathStrokeScale.set(pathMetersPerPixel * 1.2, groundLength, pathMetersPerPixel * 1.2);
+            pathStrokeMatrix.compose(pathStrokeMidpoint, pathStrokeQuaternion, pathStrokeScale); pathGroundStroke.setMatrixAt(groundSegment, pathStrokeMatrix);
+          }
+          pathGroundStroke.instanceMatrix.needsUpdate = true;
+          var intervalStart = pathAnchorPoint ? Math.min(flightPathAnchorIndex, flightPathIndex) : 0, intervalEnd = pathAnchorPoint ? Math.max(flightPathAnchorIndex, flightPathIndex) : 0;
+          pathInterval.visible = pathAnchor.visible = pathAnchorTether.visible = !!pathAnchorPoint;
+          pathInterval.count = intervalEnd - intervalStart;
+          pathStroke.material.opacity = pathAnchorPoint ? 0.40 : 1;
+          pathLine.material.transparent = true; pathLine.material.opacity = pathAnchorPoint ? 0.35 : 1;
+          for (var pathSegment = 0; pathSegment < pathStroke.count; pathSegment++) {
+            var pathFrom = flightPathSamples[pathSegment], pathTo = flightPathSamples[pathSegment + 1];
+            pathStrokeDirection.set(pathTo.x - pathFrom.x, pathTo.y - pathFrom.y, pathTo.z - pathFrom.z);
+            var pathSegmentLength = pathStrokeDirection.length();
+            pathStrokeQuaternion.setFromUnitVectors(pathStrokeAxis, pathSegmentLength > 1e-8 ? pathStrokeDirection.multiplyScalar(1 / pathSegmentLength) : pathStrokeAxis);
+            pathStrokeMidpoint.set((pathFrom.x + pathTo.x) / 2, (pathFrom.y + pathTo.y) / 2, (pathFrom.z + pathTo.z) / 2);
+            pathStrokeScale.set(pathMetersPerPixel * 2.5, pathSegmentLength, pathMetersPerPixel * 2.5);
+            pathStrokeMatrix.compose(pathStrokeMidpoint, pathStrokeQuaternion, pathStrokeScale); pathOutline.setMatrixAt(pathSegment, pathStrokeMatrix);
+            pathStrokeScale.x = pathStrokeScale.z = pathMetersPerPixel * 1.25;
+            pathStrokeMatrix.compose(pathStrokeMidpoint, pathStrokeQuaternion, pathStrokeScale); pathStroke.setMatrixAt(pathSegment, pathStrokeMatrix);
+            if (pathSegment >= intervalStart && pathSegment < intervalEnd) {
+              pathStrokeScale.x = pathStrokeScale.z = pathMetersPerPixel * 1.8;
+              pathStrokeMatrix.compose(pathStrokeMidpoint, pathStrokeQuaternion, pathStrokeScale); pathInterval.setMatrixAt(pathSegment - intervalStart, pathStrokeMatrix);
+            }
+          }
+          pathOutline.instanceMatrix.needsUpdate = true; pathStroke.instanceMatrix.needsUpdate = true;
+          pathInterval.instanceMatrix.needsUpdate = true;
+          skyDome.position.copy(camera.position); sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance); moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
+          var markerScale = Math.max(1.2, Math.min(8, radius * 0.015));
+          pathMarker.position.set(selected.x, selected.y, selected.z); pathMarker.scale.setScalar(markerScale);
+          pathMarkerRing.position.copy(pathMarker.position); pathMarkerRing.quaternion.copy(camera.quaternion); pathMarkerRing.scale.setScalar(markerScale);
+          var selectedTerrain = flightPathTerrainSamples[flightPathIndex];
+          pathTetherPositions.set([selected.x, selected.y, selected.z, selected.x, selectedTerrain.y, selected.z]); pathTetherGeometry.attributes.position.needsUpdate = true;
+          pathFoot.position.set(selected.x, selectedTerrain.y + 0.15, selected.z); pathFoot.scale.setScalar(markerScale);
+          if (pathAnchorPoint) {
+            pathAnchor.position.set(pathAnchorPoint.x, pathAnchorPoint.y, pathAnchorPoint.z); pathAnchor.scale.setScalar(markerScale);
+            var anchorTerrain = flightPathTerrainSamples[flightPathAnchorIndex];
+            pathAnchorTetherGeometry.attributes.position.array.set([pathAnchorPoint.x, pathAnchorPoint.y, pathAnchorPoint.z, pathAnchorPoint.x, anchorTerrain.y, pathAnchorPoint.z]); pathAnchorTetherGeometry.attributes.position.needsUpdate = true;
+            pathAnchorTetherGeometry.attributes.lineDistance.array[1] = Math.abs(pathAnchorPoint.y - anchorTerrain.y); pathAnchorTetherGeometry.attributes.lineDistance.needsUpdate = true;
+          }
+          if (pathPanel) {
+            pathPanel.hidden = false; pathPanel.dataset.sampleIndex = String(flightPathIndex); pathPanel.dataset.sampleTime = String(selected.t); pathPanel.dataset.sampleCount = String(flightPathSamples.length);
+            ['time', 'height', 'speed'].forEach(function(kind) { var node = pathPanel.querySelector('[data-flight-path-value="' + kind + '"]'); if (node) node.textContent = kind === 'time' ? (selected.t / 1000).toFixed(2) + ' s' : selected[kind].toFixed(1) + (kind === 'height' ? ' m' : ' m/s'); });
+            if (pathInput) { pathInput.max = String(flightPathSamples.length - 1); pathInput.value = String(flightPathIndex); pathInput.setAttribute('aria-valuetext', (selected.t / 1000).toFixed(2) + ' seconds, ' + selected.height.toFixed(1) + ' meters above terrain'); }
+            var range = pathPanel.querySelector('[data-flight-path-range]'); if (range) range.textContent = (flightPathSamples[0].t / 1000).toFixed(2) + '–' + (flightPathSamples[flightPathSamples.length - 1].t / 1000).toFixed(2) + ' s · ' + flightPathSamples.length + ' samples';
+            var metric = pathPanel.querySelector('[data-flight-path-metric]'); if (metric) metric.value = flightPathMetric;
+            var terrainToggle = pathPanel.querySelector('[data-flight-path-terrain-toggle]'); if (terrainToggle) { terrainToggle.setAttribute('aria-pressed', String(flightPathTerrainEnabled)); terrainToggle.textContent = flightPathTerrainEnabled ? 'Hide 3D terrain section' : 'Show 3D terrain section'; }
+            var terrainKey = pathPanel.querySelector('[data-flight-path-terrain-key]'); if (terrainKey) terrainKey.hidden = !flightPathTerrainEnabled && flightPathMetric !== 'terrain';
+            var terrainReadings = { bird: selected.y, ground: selectedTerrain.y, clearance: selected.y - selectedTerrain.y };
+            Object.keys(terrainReadings).forEach(function(kind) { var node = pathPanel.querySelector('[data-terrain-value="' + kind + '"]'); if (node) node.textContent = terrainReadings[kind].toFixed(1) + ' m'; });
+            pathPanel.querySelectorAll('[data-flight-path-view]').forEach(function(button) { button.setAttribute('aria-pressed', String(button.dataset.flightPathView === flightPathView)); });
+            var comparison = flightPathComparison(), comparisonPanel = pathPanel.querySelector('[data-flight-path-comparison]');
+            if (comparisonPanel) comparisonPanel.hidden = !comparison;
+            var clearButton = pathPanel.querySelector('[data-flight-path-clear]'); if (clearButton) clearButton.disabled = !comparison;
+            if (comparison) {
+              function signed(value) { return (value >= 0 ? '+' : '') + value.toFixed(1); }
+              var readings = { elapsed: comparison.elapsed.toFixed(2) + ' s', distance: comparison.distance.toFixed(1) + ' m', displacement: comparison.displacement.toFixed(1) + ' m', altitude: signed(comparison.altitudeChange) + ' m', clearance: signed(comparison.clearanceChange) + ' m', speed: signed(comparison.airspeedChange) + ' m/s' };
+              Object.keys(readings).forEach(function(key) { var node = pathPanel.querySelector('[data-path-comparison-value="' + key + '"]'); if (node) node.textContent = readings[key]; });
+              pathPanel.querySelector('[data-path-anchor-label]').textContent = 'A · pinned at ' + (pathAnchorPoint.t / 1000).toFixed(2) + ' s';
+              pathPanel.querySelector('[data-path-selected-label]').textContent = 'B · selected at ' + (selected.t / 1000).toFixed(2) + ' s';
+              pathPanel.querySelector('[data-path-comparison-direction]').textContent = flightPathIndex === flightPathAnchorIndex ? 'A and B are the same sample. Move the slider to span a flight segment.' : flightPathIndex < flightPathAnchorIndex ? 'B occurred before A. Signed changes read backward through this recorded interval; time and distance remain positive.' : 'B occurred after A. Signed changes read forward through this recorded interval.';
+            }
+          }
+          paintFlightPathProfile();
+        }
         var worldEdgeHard = terrainHalfSize - 18;
         var preyWorldEdgeHard = worldEdgeHard - 12;
         var worldEdgeState = 'clear';
@@ -18969,6 +20415,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             zoom: zoomActive,
             assist: targetLockOn,
             sound: soundEnabled,
+            motionLens: motionLensEnabled,
+            flightPathActive: flightPathActive,
             strikeReady: strikeReady,
             talonsOut: !!(talonThrow && talonThrow.active)
           });
@@ -19002,6 +20450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // A resolved mission stays frozen until a new flight is started.
           if (!nextPaused && missionOutcome !== 'active') return;
           if (!nextPaused && studyActive) leaveStudy();
+          if (!nextPaused && flightPathActive) leaveFlightPath();
           var wasPaused = simPaused;
           simPaused = !!nextPaused;
           if(simPaused&&carriedPrey){carriedPrey.grip=1;strikeFootExtension=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=0;foot.morphTargetInfluences[1]=1;});}
@@ -19153,7 +20602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
         }
         function toggleView() {
-          if (studyActive) return;
+          if (studyActive || flightPathActive) return;
           camMode = camMode === 'chase' ? 'fp' : 'chase';
           cameraFloorSmoothed = null;
           updatePausedView(true);
@@ -19161,7 +20610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce(camMode === 'fp' ? 'First-person raptor vision' : 'Chase camera');
         }
         function toggleZoom() {
-          if (studyActive) return;
+          if (studyActive || flightPathActive) return;
           zoomActive = !zoomActive;
           updatePausedView(false);
           if (zoomActive) markTutorialSignal('acuity');
@@ -19202,6 +20651,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Preserve system shortcuts and text composition; Shift remains a flight control.
           if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
           var raw = String(event.key || '').toLowerCase();
+          if (flightPathActive && raw === 'escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+            event.preventDefault(); leaveFlightPath(); publishControlState(); repaintPausedFlight(false);
+            var pathButton = motionShell && motionShell.querySelector('[data-raptor-path-button]'); if (pathButton) pathButton.focus({ preventScroll: true }); return;
+          }
           if (studyActive) {
             if (raw === 'escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
               event.preventDefault(); leaveStudy(); publishControlState(); repaintPausedFlight(false); pauseResume.focus(); return;
@@ -19747,7 +21200,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               });
             });
           });
-          var distance = Math.max(studyFocus === 'whole' ? 2.2 : 0.45, fitDistance*1.02, radius / viewTangent * Math.max(H / availableHeight, H / Math.max(220, W))) * studyDistance;
+          // Orbit-stable floor: a vertical cylinder around the box, not a sphere.
+          // The sphere's radius was the wingspan, so a side view fitted the wings
+          // vertically into the short band above the panel and the whole bird
+          // filled about a sixth of the stage.
+          var horizontalRadius = 0.5 * Math.hypot(studySize.x, studySize.z);
+          var verticalRadius = 0.5 * (studySize.y * Math.cos(studyElevation) + 2 * horizontalRadius * Math.abs(Math.sin(studyElevation)));
+          var cylinderDistance = horizontalRadius + Math.max(horizontalRadius / (viewTangent * Math.max(100, W - 32) / H), verticalRadius / (viewTangent * availableHeight / H));
+          var distance = Math.max(studyFocus === 'whole' ? 2.2 : 0.45, fitDistance*1.02, cylinderDistance) * studyDistance;
           camera.position.set(studyCenter.x + Math.sin(studyAzimuth) * Math.cos(studyElevation) * distance,
             studyCenter.y + Math.sin(studyElevation) * distance,
             studyCenter.z - Math.cos(studyAzimuth) * Math.cos(studyElevation) * distance);
@@ -19772,6 +21232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function enterStudy() {
           if (disposed || missionOutcome !== 'active') return;
+          if (flightPathActive) leaveFlightPath();
           if (studyActive) { studyTitle.focus({ preventScroll: true }); return; }
           studySavedCamera = { position: camera.position.clone(), quaternion: camera.quaternion.clone(), up: camera.up.clone(), fov: camera.fov,
             view: camera.view ? Object.assign({}, camera.view) : null, visible: raptorGroup.visible };
@@ -20240,6 +21701,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         canvasEl._rhCommand = function(action, value) {
           if (action === 'study') { enterStudy(); return; }
           if (disposed) return;
+          if (action === 'flightPath') { enterFlightPath(); return; }
+          if (action === 'pathClose') { leaveFlightPath(); publishControlState(); repaintPausedFlight(false); var pathButton = motionShell && motionShell.querySelector('[data-raptor-path-button]'); if (pathButton) pathButton.focus({ preventScroll: true }); return; }
+          if (flightPathActive && ['pathSample', 'pathView', 'pathMetric', 'pathPin', 'pathClear', 'pathCompareAll', 'pathTerrain', 'pathLowest'].indexOf(action) !== -1) {
+            if (action === 'pathSample' && Number.isFinite(value)) flightPathIndex = Math.max(0, Math.min(flightPathSamples.length - 1, Math.round(value)));
+            if (action === 'pathView' && ['oblique', 'top', 'side'].indexOf(value) !== -1) flightPathView = value;
+            if (action === 'pathMetric' && ['height', 'speed', 'terrain'].indexOf(value) !== -1) flightPathMetric = value;
+            if (action === 'pathTerrain') flightPathTerrainEnabled = !!value;
+            if (action === 'pathLowest') {
+              var leastIndex = 0;
+              for (var candidateIndex = 1; candidateIndex < flightPathSamples.length; candidateIndex++) if (flightPathSamples[candidateIndex].y - flightPathTerrainSamples[candidateIndex].y < flightPathSamples[leastIndex].y - flightPathTerrainSamples[leastIndex].y) leastIndex = candidateIndex;
+              flightPathIndex = leastIndex; rhAnnounce('Selected the recorded sample with least vertical clearance above the terrain surface.');
+            }
+            if (action === 'pathPin') { flightPathAnchorIndex = flightPathIndex; rhAnnounce('Sample A pinned. Move the recorded sample slider to compare with B.'); }
+            if (action === 'pathClear') flightPathAnchorIndex = null;
+            if (action === 'pathCompareAll') { flightPathAnchorIndex = 0; flightPathIndex = flightPathSamples.length - 1; rhAnnounce('Comparing the earliest and latest recorded samples.'); }
+            repaintPausedFlight(false); return;
+          }
           if (action === 'studyRecords') {
             studyRecordedIds = value && Array.isArray(value.ids) ? value.ids.slice(0, 2) : [];
             studyReferenceView = studyRecordedIds.length && value ? flightStudyView(value.referenceView) : null;
@@ -20277,6 +21755,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             targetHudBoundsDirty = true;
             updateTargetFeedback(motionNow, false);
             applyFlightOverlayVisibility(false);
+            repaintPausedFlight(false);
+          } else if (action === 'motionLens') {
+            motionLensEnabled = typeof value === 'boolean' ? value : !motionLensEnabled;
+            publishControlState();
+            paintMotionLens();
             repaintPausedFlight(false);
           } else if (action === 'trail') {
             if(!simPaused) togglePracticeTrail();
@@ -20369,6 +21852,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             renderFrames: renderFrameCount,
             snapshotTimeMs: performance.now(),
             motionTimeMs: motionNow,
+            motionLensEnabled: motionLensEnabled,
+            motionLensVisible: motionLensGroup.visible,
+            motionVectors: JSON.parse(JSON.stringify(motionVectors)),
+            motionConstrained: motionConstrained,
+            motionTrack: motionTrack.map(function(point) { return { x: point.x, z: point.z, t: point.t }; }),
+            flightPathActive: flightPathActive,
+            flightPathIndex: flightPathIndex,
+            flightPathAnchorIndex: flightPathAnchorIndex,
+            flightPathComparison: flightPathComparison(),
+            flightPathSamples: (flightPathActive ? flightPathSamples : motionTrack).map(copyFlightPathPoint),
+            flightPathSample: flightPathActive && flightPathSamples[flightPathIndex] ? copyFlightPathPoint(flightPathSamples[flightPathIndex]) : null,
+            flightPathView: flightPathView,
+            flightPathMetric: flightPathMetric,
+            flightPathTerrainEnabled: flightPathTerrainEnabled,
+            flightPathTerrainVisible: flightPathActive && pathTerrainCurtain.visible,
+            flightPathTerrainSamples: flightPathActive ? flightPathTerrainSamples.map(function(point) { return Object.assign({}, point); }) : [],
+            motionMapRange: motionMapRange,
+            motionMapCenter: { x: raptor.x, z: raptor.z },
+            motionProjectionSeconds: 3,
+            motionArrowScale: motionArrowScale,
+            motionArrowGeometry: motionLensArrows.map(function(arrow, index) { return { kind: ['air', 'wind', 'ground'][index], visible: arrow.visible, position: { x: arrow.position.x, y: arrow.position.y, z: arrow.position.z }, direction: { x: motionVectors[['air', 'wind', 'ground'][index]].x, z: motionVectors[['air', 'wind', 'ground'][index]].z } }; }),
             strikeReady: strikeReady,
             strikeRecoveryMs: Math.max(0, strikeRecoveryUntil - motionNow),
             talonThrowActive: talonThrow.active,
@@ -22800,6 +24304,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           updatePracticeTrail(frameStartX,frameStartY,frameStartZ);
+          // Record the actual integrated step, including contact/edge constraints.
+          // This is presentation-only: these values never feed flight or scoring.
+          if (dt > 0) {
+            motionVectors.air.x = wasLanded || wasCrashed ? 0 : groundVelX - windDriftX;
+            motionVectors.air.z = wasLanded || wasCrashed ? 0 : groundVelZ - windDriftZ;
+            motionVectors.wind.x = wasLanded || wasCrashed ? 0 : windDriftX;
+            motionVectors.wind.z = wasLanded || wasCrashed ? 0 : windDriftZ;
+            motionVectors.ground.x = (raptor.x - frameStartX) / dt;
+            motionVectors.ground.z = (raptor.z - frameStartZ) / dt;
+            motionConstrained = Math.hypot(motionVectors.ground.x - motionVectors.air.x - motionVectors.wind.x, motionVectors.ground.z - motionVectors.air.z - motionVectors.wind.z) > 0.01;
+            var motionPoint = { x: raptor.x, y: raptor.y, z: raptor.z, t: motionNow, height: Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)), speed: raptor.speed };
+            if (motionTrack.length < 2 || motionNow - motionTrack[motionTrack.length - 2].t >= 200) motionTrack.push(motionPoint);
+            else motionTrack[motionTrack.length - 1] = motionPoint;
+            while (motionTrack.length > 121 || (motionTrack.length > 1 && motionNow - motionTrack[0].t > 24000)) motionTrack.shift();
+          }
           raptorGroup.position.set(raptor.x, raptor.y, raptor.z);
           // What the bird is actually seen against. Low down that is the ground; as it
           // climbs, distance and fog wash the ground toward haze. The old readability
@@ -23228,7 +24747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             flightOverlayVisibility.trail = flightTrail.visible;
             flightOverlayVisibility.vortices = wingtipVortices.visible;
           }
-          var scenicView = studyActive || (canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true');
+          var scenicView = studyActive || flightPathActive || (canvasEl.parentElement && canvasEl.parentElement.dataset.raptorScenicView === 'true');
           speedLines.visible = !scenicView && !_rmFX && !raptor.landed && !raptor.crashed;
           airflowLines.visible = !scenicView && !_rmFX && flightOverlayVisibility.airflow;
           flightTrail.visible = !scenicView && !_rmFX && flightOverlayVisibility.trail;
@@ -23244,10 +24763,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
         function renderFlightScene() {
+          paintMotionLens();
           // Refresh once per draw, including paused camera changes and study return.
           // First-person and study views retain their normal habitat appearance.
           cameraFoliage.subject.value.copy(raptorGroup.position);
-          cameraFoliage.enabled.value=studyActive||camMode==='fp'?0:1;
+          cameraFoliage.enabled.value=studyActive||flightPathActive||camMode==='fp'?0:1;
           if (studyActive && studyPresentation === 'studio') {
             if (!studyStudioBackground) {
               var backdrop = document.createElement('canvas'); backdrop.width = backdrop.height = 512;
@@ -23283,6 +24803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function repaintPausedFlight(refreshShadows) {
           if (disposed || !simPaused) return;
           if (studyActive) updateStudyCamera();
+          if (flightPathActive) updateFlightPathReview();
           if (refreshShadows && sun.castShadow) renderer.shadowMap.needsUpdate = true;
           // A catch may remove the tracked prey immediately before the player pauses.
           if (lastTrackerTargetInfo && preyMeshes.indexOf(lastTrackerTargetInfo.prey) === -1) lastTrackerTargetInfo = null;
@@ -23350,6 +24871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           delete hudParent.dataset.raptorTrailResult;
           delete hudParent.dataset.raptorPerched;
           delete hudParent.dataset.raptorStudy;
+          delete hudParent.dataset.raptorPathReview;
           hudParent.style.removeProperty('--rh-cue-bottom');
           studyClose.onclick = studyResume.onclick = pauseStudy.onclick = studyZoom.oninput = null;
           studyKeep.onclick = studyReview.onclick = studyMatch.onclick = null;
@@ -23494,203 +25016,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: TALONS
       // ────────────────────────────────────────────────────────
       function renderTalons() {
-        var maxPsi = 1500;
-        return h('div', { className: 'rh-lab-page rh-lab-page-talons space-y-4' },
-          h('div', { className: 'rh-lab-banner rh-lab-banner-talons bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-red-200 mb-2 tracking-tight' }, TALON_FACTS.header),
-            h('div', { className: 'text-sm text-red-100/90 leading-relaxed' }, TALON_FACTS.overview)
-          ),
-          // PSI comparison chart
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.grip_force_comparison_psi', '🔬 Grip Force Comparison (PSI)')),
-            TALON_FACTS.psiComparison.map(function(item, i) {
-              var pct = (item.psi / maxPsi) * 100;
-              var colorMap = { slate: 'bg-slate-500', amber: 'bg-amber-500', orange: 'bg-orange-500', red: 'bg-red-600' };
-              var barColor = colorMap[item.color] || 'bg-amber-500';
-              return h('div', { key: i, className: 'flex items-center gap-3' },
-                h('div', { className: 'text-xs text-slate-300 w-48 flex-shrink-0' }, item.name),
-                h('div', { className: 'flex-1 bg-slate-800/60 rounded h-5 relative overflow-hidden' },
-                  h('div', {
-                    className: barColor + ' h-full rounded transition-all',
-                    style: { width: pct + '%' },
-                    role: 'img',
-                    'aria-label': item.name + ' ' + item.psi + ' PSI'
-                  })
-                ),
-                h('div', { className: 'text-xs font-mono text-amber-300 w-20 text-right' }, item.psi + ' psi')
-              );
-            })
-          ),
-          // Key concepts
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-            TALON_FACTS.keyPoints.map(function(kp, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
-                h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, kp.title),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
-              );
-            })
-          ),
-
-          // ── NEW v0.8: Talon vs Prey Calculator ──
-          (function() {
-            var tvp = rh.talonVsPrey || { predatorId: 'peregrine', preyId: 'pigeon' };
-            function setTVP(patch) { setRH({ talonVsPrey: Object.assign({}, tvp, patch) }); }
-            // Prey toughness data — approximate crush resistance + skull/spine breaking psi + size factor
-            var PREY_TOUGHNESS = {
-              pigeon:       { name: __alloT('stem.raptorhunt.pigeon', 'Pigeon'), massKg: 0.35, skullPsi: 50, vitalDepthMm: 8, type: 'bird' },
-              songbird:     { name: __alloT('stem.raptorhunt.songbird_sparrow', 'Songbird (sparrow)'), massKg: 0.03, skullPsi: 35, vitalDepthMm: 5, type: 'bird' },
-              duck:         { name: __alloT('stem.raptorhunt.duck_mallard', 'Duck (mallard)'), massKg: 1.1, skullPsi: 65, vitalDepthMm: 10, type: 'bird' },
-              fish:         { name: __alloT('stem.raptorhunt.fish_trout', 'Fish (trout)'), massKg: 0.8, skullPsi: 40, vitalDepthMm: 15, type: 'fish' },
-              rodent:       { name: __alloT('stem.raptorhunt.field_mouse_rodent', 'Field Mouse / Rodent'), massKg: 0.025, skullPsi: 25, vitalDepthMm: 4, type: 'mammal-small' },
-              rabbit:       { name: __alloT('stem.raptorhunt.cottontail_rabbit', 'Cottontail Rabbit'), massKg: 1.0, skullPsi: 80, vitalDepthMm: 12, type: 'mammal-med' },
-              snake:        { name: __alloT('stem.raptorhunt.snake', 'Snake'), massKg: 0.3, skullPsi: 30, vitalDepthMm: 6, type: 'reptile' },
-              skunk:        { name: __alloT('stem.raptorhunt.skunk', 'Skunk'), massKg: 2.5, skullPsi: 120, vitalDepthMm: 18, type: 'mammal-med' },
-              sloth:        { name: __alloT('stem.raptorhunt.three_toed_sloth', 'Three-toed Sloth'), massKg: 4.0, skullPsi: 200, vitalDepthMm: 22, type: 'mammal-med' },
-              monkey:       { name: __alloT('stem.raptorhunt.howler_monkey', 'Howler Monkey'), massKg: 7.0, skullPsi: 280, vitalDepthMm: 28, type: 'mammal-large' },
-              fawn:         { name: __alloT('stem.raptorhunt.white_tailed_fawn', 'White-tailed Fawn'), massKg: 4.5, skullPsi: 250, vitalDepthMm: 25, type: 'mammal-med' },
-              fox:          { name: __alloT('stem.raptorhunt.red_fox', 'Red Fox'), massKg: 5.0, skullPsi: 300, vitalDepthMm: 24, type: 'mammal-med' },
-              grouse:       { name: __alloT('stem.raptorhunt.ruffed_grouse', 'Ruffed Grouse'), massKg: 0.6, skullPsi: 55, vitalDepthMm: 9, type: 'bird' }
-            };
-            var prey = PREY_TOUGHNESS[tvp.preyId] || PREY_TOUGHNESS.pigeon;
-            var predator = findSpecies(tvp.predatorId);
-            // Verdict logic
-            var gripRatio = predator.talonForcePsi / prey.skullPsi;
-            var reachRatio = predator.talonLengthMm / prey.vitalDepthMm;
-            var gripGaugePct = Math.max(0, Math.min(100, (gripRatio / 3) * 100));
-            var reachGaugePct = Math.max(0, Math.min(100, (reachRatio / 3) * 100));
-            var gripGaugeState = gripRatio >= 2 ? 'clear' : gripRatio >= 1 ? 'partial' : 'risk';
-            var reachGaugeState = reachRatio >= 1 ? 'clear' : reachRatio >= 0.8 ? 'partial' : 'risk';
-            var verdict, verdictColor, verdictEmoji, verdictDetail;
-            if (gripRatio >= 2 && reachRatio >= 1) {
-              verdict = 'CLEAN KILL'; verdictEmoji = '⚡'; verdictColor = 'emerald';
-              verdictDetail = 'Grip force ' + gripRatio.toFixed(1) + '× crush threshold + talon reach exceeds vital depth. Prey is dispatched instantly via crushed cranium or severed spine.';
-            } else if (gripRatio >= 1 && reachRatio >= 0.8) {
-              verdict = 'LETHAL (slower)'; verdictEmoji = '✓'; verdictColor = 'amber';
-              verdictDetail = 'Talons can puncture + immobilize prey but lack the force or reach for instant kill. Death from blood loss + organ damage within 1-3 minutes.';
-            } else if (gripRatio >= 0.5 || reachRatio >= 0.6) {
-              verdict = 'STRUGGLE / RISK INJURY'; verdictEmoji = '⚠'; verdictColor = 'orange';
-              verdictDetail = 'Predator can engage but talons may not penetrate to vital organs. Prey can escape or counterattack — high risk of raptor injury (broken talon, cracked beak, sprained leg).';
-            } else {
-              verdict = 'PREY TOO LARGE / TOUGH'; verdictEmoji = '✗'; verdictColor = 'red';
-              verdictDetail = 'Mismatch: grip force ' + gripRatio.toFixed(1) + '× crush threshold (need ≥1.0) + talon reach ' + reachRatio.toFixed(1) + '× vital depth (need ≥0.8). This predator would not pursue this prey — energy cost + injury risk exceed reward.';
-            }
-
-            return h('div', { className: 'bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-700/40 rounded-xl p-5 space-y-3 mt-3' },
-              h('div', { className: 'text-base font-bold text-red-300' }, __alloT('stem.raptorhunt.talon_vs_prey_can_the_grip_actually_ki', '🎯 Talon vs Prey: Can the Grip Actually Kill?')),
-              h('div', { className: 'text-xs text-red-100/90 leading-relaxed' },
-                __alloT('stem.raptorhunt.grip_force_psi_alone_doesn_t_determine', 'Grip force PSI alone doesn\'t determine lethality — it has to be matched against the specific prey\'s skull/spine crush threshold AND the talon has to be long enough to reach vital organs. Try different predator-prey pairings to see which combinations actually work.')
-              ),
-              // Selector row
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-                h('div', null,
-                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.predator', '🦅 Predator')),
-                  h('select', {
-                    value: tvp.predatorId,
-                    onChange: function(e) { setTVP({ predatorId: e.target.value }); },
-                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
-                    'aria-label': __alloT('stem.raptorhunt.choose_predator', 'Choose predator')
-                  },
-                    SPECIES.map(function(s) {
-                      return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (' + s.talonForcePsi + ' psi, ' + s.talonLengthMm + ' mm talon)');
-                    })
-                  )
-                ),
-                h('div', null,
-                  h('label', { className: 'text-xs text-amber-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.prey', '🐭 Prey')),
-                  h('select', {
-                    value: tvp.preyId,
-                    onChange: function(e) { setTVP({ preyId: e.target.value }); },
-                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
-                    'aria-label': __alloT('stem.raptorhunt.choose_prey', 'Choose prey')
-                  },
-                    Object.keys(PREY_TOUGHNESS).map(function(k) {
-                      var p = PREY_TOUGHNESS[k];
-                      return h('option', { key: k, value: k }, p.name + ' (' + p.massKg + ' kg)');
-                    })
-                  )
-                )
-              ),
-              // Computation table
-              h('div', { className: 'bg-slate-900/60 rounded-lg p-3' },
-                h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
-                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.grip_force', 'Grip Force')),
-                    h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonForcePsi + ' psi')
-                  ),
-                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.prey_crush_threshold', 'Prey Crush Threshold')),
-                    h('div', { className: 'font-mono font-bold text-amber-300' }, prey.skullPsi + ' psi')
-                  ),
-                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.talon_length', 'Talon Length')),
-                    h('div', { className: 'font-mono font-bold text-amber-300' }, predator.talonLengthMm + ' mm')
-                  ),
-                  h('div', { className: 'bg-slate-800/40 rounded p-2 text-center' },
-                    h('div', { className: 'text-[10px] text-slate-400 uppercase' }, __alloT('stem.raptorhunt.prey_vital_depth', 'Prey Vital Depth')),
-                    h('div', { className: 'font-mono font-bold text-amber-300' }, prey.vitalDepthMm + ' mm')
-                  )
-                ),
-                h('div', { className: 'mt-2 text-[10px] text-slate-400 text-center font-mono' },
-                  'Grip ratio: ' + gripRatio.toFixed(2) + '× · Reach ratio: ' + reachRatio.toFixed(2) + '× (need both ≥ ~1.0 for clean kill)'
-                )
-              ),
-              // Visual ratio check: the fill uses a shared 0–3× scale and the marker shows the clean-kill threshold.
-              h('div', {
-                className: 'rh-talon-ratio-panel',
-                'data-raptor-talon-ratios': 'true',
-                role: 'group',
-                'aria-label': __alloT('stem.raptorhunt.a11y_predator_to_prey_mechanics_comparison', 'Predator to prey mechanics comparison')
-              },
-                h('div', { className: 'rh-talon-ratio-head' },
-                  h('span', null, 'Mechanics check'),
-                  h('strong', null, 'Clean-kill markers: 1× reach · 2× grip')
-                ),
-                [
-                  { key: 'grip', label: 'Grip force', ratio: gripRatio, pct: gripGaugePct, state: gripGaugeState, threshold: '2× clean-kill threshold' },
-                  { key: 'reach', label: 'Talon reach', ratio: reachRatio, pct: reachGaugePct, state: reachGaugeState, threshold: '1× vital-depth threshold' }
-                ].map(function(metric) {
-                  return h('div', {
-                    key: metric.key,
-                    className: 'rh-talon-ratio-row',
-                    'data-ratio-kind': metric.key,
-                    'data-ratio-state': metric.state
-                  },
-                    h('div', { className: 'rh-talon-ratio-label' },
-                      h('span', null, metric.label),
-                      h('strong', null, metric.ratio.toFixed(2) + '×')
-                    ),
-                    h('div', {
-                      className: 'rh-talon-ratio-track',
-                      role: 'meter',
-                      'aria-label': metric.label,
-                      'aria-valuemin': 0,
-                      'aria-valuemax': 3,
-                      'aria-valuenow': Math.max(0, Math.min(3, metric.ratio)),
-                      'aria-valuetext': metric.label + ' ratio ' + metric.ratio.toFixed(2) + ' times'
-                    },
-                      h('span', { className: 'rh-talon-ratio-fill', style: { width: metric.pct + '%' } })
-                    ),
-                    h('div', { className: 'rh-talon-ratio-scale', 'aria-hidden': 'true' },
-                      h('span', null, '0×'),
-                      h('span', null, '3×')
-                    ),
-                    h('div', { className: 'rh-talon-ratio-caption' }, metric.threshold)
-                  );
-                })
-              ),
-              // Verdict
-              h('div', { className: 'bg-' + verdictColor + '-900/40 border-2 border-' + verdictColor + '-500 rounded-xl p-4 text-center' },
-                h('div', { className: 'text-4xl mb-1' }, verdictEmoji),
-                h('div', { className: 'text-lg font-bold text- tracking-tight' + verdictColor + '-300 mb-2' }, verdict),
-                h('div', { className: 'text-xs text-' + verdictColor + '-100/90 leading-relaxed' }, verdictDetail)
-              ),
-              // Pedagogical note
-              h('div', { className: 'text-[10px] text-slate-500 italic' },
-                __alloT('stem.raptorhunt.note_real_predator_prey_relationships_', 'Note: real predator-prey relationships are also shaped by encounter rate, prey availability, learned hunting skill, energetic balance, + group dynamics. This calculator captures one factor (mechanical kill feasibility) — not the full ecology.')
-              )
-            );
-          })()
-        );
+        return h(RaptorContactPressureStudy, { React: React, settings: rh.contactPressure,
+          onChange: function(settings) { setRH({ contactPressure: settings }); } });
       }
 
       // ────────────────────────────────────────────────────────
@@ -23883,77 +25210,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: FLIGHT
       // ────────────────────────────────────────────────────────
+      function renderWingAtlas(primary) {
+        var comparison = findSpecies(rh.flightCompareSpecies || 'greatHorned');
+        if (comparison.id === primary.id) comparison = findSpecies(primary.id === 'peregrine' ? 'goldenEagle' : 'peregrine');
+        var family = ['all', 'falcons', 'hawks', 'owls'].indexOf(rh.flightMapFamily) > -1 ? rh.flightMapFamily : 'all';
+        var maxLoad = Math.max(12, Math.ceil(Math.max.apply(null, SPECIES.map(function(item) { return item.wingLoading; })) / 3) * 3);
+        var maxAspect = Math.max(12, Math.ceil(Math.max.apply(null, SPECIES.map(function(item) { return item.aspectRatio; })) / 3) * 3);
+        function point(item) { return { x: item.wingLoading / maxLoad * 100, y: 100 - item.aspectRatio / maxAspect * 100 }; }
+        function selectPrimary(id) {
+          setRH({ selectedSpecies: id, flightCompareSpecies: id === comparison.id ? primary.id : comparison.id });
+        }
+        var visible = SPECIES.filter(function(item) {
+          return item.id === primary.id || item.id === comparison.id || family === 'all' || (family === 'owls' ? item.isOwl : family === 'falcons' ? item.family === 'Falconidae' : !item.isOwl && item.family !== 'Falconidae');
+        });
+        var a = point(primary), b = point(comparison);
+        var pair = [primary, comparison];
+        var metrics = [
+          { key: 'wingLoading', label: __alloT('stem.raptorhunt.wing_atlas_loading', 'Wing loading'), unit: 'kg/m²', max: maxLoad },
+          { key: 'aspectRatio', label: __alloT('stem.raptorhunt.aspect_ratio', 'Aspect ratio'), unit: '', max: maxAspect }
+        ];
+        return h('section', { className: 'rh-wing-atlas', 'data-raptor-wing-atlas': 'true', 'aria-labelledby': 'rh-wing-atlas-title' },
+          h('div', { className: 'rh-wing-atlas-intro' },
+            h('div', null,
+              h('span', { className: 'rh-wing-atlas-kicker' }, __alloT('stem.raptorhunt.wing_atlas_kicker', 'THE WING DESIGN ATLAS')),
+              h('h3', { id: 'rh-wing-atlas-title' }, __alloT('stem.raptorhunt.wing_atlas_title', 'One sky. Different wing designs.')),
+              h('p', null, __alloT('stem.raptorhunt.wing_atlas_intro', 'Choose two raptors. Compare their wing proportions and the mass carried by each square metre of wing.'))),
+            h('span', { className: 'rh-wing-atlas-badge' }, __alloFill(__alloT('stem.raptorhunt.wing_atlas_count', '{count} species to explore'), { count: SPECIES.length }))),
+          h('div', { className: 'rh-wing-atlas-presets', role: 'group', 'aria-label': __alloT('stem.raptorhunt.wing_atlas_pairs', 'Suggested comparison pairs') },
+            [
+              { ids: ['peregrine', 'greatHorned'], label: __alloT('stem.raptorhunt.wing_atlas_pair_stealth', 'Falcon & owl') },
+              { ids: ['goldenEagle', 'harpyEagle'], label: __alloT('stem.raptorhunt.wing_atlas_pair_eagles', 'Two kinds of eagle') },
+              { ids: ['baldEagle', 'osprey'], label: __alloT('stem.raptorhunt.wing_atlas_pair_coast', 'Coastal hunters') }
+            ].map(function(preset) { return h('button', { key: preset.ids[0], type: 'button', 'aria-pressed': primary.id === preset.ids[0] && comparison.id === preset.ids[1], onClick: function() { setRH({ selectedSpecies: preset.ids[0], flightCompareSpecies: preset.ids[1], flightMapFamily: 'all' }); } }, preset.label); })),
+          h('div', { className: 'rh-wing-atlas-workbench' },
+            h('div', { className: 'rh-wing-atlas-map-panel' },
+              h('div', { className: 'rh-wing-atlas-map-head' }, h('strong', null, __alloT('stem.raptorhunt.wing_atlas_map_title', 'Find a flight profile')), h('span', null, __alloT('stem.raptorhunt.wing_atlas_map_hint', 'Select a point or use the species menus.'))),
+              h('div', { className: 'rh-wing-atlas-filter', role: 'group', 'aria-label': __alloT('stem.raptorhunt.roster_filter', 'Filter raptor groups') },
+                [['all', __alloT('stem.raptorhunt.roster_all', 'All raptors')], ['falcons', __alloT('stem.raptorhunt.roster_falcons', 'Falcons')], ['hawks', __alloT('stem.raptorhunt.roster_hawks', 'Hawks & allies')], ['owls', __alloT('stem.raptorhunt.roster_owls', 'Owls')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': family === item[0], onClick: function() { setRH({ flightMapFamily: item[0] }); } }, item[1]); })),
+              h('div', { className: 'rh-wing-atlas-map', 'data-raptor-flight-tradeoff-map': 'true', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_wing_loading_versus_aspect_ratio_species_map', 'Wing loading versus aspect ratio species map') },
+                h('div', { className: 'rh-wing-atlas-y-title' }, __alloT('stem.raptorhunt.wing_atlas_axis_aspect', 'Aspect ratio →')),
+                h('div', { className: 'rh-wing-atlas-plot' },
+                  h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                    [0, 25, 50, 75, 100].map(function(position) { return h('g', { key: position, stroke: '#587481', strokeWidth: .18, opacity: .6 }, h('line', { x1: position, x2: position, y1: 0, y2: 100 }), h('line', { x1: 0, x2: 100, y1: position, y2: position })); }),
+                    h('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#e6d5a5', strokeWidth: .55, strokeDasharray: '1.2 1.2', className: 'rh-wing-atlas-connector' })),
+                  [0, .25, .5, .75, 1].map(function(fraction) { return h('span', { key: 'x-' + fraction, className: 'rh-wing-atlas-tick rh-wing-atlas-tick-x', style: { left: fraction * 100 + '%' }, 'aria-hidden': 'true' }, String(Math.round(maxLoad * fraction * 10) / 10)); }),
+                  [0, .25, .5, .75, 1].map(function(fraction) { return h('span', { key: 'y-' + fraction, className: 'rh-wing-atlas-tick rh-wing-atlas-tick-y', style: { bottom: fraction * 100 + '%' }, 'aria-hidden': 'true' }, String(Math.round(maxAspect * fraction * 10) / 10)); }),
+                  visible.map(function(item) {
+                    var position = point(item), isPrimary = item.id === primary.id, isCompare = item.id === comparison.id;
+                    var color = item.isOwl ? '#c4b5fd' : item.family === 'Falconidae' ? '#f9bc82' : '#a8dfcb';
+                    return h('button', { key: item.id, type: 'button', className: 'rh-wing-atlas-point', 'data-map-selected': isPrimary ? 'true' : 'false', 'data-map-compare': isCompare ? 'true' : 'false', 'data-flight-point': item.id, 'aria-pressed': isPrimary,
+                      'aria-label': __alloFill(__alloT('stem.raptorhunt.wing_atlas_select_point', 'Select {species}: wing loading {loading} kilograms per square metre, aspect ratio {aspect}'), { species: item.name, loading: item.wingLoading, aspect: item.aspectRatio }),
+                      title: item.name + ' · ' + item.wingLoading + ' kg/m² · AR ' + item.aspectRatio,
+                      style: { left: position.x + '%', top: position.y + '%', '--wing-point-color': color }, onClick: function() { selectPrimary(item.id); } }, h('span', { 'aria-hidden': 'true' }, isPrimary ? 'A' : isCompare ? 'B' : ''));
+                  })),
+                h('div', { className: 'rh-wing-atlas-x-title' }, __alloT('stem.raptorhunt.wing_atlas_axis_loading', 'Wing loading (kg/m²) →'))),
+              h('p', { className: 'rh-wing-atlas-map-note' }, __alloT('stem.raptorhunt.wing_atlas_filter_note', 'A is your active raptor; B is its comparison. Both stay visible when you filter.'))),
+            h('div', { className: 'rh-wing-atlas-profiles' }, pair.map(function(item, index) {
+              return h('article', { key: index, className: 'rh-wing-atlas-profile', 'data-raptor-flight-profile': index === 0 ? 'true' : undefined, 'data-wing-profile': index === 0 ? 'A' : 'B' },
+                h('label', { htmlFor: 'rh-wing-select-' + index }, h('span', { className: 'rh-wing-atlas-letter', 'aria-hidden': 'true' }, index === 0 ? 'A' : 'B'), index === 0 ? __alloT('stem.raptorhunt.wing_atlas_active', 'Active raptor') : __alloT('stem.raptorhunt.wing_atlas_compare', 'Compare with')),
+                h('select', { id: 'rh-wing-select-' + index, value: item.id, onChange: function(event) { if (index === 0) selectPrimary(event.target.value); else setRH({ flightCompareSpecies: event.target.value }); } }, SPECIES.map(function(option) { return h('option', { key: option.id, value: option.id, disabled: index === 1 && option.id === primary.id }, option.name); })),
+                h('div', { className: 'rh-wing-atlas-portrait' }, raptorFieldArtwork(item, 'wing-atlas-' + index, false, false)),
+                h('div', { className: 'rh-wing-atlas-profile-meta' }, h('strong', null, item.name), h('span', null, item.scientific)),
+                h('dl', { className: 'rh-wing-atlas-values' }, metrics.map(function(metric) { return h('div', { key: metric.key }, h('dt', null, metric.label), h('dd', null, item[metric.key].toFixed(1) + (metric.unit ? ' ' + metric.unit : ''))); })));
+            }))),
+          h('div', { className: 'rh-wing-atlas-evidence' },
+            h('div', { className: 'rh-wing-atlas-question' }, h('span', null, __alloT('stem.raptorhunt.wing_atlas_notice', 'LOOK FOR THE DIFFERENCE')), h('h4', null, __alloT('stem.raptorhunt.wing_atlas_question', 'What changes when the wing design changes?')), h('p', null, __alloT('stem.raptorhunt.wing_atlas_definition', 'Wing loading is mass ÷ wing area. Aspect ratio is wingspan² ÷ wing area. These two numbers describe a design; they do not tell the whole flight story.'))),
+            h('div', { className: 'rh-wing-atlas-metrics', 'aria-live': 'polite', 'aria-atomic': 'true' }, metrics.map(function(metric) {
+              var delta = primary[metric.key] - comparison[metric.key];
+              return h('div', { key: metric.key, className: 'rh-wing-atlas-metric', 'data-wing-metric': metric.key },
+                h('div', { className: 'rh-wing-atlas-metric-head' }, h('strong', null, metric.label), h('span', null, __alloFill(__alloT('stem.raptorhunt.wing_atlas_delta', 'A − B: {value}'), { value: (delta > 0 ? '+' : '') + delta.toFixed(1) + (metric.unit ? ' ' + metric.unit : '') }))),
+                pair.map(function(item, index) { return h('div', { key: index, className: 'rh-wing-atlas-bar-row' }, h('span', null, index ? 'B' : 'A'), h('div', { className: 'rh-wing-atlas-bar', 'aria-hidden': 'true' }, h('span', { style: { width: (item[metric.key] / metric.max * 100) + '%' }, 'data-comparison-bar': index ? 'B' : 'A' })), h('strong', null, item[metric.key].toFixed(1))); }));
+            }))),
+          h('div', { className: 'rh-wing-atlas-foot' }, h('strong', null, __alloT('stem.raptorhunt.wing_atlas_read_map', 'Read the map: ')), __alloT('stem.raptorhunt.wing_atlas_read_map_copy', 'Right means more mass per wing area. Up means a higher aspect ratio. Values come from this lab’s species profiles; the illustrations are not to scale.')));
+      }
+
       function renderFlight() {
         var selectedFlightProfile = findSpecies(rh.selectedSpecies || 'peregrine');
-        var profileLoadState = selectedFlightProfile.wingLoading >= 8 ? 'speed' : selectedFlightProfile.wingLoading <= 4 ? 'lift' : 'balanced';
-        var profileAspectState = selectedFlightProfile.aspectRatio >= 8 ? 'soar' : selectedFlightProfile.aspectRatio <= 5.5 ? 'agile' : 'mixed';
-        var profileLoadText = profileLoadState === 'speed' ? 'High-load speed' : profileLoadState === 'lift' ? 'Low-load lift' : 'Mid-load balance';
-        var profileAspectText = profileAspectState === 'soar' ? 'High-AR glide' : profileAspectState === 'agile' ? 'Low-AR agility' : 'Mid-AR versatility';
         return h('div', { className: 'rh-lab-page rh-lab-page-flight space-y-4' },
           h('div', { className: 'rh-lab-banner rh-lab-banner-flight bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, FLIGHT_FACTS.header),
-            h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, FLIGHT_FACTS.overview)
+            h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, __alloT('stem.raptorhunt.wing_atlas_flight_intro', FLIGHT_FACTS.overview))
           ),
-          // Wing loading vs AR scatter
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.wing_loading_aspect_ratio_species_map', '✈ Wing Loading × Aspect Ratio (species map)')),
-            h('div', { className: 'text-xs text-slate-400 mb-3' }, __alloT('stem.raptorhunt.x_wing_loading_kg_m_high_fast_heavy_y_', 'X: wing loading (kg/m², high = fast/heavy). Y: aspect ratio (high = soaring efficient, low = forest agile).')),
-          h('div', {
-            className: 'rh-flight-tradeoff-profile',
-            'data-raptor-flight-profile': 'true',
-            'data-profile-load': profileLoadState,
-            'data-profile-aspect': profileAspectState,
-            role: 'region',
-            'aria-label': __alloT('stem.raptorhunt.a11y_selected_flight_profile', 'Selected flight profile')
-          },
-            h('span', { className: 'rh-flight-tradeoff-profile-kicker' }, 'Selected profile'),
-            h('strong', { className: 'rh-flight-tradeoff-profile-name' }, selectedFlightProfile.emoji + ' ' + selectedFlightProfile.name),
-            h('span', { className: 'rh-flight-tradeoff-profile-stats' }, profileLoadText + ' · ' + profileAspectText + ' · ' + selectedFlightProfile.wingLoading.toFixed(1) + ' kg/m² · AR ' + selectedFlightProfile.aspectRatio.toFixed(1))
-          ),
-          h('div', { className: 'rh-flight-tradeoff-map relative bg-slate-950/60 rounded-lg border border-slate-700/40', 'data-raptor-flight-tradeoff-map': 'true', role: 'img', 'aria-label': __alloT('stem.raptorhunt.a11y_wing_loading_versus_aspect_ratio_species_map', 'Wing loading versus aspect ratio species map'), style: { height: '320px' } },
-            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-soar', 'aria-hidden': 'true' }, 'SOAR + CLIMB'),
-            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-speed', 'aria-hidden': 'true' }, 'FAST + GLIDE'),
-            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-agile', 'aria-hidden': 'true' }, 'SLOW + AGILE'),
-            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-burst', 'aria-hidden': 'true' }, 'BURST + TURN'),
-            h('div', { className: 'rh-flight-map-guide rh-flight-map-guide-x', 'aria-hidden': 'true' }),
-            h('div', { className: 'rh-flight-map-guide rh-flight-map-guide-y', 'aria-hidden': 'true' }),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x0', 'aria-hidden': 'true' }, '18'),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x9', 'aria-hidden': 'true' }, '9'),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x18', 'aria-hidden': 'true' }, '0'),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y0', 'aria-hidden': 'true' }, '0'),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y6', 'aria-hidden': 'true' }, '6'),
-            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y12', 'aria-hidden': 'true' }, '12'),
-              // Axes
-              h('div', { className: 'absolute bottom-0 left-0 right-0 border-t border-slate-700/40' }),
-              h('div', { className: 'absolute top-0 bottom-0 left-0 border-r border-slate-700/40' }),
-              h('div', { className: 'absolute bottom-1 left-2 text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.wing_loading_kg_m_2', 'wing loading (kg/m²) →')),
-              h('div', { className: 'absolute top-2 left-2 text-[10px] text-slate-500', style: { writingMode: 'vertical-rl', transform: 'rotate(180deg)' } }, __alloT('stem.raptorhunt.aspect_ratio_2', 'aspect ratio →')),
-              // Plot SPECIES
-              SPECIES.map(function(sp2, i) {
-                var x = (sp2.wingLoading / 18) * 95 + 2;
-                var y = 95 - (sp2.aspectRatio / 12) * 90;
-                var col = sp2.isOwl ? '#a5b4fc' :
-                          sp2.family === 'Falconidae' ? '#fb923c' :
-                          sp2.family === 'Pandionidae' ? '#67e8f9' : '#fde047';
-                var isProfile = sp2.id === selectedFlightProfile.id;
-                return h('div', {
-                  key: i,
-                  className: 'rh-flight-map-point absolute transition-all' + (isProfile ? ' z-10' : ''),
-                  'data-map-selected': isProfile ? 'true' : 'false',
-                  style: { left: x + '%', top: y + '%', transform: 'translate(-50%, -50%)' }
-                },
-                  h('div', { className: 'flex flex-col items-center cursor-help' + (isProfile ? ' rh-flight-map-point-selected' : ''), title: sp2.name + ' (loading ' + sp2.wingLoading + ' / AR ' + sp2.aspectRatio + ')' },
-                    h('div', { className: 'text-xl', style: { textShadow: '0 0 6px #000' } }, sp2.emoji),
-                    h('div', { className: 'text-[9px] font-mono', style: { color: col, textShadow: '0 0 4px #000' } }, sp2.name.split(' ')[0])
-                  )
-                );
-              })
-            )
-          ),
-          h('div', { className: 'rh-flight-tradeoff-note' },
-            h('strong', null, 'Read the map: '),
-            'move right for more speed and stall resistance; move up for longer, more efficient glides. The highlighted profile is the species currently selected in Raptor Hunt.'
-          ),
+          renderWingAtlas(selectedFlightProfile),
           // Flight type cards
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             FLIGHT_FACTS.flightTypes.map(function(ft, i) {
@@ -24002,16 +25340,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             return h('div', { className: 'bg-slate-900/40 border border-cyan-700/40 rounded-xl p-4 space-y-3 mt-3' },
               h('div', { className: 'text-sm font-bold text-cyan-300' }, __alloT('stem.raptorhunt.glide_ratio_calculator', '🪁 Glide Ratio Calculator')),
+              h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.raptorhunt.wing_atlas_glide_separate', 'This glide model uses the species chosen below. Explore it independently of your atlas comparison.')),
               h('div', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.raptorhunt.glide_ratio_l_d_is_the_distance_a_bird', 'Glide ratio (L/D) is the distance a bird can cover per unit altitude lost in still air. High aspect ratio = high L/D = efficient soaring. Thermal lift extends range further (or makes flight "free" if lift > sink rate).')),
               // Species + sliders
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 h('div', null,
-                  h('label', { className: 'text-xs text-cyan-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.species', '🦅 Species')),
+                  h('label', { htmlFor: 'rh-glide-calculator-species', className: 'text-xs text-cyan-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.wing_atlas_glide_species', 'Glide calculator species')),
                   h('select', {
+                    id: 'rh-glide-calculator-species',
                     value: gr.speciesId,
                     onChange: function(e) { setGR({ speciesId: e.target.value }); },
                     className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
-                    'aria-label': __alloT('stem.raptorhunt.species_2', 'Species')
+                    'aria-label': __alloT('stem.raptorhunt.wing_atlas_glide_species', 'Glide calculator species')
                   },
                     SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (AR ' + s.aspectRatio + ')'); })
                   )
@@ -24095,12 +25435,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: STOOP CALCULATOR
       // ────────────────────────────────────────────────────────
+      // Both Stoop views use the same bounded, semi-implicit Euler samples.
+      // The final plotted point precedes ground contact; never extend a run at zero height.
+      function sampleStoopFall(model) {
+        var points = [], altitude = model.altitudeM || 600, speed = 0, time = 0;
+        while (time < 12 && altitude > 0) {
+          points.push({ t: time, alt: altitude, vel: speed, velMph: speed * 2.237 });
+          speed += (9.81 - 1.225 * model.cd * model.area * speed * speed / (2 * model.mass)) * 0.05;
+          altitude = Math.max(0, altitude - speed * 0.05);
+          time += 0.05;
+        }
+        return { points: points, reachedGround: altitude <= 0 };
+      }
+      function validStoopReference(value) {
+        return value && [['mass', 0.1, 10], ['cd', 0.05, 0.8], ['area', 0.001, 0.15], ['altitudeM', 100, 2000]].every(function(bound) {
+          return typeof value[bound[0]] === 'number' && Number.isFinite(value[bound[0]]) && value[bound[0]] >= bound[1] && value[bound[0]] <= bound[2];
+        });
+      }
+      function renderStoopComparison(current, currentFall) {
+        current = Object.assign({}, current, { altitudeM: current.altitudeM || 600 });
+        var reference = validStoopReference(rh.stoopReference) ? rh.stoopReference : null;
+        var referenceLabel = __alloT('stem.raptorhunt.stoop_compare_reference', 'Reference');
+        var currentLabel = __alloT('stem.raptorhunt.stoop_compare_current', 'Current');
+        var referenceFall = reference ? sampleStoopFall(reference) : null;
+        var commonIndex = reference ? Math.min(referenceFall.points.length, currentFall.points.length) - 1 : 0;
+        var index = Math.max(0, Math.min(commonIndex, Math.round(Number.isFinite(rh.stoopCompareSample) ? rh.stoopCompareSample : 160)));
+        var first = reference && referenceFall.points[index], second = currentFall.points[index];
+        var commonEnd = reference ? currentFall.points[commonIndex].t : 0;
+        var altitudeMax = Math.max(current.altitudeM || 600, reference ? reference.altitudeM : 0);
+        var speedMax = reference ? Math.max(10, Math.ceil(Math.max(referenceFall.points[commonIndex].vel, currentFall.points[commonIndex].vel) / 10) * 10) : 10;
+        var parameters = [
+          ['mass', __alloT('stem.raptorhunt.mass_kg_2', 'Mass (kg)'), 2],
+          ['cd', __alloT('stem.raptorhunt.drag_coefficient_cd', 'Drag coefficient (Cd)'), 2],
+          ['area', __alloT('stem.raptorhunt.frontal_area_m', 'Frontal area (m²)'), 5],
+          ['altitudeM', __alloT('stem.raptorhunt.stoop_start_altitude_m', 'Stoop start altitude (m)'), 0]
+        ];
+        var changed = reference ? parameters.filter(function(parameter) { return Math.abs(current[parameter[0]] - reference[parameter[0]]) > 1e-8; }).length : 0;
+        function sceneY(altitude) { return 54 + (1 - altitude / altitudeMax) * 228; }
+        function chartX(time) { return 47 + time / Math.max(0.05, commonEnd) * 289; }
+        function chartY(speed) { return 186 - speed / speedMax * 150; }
+        function curve(points) { return points.slice(0, commonIndex + 1).map(function(point, i) { return (i ? 'L' : 'M') + chartX(point.t).toFixed(3) + ' ' + chartY(point.vel).toFixed(3); }).join(' '); }
+        function copyModel(model) { return { mass: model.mass, cd: model.cd, area: model.area, altitudeM: model.altitudeM || 600 }; }
+        var rootData = { className: 'rh-stoop-compare', 'data-raptor-stoop-comparison': reference ? 'pinned' : 'empty', 'aria-labelledby': 'rh-stoop-compare-title' };
+        if (reference) {
+          Object.assign(rootData, { 'data-time': second.t, 'data-sample-index': index, 'data-common-end': commonEnd, 'data-reference-time': first.t, 'data-current-time': second.t, 'data-reference-speed': first.vel, 'data-current-speed': second.vel, 'data-reference-altitude': first.alt, 'data-current-altitude': second.alt, 'data-altitude-max': altitudeMax, 'data-speed-max': speedMax, 'data-changed-count': changed, 'data-reference-end': referenceFall.reachedGround ? 'ground' : 'window', 'data-current-end': currentFall.reachedGround ? 'ground' : 'window' });
+          parameters.forEach(function(parameter) { rootData['data-reference-' + parameter[0]] = reference[parameter[0]]; rootData['data-current-' + parameter[0]] = current[parameter[0]]; });
+        }
+        return h('section', rootData,
+          h('div', { className: 'rh-stoop-compare-heading' },
+            h('div', null,
+              h('span', { className: 'rh-stoop-compare-kicker' }, __alloT('stem.raptorhunt.stoop_compare_kicker', 'Try one change')),
+              h('h3', { id: 'rh-stoop-compare-title' }, __alloT('stem.raptorhunt.stoop_compare_title', 'Two falls. One clock.')),
+              h('p', null, __alloT('stem.raptorhunt.stoop_compare_intro', 'Keep a reference, change a parameter, and compare both falls at the same elapsed time.'))
+            ),
+            h('div', { className: 'rh-stoop-compare-actions' },
+              h('button', { type: 'button', 'data-stoop-compare-pin': 'true', onClick: function() { setRH({ stoopReference: copyModel(current) }); } }, reference ? __alloT('stem.raptorhunt.stoop_compare_replace', 'Replace reference') : __alloT('stem.raptorhunt.stoop_compare_pin', 'Pin current model')),
+              reference && h('button', { type: 'button', 'data-stoop-compare-clear': 'true', onClick: function(event) {
+                var section = event.currentTarget.closest('[data-raptor-stoop-comparison]');
+                setRH({ stoopReference: null });
+                window.setTimeout(function() { var pin = section && section.querySelector('[data-stoop-compare-pin]'); if (pin) pin.focus(); }, 0);
+              } }, __alloT('stem.raptorhunt.stoop_compare_clear', 'Clear reference'))
+            )
+          ),
+          !reference && h('div', { className: 'rh-stoop-compare-empty' },
+            h('svg', { viewBox: '0 0 150 62', width: 150, height: 62, 'aria-hidden': 'true' },
+              h('path', { d: 'M15 10Q48 10 65 49M15 10Q66 10 133 49', fill: 'none', stroke: '#f4d187', strokeWidth: 3, strokeDasharray: '5 5' }),
+              h('path', { d: 'M15 10Q66 10 133 49', fill: 'none', stroke: '#7de4dc', strokeWidth: 3 }),
+              h('path', { d: 'M15 5V52H140', fill: 'none', stroke: '#6d8c91' }),
+              h('circle', { cx: 65, cy: 49, r: 5, fill: '#f4d187' }), h('circle', { cx: 133, cy: 49, r: 5, fill: '#7de4dc' })
+            ),
+            h('p', null, __alloT('stem.raptorhunt.stoop_compare_empty', 'What changes when frontal area doubles? Pin this model to reveal paired birds, a shared speed graph, and a time scrubber.'))
+          ),
+          reference && h('div', { className: 'rh-stoop-compare-content' },
+            h('fieldset', { className: 'rh-stoop-compare-experiments' },
+              h('legend', null, __alloT('stem.raptorhunt.stoop_compare_experiment_label', 'Start from the reference and change one factor')),
+              h('div', { className: 'rh-stoop-compare-actions' },
+                [
+                  ['cd', 0.8, __alloT('stem.raptorhunt.stoop_compare_double_drag', '2× drag coefficient')],
+                  ['area', 0.15, __alloT('stem.raptorhunt.stoop_compare_double_area', '2× frontal area')],
+                  ['mass', 10, __alloT('stem.raptorhunt.stoop_compare_double_mass', '2× mass')]
+                ].map(function(experiment) {
+                  var nextValue = Number((reference[experiment[0]] * 2).toFixed(5));
+                  return h('button', { key: experiment[0], type: 'button', disabled: nextValue > experiment[1], 'data-stoop-compare-factor': experiment[0], onClick: function() {
+                    var next = copyModel(reference); next[experiment[0]] = nextValue; setRH({ stoopSimVars: next });
+                  } }, experiment[2]);
+                }),
+                h('button', { type: 'button', onClick: function() { setRH({ stoopSimVars: copyModel(reference) }); } }, __alloT('stem.raptorhunt.stoop_compare_restore', 'Restore reference'))
+              ),
+              h('p', null, __alloT('stem.raptorhunt.stoop_compare_limit_hint', 'Each experiment resets the other parameters to the reference. Dimmed choices would exceed the calculator range.'))
+            ),
+            h('div', { className: 'rh-stoop-compare-visuals' },
+              h('div', { className: 'rh-stoop-compare-scene-frame' },
+                h('svg', { viewBox: '0 0 360 330', 'data-stoop-compare-scene': 'true', role: 'img', 'aria-label': __alloT('stem.raptorhunt.stoop_compare_scene_label', 'Reference and current fall on the same altitude scale. Birds are enlarged; the center line marks the vertical gap.') },
+                  h('defs', null,
+                    h('linearGradient', { id: 'rh-stoop-compare-sky', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { stopColor: '#274b60' }), h('stop', { offset: '1', stopColor: '#102d39' })),
+                    h('linearGradient', { id: 'rh-stoop-compare-gap-fill', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { stopColor: '#f4d187', stopOpacity: 0.08 }), h('stop', { offset: '1', stopColor: '#7de4dc', stopOpacity: 0.14 }))
+                  ),
+                  h('rect', { width: 360, height: 330, rx: 13, fill: 'url(#rh-stoop-compare-sky)' }),
+                  h('path', { d: 'M0 297L45 274 78 286 111 265 159 289 195 277 239 297 285 270 329 291 360 280V330H0Z', fill: '#3f675e', opacity: 0.5 }),
+                  h('path', { d: 'M0 310Q65 294 129 309T260 307T360 305V330H0Z', fill: '#24483e' }),
+                  h('rect', { x: 112, y: Math.min(sceneY(first.alt), sceneY(second.alt)), width: 150, height: Math.max(1, Math.abs(sceneY(first.alt) - sceneY(second.alt))), fill: 'url(#rh-stoop-compare-gap-fill)' }),
+                  [0, 0.25, 0.5, 0.75, 1].map(function(fraction) { var y = 54 + fraction * 228; return h('g', { key: fraction }, h('line', { x1: 62, x2: 340, y1: y, y2: y, stroke: '#6d8d99', strokeDasharray: '2 6', opacity: 0.7 }), h('text', { x: 51, y: y + 4, textAnchor: 'end', fill: '#d8e8ee', fontSize: 11 }, Math.round(altitudeMax * (1 - fraction)))); }),
+                  h('text', { x: 51, y: 24, textAnchor: 'end', fill: '#d8e8ee', fontSize: 11 }, 'm'),
+                  h('text', { x: 112, y: 24, textAnchor: 'middle', fill: '#f4d187', fontSize: 12, fontWeight: 700 }, referenceLabel),
+                  h('text', { x: 262, y: 24, textAnchor: 'middle', fill: '#7de4dc', fontSize: 12, fontWeight: 700 }, currentLabel),
+                  h('path', { d: 'M182 ' + sceneY(first.alt) + 'H192M187 ' + sceneY(first.alt) + 'V' + sceneY(second.alt) + 'M182 ' + sceneY(second.alt) + 'H192', stroke: '#e5f0ed', strokeWidth: 1.5, fill: 'none', 'data-stoop-compare-gap': 'true' }),
+                  [[first, reference, 112, '#f4d187', 'reference'], [second, current, 262, '#7de4dc', 'current']].map(function(run) {
+                    var birdY = sceneY(run[0].alt), startY = sceneY(run[1].altitudeM);
+                    return h('g', { key: run[4] },
+                      h('path', { d: 'M' + run[2] + ' ' + startY + 'V' + birdY, stroke: run[3], strokeWidth: 2, strokeDasharray: run[4] === 'reference' ? '5 5' : 'none', opacity: 0.8 }),
+                      h('circle', { cx: run[2], cy: startY, r: 4, fill: '#173747', stroke: run[3], strokeWidth: 1.5 }),
+                      h('g', { transform: 'translate(' + run[2] + ' ' + birdY + ')', 'data-stoop-compare-bird': run[4], 'data-altitude': run[0].alt, 'data-y': birdY },
+                        h('ellipse', { rx: 27, ry: 18, fill: run[3], opacity: 0.09 }),
+                        h('path', { d: 'M0 16Q-9 10-7 0L-16-20-3-11 0-19 4-11 16-20 7 0Q9 10 0 16Z', fill: '#8396a0', stroke: run[3], strokeWidth: 1.8 }),
+                        h('path', { d: 'M-3-8Q-5 2 0 13Q5 4 3-8Z', fill: '#eee4c7' }),
+                        h('path', { d: 'M-3 11Q0 19 4 13L2 11Z', fill: '#e9bf70' }),
+                        h('circle', { cx: -1, cy: 10, r: 1.3, fill: '#10212b' })
+                      )
+                    );
+                  }),
+                  h('text', { x: 180, y: 320, textAnchor: 'middle', fill: '#e0eee7', fontSize: 11 }, __alloT('stem.raptorhunt.stoop_compare_height_key', 'Shared altitude scale · birds enlarged'))
+                )
+              ),
+              h('div', { className: 'rh-stoop-compare-chart-frame' },
+                h('div', { className: 'rh-stoop-compare-legend' }, h('span', { 'data-run': 'reference' }, referenceLabel + ' · ' + __alloT('stem.raptorhunt.stoop_compare_dashed', 'dashed')), h('span', { 'data-run': 'current' }, currentLabel + ' · ' + __alloT('stem.raptorhunt.stoop_compare_solid', 'solid'))),
+                h('svg', { viewBox: '0 0 360 228', 'data-stoop-compare-chart': 'true', role: 'img', 'aria-label': __alloT('stem.raptorhunt.stoop_compare_chart_label', 'Speed against elapsed time. Both curves use the same scales and end at the last time available in both falls.') },
+                  [0, 0.5, 1].map(function(fraction) { var y = chartY(fraction * speedMax); return h('g', { key: 'speed' + fraction }, h('line', { x1: 47, x2: 336, y1: y, y2: y, stroke: '#37525c' }), h('text', { x: 37, y: y + 4, textAnchor: 'end', fill: '#d2e3e8', fontSize: 14 }, String(fraction * speedMax))); }),
+                  [0, 0.5, 1].map(function(fraction) { var x = chartX(fraction * commonEnd); return h('g', { key: 'time' + fraction }, h('line', { x1: x, x2: x, y1: 36, y2: 186, stroke: '#37525c', strokeDasharray: '3 5' }), h('text', { x: x, y: 208, textAnchor: 'middle', fill: '#d2e3e8', fontSize: 14 }, (fraction * commonEnd).toFixed(2))); }),
+                  h('text', { x: 47, y: 18, fill: '#d2e3e8', fontSize: 14 }, 'm/s'), h('text', { x: 336, y: 226, textAnchor: 'end', fill: '#d2e3e8', fontSize: 14 }, 's'),
+                  h('path', { d: curve(currentFall.points), fill: 'none', stroke: '#7de4dc', strokeWidth: 3, strokeLinejoin: 'round', 'data-stoop-compare-curve': 'current' }),
+                  h('path', { d: curve(referenceFall.points), fill: 'none', stroke: '#f4d187', strokeWidth: 3, strokeDasharray: '7 6', strokeLinejoin: 'round', 'data-stoop-compare-curve': 'reference' }),
+                  h('line', { x1: chartX(second.t), x2: chartX(second.t), y1: 30, y2: 186, stroke: '#ecf5f1', strokeWidth: 1.5, strokeDasharray: '3 4', 'data-stoop-compare-cursor': 'true' }),
+                  h('circle', { cx: chartX(first.t), cy: chartY(first.vel), r: 6, fill: '#102d39', stroke: '#f4d187', strokeWidth: 2.5, 'data-stoop-compare-marker': 'reference' }),
+                  h('path', { d: 'M' + chartX(second.t) + ' ' + (chartY(second.vel) - 5) + 'l5 5-5 5-5-5Z', fill: '#7de4dc', stroke: '#102d39', strokeWidth: 1.5, 'data-stoop-compare-marker': 'current', 'data-x': chartX(second.t), 'data-y': chartY(second.vel) })
+                ),
+                h('div', { className: 'rh-stoop-compare-clock' },
+                  h('label', { htmlFor: 'rh-stoop-compare-time' }, __alloT('stem.raptorhunt.stoop_compare_time', 'Inspect both falls at the same time')),
+                  h('output', { htmlFor: 'rh-stoop-compare-time', 'data-stoop-compare-clock': 'true' }, second.t.toFixed(2) + ' s'),
+                  h('input', { id: 'rh-stoop-compare-time', 'data-stoop-compare-time': 'true', type: 'range', min: 0, max: commonIndex, step: 1, value: index, 'aria-valuetext': second.t.toFixed(2) + ' s', onInput: function(event) { setRH({ stoopCompareSample: Number(event.target.value) }); } }),
+                  h('div', { className: 'rh-stoop-compare-actions' }, [[0, __alloT('stem.raptorhunt.stoop_compare_start', 'Both at start')], [commonIndex, __alloT('stem.raptorhunt.stoop_compare_last', 'Last shared sample')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { setRH({ stoopCompareSample: item[0] }); } }, item[1]); }))
+                )
+              )
+            ),
+            h('div', { className: 'rh-stoop-compare-readings' },
+              [[referenceLabel, first, 'reference'], [currentLabel, second, 'current']].map(function(run) { return h('div', { key: run[2], 'data-run': run[2] }, h('strong', null, run[0]), h('dl', null, h('div', null, h('dt', null, __alloT('stem.raptorhunt.stoop_sample_altitude', 'Altitude')), h('dd', null, run[1].alt.toFixed(1) + ' m')), h('div', null, h('dt', null, __alloT('stem.raptorhunt.stoop_sample_speed', 'Speed')), h('dd', null, run[1].vel.toFixed(1) + ' m/s')))); }),
+              h('div', { className: 'rh-stoop-compare-difference' }, h('strong', null, __alloT('stem.raptorhunt.stoop_compare_gap', 'At this moment')), h('p', null, Math.abs(second.alt - first.alt).toFixed(1) + ' m · ' + __alloT('stem.raptorhunt.stoop_compare_height_gap', 'vertical gap')), h('p', null, (second.vel - first.vel > 0 ? '+' : '') + (second.vel - first.vel).toFixed(1) + ' m/s · ' + __alloT('stem.raptorhunt.stoop_compare_speed_delta', 'current minus reference')))
+            ),
+            h('p', { className: 'rh-stoop-compare-boundary', 'data-stoop-compare-boundary': 'true' },
+              __alloT('stem.raptorhunt.stoop_compare_shared_window', 'Shared inspection ends at'), ' ', commonEnd.toFixed(2), ' s. ',
+              referenceFall.reachedGround || currentFall.reachedGround ? __alloT('stem.raptorhunt.stoop_compare_contact_limit', 'This is the earlier final sample before either fall reaches the ground. Neither curve is extended past contact.') : __alloT('stem.raptorhunt.stoop_compare_window_limit', 'Both falls remain aloft at the end of the 12-second observation window.'),
+              ' ', __alloT('stem.raptorhunt.stoop_compare_model_limit', 'Same idealized vertical-fall model: no flapping, lift, wind or pull-up.')
+            ),
+            h('table', { className: 'rh-stoop-compare-parameters' },
+              h('caption', null, __alloT('stem.raptorhunt.stoop_compare_parameters', 'Model parameters'), ' · ', changed, ' ', __alloT('stem.raptorhunt.stoop_compare_changed', 'changed')),
+              h('thead', null, h('tr', null, h('th', { scope: 'col' }, __alloT('stem.raptorhunt.stoop_compare_parameter', 'Parameter')), h('th', { scope: 'col' }, referenceLabel), h('th', { scope: 'col' }, currentLabel))),
+              h('tbody', null, parameters.map(function(parameter) { return h('tr', { key: parameter[0], 'data-stoop-compare-parameter': parameter[0], 'data-changed': Math.abs(current[parameter[0]] - reference[parameter[0]]) > 1e-8 ? 'true' : 'false' }, h('th', { scope: 'row' }, parameter[1]), h('td', null, reference[parameter[0]].toFixed(parameter[2])), h('td', null, current[parameter[0]].toFixed(parameter[2]))); }))
+            )
+          )
+        );
+      }
       function renderStoop() {
         var v = stoopSimVars;
+        var currentFall = sampleStoopFall(v);
         var rho = 1.225; // sea level air density
         var vTerminal = Math.sqrt((2 * v.mass * 9.81) / (rho * v.area * v.cd));
         var vTerminalMph = vTerminal * 2.237;
-        // Fall time to terminal: approximate t = v_t / g
+        // Characteristic quadratic-drag timescale, not time to reach terminal.
         var tToTerminal = vTerminal / 9.81;
         // KE at terminal
         var ke = 0.5 * v.mass * vTerminal * vTerminal;
@@ -24110,8 +25610,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, STOOP_FACTS.header),
-            h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, STOOP_FACTS.overview)
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.stoop_facts_header', STOOP_FACTS.header)),
+            h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, __alloT('stem.raptorhunt.stoop_facts_overview', STOOP_FACTS.overview))
           ),
           // Formula card
           h('div', { className: 'bg-slate-900/60 border border-slate-700/50 rounded-xl p-4' },
@@ -24129,7 +25629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('span', { className: 'font-mono text-amber-300' }, v.mass.toFixed(2))
               ),
               h('input', {
-                type: 'range', min: 0.1, max: 8, step: 0.05, value: v.mass,
+                type: 'range', min: 0.1, max: 10, step: 0.01, value: v.mass,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { mass: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
                 'aria-label': __alloT('stem.raptorhunt.mass_in_kilograms', 'Mass in kilograms')
@@ -24154,10 +25654,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', null,
               h('label', { className: 'text-xs text-slate-300 flex items-center justify-between' },
                 h('span', null, __alloT('stem.raptorhunt.frontal_area_m', 'Frontal area (m²)')),
-                h('span', { className: 'font-mono text-amber-300' }, v.area.toFixed(3))
+                h('span', { className: 'font-mono text-amber-300' }, v.area.toFixed(5))
               ),
               h('input', {
-                type: 'range', min: 0.005, max: 0.15, step: 0.001, value: v.area,
+                type: 'range', min: 0.001, max: 0.15, step: 0.00001, value: v.area,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { area: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
                 'aria-label': __alloT('stem.raptorhunt.frontal_cross_section_area_in_square_m', 'Frontal cross-section area in square meters')
@@ -24166,13 +25666,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('button', {
               onClick: function() {
-                // Reset to selected species' true values
-                setRH({ stoopSimVars: { mass: sp.massKg, cd: 0.18, area: sp.wingAreaSqM * 0.06, altitudeM: 600 } });
+                // Preserve the source mass and illustrative 6%-of-wing-area preset.
+                // Five decimals cover every supplied area without native range snapping.
+                setRH({ stoopSimVars: { mass: sp.massKg, cd: 0.18, area: Number((sp.wingAreaSqM * 0.06).toFixed(5)), altitudeM: 600 } });
               },
               className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
               'aria-label': __alloT('stem.raptorhunt.load_active_species_presets', 'Load active species presets')
             }, '↺ Load ' + sp.name + ' presets')
           ),
+          renderStoopComparison(v, currentFall),
           // Results
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
             h('div', { className: 'bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-4 text-center' },
@@ -24181,37 +25683,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs text-slate-400' }, 'mph (' + vTerminal.toFixed(0) + ' m/s)')
             ),
             h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-yellow-900/40 border border-orange-700/40 rounded-xl p-4 text-center' },
-              h('div', { className: 'text-xs text-orange-200' }, __alloT('stem.raptorhunt.time_to_terminal', 'Time to ~Terminal')),
+              h('div', { className: 'text-xs text-orange-200' }, __alloT('stem.raptorhunt.drag_timescale', 'Drag timescale')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, tToTerminal.toFixed(1)),
               h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.seconds_v_t_g', 'seconds (v_t / g)'))
             ),
             h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-amber-700/40 rounded-xl p-4 text-center' },
               h('div', { className: 'text-xs text-yellow-200' }, __alloT('stem.raptorhunt.kinetic_energy', 'Kinetic Energy')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, ke.toFixed(0)),
-              h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.joules_at_impact', 'joules at impact'))
+              h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.joules_at_terminal', 'joules at terminal speed'))
             )
           ),
           h('div', {
             className: 'rh-stoop-impact-panel',
             'data-raptor-stoop-impact': 'true',
             role: 'region',
-            'aria-label': __alloT('stem.raptorhunt.a11y_impact_energy_comparison', 'Impact energy comparison')
+            'aria-label': __alloT('stem.raptorhunt.terminal_energy_comparison', 'Terminal-speed energy comparison')
           },
             h('div', { className: 'rh-stoop-impact-head' },
               h('div', null,
-                h('span', { className: 'rh-stoop-impact-kicker' }, 'Impact scale'),
-                h('strong', { className: 'rh-stoop-impact-title' }, 'Where does this dive land?')
+                h('span', { className: 'rh-stoop-impact-kicker' }, __alloT('stem.raptorhunt.terminal_energy_scale', 'Ideal terminal-energy scale')),
+                h('strong', { className: 'rh-stoop-impact-title' }, __alloT('stem.raptorhunt.terminal_energy_title', 'An upper limit for this model'))
               ),
               h('span', { className: 'rh-stoop-impact-value' }, ke.toFixed(0) + ' J')
             ),
             h('div', {
               className: 'rh-stoop-impact-track',
               role: 'meter',
-              'aria-label': __alloT('stem.raptorhunt.a11y_current_kinetic_energy_at_impact', 'Current kinetic energy at impact'),
+              'aria-label': __alloT('stem.raptorhunt.terminal_energy_value', 'Kinetic energy at the modeled terminal speed'),
               'aria-valuemin': 0,
               'aria-valuemax': impactScaleMax,
               'aria-valuenow': Math.max(0, Math.min(impactScaleMax, ke)),
-              'aria-valuetext': ke.toFixed(0) + ' joules at impact'
+              'aria-valuetext': ke.toFixed(0) + ' J · ' + __alloT('stem.raptorhunt.joules_at_terminal', 'joules at terminal speed')
             },
               h('span', { className: 'rh-stoop-impact-fill', 'aria-hidden': 'true', style: { width: impactScalePct(ke) + '%' } }),
               h('span', { className: 'rh-stoop-impact-current', style: { left: impactScalePct(ke) + '%' } },
@@ -24221,8 +25723,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               [
                 { id: 'baseball', label: 'Baseball', value: 120 },
                 { id: 'bullet', label: '.22 bullet', value: 150 },
-                { id: 'peregrine', label: 'Peregrine', value: 5000 },
-                { id: 'harpy', label: 'Harpy', value: 10000 }
+                { id: 'peregrine', label: '5 kJ', value: 5000 },
+                { id: 'harpy', label: '10 kJ', value: 10000 }
               ].map(function(marker) {
                 return h('span', { key: marker.id, className: 'rh-stoop-impact-marker', 'data-impact-marker': marker.id, style: { left: impactScalePct(marker.value) + '%' }, 'aria-hidden': 'true' },
                   h('span', { className: 'rh-stoop-impact-marker-label' }, marker.label)
@@ -24238,7 +25740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('div', { className: 'rh-stoop-impact-note' },
               h('strong', null, 'Log scale: '),
-              'the everyday references stay visible while the raptor energy jumps into the thousands of joules.'
+              __alloT('stem.raptorhunt.stoop_energy_reference_note', 'Reference energies for scale, not measured species records or energy delivered in a collision.')
             )
           ),
           h('div', { className: 'bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-xs text-slate-300' },
@@ -24246,16 +25748,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('ul', { className: 'space-y-1 list-disc list-inside' },
               h('li', null, __alloT('stem.raptorhunt.a_22_caliber_bullet_at_the_muzzle_150_', 'A .22 caliber bullet at the muzzle: ~150 J of KE')),
               h('li', null, __alloT('stem.raptorhunt.a_baseball_pitched_at_95_mph_120_j', 'A baseball pitched at 95 mph: ~120 J')),
-              h('li', null, __alloT('stem.raptorhunt.a_peregrine_at_terminal_velocity_5_000', 'A peregrine at terminal velocity: ~5,000 J — '), h('span', { className: 'text-red-300' }, __alloT('stem.raptorhunt.pistol_bullet_class', 'pistol-bullet class'))),
-              h('li', null, __alloT('stem.raptorhunt.a_harpy_eagle_in_dive_10_000_j', 'A harpy eagle in dive: ~10,000+ J'))
+              h('li', null, __alloT('stem.raptorhunt.stoop_energy_example_5k', 'Illustrative calculation: a 1 kg object at 100 m/s carries 5,000 J.')),
+              h('li', null, __alloT('stem.raptorhunt.stoop_energy_example_10k', 'Illustrative calculation: a 1 kg object at about 141 m/s carries about 10,000 J.'))
             )
           ),
           // Key points
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             STOOP_FACTS.keyPoints.map(function(kp, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
-                h('div', { className: 'text-sm font-bold text-orange-300 mb-1' }, kp.title),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
+                h('div', { className: 'text-sm font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.stoop_fact_' + i + '_title', kp.title)),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, __alloT('stem.raptorhunt.stoop_fact_' + i + '_text', kp.text))
               );
             })
           ),
@@ -24267,21 +25769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var g = 9.81;
             // Solve: dv/dt = g - (rho * Cd * A * v²) / (2 * m)
             var m = v.mass, cd = v.cd, A = v.area;
-            var dt = 0.05;
-            var pts = [];
-            var alt = v.altitudeM || 600;
-            var vel = 0;
-            var t = 0;
-            var maxT = 12;
-            while (t < maxT && alt > 0) {
-              pts.push({ t: t, alt: alt, vel: vel, velMph: vel * 2.237 });
-              var drag = (rho * cd * A * vel * vel) / (2 * m);
-              var accel = g - drag;
-              vel = vel + accel * dt;
-              alt = alt - vel * dt;
-              if (alt < 0) alt = 0;
-              t += dt;
-            }
+            var pts = currentFall.points;
             // The plot. Its dashed "terminal" line was drawn at the peak speed this fall happened to
             // reach, so from 600 m the "90% terminal" marker was 90% of 197 mph while the terminal
             // velocity above says 255. Terminal is now the calculator's own vTerminal; the legend
@@ -24299,7 +25787,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var altPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yAltAt(p.alt).toFixed(1); }).join(' ');
             var velPath = pts.map(function(p, i) { return (i === 0 ? 'M ' : 'L ') + xAt(p.t).toFixed(1) + ' ' + yVelAt(p.velMph).toFixed(1); }).join(' ');
             var velArea = velPath + ' L ' + xAt(tMax).toFixed(1) + ' ' + (ph - padB) + ' L ' + padL + ' ' + (ph - padB) + ' Z';
-            // First moment at 90% of TERMINAL velocity (none if the ground comes first).
+            // First sampled moment at 90% of terminal; the ground OR the bounded
+            // observation window may arrive first. Neither implies terminal impact.
             var t90 = pts.find(function(p) { return p.velMph >= 0.9 * termMph; });
             var velTicks = [];
             for (var vt = 0; vt <= velTop + 0.001; vt += velStep) velTicks.push(vt);
@@ -24309,11 +25798,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             for (var tt = 0; tt <= tMax + 0.001; tt += timeStep) timeTicks.push(tt);
             var markX = t90 ? xAt(t90.t) : 0, markY = t90 ? yVelAt(t90.velMph) : 0;
             var markLeft = markX > pw * 0.6;
-            var plotLabel = __alloT('stem.raptorhunt.fall_curve_plot', 'Fall curve plot') + ': from ' + altMax + ' m, speed reaches ' + velMax.toFixed(0) + ' mph after ' + tMax.toFixed(1) + ' s; terminal velocity ' + termMph.toFixed(0) + ' mph' + (t90 ? '; 90% of terminal at ' + t90.t.toFixed(1) + ' s' : '; the ground comes before 90% of terminal') + '.';
+            var reachedGround = currentFall.reachedGround;
+            var windowNote = reachedGround ? __alloT('stem.raptorhunt.stoop_window_ground', 'The integration reaches the ground. The last plotted sample is just before contact.') : __alloT('stem.raptorhunt.stoop_window_aloft', 'The 12-second observation window ends while the bird is still aloft. This is not an impact speed.');
+            var not90Note = reachedGround ? __alloT('stem.raptorhunt.stoop_ground_before_90', 'Ground reached before 90% of terminal') : __alloT('stem.raptorhunt.stoop_window_before_90', '90% of terminal is outside this time window');
+            var inspectFraction = Math.max(0, Math.min(1, Number.isFinite(rh.stoopInspectFraction) ? rh.stoopInspectFraction : 0.4));
+            var inspectIndex = Math.round(inspectFraction * (pts.length - 1));
+            var inspected = pts[inspectIndex] || { t: 0, alt: altMax, vel: 0, velMph: 0 };
+            var dragRatio = rho * cd * A * inspected.vel * inspected.vel / (2 * m * g);
+            var inspectBirdY = 40 + (1 - inspected.alt / altMax) * 206;
+            var plotLabel = __alloT('stem.raptorhunt.fall_curve_plot', 'Fall curve plot') + ': from ' + altMax + ' m, speed reaches ' + velMax.toFixed(0) + ' mph after ' + tMax.toFixed(1) + ' s; terminal velocity ' + termMph.toFixed(0) + ' mph' + (t90 ? '; 90% of terminal at ' + t90.t.toFixed(1) + ' s' : '; ' + not90Note) + '.';
             var small = { fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace' };
             return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 space-y-2', 'data-raptor-fall-curve': 'true' },
               h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.fall_curve_time_domain_physics', '📉 Fall Curve (time-domain physics)')),
-              h('div', { className: 'text-xs text-slate-300 italic' }, __alloT('stem.raptorhunt.numerical_integration_of_the_drag_equa', 'Numerical integration of the drag equation with your current slider values. Altitude (orange) plummets while velocity (red) builds toward terminal — and then plateaus when drag = weight.')),
+              h('div', { className: 'text-xs text-slate-300 italic' }, __alloT('stem.raptorhunt.stoop_model_note', 'A vertical fall from rest with constant air density, drag coefficient and frontal area. No flapping, lift, wind or pull-up is modeled. The speed approaches terminal as drag approaches weight.')),
+              h('section', { className: 'rh-stoop-inspector', 'data-raptor-stoop-inspector': 'true', 'data-sample-index': inspectIndex, 'data-time': inspected.t, 'data-altitude': inspected.alt, 'data-speed': inspected.vel, 'data-drag-ratio': dragRatio, 'data-window-end': reachedGround ? 'ground' : 'aloft', 'aria-labelledby': 'rh-stoop-inspector-title' },
+                h('div', { className: 'rh-stoop-inspector-grid' },
+                  h('svg', { className: 'rh-stoop-drop-scene', viewBox: '0 0 240 300', role: 'img', 'aria-label': __alloT('stem.raptorhunt.stoop_sample_scene', 'Selected fall sample: bird height follows the altitude scale; the amber arrow shows weight and the blue arrow shows drag.') },
+                    h('defs', null, h('linearGradient', { id: 'rh-stoop-inspector-sky', x2: '0', y2: '1' }, h('stop', { stopColor: '#254c61' }), h('stop', { offset: '1', stopColor: '#0c2230' }))),
+                    h('rect', { width: 240, height: 300, fill: 'url(#rh-stoop-inspector-sky)' }),
+                    h('path', { d: 'M0 270L38 243 63 257 98 237 139 264 184 241 240 264V300H0Z', fill: '#527468', opacity: 0.55 }),
+                    h('path', { d: 'M0 281Q49 263 98 279T240 275V300H0Z', fill: '#294c42' }),
+                    [0, 0.5, 1].map(function(f) { return h('g', { key: f }, h('line', { x1: 52, x2: 220, y1: 40 + f * 206, y2: 40 + f * 206, stroke: '#648594', strokeDasharray: '3 6' }), h('text', { x: 44, y: 44 + f * 206, textAnchor: 'end', fill: '#d8eaf0', fontSize: 10 }, Math.round(altMax * (1 - f)) + ' m')); }),
+                    h('line', { x1: 52, y1: 40, x2: 52, y2: 246, stroke: '#b0c9d2' }),
+                    h('path', { d: 'M130 40V' + inspectBirdY, stroke: '#f9d78a', strokeWidth: 2, strokeDasharray: '3 5' }),
+                    h('g', { transform: 'translate(130 ' + inspectBirdY + ')', 'data-stoop-bird': 'true' },
+                      h('ellipse', { rx: 29, ry: 12, fill: '#fff3c9', opacity: 0.08 }),
+                      h('path', { d: 'M0 14Q-8 10-7 0L-13-19-2-10 0-18 3-10 14-19 7 0Q8 9 0 14Z', fill: '#778b96', stroke: '#d3e5e9', strokeWidth: 1.2 }),
+                      h('path', { d: 'M-3-8Q-4 2 0 12Q5 3 3-8Z', fill: '#ede3c9' }),
+                      h('path', { d: 'M-3 10Q0 17 4 12L2 10Z', fill: '#dfbb74' }),
+                      h('circle', { cx: -1, cy: 9, r: 1.1, fill: '#111d25' }),
+                      h('path', { d: 'M32 0V36M28 31L32 36 36 31', stroke: '#fcd34d', strokeWidth: 2, fill: 'none' }),
+                      dragRatio > 0.015 && h('path', { d: 'M-32 0V' + (-36 * dragRatio) + 'M-36 ' + (-36 * dragRatio + 5) + 'L-32 ' + (-36 * dragRatio) + ' -28 ' + (-36 * dragRatio + 5), stroke: '#7dd3fc', strokeWidth: 2, fill: 'none' })
+                    ),
+                    h('text', { x: 130, y: 289, textAnchor: 'middle', fill: '#e6f1e5', fontSize: 10 }, __alloT('stem.raptorhunt.stoop_height_scaled', 'Height to scale · bird enlarged'))
+                  ),
+                  h('div', null,
+                    h('h3', { id: 'rh-stoop-inspector-title' }, __alloT('stem.raptorhunt.stoop_inspector_title', 'Freeze a moment in the fall')),
+                    h('p', null, __alloT('stem.raptorhunt.stoop_inspector_intro', 'Scrub the same samples used by the graph. Watch altitude fall and drag grow as speed builds.')),
+                    h('dl', { className: 'rh-stoop-sample-values' }, [
+                      [__alloT('stem.raptorhunt.stoop_sample_time', 'Elapsed time'), inspected.t.toFixed(2) + ' s'], [__alloT('stem.raptorhunt.stoop_sample_altitude', 'Altitude'), inspected.alt.toFixed(1) + ' m'], [__alloT('stem.raptorhunt.stoop_sample_speed', 'Speed'), inspected.vel.toFixed(1) + ' m/s']
+                    ].map(function(row) { return h('div', { key: row[0] }, h('dt', null, row[0]), h('dd', null, row[1])); })),
+                    h('label', { htmlFor: 'rh-stoop-inspect-time' }, __alloT('stem.raptorhunt.stoop_inspect_time', 'Inspect fall time')),
+                    h('input', { id: 'rh-stoop-inspect-time', type: 'range', min: 0, max: pts.length - 1, step: 1, value: inspectIndex, 'aria-valuetext': inspected.t.toFixed(2) + ' s · ' + inspected.alt.toFixed(1) + ' m · ' + inspected.vel.toFixed(1) + ' m/s', onInput: function(event) { setRH({ stoopInspectFraction: Number(event.target.value) / Math.max(1, pts.length - 1) }); } }),
+                    h('div', { className: 'rh-stoop-scrub-actions' }, [[0, __alloT('stem.raptorhunt.stoop_sample_start', 'Start')], [0.5, __alloT('stem.raptorhunt.stoop_sample_middle', 'Halfway')], [1, __alloT('stem.raptorhunt.stoop_sample_last', 'Last sample')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { setRH({ stoopInspectFraction: item[0] }); } }, item[1]); })),
+                    h('p', null, __alloT('stem.raptorhunt.stoop_force_key', 'Amber: weight ↓ · Blue: drag ↑'), ' · ', Math.round(dragRatio * 100) + '% ', __alloT('stem.raptorhunt.stoop_drag_weight', 'of weight')),
+                    h('p', { 'data-stoop-window-note': 'true' }, windowNote)
+                  )
+                )
+              ),
               h('div', { className: 'bg-slate-950/60 rounded-lg p-3' },
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-xs text-amber-300 flex items-center justify-between' },
@@ -24367,6 +25899,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('path', { d: velArea, fill: 'url(#rh-fall-vel-area)' }),
                     h('path', { d: altPath, fill: 'none', stroke: '#f97316', strokeWidth: 3, strokeLinejoin: 'round' }),
                     h('path', { d: velPath, fill: 'none', stroke: '#ef4444', strokeWidth: 3, strokeLinejoin: 'round' }),
+                    h('g', { 'data-stoop-chart-cursor': 'true', 'data-time': inspected.t },
+                      h('line', { x1: xAt(inspected.t), x2: xAt(inspected.t), y1: padT, y2: ph - padB, stroke: '#e0f2fe', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+                      h('circle', { cx: xAt(inspected.t), cy: yAltAt(inspected.alt), r: 5, fill: '#fed7aa', stroke: '#7c2d12', strokeWidth: 2 }),
+                      h('circle', { cx: xAt(inspected.t), cy: yVelAt(inspected.velMph), r: 5, fill: '#fecaca', stroke: '#7f1d1d', strokeWidth: 2 })
+                    ),
                     // 90% of terminal, labelled in a pill on the side away from the plot edge
                     t90 ? h('g', null,
                       h('line', { x1: markX, y1: markY, x2: markX, y2: ph - padB, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
@@ -24375,7 +25912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       h('text', { x: markLeft ? markX - 94 : markX + 94, y: markY + 26, fontSize: 12, fill: '#fde047', textAnchor: 'middle', fontWeight: 'bold' }, '90% terminal @ ' + t90.t.toFixed(1) + 's')
                     ) : h('g', null,
                       h('rect', { x: pw - padR - 372, y: yVelAt(termMph) + 8, width: 362, height: 26, rx: 13, fill: '#1c1917', stroke: '#fde68a', strokeWidth: 1, opacity: 0.95 }),
-                      h('text', { x: pw - padR - 191, y: yVelAt(termMph) + 25, fontSize: 12, fill: '#fde68a', textAnchor: 'middle', fontWeight: 'bold' }, 'The ground comes before 90% of terminal: start higher')
+                      h('text', { x: pw - padR - 191, y: yVelAt(termMph) + 25, fontSize: 12, fill: '#fde68a', textAnchor: 'middle', fontWeight: 'bold' }, not90Note)
                     )
                   )
                 ),
@@ -24396,7 +25933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
               ),
               h('div', { className: 'text-[10px] text-slate-500 italic' },
-                __alloT('stem.raptorhunt.the_exponential_approach_to_terminal_v', 'The exponential approach to terminal velocity is the signature of drag-limited fall. Without drag, the bird would just accelerate at g forever. With drag, terminal is reached + held.')
+                __alloT('stem.raptorhunt.stoop_terminal_qualifier', 'Terminal speed is an asymptotic limit for this simplified model, not a guaranteed impact speed. The drag timescale vₜ/g is a characteristic time, not the time to reach terminal speed.')
               )
             );
           })()
@@ -24407,154 +25944,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: SILENT FLIGHT
       // ────────────────────────────────────────────────────────
       function renderSilent() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, SILENT_FACTS.header),
-            h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' }, SILENT_FACTS.overview)
-          ),
-          // Diagram (text-based "anatomy of an owl feather")
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-5' },
-            h('div', { className: 'text-sm font-bold text-violet-300 mb-3' }, __alloT('stem.raptorhunt.anatomy_of_an_owl_primary_feather_3_me', '🪶 Anatomy of an Owl Primary Feather (3-mechanism silencer)')),
-            h('div', { className: 'space-y-3 text-xs' },
-              h('div', { className: 'flex items-start gap-3 p-3 bg-violet-900/20 rounded border border-violet-700/30' },
-                h('div', { className: 'text-2xl flex-shrink-0' }, '〰️'),
-                h('div', null,
-                  h('div', { className: 'font-bold text-violet-300' }, __alloT('stem.raptorhunt.1_comb_edged_leading_primaries', '1. Comb-edged leading primaries')),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.tiny_serrated_teeth_0_5_1_mm_on_the_fr', 'Tiny serrated teeth (0.5-1 mm) on the front edge of each primary feather break the laminar-to-turbulent flow transition. Result: high-frequency noise scattering above prey hearing range.'))
-                )
-              ),
-              h('div', { className: 'flex items-start gap-3 p-3 bg-indigo-900/20 rounded border border-indigo-700/30' },
-                h('div', { className: 'text-2xl flex-shrink-0' }, '⌒'),
-                h('div', null,
-                  h('div', { className: 'font-bold text-indigo-300' }, __alloT('stem.raptorhunt.2_fringed_trailing_edge', '2. Fringed trailing edge')),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.soft_2_3_mm_fringe_on_the_back_edge_ab', 'Soft 2-3 mm fringe on the back edge absorbs the trailing-edge turbulent vortex sound. This is the largest contributor — most aerodynamic noise comes from the trailing edge.'))
-                )
-              ),
-              h('div', { className: 'flex items-start gap-3 p-3 bg-purple-900/20 rounded border border-purple-700/30' },
-                h('div', { className: 'text-2xl flex-shrink-0' }, '🧶'),
-                h('div', null,
-                  h('div', { className: 'font-bold text-purple-300' }, __alloT('stem.raptorhunt.3_velvety_dorsal_surface', '3. Velvety dorsal surface')),
-                  h('div', { className: 'text-slate-300 mt-0.5' }, __alloT('stem.raptorhunt.tiny_velvet_like_pile_0_5_mm_on_the_up', 'Tiny velvet-like pile (~0.5 mm) on the upper feather surface dampens feather-on-feather friction noise during wing folding/unfolding.'))
-                )
-              )
-            )
-          ),
-          h('div', { className: 'rh-silent-stack', 'data-raptor-silent-stack': 'true', role: 'region', 'aria-label': __alloT('stem.raptorhunt.a11y_owl_silent_flight_mechanism_sequence', 'Owl silent-flight mechanism sequence') },
-            h('div', { className: 'rh-silent-stack-head' },
-              h('div', null, h('span', null, 'Signal path'), h('strong', null, 'From airflow to stealth')),
-              h('span', null, '3 features / 1 hunt advantage')
-            ),
-            h('div', { className: 'rh-silent-stack-flow' }, [
-              { step: '01', title: 'Break', label: 'Comb edge', copy: 'Splits the flow transition', tone: 'violet' },
-              { step: '02', title: 'Absorb', label: 'Soft fringe', copy: 'Soaks up trailing vortices', tone: 'indigo' },
-              { step: '03', title: 'Dampen', label: 'Velvet surface', copy: 'Quiets feather friction', tone: 'purple' },
-              { step: '04', title: 'Shift', label: 'Above prey band', copy: 'Mouse hears less', tone: 'emerald' }
-            ].map(function(stage, i) {
-              var node = h('div', { key: stage.step, className: 'rh-silent-stack-node', 'data-silent-tone': stage.tone },
-                h('span', { className: 'rh-silent-stack-node-step' }, stage.step),
-                h('strong', { className: 'rh-silent-stack-node-title' }, stage.title),
-                h('span', { className: 'rh-silent-stack-node-label' }, stage.label),
-                h('span', { className: 'rh-silent-stack-node-copy' }, stage.copy)
-              );
-              if (i === 0) return node;
-              return [h('span', { key: 'arrow-' + stage.step, className: 'rh-silent-stack-arrow', 'aria-hidden': 'true' }, '>'), node];
-            })
-            ),
-            h('div', { className: 'rh-silent-stack-foot' }, h('strong', null, 'Airflow enters at left. '), 'Each feature removes a different part of the noise pathway before it reaches the prey.')
-          ),
-          // Frequency callout
-          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.frequency_shift_the_actual_mechanism', '🔊 Frequency shift — the actual mechanism')),
-            h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' },
-              __alloT('stem.raptorhunt.owl_wing_noise_peaks_at_16_khz_hawk_wi', 'Owl wing noise peaks at ~16 kHz. Hawk wing noise peaks at ~2-4 kHz. The owl achieves silence not by reducing total noise — that\'s a small effect — but by shifting the dominant frequency range out of where prey ears are most sensitive. A mouse hears 2-4 kHz acutely (rustling, footsteps) but is much less sensitive at 16 kHz.')
-            )
-          ),
-
-          // ── NEW v0.8: Frequency Spectrum Visualization ──
-          h('div', { className: 'bg-slate-900/60 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.wing_noise_spectrum_hawk_vs_owl_vs_mou', '📈 Wing Noise Spectrum — Hawk vs Owl vs Mouse Hearing')),
-            h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.x_axis_frequency_khz_y_axis_relative_i', 'X-axis: frequency (kHz). Y-axis: relative intensity / sensitivity. Hawk wing noise (red) peaks right in the mouse\'s most-sensitive range. Owl wing noise (violet) is shifted up out of that range. The frequency shift IS the silence mechanism.')),
-            (function() {
-              // SVG plot of three curves
-              var pw = 600, ph = 220, pad = 40;
-              // Frequency range: 0.5 to 30 kHz, log scale
-              var fmin = 0.5, fmax = 30;
-              function fToX(f) { return pad + (Math.log(f) - Math.log(fmin)) / (Math.log(fmax) - Math.log(fmin)) * (pw - 2 * pad); }
-              function intensityToY(v) { return ph - pad - v * (ph - 2 * pad); } // v 0..1
-              // Define curves as samples
-              // Hawk: Gaussian centered at 3 kHz, sigma factor ~0.5 (log space)
-              function gaussian(f, center, width, peak) {
-                var lf = Math.log(f), lc = Math.log(center);
-                return peak * Math.exp(-Math.pow(lf - lc, 2) / (2 * width * width));
-              }
-              var samples = [];
-              for (var i = 0; i <= 100; i++) {
-                var f = fmin * Math.pow(fmax / fmin, i / 100);
-                samples.push(f);
-              }
-              function curvePath(centerF, width, peak, samples) {
-                return samples.map(function(f, i) {
-                  var x = fToX(f);
-                  var y = intensityToY(gaussian(f, centerF, width, peak));
-                  return (i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(1);
-                }).join(' ');
-              }
-              var hawkPath = curvePath(3, 0.6, 0.9, samples);   // peak 3 kHz
-              var owlPath = curvePath(16, 0.5, 0.7, samples);   // peak 16 kHz
-              var mousePath = curvePath(4, 0.7, 0.95, samples); // peak 4 kHz hearing
-              return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.frequency_spectrum_chart', 'Frequency spectrum chart') },
-                // Background
-                h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
-                // Grid lines (log scale frequencies)
-                [1, 2, 4, 8, 16, 30].map(function(f, i) {
-                  var x = fToX(f);
-                  return h('g', { key: 'grid' + i },
-                    h('line', { x1: x, y1: pad, x2: x, y2: ph - pad, stroke: '#1e293b', strokeWidth: 1 }),
-                    h('text', { x: x, y: ph - 8, fontSize: 10, fill: '#64748b', textAnchor: 'middle' }, f + ' kHz')
-                  );
-                }),
-                // Mouse hearing sensitivity (gray, dashed)
-                h('path', { d: mousePath, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '4,3', opacity: 0.7 }),
-                // Hawk wing noise (red)
-                h('path', { d: hawkPath, fill: '#dc2626', stroke: '#dc2626', strokeWidth: 2.5, opacity: 0.45 }),
-                // Owl wing noise (violet)
-                h('path', { d: owlPath, fill: '#8b5cf6', stroke: '#8b5cf6', strokeWidth: 2.5, opacity: 0.45 }),
-                // Peak markers
-                h('line', { x1: fToX(3), y1: pad, x2: fToX(3), y2: ph - pad, stroke: '#dc2626', strokeWidth: 1, opacity: 0.6 }),
-                h('line', { x1: fToX(16), y1: pad, x2: fToX(16), y2: ph - pad, stroke: '#8b5cf6', strokeWidth: 1, opacity: 0.6 }),
-                // Labels
-                h('text', { x: fToX(3), y: pad - 5, fontSize: 11, fill: '#fca5a5', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.hawk_wing_peak', 'Hawk wing peak')),
-                h('text', { x: fToX(16), y: pad - 5, fontSize: 11, fill: '#c4b5fd', textAnchor: 'middle', fontWeight: 'bold' }, __alloT('stem.raptorhunt.owl_wing_peak', 'Owl wing peak')),
-                // Axis labels
-                h('text', { x: pad - 25, y: ph / 2, fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 ' + (pad - 25) + ' ' + (ph / 2) + ')' }, __alloT('stem.raptorhunt.intensity_sensitivity', 'Intensity / Sensitivity')),
-                // Legend
-                h('rect', { x: pw - 175, y: 10, width: 170, height: 55, fill: 'rgba(15,23,42,0.85)', stroke: '#475569', strokeWidth: 1, rx: 4 }),
-                h('line', { x1: pw - 165, y1: 22, x2: pw - 150, y2: 22, stroke: '#dc2626', strokeWidth: 3 }),
-                h('text', { x: pw - 145, y: 25, fontSize: 10, fill: '#fca5a5' }, __alloT('stem.raptorhunt.hawk_wing_noise', 'Hawk wing noise')),
-                h('line', { x1: pw - 165, y1: 38, x2: pw - 150, y2: 38, stroke: '#8b5cf6', strokeWidth: 3 }),
-                h('text', { x: pw - 145, y: 41, fontSize: 10, fill: '#c4b5fd' }, __alloT('stem.raptorhunt.owl_wing_noise', 'Owl wing noise')),
-                h('line', { x1: pw - 165, y1: 54, x2: pw - 150, y2: 54, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '3,2' }),
-                h('text', { x: pw - 145, y: 57, fontSize: 10, fill: '#94a3b8' }, __alloT('stem.raptorhunt.mouse_hearing', 'Mouse hearing'))
-              );
-            })(),
-            h('div', { className: 'text-[10px] text-slate-400 italic mt-3' }, __alloT('stem.raptorhunt.the_owl_s_noise_peak_at_16_khz_sits_pa', 'The owl\'s noise peak at 16 kHz sits past the mouse\'s sharp drop-off in hearing sensitivity. The hawk\'s noise peak at 3 kHz sits exactly where the mouse hears best. This is what "silent flight" really means in physics: not zero amplitude — frequency shifted out of the prey\'s perceptual band.'))
-          ),
-
-          // Key points
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-            SILENT_FACTS.keyPoints.map(function(kp, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-3' },
-                h('div', { className: 'text-sm font-bold text-violet-300 mb-1' }, kp.title),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, kp.text)
-              );
-            })
-          )
-        );
+        return h(RaptorFeatherLab, { React: React });
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: SENSES (Day vs Night Eyes)
-      // ────────────────────────────────────────────────────────
       function renderSenses() {
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-slate-900/50 to-indigo-900/40 border border-indigo-700/40 rounded-xl p-4' },
@@ -24685,14 +26078,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-4xl' }, '👂'),
               h('div', null,
-                h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.owl_ear_asymmetry_3d_sound_localizatio', 'Owl ear asymmetry: 3D sound localization')),
-                h('div', { className: 'text-sm text-slate-200 leading-relaxed' },
-                  __alloT('stem.raptorhunt.owls_have', 'Owls have '),
-                  h('span', { className: 'font-bold text-cyan-300' }, __alloT('stem.raptorhunt.asymmetrically_placed_ear_openings', 'asymmetrically placed ear openings')),
-                  __alloT('stem.raptorhunt.the_left_opening_sits_higher_on_the_sk', ' — the left opening sits higher on the skull than the right by ~1 cm in barn owls. Sound arriving from above hits the left ear first by ~30 microseconds; sound from below hits the right ear first. The brain reads the time difference as '),
-                  h('span', { className: 'font-bold text-cyan-300' }, 'elevation'),
-                  __alloT('stem.raptorhunt.combined_with_the_standard_horizontal_', '. Combined with the standard horizontal timing difference (which encodes azimuth), the owl gets full 3D acoustic localization. Roger Payne (1962) showed barn owls strike mice in total darkness using only sound, with median accuracy of ~1°.')
-                )
+                h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, __alloT('stem.raptorhunt.hearing_cues_title', 'Timing and level cues')),
+                h('div', { className: 'text-sm text-slate-200 leading-relaxed' }, __alloT('stem.raptorhunt.hearing_cues_summary', 'Barn owls use differences in timing and sound level between the ears. Timing strongly informs horizontal direction; level cues also provide spatial information, including elevation. These cues interact. Our two-receiver studio compares direct paths; it does not model elevation or guarantee a fixed hearing accuracy.'))
               )
             )
           ),
@@ -26023,296 +27410,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
-      // RENDER: OWL HEARING LAB (interactive Canvas-2D)
+      // RENDER: OWL HEARING LAB (interactive arrival geometry)
+      // The old noise/asymmetry scoring model assigned unsupported performance
+      // values. This authored geometry study computes only straight path lengths.
       // ────────────────────────────────────────────────────────
-      // Replicates Payne 1962 — student "owl" must locate a hidden mouse
-      // by sound only. Slider controls ear-asymmetry magnitude; lower
-      // asymmetry = larger error radius. Click where you think the mouse is.
       function renderHearing() {
-        var hl = rh.hearing || { asymmetry: 1.0, attempts: 0, hits: 0, totalErr: 0, bestErr: null, mouseX: 0.5, mouseY: 0.5, lastErr: null, started: false };
-        function setHL(patch) {
-          setRH(function(prev) {
-            var cur = prev.hearing || { asymmetry: 1.0, attempts: 0, hits: 0, totalErr: 0, bestErr: null, mouseX: 0.5, mouseY: 0.5, lastErr: null, started: false };
-            return Object.assign({}, prev, { hearing: Object.assign({}, cur, typeof patch === 'function' ? patch(cur) : patch) });
-          });
-        }
-        function newMouse() {
-          var nx = 0.1 + Math.random() * 0.8;
-          var ny = 0.15 + Math.random() * 0.7;
-          setHL({ mouseX: nx, mouseY: ny, lastErr: null, started: true });
-        }
-        // Compute "error radius" — inverse of asymmetry, then degraded by background noise.
-        var noise = (hl.noise || 0) / 100; // 0..1
-        var baseRadius = 0.05 + (1 - hl.asymmetry) * 0.35;
-        // Noise widens the detection radius proportional to noise level (max +0.25 of canvas)
-        var errRadius = Math.min(0.6, baseRadius + noise * 0.25);
-        var avgErr = hl.attempts > 0 ? (hl.totalErr / hl.attempts) : null;
-
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.owl_hearing_lab_find_the_mouse', '🦻 Owl Hearing Lab: Find the Mouse')),
-            h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' },
-              __alloT('stem.raptorhunt.in_1962_roger_payne_placed_a_barn_owl_', 'In 1962, Roger Payne placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. The owl could hear the leaves rustle but see nothing. He recorded ~17 silent strikes — every one a kill, accurate to ~1° elevation + azimuth. This works because barn owls have '),
-              h('span', { className: 'font-bold text-violet-300' }, __alloT('stem.raptorhunt.asymmetric_ear_openings', 'asymmetric ear openings')),
-              __alloT('stem.raptorhunt.left_higher_right_lower_plus_a_flat_fa', ' (left higher, right lower) plus a flat facial disc that acts like a parabolic dish. Below, you are the owl. The mouse is hidden — your ears can detect it within a noisy radius that scales with your ear-asymmetry magnitude.')
-            )
-          ),
-
-          // Controls
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
-            h('div', null,
-              h('label', { className: 'text-xs text-indigo-300 flex items-center justify-between mb-1' },
-                h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.ear_asymmetry_magnitude', 'Ear asymmetry magnitude')),
-                h('span', { className: 'font-mono text-amber-300' }, (hl.asymmetry * 100).toFixed(0) + '%')
-              ),
-              h('input', {
-                type: 'range', min: 0, max: 1, step: 0.05, value: hl.asymmetry,
-                onInput: function(e) { setHL({ asymmetry: parseFloat(e.target.value) }); },
-                className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.ear_asymmetry_magnitude_2', 'Ear asymmetry magnitude')
-              }),
-              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, __alloT('stem.raptorhunt.0_symmetric_like_a_hawk', '0% (symmetric — like a hawk)')),
-                h('span', null, __alloT('stem.raptorhunt.100_barn_owl_grade', '100% (barn-owl-grade)'))
-              )
-            ),
-            // ── NEW v0.9: Background noise slider ──
-            h('div', null,
-              h('label', { className: 'text-xs text-cyan-300 flex items-center justify-between mb-1' },
-                h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.background_noise_wind_traffic_rustling', '🌬 Background noise (wind, traffic, rustling)')),
-                h('span', { className: 'font-mono text-amber-300' }, (hl.noise || 0) + '%')
-              ),
-              h('input', {
-                type: 'range', min: 0, max: 100, step: 5, value: (hl.noise || 0),
-                onInput: function(e) { setHL({ noise: parseInt(e.target.value) }); },
-                className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.background_noise_level', 'Background noise level')
-              }),
-              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, __alloT('stem.raptorhunt.0_silent_forest', '0% (silent forest)')),
-                h('span', null, __alloT('stem.raptorhunt.50_windy_night', '50% (windy night)')),
-                h('span', null, __alloT('stem.raptorhunt.100_highway_noise', '100% (highway noise)'))
-              )
-            ),
-            h('div', { className: 'text-[10px] text-indigo-200/70 italic' },
-              __alloT('stem.raptorhunt.effective_detection_radius', 'Effective detection radius: '),
-              h('span', { className: 'font-mono text-amber-300' }, (errRadius * 100).toFixed(0) + '%'),
-              __alloT('stem.raptorhunt.of_canvas_base', ' of canvas (base '),
-              h('span', { className: 'font-mono text-slate-300' }, (baseRadius * 100).toFixed(0) + '%'),
-              __alloT('stem.raptorhunt.from_asymmetry', ' from asymmetry + '),
-              h('span', { className: 'font-mono text-cyan-300' }, (noise * 25).toFixed(0) + '%'),
-              __alloT('stem.raptorhunt.noise_widening_real_barn_owls_operate_', ' noise widening). Real barn owls operate at ~1° error in pitch black silence; even moderate wind degrades that. Hawkesford 2019 measured ~3× detection-radius widening at 60 dB ambient.')
-            )
-          ),
-
-          // Canvas
-          h('div', { className: 'bg-slate-900 border border-indigo-700/40 rounded-xl overflow-hidden', style: { aspectRatio: '4 / 3', maxWidth: '720px', margin: '0 auto', position: 'relative' } },
-            h('canvas', {
-              'data-hearing-canvas': 'true',
-              role: 'application',
-              'aria-label': __alloT('stem.raptorhunt.owl_hearing_lab_click_anywhere_on_the_', 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is, or move the crosshair with the arrow keys and strike with Enter. Detection radius shows as a ring.'),
-              tabIndex: 0,
-              width: 600, height: 450,
-              style: { width: '100%', height: '100%', cursor: 'crosshair', display: 'block' },
-              ref: function(canvasEl) {
-                if (!canvasEl) return;
-                // Stash the CURRENT render's state + setter for the
-                // once-bound listeners below. Binding per render would stack
-                // duplicate listeners, but a once-bound listener otherwise
-                // closes over the FIRST render's hl (started: false), which
-                // left the strike click permanently dead — and, after a
-                // section switch, graded strikes against a stale mouse
-                // position.
-                canvasEl._hlState = { hl: hl, errRadius: errRadius, setHL: setHL, awardXP: ctx.awardXP };
-                var ctx2 = canvasEl.getContext('2d');
-                var W = canvasEl.width, H = canvasEl.height;
-                // Draw scene
-                function draw() {
-                  // Dark forest floor background
-                  var grad = ctx2.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
-                  grad.addColorStop(0, '#1e1b4b');
-                  grad.addColorStop(1, '#020617');
-                  ctx2.fillStyle = grad;
-                  ctx2.fillRect(0, 0, W, H);
-                  // Leaf litter speckle
-                  for (var i = 0; i < 80; i++) {
-                    ctx2.fillStyle = 'rgba(120, 100, 60, 0.18)';
-                    ctx2.beginPath();
-                    var lx = Math.sin(i * 11.13) * W * 0.45 + W/2;
-                    var ly = Math.cos(i * 7.91) * H * 0.45 + H/2;
-                    ctx2.arc(lx, ly, 2 + Math.abs(Math.sin(i)) * 3, 0, Math.PI * 2);
-                    ctx2.fill();
-                  }
-                  // If started, draw mouse "sound" zone (faint amber ring proportional to errRadius)
-                  if (hl.started) {
-                    var mx = hl.mouseX * W, my = hl.mouseY * H;
-                    var r = errRadius * Math.min(W, H);
-                    // Sound zone (faint)
-                    var soundGrad = ctx2.createRadialGradient(mx, my, 0, mx, my, r);
-                    soundGrad.addColorStop(0, 'rgba(251, 191, 36, 0.18)');
-                    soundGrad.addColorStop(0.6, 'rgba(251, 191, 36, 0.08)');
-                    soundGrad.addColorStop(1, 'rgba(251, 191, 36, 0.0)');
-                    ctx2.fillStyle = soundGrad;
-                    ctx2.beginPath();
-                    ctx2.arc(mx, my, r, 0, Math.PI * 2);
-                    ctx2.fill();
-                  }
-                  // Last error visualization
-                  if (hl.lastErr) {
-                    var le = hl.lastErr;
-                    var actualX = le.actualX * W;
-                    var actualY = le.actualY * H;
-                    var clickX = le.clickX * W;
-                    var clickY = le.clickY * H;
-                    // Line from click to actual
-                    ctx2.strokeStyle = le.hit ? 'rgba(16, 185, 129, 0.85)' : 'rgba(239, 68, 68, 0.85)';
-                    ctx2.lineWidth = 2;
-                    ctx2.setLineDash([6, 4]);
-                    ctx2.beginPath();
-                    ctx2.moveTo(clickX, clickY);
-                    ctx2.lineTo(actualX, actualY);
-                    ctx2.stroke();
-                    ctx2.setLineDash([]);
-                    // Actual mouse position (revealed)
-                    ctx2.fillStyle = '#fbbf24';
-                    ctx2.beginPath();
-                    ctx2.arc(actualX, actualY, 8, 0, Math.PI * 2);
-                    ctx2.fill();
-                    // Tiny mouse glyph (ears)
-                    ctx2.beginPath();
-                    ctx2.arc(actualX - 4, actualY - 5, 2.5, 0, Math.PI * 2);
-                    ctx2.arc(actualX + 4, actualY - 5, 2.5, 0, Math.PI * 2);
-                    ctx2.fill();
-                    // Click marker
-                    ctx2.strokeStyle = le.hit ? '#10b981' : '#ef4444';
-                    ctx2.lineWidth = 3;
-                    ctx2.beginPath();
-                    ctx2.arc(clickX, clickY, 14, 0, Math.PI * 2);
-                    ctx2.stroke();
-                    // Result text
-                    ctx2.fillStyle = le.hit ? '#10b981' : '#ef4444';
-                    ctx2.font = 'bold 16px ui-monospace';
-                    ctx2.textAlign = 'center';
-                    ctx2.fillText(le.hit ? '✓ STRIKE' : '✗ MISS', clickX, clickY - 22);
-                  }
-                  // Keyboard crosshair (arrow keys move it, Enter strikes)
-                  if (hl.started && hl.crossX != null) {
-                    var chX = hl.crossX * W, chY = (hl.crossY == null ? 0.5 : hl.crossY) * H;
-                    ctx2.strokeStyle = 'rgba(165, 180, 252, 0.9)';
-                    ctx2.lineWidth = 1.5;
-                    ctx2.beginPath();
-                    ctx2.moveTo(chX - 10, chY); ctx2.lineTo(chX + 10, chY);
-                    ctx2.moveTo(chX, chY - 10); ctx2.lineTo(chX, chY + 10);
-                    ctx2.stroke();
-                    ctx2.beginPath();
-                    ctx2.arc(chX, chY, 7, 0, Math.PI * 2);
-                    ctx2.stroke();
-                  }
-                  // Title overlay
-                  if (!hl.started) {
-                    ctx2.fillStyle = 'rgba(200, 200, 220, 0.85)';
-                    ctx2.font = 'bold 18px ui-sans-serif, system-ui';
-                    ctx2.textAlign = 'center';
-                    ctx2.fillText('Press "🦉 Release Mouse" to begin', W/2, H/2 - 10);
-                    ctx2.font = '12px ui-sans-serif';
-                    ctx2.fillText('Then click anywhere you think the mouse is', W/2, H/2 + 18);
-                  }
-                }
-                draw();
-                // Bind listeners only once; they read canvasEl._hlState for
-                // the current render's values instead of their own closure.
-                if (!canvasEl._hlBound) {
-                  canvasEl._hlBound = true;
-                  var strikeAt = function(cx, cy) {
-                    var st = canvasEl._hlState;
-                    if (!st || !st.hl.started) return;
-                    var dx = cx - st.hl.mouseX, dy = cy - st.hl.mouseY;
-                    var dist = Math.sqrt(dx * dx + dy * dy);
-                    var hit = dist <= st.errRadius;
-                    var newBest = st.hl.bestErr === null ? dist : Math.min(st.hl.bestErr, dist);
-                    st.setHL(function(cur) {
-                      return {
-                        attempts: cur.attempts + 1,
-                        hits: cur.hits + (hit ? 1 : 0),
-                        totalErr: cur.totalErr + dist,
-                        bestErr: newBest,
-                        lastErr: { clickX: cx, clickY: cy, actualX: cur.mouseX, actualY: cur.mouseY, hit: hit, dist: dist }
-                      };
-                    });
-                    if (hit) {
-                      rhAnnounce(__alloT('stem.raptorhunt.sr_strike_within_detection_radius', 'Strike! Within detection radius.'));
-                      if (st.awardXP) st.awardXP(3, 'Owl Hearing Lab: strike');
-                    } else {
-                      rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss_distance_from_mouse_percent_of_canvas', 'Miss. Distance from mouse: {value1} percent of canvas.'), { value1: (dist * 100).toFixed(0) }));
-                    }
-                  };
-                  canvasEl.addEventListener('click', function(e) {
-                    var rect = canvasEl.getBoundingClientRect();
-                    strikeAt((e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
-                  });
-                  // Keyboard path: arrows steer a crosshair, Enter/Space strikes.
-                  canvasEl.addEventListener('keydown', function(e) {
-                    var st = canvasEl._hlState;
-                    if (!st || !st.hl.started) return;
-                    var step = e.shiftKey ? 0.02 : 0.05;
-                    var cx = st.hl.crossX == null ? 0.5 : st.hl.crossX;
-                    var cy = st.hl.crossY == null ? 0.5 : st.hl.crossY;
-                    if (e.key === 'ArrowLeft') { e.preventDefault(); st.setHL({ crossX: Math.max(0, cx - step), crossY: cy }); }
-                    else if (e.key === 'ArrowRight') { e.preventDefault(); st.setHL({ crossX: Math.min(1, cx + step), crossY: cy }); }
-                    else if (e.key === 'ArrowUp') { e.preventDefault(); st.setHL({ crossX: cx, crossY: Math.max(0, cy - step) }); }
-                    else if (e.key === 'ArrowDown') { e.preventDefault(); st.setHL({ crossX: cx, crossY: Math.min(1, cy + step) }); }
-                    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); strikeAt(cx, cy); }
-                  });
-                }
-              }
-            })
-          ),
-
-          // Action row
-          h('div', { className: 'flex gap-2 flex-wrap justify-center' },
-            h('button', {
-              onClick: newMouse,
-              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 transition-all',
-              'aria-label': __alloT('stem.raptorhunt.release_new_mouse', 'Release new mouse')
-            }, __alloT('stem.raptorhunt.release_mouse', '🦉 Release Mouse')),
-            h('button', {
-              onClick: function() {
-                setHL({ attempts: 0, hits: 0, totalErr: 0, bestErr: null, lastErr: null, started: false });
-                rhAnnounce(__alloT('stem.raptorhunt.sr_stats_reset', 'Stats reset'));
-              },
-              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all active:scale-[0.97]',
-              'aria-label': __alloT('stem.raptorhunt.reset_stats', 'Reset stats')
-            }, __alloT('stem.raptorhunt.reset_stats_2', '↺ Reset Stats'))
-          ),
-
-          // Stats panel
-          h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
-            h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-emerald-300 tracking-tight' }, hl.attempts > 0 ? Math.round(hl.hits / hl.attempts * 100) + '%' : '—'),
-              h('div', { className: 'text-[10px] text-emerald-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.strike_rate', 'Strike Rate'))
-            ),
-            h('div', { className: 'bg-indigo-900/30 border border-indigo-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-indigo-300 tracking-tight' }, hl.attempts),
-              h('div', { className: 'text-[10px] text-indigo-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.attempts', 'Attempts'))
-            ),
-            h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-2xl font-bold text-amber-300 tracking-tight' }, hl.bestErr !== null ? (hl.bestErr * 100).toFixed(0) + '%' : '—'),
-              h('div', { className: 'text-[10px] text-amber-200 uppercase tracking-wider' }, __alloT('stem.raptorhunt.best_error', 'Best Error'))
-            )
-          ),
-
-          // Pedagogy
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 text-sm space-y-3' },
-            h('div', { className: 'font-bold text-indigo-300' }, __alloT('stem.raptorhunt.what_you_just_modeled', '💡 What you just modeled')),
-            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, __alloT('stem.raptorhunt.slide_the_asymmetry_slider_to_100_your', 'Slide the asymmetry slider to 100% — your detection radius is tiny + barely larger than a single pixel. Real barn owls can localize sound to ~1° error in pitch dark. Slide to 0% (a hawk\'s ear placement) — the radius balloons to 40% of the canvas. This is why hawks hunt by sight + owls hunt by sound.')),
-            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, __alloT('stem.raptorhunt.the_mechanism_is_exactly_the_diagram_i', 'The mechanism is exactly the diagram in the Day Eye vs Night Eye section: '),
-              h('span', { className: 'text-indigo-300 font-bold' }, __alloT('stem.raptorhunt.time_of_arrival_difference', 'time-of-arrival difference')),
-              __alloT('stem.raptorhunt.between_the_two_ear_openings_encodes', ' between the two ear openings encodes '),
-              h('span', { className: 'text-indigo-300 font-bold' }, __alloT('stem.raptorhunt.azimuth_elevation_in_3d', 'azimuth + elevation in 3D')),
-              __alloT('stem.raptorhunt.the_asymmetric_placement_encodes_eleva', '. The asymmetric placement encodes elevation; without asymmetry, an owl could not tell if a sound came from above or below the head — only left or right.')
-            )
-          )
-        );
+        return h(RaptorSoundArrivalStudy, { React: React });
       }
 
       // ────────────────────────────────────────────────────────
@@ -27455,616 +28558,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: STOOP TRAJECTORY VISUALIZER
       // ────────────────────────────────────────────────────────
-      // Animates Tucker 1998 logarithmic-spiral stoop. The peregrine
-      // maintains a constant retinal-angle approach to moving prey.
       function renderSpiral() {
-        var sv = rh.spiral || { startAlt: 600, preySpeed: 5, headTilt: 40, paused: false, playhead: 0 };
-        function setSV(patch) {
-          setRH({ spiral: Object.assign({}, sv, patch) });
-        }
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.stoop_trajectory_visualizer', '🌀 Stoop Trajectory Visualizer')),
-            h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' },
-              __alloT('stem.raptorhunt.tucker_1998_modeled_the_falcon_s_stoop', 'Tucker (1998) modeled the falcon\'s stoop trajectory and showed that peregrines fly a '),
-              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.logarithmic_spiral', 'logarithmic spiral')),
-              __alloT('stem.raptorhunt.a_curved_approach_that_keeps_the_prey_', ' — a curved approach that keeps the prey image at a '),
-              h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.constant_retinal_angle', 'constant retinal angle')),
-              __alloT('stem.raptorhunt.the_bird_s_head_doesn_t_need_to_turn_a', ' (the bird\'s head doesn\'t need to turn at terminal velocity, which would create drag). This is '),
-              h('em', null, 'exactly'),
-              __alloT('stem.raptorhunt.the_proportional_navigation_algorithm_', ' the proportional-navigation algorithm used by air-to-air missiles. Adjust the parameters below + watch the falcon close on its prey.')
-            )
-          ),
-
-          // Controls
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
-              h('div', null,
-                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, __alloT('stem.raptorhunt.stoop_start_altitude', 'Stoop start altitude')),
-                  h('span', { className: 'font-mono text-amber-300' }, sv.startAlt + ' m')
-                ),
-                h('input', { type: 'range', min: 200, max: 1500, step: 50, value: sv.startAlt,
-                  onInput: function(e) { setSV({ startAlt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.stoop_start_altitude_2', 'Stoop start altitude') }),
-                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.real_peregrine_stoops_200_3_000_m', 'Real peregrine stoops: 200-3,000 m'))
-              ),
-              h('div', null,
-                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, __alloT('stem.raptorhunt.prey_speed_m_s', 'Prey speed (m/s)')),
-                  h('span', { className: 'font-mono text-amber-300' }, sv.preySpeed.toFixed(1))
-                ),
-                h('input', { type: 'range', min: 1, max: 15, step: 0.5, value: sv.preySpeed,
-                  onInput: function(e) { setSV({ preySpeed: parseFloat(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.prey_forward_speed', 'Prey forward speed') }),
-                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.pigeon_flapping_16_m_s_duck_22_m_s', 'Pigeon flapping ≈ 16 m/s · duck ≈ 22 m/s'))
-              ),
-              h('div', null,
-                h('label', { className: 'text-xs text-orange-300 flex justify-between' },
-                  h('span', null, __alloT('stem.raptorhunt.head_tilt_angle', 'Head tilt angle (°)')),
-                  h('span', { className: 'font-mono text-amber-300' }, sv.headTilt + '°')
-                ),
-                h('input', { type: 'range', min: 20, max: 65, step: 1, value: sv.headTilt,
-                  onInput: function(e) { setSV({ headTilt: parseInt(e.target.value), playhead: 0 }); }, className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.head_tilt_angle_2', 'Head tilt angle') }),
-                h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.tucker_1998_measured_40', 'Tucker 1998 measured ~40°'))
-              )
-            ),
-            h('div', { className: 'flex gap-2 justify-center' },
-              h('button', {
-                onClick: function() { setSV({ playhead: 0, paused: false }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700',
-                'aria-label': __alloT('stem.raptorhunt.replay_stoop', 'Replay stoop')
-              }, __alloT('stem.raptorhunt.replay', '▶ Replay')),
-              h('button', {
-                onClick: function() { setSV({ paused: !sv.paused }); },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 active:scale-[0.97]',
-                'aria-label': sv.paused ? 'Resume' : 'Pause'
-              }, sv.paused ? '⏵ Resume' : '⏸ Pause')
-            )
-          ),
-
-          // Canvas
-          h('div', { className: 'bg-slate-950 border border-orange-700/40 rounded-xl overflow-hidden', style: { aspectRatio: '4 / 3', maxWidth: '720px', margin: '0 auto', position: 'relative' } },
-            h('canvas', {
-              'data-spiral-canvas': 'true',
-              role: 'img',
-              'aria-label': __alloT('stem.raptorhunt.animated_stoop_trajectory_showing_a_pe', 'Animated stoop trajectory showing a peregrine falcon descending in a logarithmic spiral to intercept moving prey'),
-              width: 720, height: 540,
-              style: { width: '100%', height: '100%', display: 'block' },
-              ref: function(canvasEl) {
-                if (!canvasEl) return;
-                if (canvasEl._spiralAnim) cancelAnimationFrame(canvasEl._spiralAnim);
-                var ctx2 = canvasEl.getContext('2d');
-                var W = canvasEl.width, H = canvasEl.height;
-                var startT = performance.now();
-                var headTiltRad = sv.headTilt * Math.PI / 180;
-                // Map start altitude (200-1500 m) to canvas y position
-                var altScale = (sv.startAlt - 200) / 1300; // 0..1
-                var falconStartY = 30 + altScale * 50;
-                var falconStartX = 80 + altScale * 30;
-                var preyStartX = 280, preyStartY = 380;
-                var preyV = sv.preySpeed * 8; // visual px/s
-
-                function animate(now) {
-                  // If the user navigates away mid-animation, stop the
-                  // rAF chain. The spiral animation is only 4 seconds so
-                  // the leak window is small, but the check is cheap.
-                  if (!canvasEl.isConnected) { canvasEl._spiralAnim = null; return; }
-                  var t = (now - startT) / 1000; // seconds
-                  if (sv.paused) t = sv.playhead;
-                  else sv.playhead = t;
-                  // Total animation 4 seconds
-                  var T = 4.0;
-                  if (t > T) t = T;
-                  var u = t / T; // 0..1
-
-                  // Scene: a painted sky and landscape, built once per canvas and copied each frame.
-                  // (It was a flat three-stop gradient with a green strip.)
-                  if (!canvasEl._rhSpiralBg || canvasEl._rhSpiralBg.width !== W) {
-                    var bg = document.createElement('canvas');
-                    bg.width = W; bg.height = H;
-                    var b = bg.getContext('2d');
-                    if (b) {
-                      var sky = b.createLinearGradient(0, 0, 0, H - 60);
-                      sky.addColorStop(0, '#12326b'); sky.addColorStop(0.45, '#4f8fd1'); sky.addColorStop(0.78, '#f3d6a4'); sky.addColorStop(1, '#f2a45c');
-                      b.fillStyle = sky; b.fillRect(0, 0, W, H);
-                      var sunX = W * 0.8, sunY = H - 118;
-                      var sun = b.createRadialGradient(sunX, sunY, 4, sunX, sunY, 120);
-                      sun.addColorStop(0, 'rgba(255,248,220,0.95)'); sun.addColorStop(0.12, 'rgba(255,236,179,0.8)'); sun.addColorStop(1, 'rgba(255,200,120,0)');
-                      b.fillStyle = sun; b.beginPath(); b.arc(sunX, sunY, 120, 0, Math.PI * 2); b.fill();
-                      [[150, 70, 1.1], [420, 46, 0.8], [600, 110, 1.3], [300, 150, 0.7]].forEach(function(c) {
-                        b.fillStyle = 'rgba(255,255,255,0.28)';
-                        for (var k = 0; k < 5; k++) { b.beginPath(); b.ellipse(c[0] + (k - 2) * 26 * c[2], c[1] + Math.abs(k - 2) * 5, 34 * c[2], 12 * c[2], 0, 0, Math.PI * 2); b.fill(); }
-                      });
-                      function ridge(y0, amp, color, seed) {
-                        b.fillStyle = color; b.beginPath(); b.moveTo(0, H);
-                        for (var x = 0; x <= W; x += 12) b.lineTo(x, y0 - amp * (0.55 + 0.45 * Math.sin(x * 0.011 + seed) * Math.cos(x * 0.004 + seed * 2)));
-                        b.lineTo(W, H); b.closePath(); b.fill();
-                      }
-                      ridge(H - 88, 34, 'rgba(96,118,160,0.55)', 1.3);
-                      ridge(H - 70, 22, 'rgba(62,92,78,0.85)', 4.1);
-                      var ground = b.createLinearGradient(0, H - 60, 0, H);
-                      ground.addColorStop(0, '#46661d'); ground.addColorStop(1, '#253a0e');
-                      b.fillStyle = ground; b.fillRect(0, H - 60, W, 60);
-                      b.fillStyle = '#1f3310';
-                      for (var tx = 6; tx < W; tx += 17) { var th = 8 + ((tx * 37) % 11); b.beginPath(); b.ellipse(tx, H - 60, 9, th, 0, Math.PI, 0); b.fill(); }
-                      b.strokeStyle = 'rgba(255,255,255,0.07)'; b.lineWidth = 1;
-                      for (var fy = H - 50; fy < H; fy += 12) { b.beginPath(); b.moveTo(0, fy); b.lineTo(W, fy + 6); b.stroke(); }
-                    }
-                    canvasEl._rhSpiralBg = bg;
-                  }
-                  ctx2.drawImage(canvasEl._rhSpiralBg, 0, 0);
-
-                  // Prey moves forward
-                  var preyX = preyStartX + preyV * t;
-                  var preyY = preyStartY;
-                  // Stop prey if reached edge
-                  if (preyX > W - 60) preyX = W - 60;
-
-                  // Falcon logarithmic spiral: parametrically, position smoothly curves
-                  // toward prey via Tucker's constant-retinal-angle approach.
-                  // We use a Bezier-like curve from (falconStartX, falconStartY)
-                  // toward final intercept point (preyX_at_T, preyY).
-                  var preyXend = preyStartX + preyV * T;
-                  if (preyXend > W - 60) preyXend = W - 60;
-                  // Bezier control point for log-spiral feel: offset based on head tilt
-                  var cp1x = falconStartX + 30;
-                  var cp1y = falconStartY + 80;
-                  var cp2x = preyXend - 200;
-                  var cp2y = preyY - Math.tan(headTiltRad) * 200;
-                  // Position at u
-                  function bez(t, p0, p1, p2, p3) {
-                    var ti = 1 - t;
-                    return ti*ti*ti*p0 + 3*ti*ti*t*p1 + 3*ti*t*t*p2 + t*t*t*p3;
-                  }
-                  var falconX = bez(u, falconStartX, cp1x, cp2x, preyXend);
-                  var falconY = bez(u, falconStartY, cp1y, cp2y, preyY - 8);
-
-                  // Draw trail (log spiral) up to current u, with a soft glow under it
-                  ctx2.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-                  ctx2.lineWidth = 6;
-                  ctx2.beginPath();
-                  ctx2.moveTo(falconStartX, falconStartY);
-                  for (var gi = 1; gi <= 50; gi++) {
-                    var gu = (gi / 50) * u;
-                    ctx2.lineTo(bez(gu, falconStartX, cp1x, cp2x, preyXend), bez(gu, falconStartY, cp1y, cp2y, preyY - 8));
-                  }
-                  ctx2.stroke();
-                  ctx2.strokeStyle = 'rgba(185, 28, 28, 0.85)';
-                  ctx2.lineWidth = 2.2;
-                  ctx2.setLineDash([6, 4]);
-                  ctx2.beginPath();
-                  ctx2.moveTo(falconStartX, falconStartY);
-                  for (var i = 1; i <= 50; i++) {
-                    var ui = (i / 50) * u;
-                    var px = bez(ui, falconStartX, cp1x, cp2x, preyXend);
-                    var py = bez(ui, falconStartY, cp1y, cp2y, preyY - 8);
-                    ctx2.lineTo(px, py);
-                  }
-                  ctx2.stroke();
-                  ctx2.setLineDash([]);
-
-                  // Draw constant-angle sightline from falcon to prey (this is the key visual)
-                  ctx2.strokeStyle = 'rgba(251, 191, 36, 0.55)';
-                  ctx2.lineWidth = 1;
-                  ctx2.setLineDash([5, 4]);
-                  ctx2.beginPath();
-                  ctx2.moveTo(falconX, falconY);
-                  ctx2.lineTo(preyX, preyY);
-                  ctx2.stroke();
-                  ctx2.setLineDash([]);
-
-                  // Falcon: a tucked stoop (teardrop body, wings folded along it), with speed streaks.
-                  var dx = preyX - falconX, dy = preyY - falconY;
-                  var ang = Math.atan2(dy, dx);
-                  ctx2.save();
-                  ctx2.translate(falconX, falconY);
-                  ctx2.rotate(ang);
-                  ctx2.scale(1.35, 1.35);
-                  ctx2.strokeStyle = 'rgba(255,255,255,0.55)';
-                  ctx2.lineWidth = 1;
-                  [[-26, -4, 18], [-30, 0, 24], [-26, 4, 16]].forEach(function(st) { ctx2.beginPath(); ctx2.moveTo(st[0], st[1]); ctx2.lineTo(st[0] - st[2] * (0.4 + u), st[1]); ctx2.stroke(); });
-                  ctx2.fillStyle = '#e2e8f0';
-                  ctx2.beginPath(); ctx2.moveTo(15, 1); ctx2.quadraticCurveTo(4, 7, -10, 4); ctx2.lineTo(-20, 1.5); ctx2.lineTo(-20, 0); ctx2.closePath(); ctx2.fill();
-                  ctx2.fillStyle = '#334155';
-                  ctx2.beginPath(); ctx2.moveTo(16, 0); ctx2.quadraticCurveTo(6, -7, -8, -5); ctx2.lineTo(-19, -2.5); ctx2.lineTo(-24, 0); ctx2.lineTo(-19, 2); ctx2.lineTo(-8, 2); ctx2.quadraticCurveTo(6, 3, 16, 0); ctx2.fill();
-                  ctx2.fillStyle = '#1e293b';
-                  ctx2.beginPath(); ctx2.moveTo(8, -3); ctx2.lineTo(-22, -5.5); ctx2.lineTo(-12, -1); ctx2.closePath(); ctx2.fill();
-                  ctx2.fillStyle = '#111827';
-                  ctx2.beginPath(); ctx2.arc(12, -0.5, 4.2, 0, Math.PI * 2); ctx2.fill();
-                  ctx2.fillStyle = '#fbbf24';
-                  ctx2.beginPath(); ctx2.moveTo(15.5, -1.5); ctx2.lineTo(19.5, 0.5); ctx2.lineTo(15.5, 1.5); ctx2.closePath(); ctx2.fill();
-                  ctx2.restore();
-
-                  // Prey: a pigeon, flapping, facing its direction of travel.
-                  var flap = Math.sin(now * 0.025) * 5;
-                  ctx2.save();
-                  ctx2.translate(preyX, preyY);
-                  ctx2.fillStyle = '#64748b';
-                  ctx2.beginPath(); ctx2.moveTo(-3, 0); ctx2.lineTo(-8, -6 - flap); ctx2.lineTo(3, -1); ctx2.closePath(); ctx2.fill();
-                  ctx2.fillStyle = '#94a3b8';
-                  ctx2.beginPath(); ctx2.ellipse(0, 0, 9, 4.2, 0, 0, Math.PI * 2); ctx2.fill();
-                  ctx2.beginPath(); ctx2.moveTo(-8, 0); ctx2.lineTo(-13, -3); ctx2.lineTo(-13, 3); ctx2.closePath(); ctx2.fill();
-                  ctx2.fillStyle = '#475569';
-                  ctx2.beginPath(); ctx2.arc(8, -2, 3, 0, Math.PI * 2); ctx2.fill();
-                  ctx2.fillStyle = '#cbd5e1';
-                  ctx2.beginPath(); ctx2.moveTo(-3, 0); ctx2.lineTo(-7, 6 + flap); ctx2.lineTo(3, 1); ctx2.closePath(); ctx2.fill();
-                  ctx2.restore();
-
-                  // Speed readout (falcon speed via parametric derivative)
-                  var falconV = Math.sqrt(
-                    Math.pow(preyXend - falconStartX, 2) + Math.pow((preyY - 8) - falconStartY, 2)
-                  ) / T;
-                  // Project visual to physical: 100 px ≈ 30 m (approx)
-                  var falconMps = falconV * 0.3;
-                  var falconMph = falconMps * 2.237;
-                  // Overlay text, in a rounded panel
-                  ctx2.fillStyle = 'rgba(15, 23, 42, 0.82)';
-                  ctx2.strokeStyle = 'rgba(251, 191, 36, 0.9)';
-                  ctx2.lineWidth = 1.2;
-                  ctx2.beginPath();
-                  ctx2.moveTo(20, 10); ctx2.arcTo(214, 10, 214, 76, 10); ctx2.arcTo(214, 76, 10, 76, 10); ctx2.arcTo(10, 76, 10, 10, 10); ctx2.arcTo(10, 10, 214, 10, 10); ctx2.closePath();
-                  ctx2.fill(); ctx2.stroke();
-                  ctx2.fillStyle = '#fbbf24';
-                  ctx2.font = 'bold 11px ui-monospace, Menlo, monospace';
-                  ctx2.fillText('STOOP TIME ' + t.toFixed(1) + 's / ' + T + 's', 18, 28);
-                  ctx2.fillStyle = '#fff';
-                  ctx2.fillText('Falcon ~ ' + falconMph.toFixed(0) + ' mph (avg)', 18, 46);
-                  ctx2.fillStyle = '#fde047';
-                  ctx2.fillText('Retinal angle: ' + sv.headTilt + '° (locked)', 18, 64);
-
-                  // Strike at end
-                  if (u >= 0.98) {
-                    ctx2.fillStyle = 'rgba(220, 38, 38, 0.4)';
-                    ctx2.beginPath();
-                    ctx2.arc(preyX, preyY, 25 + Math.sin(now * 0.02) * 8, 0, Math.PI * 2);
-                    ctx2.fill();
-                    ctx2.fillStyle = '#fbbf24';
-                    ctx2.font = 'bold 24px ui-sans-serif, system-ui';
-                    ctx2.textAlign = 'center';
-                    ctx2.fillText('STRIKE!', preyX, preyY - 35);
-                  }
-
-                  if (!sv.paused && t < T) {
-                    canvasEl._spiralAnim = requestAnimationFrame(animate);
-                  }
-                }
-                canvasEl._spiralAnim = requestAnimationFrame(animate);
-              }
-            })
-          ),
-
-          // ── NEW v0.13: Multi-species trajectory overlay ──
-          (function() {
-            // For each of 3 reference species, draw a trajectory curve from start altitude
-            // to a fixed prey position. Stoop steepness + travel distance differ by species.
-            var pw = 900, ph = 360, pad = 44;
-            var specs = [
-              { id: 'peregrine', name: __alloT('stem.raptorhunt.peregrine_falcon_2', 'Peregrine Falcon'), color: '#dc2626', stoopMph: 242, stoopBonus: 3.5, startAltScale: 1.0, cdCurve: 0.18 },
-              { id: 'goldenEagle', name: __alloT('stem.raptorhunt.golden_eagle_2', 'Golden Eagle'), color: '#fbbf24', stoopMph: 200, stoopBonus: 3.0, startAltScale: 1.0, cdCurve: 0.22 },
-              { id: 'goshawk', name: __alloT('stem.raptorhunt.northern_goshawk_2', 'Northern Goshawk'), color: '#10b981', stoopMph: 95, stoopBonus: 1.8, startAltScale: 0.6, cdCurve: 0.35 }
-            ];
-            // Plot grid: starting at (40, 20), ending at (560, 240) where prey is
-            var startX = pad + 10;
-            var startY = pad;
-            var endX = pw - pad - 10;
-            var endY = ph - pad;
-            // Each species: trajectory is a quadratic Bezier where control point shifts based on stoopMph
-            // Higher stoop speed = more direct (control point closer to straight line)
-            function trajectoryPath(spec) {
-              var s = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) }; // higher altitude = lower y
-              var e = { x: endX, y: endY };
-              // Control point: shifts toward direct line for high stoop speed (peregrine = direct dive),
-              // and arcs more for low stoop speed (goshawk = forest chase curve)
-              var c = controlPoint(spec, s, e);
-              return 'M ' + s.x + ' ' + s.y + ' Q ' + c.x + ' ' + c.y + ' ' + e.x + ' ' + e.y;
-            }
-            function controlPoint(spec, s, e) {
-              var directness = spec.stoopMph / 250;
-              return { x: s.x + (e.x - s.x) * 0.4, y: s.y + (e.y - s.y) * (1 - directness * 0.5) };
-            }
-            // A point along a species' curve (the quadratic Bezier at parameter t).
-            function curvePoint(spec, t) {
-              var s = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) };
-              var e = { x: endX, y: endY };
-              var c = controlPoint(spec, s, e);
-              var a = (1 - t) * (1 - t), bq = 2 * (1 - t) * t, cq = t * t;
-              return { x: a * s.x + bq * c.x + cq * e.x, y: a * s.y + bq * c.y + cq * e.y };
-            }
-            return h('div', { className: 'bg-slate-900/40 border border-amber-700/40 rounded-xl p-4 mt-3' },
-              h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.multi_species_trajectory_comparison', '⚡ Multi-Species Trajectory Comparison')),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.compare_how_3_species_approach_the_sam', 'Compare how 3 species approach the same prey target. Falcons + golden eagles use steep direct stoops; goshawks use a curved forest-chase trajectory.')),
-              h('div', { className: 'bg-slate-950/60 rounded-lg p-2' },
-                h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.multi_species_stoop_trajectory_compari', 'Multi-species stoop trajectory comparison') },
-                  // Sky gradient
-                  (function() {
-                    return [
-                      h('defs', { key: 'defs' },
-                        h('linearGradient', { id: 'multiSky', x1: 0, y1: 0, x2: 0, y2: 1 },
-                          h('stop', { offset: '0%', stopColor: '#bae6fd' }),
-                          h('stop', { offset: '100%', stopColor: '#fef3c7' })
-                        )
-                      ),
-                      h('rect', { key: 'sky', x: 0, y: 0, width: pw, height: ph, fill: 'url(#multiSky)' }),
-                      // Ground
-                      h('rect', { key: 'ground', x: 0, y: ph - 26, width: pw, height: 26, fill: '#365314' })
-                    ];
-                  })(),
-                  // Trajectories
-                  specs.map(function(spec, i) {
-                    var pStart = { x: startX, y: startY + (1 - spec.startAltScale) * (ph - 2 * pad) };
-                    var sharedBefore = specs.slice(0, i).filter(function(o) { return o.startAltScale === spec.startAltScale; }).length;
-                    var mid = curvePoint(spec, 0.5 + i * 0.08);
-                    var labelText = spec.stoopMph + ' mph';
-                    return h('g', { key: spec.id },
-                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: 'rgba(15,23,42,0.35)', strokeWidth: 5.5 }),
-                      h('path', { d: trajectoryPath(spec), fill: 'none', stroke: spec.color, strokeWidth: 3, strokeDasharray: '7 4', strokeLinecap: 'round' }),
-                      // One start marker per starting height; names stack beside it
-                      sharedBefore === 0 && h('circle', { cx: pStart.x, cy: pStart.y, r: 6, fill: '#0f172a', stroke: '#fef3c7', strokeWidth: 2 }),
-                      h('text', { x: pStart.x + 12, y: pStart.y + 4 + sharedBefore * 16, fontSize: 13, fill: spec.color, fontWeight: 'bold', style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 3.5, strokeLinejoin: 'round' } }, spec.name),
-                      // Its speed, on its own curve
-                      h('rect', { x: mid.x - 34, y: mid.y - 11, width: 68, height: 22, rx: 11, fill: '#0f172a', stroke: spec.color, strokeWidth: 1.5 }),
-                      h('text', { x: mid.x, y: mid.y + 4.5, fontSize: 12, fill: spec.color, fontWeight: 'bold', textAnchor: 'middle' }, labelText)
-                    );
-                  }),
-                  // Prey (shared target)
-                  h('circle', { cx: endX, cy: endY, r: 7, fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 2 }),
-                  h('text', { x: endX, y: endY - 14, fontSize: 13, fill: '#0f172a', fontWeight: 'bold', textAnchor: 'middle' }, __alloT('stem.raptorhunt.prey_2', '🐦 prey')),
-                  // Legend
-                  h('text', { x: pad, y: ph - 8, fontSize: 12, fill: '#f8fafc', fontWeight: 'bold' }, __alloT('stem.raptorhunt.altitude_horizontal_distance_ground_im', '↑ altitude — →  horizontal distance — →  ground impact'))
-                )
-              ),
-              h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-xs' },
-                specs.map(function(spec, i) {
-                  return h('div', { key: spec.id, className: 'bg-slate-800/40 rounded p-2', style: { borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: spec.color } },
-                    h('div', { className: 'font-bold text-amber-200' }, spec.name),
-                    h('div', { className: 'text-[10px] text-slate-400 mt-1' }, __alloT('stem.raptorhunt.stoop_speed', 'Stoop speed: '), h('span', { className: 'font-mono text-amber-300' }, spec.stoopMph + ' mph')),
-                    h('div', { className: 'text-[10px] text-slate-400' }, __alloT('stem.raptorhunt.tuck_cd', 'Tuck Cd: '), h('span', { className: 'font-mono text-amber-300' }, spec.cdCurve))
-                  );
-                })
-              ),
-              h('div', { className: 'text-[10px] text-slate-500 italic mt-2' },
-                __alloT('stem.raptorhunt.trajectory_steepness_reflects_how_comm', 'Trajectory steepness reflects how committed each species is to the vertical stoop. Peregrines + golden eagles dive nearly vertical from high altitude. Goshawks use a lower-altitude curve through forest canopy. The same logarithmic-spiral principle applies — each species adjusts the curve to keep the prey at a constant retinal angle.')
-              )
-            );
-          })(),
-
-          // Insight panel
-          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-4 text-sm space-y-2' },
-            h('div', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.why_a_spiral_not_a_straight_line', '🎯 Why a spiral, not a straight line?')),
-            h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
-              h('strong', null, __alloT('stem.raptorhunt.straight_line_problem', 'Straight-line problem: ')), __alloT('stem.raptorhunt.if_the_falcon_flies_directly_at_the_pr', 'If the falcon flies directly at the prey, the prey appears to move SIDEWAYS in its visual field as it travels — the bird would have to constantly rotate its head + body to track. At 200+ mph that head rotation creates drag, ruins the streamlining, AND requires the bird to angle its eye away from prey.')
-            ),
-            h('div', { className: 'text-amber-100/90 text-xs leading-relaxed' },
-              h('strong', null, __alloT('stem.raptorhunt.spiral_solution', 'Spiral solution: ')), __alloT('stem.raptorhunt.the_logarithmic_spiral_approach_keeps_', 'The logarithmic spiral approach keeps the prey at a CONSTANT angle to the falcon\'s body axis. The bird never needs to turn its head — eyes stay fixed forward through deep fovea, body stays streamlined, the prey appears motionless relative to the falcon. This is exactly the proportional-navigation algorithm used by AIM-9 Sidewinder + similar guided missiles, derived for the same reason: '),
-              h('strong', null, __alloT('stem.raptorhunt.guidance_without_instability', 'guidance without instability.'))
-            ),
-            h('div', { className: 'text-xs text-slate-300 italic mt-2' }, __alloT('stem.raptorhunt.reference_tucker_v_a_1998_curved_fligh', 'Reference: Tucker, V.A. (1998) Curved flight paths and sideways vision in peregrine falcons. Journal of Experimental Biology 201(3):403-414.'))
-          )
-        );
+        return h(RaptorSpiralStudy, { React: React, settings: rh.spiral,
+          onChange: function(settings) { setRH(function(current) { return Object.assign({}, current, { spiral: settings }); }); } });
       }
 
       // ────────────────────────────────────────────────────────
       // RENDER: VISION ACUITY DEMO
       // ────────────────────────────────────────────────────────
-      // Snellen-style chart at variable zoom showing what raptor vision
-      // actually feels like. Slider picks zoom: 1× (human) → 8× (theoretical).
+      // Visual angle and a fixed-field display, with no species acuity threshold.
       function renderAcuity() {
-        var av = rh.acuity || { zoom: 1.0 };
-        function setAV(patch) { setRH({ acuity: Object.assign({}, av, patch) }); }
-        // Lines of a Snellen chart, sized so 1× is normal reading
-        var lines = [
-          { text: __alloT('stem.raptorhunt.e_f_p', 'E F P'), size: 90 },
-          { text: __alloT('stem.raptorhunt.t_o_z', 'T O Z'), size: 60 },
-          { text: __alloT('stem.raptorhunt.l_p_e_d', 'L P E D'), size: 40 },
-          { text: __alloT('stem.raptorhunt.p_e_c_f_d', 'P E C F D'), size: 27 },
-          { text: __alloT('stem.raptorhunt.e_d_f_c_z_p', 'E D F C Z P'), size: 19 },
-          { text: __alloT('stem.raptorhunt.f_e_l_o_p_z_d', 'F E L O P Z D'), size: 14 },
-          { text: __alloT('stem.raptorhunt.d_e_f_p_o_t_e_c', 'D E F P O T E C'), size: 10 },
-          { text: __alloT('stem.raptorhunt.l_e_f_o_d_p_c_t', 'L E F O D P C T'), size: 7 }
-        ];
-        // 6 species presets
-        var presets = [
-          { id: 'human', label: __alloT('stem.raptorhunt.human_2', 'Human'), zoom: 1.0, color: 'slate', desc: __alloT('stem.raptorhunt.baseline_20_20_reads_the_bottom_line_a', 'Baseline — 20/20 reads the bottom line at 20 ft.') },
-          { id: 'cat', label: __alloT('stem.raptorhunt.domestic_cat', 'Domestic Cat'), zoom: 0.4, color: 'slate', desc: __alloT('stem.raptorhunt.cats_are_40_of_human_acuity_they_re_gr', 'Cats are ~40% of human acuity. They\'re great at low-light + movement, but poor at sharpness.') },
-          { id: 'peregrine', label: __alloT('stem.raptorhunt.peregrine_falcon_3', 'Peregrine Falcon'), zoom: 2.6, color: 'amber', desc: __alloT('stem.raptorhunt.peregrines_see_2_6_sharper_than_humans', 'Peregrines see ~2.6× sharper than humans at fovea center.') },
-          { id: 'redTail', label: __alloT('stem.raptorhunt.red_tailed_hawk_3', 'Red-tailed Hawk'), zoom: 4.0, color: 'amber', desc: __alloT('stem.raptorhunt.a_red_tail_can_read_the_bottom_line_at', 'A red-tail can read the bottom line at 80 ft (vs human 20 ft).') },
-          { id: 'baldEagle', label: __alloT('stem.raptorhunt.bald_eagle_3', 'Bald Eagle'), zoom: 5.0, color: 'orange', desc: __alloT('stem.raptorhunt.a_bald_eagle_sees_fine_detail_at_5_hum', 'A bald eagle sees fine detail at ~5× human acuity.') },
-          { id: 'goldenEagle', label: __alloT('stem.raptorhunt.golden_eagle_3', 'Golden Eagle'), zoom: 5.5, color: 'red', desc: __alloT('stem.raptorhunt.spots_a_rabbit_at_2_miles_reads_the_bo', 'Spots a rabbit at 2 miles. Reads the bottom Snellen line at 110 ft.') },
-          { id: 'theoretical', label: __alloT('stem.raptorhunt.theoretical_max', 'Theoretical max'), zoom: 8.0, color: 'red', desc: __alloT('stem.raptorhunt.some_claims_of_8_acuity_in_select_rapt', 'Some claims of 8× acuity in select raptor species. Likely overstated but plausible upper bound.') }
-        ];
-        var activePreset = presets.filter(function(p) { return Math.abs(p.zoom - av.zoom) < 0.05; })[0] || null;
-
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-lg font-bold text-violet-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.vision_acuity_demo_2', '👁️‍🗨️ Vision Acuity Demo')),
-            h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' },
-              __alloT('stem.raptorhunt.acuity_multipliers_are_abstract_until_', 'Acuity multipliers are abstract until you '),
-              h('span', { className: 'font-bold text-amber-300' }, 'see'),
-              __alloT('stem.raptorhunt.what_they_feel_like_the_snellen_style_', ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow. (One honest caveat: the big-eagle multipliers above ~3× come from photoreceptor-density estimates — direct behavioral tests on large eagles measure closer to 2-3× human.)')
-            )
-          ),
-
-          // Slider
-          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
-            h('div', null,
-              h('label', { className: 'text-xs text-violet-300 flex justify-between items-center' },
-                h('span', null, __alloT('stem.raptorhunt.zoom_acuity_multiplier', 'Zoom (acuity multiplier)')),
-                h('span', { className: 'font-mono text-amber-300' }, av.zoom.toFixed(2) + '×')
-              ),
-              h('input', {
-                type: 'range', min: 0.4, max: 8, step: 0.1, value: av.zoom,
-                onInput: function(e) { setAV({ zoom: parseFloat(e.target.value) }); },
-                className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.visual_acuity_zoom_multiplier', 'Visual acuity zoom multiplier')
-              }),
-              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
-                h('span', null, __alloT('stem.raptorhunt.0_4_cat', '0.4× (cat)')),
-                h('span', null, __alloT('stem.raptorhunt.1_human', '1× (human)')),
-                h('span', null, __alloT('stem.raptorhunt.5_eagle', '5× (eagle)')),
-                h('span', null, __alloT('stem.raptorhunt.8_max', '8× (max)'))
-              )
-            ),
-
-            // Species preset buttons
-            h('div', { className: 'flex flex-wrap gap-2' },
-              presets.map(function(p) {
-                var active = activePreset && activePreset.id === p.id;
-                var colorMap = { slate: 'amber', amber: 'amber', orange: 'orange', red: 'red' };
-                return h('button', {
-                  key: p.id,
-                  onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_zoom_set_to_x', 'Zoom set to {value1}: {value2}x'), { value1: p.label, value2: p.zoom })); },
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
-                    ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md ring-2 ring-amber-400/50'
-                    : 'transition-colors bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100 active:scale-[0.97]'),
-                  'aria-label': p.label + ' acuity ' + p.zoom + 'x',
-                  'aria-pressed': active
-                }, p.label + ' (' + p.zoom + '×)');
-              })
-            ),
-
-            activePreset && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700/40 text-xs text-amber-100/90 italic' }, '🦅 ' + activePreset.desc)
-          ),
-
-          // The chart itself
-          h('div', { className: 'bg-white rounded-xl p-6 overflow-hidden', style: { minHeight: '500px', maxHeight: '70vh', overflowY: 'auto' } },
-            h('div', { className: 'text-center' },
-              h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-400 mb-4' }, __alloT('stem.raptorhunt.acuity_demonstration_chart', '— Acuity Demonstration Chart —')),
-              lines.map(function(line, i) {
-                var scaledSize = line.size * av.zoom;
-                return h('div', {
-                  key: i,
-                  style: {
-                    fontFamily: 'ui-monospace, Menlo, Consolas, monospace',
-                    fontSize: scaledSize + 'px',
-                    color: '#0f172a',
-                    fontWeight: 'bold',
-                    letterSpacing: '0.15em',
-                    lineHeight: 1.1,
-                    margin: (scaledSize * 0.15) + 'px 0',
-                    transition: 'font-size 0.2s ease'
-                  }
-                }, line.text);
-              }),
-              h('div', { className: 'text-[10px] text-slate-400 mt-6 italic' }, __alloT('stem.raptorhunt.larger_text_closer_equivalent_sharper_', 'Larger text = closer-equivalent / sharper-equivalent vision. A bird that can see at this zoom level can read the same lines from much further away.'))
-            )
-          ),
-
-          // ── NEW v0.14: Hidden-Object Meadow Visualization ──
-          (function() {
-            // Render a "meadow" SVG with a vole hidden at a specific spot.
-            // The view zoom is the same av.zoom value (1-8×).
-            // At 1× (human) the vole is barely a pixel; at 5× (eagle) it's clearly visible.
-            return h('div', { className: 'bg-slate-900/40 border border-emerald-700/40 rounded-xl p-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.hidden_prey_meadow_can_you_spot_the_vo', '🌾 Hidden-Prey Meadow — Can you spot the vole?')),
-              h('div', { className: 'text-xs text-slate-400 italic mb-3' }, __alloT('stem.raptorhunt.a_scaled_down_meadow_scene_200_ft_away', 'A scaled-down meadow scene 200 ft away. A vole is hiding in the grass. At human acuity (1×) it\'s barely a speck. Crank the zoom up to red-tail or eagle vision and the vole becomes obvious.')),
-              h('div', { className: 'bg-slate-950 rounded-lg overflow-hidden border border-slate-700' },
-                h('svg', { viewBox: '0 0 600 320', style: { width: '100%', height: 'auto', maxHeight: '400px' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.meadow_scene_with_hidden_vole', 'Meadow scene with hidden vole') },
-                  // Sky gradient
-                  h('defs', null,
-                    h('linearGradient', { id: 'mdSky', x1: 0, y1: 0, x2: 0, y2: 1 },
-                      h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
-                      h('stop', { offset: '70%', stopColor: '#fef3c7' })
-                    ),
-                    h('linearGradient', { id: 'mdGround', x1: 0, y1: 0, x2: 0, y2: 1 },
-                      h('stop', { offset: '0%', stopColor: '#65a30d' }),
-                      h('stop', { offset: '100%', stopColor: '#365314' })
-                    )
-                  ),
-                  // Background sky
-                  h('rect', { x: 0, y: 0, width: 600, height: 320, fill: 'url(#mdSky)' }),
-                  // Distant tree line
-                  h('rect', { x: 0, y: 130, width: 600, height: 20, fill: '#1e3a2a' }),
-                  [80, 180, 280, 360, 440, 520].map(function(tx, i) {
-                    return h('path', { key: 'tree' + i, d: 'M ' + (tx - 8) + ' 150 L ' + tx + ' 125 L ' + (tx + 8) + ' 150 Z', fill: '#14532d' });
-                  }),
-                  // Meadow ground
-                  h('rect', { x: 0, y: 150, width: 600, height: 170, fill: 'url(#mdGround)' }),
-                  // Grass texture (random tiny lines for texture)
-                  (function() {
-                    var lines = [];
-                    for (var gi = 0; gi < 200; gi++) {
-                      // Deterministic placement so it doesn't jitter
-                      var seed = gi * 17.3;
-                      var gx = (Math.sin(seed) * 10000) % 600;
-                      if (gx < 0) gx += 600;
-                      var gy = 160 + (Math.cos(seed * 1.7) * 1000 % 150);
-                      if (gy < 160) gy = 160 + (-gy % 150);
-                      var gh = 2 + Math.abs(Math.sin(seed * 3)) * 4;
-                      lines.push(h('line', { key: 'g' + gi, x1: gx, y1: gy, x2: gx, y2: gy - gh, stroke: '#3f6212', strokeWidth: 1, opacity: 0.6 }));
-                    }
-                    return lines;
-                  })(),
-                  // The vole — its visible size scales with av.zoom!
-                  // At 1× = tiny dot; at 8× = clear glyph
-                  (function() {
-                    var vx = 340, vy = 245; // fixed meadow position
-                    var voleSize = Math.max(1, av.zoom * 1.2); // pixels (1.2px at 1× → ~9.6px at 8×)
-                    var visible = av.zoom >= 1.0; // always rendered, just very small
-                    return h('g', null,
-                      // Vole body
-                      h('ellipse', {
-                        cx: vx, cy: vy,
-                        rx: voleSize, ry: voleSize * 0.6,
-                        fill: '#78350f', stroke: '#451a03', strokeWidth: 0.5,
-                        opacity: visible ? 1 : 0
-                      }),
-                      // Vole head if zoom is high enough
-                      av.zoom >= 2.5 && h('circle', { cx: vx + voleSize * 0.9, cy: vy - voleSize * 0.2, r: voleSize * 0.6, fill: '#92400e' }),
-                      // Vole tail if zoom high enough
-                      av.zoom >= 3.5 && h('line', { x1: vx - voleSize, y1: vy, x2: vx - voleSize * 2.5, y2: vy + voleSize * 0.5, stroke: '#451a03', strokeWidth: 1 }),
-                      // Vole eye glint at very high zoom
-                      av.zoom >= 5.0 && h('circle', { cx: vx + voleSize * 1.1, cy: vy - voleSize * 0.3, r: 0.5, fill: '#fefce8' }),
-                      // "you found it" label at >= 4×
-                      av.zoom >= 4.0 && h('g', null,
-                        h('circle', { cx: vx, cy: vy, r: voleSize * 4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.6 }),
-                        h('text', { x: vx + voleSize * 4 + 4, y: vy + 4, fontSize: 11, fill: '#fbbf24', fontWeight: 'bold' }, __alloT('stem.raptorhunt.vole', '← vole!'))
-                      )
-                    );
-                  })(),
-                  // Distance scale
-                  h('text', { x: 8, y: 18, fontSize: 10, fill: '#1c1917', fontWeight: 'bold' }, __alloT('stem.raptorhunt.200_ft_from_observer', '200 ft from observer')),
-                  h('text', { x: 8, y: 314, fontSize: 9, fill: '#fefce8' }, 'Current zoom: ' + av.zoom.toFixed(1) + '× — ' + (av.zoom < 1.5 ? 'human can barely see anything' : av.zoom < 3 ? 'kestrel-class sees a speck' : av.zoom < 5 ? 'hawk-class sees the vole clearly' : 'eagle-class sees the eye glint'))
-                )
-              ),
-              // Verdict bar
-              h('div', { className: 'mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 text-center text-xs' },
-                ['1×', '2.6×', '4×', '5.5×'].map(function(z, i) {
-                  var zoom = parseFloat(z);
-                  var verdict = [
-                    { z: 1, lbl: 'Human: imperceptible', color: 'slate' },
-                    { z: 2.6, lbl: 'Peregrine: visible as speck', color: 'amber' },
-                    { z: 4, lbl: 'Red-tail: clearly a small mammal', color: 'orange' },
-                    { z: 5.5, lbl: 'Golden eagle: visible eye glint', color: 'red' }
-                  ][i];
-                  var active = Math.abs(av.zoom - verdict.z) < 0.3;
-                  return h('div', { key: i, className: 'p-2 rounded ' + (active ? 'bg-' + verdict.color + '-700/40 ring-2 ring-amber-400/50' : 'bg-slate-800/40 border border-slate-700/40') },
-                    h('div', { className: 'font-mono font-bold text-amber-300' }, z),
-                    h('div', { className: 'text-[10px] text-slate-300' }, verdict.lbl)
-                  );
-                })
-              )
-            );
-          })(),
-
-          // What this means
-          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, __alloT('stem.raptorhunt.the_100_foot_newspaper_demonstration', '💡 The "100-foot newspaper" demonstration')),
-            h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed space-y-2' },
-              h('p', null, __alloT('stem.raptorhunt.a_common_claim_a_red_tailed_hawk_can_r', 'A common claim: "a red-tailed hawk can read a newspaper headline at 100 feet." Where does that come from?')),
-              h('p', null,
-                __alloT('stem.raptorhunt.a_20_20_human_reads_a_newspaper_headli', 'A 20/20 human reads a newspaper headline at ~25 feet under normal lighting. A red-tail with ~4× acuity should be able to read the same headline at ~4 × 25 = '),
-                h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.100_feet', '100 feet')),
-                __alloT('stem.raptorhunt.a_golden_eagle_at_5_5_should_read_it_a', '. A golden eagle at 5.5× should read it at ~140 feet. A peregrine at 2.6× should read it at ~65 feet.')
-              ),
-              h('p', null, __alloT('stem.raptorhunt.these_are_simplifications_real_raptor_', 'These are simplifications — real raptor vision also has 2 foveas per eye, wider visual field, UV in falconids, and head-mounting that lets the bird scan with much less head motion than a human. The acuity number is just ONE axis of "better seeing."')),
-              h('p', { className: 'italic text-emerald-200/80' }, __alloT('stem.raptorhunt.try_toggling_between_human_peregrine_a', 'Try toggling between human, peregrine, and golden eagle on the slider above. The eagle-scale chart isn\'t just bigger text — it\'s the experiential equivalent of being 5× closer than you actually are.'))
-            )
-          )
-        );
+        return h(RaptorVisualAngleStudy, { React: React, settings: rh.acuity,
+          onChange: function(settings) { setRH(function(current) { return Object.assign({}, current, { acuity: settings }); }); } });
       }
-
       // ────────────────────────────────────────────────────────
       // RENDER: RECOVERY CASE STUDIES
       // ────────────────────────────────────────────────────────
@@ -29693,69 +30199,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: HUNTING STRATEGIES (v0.37)
       // ────────────────────────────────────────────────────────
       function renderHuntingStrategies() {
-        var huntIdx = rh.huntStrategyIdx == null ? 0 : rh.huntStrategyIdx;
-        function setHuntIdx(i) { setRH({ huntStrategyIdx: i }); }
-        var active = HUNTING_STRATEGIES.strategies[huntIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🎯'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, __alloT('stem.raptorhunt.hunting_strategies_2', 'Hunting Strategies')),
-                h('div', { className: 'text-sm text-red-100/85 mt-1' }, HUNTING_STRATEGIES.intro)
-              )
-            )
-          ),
-          // Strategy chips
-          h('div', { className: 'flex flex-wrap gap-1' },
-            HUNTING_STRATEGIES.strategies.map(function(s, i) {
-              var sel = huntIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setHuntIdx(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-red-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-red-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, s.name);
-            })
-          ),
-          // Active strategy detail
-          h('div', { className: 'bg-slate-800/40 border border-red-700/40 rounded-xl p-4 space-y-3' },
-            h('div', null,
-              h('div', { className: 'text-lg font-bold text-red-300 tracking-tight' }, active.name),
-              h('div', { className: 'text-xs italic text-amber-200/80' }, 'Practiced by: ' + active.usedBy)
-            ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.description', '📖 Description')),
-              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, active.description)
-            ),
-            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.physics_biomechanics', '⚛ Physics + Biomechanics')),
-              h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, active.physics)
-            ),
-            h('div', { className: 'grid md:grid-cols-2 gap-2' },
-              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.prey_3', '🐾 Prey')),
-                h('div', { className: 'text-amber-100/90' }, active.prey)
-              ),
-              h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.countermeasures', '🛡 Countermeasures')),
-                h('div', { className: 'text-rose-100/90' }, active.countermeasures)
-              ),
-              h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.kill_mechanism', '⚡ Kill Mechanism')),
-                h('div', { className: 'text-purple-100/90' }, active.kill)
-              ),
-              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.success_rate', '✅ Success Rate')),
-                h('div', { className: 'text-emerald-100/90' }, active.successRate)
-              )
-            ),
-            h('div', { className: 'bg-slate-900/60 border border-slate-700/40 rounded p-3 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.energetics', '⚖ Energetics')),
-              h('div', { className: 'text-yellow-100/90' }, active.energetics)
-            )
-          )
-        );
+        var index = Number.isInteger(rh.huntStrategyIdx) && HUNTING_STRATEGIES.strategies[rh.huntStrategyIdx] ? rh.huntStrategyIdx : 0;
+        var active = HUNTING_STRATEGIES.strategies[index];
+        var phase = Math.max(0, Math.min(2, Number((rh.huntingPhases || {})[index]) || 0));
+        var phases = [__alloT('stem.raptorhunt.hunt_phase_search', 'Locate food'), __alloT('stem.raptorhunt.hunt_phase_approach', 'Trace the approach'), __alloT('stem.raptorhunt.hunt_phase_interaction', 'Inspect the interaction')];
+        var routes = [
+          [[95,65],[275,100],[440,226]], [[90,175],[255,118],[455,171]], [[110,90],[285,155],[455,256]], [[270,65],[270,144],[270,255]],
+          [[190,75],[300,150],[390,261]], [[105,80],[280,116],[450,255]], [[90,155],[280,205],[435,257]], [[145,80],[320,70],[445,255]],
+          [[95,118],[255,154],[450,254]], [[105,90],[280,98],[445,178]], [[80,190],[275,164],[460,245]], [[100,255],[275,247],[445,255]],
+          [[90,170],[270,96],[455,139]], [[95,74],[270,133],[435,207]]
+        ];
+        var points = routes[index], target = points[2], current = points[phase];
+        var isWater = index === 4, isForest = index === 1 || index === 9, isBone = index === 7, isPassive = index === 5 || index === 7;
+        var habitat = ['open-air','woodland','field-edge','grassland','water','open-land','scrub','rock','night-field','canopy','grassland','ground','open-air','water-edge'][index];
+        var phaseText = phase === 0 ? active.description : phase === 1 ? active.physics : active.kill;
+        var prompts = [__alloT('stem.raptorhunt.hunt_question_search', 'What information could reveal food before an approach begins?'), __alloT('stem.raptorhunt.hunt_question_approach', 'How do body shape and the surrounding habitat help or constrain this route?'), __alloT('stem.raptorhunt.hunt_question_interaction', 'What could interrupt this interaction? The route does not guarantee a meal.')];
+        function setPhase(next) { setRH(function(state) { var choices = Object.assign({}, state.huntingPhases || {}); choices[index] = next; return Object.assign({}, state, { huntingPhases: choices }); }); }
+        function bird(x, y, partner) { return h('g', { transform: 'translate(' + x + ' ' + y + ')', 'data-hunting-actor': partner ? 'partner' : 'bird' }, h('circle', { r: 25, fill: partner ? '#314655' : '#dce5c1', stroke: partner ? '#adcbd1' : '#f4db9c', strokeWidth: 2 }), h('path', { d: 'M-18 -8L-4 -3 0 4 4 -3 18 -8 9 5 3 8 0 16 -3 8 -9 5Z', fill: partner ? '#d1e4dc' : '#2e5146' })); }
+        return h('section', { className: 'rh-quant-explorer rh-hunt-workbench', 'data-raptor-hunting-workbench': 'true', 'data-hunting-strategy': index, 'data-hunting-phase': phase, 'aria-labelledby': 'rh-hunt-title' },
+          h('div', { className: 'rh-quant-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.hunt_kicker', 'STRATEGY FIELDBOARD / READ THE SEQUENCE')), h('h3', { id: 'rh-hunt-title' }, __alloT('stem.raptorhunt.hunt_title', 'Different routes to a meal.')), h('p', null, __alloT('stem.raptorhunt.hunt_intro', 'Step through a hunting or foraging strategy. Connect the route with the animal’s senses, body, food, and surroundings.'))),
+          h('div', { className: 'rh-investigation-select' }, h('label', { htmlFor: 'rh-hunt-strategy' }, __alloT('stem.raptorhunt.hunt_choose', 'Choose a hunting or foraging strategy')), h('select', { id: 'rh-hunt-strategy', value: index, onChange: function(event) { setRH({ huntStrategyIdx: Number(event.target.value) }); } }, HUNTING_STRATEGIES.strategies.map(function(item, i) { return h('option', { key: i, value: i }, item.name); }))),
+          h('div', { className: 'rh-hunt-phases', role: 'group', 'aria-label': __alloT('stem.raptorhunt.hunt_sequence', 'Explore the strategy sequence') }, phases.map(function(label, i) { return h('button', { key: i, type: 'button', 'data-hunting-step': i, 'aria-pressed': phase === i, onClick: function() { setPhase(i); } }, h('span', null, '0' + (i + 1)), label); })),
+          h('div', { className: 'rh-hunt-bench' },
+            h('div', { className: 'rh-hunt-scene', 'data-hunting-habitat': habitat },
+              h('div', { className: 'rh-hunt-scene-head' }, h('h4', null, active.name), h('p', null, active.usedBy)),
+              h('svg', { viewBox: '0 0 560 310', role: 'img', 'aria-labelledby': 'rh-hunt-diagram-title rh-hunt-diagram-desc', focusable: 'false' },
+                h('title', { id: 'rh-hunt-diagram-title' }, active.name + ' · ' + phases[phase]),
+                h('desc', { id: 'rh-hunt-diagram-desc' }, __alloT('stem.raptorhunt.hunt_diagram_desc', 'Qualitative route diagram. Numbered markers are sequence positions, not measured times or distances. The food marker is not a guaranteed capture.')),
+                h('defs', null, h('linearGradient', { id: 'rh-hunt-sky', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: index === 8 ? '#122136' : isWater || index === 13 ? '#193e56' : isBone || index === 11 ? '#494a3c' : '#1d4147' }), h('stop', { offset: '100%', stopColor: index === 8 ? '#385164' : isWater || index === 13 ? '#61968f' : isBone || index === 11 ? '#9b8b60' : '#65826c' })), h('marker', { id: 'rh-hunt-route-arrow', markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0L6 3 0 6', fill: 'none', stroke: '#efcf8d', strokeWidth: 1.5 }))),
+                h('rect', { width: 560, height: 310, fill: 'url(#rh-hunt-sky)' }),
+                h('circle', { cx: 477, cy: 49, r: index === 8 ? 20 : 26, fill: index === 8 ? '#b4c7cf' : '#c9d5aa', opacity: .35 }),
+                index === 8 ? h('g', { fill: '#c8d9db', opacity: .5 }, [21,61,113,165,207,250,316,365,417,526].map(function(x,i) { return h('circle', { key: x, cx: x, cy: 20 + i * 19 % 100, r: i % 3 === 0 ? 1.5 : .8 }); })) : h('g', { fill: '#d9e2d1', opacity: .12 }, [[35,41,1],[208,23,.7],[388,76,1.15]].map(function(cloud,i) { return h('path', { key: i, transform: 'translate(' + cloud[0] + ' ' + cloud[1] + ') scale(' + cloud[2] + ')', d: 'M0 26Q8 7 31 14Q41-6 67 8Q91 0 102 20Q119 15 125 29H0Z' }); })),
+                h('path', { d: isBone ? 'M0 222L82 132 145 193 245 78 347 176 445 102 560 215V310H0Z' : 'M0 205Q79 143 154 195T298 190T445 186T560 200V310H0Z', fill: isBone ? '#718075' : '#557869', opacity: .5 }),
+                h('path', { d: 'M0 246Q91 203 175 234T344 227T560 231V310H0Z', fill: '#3a6358', opacity: .65 }),
+                isForest && h('g', { fill: '#264d42', stroke: '#355c4b', strokeWidth: 5, opacity: .65 }, [20,115,245,415,545].map(function(x,i) { return h('g', { key: x }, h('path', { d: 'M' + x + ' 270V' + (145 + i % 2 * 18) }), h('ellipse', { cx: x, cy: 130 + i % 2 * 18, rx: 39, ry: 53 })); })),
+                h('path', { d: 'M0 271Q130 240 270 268T560 257V310H0Z', fill: isWater ? '#427d8a' : '#365745' }),
+                !isWater && h('g', { stroke: '#8aa17a', fill: 'none', opacity: .45, strokeWidth: 1.5 }, [18,57,101,153,208,258,307,361,409,468,526].map(function(x,i) { var y = 292 + i % 3 * 5; return h('path', { key: x, d: 'M' + x + ' ' + y + 'L' + (x-4) + ' ' + (y-20) + 'M' + x + ' ' + y + 'L' + (x+7) + ' ' + (y-15) + 'M' + x + ' ' + y + 'V' + (y-25) }); })),
+                (index === 6 || index === 2) && h('path', { d: 'M382 280Q367 253 389 245Q388 224 412 228Q427 208 444 229Q471 223 473 249Q496 255 480 282Z', fill: '#25483c', stroke: '#6d8562', strokeWidth: 2 }),
+                isWater && h('g', { stroke: '#9caf84', fill: 'none', strokeWidth: 2, opacity: .75 }, [15,27,40,51].map(function(x,i) { return h('path', { key: x, d: 'M' + x + ' 310L' + (x+6) + ' ' + (247+i%2*14) + 'M' + (x+2) + ' 284L' + (x-6) + ' 265' }); })),
+                isWater && [277, 291].map(function(y) { return h('path', { key: y, d: 'M0 ' + y + 'Q50 ' + (y - 8) + ' 100 ' + y + 'T200 ' + y + 'T300 ' + y + 'T400 ' + y + 'T560 ' + y, stroke: '#b1d1ce', fill: 'none', opacity: .4 }); }),
+                isForest && [60, 190, 350, 495].map(function(x, i) { return h('g', { key: x }, h('path', { d: 'M' + x + ' 280V' + (80 + i % 2 * 40) + 'M' + x + ' 155L' + (x + 48) + ' 126', stroke: '#708969', strokeWidth: 12 }), h('ellipse', { cx: x, cy: 65 + i % 2 * 38, rx: 66, ry: 55, fill: '#29523e', opacity: .75 })); }),
+                (index === 2 || index === 8) && h('path', { d: 'M80 279V145L132 145', fill: 'none', stroke: '#a9946c', strokeWidth: 9 }),
+                isBone && h('path', { d: 'M380 283L417 235 447 244 469 228 503 284Z', fill: '#75817c', stroke: '#b6c1ad', strokeWidth: 2 }),
+                h('polyline', { 'data-hunting-route': 'complete', points: points.map(function(p) { return p.join(','); }).join(' '), fill: 'none', stroke: '#9cbcb7', strokeWidth: 3, strokeDasharray: '6 8', opacity: .75 }),
+                phase > 0 && h('polyline', { 'data-hunting-route': 'inspected', points: points.slice(0, phase + 1).map(function(p) { return p.join(','); }).join(' '), fill: 'none', stroke: '#efcf8d', strokeWidth: 4, markerEnd: 'url(#rh-hunt-route-arrow)' }),
+                points.map(function(p, i) { return h('g', { key: i }, h('circle', { cx: p[0], cy: p[1], r: 9, fill: '#10292f', stroke: '#a4c2b4', strokeWidth: 2 }), h('text', { x: p[0], y: p[1] - 35, textAnchor: 'middle', fill: '#d4dfc7', fontSize: 12, fontFamily: 'ui-monospace,monospace' }, '0' + (i + 1))); }),
+                h('circle', { cx: target[0], cy: target[1], r: 32, fill: 'none', stroke: '#c7b48c', strokeWidth: 1.5, strokeDasharray: '3 5' }),
+                h('g', { 'data-hunting-resource': 'food-marker' }, h('rect', { x: target[0] - 9, y: target[1] - 9, width: 18, height: 18, fill: '#ddbd88', stroke: '#f0dba5', strokeWidth: 2, transform: 'rotate(45 ' + target[0] + ' ' + target[1] + ')' }), h('text', { x: target[0] + 36, y: target[1] + 5, fill: '#eddbb0', fontSize: 14, fontWeight: 700 }, 'F')),
+                index === 8 && [42, 54].map(function(r) { return h('path', { key: r, d: 'M' + (target[0] - r) + ' ' + (target[1] - r / 2) + 'Q' + (target[0] - r - 15) + ' ' + target[1] + ' ' + (target[0] - r) + ' ' + (target[1] + r / 2), fill: 'none', stroke: '#b5d2ca', strokeWidth: 2 }); }),
+                (index === 6 || index === 13) && bird(index === 6 ? 450 - phase * 35 : target[0] + 55, index === 6 ? 100 + phase * 35 : target[1] - 30, true),
+                bird(isBone && phase === 2 ? points[1][0] : current[0], isBone && phase === 2 ? points[1][1] : current[1], false)),
+              h('div', { className: 'rh-hunt-legend' }, h('span', null, __alloT('stem.raptorhunt.hunt_food_marker', 'F: food resource · symbolic marker, not an animal silhouette')), h('span', null, __alloT('stem.raptorhunt.hunt_legend_route', 'Gold: inspected route · dashed: remaining sequence')), h('span', null, isBone ? __alloT('stem.raptorhunt.hunt_legend_bone', 'Final segment: bone falls toward rock; the bird stays above') : isPassive ? __alloT('stem.raptorhunt.hunt_legend_carrion', 'Food is already dead; this is a foraging interaction') : __alloT('stem.raptorhunt.hunt_legend_food', 'Dotted circle: food or prey location')))),
+            h('aside', { className: 'rh-hunt-reading', 'data-hunting-reading': phase }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.hunt_reading', 'SEQUENCE FIELD NOTES')), h('h4', null, phases[phase]), h('p', null, phaseText), h('div', { className: 'rh-hunt-question' }, h('strong', null, __alloT('stem.raptorhunt.hunt_question', 'What would you look for?')), h('p', null, prompts[phase])))),
+          h('div', { className: 'rh-hunt-resources' }, h('article', null, h('h4', null, __alloT('stem.raptorhunt.hunt_food', 'Food resources')), h('p', null, active.prey)), h('article', null, h('h4', null, __alloT('stem.raptorhunt.hunt_constraints', 'Escape and constraints')), h('p', null, active.countermeasures))),
+          h('details', { className: 'rh-investigation-reference' }, h('summary', null, __alloT('stem.raptorhunt.hunt_reference', 'Read the strategy’s full field notes')), h('div', { className: 'rh-hunt-reference-grid' }, [[__alloT('stem.raptorhunt.description', '📖 Description'), active.description], [__alloT('stem.raptorhunt.physics_biomechanics', '⚛ Physics + Biomechanics'), active.physics], [__alloT('stem.raptorhunt.energetics', '⚖ Energetics'), active.energetics], [__alloT('stem.raptorhunt.success_rate', '✅ Success Rate'), active.successRate]].map(function(item) { return h('article', { key: item[0] }, h('h4', null, item[0]), h('p', null, item[1])); }))),
+          h('p', { className: 'rh-quant-source-note' }, __alloT('stem.raptorhunt.hunt_caution', 'The diagrams are simplified sequences, not measured tracks, timings, distances, or outcome predictions. Animals can change strategy; an approach can fail or be abandoned.')));
       }
 
       // ────────────────────────────────────────────────────────
@@ -30253,6 +30751,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: CLIMATE CHANGE IMPACT (v0.37)
       // ────────────────────────────────────────────────────────
       function renderClimate() {
+        var experiment = rh.climateExperiment || {};
+        function bounded(value) { return Math.max(-21, Math.min(21, Math.round(Number(value) || 0))); }
+        var prey = bounded(experiment.preyShift), demand = bounded(experiment.demandShift);
+        var gap = Math.abs(prey - demand);
+        var lens = /^(timing|habitat|weather)$/.test(rh.climateEvidence || '') ? rh.climateEvidence : 'timing';
+        function patchExperiment(change) { setRH(function(state) { return Object.assign({}, state, { climateExperiment: Object.assign({}, state.climateExperiment || {}, change) }); }); }
+        var presets = [
+          { label: __alloT('stem.raptorhunt.climate_aligned', 'Aligned reference'), prey: 0, demand: 0 },
+          { label: __alloT('stem.raptorhunt.climate_prey_first', 'Prey shifts first'), prey: -14, demand: 0 },
+          { label: __alloT('stem.raptorhunt.climate_both_advance', 'Both peaks advance'), prey: -14, demand: -10 }
+        ];
+        function px(day) { return 48 + (day + 42) / 84 * 552; }
+        function py(day, peak) { return 214 - Math.exp(-Math.pow(day - peak, 2) / 128) * 145; }
+        function curve(peak) { var path = ''; for (var day = -42; day <= 42; day++) path += (day === -42 ? 'M' : 'L') + px(day).toFixed(2) + ' ' + py(day, peak).toFixed(2) + ' '; return path; }
+        var preyPath = curve(prey), demandPath = curve(demand), overlap = 'M48 214 ';
+        for (var day = -42; day <= 42; day++) overlap += 'L' + px(day).toFixed(2) + ' ' + Math.max(py(day, prey), py(day, demand)).toFixed(2) + ' ';
+        overlap += 'L600 214Z';
+        var lenses = [
+          { id: 'timing', label: __alloT('stem.raptorhunt.climate_timing_records', 'Timing records'), text: __alloT('stem.raptorhunt.climate_timing_evidence', 'Compare repeated dates of prey availability, laying, hatching, and peak food demand. Look for variation among years and populations before inferring a mismatch.') },
+          { id: 'habitat', label: __alloT('stem.raptorhunt.climate_habitat_records', 'Habitat records'), text: __alloT('stem.raptorhunt.climate_habitat_evidence', 'Record vegetation, prey access, water conditions, and nesting habitat alongside bird observations. A range change can have several causes; temperature alone does not establish one.') },
+          { id: 'weather', label: __alloT('stem.raptorhunt.climate_weather_records', 'Weather records'), text: __alloT('stem.raptorhunt.climate_weather_evidence', 'Compare local heat, rain, drought, or storms with nest and food observations. Separate short weather events from longer climate trends, and consider other pressures.') }
+        ];
+        return h('div', { className: 'space-y-4' },
+          h('section', { className: 'rh-quant-explorer rh-climate-workbench', 'data-raptor-climate-workbench': 'true', 'data-climate-gap': gap, 'data-climate-prey': prey, 'data-climate-demand': demand, 'aria-labelledby': 'rh-climate-title' },
+            h('div', { className: 'rh-quant-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.climate_kicker', 'SEASONAL TIMING / EXPLORE AN IDEA')), h('h3', { id: 'rh-climate-title' }, __alloT('stem.raptorhunt.climate_title', 'When the seasons fall out of step.')), h('p', null, __alloT('stem.raptorhunt.climate_intro', 'Move two hypothetical seasonal peaks independently. Explore why a shift in food availability may matter when the timing of food demand changes differently.'))),
+            h('div', { className: 'rh-compare-traits rh-climate-presets', role: 'group', 'aria-label': __alloT('stem.raptorhunt.climate_scenarios', 'Illustrative timing scenarios') }, presets.map(function(preset) { return h('button', { key: preset.label, type: 'button', 'aria-pressed': prey === preset.prey && demand === preset.demand, onClick: function() { patchExperiment({ preyShift: preset.prey, demandShift: preset.demand }); } }, preset.label); })),
+            h('div', { className: 'rh-climate-bench' },
+              h('div', { className: 'rh-climate-chart-panel' },
+                h('div', { className: 'rh-climate-chart-head' }, h('strong', null, __alloT('stem.raptorhunt.climate_profile_title', 'Illustrative seasonal profiles')), h('span', null, __alloT('stem.raptorhunt.climate_profile_units', 'Normalized shapes · not population counts'))),
+                h('svg', { viewBox: '0 0 640 285', role: 'img', 'aria-labelledby': 'rh-climate-chart-title rh-climate-chart-desc', focusable: 'false', 'data-climate-timing-chart': 'true' },
+                  h('title', { id: 'rh-climate-chart-title' }, __alloT('stem.raptorhunt.climate_chart_title', 'Relative timing of prey availability and food demand')),
+                  h('desc', { id: 'rh-climate-chart-desc' }, __alloT('stem.raptorhunt.climate_chart_desc', 'The horizontal axis shows days relative to a shared reference peak. The vertical shapes are normalized illustrations, not measured abundance, food supply, or survival probability.')),
+                  h('defs', null, h('pattern', { id: 'rh-climate-overlap-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('line', { x1: 0, x2: 0, y1: 0, y2: 8, stroke: '#d9e4bf', strokeWidth: 2, opacity: .5 }))),
+                  [-42, -28, -14, 0, 14, 28, 42].map(function(tick) { return h('g', { key: tick }, h('line', { x1: px(tick), x2: px(tick), y1: 35, y2: 219, stroke: '#577579', strokeDasharray: tick === 0 ? '5 4' : '2 6', strokeWidth: tick === 0 ? 2 : 1 }), h('text', { x: px(tick), y: 240, textAnchor: 'middle', fill: '#bed1ce', fontSize: 12, fontFamily: 'ui-monospace,monospace' }, tick > 0 ? '+' + tick : tick)); }),
+                  h('path', { d: preyPath + 'L600 214L48 214Z', fill: '#82c4b2', opacity: .17 }), h('path', { d: demandPath + 'L600 214L48 214Z', fill: '#e2c37e', opacity: .12 }),
+                  h('path', { d: overlap, fill: 'url(#rh-climate-overlap-hatch)', 'data-climate-overlap': 'illustrative' }),
+                  h('path', { d: preyPath, fill: 'none', stroke: '#9cd8c5', strokeWidth: 4, 'data-climate-curve': 'prey' }), h('path', { d: demandPath, fill: 'none', stroke: '#edd291', strokeWidth: 4, strokeDasharray: '9 5', 'data-climate-curve': 'demand' }),
+                  h('circle', { cx: px(prey), cy: 69, r: 6, fill: '#c4e7d2', stroke: '#1a4443', strokeWidth: 2 }), h('rect', { x: px(demand) - 5, y: 64, width: 10, height: 10, fill: '#f1d59a', stroke: '#594c2d', strokeWidth: 2 }),
+                  h('line', { x1: 48, x2: 600, y1: 214, y2: 214, stroke: '#93aaa6', strokeWidth: 1.5 }),
+                  h('text', { x: 324, y: 271, textAnchor: 'middle', fill: '#ccd9cc', fontSize: 12 }, __alloT('stem.raptorhunt.climate_axis', 'Days relative to the shared reference peak'))),
+                h('p', { className: 'rh-climate-axis-note' }, __alloT('stem.raptorhunt.climate_axis', 'Days relative to the shared reference peak')),
+                h('div', { className: 'rh-climate-legend' }, h('span', null, h('i', { className: 'rh-climate-key-prey', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.climate_legend_prey', 'Prey availability')), h('span', null, h('i', { className: 'rh-climate-key-demand', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.climate_legend_demand', 'Food demand')), h('span', null, __alloT('stem.raptorhunt.climate_legend_overlap', 'Hatched area: shared timing, not a survival estimate')))),
+              h('div', { className: 'rh-climate-controls' },
+                [[__alloT('stem.raptorhunt.climate_prey_shift', 'Prey peak shift (days)'), prey, 'preyShift'], [__alloT('stem.raptorhunt.climate_demand_shift', 'Food-demand peak shift (days)'), demand, 'demandShift']].map(function(control) { return h('div', { key: control[2], className: 'rh-climate-slider' }, h('label', { htmlFor: 'rh-climate-' + control[2] }, control[0]), h('output', { htmlFor: 'rh-climate-' + control[2] }, control[1] > 0 ? '+' + control[1] : control[1]), h('input', { id: 'rh-climate-' + control[2], type: 'range', min: -21, max: 21, step: 1, value: control[1], onChange: function(event) { var patch = {}; patch[control[2]] = Number(event.target.value); patchExperiment(patch); } }), h('div', { className: 'rh-climate-range-labels', 'aria-hidden': 'true' }, h('span', null, __alloT('stem.raptorhunt.climate_earlier', 'Earlier')), h('span', null, __alloT('stem.raptorhunt.climate_later', 'Later')))); }),
+                h('div', { className: 'rh-climate-gap', role: 'status' }, h('span', null, __alloT('stem.raptorhunt.climate_gap', 'Peak separation')), h('strong', null, gap + ' ' + (gap === 1 ? __alloT('stem.raptorhunt.climate_day', 'day') : __alloT('stem.raptorhunt.climate_days', 'days'))), h('p', null, prey === demand ? __alloT('stem.raptorhunt.climate_same', 'The illustrative peaks coincide.') : prey < demand ? __alloT('stem.raptorhunt.climate_prey_leads', 'Prey availability peaks before food demand in this example.') : __alloT('stem.raptorhunt.climate_demand_leads', 'Food demand peaks before prey availability in this example.'))))),
+            h('div', { className: 'rh-climate-evidence' }, h('h4', null, __alloT('stem.raptorhunt.climate_evidence_title', 'What evidence would test this idea?')), h('div', { className: 'rh-climate-evidence-tabs', role: 'group', 'aria-label': __alloT('stem.raptorhunt.climate_evidence_lens', 'Choose an evidence lens') }, lenses.map(function(item) { return h('button', { key: item.id, type: 'button', 'aria-pressed': lens === item.id, onClick: function() { setRH({ climateEvidence: item.id }); } }, item.label); })), h('p', { 'data-climate-evidence': lens }, lenses.filter(function(item) { return item.id === lens; })[0].text)),
+            h('p', { className: 'rh-quant-source-note' }, __alloT('stem.raptorhunt.climate_caution', 'This is a hypothetical timing experiment, not a climate forecast or a model for a particular species. Curve width and height are fixed teaching choices. Peak separation alone cannot predict food shortage, reproduction, or survival.'))),
+          h('details', { className: 'rh-investigation-reference rh-climate-reference' }, h('summary', null, __alloT('stem.raptorhunt.climate_reference', 'Explore climate mechanisms and monitoring notes')), renderClimateReference()));
+      }
+
+      function renderClimateReference() {
         var climateTab = rh.climateTab || 'range';
         function setClimateTab(t) { setRH({ climateTab: t }); }
         var tabs = [
@@ -30272,7 +30821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'group', 'aria-label': __alloT('stem.raptorhunt.climate_reference_topics', 'Climate reference topics') },
             tabs.map(function(t) {
               var active = climateTab === t.id;
               return h('button', {
@@ -30281,8 +30830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-orange-700 text-white'
                   : 'transition-colors text-orange-200 hover:text-white'),
-                role: 'tab',
-                'aria-selected': active
+                'aria-pressed': active
               }, t.label);
             })
           ),
@@ -30586,11 +31134,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: ECOLOGY + FOOD WEBS (v0.38)
       // ────────────────────────────────────────────────────────
+      function renderHabitatCommunity(hab, habitatIdx) {
+        var role = /^(raptors|prey|competitors|threats|services)$/.test(rh.ecologyRole || '') ? rh.ecologyRole : 'raptors';
+        var roles = {
+          raptors: { label: __alloT('stem.raptorhunt.eco_community_raptors', 'Raptor community'), icon: 'raptor', text: hab.primaryRaptors.join(' · '), question: __alloT('stem.raptorhunt.eco_question_raptors', 'Which members might use different hunting places or times? The habitat list alone cannot tell us each species’ diet.') },
+          prey: { label: __alloT('stem.raptorhunt.eco_community_prey', 'Prey resources'), icon: 'prey', text: hab.keyPrey, question: __alloT('stem.raptorhunt.eco_question_prey', 'Which listed prey resources depend on water, vegetation, or open ground? Trace one habitat requirement before making a prediction.') },
+          competitors: { label: __alloT('stem.raptorhunt.eco_community_competitors', 'Other consumers'), icon: 'competitor', text: hab.competitors, question: __alloT('stem.raptorhunt.eco_question_competitors', 'Shared resources can create competition. How could different hunting times or places reduce that overlap?') },
+          threats: { label: __alloT('stem.raptorhunt.eco_community_threats', 'Habitat pressures'), icon: 'pressure', text: hab.threats, question: __alloT('stem.raptorhunt.eco_question_threats', 'Choose one listed pressure. Which resource or organism could it affect first, and what evidence would you need to trace further effects?') },
+          services: { label: __alloT('stem.raptorhunt.eco_community_services', 'Ecological roles'), icon: 'service', text: hab.ecosystemServices, question: __alloT('stem.raptorhunt.eco_question_services', 'What observations could support this ecological role? A community diagram shows relationships, not their strength or a population forecast.') }
+        };
+        var selected = roles[role];
+        var colors = [['#285d4a', '#b8d2a1'], ['#665b2f', '#ead491'], ['#384f61', '#b5cdd4'], ['#1e5872', '#b5ddea'], ['#235c59', '#a6d4b6'], ['#23543c', '#a3d4a5'], ['#3c5d79', '#c3d9e4'], ['#705032', '#e3c28e']][habitatIdx];
+        function icon(kind) {
+          var path = kind === 'raptor' ? 'M4 12L20 18 31 28 34 15 43 12 39 21 38 30 58 13 49 31 38 35 35 47 29 37 18 31Z' : kind === 'prey' ? 'M9 33Q8 22 25 22L28 14 34 17 37 25 48 28 51 32 45 36 25 38 13 36M12 34Q-3 41 5 21M30 36L34 41M43 33L48 38' : kind === 'competitor' ? 'M6 33L17 21 23 9 30 19 41 18 49 8 52 27 58 32 49 38 27 39 15 36ZM28 30L30 30M44 28L46 28' : kind === 'pressure' ? 'M32 7L59 51H5ZM32 22V35M32 43V45' : 'M32 52V25M32 37C9 38 6 18 10 10 31 12 34 23 32 37ZM32 28C33 11 45 7 57 8 58 24 47 31 32 28Z';
+          return h('svg', { viewBox: '0 0 64 56', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: path, fill: kind === 'raptor' ? 'currentColor' : 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' }));
+        }
+        function roleButton(key) {
+          return h('button', { key: key, type: 'button', className: 'rh-community-node rh-community-' + key, 'data-community-role': key, 'aria-pressed': role === key, 'aria-controls': 'rh-community-detail', onClick: function() { setRH({ ecologyRole: key }); } }, icon(roles[key].icon), h('span', null, roles[key].label));
+        }
+        return h('section', { className: 'rh-habitat-community', 'data-habitat-community': 'true', 'data-community-habitat': habitatIdx, 'data-community-selected': role, style: { '--community-land': colors[0], '--community-glow': colors[1] }, 'aria-labelledby': 'rh-community-title' },
+          h('div', { className: 'rh-community-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.eco_community_kicker', 'HABITAT FIELD MAP / FOLLOW THE CONNECTIONS')), h('h3', { id: 'rh-community-title' }, __alloT('stem.raptorhunt.eco_community_title', 'A community, connected.')), h('p', null, __alloT('stem.raptorhunt.eco_community_intro', 'Choose a habitat, then inspect its consumers, food resources, and pressures. Each node opens the lab’s existing habitat notes.'))),
+          h('div', { className: 'rh-community-selector' }, h('label', { htmlFor: 'rh-community-habitat' }, __alloT('stem.raptorhunt.eco_community_habitat', 'Explore a habitat')), h('select', { id: 'rh-community-habitat', value: habitatIdx, onChange: function(event) { setRH({ ecologyHabitat: Number(event.target.value) }); } }, ECOLOGY.foodWebs.map(function(record, index) { return h('option', { key: index, value: index }, record.habitat); }))),
+          h('div', { className: 'rh-community-workbench' },
+            h('div', { className: 'rh-community-map-panel' },
+              h('div', { className: 'rh-community-map-title' }, h('strong', null, hab.habitat), h('span', null, __alloT('stem.raptorhunt.eco_community_grouped', 'Grouped habitat relationships'))),
+              h('div', { className: 'rh-community-map', role: 'group', 'aria-label': __alloT('stem.raptorhunt.eco_community_nodes', 'Inspect a food community role') },
+                h('svg', { className: 'rh-community-landscape', viewBox: '0 0 600 340', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                  h('circle', { cx: 495, cy: 65, r: 27, fill: 'var(--community-glow)', opacity: .2 }),
+                  h('path', { d: habitatIdx === 2 || habitatIdx === 6 ? 'M0 230L120 85 210 220 350 100 450 220 540 135 600 230V340H0Z' : 'M0 225Q70 175 150 230T300 225T450 210T600 210V340H0Z', fill: 'var(--community-land)', opacity: .55 }),
+                  h('path', { d: 'M0 287Q120 231 230 270T430 270T600 264V340H0Z', fill: 'var(--community-land)', opacity: .8 }),
+                  (habitatIdx === 3 || habitatIdx === 4) && h('path', { d: 'M0 300Q120 273 260 292T600 292V340H0Z', fill: '#7dc8d2', opacity: .3 }),
+                  (habitatIdx === 0 || habitatIdx === 5) && h('g', { fill: 'var(--community-land)' }, [20, 75, 520, 570].map(function(x, index) { return h('path', { key: x, d: 'M' + x + ' 270V150M' + (x - 24) + ' 215Q' + x + ' ' + (90 + index * 8) + ' ' + (x + 24) + ' 215Z', stroke: 'var(--community-land)', strokeWidth: 5 }); }))),
+                h('svg', { className: 'rh-community-connectors', viewBox: '0 0 600 340', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                  h('defs', null, h('marker', { id: 'rh-community-energy-arrow', markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' }, h('path', { d: 'M0 0L6 3 0 6', fill: 'none', stroke: '#e9ce8d', strokeWidth: 1.5 }))),
+                  h('path', { className: 'rh-community-energy-line', d: 'M145 231Q185 174 252 121', fill: 'none', stroke: '#e9ce8d', strokeWidth: 3, markerEnd: 'url(#rh-community-energy-arrow)' }),
+                  h('path', { className: 'rh-community-competition-line', d: 'M452 231Q412 174 348 121', fill: 'none', stroke: '#b8cbd1', strokeWidth: 2, strokeDasharray: '5 6' })),
+                roleButton('raptors'), roleButton('prey'), roleButton('competitors')),
+              h('div', { className: 'rh-community-legend' }, h('span', null, h('i', { className: 'rh-community-energy-key', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.eco_community_energy', 'Food → consumer: energy transfer')), h('span', null, h('i', { className: 'rh-community-competition-key', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.eco_community_competition', 'Dashed: possible resource competition'))),
+              h('div', { className: 'rh-community-context', role: 'group', 'aria-label': __alloT('stem.raptorhunt.eco_community_context', 'Inspect the habitat context') }, roleButton('threats'), roleButton('services'))),
+            h('aside', { id: 'rh-community-detail', className: 'rh-community-detail', 'data-community-detail': role, 'aria-labelledby': 'rh-community-detail-title' },
+              h('div', { className: 'rh-community-detail-icon' }, icon(selected.icon)),
+              h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.eco_community_selected', 'SELECTED FIELD NOTES')),
+              h('h4', { id: 'rh-community-detail-title' }, selected.label),
+              role === 'raptors' ? h('ul', { className: 'rh-community-species' }, hab.primaryRaptors.map(function(name) { return h('li', { key: name }, name); })) : h('p', { className: 'rh-community-detail-copy' }, selected.text),
+              h('div', { className: 'rh-community-question' }, h('strong', null, __alloT('stem.raptorhunt.eco_community_question', 'Think like a field ecologist')), h('p', null, selected.question)))),
+          h('p', { className: 'rh-community-note' }, __alloT('stem.raptorhunt.eco_community_note', 'This map groups organisms by habitat. It does not connect every listed raptor to every prey item. The arrow shows the direction of energy transfer for the community; competition and pressures are different kinds of relationship. It is not a population forecast.')));
+      }
+
       function renderEcology() {
         var ecoTab = rh.ecologyTab || 'niche';
         function setEcoTab(t) { setRH({ ecologyTab: t }); }
-        var habitatIdx = rh.ecologyHabitat == null ? 0 : rh.ecologyHabitat;
-        function setHab(i) { setRH({ ecologyHabitat: i }); }
+        var habitatIdx = Number.isInteger(rh.ecologyHabitat) && ECOLOGY.foodWebs[rh.ecologyHabitat] ? rh.ecologyHabitat : 0;
         var hab = ECOLOGY.foodWebs[habitatIdx];
         var tabs = [
           { id: 'niche', label: __alloT('stem.raptorhunt.niche_concepts', '🧠 Niche Concepts') },
@@ -30607,7 +31201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'group', 'aria-label': __alloT('stem.raptorhunt.eco_community_topics', 'Ecology topics') },
             tabs.map(function(t) {
               var active = ecoTab === t.id;
               return h('button', {
@@ -30616,8 +31210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-green-700 text-white'
                   : 'transition-colors text-green-200 hover:text-white'),
-                role: 'tab',
-                'aria-selected': active
+                'aria-pressed': active
               }, t.label);
             })
           ),
@@ -30629,42 +31222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               );
             })
           ),
-          ecoTab === 'webs' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'flex flex-wrap gap-1' },
-              ECOLOGY.foodWebs.map(function(f, i) {
-                var sel = habitatIdx === i;
-                return h('button', {
-                  key: i,
-                  onClick: function() { setHab(i); },
-                  className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-700 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                  'aria-pressed': sel
-                }, f.habitat);
-              })
-            ),
-            h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
-              h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, hab.habitat),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.primary_raptors', '🦅 Primary Raptors')),
-                h('div', { className: 'text-sm text-amber-100/90' }, hab.primaryRaptors.join(' · '))
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.key_prey', '🐭 Key Prey')),
-                h('div', { className: 'text-sm text-purple-100/90' }, hab.keyPrey)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-orange-300 mb-1' }, __alloT('stem.raptorhunt.competitors', '⚔ Competitors')),
-                h('div', { className: 'text-sm text-orange-100/90' }, hab.competitors)
-              ),
-              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.ecosystem_services_2', '💎 Ecosystem Services')),
-                h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, hab.ecosystemServices)
-              ),
-              h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.threats', '⚠ Threats')),
-                h('div', { className: 'text-sm text-rose-100/90 leading-relaxed' }, hab.threats)
-              )
-            )
-          ),
+          ecoTab === 'webs' && renderHabitatCommunity(hab, habitatIdx),
           ecoTab === 'services' && h('div', { className: 'space-y-3' },
             ECOLOGY.services.map(function(s, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/40 rounded-lg p-3' },
@@ -31809,6 +32367,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: DEMOGRAPHICS (v0.40)
       // ────────────────────────────────────────────────────────
+      function renderLifeHistoryExplorer() {
+        var records = DEMOGRAPHICS.lifeHistory;
+        var selected = Number.isInteger(rh.demographicSpecies) && records[rh.demographicSpecies] ? rh.demographicSpecies : 0;
+        var compared = Number.isInteger(rh.demographicCompare) && records[rh.demographicCompare] ? rh.demographicCompare : 3;
+        if (compared === selected) compared = selected === 0 ? 3 : 0;
+        var lens = rh.demographicLens === 'mortality' ? 'mortality' : 'timeline';
+        function firstRange(text) {
+          var match = String(text).match(/^\s*(~)?(\d+(?:\.\d+)?)(?:[-–](\d+(?:\.\d+)?))?(\+)?/);
+          return match ? { low: Number(match[2]), high: Number(match[3] || match[2]), open: !!match[4] } : null;
+        }
+        var lensOptions = [['timeline', __alloT('stem.raptorhunt.quant_life_timeline', 'Life timeline')], ['mortality', __alloT('stem.raptorhunt.quant_life_mortality', 'First-year mortality')]];
+        return h('section', { className: 'rh-quant-explorer', 'data-life-history-explorer': 'true', 'aria-labelledby': 'rh-life-explorer-title' },
+          h('div', { className: 'rh-quant-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.quant_life_kicker', 'LIFE HISTORY / COMPARE THE PATTERNS')), h('h3', { id: 'rh-life-explorer-title' }, __alloT('stem.raptorhunt.quant_life_title', 'A lifetime, at a glance.')), h('p', null, __alloT('stem.raptorhunt.quant_life_intro', 'Explore the lab’s reference ranges for two species. Compare timing first, then switch to the vulnerable first year.'))),
+          h('div', { className: 'rh-quant-lenses', role: 'group', 'aria-label': __alloT('stem.raptorhunt.quant_life_lens', 'Life-history view') }, lensOptions.map(function(option) { return h('button', { key: option[0], type: 'button', 'aria-pressed': lens === option[0], onClick: function() { setRH({ demographicLens: option[0] }); } }, option[1]); })),
+          h('div', { className: 'rh-life-pair', 'data-life-lens': lens }, [selected, compared].map(function(index, side) {
+            var item = records[index], lifespan = firstRange(item.lifespan), maturity = firstRange(item.maturity);
+            var mortality = /%/.test(item.mortality1stYear) ? firstRange(item.mortality1stYear) : null;
+            return h('article', { key: side, className: 'rh-life-card', 'data-life-profile': side ? 'B' : 'A' },
+              h('label', { htmlFor: 'rh-life-species-' + side }, h('span', { className: 'rh-quant-letter', 'aria-hidden': 'true' }, side ? 'B' : 'A'), side ? __alloT('stem.raptorhunt.quant_life_compare', 'Compare life history with') : __alloT('stem.raptorhunt.quant_life_species', 'Life-history species')),
+              h('select', { id: 'rh-life-species-' + side, value: index, onChange: function(event) { var next = Number(event.target.value); setRH(side ? { demographicCompare: next } : { demographicSpecies: next, demographicCompare: next === compared ? selected : compared }); } }, records.map(function(record, i) { return h('option', { key: record.species, value: i, disabled: side === 1 && i === selected }, record.species); })),
+              h('h4', null, item.species),
+              lens === 'timeline' ? h('div', { className: 'rh-life-timeline' },
+                h('div', { className: 'rh-life-stage-icons' },
+                  h('span', null, __alloT('stem.raptorhunt.quant_life_illustration', 'Life stages · illustration, not an age scale')),
+                  h('svg', { viewBox: '0 0 300 70', focusable: 'false', 'aria-hidden': 'true' },
+                    h('path', { d: 'M36 47 C23 47 22 31 30 17 Q36 8 42 17 C50 31 49 47 36 47Z', fill: '#d6c4a2', stroke: '#f5e8c9' }),
+                    h('path', { d: 'M57 34 H119 M179 34 H242', stroke: '#83aa9c', strokeDasharray: '3 5', fill: 'none' }),
+                    h('path', { d: 'M132 47 Q128 25 140 22 Q151 12 158 23 L167 25 159 29 Q164 41 152 47 Z M136 42 L145 32 154 39', fill: '#a7c6b0', stroke: '#e3e8cb' }),
+                    h('path', { d: 'M241 23 L259 31 268 40 272 29 282 26 277 34 274 43 296 24 286 43 274 47 271 58 265 49 252 43Z', fill: '#bed8cb', stroke: '#f0e3ba' }))),
+                h('div', { className: 'rh-life-timeline-axis', 'aria-hidden': 'true' }, [0, 15, 30, 45, 60].map(function(age) { return h('span', { key: age, style: { left: age / 60 * 100 + '%' } }, age); })),
+                h('div', { className: 'rh-life-range-track', 'aria-hidden': 'true' },
+                  h('span', { className: 'rh-life-range-body', style: { width: Math.min(100, lifespan.high / 60 * 100) + '%' } }),
+                  lifespan.high > lifespan.low && h('span', { className: 'rh-life-range-uncertainty', style: { left: lifespan.low / 60 * 100 + '%', width: (lifespan.high - lifespan.low) / 60 * 100 + '%' } }),
+                  h('span', { className: 'rh-life-maturity-band', style: { left: maturity.low / 60 * 100 + '%', width: Math.max(1, (maturity.high - maturity.low) / 60 * 100) + '%' } }),
+                  lifespan.open && h('span', { className: 'rh-life-open-range' }, '→')),
+                h('p', { className: 'rh-quant-caption' }, __alloT('stem.raptorhunt.quant_life_axis', 'Age in years · first listed lifespan range')),
+                h('div', { className: 'rh-life-timeline-key' }, h('span', null, __alloT('stem.raptorhunt.quant_life_key_maturity', 'Gold: maturity')), h('span', null, __alloT('stem.raptorhunt.quant_life_key_range', 'Hatched: lifespan range')))) :
+                h('div', { className: 'rh-life-cohort', 'data-life-mortality': item.mortality1stYear },
+                  h('strong', { className: 'rh-life-mortality-number' }, item.mortality1stYear),
+                  mortality ? h('div', { className: 'rh-life-percent-grid', 'aria-hidden': 'true' }, Array.from({ length: 100 }, function(_, i) { return h('span', { key: i, 'data-cohort-band': i < mortality.low ? 'mortality' : i < mortality.high ? 'range' : 'remainder' }); })) : h('div', { className: 'rh-life-variable' }, __alloT('stem.raptorhunt.quant_life_variable', 'Variable in this reference. No percentage has been assumed.')),
+                  h('p', { className: 'rh-quant-caption' }, __alloT('stem.raptorhunt.quant_life_percent_key', 'Each mark is 1 percentage point, not a tracked bird. Hatched marks show the interval between the stated low and high mortality estimates.'))),
+              h('dl', { className: 'rh-life-records' }, [[__alloT('stem.raptorhunt.lifespan', 'Lifespan'), item.lifespan], [__alloT('stem.raptorhunt.maturity', 'Maturity'), item.maturity], [__alloT('stem.raptorhunt.clutch', 'Clutch'), item.clutch], [__alloT('stem.raptorhunt.fledging_rate', 'Fledging Rate'), item.fledgingRate]].map(function(metric) { return h('div', { key: metric[0] }, h('dt', null, metric[0]), h('dd', null, metric[1])); })),
+              h('p', { className: 'rh-life-note' }, item.notes));
+          })),
+          h('p', { className: 'rh-quant-source-note' }, __alloT('stem.raptorhunt.quant_life_source', 'These are the lab’s reference values, not current population estimates or forecasts. Approximate values, open ranges, breeding intervals, and captive-lifespan notes are kept as written.')));
+      }
+
       function renderDemographics() {
         var demoTab = rh.demoTab || 'life';
         function setDemoTab(t) { setRH({ demoTab: t }); }
@@ -31828,7 +32433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
+          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'group', 'aria-label': __alloT('stem.raptorhunt.quant_population_topics', 'Population topics') },
             tabs.map(function(t) {
               var active = demoTab === t.id;
               return h('button', {
@@ -31837,12 +32442,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
                   ? 'bg-teal-700 text-white'
                   : 'transition-colors text-teal-200 hover:text-white'),
-                role: 'tab',
-                'aria-selected': active
+                'aria-pressed': active
               }, t.label);
             })
           ),
-          demoTab === 'life' && h('div', { className: 'overflow-x-auto' },
+          demoTab === 'life' && h('div', { className: 'rh-life-workbench' }, renderLifeHistoryExplorer(), h('details', { className: 'rh-life-table-disclosure' }, h('summary', null, __alloT('stem.raptorhunt.quant_life_full_table', 'Open the complete reference table')), h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full text-xs', role: 'table' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-900/60 border-b border-teal-700/40' },
@@ -31871,7 +32475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 })
               )
             )
-          ),
+          ))),
           demoTab === 'concepts' && h('div', { className: 'grid md:grid-cols-2 gap-3' },
             DEMOGRAPHICS.populationConcepts.map(function(c, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-teal-700/30 rounded-lg p-3' },
@@ -34170,61 +34774,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: COMPARATIVE ANATOMY (v0.43)
       // ────────────────────────────────────────────────────────
+      function renderComparativePlate(kind, region, side) {
+        var owl = kind === 'horned' || kind === 'barred';
+        var falcon = kind === 'peregrine' || kind === 'merlin' || kind === 'kestrel';
+        var fill = kind === 'kestrel' ? '#a66945' : owl ? '#8e7860' : '#637981';
+        var ink = '#e6ddba', marks = [], titleId = 'rh-comparison-plate-' + side;
+        if (owl) {
+          marks.push(h('ellipse', { key: 'body', cx: 160, cy: 150, rx: 62, ry: 70, fill: '#b9a68b', stroke: ink, strokeWidth: 2 }));
+          if (kind === 'horned') for (var y = 126; y < 206; y += 12) marks.push(h('path', { key: y, d: 'M113 ' + y + 'Q160 ' + (y + 9) + ' 207 ' + y, fill: 'none', stroke: '#554b40', strokeWidth: 4 }));
+          else {
+            [112, 124].forEach(function(y) { marks.push(h('path', { key: y, d: 'M113 ' + y + 'Q160 ' + (y + 7) + ' 207 ' + y, fill: 'none', stroke: '#554b40', strokeWidth: 4 })); });
+            [125, 142, 160, 178, 195].forEach(function(x) { marks.push(h('path', { key: x, d: 'M' + x + ' 140L' + x + ' 203', stroke: '#554b40', strokeWidth: 4 })); });
+          }
+          marks.push(h('path', { key: 'face', d: kind === 'horned' ? 'M98 93L98 31 128 50Q160 32 192 50L222 31 222 93Q210 124 160 125Q110 124 98 93Z' : 'M99 90Q88 30 160 30Q232 30 221 90Q208 122 160 123Q112 122 99 90Z', fill: fill, stroke: ink, strokeWidth: 2 }));
+          [132, 188].forEach(function(x) { marks.push(h('ellipse', { key: 'disc' + x, cx: x, cy: 80, rx: 29, ry: 31, fill: '#d9c8a8', stroke: '#5a5546', strokeWidth: 3 }), h('circle', { key: 'eye' + x, cx: x, cy: 78, r: 11, fill: kind === 'horned' ? '#ecc64a' : '#211d1a', stroke: '#2c2a20', strokeWidth: 2 }), h('circle', { key: 'pupil' + x, cx: x, cy: 78, r: 5, fill: '#151c1c' })); });
+          marks.push(h('path', { key: 'beak', d: 'M153 90L167 90 160 107Z', fill: '#3b4036' }));
+        } else if (region === 'head') {
+          var bald = kind === 'bald', golden = kind === 'golden';
+          marks.push(h('path', { key: 'neck', d: 'M84 215L100 146Q87 76 145 45Q211 23 244 74L263 99 234 110 223 160 247 215Z', fill: bald ? '#e4e6d7' : fill, stroke: ink, strokeWidth: 2 }));
+          if (golden) marks.push(h('path', { key: 'nape', d: 'M101 152Q87 81 147 49L151 78Q112 115 131 183Z', fill: '#c4a567' }));
+          if (kind === 'cooper' || kind === 'sharp') marks.push(h('path', { key: 'cap', d: kind === 'cooper' ? 'M105 99Q111 44 170 43Q219 45 238 76L213 92 151 83Z' : 'M103 133Q86 57 160 43Q215 38 243 78L225 158 184 163 144 129Z', fill: '#374d57' }));
+          if (kind === 'peregrine' || kind === 'merlin' || kind === 'kestrel') marks.push(h('path', { key: 'malar', d: kind === 'peregrine' ? 'M183 98L208 96 202 160 179 145Z' : kind === 'kestrel' ? 'M179 98L191 97 191 150 180 142ZM145 95L155 93 156 143 145 134Z' : 'M190 99L196 99 195 132 189 126Z', fill: '#2f3940' }));
+          marks.push(h('path', { key: 'beak', d: 'M237 86L274 99Q281 113 265 127L258 109 238 108Z', fill: bald || golden ? '#d6ad57' : '#9b9f82', stroke: '#303f3c', strokeWidth: 2 }), h('ellipse', { key: 'eye', cx: 215, cy: 86, rx: 9, ry: 8, fill: '#d9ba6c', stroke: '#263b3a', strokeWidth: 2 }), h('circle', { key: 'pupil', cx: 217, cy: 86, r: 4, fill: '#182927' }));
+          if (kind === 'harrier') marks.push(h('path', { key: 'disc', d: 'M221 51Q165 40 153 87Q148 132 214 158', fill: 'none', stroke: '#c2bda5', strokeWidth: 9 }));
+        } else if (region === 'tail') {
+          for (var feather = 0; feather < 7; feather++) {
+            var x = 91 + feather * 23, tip = kind === 'cooper' ? 205 - Math.abs(feather - 3) * 13 : 200;
+            marks.push(h('path', { key: feather, d: 'M' + (142 + feather * 5) + ' 35L' + (x + 22) + ' ' + (tip - 8) + 'Q' + (x + 12) + ' ' + (tip + 8) + ' ' + x + ' ' + (tip - 5) + 'Z', fill: kind === 'redtail' ? '#b7754b' : kind === 'bald' ? '#dedfcc' : fill, stroke: '#d9d6bc', strokeWidth: 1.5 }));
+          }
+          if (kind !== 'redtail' && kind !== 'bald') [100, 128, 157].forEach(function(y) { marks.push(h('path', { key: 'band' + y, d: 'M' + (120 - (y - 100) / 3) + ' ' + y + 'L' + (204 + (y - 100) / 3) + ' ' + y, stroke: kind === 'redshoulder' ? '#ece5cb' : '#243b43', strokeWidth: 9 })); });
+        } else {
+          var wing = falcon ? 'M145 91Q96 67 19 27Q42 66 68 91Q88 117 126 132L145 123Z' : 'M145 91Q112 77 78 58L35 43Q23 38 18 47L38 66 15 56Q8 58 12 66L34 83 12 76Q7 82 14 89L37 102 18 96Q12 103 23 112L46 124Q83 145 132 141L146 121Z';
+          if (kind === 'harrier' && region === 'wings') wing = 'M146 113L23 42 44 85 129 144 148 135Z';
+          marks.push(h('path', { key: 'left', d: wing, fill: fill, stroke: ink, strokeWidth: 2 }), h('path', { key: 'right', d: wing, transform: 'translate(320 0) scale(-1 1)', fill: fill, stroke: ink, strokeWidth: 2 }));
+          [0, 1].forEach(function(flipped) { for (var feather = 0; feather < 5; feather++) marks.push(h('path', { key: 'wing-feather-' + flipped + '-' + feather, d: 'M' + (136 - feather * 5) + ' ' + (111 + feather * 5) + 'Q' + (86 - feather * 4) + ' ' + (107 - feather * 3) + ' ' + (38 + feather * 8) + ' ' + (69 + feather * 12), fill: 'none', stroke: '#c6d0b9', strokeWidth: 1.2, opacity: .65, transform: flipped ? 'translate(320 0) scale(-1 1)' : undefined })); });
+          marks.push(h('path', { key: 'tail', d: 'M145 145L133 211Q160 221 187 211L175 145Z', fill: kind === 'redtail' ? '#b7754b' : fill, stroke: ink, strokeWidth: 2 }), h('ellipse', { key: 'body', cx: 160, cy: 122, rx: 24, ry: 48, fill: '#6f7d77', stroke: ink, strokeWidth: 2 }), h('ellipse', { key: 'head', cx: 160, cy: kind === 'cooper' ? 63 : 72, rx: kind === 'cooper' ? 17 : 14, ry: 23, fill: kind === 'bald' ? '#e4e6d7' : fill, stroke: ink, strokeWidth: 2 }));
+          [143,151,160,169,177].forEach(function(x) { marks.push(h('path', { key: 'tail-feather-' + x, d: 'M160 150L' + x + ' 211', stroke: '#d3d4b9', strokeWidth: 1, opacity: .7 })); });
+          marks.push(h('path', { key: 'beak-top', d: 'M155 ' + (kind === 'cooper' ? 41 : 50) + 'L160 ' + (kind === 'cooper' ? 30 : 39) + 'L165 ' + (kind === 'cooper' ? 41 : 50), fill: '#d5b774', stroke: '#d9cc9e', strokeWidth: 1.2 }));
+          [100,114,128,142].forEach(function(y) { marks.push(h('path', { key: 'body-coverts-' + y, d: 'M145 ' + y + 'Q152 ' + (y + 8) + ' 160 ' + y + 'Q168 ' + (y + 8) + ' 175 ' + y, fill: 'none', stroke: '#b9c7ac', strokeWidth: 1.1, opacity: .6 })); });
+          if (kind === 'harrier') marks.push(h('path', { key: 'rump', d: 'M140 152Q160 163 180 152L180 167Q160 177 140 167Z', fill: '#eee9d3' }));
+          if (kind === 'redshoulder') [174, 190, 207].forEach(function(y) { marks.push(h('path', { key: y, d: 'M139 ' + y + 'L182 ' + y, stroke: '#e9e1c8', strokeWidth: 5 })); });
+        }
+        return h('svg', { viewBox: '0 0 320 240', role: 'img', 'aria-labelledby': titleId, focusable: 'false', 'data-comparative-plate': kind, 'data-comparative-region': region }, h('title', { id: titleId }, __alloT('stem.raptorhunt.compare_plate_title', 'Simplified field-mark illustration; not a photograph or size scale')), h('path', { d: 'M20 26H300M20 220H300M160 16V229', stroke: '#57766e', strokeDasharray: '2 6', fill: 'none' }), marks);
+      }
+
       function renderComparative() {
-        var pairIdx = rh.comparativePair == null ? 0 : rh.comparativePair;
-        function setPairIdx(i) { setRH({ comparativePair: i }); }
-        var p = COMPARATIVE_ANATOMY.pairs[pairIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-pink-900/40 to-purple-900/40 border border-pink-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '⚖'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-pink-200 tracking-tight' }, __alloT('stem.raptorhunt.comparative_anatomy_2', 'Comparative Anatomy')),
-                h('div', { className: 'text-sm text-pink-100/85 mt-1' }, COMPARATIVE_ANATOMY.intro)
-              )
-            )
-          ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            COMPARATIVE_ANATOMY.pairs.map(function(pair, i) {
-              var sel = pairIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setPairIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-pink-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-pink-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, pair.a.split(' ')[0] + ' vs ' + pair.b.split(' ')[0]);
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-center text-lg font-bold tracking-tight' },
-              h('span', { className: 'text-amber-300' }, p.a),
-              h('span', { className: 'text-slate-400 mx-2' }, 'vs'),
-              h('span', { className: 'text-cyan-300' }, p.b)
-            ),
-            h('table', { className: 'w-full text-xs' },
-              h('thead', null,
-                h('tr', { className: 'border-b border-pink-700/40' },
-                  h('th', { scope: 'col', className: 'p-2 text-left text-pink-300' }, __alloT('stem.raptorhunt.feature', 'Feature')),
-                  h('th', { scope: 'col', className: 'p-2 text-left text-amber-300' }, p.a),
-                  h('th', { scope: 'col', className: 'p-2 text-left text-cyan-300' }, p.b)
-                )
-              ),
-              h('tbody', null,
-                p.features.map(function(f, i) {
-                  return h('tr', { key: i, className: 'border-b border-slate-700/40 ' + (i % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-900/30') },
-                    h('td', { className: 'p-2 font-bold text-pink-300' }, f.feature),
-                    h('td', { className: 'p-2 text-amber-100' }, f.a),
-                    h('td', { className: 'p-2 text-cyan-100' }, f.b)
-                  );
-                })
-              )
-            ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.key_diagnostic', '🔑 Key Diagnostic')),
-              h('div', { className: 'text-sm text-emerald-100/90 italic leading-relaxed' }, p.keyDiagnostic)
-            )
-          )
-        );
+        var pairIdx = Number.isInteger(rh.comparativePair) && COMPARATIVE_ANATOMY.pairs[rh.comparativePair] ? rh.comparativePair : 0;
+        var pair = COMPARATIVE_ANATOMY.pairs[pairIdx];
+        var chosen = (rh.comparativeFeatures || {})[pairIdx] || 0;
+        if (!pair.features[chosen]) chosen = 0;
+        var feature = pair.features[chosen], featureName = feature.feature.toLowerCase();
+        var sizeRanges = featureName === 'size' ? [feature.a, feature.b].map(function(value) { var match = value.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*cm/); return match ? { low: Number(match[1]), high: Number(match[2]), label: value } : null; }) : null;
+        var region = /ear|eye|head|mustache|face/.test(featureName) ? 'head' : /rump/.test(featureName) ? 'rump' : /tail/.test(featureName) ? 'tail' : /wing|shape/.test(featureName) ? 'wings' : /belly/.test(featureName) ? 'body' : 'overview';
+        var kinds = [['cooper', 'sharp'], ['bald', 'golden'], ['redtail', 'redshoulder'], ['horned', 'barred'], ['peregrine', 'merlin'], ['kestrel', 'sharp'], ['harrier', 'cooper']][pairIdx];
+        var evidence = ((rh.comparativeEvidence || {})[pairIdx] || []).filter(function(index) { return !!pair.features[index]; });
+        var pinned = evidence.indexOf(chosen) >= 0;
+        function setFeature(index) { setRH(function(current) { var choices = Object.assign({}, current.comparativeFeatures || {}); choices[pairIdx] = index; return Object.assign({}, current, { comparativeFeatures: choices }); }); }
+        function toggleEvidence() { setRH(function(current) { var all = Object.assign({}, current.comparativeEvidence || {}), list = (all[pairIdx] || []).slice(); var index = list.indexOf(chosen); if (index >= 0) list.splice(index, 1); else list.push(chosen); all[pairIdx] = list; return Object.assign({}, current, { comparativeEvidence: all }); }); }
+        return h('section', { className: 'rh-quant-explorer rh-compare-workbench', 'data-raptor-comparative-workbench': 'true', 'data-comparative-pair': pairIdx, 'data-comparative-feature': chosen, 'aria-labelledby': 'rh-compare-title' },
+          h('div', { className: 'rh-quant-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.compare_kicker', 'DIAGNOSTIC STUDIO / BUILD A CASE')), h('h3', { id: 'rh-compare-title' }, __alloT('stem.raptorhunt.compare_title', 'Look closer. Compare the evidence.')), h('p', null, __alloT('stem.raptorhunt.compare_intro', 'Explore one trait at a time, then save several clues to your evidence basket. Reliable identification combines structure, plumage, behavior, and context.'))),
+          h('div', { className: 'rh-investigation-select' }, h('label', { htmlFor: 'rh-compare-pair' }, __alloT('stem.raptorhunt.compare_pair', 'Choose a comparison pair')), h('select', { id: 'rh-compare-pair', value: pairIdx, onChange: function(event) { setRH({ comparativePair: Number(event.target.value) }); } }, COMPARATIVE_ANATOMY.pairs.map(function(record, index) { return h('option', { key: index, value: index }, record.a + ' / ' + record.b); }))),
+          h('div', { className: 'rh-compare-traits', role: 'group', 'aria-label': __alloT('stem.raptorhunt.compare_trait', 'Inspect a comparison trait') }, pair.features.map(function(item, index) { return h('button', { key: index, type: 'button', 'aria-pressed': chosen === index, 'data-comparative-trait': index, onClick: function() { setFeature(index); } }, item.feature, evidence.indexOf(index) >= 0 && h('span', { 'aria-hidden': 'true' }, ' ✓')); })),
+          sizeRanges && h('div', { className: 'rh-compare-size-panel', 'data-comparative-size-ranges': 'true' }, h('h4', null, __alloT('stem.raptorhunt.compare_size_title', 'Reference body-length ranges')), sizeRanges.every(Boolean) ? h('div', null,
+            h('div', { className: 'rh-compare-size-axis', 'aria-hidden': 'true' }, [0,20,40,60,80].map(function(value) { return h('span', { key: value, style: { left: value / 80 * 100 + '%' } }, value); })),
+            sizeRanges.map(function(range, side) { return h('div', { key: side, className: 'rh-compare-size-row', 'data-size-range': side ? 'B' : 'A', 'data-size-low': range.low, 'data-size-high': range.high }, h('div', { className: 'rh-compare-size-label' }, h('strong', null, side ? pair.b : pair.a), h('span', null, range.label)), h('div', { className: 'rh-compare-size-track', 'aria-hidden': 'true' }, h('span', { style: { left: range.low / 80 * 100 + '%', width: (range.high - range.low) / 80 * 100 + '%' } }))); }),
+            h('p', null, __alloT('stem.raptorhunt.compare_size_scale', 'Bars share a 0–80 cm scale and preserve the lab’s listed ranges. They are not limits for every age, sex, or individual. Illustrations below are not to scale.'))) : h('p', null, __alloT('stem.raptorhunt.compare_size_qualitative', 'This reference gives a qualitative size comparison, not numeric length ranges. No measurements have been invented for the illustrations.'))),
+          h('div', { className: 'rh-compare-pair' }, [0, 1].map(function(side) { return h('article', { key: side, className: 'rh-compare-specimen', 'data-comparative-side': side ? 'B' : 'A' }, h('div', { className: 'rh-compare-specimen-head' }, h('span', { className: 'rh-quant-letter' }, side ? 'B' : 'A'), h('h4', null, side ? pair.b : pair.a)), h('div', { className: 'rh-compare-art' }, renderComparativePlate(kinds[side], region, side)), h('div', { className: 'rh-compare-observation' }, h('span', null, feature.feature), h('p', null, side ? feature.b : feature.a))); })),
+          h('div', { className: 'rh-compare-evidence' },
+            h('div', { className: 'rh-compare-current' }, h('strong', null, __alloT('stem.raptorhunt.compare_read_together', 'Read the clues together')), h('p', null, pair.keyDiagnostic), h('button', { type: 'button', 'data-comparative-pin': 'true', 'aria-pressed': pinned, onClick: toggleEvidence }, pinned ? __alloT('stem.raptorhunt.compare_remove', 'Remove this trait from evidence') : __alloT('stem.raptorhunt.compare_save', 'Save this trait as evidence'))),
+            h('div', { className: 'rh-compare-basket', 'data-comparative-evidence': evidence.length }, h('h4', null, __alloT('stem.raptorhunt.compare_basket', 'Evidence basket')), evidence.length ? h('ul', null, evidence.map(function(index) { return h('li', { key: index }, h('strong', null, pair.features[index].feature), h('span', null, 'A · ' + pair.features[index].a), h('span', null, 'B · ' + pair.features[index].b)); })) : h('p', null, __alloT('stem.raptorhunt.compare_empty', 'Save useful traits here to compare several clues. This is your observation record, not an identification score.')))),
+          h('details', { className: 'rh-investigation-reference' }, h('summary', null, __alloT('stem.raptorhunt.compare_table', 'Open all comparison traits')), h('div', { className: 'rh-investigation-table-scroll' }, h('table', null, h('thead', null, h('tr', null, h('th', { scope: 'col' }, __alloT('stem.raptorhunt.feature', 'Feature')), h('th', { scope: 'col' }, pair.a), h('th', { scope: 'col' }, pair.b))), h('tbody', null, pair.features.map(function(item) { return h('tr', { key: item.feature }, h('th', { scope: 'row' }, item.feature), h('td', null, item.a), h('td', null, item.b)); }))))),
+          h('p', { className: 'rh-quant-source-note' }, __alloT('stem.raptorhunt.compare_caution', 'These schematic plates isolate selected field marks and are not drawn to a shared size scale. Age, sex, posture, light, and individual variation can change appearance. A single mark rarely settles an identification.')));
       }
 
       // ────────────────────────────────────────────────────────
@@ -35364,73 +35984,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: RAPTOR MATH LAB (v0.45)
       // ────────────────────────────────────────────────────────
       function renderMathLab() {
-        var mathIdx = rh.mathIdx == null ? 0 : rh.mathIdx;
-        function setMathIdx(i) { setRH({ mathIdx: i }); }
-        var mathReveal = rh.mathReveal || {};
-        function toggleRev() {
-          var newR = Object.assign({}, mathReveal);
-          newR[mathIdx] = !newR[mathIdx];
-          setRH({ mathReveal: newR });
+        var problems = MATH_LAB.problems;
+        var mathIdx = Number.isInteger(rh.mathIdx) && problems[rh.mathIdx] ? rh.mathIdx : 0;
+        var category = rh.mathCategory || 'all';
+        var categories = problems.map(function(p) { return p.category; }).filter(function(value, index, list) { return list.indexOf(value) === index; });
+        if (category !== 'all' && categories.indexOf(category) < 0) category = 'all';
+        var filtered = problems.map(function(p, index) { return { problem: p, index: index }; }).filter(function(entry) { return category === 'all' || entry.problem.category === category; });
+        if (!filtered.some(function(entry) { return entry.index === mathIdx; })) mathIdx = filtered[0].index;
+        var p = problems[mathIdx], work = (rh.mathWorkings || {})[mathIdx] || {};
+        var stage = Math.max(0, Math.min(3, Number((rh.mathSteps || {})[mathIdx] == null ? (rh.mathReveal || {})[mathIdx] ? 3 : 0 : rh.mathSteps[mathIdx]) || 0));
+        var reviewed = !!work.reviewed;
+        var reviewable = stage === 3 && String(work.prediction || '').trim().length > 0;
+        var reviewedCount = problems.filter(function(_, index) { return !!((rh.mathWorkings || {})[index] || {}).reviewed; }).length;
+        function updateWork(change) {
+          setRH(function(current) {
+            var workings = Object.assign({}, current.mathWorkings || {});
+            workings[mathIdx] = Object.assign({}, workings[mathIdx] || {}, change);
+            return Object.assign({}, current, { mathWorkings: workings });
+          });
         }
-        var p = MATH_LAB.problems[mathIdx];
-        var revealed = mathReveal[mathIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🧮'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_math_lab_2', 'Raptor Math Lab')),
-                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, MATH_LAB.intro)
-              )
-            )
-          ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            MATH_LAB.problems.map(function(pr, i) {
-              var sel = mathIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setMathIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, '#' + (i + 1));
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-xs uppercase font-mono text-cyan-300' }, '📊 ' + p.category),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.problem', '❓ Problem')),
-              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, p.problem)
-            ),
-            !revealed && h('button', {
-              onClick: toggleRev,
-              className: 'w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold',
-              'aria-label': __alloT('stem.raptorhunt.reveal_solution', 'Reveal solution')
-            }, __alloT('stem.raptorhunt.reveal_solution_2', '🔓 Reveal Solution')),
-            revealed && h('div', { className: 'space-y-2' },
-              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.approach', '🛤 Approach')),
-                h('div', { className: 'text-cyan-100/90' }, p.approach)
-              ),
-              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.calculation', '🔢 Calculation')),
-                h('div', { className: 'text-emerald-100/90 font-mono' }, p.calc)
-              ),
-              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.answer_3', '✅ Answer')),
-                h('div', { className: 'text-amber-100/90 font-bold' }, p.answer)
-              ),
-              h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.interpretation', '💡 Interpretation')),
-                h('div', { className: 'text-purple-100/90 italic leading-relaxed' }, p.interpretation)
-              ),
-              h('button', {
-                onClick: toggleRev,
-                className: 'transition-colors text-xs text-blue-300 hover:text-blue-200',
-                'aria-label': __alloT('stem.raptorhunt.hide_solution', 'Hide solution')
-              }, __alloT('stem.raptorhunt.hide', '🔒 Hide'))
-            )
-          )
-        );
+        function setStage(next, control) {
+          var workbook = control && control.closest('[data-raptor-math-workbook]');
+          setRH(function(current) {
+            var stages = Object.assign({}, current.mathSteps || {}), revealed = Object.assign({}, current.mathReveal || {});
+            stages[mathIdx] = next; revealed[mathIdx] = next === 3;
+            return Object.assign({}, current, { mathSteps: stages, mathReveal: revealed });
+          });
+          if (workbook && (next === 0 || next === 3)) window.setTimeout(function() {
+            var target = workbook.querySelector(next === 3 ? '[data-math-solution="answer"]' : '.rh-math-next');
+            if (target && target.isConnected) target.focus();
+          }, 0);
+        }
+        var steps = [__alloT('stem.raptorhunt.quant_math_read', 'Read'), __alloT('stem.raptorhunt.quant_math_plan', 'Plan'), __alloT('stem.raptorhunt.quant_math_calculate', 'Calculate'), __alloT('stem.raptorhunt.quant_math_review', 'Review')];
+        return h('section', { className: 'rh-quant-explorer rh-math-workbook', 'data-raptor-math-workbook': 'true', 'data-math-problem': mathIdx + 1, 'data-math-stage': stage, 'aria-labelledby': 'rh-math-title' },
+          h('div', { className: 'rh-quant-heading rh-math-heading' },
+            h('div', null, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.quant_math_kicker', 'FIELD NOTEBOOK / THINK WITH NUMBERS')), h('h3', { id: 'rh-math-title' }, __alloT('stem.raptorhunt.raptor_math_lab_2', 'Raptor Math Lab')), h('p', null, __alloT('stem.raptorhunt.quant_math_intro', 'Make a prediction, record your reasoning, then open the worked solution one step at a time.'))),
+            h('div', { className: 'rh-math-tally' }, h('strong', null, reviewedCount + ' / ' + problems.length), h('span', null, __alloT('stem.raptorhunt.quant_math_self_reviewed', 'self-reviewed')))),
+          h('div', { className: 'rh-math-selectors' },
+            h('div', null, h('label', { htmlFor: 'rh-math-category' }, __alloT('stem.raptorhunt.quant_math_category', 'Exercise topic')), h('select', { id: 'rh-math-category', value: category, onChange: function(event) { var next = event.target.value; var first = problems.findIndex(function(problem) { return next === 'all' || problem.category === next; }); setRH({ mathCategory: next, mathIdx: first }); } }, h('option', { value: 'all' }, __alloT('stem.raptorhunt.quant_math_all', 'All exercises')), categories.map(function(value) { return h('option', { key: value, value: value }, value); }))),
+            h('div', null, h('label', { htmlFor: 'rh-math-problem' }, __alloT('stem.raptorhunt.quant_math_exercise', 'Choose an exercise')), h('select', { id: 'rh-math-problem', value: mathIdx, onChange: function(event) { setRH({ mathIdx: Number(event.target.value) }); } }, filtered.map(function(entry) { return h('option', { key: entry.index, value: entry.index }, '#' + (entry.index + 1) + ' · ' + entry.problem.category); })))),
+          h('ol', { className: 'rh-math-step-rail', 'aria-label': __alloT('stem.raptorhunt.quant_math_steps', 'Worked solution steps') }, steps.map(function(label, index) { return h('li', { key: index, 'data-step-open': index <= stage, 'aria-current': index === stage ? 'step' : undefined }, h('span', { 'aria-hidden': 'true' }, String(index + 1).padStart(2, '0')), label); })),
+          h('div', { className: 'rh-math-bench' },
+            h('article', { className: 'rh-math-question' },
+              h('span', { className: 'rh-quant-kicker' }, '#' + (mathIdx + 1) + ' / ' + p.category),
+              h('h4', null, __alloT('stem.raptorhunt.problem', '❓ Problem')),
+              h('p', { className: 'rh-math-problem-copy' }, p.problem),
+              h('div', { className: 'rh-math-diagram', 'aria-hidden': 'true' }, h('span', null, 'x'), h('svg', { viewBox: '0 0 160 54', focusable: 'false' }, h('path', { d: 'M5 27H65M65 27L57 19M65 27L57 35M90 27H151M151 27L143 19M151 27L143 35', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }), h('circle', { cx: 78, cy: 27, r: 9, fill: 'none', stroke: 'currentColor', strokeWidth: 2 })), h('span', null, '?')),
+              h('p', { className: 'rh-quant-caption' }, __alloT('stem.raptorhunt.quant_math_assumptions', 'Use the supplied exercise values as simplified assumptions. A mathematical result alone does not establish what happens in the wild.'))),
+            h('div', { className: 'rh-math-notebook' },
+              h('h4', null, __alloT('stem.raptorhunt.quant_math_notebook', 'Your field notebook')),
+              h('label', { htmlFor: 'rh-math-prediction' }, __alloT('stem.raptorhunt.quant_math_prediction', 'My prediction or answer')),
+              h('textarea', { id: 'rh-math-prediction', rows: 2, maxLength: 500, value: work.prediction || '', onChange: function(event) { updateWork({ prediction: event.target.value, reviewed: false }); } }),
+              h('label', { htmlFor: 'rh-math-reasoning' }, __alloT('stem.raptorhunt.quant_math_reasoning', 'My reasoning, units, and assumptions')),
+              h('textarea', { id: 'rh-math-reasoning', rows: 3, maxLength: 2000, value: work.reasoning || '', onChange: function(event) { updateWork({ reasoning: event.target.value, reviewed: false }); } }),
+              h('p', { className: 'rh-quant-caption' }, __alloT('stem.raptorhunt.quant_math_saved', 'Notes stay with this exercise when you switch topics. They are not automatically graded.')))),
+          h('div', { className: 'rh-math-scaffold', id: 'rh-math-scaffold' },
+            stage >= 1 && h('article', { 'data-math-solution': 'approach' }, h('span', { className: 'rh-quant-letter', 'aria-hidden': 'true' }, '02'), h('div', null, h('h4', null, __alloT('stem.raptorhunt.approach', '🛤 Approach')), h('p', null, p.approach))),
+            stage >= 2 && h('article', { 'data-math-solution': 'calculation' }, h('span', { className: 'rh-quant-letter', 'aria-hidden': 'true' }, '03'), h('div', null, h('h4', null, __alloT('stem.raptorhunt.calculation', '🔢 Calculation')), h('p', { className: 'rh-math-equation' }, p.calc))),
+            stage >= 3 && h('article', { 'data-math-solution': 'answer', tabIndex: -1 }, h('span', { className: 'rh-quant-letter', 'aria-hidden': 'true' }, '04'), h('div', null, h('h4', null, __alloT('stem.raptorhunt.answer_3', '✅ Answer')), h('strong', { className: 'rh-math-answer' }, p.answer), h('h4', null, __alloT('stem.raptorhunt.interpretation', '💡 Interpretation')), h('p', null, p.interpretation)))),
+          h('div', { className: 'rh-math-actions' },
+            stage < 3 && h('button', { type: 'button', className: 'rh-math-next', 'aria-controls': 'rh-math-scaffold', onClick: function(event) { setStage(stage + 1, event.currentTarget); } }, stage === 0 ? __alloT('stem.raptorhunt.quant_math_open_plan', 'Show the approach') : stage === 1 ? __alloT('stem.raptorhunt.quant_math_open_calc', 'Show the calculation') : __alloT('stem.raptorhunt.quant_math_open_answer', 'Show answer and interpretation')),
+            stage > 0 && h('button', { type: 'button', onClick: function(event) { setStage(0, event.currentTarget); } }, __alloT('stem.raptorhunt.hide_solution', 'Hide solution')),
+            h('button', { type: 'button', 'data-math-review': 'true', 'aria-pressed': reviewed, disabled: !reviewable && !reviewed, onClick: function() { updateWork({ reviewed: !reviewed }); } }, reviewed ? __alloT('stem.raptorhunt.quant_math_reviewed', 'Self-review recorded') : __alloT('stem.raptorhunt.quant_math_mark_reviewed', 'I compared my answer'))),
+          h('p', { className: 'rh-quant-source-note', role: 'status' }, reviewed ? __alloT('stem.raptorhunt.quant_math_reviewed_note', 'You recorded a self-review. Editing your notes clears this mark so you can review your revision.') : __alloT('stem.raptorhunt.quant_math_review_help', 'Write a prediction and reveal all three solution steps to record a self-review. This mark reflects your reflection, not a score.')));
       }
 
       // ────────────────────────────────────────────────────────
@@ -38614,8 +39230,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               },
               {
                 id: 'mp7', topic: '🪝 Pressure ratio',
-                problem: 'A golden eagle has talon grip force of 750 psi. A meadow vole has cranial crush threshold of ~25 psi. Calculate the grip:crush ratio. What does this tell you about lethality?',
-                solution: 'Ratio = 750 / 25 = 30×. The golden eagle\'s grip exceeds the vole\'s crush threshold by 30-fold — instant kill, no struggle. For comparison, a human grip (80 psi) on a vole skull = 3.2× — would still crush but with some resistance. The 30× margin explains why eagle predation on small mammals is essentially never witnessed as "struggle" — the strike + grip is the kill.'
+                problem: 'In an authored contact experiment, 40 N of normal force acts over 20 mm². Calculate the mean pressure. Then halve the area while keeping force fixed. What changes?',
+                solution: 'Initially P = 40 N ÷ 20 mm² = 2 N/mm² = 2 MPa. With 10 mm², P = 4 MPa. Mean pressure doubles. These exercise inputs do not measure a species or predict tissue damage; real curved contacts have nonuniform pressure.'
               },
               {
                 id: 'mp8', topic: '🌀 Time to terminal',
@@ -39321,7 +39937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var activeSectionHint = {
         roster: __alloT('stem.raptorhunt.section_hint_roster', 'Compare field marks and physical traits before you fly.'),
         hunt: __alloT('stem.raptorhunt.section_hint_hunt', 'Choose a species, then build a controlled stoop from search to strike.'),
-        talons: __alloT('stem.raptorhunt.section_hint_talons', 'Test grip force against the geometry and toughness of prey.'),
+        talons: 'Change force and contact area, then pin a footprint to test the mean-pressure relationship.',
         vision: __alloT('stem.raptorhunt.section_hint_vision', 'See how acuity, foveae, and binocular overlap shape a hunt.'),
         flight: __alloT('stem.raptorhunt.section_hint_flight', 'Map wing loading and aspect ratio to the way a raptor moves.'),
         stoop: __alloT('stem.raptorhunt.section_hint_stoop', 'Tune the variables behind a high-speed dive and read the trade-offs.'),

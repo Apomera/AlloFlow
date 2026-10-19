@@ -1458,6 +1458,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_magnetism.js',
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
+    'stem_lab/stem_data_skyschool_geo.js',
     'stem_lab/stem_tool_flightsim.js',
     // atcTower entry moved to the catch-up batch below; the on-disk + git filename is LOWERCASE
     // stem_tool_atctower.js (a camelCase entry 404s on case-sensitive CDNs — audit B5, 2026-06-28).
@@ -1472,6 +1473,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
     'stem_lab/stem_tool_butterfly.js',
+    'stem_lab/stem_tool_coralreef.js',
     'stem_lab/stem_tool_spacecolony.js',
     'stem_lab/stem_tool_spacestation.js',
     'stem_lab/stem_tool_coasterlab.js',
@@ -2579,6 +2581,19 @@ content = content.replace(PLUGIN_VERSION_RE, () => {
     return `var pluginCdnVersion = '${version}'`;
 });
 
+// Plugin data listed in pluginContentPins is pinned by CONTENT hash (sha256-8, as
+// contentHashPin): an unchanged multi-megabyte file keeps one cacheable URL across
+// deploys, and any change is a new URL (the app service worker caches pinned URLs).
+const PLUGIN_CONTENT_PINS_RE = /var pluginContentPins = \{[^}]*\}/;
+if (!PLUGIN_CONTENT_PINS_RE.test(content)) {
+    console.warn('⚠️  pluginContentPins not found; plugin data files fall back to pluginCdnVersion.');
+}
+content = content.replace(PLUGIN_CONTENT_PINS_RE, (block) => block.replace(/'([^']+)': '[^']*'/g, (entry, file) => {
+    const pin = createHash('sha256').update(fs.readFileSync(path.join(ROOT, file))).digest('hex').slice(0, 8);
+    console.log(`  ✏️  ${file}: content pin → ${pin}`);
+    return `'${file}': '${pin}'`;
+}));
+
 if (pluginReplaced) {
     replacementCount++;
     console.log(`  📦 Plugin files managed: ${PLUGIN_FILES.join(', ')}`);
@@ -2683,6 +2698,11 @@ if (dryRun) {
         'stem_lab/birdlab_3d_wildlife.js',
         'stem_lab/birdlab_3d_mammals.js',
         'stem_lab/birdlab_3d_engine.js',
+        // Coral Reef Survey Lab loads its 3D dive companions on demand.
+        'stem_lab/reef_3d_habitat.js',
+        'stem_lab/reef_3d_engine.js',
+        'stem_lab/reef_3d_species.js',
+        'stem_lab/reef_3d_explore.js',
         // Lazy-loaded visual coding runtime (self-hosted for offline/CSP use)
         'stem_lab/blockly_runtime.bundle.js'
     ];

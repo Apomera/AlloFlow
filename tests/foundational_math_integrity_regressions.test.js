@@ -57,17 +57,19 @@ describe('Area Model active representation and progress integrity', () => {
     document.body.innerHTML = renderTool('areamodel', {
       _areamodel: { viewMode: 'multidigit', dims: { rows: 4, cols: 6 }, multiDims: { a: 23, b: 14 } },
     });
+    // f238731dd (2026-09-05) reduced the hero to one equation line (the mini grid and its
+    // "rows by columns" caption were removed); it must still show the ACTIVE mode's factors.
     let hero = document.querySelector('[data-areamodel-focus]');
-    expect(hero.querySelector('h3').textContent).toBe('23 × 14 = 322');
-    expect(hero.textContent).toContain('23 rows by 14 columns');
+    expect(hero.getAttribute('id')).toBe('stem-areamodel-panel-multidigit');
+    expect(hero.querySelector('p').textContent).toBe('23 × 14 = 322');
     expect(hero.textContent).not.toContain('4 × 6 = 24');
 
     document.body.innerHTML = renderTool('areamodel', {
       _areamodel: { viewMode: 'word', dims: { rows: 4, cols: 6 }, wordDims: { a: 7, b: 8 } },
     });
     hero = document.querySelector('[data-areamodel-focus]');
-    expect(hero.querySelector('h3').textContent).toBe('7 × 8 = 56');
-    expect(hero.textContent).toContain('7 rows by 8 columns');
+    expect(hero.querySelector('p').textContent).toBe('7 × 8 = 56');
+    expect(hero.textContent).not.toContain('4 × 6 = 24');
   });
 
   it('compares area with the full perimeter in Area Discovery', () => {

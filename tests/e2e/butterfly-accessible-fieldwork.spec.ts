@@ -54,7 +54,14 @@ for(const fallback of [false,true])test('keyboard fieldwork without flight prese
  expect(await page.locator('meter').getAttribute('value')).toBe('100');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
  await audit(page);
- if(fallback){await page.evaluate(()=>{const w=window as any;w.__ctx.isDark=true;w.__ctx.isContrast=true;w.__rerender();});await audit(page);}
+ if(fallback){
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isDark=true;w.__ctx.isContrast=true;w.__rerender();});
+  // React commits asynchronously. Audit one settled theme, rather than caching
+  // the light backgrounds before the high-contrast text has committed.
+  await expect(page.locator('.bfl')).toHaveAttribute('data-contrast','true');
+  await expect(page.locator('.bfl')).toHaveCSS('background-color','rgb(0, 0, 0)');
+  await audit(page);
+ }
  expect(errors).toEqual([]);
 });
 

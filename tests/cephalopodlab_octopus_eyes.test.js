@@ -40,8 +40,10 @@ describe('Benthic octopus curved eye surfaces',()=>{
   it('uses finite outward cap geometry with bounded eye draw calls and triangles',()=>{
     const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),cross=new THREE.Vector3(),normal=new THREE.Vector3();
     for(const id of ids){const animal=rig(id),all=eyes(animal);expect(all,id).toHaveLength(8);
-      expect(all.reduce((sum,o)=>sum+o.geometry.attributes.position.count,0)).toBe(2040);
-      expect(all.reduce((sum,o)=>sum+o.geometry.index.count/3,0)).toBe(3408);
+      // Pass74 (f7b4d993f) seats reef species' eyes in a lighter orbital hood; blue-ringed keeps the round socket.
+      const reefHood=id!=='blueRinged';
+      expect(all.reduce((sum,o)=>sum+o.geometry.attributes.position.count,0)).toBe(reefHood?1916:2040);
+      expect(all.reduce((sum,o)=>sum+o.geometry.index.count/3,0)).toBe(reefHood?3248:3408);
       for(const mesh of all){const p=mesh.geometry.attributes.position,n=mesh.geometry.attributes.normal;
         expect(Array.from(p.array).every(Number.isFinite)).toBe(true);expect(Array.from(n.array).every(Number.isFinite)).toBe(true);
         for(let i=0;i<n.count;i++)expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i)),id+' '+mesh.name).toBeCloseTo(1,5);
@@ -60,7 +62,9 @@ describe('Benthic octopus curved eye surfaces',()=>{
         const bounds=new THREE.Box3().setFromPoints(a),center=bounds.getCenter(new THREE.Vector3());expect(center.y).toBeCloseTo(.075*animal.scale,6);expect(center.z).toBeCloseTo(.430*animal.scale,6);
       }
       for(const socket of pair(animal,'cl-eye-rim')){expect(Math.abs(socket.position.x)).toBeCloseTo(.310*animal.scale,8);expect(socket.position.y).toBeCloseTo(.075*animal.scale,8);expect(socket.position.z).toBeCloseTo(.410*animal.scale,8);}
-      const compatibility=animal.root.children.filter(o=>o.name==='cl-eye-highlight');expect(compatibility).toHaveLength(2);expect(compatibility.every(o=>o.isGroup&&o.children.length===1&&o.children[0].name==='cl-eye-lid')).toBe(true);
+      // Pass73 re-parents benthic body parts, eyes included, under one refuge frame.
+      const frame=animal.root.getObjectByName('cl-crevice-body');expect(frame&&frame.parent).toBe(animal.root);
+      const compatibility=frame.children.filter(o=>o.name==='cl-eye-highlight');expect(compatibility).toHaveLength(2);expect(compatibility.every(o=>o.isGroup&&o.children.length===1&&o.children[0].name==='cl-eye-lid')).toBe(true);
     }
   });
 
@@ -91,7 +95,7 @@ describe('Benthic octopus curved eye surfaces',()=>{
   it('uses shared linear dark pupil materials and a separate clock-free bundled shader hook',()=>{
     for(const id of ids){const animal=rig(id),[left,right]=pair(animal,'cl-pupil'),material=left.material;
       expect(material).toBe(right.material);expect(material.name).toBe('cl-octopus-pupil-material');expect(material.isMeshPhysicalMaterial).toBe(true);expect(Math.max(...material.color.toArray())).toBeLessThan(.004);expect(material.emissive.getHex()).toBe(0);expect(material.transparent).toBe(false);
-      const shader={fragmentShader:THREE.ShaderLib.physical.fragmentShader};material.onBeforeCompile(shader);expect(shader.fragmentShader.match(/vec3 clOctoEyeN=/g)).toHaveLength(1);expect(material.customProgramCacheKey()).toBe('cl-octopus-pupil-water-v13');expect(shader.fragmentShader).not.toMatch(/clPhase|clTime|clOctoEyeTime/);
+      const shader={fragmentShader:THREE.ShaderLib.physical.fragmentShader};material.onBeforeCompile(shader);expect(shader.fragmentShader.match(/vec3 clOctoEyeN=/g)).toHaveLength(1);expect(material.customProgramCacheKey()).toBe(id==='blueRinged'?'cl-octopus-pupil-water-v13':'cl-reef-octopus-pupil-depth-v1');expect(shader.fragmentShader).not.toMatch(/clPhase|clTime|clOctoEyeTime/);
       const irises=pair(animal,'cl-iris');expect(irises[0].material).toBe(irises[1].material);expect(irises[0].material.name).toBe('cl-octopus-iris-material');expect(irises[0].material.vertexColors).toBe(true);expect(Array.from(irises[0].geometry.attributes.color.array).every(v=>Number.isFinite(v)&&v>0&&v<1)).toBe(true);
       expect(pair(animal,'cl-eye-lid').every(o=>o.material===animal.mantleMat)).toBe(true);
     }

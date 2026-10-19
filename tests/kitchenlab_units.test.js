@@ -157,11 +157,11 @@ describe('°C mode across the tool', () => {
     expect(html).toMatch(/data-kl-replay="\d+,\d+"/);
     const text = strip(html);
     expect(text).toContain('Your cook, one thing changed');
-    expect(text).toContain('logged every move you made (10 of them, in 2:00)');
+    expect(text).toContain('recorded decisions (10 observations and actions over 2:00)');
     expect(text).toContain('With never stir + fold:');
     expect(text).toContain('Left alone');
-    expect(text).toContain('Replayed as you cooked it, the engine gives 100.');
-    expect(text).toContain('137°C');            // your pan peak 278°F in the numbers table
+    expect(text).toContain('Your recorded score remains 100. The unchanged replay scores 100.');
+    expect(text).toContain('A · unchanged replay');
     expect(html).toContain('data-kl-replay-live="1"');
     expect(fCount(text)).toBe(1);
     // the same choice as the cook says so instead of running

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ያለውን የበረራ ሁኔታ ይጠብቁ",
+  "stem.flightsim.flight_assistance_targets": "አቅጣጫ {hdg}° · ከፍታ {alt} ft MSL · ፍጥነት {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "አቅጣጫ {hdg}° · ከፍታ {alt} ft MSL · ወደ ፊት የሚደረግ እንቅስቃሴ ፍጥነት {spd} kt",
+  "stem.flightsim.challenge_turn_left": "ወደ {airport} በግራ {degrees}° ይታጠፉ።",
+  "stem.flightsim.challenge_turn_right": "ወደ {airport} በቀኝ {degrees}° ይታጠፉ።",
+  "stem.flightsim.challenge_course_aligned": "ወደ {airport} እያመሩ ነው። የመስመሩን ምልክት ይከተሉ።",
+  "stem.flightsim.challenge_runway_reference": "የልምምድ ማኮብኮቢያ መንገድ {runway}፦ አቅጣጫ {heading}°። ለማረፍ ከመውረድዎ በፊት አውሮፕላኑን ከማኮብኮቢያ መንገዱ ጋር ያስተካክሉ።"
+}

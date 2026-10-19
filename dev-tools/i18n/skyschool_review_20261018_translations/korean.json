@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "이전 퀴즈 응시 기록",
+  "stem.flightsim.quiz_history_scope": "새 응시를 시작하면 첫 답변이 기록된 이전 응시를 최대 네 번까지 저장합니다. 기록을 검토해도 현재 퀴즈는 바뀌지 않습니다.",
+  "stem.flightsim.quiz_history_empty": "아직 저장된 이전 퀴즈 응시 기록이 없습니다.",
+  "stem.flightsim.quiz_history_attempt": "저장 날짜 {date} · 첫 답변 정답 {score}/{answered}개",
+  "stem.flightsim.quiz_history_progress": "전체 {total}문제 중 {answered}문제 기록 · 미응답 {unanswered}문제",
+  "stem.flightsim.quiz_history_question": "문제 {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "정답: {answer}",
+  "stem.flightsim.quiz_history_changed": "저장된 문제 {count}개가 더 이상 현재 퀴즈와 일치하지 않습니다. 점수는 일치하는 문제 기록만으로 계산합니다."
+}

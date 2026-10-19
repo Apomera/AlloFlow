@@ -484,7 +484,8 @@ describe('STEM dynamic active-state contrast', () => {
       // these are its current conditional-state treatments.
       ['stem_tool_behaviorlab.js', 'bg-amber-700 text-white'],
       ['stem_tool_behaviorlab.js', 'bg-emerald-700 text-white'],
-      ['stem_tool_behaviorlab.js', 'bg-red-600 text-white font-bold text-sm hover:bg-red-700'],
+      // 09-21: Start Extinction became the extinction-prediction choices (same pair, text-xs).
+      ['stem_tool_behaviorlab.js', 'bg-red-600 text-white font-bold text-xs hover:bg-red-700'],
       ['stem_tool_behaviorlab.js', 'bg-emerald-900/30 text-emerald-200 border border-emerald-700/30'],
       ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
       ['stem_tool_unitconvert.js', 'bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800'],
@@ -559,21 +560,17 @@ describe('STEM dynamic active-state contrast', () => {
 
   it('pins the five-tool status and loading-state batch', () => {
     const treatments = [
+      // Retired pins, each for an element that no longer exists in Tailwind form:
+      // Dissection's keyword-mapped germ-layer and tissue badges (removed in the
+      // 09-08 evidence redesign, 0bb48eb97); Semiconductor's Write ON/OFF button (now
+      // a native checkbox, same commit); Water Cycle's AI-quiz loading and wrong-answer
+      // panels (semantic .wc-check-* classes since a2ee92525, 10-01).
       ['stem_tool_dissection.js', 'bg-red-50 text-red-700'],
-      ['stem_tool_dissection.js', 'bg-yellow-50 text-yellow-800'],
-      ['stem_tool_dissection.js', 'bg-red-100 text-red-700'],
-      ['stem_tool_dissection.js', 'bg-emerald-100 text-emerald-700'],
-      ['stem_tool_dissection.js', 'bg-rose-100 text-rose-700'],
-      ['stem_tool_dissection.js', 'bg-amber-100 text-amber-800'],
       ['stem_tool_dissection.js', 'bg-blue-100 text-blue-700'],
-      ['stem_tool_dissection.js', 'bg-teal-100 text-teal-700'],
       ['stem_tool_semiconductor.js', 'bg-slate-600 text-slate-200 hover:bg-slate-700'],
       ['stem_tool_semiconductor.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
-      ['stem_tool_semiconductor.js', 'bg-amber-700 text-white hover:bg-amber-800'],
       ['stem_tool_watercycle.js', 'bg-sky-100 text-sky-800 hover:bg-sky-200'],
       ['stem_tool_watercycle.js', 'bg-sky-700 text-white'],
-      ['stem_tool_watercycle.js', 'bg-purple-700 text-white cursor-wait'],
-      ['stem_tool_watercycle.js', 'bg-red-50 text-red-700 border border-red-200'],
       ['stem_tool_weathersystems.js', 'hover:bg-indigo-700'],
       ['stem_tool_weathersystems.js', 'border-cyan-800 bg-cyan-700 text-white'],
       ['stem_tool_weathersystems.js', 'bg-slate-800 text-slate-300'],
@@ -640,8 +637,8 @@ describe('STEM dynamic active-state contrast', () => {
     const treatments = [
       ['stem_tool_a11yauditor.js', 'hover:bg-teal-100 text-teal-700 transition-colors'],
       ['stem_tool_geosandbox.js', 'text-slate-300 hover:bg-slate-700'],
-      ['stem_tool_cell.js', 'bg-amber-700 text-white border-amber-800'],
-      ['stem_tool_cell.js', 'border border-amber-800 bg-amber-700 text-white'],
+      // Cell's interior-guide pathway and Next buttons moved to semantic classes (09-10,
+      // 78799283f); their two amber pins are retired.
       ['stem_tool_coding.js', 'hover:bg-emerald-800'],
       ['stem_tool_coding.js', 'hover:bg-amber-800'],
       ['stem_tool_coordgrid.js', 'bg-red-50 text-red-700'],
@@ -672,7 +669,9 @@ describe('STEM dynamic active-state contrast', () => {
     const treatments = [
       ['stem_tool_weldlab.js', 'bg-orange-700 text-white border-orange-800'],
       ['stem_tool_weldlab.js', 'hover:bg-orange-800'],
-      ['stem_tool_weldlab.js', 'bg-emerald-700 text-white border-emerald-800'],
+      // Metallurgy's selected tab gained border-4 border-emerald-900 (2026-10-17);
+      // the white-on-emerald-700 pair this pins is unchanged.
+      ['stem_tool_weldlab.js', 'bg-emerald-700 text-white border-emerald-900'],
       ['stem_tool_funcgrapher.js', 'text-rose-700 bg-rose-50'],
       ['stem_tool_funcgrapher.js', 'text-sky-700 bg-sky-50'],
       ['stem_tool_funcgrapher.js', 'text-teal-700 bg-teal-50'],
@@ -696,7 +695,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_anatomy.js', 'hover:bg-violet-50 text-violet-700'],
       ['stem_tool_anatomy.js', 'bg-slate-100 text-slate-600'],
       ['stem_tool_anatomy.js', 'hover:bg-amber-800'],
-      ['stem_tool_anatomy.js', 'hover:bg-orange-200 text-orange-800'],
+      // Retired: the Study Term button moved to semantic classes (09-13, b4d7ed714).
       ['stem_tool_anatomy.js', 'text-slate-600 hover:bg-slate-100'],
       ['stem_tool_anatomy.js', 'bg-rose-100 text-rose-800 hover:bg-rose-200'],
       ['stem_tool_anatomy.js', 'hover:bg-emerald-800'],
@@ -786,8 +785,8 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_raptorhunt.js', 'bg-green-700 text-white'],
       ['stem_tool_raptorhunt.js', 'bg-yellow-800 text-white'],
       ['stem_tool_raptorhunt.js', 'bg-teal-700 text-white'],
-      ['stem_tool_raptorhunt.js', 'bg-lime-700 text-white'],
-      ['stem_tool_raptorhunt.js', 'bg-sky-700 text-white']
+      ['stem_tool_raptorhunt.js', 'bg-lime-700 text-white']
+      // Retired: the Flight Dynamics mode buttons (sky-700) were redesigned on 09-01.
     ];
     const sources = new Map();
     for (const [fileName, treatment] of treatments) {
@@ -830,7 +829,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_companionplanting.js', 'bg-white text-green-700 border border-green-400'],
       ['stem_tool_companionplanting.js', 'border-white bg-emerald-700 text-[0.5rem] font-black text-white'],
       ['stem_tool_money.js', 'hover:bg-amber-800'],
-      ['stem_tool_money.js', 'text-red-300 border border-red-900'],
+      // Retired: Cashier Rush's close button now uses the inline learningButton style (09-20).
       ['stem_tool_money.js', 'bg-emerald-700 text-white border-emerald-800'],
       ['stem_tool_money.js', 'bg-zinc-900 border-zinc-600 text-zinc-300'],
       ['stem_tool_money.js', 'bg-zinc-700 text-zinc-300'],
@@ -868,8 +867,10 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_beehive.js', 'bg-slate-50 text-slate-600'],
       ['stem_tool_beehive.js', 'hover:bg-purple-700'],
       ['stem_tool_beehive.js', 'hover:bg-indigo-700'],
-      ['stem_tool_beehive.js', 'bg-amber-700 hover:bg-amber-800 text-white'],
-      ['stem_tool_beehive.js', 'border-emerald-800 bg-emerald-700 text-white'],
+      // 10-10: the amber tone helper is gone; the tutorial Next button keeps white on
+      // amber-700/800. 10-16: the drone flight-record chips became plain spans.
+      ['stem_tool_beehive.js', "font-bold text-white ' + (dk ? 'transition-colors bg-amber-700"],
+      ['stem_tool_beehive.js', "'transition-colors bg-amber-700 hover:bg-amber-800')"],
       ['stem_tool_beehive.js', 'bg-emerald-700 text-white'],
       ['stem_tool_beehive.js', 'hover:bg-sky-800'],
       ['stem_tool_beehive.js', 'hover:bg-emerald-800'],

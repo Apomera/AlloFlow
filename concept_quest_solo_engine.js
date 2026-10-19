@@ -10,7 +10,7 @@
   function optionText(value) { return text(value && typeof value === 'object' ? value.text != null ? value.text : value.label : value); }
   function norm(value) { return optionText(value).normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' '); }
   function copy(value) { return JSON.parse(JSON.stringify(value)); }
-  function finiteNumber(value) { return (typeof value === 'number' || typeof value === 'string') && value !== '' && value != null && Number.isFinite(Number(value)); }
+  function finiteNumber(value) { return (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '' && Number.isFinite(Number(value)); }
   function typeOf(item) {
     var type = text(item.itemType || item.type || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) >= 0) return 'mcq';
@@ -67,7 +67,19 @@
     if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
     return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
   }
+  function isAnswerKeyDisputed(question) {
+    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var review = question.keyCheck;
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    if (review && typeof review === 'object') {
+      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
+    }
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+  }
+
   function hasKey(item) {
+    if (isAnswerKeyDisputed(item)) return false;
     if (item.type === 'mcq') return item.options.length >= 2 && item.correctIndex >= 0 && item.options.every(function(option) { return !!norm(option); });
     if (item.type === 'multi-select') {
       var multiKeys = Array.isArray(item.correctIndices) ? item.correctIndices : Array.isArray(item.correctAnswers) ? item.correctAnswers : [];
@@ -106,20 +118,20 @@
       if (Array.isArray(item.pairs)) item.pairs = item.pairs.map(function(pair) { return pair && typeof pair === 'object' ? Object.assign({}, pair, {left:optionText(pair.left),right:optionText(pair.right)}) : pair; });
       item.correctIndex = indexFor(item.options, item.correctAnswer, item.correctIndex);
       item.concept = text(item.conceptLabel || item.concept || item.standard || item.topic || item.skill || item.category || 'Question ' + (sourceIndex + 1));
-      item.explanation = text(item.factCheck || item.explanation || item.feedback || item.rationale);
+      item.explanation = isAnswerKeyDisputed(item) ? '' : text(item.keyCheck && item.keyCheck.checkedKey != null && String(item.keyCheck.checkedKey) !== String(item.correctAnswer) ? item.explanation || item.feedback || item.rationale : item.factCheck || item.explanation || item.feedback || item.rationale);
       item.imageUrl = text(item.imageUrl);
       item.imageAltText = text(item.imageAltText);
       item.optionImageUrls = Array.isArray(item.optionImageUrls) ? item.optionImageUrls : [];
       item.optionImageAltTexts = Array.isArray(item.optionImageAltTexts) ? item.optionImageAltTexts : [];
       item.soloPartialCredit = !(data.scoringPolicy && data.scoringPolicy.partialCredit === false);
       item.selfReviewRequired = !hasKey(item);
-      item.reviewReason = item.type === 'short-answer' || item.type === 'self-explanation' ? 'Compare your response with the guide. This is self-review, not an automatic grade.' : item.selfReviewRequired ? 'This item has no valid automatic answer key. Review it with the guide; it will not count toward accuracy or XP.' : '';
+      item.reviewReason = isAnswerKeyDisputed(item) ? 'This answer key is under review. Explain your reasoning; this item will not count toward accuracy or XP.' : item.type === 'short-answer' || item.type === 'self-explanation' ? 'Compare your response with the guide. This is self-review, not an automatic grade.' : item.selfReviewRequired ? 'This item has no valid automatic answer key. Review it with the guide; it will not count toward accuracy or XP.' : '';
       result.push(item);
     });
     return result;
   }
   function initialResponse(item) {
-    if (item.selfReviewRequired || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
+    if (item.selfReviewRequired || isAnswerKeyDisputed(item) || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
     if (item.type === 'mcq') return { answerIndex: null };
     if (item.type === 'multi-select') return { selectedIndices: [] };
     if (item.type === 'sequence-sense') return { verifyAnswer: '', wrongIndex: null, order: null, principleAnswer: '' };
@@ -128,6 +140,7 @@
     return { text: '', unit: '' };
   }
   function answerGuide(item) {
+    if (isAnswerKeyDisputed(item)) return 'Answer key under review. Discuss your reasoning with your teacher; no answer is being marked correct.';
     var answer;
     if (item.type === 'mcq') answer = item.options && item.options[item.correctIndex] || item.correctAnswer || item.expectedAnswer;
     else if (item.type === 'multi-select') answer = correctMultiIndices(item).map(function(index) { return item.options[index]; }).join('; ');
@@ -158,7 +171,7 @@
   function grade(item, response) {
     if (!item || typeof item !== 'object') return incomplete('Choose an assessment item first.');
     response = response && typeof response === 'object' ? response : {};
-    if (item.selfReviewRequired || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) {
+    if (item.selfReviewRequired || isAnswerKeyDisputed(item) || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) {
       if (!text(response.text).trim()) return incomplete('Write your response before comparing it with the guide.');
       if (response.guideRevealed !== true || ['understood', 'needs-practice'].indexOf(response.selfReview) < 0) return incomplete('Reveal the answer guide and record your self-review before continuing.');
       return { complete: true, correct: null, gradable: false, status: 'self-reviewed', score: null, maxScore: null, selfReview: response.selfReview };
@@ -350,5 +363,5 @@
     var breakdown = Object.keys(groups).map(function(key) { var entry = groups[key]; return Object.assign({}, entry, { accuracy: entry.total ? Math.round(100 * entry.correct / entry.total) : null, firstAttemptAccuracy: entry.total ? Math.round(100 * entry.firstCorrect / entry.total) : null }); });
     return Object.assign({}, summary, { outcome: quest && quest.phase === 'complete' ? 'victory' : quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress', rounds: history.length, history: history, conceptBreakdown: breakdown, sigils: quest && quest.sigils || [], missedItems: summary.missedItems });
   }
-  return { VERSION: 1, TYPES: TYPES, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief };
+  return { VERSION: 1, TYPES: TYPES, isAnswerKeyDisputed: isAnswerKeyDisputed, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief };
 });

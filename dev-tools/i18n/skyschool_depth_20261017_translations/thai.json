@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "คงสภาพการบินปัจจุบัน",
+  "stem.flightsim.flight_assistance_targets": "ทิศหัวเครื่อง {hdg}° · ระดับความสูง {alt} ft MSL · ความเร็ว {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ทิศหัวเครื่อง {hdg}° · ระดับความสูง {alt} ft MSL · ความเร็วไปข้างหน้า {spd} kt",
+  "stem.flightsim.challenge_turn_left": "เลี้ยวซ้าย {degrees}° ไปทาง {airport}",
+  "stem.flightsim.challenge_turn_right": "เลี้ยวขวา {degrees}° ไปทาง {airport}",
+  "stem.flightsim.challenge_course_aligned": "กำลังบินไปทาง {airport} ให้ตามเครื่องหมายแนวเส้นทาง",
+  "stem.flightsim.challenge_runway_reference": "ทางวิ่งฝึก {runway}: ทิศหัวเครื่อง {heading}° จัดแนวให้ตรงกับทางวิ่งก่อนลดระดับเพื่อลงจอด"
+}

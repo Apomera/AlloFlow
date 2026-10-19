@@ -1,0 +1,122 @@
+[
+  {
+    "resourceId": "eg-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "1 · A PREDICTABLE FLOOD",
+      "bullets": [
+        "The Nile flooded at about the same time each year",
+        "It left dark silt across the low ground",
+        "Predictable beats merely large: people could plan"
+      ],
+      "iconPrompt": "a river spreading across flat ground, dark band along the banks"
+    },
+    "to": {
+      "label": "1 · A PREDICTABLE FLOOD",
+      "bullets": [
+        "The Nile flooded at about the same time each year",
+        "It left dark silt across the low ground",
+        "Predictable beats merely large: people could plan"
+      ],
+      "iconPrompt": "a river spreading across flat ground, dark band along the banks",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "eg-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "2 · A SURPLUS",
+      "bullets": [
+        "Rich soil plus irrigation meant reliable harvests",
+        "More grain than the farmers needed",
+        "Grain can be stored, so wealth can be stored"
+      ],
+      "iconPrompt": "a granary with sacks stacked higher than one family could eat"
+    },
+    "to": {
+      "label": "2 · A SURPLUS",
+      "bullets": [
+        "Rich soil plus irrigation meant reliable harvests",
+        "More grain than the farmers needed",
+        "Grain can be stored, so wealth can be stored"
+      ],
+      "iconPrompt": "a granary with sacks stacked higher than one family could eat",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "eg-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "3 · SPECIALISTS",
+      "bullets": [
+        "Some people stop farming and do one thing",
+        "Potters, weavers, builders, priests, soldiers",
+        "Only possible when somebody else grows your food"
+      ],
+      "iconPrompt": "a potter at a wheel and a weaver at a loom, side by side"
+    },
+    "to": {
+      "label": "3 · SPECIALISTS",
+      "bullets": [
+        "Some people stop farming and do one thing",
+        "Potters, weavers, builders, priests, soldiers",
+        "Only possible when somebody else grows your food"
+      ],
+      "iconPrompt": "a potter at a wheel and a weaver at a loom, side by side",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "eg-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "4 · WRITING AND OFFICIALS",
+      "bullets": [
+        "Grain has to be counted, so records begin",
+        "Much of the earliest writing is receipts, not poetry",
+        "Records make taxes, officials and a pharaoh possible"
+      ],
+      "iconPrompt": "a scribe marking a tally on a clay surface beside grain sacks"
+    },
+    "to": {
+      "label": "4 · WRITING AND OFFICIALS",
+      "bullets": [
+        "Grain has to be counted, so records begin",
+        "Much of the earliest writing is receipts, not poetry",
+        "Records make taxes, officials and a pharaoh possible"
+      ],
+      "iconPrompt": "a scribe marking a tally on a clay surface beside grain sacks",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "eg-anchor",
+    "path": "data.sections.4",
+    "from": {
+      "label": "WHO IS MISSING",
+      "bullets": [
+        "Tombs and temples were made by and for the powerful",
+        "The farmers left almost nothing behind",
+        "Ask whose evidence survived before you trust the story"
+      ],
+      "iconPrompt": "a grand carved wall beside a plain empty patch of ground"
+    },
+    "to": {
+      "label": "WHO IS MISSING",
+      "bullets": [
+        "Tombs and temples were made by and for the powerful",
+        "The farmers left almost nothing behind",
+        "Ask whose evidence survived before you trust the story"
+      ],
+      "iconPrompt": "a grand carved wall beside a plain empty patch of ground",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

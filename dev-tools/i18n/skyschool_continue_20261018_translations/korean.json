@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "도전 목표가 관찰되었습니다. 다음으로 에너지 관리 연습에서 공회전 출력으로 하강할 때와 엔진 출력을 사용해 상승할 때를 비교하세요.",
+  "stem.flightsim.coaching_energy_complete": "에너지 관리 목표가 관찰되었습니다. 다음으로 짧은 공항 접근 구간에서 에너지를 조절하는 연습을 하고, 하강률과 접지를 비교하세요.",
+  "stem.flightsim.drone_battery_low": "배터리 부족: {pct}% 남았습니다. 이륙 지점으로 돌아가 곧 착륙하세요.",
+  "stem.flightsim.drone_battery_depleted_title": "드론 배터리 소진",
+  "stem.flightsim.drone_battery_depleted_body": "배터리가 0%가 되어 비행이 일시 정지되었습니다. 임무를 끝내 이번 시도를 검토한 뒤, 배터리가 가득 찬 새 임무를 시작하세요.",
+  "stem.flightsim.end_drone_mission": "임무 종료 및 검토",
+  "stem.flightsim.geoq_nearest_place": "현재 위치에서 가장 가까운 장소는 어디인가요?",
+  "stem.flightsim.geoq_paused": "이 질문에 답하는 동안 비행이 일시 정지되었습니다. 퀴즈를 닫은 뒤 비행할 준비가 되면 재개를 선택하세요.",
+  "stem.flightsim.geoq_close": "퀴즈 닫기",
+  "stem.flightsim.geoq_unavailable": "근처에서 출제할 지리 질문이 없습니다. 계속 탐색한 뒤 다시 시도하세요.",
+  "stem.flightsim.geoq_answer_feedback": "내 답: {answer}. 정답: {expected}."
+}

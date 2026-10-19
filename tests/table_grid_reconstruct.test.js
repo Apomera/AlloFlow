@@ -76,8 +76,12 @@ describe('_validateTableGrid — span consistency', () => {
     expect(_validateTableGrid(grid).ok).toBe(true);
   });
   it('rejects an entirely-empty row (row-N-all-empty — silent vision failure)', () => {
-    const grid = { rows: [row(th('A'), th('B')), row(td(''), td('   '))] };
-    expect(_validateTableGrid(grid)).toEqual({ ok: false, reason: 'row-1-all-empty' });
+    // Nothing proves the grid was read, so a blank row is a silent Vision failure.
+    expect(_validateTableGrid({ rows: [row(td('a'), td('b')), row(td(''), td('   '))] })).toEqual({ ok: false, reason: 'row-1-all-empty' });
+    // 3d45bec35 (2026-09-04): a populated header row proves the read, so a blank data row
+    // under it is the worksheet's own content and the transcription is kept.
+    expect(_validateTableGrid({ rows: [row(th('A'), th('B')), row(td(''), td('   '))] })).toEqual({ ok: true, cols: 2, rows: 2 });
+    expect(_validateTableGrid({ rows: [row(th(''), th(' ')), row(td(''), td(''))] }).ok).toBe(false);
   });
   it('does not reject a header-less grid or a row with SOME empty cells', () => {
     expect(_validateTableGrid({ rows: [row(td('a'), td('b')), row(td('c'), td('d'))] }).ok).toBe(true);

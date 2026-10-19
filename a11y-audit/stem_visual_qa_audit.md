@@ -1,25 +1,25 @@
 # STEM Visual QA Audit
 
-Generated: 2026-09-03T05:05:20.272Z
+Generated: 2026-10-17T00:16:40.205Z
 
 ## Scope
 
-- Registered STEM tools: 149
-- STEM tool files: 147
+- Registered STEM tools: 152
+- STEM tool files: 152
 - Monitored student-facing visual markers: 75
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
-| Load errors | 0 |
-| Marker passes | 75 |
-| Marker failures | 0 |
-| Monitored first-screen findings | 2 |
-| High-confidence monitored errors | 0 |
+| Load errors | 2 |
+| Marker passes | 73 |
+| Marker failures | 2 |
+| Monitored first-screen findings | 27 |
+| High-confidence monitored errors | 2 |
 | Source/public drift | 1 |
-| Any source/public/build drift | 7 |
-| Monitored file drift | 4 |
+| Any source/public/build drift | 1 |
+| Monitored file drift | 0 |
 
 ## Visual Marker Coverage
 
@@ -64,8 +64,8 @@ Generated: 2026-09-03T05:05:20.272Z
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
 | pass | `waterCycle` | `data-watercycle-focus` | Rendered |
 | pass | `playlab` | `data-playlab-gameplan` | Rendered |
-| pass | `plateTectonics` | `data-pt-sim-focus` | Rendered |
-| pass | `astronomy` | `data-astronomy-command` | Rendered |
+| fail | `plateTectonics` | `data-pt-sim-focus` | marker-missing |
+| fail | `astronomy` | `data-astronomy-command` | marker-missing |
 | pass | `geologyExplorer` | `data-geology-command` | Rendered |
 | pass | `rockCycle` | `data-rockcycle-command` | Rendered |
 | pass | `aquarium` | `data-aquarium-focus-panel` | Rendered |
@@ -105,20 +105,16 @@ Generated: 2026-09-03T05:05:20.272Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 1 | `titrationLab` |
-| notice | `horizontal-overflow-risk` | 1 | `fireEcology` |
+| error | `marker-missing` | 2 | `plateTectonics`, `astronomy` |
+| warning | `canvas-focus` | 12 | `cell`, `titrationLab` |
+| warning | `canvas-name` | 11 | `cell` |
+| notice | `horizontal-overflow-risk` | 2 | `fireEcology`, `birdLab` |
 
 ## Sync Drift
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_anatomy.js` | yes | source `95E9B45F7904`, public `95E9B45F7904`, build `2E4CCF858D38` |
-| build-drift | `stem_tool_artstudio.js` | no | source `9189D26706B6`, public `9189D26706B6`, build `B672B9F067F3` |
-| build-drift | `stem_tool_pets.js` | yes | source `DB196B642DD2`, public `DB196B642DD2`, build `D676FD2C9325` |
-| build-drift | `stem_tool_rocks.js` | yes | source `F13DF6927665`, public `F13DF6927665`, build `B45E01B1CE05` |
-| build-drift | `stem_tool_solarsystem.js` | yes | source `0337E93F8BB6`, public `0337E93F8BB6`, build `CCFBBBA22AA6` |
-| build-drift | `stem_tool_sourcebook.js` | no | source `ACA4BA89CCC7`, public `ACA4BA89CCC7`, build `77614519DF2C` |
-| source-public-drift | `stem_tool_spacestation.js` | no | source `584A6E2E26F8`, public `82917C84A363`, build `965EA474ED98` |
+| source-public-drift | `stem_tool_coralreef.js` | no | source `7C2BB48471A8`, public `30F4819498A6`, build `30F4819498A6` |
 
 ## Gate Policy
 

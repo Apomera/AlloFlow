@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Các lần làm bài trước",
+  "stem.flightsim.quiz_history_scope": "Khi bắt đầu lần làm bài mới, tối đa bốn lần làm bài trước có ghi nhận câu trả lời đầu tiên sẽ được lưu. Xem lại chúng không làm thay đổi bài kiểm tra hiện tại của bạn.",
+  "stem.flightsim.quiz_history_empty": "Chưa có lần làm bài trước nào được lưu.",
+  "stem.flightsim.quiz_history_attempt": "Đã lưu {date} · {score}/{answered} câu trả lời đầu tiên đúng",
+  "stem.flightsim.quiz_history_progress": "Đã ghi nhận {answered}/{total} câu hỏi · {unanswered} câu chưa trả lời",
+  "stem.flightsim.quiz_history_question": "Câu {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Đáp án đúng: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} câu hỏi đã lưu không còn khớp với bài kiểm tra này. Điểm chỉ được tính từ các bản ghi câu hỏi còn khớp."
+}

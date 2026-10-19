@@ -5,15 +5,15 @@
     "panels": 34,
     "resourceTypes": 24,
     "sidebarControls": 18,
-    "stemTools": 150,
+    "stemTools": 152,
     "selTools": 72,
     "alloPacks": 62,
-    "hubCards": 72,
+    "hubCards": 73,
     "appsScripts": 6,
-    "modules": 217,
+    "modules": 219,
     "langPacks": 63,
-    "unitTestFiles": 4404,
-    "e2eSpecs": 573
+    "unitTestFiles": 6604,
+    "e2eSpecs": 1310
   },
   "commands": [
     {
@@ -383,7 +383,7 @@
     {
       "id": "open_block_suggestions",
       "label": "Get document block suggestions",
-      "roles": "all",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -2099,6 +2099,11 @@
       "nameSource": "header"
     },
     {
+      "id": "coralreef",
+      "name": "Coral Reef Survey Lab: survey a reef with the methods reef monitors use",
+      "nameSource": "first-line"
+    },
+    {
       "id": "cyberdefense",
       "name": "Cyber Defense Lab",
       "nameSource": "header"
@@ -2412,6 +2417,11 @@
       "id": "particlelab3d",
       "name": "Particle Lab 3D",
       "nameSource": "header"
+    },
+    {
+      "id": "perception",
+      "name": "Perception Lab: original SVG experiments; no external graphics or runtime dependencies.",
+      "nameSource": "first-line"
     },
     {
       "id": "pets",
@@ -3077,7 +3087,7 @@
     },
     {
       "file": "crew_halfway_grade6_8",
-      "title": "Crew Launch Week 10: The Halfway Check",
+      "title": "Crew Launch Week 10: The Six-Week Check",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals;"
     },
@@ -3553,6 +3563,10 @@
           "title": "Educator Evaluation"
         },
         {
+          "id": "maineSldPractice",
+          "title": "Maine SLD Case Lab"
+        },
+        {
           "id": "meetings",
           "title": "Meeting Documentation"
         },
@@ -3885,6 +3899,7 @@
     "live_aac_module.js",
     "live_polling_module.js",
     "mailbox_script_source_module.js",
+    "maine_sld_practice_module.js",
     "math_create_module.js",
     "math_fluency_module.js",
     "math_helpers_module.js",
@@ -4023,6 +4038,7 @@
     "visual_panel_module.js",
     "voice_config_module.js",
     "voice_module.js",
+    "word_practice_module.js",
     "word_sounds_module.js",
     "word_sounds_setup_module.js",
     "word_timing_module.js"
@@ -4093,7 +4109,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 4404,
-    "e2e": 573
+    "unit": 6604,
+    "e2e": 1310
   }
 }

@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
 
 const source = readFileSync('stem_lab/stem_tool_flightsim.js', 'utf8');
+const geography = readFileSync('stem_lab/stem_data_skyschool_geo.js', 'utf8');
 const dataset = JSON.parse(readFileSync('vendor/skyschool-geography/land-water-mask.json', 'utf8'));
 const oracle = JSON.parse(readFileSync('tests/fixtures/skyschool_geography_points.json', 'utf8'));
 const encodedRows = dataset.rle.split(';');
@@ -36,6 +37,8 @@ function geographicRuntime() {
     Uint16Array: TracedUint16Array,
     Uint8Array: TracedUint8Array,
   };
+  // The geography loads first, as the STEM loader does (stemModuleDependencies).
+  runInNewContext(geography, sandbox, { timeout: 5000 });
   runInNewContext(source, sandbox, { timeout: 5000 });
   const api = sandbox.window.__RR_TEST_EXPORTS__.flightSim;
   expect(api.isWaterMask).toBeTypeOf('function');

@@ -84,10 +84,14 @@ describe('AP Biology internal foundation pilot', () => {
     expect(library.chapters).toHaveLength(8);
     expect(library.chapters.filter((chapter) => chapter.foundationPrototype).length).toBe(8);
     expect(library.chapters.every((chapter) => Array.isArray(chapter.sections))).toBe(true);
-    expect(library.chapters.every((chapter) => chapter.knowledgeChecks.length === 1)).toBe(true);
+    // ed897988b (2026-09-07, dev-tools/ap_biology_lesson_sections.cjs) grew each chapter to three
+    // sections, each with exactly one knowledge check bound to it by sectionId.
+    expect(library.chapters.every((chapter) => chapter.sections.length === 3)).toBe(true);
+    expect(library.chapters.every((chapter) => chapter.knowledgeChecks.length === chapter.sections.length
+      && chapter.sections.every((section) => chapter.knowledgeChecks.filter((check) => check.sectionId === section.id).length === 1))).toBe(true);
     expect(library.flashcards).toHaveLength(8);
     expect(library.memoryAids).toHaveLength(8);
-    expect(library.summary).toMatchObject({ chapters: 8, sections: 8, knowledgeChecks: 8, richLessonPrototypes: 8 });
+    expect(library.summary).toMatchObject({ chapters: 8, sections: 24, knowledgeChecks: 24, richLessonPrototypes: 8 });
     expect(library.chapters.every((chapter) => {
       const section = chapter.sections[0];
       return section.contentBlocks.length >= 8 && section.examples.length >= 2 && section.nonExamples.length >= 2 &&

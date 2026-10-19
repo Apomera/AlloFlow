@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ናይ ሕጂ ኩነታት በረራ ዓቅብ",
+  "stem.flightsim.flight_assistance_targets": "ኣንፈት {hdg}° · ቁመት {alt} ft MSL · ፍጥነት {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ኣንፈት {hdg}° · ቁመት {alt} ft MSL · ንቕድሚት ናይ ምኻድ ፍጥነት {spd} kt",
+  "stem.flightsim.challenge_turn_left": "ናብ {airport} ንምኻድ {degrees}° ናብ ጸጋም ተጠወ።",
+  "stem.flightsim.challenge_turn_right": "ናብ {airport} ንምኻድ {degrees}° ናብ የማን ተጠወ።",
+  "stem.flightsim.challenge_course_aligned": "ናብ {airport} ትኸይድ ኣለኻ። ናይ መንገዲ በረራ ምልክት ተኸተል።",
+  "stem.flightsim.challenge_runway_reference": "ናይ ልምምድ መዕለቢ ነፈርቲ {runway}፦ ኣንፈት {heading}°። ክትዓልብ ቅድሚ ምውራድካ፡ ነፋሪትካ ምስ መዕለቢ ነፈርቲ ብቐጥታ ኣሰልፍ።"
+}

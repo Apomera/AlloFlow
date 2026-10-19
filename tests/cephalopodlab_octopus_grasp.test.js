@@ -14,7 +14,10 @@ function region(s, a, b) { const start = s.indexOf(a), end = s.indexOf(b, start)
 function factory(s) { return new Function('T', 'species', 'Math', region(s, 'function createCLHuntAnimal(', '// Compact, individually owned prey rig.') + ';return createCLHuntAnimal(T,species);'); }
 // Apply the explicitly approved mantle shape to the historical grasp reference.
 const build = factory(source), oldBuild = factory(require('./helpers/cephalopod_pass68_reference.cjs').applyPass68ModelSource(prior));
-function rig(id = 'commonOcto', old = false) { const a = (old ? oldBuild : build)(T, { id, bodyColor: 0xbc6048 }, noRandom); owned.push(a); return a; }
+// Pass74 reef head, eye and arm tip/gesture anatomy is gated on reefMantle and has its own tests;
+// the exact-animation comparison turns only those gates off and keeps the rest of the live rig.
+const gatedBuild = factory(require('./helpers/cephalopod_pass74_reference.cjs').withoutPass74ReefAnatomy(source));
+function rig(id = 'commonOcto', old = false, gated = false) { const a = (old ? oldBuild : gated ? gatedBuild : build)(T, { id, bodyColor: 0xbc6048 }, noRandom); owned.push(a); return a; }
 const pose = extra => ({ moving: false, jet: false, strike: 0, camo: 0, substrate: 'sand', reducedMotion: false, ...extra });
 const drive = new Function('THREE', 'animal', 'speciesId', 'state', `
   var bodyScale=animal.scale,octopus=animal.root,gameState=state.gameState;
@@ -33,7 +36,10 @@ function fixture(id = 'commonOcto', target = [0.55, -0.37, 1.35], active = true)
   return { a, state, step: drive(T, a, id, state) };
 }
 function snapshot(a, originalTubeOnly = false) {
-  const rows = []; a.root.traverse(o => { const r = [o.name, o.type, o.position.toArray(), o.quaternion.toArray(), o.scale.toArray()];
+  const rows = []; a.root.traverse(o => {
+    // Pass73 re-parents benthic parts under one refuge frame; outside a crevice it must stay identity.
+    if (o.name === 'cl-crevice-body') { assert.ok(o.matrix.equals(new T.Matrix4()), 'Ordinary refuge frame is identity'); return; }
+    const r = [o.name, o.type, o.position.toArray(), o.quaternion.toArray(), o.scale.toArray()];
     // The historical animation comparison predates the appended Pass66 tips.
     // Compare every original tube value; other snapshots retain the complete caps.
     const originalArm = originalTubeOnly && /^cl-arm-\d+$/.test(o.name);
@@ -57,10 +63,10 @@ describe('Reef octopus directed grasp', () => {
       const a = rig(id), b = rig(id, true);
       for (let i = 0; i < 8; i++) { const s = pose({ moving: i > 0, jet: i > 1 && i < 5, strike: i === 3 ? .8 : 0, strikeAim: new T.Vector3(.6, -.37, 1.5), strikeRadius: .3, strikeBrace: .8, reducedMotion: i === 7 }); a.update(i / 20, .05, s); b.update(i / 20, .05, s); assert.equal(snapshot(a), snapshot(b), id); }
     }
-  });
+  }, 30000); // ~4.6 s alone: a full inverse chain plus 48 complete-rig snapshots.
 
   it('leaves idle, crawling, propulsion and undirected event animations exact for all six reef octopuses', () => {
-    for (const id of ids) { const a = rig(id), b = rig(id, true);
+    for (const id of ids) { const a = rig(id, false, true), b = rig(id, true);
       for (const s of [pose(), pose({ moving: true }), pose({ jet: true, moving: true }), pose({ strike: .8 }), pose({ strike: .8, strikeAim: { x: NaN, y: 0, z: 1 } }), pose({ reducedMotion: true, jet: true, strike: 1, strikeAim: new T.Vector3(.5, -.3, 1) })]) {
         a.update(2, .05, s); b.update(2, .05, s); assert.equal(snapshot(a, true), snapshot(b, true), id);
       }

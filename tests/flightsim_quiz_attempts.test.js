@@ -5,7 +5,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let host, root, tool, latest, updateSaved;
 const answerButtons = () => [...host.querySelectorAll('button[aria-label^="Answer "]')];
-const button = text => [...host.querySelectorAll('button')].find(element => element.textContent.includes(text));
+const button = text => [...host.querySelectorAll(text === 'Next' ? '.skyschool-quiz-nav button' : 'button')].find(element => element.textContent.includes(text));
 async function click(element) {
   expect(element).toBeTruthy();
   await act(async () => { element.click(); });

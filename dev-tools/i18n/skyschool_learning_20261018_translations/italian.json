@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Il completamento della missione e l’atterraggio al ritorno sono stati registrati. Riprova questa missione con una modifica intenzionale ai comandi o alla rotta, poi confronta le osservazioni salvate.",
+  "stem.flightsim.coaching_mission_depleted": "La batteria del drone si è esaurita. Inizia una nuova missione, usa rotte brevi e pianifica il ritorno prima che la batteria sia scarica.",
+  "stem.flightsim.coaching_mission_unknown": "Questa missione presenta prove incomplete o contrastanti. Rivedi ciò che è stato registrato, poi inizia un nuovo tentativo.",
+  "stem.flightsim.coaching_mission_capture": "Alcuni obiettivi non sono ancora stati acquisiti. In una nuova missione, avvicinati a un obiettivo alla volta e rispetta i limiti visualizzati di altezza e velocità al suolo finché l’acquisizione viene registrata.",
+  "stem.flightsim.coaching_mission_recovery": "Il superstite non è stato recuperato. In una nuova missione di soccorso, esercitati nel volo stazionario stabile entro i limiti visualizzati di altezza, deriva e velocità verticale prima di tornare alla base.",
+  "stem.flightsim.coaching_mission_return": "Gli obiettivi di recupero o acquisizione sono stati registrati; manca l’atterraggio al ritorno. Inizia una nuova missione e riserva tempo e batteria per tornare alla base.",
+  "stem.flightsim.mission_reflection_prompt": "Quale decisione relativa a un obiettivo, al volo stazionario o al ritorno cambieresti? Usa le osservazioni della missione per spiegare la scelta e pianificare una modifica per un nuovo tentativo. La spiegazione viene salvata con questo volo.",
+  "stem.flightsim.journal_different_airport": "Questi avvicinamenti hanno utilizzato aeroporti diversi. Esamina le osservazioni separatamente; le variazioni delle misure non vengono calcolate.",
+  "stem.flightsim.journal_approach_airport": "Aeroporto di avvicinamento: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "PROVE DELLA MISSIONE",
+  "stem.flightsim.challenge_brake_release": "Rilascia X e disattiva i freni delle ruote in Deck prima di aumentare la potenza."
+}

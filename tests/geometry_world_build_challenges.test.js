@@ -179,10 +179,13 @@ describe('build challenge card in the Free Build dock', () => {
       expect(view.host.querySelector('[data-gwe-lessons-done]').textContent).toBe('1 of 2 guided lessons complete');
       expect(view.host.querySelector('[data-gwe-lesson-done]')).toBeNull();
     } finally { view.unmount(); delete window.StemLab.geometryWorldLessonProgress; }
-    // Without the engine's progress record nothing is claimed.
+    // Without the engine's progress record nothing is claimed complete. Since the
+    // 6a0c48749 guided-lesson browser the count line is always shown, so it reads 0.
     const plain = mount({ activeLesson: 'volumeExplorer', worldActive: true, showGeometryHome: true, geometryHomePage: 'learn' });
     try {
-      expect(plain.host.querySelector('[data-gwe-lessons-done]')).toBeNull();
+      expect(plain.host.querySelector('[data-gwe-lessons-done]').getAttribute('data-gwe-lessons-done')).toBe('0');
+      expect(plain.host.querySelector('[data-gwe-lesson-done]')).toBeNull();
+      expect([...plain.host.querySelectorAll('#gwe-home-lesson option')].some((o) => o.textContent.includes('✓'))).toBe(false);
       expect(plain.host.querySelector('#gwe-home-lesson').value).toBe('volumeExplorer');
     } finally { plain.unmount(); }
   });

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ผลการค้นหา: {cards} การ์ดใน {topics} หัวข้อ",
+  "stem.flightsim.learn_library_counts": "{cards} การ์ด · {topics} หัวข้อ",
+  "stem.flightsim.learn_search_clear": "ล้างการค้นหา",
+  "stem.flightsim.learn_search_empty": "ไม่มีการ์ดการเรียนรู้ที่ตรงกับ “{query}” ลองใช้คำอื่นหรือล้างการค้นหา",
+  "stem.flightsim.learn_search_none": "ไม่มีการ์ดการเรียนรู้ที่ตรงกัน",
+  "stem.flightsim.learn_search_cards": "การ์ดการเรียนรู้ {count} ใบ",
+  "stem.flightsim.quiz_review_progress": "ตอบแล้ว {answered} จาก {total} ข้อ · ผิด {missed} ข้อ",
+  "stem.flightsim.quiz_review_missed": "ทบทวนข้อที่ตอบผิด",
+  "stem.flightsim.quiz_next_unanswered": "ข้อที่ยังไม่ตอบถัดไป",
+  "stem.flightsim.quiz_review_all_answered": "ทุกข้อมีคำตอบครั้งแรกแล้ว ทบทวนข้อที่ตอบผิดเพื่อฝึกแบบไม่คิดคะแนน หรือเริ่มทำใหม่",
+  "stem.flightsim.planner_drone_agl": "{ft} ฟุตเหนือพื้นดิน",
+  "stem.flightsim.sprint_native_title": "ความท้าทายภูมิศาสตร์แบบรวดเร็ว",
+  "stem.flightsim.sprint_timed_hint": "เส้นทางยังคงเดินหน้าระหว่างที่คุณตอบ หยุดชั่วคราวเพื่ออ่าน แล้วเล่นต่อก่อนเลือกคำตอบ",
+  "stem.flightsim.sprint_warp_reference": "การเดินทางถูกเร่งความเร็วสำหรับกิจกรรมภูมิศาสตร์นี้ ค่าความเร็วที่แสดงคือความเร็วเดินทางที่กำหนด เส้นทางนี้ไม่ได้ใช้วัดสมรรถนะอากาศยาน",
+  "stem.flightsim.sprint_save_menu": "บันทึกความท้าทายและกลับสู่เมนู",
+  "stem.flightsim.sprint_next_stop": "จุดแวะถัดไป: {place}",
+  "stem.flightsim.geoq_approaching_city": "คุณกำลังเข้าใกล้เมืองใด?",
+  "stem.flightsim.sprint_time_remaining": "เวลาที่เหลือ: {seconds} วินาที"
+}

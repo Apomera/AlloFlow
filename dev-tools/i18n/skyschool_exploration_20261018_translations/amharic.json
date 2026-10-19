@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "የፍለጋ ውጤቶች፦ በ{topics} ርዕሶች ውስጥ {cards} ካርዶች።",
+  "stem.flightsim.learn_library_counts": "{cards} ካርዶች · {topics} ርዕሶች",
+  "stem.flightsim.learn_search_clear": "ፍለጋውን አጽዳ",
+  "stem.flightsim.learn_search_empty": "ከ“{query}” ጋር የሚዛመድ የመማሪያ ካርድ የለም። ሌላ ቃል ሞክር ወይም ፍለጋውን አጽዳ።",
+  "stem.flightsim.learn_search_none": "የሚዛመዱ የመማሪያ ካርዶች የሉም",
+  "stem.flightsim.learn_search_cards": "{count} የመማሪያ ካርዶች",
+  "stem.flightsim.quiz_review_progress": "ከ{total} ጥያቄዎች {answered} ተመልሰዋል · {missed} ተሳስተዋል",
+  "stem.flightsim.quiz_review_missed": "የተሳሳቱትን ክለስ",
+  "stem.flightsim.quiz_next_unanswered": "ቀጣዩ ያልተመለሰ ጥያቄ",
+  "stem.flightsim.quiz_review_all_answered": "እያንዳንዱ ጥያቄ የመጀመሪያ መልስ አለው። ያለ ነጥብ ልምምድ ለማድረግ የተሳሳቱትን ክለስ፣ ወይም አዲስ ሙከራ ጀምር።",
+  "stem.flightsim.planner_drone_agl": "ከመሬት በላይ {ft} ጫማ",
+  "stem.flightsim.sprint_native_title": "ፈጣን የጂኦግራፊ ፈተና",
+  "stem.flightsim.sprint_timed_hint": "መልስ ስትሰጥ መንገዱ ይቀጥላል። ለማንበብ አቁም፤ መልስ ከመምረጥህ በፊት ቀጥል።",
+  "stem.flightsim.sprint_warp_reference": "በዚህ የጂኦግራፊ እንቅስቃሴ ጉዞው ተፋጥኗል። የፍጥነት ንባቦች የተገለጸውን የበረራ ፍጥነት ያሳያሉ፤ ይህ መንገድ የአውሮፕላኑን አፈጻጸም አይለካም።",
+  "stem.flightsim.sprint_save_menu": "ፈተናውን አስቀምጥና ወደ ምናሌ ተመለስ",
+  "stem.flightsim.sprint_next_stop": "ቀጣይ መድረሻ፦ {place}",
+  "stem.flightsim.geoq_approaching_city": "ወደ የትኛው ከተማ እየቀረብህ ነው?",
+  "stem.flightsim.sprint_time_remaining": "የቀረው ጊዜ፦ {seconds} ሰከንዶች"
+}

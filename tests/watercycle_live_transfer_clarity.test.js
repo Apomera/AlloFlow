@@ -8,8 +8,11 @@ import { renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.j
 const SOURCE_PATH = 'stem_lab/stem_tool_watercycle.js';
 const MIRROR_PATH = 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js';
 const TEST_PATH = 'tests/watercycle_live_transfer_clarity.test.js';
-const BASELINE_PATH = 'reports/watercycle-live-transfer-clarity/baseline-runtime.js';
-const BASELINE_SHA = 'd07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb';
+// Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): later
+// published passes (585a61ba2, 79e3e5eae) changed preserved declarations on purpose. The original
+// pass baseline remains at reports/watercycle-live-transfer-clarity/baseline-runtime.js.
+const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const AUTHORIZED_CANVAS_PRESENTATION = ['drawMatterEnergyEvidence2d', 'drawFlowChevrons2d', 'drawPhysicalTimeGlyph2d'];
 const PRESERVED = [
   'STAGES', 'STAGE_CUES', 'STAGE_FLOW', 'currentStageLabel', 'currentStageCue',
@@ -335,7 +338,8 @@ describe('Live transfer clarity: preserved authored model and state', () => {
       for (const text of [time.roleLabel, time.label, time.caveat]) expect(dataTime.textContent).toContain(text);
       expect(dataTime.textContent).toContain('Animation is compressed');
     });
-  });
+    // Two full SSR renders of the 3.4 MB tool per case: ~5 s under CPU contention (CI timed out at 5 s).
+  }, 30_000);
   it.each(PREVIEWS)('keeps inactive %s preview identity, figures and time distinct from a stored active journey state', activeStage => {
     sources.forEach((source, index) => {
       const { host } = renderCurrent(source, { journeyActive: false, activeStage }), matter = priorTraces.stage[activeStage], time = priorTraces.stageTime[activeStage];
@@ -349,7 +353,7 @@ describe('Live transfer clarity: preserved authored model and state', () => {
       for (const text of [matter.phaseFrom, matter.phaseTo, matter.energyLabel, matter.driver, time.roleLabel, time.label, time.caveat]) expect(summary.textContent).toContain(text);
       expect(rowByLabel(host, 'Current process').textContent).not.toContain('Aquifer flow');
     });
-  });
+  }, 30_000);
 });
 
 describe('Live transfer clarity: actual 2D draw operations', () => {

@@ -171,6 +171,8 @@ When all required evidence is fresh, the headline score is **`min(AI Rubric Scor
 
 A canonical evidence state prevents a numeric score from being mistaken for complete verification. **Complete** requires fresh AI, axe-core, and Equal Access evidence with no manual or potential findings. **Review required** means all engines ran but at least one finding needs human judgment. **Partial** means some, but not all, engines completed. **Unavailable** means no required engine completed. Scores and engine details may still be useful in the latter states, but are explicitly unverified.
 
+**Stylesheet questions (2026-10-16).** IBM Equal Access asks two review questions of every document that has CSS, once per document: whether Windows high contrast mode is supported (`style_highcontrast_visible`) and whether colour is the only way information is shown (`style_color_misuse`). Left alone, they made **Complete** unreachable for every remediated document. AlloFlow answers the high-contrast question with a deterministic stylesheet check (no CSS-inserted text, no CSS images, no `forced-color-adjust: none`, no external stylesheet); if the check finds one of those, the question stays open with the reason. A person can confirm either question in the review queue for one exact document: the confirmation is tied to the SHA-256 of the document's HTML, so any later change asks again. Answered and confirmed questions are listed separately in the report ("answered by AlloFlow's stylesheet check", "confirmed by a person"), never silently dropped.
+
 Verification evidence is bound to the exact remediated HTML using a versioned SHA-256 record plus paired, non-serializable in-memory witnesses for both the HTML and its digest. This prevents either a same-length HTML edit or a digest-only swap from inheriting a prior claim. Saved projects re-hash restored HTML before recovering verified state; legacy, mismatched, or stale projects load as unverified until a fresh three-engine audit completes. PDF/UA and veraPDF results are additionally scoped to the exact tagged-PDF artifact so an asynchronous result cannot attest to newer bytes.
 
 Averaging was abandoned (2026-06-21) because the engines measure different things — the midpoint described neither, and an inflated automated result could mask a failing content result. Engine scores and coverage are shown separately in the UI, and PDF/UA status is kept separate from HTML/WCAG scoring: the in-app structural self-check is a preflight, while veraPDF/PAC-style review is the institution-facing QA path.
@@ -251,7 +253,7 @@ A professional PDF-ready report containing:
 - axe-core automated verification results
 - Scoring methodology explanation
 - Standards compliance references (WCAG 2.2 AA, ADA Title II, Section 508, EN 301 549)
-- Knowbility referral for documents needing expert human review
+- "Where to get expert help": a neutral directory of organizations for documents needing expert human review
 
 ### Alternative Formats
 - **ePub 3.0** — read-along EPUB3 with Media Overlays, for e-readers / mobile devices
@@ -339,7 +341,7 @@ The practical rule: AlloFlow can provide structural self-checks and optional ver
 
 ## Current Limitations
 
-1. **Promise 100% compliance** — No automated tool can promise full WCAG compliance. The pipeline typically gets much of the remediation work done, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
+1. **Promise 100% compliance** — No automated tool can promise full WCAG compliance. The pipeline typically gets much of the remediation work done, with remaining issues clearly documented in the audit report for expert review. This is why the report and the app point to organizations that offer expert human review for high-stakes documents.
 
 2. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
 
@@ -447,14 +449,15 @@ The pipeline is designed to support alignment with:
 
 ---
 
-## Partnership: Knowbility
+## Where to get expert help
 
-AlloFlow partners with [Knowbility](https://knowbility.org/) (AccessWorks program) for documents that need expert human remediation. The audit report includes a Knowbility referral when:
-- The remediated document scores below 70
-- Critical axe-core violations remain after automated remediation
-- The document contains complex interactive elements
+AlloFlow has no partnership with any accessibility vendor. Instead, the app and every exported report show a neutral directory, "Where to get expert help", defined once in `doc_pipeline_source.jsx` (`ALLO_HELP_DIRECTORY`) and checked on each organization's own website on 2026-10-16. It has four groups: free guidance and public programs (for example NCADEMI, Maine CITE, Section508.gov, the ADA National Network), accessible formats for students (APH, Bookshare, DCMP, NIMAC), training and testing with disabled users (Deque University, Fable, Knowbility), and paid document remediation services (Allyant, Continual Engine, Equidox, Georgia Tech CIDI, Level Access). Entries are sorted by name within each group so the order implies no ranking, links carry no tracking parameters, and the directory states that AlloFlow has no partnership with, payment from, or endorsement of any listed organization.
 
-This ensures that the hardest documents get the human expertise they need, while the pipeline handles the bulk of the workload.
+The app shows the directory while an audit or remediation runs, and in the expert-review card when:
+- Confirmed critical axe-core or Equal Access failures remain after automated remediation
+- The remediated document scores below 50 after the fix loop
+
+Re-check the entries before relying on them; services and costs change.
 
 ---
 

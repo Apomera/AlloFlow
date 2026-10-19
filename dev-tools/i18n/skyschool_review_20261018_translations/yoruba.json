@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Àwọn ìgbìyànjú ìdánwò àtijọ́",
+  "stem.flightsim.quiz_history_scope": "Bíbẹ̀rẹ̀ ìgbìyànjú tuntun ń fi àwọn ìgbìyànjú àtijọ́ tó ní ìdáhùn àkọ́kọ́ tí a kọ sílẹ̀ pamọ́, tí kò ju mẹ́rin lọ. Àtúnyẹ̀wò wọn kò yí ìdánwò rẹ lọ́wọ́lọ́wọ́ padà.",
+  "stem.flightsim.quiz_history_empty": "A kò tíì fi ìgbìyànjú ìdánwò àtijọ́ kankan pamọ́.",
+  "stem.flightsim.quiz_history_attempt": "A fi pamọ́ ní {date} · Ìdáhùn àkọ́kọ́ {score}/{answered} tọ́",
+  "stem.flightsim.quiz_history_progress": "A ti kọ ìbéèrè {answered} nínú {total} sílẹ̀ · {unanswered} kò ní ìdáhùn",
+  "stem.flightsim.quiz_history_question": "Ìbéèrè {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Ìdáhùn tó tọ́: {answer}",
+  "stem.flightsim.quiz_history_changed": "Ìbéèrè {count} tí a fi pamọ́ kò bá ìdánwò yìí mu mọ́. Àwọn àkọsílẹ̀ ìbéèrè tó bá a mu nìkan ni a ń lò láti ṣírò àmì."
+}

@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {safeBoardImage} from './lesson_board_support.js';
 const React=window.React;
 
@@ -11,12 +12,12 @@ function LoadedScenery({src}) {
 export function TabletopScenery({support,showImages=true}) {
   const src=showImages&&safeBoardImage(support?.assets?.[support?.art?.tabletop]);
   if(!src)return null;
-  return <><style>{`
+  return <>{addBoardStyle(`
     .lb .lb-tabletop-scenery{position:absolute;inset:0;pointer-events:none;opacity:0;overflow:hidden;border-radius:inherit}
     .lb .lb-tabletop-scenery img{display:block;width:100%;height:100%;object-fit:cover;max-width:none;user-select:none}
     .lb .lb-tabletop-scenery[data-loaded=true]{opacity:.76}
     .lb .lb-tabletop-scenery[data-loaded=true]~.lb-landscape-terrain{opacity:0}
     .dark .lb .lb-tabletop-scenery[data-loaded=true]{opacity:.66;filter:brightness(.56) saturate(.75)}
     @media(forced-colors:active){.lb .lb-tabletop-scenery{display:none}.lb .lb-tabletop-scenery[data-loaded=true]~.lb-landscape-terrain{opacity:.87}}
-  `}</style><LoadedScenery key={src} src={src}/></>;
+  `)}<LoadedScenery key={src} src={src}/></>;
 }

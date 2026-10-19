@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Search results: {cards} cards in {topics} topics.",
+  "stem.flightsim.learn_library_counts": "{cards} cards · {topics} topics",
+  "stem.flightsim.learn_search_clear": "Clear search",
+  "stem.flightsim.learn_search_empty": "No learning cards match “{query}”. Try another term or clear the search.",
+  "stem.flightsim.learn_search_none": "No matching learning cards",
+  "stem.flightsim.learn_search_cards": "{count} learning cards",
+  "stem.flightsim.quiz_review_progress": "{answered} of {total} questions answered · {missed} missed",
+  "stem.flightsim.quiz_review_missed": "Review missed",
+  "stem.flightsim.quiz_next_unanswered": "Next unanswered",
+  "stem.flightsim.quiz_review_all_answered": "Every question has a first response. Review missed questions for unscored practice, or start a new attempt.",
+  "stem.flightsim.planner_drone_agl": "{ft} ft AGL",
+  "stem.flightsim.sprint_native_title": "Geography sprint",
+  "stem.flightsim.sprint_timed_hint": "The route moves while you answer. Pause to read; resume before choosing an answer.",
+  "stem.flightsim.sprint_warp_reference": "Travel is accelerated for this geography activity. Speed readings show the advertised cruise speed; this route does not measure aircraft performance.",
+  "stem.flightsim.sprint_save_menu": "Save sprint and return to menu",
+  "stem.flightsim.sprint_next_stop": "Next stop: {place}",
+  "stem.flightsim.geoq_approaching_city": "You are approaching which city?",
+  "stem.flightsim.sprint_time_remaining": "Time remaining: {seconds} seconds"
+}

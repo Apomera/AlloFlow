@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "已观测到挑战目标达成。接下来，在能量管理练习中，比较发动机怠速下降与使用动力爬升的过程。",
+  "stem.flightsim.coaching_energy_complete": "已观测到能量管理目标达成。接下来，在短程机场进近中练习控制能量，然后比较下降率和接地情况。",
+  "stem.flightsim.drone_battery_low": "电池电量低：剩余 {pct}%。请返回起飞点并尽快着陆。",
+  "stem.flightsim.drone_battery_depleted_title": "无人机电池已耗尽",
+  "stem.flightsim.drone_battery_depleted_body": "电量降至 0%，飞行已暂停。请结束任务以回顾本次尝试，然后使用满电电池开始新任务。",
+  "stem.flightsim.end_drone_mission": "结束任务并回顾",
+  "stem.flightsim.geoq_nearest_place": "哪个地点离你当前的位置最近？",
+  "stem.flightsim.geoq_paused": "飞行已暂停，以便回答此题。关闭测验，准备好飞行后选择继续。",
+  "stem.flightsim.geoq_close": "关闭测验",
+  "stem.flightsim.geoq_unavailable": "附近暂无可用的地理题目。请继续探索，然后重试。",
+  "stem.flightsim.geoq_answer_feedback": "你的答案：{answer}。正确答案：{expected}。"
+}

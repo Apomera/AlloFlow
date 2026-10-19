@@ -6,9 +6,9 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let host, root, latest, cockpit, frameCallback, canvasContext, consoleError, fullscreen;
 const hooks = () => window.__testHooks.flightSim;
 
-function press(key) {
+function press(key, target = cockpit) {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
-  cockpit.dispatchEvent(event);
+  target.dispatchEvent(event);
   return event;
 }
 function release(key) {
@@ -19,9 +19,7 @@ async function frame() {
   await act(async () => { frameCallback(); });
   expect(consoleError).not.toHaveBeenCalled();
 }
-function quizDrawn() {
-  return canvasContext.fillText.mock.calls.some(([text]) => String(text).includes('GEOGRAPHY QUIZ'));
-}
+const quiz = () => host.querySelector('[data-flight-geography-quiz]');
 
 beforeEach(async () => {
   vi.useFakeTimers();
@@ -119,14 +117,13 @@ describe('SkySchool Escape through the simulation RAF', () => {
     press('q');
     await frame();
     release('q');
-    expect(quizDrawn()).toBe(true);
-    canvasContext.fillText.mockClear();
-    press('Escape');
-    release('Escape');
+    expect(quiz()).toBeTruthy();
+    expect(document.activeElement).toBe(quiz().querySelector('#skyschool-geoq-question'));
+    await act(async () => { press('Escape', document.activeElement); });
     await frame();
     expect(latest.view).toBe('flying');
     expect(hooks().flyingRef.current).toBe(true);
-    expect(quizDrawn()).toBe(false);
+    expect(quiz()).toBeNull();
     expect(latest.lastDebrief).toBeUndefined();
   });
 

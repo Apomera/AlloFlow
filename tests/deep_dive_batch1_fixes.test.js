@@ -117,7 +117,11 @@ describe('H2 — quota-classed errors feed the throttle machinery', () => {
   });
   it('gemini_api classifier carries the per-minute/per-day evidence on the classification object', () => {
     expect(gem).toContain('perMinute: perMinHint, perDay: perDayHint');
-    expect(gem).toContain('perMinute: false, perDay: false'); // the ambiguous 403-quota branch
+    // a9ae02cb5 (2026-09-30) removed the separate ambiguous-403 quota branch (a bare 401/403 is
+    // not evidence of throttling): a 403 that names a quota now takes the one quota branch above,
+    // so it carries the same per-minute/per-day evidence.
+    expect(gem).toContain('if (status === 429 || (status !== 401 && explicitQuota)) {');
+    expect(gem).not.toContain("msg.includes('403')");
     expect(gem).toContain('out.classification = cls;');       // _throwClassified forwards it
   });
 });

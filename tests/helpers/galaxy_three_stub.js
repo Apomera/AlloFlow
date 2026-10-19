@@ -244,10 +244,15 @@ export function installThreeStub() {
     Vector3: function (x, y, z) { return vec(x, y, z); },
     Color: function (input) { return colorLike(input); },
     BufferAttribute: function (array, itemSize) {
-      return { __kind: 'BufferAttribute', array, itemSize, needsUpdate: false };
+      return { __kind: 'BufferAttribute', array, itemSize, count: array.length / itemSize, needsUpdate: false };
     },
     BufferGeometry: function () { return geometry('BufferGeometry'); },
-    RingGeometry: function () { return geometry('RingGeometry'); },
+    RingGeometry: function (innerRadius, outerRadius, thetaSegments = 8, phiSegments = 1) {
+      const ring = geometry('RingGeometry');
+      const count = (Math.max(3, thetaSegments) + 1) * (Math.max(1, phiSegments) + 1);
+      ring.setAttribute('position', { array: new Float32Array(count * 3), itemSize: 3, count });
+      return ring;
+    },
     SphereGeometry: function () { return geometry('SphereGeometry'); },
     TorusGeometry: function () { return geometry('TorusGeometry'); },
     ConeGeometry: function () { return geometry('ConeGeometry'); },

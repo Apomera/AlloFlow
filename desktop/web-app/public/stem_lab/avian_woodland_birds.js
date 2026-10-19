@@ -12,12 +12,15 @@
   var SPECIES = {
     mourningDove: {
       body: [.037, .043, .073], bodyY: .083, bodyZ: -.018,
-      head: [.021, .025, .027], headY: .132, headZ: .064,
+      // A small head is the dove's field mark: about a third of the body's width.
+      head: [.0175, .0205, .0225], headY: .132, headZ: .064,
       leg: .034, stance: .014, shoulder: [.030, .096, .013], wing: 1,
       tailY: .081, tailZ: -.065, tailLength: .137, tailWidth: .014,
       neckBase: [.100, .031], neckWidth: .023, billLength: .020,
-      dark: '#292725', back: '#77756d', breast: '#ab9587', pale: '#c7c3af',
-      wingColor: '#555149', foot: '#a57671'
+      // Buffy-tan, not gray: the ACES-lit scene lifts mid-tones, and the
+      // earlier gray palette rendered the dove nearly white.
+      dark: '#292725', back: '#6e5c4b', breast: '#a2806b', pale: '#c4ad95',
+      wingColor: '#5f5243', foot: '#a57671'
     },
     grouse: {
       body: [.066, .078, .124], bodyY: .126, bodyZ: -.008,
@@ -45,6 +48,83 @@
       neckBase: [.083, .021], neckWidth: .0185, billLength: .016,
       dark: '#231f20', back: '#a53135', breast: '#cf3538', pale: '#d66555',
       wingColor: '#913b3b', foot: '#8d706b'
+    },
+    // Hopping ground songbirds. Their tuning lives in `tune`, so the four
+    // original species keep their historical code paths exactly.
+    // Fieldmarks: allaboutbirds.org/guide/Dark-eyed_Junco/id (slate-colored),
+    // /guide/Tufted_Titmouse/id and /guide/Eastern_Towhee/id (adult male).
+    darkEyedJunco: {
+      body: [.024, .029, .043], bodyY: .060, bodyZ: -.009,
+      head: [.0165, .019, .0205], headY: .098, headZ: .039,
+      leg: .027, stance: .0105, shoulder: [.019, .071, .008], wing: .46,
+      tailY: .058, tailZ: -.042, tailLength: .074, tailWidth: .0085,
+      neckBase: [.073, .018], neckWidth: .016, billLength: .011,
+      dark: '#1f2124', back: '#3f454b', breast: '#ecebe5', pale: '#f4f3ee',
+      wingColor: '#3a4046', foot: '#a8877d',
+      tune: { walkReach: .015, stepLift: .009, strideRate: 12, wingbeatCruise: 7.2, wingbeatBurst: 8.8, sizeM: .155,
+        eyeRing: '#3b4045', bill: '#e5c4bb', iris: '#141414', crown: '#3d4348', cheek: '#41474c', throat: '#454b50',
+        billWidth: .0050, billHeight: .0049, billDroop: .0008, billTaper: 1.0, eye: [.0030, .0031, .0024, .0025],
+        peckDrop: .0705, peckForward: .030, upperLeg: .030, footScale: .74, tailShape: [1.7, .05], fan: .40,
+        hood: true, wingRound: .22, tailRound: .30 }
+    },
+    tuftedTitmouse: {
+      body: [.025, .030, .044], bodyY: .062, bodyZ: -.009,
+      head: [.018, .021, .022], headY: .101, headZ: .040,
+      leg: .028, stance: .0105, shoulder: [.020, .074, .008], wing: .48,
+      tailY: .060, tailZ: -.043, tailLength: .076, tailWidth: .0088,
+      neckBase: [.076, .019], neckWidth: .0168, billLength: .0095,
+      dark: '#161616', back: '#50565d', breast: '#e2dfd8', pale: '#ecebe6',
+      wingColor: '#4b5158', foot: '#6d747c',
+      tune: { walkReach: .015, stepLift: .009, strideRate: 12, wingbeatCruise: 7.0, wingbeatBurst: 8.5, sizeM: .16,
+        eyeRing: '#5b6167', bill: '#2c2c2d', iris: '#0b0b0b', crown: '#52585f', cheek: '#d2d3cf', throat: '#e3e2dc',
+        billWidth: .0040, billHeight: .0038, billDroop: .0012, billTaper: .9, eye: [.0036, .0037, .0030, .0031],
+        peckDrop: .0737, peckForward: .030, upperLeg: .031, footScale: .74, tailShape: [1.7, .04], fan: .34,
+        flank: '#d79c6f', crest: 'titmouse', forehead: true, wingRound: .22, tailRound: .28 }
+    },
+    easternTowhee: {
+      body: [.031, .036, .058], bodyY: .074, bodyZ: -.012,
+      head: [.020, .024, .026], headY: .121, headZ: .051,
+      leg: .033, stance: .0125, shoulder: [.025, .089, .010], wing: .60,
+      tailY: .072, tailZ: -.056, tailLength: .102, tailWidth: .0105,
+      neckBase: [.091, .024], neckWidth: .0195, billLength: .014,
+      dark: '#121111', back: '#1b1a1a', breast: '#efede7', pale: '#f3f1ec',
+      wingColor: '#181717', foot: '#b28e7f',
+      tune: { walkReach: .019, stepLift: .011, strideRate: 11, wingbeatCruise: 6.2, wingbeatBurst: 7.6, sizeM: .20,
+        eyeRing: '#2a2222', bill: '#1c1b1b', iris: '#8e1712', crown: '#1a1919', cheek: '#1c1b1b', throat: '#1e1c1c',
+        billWidth: .0060, billHeight: .0058, billDroop: .0012, billTaper: 1.0, eye: [.0032, .0033, .0026, .0027],
+        peckDrop: .0868, peckForward: .034, upperLeg: .038, footScale: .86, tailShape: [1.6, .14], fan: .36,
+        hood: true, flank: '#b0582a', wingPatch: true, tailCorners: true, wingRound: .24, tailRound: .34 }
+    },
+    // A running, ground-foraging thrush (walks, not hops) and a tiny hopping
+    // chickadee. allaboutbirds.org/guide/American_Robin/id and
+    // /guide/Black-capped_Chickadee/id.
+    americanRobin: {
+      body: [.034, .040, .066], bodyY: .090, bodyZ: -.012,
+      head: [.021, .024, .027], headY: .136, headZ: .060,
+      leg: .040, stance: .0145, shoulder: [.028, .098, .013], wing: .78,
+      tailY: .084, tailZ: -.060, tailLength: .110, tailWidth: .0125,
+      neckBase: [.103, .032], neckWidth: .0235, billLength: .021,
+      dark: '#1b1a1a', back: '#56524c', breast: '#b2491b', pale: '#efebe3',
+      wingColor: '#4b4742', foot: '#5a4739',
+      tune: { walkReach: .026, stepLift: .012, strideRate: 12, wingbeatCruise: 6.2, wingbeatBurst: 7.4, sizeM: .25,
+        eyeRing: '#e9e6de', bill: '#e0b02a', iris: '#121111', crown: '#272626', cheek: '#2f2d2c', throat: '#cfc7bc',
+        billWidth: .0042, billHeight: .0040, billDroop: .0018, billTaper: .85, eye: [.0040, .0041, .0031, .0032],
+        peckDrop: .0944, peckForward: .046, upperLeg: .046, footScale: 1.0, tailShape: [1.6, .06], fan: .40,
+        vent: true, throatStreaks: true, tailCorners: true, wingRound: .20, tailRound: .26 }
+    },
+    blackCappedChickadee: {
+      body: [.022, .027, .039], bodyY: .056, bodyZ: -.008,
+      head: [.0165, .0185, .0195], headY: .091, headZ: .035,
+      leg: .025, stance: .0098, shoulder: [.017, .066, .007], wing: .44,
+      tailY: .054, tailZ: -.039, tailLength: .068, tailWidth: .0078,
+      neckBase: [.068, .017], neckWidth: .015, billLength: .0075,
+      dark: '#121212', back: '#4a5055', breast: '#efede6', pale: '#f4f2ec',
+      wingColor: '#42484e', foot: '#4b4f54',
+      tune: { walkReach: .013, stepLift: .008, strideRate: 13, wingbeatCruise: 7.6, wingbeatBurst: 9.0, sizeM: .13,
+        eyeRing: '#1a1a1a', bill: '#1e1e1f', iris: '#0b0b0b', crown: '#141414', cheek: '#f1f0eb', throat: '#151515',
+        billWidth: .0030, billHeight: .0029, billDroop: .0006, billTaper: 1.0, eye: [.0030, .0031, .0024, .0025],
+        peckDrop: .0675, peckForward: .028, upperLeg: .028, footScale: .70, tailShape: [1.7, .08], fan: .36,
+        flank: '#d6b088', capAndBib: true, wingEdges: true, wingRound: .22, tailRound: .30 }
     }
   };
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -59,12 +139,22 @@
     if (!supports(id)) throw new RangeError('Unsupported woodland bird: ' + id);
     options = options || {};
     var p = SPECIES[id], grouse = id === 'grouse', jay = id === 'blueJay', cardinal = id === 'northernCardinal', high = options.quality !== 'low';
+    var dove = id === 'mourningDove', tune = p.tune || null;
+    var junco = id === 'darkEyedJunco', titmouse = id === 'tuftedTitmouse', towhee = id === 'easternTowhee';
+    var robin = id === 'americanRobin', chickadee = id === 'blackCappedChickadee';
+    // Small songbirds share the cardinal's short rounded wing and its paired
+    // two-footed hop. The cardinal's flight-loading cues stay its own.
+    var songbird = cardinal || junco || titmouse || towhee || chickadee, hopper = songbird;
+    var hooded = !!(tune && tune.hood), vent = !!(tune && tune.vent);
     // Scene adapters share the anatomy's contact/cadence profile, while the
     // retained geometry and deterministic pose evaluator stay scene agnostic.
     var profile = Object.freeze({ speciesId: id, leg: p.leg, stance: p.stance, ankleY: -p.leg + .003, ankleZ: .002,
-      walkReach: grouse ? .034 : jay ? .023 : cardinal ? .017 : .022, stepLift: grouse ? .016 : jay ? .012 : cardinal ? .010 : .011,
-      strideRate: grouse ? 9 : jay ? 10 : cardinal ? 12 : 11, wingbeatCruise: grouse ? 7.4 : jay ? 5.4 : cardinal ? 6.4 : 5.8,
-      wingbeatBurst: grouse ? 8.5 : jay ? 6.4 : cardinal ? 7.8 : 6.8, sizeM: grouse ? .30 : jay ? .29 : cardinal ? .22 : .16 });
+      walkReach: tune ? tune.walkReach : grouse ? .034 : jay ? .023 : cardinal ? .017 : .022,
+      stepLift: tune ? tune.stepLift : grouse ? .016 : jay ? .012 : cardinal ? .010 : .011,
+      strideRate: tune ? tune.strideRate : grouse ? 9 : jay ? 10 : cardinal ? 12 : 11,
+      wingbeatCruise: tune ? tune.wingbeatCruise : grouse ? 7.4 : jay ? 5.4 : cardinal ? 6.4 : 5.8,
+      wingbeatBurst: tune ? tune.wingbeatBurst : grouse ? 8.5 : jay ? 6.4 : cardinal ? 7.8 : 6.8,
+      sizeM: tune ? tune.sizeM : grouse ? .30 : jay ? .29 : cardinal ? .22 : .16 });
     var resources = [], disposed = false, meshes = [];
     var root = new THREE.Group(); root.name = 'avian-woodland-' + id;
     root.userData.speciesId = id; root.userData.quality = high ? 'high' : 'low';
@@ -81,10 +171,24 @@
     function keep(r) { resources.push(r); return r; }
     function color(hex) { return new THREE.Color(hex).convertSRGBToLinear(); }
     var back = color(p.back), breast = color(p.breast), pale = color(p.pale), dark = color(p.dark);
-    var wingColor = color(p.wingColor), footColor = color(p.foot), eyeColor = color('#0f1010');
-    var eyeRing = color(grouse ? '#aa9370' : jay ? '#41474b' : cardinal ? '#6b5148' : '#a0b6bd'), billColor = color(grouse ? '#615647' : jay ? '#242b31' : cardinal ? '#e16638' : '#555450');
+    var wingColor = color(p.wingColor), footColor = color(p.foot), eyeColor = color(tune ? tune.iris : '#0f1010');
+    var eyeRing = color(tune ? tune.eyeRing : grouse ? '#aa9370' : jay ? '#41474b' : cardinal ? '#6b5148' : '#a0b6bd'), billColor = color(tune ? tune.bill : grouse ? '#615647' : jay ? '#242b31' : cardinal ? '#e16638' : '#555450');
+    var flank = tune && tune.flank ? color(tune.flank) : null, tinted = hooded || vent || !!flank;
+    var billDroop = tune ? tune.billDroop : jay ? .0015 : cardinal ? .001 : .0038;
     function mix(a, b, t) { return new THREE.Color(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t); }
     function shade(c, n) { return new THREE.Color(c.r * n, c.g * n, c.b * n); }
+    // Hooded songbirds carry the dark hood down over the breast to a clean line
+    // above the white belly; flanked ones wash their lower sides with color.
+    // Arguments are the unit surface direction: `down` (+1 under the belly),
+    // `front` (+1 at the breast pole) and `side` (|lateral|).
+    function songbirdTint(c, down, front, side) {
+      if (hooded) c = mix(c, back, smooth((front - .08) / .26) * (1 - smooth((down - (.28 + .22 * front)) / .12)));
+      if (flank) c = mix(c, flank, smooth((side - .26) / .34) * smooth((down + .34) / .36) *
+        (1 - smooth((down - .84) / .14)) * (1 - smooth((front - .58) / .30)) * .95);
+      // A white lower belly and undertail behind the colored breast.
+      if (vent) c = mix(c, pale, smooth((-front - .02) / .40) * smooth((down - .05) / .35) * .95);
+      return c;
+    }
     function data() { return { p: [], c: [], uv: [], feather: [], ix: [], kind: 0, seed: 0 }; }
     function vertex(d, x, y, z, c, u, v) {
       d.p.push(x, y, z); d.c.push(c.r, c.g, c.b); d.uv.push(u, v);
@@ -148,7 +252,10 @@
       shader.uniforms.awGrouse = { value: grouse ? 1 : 0 };
       shader.uniforms.awJay = { value: jay ? 1 : 0 };
       shader.uniforms.awCardinal = { value: cardinal ? 1 : 0 };
-      shader.fragmentShader = 'uniform float awGrouse;\nuniform float awJay;\nuniform float awCardinal;\n' + shader.fragmentShader;
+      // Dove-only marks are keyed explicitly, so a new species never inherits
+      // the covert spots or cheek mark by falling through the other flags.
+      shader.uniforms.awDove = { value: dove ? 1 : 0 };
+      shader.fragmentShader = 'uniform float awGrouse;\nuniform float awJay;\nuniform float awCardinal;\nuniform float awDove;\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'float awNeck = step(5.5, awFeatherInfo.x);',
@@ -178,10 +285,12 @@
         'float awCovert = step(2.5, awKind) * (1.0 - step(3.5, awKind));',
         'float awUnderCovert = awCovert * step(2047.5, awSeed);',
         'float awCovertRow = floor(awSeed / 13.0), awCovertColumn = mod(awSeed, 13.0);',
-        'float awSpotSelect = (1.0 - step(.5, mod(awCovertRow, 2.0))) * (1.0 - step(.5, mod(awCovertColumn + 2.0, 4.0)));',
-        'float awSpotDistance = length(vec2((awU - .46 - awRandom * .12) * (3.2 + awRandom), (awV - .73 - awRandom * .05) * (4.8 + awRandom)));',
+        // Bold black ovals on the folded coverts are the dove's wing field mark.
+        // Exposed vane tips carry them; broad spots stay legible at range.
+        'float awSpotSelect = (1.0 - step(.5, mod(awCovertColumn + awCovertRow, 3.0))) * (1.0 - step(2.5, awCovertRow));',
+        'float awSpotDistance = length(vec2((awU - .48 - awRandom * .08) * (1.8 + awRandom * .4), (awV - .62 - awRandom * .06) * (2.5 + awRandom * .5)));',
         'float awSpot = 1.0 - smoothstep(.66 - fwidth(awSpotDistance), .86 + fwidth(awSpotDistance), awSpotDistance);',
-        'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.023, .020, .017), (1.0 - awGrouse) * (1.0 - awJay) * awCovert * (1.0 - awCardinal) * (1.0 - awUnderCovert) * awSpotSelect * awSpot * .93);',
+        'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.023, .020, .017), awDove * awCovert * (1.0 - awUnderCovert) * awSpotSelect * awSpot * .93);',
         // Jay barring follows the vanes, retaining the same broad field marks
         // at either geometry quality. Pale wingbars and tail corners remain
         // unbarred; derivatives soften the markings at woodland distance.
@@ -199,7 +308,7 @@
         'awCheek.y -= awCheek.x * .38;',
         'float awCheekEdge = length(awCheek) + sin(awCheek.x * 18.0 + awCheek.y * 8.0) * .065;',
         'float awCheekAA = max(.04, fwidth(awCheekEdge));',
-        'float awCheekMark = (1.0 - smoothstep(.68 - awCheekAA, 1.0 + awCheekAA, awCheekEdge)) * awHeadSurface * (1.0 - awGrouse) * (1.0 - awJay) * (1.0 - awCardinal);',
+        'float awCheekMark = (1.0 - smoothstep(.68 - awCheekAA, 1.0 + awCheekAA, awCheekEdge)) * awHeadSurface * awDove;',
         'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.035, .030, .026), awCheekMark * .88);',
         'float awUnderVane = (gl_FrontFacing ? 0.0 : 1.0) * step(3.5, awKind) * (1.0 - awNeck);',
         'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.31, .30, .25), awUnderVane * mix(.32, .12, awGrouse));',
@@ -251,7 +360,7 @@
         'if (abs(awDet) > 1e-12) normal = normalize(abs(awDet) * normal - sign(awDet) * (dFdx(awRelief) * awR1 + dFdy(awRelief) * awR2));'
       ].join('\n'));
     };
-    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v12'; };
+    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v13'; };
     var details = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: cardinal ? .34 : .48 }));
     if (cardinal) {
       // A closed seed bill needs two readable mandibles without another mesh
@@ -362,7 +471,9 @@
     function bodyColor(t, angle) {
       var ventral = smooth((t - .37) * 2.4), c = mix(back, breast, ventral);
       if (grouse) c = mix(c, pale, ventral * .18);
-      return frontBreastTint(c, Math.sin(t * PI) * Math.sin(angle));
+      c = frontBreastTint(c, Math.sin(t * PI) * Math.sin(angle));
+      if (tinted) c = songbirdTint(c, -Math.cos(t * PI), Math.sin(t * PI) * Math.sin(angle), Math.abs(Math.sin(t * PI) * Math.cos(angle)));
+      return c;
     }
     // Recess the continuous undercoat slightly. Curved contour facets must
     // remain above it between their vertices, not just at the vertices.
@@ -397,14 +508,15 @@
             var colorFront = smooth((zr - .74) / .26);
             var colorNy = ny * (1 - colorFront + colorFront * radial);
             var c = frontBreastTint(mix(back, breast, smooth((.35 - colorNy) * .9)), zr);
+            if (tinted) c = songbirdTint(c, -ny * radial, zr, Math.abs(nx) * radial);
             var mottling = noise(row * 7 + around, j + k * .37);
             if (grouse) {
               // Broken pale feather margins and fine dark transverse marks.
               c = mix(c, pale, .05 + mottling * .08);
             } else {
-              c = mix(c, pale, smooth((v - .86) * 7) * (cardinal ? .035 : .08));
+              c = mix(c, pale, smooth((v - .86) * 7) * (songbird ? .035 : .08));
             }
-            c = shade(c, cardinal ? .985 + noise(row, around) * .03 : .96 + noise(row, around) * .08);
+            c = shade(c, songbird ? .985 + noise(row, around) * .03 : .96 + noise(row, around) * .08);
             vertex(bodyData, nx * (p.body[0] * radial + lift), ny * (p.body[1] * radial + lift), zr * p.body[2], c, u, v);
           }
         }
@@ -422,7 +534,9 @@
     for (var cap = 0; cap < capAround; cap++) {
       var capBase = bodyData.p.length / 3, capPhi = (cap + .25) / capAround * TAU;
       bodyData.kind = 1; bodyData.seed = 1000 + cap;
-      vertex(bodyData, 0, 0, p.body[2], frontBreastTint(mix(back, breast, smooth(.35 * .9)), 1), .5, 0);
+      var capCenter = frontBreastTint(mix(back, breast, smooth(.35 * .9)), 1);
+      if (tinted) capCenter = songbirdTint(capCenter, 0, 1, 0);
+      vertex(bodyData, 0, 0, p.body[2], capCenter, .5, 0);
       for (var cj = 1; cj <= capSteps; cj++) {
         var cv = cj / capSteps, ca = capAngle * cv;
         var capRadial = Math.sin(ca), capZ = Math.cos(ca);
@@ -433,6 +547,7 @@
           var capNx = Math.cos(cp), capNy = Math.sin(cp);
           var capLift = Math.sin(PI * cv) * (.00011 + (1 - capSide * capSide) * .00007) + cv * .00008;
           var capColor = frontBreastTint(mix(back, breast, smooth((.35 - capNy * capRadial) * .9)), capZ);
+      if (tinted) capColor = songbirdTint(capColor, -capNy * capRadial, capZ, Math.abs(capNx) * capRadial);
           capColor = shade(capColor, .98 + noise(cap + 45, cj) * .035);
           vertex(bodyData, capNx * (p.body[0] * capRadial + capLift), capNy * (p.body[1] * capRadial + capLift),
             capZ * p.body[2], capColor, cu, cv);
@@ -470,6 +585,7 @@
           var rumpLift = .00009 + (rumpRows - rr) * .000025 + Math.sin(PI * rv) * .00011 + rv * .000045;
           var rumpColor = mix(back, breast, smooth((.20 - rumpY) * 1.3));
           if (grouse) rumpColor = mix(rumpColor, pale, .06 + noise(rr, rc + 12) * .05);
+      if (tinted) rumpColor = songbirdTint(rumpColor, -rumpY, rz, Math.abs(rx));
           rumpColor = shade(rumpColor, .97 + noise(rr + 35, rc) * .06);
           vertex(bodyData, rx * p.body[0] + rnx / rnLength * rumpLift,
             rumpY * p.body[1] + rny / rnLength * rumpLift, rz * p.body[2] + rnz / rnLength * rumpLift,
@@ -534,9 +650,9 @@
     mesh(body, 'woodland-body-plumage', bodyData, plumage);
 
     var headData = data();
-    var headCrown = color(grouse ? '#61513c' : jay ? '#4b87b5' : cardinal ? '#d43b39' : '#6e7471');
-    var headCheek = color(grouse ? '#806b4c' : jay ? '#d0d5d3' : cardinal ? '#bc3033' : '#92887d');
-    var headThroat = color(grouse ? '#a4936f' : jay ? '#e1e3d9' : cardinal ? '#292021' : '#a39584');
+    var headCrown = color(tune ? tune.crown : grouse ? '#61513c' : jay ? '#4b87b5' : cardinal ? '#d43b39' : '#76726c');
+    var headCheek = color(tune ? tune.cheek : grouse ? '#806b4c' : jay ? '#d0d5d3' : cardinal ? '#bc3033' : '#957c69');
+    var headThroat = color(tune ? tune.throat : grouse ? '#a4936f' : jay ? '#e1e3d9' : cardinal ? '#292021' : '#a2846e');
     function headPaint(t, angle) {
       var c = mix(headCrown, headCheek, smooth((t - .23) * 1.8));
       var front = .5 + .5 * Math.sin(angle);
@@ -553,6 +669,29 @@
         var maskCap = smooth((t - (.400 - .035 * maskBrow)) / .070);
         c = mix(c, dark, maskFront * maskCap * .98);
         c = shade(c, .98 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .04);
+      } else if (chickadee) {
+        // Black cap and bib frame a white cheek that wraps toward the nape.
+        var chickFront = Math.sin(angle);
+        c = mix(headCrown, headCheek, smooth((t - .38) / .07));
+        c = mix(c, headThroat, smooth((chickFront + .05) / .25) * smooth((t - .58) / .07));
+        c = mix(c, back, smooth((-chickFront - .45) / .25) * smooth((t - .40) / .08) * .85);
+        c = shade(c, .98 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .04);
+      } else if (robin) {
+        // Dark head over a white, dark-streaked throat; the white eye arcs are the eye ring.
+        var robinFront = .5 + .5 * Math.sin(angle);
+        c = mix(c, headThroat, smooth((t - .64) / .12) * smooth((robinFront - .62) / .20));
+        var robinStreak = smooth((Math.sin(angle * 46) - .55) / .25) * smooth((t - .66) / .10) * smooth((robinFront - .70) / .15);
+        c = mix(c, dark, robinStreak * .65);
+        c = shade(c, .97 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .05);
+      } else if (titmouse) {
+        // Gray crown and nape; only the face and throat are pale. A small
+        // black band crosses the forehead just above the bill.
+        var titFace = .5 + .5 * Math.sin(angle);
+        c = mix(headCrown, headCheek, smooth((t - .40) / .22) * smooth((titFace - .30) / .32));
+        c = mix(c, headThroat, smooth((t - .68) / .20) * titFace * .6);
+        var foreheadPatch = smooth((Math.sin(angle) - .52) / .26) * Math.exp(-Math.pow((t - .37) * 12, 2));
+        c = mix(c, dark, foreheadPatch * .96);
+        c = shade(c, .97 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .05);
       } else if (jay) {
         c = mix(headCrown, headCheek, smooth((t - .28) / .22));
         c = mix(c, headThroat, smooth((t - .57) / .30) * front);
@@ -616,7 +755,7 @@
       var offset = d.p.length / 3, dx = bx - ax, dz = bz - az;
       var len = Math.sqrt(dx * dx + dz * dz), sx = len > 1e-8 ? -dz / len : 1, sz = len > 1e-8 ? dx / len : 0;
       var detailedVane = d.kind >= 3 && d.kind <= 5, tailVane = d.kind === 5;
-      var roundedTip = !detailedVane ? .018 : tailVane ? (grouse ? .48 : jay ? .42 : cardinal ? .36 : .18) : d.kind === 3 ? .34 : grouse ? .28 : jay ? .22 : cardinal ? .26 : .14;
+      var roundedTip = !detailedVane ? .018 : tailVane ? (tune ? tune.tailRound : grouse ? .48 : jay ? .42 : cardinal ? .36 : .18) : d.kind === 3 ? .34 : tune ? tune.wingRound : grouse ? .28 : jay ? .22 : cardinal ? .26 : .14;
       var capDepth = detailedVane ? Math.min(.055, width / Math.max(len, .001) * (tailVane && grouse ? .23 : .16)) : 0;
       // The shorter, broad underwing tips need a shallower cap so the last
       // outer corner cannot fold back through the preceding row.
@@ -719,6 +858,18 @@
           headData.p[cardinalVertex * 3 + 2] = cardinalPlaneZ - (cardinalY - cardinalPlaneY) * cardinalSlope + cardinalDepth;
         }
       }
+    } else if (titmouse) {
+      var titCrestColumns = high ? 7 : 5;
+      for (var titRow = 0; titRow < 3; titRow++) for (var titColumn = 0; titColumn < titCrestColumns; titColumn++) {
+        var titAcross = titColumn / (titCrestColumns - 1) * 2 - 1;
+        var titX = titAcross * .0098, titHeight = .029 + (1 - Math.abs(titAcross)) * .006 - titRow * .0016;
+        headData.kind = 2; headData.seed = -1500 - titRow * 16 - titColumn;
+        var titColor = shade(headCrown, .95 + noise(titColumn, titRow + 23) * .08);
+        headTuft(titX, .0165 - Math.abs(titAcross) * .0024, .003 - titRow * .0055,
+          titX * .45, titHeight, -.022 - titRow * .005, high ? .0052 : .0070,
+          1, 0, titAcross * .25, .0007,
+          function (v) { return mix(titColor, back, v * .12); });
+      }
     } else if (jay) {
       var jayCrestColumns = high ? 9 : 6;
       for (var jayRow = 0; jayRow < 3; jayRow++) for (var jayColumn = 0; jayColumn < jayCrestColumns; jayColumn++) {
@@ -758,9 +909,9 @@
     var face = data();
     for (var faceSide = -1; faceSide <= 1; faceSide += 2) {
       var ex = faceSide * p.head[0] * .905, ey = p.head[1] * .13, ez = p.head[2] * .34;
-      ellipsoid(face, ex, ey, ez, .0009, grouse ? .0046 : cardinal ? .0031 : .0037, grouse ? .0047 : cardinal ? .0032 : .0038,
+      ellipsoid(face, ex, ey, ez, .0009, tune ? tune.eye[0] : grouse ? .0046 : cardinal ? .0031 : .0037, tune ? tune.eye[1] : grouse ? .0047 : cardinal ? .0032 : .0038,
         constant(eyeRing), high ? 10 : 6, high ? 16 : 10);
-      ellipsoid(face, ex + faceSide * .0006, ey, ez + .0002, .0009, grouse ? .0038 : cardinal ? .0025 : .0029, grouse ? .0039 : cardinal ? .0026 : .0030,
+      ellipsoid(face, ex + faceSide * .0006, ey, ez + .0002, .0009, tune ? tune.eye[2] : grouse ? .0038 : cardinal ? .0025 : .0029, tune ? tune.eye[3] : grouse ? .0039 : cardinal ? .0026 : .0030,
         constant(eyeColor), high ? 12 : 7, high ? 18 : 10);
     }
     // The seed-cracking cardinal bill has a deep, short cone. Other bills
@@ -768,11 +919,11 @@
     var billOffset = face.p.length / 3, billRings = high ? 9 : 6, billSegments = high ? 12 : 8;
     face.kind = cardinal ? 1 : 0;
     for (var br = 0; br <= billRings; br++) {
-      var bv = br / billRings, taper = .04 + .96 * Math.pow(1 - bv, cardinal ? 1.04 : .8);
+      var bv = br / billRings, taper = .04 + .96 * Math.pow(1 - bv, tune ? tune.billTaper : cardinal ? 1.04 : .8);
       for (var bs = 0; bs < billSegments; bs++) {
         var ba = bs / billSegments * TAU;
-        vertex(face, Math.cos(ba) * (grouse ? .0073 : jay ? .0058 : cardinal ? .0083 : .0045) * taper,
-          -.0035 - bv * bv * (jay ? .0015 : cardinal ? .001 : .0038) + Math.sin(ba) * (grouse ? .006 : jay ? .0051 : cardinal ? .0080 : .0039) * taper,
+        vertex(face, Math.cos(ba) * (tune ? tune.billWidth : grouse ? .0073 : jay ? .0058 : cardinal ? .0083 : .0045) * taper,
+          -.0035 - bv * bv * billDroop + Math.sin(ba) * (tune ? tune.billHeight : grouse ? .006 : jay ? .0051 : cardinal ? .0080 : .0039) * taper,
           p.head[2] * .76 + p.billLength * bv, shade(billColor, .92 + .10 * Math.sin(ba)), bs / billSegments, bv);
       }
     }
@@ -789,7 +940,7 @@
     var neckCoordinates = [];
     function neckColor(t, angle) {
       var throat = .5 + Math.sin(angle) * .5;
-      var base = mix(back, breast, throat * .72);
+      var base = hooded ? back : mix(back, breast, throat * .72);
       var top = mix(headCrown, headCheek, throat * .80);
       var c = mix(base, top, smooth((t - .18) / .82));
       if (grouse) c = mix(c, dark, Math.pow(Math.cos(angle), 2) * smooth((t - .45) / .50) * .18);
@@ -797,6 +948,7 @@
         var bibWidth = .72 - smooth((t - .58) / .36) * .14;
         c = mix(c, dark, smooth((Math.sin(angle) - bibWidth) / .20) * smooth((t - .58) / .24) * .98);
       }
+      if (chickadee) c = mix(c, dark, smooth((Math.sin(angle) - .05) / .30) * smooth((t - .22) / .20) * .97);
       if (jay) {
         c = mix(back, headThroat, throat * .94);
         // The necklace dips across the throat and rises around the nape.
@@ -860,6 +1012,31 @@
             c = mix(c, back, smooth((Math.abs(u - .5) - .30) / .20) * .30);
           } else if (kind === 'tail') c = mix(c, breast, .19 + (1 - shaftShade) * .17);
           else c = mix(c, back, .52);
+        } else if (robin) {
+          // Blackish tail with small white outer corners; darker remiges.
+          if (kind === 'tail') { c = mix(c, dark, .55); if (index === 0 || index === 11) c = mix(c, pale, smooth((v - .86) / .08) * .9); }
+          else if (kind === 'primary') c = mix(c, dark, .20);
+          else if (kind === 'tertial') c = mix(c, dark, .12);
+        } else if (chickadee) {
+          // White edges on the secondaries and tertials form the pale wing panel.
+          if (kind === 'secondary' || kind === 'tertial') c = mix(c, pale, smooth((Math.abs(u - .5) - .30) / .12) * .75);
+          else if (kind === 'tail') c = mix(mix(c, dark, .32), pale, smooth((Math.abs(u - .5) - .40) / .08) * .28);
+          else if (kind === 'primary') c = mix(c, dark, .10);
+        } else if (junco) {
+          // Slate wings. The two outer tail pairs are white, flashing in flight
+          // and hidden beneath the central feathers when the tail is folded.
+          if (kind === 'tail') c = index <= 1 || index >= 10 ? mix(pale, c, .06) :
+            index === 2 || index === 9 ? mix(c, pale, smooth((Math.abs(u - .5) - .05) / .20) * .85) : mix(c, dark, .18);
+          else if (kind === 'primary') c = mix(c, dark, .14);
+        } else if (titmouse) {
+          if (kind === 'primary') c = mix(c, dark, .10);
+          if (kind === 'tail') c = mix(c, dark, .08);
+        } else if (towhee) {
+          // White patch at the primary bases, pale tertial edges, white tail corners.
+          if (kind === 'primary' && index >= 2 && index <= 7) c = mix(c, pale, smooth((.34 - v) / .10) * smooth((v - .08) / .06) * .92);
+          if (kind === 'tertial') c = mix(c, pale, smooth((Math.abs(u - .5) - .36) / .10) * .55);
+          if (kind === 'tail' && (index <= 1 || index >= 10)) c = mix(c, pale, smooth((v - .70) / .12) * .95);
+          if (kind === 'tail' && (index === 2 || index === 9)) c = mix(c, pale, smooth((v - .84) / .10) * .80);
         } else if (jay) {
           if (kind === 'scapular') c = mix(c, back, .55);
           if (kind === 'covert') {
@@ -919,14 +1096,14 @@
       for (var s = 0; s < 10; s++) {
         var a = s / 9;
         feather('secondary', s, [.008 + a * .094, -.0002 - a * .0003, .013 - a * .019],
-          [.020 + a * .098, -.001, cardinal ? -.065 - a * .018 : -.075 - a * .021],
+          [.020 + a * .098, -.001, songbird ? -.065 - a * .018 : -.075 - a * .021],
           [.020 + a * .006, -.004 - a * .006, .009 - a * .054], [.026 + a * .003, -.012, -.063 - a * .043],
           grouse ? .027 : .023, .0018);
       }
       for (var q = 0; q < 10; q++) {
-        var b = q / 9, tipX = .132 + Math.sin(b * PI * (cardinal ? .62 : .5)) * (grouse ? .112 : .098);
+        var b = q / 9, tipX = .132 + Math.sin(b * PI * (songbird ? .62 : .5)) * (grouse ? .112 : .098);
         feather('primary', q, [.093 + b * .048, -.0009, -.014 + b * .018],
-          [tipX, -.002 + b * .002, cardinal ? -.083 + b * .053 : -.103 + b * (grouse ? .049 : .068)],
+          [tipX, -.002 + b * .002, songbird ? -.083 + b * .053 : -.103 + b * (grouse ? .049 : .068)],
           [.024 + b * .004, -.006, -.034 - b * .020], [.022 + b * .003, -.015, -.108 - b * .019],
           (grouse ? .025 : .020) * (1 - b * .38), .0012);
       }
@@ -985,8 +1162,8 @@
       // layers, preserving their order instead of inflating every feather.
       // It tapers out at the seated shoulder and free tips. The folded mantle
       // remains the original template, so resting/preening contacts stay put.
-      var wingCamber = cardinal ? new Float32Array(open.p.length / 3) : null;
-      if (cardinal) for (var cv = 0; cv < open.p.length; cv += 3) {
+      var wingCamber = songbird ? new Float32Array(open.p.length / 3) : null;
+      if (songbird) for (var cv = 0; cv < open.p.length; cv += 3) {
         var spanX = open.p[cv] / scale, chordZ = open.p[cv + 2] / scale;
         var leadingZ = .026 - spanX * .20;
         var trailingZ = -.069 - spanX * .14 + .065 * smoothHop((spanX - .10) / .13);
@@ -1045,7 +1222,7 @@
     var tailData = data(), tailFactors = [], tailCount = grouse ? 18 : 12;
     for (var tf = 0; tf < tailCount; tf++) {
       var factor = (tf / (tailCount - 1) - .5) * 2;
-      var length = p.tailLength * (grouse ? 1 - Math.abs(factor) * .10 : jay ? 1 - Math.abs(factor) * .065 : cardinal ? 1 - Math.pow(Math.abs(factor), 1.7) * .12 : 1 - Math.pow(Math.abs(factor), .8) * .30);
+      var length = p.tailLength * (tune ? 1 - Math.pow(Math.abs(factor), tune.tailShape[0]) * tune.tailShape[1] : grouse ? 1 - Math.abs(factor) * .10 : jay ? 1 - Math.abs(factor) * .065 : cardinal ? 1 - Math.pow(Math.abs(factor), 1.7) * .12 : 1 - Math.pow(Math.abs(factor), .8) * .30);
       var old = tailData.p.length / 3;
       tailData.kind = 5; tailData.seed = tf;
       var tailRoot = factor * (grouse ? .007 : .0033);
@@ -1081,7 +1258,7 @@
     var footStates = [], previousFootTargets = new Float64Array(10);
     var clawRootColor = color(grouse ? '#73624d' : jay ? '#55575a' : '#695b53'), clawTipColor = color(jay ? '#252a2e' : '#302b26');
     for (var foot = 0; foot < 2; foot++) {
-      var fd = data(), footScale = grouse ? 1.35 : cardinal ? .82 : 1, legPoints = [], legRadii = [], legSegments = high ? 10 : 6, toeProfiles = [];
+      var fd = data(), footScale = tune ? tune.footScale : grouse ? 1.35 : cardinal ? .82 : 1, legPoints = [], legRadii = [], legSegments = high ? 10 : 6, toeProfiles = [];
       for (var ls = 0; ls <= legSegments; ls++) {
         var lt = ls / legSegments;
         legPoints.push([0, .009 - lt * (p.leg + .006), -.004 + lt * .006]);
@@ -1177,7 +1354,7 @@
       // A paired hop bends through the legs and torso while its gaze stays
       // quiet. Every pulse has zero velocity and acceleration at its joins;
       // the phase is supplied by the scene, so seeking needs no motion history.
-      var hopPhase = cardinal && flight === 0 ? number(pose.hopPhase, -1) : -1;
+      var hopPhase = hopper && flight === 0 ? number(pose.hopPhase, -1) : -1;
       var hopAir = 0, hopGather = 0, hopPlant = 0, hopLean = 0, hopTail = 0, hopTailFlex = 0, hopHeadY = 0, hopHeadZ = 0, hopHeadPitch = 0, hopAttach = 0;
       if (hopPhase >= 0 && hopPhase <= 1) {
         var prepare = hopPulse(hopPhase / .18), settleHop = hopPulse((hopPhase - .65) / .35);
@@ -1203,7 +1380,7 @@
           .0014 * hopPulse((hopPhase - .18) / .47) - .0016 * hopPulse((hopPhase - .69) / .31);
         hopAttach = Math.max(prepare, hopAir, settleHop);
       }
-      var hopChanged = cardinal && previous.hopPhase !== hopPhase;
+      var hopChanged = hopper && previous.hopPhase !== hopPhase;
       var crestFold = cardinal ? smoothHop(flight) * (1 - smoothHop(landing) * .40) : 0;
       if (cardinal) crestFold += .35 * landingSettle * (1 - smoothHop(flight));
       var crestChanged = cardinal && previous.crestFold !== crestFold;
@@ -1247,18 +1424,19 @@
       }
       walkX *= walkAmount * (grouse ? .0022 : .0014);
       walkY = Math.min(1, walkY) * walkAmount * (grouse ? .0009 : .00065);
-      if (cardinal && hopPhase >= 0) { walkX = 0; walkY = hopAir * .00065; }
+      if (hopper && hopPhase >= 0) { walkX = 0; walkY = hopAir * .00065; }
       var neckChanged = previous.flight !== flight || previous.peck !== peck || previous.yaw !== yaw ||
         previous.walkX !== walkX || previous.walkY !== walkY || groomingChanged || hopChanged || flightLoadChanged ||
         (cardinal && flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.landing !== landing));
       var wingChanged = previous.flight !== flight || (flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.bank !== bank || previous.landing !== landing));
-      var tailChanged = previous.flight !== flight || previous.fan !== fan || (cardinal && hopChanged) || settlingChanged || (flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.bank !== bank || previous.landing !== landing));
+      var tailChanged = previous.flight !== flight || previous.fan !== fan || (hopper && hopChanged) || settlingChanged || (flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.bank !== bank || previous.landing !== landing));
       previous.flight = flight; previous.phase = phase; previous.effort = effort; previous.bank = bank;
       previous.yaw = yaw; previous.pitch = pitch; previous.peck = peck; previous.stride = stride; previous.walking = walking; previous.fan = fan; previous.landing = landing;
       previous.walkX = walkX; previous.walkY = walkY;
       previous.preen = preen; previous.preenSide = preenSide; previous.preenStroke = preenStroke;
+      if (hopper) previous.hopPhase = hopPhase;
       if (cardinal) {
-        previous.hopPhase = hopPhase; previous.crestFold = crestFold;
+        previous.crestFold = crestFold;
         previous.launchLoad = launchLoad; previous.landingLoad = landingLoad; previous.flightTuck = flightTuck; previous.landingReach = landingReach;
         previous.landingSettle = landingSettle;
       }
@@ -1288,10 +1466,10 @@
       var cardinalDrop = cardinal ? -.005 * launchLoad - .004 * landingLoad + .0008 * cardinalAir * Math.sin(beat - .50) : 0;
       body.position.set(walkX, p.bodyY - peck * .004 + walkY, p.bodyZ);
       body.rotation.set(.08 * unfold - transition * .07 + peck * .09, 0, -Math.sin(bank) * unfold * .015);
-      head.position.set(Math.sin(yaw) * (grouse ? .004 : .0025), p.headY - peck * (grouse ? .153 : jay ? .100 : cardinal ? .0765 : .0905) - flight * .013,
-        p.headZ + peck * (grouse ? .068 : cardinal ? .034 : .048) + flight * .013);
+      head.position.set(Math.sin(yaw) * (grouse ? .004 : .0025), p.headY - peck * (tune ? tune.peckDrop : grouse ? .153 : jay ? .100 : cardinal ? .0765 : .0937) - flight * .013,
+        p.headZ + peck * (tune ? tune.peckForward : grouse ? .068 : cardinal ? .034 : .048) + flight * .013);
       head.rotation.set(pitch * (1 - peck) + peck * 1.16 - flight * .05, yaw, -Math.sin(bank) * flight * .07);
-      if (cardinal && hopPhase >= 0) {
+      if (hopper && hopPhase >= 0) {
         body.rotation.x += hopLean;
         head.position.y += hopHeadY; head.position.z += hopHeadZ;
         head.rotation.x += hopHeadPitch;
@@ -1328,7 +1506,7 @@
           p.shoulder[1] + localX * sw + localY * cw + .0012, p.shoulder[2] + localZ);
         preenRotation.setFromEuler(preenEuler.set((grouse ? .86 : jay ? .75 : .72) + preenStroke * .055,
           preenSide * (2.30 + preenStroke * .065), -preenSide * .035, 'YXZ'));
-        preenBill.set(0, -.0035 - (jay ? .0015 : cardinal ? .001 : .0038), p.head[2] * .76 + p.billLength).applyQuaternion(preenRotation);
+        preenBill.set(0, -.0035 - billDroop, p.head[2] * .76 + p.billLength).applyQuaternion(preenRotation);
         head.position.x += (preenPoint.x - preenBill.x - head.position.x) * preen;
         head.position.y += (preenPoint.y - preenBill.y - head.position.y) * preen;
         head.position.z += (preenPoint.z - preenBill.z - head.position.z) * preen;
@@ -1337,7 +1515,7 @@
       var neckPos = neckMesh.geometry.attributes.position.array;
       var lowerY = p.neckBase[0] - peck * .005 - (1 - peck) * (grouse ? .009 : .006) + walkY;
       var lowerZ = p.neckBase[1] - (1 - peck) * (grouse ? .008 : .005);
-      if (cardinal && cardinalLean !== 0) {
+      if (hopper && cardinalLean !== 0) {
         var neckHopY = lowerY - p.bodyY, neckHopZ = lowerZ - p.bodyZ;
         lowerY = p.bodyY + neckHopY * Math.cos(cardinalLean) - neckHopZ * Math.sin(cardinalLean);
         lowerZ = p.bodyZ + neckHopY * Math.sin(cardinalLean) + neckHopZ * Math.cos(cardinalLean);
@@ -1379,7 +1557,7 @@
         group.position.set(sign * p.shoulder[0] + walkX, p.shoulder[1] + walkY, p.shoulder[2]);
         group.rotation.set(unfold * (.030 + recovery * effort * .040), -sign * unfold * recovery * effort * .045,
           sign * (stroke + unfold * .045 + Math.sin(bank) * unfold * sign * .055));
-        if (cardinal && cardinalLean !== 0) {
+        if (hopper && cardinalLean !== 0) {
           var shoulderY = p.shoulder[1] - p.bodyY, shoulderZ = p.shoulder[2] - p.bodyZ;
           group.position.y = p.bodyY + walkY + shoulderY * Math.cos(cardinalLean) - shoulderZ * Math.sin(cardinalLean);
           group.position.z = p.bodyZ + shoulderY * Math.sin(cardinalLean) + shoulderZ * Math.cos(cardinalLean);
@@ -1396,7 +1574,7 @@
         // Pressure deepens the section on the power stroke, then its elastic
         // recoil relaxes it during hand recovery. This follows the existing
         // continuous beat and never changes the route or resets its phase.
-        var sectionLoad = cardinal ? effort * (.32 * smoothHop(Math.sin(beat) + .06) - .18 * smoothHop(-Math.sin(beat - .24) + .06)) : 0;
+        var sectionLoad = songbird ? effort * (.32 * smoothHop(Math.sin(beat) + .06) - .18 * smoothHop(-Math.sin(beat - .24) + .06)) : 0;
         // Light differential loading bends the outer vanes through a bank;
         // braking raises their trailing tips without unseating the coverts.
         var strokeFlex = (settle * .0048 + wristRecovery * effort * unfold * .0018) * p.wing;
@@ -1418,7 +1596,7 @@
         if (wingChanged) for (var v = 0; v < state.flex.length; v++) {
           var i = v * 3, bend = state.flex[v], quillFlex = 0;
           var ox = state.open[i], oy = state.open[i + 1], oz = state.open[i + 2];
-          if (cardinal) oy += state.camber[v] * sectionLoad;
+          if (songbird) oy += state.camber[v] * sectionLoad;
           if (deployment > 0) {
             var featherStart = Math.floor(v / vaneCount) * vaneCount;
             if (deployedFeather !== featherStart) {
@@ -1453,7 +1631,7 @@
           var hand = smooth((ox / p.wing - .105) / .065);
           var forearm = smooth((ox / p.wing - .048) / .065);
           var along = vaneUv[v * 2 + 1];
-          if (along > 0 && vaneInfo[v * 2] === 3 && (cardinal || vaneInfo[v * 2 + 1] >= 2048)) {
+          if (along > 0 && vaneInfo[v * 2] === 3 && (songbird || vaneInfo[v * 2 + 1] >= 2048)) {
             // Keep the lining and cardinal dorsal coverts broad as the wrist
             // folds. Each row follows its shaft instead of assigning opposite
             // edges different bones and squeezing the vane like an accordion.
@@ -1543,14 +1721,14 @@
       tail.rotation.set(unfold * (.055 + effort * Math.sin(beat - .65) * .012) + transition * .105 - peck * .11 + tailBrake * .070,
         -Math.sin(bank) * unfold * .095, Math.sin(bank) * unfold * .025);
       if (cardinal) tail.rotation.x += .035 * landingSettle;
-      if (cardinal && (hopPhase >= 0 || flight > 0 || launchLoad > 0 || landingLoad > 0)) {
+      if (hopper && (hopPhase >= 0 || (cardinal && (flight > 0 || launchLoad > 0 || landingLoad > 0)))) {
         var tailHopY = p.tailY - p.bodyY, tailHopZ = p.tailZ - p.bodyZ;
         tail.position.y = p.bodyY + walkY + cardinalDrop + tailHopY * Math.cos(cardinalLean) - tailHopZ * Math.sin(cardinalLean);
         tail.position.z = p.bodyZ + tailHopY * Math.sin(cardinalLean) + tailHopZ * Math.cos(cardinalLean);
         tail.rotation.x += hopTail - .085 * launchLoad + .05 * landingLoad - .020 * cardinalAir * Math.sin(beat - .15);
       }
-      var tailSpread = .055 + fan * (grouse ? .91 : jay ? .36 : cardinal ? .32 : .48) + unfold * (.13 + effort * recovery * .035) + transition * .105;
-      if (cardinal) tailSpread += hopPlant * .065;
+      var tailSpread = .055 + fan * (tune ? tune.fan : grouse ? .91 : jay ? .36 : cardinal ? .32 : .48) + unfold * (.13 + effort * recovery * .035) + transition * .105;
+      if (hopper) tailSpread += hopPlant * .065;
       if (cardinal) tailSpread += landingSettle * .035;
       var tailFlex = unfold * effort * Math.sin(beat - .65) * .0018;
       var tp = tailMesh.geometry.attributes.position.array, tailUv = tailMesh.geometry.attributes.uv.array;
@@ -1593,7 +1771,7 @@
           feet[f].position.y * (1 - targetBlend) + targets[f].y * targetBlend,
           feet[f].position.z * (1 - targetBlend) + targets[f].z * targetBlend);
         feet[f].rotation.set(-tuck * 1.23 + reach * .10, 0, (f === 0 ? -1 : 1) * tuck * .08);
-        if (cardinal && hopAir > 0) {
+        if (hopper && hopAir > 0) {
           feet[f].rotation.x -= hopGather * .50;
           // Rotation alone swings the low ankle forward. Compensate that
           // arc so the actual feet gather beneath the belly, not ahead of it.
@@ -1617,7 +1795,7 @@
           toeGather = toeGather * (1 - targetBlend) + targetLift * .34 * (1 - flightCurl) * targetBlend;
           footRoll = footRoll * (1 - targetBlend) + targetLift * .26 * (1 - 2 * Math.max(0, targetSwing)) * (1 - flightCurl) * targetBlend;
         }
-        if (cardinal && hopPhase >= 0) {
+        if (hopper && hopPhase >= 0) {
           // Both feet recover together; toes unfurl before the ankle reaches
           // forward. An ankle-centered roll lifts the tips during approach
           // without translating any supporting sole through the floor.
@@ -1638,7 +1816,7 @@
         }
         // A hop's continuous envelope replaces walking's thresholded contact
         // blend. The actual soles remain at their supplied fixed contacts.
-        if (cardinal && hopPhase >= 0) attachment = hopAttach;
+        if (hopper && hopPhase >= 0) attachment = hopAttach;
         else if (cardinal) attachment = Math.max(attachment, launchLoad, landingLoad);
         var hipX = 0, hipY = .009, hipZ = -.004;
         if (attachment > 0) {
@@ -1648,7 +1826,7 @@
           var wx = body.position.x + (f === 0 ? -1 : 1) * p.stance - feet[f].position.x;
           var wy = body.position.y - .010 - feet[f].position.y;
           var wz = .002 - feet[f].position.z;
-          if (cardinal && cardinalLean !== 0) {
+          if (hopper && cardinalLean !== 0) {
             wy = body.position.y - .010 * Math.cos(cardinalLean) - .012 * Math.sin(cardinalLean) - feet[f].position.y;
             wz = body.position.z - .010 * Math.sin(cardinalLean) + .012 * Math.cos(cardinalLean) - feet[f].position.z;
           }
@@ -1733,7 +1911,7 @@
             var legDx = -hipX, legDy = ankleY - hipY, legDz = ankleZ - hipZ;
             var legDistance = Math.sqrt(Math.max(1e-12, legDx * legDx + legDy * legDy + legDz * legDz));
             var lowerLength = Math.sqrt((p.leg + .006) * (p.leg + .006) + .006 * .006);
-            var upperLength = grouse ? .066 : jay ? .044 : cardinal ? .034 : .042;
+            var upperLength = tune ? tune.upperLeg : grouse ? .066 : jay ? .044 : cardinal ? .034 : .042;
             var legUx = legDx / legDistance, legUy = legDy / legDistance, legUz = legDz / legDistance;
             var kneeAlong = (upperLength * upperLength - lowerLength * lowerLength + legDistance * legDistance) / (2 * legDistance);
             kneeAlong = clamp(kneeAlong, 0, legDistance);

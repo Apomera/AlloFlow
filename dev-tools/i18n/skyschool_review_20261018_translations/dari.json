@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "تلاش‌های قبلی آزمون",
+  "stem.flightsim.quiz_history_scope": "با شروع یک تلاش تازه، تا چهار تلاش قبلی که پاسخ‌های نخست آن‌ها ثبت شده است ذخیره می‌شود. مرور آن‌ها آزمون فعلی شما را تغییر نمی‌دهد.",
+  "stem.flightsim.quiz_history_empty": "هنوز هیچ تلاش قبلی آزمون ذخیره نشده است.",
+  "stem.flightsim.quiz_history_attempt": "ذخیره‌شده در {date} · {score} پاسخ نخست درست از {answered} پاسخ",
+  "stem.flightsim.quiz_history_progress": "{answered} پرسش از {total} پرسش ثبت شده · {unanswered} پرسش بی‌پاسخ",
+  "stem.flightsim.quiz_history_question": "پرسش {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "پاسخ درست: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} پرسش ذخیره‌شده دیگر با این آزمون مطابقت ندارد. نمره‌ها فقط از سوابق پرسش‌های مطابق محاسبه می‌شوند."
+}

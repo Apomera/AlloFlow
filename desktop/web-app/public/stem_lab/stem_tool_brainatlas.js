@@ -17096,17 +17096,17 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("span", { className: "brainatlas-status-hint" }, useBrain3D ? (brain3DChallengeActive ? 'Challenge active · Select the structure that matches the clue' : (brain3DPathwayInfo ? (brain3DPathwayInfo.shortLabel + ' pathway · Step ' + (brain3DPathwayStep + 1) + ' of ' + brain3DPathwayInfo.steps.length + (brain3DPathwayPlaying ? ' · Playing' : ' · Paused')) : (brain3DCompareActive ? ('Compare anatomy · ' + brain3DCompareStructures.length + ' of 2 selected') : (brain3DSliceAxis !== 'off' ? brainAtlas3DSliceAxisLabel(brain3DSliceAxis) + ' · Move depth or flip side' : 'Drag to rotate · Scroll to zoom · Click a structure · Arrow keys orbit')))) : (canvasZoom > 1 ? t('stem.brainatlas.diagram_enlarged_scroll_hint', 'Diagram enlarged - scroll to explore every label.') : (d.quizMode ? t('stem.brainatlas.quiz_status_hint', 'Quiz is active - use the diagram and evidence to decide.') : t('stem.brainatlas.canvas_interaction_hint', 'Select a label on the diagram or choose a region below.'))))
                 ),
-                !useBrain3D && anatomyOrientation && React.createElement("div", {className:"brainatlas-anatomy-orientation", "data-brainatlas-orientation":viewKey, role:"group", "aria-label":'Diagram orientation'},
+                !useBrain3D && anatomyOrientation && React.createElement("div", {className:"brainatlas-anatomy-orientation", "data-brainatlas-orientation":viewKey, role:"group", "aria-label":__alloT('stem.brainatlas.a11y_diagram_orientation', 'Diagram orientation')},
                   React.createElement("strong", null, anatomyOrientation.label),
                   React.createElement("span", null, React.createElement("span", {className:"brainatlas-orientation-axis", "aria-hidden":"true"}, '\u2194'), anatomyOrientation.horizontal),
                   React.createElement("span", null, React.createElement("span", {className:"brainatlas-orientation-axis", "aria-hidden":"true"}, '\u2195'), anatomyOrientation.vertical)
                 ),
-                !useBrain3D && currentView.isNeuron && React.createElement("section", { className:"brainatlas-spike-study", "data-brainatlas-spike-study":"true", "aria-label":'Action-potential study controls' },
+                !useBrain3D && currentView.isNeuron && React.createElement("section", { className:"brainatlas-spike-study", "data-brainatlas-spike-study":"true", "aria-label":__alloT('stem.brainatlas.a11y_action_potential_study_controls', 'Action-potential study controls') },
                   React.createElement("div", {className:"brainatlas-spike-study-head"},
                     React.createElement("div", null, React.createElement("strong", null, 'Study the spike'), React.createElement("p", null, 'Pause or choose a phase to inspect the curve.')),
                     React.createElement("button", {type:"button", className:"brainatlas-spike-play", "data-brainatlas-spike-play":"true", onClick:function(event){controlBrainAtlasNeuron(event, 'toggle');}}, prefersReducedMotion ? 'Play cycle' : 'Pause cycle')
                   ),
-                  React.createElement("div", {className:"brainatlas-spike-phases", role:"group", "aria-label":'Choose and pause at a phase'}, BA_SPIKE_PHASES.map(function(info,index){
+                  React.createElement("div", {className:"brainatlas-spike-phases", role:"group", "aria-label":__alloT('stem.brainatlas.a11y_choose_and_pause_at_a_phase', 'Choose and pause at a phase')}, BA_SPIKE_PHASES.map(function(info,index){
                     return React.createElement("button", {key:info.label, type:"button", "data-brainatlas-spike-phase":String(index), "aria-label":info.short + ': inspect ' + info.label.toLowerCase() + ' phase', "aria-pressed":index===0?'true':'false', onClick:function(event){controlBrainAtlasNeuron(event,'phase',index);}}, React.createElement("span", {"aria-hidden":"true"},String(index+1).padStart(2,'0')), info.short);
                   })),
                   React.createElement("p", {className:"brainatlas-spike-readout", "data-brainatlas-spike-readout":"true", "aria-live":"off", "aria-atomic":"true"}, 'Resting. The membrane starts near \u221270 mV.')
@@ -17677,7 +17677,7 @@ var d = labToolData.brainAtlas || {};
 
                 ),
 
-                !useBrain3D && supportsCalloutDensity && diagramLabelKeyRegions.length > 0 && React.createElement("section", { className: "brainatlas-diagram-key", "data-brainatlas-diagram-key": "true", "aria-label": 'Anatomy label key' },
+                !useBrain3D && supportsCalloutDensity && diagramLabelKeyRegions.length > 0 && React.createElement("section", { className: "brainatlas-diagram-key", "data-brainatlas-diagram-key": "true", "aria-label": __alloT('stem.brainatlas.a11y_anatomy_label_key', 'Anatomy label key') },
                   React.createElement("div", { className: "brainatlas-diagram-key-heading" },
                     React.createElement("strong", null, 'Anatomy key'),
                     React.createElement("span", null, 'Numbers match the diagram. Choose a name to explore.')

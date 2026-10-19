@@ -475,7 +475,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
   it('the section tabs use roving focus and Explore controls expose named groups', () => {
     const html = renderTab('explore');
     expect(html).toMatch(/role="tablist" aria-label="Dino Lab sections" aria-orientation="horizontal"/);
-    expect(html).toMatch(/nav aria-label="Dino Lab section navigation"/);
+    expect(new DOMParser().parseFromString(html, 'text/html').querySelector('nav[aria-label="Dino Lab section navigation"]')).not.toBeNull();
     expect(html).toMatch(/class="dinolab-section-cue"/);
     expect(html).toMatch(/data-tab-group="Discover"/);
     expect(html).toMatch(/id="dinotab-explore" role="tab"[^>]*tabindex="0" aria-selected="true"/);

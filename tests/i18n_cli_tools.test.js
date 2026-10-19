@@ -123,22 +123,25 @@ describe('record_pack_translation_review.cjs - per-pack stale review ledger', ()
   it('recognizes the reviewed Spanish tour keys without globally blessing them', () => {
     const { stdout, status } = runNode(PACK_REVIEW, [
       '--lang=spanish_latin_america',
-      '--key=tour.actions_text',
       '--key=tour.brainstorm_text',
     ]);
     expect(status).toBe(0);
-    expect(stdout).toContain('0 to record, 2 already recorded');
+    expect(stdout).toContain('0 to record, 1 already recorded');
     expect(stdout).toContain('DRY RUN');
 
     // tour.note_taking_text graduated: the 2026-08 hand-translation refreshed
     // it against the English baseline, so the tool now refuses a review record
     // for it — the honest signal that the ledger entry is obsolete.
-    const graduated = runNode(PACK_REVIEW, [
-      '--lang=spanish_latin_america',
-      '--key=tour.note_taking_text',
-    ]);
-    expect(graduated.status).not.toBe(0);
-    expect(graduated.stdout).toContain('not currently stale against the global English baseline');
+    // tour.actions_text graduated the same way later: its English was reworded,
+    // Spanish re-translated and the global baseline re-blessed (hash 1e87bdfd1dbd).
+    for (const key of ['tour.note_taking_text', 'tour.actions_text']) {
+      const graduated = runNode(PACK_REVIEW, [
+        '--lang=spanish_latin_america',
+        '--key=' + key,
+      ]);
+      expect(graduated.status, key).not.toBe(0);
+      expect(graduated.stdout, key).toContain('not currently stale against the global English baseline');
+    }
   }, 120000);
 });
 

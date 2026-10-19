@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ક્વિઝના અગાઉના પ્રયાસો",
+  "stem.flightsim.quiz_history_scope": "નવો પ્રયાસ શરૂ કરવાથી પ્રથમ જવાબો નોંધાયેલા હોય એવા અગાઉના વધુમાં વધુ ચાર પ્રયાસો સાચવાય છે. તેમની સમીક્ષા કરવાથી તમારી હાલની ક્વિઝ બદલાતી નથી.",
+  "stem.flightsim.quiz_history_empty": "હજુ સુધી ક્વિઝના કોઈ અગાઉના પ્રયાસો સાચવેલા નથી.",
+  "stem.flightsim.quiz_history_attempt": "{date}ના રોજ સાચવ્યું · પ્રથમ જવાબોમાંથી {score}/{answered} સાચા",
+  "stem.flightsim.quiz_history_progress": "{total} પ્રશ્નોમાંથી {answered} નોંધાયેલા · {unanswered} અનુત્તરિત",
+  "stem.flightsim.quiz_history_question": "પ્રશ્ન {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "સાચો જવાબ: {answer}",
+  "stem.flightsim.quiz_history_changed": "સાચવેલા {count} પ્રશ્નો હવે આ ક્વિઝ સાથે મેળ ખાતા નથી. ગુણ માટે ફક્ત મેળ ખાતા પ્રશ્નોની નોંધો વપરાય છે."
+}

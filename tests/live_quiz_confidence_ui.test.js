@@ -18,7 +18,10 @@ beforeAll(() => {
   ({ act } = require(resolve(modulesDir, 'react-dom/test-utils')));
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
-  window.AlloLanguageContext = React.createContext({ t: key => key });
+  // The student confidence labels moved to quiz.live_student.* keys (a9ae02cb5, 2026-09-30);
+  // read that namespace from the shipped English strings, leave every other key raw.
+  const liveStudent = JSON.parse(require('node:fs').readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8')).quiz.live_student;
+  window.AlloLanguageContext = React.createContext({ t: key => (key.startsWith('quiz.live_student.') && typeof liveStudent[key.slice(18)] === 'string' ? liveStudent[key.slice(18)] : key) });
   window.UiLanguageSelector = () => null;
   window._fbDoc = (_db, ...parts) => parts.join('/');
   window.__confidenceWrites = [];

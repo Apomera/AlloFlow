@@ -1,6 +1,8 @@
 import {beforeAll,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -56,7 +58,7 @@ describe('Committed destinations on the tabletop',()=>{
         expect(find('[data-destination-list="cooler"]').textContent).toContain('Expedition destination · +2 Observation tokens');
       }else{
         expect(find('[data-expedition-destination-marker="cooler"]').getAttribute('aria-hidden')).toBe('true');
-        expect(find('[data-location="cooler"]').getAttribute('aria-label')).toContain('Expedition destination. Reward after a successful investigation');
+        expect(spoken(find('[data-location="cooler"]'))).toContain('Expedition destination. Reward after a successful investigation');
       }
       await click('[data-inspect-tabletop-destination="cooler"]');
     }

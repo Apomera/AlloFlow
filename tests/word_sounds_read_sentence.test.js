@@ -15,6 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const SOURCE = read('word_sounds_setup_source.jsx');
@@ -140,9 +141,24 @@ describe('the compiled pack carries the board', () => {
   });
 
   it('AI sentence distractors pass through the unverified-word flag', () => {
-    const sweep = SOURCE.indexOf('const candidates = [');
-    expect(sweep).toBeGreaterThan(0);
-    expect(SOURCE.slice(sweep, sweep + 400)).toMatch(/item\.sentenceDistractors/);
+    // Runs the real flag sweep (sliced from the source) with a stub word list.
+    const body = sliceBetween(SOURCE, 'const sessionWords = new Set(', '\n             }\n             compileActivityItems(processed);', { label: 'unverified-word flag sweep' });
+    expect(body).toContain('item._unverifiedWords = unverified;');
+    const sweep = new Function('processed', 'isUnverifiedK2Word', body);
+    const processed = [
+      { word: 'corn', sentenceDistractors: ['cord', 'zorp'] },
+      { word: 'cord', sentenceDistractors: ['corn'] },
+    ];
+    sweep(processed, (w, sessionWords) => !sessionWords.has(w) && w !== 'torn');
+    expect(processed[0]._unverifiedWords).toEqual(['zorp']);
+    expect(processed[1]._unverifiedWords).toBeUndefined();
+    // Each flag records the boards that show it, so a sentence-only lesson
+    // is warned about sentence and blending choices, not rhyme words.
+    expect(processed[0]._unverifiedBySource).toEqual({ sentence: ['zorp'] });
+    const mixed = [{ word: 'corn', rhymeDistractors: ['hon'], blendingDistractors: ['vog', 'corn'], sentenceDistractors: ['vog'] }];
+    sweep(mixed, (w, sessionWords) => !sessionWords.has(w));
+    expect(mixed[0]._unverifiedBySource).toEqual({ rhyme: ['hon'], blending: ['vog'], sentence: ['vog'] });
+    expect(mixed[0]._unverifiedWords).toEqual(['hon', 'vog']);
   });
 
   it('the prewarm packs the option words, the sentence clip, and the instruction', () => {

@@ -64,7 +64,9 @@ describe('main UI language pack parity', () => {
     // A ratchet: this number may be lowered as translations land, never raised.
     // If a legitimate new English key needs queuing, re-record with --update and
     // update this ceiling in the same change so the growth is deliberate.
-    expect(baseline.missing.length).toBeLessThanOrEqual(2520);
+    // 2026-10-16: 2520 -> 24477, owner-approved debt re-record (catalog growth since
+    // 09-14 plus the strings routed for the CI push). See docs/i18n_debt_2026-10-16.md.
+    expect(baseline.missing.length).toBeLessThanOrEqual(24477);
   });
 
   it('covers every directions key used by the directions view', () => {

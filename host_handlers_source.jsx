@@ -2755,6 +2755,11 @@ const handleSubmitLiveAnswer = async (payload) => {
           if (!Number.isInteger(payload.questionIdx) || payload.questionIdx < 0 || payload.questionIdx > 9999) return { status: 'invalid' };
           return guest.sendConfirmedResponse(payload.questionIdx, {
               itemType: payload.itemType, answer: payload.answer, conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
+              confidence: ['knew', 'guessed', 'no-idea'].includes(payload.confidence) ? payload.confidence : null,
+              questionSignature: typeof payload.questionSignature === 'string' ? payload.questionSignature.slice(0, 80) : '',
+              assessmentAttemptId: typeof payload.assessmentAttemptId === 'string' ? payload.assessmentAttemptId.slice(0, 96) : '',
+              assessmentAttemptStartedAt: Number(payload.assessmentAttemptStartedAt) || 0,
+              assessmentFinal: payload.itemType !== 'assessment-start',
               timestamp: payload.timestamp || Date.now(), submitted: payload.answered !== false, assessmentActivityId: activityId,
           }, String(payload.requestId || ''));
       }
@@ -2778,6 +2783,10 @@ const handleSubmitLiveAnswer = async (payload) => {
           itemType: normalizedItemType,
           timestamp: typeof payload.timestamp === 'number' && Number.isFinite(payload.timestamp) ? payload.timestamp : Date.now(),
           conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
+          questionSignature: typeof payload.questionSignature === 'string' ? payload.questionSignature.slice(0, 80) : '',
+          assessmentAttemptId: typeof payload.assessmentAttemptId === 'string' ? payload.assessmentAttemptId.slice(0, 96) : '',
+          assessmentAttemptStartedAt: Number(payload.assessmentAttemptStartedAt) || 0,
+          assessmentActivityId: String(__d.sessionData?.quizState?.activityId || ''),
           submitted: true,
       };
       if (isStructured) {
@@ -4312,7 +4321,7 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
       const studioApi = window.AlloModules && window.AlloModules.StudioResponse;
       const needsStudioResponse = filteredContent.some(item => ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type));
       if (needsStudioResponse && (!studioApi || ['supports', 'toSubmission', 'toResponseEntries'].some(name => typeof studioApi[name] !== 'function'))) {
-          __d.addToast(__d.t('toasts.export_tools_still_loading_try') || 'Submission tools are still loading. Try Submit again.', 'error');
+          __d.addToast(__d.t('toasts.submission_tools_still_loading'), 'error');
           return { ok: false, retryable: true, reason: 'studio-tools-not-ready' };
       }
       const cleanContent = __d.sanitizeSubmissionData(filteredContent.filter(item => !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type) || studioApi).map(item =>
@@ -4572,7 +4581,7 @@ const handleDeleteHistoryItem = (e, id, itemRef = null) => {
       }) : [];
       if (dependents.length) {
         const titles = dependents.slice(0, 3).map(it => String(it.title || 'Lesson Directions')).join(', ');
-        __d.addToast(__d.t('directions.delete_ref_notice', { titles }) || ('Heads up: ' + titles + ' still uses this resource for a goal or activity choice. Edit the directions to update them.'), 'warning');
+        __d.addToast(__d.t('directions.delete_ref_notice', { titles }), 'warning');
       }
     } catch (_) {}
     if (deletingActiveResource) {
@@ -5071,7 +5080,7 @@ const handleRestoreImage = async (options) => {
             applied = commit(data => _alloRegeneratedImageData(data, { imageUrl: imageBase64 }));
             if (applied !== false) __d.addToast(__d.t('toasts.image_restored') || 'Image regenerated!', "success");
         }
-        if (applied === false) __d.addToast(__d.t('visuals.regenerate_superseded') || 'The visual changed while new pictures were being made, so they were not applied. Try again.', 'warning');
+        if (applied === false) __d.addToast(__d.t('visuals.regenerate_superseded'), 'warning');
     } catch (e) {
         __d.warnLog("Image regeneration failed", e);
         __d.setError(__d.t('visuals.actions.restore_error'));
@@ -5326,8 +5335,53 @@ const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) =
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
   };
-const handleQuizQuestionAction = async (qIndex, action, payload = null) => {
+const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = null) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'quiz' || !__d.generatedContent.data) return;
+    if (action === 'replace' && guard != null) {
+        if (!guard || typeof guard !== 'object' || !Number.isInteger(qIndex) || qIndex < 0
+            || guard.questionIndex !== qIndex || guard.resourceId == null || !guard.question
+            || typeof guard.questionSignature !== 'string' || !payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+        const targetId = String(guard.resourceId);
+        const originalQuestion = guard.question;
+        const originalSignature = guard.questionSignature;
+        const matchesTarget = (item, requireIdentity) => {
+            if (!item || item.type !== 'quiz' || String(item.id) !== targetId || !Array.isArray(item.data?.questions)) return false;
+            const question = item.data.questions[qIndex];
+            if (!question || requireIdentity && question !== originalQuestion) return false;
+            try { return JSON.stringify(question) === originalSignature; } catch (_) { return false; }
+        };
+        // The caller may have completed after navigation or a target edit.
+        // Recheck now, and again against each latest state inside the updaters.
+        if (!matchesTarget(__d.generatedContent, true)) return false;
+        const replacement = { ...payload, type: payload.type || originalQuestion.type || 'mcq', factCheck: null };
+        const applyReplacement = (item, requireIdentity) => {
+            if (!matchesTarget(item, requireIdentity)) return item;
+            const questions = item.data.questions.slice();
+            questions[qIndex] = { ...replacement };
+            const actualMix = {};
+            questions.forEach(question => {
+                const type = question && question.type || 'mcq';
+                actualMix[type] = (actualMix[type] || 0) + 1;
+            });
+            const data = { ...item.data, questions, actualItemTypeMix: actualMix };
+            if (data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object') {
+                const keys = new Set([...Object.keys(data.requestedItemTypeMix), ...Object.keys(actualMix)]);
+                data.itemCountMismatch = Array.from(keys).some(key => (data.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
+            }
+            return { ...item, data };
+        };
+        __d.setGeneratedContent(previous => applyReplacement(previous, true));
+        __d.setHistory(previous => {
+            if (!Array.isArray(previous)) return previous;
+            // Public ids must identify one saved resource. Do not guess when
+            // imported history contains ambiguous copies with the same id.
+            if (previous.filter(item => item && item.type === 'quiz' && String(item.id) === targetId).length !== 1) return previous;
+            return previous.map(item => applyReplacement(item, false));
+        });
+        // React may defer or replay the pure updaters. This acknowledges that
+        // a guarded commit was queued, not that it has already been applied.
+        return { status: 'queued' };
+    }
     if (action === 'release-feedback') {
         if (!__d.isTeacherMode || !payload || typeof payload.signature !== 'string' || !payload.signature) return false;
         const targetId = __d.generatedContent.id;
@@ -6212,12 +6266,12 @@ const handleAiRefineSource = async () => {
           const lengthRatio = refined.length / Math.max(1, currentText.length);
           if (!refined || (currentText.length >= 40 && (lengthRatio < 0.25 || lengthRatio > 4))) {
               __d.warnLog("Refinement rejected: empty or drastic length change", lengthRatio);
-              __d.addToast(__d.t('analysis.refine_rejected') || 'The AI returned text that was empty or far shorter or longer than the source, so nothing was changed. Try a more specific instruction.', "warning");
+              __d.addToast(__d.t('analysis.refine_rejected'), "warning");
               return;
           }
           // Id-bound and revision-checked: a late result never lands on another resource or over newer edits.
           if (!onCorrectAnalysisText(refineResourceId, expectedText, refined, [])) {
-              __d.addToast(__d.t('analysis.refine_source_changed') || 'The source changed while the AI was revising it, so the revision was not applied. Review the text and try again.', "warning");
+              __d.addToast(__d.t('analysis.refine_source_changed'), "warning");
               return;
           }
           __d.setSourceRefineInstruction('');
@@ -6306,7 +6360,7 @@ const handleGenerateRubric = async () => {
         const applied = __d.onUpdateResource(rubricResourceId, previous => previous && previous.type === 'sentence-frames' && scaffoldKey(previous.data) === requestedKey
             ? { ...previous, data: { ...previous.data, rubric: rubricText } } : previous);
         if (!applied) {
-            __d.addToast(__d.t('scaffolds.rubric_stale') || 'The writing scaffold changed while the rubric was being written, so it was not added. Generate it again.', "warning");
+            __d.addToast(__d.t('scaffolds.rubric_stale'), "warning");
             return;
         }
         __d.addToast(__d.isIndependentMode ? __d.t('toasts.checklist_generated') : __d.t('toasts.rubric_generated'), "success");

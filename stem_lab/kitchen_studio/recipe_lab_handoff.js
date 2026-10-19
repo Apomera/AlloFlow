@@ -8,6 +8,7 @@
     var d=items[id];if(!d)return null;var reason=null;
     if(locked||s.plated||s.time>=3600||s.log.length>=1200)reason='Recorded or finished kitchen. Ingredient transfers are locked.';
     else if(R.serving(s).started)reason='Return the served food to the pan before adding ingredients.';
+    else if(id==='cooked'&&s.time+R.mixingDuration(s,d.action)>3600)reason='Adding and tossing the pasta takes '+R.mixingDuration(s,d.action)+' simulated seconds. There is not enough time in this cook to finish the toss.';
     else if(id==='produce')reason=s.pan.produce?'The prepared produce is already in the pan.':!s.prep.hands?'Wash hands before preparing the produce.':!s.prep.cut?'Cut the produce before lifting the prep board.':!s.pan.oil?'Measure the olive oil into the pan before adding produce.':null;
     else if(id==='garlic')reason=s.pan.garlic?'The garlic is already in the pan.':!s.prep.garlic?'Mince every garlic clove before carrying the bowl.':!s.pan.oil?'Measure the olive oil into the pan before adding garlic.':null;
     else reason=s.pan.combined?'The drained pasta is already in the sauce.':!s.pot.drained?'Drain the pasta completely before lifting the colander.':!s.pan.produce||!s.pan.garlic?'Prepare the produce and garlic in the pan before adding the pasta.':null;

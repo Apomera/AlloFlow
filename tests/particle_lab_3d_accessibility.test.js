@@ -9,6 +9,11 @@ const TOOL_PATHS = [
 
 describe('Particle Lab 3D interaction surface accessibility contract', () => {
   const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
+  // 09-21 (0949e8111): accessible names reach the translator, so an aria-label reads
+  // __alloT('stem.particlelab3d.<key>','Text'); accept that or the plain literal.
+  const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hasAriaLabel = (text, prefix = '') => source.includes(prefix + "'aria-label': '" + text + "'")
+    || new RegExp(reEsc(prefix + "'aria-label': __alloT('stem.particlelab3d.") + "[a-z0-9_]+'," + reEsc("'" + text + "')")).test(source);
 
   it('puts focus and interactive semantics on the actual canvas', () => {
     // chamberLive = the 3D scene is ready OR the flat 2D fallback is running; the canvas is only dead while loading.
@@ -74,7 +79,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("id: 'particle-trace-selector', type: 'number'");
     expect(source).toContain("htmlFor: 'particle-trace-selector'");
     expect(source).toContain('keyboard users can use the labeled particle selector, camera views, and chamber shortcuts.');
-    expect(source).toContain("role: 'group', 'aria-label': 'Camera views'");
+    expect(hasAriaLabel('Camera views', "role: 'group', "), 'Camera views group').toBe(true);
     expect(source).toContain("setCameraShot('hero')");
     expect(source).toContain("setCameraShot('top')");
     expect(source).toContain("setCameraShot('close')");
@@ -82,15 +87,15 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
 
   it('labels the experiment loop, scene key, and active camera state', () => {
     expect(source).toContain("href: '#particle-stage'");
-    expect(source).toContain("'aria-label': 'Jump to the 3D particle chamber'");
+    expect(hasAriaLabel('Jump to the 3D particle chamber'), 'skip link name').toBe(true);
     expect(source).toContain("id: 'particle-stage'");
     expect(source).toContain("id: 'particle-experiment-runway'");
-    expect(source).toContain("'aria-label': 'Experiment loop'");
+    expect(hasAriaLabel('Experiment loop'), 'experiment loop region').toBe(true);
     expect(source).toContain("id: 'particle-stage-status'");
     expect(source).toContain("id: 'particle-scene-key'");
     expect(source).toContain("var activeCameraView = followTracer ? 'follow'");
     expect(source).toContain("'aria-pressed': activeCameraView === 'hero'");
-    expect(source).toContain("'aria-label': 'Hero overview camera view'"); // WCAG 2.5.3: the name must contain the visible text
+    expect(hasAriaLabel('Hero overview camera view'), 'hero camera name').toBe(true); // WCAG 2.5.3: the name must contain the visible text
     expect(source).toContain("var evidenceCue = currentProtocol ? currentProtocol.watch");
     expect(source).toContain("'measured'");
     expect(source).toContain("'setpoint ' + temperature");
@@ -135,7 +140,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
 
   it('turns temperature settling into a compact accessible progress cue', () => {
     expect(source).toContain('var temperatureProgress = clamp');
-    expect(source).toContain("role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint'");
+    expect(hasAriaLabel('Temperature settling toward setpoint', "role: 'progressbar', "), 'settling progressbar').toBe(true);
     expect(source).toContain("'aria-valuetext': displayTemperature + ' K '");
     expect(source).toContain('transition-[width] duration-500');
   });
@@ -144,8 +149,9 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("var [historyCursor, setHistoryCursor] = useState(-1)");
     expect(source).toContain("id: 'particle-evidence-timeline'");
     expect(source).toContain("id: 'particle-evidence-scrubber'");
-    expect(source).toContain("'aria-label': 'Evidence timeline sample'");
-    expect(source).toContain("'aria-label': 'Evidence markers'");
+    // The scrubber is now named by a visually hidden <label for>, not an aria-label.
+    expect(source).toMatch(/htmlFor: 'particle-evidence-scrubber' \},\s*h\('span', \{ className: 'sr-only' \}, 'Evidence timeline sample'\)/);
+    expect(hasAriaLabel('Evidence markers'), 'evidence markers group').toBe(true);
     expect(source).toContain("'aria-label': replayMode ? 'Return to live simulation' : 'Follow the latest measurement sample'");
     expect(source).toContain("var [replayPlaying, setReplayPlaying] = useState(false)");
     expect(source).toContain('function applyReplayIndex(nextIndex)');
@@ -420,8 +426,8 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain('setLiveCount(particles.length);');
     expect(source).not.toContain('settingsRef.current.count'); // every live reading counts what is in the chamber now
     expect(source.match(/count: liveCount, boxSize: boxSize/g).length).toBeGreaterThanOrEqual(3); // trials, tracer walks, live conditions
-    expect(source).toContain("role: 'group', 'aria-label': 'Pump and lid'");
-    expect(source).toContain("'aria-label': 'Fullscreen pump and lid'");
+    expect(hasAriaLabel('Pump and lid', "role: 'group', "), 'pump group').toBe(true);
+    expect(hasAriaLabel('Fullscreen pump and lid'), 'fullscreen pump group').toBe(true);
     expect(source).toContain("['P', 'Pump eight particles in through the wall nozzle (Shift+P releases eight through the lid)']");
     expect(source).toContain("id: 'avogadro'");
     expect(source).toContain('unavailable in the solid preset because the lattice has no free space'); // aria-disabled reason, still reachable
@@ -434,7 +440,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("(protocol.id === 'mixing' ? 0 : 1)"); // Diffusion Race begins with the divider in place
     expect(source).toContain('new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100)');
     expect(source).toContain("var flat = settingsRef.current.viewMode === 'flat'; activeCamera = flat ? flatCamera : camera; controls.enabled = !flat && touchGateEnabled; stars.visible = !flat;");
-    expect(source).toContain("'aria-label': 'Flat 2D view. A fixed front camera with no perspective; nearer particles draw larger.'");
+    expect(hasAriaLabel('Flat 2D view. A fixed front camera with no perspective; nearer particles draw larger.'), 'flat view name').toBe(true);
     expect(source).toContain("['2', 'Flat 2D view with a fixed front camera; press again for the 3D orbit view']");
     expect(source).toContain("restoreOneOf(bucket.viewMode, ['orbit', 'flat'], 'orbit')");
     expect(source).toContain('var AudioCtx = window.AudioContext || window.webkitAudioContext;');
@@ -453,7 +459,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain('chamberGroup.scale.setScalar(liveBoxSize / builtBox);');
     expect(source).toContain('function thermostatScale(measured, setpoint, rate)');
     expect(source).toContain('function maxwellBoltzmannBins(temperature, mass, binCount, maxSpeed)');
-    expect(source).toContain("'aria-label': 'Describe the chamber. Reads a summary of what is in the chamber right now.'");
+    expect(hasAriaLabel('Describe the chamber. Reads a summary of what is in the chamber right now.'), 'describe button name').toBe(true);
     // Wall hits are counted apart from particle hits (PhET's collision counter counts walls), published per sample,
     // and rolled into a per-second rate; PV / NT is checked across a trial pair.
     expect(source).toContain('return { collisions: collisions, wallCollisions: wallCollisions, impulse: impulse, events: events');

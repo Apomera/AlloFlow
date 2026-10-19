@@ -1,8 +1,10 @@
 import { conceptPriorities } from './lesson_board_learning.js';
 import { useBoardEscape } from './lesson_board_accessibility.js';
 import { tr } from './lesson_board_strings.js';
+import { errorText } from './lesson_board_errors.js';
 import { roleAssignments } from './lesson_board_roles.js';
 import { learningReport, readReports, saveReport, removeReport, downloadReport } from './lesson_board_results.js';
+import { readResponses } from './lesson_board_responses.js';
 const React = window.React;
 const { useState, useEffect, useRef } = React;
 export const practiceReason = (t, reason) => reason === 'revisit' ? tr(t, 'practice_reason_revisit', 'Latest response needs review') : reason === 'unattempted' ? tr(t, 'practice_reason_unattempted', 'No recorded response yet') : tr(t, 'practice_reason_strengthen', 'Reinforce improvement after review');
@@ -37,9 +39,10 @@ export function ConceptReview({ report, t }) {
     {id:'strengthen',key:'concept_group_strengthen',label:'Reinforce improvement',helpKey:'concept_group_strengthen_help',help:'Ask learners to explain what changed between their first and latest responses.'}
   ];
   return <section data-concept-priorities><h3>{tr(t,'concept_review','Concept review')}</h3><p className="lb-muted">{tr(t,'concept_review_basis',"Across recorded activities and suggested practice, compare each learner's first and latest response. Additional retries do not increase these totals. A learner may appear in more than one practice group.")}</p>
-    {concepts.map(concept => <details key={concept.id} data-concept-priority={concept.id}><summary>{concept.name}{concept.reviewed > 0 ? ' · ' + (concept.attempted ? tr(t,'concept_latest_counts','Latest responses correct: {correct}/{total}.',{correct:concept.latestCorrect,total:concept.attempted}) : tr(t,'no_responses','No recorded responses')) : ''}</summary>
-      {!concept.reviewed ? <p>{tr(t,'concept_not_reviewed','No locations reviewed for this concept yet.')}</p> : <>{concept.attempted > 0 && <p>{tr(t,'concept_first_counts','First responses correct: {correct}/{total}.',{correct:concept.firstCorrect,total:concept.attempted})}</p>}
+    {concepts.map(concept => <details key={concept.id} data-concept-priority={concept.id}><summary>{concept.name}{concept.reviewed > 0 ? ' · ' + (concept.attempted ? tr(t,'concept_first_summary','First responses correct: {first}/{total} · latest: {latest}/{total}',{first:concept.firstCorrect,latest:concept.latestCorrect,total:concept.attempted}) : tr(t,'no_responses','No recorded responses')) : ''}</summary>
+      {!concept.reviewed ? <p>{tr(t,'concept_not_reviewed','No locations reviewed for this concept yet.')}</p> : <>{concept.attempted > 0 && <p className="lb-muted">{tr(t,'concept_evidence_note','First responses show what learners knew before feedback. Latest responses can follow hints or a shown answer.')}</p>}
       {groups.map(group => concept[group.id].length > 0 && <section key={group.id} data-concept-group={group.id}><h4>{tr(t,group.key,group.label)} ({concept[group.id].length})</h4><p>{tr(t,group.helpKey,group.help)}</p><ul>{concept[group.id].map(learner => <li key={learner.uid}><strong>{learner.name}</strong>: {learner.locations.map(node => node.name).join(' · ')}</li>)}</ul></section>)}
+      {concept.thin > 0 && <p data-concept-thin>{tr(t,'concept_thin_evidence','{count} learners have only one answered activity for this concept, so the evidence is thin. Use the suggested practice to confirm.',{count:concept.thin})}</p>}
       {!groups.some(group => concept[group.id].length) && <p>{tr(t,'concept_extend','Latest recorded responses are correct. Invite learners to explain a connection or apply the idea in another example.')}</p>}</>}
     </details>)}
   </section>;
@@ -47,13 +50,23 @@ export function ConceptReview({ report, t }) {
 
 export function ReportPreview({ report, t }) {
   return <><p>{report.boardTitle} · {new Date(report.savedAt).toLocaleString()}</p><p>{report.complete ? tr(t, 'report_complete', 'Mission complete') : tr(t, 'report_in_progress', 'Progress snapshot')}</p><p className="lb-muted">{tr(t, 'report_interpretation', 'Results describe these board activities. Missing responses are separate from incorrect responses; practice here does not change the recorded results.')}</p>
-    <ConceptReview report={report} t={t}/>{report.learners.map(learner => <details key={learner.uid} data-report-learner><summary>{learner.name}</summary><p>{tr(t, 'personal_progress', 'First responses correct: {first}. Latest responses correct: {latest}. Locations attempted: {total}.', { first: learner.firstCorrectCount, latest: learner.latestCorrectCount, total: learner.attemptedLocations })}</p><h4>{tr(t, 'report_practice', 'Suggested practice')}</h4>{learner.practice.length ? <ul>{learner.practice.map(item => <li key={item.id}>{item.name}: {practiceReason(t, item.reason)}</li>)}</ul> : <p>{tr(t, 'report_no_practice', 'No review priorities are identified in the resolved activities so far.')}</p>}</details>)}<CoveragePanel coverage={report.coverage} compact t={t}/></>;
+    <ConceptReview report={report} t={t}/>{report.learners.map(learner => <details key={learner.uid} data-report-learner><summary>{learner.name}</summary><p>{tr(t, 'personal_progress', 'First responses correct: {first}. Latest responses correct: {latest}. Locations attempted: {total}.', { first: learner.firstCorrectCount, latest: learner.latestCorrectCount, total: learner.attemptedLocations })}</p>{learner.assistedCount > 0 && <p data-report-assisted>{tr(t, 'assisted_count', '{count} activities were answered correctly only after the answer was shown.', { count: learner.assistedCount })}</p>}<h4>{tr(t, 'report_practice', 'Suggested practice')}</h4>{learner.practice.length ? <ul>{learner.practice.map(item => <li key={item.id}>{item.name}: {practiceReason(t, item.reason)}</li>)}</ul> : <p>{tr(t, 'report_no_practice', 'No review priorities are identified in the resolved activities so far.')}</p>}</details>)}<ResponsePatterns report={report} t={t}/><CoveragePanel coverage={report.coverage} compact t={t}/></>;
+}
+// Missed first responses grouped by stop, so an answer many learners shared stands out.
+function ResponsePatterns({ report, t }) {
+  const stops = new Map();
+  for (const learner of report.learners) for (const location of learner.locations) if (location.firstCorrect === false && location.firstResponse) {
+    const stop = stops.get(location.id) || { name: location.name, counts: new Map() };
+    stop.counts.set(location.firstResponse, (stop.counts.get(location.firstResponse) || 0) + 1); stops.set(location.id, stop);
+  }
+  if (!stops.size) return null;
+  return <section data-response-patterns><h4>{tr(t, 'response_patterns', 'First responses that missed')}</h4><p className="lb-muted">{tr(t, 'response_patterns_help', 'Answers that several learners shared point to a misconception worth reteaching.')}</p><ul>{[...stops.entries()].map(([id, stop]) => <li key={id}><strong>{stop.name}</strong>: {[...stop.counts.entries()].sort((a, b) => b[1] - a[1]).map(([response, count]) => tr(t, 'response_pattern_item', '{response} ({count})', { response, count })).join(' · ')}</li>)}</ul></section>;
 }
 export function ReportActions({ board, run, roster, context = {}, t }) {
   const [message, setMessage] = useState(''), [error, setError] = useState('');
   useEffect(() => { setMessage(''); setError(''); }, [board, run, context.attemptId, context.owner]);
-  const report = learningReport(board, run, roster, context), hasEvidence = report.learners.some(item => item.answered);
-  const perform = fn => { try { setError(''); fn(); } catch (failure) { setError(failure.message || tr(t, 'report_failed', 'The report could not be saved or downloaded.')); } };
+  const report = learningReport(board, run, roster, { ...context, responses: readResponses((() => { try { return localStorage; } catch (_) { return null; } })(), context) }), hasEvidence = report.learners.some(item => item.answered);
+  const perform = fn => { try { setError(''); fn(); } catch (failure) { setError(errorText(t, failure) || tr(t, 'report_failed', 'The report could not be saved or downloaded.')); } };
   return <details data-board-report><summary>{tr(t, 'report_title', 'Save or export learning results')}</summary><p>{tr(t, 'report_storage_help', 'Saved reports stay on this device under the current account. They are available from board setup. Downloads include the learner names shown in this review.')}</p>{!hasEvidence && <p>{tr(t, 'report_wait', 'Resolve an activity to create a learning report.')}</p>}
     <div className="lb-row"><button type="button" data-save-board-report disabled={!hasEvidence || context.preview} onClick={() => perform(() => { saveReport(localStorage, context.appId, context.owner, report); setMessage(tr(t, 'report_saved', 'Learning report saved on this device.')); })}>{tr(t, 'report_save', 'Save learning report')}</button><button type="button" data-export-board-report="csv" disabled={!hasEvidence} onClick={() => perform(() => downloadReport(report, 'csv'))}>{tr(t, 'report_csv', 'Download results CSV')}</button><button type="button" data-export-board-report="json" disabled={!hasEvidence} onClick={() => perform(() => downloadReport(report))}>{tr(t, 'report_json', 'Download full report')}</button></div>
     {context.preview && <p>{tr(t, 'report_preview_notice', 'Preview results can be downloaded but are not saved as a learner report.')}</p>}{message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}{hasEvidence && <ReportPreview report={report} t={t}/>}</details>;
@@ -63,10 +76,10 @@ export function ReportLibrary({ appId, owner, t }) {
   const [reports, setReports] = useState([]), [error, setError] = useState(''), [removing, setRemoving] = useState(null), cancel = useRef(null), group = useRef(null), summary = useRef(null), trigger = useRef(null);
   const dismiss = () => { setRemoving(null); trigger.current?.focus(); };
   useBoardEscape(group, dismiss, !!removing);
-  const refresh = () => { try { setReports(readReports(localStorage, appId, owner)); setError(''); } catch (failure) { setReports([]); setError(failure.message); } finally {setLoadedScope(scope);} };
+  const refresh = () => { try { setReports(readReports(localStorage, appId, owner)); setError(''); } catch (failure) { setReports([]); setError(errorText(t, failure)); } finally {setLoadedScope(scope);} };
   useEffect(() => { setRemoving(null); refresh(); }, [appId, owner]);
   useEffect(() => { if (removing) cancel.current?.focus(); }, [removing]);
-  const action = fn => { try { fn(); setError(''); } catch (failure) { setError(failure.message); } };
+  const action = fn => { try { fn(); setError(''); } catch (failure) { setError(errorText(t, failure)); } };
   const visibleReports = loadedScope === scope ? reports : [];
   return <details data-board-report-library onToggle={event => { if (event.currentTarget.open) refresh(); }}><summary ref={summary}>{tr(t, 'reports_library', 'Saved learning reports')} ({visibleReports.length}/12)</summary><p>{tr(t, 'reports_scope', 'Reports saved by this account on this device. Export a copy before removing a report you want to keep.')}</p>{error && <p role="alert">{error}</p>}{!visibleReports.length && !error && <p>{tr(t, 'reports_empty', 'No learning reports have been saved yet.')}</p>}
     {visibleReports.map(report => <details key={report.id}><summary>{report.boardTitle} · {new Date(report.savedAt).toLocaleString()}</summary><ReportPreview report={report} t={t}/><div className="lb-row"><button type="button" onClick={() => action(() => downloadReport(report, 'csv'))}>{tr(t, 'report_csv', 'Download results CSV')}</button><button type="button" onClick={() => action(() => downloadReport(report))}>{tr(t, 'report_json', 'Download full report')}</button><button type="button" data-remove-board-report={report.id} onClick={event => { trigger.current = event.currentTarget; setRemoving(report); }}>{tr(t, 'report_remove', 'Remove saved report')}</button></div></details>)}

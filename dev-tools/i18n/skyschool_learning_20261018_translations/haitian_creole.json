@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Yo anrejistre misyon an ki konplete ak aterisaj apre retou a. Eseye misyon sa a ankò ak yon sèl chanjman ou chwazi nan kontwòl oswa wout la, epi konpare obsèvasyon ki konsève yo.",
+  "stem.flightsim.coaching_mission_depleted": "Batri dròn nan fini. Kòmanse yon nouvo misyon, sèvi ak wout kout epi planifye retou a anvan batri a ba.",
+  "stem.flightsim.coaching_mission_unknown": "Misyon sa a gen prèv ki pa konplè oswa ki kontredi youn lòt. Revize sa ki anrejistre, epi kòmanse yon nouvo esè.",
+  "stem.flightsim.coaching_mission_capture": "Gen kèk sib yo poko anrejistre. Nan yon nouvo misyon, pwoche bò yon sèl sib alafwa epi rete nan limit wotè ak vitès parapò ak tè a ki parèt yo jiskaske yo anrejistre kaptire a.",
+  "stem.flightsim.coaching_mission_recovery": "Yo pa t sove moun ki siviv la. Nan yon nouvo misyon sovtaj, pratike rete estab nan menm kote nan lè a nan limit wotè, deplasman ak vitès vètikal ki parèt yo anvan ou retounen nan baz la.",
+  "stem.flightsim.coaching_mission_return": "Yo anrejistre objektif ranmasaj oswa kaptire yo; aterisaj apre retou a rete pou fèt. Kòmanse yon nouvo misyon, epi konsève tan ak batri pou retounen nan baz la.",
+  "stem.flightsim.mission_reflection_prompt": "Ki desizyon sou yon sib, rete nan menm kote nan lè a oswa retou ou ta chanje? Sèvi ak obsèvasyon misyon an pou esplike chwa ou epi planifye yon chanjman pou yon nouvo esè. Esplikasyon ou ap konsève ak vòl sa a.",
+  "stem.flightsim.journal_different_airport": "Apwòch sa yo te sèvi ak ayewopò diferan. Revize obsèvasyon yo apa; yo pa kalkile chanjman nan mezi yo.",
+  "stem.flightsim.journal_approach_airport": "Ayewopò apwòch la: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "PRÈV MISYON AN",
+  "stem.flightsim.challenge_brake_release": "Lage X epi dezaktive fren wou yo nan Deck anvan ou ajoute puisans."
+}

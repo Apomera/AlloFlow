@@ -136,7 +136,7 @@ describe('no student-facing path re-derives the verdict', () => {
   });
 
   it('the key is repaired, not abandoned, when a teacher edits the options', () => {
-    expect(view).toContain('var answerIndex = oldAnswers.findIndex(function (answer) { return _quizAnswerMatches(answer, q.correctAnswer); });');
+    expect(view).toContain('return exact >= 0 ? exact : previous.findIndex(function (value) { return _quizAnswerMatches(value, key); });');
   });
 });
 

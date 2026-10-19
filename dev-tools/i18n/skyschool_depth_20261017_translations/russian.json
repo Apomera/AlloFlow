@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Сохранять текущий режим полёта",
+  "stem.flightsim.flight_assistance_targets": "Курс {hdg}° · Высота {alt} ft MSL · Скорость {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Курс {hdg}° · Высота {alt} ft MSL · Скорость движения вперёд {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Поверните влево на {degrees}° в сторону {airport}.",
+  "stem.flightsim.challenge_turn_right": "Поверните вправо на {degrees}° в сторону {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Вы летите в сторону {airport}. Следуйте указателю курса.",
+  "stem.flightsim.challenge_runway_reference": "Учебная ВПП {runway}: курс {heading}°. Выровняйте самолёт по оси ВПП перед снижением для посадки."
+}

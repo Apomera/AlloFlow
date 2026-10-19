@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "L’achèvement de la mission et l’atterrissage de retour ont été enregistrés. Recommencez cette mission avec un seul changement volontaire de commande ou d’itinéraire, puis comparez les observations sauvegardées.",
+  "stem.flightsim.coaching_mission_depleted": "La batterie du drone est épuisée. Lancez une nouvelle mission, choisissez des itinéraires courts et prévoyez le retour avant que la batterie soit faible.",
+  "stem.flightsim.coaching_mission_unknown": "Cette mission présente des preuves incomplètes ou contradictoires. Examinez les données enregistrées, puis faites une nouvelle tentative.",
+  "stem.flightsim.coaching_mission_capture": "Certaines cibles n’ont pas encore été capturées. Lors d’une nouvelle mission, approchez une cible à la fois et respectez les limites affichées de hauteur et de vitesse sol jusqu’à l’enregistrement de la capture.",
+  "stem.flightsim.coaching_mission_recovery": "Le survivant n’a pas été secouru. Lors d’une nouvelle mission de sauvetage, entraînez-vous au vol stationnaire stable dans les limites affichées de hauteur, de dérive et de vitesse verticale avant de rentrer à la base.",
+  "stem.flightsim.coaching_mission_return": "Les objectifs de récupération ou de capture ont été enregistrés ; l’atterrissage de retour reste à faire. Lancez une nouvelle mission, puis gardez du temps et de la batterie pour rentrer à la base.",
+  "stem.flightsim.mission_reflection_prompt": "Quelle décision concernant une cible, le vol stationnaire ou le retour changeriez-vous ? Appuyez-vous sur les observations de la mission pour expliquer votre choix et prévoir un changement lors d’une nouvelle tentative. Votre explication sera sauvegardée avec ce vol.",
+  "stem.flightsim.journal_different_airport": "Ces approches ont été réalisées sur des aéroports différents. Examinez leurs observations séparément ; les variations des mesures ne sont pas calculées.",
+  "stem.flightsim.journal_approach_airport": "Aéroport d’approche : {airport}.",
+  "stem.flightsim.mission_evidence_heading": "PREUVES DE LA MISSION",
+  "stem.flightsim.challenge_brake_release": "Relâchez X et désactivez les freins de roues dans Deck avant d’augmenter la puissance."
+}

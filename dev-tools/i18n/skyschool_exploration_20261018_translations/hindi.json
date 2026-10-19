@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "खोज परिणाम: {topics} विषयों में {cards} कार्ड।",
+  "stem.flightsim.learn_library_counts": "{cards} कार्ड · {topics} विषय",
+  "stem.flightsim.learn_search_clear": "खोज साफ़ करें",
+  "stem.flightsim.learn_search_empty": "“{query}” से कोई सीखने का कार्ड मेल नहीं खाता। दूसरा शब्द आज़माएँ या खोज साफ़ करें।",
+  "stem.flightsim.learn_search_none": "कोई मेल खाते सीखने के कार्ड नहीं",
+  "stem.flightsim.learn_search_cards": "सीखने के {count} कार्ड",
+  "stem.flightsim.quiz_review_progress": "{total} में से {answered} प्रश्नों के उत्तर दिए · {missed} गलत",
+  "stem.flightsim.quiz_review_missed": "गलत उत्तरों की समीक्षा करें",
+  "stem.flightsim.quiz_next_unanswered": "अगला अनुत्तरित प्रश्न",
+  "stem.flightsim.quiz_review_all_answered": "हर प्रश्न का पहला उत्तर दर्ज है। बिना अंक वाली प्रैक्टिस के लिए गलत उत्तरों की समीक्षा करें या नया प्रयास शुरू करें।",
+  "stem.flightsim.planner_drone_agl": "ज़मीन से {ft} फ़ुट ऊपर",
+  "stem.flightsim.sprint_native_title": "भूगोल की तेज़ चुनौती",
+  "stem.flightsim.sprint_timed_hint": "आपके उत्तर देते समय भी मार्ग पर आगे बढ़ना जारी रहता है। पढ़ने के लिए रोकें; उत्तर चुनने से पहले फिर चालू करें।",
+  "stem.flightsim.sprint_warp_reference": "इस भूगोल गतिविधि के लिए यात्रा तेज़ की गई है। गति के आँकड़े निर्धारित क्रूज़ गति दिखाते हैं; यह मार्ग विमान के प्रदर्शन को नहीं मापता।",
+  "stem.flightsim.sprint_save_menu": "चुनौती सहेजें और मेनू में लौटें",
+  "stem.flightsim.sprint_next_stop": "अगला पड़ाव: {place}",
+  "stem.flightsim.geoq_approaching_city": "आप किस शहर के पास पहुँच रहे हैं?",
+  "stem.flightsim.sprint_time_remaining": "बाकी समय: {seconds} सेकंड"
+}

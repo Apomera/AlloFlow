@@ -303,9 +303,18 @@ window.StemLab = window.StemLab || {
           const compareSegs = [];
           var curCSeg = null;
 
+          var fgPrevSampleX = null;
           for (var px = 0; px <= W - 2 * pad; px += 2) {
 
             var x = xR.xMin + (px / (W - 2 * pad)) * (xR.xMax - xR.xMin);
+
+            // A rational's pole at x = -b can fall BETWEEN two samples whose values are
+            // both in range (0.5/x: -8.75 then 8.75); that pair must not be joined.
+            if (fgPrevSampleX !== null) {
+              if (d.type === 'rational' && (x + d.b) * (fgPrevSampleX + d.b) <= 0) { curSeg = null; curDSeg = null; }
+              if (evalF2 && d.compareType === 'rational' && (x + (d.compareB || 0)) * (fgPrevSampleX + (d.compareB || 0)) <= 0) curCSeg = null;
+            }
+            fgPrevSampleX = x;
 
             var y = evalF(x);
 
@@ -349,13 +358,24 @@ window.StemLab = window.StemLab || {
           for (var cx2 = xR.xMin; cx2 < xR.xMax; cx2 += 0.05) {
             var d1 = evalDeriv(cx2), d2 = evalDeriv(cx2 + 0.05);
             if (d1 * d2 < 0) {
-              var cpX = cx2 - d1 * 0.05 / (d2 - d1);
+              // Bisect on the sign of f': linear interpolation put the |x| corner 0.025 off,
+              // labelled "min (-0.0, 0.03)" instead of (0, 0).
+              var fgBisLo = cx2, fgBisHi = cx2 + 0.05;
+              for (var fgBisI = 0; fgBisI < 60; fgBisI++) { var fgBisMid = (fgBisLo + fgBisHi) / 2; if (evalDeriv(fgBisMid) * d1 > 0) fgBisLo = fgBisMid; else fgBisHi = fgBisMid; }
+              var cpX = (fgBisLo + fgBisHi) / 2;
+              if (Math.abs(cpX) < 1e-9) cpX = 0;
               var cpY = evalF(cpX);
               if (cpY >= yR.yMin && cpY <= yR.yMax && cpX >= xR.xMin && cpX <= xR.xMax) {
                 critPts.push({ x: cpX, y: cpY, kind: d1 > 0 ? 'max' : 'min' });
               }
             }
           }
+          // A double root (x², |x|, sin x - 1) touches the axis without changing sign, so the
+          // sign-change scan misses it. A turning point whose value is 0 is that root.
+          critPts.forEach(function (cp) {
+            if (Math.abs(cp.y) < 1e-9 && !roots.some(function (r) { return Math.abs(r - cp.x) < 0.01; })) roots.push(cp.x);
+          });
+          roots.sort(function (p, q) { return p - q; });
 
           // Numerical integral of f from 0 to xR.xMax (trapezoidal) — shown when Area is on
           var integral0ToMax = 0;
@@ -1236,7 +1256,8 @@ window.StemLab = window.StemLab || {
 
                 while (opts.length < 4) {
 
-                  var wrong = rootAnswer + (Math.floor(Math.random() * 7) - 3);
+                  // Round like the answer: -1.33 + 1 is -0.33000000000000007 on the button.
+                  var wrong = Math.round((rootAnswer + (Math.floor(Math.random() * 7) - 3)) * 100) / 100;
 
                   if (rootAnswers.indexOf(wrong) < 0 && opts.indexOf(wrong) < 0) opts.push(wrong);
 
@@ -1396,6 +1417,13 @@ window.StemLab = window.StemLab || {
                 if (q.c !== undefined) upd('c', q.c);
 
                 if (q.type) upd('type', q.type);
+
+                // Name That Graph keeps the student's coefficients. a = 0 (or b = 0 for the wave
+                // and exponential families) draws a flat line that matches no family name.
+                if (q.mode === 'name') {
+                  if (!d.a) upd('a', 1);
+                  if ((q.type === 'trig' || q.type === 'exponential') && !d.b) upd('b', 1);
+                }
 
               }
 

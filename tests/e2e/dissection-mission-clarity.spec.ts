@@ -13,11 +13,12 @@ test.beforeAll(async () => { await harness.start(); await mkdir(out, { recursive
 test.afterAll(async () => { await harness.stop(); });
 test.afterEach(async ({ page }) => { if (await page.evaluate(() => typeof (window as any).__unmount === 'function')) await harness.unmount(page); });
 
-async function mount(page: Page, state: any = {}, width = 390, available = width) {
+async function mount(page: Page, state: any = {}, width = 390, available = width, expandOverview = true) {
   await page.setViewportSize({ width, height: 1000 });
   await harness.mount(page, { dissection: { ...initial, ...state } }, undefined, { expectCanvas: false });
   await page.evaluate(() => { const meta = document.querySelector('meta[name="viewport"]') || document.head.appendChild(document.createElement('meta')); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width, initial-scale=1'); });
   await page.addStyleTag({ content: `#wrap {width:100%!important;max-width:${available}px;}` });
+  if (expandOverview) await page.locator('.diss-mission__overview > summary').click();
 }
 function mission(page: Page) { return page.locator('[data-dissection-mission]'); }
 async function proof(page: Page) {
@@ -98,4 +99,22 @@ test('mission assessment shortcut focuses its summary while preserving assessmen
 test('mission continue shortcut focuses the planning checkpoint without performing a technique action', async ({ page }) => {
   await mount(page, { specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', anatomicalView: 'ventral', exploredOrgans: {}, organNotes: {}, organConfidence: {}, verifiedIdentifications: {} }, 320);
   const p = mission(page), before = await proof(page); await p.getByRole('button', { name: 'Continue activity', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(page.locator('#diss-learning-checkpoint')).toBeFocused(); expect(await proof(page)).toEqual(before);
+});
+
+test('Essentials keeps the overview compact and keyboard expansion preserves learner work', async ({ page }) => {
+  await mount(page, {}, 390, 390, false);
+  const p = mission(page), overview = p.locator('.diss-mission__overview'), before = await proof(page);
+  await expect(overview).not.toHaveAttribute('open');
+  await expect(p.locator('.diss-mission__context')).toContainText('Fetal Pig');
+  await expect(p.getByRole('button', { name: 'Continue activity', exact: true })).toBeVisible();
+  const collapsedHeight = await p.evaluate(el => el.getBoundingClientRect().height);
+  await overview.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(overview).toHaveAttribute('open', '');
+  await expect(p.getByRole('group', { name: 'Current lab status', exact: true })).toBeVisible();
+  expect(await p.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(collapsedHeight + 150);
+  expect(await proof(page)).toEqual(before);
+  await p.getByRole('button', { name: 'Continue activity', exact: true }).click();
+  await expect(overview).toHaveAttribute('open', '');
+  expect(await proof(page)).toEqual(before);
 });

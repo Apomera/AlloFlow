@@ -63,7 +63,7 @@ describe('display + read-aloud settings persist across sessions', () => {
   it('the localStorage-to-bridge mirror that makes these durable still exists', () => {
     const utils = readFileSync('utils_pure_source.jsx', 'utf-8');
     expect(utils).toContain("ds.get('ls_prefs', 'all')");   // hydrate
-    expect(utils).toContain("ds.set('ls_prefs', 'all', dump)"); // snapshot
+    expect(utils).toContain("ds.set('ls_prefs', 'all', dump, { queue: false })"); // snapshot (awaited, unqueued write)
     expect(utils).toContain('window.__alloPrefsHydrated');       // mount gate holds first paint
     expect(utils).toContain("window.addEventListener('pagehide', _lsSnapshot)");
     // Hydration must never clobber a value written earlier this session.

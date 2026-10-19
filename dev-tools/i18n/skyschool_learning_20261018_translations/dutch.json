@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Het voltooien van de missie en de landing na terugkeer zijn vastgelegd. Probeer deze missie opnieuw met één bewuste wijziging in de besturing of route en vergelijk daarna de opgeslagen waarnemingen.",
+  "stem.flightsim.coaching_mission_depleted": "De accu van de drone is leeggeraakt. Begin een nieuwe missie, gebruik korte routes en plan de terugkeer voordat de accu bijna leeg is.",
+  "stem.flightsim.coaching_mission_unknown": "Deze missie bevat onvolledig of tegenstrijdig bewijs. Bekijk wat er is vastgelegd en begin daarna een nieuwe poging.",
+  "stem.flightsim.coaching_mission_capture": "Sommige doelen zijn nog niet vastgelegd. Nader bij een nieuwe missie één doel tegelijk en blijf binnen de getoonde hoogte- en grondsnelheidsgrenzen totdat de opname is vastgelegd.",
+  "stem.flightsim.coaching_mission_recovery": "De overlevende is niet gered. Oefen bij een nieuwe reddingsmissie een stabiele hover binnen de getoonde grenzen voor hoogte, drift en verticale snelheid voordat je terugkeert naar de basis.",
+  "stem.flightsim.coaching_mission_return": "De ophaal- of opnamedoelen zijn vastgelegd; de landing na terugkeer ontbreekt nog. Begin een nieuwe missie en reserveer tijd en acculading voor de terugkeer naar de basis.",
+  "stem.flightsim.mission_reflection_prompt": "Welke beslissing over een doel, hover of terugkeer zou je veranderen? Gebruik de missiewaarnemingen om je keuze uit te leggen en één wijziging voor een nieuwe poging te plannen. Je uitleg wordt bij deze vlucht opgeslagen.",
+  "stem.flightsim.journal_different_airport": "Deze naderingen vonden bij verschillende luchthavens plaats. Bekijk hun waarnemingen afzonderlijk; veranderingen in metingen worden niet berekend.",
+  "stem.flightsim.journal_approach_airport": "Luchthaven van de nadering: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "MISSIEBEWIJS",
+  "stem.flightsim.challenge_brake_release": "Laat X los en schakel Wielremmen in Deck uit voordat je vermogen toevoegt."
+}

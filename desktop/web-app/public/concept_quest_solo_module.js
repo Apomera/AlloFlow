@@ -98,6 +98,7 @@
     puzzle_locked: 'The reasoning lock needs two-thirds consensus; discuss the evidence and try another clue.',
     boss_bonus: 'The class broke the Mastery Barrier for 2 bonus damage.',
     boss_limited: 'The Mastery Barrier limited damage; regroup around the strongest evidence.',
+    boss_assessment_remaining: 'The final barrier stays open for review: {count} supported assessment item(s) remain.',
     round_log: '{correct}/{total} concept checks succeeded; the party dealt {damage} damage.',
     round_combo_log: 'A three-ability concept combo added 3 damage!',
     round_synergy_log: '{count} party role synergies activated.',
@@ -165,8 +166,20 @@
     return text.slice(0, maxLength || 500);
   }
 
+  function isAnswerKeyDisputed(question) {
+    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var review = question.keyCheck;
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    if (review && typeof review === 'object') {
+      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
+    }
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+  }
+
   function questionAnswerIndex(question) {
     if (!question || typeof question !== 'object') return -1;
+    if (isAnswerKeyDisputed(question)) return -1;
     var type = String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) < 0) return -1;
     var options = question.options || question.choices;
@@ -243,27 +256,107 @@
   function sealQuest(quest) { return Object.assign({}, quest, { turnKey: getTurnKey(quest) }); }
   function sealResult(result) { return result.error ? result : Object.assign({}, result, { quest: sealQuest(result.quest) }); }
 
-  function normalizeQuestion(question, index, strings) {
+  // New class sessions keep the whole supported assessment independently of
+  // the map. Old sessions retain their room-local rotation; solo owns its own
+  // source bank and must never credit the structural MCQ adapters stored here.
+  function classAssessmentBank(quest) {
+    var bank = quest && !quest.solo && quest.assessmentBank;
+    return bank && bank.version === 1 && Array.isArray(bank.items) && bank.items.length ? bank : null;
+  }
+
+  function coverage(quest) {
+    var bank = classAssessmentBank(quest);
+    if (!bank) return null;
+    var attempted = bank.items.filter(function(item) { return !!(bank.attempts && bank.attempts[item.sourceIndex] && bank.attempts[item.sourceIndex].rounds > 0); }).length;
+    return { total: bank.items.length, attempted: attempted, remaining: bank.items.length - attempted, complete: attempted === bank.items.length, excluded: quest.excludedQuestions || 0 };
+  }
+
+  function nextAssessmentIndex(bank, start) {
+    for (var offset = 0; offset < bank.items.length; offset++) {
+      var index = (start + offset) % bank.items.length;
+      if (!bank.attempts[bank.items[index].sourceIndex]) return index;
+    }
+    return start % bank.items.length;
+  }
+
+  function emptyLearningTotals(completeHistory) {
+    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [] };
+  }
+
+  function addLearningRound(totals, round, quest) {
+    var concepts = Object.assign(Object.create(null), totals.concepts || {});
+    var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
+    var previous = concepts[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
+    concepts[concept] = { concept: concept, correct: previous.correct + (round.correct || 0), total: previous.total + (round.total || 0), rounds: previous.rounds + 1 };
+    var cleared = (totals.conceptsCleared || []).slice();
+    if (round.enemyDefeated && cleared.indexOf(concept) < 0) cleared.push(concept);
+    return Object.assign({}, totals, {
+      rounds: totals.rounds + 1, totalAnswers: totals.totalAnswers + (round.total || 0), correctAnswers: totals.correctAnswers + (round.correct || 0),
+      combos: totals.combos + (round.combo ? 1 : 0), roleSynergies: totals.roleSynergies + (round.synergyCount || 0), peerAssists: totals.peerAssists + (round.assistedCount || 0),
+      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared
+    });
+  }
+
+  function learningTotals(quest) {
+    if (quest && !quest.solo && quest.learningTotals && quest.learningTotals.version === 1) return quest.learningTotals;
+    var rounds = quest && Array.isArray(quest.roundHistory) ? quest.roundHistory : [];
+    // Older saves may already have discarded earlier rounds. Preserve available
+    // evidence and label that limit instead of claiming it covers the session.
+    return rounds.reduce(function(totals, round) { return addLearningRound(totals, round, quest); }, emptyLearningTotals(!!(quest && quest.solo) || rounds.length < 24));
+  }
+
+  // Assessment content is rendered as React text, not HTML. Keep authored
+  // comparators and full passages; the bounded cleaner remains for GM drafts.
+  function sourceQuestionText(value, fallback) {
+    var text = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+    return text || fallback || '';
+  }
+
+  // GM assessment text is also rendered as escaped React text. Keep mathematical
+  // operators while retaining the draft limits; metadata still uses cleanText.
+  function draftQuestionText(value, fallback, maxLength) {
+    return sourceQuestionText(value, fallback).slice(0, maxLength || 500);
+  }
+
+  function sourceChallengePreview(item) {
+    var preview = Object.assign({}, item);
+    // Keep potentially large image data once in the bank and once in the active
+    // encounter, rather than repeating it throughout the serialized map.
+    ['imageUrl', 'imageAltText', 'optionImageUrls', 'optionImageAltTexts'].forEach(function(field) { delete preview[field]; });
+    return preview;
+  }
+
+  function normalizeQuestion(question, index, strings, preserveSource) {
     question = question || {};
+    var questionText = preserveSource ? sourceQuestionText : draftQuestionText;
     var options = Array.isArray(question.options) ? question.options :
       (Array.isArray(question.choices) ? question.choices : []);
     options = options.slice(0, 6).map(function(option, optionIndex) {
-      if (option && typeof option === 'object') return cleanText(option.text || option.label, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
-      return cleanText(option, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
+      if (option && typeof option === 'object') return questionText(option.text || option.label, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
+      return questionText(option, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
     });
     if (options.length < 2) {
       options = [textFromStrings(strings, 'option_evidence'), textFromStrings(strings, 'option_clue')];
     }
     var correctIndex = questionAnswerIndex(question);
     if (correctIndex < 0) throw new Error(textFromStrings(strings, 'challenge_key_required'));
-    return {
+    var normalized = {
       id: 'challenge-' + (index + 1),
       concept: conceptLabel(question, index, strings),
-      prompt: cleanText(question.question || question.prompt || question.text, textFromStrings(strings, 'question_default'), 500),
+      prompt: questionText(question.question || question.prompt || question.text, textFromStrings(strings, 'question_default'), 500),
       options: options,
       correctIndex: correctIndex,
-      explanation: cleanText(question.explanation || question.feedback || question.rationale, textFromStrings(strings, 'explanation_default'), 500)
+      explanation: questionText(question.explanation || question.feedback || question.rationale, textFromStrings(strings, 'explanation_default'), 500)
     };
+    if (preserveSource) {
+      normalized.question_en = sourceQuestionText(question.question_en);
+      normalized.imageUrl = sourceQuestionText(question.imageUrl);
+      normalized.imageAltText = sourceQuestionText(question.imageAltText);
+      ['options_en', 'optionImageUrls', 'optionImageAltTexts'].forEach(function(field) {
+        normalized[field] = options.map(function(_, optionIndex) { return sourceQuestionText(Array.isArray(question[field]) ? question[field][optionIndex] : ''); });
+      });
+    }
+    return normalized;
   }
 
   function conceptLabel(question, index, strings) {
@@ -278,9 +371,11 @@
   function createSession(options) {
     options = options || {};
     var strings = createLocalizedStrings(options.translate);
-    var suppliedQuestions = Array.isArray(options.questions) ? options.questions.filter(Boolean) : [];
-    var sourceQuestions = suppliedQuestions.filter(function(question) { return questionAnswerIndex(question) >= 0; });
+    var suppliedQuestions = Array.isArray(options.questions) ? options.questions : [];
+    var sourceEntries = suppliedQuestions.map(function(question, sourceIndex) { return { question: question, sourceIndex: sourceIndex }; }).filter(function(entry) { return questionAnswerIndex(entry.question) >= 0; });
+    var sourceQuestions = sourceEntries.map(function(entry) { return entry.question; });
     if (!sourceQuestions.length) throw new Error(textFromStrings(strings, 'source_questions_required'));
+    var assessmentItems = sourceEntries.map(function(entry) { return Object.assign({}, normalizeQuestion(entry.question, entry.sourceIndex, strings, true), { sourceIndex: entry.sourceIndex }); });
     var title = cleanText(options.title, textFromStrings(strings, 'session_default_title'), 100);
     var rooms = ROOM_LAYOUT.map(function(position, index) {
       var source = sourceQuestions[index % sourceQuestions.length];
@@ -294,7 +389,7 @@
       var challenges = [];
       var challengeCount = Math.min(3, sourceQuestions.length);
       for (var challengeOffset = 0; challengeOffset < challengeCount; challengeOffset++) {
-        challenges.push(normalizeQuestion(sourceQuestions[(index + challengeOffset) % sourceQuestions.length], index * 3 + challengeOffset, strings));
+        challenges.push(sourceChallengePreview(assessmentItems[(index + challengeOffset) % assessmentItems.length]));
       }
       return {
         id: 'room-' + (index + 1),
@@ -327,6 +422,8 @@
       actionSchema: 1,
       sessionId: 'quest-' + Date.now().toString(36) + '-' + (++logSequence).toString(36),
       excludedQuestions: suppliedQuestions.length - sourceQuestions.length,
+      assessmentBank: { version: 1, items: assessmentItems, cursor: 1 % assessmentItems.length, attempts: {} },
+      learningTotals: emptyLearningTotals(true),
       title: title,
       objective: cleanText(options.objective, textFromStrings(strings, 'objective_default'), 240),
       localizedStrings: strings,
@@ -379,8 +476,10 @@
     if (destination.reward && (quest.inventory || []).length >= 12 && !(quest.inventory || []).some(function(item) { return item.id === destination.reward.id; })) return questError(quest, 'inventory_full');
     var visited = (quest.visited || []).indexOf(destinationId) >= 0 ? (quest.visited || []).slice() : (quest.visited || []).concat([destinationId]);
     var rooms = quest.rooms.map(function(room) {
-      if (room.id !== destinationId || !room.reward) return room;
-      return Object.assign({}, room, { reward: null });
+      var bank = classAssessmentBank(quest);
+      if (room.id !== destinationId) return bank && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? Object.assign({}, room, { challenge: sourceChallengePreview(room.challenge) }) : room;
+      var scheduled = bank && room.enemy && room.enemy.hp > 0 && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? bank.items[bank.cursor] : null;
+      return Object.assign({}, room, room.reward ? { reward: null } : {}, scheduled ? { challenge: scheduled } : {});
     });
     var inventory = (quest.inventory || []).slice();
     if (destination.reward && !inventory.some(function(item) { return item.id === destination.reward.id; })) inventory.push(destination.reward);
@@ -477,9 +576,24 @@
     damage = clamp(damage, 0, 20);
     heal = clamp(heal, 0, 4);
     shield = clamp(shield, 0, 6);
+    var bank = classAssessmentBank(quest);
+    var sourceIndex = bank ? bank.items.findIndex(function(item) { return item.sourceIndex === challenge.sourceIndex; }) : -1;
+    if (sourceIndex >= 0) {
+      var attempts = Object.assign({}, bank.attempts);
+      var previous = attempts[challenge.sourceIndex] || { rounds: 0, correct: 0, total: 0 };
+      attempts[challenge.sourceIndex] = { rounds: previous.rounds + 1, correct: previous.correct + correct, total: previous.total + total };
+      bank = Object.assign({}, bank, { attempts: attempts });
+      bank.cursor = nextAssessmentIndex(bank, sourceIndex + 1);
+    }
+    var remaining = bank ? bank.items.filter(function(item) { return !bank.attempts[item.sourceIndex]; }).length : 0;
     var enemyHp = Math.max(0, room.enemy.hp - damage);
+    var barrierHeld = !!(bank && room.kind === 'boss' && remaining > 0 && enemyHp === 0);
+    if (barrierHeld) {
+      enemyHp = 1;
+      encounterRule += (encounterRule ? ' ' : '') + questText(quest, 'boss_assessment_remaining', { count: remaining });
+    }
     var enemyDefeated = enemyHp === 0;
-    var incoming = enemyDefeated ? 0 : room.enemy.attack;
+    var incoming = enemyDefeated || barrierHeld ? 0 : room.enemy.attack;
     var totalShield = clamp((quest.party.shield || 0) + shield, 0, 8);
     var absorbed = Math.min(incoming, totalShield);
     var partyHp = clamp(quest.party.hp + heal - Math.max(0, incoming - absorbed), 0, quest.party.maxHp);
@@ -491,7 +605,7 @@
       return Object.assign({}, entry, {
         enemy: Object.assign({}, entry.enemy, { hp: enemyHp }),
         challengeIndex: nextChallengeIndex,
-        challenge: Array.isArray(entry.challenges) && entry.challenges.length ? entry.challenges[nextChallengeIndex] : entry.challenge
+        challenge: bank && (sourceIndex >= 0 || barrierHeld) ? bank.items[bank.cursor] : Array.isArray(entry.challenges) && entry.challenges.length ? entry.challenges[nextChallengeIndex] : entry.challenge
       });
     });
     var won = enemyDefeated && room.kind === 'boss';
@@ -505,7 +619,13 @@
     if (encounterRule) text += ' ' + encounterRule;
     if (enemyDefeated) text += ' ' + questText(quest, 'round_enemy_defeated_log', { enemy: room.enemy.name });
     else text += ' ' + questText(quest, 'round_party_damage_log', { damage: Math.max(0, incoming - absorbed) });
-    return { quest: Object.assign({}, quest, {
+    var roundRecord = {
+      turn: quest.turn, roomId: room.id, concept: challenge.concept || room.concept, correct: correct, total: total,
+      accuracy: total ? Math.round((correct / total) * 100) : 0, damage: damage,
+      incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
+      assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule, enemyDefeated: enemyDefeated
+    };
+    return { quest: Object.assign({}, quest, bank ? { assessmentBank: bank } : {}, quest.solo ? {} : { learningTotals: addLearningRound(learningTotals(quest), roundRecord, quest) }, {
       rooms: rooms,
       phase: phase,
       gmUndo: null,
@@ -525,15 +645,9 @@
         synergyCount: synergyCount,
         assistedCount: assistedCount,
         encounterRule: encounterRule,
-        explanation: cleanText(challenge.explanation, questText(quest, 'explanation_discuss'), 500)
+        explanation: (Number.isInteger(challenge.sourceIndex) ? sourceQuestionText : draftQuestionText)(challenge.explanation, questText(quest, 'explanation_discuss'), 500)
       },
-      roundHistory: (quest.roundHistory || []).concat([{
-        turn: quest.turn, roomId: room.id, concept: challenge.concept || room.concept, correct: correct, total: total,
-        accuracy: total ? Math.round((correct / total) * 100) : 0, damage: damage,
-        incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
-        assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule,
-        enemyDefeated: enemyDefeated
-      }]).slice(-24),
+      roundHistory: (quest.roundHistory || []).concat([roundRecord]).slice(-24),
       log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn + 1, text: text + (enemyDefeated && room.kind !== 'boss' ? ' ' + questText(quest, 'round_sigil_log') : '') }]).slice(-30)
     }), summary: { correct: correct, total: total, damage: damage, incoming: Math.max(0, incoming - absorbed), enemyDefeated: enemyDefeated, combo: combo, synergyCount: synergyCount, assistedCount: assistedCount, encounterRule: encounterRule } };
   }
@@ -543,6 +657,7 @@
       rooms: quest.rooms,
       currentRoomId: quest.currentRoomId,
       roundCount: (quest.roundHistory || []).length,
+      learningRoundCount: learningTotals(quest).rounds,
       party: quest.party,
       inventory: quest.inventory,
       phase: quest.phase,
@@ -660,6 +775,7 @@
     var history = quest && Array.isArray(quest.gmHistory) ? quest.gmHistory.slice() : [];
     var snapshot = history.length ? history.pop() : (quest && quest.gmUndo);
     if (!snapshot || snapshot.currentRoomId !== quest.currentRoomId || snapshot.roundCount !== (quest.roundHistory || []).length) return questError(quest, 'gm_undo_unavailable');
+    if (snapshot.learningRoundCount != null && snapshot.learningRoundCount !== learningTotals(quest).rounds) return questError(quest, 'gm_undo_unavailable');
     var restoredLog = (quest.log || []).slice(0, Math.max(0, snapshot.logLength || 0));
     restoredLog.push({ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_gm_undo') });
     return { quest: Object.assign({}, quest, {
@@ -710,30 +826,28 @@
 
   function createDebrief(quest) {
     var rounds = quest && Array.isArray(quest.roundHistory) ? quest.roundHistory : [];
-    var totalAnswers = rounds.reduce(function(sum, round) { return sum + (round.total || 0); }, 0);
-    var correctAnswers = rounds.reduce(function(sum, round) { return sum + (round.correct || 0); }, 0);
-    var conceptTotals = Object.create(null);
-    rounds.forEach(function(round) {
-      var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
-      conceptTotals[concept] = conceptTotals[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
-      conceptTotals[concept].correct += round.correct || 0;
-      conceptTotals[concept].total += round.total || 0;
-      conceptTotals[concept].rounds += 1;
-    });
+    var totals = learningTotals(quest);
+    var totalAnswers = totals.totalAnswers, correctAnswers = totals.correctAnswers, conceptTotals = totals.concepts;
     var conceptBreakdown = Object.keys(conceptTotals).map(function(key) {
       var entry = conceptTotals[key];
       return Object.assign({}, entry, { accuracy: entry.total ? Math.round((entry.correct / entry.total) * 100) : 0 });
     }).sort(function(a, b) { return a.accuracy - b.accuracy || a.concept.localeCompare(b.concept); });
     return {
       outcome: quest && quest.phase === 'complete' ? 'victory' : (quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress'),
-      rounds: rounds.length,
+      coverage: coverage(quest),
+      rounds: totals.rounds,
+      recentRoundCount: rounds.length,
+      completeHistory: totals.completeHistory,
+      summaryScope: totals.completeHistory ? 'whole-session' : 'available-history',
+      totalAnswers: totalAnswers,
+      correctAnswers: correctAnswers,
       accuracy: totalAnswers ? Math.round((correctAnswers / totalAnswers) * 100) : 0,
-      combos: rounds.filter(function(round) { return round.combo; }).length,
-      roleSynergies: rounds.reduce(function(sum, round) { return sum + (round.synergyCount || 0); }, 0),
-      peerAssists: rounds.reduce(function(sum, round) { return sum + (round.assistedCount || 0); }, 0),
-      puzzlesSolved: rounds.filter(function(round) { return round.roomKind === 'puzzle' && round.enemyDefeated; }).length,
+      combos: totals.combos,
+      roleSynergies: totals.roleSynergies,
+      peerAssists: totals.peerAssists,
+      puzzlesSolved: totals.puzzlesSolved,
       sigils: (quest && quest.sigils || []).slice(),
-      conceptsCleared: Array.from(new Set(rounds.filter(function(round) { return round.enemyDefeated; }).map(function(round) { return round.concept; }))),
+      conceptsCleared: totals.conceptsCleared,
       conceptBreakdown: conceptBreakdown,
       needsReview: conceptBreakdown.length && conceptBreakdown[0].accuracy < 70 ? conceptBreakdown[0] : null,
       strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null
@@ -751,6 +865,7 @@
     currentVotes: currentVotes,
     requiredSigils: requiredSigils,
     questionAnswerIndex: questionAnswerIndex,
+    isAnswerKeyDisputed: isAnswerKeyDisputed,
     getRoom: getRoom,
     tallyVotes: tallyVotes,
     resolveTravel: function() { return sealResult(resolveTravel.apply(null, arguments)); },
@@ -761,7 +876,8 @@
     undoLastGmChange: function() { return sealResult(undoLastGmChange.apply(null, arguments)); },
     adjustEncounter: function() { return sealResult(adjustEncounter.apply(null, arguments)); },
     dismissEvent: dismissEvent,
-    createDebrief: createDebrief
+    createDebrief: createDebrief,
+    coverage: coverage
   };
 });
 
@@ -780,7 +896,7 @@
   function optionText(value) { return text(value && typeof value === 'object' ? value.text != null ? value.text : value.label : value); }
   function norm(value) { return optionText(value).normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' '); }
   function copy(value) { return JSON.parse(JSON.stringify(value)); }
-  function finiteNumber(value) { return (typeof value === 'number' || typeof value === 'string') && value !== '' && value != null && Number.isFinite(Number(value)); }
+  function finiteNumber(value) { return (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '' && Number.isFinite(Number(value)); }
   function typeOf(item) {
     var type = text(item.itemType || item.type || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) >= 0) return 'mcq';
@@ -837,7 +953,19 @@
     if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
     return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
   }
+  function isAnswerKeyDisputed(question) {
+    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var review = question.keyCheck;
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    if (review && typeof review === 'object') {
+      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
+    }
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+  }
+
   function hasKey(item) {
+    if (isAnswerKeyDisputed(item)) return false;
     if (item.type === 'mcq') return item.options.length >= 2 && item.correctIndex >= 0 && item.options.every(function(option) { return !!norm(option); });
     if (item.type === 'multi-select') {
       var multiKeys = Array.isArray(item.correctIndices) ? item.correctIndices : Array.isArray(item.correctAnswers) ? item.correctAnswers : [];
@@ -876,20 +1004,20 @@
       if (Array.isArray(item.pairs)) item.pairs = item.pairs.map(function(pair) { return pair && typeof pair === 'object' ? Object.assign({}, pair, {left:optionText(pair.left),right:optionText(pair.right)}) : pair; });
       item.correctIndex = indexFor(item.options, item.correctAnswer, item.correctIndex);
       item.concept = text(item.conceptLabel || item.concept || item.standard || item.topic || item.skill || item.category || 'Question ' + (sourceIndex + 1));
-      item.explanation = text(item.factCheck || item.explanation || item.feedback || item.rationale);
+      item.explanation = isAnswerKeyDisputed(item) ? '' : text(item.keyCheck && item.keyCheck.checkedKey != null && String(item.keyCheck.checkedKey) !== String(item.correctAnswer) ? item.explanation || item.feedback || item.rationale : item.factCheck || item.explanation || item.feedback || item.rationale);
       item.imageUrl = text(item.imageUrl);
       item.imageAltText = text(item.imageAltText);
       item.optionImageUrls = Array.isArray(item.optionImageUrls) ? item.optionImageUrls : [];
       item.optionImageAltTexts = Array.isArray(item.optionImageAltTexts) ? item.optionImageAltTexts : [];
       item.soloPartialCredit = !(data.scoringPolicy && data.scoringPolicy.partialCredit === false);
       item.selfReviewRequired = !hasKey(item);
-      item.reviewReason = item.type === 'short-answer' || item.type === 'self-explanation' ? 'Compare your response with the guide. This is self-review, not an automatic grade.' : item.selfReviewRequired ? 'This item has no valid automatic answer key. Review it with the guide; it will not count toward accuracy or XP.' : '';
+      item.reviewReason = isAnswerKeyDisputed(item) ? 'This answer key is under review. Explain your reasoning; this item will not count toward accuracy or XP.' : item.type === 'short-answer' || item.type === 'self-explanation' ? 'Compare your response with the guide. This is self-review, not an automatic grade.' : item.selfReviewRequired ? 'This item has no valid automatic answer key. Review it with the guide; it will not count toward accuracy or XP.' : '';
       result.push(item);
     });
     return result;
   }
   function initialResponse(item) {
-    if (item.selfReviewRequired || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
+    if (item.selfReviewRequired || isAnswerKeyDisputed(item) || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
     if (item.type === 'mcq') return { answerIndex: null };
     if (item.type === 'multi-select') return { selectedIndices: [] };
     if (item.type === 'sequence-sense') return { verifyAnswer: '', wrongIndex: null, order: null, principleAnswer: '' };
@@ -898,6 +1026,7 @@
     return { text: '', unit: '' };
   }
   function answerGuide(item) {
+    if (isAnswerKeyDisputed(item)) return 'Answer key under review. Discuss your reasoning with your teacher; no answer is being marked correct.';
     var answer;
     if (item.type === 'mcq') answer = item.options && item.options[item.correctIndex] || item.correctAnswer || item.expectedAnswer;
     else if (item.type === 'multi-select') answer = correctMultiIndices(item).map(function(index) { return item.options[index]; }).join('; ');
@@ -928,7 +1057,7 @@
   function grade(item, response) {
     if (!item || typeof item !== 'object') return incomplete('Choose an assessment item first.');
     response = response && typeof response === 'object' ? response : {};
-    if (item.selfReviewRequired || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) {
+    if (item.selfReviewRequired || isAnswerKeyDisputed(item) || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) {
       if (!text(response.text).trim()) return incomplete('Write your response before comparing it with the guide.');
       if (response.guideRevealed !== true || ['understood', 'needs-practice'].indexOf(response.selfReview) < 0) return incomplete('Reveal the answer guide and record your self-review before continuing.');
       return { complete: true, correct: null, gradable: false, status: 'self-reviewed', score: null, maxScore: null, selfReview: response.selfReview };
@@ -1120,7 +1249,7 @@
     var breakdown = Object.keys(groups).map(function(key) { var entry = groups[key]; return Object.assign({}, entry, { accuracy: entry.total ? Math.round(100 * entry.correct / entry.total) : null, firstAttemptAccuracy: entry.total ? Math.round(100 * entry.firstCorrect / entry.total) : null }); });
     return Object.assign({}, summary, { outcome: quest && quest.phase === 'complete' ? 'victory' : quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress', rounds: history.length, history: history, conceptBreakdown: breakdown, sigils: quest && quest.sigils || [], missedItems: summary.missedItems });
   }
-  return { VERSION: 1, TYPES: TYPES, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief };
+  return { VERSION: 1, TYPES: TYPES, isAnswerKeyDisputed: isAnswerKeyDisputed, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief };
 });
 
   /* Local-only, account-scoped save slots for Solo Concept Quest. No network writes. */
@@ -1918,15 +2047,76 @@ function ConceptQuestSoloQuestion({
     ...patch
   });
   const type = item.type || 'mcq';
-  const optionImage = index => item.optionImageUrls?.[index] ? /*#__PURE__*/React.createElement("img", {
-    src: item.optionImageUrls[index],
-    alt: item.optionImageAltTexts?.[index] || tr('solo_no_image_description', 'No visual description provided.'),
-    className: "mb-2 max-h-36 max-w-full rounded-lg object-contain"
-  }) : null;
+  const keyUnderReview = !!window.AlloModules.ConceptQuestSoloEngine.isAnswerKeyDisputed?.(item);
+  const requiresReview = item.selfReviewRequired || keyUnderReview;
+  const imageAlt = value => String(value == null ? '' : value).trim() || tr('solo_no_image_description', 'No visual description provided.');
+  // Match the authored field names and legacy aliases used by Assess.
+  const choiceSupport = field => {
+    const stems = {
+      options: 'option',
+      answerOptions: 'answerOption',
+      evidenceOptions: 'evidenceOption',
+      items: 'item',
+      candidatePartners: 'candidatePartner',
+      principleOptions: 'principleOption'
+    };
+    const stem = stems[field] || field;
+    return {
+      translations: item[field + '_en'] || (field === 'answerOptions' ? item.options_en : null) || [],
+      images: item[stem + 'ImageUrls'] || (field === 'answerOptions' ? item.answerImageUrls || item.optionImageUrls : field === 'evidenceOptions' ? item.evidenceImageUrls : field === 'principleOptions' ? item.principleOptionsImageUrls : null) || [],
+      descriptions: item[stem + 'ImageAltTexts'] || (field === 'answerOptions' ? item.answerImageAltTexts || item.optionImageAltTexts : field === 'evidenceOptions' ? item.evidenceImageAltTexts : field === 'principleOptions' ? item.principleOptionsImageAltTexts : null) || []
+    };
+  };
+  const choiceContent = (field, index, text, prefix = '') => {
+    const support = choiceSupport(field);
+    return /*#__PURE__*/React.createElement("span", {
+      "data-solo-choice-field": field,
+      "data-solo-choice-index": index,
+      className: "min-w-0 flex-1 break-words"
+    }, /*#__PURE__*/React.createElement("span", null, prefix, text), support.translations[index] && /*#__PURE__*/React.createElement("span", {
+      className: "mt-1 block text-sm font-normal italic opacity-80"
+    }, support.translations[index]), support.images[index] && /*#__PURE__*/React.createElement("img", {
+      src: support.images[index],
+      alt: imageAlt(support.descriptions[index]),
+      loading: "lazy",
+      className: "my-2 max-h-48 w-full rounded bg-white object-contain"
+    }));
+  };
+  const optionLabel = (field, index, text) => text + (choiceSupport(field).translations[index] ? ' — ' + choiceSupport(field).translations[index] : '');
+  const selectSupports = field => {
+    const support = choiceSupport(field);
+    return Array.isArray(support.translations) && support.translations.some(Boolean) || Array.isArray(support.images) && support.images.some(Boolean) ? /*#__PURE__*/React.createElement("ol", {
+      "data-solo-choice-supports": field,
+      className: "mt-2 space-y-2"
+    }, (item[field] || []).map((text, index) => /*#__PURE__*/React.createElement("li", {
+      key: index,
+      className: "rounded-lg border border-slate-200 bg-white p-3"
+    }, choiceContent(field, index, text)))) : null;
+  };
+  const pairSide = (pair, index, side) => {
+    pair = pair && typeof pair === 'object' ? pair : {};
+    const translation = pair[side + '_en'] || item.pairs_en?.[index]?.[side];
+    return /*#__PURE__*/React.createElement("span", {
+      "data-solo-pair-side": side,
+      className: "min-w-0 flex-1 break-words"
+    }, /*#__PURE__*/React.createElement("span", null, pair[side]), translation && /*#__PURE__*/React.createElement("span", {
+      className: "mt-1 block text-sm font-normal italic opacity-80"
+    }, translation), pair[side + 'ImageUrl'] && /*#__PURE__*/React.createElement("img", {
+      src: pair[side + 'ImageUrl'],
+      alt: imageAlt(pair[side + 'ImageAltText']),
+      loading: "lazy",
+      className: "my-2 max-h-48 w-full rounded bg-white object-contain"
+    }));
+  };
+  const pairLabel = (pair, index) => {
+    const left = pair.left_en || item.pairs_en?.[index]?.left,
+      right = pair.right_en || item.pairs_en?.[index]?.right;
+    return pair.left + ' / ' + pair.right + (left || right ? ' — ' + (left || pair.left) + ' / ' + (right || pair.right) : '');
+  };
   const choiceClass = selected => 'flex min-h-11 items-start gap-3 rounded-xl border-2 p-3 text-left ' + (selected ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white');
   const textClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-slate-900 focus:ring-4 focus:ring-indigo-200';
   const guide = window.AlloModules.ConceptQuestSoloEngine.answerGuide(item);
-  const renderChoice = (option, index, field, name, image) => /*#__PURE__*/React.createElement("label", {
+  const renderChoice = (option, index, field, name, sourceField) => /*#__PURE__*/React.createElement("label", {
     key: index,
     className: choiceClass(response[field] === index)
   }, /*#__PURE__*/React.createElement("input", {
@@ -1937,11 +2127,7 @@ function ConceptQuestSoloQuestion({
       [field]: index
     }),
     className: "mt-1"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "min-w-0 break-words"
-  }, image && optionImage(index), /*#__PURE__*/React.createElement("span", {
-    className: "mr-2 font-bold"
-  }, String.fromCharCode(65 + index), "."), option));
+  }), choiceContent(sourceField, index, option, String.fromCharCode(65 + index) + '. '));
   const pairs = Array.isArray(item.pairs) ? item.pairs : [];
   const orderItems = Array.isArray(item.items) ? item.items : [];
   const presented = Array.isArray(item.presentedOrder) && item.presentedOrder.length ? item.presentedOrder.map(entry => typeof entry === 'number' ? orderItems[entry] : entry) : orderItems;
@@ -1958,6 +2144,16 @@ function ConceptQuestSoloQuestion({
     });
   };
   const moveClass = 'rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-800 disabled:opacity-40';
+  const reviewChoices = (field, values) => Array.isArray(values) && values.length > 0 ? /*#__PURE__*/React.createElement("ol", {
+    "data-solo-review-choices": field,
+    className: "space-y-2"
+  }, values.map((option, index) => /*#__PURE__*/React.createElement("li", {
+    key: index,
+    className: "rounded-lg border border-slate-300 bg-white p-3"
+  }, choiceContent(field, index, option, String.fromCharCode(65 + index) + '. ')))) : null;
+  // A missing automatic key changes how the learner responds, not the material
+  // they need to inspect. Keep the authored stimulus available for self-review.
+  const reviewOrder = new Set(presentedIndices).size === orderItems.length ? presentedIndices : orderItems.map((_, index) => index);
   return /*#__PURE__*/React.createElement("fieldset", {
     disabled: disabled,
     className: "space-y-4",
@@ -1971,11 +2167,11 @@ function ConceptQuestSoloQuestion({
     className: "text-sm italic text-slate-600"
   }, item.question_en), item.imageUrl && /*#__PURE__*/React.createElement("img", {
     src: item.imageUrl,
-    alt: item.imageAltText || tr('solo_no_image_description', 'No visual description provided.'),
+    alt: imageAlt(item.imageAltText),
     className: "max-h-72 w-full rounded-xl bg-white object-contain"
-  }), !item.selfReviewRequired && type === 'mcq' && /*#__PURE__*/React.createElement("div", {
+  }), !requiresReview && type === 'mcq' && /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
-  }, (item.options || []).map((option, index) => renderChoice(option, index, 'answerIndex', 'answer', true))), !item.selfReviewRequired && type === 'multi-select' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, (item.options || []).map((option, index) => renderChoice(option, index, 'answerIndex', 'answer', 'options'))), !requiresReview && type === 'multi-select' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
   }, tr('solo_select_all', 'Select every answer that applies.')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
@@ -1991,10 +2187,8 @@ function ConceptQuestSoloQuestion({
         selectedIndices: selected ? response.selectedIndices.filter(value => value !== index) : [...(response.selectedIndices || []), index]
       }),
       className: "mt-1"
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 break-words"
-    }, optionImage(index), option));
-  }))), !item.selfReviewRequired && (type === 'fill-blank' || type === 'numeric-response') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    }), choiceContent('options', index, option));
+  }))), !requiresReview && (type === 'fill-blank' || type === 'numeric-response') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, type === 'numeric-response' ? tr('solo_numeric_answer', 'Your value') : tr('solo_fill_answer', 'Complete the blank'), /*#__PURE__*/React.createElement("input", {
     "aria-describedby": uid + '-prompt',
@@ -2019,12 +2213,13 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_numeric_help', 'Enter a number, decimal, or fraction. Include units when the question requires them.')), response.text && !window.AlloModules.ConceptQuestSoloEngine.grade(item, response).complete && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm text-amber-900"
-  }, tr('solo_numeric_invalid', 'Check that the value is a valid number and that any units in both fields agree.')))), !item.selfReviewRequired && type === 'sequence-sense' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ol", {
+  }, tr('solo_numeric_invalid', 'Check that the value is a valid number and that any units in both fields agree.')))), !requiresReview && type === 'sequence-sense' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ol", {
+    "data-solo-presented-order": true,
     className: "list-inside list-decimal space-y-2 rounded-xl border border-slate-200 bg-white p-4"
   }, presented.map((text, index) => /*#__PURE__*/React.createElement("li", {
     key: index,
     className: "break-words"
-  }, text))), /*#__PURE__*/React.createElement("label", {
+  }, choiceContent('items', presentedIndices[index], text)))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_sequence_check', 'Is this sequence in the correct order?'), /*#__PURE__*/React.createElement("select", {
     value: response.verifyAnswer || '',
@@ -2052,7 +2247,7 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_select_position', 'Choose a position')), presented.map((text, index) => /*#__PURE__*/React.createElement("option", {
     key: index,
     value: index
-  }, index + 1, ". ", text)))), /*#__PURE__*/React.createElement("div", {
+  }, index + 1, ". ", optionLabel('items', presentedIndices[index], text))))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-semibold"
@@ -2064,9 +2259,7 @@ function ConceptQuestSoloQuestion({
     className: "flex items-center gap-2 break-words"
   }, /*#__PURE__*/React.createElement("span", {
     className: "w-6 flex-shrink-0 text-xs font-bold text-slate-600"
-  }, position + 1, "."), /*#__PURE__*/React.createElement("span", {
-    className: "min-w-0 flex-1"
-  }, orderItems[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
+  }, position + 1, "."), choiceContent('items', canonicalIndex, orderItems[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: position === 0,
     "aria-label": tr('solo_move_up', 'Move up') + ': ' + orderItems[canonicalIndex],
@@ -2091,21 +2284,25 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_select_response', 'Choose a response')), item.principleOptions.map((option, index) => /*#__PURE__*/React.createElement("option", {
     key: index,
     value: option
-  }, option))) : /*#__PURE__*/React.createElement("input", {
+  }, optionLabel('principleOptions', index, option)))) : /*#__PURE__*/React.createElement("input", {
     value: response.principleAnswer || '',
     onChange: event => update({
       principleAnswer: event.target.value
     }),
     maxLength: 2000,
     className: textClass + ' mt-2'
-  }), " ")), !item.selfReviewRequired && type === 'relation-mismatch' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
+  }), " "), selectSupports('principleOptions')), !requiresReview && type === 'relation-mismatch' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2"
   }, pairs.map((pair, index) => /*#__PURE__*/React.createElement("li", {
     key: index,
     className: "rounded-lg border border-slate-300 bg-white p-3"
-  }, index + 1, ". ", pair.left, " ", /*#__PURE__*/React.createElement("span", {
+  }, index + 1, ". ", /*#__PURE__*/React.createElement("span", {
+    "data-solo-choice-field": "pairs",
+    "data-solo-choice-index": index,
+    className: "flex min-w-0 items-start gap-2"
+  }, pairSide(pair, index, 'left'), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "↔"), " ", pair.right))), /*#__PURE__*/React.createElement("label", {
+  }, "↔"), pairSide(pair, index, 'right'))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_mismatch_pair', 'Which pair does not belong?'), /*#__PURE__*/React.createElement("select", {
     value: response.pairIndex ?? '',
@@ -2118,7 +2315,7 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_select_pair', 'Choose a pair')), pairs.map((pair, index) => /*#__PURE__*/React.createElement("option", {
     key: index,
     value: index
-  }, index + 1, ". ", pair.left, " / ", pair.right)))), /*#__PURE__*/React.createElement("label", {
+  }, index + 1, ". ", pairLabel(pair, index))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_correct_partner', 'Choose or write the correct partner'), Array.isArray(item.candidatePartners) && item.candidatePartners.length ? /*#__PURE__*/React.createElement("select", {
     value: response.partnerAnswer || '',
@@ -2131,23 +2328,68 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_select_response', 'Choose a response')), item.candidatePartners.map((partner, index) => /*#__PURE__*/React.createElement("option", {
     key: index,
     value: partner
-  }, partner))) : /*#__PURE__*/React.createElement("input", {
+  }, optionLabel('candidatePartners', index, partner)))) : /*#__PURE__*/React.createElement("input", {
     value: response.partnerAnswer || '',
     onChange: event => update({
       partnerAnswer: event.target.value
     }),
     className: textClass + ' mt-2'
-  }))), !item.selfReviewRequired && type === 'answer-evidence' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })), selectSupports('candidatePartners')), !requiresReview && type === 'answer-evidence' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-label": tr('solo_answer_part', 'Answer'),
     className: "space-y-2"
-  }, (item.answerOptions || item.options || []).map((option, index) => renderChoice(option, index, 'answerIndex', 'answer', false))), /*#__PURE__*/React.createElement("h5", {
+  }, (item.answerOptions || item.options || []).map((option, index) => renderChoice(option, index, 'answerIndex', 'answer', 'answerOptions'))), /*#__PURE__*/React.createElement("h5", {
     className: "font-bold"
-  }, item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.')), /*#__PURE__*/React.createElement("div", {
+  }, item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.')), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm italic text-slate-600"
+  }, item.evidencePrompt_en), /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-label": tr('solo_evidence_label', 'Supporting evidence'),
     className: "space-y-2"
-  }, (item.evidenceOptions || []).map((option, index) => renderChoice(option, index, 'evidenceIndex', 'evidence', false)))), item.selfReviewRequired && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, (item.evidenceOptions || []).map((option, index) => renderChoice(option, index, 'evidenceIndex', 'evidence', 'evidenceOptions')))), requiresReview && /*#__PURE__*/React.createElement(React.Fragment, null, keyUnderReview && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "rounded-lg bg-amber-50 p-3 text-sm text-amber-950"
+  }, tr('solo_key_under_review', 'This answer key is under review. Explain your reasoning and discuss it with your teacher; no answer is being marked correct.')), /*#__PURE__*/React.createElement("div", {
+    "data-solo-review-stimulus": true,
+    className: "space-y-4"
+  }, type !== 'answer-evidence' && reviewChoices('options', item.options), orderItems.length > 0 && /*#__PURE__*/React.createElement("ol", {
+    "data-solo-presented-order": true,
+    className: "list-inside list-decimal space-y-2 rounded-xl border border-slate-200 bg-white p-4"
+  }, reviewOrder.map((index, position) => /*#__PURE__*/React.createElement("li", {
+    key: position,
+    className: "break-words"
+  }, choiceContent('items', index, orderItems[index])))), Array.isArray(item.principleOptions) && item.principleOptions.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-semibold"
+  }, tr('solo_ordering_reason', 'What principle determines the order?')), reviewChoices('principleOptions', item.principleOptions)), pairs.length > 0 && /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-2"
+  }, pairs.map((pair, index) => /*#__PURE__*/React.createElement("li", {
+    key: index,
+    className: "rounded-lg border border-slate-300 bg-white p-3"
+  }, index + 1, ". ", /*#__PURE__*/React.createElement("span", {
+    "data-solo-choice-field": "pairs",
+    "data-solo-choice-index": index,
+    className: "flex min-w-0 items-start gap-2"
+  }, pairSide(pair, index, 'left'), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "↔"), pairSide(pair, index, 'right'))))), Array.isArray(item.candidatePartners) && item.candidatePartners.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-semibold"
+  }, tr('solo_correct_partner', 'Choose or write the correct partner')), reviewChoices('candidatePartners', item.candidatePartners)), type === 'answer-evidence' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tr('solo_answer_part', 'Answer'),
+    className: "space-y-2"
+  }, reviewChoices('answerOptions', item.answerOptions || item.options)), /*#__PURE__*/React.createElement("h5", {
+    className: "font-bold"
+  }, item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.')), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm italic text-slate-600"
+  }, item.evidencePrompt_en), /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tr('solo_evidence_label', 'Supporting evidence'),
+    className: "space-y-2"
+  }, reviewChoices('evidenceOptions', item.evidenceOptions)))), /*#__PURE__*/React.createElement("p", {
     className: "rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950"
   }, tr('solo_written_scope', 'Explain your reasoning, then compare it with the answer guide. This is a self-review checkpoint; it is not automatically graded and does not award correctness XP.')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"

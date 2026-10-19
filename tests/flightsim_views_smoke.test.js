@@ -143,7 +143,8 @@ describe('every view renders real content', () => {
     expect(SRC).toContain('navLights');
     expect(SRC).toContain('addNavLight');
     expect(SRC).toContain("nav.mode === 'strobe'");
-    expect(SRC).toContain('canopy.position.set(0, 1.25, 2.0)');
+    // Cabin glass is lit Lambert paint, so it darkens with the scene at night.
+    expect(SRC).toContain('var cabinGlass = new THREE.MeshLambertMaterial');
     expect(SRC).toContain('rwGroup.userData.runwayLights');
     expect(SRC).toContain('localThresholdZ + end.sign * (140 + al * 180)');
     expect(SRC).toContain('approach.end.sign === rec.endSign');
@@ -198,7 +199,9 @@ describe('every view renders real content', () => {
     expect(html).toContain('data-flightsim-learn-library="true"');
     expect(html).toContain('aria-label="Search SkySchool Learn topics"');
     expect(html).toContain('type="search"');
-    expect(html).toContain('data-learn-topic="forces"');
+    expect(html).toContain('data-learn-result-count="true"');
+    expect(html).toContain('Search results:');
+    expect(html).toContain('data-learn-topic=');
     expect(html).toContain('skyschool-learn-split');
   });
 

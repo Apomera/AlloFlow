@@ -16,12 +16,62 @@
 //     failures too. Nothing is announced for repairs the generation pipeline
 //     made before the teacher arrived.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { transformSync } from '@babel/core';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const SOURCE = read('misc_components_source.jsx');
+
+// Renders the real panel from its canonical JSX inside a host that owns the
+// word list, so a fixer can update state the way the Word Sounds host does.
+const require = createRequire(import.meta.url);
+const React = require(resolve('desktop/web-app/node_modules/react'));
+const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
+const act = React.act || require(resolve('desktop/web-app/node_modules/react-dom/test-utils')).act;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+let Panel, root, container, host;
+
+beforeAll(() => {
+  const source = transformSync(SOURCE, { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code;
+  Panel = new Function('React', `
+    const Ban = () => null, CheckCircle2 = Ban, ChevronDown = Ban, ChevronLeft = Ban,
+      ImageIcon = Ban, Play = Ban, RefreshCw = Ban, Send = Ban, Sparkles = Ban, Volume2 = Ban;
+    ${source}
+    return WordSoundsReviewPanel;
+  `)(React);
+});
+
+afterEach(() => {
+  if (root) act(() => root.unmount());
+  root = null;
+  container?.remove();
+  vi.useRealTimers();
+});
+
+async function mountPanel(words, makeProps) {
+  vi.useFakeTimers();
+  host = {};
+  function Host() {
+    const [items, setItems] = React.useState(words);
+    host.words = items; host.replace = setItems;
+    return React.createElement(Panel, { t: () => '', onClose: () => {}, onStartActivity: () => {}, preloadedWords: items, ...makeProps() });
+  }
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => root.render(React.createElement(Host)));
+}
+
+async function runGap(key) {
+  await act(async () => container.querySelector(`[data-review-gap="${key}"] button`).click());
+  for (let step = 0; step < 12; step++) await act(async () => vi.advanceTimersByTimeAsync(1));
+}
+
+const setWord = (index, patch) => host.replace((prev) => prev.map((w, i) => (i === index ? { ...w, ...patch } : w)));
 
 describe('the live panel reaches the real phoneme checker', () => {
   it('destructures onCheckPhonemes', () => {
@@ -59,17 +109,36 @@ describe('each gap that has a fixer gets a scoped button', () => {
     expect(SOURCE).toMatch(/each: onRegenerateManipulationTask/);
     // Regenerate word now refreshes audio; it cannot fill a missing rhyme.
     // The player builds the rhyme board, so this note offers no false repair.
-    const rhyme = SOURCE.slice(SOURCE.indexOf("key: 'rhyme'"), SOURCE.indexOf("key: 'task'"));
+    const rhyme = sliceBetween(SOURCE, "key: 'rhyme'", "key: 'task'", { label: 'rhyme gap' });
     expect(rhyme).toContain("activities: ['rhyming']");
     expect(rhyme).toMatch(/each: null/);
     expect(rhyme).not.toMatch(/label:|each: onRegenerateWord/);
-    expect(SOURCE).toMatch(/onGenerateImage\(i, preloadedWords\[i\]/);
+  });
+
+  it('routes missing Read & Match pictures to the image fixer, one missing choice at a time', async () => {
+    // The gap is about the decoding board's CHOICES, so the fixer asks for
+    // each missing choice picture. Regenerating the row's own picture (the
+    // old call) could never close it. Full repair behaviour is pinned in
+    // word_sounds_review_image_repair.test.js.
+    // Like the host, a saved fix marks the word edited since preparation.
+    const onGenerateImage = vi.fn(async (index, choice) => {
+      setWord(index, { _packEdited: true, _decodingAssets: { ...host.words[index]._decodingAssets, [choice]: 'data:image/png;base64,' + choice } });
+      return true;
+    });
+    await mountPanel(
+      [{ id: 'cat', word: 'cat', ttsReady: true, image: 'data:image/png;base64,cat', activityItems: { decoding: { choices: ['cat', 'dog'] } } }],
+      () => ({ activitySequence: ['decoding'], onGenerateImage }),
+    );
+    await runGap('images');
+    expect(onGenerateImage.mock.calls).toEqual([[0, 'dog', { purpose: 'decoding-choice' }]]);
+    expect(container.querySelector('[data-review-gap="images"]')).toBeNull();
+    expect(container.textContent).toContain('1 fixed');
   });
 
   it('offers no button where no fixer exists', () => {
     // Re-packing an edited word is not built. A button that quietly did
     // something else would be worse than none.
-    const edited = SOURCE.slice(SOURCE.indexOf("key: 'edited'"), SOURCE.indexOf("key: 'phonemes'"));
+    const edited = sliceBetween(SOURCE, "key: 'edited'", "key: 'phonemes'", { label: 'edited gap' });
     expect(edited).toMatch(/each: null/);
     expect(edited).not.toMatch(/label:/);
   });
@@ -119,7 +188,7 @@ describe('outcome is reported for pressed fixes, and includes failures', () => {
   it('one word failing does not abandon the rest of the batch', () => {
     // A thrown error is caught and falls through to the same verification
     // step, so the loop continues and the word is simply counted unchanged.
-    const runner = SOURCE.slice(SOURCE.indexOf('const runOneGapFix'), SOURCE.indexOf('const describeGapFix'));
+    const runner = sliceBetween(SOURCE, 'const runOneGapFix', 'const describeGapFix', { label: 'gap fix runner' });
     expect(runner).toMatch(/catch \(e\) \{/);
     expect(runner).not.toMatch(/catch \(e\) \{[\s\S]{0,60}(return|throw)/);
   });
@@ -140,6 +209,20 @@ describe('outcome is reported for pressed fixes, and includes failures', () => {
   });
 });
 
+describe('the outcome survives the gap it closed', () => {
+  it('still reports, in the live region, a fix that closed the last open gap', async () => {
+    // Without an "edited" line left behind, closing the only gap used to
+    // unmount the whole box, result line and live region included.
+    const onCheckPhonemes = vi.fn(async (index) => setWord(index, { phonemes: ['sh', 'i', 'p'], _fallbackUsed: false }));
+    await mountPanel([{ id: 'ship', word: 'ship', ttsReady: true, phonemes: ['s', 'h', 'i', 'p'], _fallbackUsed: true }],
+      () => ({ activitySequence: ['blending'], onCheckPhonemes }));
+    const region = () => container.querySelector('[role="status"][aria-live="polite"]');
+    await runGap('phonemes');
+    expect(container.querySelector('[data-review-gap="phonemes"]')).toBeNull();
+    expect(region()?.textContent).toBe('1 fixed.');
+  });
+});
+
 describe('a fix is verified, not assumed', () => {
   it('re-tests the gap predicate after each word', () => {
     // Every host fixer catches its own errors, toasts, and resolves normally,
@@ -150,12 +233,24 @@ describe('a fix is verified, not assumed', () => {
     expect(SOURCE).toMatch(/unchanged \+= 1;/);
   });
 
-  it('reads the word back through a ref, not the closed-over prop', () => {
+  it('reads the word back through a ref, not the closed-over prop', async () => {
     // The loop's `preloadedWords` is the array from the render that created
     // the closure, so it can never show the result of the fix.
     expect(SOURCE).toMatch(/const latestWordsRef = React\.useRef\(preloadedWords\)/);
     expect(SOURCE).toMatch(/latestWordsRef\.current = preloadedWords;/);
-    expect(SOURCE).toMatch(/const after = \(latestWordsRef\.current \|\| \[\]\)\[idx\];/);
+    // Rendered: one checker really fixes its word, the other changes nothing.
+    // Only a runner that sees the post-fix words can tell the two apart.
+    const onCheckPhonemes = vi.fn(async (index) => {
+      if (host.words[index].word === 'ship') setWord(index, { phonemes: ['sh', 'i', 'p'], _fallbackUsed: false, _packEdited: true });
+    });
+    await mountPanel([
+      { id: 'ship', word: 'ship', ttsReady: true, phonemes: ['s', 'h', 'i', 'p'], _fallbackUsed: true },
+      { id: 'chat', word: 'chat', ttsReady: true, phonemes: ['c', 'h', 'a', 't'], _fallbackUsed: true },
+    ], () => ({ activitySequence: ['blending'], onCheckPhonemes }));
+    await runGap('phonemes');
+    expect(onCheckPhonemes.mock.calls.map(([index]) => index)).toEqual([0, 1]);
+    expect(container.textContent).toContain('1 fixed, 1 unchanged.');
+    expect(container.querySelector('[data-review-gap="phonemes"]').textContent).toContain('(1)');
   });
 
   it('indices and predicate come from the same source', () => {

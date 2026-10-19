@@ -1593,9 +1593,10 @@ const generateMathAssessment = async (blocks, options = {}) => {
   }
   const sections = [];
   const language = options.language || 'English';
+  // Only the shared resolver may read the multi-state setting; without one, stay single-language.
   const translation = typeof options.resolveTranslationPolicy === 'function'
     ? options.resolveTranslationPolicy(options.translationMode, language, options.uiLanguage)
-    : { enabled: language !== 'English' && options.translationMode !== 'off', target: 'English' };
+    : { enabled: false, target: 'English' };
   const resourceId = options.resourceId || _nextMathGeneratedResourceId([]);
   for (let index = 0; index < blocks.length; index++) {
     const block = blocks[index];
@@ -1689,7 +1690,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
       if (!problemToSolve.trim()) {
           console.warn('[MATH] Empty input — nothing to generate');
-          addToast('Please enter a topic or problem first', 'error');
+          addToast(t('toasts.enter_topic_first'), 'error');
           return;
       }
       const generationOwner = typeof setGeneratedContent === 'function' ? setGeneratedContent : deps;

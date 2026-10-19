@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Penyelesaian misi dan pendaratan kembali telah dicatat. Coba misi ini lagi dengan satu perubahan kendali atau rute yang disengaja, lalu bandingkan pengamatan yang tersimpan.",
+  "stem.flightsim.coaching_mission_depleted": "Baterai drone habis. Mulai misi baru, gunakan rute pendek, dan rencanakan kepulangan sebelum baterai lemah.",
+  "stem.flightsim.coaching_mission_unknown": "Misi ini memiliki bukti yang tidak lengkap atau saling bertentangan. Tinjau catatannya, lalu mulai percobaan baru.",
+  "stem.flightsim.coaching_mission_capture": "Beberapa target belum direkam. Pada misi baru, dekati satu target setiap kali dan tetap dalam batas ketinggian serta kecepatan terhadap tanah yang ditampilkan hingga perekaman tercatat.",
+  "stem.flightsim.coaching_mission_recovery": "Penyintas belum diselamatkan. Pada misi penyelamatan baru, latih melayang stabil dalam batas ketinggian, pergeseran, dan kecepatan vertikal yang ditampilkan sebelum kembali ke pangkalan.",
+  "stem.flightsim.coaching_mission_return": "Tujuan penjemputan atau perekaman telah dicatat; pendaratan kembali masih tersisa. Mulai misi baru, lalu sisihkan waktu dan baterai untuk kembali ke pangkalan.",
+  "stem.flightsim.mission_reflection_prompt": "Keputusan tentang target, melayang, atau kepulangan mana yang ingin Anda ubah? Gunakan pengamatan misi untuk menjelaskan pilihan dan merencanakan satu perubahan pada percobaan baru. Penjelasan Anda disimpan bersama penerbangan ini.",
+  "stem.flightsim.journal_different_airport": "Pendekatan ini menggunakan bandara yang berbeda. Tinjau pengamatannya secara terpisah; perubahan pengukuran tidak dihitung.",
+  "stem.flightsim.journal_approach_airport": "Bandara pendekatan: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "BUKTI MISI",
+  "stem.flightsim.challenge_brake_release": "Lepaskan X dan matikan Rem Roda di Deck sebelum menambah daya."
+}

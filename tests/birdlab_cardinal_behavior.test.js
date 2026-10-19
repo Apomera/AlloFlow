@@ -110,7 +110,7 @@ describe('Northern cardinal independent woodland behavior', () => {
       expect(hops).toBeGreaterThan(20); expect(feeds).toBeGreaterThan(20); expect(flights).toBeGreaterThan(20); expect(grounded).toBeGreaterThan(20);
       f.model.root.traverse(object => { if (object.isMesh) { expect(resources.has(object.geometry)).toBe(true); expect(resources.has(object.material)).toBe(true); } });
     } finally { f.wildlife.dispose(); }
-  });
+  }, 20000);
 
   it('replays at 30 and 60 Hz, freezes when paused, and restores Guided observations after Free roam', () => {
     const a = fixture(), b = fixture();

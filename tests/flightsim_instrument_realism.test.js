@@ -281,3 +281,25 @@ describe('Low-altitude height readout remains clear on a phone', () => {
     expect(x + w).toBeLessThanOrEqual(320);
   });
 });
+
+describe('Outside air temperature follows the standard atmosphere', () => {
+  it.each([
+    // ICAO standard atmosphere, with the icing band FAA AC 91-74B gives:
+    // most airframe icing forms between about 0 and -20 C in visible moisture.
+    [2000, '11°C OAT', 'Normal'],
+    [6000, '3°C OAT', 'Normal'],
+    // Ice can still form in cloud a degree or two above freezing.
+    [7000, '1°C OAT', 'Icing in cloud'],
+    [8000, '-1°C OAT', 'Icing in cloud'],
+    [20000, '-25°C OAT', 'Very cold'],
+    // Isothermal above the tropopause: -56.5 C, not 15 - 2 C per 1,000 ft (-75 C).
+    [45000, '-56°C OAT', 'Very cold'],
+  ])('reads %i ft as %s (%s)', async (altitude, reading, advice) => {
+    await mount();
+    await paint({ state: { ...cruise, altitude } });
+    const shown = texts();
+    expect(shown).toContain(reading);
+    const row = shown.indexOf(reading);
+    expect(shown[row + 1]).toBe(advice);
+  });
+});

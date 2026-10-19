@@ -170,7 +170,8 @@ function stubGeminiAudio() {
     ok: true,
     status: 200,
     json: async () => ({
-      candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+      // 16-bit PCM: an odd byte count is rejected as an invalid payload (2026-09-07).
+      candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm!').toString('base64') } }] } }],
     }),
   }));
   vi.stubGlobal('fetch', fetchMock);

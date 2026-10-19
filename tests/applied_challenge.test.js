@@ -540,13 +540,13 @@ describe('Applied Challenge Studio coaching guardrails', () => {
       question: 'What would change your mind?',
       status: 'grounded',
     }).status).toBe('grounded');
-    expect(H.parseAppliedChallengeFeedback({ status: 'perfect' }).status).toBe('developing');
+    expect(H.parseAppliedChallengeFeedback({ status: 'perfect' })).toBeNull();
     expect(H.parseAppliedChallengeFeedback('Coach note: ' + JSON.stringify({
       strength: 'The evidence boundary is clear.',
       nextStep: 'Test the strongest alternative.',
       status: 'grounded',
     })).status).toBe('grounded');
-    expect(H.parseAppliedChallengeFeedback({}).strength).toContain('connected to the challenge');
+    expect(H.parseAppliedChallengeFeedback({})).toBeNull();
     expect(H.finalizeAppliedChallengeFeedback({
       strength: 'Strong reasoning',
       status: 'grounded',

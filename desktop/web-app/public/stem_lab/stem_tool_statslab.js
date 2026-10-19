@@ -157,6 +157,16 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   function _isNum(x) { return typeof x === 'number' && isFinite(x); }
   function _clean(arr) { return (arr || []).filter(_isNum); }
+  // Value textareas show the raw text while it still parses to the stored list,
+  // so a half-typed "2." or "-" or a trailing newline survives the re-render.
+  function _parseNumList(text) { return String(text).split(/[\s,]+/).map(parseFloat).filter(_isNum); }
+  function _numListText(text, arr) {
+    if (typeof text === 'string') {
+      var parsed = _parseNumList(text);
+      if (parsed.length === arr.length && parsed.every(function(v, i) { return v === arr[i]; })) return text;
+    }
+    return arr.join('\n');
+  }
   function sum(arr) { var x = _clean(arr); var s = 0; for (var i = 0; i < x.length; i++) s += x[i]; return s; }
   function mean(arr) { var x = _clean(arr); return x.length ? sum(x) / x.length : NaN; }
   function median(arr) {
@@ -518,10 +528,19 @@ window.StemLab = window.StemLab || {
   }
 
   // ── Chi-square goodness-of-fit ──
+  // Expected may be entered as counts, proportions or ratios; goodness-of-fit
+  // needs expected counts that total the observed N, so rescale to it.
+  function _scaledExpected(observed, expected) {
+    var exp = (expected || []).slice();
+    var sumO = sum(observed), sumE = sum(exp);
+    if (!(sumE > 0) || !(sumO > 0) || Math.abs(sumE - sumO) <= 1e-9 * sumO) return exp;
+    return exp.map(function(e) { return e * sumO / sumE; });
+  }
   function chiSquareGoodnessOfFit(observed, expected) {
     if (!observed || !expected || observed.length !== expected.length || observed.length < 2) {
       return { error: 'Observed and expected must have ≥2 matching categories.' };
     }
+    expected = _scaledExpected(observed, expected);
     var x2 = 0;
     for (var i = 0; i < observed.length; i++) {
       if (expected[i] === 0) return { error: 'Expected count cannot be 0.' };
@@ -729,7 +748,11 @@ window.StemLab = window.StemLab || {
         ', d = ' + result.cohensD.toFixed(2) + '. Group 1 (M = ' + result.mean1.toFixed(2) + ', SD = ' + result.sd1.toFixed(2) +
         ', n = ' + result.n1 + ') vs. Group 2 (M = ' + result.mean2.toFixed(2) + ', SD = ' + result.sd2.toFixed(2) + ', n = ' + result.n2 + ').';
     }
-    if (/ANOVA/.test(t)) {
+    if (/^Repeated-measures ANOVA/.test(t)) {
+      return 'F(' + result.dfCond + ', ' + result.dfError + ') = ' + result.F.toFixed(2) + ', ' + pStr +
+        ', partial η² = ' + result.partialEtaSquared.toFixed(3) + '.';
+    }
+    if (/^One-way ANOVA/.test(t)) {
       return 'F(' + result.dfBetween + ', ' + result.dfWithin + ') = ' + result.F.toFixed(2) + ', ' + pStr +
         ', η² = ' + result.etaSquared.toFixed(3) + ', ω² = ' + result.omegaSquared.toFixed(3) + '.';
     }
@@ -1545,14 +1568,21 @@ window.StemLab = window.StemLab || {
       // string or a partial object throws before any test runs. Merge each
       // over its default so a partial save keeps whatever it does have.
       d = Object.assign({}, d);
-      ['oneColData', 'twoColData', 'multiColData'].forEach(function (k) {
+      ['oneColData', 'twoColData', 'multiColData', 'chiGofData', 'chiIndepData', 'multiRegData'].forEach(function (k) {
         d[k] = Object.assign({}, STATSLAB_DEFAULTS[k],
           (d[k] && typeof d[k] === 'object' && !Array.isArray(d[k])) ? d[k] : {});
       });
       if (!Array.isArray(d.twoColData.a)) d.twoColData.a = STATSLAB_DEFAULTS.twoColData.a;
       if (!Array.isArray(d.twoColData.b)) d.twoColData.b = STATSLAB_DEFAULTS.twoColData.b;
+      [['chiGofData', ['observed', 'expected', 'labels']], ['chiIndepData', ['rows', 'cols', 'table']], ['multiRegData', ['x', 'y', 'xLabels']]].forEach(function (pair) {
+        pair[1].forEach(function (f) { if (!Array.isArray(d[pair[0]][f])) d[pair[0]][f] = STATSLAB_DEFAULTS[pair[0]][f]; });
+      });
       if (!Array.isArray(d.oneColData.values)) d.oneColData.values = STATSLAB_DEFAULTS.oneColData.values;
       if (!Array.isArray(d.multiColData.groups)) d.multiColData.groups = STATSLAB_DEFAULTS.multiColData.groups;
+      d.multiColData.groups = d.multiColData.groups.map(function (g, gi) {
+        var safe = (g && typeof g === 'object') ? g : {};
+        return Object.assign({}, safe, { label: typeof safe.label === 'string' ? safe.label : 'Group ' + (gi + 1), values: Array.isArray(safe.values) ? safe.values : [] });
+      });
 
       // ── Concept-mastery state + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include statsLab,
@@ -1741,7 +1771,7 @@ window.StemLab = window.StemLab || {
             if (result.cohensD != null && Math.abs(result.cohensD) >= 0.8) bumps.largeEffectFound = true;
             if (result.etaSquared != null && result.etaSquared >= 0.14) bumps.largeEffectFound = true;
             if (result.r != null && Math.abs(result.r) >= 0.5) bumps.largeEffectFound = true;
-            if (awardXP) awardXP(15, 'StatsLab — ' + (result.test || testType), 'statsLab');
+            if (awardXP) awardXP('statsLab', 15, 'StatsLab — ' + (result.test || testType));
             if (addToast) addToast('✓ ' + (result.test || testType) + ' complete' + (excludeOutliers && nRemoved > 0 ? ' (' + nRemoved + ' outlier(s) excluded)' : ''), 'success');
           } else {
             if (addToast) addToast('⚠ ' + result.error, 'error');
@@ -2486,8 +2516,15 @@ window.StemLab = window.StemLab || {
         if (addToast) addToast('CSV needs at least 2 columns of numeric data.', 'error');
         return;
       }
-      var a = parsed.data.map(function(r) { return r[0]; }).filter(_isNum);
-      var b = parsed.data.map(function(r) { return r[1]; }).filter(_isNum);
+      // A blank cell above a value would shift that column up a row and re-pair
+      // the data, so keep complete rows; trailing blanks (shorter group) stay.
+      var midGap = [0, 1].some(function(c) {
+        var gap = false;
+        return parsed.data.some(function(r) { if (!_isNum(r[c])) { gap = true; return false; } return gap; });
+      });
+      var rows = midGap ? parsed.data.filter(function(r) { return _isNum(r[0]) && _isNum(r[1]); }) : parsed.data;
+      var a = rows.map(function(r) { return r[0]; }).filter(_isNum);
+      var b = rows.map(function(r) { return r[1]; }).filter(_isNum);
       upd('twoColData', { aLabel: parsed.header[0], bLabel: parsed.header[1], a: a, b: b });
       if (addToast) addToast('Loaded ' + a.length + ' / ' + b.length + ' values into 2 columns.', 'success');
     }
@@ -2650,10 +2687,10 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
-              value: t.a.join('\n'),
+              value: _numListText(t.aText, t.a),
               onChange: function(e) {
-                var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
-                upd('twoColData', Object.assign({}, t, { a: vals }));
+                var vals = _parseNumList(e.target.value);
+                upd('twoColData', Object.assign({}, t, { a: vals, aText: e.target.value }));
               },
               'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_a_values', 'Column A values'),
               placeholder: 'one number per line\nor comma-separated',
@@ -2670,10 +2707,10 @@ window.StemLab = window.StemLab || {
               style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
-              value: t.b.join('\n'),
+              value: _numListText(t.bText, t.b),
               onChange: function(e) {
-                var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
-                upd('twoColData', Object.assign({}, t, { b: vals }));
+                var vals = _parseNumList(e.target.value);
+                upd('twoColData', Object.assign({}, t, { b: vals, bText: e.target.value }));
               },
               'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_b_values', 'Column B values'),
               placeholder: 'one number per line\nor comma-separated',
@@ -2729,11 +2766,11 @@ window.StemLab = window.StemLab || {
                 style: { width: '100%', padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, fontSize: 11, marginBottom: 4, boxSizing: 'border-box' }
               }),
               h('textarea', {
-                value: g.values.join('\n'),
+                value: _numListText(g.text, g.values),
                 onChange: function(e) {
-                  var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
+                  var vals = _parseNumList(e.target.value);
                   var nextGroups = t2.groups.slice();
-                  nextGroups[gi] = { label: g.label, values: vals };
+                  nextGroups[gi] = { label: g.label, values: vals, text: e.target.value };
                   upd('multiColData', { groups: nextGroups });
                 },
                 'data-sl-focusable': 'true', 'aria-label': 'Group ' + (gi + 1) + ' values',
@@ -2774,10 +2811,10 @@ window.StemLab = window.StemLab || {
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Single-column data (one-sample t-test)'),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 200px', gap: 10 } },
           h('textarea', {
-            value: d.oneColData.values.join('\n'),
+            value: _numListText(d.oneColData.valuesText, d.oneColData.values),
             onChange: function(e) {
-              var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
-              upd('oneColData', Object.assign({}, d.oneColData, { values: vals }));
+              var vals = _parseNumList(e.target.value);
+              upd('oneColData', Object.assign({}, d.oneColData, { values: vals, valuesText: e.target.value }));
             },
             'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_single_column_values', 'Single column values'),
             rows: 5,
@@ -3471,7 +3508,7 @@ window.StemLab = window.StemLab || {
       try {
         (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(apa);
         upd('apaCopied', (d.apaCopied || 0) + 1);
-        if (awardXP) awardXP(5, 'StatsLab — APA write-up copied', 'statsLab');
+        if (awardXP) awardXP('statsLab', 5, 'StatsLab — APA write-up copied');
         if (addToast) addToast('✓ APA write-up copied to clipboard', 'success');
       } catch (e) {
         if (addToast) addToast('Copy failed — select and copy manually.', 'error');
@@ -3536,7 +3573,7 @@ window.StemLab = window.StemLab || {
       var report = lines.join('\n');
       try {
         (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report);
-        if (awardXP) awardXP(10, 'StatsLab — full report exported', 'statsLab');
+        if (awardXP) awardXP('statsLab', 10, 'StatsLab — full report exported');
         if (addToast) addToast('✓ Full report copied to clipboard (paste into Docs/Word)', 'success');
       } catch (e) {
         if (addToast) addToast('Copy failed — clipboard access blocked.', 'error');
@@ -4113,7 +4150,7 @@ window.StemLab = window.StemLab || {
                 try { setSlCeleb({ question: newlyMasteredQ.question, tags: newlyMasteredQ.tags, total: Object.keys(nextMastery).length, at: Date.now() }); } catch (e) {}
                 try { setTimeout(function () { setSlCeleb(null); }, 3500); } catch (e) {}
               }
-              if (awardXP) awardXP(correct * 5, 'StatsLab — quiz: ' + correct + '/5', 'statsLab');
+              if (awardXP) awardXP('statsLab', correct * 5, 'StatsLab — quiz: ' + correct + '/5');
               if (addToast) addToast('Quiz scored: ' + correct + ' / ' + d.quizQuestions.length, correct >= 4 ? 'success' : 'info');
               slAnnounce('Quiz score: ' + correct + ' out of ' + d.quizQuestions.length);
             },
@@ -4544,6 +4581,7 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   function _renderPower(d, upd, h, addToast) {
     var p = d.powerInputs || { test: 'ttest_independent', effectSize: 0.5, alpha: 0.05, power: 0.8, n: null, solveFor: 'n' };
+    var vizD = _isNum(p.vizD) ? p.vizD : 0.5;
     function setP(key, val) {
       var next = Object.assign({}, p);
       next[key] = val;
@@ -4731,11 +4769,11 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
           h('div', null,
             h('label', { htmlFor: 'sl-viz-d', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
-              "Effect size (Cohen's d): ", h('b', { style: { color: 'var(--sl-warning)' } }, parseFloat(p.vizD || 0.5).toFixed(2))
+              "Effect size (Cohen's d): ", h('b', { style: { color: 'var(--sl-warning)' } }, parseFloat(vizD).toFixed(2))
             ),
             h('input', {
               id: 'sl-viz-d', type: 'range', min: 0, max: 2.0, step: 0.05,
-              value: p.vizD || 0.5,
+              value: vizD,
               onChange: function(e) { setP('vizD', parseFloat(e.target.value)); },
               'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_cohen_s_d_slider', 'Cohen\'s d slider'),
               style: { width: '100%' }
@@ -4766,10 +4804,10 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
-        _renderTypeErrorViz(p.vizD || 0.5, p.vizAlpha || 0.05, p.vizN || 30, h),
+        _renderTypeErrorViz(vizD, p.vizAlpha || 0.05, p.vizN || 30, h),
         // Live readout below the chart
         (function() {
-          var vd = p.vizD || 0.5, va = p.vizAlpha || 0.05, vn = p.vizN || 30;
+          var vd = vizD, va = p.vizAlpha || 0.05, vn = p.vizN || 30;
           var ncp = vd * Math.sqrt(vn / 2);
           var crit = _normalInv(1 - va);
           var beta = _normalCdf(crit, ncp, 1);
@@ -5044,6 +5082,8 @@ window.StemLab = window.StemLab || {
     // Linear fit
     var lr = linearRegression(x, y);
     var hasFit = !lr.error && _isNum(lr.slope);
+    // linearRegression() reports R², not r: recover r with the slope's sign.
+    var fitR = hasFit ? (lr.slope < 0 ? -1 : 1) * Math.sqrt(Math.max(0, lr.rSquared)) : null;
     var children = [
       // Axes
       h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
@@ -5076,13 +5116,13 @@ window.StemLab = window.StemLab || {
     children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, yLabel));
     if (hasFit) {
       children.push(h('text', { key: 'fitnote', x: W - pad.r, y: pad.t + 4, fill: 'var(--sl-chart-warning)', fontSize: 9, textAnchor: 'end' },
-        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ', r²=' + (lr.r != null ? (lr.r * lr.r).toFixed(2) : '?') + ')'
+        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + fitR.toFixed(2) + ', r²=' + (fitR * fitR).toFixed(2) + ')'
       ));
     }
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
-      'aria-label': 'Scatterplot of ' + xLabel + ' vs ' + yLabel + ', n=' + x.length + (hasFit ? ', r=' + lr.r.toFixed(2) : ''),
+      'aria-label': 'Scatterplot of ' + xLabel + ' vs ' + yLabel + ', n=' + x.length + (hasFit ? ', r=' + fitR.toFixed(2) : ''),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     }, children);
   }
@@ -5236,7 +5276,7 @@ window.StemLab = window.StemLab || {
       if (t1.values.length >= 2) charts.push(h('div', { key: 'h1', style: { marginBottom: 10 } }, _renderHistogram(t1.values, 'Sample (μ₀=' + t1.mu0 + ')', h)));
       if (t1.values.length >= 4) charts.push(h('div', { key: 'qq1', style: { marginBottom: 10 } }, _renderQQPlot(t1.values, 'Sample', h)));
     } else if (sel === 'chiSquareGoodnessOfFit') {
-      if (d.chiGofData.observed.length) charts.push(h('div', { key: 'gof', style: { marginBottom: 10 } }, _renderBarObsExp(d.chiGofData.observed, d.chiGofData.expected, d.chiGofData.labels, h)));
+      if (d.chiGofData.observed.length) charts.push(h('div', { key: 'gof', style: { marginBottom: 10 } }, _renderBarObsExp(d.chiGofData.observed, _scaledExpected(d.chiGofData.observed, d.chiGofData.expected), d.chiGofData.labels, h)));
     } else if (sel === 'anova_twoWay') {
       if (d.twoWayData) charts.push(h('div', { key: 'inter', style: { marginBottom: 10 } }, _renderInteractionPlot(d.twoWayData.matrix, d.twoWayData.factorALevels, d.twoWayData.factorBLevels, h)));
     } else {

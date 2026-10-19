@@ -78,9 +78,12 @@ describe('explicit student reading assignments', () => {
       { id: 'private-analysis', type: 'analysis', data: { originalText: 'Teacher review' } },
       { id: 'unrelated-quiz', type: 'quiz', data: [] }
     ], [adapted.id]);
-    expect(result.resources.map(item => item.id)).toEqual([adapted.id, source.id]);
-    expect(result.currentResourceId).toBe(adapted.id);
-    expect(result.title).toBe(adapted.title);
+    // Since a9ae02cb5 (K5, Novak point 4) the preserved original opens before its adapted
+    // companion (tests/k5_original_first_order.test.js), so it is the opening resource and
+    // the link is named after it.
+    expect(result.resources.map(item => item.id)).toEqual([source.id, adapted.id]);
+    expect(result.currentResourceId).toBe(source.id);
+    expect(result.title).toBe(source.title);
     const reopened = window.hydrateHistory(result.resources);
     const received = reopened.find(item => item.id === source.id);
     expect(contract.isSupportedOriginal(received)).toBe(true);
@@ -95,7 +98,7 @@ describe('explicit student reading assignments', () => {
   it('deduplicates an original shared by multiple selected companions', async () => {
     const source = original(), first = companion(source), second = companion(source, 'adapted-second');
     const result = await packet([source, first, second], [first.id, second.id]);
-    expect(result.resources.map(item => item.id)).toEqual([first.id, second.id, source.id]);
+    expect(result.resources.map(item => item.id)).toEqual([source.id, first.id, second.id]);
     const both = await packet([source, first], [source.id, first.id]);
     expect(both.resources.map(item => item.id)).toEqual([source.id, first.id]);
   });
@@ -105,10 +108,11 @@ describe('explicit student reading assignments', () => {
     const revision = original('revised-original', 'family-a', 'unit-a', 'Fair words in a later revision.');
     const result = await packet([revision, adapted], [adapted.id]);
     expect(result.resources).toHaveLength(2);
-    expect(result.resources[0].id).toBe(adapted.id);
-    expect(result.resources[1].data).toBe(text);
-    expect(result.resources[1].id).not.toBe(revision.id);
-    expect(result.resources[1].readingSupports?.annotations || []).toEqual([]);
+    // The reconstructed original opens first (K5 original-first order).
+    expect(result.resources[1].id).toBe(adapted.id);
+    expect(result.resources[0].data).toBe(text);
+    expect(result.resources[0].id).not.toBe(revision.id);
+    expect(result.resources[0].readingSupports?.annotations || []).toEqual([]);
   });
 
   it('keeps original-only and non-reading selections scoped and empty selections empty', async () => {

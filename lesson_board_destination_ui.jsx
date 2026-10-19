@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {routeTo,travelLimitOf} from './lesson_board_spatial.js';
 import {Amounts} from './lesson_board_play_extras.jsx';
 import {tr} from './lesson_board_strings.js';
@@ -45,7 +46,7 @@ export function DestinationReminder({board,progress,lead,onInspect,t}){
 export function DestinationReceipt({board,lead,t}){
   return <div data-field-lead-receipt><Amounts board={board} values={lead.reward} prefix="+"/><p>{tr(t,'field_lead_receipt','Your lead to {name} is saved. These supplies arrive only after you successfully investigate that destination. Other actions keep the lead ready.',{name:destinationName(board,lead.targetId)})}</p></div>;
 }
-export function DestinationStyles(){return <style>{`
+export function DestinationStyles(){return addBoardStyle(`
 .lb .lb-field-lead-offer{margin-top:14px;padding-top:12px;border-top:1px solid var(--gold)}.lb .lb-field-lead-offer fieldset{border:0;padding:0;margin:0 0 12px}.lb .lb-field-lead-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}.lb .lb-field-lead-option{min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}.lb .lb-field-lead-option[data-selected=true]{border:2px solid var(--route);padding:11px;background:var(--route-soft)}.lb .lb-field-lead-option label{display:flex;align-items:center;gap:8px;margin:0 0 8px;cursor:pointer}.lb .lb-field-lead-option input{width:22px;min-width:22px;height:22px;min-height:22px;accent-color:var(--route);margin:0}.lb .lb-field-lead-option strong{min-width:0}.lb .lb-field-lead-option small{display:block;margin:9px 0}.lb .lb-field-lead-option button,.lb [data-field-lead-commit]{width:100%;white-space:normal;text-align:start}.lb [data-field-lead-commit]{border:2px solid var(--route);background:var(--panel);font-weight:650}.lb .lb-field-lead-offer>small{display:block;margin-top:8px}.lb [data-field-lead]>button{margin-top:10px;max-width:100%;white-space:normal}
 @media(forced-colors:active){.lb .lb-field-lead-option[data-selected=true],.lb [data-field-lead-commit]{border-color:Highlight}.lb .lb-field-lead-offer{border-color:CanvasText}}
-`}</style>;}
+`);}

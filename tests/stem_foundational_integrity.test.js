@@ -201,10 +201,19 @@ describe('Area Model representation and submission integrity', () => {
         muted: true,
       },
     };
+    // Since 09-05 the hero states the active challenge's factors but withholds the
+    // product until the learner solves it (it used to print the answer beside the
+    // question), then shows it once feedback is correct.
+    const hero = (markup) => (markup.match(/<section id="stem-areamodel-panel-multidigit"[\s\S]*?<\/section>/) || [''])[0];
     const html = renderTool('areamodel', state);
-    expect(html).toContain('31 × 12 = 372');
-    expect(html).toContain('31 rows by 12 columns');
+    expect(hero(html)).toContain('31 × 12 = ?');
+    expect(hero(html)).not.toContain('372');
+    expect(hero(html)).not.toContain('23 × 14');
     expect(html).not.toContain('23 × 14 = 322');
+    resetStemLab();
+    loadTool(AREA_FILE, 'areamodel');
+    const solved = renderTool('areamodel', { _areamodel: { ...state._areamodel, feedback: { correct: true } } });
+    expect(hero(solved)).toContain('31 × 12 = 372');
 
     resetStemLab();
     const tool = loadTool(AREA_FILE, 'areamodel');

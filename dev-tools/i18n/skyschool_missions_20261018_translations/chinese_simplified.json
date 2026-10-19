@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "任务观察记录",
+  "stem.flightsim.mission_journal_targets": "已采集目标：{captured}/{total}。",
+  "stem.flightsim.mission_journal_complete": "已记录所有任务目标的完成情况和返航着陆。",
+  "stem.flightsim.mission_journal_ended": "任务结束时，尚未记录全部完成证据。",
+  "stem.flightsim.mission_journal_recovery": "已记录幸存者救援：{value}。",
+  "stem.flightsim.mission_journal_return": "已记录返回基地着陆：{value}。",
+  "stem.flightsim.mission_guidance_title": "任务引导",
+  "stem.flightsim.mission_route": "{target} · 方位 {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "起飞点",
+  "stem.flightsim.mission_read_status": "朗读任务状态",
+  "stem.flightsim.mission_return_criterion": "在距{target} {distance} nm以内着陆，地速低于{speed} kt，下降率低于{fpm} fpm。",
+  "stem.flightsim.mission_unavailable": "任务目标数据不可用。请结束本次飞行并开始新任务。",
+  "stem.flightsim.mission_capture_criterion": "保持在{distance} ft以内，离地高度高于{min} ft且低于{max} ft，地速低于{speed} kt，持续{hold} s。"
+}

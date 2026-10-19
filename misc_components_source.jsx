@@ -996,14 +996,32 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // informal clipping of "honey", and a flawless CVC that
                         // no shape rule can catch — reaches a teacher before it
                         // reaches a child.
+                        // Each flagged word is tagged with the boards that show
+                        // it, so a lesson lists only words its activities use.
+                        // Packs prepared before the tags fall back to the
+                        // activities whose words the old flag covered.
+                        const UNVERIFIED_SOURCE_ACTIVITIES = {
+                            rhyme: ['rhyming'], family: ['word_families'],
+                            blending: ['blending', 'read_sentence', 'read_passage'],
+                            sentence: ['read_sentence', 'read_passage'],
+                        };
+                        const unverifiedFor = (w) => {
+                            if (!w || !Array.isArray(w._unverifiedWords)) return [];
+                            const bySource = w._unverifiedBySource;
+                            if (!bySource || typeof bySource !== 'object') {
+                                return reviewsActivity('rhyming', 'word_families', 'read_sentence', 'read_passage') ? w._unverifiedWords : [];
+                            }
+                            return [...new Set(Object.entries(bySource)
+                                .filter(([source, words]) => Array.isArray(words) && reviewsActivity(...(UNVERIFIED_SOURCE_ACTIVITIES[source] || [])))
+                                .flatMap(([, words]) => words))];
+                        };
                         addGap({
                             key: 'unverified',
-                            activities: ['rhyming', 'word_families'],
-                            test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
+                            activities: ['rhyming', 'word_families', 'blending', 'read_sentence', 'read_passage'],
+                            test: (w) => unverifiedFor(w).length > 0,
                             text: (n) => {
-                                const sample = [...new Set(preloadedWords
-                                    .flatMap((w) => (w && w._unverifiedWords) || []))].slice(0, 6);
-                                return reviewText('review_gap_unverified', "Words with generated rhymes or family members outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.", { count: n, words: sample.join(', ') });
+                                const sample = [...new Set(preloadedWords.flatMap(unverifiedFor))].slice(0, 6);
+                                return reviewText('review_gap_unverified_words', "Generated words outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.", { count: n, words: sample.join(', ') });
                             },
                             // A judgement call, not a repair: the teacher edits
                             // or regenerates the word if they disagree.
@@ -1033,7 +1051,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             each: onCheckPhonemes,
                         });
 
-                        if (!gaps.length) return null;
+                        // Stay mounted while a fix runs or its result shows: a fix
+                        // that closes the last gap must still report (and announce) it.
+                        if (!gaps.length && fixingGap === null && !gapFixResult) return null;
                         const busy = fixingGap !== null;
                         const fixable = gaps.filter((g) => g.each || g.batch);
                         const fixableWords = new Set(fixable.flatMap((g) => g.indices)).size;

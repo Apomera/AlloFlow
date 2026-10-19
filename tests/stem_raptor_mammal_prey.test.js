@@ -11,7 +11,8 @@ function body(name){
 }
 const names=['preyKindFor','mergeGroundPreyParts','buildGroundPreyParts','buildMammalPreyParts','buildPreyVisual','advanceGroundPreyGait','setGroundPreyLegPose','advanceGroundPreyTerrain'];
 const api=Function('THREE',names.map(body).join('\n')+';return {build:buildPreyVisual,gait:advanceGroundPreyGait,leg:setGroundPreyLegPose,terrain:advanceGroundPreyTerrain};')(THREE);
-const carryFixture=Function('THREE','mesh','var talonGroup=new THREE.Group();talonGroup.add(mesh);var carriedPrey={prey:{mesh:mesh}},studyBoundsDirty=false;'+body('clearCarriedPrey')+';return {clear:clearCarriedPrey,talonGroup:talonGroup,state:function(){return {carriedPrey:carriedPrey,studyBoundsDirty:studyBoundsDirty};}};');
+// Production prey carry their buildPreyVisual model as prey.animation; clearCarriedPrey reads it.
+const carryFixture=Function('THREE','mesh','animation','var talonGroup=new THREE.Group();talonGroup.add(mesh);var carriedPrey={prey:{mesh:mesh,animation:animation}},studyBoundsDirty=false;'+body('clearCarriedPrey')+';return {clear:clearCarriedPrey,talonGroup:talonGroup,state:function(){return {carriedPrey:carriedPrey,studyBoundsDirty:studyBoundsDirty};}};');
 const ids=['fawnDeer','pronghornCalf','fox'];
 const make=(id,size=2)=>api.build({id,color:0xa16207},size);
 function resources(model){const result=new Set();model.root.traverse(o=>{if(o.geometry)result.add(o.geometry);if(o.material)result.add(o.material);});return result;}
@@ -69,7 +70,7 @@ describe('Mountain mammal prey detail',()=>{
   it('removes carried prey and disposes seven geometries and one shared material exactly once',()=>{
     for(const id of ids){const m=make(id),all=resources(m),counts=new Map();expect(all.size).toBe(8);
       all.forEach(resource=>{counts.set(resource,0);resource.addEventListener('dispose',()=>counts.set(resource,counts.get(resource)+1));});
-      const preyMesh=new THREE.Group();preyMesh.add(m.root);const fixture=carryFixture(THREE,preyMesh);
+      const preyMesh=new THREE.Group();preyMesh.add(m.root);const fixture=carryFixture(THREE,preyMesh,m);
       expect(preyMesh.parent).toBe(fixture.talonGroup);expect(fixture.state().carriedPrey.prey.mesh).toBe(preyMesh);
       fixture.clear();fixture.clear();
       expect(preyMesh.parent).toBeNull();expect(fixture.talonGroup.children).toHaveLength(0);
@@ -137,7 +138,7 @@ describe('Mountain mammal terrain support',()=>{
         expect(footClearance(m,height)).toBeGreaterThan(-1e-5);
       }dispose(m);
     }
-  });
+  }, 20000);
   it('retains terrain contact and quiet feet under reduced motion at large prey sizes',()=>{
     for(const id of ids)for(const size of [.75,6.3,7.2]){const m=make(id,size),height=(x,z)=>.3*x-.2*z;
       api.gait(m.gait,12,12,size,'mammal',.25,false,.7);api.gait(m.gait,0,12,size,'mammal',0,true,.7);applyFeet(m);

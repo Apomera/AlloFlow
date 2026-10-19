@@ -2904,7 +2904,11 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     const net = frame.querySelector('[data-flow-stored-rate]');
     expect(Number(net.dataset.flowStoredRate)).toBe(point.storedPowerWPerKg);
     expect(point.storedPowerWPerKg).toBeCloseTo(rates.input - rates.damping, 12);
-    const small = [...Object.values(rates), point.storedPowerWPerKg]
+    // Since 10-10 the bar-scale caption prints the experiment's maximum rate too, so a
+    // tiny maximum (shown in e-notation) also earns the scientific-notation help.
+    const maximum = Number(frame.dataset.flowMaximumWPerKg);
+    expect(Number.isFinite(maximum)).toBe(true);
+    const small = [...Object.values(rates), point.storedPowerWPerKg, maximum]
       .some(value => value !== 0 && Math.abs(value) < 0.001);
     expect(Boolean(frame.querySelector('[data-flow-scientific-help]'))).toBe(small);
     expect(frame.innerHTML).not.toMatch(/NaN|Infinity/);

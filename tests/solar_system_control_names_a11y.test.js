@@ -27,12 +27,21 @@ describe('Solar System control accessible names', () => {
     expect(readFileSync(MIRROR, 'utf8')).toBe(readFileSync(SOURCE, 'utf8'));
   });
 
-  it('names all 44 generated mini-tool sliders from their visible labels', () => {
+  it('names every generated mini-tool slider from its visible label', () => {
+    // The redesigned mini-tools (10-12, 10-16) moved many sliders from an aria-label to a
+    // visible <label htmlFor> paired with the input id, so count the naming, not one form.
     const source = readFileSync(SOURCE, 'utf8');
-    const sliders = source.match(/React\.createElement\('input', \{ 'aria-label': [^\n]+, type: 'range'/g) || [];
-    expect(sliders).toHaveLength(44);
-    expect(sliders.some((line) => line.includes("'aria-label': s.label"))).toBe(true);
-    expect(sliders.some((line) => line.includes("'aria-label': __alloT('stem.solarsystem.time', 'Time')"))).toBe(true);
+    const sliders = [...source.matchAll(/React\.createElement\('input', \{[^\n]*?type: 'range'[^\n]*/g)];
+    expect(sliders.length).toBeGreaterThanOrEqual(44);
+    const unnamed = sliders.filter(({ 0: line, index }) => {
+      if (/'aria-label(ledby)?': /.test(line)) return false;
+      const id = (line.match(/\{ id: ([^,]+),/) || [])[1];
+      return !id || !source.slice(Math.max(0, index - 3000), index + 3000).includes('htmlFor: ' + id.trim());
+    }).map(({ 0: line }) => line.slice(0, 120));
+    expect(unnamed, 'range inputs without an aria-label or a label[for] naming their id').toEqual([]);
+    expect(sliders.filter(({ 0: line }) => /\{ id: /.test(line)).length, 'the label[for] path is exercised').toBeGreaterThan(20);
+    expect(sliders.some(({ 0: line }) => line.includes("'aria-label': s.label"))).toBe(true);
+    expect(sliders.some(({ 0: line }) => line.includes("'aria-label': __alloT('stem.solarsystem.time', 'Time')"))).toBe(true);
   });
 
   it('renders no unnamed form controls in the planet and field-journal view', () => {

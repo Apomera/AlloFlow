@@ -519,6 +519,11 @@
       }
       var key = a + '_' + op + '_' + b;
       var allowRepeat = attempt > Math.max(300, requested * 12);
+      // Never the same fact (or its turnaround) twice in a row: the answer is
+      // still in working memory, which inflates practice DCPM. Smart Review
+      // applies the same rule.
+      var previous = problems[problems.length - 1];
+      if (previous && getFactKey(previous) === getFactKey({ a: a, b: b, op: op })) continue;
       if (!used[key] || allowRepeat) {
         used[key] = true;
         problems.push({ a: a, b: b, op: op, symbol: _practiceSymbol(op), answer: answer, studentAnswer: null, correct: null, responseMs: null });
@@ -813,6 +818,15 @@
     });
   }
 
+  // A session with nothing attempted has no accuracy (0 of 0), so it must not
+  // enter averages, tables or exports as 0%. Rows saved without totalAttempted
+  // keep their stored value.
+  function sessionAccuracy(item) {
+    if (!item || item.accuracy == null || !Number.isFinite(Number(item.accuracy))) return null;
+    if (item.totalAttempted != null && Number(item.totalAttempted) === 0) return null;
+    return Number(item.accuracy);
+  }
+
   function buildTeacherReport(history, mastery, filters, grade, mazeLifetime, nowValue) {
     var options = filters || {};
     var now = nowValue instanceof Date ? nowValue : new Date(nowValue || Date.now());
@@ -833,8 +847,8 @@
     }).slice().sort(function (a, b) { return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime(); });
     var attempted = sessions.reduce(function (sum, item) { return sum + (Number(item.totalAttempted) || 0); }, 0);
     var correct = sessions.reduce(function (sum, item) { return sum + (Number(item.totalCorrect) || 0); }, 0);
-    var accuracyItems = sessions.filter(function (item) { return item.accuracy != null && Number.isFinite(Number(item.accuracy)); });
-    var avgAccuracy = accuracyItems.length ? Math.round(accuracyItems.reduce(function (sum, item) { return sum + Number(item.accuracy); }, 0) / accuracyItems.length) : null;
+    var accuracyItems = sessions.filter(function (item) { return sessionAccuracy(item) != null; });
+    var avgAccuracy = accuracyItems.length ? Math.round(accuracyItems.reduce(function (sum, item) { return sum + sessionAccuracy(item); }, 0) / accuracyItems.length) : null;
     var comparable = sessions.filter(function (item) { return item.validForComparison && item.dcpm != null && Number.isFinite(Number(item.dcpm)); });
     var goalSessions = sessions.filter(function (item) { return item.goalResult && (item.goalResult.status === 'met' || item.goalResult.status === 'building'); });
     var goalsMet = goalSessions.filter(function (item) { return item.goalResult.met; }).length;
@@ -879,9 +893,9 @@
         var complete = item.completionStatus == null || item.completionStatus === 'complete';
         return complete && Number.isFinite(when) && when >= cutoff;
       }).slice().sort(function (a, b) { return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime(); });
-      var accuracySessions = sessions.filter(function (item) { return item.accuracy != null && Number.isFinite(Number(item.accuracy)); });
+      var accuracySessions = sessions.filter(function (item) { return sessionAccuracy(item) != null; });
       var recentAccuracy = accuracySessions.length
-        ? Math.round(accuracySessions.reduce(function (sum, item) { return sum + Number(item.accuracy); }, 0) / accuracySessions.length)
+        ? Math.round(accuracySessions.reduce(function (sum, item) { return sum + sessionAccuracy(item); }, 0) / accuracySessions.length)
         : null;
       var comparable = sessions.filter(function (item) { return item.validForComparison && item.dcpm != null && Number.isFinite(Number(item.dcpm)); });
       var latestDcpm = comparable.length ? Number(comparable[0].dcpm) : null;
@@ -992,7 +1006,7 @@
       return [
         item.date || '', mode, item.operation || '', item.practiceSet || item.difficulty || '',
         item.untimed ? 'Untimed' : ((item.timeLimit || '') + (item.timeLimit ? ' seconds' : '')),
-        item.accuracy != null && Number.isFinite(Number(item.accuracy)) ? Number(item.accuracy) + '%' : '',
+        sessionAccuracy(item) != null ? sessionAccuracy(item) + '%' : '',
         item.dcpm != null && Number.isFinite(Number(item.dcpm)) ? item.dcpm : '', item.totalCorrect == null ? '' : item.totalCorrect,
         item.totalAttempted == null ? '' : item.totalAttempted, item.completionStatus || '',
         item.goal && item.goal.label || '', item.goalResult ? (item.goalResult.met ? 'Met' : item.goalResult.status) : ''
@@ -3020,7 +3034,7 @@
                 var type = item.mode === 'benchmark' ? 'Benchmark' : (item.untimed ? 'Accuracy Focus' : 'Timed Practice');
                 return h('tr', { key: (item.date || '') + '-' + index },
                   h('td', null, item.date ? new Date(item.date).toLocaleDateString() : 'N/A'), h('td', null, type), h('td', null, item.operation || 'N/A'),
-                  h('td', null, item.accuracy != null && Number.isFinite(Number(item.accuracy)) ? item.accuracy + '%' : 'N/A'), h('td', null, item.dcpm != null && Number.isFinite(Number(item.dcpm)) ? item.dcpm : 'N/A'));
+                  h('td', null, sessionAccuracy(item) != null ? sessionAccuracy(item) + '%' : 'N/A'), h('td', null, item.dcpm != null && Number.isFinite(Number(item.dcpm)) ? item.dcpm : 'N/A'));
               }) : h('tr', null, h('td', { colSpan: 5 }, 'No sessions match these filters.')))
             )
           )

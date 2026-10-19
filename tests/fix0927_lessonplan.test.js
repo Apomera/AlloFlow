@@ -159,12 +159,17 @@ describe('C3 + C4: print/HTML and copy carry success criteria, STEAM tools and t
       addToast: () => {}, t: key => key, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => 'Lesson Plan',
       state: { currentUiLanguage: 'English', isParentMode: false, isIndependentMode: false }
     });
-    const html = pipeline.generateFullPackHTML([plan()], 'Tides', false, {}, { includeLessonPlan: true });
-    const section = new DOMParser().parseFromString(html, 'text/html').getElementById('plan-x');
-    const text = section.textContent;
+    // 6a0c48749 (2026-10-05): a no-key copy is the learner guide, which keeps the guide's own
+    // sections and success criteria but leaves STEAM station picks on the teacher's copy.
+    const sectionText = (options, scope = '') => new DOMParser().parseFromString(pipeline.generateFullPackHTML([plan()], 'Tides', false, {}, options), 'text/html').querySelector(scope + '[id="plan-x"]').textContent;
+    const text = sectionText({ includeLessonPlan: true, includeTeacherKey: true }, '.teacher-view ');
     for (const s of ['I can explain why tides happen.', 'I can read a tide chart.', 'Astronomy Lab', 'Shows the moon pulling on the oceans.', 'Model a spring tide.']) expect(text).toContain(s);
     expect(text).toContain('lesson_headers.parent.hook');
     expect(text).not.toContain('lesson_headers.teacher.hook');
+    const learner = sectionText({ includeLessonPlan: true });
+    for (const s of ['I can explain why tides happen.', 'I can read a tide chart.', 'lesson_headers.parent.hook']) expect(learner).toContain(s);
+    expect(learner).not.toContain('Astronomy Lab');
+    expect(learner).not.toContain('lesson_headers.teacher.hook');
     delete window.STEM_TOOL_REGISTRY;
   });
   it('copy includes them and uses the saved headings', async () => {

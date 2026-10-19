@@ -13,6 +13,17 @@ afterEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = priorAct;
 });
 const api = () => window.__MicrobiologyCore.resistance;
+// jsdom 29 cascades stylesheet rules into getComputedStyle but reports '' for the
+// border-radius shorthand, so read that one from the last matching CSSOM rule.
+function declaredStyle(element, property) {
+  let value = '';
+  for (const sheet of document.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.selectorText && rule.style && element.matches(rule.selectorText)) value = rule.style.getPropertyValue(property) || value;
+    }
+  }
+  return value || getComputedStyle(element).getPropertyValue(property);
+}
 const pair = () => ({ aId: 4, bId: 9 });
 function book() {
   const first = { day: 0, sensitive: 68, resistant: 12 };
@@ -162,7 +173,7 @@ describe('Resistance history plots and accessible observed counts', { timeout: 6
       expect(b.getAttribute('stroke-dasharray')).toMatch(/[1-9]/);
       const aMarkers = [...plot(kind).querySelectorAll('[data-resistance-history-marker="a"]')], bMarkers = [...plot(kind).querySelectorAll('[data-resistance-history-marker="b"]')];
       expect(aMarkers).toHaveLength(3); expect(bMarkers).toHaveLength(3);
-      expect(aMarkers.every(marker => marker.namespaceURI === 'http://www.w3.org/1999/xhtml' && getComputedStyle(marker).borderRadius === '50%')).toBe(true);
+      expect(aMarkers.every(marker => marker.namespaceURI === 'http://www.w3.org/1999/xhtml' && declaredStyle(marker, 'border-radius') === '50%')).toBe(true);
       expect(bMarkers.every(marker => marker.namespaceURI === 'http://www.w3.org/1999/xhtml' && /rotate\(45deg\)/.test(getComputedStyle(marker).transform))).toBe(true);
       expect(svg.closest('#micro-resistance-history').textContent).toContain('A · Evidence 4'); expect(svg.closest('#micro-resistance-history').textContent).toContain('B · Evidence 9');
     }

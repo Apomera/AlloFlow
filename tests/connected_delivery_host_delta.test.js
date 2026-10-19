@@ -20,6 +20,11 @@ function callback(start, end, name, deps) {
   if (from < 0 || to <= from) throw new Error('Missing host callback: ' + name);
   return new Function(...Object.keys(deps), host.slice(from, to) + '\nreturn ' + name + ';')(...Object.values(deps));
 }
+// The real chunk store helpers (2026-10-05 added store.pending, which the receive path reads).
+function chunkHelpers() {
+  const fn = name => { const from = host.indexOf('function ' + name + '('); const to = host.indexOf('\nfunction ', from + 1); if (from < 0 || to < 0) throw new Error('Missing host helper: ' + name); return host.slice(from, to); };
+  return new Function(['_alloPruneResChunks', '_alloFinishResChunk', '_alloCollectResChunk'].map(fn).join('\n') + '\nreturn { collect: _alloCollectResChunk, finish: _alloFinishResChunk };')();
+}
 const docs = new Map();
 const clone = value => JSON.parse(JSON.stringify(value));
 let contract, shared, live, transport;
@@ -56,7 +61,7 @@ function assignmentLoader(packet, hydrate) {
   const deps = {
     _alloEnsureAuthenticatedUser: async () => ({ uid: 'student-fixture' }), setUser: vi.fn(), doc: window.doc, db: {}, hostId: 'app-test', assignmentId: 'HW-fixture',
     getDoc: async () => ({ exists: () => true, data: () => clone(packet) }), _alloApplyAuthoritativeStudentAiPolicy: vi.fn(), _alloAssignmentIsExpired: () => false,
-    hydrateSessionAssets: hydrate, cancelled: false, setHistory: vi.fn(), setReceivedDeliveryResources: vi.fn(), setPendingQrAssignmentResource: vi.fn(), addToast: vi.fn(), warnLog: vi.fn()
+    hydrateSessionAssets: hydrate, cancelled: false, isCurrentEntry: () => true, setHistory: vi.fn(), setReceivedDeliveryResources: vi.fn(), setPendingQrAssignmentResource: vi.fn(), addToast: vi.fn(), warnLog: vi.fn()
   };
   return { deps, load: callback('          const loadAssignment = async () => {', '          loadAssignment();', 'loadAssignment', deps) };
 }
@@ -65,21 +70,24 @@ describe('track 13 isolated host integration', () => {
   it('receives an adapted resource without replacing it or its curated original', async () => {
     const [adapted, original] = readings();
     let history = [original], receivedBundle = [];
+    const chunks = chunkHelpers();
     const deps = {
       useCallback: fn => fn, addToast: vi.fn(), mbChunkStoreRef: { current: null }, hydratedHistoryRef: { current: history },
-      _alloCollectResChunk: (_store, value) => value.data, _alloDecodeAlloPack: async data => data,
+      _alloCollectResChunk: chunks.collect, _alloDecodeAlloPack: async data => data,
       _alloStudentSafeResources: items => transport.studentSafeResources(items, ['analysis']),
       setReceivedDeliveryResources: update => { receivedBundle = update(receivedBundle); },
       setHistory: update => { history = update(history); }, setPendingQrAssignmentResource: vi.fn(),
-      _alloFinishResChunk: vi.fn(), setMbResourceReceiveError: vi.fn(), mbStudentCursorRef: { current: 0 }, warnLog: vi.fn()
+      _alloFinishResChunk: vi.fn(chunks.finish), setMbResourceReceiveError: vi.fn(), mbStudentCursorRef: { current: 0 }, warnLog: vi.fn()
     };
     const receive = callback('  const applyMbDownPayload = useCallback(', '  const createHomeworkAssignmentLink = useCallback(', 'applyMbDownPayload', deps);
-    await receive({ kind: 'res', rid: 'fixture-message', data: JSON.stringify(serialize(adapted)) });
+    await receive({ kind: 'res', rid: 'fixture-message', part: 1, of: 1, data: JSON.stringify(serialize(adapted)) });
+    expect(deps.mbChunkStoreRef.current.applied.has('fixture-message')).toBe(true);
+    expect(deps.setMbResourceReceiveError).toHaveBeenLastCalledWith(false);
     expect(history.map(item => item.id)).toEqual([original.id, adapted.id]);
     expect(receivedBundle.map(item => item.id)).toEqual([adapted.id]);
     expect(history[0].readingSupports.annotations[0].pinned).toBe(true);
     expect(deps.setPendingQrAssignmentResource).toHaveBeenCalledWith(expect.objectContaining({ id: adapted.id, data: adapted.data }));
-    expect(deps._alloFinishResChunk).toHaveBeenCalledWith(deps.mbChunkStoreRef.current, 'fixture-message', true);
+    expect(deps._alloFinishResChunk).toHaveBeenCalledWith(deps.mbChunkStoreRef.current, 'fixture-message', true, expect.any(Object));
   });
 
   it.each(['offline', 'unresolved'])('does not open reference-only resources or claim success after %s hydration', async mode => {

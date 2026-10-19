@@ -97,7 +97,8 @@ describe('pipeline + UI wiring (source-pinned)', () => {
   it('the view shows the score qualifier chip + the per-note list', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
     expect(view).toContain('pdfFixResult.fidelityLimited');
-    expect(view).toContain('pdfFixResult.fidelityNotes.map');
+    // f5b045fc9 (2026-09-20) skips empty note slots before rendering the list.
+    expect(view).toContain('pdfFixResult.fidelityNotes.filter(Boolean).map((n, i) => (');
   });
   it('#5 content-fidelity download gate — conservative <80% / refusal threshold, opt-in (never hard-block)', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');

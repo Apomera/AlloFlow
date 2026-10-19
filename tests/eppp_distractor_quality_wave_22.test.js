@@ -169,23 +169,28 @@ describe('EPPP distractor-quality repair wave 22', () => {
       pair.leftId === selectedId || pair.rightId === selectedId
     ));
 
-    expect(diagnostics.summary).toMatchObject(expectedAfter);
+    // Later waves (through the wave-49 cleanup) kept lowering the global counts, so the isolated
+    // replay must land at or below wave 22's own after-state rather than on it exactly.
+    expect(diagnostics.summary).toMatchObject({ totalItems: expectedAfter.totalItems });
+    for (const [metric, ceiling] of Object.entries(expectedAfter)) {
+      expect(diagnostics.summary[metric], metric).toBeLessThanOrEqual(ceiling);
+    }
     expect(selectedPair).toBeUndefined();
     expect(diagnostics.uniqueKeyStemLexicalLeakage.some((item) => item.id === selectedId)).toBe(false);
     expect(diagnostics.asymmetricExtremeDistractors.some((item) => item.id === selectedId)).toBe(false);
     expect(diagnostics.advancedDirectRecall.some((item) => item.id === selectedId)).toBe(false);
 
     for (const metric of ['forbiddenAggregateChoices', 'uniqueKeyStemLexicalLeakageCandidates']) {
-      expect(diagnostics.summary[metric]).toBe(wave22.warningCountsBefore[metric]);
+      expect(diagnostics.summary[metric], metric).toBeLessThanOrEqual(wave22.warningCountsBefore[metric]);
     }
     expect(diagnostics.summary.asymmetricExtremeDistractorCandidates)
-      .toBe(wave22.warningCountsBefore.asymmetricExtremeDistractorCandidates - 4);
+      .toBeLessThanOrEqual(wave22.warningCountsBefore.asymmetricExtremeDistractorCandidates - 4);
     expect(diagnostics.summary.advancedDirectRecallCandidates)
-      .toBe(wave22.warningCountsBefore.advancedDirectRecallCandidates - 3);
+      .toBeLessThanOrEqual(wave22.warningCountsBefore.advancedDirectRecallCandidates - 3);
     expect(diagnostics.summary.semanticConceptDuplicatePairs)
-      .toBe(wave22.warningCountsBefore.semanticConceptDuplicatePairs - 2);
+      .toBeLessThanOrEqual(wave22.warningCountsBefore.semanticConceptDuplicatePairs - 2);
     expect(diagnostics.summary.semanticConceptDuplicateClusters)
-      .toBe(wave22.warningCountsBefore.semanticConceptDuplicateClusters - 2);
+      .toBeLessThanOrEqual(wave22.warningCountsBefore.semanticConceptDuplicateClusters - 2);
 
     for (const relativePath of protectedPaths) {
       expect(read(relativePath)).toBe(beforeFiles.get(relativePath));

@@ -939,7 +939,7 @@ function LessonPlanView(props) {
         return;
       }
       setActiveStation && setActiveStation(station);
-      addToast && addToast(tl('lesson_plan.stem_station_created', 'STEAM station created. Open STEAM Lab to see your curated tools.'));
+      addToast && addToast(t('lesson_plan.stem_station_created'));
     },
     className: "flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
   }, /*#__PURE__*/React.createElement("span", {

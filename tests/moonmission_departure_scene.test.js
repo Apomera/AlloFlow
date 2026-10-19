@@ -39,8 +39,9 @@ const drawCraft = (options={}, angle=0.731, scale=0.62) => {
 };
 const geomCalls = calls => calls.filter(row => !['set','gradient','stop'].includes(row[0]));
 const sun = fraction => ({ directionX: 3, directionY: 4, fraction });
+// One assertion per scene: an expect() per number made a 60-scene test exceed 5 s.
 const finiteCalls = calls => {
-  for (const row of calls) for (const value of row) if (typeof value==='number') expect(Number.isFinite(value),row[0]).toBe(true);
+  expect(calls.filter(row => row.some(value => typeof value==='number' && !Number.isFinite(value))),'Canvas calls with non-finite numbers').toEqual([]);
 };
 const channels = color => {
   expect(color).toMatch(/^rgb\(\d+,\d+,\d+\)$/);

@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {planningKey} from './lesson_board_sandbox.js';
 import {tr} from './lesson_board_strings.js';
 const React=window.React;
@@ -56,8 +57,8 @@ export function AssignmentMapRoutes({model,positions,excluded=new Set(),routes=[
   })}</g>;
 }
 
-export function AssignmentMapStyles(){return <style>{`
+export function AssignmentMapStyles(){return addBoardStyle(`
 .lb .lb-assignment-map-caption{margin:10px 0;padding:9px 11px;border:1px dashed var(--accent);border-radius:10px;background:var(--soft);min-width:0}.lb .lb-assignment-map-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;font-size:.87em}.lb .lb-assignment-map-heading button{font-size:.9em;min-height:44px;padding:6px 9px}.lb .lb-assignment-map-caption p{font-size:.78em;line-height:1.45;margin:5px 0 8px;overflow-wrap:anywhere}.lb .lb-assignment-map-caption .lb-assignment-map-partial{font-weight:700}.lb .lb-assignment-map-priorities{display:flex;flex-wrap:wrap;gap:6px}.lb .lb-assignment-map-priorities button{display:flex;align-items:center;gap:7px;flex:1 1 160px;min-width:0;min-height:44px;padding:7px 9px;font-size:.8em;text-align:start;white-space:normal}.lb .lb-assignment-map-priorities button>span:last-child{min-width:0;overflow-wrap:anywhere}.lb .lb-assignment-map-key,.lb .lb-assignment-map-token{display:inline-flex;justify-content:center;align-items:center;box-sizing:border-box;width:27px;height:24px;flex:none;border:2px dashed var(--accent);border-radius:6px;background:var(--panel);color:var(--ink);font-size:11px;font-weight:750;line-height:1}.lb .lb-assignment-map-token{position:absolute;top:-12px;left:-9px;z-index:4;pointer-events:none;box-shadow:0 2px 0 var(--board-face),0 3px 3px var(--board-shadow);transform:translateZ(4px)}.lb [data-contract-destination=true]>.lb-assignment-map-token{top:-21px}.lb .lb-home-standard+button>.lb-assignment-map-token{top:auto;bottom:-20px}.lb .lb-spatial-project>.lb-assignment-map-token{top:auto;bottom:0}.lb .lb-assignment-map-token>span{font-size:8px;margin-inline-end:1px}.lb .lb-assignment-route-underlay{fill:none;stroke:var(--board-top);stroke-width:7;stroke-linecap:round}.lb .lb-assignment-route{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:7 6;stroke-linecap:round;opacity:.86}.lb .lb-assignment-route[data-assignment-future-connection=true]{stroke-dasharray:7 4 1 4}.lb .lb-assignment-list-priority{font-weight:650;color:var(--accent)}
 @media(max-width:600px){.lb .lb-assignment-map-caption{padding:8px}.lb .lb-assignment-map-priorities button{flex-basis:100%}}
 @media(forced-colors:active){.lb .lb-assignment-map-caption,.lb .lb-assignment-map-token,.lb .lb-assignment-map-key{border-color:LinkText;background:Canvas;color:CanvasText}.lb .lb-assignment-map-token{box-shadow:none}.lb .lb-assignment-route-underlay{stroke:Canvas}.lb .lb-assignment-route{stroke:LinkText;opacity:1}.lb .lb-assignment-list-priority{color:LinkText}}
-`}</style>;}
+`);}

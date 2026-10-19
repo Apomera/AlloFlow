@@ -87,7 +87,7 @@
       describe: "Explore our barred spiral galaxy from outside its stellar disc, then approach the central bar and our Solar System’s neighbourhood. A layer sweep reveals its depth, while a dust-reduced view exposes hidden starlight.",
       note: "The roughly 100,000-light-year disc is an illustrated reference with a fuzzy outer extent. Spiral paths, colours and vertical structure are interpretive. Enlarged points sample stellar populations; the galaxy’s extended halo is outside this model." },
     { id: 'galactic-centre', emoji: '🎯', name: 'Distance to the centre of the Milky Way', size: 2.5e20, dim: 'distance', group: 'cosmic',
-      describe: "Travel inward from our Solar System through the Milky Way’s disc, central bar, molecular clouds and dense nuclear star cluster. Nested reference scales lead to a one-parsec view around Sagittarius A*.",
+      describe: "Cross the distance from our Solar System inward through the Milky Way’s disc, central bar, molecular clouds and dense nuclear star cluster. Nested reference scales lead to a one-parsec view around Sagittarius A*.",
       note: "The retained distance is about 26,400 light-years, a rounded teaching reference rather than a precision measurement. Dust hides much of the centre in visible light. The illustrated map draws on structures studied at infrared and radio wavelengths." },
     { id: 'local-bubble', emoji: '🫧', name: 'The Local Bubble', size: 9.5e18, dim: 'reference span', group: 'cosmic',
       describe: 'The low-density cavity around our Solar System, traced by surrounding dust. Explore a 2024 reconstruction inferred from how dust changes starlight.',
@@ -95,7 +95,7 @@
     { id: 'orion-nebula', emoji: '☁️', name: 'The Orion Nebula', size: 2.27e17, dim: 'across', group: 'cosmic',
       describe: 'A glowing cloud of gas and dust where new stars are forming, visible as the middle "star" of Orion\'s sword.' },
     { id: 'alpha-cen-dist', emoji: '📍', name: 'Distance to the nearest star system', size: 4.1e16, dim: 'distance', group: 'cosmic',
-      describe: "Explore our nearest neighbouring star system: the Alpha Centauri A/B binary and its distant red-dwarf companion Proxima. Approach each star at its physical size and move through the binary’s orbit.",
+      describe: "Cross the distance to our nearest neighbouring star system: the Alpha Centauri A/B binary and its distant red-dwarf companion Proxima. Approach each star at its physical size and move through the binary’s orbit.",
       note: "The 4.1 × 10¹⁶ m ruler is a rounded Sun-to-A/B reference, about 4.33 light-years. Proxima is the nearest individual star at about 4.24 light-years. The drawn triangle uses rounded reference distances with a composed orientation; it is not a dated sky map." },
     { id: 'oort', emoji: '🫧', name: 'The Oort Cloud', size: 1.5e16, dim: 'across', group: 'cosmic',
       describe: 'A vast shell of icy bodies thought to surround the Solar System far beyond the planets, and the source of long-period comets.',
@@ -115,7 +115,7 @@
     { id: 'light-minute', emoji: '⏱️', name: 'One light minute', size: 17987547480, dim: 'distance', group: 'cosmic',
       describe: "Explore the distance light travels in one minute in vacuum. Earth and Moon share a physical scale with a sixty-second ruler, and a time slider connects elapsed seconds with distance.", note: "One light minute is exactly 17,987,547,480 metres. Earth and Moon use mean diameters and a 384,400 km centre-to-centre reference separation. Their arrangement and the luminous time marker are illustrative." },
     { id: 'au', emoji: '📍', name: 'Distance from the Earth to the Sun', size: 1.496e11, dim: 'distance', group: 'cosmic',
-      describe: "Explore the space between the Sun and Earth: a rounded 149.6 million km reference, crossed by light in about 8 minutes 19 seconds. Approach either body while their physical sizes stay fixed.",
+      describe: "Explore the distance between the Sun and Earth: a rounded 149.6 million km reference, crossed by light in about 8 minutes 19 seconds. Approach either body while their physical sizes stay fixed.",
       note: "An astronomical unit is exactly 149,597,870,700 metres. This entry keeps a rounded 149.6-million-kilometre reference. Earth’s actual distance changes through its orbit; the scene is a fixed distance study." },
     { id: 'sun', photo: 'solarflare', emoji: '☀️', name: 'The Sun', size: 1.392e9, dim: 'across', group: 'cosmic',
       describe: 'Our star, a ball of hot plasma held together by its own gravity. About 109 Earths would fit side by side across it, and it holds more than 99 per cent of all the mass in the Solar System.' },
@@ -257,6 +257,16 @@
       { id: 'alpha-cen-dist', line: 'The nearest other star system, a little over four light years. Every stop so far fits into this gap.' } ] }
   ];
 
+  // Rulers that are only a length get a few true landmarks along them.
+  // Fractions of the ruler: a light month is 30 light days, so Voyager 1
+  // (about one light day out in 2026) sits at 1/30; the ten-billion-year
+  // ruler is light-travel time, so 0.46 is light that set out 4.6 billion
+  // years ago, as the Sun formed.
+  var RULER_STORIES = {
+    'light-month': { ticks: 30, major: 10, lights: [[0, '#ffd9a0', 46, .9], [0, '#fff6e2', 14, 1]], dots: [[1 / 30, '#8fe3ff', .012]], pins: [['sun', 0], ['voyager', 1 / 30], ['end', 1]] },
+    'ten-billion-ly': { ticks: 10, major: 5, lights: [[0, '#cfe0ff', 22, .85], [.46, '#ffe1a8', 12, .9], [1, '#ff9874', 15, .8]], pins: [['here', 0], ['sun', .46], ['far', 1]] }
+  };
+
   var MIN_EXP = -16.2, MAX_EXP = 27.6;   // a little past the smallest and largest items
   var DECADES_ACROSS = 3.2;              // how many powers of ten span the canvas width
   var HUMAN = 1.7;
@@ -376,6 +386,9 @@
       if (au < 1.05) return 'the Earth–Sun distance';
       return bigCount(au) + ' times the Earth–Sun distance';
     }
+    // "12,742 km", not "13 thousand km": below a million kilometres the digits
+    // are short enough to read, and rounding to thousands hid Earth's size.
+    if (a >= 1e7 && a < 1e9) return String(Math.round(m / 1000)).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' km';
     if (a >= 1000) return bigCount(m / 1000) + ' km';
     if (a >= 1) return round2(m) + ' m';
     if (a >= 0.01) return round2(m * 100) + ' cm';
@@ -411,6 +424,315 @@
       if (ratio >= units[i][0]) return round2(ratio / units[i][0]) + ' ' + units[i][1] + ' times';
     }
     return String(Math.round(ratio)) + ' times';
+  }
+
+  // On the true-scale chart a picture is a claim about shape. These objects
+  // had emoji that showed the wrong thing (a red blood cell as a drop of
+  // blood, a sand grain as a beach, a flea as a mosquito, a wavelength as a
+  // rainbow), so they are drawn instead. s is the glyph size in CSS pixels.
+  function chartGlyph(g, id, x, y, s) {
+    function orb(cx, cy, r, light, mid, dark) {
+      var grad = g.createRadialGradient(cx - r * .35, cy - r * .35, r * .08, cx, cy, r);
+      grad.addColorStop(0, light); grad.addColorStop(.55, mid); grad.addColorStop(1, dark);
+      g.fillStyle = grad; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+    }
+    function wave(color) {
+      // One full cycle across the diameter: the circle IS one wavelength.
+      var w = s * .92, a = s * .26, k;
+      g.strokeStyle = color; g.globalAlpha *= .45; g.lineWidth = Math.max(1, s * .012);
+      g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x + w / 2, y); g.stroke(); g.globalAlpha /= .45;
+      g.lineWidth = Math.max(1.5, s * .045); g.lineCap = 'round'; g.beginPath();
+      for (k = 0; k <= 64; k++) { var px = x - w / 2 + w * k / 64, py = y - a * Math.sin(k / 64 * Math.PI * 2); if (k) g.lineTo(px, py); else g.moveTo(px, py); }
+      g.stroke();
+    }
+    var r = s * .46, i;
+    g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+    if (id === 'rbc') {
+      // A biconcave disc seen face-on: thick red rim, pale thin centre.
+      var disc = g.createRadialGradient(x, y, 0, x, y, r);
+      disc.addColorStop(0, '#f2a3a0'); disc.addColorStop(.38, '#e0555a'); disc.addColorStop(.72, '#c21d26'); disc.addColorStop(.93, '#a3111b'); disc.addColorStop(1, '#6e0910');
+      g.fillStyle = disc; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(255,214,210,.45)'; g.lineWidth = Math.max(1, s * .03); g.beginPath(); g.arc(x, y, r * .78, Math.PI * 1.05, Math.PI * 1.6); g.stroke();
+    } else if (id === 'water') {
+      // Bent at about 104.5 degrees: O at the apex, two H below.
+      var half = 104.5 / 2 * Math.PI / 180, d = s * .33, oy = y - s * .1, hx = Math.sin(half) * d, hy = oy + Math.cos(half) * d;
+      g.strokeStyle = '#c8d0d8'; g.lineWidth = Math.max(2, s * .07);
+      g.beginPath(); g.moveTo(x - hx, hy); g.lineTo(x, oy); g.lineTo(x + hx, hy); g.stroke();
+      orb(x - hx, hy, s * .17, '#ffffff', '#dfe6ee', '#8f9cab'); orb(x + hx, hy, s * .17, '#ffffff', '#dfe6ee', '#8f9cab');
+      orb(x, oy, s * .26, '#ff9a8a', '#d9372a', '#7f1710');
+    } else if (id === 'sand') {
+      // A subangular quartz grain with a patch of iron-oxide staining.
+      var radii = [.95, .8, 1, .86, .97, .76, .92, .84], pts = [];
+      for (i = 0; i < 8; i++) { var ang = i / 8 * Math.PI * 2 + .3; pts.push([x + Math.cos(ang) * r * radii[i], y + Math.sin(ang) * r * radii[i] * .86]); }
+      var quartz = g.createLinearGradient(x - r, y - r, x + r, y + r); quartz.addColorStop(0, '#fbf6ea'); quartz.addColorStop(.6, '#ded0b0'); quartz.addColorStop(1, '#b49d72');
+      g.fillStyle = quartz; g.beginPath(); pts.forEach(function (p, k) { if (k) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.closePath(); g.fill();
+      g.strokeStyle = '#8b7752'; g.lineWidth = Math.max(1, s * .02); g.stroke();
+      g.globalAlpha *= .55; g.fillStyle = '#c27f42'; g.beginPath(); g.ellipse(x + r * .3, y + r * .25, r * .3, r * .2, .5, 0, Math.PI * 2); g.fill(); g.globalAlpha /= .55;
+      g.strokeStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.moveTo(pts[5][0], pts[5][1]); g.lineTo(x - r * .1, y - r * .05); g.lineTo(pts[2][0], pts[2][1]); g.stroke();
+    } else if (id === 'flea') {
+      // Side view: a flattened, hunched body and long jumping hind legs.
+      var body = '#6e3a1e', leg = '#55301a', lw = Math.max(1.2, s * .035);
+      g.strokeStyle = leg; g.lineWidth = lw;
+      [[-.05, .5, .55, .1], [.05, .55, .15, .6], [.18, .6, -.1, .64]].forEach(function (l, k) { g.beginPath(); g.moveTo(x + r * l[0], y + r * .2); g.lineTo(x + r * (l[0] + (k ? .05 : .35)), y + r * l[1] * .9); g.lineTo(x + r * (l[0] + l[2]), y + r * (l[1] + .32)); g.stroke(); });
+      g.lineWidth = lw * 1.5; g.beginPath(); g.moveTo(x + r * .35, y + r * .1); g.lineTo(x + r * .75, y + r * .55); g.lineTo(x + r * .55, y + r * .9); g.lineTo(x + r * .9, y + r * .95); g.stroke();
+      var shell = g.createLinearGradient(x, y - r, x, y + r * .5); shell.addColorStop(0, '#9a5a32'); shell.addColorStop(1, body);
+      g.fillStyle = shell; g.beginPath(); g.ellipse(x + r * .12, y - r * .05, r * .62, r * .42, -.25, 0, Math.PI * 2); g.fill();
+      g.fillStyle = body; g.beginPath(); g.ellipse(x - r * .5, y + r * .12, r * .22, r * .18, .2, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(255,220,180,.35)'; g.lineWidth = Math.max(1, s * .012);
+      for (i = 0; i < 5; i++) { g.beginPath(); g.ellipse(x + r * .12, y - r * .05, r * (.18 + i * .1), r * .42, -.25, -1.2, -.3); g.stroke(); }
+    } else if (id === 'ecoli') {
+      // A rod with rounded ends and long flagella.
+      g.translate(x, y); g.rotate(-.25);
+      g.strokeStyle = 'rgba(214,232,196,.75)'; g.lineWidth = Math.max(1, s * .014);
+      [-.12, .02, .14].forEach(function (o) { g.beginPath(); g.moveTo(r * .78, r * o); g.bezierCurveTo(r * 1.0, r * (o - .25), r * 1.05, r * (o + .3), r * 1.3, r * o); g.stroke(); });
+      var rod = g.createLinearGradient(0, -r * .4, 0, r * .4); rod.addColorStop(0, '#d2e8b5'); rod.addColorStop(.5, '#8fbc6e'); rod.addColorStop(1, '#55804a');
+      var hw = r * .82, hh = r * .34; g.fillStyle = rod; g.beginPath(); g.moveTo(-hw + hh, -hh); g.lineTo(hw - hh, -hh); g.arc(hw - hh, 0, hh, -Math.PI / 2, Math.PI / 2); g.lineTo(-hw + hh, hh); g.arc(-hw + hh, 0, hh, Math.PI / 2, Math.PI * 1.5); g.fill();
+      g.strokeStyle = '#46683b'; g.lineWidth = Math.max(1, s * .015); g.stroke();
+    } else if (id === 'hair') {
+      // Seen end-on: the width is the thing being measured.
+      var shaft = g.createRadialGradient(x - r * .2, y - r * .2, r * .1, x, y, r);
+      shaft.addColorStop(0, '#9b6a45'); shaft.addColorStop(.8, '#6b4428'); shaft.addColorStop(1, '#4a2d19');
+      g.fillStyle = shaft; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(240,210,170,.6)'; g.lineWidth = Math.max(1, s * .025); g.beginPath(); g.arc(x, y, r * .9, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#3a2213'; g.beginPath(); g.arc(x, y, r * .16, 0, Math.PI * 2); g.fill();
+    } else if (id === 'mitochondrion') {
+      g.translate(x, y); g.rotate(-.18);
+      g.fillStyle = '#d98457'; g.beginPath(); g.ellipse(0, 0, r, r * .55, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#f3c9a3'; g.beginPath(); g.ellipse(0, 0, r * .86, r * .42, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#a9577f'; g.lineWidth = Math.max(1.2, s * .03); g.beginPath();
+      for (i = 0; i <= 8; i++) { var cxr = -r * .72 + i * r * .18; g.moveTo(cxr, i % 2 ? -r * .4 : r * .4); g.lineTo(cxr, i % 2 ? r * .05 : -r * .05); }
+      g.stroke();
+    } else if (id === 'ribosome') {
+      // Two subunits: a large one and a small one bound against it.
+      orb(x + r * .08, y - r * .12, r * .66, '#efd9ff', '#b98ce0', '#6c3f96');
+      orb(x - r * .12, y + r * .42, r * .42, '#d8fbfa', '#7fcfd0', '#2f7d82');
+    } else if (id === 'virus') {
+      g.strokeStyle = '#e9a58f'; g.lineWidth = Math.max(1, s * .025);
+      for (i = 0; i < 22; i++) { var sa = i / 22 * Math.PI * 2; g.beginPath(); g.moveTo(x + Math.cos(sa) * r * .74, y + Math.sin(sa) * r * .74); g.lineTo(x + Math.cos(sa) * r * .98, y + Math.sin(sa) * r * .98); g.stroke(); g.fillStyle = i % 3 ? '#f2b49a' : '#9ad7e0'; g.beginPath(); g.arc(x + Math.cos(sa) * r, y + Math.sin(sa) * r, Math.max(1, s * .03), 0, Math.PI * 2); g.fill(); }
+      orb(x, y, r * .76, '#e4cdf5', '#a985c8', '#5d3f7c');
+    } else if (id === 'eiffel') {
+      // The emoji 🗼 is Tokyo Tower. A curved lattice silhouette with its arch.
+      var half = s * .3, top = y - s * .47, base = y + s * .47;
+      g.fillStyle = '#9a7650'; g.beginPath(); g.moveTo(x - half, base);
+      g.quadraticCurveTo(x - half * .1, y + s * .26, x - s * .012, top); g.lineTo(x + s * .012, top);
+      g.quadraticCurveTo(x + half * .1, y + s * .26, x + half, base); g.lineTo(x + half * .55, base);
+      g.quadraticCurveTo(x, base - s * .2, x - half * .55, base); g.closePath(); g.fill();
+      g.strokeStyle = '#d8b98a'; g.lineWidth = Math.max(1, s * .025);
+      [[.25, .5], [.04, .2], [-.24, .07]].forEach(function (pl) { g.beginPath(); g.moveTo(x - half * pl[1], y + s * pl[0]); g.lineTo(x + half * pl[1], y + s * pl[0]); g.stroke(); });
+    } else if (id === 'milkyway') {
+      // Face-on barred spiral (🌀 is a cyclone): bulge, bar and two arms.
+      var core = g.createRadialGradient(x, y, 0, x, y, r * .45); core.addColorStop(0, 'rgba(255,240,205,1)'); core.addColorStop(1, 'rgba(255,220,160,0)');
+      // Each arm: a faint wide glow, then a thin bright lane, then scattered stars.
+      for (var pass = 0; pass < 2; pass++) for (var arm = 0; arm < 2; arm++) {
+        g.lineWidth = Math.max(1, s * (pass ? .018 : .07)); g.strokeStyle = pass ? 'rgba(205,222,255,.8)' : 'rgba(120,150,220,.28)'; g.beginPath();
+        for (i = 0; i <= 60; i++) { var th = i / 60 * Math.PI * 2.1, rr = r * (.16 + .84 * i / 60), aa = th + arm * Math.PI; var px2 = x + Math.cos(aa) * rr, py2 = y + Math.sin(aa) * rr * .9; if (i) g.lineTo(px2, py2); else g.moveTo(px2, py2); }
+        g.stroke();
+      }
+      g.fillStyle = 'rgba(230,238,255,.85)';
+      for (i = 0; i < 40; i++) { var sa2 = i * 2.39996, sr = r * Math.sqrt((i + .5) / 40) * .95; g.beginPath(); g.arc(x + Math.cos(sa2) * sr, y + Math.sin(sa2) * sr * .9, Math.max(.6, s * .008), 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = core; g.beginPath(); g.arc(x, y, r * .45, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(255,236,196,.9)'; g.beginPath(); g.ellipse(x, y, r * .24, r * .08, .5, 0, Math.PI * 2); g.fill();
+    } else if (id === 'jupiter') {
+      // Banded belts and zones with the Great Red Spot in the south.
+      g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.clip();
+      var bands = ['#e9dcc4', '#c99a6c', '#efe3cc', '#b8774f', '#f1e6d2', '#c48b5f', '#ead9bd', '#a8714f', '#e2cfb2'];
+      for (i = 0; i < bands.length; i++) { g.fillStyle = bands[i]; g.fillRect(x - r, y - r + i * 2 * r / bands.length, 2 * r, 2 * r / bands.length + 1); }
+      g.fillStyle = '#c0533c'; g.beginPath(); g.ellipse(x + r * .28, y + r * .32, r * .2, r * .11, 0, 0, Math.PI * 2); g.fill();
+      var shade = g.createRadialGradient(x - r * .3, y - r * .3, r * .2, x, y, r); shade.addColorStop(0, 'rgba(0,0,0,0)'); shade.addColorStop(1, 'rgba(0,0,0,.4)');
+      g.fillStyle = shade; g.fillRect(x - r, y - r, 2 * r, 2 * r); g.restore();
+    } else if (id === 'pyramid') {
+      // A square pyramid seen from a corner: a sunlit face and a shaded face.
+      var apexY = y - s * .36, by = y + s * .32, bx = s * .46;
+      g.fillStyle = '#e2c792'; g.beginPath(); g.moveTo(x, apexY); g.lineTo(x - bx, by); g.lineTo(x + bx * .12, by + s * .08); g.closePath(); g.fill();
+      g.fillStyle = '#b48c58'; g.beginPath(); g.moveTo(x, apexY); g.lineTo(x + bx * .12, by + s * .08); g.lineTo(x + bx, by - s * .02); g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(120,90,50,.35)'; g.lineWidth = Math.max(1, s * .012);
+      for (i = 1; i < 7; i++) { var f = i / 7; g.beginPath(); g.moveTo(x - bx * f, apexY + (by - apexY) * f); g.lineTo(x + bx * .12 * f, apexY + (by + s * .08 - apexY) * f); g.lineTo(x + bx * f, apexY + (by - s * .02 - apexY) * f); g.stroke(); }
+    } else if (id === 'chicxulub') {
+      // Seen from above: the buried rim and peak ring, half under the sea (☄️ is the impactor).
+      g.fillStyle = '#c8b98a'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.clip(); g.fillStyle = 'rgba(88,160,170,.85)'; g.fillRect(x, y - r, r, 2 * r); g.restore();
+      g.strokeStyle = 'rgba(110,80,50,.85)'; g.lineWidth = Math.max(1.2, s * .035); g.beginPath(); g.arc(x, y, r * .94, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = 'rgba(140,100,65,.75)'; g.lineWidth = Math.max(1, s * .025); g.beginPath(); g.arc(x, y, r * .44, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#0e4a5e'; for (i = 0; i < 9; i++) { var ca = Math.PI * (.62 + .76 * i / 8); g.beginPath(); g.arc(x + Math.cos(ca) * r * .9, y + Math.sin(ca) * r * .9, Math.max(1, s * .018), 0, Math.PI * 2); g.fill(); }
+    } else if (id === 'football-pitch') {
+      // The 105 m is the pitch, not a goal (🥅): a top view, 105 × 68 m.
+      var pw = s * .94, ph = pw * 68 / 105, px0 = x - pw / 2, py0 = y - ph / 2;
+      g.fillStyle = '#3f8a46'; g.fillRect(px0, py0, pw, ph);
+      g.fillStyle = 'rgba(255,255,255,.07)'; for (i = 0; i < 10; i += 2) g.fillRect(px0 + pw * i / 10, py0, pw / 10, ph);
+      g.strokeStyle = 'rgba(245,248,240,.9)'; g.lineWidth = Math.max(1, s * .012);
+      g.strokeRect(px0, py0, pw, ph); g.beginPath(); g.moveTo(x, py0); g.lineTo(x, py0 + ph); g.stroke();
+      g.beginPath(); g.arc(x, y, pw * 9.15 / 105, 0, Math.PI * 2); g.stroke();
+      [-1, 1].forEach(function (sd) { var bw = pw * 16.5 / 105, bh = ph * 40.3 / 68; g.strokeRect(sd < 0 ? px0 : px0 + pw - bw, y - bh / 2, bw, bh); });
+    } else if (id === 'rice') {
+      // A single polished kernel (🌾 is the whole plant).
+      g.translate(x, y); g.rotate(-.5);
+      var kernel = g.createLinearGradient(0, -r * .2, 0, r * .2); kernel.addColorStop(0, '#fbf7ec'); kernel.addColorStop(.6, '#e6dcc4'); kernel.addColorStop(1, '#c9bb9c');
+      g.fillStyle = kernel; g.beginPath(); g.ellipse(0, 0, r * .95, r * .3, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(160,140,100,.5)'; g.lineWidth = Math.max(1, s * .012); g.beginPath(); g.ellipse(0, 0, r * .95, r * .3, 0, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = 'rgba(150,125,85,.45)'; g.beginPath(); g.ellipse(-r * .82, r * .1, r * .1, r * .08, 0, 0, Math.PI * 2); g.fill();
+    } else if (id === 'pollen') {
+      // A tricolpate grain: a patterned wall with three furrows (🌼 is the flower).
+      orb(x, y, r * .9, '#ffe7a3', '#e6b84a', '#9b6e1d');
+      g.fillStyle = 'rgba(120,80,20,.35)';
+      for (i = 0; i < 60; i++) { var pa = i * 2.39996, pr = r * .82 * Math.sqrt((i + .5) / 60); g.beginPath(); g.arc(x + Math.cos(pa) * pr, y + Math.sin(pa) * pr, Math.max(.6, s * .014), 0, Math.PI * 2); g.fill(); }
+      g.strokeStyle = 'rgba(110,70,15,.75)'; g.lineWidth = Math.max(1.2, s * .03);
+      for (i = 0; i < 3; i++) { var fa = -Math.PI / 2 + i * Math.PI * 2 / 3; g.beginPath(); g.moveTo(x + Math.cos(fa) * r * .2, y + Math.sin(fa) * r * .2); g.lineTo(x + Math.cos(fa) * r * .8, y + Math.sin(fa) * r * .8); g.stroke(); }
+    } else if (id === 'mouse') {
+      // The whole animal in side view, head to rump (🐭 is only a face); the tail runs beyond.
+      g.strokeStyle = '#c9a59a'; g.lineWidth = Math.max(1, s * .02); g.beginPath(); g.moveTo(x + r * .8, y + r * .12); g.bezierCurveTo(x + r * 1.25, y + r * .5, x + r * 1.15, y - r * .15, x + r * 1.45, y - r * .05); g.stroke();
+      var fur = g.createLinearGradient(x, y - r * .5, x, y + r * .4); fur.addColorStop(0, '#9c8d80'); fur.addColorStop(1, '#6f6156');
+      g.fillStyle = fur; g.beginPath(); g.ellipse(x + r * .12, y, r * .7, r * .38, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(x - r * .55, y - r * .08, r * .32, r * .24, -.25, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#d9b3ab'; g.beginPath(); g.arc(x - r * .5, y - r * .36, r * .15, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#1a1414'; g.beginPath(); g.arc(x - r * .66, y - r * .12, Math.max(1, s * .02), 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#e7b8b0'; g.beginPath(); g.arc(x - r * .86, y - r * .02, Math.max(1, s * .016), 0, Math.PI * 2); g.fill();
+    } else if (id === 'dust-mite') {
+      // Top view of the eight-legged mite (🕷️ is a spider, only a cousin): pale, ridged, short legs.
+      g.strokeStyle = '#b89a78'; g.lineWidth = Math.max(1, s * .03);
+      for (i = 0; i < 8; i++) {
+        var side = i % 2 ? 1 : -1, row = i >> 1, ly = y + r * (-.36 + row * .25), lx = x + side * r * .4, fwd = row < 2 ? -1 : 1;
+        g.beginPath(); g.moveTo(lx, ly); g.lineTo(lx + side * r * .3, ly + fwd * r * .1); g.lineTo(lx + side * r * .46, ly + fwd * r * .26); g.stroke();
+      }
+      var mite = g.createRadialGradient(x - r * .15, y - r * .2, r * .05, x, y, r * .6); mite.addColorStop(0, '#f6ead6'); mite.addColorStop(.7, '#e2cba8'); mite.addColorStop(1, '#bf9f78');
+      g.fillStyle = mite; g.beginPath(); g.ellipse(x, y + r * .06, r * .46, r * .58, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(125,85,50,.35)'; g.beginPath(); g.ellipse(x, y + r * .12, r * .2, r * .27, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#c79a6e'; g.beginPath(); g.ellipse(x, y - r * .58, r * .13, r * .12, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(150,115,80,.45)'; g.lineWidth = Math.max(1, s * .01);
+      for (i = 0; i < 5; i++) { g.beginPath(); g.ellipse(x, y + r * .06, r * (.18 + i * .06), r * (.24 + i * .07), 0, .25 * Math.PI, .75 * Math.PI); g.stroke(); }
+    } else if (id === 'paramecium') {
+      // A slipper-shaped cell fringed with cilia: oral groove, macronucleus and two
+      // star-shaped contractile vacuoles (🦠 stands for any microbe).
+      g.translate(x, y); g.rotate(-.35);
+      var cl = r * .98, cw = r * .42;
+      g.strokeStyle = 'rgba(190,228,216,.75)'; g.lineWidth = Math.max(1, s * .01);
+      for (i = 0; i < 56; i++) { var ta = i / 56 * Math.PI * 2, ex = Math.cos(ta) * cl, ey = Math.sin(ta) * cw, nx = Math.cos(ta) * cw, ny = Math.sin(ta) * cl, nl = Math.hypot(nx, ny); g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex + nx / nl * r * .09, ey + ny / nl * r * .09); g.stroke(); }
+      var cell = g.createLinearGradient(0, -cw, 0, cw); cell.addColorStop(0, '#d9f1e8'); cell.addColorStop(.55, '#97c9ba'); cell.addColorStop(1, '#5a9787');
+      g.fillStyle = cell; g.beginPath(); g.ellipse(0, 0, cl, cw, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(40,96,84,.45)'; g.beginPath(); g.moveTo(-cl * .25, cw * .98); g.quadraticCurveTo(-cl * .02, cw * .45, cl * .1, cw * .02); g.quadraticCurveTo(cl * .02, cw * .6, cl * .2, cw * .9); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(70,110,150,.6)'; g.beginPath(); g.ellipse(-cl * .08, -cw * .18, cl * .24, cw * .3, .2, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(70,140,190,.8)'; g.fillStyle = 'rgba(200,236,255,.9)'; g.lineWidth = Math.max(1, s * .012);
+      [-.62, .62].forEach(function (vx) { for (var k = 0; k < 6; k++) { var va = k / 6 * Math.PI * 2; g.beginPath(); g.moveTo(cl * vx, -cw * .1); g.lineTo(cl * vx + Math.cos(va) * cw * .32, -cw * .1 + Math.sin(va) * cw * .32); g.stroke(); } g.beginPath(); g.arc(cl * vx, -cw * .1, cw * .13, 0, Math.PI * 2); g.fill(); });
+    } else if (id === 'hydrogen') {
+      // A soft 1s electron cloud, not a hard ball (⚪). The proton dot is drawn far too
+      // big: at true scale it would be about 1/60,000 of this width.
+      var cloud = g.createRadialGradient(x, y, 0, x, y, r); cloud.addColorStop(0, 'rgba(160,205,255,.95)'); cloud.addColorStop(.35, 'rgba(110,165,240,.6)'); cloud.addColorStop(.75, 'rgba(80,130,220,.2)'); cloud.addColorStop(1, 'rgba(80,130,220,0)');
+      g.fillStyle = cloud; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ff6a5c'; g.beginPath(); g.arc(x, y, Math.max(1, s * .025), 0, Math.PI * 2); g.fill();
+    } else if (id === 'carbon') {
+      // 1s² 2s² 2p² in the 3D study's colours: gold 1s core, violet 2s cloud, teal 2p dumbbells.
+      var outer = g.createRadialGradient(x, y, 0, x, y, r); outer.addColorStop(0, 'rgba(175,150,255,.55)'); outer.addColorStop(.7, 'rgba(130,105,230,.18)'); outer.addColorStop(1, 'rgba(130,105,230,0)');
+      g.fillStyle = outer; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(96,212,198,.42)';
+      for (i = 0; i < 4; i++) { var pa2 = .5 + i * Math.PI / 2; g.beginPath(); g.ellipse(x + Math.cos(pa2) * r * .46, y + Math.sin(pa2) * r * .46, r * .4, r * .2, pa2, 0, Math.PI * 2); g.fill(); }
+      var inner = g.createRadialGradient(x, y, 0, x, y, r * .24); inner.addColorStop(0, 'rgba(255,226,140,.95)'); inner.addColorStop(1, 'rgba(255,200,90,0)');
+      g.fillStyle = inner; g.beginPath(); g.arc(x, y, r * .24, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ff6a5c'; g.beginPath(); g.arc(x, y, Math.max(1, s * .025), 0, Math.PI * 2); g.fill();
+    } else if (id === 'nucleus') {
+      // Gold: 79 protons (amber) and 118 neutrons (teal), the 3D model's colours; one face shows 37.
+      var balls = [], step = r / 3.55;
+      for (var hq = -3; hq <= 3; hq++) for (var hp = -3; hp <= 3; hp++) if (Math.max(Math.abs(hp), Math.abs(hq), Math.abs(hp + hq)) <= 3) balls.push([x + (hp + hq / 2) * step, y + hq * step * .866, balls.length]);
+      balls.sort(function (a, b) { return a[1] - b[1]; }).forEach(function (b) { if (b[2] * 7 % 5 < 2) orb(b[0], b[1], step * .56, '#ffd99a', '#c98a35', '#5e3a0e'); else orb(b[0], b[1], step * .56, '#a9dde5', '#3a7f8c', '#143a42'); });
+    } else if (id === 'proton') {
+      // Schematic: two up quarks (blue) and one down quark (salmon) joined by gluons, as in the 3D study.
+      var haze = g.createRadialGradient(x, y, 0, x, y, r); haze.addColorStop(0, 'rgba(246,199,156,.55)'); haze.addColorStop(.7, 'rgba(141,143,221,.2)'); haze.addColorStop(1, 'rgba(141,143,221,0)');
+      g.fillStyle = haze; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      var quarks = [[-Math.PI / 2, '#99d7ed'], [Math.PI / 6, '#99d7ed'], [Math.PI * 5 / 6, '#f2b49f']].map(function (q) { return [x + Math.cos(q[0]) * r * .42, y + Math.sin(q[0]) * r * .42, q[1]]; });
+      g.strokeStyle = 'rgba(255,236,200,.85)'; g.lineWidth = Math.max(1, s * .014);
+      for (i = 0; i < 3; i++) { var qa = quarks[i], qb = quarks[(i + 1) % 3], qdx = qb[0] - qa[0], qdy = qb[1] - qa[1], qlen = Math.hypot(qdx, qdy); g.beginPath(); for (var k = 0; k <= 40; k++) { var qt = k / 40, off = Math.sin(qt * Math.PI * 10) * r * .05; var gx = qa[0] + qdx * qt - qdy / qlen * off, gy = qa[1] + qdy * qt + qdx / qlen * off; if (k) g.lineTo(gx, gy); else g.moveTo(gx, gy); } g.stroke(); }
+      quarks.forEach(function (q) { orb(q[0], q[1], r * .16, '#ffffff', q[2], 'rgba(30,30,40,.9)'); });
+    } else if (id === 'solar-system') {
+      // Top view out to Neptune at true proportion (🪐 is Saturn alone); Mercury to
+      // Mars crowd inside the smallest ring.
+      [30.07, 19.19, 9.54, 5.2, 1.52].forEach(function (au, k) {
+        var orr = r * au / 30.07; g.strokeStyle = 'rgba(200,215,240,.4)'; g.lineWidth = Math.max(1, s * .008); g.beginPath(); g.arc(x, y, orr, 0, Math.PI * 2); g.stroke();
+        var oa = 1.1 + k * 2.2; g.fillStyle = ['#7fa6ff', '#9fe3e6', '#e6d29a', '#e3b98a', '#e07a5a'][k]; g.beginPath(); g.arc(x + Math.cos(oa) * orr, y + Math.sin(oa) * orr, Math.max(1, s * (k < 4 ? .028 : .012)), 0, Math.PI * 2); g.fill();
+      });
+      orb(x, y, Math.max(1.2, s * .02), '#fffbe0', '#ffd34d', '#e08a12');
+    } else if (id === 'heliosphere') {
+      // The Sun's wind bubble: nose into the interstellar wind on the left, the
+      // termination shock (dashed) inside, the heliotail trailing away (🛡️ is a shield).
+      var tail = g.createLinearGradient(x - r, y, x + r * 1.35, y); tail.addColorStop(0, 'rgba(120,170,255,.4)'); tail.addColorStop(.55, 'rgba(120,170,255,.18)'); tail.addColorStop(1, 'rgba(120,170,255,0)');
+      g.fillStyle = tail; g.beginPath(); g.moveTo(x + r * 1.35, y - r * .78); g.lineTo(x, y - r * .92); g.arc(x, y, r, -Math.PI / 2 - .4, Math.PI / 2 + .4, true); g.lineTo(x + r * 1.35, y + r * .78); g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(170,205,255,.85)'; g.lineWidth = Math.max(1, s * .016); g.beginPath(); g.arc(x, y, r, Math.PI / 2 + .4, Math.PI * 1.5 - .4); g.stroke();
+      g.setLineDash([Math.max(2, s * .03), Math.max(2, s * .025)]); g.strokeStyle = 'rgba(255,214,150,.75)'; g.beginPath(); g.ellipse(x + r * .12, y, r * .76, r * .68, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+      g.strokeStyle = 'rgba(200,220,255,.55)';
+      for (i = -1; i <= 1; i++) { var wy = y + i * r * .45, wx = x - r * 1.18; g.beginPath(); g.moveTo(wx - r * .22, wy); g.lineTo(wx, wy); g.lineTo(wx - r * .07, wy - r * .05); g.moveTo(wx, wy); g.lineTo(wx - r * .07, wy + r * .05); g.stroke(); }
+      orb(x, y, Math.max(1.5, s * .03), '#fffbe0', '#ffd34d', '#e08a12');
+    } else if (id === 'virgo-sc') {
+      // A flattened swarm of galaxy groups around the dense Virgo Cluster. Virgo lies
+      // about 54 million light-years from our Local Group (the ring): 1.08 radii here.
+      var vx = x + r * .58, lgx = x - r * .5;
+      var vglow = g.createRadialGradient(vx, y, 0, vx, y, r * .3); vglow.addColorStop(0, 'rgba(255,236,200,.9)'); vglow.addColorStop(1, 'rgba(255,220,170,0)');
+      g.fillStyle = 'rgba(205,215,255,.75)';
+      for (i = 0; i < 70; i++) { var ga = i * 2.39996, gr = r * .95 * Math.pow((i + .5) / 70, .8), gpx = x + Math.cos(ga) * gr, gpy = y + Math.sin(ga) * gr * .42; gpx += (vx - gpx) * .35 * (1 - gr / r); g.beginPath(); g.arc(gpx, gpy, Math.max(.6, s * .01), 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = vglow; g.beginPath(); g.arc(vx, y, r * .3, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#ffd36b'; g.lineWidth = Math.max(1, s * .016); g.beginPath(); g.arc(lgx, y, Math.max(2, r * .09), 0, Math.PI * 2); g.stroke();
+    } else if (id === 'orion-nebula') {
+      // Glowing gas (☁️ is a rain cloud): red hydrogen outside, teal oxygen near
+      // the hot young Trapezium stars at the heart.
+      [[.1, .05, 1, 'rgba(224,84,100,.62)'], [-.28, -.12, .7, 'rgba(200,70,120,.5)'], [.3, -.25, .55, 'rgba(240,120,96,.46)'], [0, 0, .5, 'rgba(100,214,210,.6)']].forEach(function (c) {
+        var cg = g.createRadialGradient(x + r * c[0], y + r * c[1], 0, x + r * c[0], y + r * c[1], r * c[2]); cg.addColorStop(0, c[3]); cg.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = cg; g.beginPath(); g.arc(x + r * c[0], y + r * c[1], r * c[2], 0, Math.PI * 2); g.fill();
+      });
+      g.strokeStyle = 'rgba(20,10,20,.32)'; g.lineWidth = Math.max(1, s * .03); g.beginPath(); g.moveTo(x - r * .7, y + r * .45); g.quadraticCurveTo(x - r * .2, y + r * .2, x + r * .1, y + r * .6); g.stroke();
+      g.fillStyle = '#f4fbff'; [[-.06, -.04], [.05, -.06], [-.02, .05], [.07, .03]].forEach(function (p) { g.beginPath(); g.arc(x + r * p[0], y + r * p[1], Math.max(1, s * .016), 0, Math.PI * 2); g.fill(); });
+    } else if (id === 'oort') {
+      // A thin spherical shell of icy bodies around a tiny Sun (🫧 is soap bubbles);
+      // seen from outside, the shell crowds toward its rim.
+      g.fillStyle = 'rgba(160,200,235,.8)';
+      for (i = 0; i < 160; i++) { var oz = 1 - 2 * (i + .5) / 160, orr = Math.sqrt(1 - oz * oz), oa = i * 2.39996, rr2 = r * (.82 + .16 * ((i * 7) % 5) / 4); g.beginPath(); g.arc(x + Math.cos(oa) * orr * rr2, y + Math.sin(oa) * orr * rr2, Math.max(.5, s * .007), 0, Math.PI * 2); g.fill(); }
+      orb(x, y, Math.max(1.2, s * .02), '#fffbe0', '#ffd34d', '#e08a12');
+    } else if (id === 'local-bubble') {
+      // A low-density cavity carved by supernovae, walled by dust; the Sun sits inside (🫧 is soap bubbles).
+      var wall = [1, .86, .95, .78, .92, 1.02, .84, .9, .97, .8, .9, .88];
+      for (i = 0; i < 240; i++) { var ba = i / 240 * Math.PI * 2, bk = ba / (Math.PI * 2) * wall.length, b0 = wall[Math.floor(bk) % wall.length], b1 = wall[(Math.floor(bk) + 1) % wall.length], br = r * (b0 + (b1 - b0) * (bk % 1)) * (.86 + .14 * ((i * 13) % 7) / 6); g.fillStyle = i % 3 ? 'rgba(214,170,120,.55)' : 'rgba(150,180,220,.5)'; g.beginPath(); g.arc(x + Math.cos(ba) * br, y + Math.sin(ba) * br * .9, Math.max(.6, s * (.008 + .006 * (i % 4))), 0, Math.PI * 2); g.fill(); }
+      orb(x + r * .12, y + r * .05, Math.max(1.2, s * .02), '#fffbe0', '#ffd34d', '#e08a12');
+    } else if (id === 'grand-canyon') {
+      // Seen from above: a winding gorge with side canyons cut into the plateau (🏜️ is a cactus desert).
+      g.save(); g.beginPath(); g.ellipse(x, y, r, r * .62, -.2, 0, Math.PI * 2); g.clip();
+      g.fillStyle = '#d9c39a'; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+      var gorge = []; for (i = 0; i <= 40; i++) { var gt = i / 40; gorge.push([x - r + 2 * r * gt, y + Math.sin(gt * Math.PI * 3.2) * r * .16 - (gt - .5) * r * .25]); }
+      g.lineCap = 'round'; g.strokeStyle = '#b4573a'; g.lineWidth = Math.max(1, s * .022);
+      for (i = 4; i < 40; i += 5) { var gp = gorge[i], side = i % 2 ? 1 : -1; g.beginPath(); g.moveTo(gp[0], gp[1]); g.quadraticCurveTo(gp[0] + r * .05, gp[1] + side * r * .14, gp[0] - r * .02, gp[1] + side * r * .26); g.stroke(); }
+      [[s * .1, '#c0603e'], [s * .045, '#7a2f22'], [Math.max(1, s * .012), '#4f8f86']].forEach(function (band) { g.strokeStyle = band[1]; g.lineWidth = band[0]; g.beginPath(); gorge.forEach(function (p, k) { if (k) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.stroke(); });
+      g.restore();
+    } else if (id === 'universe') {
+      // The observable universe: a sphere around us, galaxies inside, the mottled
+      // microwave background at its edge (🌌 is our own galaxy in the night sky).
+      var cmb = g.createRadialGradient(x, y, r * .78, x, y, r); cmb.addColorStop(0, 'rgba(60,90,160,0)'); cmb.addColorStop(.7, 'rgba(110,140,210,.35)'); cmb.addColorStop(1, 'rgba(230,150,90,.6)');
+      g.fillStyle = cmb; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      for (i = 0; i < 48; i++) { var ca2 = i / 48 * Math.PI * 2; g.fillStyle = i % 2 ? 'rgba(240,160,100,.55)' : 'rgba(120,160,230,.55)'; g.beginPath(); g.arc(x + Math.cos(ca2) * r * .94, y + Math.sin(ca2) * r * .94, Math.max(.8, s * .02), 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = 'rgba(225,232,255,.85)';
+      for (i = 0; i < 46; i++) { var ua = i * 2.39996, ur = r * .8 * Math.sqrt((i + .5) / 46); g.beginPath(); g.ellipse(x + Math.cos(ua) * ur, y + Math.sin(ua) * ur, Math.max(.6, s * .012), Math.max(.4, s * .006), ua, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, Math.max(1.2, s * .018), 0, Math.PI * 2); g.fill();
+    } else if (id === 'laniakea') {
+      // Galaxy flows converging on one basin (🕸️ is a spider's web); the ring marks the Milky Way.
+      var sink = [x + r * .12, y + r * .05];
+      g.strokeStyle = 'rgba(232,190,110,.75)'; g.lineWidth = Math.max(1, s * .012);
+      for (i = 0; i < 16; i++) { var la = i / 16 * Math.PI * 2, lx0 = x + Math.cos(la) * r * .95, ly0 = y + Math.sin(la) * r * .8, bend = (i % 2 ? 1 : -1) * r * .18; g.beginPath(); g.moveTo(lx0, ly0); g.quadraticCurveTo((lx0 + sink[0]) / 2 - Math.sin(la) * bend, (ly0 + sink[1]) / 2 + Math.cos(la) * bend, sink[0], sink[1]); g.stroke(); }
+      var basin = g.createRadialGradient(sink[0], sink[1], 0, sink[0], sink[1], r * .22); basin.addColorStop(0, 'rgba(255,230,170,.9)'); basin.addColorStop(1, 'rgba(255,210,140,0)');
+      g.fillStyle = basin; g.beginPath(); g.arc(sink[0], sink[1], r * .22, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#9fd0ff'; g.lineWidth = Math.max(1, s * .016); g.beginPath(); g.arc(x - r * .45, y + r * .3, Math.max(2, r * .08), 0, Math.PI * 2); g.stroke();
+    } else if (id === 'light') wave('#5be27f');
+    else if (id === 'xray') wave('#9fb4ff');
+    else if (id === 'gamma') wave('#d39bff');
+    else { g.restore(); return false; }
+    g.restore();
+    return true;
+  }
+
+  // The same drawn shapes as small images, so a comparison diagram shows a
+  // flea rather than a mosquito. Null when there is no glyph or no canvas.
+  var glyphImages = {};
+  function glyphImage(id) {
+    if (Object.prototype.hasOwnProperty.call(glyphImages, id)) return glyphImages[id];
+    var url = null;
+    try {
+      var cv = document.createElement('canvas'); cv.width = cv.height = 96;
+      var g = cv.getContext && cv.getContext('2d');
+      if (g && chartGlyph(g, id, 48, 48, 88)) url = cv.toDataURL('image/png');
+    } catch (_) { url = null; }
+    glyphImages[id] = url; return url;
   }
 
   function palette(theme) {
@@ -3477,6 +3799,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     if(id==='heliosphere')return [{id:'helio-wind',helioSite:true,marker:false,at:[0,0,0],view:[0.65,0.25,1],zoom:1.3,label:S('atlas_helio_wind',"Inside the solar wind"),body:S('atlas_helio_wind_body',"Follow the outward arrows from the Sun. The faint rings mark the giant-planet orbits, with Neptune at about 30 AU. The Sun and arrows are enlarged to make the structure visible."),source:"https://science.nasa.gov/mission/voyager/interstellar-mission/"},
 {id:'helio-shock',helioSite:true,marker:false,at:[0.22,0.05,0.15],view:[0.9,0.25,1],zoom:1.65,label:S('atlas_helio_shock',"Where the wind slows"),body:S('atlas_helio_shock_body',"At the termination shock, the solar wind slows abruptly and heats up. This gold layer uses a 90 AU reference. Voyager 1 crossed at about 94 AU in 2004; Voyager 2 at about 84 AU in 2007."),source:"https://science.nasa.gov/mission/voyager/mission-overview/"},
 {id:'helio-sheath',helioSite:true,marker:false,at:[0.32,0.02,0.2],view:[0.7,0.35,1],zoom:1.8,label:S('atlas_helio_sheath',"Between the boundaries"),body:S('atlas_helio_sheath_body',"The heliosheath lies between the termination shock and heliopause. The cutaway reveals its thickness in this reference model. The blue outer layer marks where the solar wind meets interstellar plasma."),source:"https://science.nasa.gov/mission/voyager/interstellar-mission/"},
+{id:'helio-flow',helioSite:true,marker:false,at:[0,0,0],view:[-0.42,0.35,0.91],zoom:1,label:S('atlas_helio_flow',"Moving through interstellar space"),body:S('atlas_helio_flow_body',"The Sun carries its heliosphere through a thin cloud of interstellar gas at about 26 km/s. Seen from the Sun, that gas streams past like a wind and flows around the heliopause. Both Voyagers crossed on the upwind side, the nose. Downwind the heliosphere trails a tail whose length and shape have not been measured. The flow lines and tail here are illustrative."),source:"https://science.nasa.gov/mission/voyager/interstellar-mission/"},
 {id:'helio-voyager1',helioSite:true,marker:false,at:[0.29,0.21,0.134],view:[0.8,0.3,1],zoom:2.4,label:S('atlas_helio_voyager1',"Voyager 1 · 2012"),body:S('atlas_helio_voyager1_body',"The highlighted route marks Voyager 1’s historical crossings: the shock at 94 AU and the heliopause at 121.6 AU. It reached interstellar space in August 2012. The Sun’s gravity extends far beyond this plasma boundary."),source:"https://science.nasa.gov/mission/voyager/voyager-1/"},
 {id:'helio-voyager2',helioSite:true,marker:false,at:[0.3,-0.196,0.139],view:[0.8,-0.25,1],zoom:2.4,label:S('atlas_helio_voyager2',"Voyager 2 · 2018"),body:S('atlas_helio_voyager2_body',"Voyager 2 crossed the shock at 84 AU and the heliopause at about 119 AU in November 2018. Compare the two records below. Different crossing distances reflect different directions and times."),source:"https://www.nasa.gov/news-release/nasas-voyager-2-probe-enters-interstellar-space/"}];
     if(id==='oort')return [{id:'oort-shell',oortSite:true,marker:false,at:[0,0,0],view:[0.45,0.24,1],zoom:1.2,label:S('atlas_oort_shell',"A spherical reservoir"),body:S('atlas_oort_shell_body',"Orbit the sphere to see bodies above and below the planetary plane. This sparse sample represents a proposed reservoir of icy objects. Their positions are illustrative."),source:'https://science.nasa.gov/solar-system/oort-cloud/facts/'},
@@ -3498,6 +3821,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     if(id==='basketball')return BASKETBALL_SITES.map(function(site){return Object.assign({id:site.id,basketballSite:true,marker:false,label:S('atlas_basketball_'+site.key,site.label),body:S('atlas_basketball_'+site.key+'_body',site.body),source:BASKETBALL_STUDY_SOURCE},basketballStudyPoint(site.id));}).concat(Array.from({length:101},function(_,n){return Object.assign({id:'basketball-open-'+n,basketballSite:true,basketballSample:true,marker:false,label:S('atlas_basketball_section','Cutaway · {percent}% open',{percent:n}),body:S('atlas_basketball_section_body','Move the opening to expose the layers beneath the cover. Each edge shows a different material; the centre is hollow. The outer size remains fixed while the virtual section changes.'),source:BASKETBALL_STUDY_SOURCE},basketballStudyPoint('basketball-open-'+n));}));
     if(id==='betelgeuse')return [{id:'betelgeuse-convection',betelgeuseSite:true,marker:false,at:[0,0,0.49],view:[0,0,1],zoom:2.5,label:S('atlas_betelgeuse_convection',"Giant convection cells"),body:S('atlas_betelgeuse_convection_body',"Explore broad, bright regions separated by cooler, darker areas. Hot gas rises and cooled gas sinks in enormous convection cells. This procedural surface illustrates that uneven character; its pattern and slow animation are not an observed map or a physical clock."),source:'https://www.eso.org/public/news/eso0927/'},
 {id:'betelgeuse-limb',betelgeuseSite:true,marker:false,at:[0.4,0.04,0.27],view:[0,0,1],zoom:2.5,label:S('atlas_betelgeuse_limb',"The soft stellar limb"),body:S('atlas_betelgeuse_limb_body',"Look across the edge of the visible surface. The darker limb and faint warm haze suggest a gaseous atmosphere with no solid ground. The haze is illustrative and does not measure the full extent of the material surrounding Betelgeuse."),source:'https://www.eso.org/public/news/eso0927/'},
+{id:'betelgeuse-orbits',betelgeuseSite:true,marker:false,at:[0,0,0],view:[0,0.42,1],zoom:.82,label:S('atlas_betelgeuse_orbits',"If it replaced the Sun"),body:S('atlas_betelgeuse_orbits_body',"Picture Betelgeuse in the Sun’s place, with the planets’ orbits drawn on the same scale. Its catalogue diameter gives a radius of about 3.5 times the Earth–Sun distance, so the orbits of Mercury, Venus, Earth and Mars (dashed) would lie inside the star. Jupiter’s orbit, at 5.2 times that distance, would pass outside. Every published radius, from about 640 to 887 times the Sun’s, keeps both statements true."),source:'https://science.nasa.gov/solar-system/planets/'},
 {id:'betelgeuse-overview',betelgeuseSite:true,marker:false,at:[0,0,0],view:[0,0.12,1],zoom:1,label:S('atlas_betelgeuse_overview',"An uneven red supergiant"),body:S('atlas_betelgeuse_overview_body',"Return to the whole star to see the large surface patterns together. The catalog uses a nominal diameter: estimates of this extended, variable star depend on wavelength and on the layer being measured. The model is an interpretation, not a prediction of its appearance today."),source:'https://www.eso.org/public/news/eso0927/'}];
     if(id==='reef')return REEF_SITES.map(function(site){return {id:site.id,reefSite:true,marker:false,at:reefProject(site.longitude,site.latitude),view:[0,1,.28],zoom:site.zoom,label:S('atlas_reef_'+site.key,site.label),body:S('atlas_reef_'+site.key+'_body',site.body),source:'https://www.arcgis.com/home/item.html?id=816f4d747cd94d84acfd924b27f581d8'};});
     if(id==='football-pitch')return FOOTBALL_SITES.map(function(site){return {id:site.id,footballSite:true,marker:false,at:site.at.slice(),view:site.view.slice(),zoom:site.zoom,label:S('atlas_pitch_'+site.key,site.label),body:S('atlas_pitch_'+site.key+'_body',site.body),source:'https://www.theifab.com/laws/latest/the-field-of-play/'};});
@@ -4271,9 +4595,26 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     key.shadow.bias = -0.0003; key.shadow.normalBias = 0.012; key.shadow.radius = 3;
     var rim = new T.DirectionalLight(0xb6d9ed, 1.15); rim.position.set(4, 2, -4); scene.add(rim);
     var fill = new T.DirectionalLight(0xd9e6ef, 0.4); fill.position.set(3, 1, 5); scene.add(fill);
-    var libertyHarbor=null;
+    var libertyHarbor=null,footballStadium=null;
     var pyramidDesert=null;
-    var eiffelPlaza=null;
+    var eiffelPlaza=null,skies={};
+    // Screen-space skies, built once each: deeper overhead, paler at the horizon.
+    // Each scene's fog uses its horizon band, so distance fades into the sky.
+    // Paris dusk is blue hour: deep blue above, the last warm glow below.
+    var SKY_GRADIENTS={
+      'paris-dusk':[[0,'#08112a'],[.34,'#16244a'],[.52,'#2c3460'],[.64,'#4d4468'],[.74,'#7a5468'],[.86,'#a8705e'],[1,'#b9805f']],
+      'paris-day':[[0,'#4f7799'],[.45,'#7e9fb8'],[.75,'#adc0cc'],[1,'#c8d3d6']],
+      'harbor-day':[[0,'#4d7c9e'],[.45,'#7ea3ba'],[.75,'#aec5d0'],[1,'#c6d5da']],
+      'giza-day':[[0,'#5f84a3'],[.4,'#8fa7b6'],[.68,'#bdbcaf'],[.85,'#d2c4a4'],[1,'#d9c8a2']],
+      // Under the canopy: daylight overhead, the forest closing in toward the ground.
+      'grove-day':[[0,'#6f8f93'],[.3,'#47645c'],[.62,'#25392f'],[1,'#172a21']]
+    };
+    function skyGradient(key){
+      if(skies[key])return skies[key];
+      var c=document.createElement('canvas');c.width=4;c.height=256;var x=c.getContext('2d'),grad=x.createLinearGradient(0,0,0,256);
+      SKY_GRADIENTS[key].forEach(function(s){grad.addColorStop(s[0],s[1]);});
+      x.fillStyle=grad;x.fillRect(0,0,4,256);var tex=track(new T.CanvasTexture(c));tex.encoding=T.sRGBEncoding;skies[key]=tex;return tex;
+    }
     var sequoiaGrove=null;
     var resources = new Set(), models = {}, disposed = false, frame = 0, dirty = true, paintCount = 0;
     var yaw = 0, pitch = 0.12, time = 0, last = 0, inView = true, canvasInView = true, navigationInView = false;
@@ -4429,9 +4770,32 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       var sprite = new T.Sprite(track(new T.SpriteMaterial({ map: glowTexture, color: color, transparent: true, opacity: opacity || 0.6, depthWrite: false, blending: T.AdditiveBlending })));
       sprite.scale.set(size, size, 1); g.add(sprite); return sprite;
     }
+    // A fixed-size point of light for a luminous body too small to resolve. It
+    // shows where the light comes from, never how big the body is.
+    function lightPoint(parent,color,px,opacity){
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute([0,0,0],3));
+      var p=new T.Points(geo,track(new T.PointsMaterial({map:glowTexture,color:color,size:px,sizeAttenuation:false,transparent:true,opacity:opacity,depthWrite:false,blending:T.AdditiveBlending})));
+      p.userData.unmeasured=true;p.userData.baseOpacity=opacity;p.frustumCulled=false;p.renderOrder=6;p.castShadow=p.receiveShadow=false;parent.add(p);return p;
+    }
     var haze = glow(scene, '#6086b8', 30, 0.13); haze.position.set(-6, 3, -18);
     var haze2 = glow(scene, '#9475b8', 20, 0.1); haze2.position.set(7, -3, -14);
     var motes = dots(scene, 700, function (r) { return [(r() - 0.5) * 65, (r() - 0.5) * 38, -8 - r() * 55]; }, '#b8d8ff', 0.045, 91);
+    // A distant sky for the crossings of empty space. It rides with the camera,
+    // so it gives depth and orientation without implying any distance or size.
+    // Only inside our galaxy: intergalactic space is not full of stars.
+    // Not the Oort Cloud, whose own points would read as more stars.
+    var SKY_SCENES={au:1,'alpha-cen-dist':1,'light-month':1,heliosphere:1,'solar-system':1,betelgeuse:1,sun:1};
+    var sky=(function(){
+      var layers=new T.Group(),r=random(4242);layers.name='atlas-distant-sky';layers.visible=false;layers.renderOrder=-10;scene.add(layers);
+      [[2400,1.3,.8],[260,2.3,.95]].forEach(function(spec){
+        var pos=[],col=[];
+        for(var i=0;i<spec[0];i++){var u=r()*2-1,a=r()*Math.PI*2,s=Math.sqrt(1-u*u),t=r(),b=.28+.72*Math.pow(r(),2.6),c=t<.14?[1,.8,.62]:t<.36?[.74,.84,1]:[1,.97,.92];pos.push(Math.cos(a)*s*90,u*90,Math.sin(a)*s*90);col.push(c[0]*b,c[1]*b,c[2]*b);}
+        var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(pos,3));geo.setAttribute('color',new T.Float32BufferAttribute(col,3));
+        var points=new T.Points(geo,track(new T.PointsMaterial({size:spec[1],sizeAttenuation:false,vertexColors:true,transparent:true,opacity:spec[2],depthWrite:false,fog:false})));
+        points.userData.baseOpacity=spec[2];points.frustumCulled=false;points.renderOrder=-10;layers.add(points);
+      });
+      return layers;
+    })();
     var ground = new T.Group(); ground.name='atlasGround'; scene.add(ground); ground.position.y = -1.64;
     var floor=mesh(ground,track(new T.PlaneGeometry(180,180)),material('#26302c',{roughness:1,bumpMap:grainTexture,bumpScale:0.01}));floor.rotation.x=-Math.PI/2;floor.castShadow=false;
     var garden = new T.Group(); scene.add(garden);
@@ -5749,16 +6113,22 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     }
     function canyonModel(g) {
       var land=new T.Group();g.add(land);
-      var positions=[],uvs=[],colors=[],indices=[],nx=384,nz=144;
+      var positions=[],uvs=[],colors=[],covers=[],indices=[],nx=384,nz=144;
       function point(x,z) {
         var height=canyonHeight(x,z),level=height/CANYON_PATH.depth;
         positions.push(x,height,z);uvs.push((x+.5)*3,level*.84+.12);
+        // Scrub grows on the gently sloping plateau, not on the cliffs: cover
+        // follows slope, so small height noise cannot band the rim rock.
+        var e=.0015,slope=Math.hypot(canyonHeight(x+e,z)-canyonHeight(x-e,z),canyonHeight(x,z+e)-canyonHeight(x,z-e))/(2*e*CANYON_PATH.depth);
+        covers.push(canyonSmooth(.84,.9,level)*(1-canyonSmooth(10,16,slope)));
         var d=Math.abs(z-canyonCenter(x)),grain=canyonNoise(x*100,z*100);
-        var shadow=.68+.32*canyonSmooth(.001,.025,d),green=canyonSmooth(.86,1,level)*(.3+.5*grain);
-        colors.push(shadow*(1-green*.28),shadow*(1-green*.12),shadow*(1-green*.34));
+        // Deep inner gorges sit in shade; the rest takes its colour from the rock.
+        var shadow=.68+.32*canyonSmooth(.001,.025,d),varnish=1-.06*grain*canyonSmooth(.3,.8,level);
+        colors.push(shadow*varnish,shadow*varnish*.985,shadow*varnish*.97);
       }
+      // The plateau keeps straight edges; only the gorge follows the river.
       for(var z=0;z<=nz;z++)for(var x=0;x<=nx;x++){
-        var px=x/nx-.5,q=z/nz*2-1,pz=canyonCenter(px)+Math.sign(q)*.19*Math.pow(Math.abs(q),1.65);point(px,pz);
+        var px=x/nx-.5,q=z/nz*2-1,aq=Math.abs(q),pz=canyonCenter(px)*(1-aq*aq*aq)+Math.sign(q)*.25*Math.pow(aq,1.65);point(px,pz);
         if(z<nz&&x<nx){var a=z*(nx+1)+x,b=a+nx+1;indices.push(a,b,a+1,a+1,b,b+1);}
       }
       // Close the terrain at its edges so low viewpoints reveal a solid slab.
@@ -5766,12 +6136,15 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       for(var x=nx-1;x>=0;x--)edge.push(nz*(nx+1)+x);for(var z=nz-1;z>0;z--)edge.push(z*(nx+1));
       for(var i=0;i<edge.length;i++){
         var a=edge[i],b=edge[(i+1)%edge.length],at=positions.length/3;
-        [a,b].forEach(function(index){positions.push(positions[index*3],-.00065,positions[index*3+2]);uvs.push(uvs[index*2],0);colors.push(.63,.60,.58);});
+        [a,b].forEach(function(index){positions.push(positions[index*3],-.00065,positions[index*3+2]);uvs.push(uvs[index*2],0);colors.push(.63,.60,.58);covers.push(0);});
         indices.push(a,at,b,b,at,at+1);
       }
-      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
+      var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setAttribute('canyonCover',new T.Float32BufferAttribute(covers,1));geo.setIndex(indices);geo.computeVertexNormals();
       var cv=document.createElement('canvas');cv.width=128;cv.height=1024;var ctx=cv.getContext('2d'),pixels=ctx.createImageData(128,1024);
-      var bands=[[0,'#5f4e50'],[.12,'#725855'],[.27,'#a76550'],[.41,'#b68b6e'],[.53,'#b75f42'],[.66,'#d2916b'],[.80,'#b27a58'],[.93,'#d5bc92'],[1,'#c7b391']];
+      // Named formations, river to rim (texture v = level*.84+.12): Vishnu
+      // Schist, Tapeats, Bright Angel, Muav, Redwall, Supai, Hermit, Coconino,
+      // Toroweap, Kaibab. Thicknesses follow the stepped profile, not a section.
+      var bands=[[0,'#38302f'],[.12,'#3d3434'],[.288,'#6b5141'],[.33,'#767b62'],[.4224,'#867b6c'],[.4728,'#9a5542'],[.6072,'#a6644d'],[.7584,'#8c4634'],[.8256,'#d9cbab'],[.8844,'#bea684'],[.918,'#cbbd9b'],[1,'#cbbd9b']];
       var ramp=bands.map(function(b){return [b[0],new T.Color(b[1])];});
       for(var y=0;y<1024;y++)for(var x=0;x<128;x++){
         var h=1-y/1023,band=0;while(band<ramp.length-2&&h>ramp[band+1][0])band++;
@@ -5782,10 +6155,12 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       ctx.putImageData(pixels,0,0);var strata=track(new T.CanvasTexture(cv));strata.encoding=T.sRGBEncoding;strata.wrapS=T.RepeatWrapping;strata.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
       var rockMat=material('#ffffff',{map:strata,vertexColors:true,roughness:.96,bumpMap:grainTexture,bumpScale:.000035,side:T.DoubleSide});
       rockMat.onBeforeCompile=function(shader){
-        shader.vertexShader='varying vec3 vCanyonPosition;\n'+shader.vertexShader;
-        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCanyonPosition=position;');
-        shader.fragmentShader='varying vec3 vCanyonPosition;\nfloat canyonGrain(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat canyonSoil(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(canyonGrain(i),canyonGrain(i+vec2(1.,0.)),f.x),mix(canyonGrain(i+vec2(0.,1.)),canyonGrain(i+vec2(1.)),f.x),f.y);}\n'+shader.fragmentShader;
-        shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat top=smoothstep('+String(CANYON_PATH.depth*.84)+','+String(CANYON_PATH.depth*.97)+',vCanyonPosition.y);float grain=canyonSoil(vCanyonPosition.xz*370.);vec3 soil=mix(vec3(.27,.235,.16),vec3(.12,.17,.085),canyonSoil(vCanyonPosition.xz*120.));diffuseColor.rgb=mix(diffuseColor.rgb,soil*(.8+.4*grain),top);');
+        shader.vertexShader='attribute float canyonCover;varying float vCanyonCover;varying vec3 vCanyonPosition;\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCanyonPosition=position;vCanyonCover=canyonCover;');
+        shader.fragmentShader='varying float vCanyonCover;varying vec3 vCanyonPosition;\nfloat canyonGrain(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat canyonSoil(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(canyonGrain(i),canyonGrain(i+vec2(1.,0.)),f.x),mix(canyonGrain(i+vec2(0.,1.)),canyonGrain(i+vec2(1.)),f.x),f.y);}\n'+shader.fragmentShader;
+        // Rims are arid limestone ground with patchy pinyon-juniper scrub; the
+        // cover stays on the plateau so the Coconino and Kaibab cliffs show.
+        shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat top=vCanyonCover;float grain=canyonSoil(vCanyonPosition.xz*370.);float scrub=smoothstep(.45,.85,canyonSoil(vCanyonPosition.xz*420.))*smoothstep(.25,.75,canyonSoil(vCanyonPosition.xz*1500.));vec3 ground=mix(vec3(.4,.32,.22),vec3(.3,.24,.16),canyonSoil(vCanyonPosition.xz*60.));vec3 soil=mix(ground,vec3(.1,.13,.08),scrub);diffuseColor.rgb=mix(diffuseColor.rgb,soil*(.85+.3*grain),top);');
       };
       var terrain=mesh(land,geo,rockMat);terrain.name='canyonStrata';
       var riverPositions=[],riverUV=[],riverIndices=[],halfWidth=91/446000*CANYON_PATH.length/2;
@@ -5796,6 +6171,68 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       var locator=new T.Mesh(track(new T.RingGeometry(.003,.004,48)),track(new T.MeshBasicMaterial({color:'#e8f6cf',side:T.DoubleSide,depthTest:false,depthWrite:false})));
       locator.rotation.x=-Math.PI/2;locator.visible=false;locator.renderOrder=8;locator.name='canyonRouteLocator';g.add(locator);
       land.scale.y=8;g.userData.canyon={land:land,terrain:terrain,river:river,locator:locator};
+    }
+    // Labels for points a model publishes as userData.scenePins: {group, pins:
+    // {key: local position}}. A pin shows only while its group is visible.
+    function paintScenePins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;
+      var source=!!root&&!state.comparison&&!state.flight&&root.visible&&root.userData.model.userData.scenePins,shown=!!source;
+      for(var n=source&&source.group;shown&&n;n=n.parent)if(!n.visible)shown=false;
+      var placed=[];
+      Array.prototype.forEach.call(host.querySelectorAll('[data-scene-pin]'),function(pin){
+        var p=shown&&source.pins[pin.dataset.scenePin],active=!!p;
+        if(active){
+          markerPoint.copy(p);source.group.localToWorld(markerPoint);markerPoint.project(camera);
+          var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height;pin.hidden=false;
+          var w=pin.offsetWidth,hh=pin.offsetHeight,left=clamp(x-w/2,8,Math.max(8,width-w-8)),top=y-hh/2;
+          for(var k=0;k<3&&placed.some(function(b){return left<b.x+b.w+6&&left+w>b.x-6&&top<b.y+b.h+4&&top+hh>b.y-4;});k++)top+=hh+6;
+          active=markerPoint.z>-1&&markerPoint.z<1&&x>0&&x<width&&top>130&&top+hh<height-54;
+          if(active){pin.style.transform='translate('+left.toFixed(1)+'px,'+top.toFixed(1)+'px)';placed.push({x:left,y:top,w:w,h:hh});}
+        }
+        pin.hidden=!active;
+      });
+    }
+    function paintRulerStoryPins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;
+      var story=!!root&&!state.comparison&&!state.flight&&root.visible&&root.userData.model.userData.rulerStory;
+      Array.prototype.forEach.call(host.querySelectorAll('[data-ruler-pin]'),function(pin){
+        var kind=pin.dataset.rulerPin,p=story&&story.pins[kind],active=!!p;
+        if(active){
+          markerPoint.copy(p);root.userData.model.localToWorld(markerPoint);markerPoint.project(camera);
+          var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height,above=story.order.indexOf(kind)%2===0;
+          pin.hidden=false;var w=pin.offsetWidth,hh=pin.offsetHeight,left=clamp(x-w/2,8,Math.max(8,width-w-8)),top=above?y-hh-18:y+18;
+          active=markerPoint.z>-1&&markerPoint.z<1&&x>0&&x<width&&top>130&&top+hh<height-54;
+          if(active){pin.style.transform='translate('+left.toFixed(1)+'px,'+top.toFixed(1)+'px)';pin.style.setProperty('--pin-x',clamp(x-left,6,w-6).toFixed(1)+'px');pin.dataset.side=above?'above':'below';}
+        }
+        pin.hidden=!active;
+      });
+    }
+    // A glazed egg cup in egg units (the egg spans y -0.5 to 0.5); the egg
+    // rests on the rim, as a real egg does, rather than on its tip.
+    var eggCup=null;
+    function eggCupProp(){
+      if(eggCup)return eggCup;
+      var profile=[[0,-.52],[.1,-.515],[.18,-.48],[.24,-.42],[.276,-.34],[.29,-.27],[.302,-.254],[.318,-.262],[.316,-.3],[.3,-.38],[.262,-.47],[.19,-.55],[.122,-.6],[.104,-.64],[.122,-.668],[.2,-.686],[.236,-.7],[.232,-.715],[0,-.715]].map(function(p){return new T.Vector2(p[0],p[1]);});
+      var glaze=track(new T.MeshPhysicalMaterial({color:new T.Color('#9cc6b9').convertSRGBToLinear(),roughness:.22,clearcoat:.85,clearcoatRoughness:.12,side:T.DoubleSide}));
+      eggCup=new T.Group();eggCup.name='egg-cup-prop';
+      var full=new T.Mesh(track(new T.LatheGeometry(profile,72)),glaze),half=new T.Mesh(track(new T.LatheGeometry(profile,64,Math.PI/2,Math.PI)),glaze);
+      [full,half].forEach(function(m){m.castShadow=m.receiveShadow=true;eggCup.add(m);});
+      eggCup.userData={full:full,half:half};eggCup.visible=false;scene.add(eggCup);return eggCup;
+    }
+    // Context that belongs to the explore view only, never to a comparison.
+    function lightSceneExtras(root,state){
+      var sand=root.userData.model.userData.sand;if(sand)sand.bed.visible=!state.comparison;
+      var b=root.userData.model.userData.betelgeuse;if(!b)return;
+      b.orbits.visible=!state.comparison&&!state.flight&&root.userData.itemId===state.focusId&&(!state.detailId||state.detailId==='betelgeuse-orbits');
+    }
+    function paintBetelgeusePins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;
+      var b=!!root&&state.focusId==='betelgeuse'&&root.userData.model.userData.betelgeuse,show=!!b&&root.visible&&b.orbits.visible;
+      Array.prototype.forEach.call(host.querySelectorAll('[data-betelgeuse-pin]'),function(pin){
+        var p=show&&b.orbitPins[pin.dataset.betelgeusePin],active=!!p;
+        if(active){markerPoint.copy(p);b.orbits.localToWorld(markerPoint);markerPoint.project(camera);var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height;active=markerPoint.z>-1&&markerPoint.z<1&&x>40&&x<width-160&&y>140&&y<height-60;if(active)pin.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) translate(-6px,-50%)';}
+        pin.hidden=!active;
+      });
     }
     function lightCanyon(root,state) {
       var c=root.userData.model.userData.canyon;if(!c)return;
@@ -6728,12 +7165,26 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     function cylinder(out,x,z,bottom,top,radius,id){var segments=14;for(var j=0;j<segments;j++){var a=j*pi*2/segments,b=(j+1)*pi*2/segments,n0=[Math.cos(a),0,Math.sin(a)],n1=[Math.cos(b),0,Math.sin(b)],p0=[x+radius*n0[0],bottom,z+radius*n0[2]],p1=[x+radius*n0[0],top,z+radius*n0[2]],p2=[x+radius*n1[0],top,z+radius*n1[2]],p3=[x+radius*n1[0],bottom,z+radius*n1[2]];triangle(out,vertex(p0,n0,rockColor(id,x,bottom,z)),vertex(p1,n0,rockColor(id,x,top,z)),vertex(p2,n1,rockColor(id,x,top,z)));triangle(out,vertex(p0,n0,rockColor(id,x,bottom,z)),vertex(p2,n1,rockColor(id,x,top,z)),vertex(p3,n1,rockColor(id,x,bottom,z)));triangle(out,vertex([x,top,z],[0,1,0],rockColor(id,x,top,z)),vertex(p2,[0,1,0],rockColor(id,x,top,z)),vertex(p1,[0,1,0],rockColor(id,x,top,z)));}}
     cylinder(drill,drillX,drillZ,drillBottom,drillTop+.008,drillRadius,'borehole');cylinder(drill,drillX,drillZ,drillTop+.006,drillTop+.011,.008,'borehole');finish(drill,borehole,'borehole','schematic M0077A borehole casing',.48);
     data.boreholePosition=[drillX,drillTop,drillZ];data.boreholeBottom=drillBottom;data.peakRingRadius=ringRadius;data.topHeight=.105;data.floorHeight=-.16;
+    // The one sign of the crater at the surface: an arc of cenotes (water-filled
+    // sinkholes) about 85 km from the centre, where fractured rock above the
+    // buried rim guides groundwater. Real cenotes are metres to hundreds of
+    // metres wide, so these markers are enlarged; their spacing is illustrative.
+    var cenotes=new T.Group(),sinkholes=batch(),cenoteR=85000/180000,seed=7;cenotes.name='ring of cenotes (enlarged)';body.add(cenotes);
+    function nextRandom(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+    var pool=new T.Color('#0e4a5e').convertSRGBToLinear(),lip=new T.Color('#ddd5b8').convertSRGBToLinear();
+    for(var cn=0;cn<34;cn++){
+      var ct=-2.62+2.1*(cn+.5)/34+(nextRandom()-.5)*.05,cr=cenoteR+(nextRandom()-.5)*.018,ccx=cr*Math.sin(ct),ccz=cr*Math.cos(ct),crad=.0045+nextRandom()*.0045,cy=terrain(ccx,ccz)+.0006;
+      for(var cs=0;cs<16;cs++){var c0=cs/16*pi*2,c1=(cs+1)/16*pi*2,o0=[ccx+Math.cos(c0)*crad,cy,ccz+Math.sin(c0)*crad],o1=[ccx+Math.cos(c1)*crad,cy,ccz+Math.sin(c1)*crad],i0=[ccx+Math.cos(c0)*crad*.62,cy+.0001,ccz+Math.sin(c0)*crad*.62],i1=[ccx+Math.cos(c1)*crad*.62,cy+.0001,ccz+Math.sin(c1)*crad*.62],up=[0,1,0],lc=[lip.r,lip.g,lip.b],pc=[pool.r,pool.g,pool.b];
+        triangle(sinkholes,vertex(o0,up,lc),vertex(i1,up,lc),vertex(o1,up,lc));triangle(sinkholes,vertex(o0,up,lc),vertex(i0,up,lc),vertex(i1,up,lc));triangle(sinkholes,vertex([ccx,cy+.0001,ccz],up,pc),vertex(i1,up,pc),vertex(i0,up,pc));}
+    }
+    finish(sinkholes,cenotes,'surface','ring of cenotes (enlarged markers)',.3);data.cenotes=cenotes;
+    g.userData.scenePins={group:cenotes,pins:{cenotes:new T.Vector3(-cenoteR-.035,.11,0)}};
     g.userData.dimension='x';g.userData.extent=1;g.userData.measureCenter=0;g.userData.crater=data;
     craterPaint(data,false,'');
   }
   function craterPaint(data,cutaway,detailId) {
     if(!data)return;var open=!!cutaway,detail=typeof detailId==='string'?detailId:'';
-    data.cover.visible=!open;data.interior.visible=open;data.section.visible=open;data.borehole.visible=open;data.cutaway=open;
+    data.cover.visible=!open;data.interior.visible=open;data.section.visible=open;data.borehole.visible=open;data.cutaway=open;if(data.cenotes)data.cenotes.visible=!open;
     if(data.detailId!==detail){data.meshes.forEach(function(m){var selected=!!detail&&m.userData.craterDetailId===detail;if(m.material.emissive)m.material.emissiveIntensity=selected?.13:detail?.008:.014;});data.detailId=detail;}
   }
 
@@ -7094,18 +7545,34 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
         'diffuseColor.rgb*=mix(vec3(.78,.88,.79),vec3(1.04,.98,.83),forestWide)*(.94+.09*forestLitter);'
       ].join('\n'));
     };
-    var floor=mesh(grove,track(new T.CircleGeometry(1.35,96)),floorMat,0,-.5004,-.40);floor.rotation.x=-Math.PI/2;floor.castShadow=false;floor.receiveShadow=true;floor.name='soft leaf litter forest floor';
-    var trunkGeo=track(new T.CylinderGeometry(.18,1,1,18,22,false)),bark=material('#5e5746',{roughness:1,metalness:0}),trees=new T.InstancedMesh(trunkGeo,bark,7),pose=new T.Object3D();
-    var positions=trunkGeo.attributes.position;for(var i=0;i<positions.count;i++){var x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i),a=Math.atan2(z,x),ridge=1+.042*Math.sin(a*9+y*2.1);positions.setXYZ(i,x*ridge,y,z*ridge);}trunkGeo.computeVertexNormals();
+    // Wide enough that its edge lies out in the fog, not as a visible disc rim.
+    var floor=mesh(grove,track(new T.CircleGeometry(4.5,96)),floorMat,0,-.5004,-.40);floor.rotation.x=-Math.PI/2;floor.castShadow=false;floor.receiveShadow=true;floor.name='soft leaf litter forest floor';
+    // Neighbouring sequoias: cinnamon bark, a flared, buttressed base and a
+    // nearly columnar bole (a straight taper read as a grey pole).
+    var trunkGeo=track(new T.CylinderGeometry(.18,1,1,18,22,false)),bark=material('#7a4630',{roughness:1,metalness:0}),trees=new T.InstancedMesh(trunkGeo,bark,7),pose=new T.Object3D();
+    var positions=trunkGeo.attributes.position;for(var i=0;i<positions.count;i++){var x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i),a=Math.atan2(z,x),t=y+.5,linear=1-.82*t,shape=.3+.22*(1-t)+.48*Math.pow(1-t,7),ridge=1+.042*Math.sin(a*9+y*2.1)+.05*Math.pow(1-t,6)*Math.sin(a*4.+.7);positions.setXYZ(i,x*ridge*shape/linear,y,z*ridge*shape/linear);}trunkGeo.computeVertexNormals();
     bark.customProgramCacheKey=function(){return 'distant-sequoia-fibers-v1';};bark.onBeforeCompile=function(shader){shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vGroveWood;').replace('#include <begin_vertex>','#include <begin_vertex>\nvGroveWood=uv;');shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vGroveWood;').replace('#include <color_fragment>','#include <color_fragment>\nfloat groveFiber=.5+.5*sin(vGroveWood.x*270.+sin(vGroveWood.y*7.)*.9);\ndiffuseColor.rgb*=.76+.30*groveFiber;');};
     var canopyGeo=track(new T.BufferGeometry());canopyGeo.setAttribute('position',new T.Float32BufferAttribute([-.5,-.5,0,.5,-.5,0,.5,.5,0,-.5,.5,0,0,-.5,-.5,0,-.5,.5,0,.5,.5,0,.5,-.5],3));canopyGeo.setAttribute('normal',new T.Float32BufferAttribute([0,0,1,0,0,1,0,0,1,0,0,1,1,0,0,1,0,0,1,0,0,1,0,0],3));canopyGeo.setAttribute('uv',new T.Float32BufferAttribute([0,0,1,0,1,1,0,1,0,0,1,0,1,1,0,1],2));canopyGeo.setIndex(new T.BufferAttribute(new Uint16Array([0,1,2,0,2,3,4,5,6,4,6,7]),1));
     var canopyMat=material('#748774',{roughness:1,metalness:0,map:sequoiaBranchletMap(),alphaTest:.09,side:T.DoubleSide}),canopies=new T.InstancedMesh(canopyGeo,canopyMat,1960);
     if(typeof trees.dispose==='function')track(trees);if(typeof canopies.dispose==='function')track(canopies);
     var placements=[[-.55,-.72,.91,.021],[-.34,-1.04,1.03,.023],[.43,-.78,.86,.019],[.65,-1.16,.97,.021],[-.13,-1.24,.78,.018],[.22,-1.38,.94,.020],[.04,-.94,.89,.016]],seed=54133;
     function randomGrove(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
-    placements.forEach(function(p,i){pose.position.set(p[0],-.5+p[2]*.5,p[1]);pose.scale.set(p[3],p[2],p[3]);pose.rotation.set(0,i*.7,(i%3-1)*.022);pose.updateMatrix();trees.setMatrixAt(i,pose.matrix);
-      for(var k=0;k<280;k++){var a=randomGrove()*Math.PI*2,t=randomGrove(),spread=(.045+.065*Math.sin(t*Math.PI))*Math.sqrt(randomGrove());pose.position.set(p[0]+Math.cos(a)*spread,-.5+p[2]*(.67+t*.32),p[1]+Math.sin(a)*spread);pose.scale.set(.019+randomGrove()*.010,.041+randomGrove()*.031,.019+randomGrove()*.010);pose.rotation.set(.45*randomGrove(),a,randomGrove()*.8-.4);pose.updateMatrix();canopies.setMatrixAt(i*280+k,pose.matrix);}
+    placements.forEach(function(p,i){pose.position.set(p[0],-.5+p[2]*.5,p[1]);pose.scale.set(p[3]*1.75,p[2],p[3]*1.75);pose.rotation.set(0,i*.7,(i%3-1)*.022);pose.updateMatrix();trees.setMatrixAt(i,pose.matrix);
+      for(var k=0;k<280;k++){var a=randomGrove()*Math.PI*2,t=randomGrove(),spread=(.04+.075*Math.sin(t*Math.PI)*(.75+.5*randomGrove()))*Math.sqrt(randomGrove());pose.position.set(p[0]+Math.cos(a)*spread,-.5+p[2]*(.67+t*.32),p[1]+Math.sin(a)*spread);pose.scale.set(.019+randomGrove()*.010,.041+randomGrove()*.031,.019+randomGrove()*.010);pose.rotation.set(.45*randomGrove(),a,randomGrove()*.8-.4);pose.updateMatrix();canopies.setMatrixAt(i*280+k,pose.matrix);}
     });trees.name='distant tapered forest boles';trees.castShadow=false;trees.receiveShadow=true;canopies.name='faint irregular branchlet crowns';canopies.castShadow=false;canopies.receiveShadow=true;grove.add(trees,canopies);
+    // Companion conifers of the Sierra mixed forest (white fir, sugar pine):
+    // narrow, tiered, conical crowns, 40-60 m tall. Placement is illustrative.
+    var firParts=[],firBark=new T.Color('#5a3b2a').convertSRGBToLinear(),firNeedle=new T.Color('#2f4734').convertSRGBToLinear();
+    function firPart(geo,dy,color){geo.translate(0,dy,0);var n=geo.attributes.position.count,c=[];for(var q=0;q<n;q++){var shade=.82+.18*(geo.attributes.position.getY(q)-dy+.5);c.push(color.r*shade,color.g*shade,color.b*shade);}geo.setAttribute('color',new T.Float32BufferAttribute(c,3));firParts.push(geo);}
+    firPart(new T.CylinderGeometry(.006,.014,.36,8),.18,firBark);
+    for(var tier=0;tier<6;tier++)firPart(new T.ConeGeometry(.07*(1-tier*.14),.2,11,1),.28+tier*.12,firNeedle);
+    var firP=[],firN=[],firC=[],firI=[],firBase=0;
+    firParts.forEach(function(geo){var gp=geo.attributes.position,gn=geo.attributes.normal,gc=geo.attributes.color;for(var q=0;q<gp.count;q++){firP.push(gp.getX(q),gp.getY(q),gp.getZ(q));firN.push(gn.getX(q),gn.getY(q),gn.getZ(q));firC.push(gc.getX(q),gc.getY(q),gc.getZ(q));}var gi=geo.index;for(var q=0;q<gi.count;q++)firI.push(firBase+gi.getX(q));firBase+=gp.count;geo.dispose();});
+    var firGeo=track(new T.BufferGeometry());firGeo.setAttribute('position',new T.Float32BufferAttribute(firP,3));firGeo.setAttribute('normal',new T.Float32BufferAttribute(firN,3));firGeo.setAttribute('color',new T.Float32BufferAttribute(firC,3));firGeo.setIndex(new T.BufferAttribute(new Uint16Array(firI),1));firGeo.computeBoundingSphere();
+    var firSpots=[[-.82,-.55,.56],[-.7,-1.05,.62],[-.28,-.62,.48],[-.42,-1.3,.66],[.25,-.58,.5],[.55,-.5,.45],[.82,-.85,.6],[.38,-1.12,.58],[-.95,-.82,.52],[.92,-1.25,.64],[-.12,-1.48,.6],[.7,-1.45,.55],[-.62,-1.5,.5],[.12,-.75,.42]];
+    var firs=new T.InstancedMesh(firGeo,material('#ffffff',{vertexColors:true,roughness:1,metalness:0}),firSpots.length);
+    firSpots.forEach(function(s,k){pose.position.set(s[0],-.5,s[1]);pose.rotation.set(0,k*1.3,(k%3-1)*.015);pose.scale.set(s[2]*(.85+.3*randomGrove()),s[2],s[2]*(.85+.3*randomGrove()));pose.updateMatrix();firs.setMatrixAt(k,pose.matrix);firs.setColorAt(k,new T.Color(1,1,1).multiplyScalar(.85+.3*randomGrove()));});
+    if(typeof firs.dispose==='function')track(firs);firs.name='companion conifers';firs.castShadow=false;firs.receiveShadow=true;grove.add(firs);
     // A quiet standing silhouette gives the enormous base a familiar measure.
     var human=new T.Group();human.position.set(.093,-.5,.055);human.name='1.7 metre human reference';human.userData.heightMeters=1.7;grove.add(human);
     var cloth=material('#a99d7c',{roughness:1}),trousers=material('#454d48',{roughness:1}),headMat=material('#ba9473',{roughness:1}),cylinder=track(new T.CylinderGeometry(1,1,1,8,1)),headGeo=track(new T.SphereGeometry(1,12,8));
@@ -7209,7 +7676,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     if(!data)return;data.detailId=typeof detailId==='string'?detailId:'';data.night=typeof sunAngle==='number'&&isFinite(sunAngle)&&sunAngle>=140;
     var route=data.routePattern.test(data.detailId),n=route?Number(data.detailId.slice(6)):0;route=route&&n>=0&&n<=276;data.cabin.visible=route;data.cabinMeters=route?n:0;data.cabin.userData.heightMeters=route?n:0;
     var height=route?n:0;data.cabin.position.fromArray(eiffelRailAt(height));
-    for(var i=0;i<data.meshes.length;i++){var m=data.meshes[i],selected=m.userData.eiffelDetailId===data.detailId,mat=m.material;mat.emissiveIntensity=mat.userData.eiffelLamp?(data.night?.95:.015):(mat.userData.eiffelIron?(data.night?.055:0)+(selected?.065:0):(selected?.025:0));}
+    for(var i=0;i<data.meshes.length;i++){var m=data.meshes[i],selected=m.userData.eiffelDetailId===data.detailId,mat=m.material;mat.emissiveIntensity=mat.userData.eiffelLamp?(data.night?.95:.015):(mat.userData.eiffelIron?(data.night?.5:0)+(selected?.065:0):(selected?.025:0));}
   }
   // A restrained composed esplanade and distant Paris roofline. The whole
   // group stays outside the measured tower and is hidden during comparisons.
@@ -7229,14 +7696,41 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
         'diffuseColor.rgb*=(.89+.11*joint)*stoneTone;'
       ].join('\n'));
     };
-    var floor=mesh(plaza,track(new T.PlaneGeometry(1.8,1.8)),paving,0,-.5002,-.12);floor.rotation.x=-Math.PI/2;floor.castShadow=false;floor.receiveShadow=true;floor.name='warm paved esplanade';
+    // Layout follows the real site in outline (1 unit = 330 m): the Seine and
+    // the Pont d'Iéna in front, the Champ de Mars stretching away behind with
+    // lawns, a central allée and tree avenues, Haussmann blocks along its sides.
+    // Positions and counts are composed, not a survey.
+    var floor=mesh(plaza,track(new T.PlaneGeometry(1.8,1.42)),paving,0,-.5002,-.31);floor.rotation.x=-Math.PI/2;floor.castShadow=false;floor.receiveShadow=true;floor.name='warm paved esplanade';
+    var farBank=mesh(plaza,track(new T.PlaneGeometry(1.8,.24)),paving,0,-.5002,.9);farBank.rotation.x=-Math.PI/2;farBank.castShadow=false;farBank.receiveShadow=true;farBank.name='Trocadero bank';
+    // One switch for the evening: lit windows and city light on the river.
+    var parisNight={value:0};plaza.userData.parisNight=parisNight;
+    var water=material('#3f5f69',{roughness:.22,metalness:.08});
+    water.customProgramCacheKey=function(){return 'eiffel-seine-water-v2';};
+    water.onBeforeCompile=function(shader){
+      if(shader.uniforms)shader.uniforms.uParisNight=parisNight;
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vSeine;').replace('#include <begin_vertex>','#include <begin_vertex>\nvSeine=position.xy;');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vSeine;uniform float uParisNight;').replace('#include <color_fragment>',[
+        '#include <color_fragment>',
+        'float seineRipple=.5+.5*sin(vSeine.x*420.+sin(vSeine.y*160.)*1.7)*sin(vSeine.y*260.+vSeine.x*37.);',
+        'diffuseColor.rgb*=.9+.16*seineRipple;',
+        'totalEmissiveRadiance+=vec3(1.,.68,.34)*uParisNight*pow(seineRipple,10.)*.42;'
+      ].join('\n'));
+    };
+    var river=mesh(plaza,track(new T.PlaneGeometry(1.8,.38)),water,0,-.5245,.59);river.rotation.x=-Math.PI/2;river.castShadow=false;river.receiveShadow=true;river.name='the Seine';
     var grass=material('#63714f',{roughness:1}),lawnGeo=track(new T.PlaneGeometry(1,1));
-    [-1,1].forEach(function(side){var lawn=mesh(plaza,lawnGeo,grass,side*.41,-.5001,-.18,.30,.83,1);lawn.rotation.x=-Math.PI/2;lawn.castShadow=false;lawn.receiveShadow=true;});
+    [[-.095,-.66,.13,.68],[.095,-.66,.13,.68],[-.38,.03,.22,.48],[.38,.03,.22,.48]].forEach(function(l){var lawn=mesh(plaza,lawnGeo,grass,l[0],-.5001,l[1],l[2],l[3],1);lawn.rotation.x=-Math.PI/2;lawn.castShadow=false;lawn.receiveShadow=true;});
+    // Quay walls and the five-arch Pont d'Iéna on the tower's axis, in one batch.
+    var stone=material('#b7ad98',{roughness:.95,metalness:0}),stoneBox=track(new T.BoxGeometry(1,1,1)),stoneParts=[[0,-.5122,.4,1.8,.0245,.006],[0,-.5122,.78,1.8,.0245,.006],[0,-.5025,.59,.106,.005,.38]];
+    for(var pier=1;pier<5;pier++)stoneParts.push([0,-.515,.4+.38*pier/5,.118,.02,.016]);
+    var bridge=new T.InstancedMesh(stoneBox,stone,stoneParts.length),stonePose=new T.Object3D();
+    stoneParts.forEach(function(s,k){stonePose.position.set(s[0],s[1],s[2]);stonePose.scale.set(s[3],s[4],s[5]);stonePose.updateMatrix();bridge.setMatrixAt(k,stonePose.matrix);});
+    bridge.castShadow=bridge.receiveShadow=true;bridge.name="quays and the Pont d'Iena";plaza.add(bridge);
     var facades=material('#9b9383',{roughness:.97,metalness:0});
-    facades.customProgramCacheKey=function(){return 'composed-paris-window-facades-v2';};
+    facades.customProgramCacheKey=function(){return 'composed-paris-window-facades-v3';};
     facades.onBeforeCompile=function(shader){
+      if(shader.uniforms)shader.uniforms.uParisNight=parisNight;
       shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vParisFacadeUv;varying vec3 vParisFacadeNormal;').replace('#include <begin_vertex>','#include <begin_vertex>\nvParisFacadeUv=uv;vParisFacadeNormal=normal;');
-      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vParisFacadeUv;varying vec3 vParisFacadeNormal;').replace('#include <color_fragment>',[
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vParisFacadeUv;varying vec3 vParisFacadeNormal;uniform float uParisNight;').replace('#include <color_fragment>',[
         '#include <color_fragment>',
         'float parisWall=1.-step(.5,abs(vParisFacadeNormal.y));',
         'vec2 bay=vParisFacadeUv*vec2(8.,5.);vec2 pane=fract(bay);',
@@ -7249,7 +7743,9 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
         'float corniceShadow=1.-smoothstep(.012,.030,abs(pane.y-.86));',
         'float quoin=1.-smoothstep(.018,.036,min(vParisFacadeUv.x,1.-vParisFacadeUv.x));',
         'vec3 parisStone=vec3(1.)+cornice*.12-corniceShadow*.10+quoin*.06;',
-        'diffuseColor.rgb*=mix(vec3(1.),mix(parisStone,parisGlass,windowMask),parisWall);'
+        'diffuseColor.rgb*=mix(vec3(1.),mix(parisStone,parisGlass,windowMask),parisWall);',
+        'float parisLit=step(.45,fract(bayTone*7.13))*windowMask*(1.-min(1.,sash))*parisWall;',
+        'totalEmissiveRadiance+=vec3(1.,.64,.3)*parisLit*uParisNight*(.32+.3*bayTone);'
       ].join('\n'));
     };
     var slate=material('#53616a',{roughness:.90,metalness:.04});
@@ -7272,30 +7768,43 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       face.forEach(function(i,k){pos.push.apply(pos,roofVertices[i]);normals.push(x/length,y/length,z/length);uv.push(k===1||k===2?1:0,k>=2?1:0);});indices.push(first,first+1,first+2,first,first+2,first+3);
     });
     roofGeo.setAttribute('position',new T.Float32BufferAttribute(pos,3));roofGeo.setAttribute('normal',new T.Float32BufferAttribute(normals,3));roofGeo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));roofGeo.setIndex(new T.BufferAttribute(new Uint16Array(indices),1));
-    var city=new T.InstancedMesh(boxGeo,facades,11),roofs=new T.InstancedMesh(roofGeo,slate,11),chimneyMat=material('#746757',{roughness:1}),chimneys=new T.InstancedMesh(boxGeo,chimneyMat,22),pose=new T.Object3D();
-    for(var i=0;i<11;i++){
-      var x=-.57+i*.107,w=.075+(i%3)*.009,h=.040+(i%4)*.006,z=-.73-(i%3)*.065;
+    // Haussmann blocks: six along each side of the Champ de Mars (rotated to face
+    // the lawns) and six closing the far end.
+    var blocks=[];
+    for(var i=0;i<6;i++){blocks.push([-.48,-.36-i*.115,.098+(i%3)*.008,.042+(i%4)*.006,Math.PI/2]);blocks.push([.48,-.36-i*.115,.098+((i+1)%3)*.008,.042+((i+2)%4)*.006,Math.PI/2]);}
+    for(var i=0;i<6;i++)blocks.push([-.55+i*.22,-.965,.13,.045+(i%3)*.005,0]);
+    var city=new T.InstancedMesh(boxGeo,facades,blocks.length),roofs=new T.InstancedMesh(roofGeo,slate,blocks.length),chimneyMat=material('#746757',{roughness:1}),chimneys=new T.InstancedMesh(boxGeo,chimneyMat,blocks.length*2),pose=new T.Object3D(),local=new T.Vector3();
+    blocks.forEach(function(b,i){
+      var x=b[0],z=b[1],w=b[2],h=b[3];pose.rotation.set(0,b[4],0);
       pose.position.set(x,-.5+h*.5,z);pose.scale.set(w,h,.062);pose.updateMatrix();city.setMatrixAt(i,pose.matrix);
       pose.position.set(x,-.5+h,z);pose.scale.set(w,.024,.067);pose.updateMatrix();roofs.setMatrixAt(i,pose.matrix);
-      for(var k=0;k<2;k++){pose.position.set(x+(k?1:-1)*w*.22,-.5+h+.024*.4+.00165,z+(k?1:-1)*.012);pose.scale.set(.00165,.0044,.0013);pose.updateMatrix();chimneys.setMatrixAt(i*2+k,pose.matrix);}
-    }
+      for(var k=0;k<2;k++){local.set((k?1:-1)*w*.22,0,(k?1:-1)*.012).applyAxisAngle(new T.Vector3(0,1,0),b[4]);pose.position.set(x+local.x,-.5+h+.024*.4+.00165,z+local.z);pose.scale.set(.00165,.0044,.0013);pose.updateMatrix();chimneys.setMatrixAt(i*2+k,pose.matrix);}
+    });
+    pose.rotation.set(0,0,0);
     city.castShadow=city.receiveShadow=true;roofs.castShadow=roofs.receiveShadow=true;chimneys.castShadow=chimneys.receiveShadow=true;city.frustumCulled=roofs.frustumCulled=chimneys.frustumCulled=false;city.name='distant Paris windowed facades';roofs.name='slate mansard roofline';chimneys.name='small chimney silhouettes';plaza.add(city,roofs,chimneys);
     // Modest avenue trees use fine leaf cards, with no solid canopy blobs.
-    var trunkGeo=track(new T.CylinderGeometry(.50,1,1,8,6)),trunkMat=material('#625b47',{roughness:1}),parkTrunks=new T.InstancedMesh(trunkGeo,trunkMat,12),leafGeo=track(new T.PlaneGeometry(1,1));
+    // Tree avenues: two rows each side of the Champ de Mars, one along the quay.
+    var treeSpots=[];
+    [-.29,-.21,.21,.29].forEach(function(tx){for(var q=0;q<6;q++)treeSpots.push([tx,-.37-q*.12]);});
+    [-.78,-.62,-.46,-.3,.3,.46,.62,.78].forEach(function(tx){treeSpots.push([tx,.355]);});
+    var leavesPerTree=300;
+    var trunkGeo=track(new T.CylinderGeometry(.50,1,1,8,6)),trunkMat=material('#625b47',{roughness:1}),parkTrunks=new T.InstancedMesh(trunkGeo,trunkMat,treeSpots.length),leafGeo=track(new T.PlaneGeometry(1,1));
     var pixels=new Uint8Array(64*64*4);
     for(var y=0;y<64;y++)for(var x=0;x<64;x++){
       var dx=(x-31.5)/29,dy=(y-31.5)/29,angle=Math.atan2(dy,dx),edge=.86+.08*Math.cos(angle*7),r=Math.hypot(dx,dy),alpha=Math.round(255*Math.max(0,Math.min(1,(edge-r)*12))),q=(y*64+x)*4;
       pixels[q]=118+Math.round(7*Math.sin(x*.6+y*.2));pixels[q+1]=143+Math.round(8*Math.sin(y*.3));pixels[q+2]=88+Math.round(5*Math.cos(x*.4));pixels[q+3]=alpha;
     }
     var leafMap=track(new T.DataTexture(pixels,64,64,T.RGBAFormat));leafMap.encoding=T.sRGBEncoding;leafMap.magFilter=T.LinearFilter;leafMap.minFilter=T.LinearMipmapLinearFilter;leafMap.generateMipmaps=true;leafMap.needsUpdate=true;
-    var leafMat=material('#c4d0ae',{roughness:1,metalness:0,map:leafMap,alphaTest:.15,side:T.DoubleSide}),parkLeaves=new T.InstancedMesh(leafGeo,leafMat,4560),seed=60221;
+    var leafMat=material('#c4d0ae',{roughness:1,metalness:0,map:leafMap,alphaTest:.15,side:T.DoubleSide}),parkLeaves=new T.InstancedMesh(leafGeo,leafMat,treeSpots.length*leavesPerTree),seed=60221;
     function randomPark(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
-    for(var tree=0;tree<12;tree++){
-      var tx=(tree<6?-1:1)*.52,tz=-.46+(tree%6)*.13;
-      pose.position.set(tx,-.5+3.05/330,tz);pose.scale.set(.24/330,6.1/330,.24/330);pose.rotation.set(0,tree*.9,0);pose.updateMatrix();parkTrunks.setMatrixAt(tree,pose.matrix);
-      for(var n=0;n<380;n++){
-        var a=randomPark()*Math.PI*2,h=randomPark()*2-1,r=Math.cbrt(randomPark())*Math.sqrt(1-h*h),sx=(.20+randomPark()*.14)/330;
-        pose.position.set(tx+Math.cos(a)*r*2.4/330,-.5+(6.5+h*2.35)/330,tz+Math.sin(a)*r*2.1/330);pose.scale.set(sx,sx*(.80+randomPark()*.35),sx);pose.rotation.set(randomPark()*Math.PI,randomPark()*Math.PI,randomPark()*Math.PI);pose.updateMatrix();parkLeaves.setMatrixAt(tree*380+n,pose.matrix);
+    for(var tree=0;tree<treeSpots.length;tree++){
+      var tx=treeSpots[tree][0],tz=treeSpots[tree][1];
+      // Mature avenue plane trees are 15-20 m tall: the earlier 9 m trees sat below the roofline.
+      var ts=1.7;
+      pose.position.set(tx,-.5+3.05*ts/330,tz);pose.scale.set(.24*ts/330,6.1*ts/330,.24*ts/330);pose.rotation.set(0,tree*.9,0);pose.updateMatrix();parkTrunks.setMatrixAt(tree,pose.matrix);
+      for(var n=0;n<leavesPerTree;n++){
+        var a=randomPark()*Math.PI*2,h=randomPark()*2-1,r=Math.cbrt(randomPark())*Math.sqrt(1-h*h),sx=(.20+randomPark()*.14)*ts/330;
+        pose.position.set(tx+Math.cos(a)*r*2.4*ts/330,-.5+(6.5+h*2.35)*ts/330,tz+Math.sin(a)*r*2.1*ts/330);pose.scale.set(sx,sx*(.80+randomPark()*.35),sx);pose.rotation.set(randomPark()*Math.PI,randomPark()*Math.PI,randomPark()*Math.PI);pose.updateMatrix();parkLeaves.setMatrixAt(tree*leavesPerTree+n,pose.matrix);
       }
     }
     parkTrunks.castShadow=parkTrunks.receiveShadow=true;parkLeaves.castShadow=parkLeaves.receiveShadow=true;parkTrunks.frustumCulled=parkLeaves.frustumCulled=false;parkTrunks.name='small park avenue trunks';parkLeaves.name='fine irregular park foliage';plaza.add(parkTrunks,parkLeaves);
@@ -8101,7 +8610,8 @@ return plaza;
     function dustMiteModel(g) {
       var batches={},all=[],setaCount=0,vertexCount=0,triangleCount=0,setaPick=null;
       var grain=typeof grainTexture!=='undefined'?grainTexture:null;
-      var colors={skin:'#b6aa90',shield:'#b2a384',mouth:'#ad9d78',leg:'#bba882',pad:'#e0d5b9',hair:'#8c7955'};
+      // A pale, cream body with darker, more sclerotised legs and mouthparts.
+      var colors={skin:'#a99a79',shield:'#94805b',mouth:'#7d6544',leg:'#8f744b',pad:'#d6c9a8',hair:'#5e4c30'};
       var linear={};Object.keys(colors).forEach(function(k){linear[k]=new T.Color(colors[k]).convertSRGBToLinear();});
       function batch(id,finish){var key=id+':'+finish;if(!batches[key])batches[key]={id:id,finish:finish,p:[],c:[],uv:[],ix:[]};return batches[key];}
       function vertex(b,p,tone,shade,uv){var c=linear[tone],f=shade===undefined?1:shade;b.p.push(p.x,p.y,p.z);b.c.push(c.r*f,c.g*f,c.b*f);b.uv.push(uv?uv[0]:0,uv?uv[1]:0);}
@@ -8157,9 +8667,12 @@ return plaza;
       vertex(skin,bodyPoint(0,0),'skin',.96,[0,0]);
       for(var i=1;i<rows;i++)for(var j=0;j<sides;j++){
         var t=i/rows,a=j/sides*Math.PI*2,p=bodyPoint(t,a);
-        var striaShade=.016*(.5+.5*Math.cos(Math.PI*2*(58*t+.38*Math.sin(a*2)+.12*Math.sin(t*19))));
+        var striaShade=.05*(.5+.5*Math.cos(Math.PI*2*(58*t+.38*Math.sin(a*2)+.12*Math.sin(t*19))));
         if(t<.38&&Math.sin(a)>.55)striaShade*=Math.max(0,1-(.38-t)*13);
-        var shade=.963+.020*Math.cos(a-.6)+.013*Math.sin(t*15+a*3)+.007*Math.sin(t*123+a*17)-striaShade;
+        // The cuticle is thin and pale, so food in the gut shows through as a
+        // darker mass in the rear body (illustrative position and size).
+        var gut=Math.exp(-Math.pow((t-.62)/.15,2)-Math.pow((Math.sin(a)-.75)/.45,2));
+        var shade=.963+.020*Math.cos(a-.6)+.013*Math.sin(t*15+a*3)+.007*Math.sin(t*123+a*17)-striaShade-.42*gut;
         vertex(skin,p,'skin',shade,[j/sides,t]);
       }
       var end=skin.p.length/3;vertex(skin,bodyPoint(1,0),'skin',.98,[0,1]);
@@ -8333,7 +8846,9 @@ return plaza;
       var tooth=material('#c9bb94',{roughness:.48}),horn=material('#4b4737',{roughness:.79});
       var eye=material('#b99845',{roughness:.25}),pupil=material('#121a15',{roughness:.16});
       function mark(m,id,target,teeth){m.userData.specimenKind='trex';if(id)m.userData.specimenDetailId=id;if(teeth)m.userData.trexTooth=true;parts.push(m);if(target&&m.parent!==target){g.remove(m);target.add(m);}return m;}
-      function geometry(p,n,uv,ix,color){var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('normal',new T.Float32BufferAttribute(n,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(new T.BufferAttribute(new Uint16Array(ix),1));if(color){var c=new T.Color(color).convertSRGBToLinear(),col=[];for(var j=0;j<p.length;j+=3){var shade=1+.035*Math.sin(p[j]*57+p[j+1]*81)*Math.cos(p[j+2]*93),belly=Math.max(0,Math.min(1,(.04-p[j+1])*6));col.push(c.r*shade+belly*.022,c.g*shade+belly*.015,c.b*shade+belly*.006);}geo.setAttribute('color',new T.Float32BufferAttribute(col,3));}return geo;}
+      function geometry(p,n,uv,ix,color){var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('normal',new T.Float32BufferAttribute(n,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(new T.BufferAttribute(new Uint16Array(ix),1));if(color){var c=new T.Color(color).convertSRGBToLinear(),col=[];for(var j=0;j<p.length;j+=3){var shade=1+.035*Math.sin(p[j]*57+p[j+1]*81)*Math.cos(p[j+2]*93),belly=Math.max(0,Math.min(1,(.04-p[j+1])*6)),back=Math.max(0,Math.min(1,(p[j+1]-.085)*14))*Math.max(0,Math.min(1,1-Math.abs(p[j+2])*9)),band=Math.pow(.5+.5*Math.sin(p[j]*150),3);
+            // Illustrative countershading: a darker, faintly banded back. Real colours are unknown.
+            shade*=1-back*(.34+.22*band);col.push(c.r*shade+belly*.022,c.g*shade+belly*.015,c.b*shade+belly*.006);}geo.setAttribute('color',new T.Float32BufferAttribute(col,3));}return geo;}
       // Frenet frames keep bent limbs and the tail smooth through every turn.
       // Equal seam normals, continuous UVs and 16-bit batches support WebGL 1.
       function hull(rows,id,mat,color,steps,sides,target,teeth){
@@ -8353,23 +8868,26 @@ return plaza;
       parts.splice(parts.indexOf(trunk),1);g.remove(trunk);
       Object.keys(regions).forEach(function(id){var geo=track(trunk.geometry.clone());geo.setIndex(new T.BufferAttribute(new Uint16Array(regions[id]),1));mark(mesh(g,geo,skin),id==='body'?'':id);});
       // Skull expands behind the narrow snout; the brow and cheeks carry soft tissue.
-      hull([[-.5,.176,0,.0004,.0005],[-.495,.182,0,.025,.026],[-.474,.190,0,.029,.029],[-.437,.192,0,.037,.038],[-.396,.193,0,.057,.047],[-.371,.190,0,.062,.050],[-.350,.182,0,.045,.034],[-.341,.181,0,.001,.0005]],'skull',skin,'#56614b',78,44);
+      // Hull radii are [width, height]. The snout is deeper than it is wide with a
+      // blunt tip, and only the back of the skull is broad (forward-facing eyes);
+      // a round, wide snout over a flat jaw read as a duck's bill.
+      hull([[-.5,.177,0,.004,.007],[-.496,.180,0,.017,.026],[-.474,.188,0,.021,.031],[-.437,.193,0,.029,.038],[-.396,.195,0,.057,.048],[-.371,.191,0,.062,.050],[-.350,.182,0,.045,.034],[-.341,.181,0,.001,.0005]],'skull',skin,'#56614b',78,44);
       // Lower jaw has its own hinge. Lips close over the teeth at whole scale.
       function local(rows){return rows.map(function(v){return[v[0]+.354,v[1]-.153,v[2],v[3],v[4]];});}
-      hull(local([[-.498,.155,0,.0005,.0005],[-.492,.153,0,.024,.017],[-.459,.147,0,.029,.019],[-.419,.145,0,.036,.021],[-.380,.150,0,.043,.022],[-.354,.153,0,.031,.008],[-.345,.155,0,.0004,.0004]]),'jaw',skin,'#62664d',74,36,jaw);
-      hull([[-.493,.158,0,.018,.001],[-.465,.155,0,.024,.004],[-.418,.154,0,.038,.005],[-.375,.157,0,.047,.003],[-.352,.157,0,.027,.0005]],'jaw',mouth,null,54,24);
-      hull(local([[-.493,.158,0,.018,.001],[-.458,.157,0,.027,.003],[-.407,.158,0,.037,.003],[-.368,.157,0,.033,.002]]),'jaw',mouth,null,46,24,jaw);
+      hull(local([[-.498,.155,0,.004,.005],[-.492,.152,0,.016,.017],[-.459,.146,0,.021,.021],[-.419,.144,0,.028,.024],[-.380,.149,0,.040,.024],[-.354,.153,0,.031,.008],[-.345,.155,0,.0004,.0004]]),'jaw',skin,'#62664d',74,36,jaw);
+      hull([[-.493,.158,0,.014,.001],[-.465,.155,0,.018,.004],[-.418,.154,0,.028,.005],[-.375,.157,0,.040,.003],[-.352,.157,0,.026,.0005]],'jaw',mouth,null,54,24);
+      hull(local([[-.493,.158,0,.014,.001],[-.458,.157,0,.019,.003],[-.407,.158,0,.028,.003],[-.368,.157,0,.031,.002]]),'jaw',mouth,null,46,24,jaw);
       [-1,1].forEach(function(sign){
-        line([[-.493,.157,sign*.015],[-.471,.157,sign*.026],[-.43,.159,sign*.036],[-.388,.159,sign*.050],[-.361,.159,sign*.036]],.0020,'jaw',lip);
-        line([[-.493+.354,.157-.153,sign*.014],[-.457+.354,.158-.153,sign*.028],[-.412+.354,.160-.153,sign*.038],[-.369+.354,.159-.153,sign*.032]],.0018,'jaw',lip,jaw);
+        line([[-.493,.157,sign*.012],[-.471,.157,sign*.019],[-.43,.159,sign*.028],[-.388,.159,sign*.044],[-.361,.159,sign*.036]],.0020,'jaw',lip);
+        line([[-.493+.354,.157-.153,sign*.011],[-.457+.354,.158-.153,sign*.020],[-.412+.354,.160-.153,sign*.028],[-.369+.354,.159-.153,sign*.030]],.0018,'jaw',lip,jaw);
         // Eyes sit under brows at the broad rear of the skull.
         oval([-.394,.210,sign*.055],[.0085,.0085,.005],'skull',eye);
         oval([-.397,.210,sign*.058],[.0045,.0055,.0025],'skull',pupil);
         oval([-.394,.217,sign*.052],[.024,.008,.010],'skull',brow);
         line([[-.402,.199,sign*.049],[-.394,.198,sign*.052],[-.387,.202,sign*.052]],.0014,'skull',crease);
-        oval([-.478,.190,sign*.023],[.010,.004,.0028],'skull',crease);
+        oval([-.478,.193,sign*.019],[.010,.004,.0028],'skull',crease);
         // Variable, curved crowns replace a row of identical cones.
-        for(var i=0;i<13;i++){var t=i/12,x=-.488+t*.109,z=sign*(.016+.028*Math.sin(t*Math.PI*.65)),len=.006+.005*Math.sin(t*Math.PI),r=.0015+.0008*Math.sin(t*Math.PI);
+        for(var i=0;i<13;i++){var t=i/12,x=-.488+t*.109,z=sign*(.011+.021*Math.sin(t*Math.PI*.65)),len=.006+.005*Math.sin(t*Math.PI),r=.0015+.0008*Math.sin(t*Math.PI);
           hull([[x,.158,z,r,r*.7],[x+.0005,.158-len*.35,z,r*.87,r*.60],[x+.002,.158-len*.80,z,r*.42,r*.29],[x+.004,.158-len,z,.00012,.00012]],'jaw',tooth,null,22,16,null,true);
           hull(local([[x+.003,.158,z*.87,r*.80,r*.6],[x+.0035,.158+len*.28,z*.87,r*.67,r*.50],[x+.005,.158+len*.66,z*.87,r*.30,r*.22],[x+.007,.158+len*.80,z*.87,.00012,.00012]]),'jaw',tooth,null,20,16,jaw,true);
         }
@@ -8625,13 +9143,15 @@ return plaza;
     // Illustrative adult African savanna elephant. One local unit is the
     // foot plane to shoulder, independently of head, ears, tusks and trunk.
     function elephantModel(g) {
-      var pieces=[], palette={skin:'#686c66',head:'#70726b',ear:'#71736d',crease:'#51574f',ivory:'#c5bc9d',nail:'#aaa995',eye:'#1a211c',hair:'#30372e'};
+      // Darker, warmer grey-brown than before: the old pale grey washed out to plastic under the key light.
+      var pieces=[], palette={skin:'#53524c',head:'#56554f',ear:'#5a5852',crease:'#363530',ivory:'#c5bc9d',nail:'#aaa995',eye:'#1a211c',hair:'#30372e'};
       var coat=material('#ffffff',{vertexColors:true,roughness:.94,bumpMap:wrinkleTexture,bumpScale:.0028});
       var earMat=material('#ffffff',{vertexColors:true,roughness:.96,side:T.DoubleSide,bumpMap:wrinkleTexture,bumpScale:.0015});
       var crease=material(palette.crease,{roughness:.97}),earFold=material('#686d65',{roughness:.97}),ivory=material(palette.ivory,{roughness:.58,bumpMap:grainTexture,bumpScale:.0004});
       var nailMat=material(palette.nail,{roughness:.83,bumpMap:grainTexture,bumpScale:.0007}),eyeMat=material(palette.eye,{roughness:.26}),hairMat=material(palette.hair,{roughness:.96});
       function tag(m,id){m.userData.specimenKind='elephant';if(id)m.userData.specimenDetailId=id;pieces.push(m);return m;}
-      function colors(positions,base,dust){var c=new T.Color(base).convertSRGBToLinear(),out=[];for(var i=0;i<positions.length;i+=3){var x=positions[i],y=positions[i+1],z=positions[i+2],noise=Math.sin(x*59+y*73+z*91)*Math.sin(x*101-z*83)*.022,shade=1+noise+(dust?Math.max(0,.15-y)*.045:0);out.push(c.r*shade,c.g*shade,c.b*shade);}return out;}
+      // Broad mottling plus fine noise, and dust from dust-bathing on the lower legs.
+      function colors(positions,base,dust){var c=new T.Color(base).convertSRGBToLinear(),soil=new T.Color('#86705c').convertSRGBToLinear(),out=[];for(var i=0;i<positions.length;i+=3){var x=positions[i],y=positions[i+1],z=positions[i+2],noise=Math.sin(x*59+y*73+z*91)*Math.sin(x*101-z*83)*.022+Math.sin(x*13.1+z*7.3)*Math.sin(y*11.7-x*5.1)*.06,shade=1+noise,d=dust?Math.min(.42,Math.max(0,(-.12-y)/.32)*.42):0;out.push((c.r+(soil.r-c.r)*d)*shade,(c.g+(soil.g-c.g)*d)*shade,(c.b+(soil.b-c.b)*d)*shade);}return out;}
       function geo(pos,nor,uv,ix,base){for(var i=0;i<ix.length;i+=3){var ai=ix[i]*3,bi=ix[i+1]*3,ci=ix[i+2]*3,ax=pos[bi]-pos[ai],ay=pos[bi+1]-pos[ai+1],az=pos[bi+2]-pos[ai+2],bx=pos[ci]-pos[ai],by=pos[ci+1]-pos[ai+1],bz=pos[ci+2]-pos[ai+2],nx=nor[ai]+nor[bi]+nor[ci],ny=nor[ai+1]+nor[bi+1]+nor[ci+1],nz=nor[ai+2]+nor[bi+2]+nor[ci+2];if((ay*bz-az*by)*nx+(az*bx-ax*bz)*ny+(ax*by-ay*bx)*nz<0){var old=ix[i+1];ix[i+1]=ix[i+2];ix[i+2]=old;}}var a=track(new T.BufferGeometry());a.setAttribute('position',new T.Float32BufferAttribute(pos,3));a.setAttribute('normal',new T.Float32BufferAttribute(nor,3));a.setAttribute('uv',new T.Float32BufferAttribute(uv,2));a.setIndex(new T.BufferAttribute(new Uint16Array(ix),1));if(base)a.setAttribute('color',new T.Float32BufferAttribute(colors(pos,base,true),3));return a;}
       // Ellipse sweeps use derivatives in both surface directions. Duplicate
       // UV seam vertices receive identical normals, so skin stays continuous.
@@ -9177,7 +9697,8 @@ return plaza;
         ctx.fillStyle='rgba(140,126,109,'+(.035+rng()*.10)+')';ctx.beginPath();ctx.ellipse(x,y,r,r*(.5+rng()*.6),rng()*pi,0,2*pi);ctx.fill();
       }
       var texture=track(new T.CanvasTexture(cv));texture.encoding=T.sRGBEncoding;texture.wrapS=texture.wrapT=T.RepeatWrapping;
-      var shell=material('#f5eddc',{map:texture,bumpMap:texture,bumpScale:.00115,roughness:.62});
+      // Below white, so the key light shades the shell instead of clipping it flat.
+      var shell=material('#ddd3c1',{map:texture,bumpMap:texture,bumpScale:.00115,roughness:.62});
       var shellInner=material('#e3dbc4',{roughness:.78}),edge=material('#e9ddbe',{roughness:.70});
       var membrane=material('#ddd9c3',{roughness:.40,side:T.DoubleSide});
       var innerMembrane=material('#e9e9d9',{roughness:.35,side:T.DoubleSide});
@@ -9599,21 +10120,54 @@ return plaza;
     function reefModel(g){
       var context=new T.Group();context.name='reef-geographic-context';g.add(context);
       function batch(parent,name,color){var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute([],3));var node=mesh(parent,geo,material(color,{roughness:.94,side:T.DoubleSide,vertexColors:true}));node.name=name;node.visible=false;node.castShadow=node.receiveShadow=false;return node;}
-      var reefs=batch(g,'reef-mapped-outlines','#ffffff'),land=batch(context,'reef-coast-and-islands','#ffffff'),selected=batch(g,'reef-selected-footprint','#ffffff');
+      var reefs=batch(g,'reef-mapped-outlines','#ffffff'),land=batch(context,'reef-coast-and-islands','#ffffff'),mainland=batch(context,'reef-mainland','#ffffff'),selected=batch(g,'reef-selected-footprint','#ffffff');
       function lines(parent,name,color,opacity){var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute([],3));var node=new T.LineSegments(geo,track(new T.LineBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:opacity,depthWrite:false})));node.name=name;node.visible=false;parent.add(node);return node;}
       var outlines=lines(g,'reef-shorelines','#c0e3c9',.46),coast=lines(context,'reef-coastline','#c6d0a2',.6),grid=lines(context,'reef-coordinate-grid','#568b98',.23);
       var sea=mesh(context,track(new T.PlaneGeometry(.64,.75)),material('#11404e',{roughness:.67,metalness:.04}),0,-.0004,0);sea.rotation.x=-Math.PI/2;sea.name='reef-ocean-map';sea.castShadow=sea.receiveShadow=false;
       var data={status:'loading',data:null,context:context,reefs:reefs,selected:selected,selection:'',features:{},bounds:new T.Box3(new T.Vector3(-.27,0,-.35),new T.Vector3(.3,.0002,.37))};g.userData.reef=data;
       var controller=null,timer=0;track({dispose:function(){clearTimeout(timer);if(controller)controller.abort();}});
+      // An illustrative depth tint, not bathymetry: turquoise shallows near the
+      // coast and around reefs, the shelf between, deep blue past the reef tract.
+      function reefTextures(map,minX,maxX,minZ,maxZ){
+        if(typeof document==='undefined'||!(maxX>minX)||!(maxZ>minZ))return null;
+        var W=640,H=Math.max(16,Math.round(W*(maxZ-minZ)/(maxX-minX)));
+        // Fill each mask once, then blur in script: three box passes approximate
+        // a Gaussian. Canvas blur filters downsample large radii into blocks.
+        function mask(test){
+          var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext&&c.getContext('2d');if(!x||!x.getImageData)return null;x.fillStyle='#ffffff';
+          map.features.forEach(function(f){if(!test(f))return;x.beginPath();reefPolygons(f.rings).forEach(function(poly){[poly.outer].concat(poly.holes).forEach(function(ring){ring.forEach(function(p,i){var v=reefProject(p[0],p[1]),px=(v[0]-minX)/(maxX-minX)*W,py=(v[2]-minZ)/(maxZ-minZ)*H;if(i)x.lineTo(px,py);else x.moveTo(px,py);});x.closePath();});});x.fill('evenodd');});
+          var rgba=x.getImageData(0,0,W,H).data,out=new Float32Array(W*H);for(var i=0;i<W*H;i++)out[i]=rgba[i*4]/255;return out;
+        }
+        function boxPass(src,dst,r,horizontal){
+          var lines=horizontal?H:W,len=horizontal?W:H,step=horizontal?1:W,norm=1/(2*r+1);
+          for(var l=0;l<lines;l++){var base=horizontal?l*W:l,sum=0;for(var k=-r;k<=r;k++)sum+=src[base+Math.min(len-1,Math.max(0,k))*step];
+            for(var i=0;i<len;i++){dst[base+i*step]=sum*norm;sum+=src[base+Math.min(len-1,i+r+1)*step]-src[base+Math.max(0,i-r)*step];}}
+        }
+        function blurred(source,sigma){var a=Float32Array.from(source),b=new Float32Array(a.length),r=Math.max(1,Math.round(sigma));for(var pass=0;pass<3;pass++){boxPass(a,b,r,true);boxPass(b,a,r,false);}return a;}
+        var landMask=mask(function(f){return f.type!=='Reef';}),reefMask=mask(function(f){return f.type==='Reef';});if(!landMask||!reefMask)return null;
+        var coastNear=blurred(landMask,14),coastWide=blurred(landMask,44),reefNear=blurred(reefMask,5),reefWide=blurred(reefMask,30);
+        var out=document.createElement('canvas');out.width=W;out.height=H;var ctx=out.getContext('2d'),img=ctx.createImageData(W,H),deep=[7,26,48],shelf=[13,58,76],lagoon=[24,90,100],halo=[44,116,124];
+        for(var i=0;i<W*H;i++){var k=i*4,s=Math.min(1,Math.max(coastWide[i]*1.6,reefWide[i]*2.2)),l=Math.min(1,coastNear[i]*1.4+coastWide[i]*.5),h=Math.min(1,reefNear[i]*1.8);
+          for(var c=0;c<3;c++){var v=deep[c]+(shelf[c]-deep[c])*canyonSmooth(.05,.5,s);v+=(lagoon[c]-v)*canyonSmooth(.15,.7,l);v+=(halo[c]-v)*h*.7;img.data[k+c]=v;}img.data[k+3]=255;}
+        ctx.putImageData(img,0,0);var texture=track(new T.CanvasTexture(out));texture.encoding=T.sRGBEncoding;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+        // An illustrative land tint, not a vegetation map: greener along the wet
+        // coast, savanna inland, with soft mottling so the plain does not read flat.
+        var rng=random(4417),grain=new Float32Array(W*H);for(i=0;i<W*H;i++)grain[i]=rng();var broad=blurred(grain,9),fine=blurred(grain,2);
+        var landOut=document.createElement('canvas');landOut.width=W;landOut.height=H;var lctx=landOut.getContext('2d'),limg=lctx.createImageData(W,H),wet=[44,84,54],savanna=[86,96,58],dry=[110,104,70];
+        for(i=0;i<W*H;i++){var lk=i*4,inland=canyonSmooth(.55,.97,coastWide[i]),far=canyonSmooth(.9,1,coastWide[i]),tone=.82+.5*(broad[i]-.5)*6+.3*(fine[i]-.5)*4;tone=Math.min(1.12,Math.max(.72,tone));
+          for(c=0;c<3;c++){var lv=wet[c]+(savanna[c]-wet[c])*inland;lv+=(dry[c]-lv)*far;limg.data[lk+c]=Math.min(255,lv*tone);}limg.data[lk+3]=255;}
+        lctx.putImageData(limg,0,0);var landTexture=track(new T.CanvasTexture(landOut));landTexture.encoding=T.sRGBEncoding;landTexture.anisotropy=texture.anisotropy;
+        return {sea:texture,land:landTexture};
+      }
       function geometry(node,positions,colors){node.geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));if(colors){node.geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));node.geometry.computeVertexNormals();}node.geometry.computeBoundingBox();node.geometry.computeBoundingSphere();node.visible=positions.length>0;}
       function load(){
         if(disposed||g.userData.released||data.status==='ready')return;
         data.status='loading';controller=typeof AbortController!=='undefined'?new AbortController():null;timer=setTimeout(function(){if(controller)controller.abort();},20000);invalidate();
         fetch(new URL('../scale-explorer/reef/reef-geography.json',atlasAssetBase).href,controller?{signal:controller.signal}:{}).then(function(r){if(!r.ok)throw new Error('Reef geography unavailable');return r.json();}).then(function(map){
           clearTimeout(timer);if(disposed||g.userData.released)return;if(!validReefMap(map))throw new Error('Invalid reef map');
-          var reefPositions=[],reefColors=[],landPositions=[],landColors=[],reefEdges=[],coastEdges=[],gridPositions=[],selectedFeatures={};
+          var reefPositions=[],reefColors=[],landPositions=[],landColors=[],mainPositions=[],mainColors=[],reefEdges=[],coastEdges=[],gridPositions=[],selectedFeatures={};
           map.features.forEach(function(feature){
-            var isReef=feature.type==='Reef',height=isReef?0:feature.type==='Cay'?.00004:.00002,positions=isReef?reefPositions:landPositions,colors=isReef?reefColors:landColors,edges=isReef?reefEdges:coastEdges;
+            var isReef=feature.type==='Reef',isMain=feature.type==='Mainland',height=isReef?0:feature.type==='Cay'?.00004:.00002,positions=isReef?reefPositions:isMain?mainPositions:landPositions,colors=isReef?reefColors:isMain?mainColors:landColors,edges=isReef?reefEdges:coastEdges;
             var color=new T.Color(feature.type==='Cay'?'#d4cd9c':feature.type==='Island'?'#829371':feature.type==='Mainland'?'#607b63':'#75c4aa').convertSRGBToLinear();
             if(isReef)color.lerp(new T.Color('#a9d7ae').convertSRGBToLinear(),(feature.id%11)/30);
             var start=positions.length;
@@ -9627,9 +10181,13 @@ return plaza;
           });
           for(var longitude=142;longitude<=154;longitude+=2)for(var latitude=-24.8;latitude<-10.1;latitude+=.2){var a=reefProject(longitude,latitude),b=reefProject(longitude,Math.min(-10.1,latitude+.2));gridPositions.push(a[0],-.0002,a[2],b[0],-.0002,b[2]);}
           for(var latitude=-24;latitude<=-12;latitude+=2)for(var longitude=142;longitude<153.8;longitude+=.2){var a=reefProject(longitude,latitude),b=reefProject(Math.min(153.8,longitude+.2),latitude);gridPositions.push(a[0],-.0002,a[2],b[0],-.0002,b[2]);}
-          geometry(reefs,reefPositions,reefColors);geometry(land,landPositions,landColors);geometry(outlines,reefEdges);geometry(coast,coastEdges);geometry(grid,gridPositions);
+          geometry(reefs,reefPositions,reefColors);geometry(land,landPositions,landColors);geometry(mainland,mainPositions,mainColors);geometry(outlines,reefEdges);geometry(coast,coastEdges);geometry(grid,gridPositions);
           var bounds=reefs.geometry.boundingBox;data.bounds.copy(bounds);var corners=map.bounds,crop=[reefProject(corners[0],corners[1]),reefProject(corners[0],corners[3]),reefProject(corners[2],corners[1]),reefProject(corners[2],corners[3])],xs=crop.map(function(v){return v[0];}),zs=crop.map(function(v){return v[2];}),minX=Math.min.apply(Math,xs),maxX=Math.max.apply(Math,xs),minZ=Math.min.apply(Math,zs),maxZ=Math.max.apply(Math,zs);
           sea.scale.set((maxX-minX)/.64,(maxZ-minZ)/.75,1);sea.position.set((maxX+minX)/2,-.0004,(maxZ+minZ)/2);
+          var maps=null;try{maps=reefTextures(map,minX,maxX,minZ,maxZ);}catch(_){maps=null;}if(maps){sea.material.map=maps.sea;sea.material.color.set('#ffffff');sea.material.roughness=.55;sea.material.needsUpdate=true;
+            // The tint replaces the flat mainland colour; islands and cays keep theirs.
+            var uvs=[];for(var m=0;m<mainPositions.length;m+=3)uvs.push((mainPositions[m]-minX)/(maxX-minX),1-(mainPositions[m+2]-minZ)/(maxZ-minZ));
+            mainland.geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));mainland.geometry.attributes.color.array.fill(1);mainland.geometry.attributes.color.needsUpdate=true;mainland.material.map=maps.land;mainland.material.needsUpdate=true;}
           var capacity=Math.max.apply(Math,Object.keys(selectedFeatures).map(function(id){return selectedFeatures[id].length;})),highlightColor=new T.Color('#f1d298').convertSRGBToLinear(),highlightColors=new Float32Array(capacity);
           for(var i=0;i<capacity;i+=3){highlightColors[i]=highlightColor.r;highlightColors[i+1]=highlightColor.g;highlightColors[i+2]=highlightColor.b;}
           selected.geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(capacity),3));selected.geometry.setAttribute('color',new T.BufferAttribute(highlightColors,3));selected.geometry.setDrawRange(0,0);
@@ -9720,7 +10278,68 @@ return plaza;
       organic(figure,[[0,.72*unit,0,.12*unit,.08*unit],[0,1.2*unit,0,.19*unit,.10*unit],[0,1.43*unit,0,.07*unit,.07*unit]],person,'y');
       [-1,1].forEach(function(s){rod(figure,[s*.1*unit,.75*unit,0],[s*.11*unit,.06*unit,0],.055*unit,person);ball(figure,person,s*.11*unit,.055*unit,.05*unit,.12*unit,.11*unit,.24*unit);rod(figure,[s*.18*unit,1.23*unit,0],[s*.24*unit,.75*unit,0],.042*unit,person);});
       figure.userData.heightMetres=1.7;
-      g.userData.football={field:field,context:context,reference:figure};g.userData.dimension='x';g.userData.extent=1;g.userData.measureCenter=0;
+      // Twenty-two players at kick-off, each about 1.8 m tall: at whole-pitch
+      // scale a person is a speck, which is the point. Instanced, so the team
+      // costs four draw calls. Outside the measured bounds (the field only).
+      var players=new T.Group();players.name='football-players';g.add(players);
+      var shapes={legs:track(new T.CylinderGeometry(.13*unit,.11*unit,.86*unit,8)),torso:track(new T.CylinderGeometry(.2*unit,.17*unit,.62*unit,10)),head:track(new T.SphereGeometry(.12*unit,10,8))};
+      var squads=[{shirt:'#c8463c',keeper:'#e3c445',side:-1,spots:[[-50,0],[-36,-24],[-36,-8],[-36,8],[-36,24],[-20,-26],[-20,-9],[-20,9],[-20,26],[-6,-7],[-1.2,1.5]]},{shirt:'#3f6fd2',keeper:'#46c08f',side:1,spots:[[50,0],[34,-22],[34,-7],[34,8],[34,23],[18,-24],[18,-6],[18,10],[18,25],[9.6,-4],[9.6,6]]}];
+      var shirts=new T.InstancedMesh(shapes.torso,material('#ffffff',{roughness:.7}),22),legs=new T.InstancedMesh(shapes.legs,material('#1d2230',{roughness:.8}),22),heads=new T.InstancedMesh(shapes.head,material('#b98a68',{roughness:.75}),22),place=new T.Object3D(),k=0;
+      squads.forEach(function(team){team.spots.forEach(function(s,n){
+        place.rotation.set(0,team.side>0?Math.PI:0,0);
+        place.position.set(s[0]*unit,.43*unit,s[1]*unit);place.updateMatrix();legs.setMatrixAt(k,place.matrix);
+        place.position.y=1.17*unit;place.updateMatrix();shirts.setMatrixAt(k,place.matrix);shirts.setColorAt(k,new T.Color(n?team.shirt:team.keeper).convertSRGBToLinear());
+        place.position.y=1.62*unit;place.updateMatrix();heads.setMatrixAt(k,place.matrix);k++;
+      });});
+      [shirts,legs,heads].forEach(function(m){m.castShadow=true;m.receiveShadow=false;players.add(m);});
+      var matchBall=mesh(players,track(new T.SphereGeometry(.11*unit,12,8)),material('#f4f2ea',{roughness:.5}),0,.11*unit,0);matchBall.name='football-match-ball';
+      g.userData.scenePins={group:players,pins:{players:new T.Vector3(-20*unit,2*unit,-26*unit)}};
+      g.userData.football={field:field,context:context,reference:figure,players:players};g.userData.dimension='x';g.userData.extent=1;g.userData.measureCenter=0;
+    }
+    // A composed stadium around the measured pitch: stands, boards and floodlight
+    // masts are context only, outside the model and hidden in comparisons.
+    function buildFootballStadium(){
+      var u=1/105,stadium=new T.Group();stadium.name='football stadium context';stadium.userData.footballStadium=true;
+      var apron=mesh(stadium,track(new T.PlaneGeometry(130*u,96*u)),material('#252e29',{roughness:1}),0,-.03*u,0);apron.rotation.x=-Math.PI/2;apron.castShadow=false;apron.receiveShadow=true;apron.name='stadium concourse';
+      // Twelve 2 m treads, each 1.15 m above the last, over a 2 m front wall: about a 30 degree rake.
+      var profile=new T.Shape();profile.moveTo(0,0);profile.lineTo(0,2*u);
+      for(var k=0;k<12;k++){profile.lineTo((k+1)*2*u,(2+k*1.15)*u);profile.lineTo((k+1)*2*u,(2+(k+1)*1.15)*u);}
+      profile.lineTo(24.6*u,15.8*u);profile.lineTo(24.6*u,0);profile.lineTo(0,0);
+      var seats=new T.Color('#2a3c58').convertSRGBToLinear(),concrete=new T.Color('#6c706c').convertSRGBToLinear(),back=new T.Color('#3b403d').convertSRGBToLinear();
+      function standGeometry(length){
+        var geo=track(new T.ExtrudeGeometry(profile,{depth:length*u,bevelEnabled:false,steps:1,curveSegments:1}));geo.translate(0,0,-length*u/2);
+        var n=geo.attributes.normal,colors=[];
+        for(var i=0;i<n.count;i++){var c=n.getY(i)>.5?seats:n.getX(i)>.5||Math.abs(n.getZ(i))>.5?back:concrete;colors.push(c.r,c.g,c.b);}
+        geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));return geo;
+      }
+      // Seat-sized cells on the treads fill with a crowd; about one seat in five stays empty.
+      var standMat=material('#ffffff',{vertexColors:true,roughness:.92});
+      standMat.customProgramCacheKey=function(){return 'football-stand-crowd-v1';};
+      standMat.onBeforeCompile=function(shader){
+        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vStandPos;varying float vStandUp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvStandPos=position;vStandUp=normal.y;');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vStandPos;varying float vStandUp;').replace('#include <color_fragment>',[
+          '#include <color_fragment>',
+          'vec2 seat=floor(vec2(vStandPos.z*210.,vStandPos.x*131.25));',
+          'float fan=fract(sin(dot(seat,vec2(127.1,311.7)))*43758.5453);',
+          'vec3 shirt=mix(mix(vec3(.36,.09,.08),vec3(.5,.5,.48),step(.35,fan)),mix(vec3(.06,.07,.1),vec3(.42,.33,.1),step(.72,fan)),step(.55,fan));',
+          'diffuseColor.rgb=mix(diffuseColor.rgb,shirt,step(.5,vStandUp)*step(fan,.8)*.6);'
+        ].join('\n'));
+      };
+      var longStand=standGeometry(120),endStand=standGeometry(76);
+      [[longStand,0,41,-Math.PI/2],[longStand,0,-41,Math.PI/2],[endStand,59.5,0,0],[endStand,-59.5,0,Math.PI]].forEach(function(s,i){
+        var stand=mesh(stadium,s[0],standMat,s[1]*u,0,s[2]*u);stand.rotation.y=s[3];stand.castShadow=false;stand.receiveShadow=true;stand.name='stadium stand '+(i+1);
+      });
+      // LED advertising boards at the outer edge of the runoff.
+      var boards=material('#132744',{roughness:.5,emissive:'#2f6fc4',emissiveIntensity:.55});
+      [[0,38.4,113,.25],[0,-38.4,113,.25],[56.8,0,.25,77],[-56.8,0,.25,77]].forEach(function(b){var m=box(stadium,boards,b[0]*u,.45*u,b[1]*u,b[2]*u,.9*u,b[3]*u);m.castShadow=false;m.name='stadium LED boards';});
+      // Four 48 m floodlight masts in the open corners, heads turned to the centre spot.
+      var steel=material('#7e858a',{roughness:.6,metalness:.4}),lamps=material('#f3f1e6',{emissive:'#fff4d6',emissiveIntensity:1.1,roughness:.4});
+      [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(function(c){
+        var x=c[0]*72*u,z=c[1]*54*u,mast=rod(stadium,[x,0,z],[x,48*u,z],.55*u,steel);mast.castShadow=false;mast.name='floodlight mast';
+        var head=new T.Group();head.name='floodlight head';head.position.set(x,49.5*u,z);stadium.add(head);head.lookAt(0,0,0);
+        box(head,steel,0,0,0,9*u,4.5*u,.8*u).castShadow=false;box(head,lamps,0,0,.45*u,8.4*u,3.9*u,.1*u).castShadow=false;
+      });
+      return stadium;
     }
 
     function paintVirgoPins(root,state,width,height){
@@ -10028,9 +10647,12 @@ return plaza;
       ['a','b'].forEach(function(id){var points=[];for(var i=0;i<=256;i++){var e=i/256*Math.PI*2,axis=CENTAURI_BINARY.aAU*CENTAURI_AU_M/CENTAURI_REFERENCE_M,relative=centauriBinaryVector(axis*(Math.cos(e)-CENTAURI_BINARY.e),axis*Math.sqrt(1-CENTAURI_BINARY.e*CENTAURI_BINARY.e)*Math.sin(e)),fraction=id==='a'?-CENTAURI_BINARY.massB/(CENTAURI_BINARY.massA+CENTAURI_BINARY.massB):CENTAURI_BINARY.massA/(CENTAURI_BINARY.massA+CENTAURI_BINARY.massB);points.push(relative.map(function(v){return v*fraction;}));}line(orbits,'centauri-orbit-'+id,points,id==='a'?'#ead6a8':'#c49f83',.70);});
       var markerGeometry=geometry(new T.SphereGeometry(.5,16,12));
       [['sun','#ecdcba'],['ab','#e7d3ae'],['a','#f8e5bd'],['b','#d8b38c'],['proxima','#c28a72']].forEach(function(entry){var mat=material(new T.MeshBasicMaterial({color:new T.Color(entry[1]).convertSRGBToLinear(),transparent:true,opacity:.82,depthWrite:false})),marker=mesh(context,markerGeometry,mat);marker.name='centauri-enlarged-navigation-marker-'+entry[0];marker.userData.unmeasured=true;marker.userData.markerOnly=true;marker.castShadow=marker.receiveShadow=false;markers[entry[0]]=marker;});
+      // Points of light for stars far smaller than a pixel. Size loosely
+      // follows luminosity (A 1.5, Sun 1, B 0.5, Proxima 0.0017 suns); none is a diameter.
+      var lights={};[['sun','#fff1d6',46,.9],['a','#fff0cf',52,.9],['b','#ffc98e',34,.85],['proxima','#ff8657',13,.75]].forEach(function(entry){lights[entry[0]]=lightPoint(context,entry[1],entry[2],entry[3]);lights[entry[0]].name='centauri-light-'+entry[0];});
       var outer=CENTAURI_BINARY.aAU*CENTAURI_AU_M/CENTAURI_REFERENCE_M*(1+CENTAURI_BINARY.e),binaryEnvelope=outer*Math.max(CENTAURI_BINARY.massA,CENTAURI_BINARY.massB)/(CENTAURI_BINARY.massA+CENTAURI_BINARY.massB)+Math.max(CENTAURI_STARS.a.scale,CENTAURI_STARS.b.scale)/2;
       var bounds=new T.Box3(new T.Vector3(-.5-CENTAURI_STARS.sun.scale/2,-binaryEnvelope,-binaryEnvelope),new T.Vector3(.5+binaryEnvelope,binaryEnvelope,Math.max(binaryEnvelope,zero.at.proxima[2]+CENTAURI_STARS.proxima.scale/2)));
-      var data={body:body,stars:stars,surfaces:surfaces,halos:halos,context:context,guides:guides,orbits:orbits,markers:markers,reference:reference,triangle:triangle,bounds:bounds,time:time,motion:motion,materials:materials,geometries:geometries,phase:0,detail:'',comparison:false,system:zero};
+      var data={body:body,stars:stars,surfaces:surfaces,halos:halos,context:context,guides:guides,orbits:orbits,markers:markers,lights:lights,reference:reference,triangle:triangle,bounds:bounds,time:time,motion:motion,materials:materials,geometries:geometries,phase:0,detail:'',comparison:false,system:zero};
       data.update=function(detail,phase,comparison,animate,clock,zoom){
         var system=centauriSystem(phase),point=centauriPoint(detail,phase),z=typeof zoom==='number'&&isFinite(zoom)&&zoom>0?zoom:point.zoom,close=z>=1000000;
         Object.keys(stars).forEach(function(id){stars[id].position.fromArray(system.at[id]);markers[id].position.fromArray(system.at[id]);});markers.ab.position.fromArray(system.at.barycenter);
@@ -10038,6 +10660,7 @@ return plaza;
         reference.visible=!!comparison||z<=20;orbits.visible=context.visible&&z>=1000;
         var markerScale=Math.max(3e-8,Math.min(.004,.038/z));
         Object.keys(markers).forEach(function(id){var visible=z<=20?(id==='sun'||id==='ab'||id==='proxima'):z<5000?(id==='ab'||id==='proxima'):(id==='a'||id==='b');markers[id].visible=context.visible&&visible;markers[id].scale.setScalar(markerScale);});
+        var lightFade=clamp(1-(z-1e5)/7e5,0,1);Object.keys(lights).forEach(function(id){lights[id].position.fromArray(system.at[id]);lights[id].material.opacity=lights[id].userData.baseOpacity*lightFade;lights[id].visible=context.visible&&lightFade>0;});
         motion.value=!comparison&&animate?1:0;if(motion.value&&typeof clock==='number'&&isFinite(clock))time.value=clock;
         data.phase=system.phase;data.detail=detail||'';data.comparison=!!comparison;data.zoom=z;data.system=system;return system;
       };
@@ -10121,10 +10744,23 @@ return plaza;
       var tickGeo=track(new T.BufferGeometry());tickGeo.setAttribute('position',new T.Float32BufferAttribute(tickPositions,3));
       var ticks=new T.LineSegments(tickGeo,track(new T.LineBasicMaterial({color:new T.Color('#83a6b5').convertSRGBToLinear(),transparent:true,opacity:.58,depthWrite:false})));
       ticks.name='au-tenth-au-ticks';context.add(ticks);
+      // Mercury, Venus and Earth orbits as circles round the Sun, in the level
+      // plane of the ruler: this distance is the radius of Earth's path. Real
+      // orbits are slightly elliptical (Earth: about 147 to 152 million km).
+      [[1,'#9fc6e6',.5],[.723,'#e8cf9a',.3],[.387,'#c9b49c',.26]].forEach(function(o){
+        var pts=[];for(var k=0;k<=256;k++){var a=k/256*Math.PI*2;pts.push(new T.Vector3(-.5+Math.cos(a)*o[0],0,Math.sin(a)*o[0]));}
+        var orbit=new T.Line(track(new T.BufferGeometry().setFromPoints(pts)),track(new T.LineBasicMaterial({color:new T.Color(o[1]).convertSRGBToLinear(),transparent:true,opacity:o[2],depthWrite:false})));
+        orbit.name='au-orbit-'+o[0];orbit.userData.unmeasured=true;context.add(orbit);
+      });
       var markerGeo=track(new T.SphereGeometry(.5,16,12));
       function location(name,x,color,size){var m=new T.Mesh(markerGeo,track(new T.MeshBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:.9,depthWrite:false})));m.name=name;m.position.set(x,0,0);m.scale.setScalar(size);m.userData.unmeasured=true;context.add(m);return m;}
       var home=location('au-sun-centre-navigation-marker',-.5,'#ffe6ae',.0015),endpoint=location('au-earth-navigation-marker',.5,'#9dcef4',.0015),cursor=location('au-route-position',0,'#d1f5ed',.0013);
       var cursorGlow=glow(context,'#9edbd5',.007,.22);cursorGlow.name='au-route-position-glow';cursorGlow.userData.unmeasured=true;
+      // Unresolved, the Sun is still the brightest thing in view and sunlit
+      // Earth a pale dot. These points mark light, not size, and fade out as
+      // the camera approaches and the real discs resolve.
+      var sunLight=lightPoint(context,'#ffd9a0',58,.9),sunCore=lightPoint(context,'#fff7e6',15,1),earthLight=lightPoint(context,'#9ccfff',20,.9);
+      sunLight.position.set(-.5,0,0);sunCore.position.set(-.5,0,0);earthLight.position.set(.5,0,0);sunLight.name='au-sun-light';earthLight.name='au-earth-light';
       var bounds=new T.Box3(new T.Vector3(-.5-AU_SUN_SCALE/2,-AU_SUN_SCALE/2,-AU_SUN_SCALE/2),new T.Vector3(.5+AU_EARTH_SCALE/2,AU_SUN_SCALE/2,AU_SUN_SCALE/2));
       var data={body:body,context:context,sun:sun,earth:earth,photosphere:photosphere,globe:globe,corona:corona,atmosphere:atmosphere,path:path,ticks:ticks,cursor:cursor,home:home,endpoint:endpoint,bounds:bounds,time:time,motion:motion,sunLocal:sunLocal,worldSun:new T.Vector3(),earthMaterial:earthMat,status:'loading',dayStatus:'loading',nightStatus:'loading'};
       data.update=function(detail,comparison,animate,clock,zoom){
@@ -10135,6 +10771,7 @@ return plaza;
         context.visible=!comparison&&!close;path.visible=!close||!!comparison;ticks.visible=context.visible;
         cursor.visible=cursorGlow.visible=context.visible&&fraction>0&&fraction<1;
         cursor.position.fromArray(auRoutePoint(fraction));cursorGlow.position.copy(cursor.position);
+        var fade=clamp(1-((typeof zoom==='number'&&isFinite(zoom)?zoom:1)-3)/12,0,1);[sunLight,sunCore,earthLight].forEach(function(p){p.material.opacity=p.userData.baseOpacity*fade;p.visible=fade>0;});
         motion.value=!comparison&&animate?1:0;
         // Retain the last pose when reduced motion is enabled. The texture does
         // not jump back to its first frame when animation is switched off.
@@ -10244,6 +10881,9 @@ return plaza;
         vertexShader:'attribute float aSize;varying vec3 vColor;void main(){vColor=color;gl_PointSize=aSize;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
         fragmentShader:['uniform float uOpacity;varying vec3 vColor;void main(){float r=length(gl_PointCoord-.5);if(r>.5)discard;float light=exp(-r*r*9.);gl_FragColor=vec4(vColor,light*uOpacity);'].concat(finish).join('\n')}));
       var stars=new T.Points(starGeometry,starMaterial);stars.name='light-minute-illustrative-background-stars';stars.userData={unmeasured:true,illustrative:true,catalogue:false,count:starCount};context.add(stars);
+      // Sunlit Earth and Moon as points of light while their discs are far
+      // below a pixel; they fade as the camera approaches and the globes resolve.
+      var earthLight=lightPoint(context,'#9ccfff',26,.95),moonLight=lightPoint(context,'#e3e1da',13,.8);earthLight.position.set(-.5,0,0);moonLight.position.set(moonX,0,0);earthLight.name='light-minute-earth-light';moonLight.name='light-minute-moon-light';
       var bounds=new T.Box3(new T.Vector3(-.5-earthDiameter/2,-earthDiameter/2,-earthDiameter/2),new T.Vector3(.5,earthDiameter/2,earthDiameter/2));
       var data={body:body,context:context,bounds:bounds,earth:earth,moon:moon,earthSurface:earthSurface,moonSurface:moonSurface,atmosphere:atmosphere,path:path,ticks:ticks,pulse:pulse,locator:locator,wavefront:wavefront,trail:trail,stars:stars,earthMaterial:earthMaterial,moonMaterial:moonMaterial,sunLocal:sunLocal,worldSun:new T.Vector3(),localSun:new T.Vector3(),inverseEarth:new T.Quaternion(),textureStatus:{earth:'loading',night:'loading',moon:'loading',relief:'loading'},stats:{physicalBodies:2,surfaceTriangles:40448,maximumDrawCalls:9,oneSecondTicks:61,tenSecondAccents:7,pulseIllustrative:true,illustrativeBackgroundStars:starCount},dimensions:{referenceM:referenceM,lightSpeedMPS:299792458,earthDiameterM:earthDiameterM,moonDiameterM:moonDiameterM,moonDistanceM:moonDistanceM,earthDiameter:earthDiameter,moonDiameter:moonDiameter,moonPosition:[moonX,0,0],referenceFrom:[-.5,0,0],referenceTo:[.5,0,0],physicalRadii:true,adaptiveRescale:false}};
       var lastDetail=null,point=null,previousSeconds=null;
@@ -10256,6 +10896,7 @@ return plaza;
         context.visible=!comparison;path.visible=!!comparison||magnification<=100;
         ticks.visible=magnification<=20;trail.visible=seconds>0&&magnification<=100;
         pulse.visible=seconds>0;wavefront.visible=magnification<=20;locator.visible=magnification<=100&&id!=='light-minute-pair';
+        var lightFade=clamp(1-(magnification-3)/12,0,1);[earthLight,moonLight].forEach(function(p){p.material.opacity=p.userData.baseOpacity*lightFade;p.visible=lightFade>0;});
         if(seconds!==previousSeconds){pulse.position.set(x,0,0);trailGeometry.attributes.position.setXYZ(1,x,0,0);trailGeometry.attributes.position.needsUpdate=true;trailGeometry.computeBoundingSphere();previousSeconds=seconds;}
         // Time is chosen by the slider. Ambient animation never advances it.
         data.paused=true;
@@ -10403,6 +11044,9 @@ return plaza;
       function marker(name,at,color,size){var m=new T.Mesh(markerGeo,track(new T.MeshBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:.88,depthWrite:false})));m.name=name;m.position.fromArray(at);m.scale.setScalar(size);m.userData.unmeasured=true;context.add(m);return m;}
       var home=marker('coma-solar-system-locator',[-.5,0,0],'#b6dcd7',.0017),endpoint=marker('coma-cluster-reference-locator',[.5,0,0],'#f4d2a3',.0019),cursor=marker('coma-crossing-position',[0,0,0],'#d7eef2',.0016);
       var photon=marker('coma-illustrative-light-direction',[.5,0,0],'#dce6f7',.0009),cursorGlow=glow(context,'#9cd8de',.007,.24);cursorGlow.userData.unmeasured=true;
+      // Each member galaxy is far below a pixel across the full crossing, so the
+      // cluster's combined light (and our galaxy's) marks where they are.
+      var clusterLight=lightPoint(context,'#ffd6a0',64,.85),homeLight=lightPoint(context,'#d3e3ff',24,.75);clusterLight.position.set(.5,0,0);homeLight.position.set(-.5,0,0);clusterLight.name='coma-integrated-light';homeLight.name='coma-milky-way-light';
       var travelTime={value:0},motion={value:0};g.updateMatrixWorld(true);
       // Only physical objects and the two endpoints set bounds. The adopted
       // 20-million-light-year window is a framing reference, not a cluster edge.
@@ -10414,6 +11058,7 @@ return plaza;
         zoom=typeof zoom==='number'&&isFinite(zoom)?Math.max(1,zoom):1;data.detail=id;data.comparison=!!comparison;data.fraction=point.fraction;data.zoom=zoom;
         context.visible=!comparison&&zoom<=20;path.visible=!!comparison||zoom<=20;ticks.visible=!id||id==='coma-overview'||id==='coma-halfway'||id.indexOf('coma-passage-')===0;
         cursor.visible=cursorGlow.visible=point.fraction>0&&point.fraction<1;cursor.position.set(-.5+point.fraction,0,0);cursorGlow.position.copy(cursor.position);
+        var lightFade=clamp(1-(zoom-1.5)/5,0,1);[clusterLight,homeLight].forEach(function(p){p.material.opacity=p.userData.baseOpacity*lightFade;p.visible=lightFade>0;});
         motion.value=!comparison&&animate&&zoom<=20?1:0;travelTime.value=motion.value&&isFinite(clock)?clock:0;photon.visible=!!motion.value;photon.position.set(.5-(travelTime.value*.025%1),0,0);
       };
       g.userData.coma=data;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';g.rotation.set(0,0,0);data.update('',false,false,0,1);
@@ -10460,12 +11105,15 @@ return plaza;
       function location(name,pos,color,size){var m=new T.Mesh(markerGeo,track(new T.MeshBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:.9,depthWrite:false})));m.name=name;m.position.fromArray(pos);m.scale.setScalar(size);context.add(m);return m;}
       var home=location('andromeda-solar-system-marker',[-.5,0,0],'#acd4cf',.0015),endpoint=location('andromeda-centre-marker',[.5,0,0],'#f5cd91',.0018),cursor=location('andromeda-crossing-position',[0,0,0],'#e4f4e5',.0016);
       var cursorGlow=glow(context,'#91d7d1',.008,.35),photon=location('andromeda-light-direction',[-.5,0,0],'#cbe8ed',.0008);
+      // Integrated starlight for the wide views; Andromeda gives off roughly twice our galaxy's light.
+      var mwLight=lightPoint(context,'#d6e4ff',30,.6),m31Light=lightPoint(context,'#ffe2bc',44,.7);mwLight.position.fromArray(ANDROMEDA_MW_CENTER);m31Light.position.set(.5,0,0);
       var travelTime={value:0},motion={value:0};g.updateMatrixWorld(true);var bounds=new T.Box3().setFromObject(body);bounds.expandByPoint(new T.Vector3(-.5,0,0));bounds.expandByPoint(new T.Vector3(.5,0,0));
       var data={body:body,context:context,milkyWay:milkyWay,destination:destination,path:path,ticks:ticks,cursor:cursor,home:home,endpoint:endpoint,photon:photon,bounds:bounds,travelTime:travelTime,motion:motion};
       data.update=function(detail,comparison,animate,clock){var point=andromedaPoint(detail),sample=andromedaRouteIndex(detail);data.detail=detail;data.comparison=comparison;data.fraction=point.fraction;context.visible=!comparison;cursor.visible=cursorGlow.visible=!comparison&&point.fraction>0&&point.fraction<1;cursor.position.fromArray(andromedaRoutePoint(point.fraction));cursorGlow.position.copy(cursor.position);motion.value=!comparison&&animate?1:0;travelTime.value=motion.value&&isFinite(clock)?clock:0;photon.visible=!!motion.value;photon.position.set(.5-(travelTime.value*.035%1),0,0);
         // Sparse measurement ticks quieten during close inspections; the gap
         // itself and both galaxy scales remain unchanged.
         ticks.visible=!comparison&&(!detail||detail==='andromeda-overview'||detail==='andromeda-midway');
+        mwLight.visible=m31Light.visible=ticks.visible;
       };
       g.userData.andromeda=data;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';data.update('',false,false,0);
     }
@@ -10780,22 +11428,56 @@ return plaza;
         var mat=track(new T.MeshBasicMaterial({color:color})),ts=ball(group,mat,0,0,0,.010),hp=ball(group,mat,0,0,0,.015);ts.position.fromArray(helioCrossingPoint(index,'shock'));hp.position.fromArray(helioCrossingPoint(index,'pause'));ts.name='shock-crossing';hp.name='heliopause-crossing';
         var halo=glow(group,color,.034,.4);halo.position.copy(hp.position);probes.push({group:group,shock:ts,pause:hp,record:v});
       });
-      var data={body:body,context:context,outer:outer,shock:shock,wind:wind,section:section,cut:cut,crossings:crossings,probes:probes,sun:sun,shockRadius:shockRadius,bounds:new T.Box3(new T.Vector3(-.5,-.5,-.5),new T.Vector3(.5,.5,.5))};
+      // The heliosphere moves through interstellar gas, so seen from the Sun the
+      // gas streams past from the upwind "nose" (where both Voyagers crossed)
+      // and is deflected around the heliopause. Streamlines are ideal flow
+      // around the reference sphere; the downwind tail fades out because its
+      // length has not been measured. Both are illustrative, outside the bounds.
+      var nose=HELIO_CROSSINGS.reduce(function(sum,v){return sum.add(new T.Vector3().fromArray(v.direction).normalize());},new T.Vector3()).normalize();
+      var flowAxis=nose.clone().negate(),side1=new T.Vector3(0,1,0).cross(flowAxis).normalize(),side2=flowAxis.clone().cross(side1).normalize();
+      var flow=new T.Group();flow.name='interstellar-flow';context.add(flow);
+      var flowPoints=[],arrowSpots=[];
+      function flowVelocity(p){var r2=p.lengthSq(),r=Math.sqrt(r2),k=.5*Math.pow(.5,3)/(r2*r);var along=p.dot(flowAxis);return flowAxis.clone().multiplyScalar(1+k).sub(p.clone().multiplyScalar(3*k*along/r2));}
+      [.16,.3,.44,.58].forEach(function(b,ring){
+        for(var j=0;j<6;j++){
+          var phi=j/6*Math.PI*2+ring*.5,p=flowAxis.clone().multiplyScalar(-.95).addScaledVector(side1,Math.cos(phi)*b).addScaledVector(side2,Math.sin(phi)*b),prev=p.clone(),arrowDone=false;
+          for(var step=0;step<420&&p.dot(flowAxis)<.95;step++){
+            var v1=flowVelocity(p),mid=p.clone().addScaledVector(v1.normalize(),.004),v2=flowVelocity(mid).normalize();
+            p.addScaledVector(v2,.008);flowPoints.push(prev.x,prev.y,prev.z,p.x,p.y,p.z);prev.copy(p);
+            if(!arrowDone&&p.dot(flowAxis)>-.72){arrowSpots.push({at:p.clone(),dir:v2.clone()});arrowDone=true;}
+          }
+        }
+      });
+      var flowGeo=track(new T.BufferGeometry());flowGeo.setAttribute('position',new T.Float32BufferAttribute(flowPoints,3));
+      var flowLines=new T.LineSegments(flowGeo,track(new T.LineBasicMaterial({color:new T.Color('#b6a8f0').convertSRGBToLinear(),transparent:true,opacity:.42,depthWrite:false})));flowLines.name='interstellar-streamlines';flow.add(flowLines);
+      var flowArrows=new T.InstancedMesh(track(new T.ConeGeometry(.007,.024,8)),track(new T.MeshBasicMaterial({color:'#c9bdf7',transparent:true,opacity:.8})),arrowSpots.length);
+      arrowSpots.forEach(function(s,k){dummy.position.copy(s.at);dummy.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),s.dir);dummy.updateMatrix();flowArrows.setMatrixAt(k,dummy.matrix);});flow.add(flowArrows);
+      var tailProfile=[];for(var tp=0;tp<=24;tp++){var u=tp/24;tailProfile.push(new T.Vector2(.5-.12*u*u,u*1.15));}
+      var tail=new T.Mesh(track(new T.LatheGeometry(tailProfile,64)),track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,uniforms:{uOpacity:{value:1}},
+        vertexShader:'varying float vAlong;varying vec3 vN;varying vec3 vEye;void main(){vAlong=position.y;vec4 p=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vEye=normalize(-p.xyz);gl_Position=projectionMatrix*p;}',
+        fragmentShader:'varying float vAlong;varying vec3 vN;varying vec3 vEye;uniform float uOpacity;void main(){float rim=pow(1.-abs(dot(normalize(vN),normalize(vEye))),1.6);float fade=1.-smoothstep(.05,1.15,vAlong);gl_FragColor=vec4(.45,.62,.86,(.04+.22*rim)*fade*uOpacity);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'})));
+      tail.name='illustrative-heliotail';tail.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),flowAxis);flow.add(tail);
+      var scenePins={group:flow,pins:{wind:nose.clone().multiplyScalar(.86).addScaledVector(side2,.34),nose:nose.clone().multiplyScalar(.5),tail:flowAxis.clone().multiplyScalar(.95).addScaledVector(side2,.3)}};
+      var data={body:body,context:context,outer:outer,shock:shock,wind:wind,section:section,cut:cut,crossings:crossings,probes:probes,sun:sun,shockRadius:shockRadius,flow:flow,nose:nose,bounds:new T.Box3(new T.Vector3(-.5,-.5,-.5),new T.Vector3(.5,.5,.5))};
       data.update=function(detail,comparison){
-        data.detail=detail;context.visible=!comparison;cut.value=!comparison&&!!detail?1:0;section.visible=cut.value===1;wind.visible=detail!=='helio-voyager1'&&detail!=='helio-voyager2';
+        data.detail=detail;context.visible=!comparison;cut.value=!comparison&&!!detail&&detail!=='helio-flow'?1:0;section.visible=cut.value===1;wind.visible=detail!=='helio-voyager1'&&detail!=='helio-voyager2';
+        flow.visible=!comparison&&(!detail||detail==='helio-flow');
         crossings.visible=/^helio-voyager/.test(detail);probes.forEach(function(p){p.group.visible=detail==='helio-'+p.record.id;});
       };
-      g.userData.heliosphere=data;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';data.update('',false);
+      g.userData.heliosphere=data;g.userData.scenePins=scenePins;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';data.update('',false);
     }
 
     function oortModel(g){
       var body=new T.Group(),context=new T.Group();body.name='oort-reference';context.name='oort-guides';context.userData.unmeasured=true;g.add(body,context);
       var innerRadius=3000*149597870700/1.5e16,cut={value:0},fade={value:1},rng=random(51003),positions=[],colors=[],sizes=[];
       // A repeatable illustrative distribution, not a catalogue of measured bodies.
+      // The inner (Hills) cloud, inside about 20,000 AU, is thought to be
+      // flatter, nearer the planets' plane; the outer cloud is near-spherical.
       for(var i=0;i<10000;i++){
-        var r=innerRadius+(.5-innerRadius)*Math.pow(rng(),.72),u=rng()*2-1,a=rng()*Math.PI*2,ring=Math.sqrt(1-u*u),light=.55+rng()*.45;
-        positions.push(r*Math.cos(a)*ring,r*u,r*Math.sin(a)*ring);
-        var tint=r/.5;colors.push(light*(.80-tint*.20),light*(.72+tint*.13),light*(.65+tint*.35));sizes.push(1.1+rng()*1.15);
+        var r=innerRadius+(.5-innerRadius)*Math.pow(rng(),.72),u=rng()*2-1,a=rng()*Math.PI*2,ring=Math.sqrt(1-u*u),light=.5+rng()*.5;
+        var flat=.45+.55*Math.min(1,Math.max(0,(r-.08)/.14)),px=r*Math.cos(a)*ring,py=r*u*flat,pz=r*Math.sin(a)*ring,len=Math.hypot(px,py,pz),lift=len<innerRadius?innerRadius/len:1;
+        positions.push(px*lift,py*lift,pz*lift);
+        var ice=rng(),tint=r/.5;colors.push(light*(.36+.2*ice-tint*.06),light*(.66+.14*ice),light);sizes.push(1.1+rng()*1.15);
       }
       var geometry=track(new T.BufferGeometry());geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setAttribute('aSize',new T.Float32BufferAttribute(sizes,1));
       var pointMaterial=track(new T.ShaderMaterial({transparent:true,depthWrite:false,vertexColors:true,uniforms:{uCut:cut,uFade:fade,uPixel:{value:renderer.getPixelRatio()},uOpacity:{value:1}},
@@ -11025,10 +11707,12 @@ return plaza;
       }
       geo.computeBoundingBox();var box=geo.boundingBox,span=box.max.x-box.min.x,cx=(box.max.x+box.min.x)/2,cy=(box.max.y+box.min.y)/2,cz=(box.max.z+box.min.z)/2;
       geo.translate(-cx,-cy,-cz);geo.scale(1/span,1/span,1/span);geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();
-      var color=[];
+      // Clear-to-milky quartz with patchy iron-oxide staining, a common coating
+      // on weathered grains; the patches are illustrative, not a mapped grain.
+      var color=[],quartz=new T.Color('#f3eee2').convertSRGBToLinear(),stain=new T.Color('#c27f42').convertSRGBToLinear();
       for(var i=0;i<pos.count;i++){
-        var x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),tint=.5+.5*Math.sin(x*13+y*8+Math.sin(z*19)),c=new T.Color('#cbbd9c').convertSRGBToLinear();
-        c.multiplyScalar(.82+.16*tint);color.push(c.r,c.g,c.b);
+        var x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),tint=.5+.5*Math.sin(x*13+y*8+Math.sin(z*19)),rust=Math.max(0,Math.min(1,(grainNoise(x*5+3,y*5,z*5)-.52)/.16))*.85;
+        var c=quartz.clone().lerp(stain,rust);c.multiplyScalar(.86+.12*tint);color.push(c.r,c.g,c.b);
       }
       geo.setAttribute('color',new T.Float32BufferAttribute(color,3));
       // A small procedural studio environment gives the fracture surfaces readable reflections.
@@ -11039,9 +11723,26 @@ return plaza;
         if(side===0||side===4){ctx.fillStyle='#dddacc';ctx.fillRect(18,8,13,104);ctx.fillStyle='#84959a';ctx.fillRect(100,0,7,128);}faces.push(cv);
       }
       var studio=track(new T.CubeTexture(faces));studio.encoding=T.sRGBEncoding;studio.needsUpdate=true;
-      var mineral=track(new T.MeshPhysicalMaterial({color:'#ffffff',vertexColors:true,roughness:.30,metalness:0,transmission:.48,ior:1.54,envMap:studio,envMapIntensity:.8,clearcoat:.08,clearcoatRoughness:.34,bumpMap:grainTexture,bumpScale:.0010}));
-      var body=mesh(g,geo,mineral);body.name='sand-quartz-grain';
-      g.userData.sand={body:body,studio:studio,fractureCount:cuts.length};g.userData.extent=1;g.userData.measureCenter=0;
+      // Transmission only shows through a transparent material; the grain is
+      // frosted (wind and waves pit the surface), so it stays translucent.
+      var mineral=track(new T.MeshPhysicalMaterial({color:'#ffffff',vertexColors:true,roughness:.34,metalness:0,transmission:.3,transparent:true,ior:1.54,envMap:studio,envMapIntensity:1.3,clearcoat:.3,clearcoatRoughness:.45,emissive:'#3a352b',emissiveIntensity:.35,bumpMap:grainTexture,bumpScale:.0012}));
+      var body=mesh(g,geo,mineral);body.name='sand-quartz-grain';body.renderOrder=2;
+      // A bed of neighbours: sand is a mixture. Sizes and minerals are typical
+      // of a beach sample, placed for context and excluded from the ruler.
+      var bed=new T.Group();bed.name='sand-neighbour-grains';g.add(bed);
+      function pebble(seed,size,mat,squash,at){
+        var shape=track(new T.SphereGeometry(1,40,28)),p=shape.attributes.position;
+        for(var k=0;k<p.count;k++){var vx=p.getX(k),vy=p.getY(k),vz=p.getZ(k),bump=.82+.3*grainNoise(vx*1.6+seed,vy*1.6,vz*1.6)+.05*grainNoise(vx*7,vy*7+seed,vz*7);p.setXYZ(k,vx*bump,vy*bump*squash,vz*bump);}
+        shape.computeVertexNormals();var m=mesh(bed,shape,mat);m.scale.setScalar(size/2);m.position.fromArray(at);m.rotation.set(seed*.7,seed*1.3,seed*.4);m.castShadow=m.receiveShadow=false;return m;
+      }
+      var clearMat=track(new T.MeshPhysicalMaterial({color:'#efe6d2',roughness:.4,transmission:.5,transparent:true,ior:1.54,envMap:studio,envMapIntensity:.9,clearcoat:.2})),
+        amberMat=track(new T.MeshPhysicalMaterial({color:'#d8ad78',roughness:.42,transmission:.35,transparent:true,ior:1.54,envMap:studio,envMapIntensity:.8})),
+        feldsparMat=track(new T.MeshStandardMaterial({color:'#d39a83',roughness:.6,envMap:studio,envMapIntensity:.5})),
+        magnetiteMat=track(new T.MeshStandardMaterial({color:'#26272b',roughness:.32,metalness:.55,envMap:studio,envMapIntensity:1})),
+        shellMat=track(new T.MeshStandardMaterial({color:'#f0e8da',roughness:.55,envMap:studio,envMapIntensity:.6})),
+        garnetMat=track(new T.MeshPhysicalMaterial({color:'#8a2f36',roughness:.3,transmission:.25,transparent:true,ior:1.8,envMap:studio,envMapIntensity:.9}));
+      [[1.1,.5,clearMat,.8,[-.95,-.62,-.75]],[2.3,.42,feldsparMat,.7,[.85,-.64,-.7]],[3.7,.24,magnetiteMat,.8,[.62,-.66,-.15]],[4.9,.58,amberMat,.66,[.1,-.72,-1.25]],[6.1,.46,shellMat,.3,[-.7,-.74,-.1]],[7.3,.32,clearMat,.85,[1.3,-.62,-.2]],[8.5,.22,garnetMat,.9,[-1.3,-.64,-.25]],[9.7,.44,clearMat,.75,[-.5,-.74,-1.4]],[10.9,.28,magnetiteMat,.7,[1.15,-.68,-1.25]],[12.1,.5,feldsparMat,.62,[-1.55,-.74,-1.15]]].forEach(function(n){pebble(n[0],n[1],n[2],n[3],n[4]);});
+      g.userData.sand={body:body,bed:bed,studio:studio,fractureCount:cuts.length};g.userData.extent=1;g.userData.measureCenter=0;
     }
 
     function riceModel(g){
@@ -11061,12 +11762,15 @@ return plaza;
           if(kind==='hull')lines.push('float rib=.5+.5*cos(atan(p.z,p.x)*36.+sin(p.y*12.)*.25);','float fibre=.5+.5*sin(p.x*1750.+sin(p.y*140.)*.25+p.z*1120.);','float fleck=step(.97,fine);','diffuseColor.rgb*=.81+.12*rib+.075*fibre-.11*fleck;');
           else if(kind==='bran')lines.push('float stripe=.5+.5*sin(p.x*385.+sin(p.y*29.)*.28+p.z*420.);','float mottled=.5+.5*sin(p.y*35.+sin(p.x*130.)+cos(p.z*125.));','diffuseColor.rgb*=.90+.065*stripe+.085*mottled-.045*fine;');
           else if(kind==='face')lines.push('float chalk=.5+.5*sin(p.y*17.+sin(p.x*43.)*.7);','diffuseColor.rgb*=.94+.036*chalk+.024*fine;');
-          else lines.push('float cloud=.5+.5*sin(p.y*11.+sin(p.x*18.)+cos(p.z*22.));','float polish=.5+.5*sin(p.x*870.+sin(p.y*17.)*.8+p.z*370.);','diffuseColor.rgb*=.963+.025*cloud+.012*polish;');
+          // Polished rice is partly translucent (vitreous) with an opaque, chalky
+          // "white belly" on one side; light passing through the edges glows.
+          else lines.push('float cloud=.5+.5*sin(p.y*11.+sin(p.x*18.)+cos(p.z*22.));','float polish=.5+.5*sin(p.x*870.+sin(p.y*17.)*.8+p.z*370.);','float chalk=smoothstep(-.005,.035,p.z+.012*(cloud-.5))*(1.-smoothstep(.16,.38,abs(p.y+.04)));','float groove=pow(.5+.5*cos(atan(p.z,p.x)*5.+.6),18.)*(1.-smoothstep(.36,.5,abs(p.y)));','diffuseColor.rgb*=mix(vec3(.84,.86,.885),vec3(1.04,1.035,1.015),chalk)*(.97+.02*cloud+.01*polish)*(1.-.13*groove);');
           shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',lines.join('\n'));
+          if(kind==='white')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=vec3(.3,.28,.22)*pow(1.-abs(dot(normal,normalize(vViewPosition))),2.);');
         };
         mat.customProgramCacheKey=function(){return 'rice-anatomy-v2-'+kind+'-'+(clip?'section':'whole');};return mat;
       }
-      var ivory=surface('#ece4d0','white',true,{roughness:.43,bumpMap:grainTexture,bumpScale:.00050,emissive:'#e7d6b1',emissiveIntensity:.025});
+      var ivory=surface('#d6cdb8','white',true,{roughness:.38,bumpMap:grainTexture,bumpScale:.00050});
       var coatMat=surface('#ba8751','bran',true,{roughness:.64,bumpMap:grainTexture,bumpScale:.00032});
       var hullMat=surface('#d5ac69','hull',true,{roughness:.84,bumpMap:grainTexture,bumpScale:.00065});
       var ribMat=surface('#b58b4e','hull',true,{roughness:.88});
@@ -11424,10 +12128,11 @@ return plaza;
           'float cells=fbm(p*10.+warp*3.2-vec3(t,0.,t));',
           'float grain=fbm(p*56.+warp*2.);',
           'float heat=smoothstep(.24,.78,broad*.79+cells*.21);',
-          'vec3 cool=vec3(.24,.025,.007);vec3 warm=vec3(.90,.20,.045);vec3 hot=vec3(1.45,.48,.15);',
+          // A glowing photosphere: cooler lanes are dimmer, never black.
+          'vec3 cool=vec3(.44,.08,.02);vec3 warm=vec3(.88,.22,.055);vec3 hot=vec3(1.28,.46,.16);',
           'vec3 col=mix(cool,warm,smoothstep(.02,.64,heat));col=mix(col,hot,smoothstep(.56,.94,heat));',
-          'col*=.81+grain*.38;float mu=max(0.,dot(normalize(vN),normalize(vV)));',
-          'col*=.13+.87*pow(mu,.55);gl_FragColor=vec4(col,1.);',
+          'col*=.86+grain*.28;float mu=max(0.,dot(normalize(vN),normalize(vV)));',
+          'col*=.2+.8*pow(mu,.5);gl_FragColor=vec4(col,1.);',
           '#include <tonemapping_fragment>','#include <encodings_fragment>','}'
         ].join('\n')
       }));
@@ -11448,8 +12153,20 @@ return plaza;
         fragmentShader:'varying vec3 vN;varying vec3 vV;void main(){float mu=abs(dot(normalize(vN),normalize(vV)));float rim=pow(1.-mu,3.)*pow(mu,.7);gl_FragColor=vec4(.85,.18,.035,rim*.5);}'
       }));
       var shell=mesh(g,track(new T.SphereGeometry(.517,96,64)),atmosphere);shell.name='betelgeuse-limb-haze';
-      glow(g,'#e9763c',1.8,.22);
-      g.userData.starMaterial=star;g.userData.betelgeuse={surface:surface};g.userData.measureCenter=0;g.userData.extent=1;
+      // Light, not size: the halo and the faint outer envelope are illustrative.
+      glow(g,'#ff7a3d',2.5,.4);glow(g,'#b8432a',4.4,.13);
+      // If Betelgeuse replaced the Sun: planetary orbits on the same scale.
+      // The catalogue radius is about 3.5 AU, so Mercury to Mars lie inside the
+      // star (dashed) and Jupiter's 5.2 AU orbit passes outside. Every published
+      // radius (640–887 solar radii, 3.0–4.1 AU) keeps both statements true.
+      var au=1.496e11/1.06e12,orbits=new T.Group(),orbitPins={};orbits.name='betelgeuse-solar-orbits';orbits.rotation.set(-1.12,0,.18);orbits.visible=false;g.add(orbits);
+      [['mercury',.387],['venus',.723],['earth',1],['mars',1.524],['jupiter',5.203]].forEach(function(o,i){
+        var r=o[1]*au,inside=r<.5,points=[];for(var k=0;k<=180;k++){var a=k/180*Math.PI*2;points.push(new T.Vector3(Math.cos(a)*r,Math.sin(a)*r,0));}
+        var mat=inside?new T.LineDashedMaterial({color:'#fff0d2',dashSize:.011,gapSize:.007,transparent:true,opacity:.9,depthTest:false,depthWrite:false}):new T.LineBasicMaterial({color:'#bfe3f5',transparent:true,opacity:.8,depthWrite:false});
+        var line=new T.Line(track(new T.BufferGeometry().setFromPoints(points)),track(mat));if(inside)line.computeLineDistances();line.renderOrder=inside?60:4;line.name='betelgeuse-orbit-'+o[0];orbits.add(line);
+        var pinAngle=[0,0,Math.PI/2,-Math.PI/2,-.62][i];orbitPins[o[0]]=new T.Vector3(Math.cos(pinAngle)*r,Math.sin(pinAngle)*r,0);
+      });
+      g.userData.starMaterial=star;g.userData.betelgeuse={surface:surface,orbits:orbits,orbitPins:orbitPins};g.userData.measureCenter=0;g.userData.extent=1;
     }
 
     function atlasModelBounds(g){
@@ -11478,6 +12195,7 @@ return plaza;
       if(g.userData.door)return new T.Box3().setFromObject(g.userData.door.body);
       if(g.userData.basketball)return new T.Box3().setFromCenterAndSize(new T.Vector3().setFromMatrixPosition(g.matrixWorld),new T.Vector3(1,1,1).multiplyScalar(g.matrixWorld.getMaxScaleOnAxis()));
       if(g.userData.betelgeuse)return new T.Box3().setFromObject(g.userData.betelgeuse.surface);
+      if(g.userData.sand)return new T.Box3().setFromObject(g.userData.sand.body);
       if(g.userData.reef)return g.userData.reef.bounds.clone().applyMatrix4(g.matrixWorld);
       if(g.userData.football)return new T.Box3().setFromObject(g.userData.football.field);
       // Three r128 reads the shared sphere geometry, ignoring instance matrices.
@@ -11504,11 +12222,19 @@ return plaza;
       } else if(id==='andromeda-dist'){
         andromedaDistanceModel(g);
       } else if (item.dim === 'distance') {
-        var lineMat=material('#b8c8ff',{emissive:'#697ed0',emissiveIntensity:0.7});
+        var story=RULER_STORIES[id],lineMat=material('#b8c8ff',{emissive:'#697ed0',emissiveIntensity:0.7}),tickCount=story?story.ticks:10,major=story?story.major:1;
         rod(g,[-0.5,0,0],[0.5,0,0],0.006,lineMat);
-        for(j=0;j<=10;j++)rod(g,[-0.5+j/10,-0.035,0],[-0.5+j/10,0.035,0],0.003,lineMat);
+        for(j=0;j<=tickCount;j++){var tall=j%major===0?.035:.018;rod(g,[-0.5+j/tickCount,-tall,0],[-0.5+j/tickCount,tall,0],j%major===0?.003:.002,lineMat);}
         ball(g,white,-0.5,0,0,0.024);ball(g,white,0.5,0,0,0.024);
-        glow(g,'#98b4ff',0.5,0.3);g.userData.dimension='x';
+        if(story){
+          // Points along the ruler where something happened; light points mark
+          // luminous places, plain dots mark objects that give off no light.
+          var storyPins={};story.lights.forEach(function(l){lightPoint(g,l[1],l[2],l[3]).position.set(-.5+l[0],0,0);});
+          (story.dots||[]).forEach(function(d){ball(g,material(d[1],{emissive:d[1],emissiveIntensity:.6}),-.5+d[0],0,0,d[2]);});
+          story.pins.forEach(function(p){storyPins[p[0]]=new T.Vector3(-.5+p[1],0,0);});
+          g.userData.rulerStory={pins:storyPins,order:story.pins.map(function(p){return p[0];})};
+        } else glow(g,'#98b4ff',0.5,0.3);
+        g.userData.dimension='x';
       } else if (['earth','moon','jupiter'].indexOf(id)>=0) {
         var planetMat=track(new T.MeshPhysicalMaterial({color:0xffffff,map:planetTexture(id),roughness:.96,reflectivity:id==='earth'?.18:.08}));
         if(id==='moon'){var lunarGlobe=mesh(g,track(new T.SphereGeometry(.5,96,64)),planetMat);lunarGlobe.name='lunar-globe';g.userData.lunar={material:planetMat,color:planetMat.map,height:null,status:'loading',view:'surface'};}else if(id==='earth'){var earthGlobe=mesh(g,track(new T.SphereGeometry(.5,96,64)),planetMat);earthGlobe.name='earth-globe';}else if(id==='jupiter'){var jupiterGlobe=mesh(g,track(jupiterGeometry(T)),planetMat);jupiterGlobe.name='jupiter-globe';jupiterMapMaterial(planetMat);}else ball(g,planetMat,0,0,0,1);
@@ -11631,7 +12357,7 @@ return plaza;
         for(var tick=0;tick<=10;tick++){var mark=-.5+tick/10;rod(ruler,[mark,0,pitchRulerZ-.006],[mark,0,pitchRulerZ+.006],.0009,rulerMat);}
       } else if(id==='grand-canyon'){
         g.updateMatrix();var path=CANYON_PATH.points.map(function(p){return new T.Vector3(p[0],.0002,p[1]).applyMatrix4(g.matrix);});
-        var routeGeo=track(new T.BufferGeometry().setFromPoints(path)),route=new T.Line(routeGeo,track(new T.LineDashedMaterial({color:'#b2ddcf',dashSize:.018,gapSize:.008,transparent:true,opacity:.85,depthTest:false,depthWrite:false})));
+        var routeGeo=track(new T.BufferGeometry().setFromPoints(path)),route=new T.Line(routeGeo,track(new T.LineDashedMaterial({color:'#f0d48c',dashSize:.004,gapSize:.006,transparent:true,opacity:.9,depthTest:false,depthWrite:false})));
         route.computeLineDistances();ruler.add(route);measureAnchor.copy(path[Math.floor(path.length/2)]);
       } else if(id==='rice'){
         measureAnchor.set(.3,0,0);rod(ruler,[.3,-.5,0],[.3,.5,0],.0012,rulerMat);
@@ -11698,6 +12424,7 @@ return plaza;
       if(pyramidDesert)pyramidDesert.visible=false;
       if(eiffelPlaza)eiffelPlaza.visible=false;
       if(sequoiaGrove)sequoiaGrove.visible=false;
+      if(footballStadium)footballStadium.visible=false;
       bloodBackdrop.visible=false;
       ground.visible = garden.visible = microBackdrop.visible = leafWorld.visible = floor.visible = motes.visible = false;
       if (focusRing) focusRing.visible = false;
@@ -11713,7 +12440,7 @@ return plaza;
         root.userData.ruler.visible = state.measure;
         root.userData.ruler.quaternion.identity();
         lunarPaint(root.userData.model,'surface');
-        root.userData.model.rotation.y = root.userData.initialYaw;lightCanyon(root,state);lightEverest(root,state);
+        root.userData.model.rotation.y = root.userData.initialYaw;lightCanyon(root,state);lightEverest(root,state);lightSceneExtras(root,state);
         if(root.userData.model.userData.ribosome)ribosomePaint(root.userData.model.userData.ribosome,false,'',state.riboProteins!==false);
         if(root.userData.model.userData.pollen)pollenPaint(root.userData.model.userData.pollen,false,'',0);
         if(root.userData.model.userData.virus)virusPaint(root.userData.model.userData.virus,false,'');
@@ -11954,6 +12681,33 @@ return plaza;
       });
     }
 
+    // Name the length on the ruler itself: the size is the lesson, and a bare
+    // bracket under a cell or a galaxy says nothing about how big it is.
+    var tagA=new T.Vector3(),tagB=new T.Vector3(),tagM=new T.Vector3();
+    function paintRulerTag(root,width,height){
+      var tag=comparisonLabels&&comparisonLabels.querySelector('[data-scale-ruler-tag]');if(!tag)return;
+      var ruler=root&&root.userData.ruler,anchor=root&&root.userData.measureAnchor,axis=root&&root.userData.measureAxis,shown=!!ruler&&root.visible&&ruler.visible&&!!anchor&&tag.dataset.scaleRulerTag===root.userData.itemId;
+      if(shown){
+        ruler.localToWorld(tagM.copy(anchor)).project(camera);
+        tagA.copy(anchor);tagA[axis]-=.5;ruler.localToWorld(tagA).project(camera);
+        tagB.copy(anchor);tagB[axis]+=.5;ruler.localToWorld(tagB).project(camera);
+        shown=[tagM,tagA,tagB].every(function(v){return isFinite(v.x)&&isFinite(v.y)&&Math.abs(v.z)<=1;});
+      }
+      var ax=(tagA.x-tagB.x)*width/2,ay=(tagA.y-tagB.y)*height/2,mx=(tagM.x*.5+.5)*width,my=(-tagM.y*.5+.5)*height;
+      if(shown)shown=Math.hypot(ax,ay)>=40&&mx>-20&&mx<width+20&&my>0&&my<height;
+      tag.hidden=!shown;if(!shown){delete tag.dataset.rulerX;return;}
+      var w=tag.offsetWidth,hgt=tag.offsetHeight,upright=Math.abs(ay)>Math.abs(ax),x,y;
+      // Landmark buttons win: try both sides of the ruler, then slide along it.
+      // Read the stage coordinates this paint wrote, not live layout boxes,
+      // which can still be settling after a destination change.
+      var taken=markers?Array.prototype.map.call(markers.querySelectorAll('[data-scale-marker]'),function(b){var m=!b.hidden&&/translate\(([-\d.]+)px, ?([-\d.]+)px\)/.exec(b.style.transform);return m?{x:+m[1]-22,y:+m[2]-22,w:44,h:44}:null;}).filter(Boolean):[];
+      var ux=Math.abs(ax)+Math.abs(ay)?ax/Math.hypot(ax,ay):1,uy=Math.abs(ax)+Math.abs(ay)?-ay/Math.hypot(ax,ay):0,spots=[];
+      [0,.3,-.3].forEach(function(f){var cx=mx+ux*f*Math.hypot(ax,ay),cy=my+uy*f*Math.hypot(ax,ay);if(upright)spots.push([cx+12,cy-hgt/2],[cx-12-w,cy-hgt/2]);else spots.push([cx-w/2,cy+9],[cx-w/2,cy-9-hgt]);});
+      var fits=function(s){var sx=clamp(s[0],8,Math.max(8,width-w-8)),sy=clamp(s[1],8,Math.max(8,height-hgt-8));return sy+hgt<=height-54&&!taken.some(function(r){return sx<r.x+r.w&&sx+w>r.x&&sy<r.y+r.h&&sy+hgt>r.y;});};
+      var spot=spots.filter(fits)[0]||spots[0];x=spot[0];y=spot[1];
+      x=clamp(x,8,Math.max(8,width-w-8));y=clamp(y,8,Math.max(8,height-hgt-8));
+      tag.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';tag.dataset.rulerX=mx.toFixed(1);tag.dataset.rulerY=my.toFixed(1);
+    }
     function paint() {
       if(disposed)return;
       if(comparisonSilhouette)comparisonSilhouette.hide();hideLunarRuler();if(jupiterStudyGuide)jupiterStudyGuide.visible=false;
@@ -11997,11 +12751,12 @@ return plaza;
       // Leave room for the AU heading without changing physical sizes or orbit targets.
       if((state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='ecoli'||state.focusId==='galactic-centre')&&!state.comparison)camera.setViewOffset(width,height,0,-height*.08,width,height);
       else if(camera.view&&camera.view.enabled)camera.clearViewOffset();
-      if (state.comparison) { stopAir();clearNebulaCourse();paintNebulaDestination(null,state,width,height);clearOrbitHover();paintComparison(state, width, height); return; }
+      if (state.comparison) { stopAir();clearNebulaCourse();paintNebulaDestination(null,state,width,height);clearOrbitHover();paintRulerTag(null,width,height);sky.visible=false;if(eggCup)eggCup.visible=false;paintComparison(state, width, height); return; }
       activeCamera = camera; comparisonLayoutKey = '';
       canvas.dataset.atlasComparison = ''; canvas.dataset.atlasProjection = 'perspective'; delete canvas.dataset.atlasSmallPixels;delete canvas.dataset.atlasComparisonStyle;delete canvas.dataset.atlasSilhouette;
       if (comparisonLabels) Array.prototype.forEach.call(comparisonLabels.querySelectorAll('[data-scale-comparison-point],[data-scale-comparison-measure],[data-scale-measure-leader]'), function (node) { node.hidden = true; });
       scene.background=new T.Color(state.contrast?'#000000':realm.bg);haze.material.color.set(realm.color);haze2.material.color.set(realm.color);
+      var skyLevel=!state.contrast&&!flight&&SKY_SCENES[state.focusId]||0;sky.visible=skyLevel>0;sky.children.forEach(function(p){p.material.opacity=p.userData.baseOpacity*skyLevel;});
       motes.visible=!state.contrast&&realm.id!=='human';motes.rotation.y=e*0.027+(state.motion?time*0.001:0);
       motes.material.size = realm.id === 'micro' ? 0.1 : 0.045;
       motes.material.color.set(realm.id === 'micro' ? '#79dfc6' : '#ffffff');
@@ -12036,6 +12791,8 @@ return plaza;
         hemisphere.intensity=.68;rim.intensity=.55;fill.intensity=.38;key.intensity=1.65;key.color.set('#fff0da');
         key.position.set(-3,5,5);key.target.position.set(0,0,0);haze.material.opacity=.003;haze2.material.opacity=.002;
       }
+      // A pale, nearly translucent animal: softer key light keeps its ridges and gut visible.
+      if(specimenActive&&focal.id==='dust-mite'){key.intensity=1.05;hemisphere.intensity=.45;fill.intensity=.26;rim.intensity=.7;}
       if(specimenActive&&focal.id==='nucleus'){
         scene.background.set(state.contrast?'#000000':'#081622');scene.fog=null;
         ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;haze.material.opacity=haze2.material.opacity=0;
@@ -12056,6 +12813,8 @@ return plaza;
         bloodBackdrop.children.forEach(function(cell,i){var p=cell.userData.bloodPosition,t=state.motion&&!state.reduceMotion?time:0;cell.position.set(p[0]+.35*Math.sin(t*.13+i),p[1]+.2*Math.sin(t*.17+i*.7),p[2]);});
       }
       if(specimenActive&&(focal.id==='honeybee'||focal.id==='ladybird')){ground.visible=true;key.castShadow=true;}
+      // A walking animal needs a floor; without one the mouse floated in space.
+      if(specimenActive&&focal.id==='mouse'){ground.visible=true;key.castShadow=true;key.shadow.normalBias=.001;}
       if(specimenActive&&focal.id==='egg'){
         ground.visible=true;key.castShadow=true;scene.background.set(state.contrast?'#000000':'#243138');
         hemisphere.intensity=.49;fill.intensity=.24;rim.intensity=.35;key.intensity=1.30;key.color.set('#fff3dd');
@@ -12070,25 +12829,27 @@ return plaza;
       }
       if(focal&&focal.id==='liberty'){
         distance-=.45*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;
-        scene.background.set(state.contrast?'#000000':'#87a9b9');scene.fog=state.contrast?null:new T.Fog('#87a9b9',9,30);
+        if(state.contrast)scene.background.set('#000000');else scene.background=skyGradient('harbor-day');scene.fog=state.contrast?null:new T.Fog('#aec5d0',9,30);
         hemisphere.intensity=.7;rim.intensity=.28;fill.intensity=.35;key.intensity=1.2;key.color.set('#fff0d4');key.castShadow=true;key.shadow.normalBias=.0008;
         key.position.set(-3,6,5);key.target.position.set(0,.15,0);haze.material.opacity=.004;haze2.material.opacity=.002;
       }
       if(focal&&focal.id==='pyramid'){
         distance-=(state.detailId?1.1:.4)*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;
-        scene.background.set(state.contrast?'#000000':'#75634f');scene.fog=state.contrast?null:new T.Fog('#75634f',9,26);
+        if(state.contrast)scene.background.set('#000000');else scene.background=skyGradient('giza-day');scene.fog=state.contrast?null:new T.Fog('#cfc2a3',9,26);
         hemisphere.intensity=state.cutaway?.35:.7;rim.intensity=state.cutaway?.15:.5;fill.intensity=state.cutaway?.18:.35;key.intensity=state.cutaway?1.05:1.45;key.color.set('#ffe1ac');key.castShadow=!state.cutaway;key.shadow.normalBias=.001;
         key.position.set(4,6,3);key.target.position.set(0,.1,0);haze.material.opacity=.008;haze2.material.opacity=.004;
       }
       if(focal&&focal.id==='eiffel'){
         var towerNight=state.sunAngle>=140;distance-=1.8*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;
-        scene.background.set(state.contrast?'#000000':towerNight?'#101827':'#283c4c');scene.fog=state.contrast?null:new T.Fog(towerNight?'#101827':'#283c4c',8,22);
-        hemisphere.intensity=towerNight?.28:.7;rim.intensity=towerNight?.85:.65;fill.intensity=towerNight?.18:.35;key.intensity=towerNight?1.25:1.8;key.color.set(towerNight?'#ffc779':'#fff0d8');key.castShadow=true;key.shadow.normalBias=.001;
+        // Daylight is a hazy Paris sky; evening is blue hour, the tower lit gold.
+        if(state.contrast)scene.background.set('#000000');else scene.background=skyGradient(towerNight?'paris-dusk':'paris-day');
+        scene.fog=state.contrast?null:new T.Fog(towerNight?'#2c3460':'#adc0cc',8,22);
+        hemisphere.intensity=towerNight?.17:.7;rim.intensity=towerNight?.32:.65;fill.intensity=towerNight?.1:.35;key.intensity=towerNight?.4:1.8;key.color.set(towerNight?'#9fb2dc':'#fff0d8');key.castShadow=true;key.shadow.normalBias=.001;
         key.position.set(-4,5,5);key.target.position.set(0,.2,0);haze.material.opacity=.008;haze2.material.opacity=.004;
       }
       if(focal&&focal.id==='sequoia'){
         distance-=1.9*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;
-        scene.background.set(state.contrast?'#000000':'#142820');scene.fog=state.contrast?null:new T.Fog('#142820',7,20);
+        if(state.contrast)scene.background.set('#000000');else scene.background=skyGradient('grove-day');scene.fog=state.contrast?null:new T.Fog('#1f3329',7,20);
         hemisphere.intensity=.62;rim.intensity=.5;fill.intensity=.38;key.intensity=1.65;key.color.set('#ffe6bb');key.castShadow=true;key.shadow.normalBias=.001;
         key.position.set(-3,7,5);key.target.position.set(0,.5,0);haze.material.opacity=.008;haze2.material.opacity=.004;
       }
@@ -12206,6 +12967,8 @@ return plaza;
         hemisphere.intensity=.5;rim.intensity=.2;fill.intensity=.15;key.intensity=1.45;key.color.set('#ffe0b6');key.castShadow=true;key.shadow.normalBias=.001;
         distance-=2.4*close;
       }
+      // The pitch is flat and wide; frame it so the players are visible.
+      if(focal&&focal.id==='football-pitch')distance-=1.4*close;
       if(focal&&focal.id==='everest'){
         scene.background.set(state.contrast?'#000000':'#1c3446');scene.fog=new T.Fog(state.contrast?'#000000':'#1c3446',15,35);
         motes.visible=ground.visible=garden.visible=false;haze.material.opacity=.018;haze2.material.opacity=.01;
@@ -12219,7 +12982,7 @@ return plaza;
       camera.fov=state.focusId==='orion-nebula'&&state.nebulaInside?62:state.focusId==='everest'&&state.detailId==='everest-flight'?58:43;
       camera.near=focal&&focal.id==='lightyear'?lightMinuteClipNear(distance):focal&&focal.id==='milkyway'?.002:focal&&focal.id==='human'?.002:focal&&focal.id==='light-minute'?lightMinuteClipNear(distance):focal&&focal.id==='coma-dist'?comaClipNear(distance):focal&&focal.id==='galactic-centre'?galcentreClipNear(distance):focal&&focal.id==='ecoli'?ecoliClipNear(distance):focal&&focal.id==='alpha-cen-dist'?centauriClipNear(distance):focal&&focal.id==='au'?auClipNear(distance):focal&&(specimenActive||(focal.id==='reef'||focal.id==='football-pitch'||focal.id==='basketball'||focal.id==='rice'||focal.id==='sand'||focal.id==='door'||focal.id==='oort'||focal.id==='heliosphere'||focal.id==='carbon'||focal.id==='proton'||focal.id==='local-bubble'||focal.id==='virgo-sc'||focal.id==='laniakea'||focal.id==='universe'||focal.id==='andromeda-dist')&&!!state.detailId||focal.id==='solar-system'||focal.id==='liberty'||focal.id==='sequoia'||focal.id==='eiffel'||focal.id==='pyramid'||focal.id==='orion-nebula'&&state.nebulaInside)?.002:state.focusId==='everest'&&state.detailId==='everest-flight'?.006:.05;camera.updateProjectionMatrix();
       var detailKey=state.focusId+':'+state.detailId+(state.detailId==='jupiter-scan'?':'+jupiterLatitudeValue(state.jupiterLatitude):'')+(state.detailId==='lunar-surface'?':'+JSON.stringify(lunarPosition(state.lunarPoint)):'')+(state.detailId==='river-journey'?':'+canyonRouteKm(state.riverKm):''),detailChanged=detailKey!==previousDetail;
-      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:state.focusId==='basketball'?{yaw:0,pitch:.30}:state.focusId==='lightyear'?{yaw:.55,pitch:.30}:state.focusId==='milkyway'?{yaw:.10,pitch:.14}:state.focusId==='human'?{yaw:.1974,pitch:.117}:state.focusId==='light-minute'?{yaw:0,pitch:.20}:state.focusId==='coma-dist'?{yaw:0,pitch:.12}:state.focusId==='galactic-centre'?{yaw:.12,pitch:.98}:state.focusId==='paramecium'?{yaw:.08,pitch:.18}:state.focusId==='ecoli'?{yaw:.08,pitch:.18}:state.focusId==='alpha-cen-dist'?{yaw:.04,pitch:.20}:state.focusId==='au'?{yaw:.02,pitch:.22}:state.focusId==='andromeda-dist'?{yaw:.04,pitch:.58}:state.focusId==='universe'?{yaw:.675,pitch:.32}:state.focusId==='laniakea'?{yaw:-.4,pitch:.32}:state.focusId==='virgo-sc'?{yaw:-.38,pitch:.42}:state.focusId==='local-bubble'?{yaw:-.2,pitch:.28}:state.focusId==='proton'?{yaw:.22,pitch:.14}:state.focusId==='carbon'?{yaw:.2,pitch:.18}:state.focusId==='heliosphere'?{yaw:.52,pitch:.24}:state.focusId==='oort'?{yaw:.5,pitch:.2}:isElectromagneticWave(state.focusId)?{yaw:-.16,pitch:.40}:state.focusId==='moon'?{yaw:Math.PI/2,pitch:0}:state.focusId==='everest'?{yaw:.2,pitch:.5}:state.focusId==='mitochondrion'?{yaw:.32,pitch:.22}:state.focusId==='ribosome'?{yaw:.18,pitch:.12}:state.focusId==='pollen'?{yaw:.3,pitch:.18}:state.focusId==='virus'?{yaw:.22,pitch:.14}:state.focusId==='chicxulub'?{yaw:.18,pitch:.48}:state.focusId==='blue-whale'?{yaw:-.25,pitch:.40}:state.focusId==='sequoia'?{yaw:.24,pitch:.10}:state.focusId==='eiffel'?{yaw:.60,pitch:.12}:state.focusId==='pyramid'?{yaw:.70,pitch:.30}:state.focusId==='liberty'?{yaw:.28,pitch:.12}:state.focusId==='mouse'?{yaw:-.18,pitch:.22}:state.focusId==='dust-mite'?{yaw:.12,pitch:.70}:state.focusId==='flea'?{yaw:-.12,pitch:.06}:state.focusId==='trex'?{yaw:-.14,pitch:.13}:state.focusId==='giraffe'?{yaw:-.22,pitch:.08}:state.focusId==='elephant'?{yaw:-.24,pitch:.12}:state.focusId==='honeybee'?{yaw:-.18,pitch:.20}:state.focusId==='ladybird'?{yaw:-.20,pitch:.34}:state.focusId==='hair'?{yaw:.18,pitch:.10}:state.focusId==='egg'?{yaw:-.20,pitch:.14}:state.focusId==='rbc'?{yaw:.28,pitch:.15}:state.focusId==='water'?{yaw:.16,pitch:.10}:state.focusId==='hydrogen'?{yaw:.28,pitch:.18}:state.focusId==='nucleus'?{yaw:-.20,pitch:.12}:null;
+      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:state.focusId==='basketball'?{yaw:0,pitch:.30}:state.focusId==='lightyear'?{yaw:.55,pitch:.30}:state.focusId==='milkyway'?{yaw:.10,pitch:.14}:state.focusId==='human'?{yaw:.1974,pitch:.117}:state.focusId==='light-minute'?{yaw:0,pitch:.20}:state.focusId==='coma-dist'?{yaw:0,pitch:.12}:state.focusId==='galactic-centre'?{yaw:.12,pitch:.98}:state.focusId==='paramecium'?{yaw:.08,pitch:.18}:state.focusId==='ecoli'?{yaw:.08,pitch:.18}:state.focusId==='alpha-cen-dist'?{yaw:.04,pitch:.20}:state.focusId==='au'?{yaw:.02,pitch:.22}:state.focusId==='andromeda-dist'?{yaw:.04,pitch:.58}:state.focusId==='universe'?{yaw:.675,pitch:.32}:state.focusId==='laniakea'?{yaw:-.4,pitch:.32}:state.focusId==='virgo-sc'?{yaw:-.38,pitch:.42}:state.focusId==='local-bubble'?{yaw:-.2,pitch:.28}:state.focusId==='proton'?{yaw:.22,pitch:.14}:state.focusId==='carbon'?{yaw:.2,pitch:.18}:state.focusId==='heliosphere'?{yaw:.52,pitch:.24}:state.focusId==='oort'?{yaw:.5,pitch:.2}:isElectromagneticWave(state.focusId)?{yaw:-.16,pitch:.40}:state.focusId==='moon'?{yaw:Math.PI/2,pitch:0}:state.focusId==='everest'?{yaw:.2,pitch:.5}:state.focusId==='mitochondrion'?{yaw:.32,pitch:.22}:state.focusId==='ribosome'?{yaw:.18,pitch:.12}:state.focusId==='pollen'?{yaw:.3,pitch:.18}:state.focusId==='virus'?{yaw:.22,pitch:.14}:state.focusId==='chicxulub'?{yaw:.18,pitch:.48}:state.focusId==='blue-whale'?{yaw:-.25,pitch:.40}:state.focusId==='sequoia'?{yaw:.24,pitch:.10}:state.focusId==='eiffel'?{yaw:.60,pitch:.12}:state.focusId==='pyramid'?{yaw:.70,pitch:.30}:state.focusId==='liberty'?{yaw:.28,pitch:.12}:state.focusId==='mouse'?{yaw:-.18,pitch:.22}:state.focusId==='dust-mite'?{yaw:.12,pitch:.70}:state.focusId==='flea'?{yaw:-.12,pitch:.06}:state.focusId==='trex'?{yaw:-.14,pitch:.13}:state.focusId==='giraffe'?{yaw:-.22,pitch:.08}:state.focusId==='elephant'?{yaw:-.24,pitch:.12}:state.focusId==='honeybee'?{yaw:-.18,pitch:.20}:state.focusId==='ladybird'?{yaw:-.20,pitch:.34}:state.focusId==='hair'?{yaw:.18,pitch:.10}:state.focusId==='egg'?{yaw:-.20,pitch:.14}:state.focusId==='rbc'?{yaw:.78,pitch:.2}:state.focusId==='water'?{yaw:.16,pitch:.10}:state.focusId==='hydrogen'?{yaw:.28,pitch:.18}:state.focusId==='nucleus'?{yaw:-.20,pitch:.12}:null;
       var occupied=[], visible=[];paintCount++;
       Object.keys(models).forEach(function(id){models[id].visible=false;});
       candidates.forEach(function(it){
@@ -12231,7 +12994,7 @@ return plaza;
         if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
         if(root.userData.model.userData.outerMembrane)root.userData.model.userData.outerMembrane.visible=!state.cutaway;
         lunarPaint(root.userData.model,it.id===state.focusId?state.lunarView:'surface');
-        lightCanyon(root,state);lightEverest(root,state);
+        lightCanyon(root,state);lightEverest(root,state);lightSceneExtras(root,state);
         if(root.userData.model.userData.ribosome)ribosomePaint(root.userData.model.userData.ribosome,state.cutaway,it.id===state.focusId?state.detailId:'',state.riboProteins!==false);
         if(root.userData.model.userData.pollen)pollenPaint(root.userData.model.userData.pollen,state.cutaway,it.id===state.focusId?state.detailId:'',it.id===state.focusId?state.pollenGrowth:0);
         if(root.userData.model.userData.mito)mitoPaint(root.userData.model.userData.mito,state.cutaway,it.id===state.focusId?(mitoDetailFold(state.detailId)||(mitoEnergyIndex(state.detailId)?4:0)):0,state.mitoFlow===true,state.motion,time*1000);
@@ -12283,6 +13046,10 @@ return plaza;
         if(occupied.length===1&&ground.visible){ground.position.y=root.position.y+root.userData.floor*scale-.008;garden.position.y=ground.position.y+1.64;}
         visible.push(root);
       });
+      // An upright egg needs something to stand in. The cup is a prop beside
+      // the specimen, outside its measured bounds; it opens with the cutaway.
+      var eggRoot=!!focal&&focal.id==='egg'&&!state.comparison&&!flight&&close>.5&&models.egg&&models.egg.visible?models.egg:null;
+      if(eggRoot||eggCup){var cup=eggCupProp();cup.visible=!!eggRoot;if(eggRoot){var cupScale=eggRoot.scale.x,eggPose=eggRoot.userData.model.userData.specimen.pose;cup.position.copy(eggRoot.position);cup.scale.setScalar(cupScale);cup.rotation.y=eggRoot.userData.model.rotation.y;cup.userData.full.visible=!eggPose.cutaway;cup.userData.half.visible=eggPose.cutaway;if(ground.visible){ground.position.y=eggRoot.position.y-.715*cupScale-.008;garden.position.y=ground.position.y+1.64;}}}
       // Keep only the recent neighborhood. In particular, a tour through the
       // whole catalog must not retain every model, shader, and texture on GPU.
       trimModelCache();
@@ -12300,7 +13067,10 @@ return plaza;
       var activeRoot=visible.filter(function(r){return r.userData.itemId===state.focusId;})[0];
       if(activeRoot&&(state.focusId==='lightyear'||state.focusId==='milkyway'||state.focusId==='light-minute'||state.focusId==='coma-dist'||state.focusId==='door'||state.focusId==='oort'||state.focusId==='heliosphere'||state.focusId==='carbon'||state.focusId==='proton'||state.focusId==='local-bubble'||state.focusId==='virgo-sc'||state.focusId==='laniakea'||state.focusId==='universe'||state.focusId==='andromeda-dist'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='ecoli'||state.focusId==='galactic-centre'||isElectromagneticWave(state.focusId))&&close>.8)floor.visible=false;
       var footballActive=!!activeRoot&&state.focusId==='football-pitch'&&close>.8&&!state.neighbors&&!state.flight;
-      if(footballActive){floor.visible=ground.visible=garden.visible=motes.visible=false;scene.fog=null;if(state.detailId)activeRoot.userData.ruler.visible=false;}
+      if(footballActive){floor.visible=ground.visible=garden.visible=motes.visible=false;scene.fog=null;if(state.detailId)activeRoot.userData.ruler.visible=false;
+        if(!footballStadium){footballStadium=buildFootballStadium();scene.add(footballStadium);}
+        footballStadium.visible=true;footballStadium.position.copy(activeRoot.position);footballStadium.quaternion.copy(activeRoot.quaternion);footballStadium.scale.copy(activeRoot.scale);
+      }else if(footballStadium)footballStadium.visible=false;
       var libertyActive=!!activeRoot&&state.focusId==='liberty'&&close>.8&&!state.neighbors&&!state.flight;
       if(libertyActive){
         if(!libertyHarbor){libertyHarbor=buildLibertyHarbor();scene.add(libertyHarbor);}
@@ -12318,6 +13088,7 @@ return plaza;
       if(towerActive){
         if(!eiffelPlaza){eiffelPlaza=buildEiffelPlaza();scene.add(eiffelPlaza);}
         eiffelPlaza.visible=true;eiffelPlaza.position.copy(activeRoot.position);eiffelPlaza.quaternion.copy(activeRoot.quaternion);eiffelPlaza.scale.copy(activeRoot.scale);
+        eiffelPlaza.userData.parisNight.value=state.sunAngle>=140&&!state.contrast?1:0;
         floor.visible=ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;
       }else if(eiffelPlaza)eiffelPlaza.visible=false;
       var forestActive=!!activeRoot&&state.focusId==='sequoia'&&close>.8&&!state.neighbors&&!state.flight;
@@ -12463,6 +13234,9 @@ return plaza;
       paintAuPins(activeRoot,state,width,height);
       paintCentauriPins(activeRoot,state,width,height);
       paintGalcentrePins(activeRoot,state,width,height);
+      paintBetelgeusePins(activeRoot,state,width,height);paintRulerStoryPins(activeRoot,state,width,height);paintScenePins(activeRoot,state,width,height);
+      paintRulerTag(flight?null:activeRoot,width,height);
+      if(sky.visible)sky.position.copy(camera.position);
       if(flight)paintFlightRings(flight,e,width,height);
       if(canvasInView)renderer.render(scene,camera);
       canvas.dataset.atlasReady='true';canvas.dataset.atlasObjects=visible.map(function(o){return o.userData.itemId;}).join(',');
@@ -13202,7 +13976,7 @@ return plaza;
 
       var _pendingObservation = React.useState(null); var pendingObservation = _pendingObservation[0], setPendingObservation = _pendingObservation[1];
       var savedObservationsRef = React.useRef(null);
-      React.useEffect(function(){if(!pendingObservation){setInspectionZoom(focusId==='paramecium'?1.45:1);setDetailId('');if(focusId==='rice'||focusId==='ecoli'||focusId==='blue-whale'||focusId==='pyramid'||focusId==='liberty'||focusId==='rbc'||focusId==='water'||focusId==='hydrogen'||focusId==='nucleus')setCutaway(false);if(focusId==='eiffel')setSunAngle(45);}},[focusId]);
+      React.useEffect(function(){if(!pendingObservation){setInspectionZoom(focusId==='paramecium'?1.45:1);setDetailId('');if(focusId==='rice'||focusId==='ecoli'||focusId==='blue-whale'||focusId==='pyramid'||focusId==='liberty'||focusId==='rbc'||focusId==='water'||focusId==='hydrogen'||focusId==='nucleus')setCutaway(false);if(focusId==='mitochondrion')setCutaway(true);if(focusId==='eiffel')setSunAngle(45);}},[focusId]);
       var _search = React.useState(''); var search = _search[0], setSearch = _search[1];
       var readoutRef = React.useRef(null);
       var scrubRef = React.useRef(null);
@@ -14964,9 +15738,9 @@ return plaza;
       function helioStudy(){
         if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='heliosphere')return null;
         return h('section',{className:'sx-helio-study','aria-label':S('atlas_helio_study','Heliosphere study')},
-          h('div',{className:'sx-helio-views'},details.slice(0,3).map(function(d){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id,onClick:function(){chooseDetail(d);}},d.label);})),
+          h('div',{className:'sx-helio-views'},details.filter(function(d){return !/^helio-voyager/.test(d.id);}).map(function(d){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id,onClick:function(){chooseDetail(d);}},d.label);})),
           h('div',{className:'sx-helio-crossings','aria-label':S('atlas_helio_crossings','Recorded crossings from the Sun')},HELIO_CROSSINGS.map(function(v,i){var d=details.filter(function(d){return d.id==='helio-'+v.id;})[0];return h('button',{key:v.id,type:'button','aria-pressed':detailId===d.id,onClick:function(){chooseDetail(d);}},h('strong',null,d.label),h('span',null,S('atlas_helio_shock_metric','Termination shock')+' · '+v.shock+' AU'),h('span',null,S('atlas_helio_pause','Heliopause')+' · '+v.pause+' AU'));})),
-          h('div',{className:'sx-helio-legend'},h('strong',null,S('atlas_helio_reference','Reference diameter ≈ 243 AU')),h('span',null,S('atlas_helio_legend','Gold · solar wind / shock   Blue · heliopause'))),
+          h('div',{className:'sx-helio-legend'},h('strong',null,S('atlas_helio_reference','Reference diameter ≈ 243 AU')),h('span',null,S('atlas_helio_legend','Gold · solar wind / shock   Blue · heliopause')),h('span',null,S('atlas_helio_legend_flow','Violet · interstellar wind (illustrative)'))),
           h('p',null,S('atlas_helio_scope','Round layers and route directions are schematic. The real boundaries are uneven and change over time. Markers show historical crossing distances, not current spacecraft positions.')));
       }
 
@@ -15396,17 +16170,33 @@ return plaza;
           g.globalAlpha = alpha;
           g.strokeStyle = isFocus ? P.ringHot : P.ring;
           g.lineWidth = isFocus ? 2.5 : 1.25;
+          // A distance is not a round object: its ring is dashed and a ruler
+          // spans the diameter, which is the distance itself.
+          var isDistance = obj.dim === 'distance';
+          if (isDistance) g.setLineDash([6, 5]);
           g.beginPath(); g.arc(c.x, c.y, c.dia / 2, 0, Math.PI * 2); g.stroke();
+          g.setLineDash([]);
 
           var glyph = c.dia * 0.7;
           if (glyph >= 10 && glyph <= maxGlyph) {
-            g.globalAlpha = alpha * (isFocus ? 1 : 0.85);
+            // A neighbour bigger than the focus is drawn faint: its picture sits
+            // over the smaller things around the focus, which must stay visible.
+            g.globalAlpha = alpha * (isFocus ? 1 : c.dia > refPx * 1.2 ? 0.45 : 0.85);
             g.font = glyph + 'px system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
             g.textAlign = 'center';
-            g.fillText(obj.emoji, c.x, c.y);
+            if (isDistance) {
+              var rx0 = c.x - c.dia / 2, rx1 = c.x + c.dia / 2, tick = Math.min(14, c.dia * 0.08);
+              g.lineWidth = isFocus ? 2.5 : 1.75;
+              g.beginPath(); g.moveTo(rx0, c.y); g.lineTo(rx1, c.y);
+              [rx0, c.x, rx1].forEach(function (tx, ti) { var th = ti === 1 ? tick * 0.55 : tick; g.moveTo(tx, c.y - th); g.lineTo(tx, c.y + th); });
+              g.stroke();
+              g.fillStyle = isFocus ? P.ringHot : P.ring;
+              [rx0, rx1].forEach(function (tx) { g.beginPath(); g.arc(tx, c.y, Math.max(2.5, tick * 0.28), 0, Math.PI * 2); g.fill(); });
+            } else if (!chartGlyph(g, obj.id, c.x, c.y, glyph)) g.fillText(obj.emoji, c.x, c.y);
           }
 
           if (c.dia >= 30) c.wantsLabel = true;
+          c.arcOnly = glyph > maxGlyph;
           g.globalAlpha = 1;
 
           // Nested decade frames. The ring ten times WIDER than the focus is off
@@ -15464,14 +16254,43 @@ return plaza;
         // at claims its space first and the rest fit around it.
         var labelled = cands.filter(function (c) { return c.wantsLabel; })
           .sort(function (a, b) { return a.dist - b.dist; });
+        // An object too big for a glyph is only an arc. Its label goes where
+        // that arc crosses the stage (top edge first, then a side), with a dot
+        // on the arc; an object whose arc never crosses the stage is unlabelled
+        // rather than leaving a name floating over empty space.
+        function arcAnchor(c) {
+          var r = c.dia / 2, top = 26, side, dx, dy, xs, ys;
+          if (c.y - r >= top && c.x > 40 && c.x < cssW - 40) return { x: c.x, y: c.y - r, below: true };
+          if (r > Math.abs(c.y - top)) {
+            dx = Math.sqrt(r * r - (c.y - top) * (c.y - top));
+            xs = [c.x - dx, c.x + dx].filter(function (v) { return v > 40 && v < cssW - 40; }).sort(function (a, b) { return Math.abs(a - cssW / 2) - Math.abs(b - cssW / 2); });
+            if (xs.length) return { x: xs[0], y: top, below: true };
+          }
+          for (var sI = 0; sI < 2; sI++) {
+            side = sI ? cssW - 30 : 30;
+            if (r <= Math.abs(c.x - side)) continue;
+            dy = Math.sqrt(r * r - (c.x - side) * (c.x - side));
+            ys = [c.y - dy, c.y + dy].filter(function (v) { return v > top + 30 && v < axisY - 40; });
+            if (ys.length) return { x: side, y: ys[0], below: false };
+          }
+          return null;
+        }
         g.textAlign = 'center'; g.textBaseline = 'bottom';
         for (var L = 0; L < labelled.length; L++) {
           var lc = labelled[L], lo = lc.it;
           var lFocus = lo.id === focusIdRef.current;
+          var anchor = lc.arcOnly && !lFocus ? arcAnchor(lc) : null;
+          if (lc.arcOnly && !lFocus && !anchor) continue;
+          if (anchor) lc = { it: lo, dist: lc.dist, dia: 0, x: anchor.x, y: anchor.y + (anchor.below ? 38 : 10), anchor: anchor };
           g.globalAlpha = lFocus ? 1 : clamp(1 - (lc.dist / (DECADES_ACROSS * 1.35)), 0.12, 1);
+          var sizeLine = sciRef.current ? sciNotation(lo.size) : humanLength(lo.size);
+          g.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+          var sizeW = g.measureText(sizeLine).width;
           g.font = (lFocus ? '700 ' : '500 ') + '12px system-ui, -apple-system, "Segoe UI", sans-serif';
           var nm = itemText(lo, 'name');
-          var wpx = g.measureText(nm).width;
+          // Measure both lines: the size line can be the wider one, and it was
+          // being cut off at the right edge ("7.09 times the Earth–Sun dist").
+          var wpx = Math.max(g.measureText(nm).width, sizeW);
           var ly = lc.y - Math.min(lc.dia / 2, maxGlyph / 2) - 8;
           if (ly < 16) ly = 16;
           // Keep the whole label on the stage; a name centred near the edge was
@@ -15485,11 +16304,16 @@ return plaza;
           }
           if (clash) continue;
           labelBoxes.push(box);
+          if (lc.anchor) { g.fillStyle = P.ring; g.beginPath(); g.arc(lc.anchor.x, lc.anchor.y, 3, 0, Math.PI * 2); g.fill(); }
+          // A halo in the stage colour keeps a label readable over any picture.
+          g.lineJoin = 'round'; g.lineWidth = 3.5; g.strokeStyle = P.stage;
+          g.strokeText(nm, lx, ly);
           g.fillStyle = lFocus ? P.ringHot : P.stageFg;
           g.fillText(nm, lx, ly);
           g.font = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+          g.strokeText(sizeLine, lx, ly + 13);
           g.fillStyle = P.stageDim;
-          g.fillText(sciRef.current ? sciNotation(lo.size) : humanLength(lo.size), lx, ly + 13);
+          g.fillText(sizeLine, lx, ly + 13);
         }
         g.globalAlpha = 1;
         g.textBaseline = 'middle';
@@ -16179,9 +17003,13 @@ return plaza;
         // the big thing: one bar the full width
         kids.push(h('rect', { key: 'big', x: 0, y: top, width: W, height: barH, rx: 6, fill: P.selBg, stroke: P.accent, strokeWidth: 1 }));
         var glyph = cellW >= 14;
+        var smallImage = glyphImage(compare.small.id);
+        function icon(item) { var url = glyphImage(item.id); return url ? h('img', { src: url, alt: '', width: 14, height: 14, style: { verticalAlign: '-2px', marginRight: 4 } }) : item.emoji + ' '; }
         for (var i = 0; i < whole; i++) {
-          var x = i * cellW;
-          if (glyph) {
+          var x = i * cellW, gs = Math.min(cellW * 0.85, 26);
+          if (glyph && smallImage) {
+            kids.push(h('image', { key: 'g' + i, href: smallImage, x: x + cellW / 2 - gs / 2, y: top + barH / 2 - gs / 2, width: gs, height: gs }));
+          } else if (glyph) {
             kids.push(h('text', { key: 'g' + i, x: x + cellW / 2, y: top + barH / 2 + 1, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: Math.min(cellW * 0.85, 26) }, compare.small.emoji));
           } else {
             kids.push(h('rect', { key: 'c' + i, x: x + 0.5, y: top + 6, width: Math.max(cellW - 1, 0.6), height: barH - 12, fill: i % 2 ? P.accent : P.ringHot, opacity: 0.85 }));
@@ -16200,8 +17028,8 @@ return plaza;
           h('div', { style: { fontSize: '0.71875rem', color: P.dim, marginBottom: 4 } }, caption),
           h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': caption, style: { display: 'block', overflow: 'visible' } }, kids),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '0.65625rem', color: P.dim } },
-            h('span', null, compare.small.emoji + ' ' + itemText(compare.small, 'name') + ' × ' + n),
-            h('span', null, compare.big.emoji + ' ' + itemText(compare.big, 'name'))));
+            h('span', null, icon(compare.small), itemText(compare.small, 'name') + ' × ' + n),
+            h('span', null, icon(compare.big), itemText(compare.big, 'name'))));
       }
       function staircase() {
         if (bridge.length < 2) return null;
@@ -16301,6 +17129,19 @@ return plaza;
         return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + lengthText(i.size)); });
       }
 
+      // What the stage labels show, as text: those labels are drawn over the
+      // canvas for sighted viewers and are hidden from assistive technology.
+      var sceneNote = viewMode === 'atlas' && !comparisonActive && !scaleFlight ? ({
+        heliosphere: S('atlas_helio_scene_note', 'Also shown: interstellar gas streaming past the heliosphere from the upwind nose, where both Voyagers crossed, and a fading tail downwind whose length has not been measured.'),
+        chicxulub: S('atlas_crater_scene_note', 'Also shown at the surface: an arc of cenotes, water-filled sinkholes about 85 km from the centre that trace the buried rim. The markers are enlarged.'),
+        'football-pitch': S('atlas_pitch_scene_note', 'Also shown: 22 players at kick-off, each about 1.8 m tall, for scale, inside a composed stadium with stands and floodlights.'),
+        eiffel: S('atlas_eiffel_scene_note', 'Also shown: a composed Paris setting, not a survey: the Seine and the Pont d’Iéna in front, the Champ de Mars lawns and tree avenues behind, apartment blocks along its sides, and a 1.7 m person beside the tower. In evening light the tower is floodlit gold and windows are lit.'),
+        au: S('atlas_au_scene_note', 'Also shown: the orbits of Mercury, Venus and Earth, drawn as circles around the Sun. This distance is the radius of Earth’s orbit; the real orbit is slightly oval, from about 147 to 152 million km.'),
+        sequoia: S('atlas_sequoia_scene_note', 'Also shown: neighbouring giant sequoias, smaller white firs and sugar pines 40 to 60 m tall, and a 1.7 m person at the base. Tree placement is illustrative.'),
+        betelgeuse: S('atlas_betelgeuse_scene_note', 'Also shown: planet orbits on the same scale. The orbits of Mercury, Venus, Earth and Mars would lie inside the star; Jupiter’s orbit would pass outside.'),
+        'light-month': S('atlas_lightmonth_scene_note', 'Marked along the ruler: the Sun at day 0, Voyager 1 at about one light day, and thirty light days at the far end.'),
+        'ten-billion-ly': S('atlas_tenbillion_scene_note', 'Marked along the ruler: light arriving here today, light that set out as the Sun formed 4.6 billion years ago, and light that set out 10 billion years ago.')
+      })[focusId] || null : null;
       var realm = realmAt(log10(focused.size));
       var focusIndex = sorted.findIndex(function (i) { return i.id === focused.id; });
       var smaller = sorted[focusIndex + 1], larger = sorted[focusIndex - 1];
@@ -16361,7 +17202,7 @@ return plaza;
           S('atlas_blurb', 'Travel from the familiar to the almost unimaginable. Orbit a world, find your next destination, and feel what a power of ten changes.')),
 
         h('style', null, '.sx-panel{align-self:flex-start;flex-basis:420px}@media(min-width:701px){.sx-panel.sx-workspace-all{flex-basis:310px}}.sx-panel [hidden]{display:none!important}.sx-workspace-navigation{display:flex;flex-direction:column;gap:7px}.sx-workspace-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sx-workspace-tabs button{font-size:.8125rem!important;padding:8px 5px!important;overflow-wrap:anywhere}.sx-workspace-panel{min-width:0}.sx-report input:focus-visible,.sx-report button:focus-visible,.sx-backup input:focus-visible,.sx-backup button:focus-visible,.sx-backup-review h4:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-panel:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}.sx-workspace-eyebrow{font-size:.6875rem;letter-spacing:.07em;text-transform:uppercase;margin:0 0 5px}.sx-workspace-question{font-size:.8125rem;line-height:1.5;margin:7px 0;overflow-wrap:anywhere}.sx-workspace-count{font-size:.75rem;margin:7px 0}.sx-workspace-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sx-workspace-steps button{text-align:left;font-size:.75rem!important;padding:8px!important}.sx-workspace-save-state{font-size:.6875rem;line-height:1.5;margin:9px 0}.sx-workspace-actions{display:flex;gap:6px;flex-wrap:wrap}.sx-workspace-actions button{font-size:.75rem!important;flex:1 1 145px}.sx-investigation-workspace{overflow-wrap:anywhere}@media(max-width:700px){.sx-panel{flex-basis:100%}.sx-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}.sx-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,17,.38),transparent 29%,transparent 82%,rgba(3,9,17,.45))}.sx-hud,.sx-stage-note{z-index:1}.sx-hud h3{letter-spacing:-.025em}.sx-stage canvas:active{cursor:grabbing!important}.sx-markers{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-marker{position:absolute;left:0;top:0;width:44px;height:44px;padding:6px;background:transparent;border:0;pointer-events:auto;cursor:pointer;color:#f2f8ec;font:600 12px system-ui}.sx-marker[hidden]{display:none}.sx-marker span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d0dec2;border-radius:50%;background:rgba(11,27,23,.88);box-shadow:0 0 0 4px rgba(180,215,162,.10),0 3px 12px #0005}.sx-marker:hover span,.sx-marker[aria-pressed="true"] span{background:#deebbe;color:#172819;border-color:#eff5de}.sx-detail-choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.sx-detail-choices button{flex:1 1 130px;text-align:left}.sx-detail-note a:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
-        h('style',null,".sx-reference-control{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:5px;align-items:end}.sx-reference-label{display:block;min-width:0}.sx-reference-label>span{display:block;font-size:9px;letter-spacing:.06em;color:#b8d6d7;margin-bottom:5px}.sx-reference-label select{display:block;width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid #60818e;border-radius:7px;background:#142c39;color:#e8f1f3;font:inherit;font-size:11px;padding:7px 4px;cursor:pointer}.sx-reference-label select:focus-visible{outline:3px solid #e4d2a0;outline-offset:2px}.sx-reference-control button{width:44px;padding:7px!important}.sx-reference-control button:disabled{opacity:.38;cursor:default}.sx-silhouette-legend:has(.sx-reference-control){min-width:260px}.sx-measure-badge{position:absolute;left:0;top:0;pointer-events:none;z-index:1;display:flex;flex-direction:column;gap:3px;width:max-content;max-width:170px;min-width:108px;box-sizing:border-box;padding:7px 9px;border:1px solid #6e6450;border-left:2px solid #d5b371;border-radius:6px;background:rgba(8,22,32,.93);box-shadow:0 4px 18px #0003;color:#eed29b;font:11px/1.25 system-ui,sans-serif;backdrop-filter:blur(6px)}.sx-measure-badge.is-reference{border-color:#4c737b;border-left-color:#a4cfd1;color:#c3e4e3}.sx-measure-badge>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#e7f0f2}.sx-measure-badge>strong{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.sx-measure-badge>small{font-size:9px;color:#b9c9d0;overflow-wrap:anywhere}.sx-measure-leader{position:absolute;left:0;top:0;height:1px;pointer-events:none;background:#d5b371;opacity:.8;transform-origin:0 50%}.sx-measure-leader:before{content:'';position:absolute;left:-2px;top:-2px;width:5px;height:5px;border-radius:50%;background:inherit}.sx-measure-leader.is-reference{background:#a4cfd1}.sx-measure-badge[hidden],.sx-measure-leader[hidden]{display:none}@media(max-width:800px){.sx-silhouette-legend:has(.sx-reference-control){flex:1 1 100%;min-width:0}}@media(max-width:500px){.sx-measure-badge{max-width:136px;min-width:104px;padding:6px 8px}.sx-measure-badge>span{font-size:9px}.sx-reference-label select{font-size:10px}}"),
+        h('style',null,".sx-reference-control{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:5px;align-items:end}.sx-reference-label{display:block;min-width:0}.sx-reference-label>span{display:block;font-size:9px;letter-spacing:.06em;color:#b8d6d7;margin-bottom:5px}.sx-reference-label select{display:block;width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid #60818e;border-radius:7px;background:#142c39;color:#e8f1f3;font:inherit;font-size:11px;padding:7px 4px;cursor:pointer}.sx-reference-label select:focus-visible{outline:3px solid #e4d2a0;outline-offset:2px}.sx-reference-control button{width:44px;padding:7px!important}.sx-reference-control button:disabled{opacity:.38;cursor:default}.sx-silhouette-legend:has(.sx-reference-control){min-width:260px}.sx-measure-badge{position:absolute;left:0;top:0;pointer-events:none;z-index:1;display:flex;flex-direction:column;gap:3px;width:max-content;max-width:170px;min-width:108px;box-sizing:border-box;padding:7px 9px;border:1px solid #6e6450;border-left:2px solid #d5b371;border-radius:6px;background:rgba(8,22,32,.93);box-shadow:0 4px 18px #0003;color:#eed29b;font:11px/1.25 system-ui,sans-serif;backdrop-filter:blur(6px)}.sx-measure-badge.is-reference{border-color:#4c737b;border-left-color:#a4cfd1;color:#c3e4e3}.sx-measure-badge>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#e7f0f2}.sx-measure-badge>strong{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.sx-measure-badge>small{font-size:9px;color:#b9c9d0;overflow-wrap:anywhere}.sx-measure-leader{position:absolute;left:0;top:0;height:1px;pointer-events:none;background:#d5b371;opacity:.8;transform-origin:0 50%}.sx-measure-leader:before{content:'';position:absolute;left:-2px;top:-2px;width:5px;height:5px;border-radius:50%;background:inherit}.sx-measure-leader.is-reference{background:#a4cfd1}.sx-measure-badge[hidden],.sx-measure-leader[hidden],.sx-ruler-tag[hidden],.sx-betelgeuse-pin[hidden]{display:none}.sx-betelgeuse-pin{position:absolute;left:0;top:0;z-index:3;pointer-events:none;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 6px;border:1px solid #e9c391;border-radius:5px;background:rgba(24,10,6,.84);color:#ffe8c8;font:600 11px/1.3 system-ui,sans-serif;white-space:nowrap}.sx-betelgeuse-pin:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.sx-betelgeuse-pin[data-betelgeuse-pin=jupiter]{border-color:#9fd0ea;background:rgba(6,18,28,.86);color:#dff1fb}.sx-ruler-pin{position:absolute;left:0;top:0;z-index:3;pointer-events:none;padding:5px 9px;border:1px solid #8ea4d6;border-radius:6px;background:rgba(10,14,32,.9);color:#e4eaff;font:500 11px/1.35 system-ui,sans-serif;white-space:nowrap}.sx-ruler-pin[hidden]{display:none}.sx-ruler-pin:after{content:'';position:absolute;left:var(--pin-x,50%);width:1px;height:16px;background:#8ea4d6}.sx-ruler-pin[data-side=above]:after{top:100%}.sx-ruler-pin[data-side=below]:after{bottom:100%}.sx-scene-pin{position:absolute;left:0;top:0;z-index:3;pointer-events:none;padding:4px 9px;border:1px solid #b6a8f0;border-radius:6px;background:rgba(16,12,36,.88);color:#ece8ff;font:500 11px/1.35 system-ui,sans-serif;white-space:nowrap}.sx-scene-pin[hidden]{display:none}.sx-ruler-tag{position:absolute;left:0;top:0;pointer-events:none;padding:3px 9px;border:1px solid #5d8190;border-radius:999px;background:rgba(6,18,28,.86);color:#d9eef4;font:600 11px/1.35 system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap;box-shadow:0 2px 10px #0006}@media(max-width:800px){.sx-silhouette-legend:has(.sx-reference-control){flex:1 1 100%;min-width:0}}@media(max-width:500px){.sx-measure-badge{max-width:136px;min-width:104px;padding:6px 8px}.sx-measure-badge>span{font-size:9px}.sx-reference-label select{font-size:10px}}"),
         h('style',null,".sx-lunar-distance-hud{position:absolute;right:18px;bottom:62px;padding:10px 14px;max-width:calc(100% - 64px);box-sizing:border-box;pointer-events:none;border:1px solid #65838c;border-radius:10px;background:#0c222de8;box-shadow:0 6px 24px #0004;color:#d1f7f4;z-index:5}.sx-lunar-distance-hud span{display:block;font:500 10px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#b9d1d8}.sx-lunar-distance-hud strong{display:block;margin-top:4px;font:500 19px ui-monospace,monospace}.sx-lunar-ruler{margin-top:18px;padding:16px;border:1px solid #546c78;border-radius:10px;background:#102530}.sx-lunar-ruler-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.sx-lunar-ruler-heading>div:first-child{display:flex;flex-direction:column;gap:5px}.sx-lunar-ruler-heading strong{font:500 1.5rem ui-monospace,monospace;color:#d0f5f3;letter-spacing:-.04em}.sx-lunar-ruler-heading strong:not([data-lunar-distance]){font-size:.9rem;font-family:inherit;font-weight:600;letter-spacing:0}.sx-lunar-ruler-ends{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:14px 0 8px}.sx-lunar-ruler-ends>div{display:flex;gap:8px;align-items:center;flex:1 1 190px}.sx-lunar-ruler-ends span{font-size:.7rem;color:#e5edef}.sx-lunar-ruler-ends small{display:block;margin-top:4px;font-size:.65rem;color:#bacbd4}.sx-lunar-ruler b{display:grid;place-items:center;min-width:26px;height:26px;background:#edcd96;color:#112432;border-radius:50%;font:700 .75rem system-ui}.sx-lunar-ruler b[data-lunar-key=b]{background:#a3e9ed}.sx-lunar-ruler p{margin:10px 0 0;font-size:.72rem;line-height:1.6;color:#d2e0e6}.sx-lunar-ruler p.sx-lunar-ruler-note{font-size:.65rem;color:#aabbc7}.sx-lunar-endpoints{position:absolute;inset:0;pointer-events:none;z-index:5}.sx-lunar-endpoints span{position:absolute;left:0;top:0;display:grid;place-items:center;width:26px;height:26px;border:2px solid #152637;border-radius:50%;background:#edcd96;color:#102432;box-shadow:0 0 0 1px #edcd96,0 2px 10px #0008;font:700 12px system-ui}.sx-lunar-endpoints span[data-lunar-endpoint=b]{background:#a3e9ed;box-shadow:0 0 0 1px #a3e9ed,0 2px 10px #0008}.sx-lunar-endpoints span[hidden]{display:none}@media(max-width:650px){.sx-lunar-ruler{padding:12px}.sx-lunar-ruler-heading{gap:12px}.sx-lunar-ruler-heading .sx-lunar-actions{width:100%}.sx-lunar-ruler-heading button{flex:1}.sx-lunar-ruler-ends{gap:12px}.sx-lunar-ruler-ends>div{flex:1 1 100%}}"),
         h('style',null,".sx-lunar-survey{padding:18px;border:1px solid #475c69;border-radius:14px;background:linear-gradient(130deg,#15232d,#101b26);color:#eaf0f2;box-shadow:inset 0 1px 0 #ffffff08}\n.sx-lunar-note{font-size:.75rem;line-height:1.65;margin-top:14px;color:#d4dfe4}.sx-lunar-note summary{cursor:pointer;min-height:32px}.sx-lunar-note p{margin:0 0 8px}.sx-lunar-survey header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}\n.sx-lunar-survey h3{margin:4px 0 0;font-size:1.1rem;letter-spacing:-.02em}.sx-lunar-eyebrow{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:#bac9d0}\n.sx-lunar-modes,.sx-lunar-actions{display:flex;gap:6px;flex-wrap:wrap}.sx-lunar-survey button,.sx-lunar-survey select{min-height:44px;border:1px solid #607581;border-radius:8px;background:#1c2c38;color:#ecf2f5;padding:8px 11px;font:inherit;font-size:.75rem;cursor:pointer}.sx-lunar-survey button[aria-pressed=true]{border-color:#edcf99;background:#e4cca3;color:#17242e}.sx-lunar-survey button:disabled,.sx-lunar-survey select:disabled{opacity:.5;cursor:default}\n.sx-lunar-survey button:focus-visible,.sx-lunar-survey select:focus-visible,.sx-lunar-map:focus-visible{outline:3px solid #f3d499;outline-offset:4px}.sx-lunar-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr);gap:20px;align-items:center}.sx-lunar-map-wrap{min-width:0}.sx-lunar-map{display:block;width:100%;aspect-ratio:2/1;border-radius:10px;background:#09111c;border:1px solid #62717b;touch-action:none;cursor:crosshair;overflow:hidden;box-sizing:border-box}.sx-lunar-map-caption{display:flex;justify-content:space-between;gap:8px;font-size:.63rem;color:#bcc8ce;margin-top:7px}.sx-lunar-controls{display:flex;flex-direction:column;gap:9px;min-width:0}.sx-lunar-controls>strong{font-size:.95rem}.sx-lunar-controls output{font:500 .72rem ui-monospace,monospace;color:#eed6ac;overflow-wrap:anywhere}.sx-lunar-controls label{display:flex;flex-direction:column;gap:5px;font-size:.68rem;color:#c5d2d8}.sx-lunar-controls p,.sx-lunar-scope{font-size:.72rem;color:#bccad1;line-height:1.65;margin:2px 0}.sx-lunar-scope{border-top:1px solid #3d4f5b;padding-top:12px;margin-top:14px}.sx-lunar-survey>a{display:inline-block;margin-top:8px;color:#a7dcf3;font-size:.72rem}\n@media(max-width:650px){.sx-lunar-survey{padding:14px}.sx-lunar-grid{grid-template-columns:minmax(0,1fr);gap:16px}.sx-lunar-modes{width:100%}.sx-lunar-modes button{flex:1}.sx-lunar-controls label select{width:100%}.sx-lunar-survey header{gap:12px}}"),
         h('style', null, '.sx-comparison-points{position:absolute;inset:0;pointer-events:none;z-index:2}.sx-comparison-point{position:absolute;left:0;top:0;pointer-events:auto;width:172px;border:1px dashed #bed3de;border-radius:8px;padding:7px 9px;color:#eef6fc;background:rgba(9,22,32,.93);font:12px system-ui;cursor:pointer}.sx-comparison-point:before{content:"+";display:block;font-size:20px;line-height:22px}.sx-comparison-point[hidden]{display:none}.sx-comparison-pair{display:flex;gap:8px;flex-wrap:wrap}.sx-comparison-pair article{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.sx-scale-bridge button{text-align:left;max-width:100%}.sx-explorer textarea:focus-visible,.sx-explorer .sx-comparison-diagram:focus-visible{outline:3px solid #67d8f5;outline-offset:3px}'),
@@ -16441,7 +17282,8 @@ return plaza;
               viewMode==='atlas'&&focusId==='everest'&&detailId==='everest-flight'&&!comparisonActive?h('div',{'data-air-world-waypoint':true,className:'sx-air-world-waypoint',hidden:true,'aria-hidden':'true'},h('i',null),h('strong',null,S('atlas_air_waypoint_label', 'Waypoint')),h('span',{'data-air-world-range':true})):null,
               viewMode === 'atlas' ? h('canvas', { ref: atlasCanvasRef, tabIndex: 0, role: 'application',
                 'aria-label': comparisonActive ? S('atlas_comparison_canvas_aria', 'Shared scale comparison. Drag or use W A S D to orbit. Scroll or pinch to inspect. R resets the camera. Escape returns to exploration.') : nebulaInside?S('atlas_nebula_nav_canvas', 'Inside Orion. Drag to look. W A S D or arrows move. Q and E change height. Space brakes. R resets. Escape returns to the whole nebula.') : detailId==='everest-flight'?S('atlas_air_canvas', 'Flight through Everest. Drag to look. W A S D or arrows move. Q and E change height. Space brakes. R resets. Escape returns to the terrain map.') : S('atlas_canvas_aria', 'Interactive scale atlas. Scroll or use arrow keys to travel through scale. Drag to orbit, or use W A S D. Pinch to inspect more closely. R resets the camera. Home returns to human scale. Space plays or pauses the journey.'),
-                'aria-describedby': nebulaInside?descId+'-nebula-help':detailId==='everest-flight'?descId+'-air-help':descId, 'aria-busy':!!scaleFlight, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
+                'aria-describedby': nebulaInside?descId+'-nebula-help':detailId==='everest-flight'?descId+'-air-help':descId+(sceneNote?' '+descId+'-scene':''), 'aria-busy':!!scaleFlight, onKeyDown: onCanvasKey, style: { touchAction: 'none', cursor: 'grab', outlineOffset: '-4px' } }) : null,
+              sceneNote ? h('p', { id: descId + '-scene', className: 'sx-air-sr' }, sceneNote) : null,
               h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
                 'aria-label': S('canvas_aria', 'Scale view. Left and right arrows zoom by a quarter of a power of ten, hold shift for a whole one, Page Up and Page Down jump three, Home returns to human scale, space plays or pauses the zoom.'),
                 'aria-describedby': descId,
@@ -16451,6 +17293,11 @@ return plaza;
               viewMode==='atlas'&&!comparisonActive&&focusId==='reef'&&planetImagery.id==='reef'&&planetImagery.status==='ready'?h('div',{'data-reef-scale':true,style:{position:'absolute',right:12,bottom:64,zIndex:4,pointerEvents:'none',fontSize:'.65rem',padding:'8px 10px',border:'1px solid #426d7c',borderRadius:7,color:'#d0e9e6',background:'#0c2631e8',minWidth:115}},h('span',{style:{display:'block',fontSize:9,opacity:.78,marginBottom:5}},S('atlas_reef_scale_center','Scale at view center')),h('span',{'data-reef-scale-bar':true,style:{display:'block',height:6,border:'solid #cde5df',borderWidth:'0 1px 2px',width:100,marginBottom:4}}),h('strong',{'data-reef-scale-value':true},'')):null,
               viewMode==='atlas'&&!comparisonActive&&focusId==='jupiter'&&jupiterEarth&&selectedDetail?h('div',{'data-jupiter-reference-label':true,style:{position:'absolute',right:12,bottom:64,zIndex:4,pointerEvents:'none',fontSize:'.65rem',padding:'6px 9px',border:'1px solid #527385',borderRadius:6,color:'#c3edf5',background:'#10202de8'}},S('atlas_jupiter_earth_label','Earth reference · 12,742 km')):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='alpha-cen-dist'?h('div',{'aria-hidden':'true'},['sun','ab','proxima','a','b'].map(function(id){return h('div',{key:id,'data-centauri-pin':id,className:'sx-centauri-pin',hidden:true},S('atlas_centauri_pin_'+id,{"sun":"Sun · position guide","ab":"A/B · position guide","a":"A · position guide","b":"B · position guide","proxima":"Proxima · position guide"}[id]));})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='football-pitch'?h('div',{'aria-hidden':'true'},h('div',{'data-scene-pin':'players',className:'sx-scene-pin',hidden:true},S('atlas_pitch_pin_players','22 players · each about 1.8 m tall'))):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='chicxulub'?h('div',{'aria-hidden':'true'},h('div',{'data-scene-pin':'cenotes',className:'sx-scene-pin',hidden:true},S('atlas_crater_pin_cenotes','Ring of cenotes · sinkholes trace the buried rim (enlarged)'))):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='heliosphere'?h('div',{'aria-hidden':'true'},[['wind',S('atlas_helio_pin_wind','Interstellar wind · about 26 km/s')],['nose',S('atlas_helio_pin_nose','Upwind nose · both Voyagers crossed here')],['tail',S('atlas_helio_pin_tail','Heliotail · length not yet measured')]].map(function(p){return h('div',{key:p[0],'data-scene-pin':p[0],className:'sx-scene-pin',hidden:true},p[1]);})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&(focusId==='light-month'||focusId==='ten-billion-ly')?h('div',{'aria-hidden':'true'},(focusId==='light-month'?[['sun',S('atlas_lightmonth_pin_sun','The Sun · day 0')],['voyager',S('atlas_lightmonth_pin_voyager','Voyager 1 · about one light day')],['end',S('atlas_lightmonth_pin_end','Thirty light days')]]:[['here',S('atlas_tenbillion_pin_here','Here · light arriving today')],['sun',S('atlas_tenbillion_pin_sun','Set out as the Sun formed · 4.6 billion years ago')],['far',S('atlas_tenbillion_pin_far','Set out 10 billion years ago')]]).map(function(p){return h('div',{key:p[0],'data-ruler-pin':p[0],className:'sx-ruler-pin',hidden:true},p[1]);})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='betelgeuse'?h('div',{'aria-hidden':'true'},['earth','mars','jupiter'].map(function(id){return h('div',{key:id,'data-betelgeuse-pin':id,className:'sx-betelgeuse-pin',hidden:true},S('atlas_betelgeuse_orbit_'+id,{earth:'Earth’s orbit',mars:'Mars’s orbit',jupiter:'Jupiter’s orbit'}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='au'?h('div',{'aria-hidden':'true'},['sun','earth','cursor'].map(function(id){return h('div',{key:id,'data-au-pin':id,className:'sx-au-pin',hidden:true},S('atlas_au_pin_'+id,{sun:'Sun',earth:'Earth · position guide',cursor:'Inspection point'}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='galactic-centre'?h('div',{'aria-hidden':'true'},['home','centre','cursor'].map(function(id){return h('div',{key:id,'data-galcentre-pin':id,className:'sx-galcentre-pin',hidden:true},S('atlas_galcentre_pin_'+id,{"home":"Our Solar System","centre":"Sagittarius A* location","cursor":"Journey position"}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='basketball'?h('div',{'aria-hidden':'true'},['cover','carcass','windings','bladder'].map(function(key){return h('div',{key:key,'data-basketball-pin':key,className:'sx-basketball-pin',hidden:true},key==='cover'?S('atlas_basketball_layer_cover','Cover'):key==='carcass'?S('atlas_basketball_layer_carcass','Rubber carcass'):key==='windings'?S('atlas_basketball_layer_windings','Thread windings'):S('atlas_basketball_layer_bladder','Air bladder'));})):null,
@@ -16476,7 +17323,7 @@ return plaza;
                   h('i',{key:'leader-'+item.id,className:'sx-measure-leader'+variant,'data-scale-measure-leader':item.id,hidden:true,'aria-hidden':true}),
                   h('div',{key:'measure-'+item.id,className:'sx-measure-badge'+variant,'data-scale-comparison-measure':item.id,hidden:true,title:itemText(item,'name')+' · '+lengthText(item.size)+' · '+dimensionText(item,S)},
                     h('span',null,itemText(item,'name')),h('strong',null,lengthText(item.size)),h('small',null,dimensionText(item,S)))];
-              }) : null) : null,
+              }) : null, h('span',{className:'sx-ruler-tag','data-scale-ruler-tag':focusId,hidden:true,'aria-hidden':'true'},humanLength(focused.size))) : null,
               viewMode === 'atlas' || comparisonActive ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
                 h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, scaleFlight ? S('atlas_flight_heading', 'Journey through scale') : comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : nebulaInside?S('atlas_nebula_nav_badge', 'Inside Orion · a stellar nursery'):focusId==='basketball'?S('atlas_basketball_study','Basketball workshop'):focusId==='lightyear'?S('atlas_lightyear_study','Light-year voyage'):focusId==='milkyway'?S('atlas_milkyway_study','Milky Way structure study'):focusId==='human'?S('atlas_human_study','Human stature study'):focusId==='light-minute'?S('atlas_lightminute_study','Light-minute observatory'):focusId==='coma-dist'?S('atlas_coma_study','Coma Cluster atlas'):focusId==='galactic-centre'?S('atlas_galcentre_study','Galactic Centre journey'):focusId==='ecoli'?S('atlas_ecoli_study','E. coli cell atlas'):focusId==='alpha-cen-dist'?S('atlas_centauri_study','Alpha Centauri observatory'):focusId==='au'?S('atlas_au_study','Earth–Sun crossing'):focusId==='andromeda-dist'?S('atlas_andromeda_study','Andromeda crossing'):focusId==='universe'?S('atlas_universe_study','Observable universe atlas'):focusId==='laniakea'?S('atlas_laniakea_study','Laniakea flow atlas'):focusId==='virgo-sc'?S('atlas_virgo_study','Virgo neighbourhood atlas'):focusId==='local-bubble'?S('atlas_bubble_study','Local Bubble dust atlas'):focusId==='proton'?S('atlas_proton_study','Proton structure study'):focusId==='carbon'?S('atlas_carbon_study','Carbon orbital study'):focusId==='heliosphere'?S('atlas_helio_study','Heliosphere study'):focusId==='oort'?S('atlas_oort_study','Oort Cloud study'):isElectromagneticWave(focusId)?S('atlas_wave_study','Electromagnetic wave study'):focusId==='door'?S('atlas_door_study','Doorway study'):focusId==='sand'?S('atlas_sand_study', 'Mineral grain study'):S('atlas_realm_' + realm.id, realm.name)),
                 h('h3', null, comparisonActive ? (comparisonStyle==='silhouette'&&compare.a.id!==compare.b.id?S('atlas_silhouette_heading',SPECIMEN_COPY.atlas_silhouette_heading):S('atlas_comparison_shared', 'One shared scale')) : focused.id==='dna'?S('atlas_dna_title', 'DNA double helix'):itemText(focused, 'name')),
@@ -16488,6 +17335,7 @@ return plaza;
                 !comparisonActive&&focused.id==='sequoia'?h('p',{style:{color:'#cddbb7',marginTop:10}},S('atlas_sequoia_badge','Giant forest · 84 m from ground to summit')):null,
                 !comparisonActive&&focused.id==='blue-whale'?h('p',{style:{color:'#bcdce5',marginTop:10}},S('atlas_whale_badge', 'Ocean giant · 25 m from snout to tail notch')):null,
                 !comparisonActive&&focused.id==='chicxulub'?h('p',{style:{color:'#c5dace',marginTop:10}},S('atlas_crater_badge', 'Buried impact structure · vertical relief enlarged 15×')):null,
+                !comparisonActive&&!scaleFlight&&focused.id==='betelgeuse'&&(!detailId||detailId==='betelgeuse-orbits')?h('p',{style:{color:'#f3c9a2',marginTop:10}},S('atlas_betelgeuse_badge', 'In the Sun’s place · planet orbits on the same scale')):null,
                 !comparisonActive&&focused.id==='virus'?h('p',{style:{color:'#bdd6e5',marginTop:10}},S('atlas_virus_badge', 'Influenza A example · eight RNA segments')):null,
                 !comparisonActive&&focused.id==='pollen'?h('p',{style:{color:'#d6cead',marginTop:10}},S('atlas_pollen_badge', 'Tricolpate example · three elongated apertures')):null,
                 !comparisonActive&&focused.id==='ribosome'?h('p',{style:{color:'#bedbdc',marginTop:10}},S('atlas_ribo_badge', 'Experimental RNA · two cooperating subunits')):null,

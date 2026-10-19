@@ -17,6 +17,8 @@ const sandbox = {
   document: { getElementById: () => ({}) },
   console: { log() {}, warn() {}, error() {} },
 };
+// The geography loads first, as the STEM loader does (stemModuleDependencies).
+vm.runInNewContext(fs.readFileSync(path.join(root, 'stem_lab/stem_data_skyschool_geo.js'), 'utf8'), sandbox, { timeout: 5000 });
 vm.runInNewContext(source, sandbox, { timeout: 5000 });
 const newHeight = sandbox.window.__RR_TEST_EXPORTS__.flightSim.getFlightTerrainHeight;
 if (typeof newHeight !== 'function') throw new Error('Missing production terrain helper');

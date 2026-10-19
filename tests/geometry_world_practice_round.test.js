@@ -394,8 +394,11 @@ describe('practice rounds, mounted', () => {
     expect(select.value).toBe('practice_42');
     Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set.call(select, 'practice_new');
     React.act(() => select.dispatchEvent(new window.Event('change', { bubbles: true })));
-    expect(m.bucket().activeLesson).toMatch(/^practice_\d{1,4}$/);
-    expect(m.bucket().activeLesson).not.toBe('practice_new');
+    // 6a0c48749: a chosen lesson is staged in pendingLesson behind its intro; the live
+    // world (activeLesson) is only replaced when the learner starts it.
+    expect(m.bucket().pendingLesson).toMatch(/^practice_\d{1,4}$/);
+    expect(m.bucket().pendingLesson).not.toBe('practice_42');
+    expect(m.bucket().activeLesson).toBe('practice_42');
     expect(m.bucket().showLessonIntro).toBe(true);
     m.unmount();
     // Choosing closes the settings panel, so the stretch choice gets its own visit.
@@ -404,7 +407,7 @@ describe('practice rounds, mounted', () => {
     const select2 = [...s2.container.querySelectorAll('select')].find((x) => [...x.options].some((o) => o.value === 'practice_new_s'));
     Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set.call(select2, 'practice_new_s');
     React.act(() => select2.dispatchEvent(new window.Event('change', { bubbles: true })));
-    expect(s2.bucket().activeLesson).toMatch(/^practice_s[1-9]\d{0,3}$/);
+    expect(s2.bucket().pendingLesson).toMatch(/^practice_s[1-9]\d{0,3}$/);
     s2.unmount();
   });
 

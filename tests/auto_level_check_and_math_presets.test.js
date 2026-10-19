@@ -49,7 +49,10 @@ describe('automatic level check in the adapted-text pipeline', () => {
         expect(block).toContain("const _agree = _fkStatus === _judgeStatus && (_fkStatus === 'above-target' || _fkStatus === 'below-target');");
         expect(block).toContain("const _shouldRelevel = _agree && !configOverride.relevelPass && Number.isFinite(_fkGrade) && _autoPref('alloflow_auto_relevel');");
         expect(block).toContain('relevelPass: 1,');
-        expect(block).toContain('relevelReplaceId: newId,');
+        // a9ae02cb5 (2026-09-30): the first draft is never committed before the re-level; the
+        // re-level's own result is what lands (an existing item's id is forwarded, if any).
+        expect(block).toContain('relevelReplaceId: configOverride.relevelReplaceId || null,');
+        expect(block).toContain('if (_relevelled) return _relevelled;');
         expect(block).toContain("await handleGenerate('simplified', langOverride, keepLoading, textOverride, {");
         // Off switches, both defaulting to on.
         expect(block).toContain("_autoPref('alloflow_auto_level_check')");
@@ -68,8 +71,10 @@ describe('automatic level check in the adapted-text pipeline', () => {
         expect(block).toContain('fromLocalStats: _fkStats,');
         expect(block).toContain('measuredBefore: _fkGrade,');
         expect(block).toContain("direction: _simpler ? 'simpler' : 'harder'");
-        expect(dispatcher).toContain('setHistory(prev => configOverride.relevelReplaceId');
-        expect(dispatcher).toContain('? prev.map(item => item.id === configOverride.relevelReplaceId ? tempItem : item)');
+        // Replacement is guarded: only the unchanged item it was built from is swapped out.
+        expect(dispatcher).toContain('if (!configOverride.relevelReplaceId) return [...prev, finalAdaptedItem];');
+        expect(dispatcher).toContain('return prev.some(canReplace) ? prev.map(item => canReplace(item) ? finalAdaptedItem : item) : prev;');
+        expect(dispatcher).toContain('const canReplace = item => item?.id === configOverride.relevelReplaceId\n          && replacementBaselineKey && JSON.stringify(item) === replacementBaselineKey;');
         // The directive reaches the rewrite prompt for every chunk.
         expect(dispatcher).toContain("${configOverride.relevelDirective ? String(configOverride.relevelDirective) : ''}");
         expect(block).toContain('RE-LEVEL PASS (automatic)');

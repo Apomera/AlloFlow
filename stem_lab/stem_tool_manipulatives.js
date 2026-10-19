@@ -904,8 +904,12 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Challenge Checks ──
       // ══════════════════════════════════════════════════════════════
+      // A solved challenge stays solved (the Check buttons stay enabled): re-clicking
+      // re-scored it, so one 347 earned 25/25, a 25 streak and 25 XP awards.
+      var challengeCheckPending = false;
       var checkBase10 = function() {
-        if (!b10Challenge) return;
+        if (!b10Challenge || b10Challenge.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var ok = totalValue === b10Challenge.target;
         if (announceToSR) announceToSR(ok ? 'Correct!' : 'Incorrect');
         var newStreak = ok ? streak + 1 : 0;
@@ -917,7 +921,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Your blocks show ' + totalValue.toLocaleString() + ', target is ' + b10Challenge.target.toLocaleString() },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          blocksSolved: newBS
+          blocksSolved: newBS,
+          b10Challenge: ok ? Object.assign({}, b10Challenge, { solved: true }) : b10Challenge
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'base-10 blocks');
@@ -930,7 +935,8 @@ window.StemLab = window.StemLab || {
       };
 
       var checkAbacus = function() {
-        if (!abacusChallenge) return;
+        if (!abacusChallenge || abacusChallenge.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var ok = abacusTotal === abacusChallenge.target;
         var newStreak = ok ? streak + 1 : 0;
         var newAS = abacusSolved + (ok ? 1 : 0);
@@ -940,7 +946,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Shows ' + abacusTotal.toLocaleString() + ', target is ' + abacusChallenge.target.toLocaleString() },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          abacusSolved: newAS
+          abacusSolved: newAS,
+          abacusChallenge: ok ? Object.assign({}, abacusChallenge, { solved: true }) : abacusChallenge
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'abacus');
@@ -970,7 +977,8 @@ window.StemLab = window.StemLab || {
       };
 
       var checkSR = function() {
-        if (!srProblem) return;
+        if (!srProblem || srProblem.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var tolerance = srProblem.answer * 0.15;
         var ok = Math.abs(product - srProblem.answer) <= tolerance;
         var newStreak = ok ? streak + 1 : 0;
@@ -981,7 +989,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Need \u2248' + srProblem.answer + ', your slide rule reads \u2248' + product.toFixed(1) },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          slideSolved: newSS
+          slideSolved: newSS,
+          srProblem: ok ? Object.assign({}, srProblem, { solved: true }) : srProblem
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'slide rule');
@@ -1821,7 +1830,8 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, pvQuiz.q),
             !pvFeedback && h('div', { className: 'grid grid-cols-2 gap-3' },
               pvQuiz.opts.map(function(opt) {
-                return h('button', { 'aria-label': __alloT('stem.manipulatives.next', 'Next'), key: opt, onClick: function() { answerPVQuiz(opt); },
+                // No aria-label: it named every choice "Next"; the visible option text is the name.
+                return h('button', { key: opt, onClick: function() { answerPVQuiz(opt); },
                   className: 'px-4 py-3 rounded-xl text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer'
                 }, opt);
               })
@@ -2271,7 +2281,7 @@ window.StemLab = window.StemLab || {
                 upd({ pvdChallenge: { type: t, target: a + b, q: 'Build ' + a + ' + ' + b + ' = ?  Place all the disks, then regroup.' }, pvdFeedback: null, pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } });
               } else {
                 var x = 200 + Math.floor(Math.random() * 700);
-                var y = 100 + Math.floor(Math.random() * (x - 50));
+                var y = 100 + Math.floor(Math.random() * (x - 100)); // y < x; (x - 50) allowed "take away 249 from 200"
                 upd({ pvdChallenge: { type: t, target: x - y, q: 'Build ' + x + ', then take away ' + y + '. What disks remain?' }, pvdFeedback: null, pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } });
               }
             };
@@ -2294,7 +2304,9 @@ window.StemLab = window.StemLab || {
               }
               var newStreak = ok ? streak + 1 : 0;
               upd({
-                pvdFeedback: { ok: ok, msg: ok ? '✅ Correct! Total = ' + total.toLocaleString() : '❌ Currently ' + total.toLocaleString() + ', need ' + pvdChallenge.target.toLocaleString() },
+                pvdFeedback: { ok: ok, msg: ok ? '✅ Correct! Total = ' + total.toLocaleString()
+                  : total === pvdChallenge.target ? '❌ ' + total.toLocaleString() + ' is the right value, but not with the fewest disks. Regroup: trade 10 of one disk for 1 of the next.'
+                  : '❌ Currently ' + total.toLocaleString() + ', need ' + pvdChallenge.target.toLocaleString() },
                 score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
                 streak: newStreak
               });
@@ -2340,7 +2352,8 @@ window.StemLab = window.StemLab || {
             onClick: function() {
               var nh = Object.assign({}, hundredsHighlight);
               if (nh[n]) delete nh[n]; else nh[n] = true;
-              upd({ hundredsHighlight: nh });
+              // Remember the click itself: Object.keys sorts integer keys, so "last key" was the LARGEST cell.
+              upd({ hundredsHighlight: nh, hcLastClicked: nh[n] ? n : null });
               sfxClick();
             },
             'aria-label': 'Number ' + n + (highlighted ? ', highlighted' : '') + (isSkipCounted ? ', skip-count match' : ''),
@@ -2410,21 +2423,18 @@ window.StemLab = window.StemLab || {
             var genHc = function() {
               var types = ['skipFind', 'multiple', 'prime', 'pattern'];
               var t = types[Math.floor(Math.random() * types.length)];
+              upd({ hcLastClicked: null });
               if (t === 'skipFind') {
                 var step = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
                 var nth = 3 + Math.floor(Math.random() * 8);
-                upd({ hcChallenge: { type: t, q: 'Skip-count by ' + step + 's. Click the ' + nth + 'th number you land on.', target: step * nth }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Skip-count by ' + step + 's. Click the ' + (nth === 3 ? '3rd' : nth + 'th') + ' number you land on.', target: step * nth }, hcFeedback: null });
               } else if (t === 'multiple') {
+                // Graded from data in checkHc: a validator FUNCTION in state is lost on save/reload.
                 var bases = [3, 4, 6, 7, 8, 9, 11];
                 var b = bases[Math.floor(Math.random() * bases.length)];
-                var mult = 2 + Math.floor(Math.random() * Math.floor(100 / b));
-                upd({ hcChallenge: { type: t, q: 'Click any multiple of ' + b + ' greater than 20.', target: null, validator: function(n) { return n % b === 0 && n > 20; } }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Click any multiple of ' + b + ' greater than 20.', target: null, base: b }, hcFeedback: null });
               } else if (t === 'prime') {
-                upd({ hcChallenge: { type: t, q: 'Click any prime number between 30 and 70.', target: null, validator: function(n) {
-                  if (n < 30 || n > 70) return false;
-                  for (var d = 2; d * d <= n; d++) if (n % d === 0) return false;
-                  return n > 1;
-                } }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Click any prime number between 30 and 70.', target: null, low: 30, high: 70 }, hcFeedback: null });
               } else {
                 var diff = 2 + Math.floor(Math.random() * 8);
                 var startSeq = 1 + Math.floor(Math.random() * 9);
@@ -2433,12 +2443,16 @@ window.StemLab = window.StemLab || {
             };
             var checkHc = function() {
               if (!hcChallenge) return;
-              // Last highlighted cell — newest key
-              var highlighted = Object.keys(hundredsHighlight).map(Number);
-              if (highlighted.length === 0) return;
-              var picked = highlighted[highlighted.length - 1];
+              // The cell clicked last (and still highlighted).
+              var picked = Number(_m.hcLastClicked);
+              if (!Number.isInteger(picked) || !hundredsHighlight[picked]) return;
               var ok;
-              if (hcChallenge.validator) ok = hcChallenge.validator(picked);
+              if (hcChallenge.type === 'multiple' && hcChallenge.base) ok = picked % hcChallenge.base === 0 && picked > 20;
+              else if (hcChallenge.type === 'prime') {
+                ok = picked >= (hcChallenge.low || 30) && picked <= (hcChallenge.high || 70);
+                for (var pd = 2; ok && pd * pd <= picked; pd++) if (picked % pd === 0) ok = false;
+              }
+              else if (typeof hcChallenge.validator === 'function') ok = hcChallenge.validator(picked);
               else ok = picked === hcChallenge.target;
               var newStreak = ok ? streak + 1 : 0;
               upd({
@@ -2613,7 +2627,8 @@ window.StemLab = window.StemLab || {
                 ),
             patternBlocks.length > 0 && h('p', { className: 'text-[0.6875rem] text-purple-700 mt-2 text-center font-bold' },
               __alloT('stem.manipulatives.total_fractional_value_in_hexagons', 'Total fractional value (in hexagons): '), h('span', { className: 'font-mono' }, totalValue.toFixed(3)),
-              totalValue === Math.floor(totalValue) && totalValue > 0 && ' = ' + totalValue + ' whole hexagon' + (totalValue === 1 ? '' : 's')
+              // Six 1/6 triangles sum to 0.9999999999999999 in floating point; compare to 6 places.
+              Math.abs(totalValue - Math.round(totalValue)) < 1e-6 && Math.round(totalValue) > 0 && ' = ' + Math.round(totalValue) + ' whole hexagon' + (Math.round(totalValue) === 1 ? '' : 's')
             )
           ),
           h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800' },
@@ -2645,19 +2660,23 @@ window.StemLab = window.StemLab || {
               }, 0);
               var valOk = Math.abs(total - pbChallenge.target) < 0.001;
               var useOk = true;
+              // ONLY means only: squares and tan rhombi (no hexagon value) used to slip through,
+              // and counted toward "exactly N pieces" (2 hexagons + 4 squares = "6 pieces worth 2").
+              var valued = patternBlocks.filter(function(b) {
+                var s = PB_SHAPES.find(function(x) { return x.id === b.type; });
+                return !!(s && s.value);
+              });
               if (pbChallenge.mustUse) {
-                useOk = patternBlocks.every(function(b) {
-                  var s = PB_SHAPES.find(function(x) { return x.id === b.type; });
-                  return !s || !s.value || b.type === pbChallenge.mustUse;
-                });
+                useOk = patternBlocks.every(function(b) { return b.type === pbChallenge.mustUse; });
               }
-              var countOk = pbChallenge.exactCount == null || patternBlocks.length === pbChallenge.exactCount;
+              var countOk = pbChallenge.exactCount == null || (valued.length === pbChallenge.exactCount && valued.length === patternBlocks.length);
               var ok = valOk && useOk && countOk;
               var newStreak = ok ? streak + 1 : 0;
               var msgParts = [];
-              if (!valOk) msgParts.push('value is ' + total.toFixed(3) + ', need ' + pbChallenge.target);
-              if (!useOk) msgParts.push('only use ' + pbChallenge.mustUse);
-              if (!countOk) msgParts.push('use exactly ' + pbChallenge.exactCount + ' pieces (you have ' + patternBlocks.length + ')');
+              var mustShape = PB_SHAPES.find(function(x) { return x.id === pbChallenge.mustUse; });
+              if (!valOk) msgParts.push('value is ' + total.toFixed(3) + ', need ' + Number(pbChallenge.target.toFixed(3)));
+              if (!useOk) msgParts.push('only use ' + (mustShape ? mustShape.name : pbChallenge.mustUse));
+              if (!countOk) msgParts.push('use exactly ' + pbChallenge.exactCount + ' hexagon-fraction pieces (you have ' + valued.length + (valued.length !== patternBlocks.length ? ' plus ' + (patternBlocks.length - valued.length) + ' without a fraction value' : '') + ')');
               upd({
                 pbFeedback: { ok: ok, msg: ok ? '✅ Correct! Value = ' + total.toFixed(3) : '❌ ' + msgParts.join('; ') },
                 score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
@@ -3143,8 +3162,8 @@ window.StemLab = window.StemLab || {
           upd({ nbWhole: w, nbPart1: p1, nbMode: 'practice', nbAnswer: '', nbFeedback: null });
         };
         var checkNb = function() {
-          var ans = parseInt(nbAnswer);
-          var ok = ans === (nbWhole - nbPart1);
+          var ans = String(nbAnswer).trim() === '' ? NaN : Number(nbAnswer); // parseInt took "4.9" as 4
+          var ok = Number.isInteger(ans) && ans === (nbWhole - nbPart1);
           if (ok) {
             var newNbS = (_m.nbSolved || 0) + 1;
             sfxCorrect();
@@ -3274,23 +3293,26 @@ window.StemLab = window.StemLab || {
         var craGenAddition = function() {
           var a = 3 + Math.floor(Math.random() * 8);  // 3..10
           var b = 2 + Math.floor(Math.random() * 7);  // 2..8
-          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenSubtraction = function() {
           var a = 5 + Math.floor(Math.random() * 10); // 5..14
           var b = 1 + Math.floor(Math.random() * Math.min(a - 1, 8));
-          upd({ craTarget: { op: '−', a: a, b: b, ans: a - b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '−', a: a, b: b, ans: a - b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenRegroup = function() {
           // Force a regrouping addition (carrying)
-          var a = 13 + Math.floor(Math.random() * 15); // 13..27
-          var b = 14 + Math.floor(Math.random() * 15); // 14..28
-          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b, requiresRegroup: true }, craStep: 1, craFeedback: null });
+          var a, b;
+          do { // resample until the ones carry: 47% of pairs (13 + 14) needed no regrouping
+            a = 13 + Math.floor(Math.random() * 15); // 13..27
+            b = 14 + Math.floor(Math.random() * 15); // 14..28
+          } while ((a % 10) + (b % 10) < 10);
+          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b, requiresRegroup: true }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenMultiplication = function() {
           var a = 2 + Math.floor(Math.random() * 4);
           var b = 2 + Math.floor(Math.random() * 5);
-          upd({ craTarget: { op: '×', a: a, b: b, ans: a * b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '×', a: a, b: b, ans: a * b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craNext = function() {
           if (craStep < 3) upd({ craStep: craStep + 1, craFeedback: null });
@@ -3478,8 +3500,8 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ craUserAns: e.target.value }); },
                   onKeyDown: function(e) {
                     if (e.key === 'Enter') {
-                      var u = parseInt(_m.craUserAns);
-                      var ok = u === t.ans;
+                      var u = String(_m.craUserAns == null ? '' : _m.craUserAns).trim() === '' ? NaN : Number(_m.craUserAns); // parseInt took "12.9" as 12
+                      var ok = Number.isInteger(u) && u === t.ans;
                       upd({ craFeedback: { ok: ok, msg: ok ? '✅ Correct! ' + t.a + ' ' + t.op + ' ' + t.b + ' = ' + t.ans : '❌ Answer is ' + t.ans } });
                       if (ok) { sfxCorrect(); checkBadges({ craCompleted: true }); } else sfxWrong();
                     }
@@ -4272,7 +4294,7 @@ window.StemLab = window.StemLab || {
             }, mode: 'tenFrame', goal: 'tenFrame' },
           { id: 'tf_subitize', cat: 'Ten Frames',
             gen: function() {
-              var n = 4 + Math.floor(Math.random() * 6);
+              var n = 5 + Math.floor(Math.random() * 6); // 5..10: n = 4 asked for "-1 more"
               return { q: 'A ten frame has the top row full and ' + (n - 5) + ' more in the bottom row. How many total?', a: n };
             }, mode: 'tenFrame', goal: 'tenFrame' },
           { id: 'ct_net', cat: 'Counters',
@@ -4305,7 +4327,7 @@ window.StemLab = window.StemLab || {
             gen: function() {
               var step = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
               var n = 2 + Math.floor(Math.random() * 8);
-              return { q: 'Skip-count by ' + step + 's. The ' + n + 'th number is?', a: step * n };
+              return { q: 'Skip-count by ' + step + 's. The ' + (n === 2 ? '2nd' : n === 3 ? '3rd' : n + 'th') + ' number is?', a: step * n };
             }, mode: 'hundredsChart', goal: 'hundredsChart' },
           { id: 'pb_frac', cat: 'Pattern Blocks',
             gen: function() {
@@ -4334,10 +4356,12 @@ window.StemLab = window.StemLab || {
             }, mode: 'cRods', goal: 'cRods' },
           { id: 'cr_fit', cat: 'Cuisenaire',
             gen: function() {
+              // Divisors only: [2,2,3,5] paired 8 with 3 (answer 2.67), and only the 10-rod is orange.
               var bigs = [4, 6, 8, 10];
               var big = bigs[Math.floor(Math.random() * bigs.length)];
-              var small = [2, 2, 3, 5][bigs.indexOf(big)];
-              return { q: 'How many rods of length ' + small + ' fit along an orange-' + big + '?', a: big / small };
+              var fits = [2, 3, 4, 5].filter(function(s) { return s < big && big % s === 0; });
+              var small = fits[Math.floor(Math.random() * fits.length)];
+              return { q: 'How many rods of length ' + small + ' fit along a rod of length ' + big + '?', a: big / small };
             }, mode: 'cRods', goal: 'cRods' },
           { id: 'nb_part', cat: 'Number Bonds',
             gen: function() {
@@ -4362,7 +4386,13 @@ window.StemLab = window.StemLab || {
           if (!crChallenge) return;
           var raw = (_m.crUserAns || '').toString().trim();
           if (raw === '') return;
-          var ok = crChallenge.strAnswer ? raw === crChallenge.ans : parseFloat(raw) === crChallenge.ans;
+          // Fraction answers grade by VALUE: "2/4" and "0.5" are the trapezoid's 1/2.
+          var fracValue = function(s) {
+            var m = /^\s*(\d+)\s*\/\s*(\d+)\s*$/.exec(String(s));
+            if (m) return Number(m[2]) > 0 ? Number(m[1]) / Number(m[2]) : NaN;
+            return /^\s*\d*\.?\d+\s*$/.test(String(s)) ? Number(s) : NaN;
+          };
+          var ok = crChallenge.strAnswer ? Math.abs(fracValue(raw) - fracValue(crChallenge.ans)) < 1e-9 : Number(raw) === crChallenge.ans;
           var newStreak = ok ? streak + 1 : 0;
           upd({
             crFeedback: { ok: ok, msg: ok ? '✅ Correct! Answer = ' + crChallenge.ans : '❌ Answer was ' + crChallenge.ans },

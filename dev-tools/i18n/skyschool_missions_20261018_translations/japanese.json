@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ミッションの観察記録",
+  "stem.flightsim.mission_journal_targets": "記録した目標：{total}件中{captured}件。",
+  "stem.flightsim.mission_journal_complete": "すべてのミッション目標と帰還後の着陸が記録されました。",
+  "stem.flightsim.mission_journal_ended": "完了に必要な証拠がすべて記録される前にミッションが終了しました。",
+  "stem.flightsim.mission_journal_recovery": "生存者の救助記録：{value}。",
+  "stem.flightsim.mission_journal_return": "基地へ帰還した際の着陸記録：{value}。",
+  "stem.flightsim.mission_guidance_title": "ミッションガイド",
+  "stem.flightsim.mission_route": "{target} · 方位 {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "離陸地点",
+  "stem.flightsim.mission_read_status": "ミッションの状況を読み上げる",
+  "stem.flightsim.mission_return_criterion": "{target}から{distance} nm以内に、対地速度{speed} kt未満、降下率{fpm} fpm未満で着陸してください。",
+  "stem.flightsim.mission_unavailable": "ミッションの目標データを利用できません。この飛行を終了して、新しいミッションを開始してください。",
+  "stem.flightsim.mission_capture_criterion": "距離{distance} ft以内、対地高度{min} ft超かつ{max} ft未満、対地速度{speed} kt未満を{hold} s維持してください。"
+}

@@ -197,7 +197,7 @@ describe('Dino Lab native dorsal spine caller', () => {
 function nativeChain({ scale = 1, region = 'dorsal', reverse = false, legacy = false, showSkeleton = true, collapsed = false } = {}) {
   const model = new THREE.Group(), boneMat = new THREE.MeshStandardMaterial(), jointMat = new THREE.MeshStandardMaterial();
   const start = vec(reverse ? 1 : -1, 2, .1).multiplyScalar(scale), end = collapsed ? start.clone() : vec(reverse ? -1 : 1, 2.15, -.1).multiplyScalar(scale);
-  const context = { THREE, vec, model, boneMat, jointMat, props: { showSkeleton }, skeletalProfile: { proximalCaudalProcessCount: 3 }, dinoDorsalSpineGeometry: geometryFor };
+  const context = { THREE, vec, model, boneMat, jointMat, dn: { id: 'tyrannosaurus' }, props: { showSkeleton }, skeletalProfile: { proximalCaudalProcessCount: 3 }, dinoDorsalSpineGeometry: geometryFor };
   const legacyReplacement = legacy ? '\naddDorsalSpine = function(a,b,r0,r1,m) { var spine = addTaperedBoneSegment(a,b,r0,r1,m); if (spine) spine.userData.legacyDorsalSpine = true; return spine; };\n' : '';
   const add = new Function('context', 'with (context) {' + nativeHelpers + callerCode + chainCode + legacyReplacement + '\nreturn addVertebralChain;}')(context);
   add(start, end, 8, .05 * scale, .055 * scale, 1.55, region);

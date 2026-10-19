@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Ivyabonetse vyerekanye ko intumbero z’igerageza zashitsweko. Ubu, mu mwimenyerezo wo gucunga inguvu, gereranya kumanuka moteri ikora ku muvuduko muto no kuduga ukoresheje inguvu za moteri.",
+  "stem.flightsim.coaching_energy_complete": "Ivyabonetse vyerekanye ko intumbero zo gucunga inguvu zashitsweko. Ubu imenyereze kugenzura inguvu mu rugendo rugufi rwo kwegera ikibuga c’indege, hanyuma ugereranye umuvuduko wo kumanuka no gukora hasi.",
+  "stem.flightsim.drone_battery_low": "Batiri iri hafi guhera: hasigaye {pct}%. Subira aho wahagurukiye maze wururuke vuba.",
+  "stem.flightsim.drone_battery_depleted_title": "Batiri ya dorone yaheze",
+  "stem.flightsim.drone_battery_depleted_body": "Igihe umuriro wa batiri washika kuri 0%, ukuguruka kwahagaritswe vy’agateganyo. Sozera igikorwa kugira ngo usuzume iri gerageza, hanyuma utangure igikorwa gishasha ufise batiri yuzuye.",
+  "stem.flightsim.end_drone_mission": "Sozera igikorwa maze usuzume",
+  "stem.flightsim.geoq_nearest_place": "Ni hehe hegereye cane aho uri ubu?",
+  "stem.flightsim.geoq_paused": "Ukuguruka kwahagaritswe vy’agateganyo kubera iki kibazo. Funga ibibazo, hanyuma uhitemwo Kubandanya igihe witeguriye kuguruka.",
+  "stem.flightsim.geoq_close": "Funga ibibazo",
+  "stem.flightsim.geoq_unavailable": "Nta kibazo c’ubumenyi bw’isi kiriho ku hantu hafi yawe. Bandanya kurondera maze wongere ugerageze.",
+  "stem.flightsim.geoq_answer_feedback": "Inyishu yawe: {answer}. Inyishu y’ukuri: {expected}."
+}

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "การทำแบบทดสอบครั้งก่อน",
+  "stem.flightsim.quiz_history_scope": "เมื่อเริ่มทำครั้งใหม่ ระบบจะบันทึกการทำครั้งก่อนที่มีคำตอบครั้งแรกบันทึกไว้สูงสุดสี่ครั้ง การทบทวนบันทึกเหล่านี้จะไม่เปลี่ยนแบบทดสอบปัจจุบันของคุณ",
+  "stem.flightsim.quiz_history_empty": "ยังไม่มีบันทึกการทำแบบทดสอบครั้งก่อน",
+  "stem.flightsim.quiz_history_attempt": "บันทึกเมื่อ {date} · ตอบครั้งแรกถูก {score}/{answered} ข้อ",
+  "stem.flightsim.quiz_history_progress": "บันทึกแล้ว {answered} จาก {total} ข้อ · ยังไม่ตอบ {unanswered} ข้อ",
+  "stem.flightsim.quiz_history_question": "ข้อ {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "คำตอบที่ถูกต้อง: {answer}",
+  "stem.flightsim.quiz_history_changed": "คำถามที่บันทึกไว้ {count} ข้อไม่ตรงกับแบบทดสอบนี้แล้ว คะแนนจะใช้เฉพาะบันทึกคำถามที่ตรงกันเท่านั้น"
+}

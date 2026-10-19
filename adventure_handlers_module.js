@@ -795,7 +795,7 @@ const handleResumeAdventure = async (deps) => {
           if (adventureState && adventureState.currentScene && Number(adventureState.turnCount) > 0) {
               setAdventureState(prev => ({ ...prev, isLoading: false, isImageLoading: false }));
               setActiveView('adventure');
-              addToast(`Resumed Adventure (Level ${adventureState.level || 1})`, "success");
+              addToast(t('toasts.adventure_resumed_level', { level: adventureState.level || 1 }), "success");
               return;
           }
           window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
@@ -824,7 +824,7 @@ const handleResumeAdventure = async (deps) => {
           // Saves stamped with a learner key open only for that learner (shared devices).
           if (typeof savedConfig.learnerKey === 'string' && typeof _lessonKeyOf === 'function'
               && savedConfig.learnerKey !== _lessonKeyOf([], deps.studentNickname)) {
-              addToast(t('toasts.adventure_other_learner') || 'This saved adventure belongs to another learner on this device.', "error");
+              addToast(t('toasts.adventure_other_learner'), "error");
               setHasSavedAdventure(false);
               return;
           }
@@ -892,7 +892,7 @@ const handleResumeAdventure = async (deps) => {
               imageCache: []
           });
           setActiveView('adventure');
-          addToast(`Resumed Adventure (Level ${safeState.level})`, "success");
+          addToast(t('toasts.adventure_resumed_level', { level: safeState.level }), "success");
       } catch (e) {
           warnLog("Failed to resume", e);
           addToast(t('toasts.save_load_failed'), "error");
@@ -1260,7 +1260,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
       setShowDice(true);
     } catch (error) {
       warnLog("Adventure Text Error:", error);
-      addToast(error && error.adventureUnreadable ? (t('toasts.adventure_reply_unreadable') || 'The story reply could not be read, so nothing changed. Try again.') : t('toasts.connection_failed'), "error");
+      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'text', payload: currentInput });
       const snapshot = lastTurnSnapshot.current;
       setAdventureState(prev => snapshot ? { ...snapshot, isLoading: false, isImageLoading: false } : { ...prev, isLoading: false });
@@ -1573,7 +1573,7 @@ const handleAdventureChoice = async (choice, deps) => {
       }
     } catch (error) {
       warnLog("Adventure Turn Error:", error);
-      addToast(error && error.adventureUnreadable ? (t('toasts.adventure_reply_unreadable') || 'The story reply could not be read, so nothing changed. Try again.') : t('toasts.connection_failed'), "error");
+      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'choice', payload: normalizedChoice });
       setAdventureState(prev => {
           return {

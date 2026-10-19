@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Obsèvasyon yo montre objektif defi a reyalize. Kounye a, nan egzèsis jesyon enèji a, konpare yon desant ak motè a nan ralanti ak yon monte kote w sèvi ak puisans motè a.",
+  "stem.flightsim.coaching_energy_complete": "Obsèvasyon yo montre objektif jesyon enèji yo reyalize. Kounye a, pratike kontwòl enèji pandan yon apwòch kout sou yon ayewopò, epi konpare vitès desant lan ak fason avyon an touche tè a.",
+  "stem.flightsim.drone_battery_low": "Batri a fèb: {pct}% rete. Retounen kote ou te dekole a epi ateri talè konsa.",
+  "stem.flightsim.drone_battery_depleted_title": "Batri dròn nan fini",
+  "stem.flightsim.drone_battery_depleted_body": "Vòl la an poz paske batri a rive nan 0%. Fini misyon an pou revize tantativ sa a, apre sa kòmanse yon nouvo misyon ak yon batri plen.",
+  "stem.flightsim.end_drone_mission": "Fini misyon an epi revize li",
+  "stem.flightsim.geoq_nearest_place": "Ki kote ki pi pre pozisyon ou ye kounye a?",
+  "stem.flightsim.geoq_paused": "Vòl la an poz pou kesyon sa a. Fèmen egzamen an, epi chwazi Rekòmanse lè ou pare pou vole.",
+  "stem.flightsim.geoq_close": "Fèmen egzamen an",
+  "stem.flightsim.geoq_unavailable": "Pa gen kesyon jewografi ki disponib pou zòn ki toupre a. Kontinye eksplore epi eseye ankò.",
+  "stem.flightsim.geoq_answer_feedback": "Repons ou: {answer}. Repons ki kòrèk la: {expected}."
+}

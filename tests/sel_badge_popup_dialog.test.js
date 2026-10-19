@@ -86,7 +86,9 @@ function renderWith(toolId, toolData) {
     React, toolData, setToolData: noop, update: noop, updateMulti: noop,
     setSelHubTool: noop, setSelHubTab: noop, selHubTab: '', selHubTool: '',
     addToast: noop, awardXP: noop, getXP: () => 0, announceToSR: noop, celebrate: noop, beep: noop,
-    t: (k) => k, theme, isDark: true, isContrast: false,
+    // The host t() returns undefined for a key it cannot resolve, never the key itself; tools that
+    // localize via a key-plus-English-fallback helper (emotions) then show the fallback.
+    t: () => undefined, theme, isDark: true, isContrast: false,
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
     onSafetyFlag: noop, studentCodename: null, selectedVoice: null, activeSessionCode: null,
     icons: new Proxy({}, { get: () => stub }),
@@ -183,7 +185,7 @@ describe.skipIf(!R)('SEL Hub · badge popups are dialogs, not three-second flash
     const base = {
       React, toolData: { [c.key]: { showBadgePopup: c.badge, xp: 25 } },
       setToolData: record, update: record, updateMulti: record,
-      t: (k) => k, theme, isDark: true, isContrast: false, callGemini: null,
+      t: () => undefined, theme, isDark: true, isContrast: false, callGemini: null,
       icons: new Proxy({}, { get: () => stub }), gradeLevel: '5th Grade', gradeBand: 'middle',
       toolSnapshots: [], setToolSnapshots: noop, saveSnapshot: noop, announceToSR: noop,
       addToast: noop, awardXP: noop, getXP: () => 0, celebrate: noop, beep: noop,
@@ -251,7 +253,7 @@ describe.skipIf(!R)('SEL Hub · badge popups are dialogs, not three-second flash
     const ctxFor = () => {
       const base = {
         React, toolData: { [c.key]: showBadge ? { showBadgePopup: c.badge, xp: 25 } : { xp: 25 } },
-        setToolData: noop, update: noop, updateMulti: noop, t: (k) => k,
+        setToolData: noop, update: noop, updateMulti: noop, t: () => undefined,
         theme, isDark: true, isContrast: false, callGemini: null,
         icons: new Proxy({}, { get: () => stub }), gradeLevel: '5th Grade', gradeBand: 'middle',
         toolSnapshots: [], setToolSnapshots: noop, saveSnapshot: noop, announceToSR: noop,

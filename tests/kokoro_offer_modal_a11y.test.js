@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
 
 const source = fs.readFileSync('view_kokoro_offer_modal_source.jsx', 'utf8');
 
@@ -31,12 +36,46 @@ describe('Kokoro offer modal accessibility', () => {
     expect(source).toContain("{'\\uD83C\\uDFA4'}");
   });
 
-  it('reports every loader outcome through the accessible toast channel', () => {
-    expect(source).toContain("typeof window.__loadKokoroTTS !== 'function'");
-    expect(source).toContain("addToast('Downloading Kokoro voice model (~88MB)...', 'info')");
-    expect(source).toContain("addToast('Kokoro voice ready! Switching to offline voice.', 'success')");
-    expect(source).toContain('.catch(() => {');
-    expect(source).toContain("addToast('Download failed; please try again later.', 'error')");
+  // Behavioral since the 2026-09-30 wording pass (model vs clips, already-running guard):
+  // click Download Voice against each loader outcome and read the toasts it raises.
+  it('reports every loader outcome through the accessible toast channel', async () => {
+    const React = require(resolve('desktop/web-app/node_modules/react'));
+    const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
+    globalThis.React = window.React = React; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    loadAlloModule('view_kokoro_offer_modal_module.js');
+    const { KokoroOfferModal } = window.AlloModules.KokoroOfferModal;
+    const run = async (setup) => {
+      delete window.__kokoroTTSDownloading; delete window._kokoroTTS; delete window.__loadKokoroTTS;
+      setup();
+      const toasts = [], setSelectedVoice = vi.fn(), close = vi.fn();
+      const host = document.createElement('div'); document.body.append(host);
+      const root = createRoot(host);
+      await React.act(async () => root.render(React.createElement(KokoroOfferModal, { setShowKokoroOfferModal: close, setSelectedVoice, addToast: (m, k) => toasts.push([k, m]) })));
+      const button = [...host.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Download Voice');
+      await React.act(async () => { button.click(); await Promise.resolve(); await Promise.resolve(); });
+      await React.act(async () => root.unmount()); host.remove();
+      expect(close).toHaveBeenCalledWith(false);
+      return { toasts, setSelectedVoice, downloading: window.__kokoroTTSDownloading };
+    };
+    const noLoader = await run(() => {});
+    expect(noLoader.toasts).toEqual([['error', expect.stringMatching(/loader is unavailable/)]]);
+    const busy = await run(() => { window.__kokoroTTSDownloading = true; window.__loadKokoroTTS = vi.fn(); });
+    expect(busy.toasts).toEqual([['info', expect.stringMatching(/already running/)]]);
+    expect(window.__loadKokoroTTS).not.toHaveBeenCalled();
+    const ready = await run(() => { window.__loadKokoroTTS = vi.fn(async () => { window._kokoroTTS = { ready: true }; return true; }); });
+    expect(ready.toasts.map(([k]) => k)).toEqual(['info', 'success']);
+    expect(ready.toasts[0][1]).toMatch(/~88MB/);
+    expect(ready.setSelectedVoice).toHaveBeenCalledWith('af_heart');
+    expect(ready.downloading).toBe(false);
+    const notReady = await run(() => { window.__loadKokoroTTS = vi.fn(async () => false); });
+    expect(notReady.toasts.map(([k]) => k)).toEqual(['info', 'error']);
+    expect(notReady.setSelectedVoice).not.toHaveBeenCalled();
+    expect(notReady.downloading).toBe(false);
+    const failed = await run(() => { window.__loadKokoroTTS = vi.fn(async () => { throw new Error('network'); }); });
+    expect(failed.toasts.map(([k]) => k)).toEqual(['info', 'error']);
+    expect(failed.setSelectedVoice).not.toHaveBeenCalled();
+    expect(failed.downloading).toBe(false);
+    delete window.__kokoroTTSDownloading; delete window._kokoroTTS; delete window.__loadKokoroTTS;
   });
 
   it('synchronizes the deployable module', () => {

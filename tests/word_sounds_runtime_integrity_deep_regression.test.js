@@ -68,13 +68,19 @@ describe('Word Sounds runtime session integrity', () => {
     expect(reset).toContain('setCurrentWordSoundsWord?.(null)');
     expect(reset).not.toContain('setWordSoundsHistory');
 
+    // The review panel's Start delegates to startReviewedActivity (2adff44c5),
+    // which runs the syllable-review guards and then resets run-local state.
+    expect(source).toContain('onStartActivity: () => startReviewedActivity(),');
     const reviewLaunch = sliceBetween(
-      'onStartActivity: () => {',
-      'onClose: closeSessionDialog',
+      'const startReviewedActivity = (useSavedVersion = false) => {',
+      'const unsavedSyllableWords =',
     );
     expect(reviewLaunch).toContain('resetRuntimeSession()');
-    expect(reviewLaunch).not.toContain('setWordSoundsHistory([])');
-    expect(source).toMatch(/const closeSessionDialog = \(\) => \{\s*resetRuntimeSession\(\);\s*onClose\?\.\(\);/);
+    expect(reviewLaunch).not.toContain('setWordSoundsHistory');
+    // Close now runs behind the unsaved-syllable exit guard.
+    const closeDialog = sliceBetween('const closeSessionDialog = () => {', 'if (showProbeResults)');
+    expect(closeDialog).toMatch(/resetRuntimeSession\(\);\s*onClose\?\.\(\);/);
+    expect(closeDialog).not.toContain('setWordSoundsHistory');
   });
 
   it('records enough provenance to separate learners, resources, and runs', () => {
@@ -92,15 +98,28 @@ describe('Word Sounds runtime session integrity', () => {
   });
 
   it('keeps progress cumulative across ten-item level boundaries', () => {
+    // Level-up side effects moved out of the state updater (79e3e5eae);
+    // run the real block and check progress never resets at a boundary.
     const progress = sliceBetween(
-      '// Level-ups are practice gamification',
+      'const nextSessionProgress =',
       '// Badges are practice rewards',
     );
-
-    expect(progress).toContain('const newVal = prev + 1');
-    expect(progress).toContain('newVal % 10 === 0');
-    expect((progress.match(/return newVal;/g) || []).length).toBeGreaterThanOrEqual(2);
-    expect(progress).not.toContain('return 0;');
+    const answer = (before, isCorrect = true) => {
+      const seen = { progress: [], levelUps: 0 };
+      const result = new Function('wordSoundsSessionProgress', 'isCorrect', 'isProbeMode', 'setWordSoundsSessionProgress', 'setWordSoundsLevel', 'ts',
+        `${progress}\nreturn { isLevelUp, levelMessage };`)(
+        before, isCorrect, false,
+        (update) => seen.progress.push(typeof update === 'function' ? update(before) : update),
+        () => { seen.levelUps += 1; },
+        (key, params) => key + ':' + params.level,
+      );
+      return { ...seen, ...result };
+    };
+    expect(answer(8)).toMatchObject({ progress: [9], levelUps: 0, isLevelUp: false });
+    expect(answer(9)).toMatchObject({ progress: [10], levelUps: 1, isLevelUp: true, levelMessage: 'word_sounds.level_up_star:2' });
+    expect(answer(10)).toMatchObject({ progress: [11], levelUps: 0, isLevelUp: false });
+    expect(answer(19)).toMatchObject({ progress: [20], levelUps: 1, levelMessage: 'word_sounds.level_up_star:3' });
+    expect(answer(9, false)).toMatchObject({ progress: [], levelUps: 0 });
   });
 
   it('uses post-answer mastery synchronously and language-gates every automatic transition', () => {

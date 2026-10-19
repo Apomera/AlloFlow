@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "د لټون پایلې: په {topics} موضوعاتو کې {cards} کارتونه.",
+  "stem.flightsim.learn_library_counts": "{cards} کارتونه · {topics} موضوعات",
+  "stem.flightsim.learn_search_clear": "لټون پاک کړئ",
+  "stem.flightsim.learn_search_empty": "له «{query}» سره سمون لرونکي د زده کړې کارتونه نشته. بله کلمه وازمویئ یا لټون پاک کړئ.",
+  "stem.flightsim.learn_search_none": "سمون لرونکي د زده کړې کارتونه نشته",
+  "stem.flightsim.learn_search_cards": "د زده کړې {count} کارتونه",
+  "stem.flightsim.quiz_review_progress": "له {total} پوښتنو څخه {answered} ځواب شوې · {missed} ناسم ځوابونه",
+  "stem.flightsim.quiz_review_missed": "ناسم ځوابونه بیا وګورئ",
+  "stem.flightsim.quiz_next_unanswered": "بله بې‌ځوابه پوښتنه",
+  "stem.flightsim.quiz_review_all_answered": "هره پوښتنه لومړنی ځواب لري. د بې‌نمرو تمرین لپاره ناسمې ځواب شوې پوښتنې بیا وګورئ، یا نوې هڅه پیل کړئ.",
+  "stem.flightsim.planner_drone_agl": "د ځمکې له سطحې {ft} فوټه پورته",
+  "stem.flightsim.sprint_native_title": "د جغرافیې چټکه سیالي",
+  "stem.flightsim.sprint_timed_hint": "د ځواب ورکولو پر مهال لاره روانه وي. د لوستلو لپاره یې لنډه وځنډوئ؛ د ځواب له ټاکلو مخکې یې بېرته روانه کړئ.",
+  "stem.flightsim.sprint_warp_reference": "په دې جغرافیایي فعالیت کې سفر چټک شوی دی. د سرعت شمېرې د سفر اعلان شوی سرعت ښيي؛ دا لاره د الوتکې کارکردګي نه اندازه کوي.",
+  "stem.flightsim.sprint_save_menu": "سیالي خوندي کړئ او غورنۍ ته ستانه شئ",
+  "stem.flightsim.sprint_next_stop": "بل تمځای: {place}",
+  "stem.flightsim.geoq_approaching_city": "تاسو کوم ښار ته نږدې کېږئ؟",
+  "stem.flightsim.sprint_time_remaining": "پاتې وخت: {seconds} ثانیې"
+}

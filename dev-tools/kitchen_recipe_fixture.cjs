@@ -14,7 +14,16 @@ module.exports=function cook(id='mushroom',servings=2){
     if(p.pasta&&!p.drained&&p.progress>=.94){act('sample');act('reserve');act('drain');act('potHeat',0);}
     if(p.drained&&ready&&n.garlic&&n.moisture<=130*servings/2){
       if(!n.waterAdded||n.moisture<40)act('water');
-      act('combine');act('potHeat',0);act('panHeat',0);act('taste');act('plate');break;
+      act('combine');act('potHeat',0);act('panHeat',0);act('taste');
+      // The timed toss keeps cooking and absorbing water. Use the recorded spoon
+      // check to decide on a further measured splash before finishing this example.
+      for(let adjustment=0;adjustment<10;adjustment++){
+        const check=R.inspections(s).at(-1);
+        if(check&&(check.bodyType||check.type)==='unmixed'){act('stirPan');act('taste');continue;}
+        if(!check||!['dry','thick'].includes(check.bodyType||check.type)||s.pot.reserve<20)break;
+        act('pour',20);act('stirPan');act('taste');
+      }
+      act('plate');break;
     }
     if(n.produce&&s.time-n.lastStir>60)act('stirPan');
     act('advance',30);

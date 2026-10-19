@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "임무 완료와 복귀 착륙이 기록되었습니다. 조종이나 경로에서 한 가지를 의도적으로 바꾸어 이 임무를 다시 수행한 뒤 저장된 관찰 기록을 비교하세요.",
+  "stem.flightsim.coaching_mission_depleted": "드론의 배터리가 소진되었습니다. 새 임무를 시작하고 짧은 경로를 이용하며 배터리가 부족해지기 전에 복귀하도록 계획하세요.",
+  "stem.flightsim.coaching_mission_unknown": "이 임무의 근거가 불완전하거나 서로 맞지 않습니다. 기록된 내용을 검토한 뒤 새로 시도하세요.",
+  "stem.flightsim.coaching_mission_capture": "아직 촬영하지 못한 목표가 있습니다. 새 임무에서는 목표에 하나씩 접근하여 촬영이 기록될 때까지 표시된 높이와 지상 속도 범위 안에서 유지하세요.",
+  "stem.flightsim.coaching_mission_recovery": "생존자를 구조하지 못했습니다. 새 구조 임무에서는 기지로 복귀하기 전에 표시된 높이, 표류 및 수직 속도 범위 안에서 안정적으로 제자리비행하는 연습을 하세요.",
+  "stem.flightsim.coaching_mission_return": "구조 또는 촬영 목표는 기록되었지만 복귀 착륙이 남아 있습니다. 새 임무를 시작한 뒤 기지로 돌아올 시간과 배터리를 남겨 두세요.",
+  "stem.flightsim.mission_reflection_prompt": "목표, 제자리비행 또는 복귀에 관한 어떤 결정을 바꾸겠나요? 임무 관찰 기록으로 선택을 설명하고 새 시도에서 바꿀 한 가지를 계획하세요. 설명은 이 비행과 함께 저장됩니다.",
+  "stem.flightsim.journal_different_airport": "이 접근 비행들은 서로 다른 공항에서 수행되었습니다. 관찰 기록을 따로 검토하세요. 측정값의 차이는 계산하지 않습니다.",
+  "stem.flightsim.journal_approach_airport": "접근 공항: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "임무 근거",
+  "stem.flightsim.challenge_brake_release": "출력을 높이기 전에 X 키를 놓고 조종 패널의 바퀴 브레이크를 끄세요."
+}

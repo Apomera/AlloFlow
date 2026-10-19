@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Mission observations",
+  "stem.flightsim.mission_journal_targets": "Targets captured: {captured} of {total}.",
+  "stem.flightsim.mission_journal_complete": "All mission objectives and the return landing were recorded.",
+  "stem.flightsim.mission_journal_ended": "Mission ended before all completion evidence was recorded.",
+  "stem.flightsim.mission_journal_recovery": "Survivor recovery recorded: {value}.",
+  "stem.flightsim.mission_journal_return": "Return landing at base recorded: {value}.",
+  "stem.flightsim.mission_guidance_title": "Mission guidance",
+  "stem.flightsim.mission_route": "{target} · bearing {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Launch point",
+  "stem.flightsim.mission_read_status": "Read mission status",
+  "stem.flightsim.mission_return_criterion": "Land within {distance} nm of {target}, below {speed} kt ground speed and {fpm} fpm descent.",
+  "stem.flightsim.mission_unavailable": "Mission target data is unavailable. End this flight and start a fresh mission.",
+  "stem.flightsim.mission_capture_criterion": "Stay within {distance} ft, above {min} and below {max} ft AGL, with ground speed below {speed} kt for {hold} s."
+}

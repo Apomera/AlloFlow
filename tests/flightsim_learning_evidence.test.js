@@ -90,8 +90,10 @@ describe('controlled stall investigations', () => {
   it('uses the same coefficients, stall states, and forces as the trainer flight model', () => {
     for (const aoa of [5, 12, 15, 21.5]) {
       for (const airspeed of [50, 130, 200]) {
+        const trainer = FS.AIRCRAFT.find((a) => a.id === 'cessna172');
         const model = Object.assign(Object.create(FS.Physics), {
-          WING_AREA: 174, WEIGHT: 2550, CL0: 0.3, CL_PER_AOA: 0.1, CD0: 0.028, CD_INDUCED_K: 0.042,
+          WING_AREA: trainer.wingArea, WEIGHT: trainer.weight, CL0: trainer.cl0, CL_PER_AOA: trainer.clPerAoa,
+          CD0: trainer.cd0, CD_INDUCED_K: trainer.cdK, WAVE_DRAG: 0,
         });
         const physics = model.sampleAerodynamics(airspeed / 0.5924838, 5000, aoa);
         const row = observation(airspeed, 5000, aoa);

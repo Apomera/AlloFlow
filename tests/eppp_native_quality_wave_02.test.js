@@ -19,6 +19,29 @@ const supersedingReviewWaveById = new Map([
   ['eppp-v3-social-cultural-055', 'eppp-native-quality-wave-12'],
   ['eppp-v3-intervention-064', 'eppp-native-quality-wave-12'],
 ]);
+// Later question-quality (24-44) and application-rewrite (52-53) waves deliberately re-authored
+// these items again, same keys; each lists the id in its own audit. These override the map above.
+for (const [wave, laterIds] of Object.entries({
+  'eppp-native-quality-wave-24': ['eppp-v3-cognitive-affective-052'],
+  'eppp-native-quality-wave-35': ['eppp-v3-intervention-067'],
+  'eppp-native-quality-wave-43': [
+    'eppp-v3-assessment-056', 'eppp-v3-assessment-063', 'eppp-v3-cognitive-affective-059',
+    'eppp-v3-intervention-069', 'eppp-v3-lifespan-055', 'eppp-v3-professional-020',
+  ],
+  'eppp-native-quality-wave-44': [
+    'eppp-v3-assessment-058', 'eppp-v3-assessment-062', 'eppp-v3-assessment-078',
+    'eppp-v3-cognitive-affective-065', 'eppp-v3-intervention-064', 'eppp-v3-intervention-071',
+    'eppp-v3-lifespan-054', 'eppp-v3-lifespan-060', 'eppp-v3-professional-041',
+    'eppp-v3-professional-050', 'eppp-v3-social-cultural-054',
+  ],
+  'eppp-application-rewrite-wave-52': ['eppp-v3-intervention-061', 'eppp-v3-professional-006'],
+  'eppp-application-rewrite-wave-53': ['eppp-v3-professional-004'],
+})) {
+  for (const id of laterIds) supersedingReviewWaveById.set(id, wave);
+}
+const expectedReviewStatus = (wave) => (/^eppp-application-rewrite-wave-/.test(wave || '')
+  ? 'editorial-application-rewrite'
+  : 'editorial-deep-rewrite-pass');
 
 describe('EPPP native quality repair wave 02', () => {
   it('records completion of the entire 113-item deep-rewrite queue', () => {
@@ -47,7 +70,7 @@ describe('EPPP native quality repair wave 02', () => {
     for (const id of audit.rewrittenItemIds) {
       const item = byId.get(id);
       expect(item, id).toBeTruthy();
-      expect(item.wordingReviewStatus, id).toBe('editorial-deep-rewrite-pass');
+      expect(item.wordingReviewStatus, id).toBe(expectedReviewStatus(supersedingReviewWaveById.get(id)));
       expect(item.wordingReviewWave, id).toBe(
         supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-02',
       );

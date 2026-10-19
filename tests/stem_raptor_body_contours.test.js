@@ -21,6 +21,16 @@ describe('Raptor body and species contours',()=>{
     }
     expect(counts[1]).toBeGreaterThan(counts[0]);
   });
+  it('tapers from full shoulders to a slim tail base, keeping owls stockier than falcons',()=>{
+    // Widest cross-section within a band of the body's length.
+    const girth=(g,from,to)=>{const p=g.attributes.position;let r=0;for(let i=0;i<p.count;i++)if(p.getZ(i)>=from&&p.getZ(i)<=to)r=Math.max(r,Math.hypot(p.getX(i),p.getY(i)));return r;};
+    const hawk=body('high',0x6b4423,0xfef3c7),falcon=body('high',0x6b4423,0xfef3c7,0.46),owl=body('high',0x6b4423,0xfef3c7,0.22);
+    const ratio=g=>girth(g,-0.52,-0.40)/girth(g,0.10,0.35);
+    expect(ratio(hawk)).toBeLessThan(0.75);expect(ratio(falcon)).toBeLessThan(ratio(hawk));expect(ratio(owl)).toBeGreaterThan(ratio(hawk)+0.08);
+    // The back sits lower than the breast hangs at the shoulder.
+    const p=hawk.attributes.position;let top=0,bottom=0;for(let i=0;i<p.count;i++)if(Math.abs(p.getZ(i)-0.2)<0.06){top=Math.max(top,p.getY(i));bottom=Math.min(bottom,p.getY(i));}
+    expect(top).toBeLessThan(-bottom);[hawk,falcon,owl].forEach(g=>g.dispose());
+  });
   it('builds mirrored feathered tufts with nondegenerate surfaces and roots inside the head',()=>{
     const g=tufts(),p=g.attributes.position,n=g.attributes.normal,ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();expect(p.count).toBe(150);
     for(const attr of [p,n,g.attributes.color])expect(Array.from(attr.array).every(Number.isFinite)).toBe(true);

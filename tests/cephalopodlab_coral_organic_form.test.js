@@ -14,7 +14,8 @@ const THREE = require(resolve(repo, 'vendor/three-r128/three.min.js'));
 const { restorePass38CoralSource } = require('./helpers/cephalopod_coral_organic_reference.cjs');
 // Retain the pass38 historical cap contract; current tips have their own exhaustive suite.
 const rawSource = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || resolve(repo, 'stem_lab/stem_tool_cephalopodlab.js'), 'utf8').replace(/\r\n/g, '\n');
-const source = require('./helpers/cephalopod_pass64_reference.cjs').restorePass64CoralSource(rawSource);
+// Pass74 young branchlets are appended after this geometry; living_coral_branches covers them.
+const source = require('./helpers/cephalopod_pass64_reference.cjs').restorePass64CoralSource(require('./helpers/cephalopod_pass74_reference.cjs').restorePass74CoralSource(rawSource));
 const restored = restorePass38CoralSource(source);
 
 function region(value, start, end) {

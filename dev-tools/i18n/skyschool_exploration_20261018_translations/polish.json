@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Wyniki wyszukiwania: {cards} kart w {topics} tematach.",
+  "stem.flightsim.learn_library_counts": "{cards} kart · {topics} tematów",
+  "stem.flightsim.learn_search_clear": "Wyczyść wyszukiwanie",
+  "stem.flightsim.learn_search_empty": "Żadne karty edukacyjne nie pasują do „{query}”. Spróbuj innego hasła lub wyczyść wyszukiwanie.",
+  "stem.flightsim.learn_search_none": "Brak pasujących kart edukacyjnych",
+  "stem.flightsim.learn_search_cards": "{count} kart edukacyjnych",
+  "stem.flightsim.quiz_review_progress": "Odpowiedzi na {answered} z {total} pytań · {missed} błędnych",
+  "stem.flightsim.quiz_review_missed": "Powtórz błędne odpowiedzi",
+  "stem.flightsim.quiz_next_unanswered": "Następne pytanie bez odpowiedzi",
+  "stem.flightsim.quiz_review_all_answered": "Na każde pytanie udzielono pierwszej odpowiedzi. Powtórz błędne odpowiedzi bez zdobywania punktów lub rozpocznij nową próbę.",
+  "stem.flightsim.planner_drone_agl": "{ft} stóp nad ziemią",
+  "stem.flightsim.sprint_native_title": "Sprint geograficzny",
+  "stem.flightsim.sprint_timed_hint": "Trasa postępuje, gdy odpowiadasz. Wstrzymaj ją, aby przeczytać pytanie; wznów przed wybraniem odpowiedzi.",
+  "stem.flightsim.sprint_warp_reference": "Podróż jest przyspieszona na potrzeby tego ćwiczenia geograficznego. Wskaźniki prędkości pokazują podaną prędkość przelotową; ta trasa nie mierzy osiągów samolotu.",
+  "stem.flightsim.sprint_save_menu": "Zapisz sprint i wróć do menu",
+  "stem.flightsim.sprint_next_stop": "Następny przystanek: {place}",
+  "stem.flightsim.geoq_approaching_city": "Do jakiego miasta się zbliżasz?",
+  "stem.flightsim.sprint_time_remaining": "Pozostały czas: {seconds} sekund"
+}

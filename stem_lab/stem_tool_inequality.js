@@ -132,7 +132,7 @@ window.StemLab = window.StemLab || {
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
     color: 'fuchsia', category: 'math',
     questHooks: [
-      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!d.expr; }, progress: function(d) { return d.expr ? 'Done' : 'Pick a preset or type one'; } },
+      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!(d.expr && d.studentGraphed); }, progress: function(d) { return d.expr && d.studentGraphed ? 'Done' : 'Pick a preset or type one'; } },
       { id: 'quiz_5_correct', label: 'Answer 5 challenges correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizCorrectTotal || 0) >= 5; }, progress: function(d) { return (d.quizCorrectTotal || 0) + '/5 correct'; } },
       { id: 'both_modes', label: 'Graph in both 1D and 2D modes', icon: '\uD83D\uDCCA', check: function(d) { var m = d.modesUsed || {}; return !!(m['1d'] && m['2d']); }, progress: function(d) { var m = d.modesUsed || {}; return ((m['1d'] ? 1 : 0) + (m['2d'] ? 1 : 0)) + '/2 modes'; } },
       { id: 'solver_3', label: 'Solve 3 inequalities step-by-step', icon: '\uD83E\uDDEA', check: function(d) { return (d.solverCount || 0) >= 3; }, progress: function(d) { return (d.solverCount || 0) + '/3 solved'; } }
@@ -332,8 +332,7 @@ window.StemLab = window.StemLab || {
 
       // Check expression-based badges
       if (ineq) {
-        if (ineq.absSource && !badges.absValue) checkBadges({ absValue: true });
-        if (ineq.compound && !badges.compound) checkBadges({ compound: true });
+        if ((ineq.absSource && !badges.absValue) || (ineq.compound && !badges.compound)) checkBadges({ absValue: !!ineq.absSource, compound: !!ineq.compound });
       }
 
       // ── NOTATION ──
@@ -531,18 +530,22 @@ window.StemLab = window.StemLab || {
       var solveInequality = function(raw) {
         if (!raw) return null;
         var steps = [];
-        var s = raw.replace(/\s+/g, '');
-        var m = s.match(/(-?\d*)([a-z])([+-]\d+\.?\d*)([<>]=?|[\u2264\u2265])(-?\d+\.?\d*)/);
+        var s = raw.replace(/\s+/g, '').replace(/\u2212/g, '-');
+        // Anchored. Without anchors "-0.5x+1<3" matched only "5x+1<3" and "x+1<2x+3" only
+        // "x+1<2", so the solver printed confident wrong answers (and wrong directions).
+        var m = s.match(/^([+-]?\d*\.?\d*)([a-z])([+-]\d+\.?\d*)([<>]=?|[\u2264\u2265])(-?\d+\.?\d*)$/);
         if (!m) return null;
         var aStr = m[1], v = m[2], bStr = m[3], opRaw = m[4], cStr = m[5];
         var a = aStr === '' || aStr === '+' ? 1 : aStr === '-' ? -1 : parseFloat(aStr);
+        if (!isFinite(a) || a === 0) return null;
+        var fmtStep = function(n) { return String(Number(n.toPrecision(12))); };
         var b = parseFloat(bStr);
         var c = parseFloat(cStr);
         var op = opRaw.replace('\u2264', '<=').replace('\u2265', '>=');
         steps.push({ text: 'Start: ' + raw, highlight: false });
         var rhs1 = c - b;
         steps.push({ text: (b < 0 ? 'Add ' + (-b) + ' to both sides:' : 'Subtract ' + b + ' from both sides:'), highlight: false });
-        steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + rhs1, highlight: true });
+        steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + fmtStep(rhs1), highlight: true });
         if (a !== 1) {
           var flipOp = op;
           if (a < 0) {
@@ -786,7 +789,9 @@ window.StemLab = window.StemLab || {
           h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
             type: 'text', value: d.expr || '',
             placeholder: graphMode === '2d' ? 'y > 2x + 1' : 'x > 3 or -2 < x \u2264 5',
-            onChange: function(e) { upd('expr', e.target.value); },
+            // studentGraphed feeds graph_first: the host's starter state already holds
+            // expr 'x > 3', so a bare expr check completed the quest on first open.
+            onChange: function(e) { upd({ expr: e.target.value, studentGraphed: true }); },
             onKeyDown: function(e) { if (e.key === 'Enter') addToHistory(d.expr); },
             className: 'px-4 py-2 border-2 border-fuchsia-600 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none',
             'aria-label': __alloT('stem.inequality.aria_expression_input', 'Inequality expression input')
@@ -796,7 +801,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
           PRESETS.map(function(ex) {
             return h('button', { key: ex.label,
-              onClick: function() { upd('expr', ex.expr); },
+              onClick: function() { upd({ expr: ex.expr, studentGraphed: true }); },
               className: 'px-2 py-1 text-[0.6875rem] font-bold bg-fuchsia-50 text-fuchsia-700 rounded border border-fuchsia-700 hover:bg-fuchsia-100 transition-all'
             }, ex.label);
           })
@@ -1161,8 +1166,11 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 var steps = solveInequality(solverExpr);
                 if (steps) {
-                  var newSC = solverCount + 1;
-                  upd({ solverSteps: steps, solverRevealIdx: 1, solverCount: newSC });
+                  // Count each inequality once: re-clicking Solve completed the solver_3 quest.
+                  var solvedKey = solverExpr.replace(/\s+/g, ''), solvedList = Array.isArray(d.solverSolved) ? d.solverSolved : [];
+                  var isNewSolve = solvedList.indexOf(solvedKey) === -1;
+                  var newSC = solverCount + (isNewSolve ? 1 : 0);
+                  upd({ solverSteps: steps, solverRevealIdx: 1, solverCount: newSC, solverSolved: isNewSolve ? solvedList.concat([solvedKey]).slice(-50) : solvedList });
                   if (newSC >= 5) checkBadges({ solverPro: true });
                 } else {
                   addToast('Could not parse. Try format: 3x - 7 \u2265 5', 'error');
@@ -1172,7 +1180,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83D\uDD0D ' + __alloT('stem.inequality.solve', 'Solve')),
             solverSteps && solverSteps.solution && h('button', { 'aria-label': __alloT('stem.inequality.graph_it', 'Graph It'),
               onClick: function() {
-                upd({ expr: solverSteps.solution, graphMode: '1d' });
+                upd({ expr: solverSteps.solution, graphMode: '1d', studentGraphed: true });
                 addToHistory(solverSteps.solution);
                 addToast('\uD83D\uDCC8 Graphed the solution!', 'success');
               },
@@ -1208,7 +1216,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-1.5' },
             exprHistory.map(function(ex, i) {
               return h('button', { key: i,
-                onClick: function() { upd('expr', ex); },
+                onClick: function() { upd({ expr: ex, studentGraphed: true }); },
                 className: 'px-2 py-1 text-[0.6875rem] font-mono font-bold bg-white text-slate-600 rounded border border-slate-400 hover:bg-fuchsia-50 hover:border-fuchsia-600 transition-all'
               }, ex);
             })

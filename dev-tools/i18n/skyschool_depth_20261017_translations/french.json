@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Maintenir les paramètres de vol actuels",
+  "stem.flightsim.flight_assistance_targets": "Cap {hdg}° · Altitude {alt} ft MSL · Vitesse {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Cap {hdg}° · Altitude {alt} ft MSL · Vitesse vers l’avant {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Virez de {degrees}° à gauche vers {airport}.",
+  "stem.flightsim.challenge_turn_right": "Virez de {degrees}° à droite vers {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Vous vous dirigez vers {airport}. Suivez le repère de route.",
+  "stem.flightsim.challenge_runway_reference": "Piste d’entraînement {runway} : cap {heading}°. Alignez-vous sur la piste avant d’entamer la descente pour atterrir."
+}

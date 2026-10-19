@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "ዕላማታት እቲ ብድሆ ከም ዝተማልኡ ተራእዩ። ቀጺልካ፡ ኣብ ልምምድ ምሕደራ ጸዓት፡ ብትሑት ሓይሊ ሞተር ምውራድን ብሓይሊ ሞተር ምድያብን ኣነጻጽር።",
+  "stem.flightsim.coaching_energy_complete": "ዕላማታት ምሕደራ ጸዓት ከም ዝተማልኡ ተራእዩ። ቀጺልካ፡ ናብ መዓርፎ ነፈርቲ ብሓጺር መንገዲ እናቐረብካ ጸዓት ምቁጽጻር ተለማመድ፤ ድሕሪኡ ፍጥነት ምውራድን ምድሪ ምትንካፍን ኣነጻጽር።",
+  "stem.flightsim.drone_battery_low": "ባትሪ ውሑድ እዩ፦ {pct}% ተሪፉ። ናብ ዝተበገስካሉ ቦታ ተመሊስካ ቀልጢፍካ ዕለብ።",
+  "stem.flightsim.drone_battery_depleted_title": "ባትሪ ድሮን ተወዲኡ",
+  "stem.flightsim.drone_battery_depleted_body": "ባትሪ 0% ምስ በጽሐ በረራ ንግዜኡ ተቛሪጹ። ነዚ ፈተነ ንምግምጋም ተልእኾ ወድእ፣ ድሕሪኡ ብምሉእ ባትሪ ሓድሽ ተልእኾ ጀምር።",
+  "stem.flightsim.end_drone_mission": "ተልእኾ ወድእን ገምግምን",
+  "stem.flightsim.geoq_nearest_place": "ካብ ሕጂ ዘለኻዮ ቦታ እንታይ ቦታ ዝቐረበ እዩ፧",
+  "stem.flightsim.geoq_paused": "ነዚ ሕቶ ንምምላስ በረራ ንግዜኡ ተቛሪጹ። ፈተና ዕጸዎ፣ ንምብራር ምስ ተዳለኻ ድማ ናይ ምቕጻል ምርጫ ምረጽ።",
+  "stem.flightsim.geoq_close": "ፈተና ዕጸዎ",
+  "stem.flightsim.geoq_unavailable": "ብዛዕባ ከባቢኻ ናይ ጂኦግራፊ ሕቶ የለን። ምድህሳስ ቀጽልን ዳግም ፈትንን።",
+  "stem.flightsim.geoq_answer_feedback": "መልስኻ፦ {answer}። ቅኑዕ መልሲ፦ {expected}።"
+}

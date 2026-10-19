@@ -45,7 +45,10 @@ const uiStrings = JSON.parse(readFileSync(resolve(root, 'ui_strings.js'), 'utf8'
 // X7 excluded from family mode; assessment-center itself stays visible to all
 // roles (F1 kept the Center for home-schooling parents).
 const HIDDEN_FOR_HOME = ['leadership-hub', 'school-rewards', 'professional-development', 'report-writer', 'research-suite', 'communications-studio'];
-const KEPT_ARGUABLES = ['dynamic-assessment', 'polls-signups'];
+// K5 (2026-09-28, hideFromFamily in the source): student-record and clinical tools are
+// hidden in FAMILY mode only; independent mode still sees them.
+const HIDDEN_FOR_FAMILY_ONLY = ['assessment-center', 'dynamic-assessment', 'behavior-lens'];
+const KEPT_ARGUABLES = ['polls-signups'];
 
 let Hub;
 const roots = [];
@@ -107,15 +110,20 @@ describe('the card filter, behaviorally (real React mount of the built module)',
     roots.forEach(({ root: r, container }) => { act(() => r.unmount()); container.remove(); });
     roots.length = 0;
     const parentIds = cardIds(mountHub({ isParentMode: true }));
-    for (const id of HIDDEN_FOR_HOME) expect(parentIds, id + ' must be hidden from a parent').not.toContain(id);
+    for (const id of [...HIDDEN_FOR_HOME, ...HIDDEN_FOR_FAMILY_ONLY]) expect(parentIds, id + ' must be hidden from a parent').not.toContain(id);
     for (const id of KEPT_ARGUABLES) expect(parentIds, id + ' stays by recorded default').toContain(id);
     const removed = defaultIds.filter((id) => !parentIds.includes(id)).sort();
-    expect(removed, 'ONLY the recorded three may disappear').toEqual([...HIDDEN_FOR_HOME].sort());
+    expect(removed, 'ONLY the recorded cards may disappear').toEqual([...HIDDEN_FOR_HOME, ...HIDDEN_FOR_FAMILY_ONLY].sort());
   });
 
-  it('independent mode gets the same scope as family mode', () => {
+  it('independent mode hides the school-professional cards but keeps the family-only ones', () => {
+    const defaultIds = cardIds(mountHub());
+    roots.forEach(({ root: r, container }) => { act(() => r.unmount()); container.remove(); });
+    roots.length = 0;
     const ids = cardIds(mountHub({ isIndependentMode: true }));
     for (const id of HIDDEN_FOR_HOME) expect(ids).not.toContain(id);
+    for (const id of [...HIDDEN_FOR_FAMILY_ONLY, ...KEPT_ARGUABLES]) expect(ids, id + ' stays for independent learners').toContain(id);
+    expect(defaultIds.filter((id) => !ids.includes(id)).sort()).toEqual([...HIDDEN_FOR_HOME].sort());
   });
 });
 

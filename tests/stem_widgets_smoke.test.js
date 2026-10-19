@@ -39,7 +39,10 @@ const WIDGETS = [
   // B11
   // The command-center refactor (0326d9475) moved the ops inquiry widget
   // behind the menu's Ops Lab panel; the default panel is 'airports'.
-  { file: 'stem_lab/stem_tool_atctower.js', toolId: 'atcTower', data: { atcTower: { atcMenuPanel: 'ops' } } },
+  // 10-10: ATC is a live-output tool, so its Ops Lab inquiry became an observe-log-explain
+  // investigation (no hidden-prediction copy; see stem_prediction_semantics); `signal`
+  // names the marker that block carries instead of the shared H7b'' phrases.
+  { file: 'stem_lab/stem_tool_atctower.js', toolId: 'atcTower', signal: "data-atctower-live-inquiry=\"observe-log-explain\"", data: { atcTower: { atcMenuPanel: 'ops' } } },
   { file: 'stem_lab/stem_tool_geosandbox.js', toolId: 'geoSandbox', skip: 'Three.js / OrbitControls global (loaded via CDN at runtime; not available in jsdom)', data: { geoSandbox: { mode: 'stretch', construction: { objects: [{ type: 'segment', position: [0, 0, 0], vector: [1, 0, 0] }], selection: null }, history: [], savedConstructions: {} } } },
   { file: 'stem_lab/stem_tool_pets.js', toolId: 'petsLab', data: {} },
   { file: 'stem_lab/stem_tool_fisherlab.js', toolId: 'fisherLab', skip: 'Tool body depends on window.THREE; aqcond inquiry tab is reached after sim init', data: { fisherLab: {} } },
@@ -108,7 +111,7 @@ describe('STEM Lab H7b\'\' inquiry widgets — runtime smoke (29 widgets)', () =
       }
       expect(html.length, w.toolId + ' rendered empty HTML').toBeGreaterThan(50);
 
-      const sig = findInquirySignal(html);
+      const sig = w.signal ? (html.includes(w.signal) ? w.signal : null) : findInquirySignal(html);
       expect(sig, w.toolId + ' SSR output contains no H7b\'\' inquiry signature — the inquiry block did not render under the test state').toBeTruthy();
     });
   }

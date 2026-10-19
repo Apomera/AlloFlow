@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Amagerageza y'ikizamini yabanje",
+  "stem.flightsim.quiz_history_scope": "Gutangira igerageza rishya bibika amagerageza yabanje afite ibisubizo bya mbere byanditswe, ane ntarengwa. Kuyasubiramo ntibihindura ikizamini urimo.",
+  "stem.flightsim.quiz_history_empty": "Nta magerageza y'ikizamini yabanje arabikwa.",
+  "stem.flightsim.quiz_history_attempt": "Byabitswe ku wa {date} · Ibisubizo bya mbere {score}/{answered} ni byo",
+  "stem.flightsim.quiz_history_progress": "Ibibazo {answered} kuri {total} byanditswe · {unanswered} ntibisubijwe",
+  "stem.flightsim.quiz_history_question": "Ikibazo cya {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Igisubizo cy'ukuri: {answer}",
+  "stem.flightsim.quiz_history_changed": "Ibibazo {count} byabitswe ntibigihuye n'iki kizamini. Amanota abarwa hakoreshejwe gusa inyandiko z'ibibazo bihuye na cyo."
+}

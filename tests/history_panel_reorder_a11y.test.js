@@ -45,7 +45,15 @@ describe('HistoryPanel pointer-independent resource controls', () => {
 
   it('renders only displayable metadata instead of object coercion noise', () => {
     expect(source).toContain("const rawItemMeta = getSafeArtifactField(item, 'meta');");
-    expect(source).toContain("const itemMeta = typeof rawItemMeta === 'string' ? rawItemMeta.trim().slice(0, 500) : '';");
+    // 91652c2fe (2026-10-12) moved the string-only rule into getHistoryDisplayMeta; run it.
+    expect(source).toContain('const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);');
+    const start = source.indexOf('const getHistoryDisplayMeta = (type, meta) => {');
+    const end = source.indexOf('// HISTORY_DISPLAY_FORMAT_END', start);
+    expect(start).toBeGreaterThan(-1);
+    const displayMeta = new Function('getResourceTypeLabel', source.slice(start, end) + '\nreturn getHistoryDisplayMeta;')(() => 'Lesson Plan');
+    for (const junk of [{ toString: () => '[object Object]' }, ['a'], 42, null, undefined]) expect(displayMeta('quiz', junk)).toBe('');
+    expect(displayMeta('quiz', '  Grade 5 · Fractions  ')).toBe('Grade 5 · Fractions');
+    expect(displayMeta('quiz', 'x'.repeat(600))).toHaveLength(500);
     expect(source).toContain('{itemMeta && <span>');
     expect(built).not.toContain('String(item.meta || "")');
   });

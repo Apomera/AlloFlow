@@ -1,0 +1,98 @@
+[
+  {
+    "resourceId": "cf-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "VERDICT THINKING",
+      "bullets": [
+        "\"This means I am bad at this\"",
+        "\"The teacher does not like my work\"",
+        "Feeling: sinking, then stopping"
+      ],
+      "iconPrompt": "a plain gavel on a block"
+    },
+    "to": {
+      "label": "VERDICT THINKING",
+      "bullets": [
+        "\"This means I am bad at this\"",
+        "\"The teacher does not like my work\"",
+        "Feeling: sinking, then stopping"
+      ],
+      "iconPrompt": "a plain gavel on a block",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cf-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "MAP THINKING",
+      "bullets": [
+        "\"Which row is the gap in?\"",
+        "\"What does the next level look like?\"",
+        "Feeling: okay, that one, not that one"
+      ],
+      "iconPrompt": "a folded paper map with one route marked"
+    },
+    "to": {
+      "label": "MAP THINKING",
+      "bullets": [
+        "\"Which row is the gap in?\"",
+        "\"What does the next level look like?\"",
+        "Feeling: okay, that one, not that one"
+      ],
+      "iconPrompt": "a folded paper map with one route marked",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cf-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "SELF-ASSESS FIRST",
+      "bullets": [
+        "Open the rubric before you turn it in",
+        "Rate each row with evidence",
+        "Feedback becomes confirmation, not surprise"
+      ],
+      "iconPrompt": "a checklist with a pencil resting on it"
+    },
+    "to": {
+      "label": "SELF-ASSESS FIRST",
+      "bullets": [
+        "Open the rubric before you turn it in",
+        "Rate each row with evidence",
+        "Feedback becomes confirmation, not surprise"
+      ],
+      "iconPrompt": "a checklist with a pencil resting on it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cf-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "REVISE, DO NOT REDO",
+      "bullets": [
+        "Keep what works",
+        "Change what the target says",
+        "Most revisions are small"
+      ],
+      "iconPrompt": "a page with one paragraph highlighted and the rest untouched"
+    },
+    "to": {
+      "label": "REVISE, DO NOT REDO",
+      "bullets": [
+        "Keep what works",
+        "Change what the target says",
+        "Most revisions are small"
+      ],
+      "iconPrompt": "a page with one paragraph highlighted and the rest untouched",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

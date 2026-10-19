@@ -11,6 +11,74 @@ const TEXT_SPACING_CSS = `
   }
 `;
 
+// Document styles do not cross a shadow boundary, so each open shadow root under
+// #tool-root receives the same normative overrides.
+const SHADOW_TEXT_SPACING_CSS = `
+  * {
+    line-height: 1.5 !important;
+    letter-spacing: 0.12em !important;
+    word-spacing: 0.16em !important;
+  }
+
+  p {
+    margin-bottom: 2em !important;
+  }
+`;
+
+// Tools may render inside an open shadow root (Practice Journeys mounts its journey
+// host that way). Installed in the page before each audit so every probe walks the
+// composed tree: queries enter open shadow roots, ancestor walks step from a shadow
+// root to its host, and focus and hit testing resolve to the innermost element.
+export function installShadowDomHelpers() {
+  const composedParent = (node) => node.parentElement ||
+    (node.parentNode instanceof ShadowRoot ? node.parentNode.host : null);
+  const composedContains = (ancestor, node) => {
+    for (let current = node; current; current = composedParent(current)) {
+      if (current === ancestor) return true;
+    }
+    return false;
+  };
+  const composedClosest = (element, selector) => {
+    for (let current = element; current; current = composedParent(current)) {
+      if (current.matches && current.matches(selector)) return current;
+    }
+    return null;
+  };
+  const deepQueryAll = (scope, selector) => {
+    const found = [];
+    const walk = (container) => {
+      for (const element of container.querySelectorAll('*')) {
+        if (element.matches(selector)) found.push(element);
+        if (element.shadowRoot) walk(element.shadowRoot);
+      }
+    };
+    walk(scope);
+    return found;
+  };
+  const shadowRoots = (scope) => deepQueryAll(scope, '*')
+    .filter((element) => element.shadowRoot).map((element) => element.shadowRoot);
+  const deepActiveElement = () => {
+    let active = document.activeElement;
+    while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+    return active;
+  };
+  const deepElementFromPoint = (x, y) => {
+    let hit = document.elementFromPoint(x, y);
+    while (hit && hit.shadowRoot) {
+      const inner = hit.shadowRoot.elementFromPoint(x, y);
+      if (!inner || inner === hit) break;
+      hit = inner;
+    }
+    return hit;
+  };
+  window.__alloShadowDom = {
+    composedParent, composedContains, composedClosest, deepQueryAll, shadowRoots,
+    deepActiveElement, deepElementFromPoint,
+  };
+}
+
 // Gate WCAG 2.2 target size before changing layout, then verify that content
 // and functionality survive the WCAG 1.4.12 normative spacing overrides in
 // the already-rendered 320px fleet fixture. Intentional inner scrollers remain
@@ -22,22 +90,34 @@ export async function auditTextSpacingReflow(page) {
   }
 
   await page.addStyleTag({ content: TEXT_SPACING_CSS });
+  await page.evaluate(installShadowDomHelpers);
+  await page.evaluate((css) => {
+    const root = document.querySelector('#tool-root');
+    if (!root) return;
+    for (const shadowRoot of window.__alloShadowDom.shadowRoots(root)) {
+      const style = document.createElement('style');
+      style.textContent = css;
+      shadowRoot.appendChild(style);
+    }
+  }, SHADOW_TEXT_SPACING_CSS);
   await page.evaluate(() => new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   }));
 
   const measureReflow = () => page.evaluate(() => {
+    const { composedParent, deepQueryAll } = window.__alloShadowDom;
     const clientWidth = document.documentElement.clientWidth;
     const scrollWidth = document.documentElement.scrollWidth;
+    const root = document.querySelector('#tool-root');
     const offenders = scrollWidth > clientWidth
-      ? [...document.querySelectorAll('#tool-root, #tool-root *')]
+      ? (root ? [root, ...deepQueryAll(root, '*')] : [])
           .map((element) => {
             const box = element.getBoundingClientRect();
             const styles = getComputedStyle(element);
             let visibleLeft = box.left;
             let visibleRight = box.right;
             const clippedBy = [];
-            let ancestor = element.parentElement;
+            let ancestor = composedParent(element);
             while (ancestor && ancestor !== document.documentElement) {
               const ancestorStyles = getComputedStyle(ancestor);
               if (/^(auto|scroll|hidden|clip)$/.test(ancestorStyles.overflowX)) {
@@ -46,7 +126,7 @@ export async function auditTextSpacingReflow(page) {
                 visibleRight = Math.min(visibleRight, ancestorBox.right);
                 clippedBy.push(ancestor.tagName.toLowerCase() + (ancestor.id ? `#${ancestor.id}` : ''));
               }
-              ancestor = ancestor.parentElement;
+              ancestor = composedParent(ancestor);
             }
             return {
               element: element.tagName.toLowerCase() + (element.id ? `#${element.id}` : ''),
@@ -144,7 +224,9 @@ const POINTER_TARGET_SELECTOR = [
 // treats an associated label as part of a form control's effective target.
 // It intentionally reports diagnostics rather than attempting to infer a fix.
 export async function auditTargetSize(page) {
+  await page.evaluate(installShadowDomHelpers);
   return page.evaluate((selector) => {
+    const { composedClosest, composedContains, composedParent, deepQueryAll } = window.__alloShadowDom;
     const ROOT = document.querySelector('#tool-root');
     const MINIMUM = 24;
     const TOLERANCE = 0.5;
@@ -170,14 +252,13 @@ export async function auditTargetSize(page) {
 
     const isVisibleTarget = (element) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) return false;
-      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      let closedDisclosure = element.closest('details:not([open])');
+      if (composedClosest(element, '[hidden], [inert], [aria-hidden="true"]')) return false;
+      let closedDisclosure = composedClosest(element, 'details:not([open])');
       while (closedDisclosure) {
         const summary = closedDisclosure.querySelector(':scope > summary');
-        if (!summary || (element !== summary && !summary.contains(element))) return false;
-        closedDisclosure = closedDisclosure.parentElement
-          ? closedDisclosure.parentElement.closest('details:not([open])')
-          : null;
+        if (!summary || (element !== summary && !composedContains(summary, element))) return false;
+        const outer = composedParent(closedDisclosure);
+        closedDisclosure = outer ? composedClosest(outer, 'details:not([open])') : null;
       }
       if (element.matches(':disabled, [aria-disabled="true"]')) return false;
       const styles = getComputedStyle(element);
@@ -230,7 +311,7 @@ export async function auditTargetSize(page) {
     const clippingContext = (element, rect) => {
       const ancestors = [];
       let fullyVisible = true;
-      let ancestor = element.parentElement;
+      let ancestor = composedParent(element);
       while (ancestor && ancestor !== document.documentElement) {
         const styles = getComputedStyle(ancestor);
         const clipsX = /^(auto|scroll|hidden|clip)$/.test(styles.overflowX);
@@ -255,7 +336,7 @@ export async function auditTargetSize(page) {
             clipsY,
           });
         }
-        ancestor = ancestor.parentElement;
+        ancestor = composedParent(ancestor);
       }
       return { ancestors, fullyVisible };
     };
@@ -264,7 +345,7 @@ export async function auditTargetSize(page) {
       first.clipping.ancestors.some((clip) =>
         second.clipping.ancestors.some((otherClip) => otherClip.element === clip.element));
 
-    const targets = [...ROOT.querySelectorAll(selector)]
+    const targets = deepQueryAll(ROOT, selector)
       .filter(isVisibleTarget)
       .map((element) => {
         const ownRect = rectObject(element.getBoundingClientRect());

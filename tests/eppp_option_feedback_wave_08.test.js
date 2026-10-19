@@ -37,6 +37,15 @@ const genericFeedbackPattern = /\b(?:is not best because|does not meet the defin
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|regardless|automatically|guaranteed|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const wordCount = (value) => String(value || '').trim().split(/\s+/).filter(Boolean).length;
+// Question-quality waves 35-39 (2026-08-20) re-authored most of these items with the same keys.
+// Each records itself as both the wording and option-feedback refinement wave, records the
+// wave-08 prompt as its preimage, and its data file holds the revision the item must match.
+const laterRevisionFor = (item) => {
+  const match = /^eppp-native-quality-wave-(\d+)$/.exec(item.wordingReviewWave || '');
+  if (!match || item.optionFeedbackRefinementWave !== item.wordingReviewWave) return null;
+  const data = require(`../dev-tools/eppp_native_quality_wave_${match[1]}_data.cjs`);
+  return data.revisions.find((revision) => revision.id === item.id) || null;
+};
 
 describe('EPPP incorrect-option explanation repair wave 08', () => {
   it('preserves answer positions and supplies three detailed nonredundant explanations per item', () => {
@@ -52,9 +61,16 @@ describe('EPPP incorrect-option explanation repair wave 08', () => {
       expect(revisions[id].expectedAnswerIndex).toBe(expectedKeys[index]);
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(item.optionFeedbackReviewWave).toBe('eppp-option-feedback-wave-01');
-      const refinementWave = /^eppp-option-feedback-wave-(\d+)$/.exec(item.optionFeedbackRefinementWave || '');
-      expect(refinementWave).toBeTruthy();
-      expect(Number(refinementWave[1])).toBeGreaterThanOrEqual(8);
+      const later = laterRevisionFor(item);
+      if (later) {
+        expect(later.expectedAnswerIndex, id).toBe(expectedKeys[index]);
+        expect(item.prompt, id).toBe(later.prompt);
+        expect(item.choices, id).toEqual(later.choices);
+      } else {
+        const refinementWave = /^eppp-option-feedback-wave-(\d+)$/.exec(item.optionFeedbackRefinementWave || '');
+        expect(refinementWave, id).toBeTruthy();
+        expect(Number(refinementWave[1])).toBeGreaterThanOrEqual(8);
+      }
       expect(item.optionFeedbackRefinedAt >= '2026-07-18').toBe(true);
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices.map(normalize)).size).toBe(4);
@@ -84,25 +100,50 @@ describe('EPPP incorrect-option explanation repair wave 08', () => {
     const bank = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
     const byId = new Map(bank.map((item) => [item.id, item]));
     const td = byId.get('eppp-b004-biological-2');
-    expect(td.prompt).toBe('A patient develops persistent involuntary orofacial and limb movements after taking a medication for several years. Which medication history is most characteristic of tardive dyskinesia?');
+    const tdWave08Prompt = 'A patient develops persistent involuntary orofacial and limb movements after taking a medication for several years. Which medication history is most characteristic of tardive dyskinesia?';
+    const tdLater = laterRevisionFor(td);
+    if (tdLater) {
+      expect(tdLater.expectedPrompt).toBe(tdWave08Prompt);
+      expect(td.prompt).toBe(tdLater.prompt);
+    } else {
+      expect(td.prompt).toBe(tdWave08Prompt);
+    }
     expect(td.references).toEqual(['https://doi.org/10.1177/0706743719828968']);
     expect(td.references).not.toContain('https://doi.org/10.4088/JCP.tv17016ah4c');
 
-    const vta = byId.get('eppp-b003-biological-2');
-    expect(vta.choices.join(' ')).toContain('dorsal-striatal');
-    expect(vta.choices.join(' ')).toContain('prolactin');
-    const principleA = byId.get('eppp-b002-professional-1');
-    expect(principleA.choices.join(' ')).toContain('accuracy, honesty, and truthfulness');
-    expect(principleA.choices.join(' ')).toContain('privacy, confidentiality, and self-determination');
-    expect(byId.get('eppp-b002-cognitive-1').choices[1]).toBe('Biological preparedness shapes conditioning selectivity');
-    expect(byId.get('eppp-b002-professional-2').choices[3]).toBe('Its nature, anticipated course, fees, third-party involvement, and limits of confidentiality');
-    const constructValidity = byId.get('eppp-b007-research-1');
-    expect(constructValidity.prompt).toContain('different measurement methods');
-    expect(byId.get('eppp-b007-assessment-2').choices[2]).toBe('Shows unequal conditional response probabilities across groups matched on the target ability');
-    expect(byId.get('eppp-b008-research-1').choices[0]).toBe('The chance that a study enters the available literature depends on result direction or statistical significance');
-    const asch = byId.get('eppp-b004-social-2');
-    expect(asch.choices[asch.answerIndex]).toContain('dissenter');
-    expect(asch.rationale).toContain('did not have to give the objectively correct answer');
+    // Wave-08 wording pins apply while wave 08 still owns the item; once a later wave re-authors
+    // it, the item must match that wave's revision with the same key.
+    const wave08Pins = {
+      'eppp-b003-biological-2': (item) => {
+        expect(item.choices.join(' ')).toContain('dorsal-striatal');
+        expect(item.choices.join(' ')).toContain('prolactin');
+      },
+      'eppp-b002-professional-1': (item) => {
+        expect(item.choices.join(' ')).toContain('accuracy, honesty, and truthfulness');
+        expect(item.choices.join(' ')).toContain('privacy, confidentiality, and self-determination');
+      },
+      'eppp-b002-cognitive-1': (item) => expect(item.choices[1]).toBe('Biological preparedness shapes conditioning selectivity'),
+      'eppp-b002-professional-2': (item) => expect(item.choices[3]).toBe('Its nature, anticipated course, fees, third-party involvement, and limits of confidentiality'),
+      'eppp-b007-research-1': (item) => expect(item.prompt).toContain('different measurement methods'),
+      'eppp-b007-assessment-2': (item) => expect(item.choices[2]).toBe('Shows unequal conditional response probabilities across groups matched on the target ability'),
+      'eppp-b008-research-1': (item) => expect(item.choices[0]).toBe('The chance that a study enters the available literature depends on result direction or statistical significance'),
+      'eppp-b004-social-2': (item) => {
+        expect(item.choices[item.answerIndex]).toContain('dissenter');
+        expect(item.rationale).toContain('did not have to give the objectively correct answer');
+      },
+    };
+    for (const [id, wave08Pin] of Object.entries(wave08Pins)) {
+      const item = byId.get(id);
+      const later = laterRevisionFor(item);
+      if (later) {
+        expect(later.expectedAnswerIndex, id).toBe(item.answerIndex);
+        expect(item.answerIndex, id).toBe(expectedKeys[ids.indexOf(id)]);
+        expect(item.prompt, id).toBe(later.prompt);
+        expect(item.choices, id).toEqual(later.choices);
+      } else {
+        wave08Pin(item);
+      }
+    }
 
     const strengthened = [
       'eppp-b007-assessment-2',

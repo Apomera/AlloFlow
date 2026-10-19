@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Proposita provocationis observata sunt. Deinde, in exercitatione moderationis energiae, descensum motore otioso cum ascensu vi motoris compara.",
+  "stem.flightsim.coaching_energy_complete": "Proposita moderationis energiae observata sunt. Deinde energiam in brevi accessu ad aeroportum moderari exerce; postea celeritatem descensus et contactum cum terra compara.",
+  "stem.flightsim.drone_battery_low": "Parva energia accumulatoris: {pct}% remanet. Redi ad locum profectionis et mox terram attinge.",
+  "stem.flightsim.drone_battery_depleted_title": "Accumulator aeronavis sine gubernatore exhaustus",
+  "stem.flightsim.drone_battery_depleted_body": "Volatus intermissus est energia accumulatoris ad 0% redacta. Missionem fini ut hunc conatum recognoscas, deinde novam missionem cum accumulatore pleno incipe.",
+  "stem.flightsim.end_drone_mission": "Missionem fini et recognosce",
+  "stem.flightsim.geoq_nearest_place": "Qui locus positioni tuae praesenti proximus est?",
+  "stem.flightsim.geoq_paused": "Volatus propter hanc quaestionem intermissus est. Quaestionarium claude, deinde, cum ad volandum paratus es, optionem resumendi elige.",
+  "stem.flightsim.geoq_close": "Quaestionarium claude",
+  "stem.flightsim.geoq_unavailable": "Nulla quaestio geographica de vicinia praesto est. Explora porro et iterum conare.",
+  "stem.flightsim.geoq_answer_feedback": "Responsum tuum: {answer}. Responsum rectum: {expected}."
+}

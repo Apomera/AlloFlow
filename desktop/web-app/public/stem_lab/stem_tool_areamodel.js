@@ -264,7 +264,8 @@ window.StemLab = window.StemLab || {
           var c = randInt(4, max2);
           var split = randInt(1, c - 1);
           upd({
-            viewMode: 'distributive', dims: { rows: r, cols: c }, splitAt: split,
+            // swapped:false - a commuted grid split its columns at a different place than the question names.
+            viewMode: 'distributive', dims: { rows: r, cols: c }, splitAt: split, swapped: false,
             challenge: { a: r, b: c, split: split, answer: r * c, question: 'Use distributive property: ' + r + ' \u00d7 ' + c + ' = ' + r + ' \u00d7 ' + split + ' + ' + r + ' \u00d7 ' + (c - split) + ' = ?', mode: 'distributive' },
             answer: '', feedback: null, challengeTypesUsed: newTypes
           });
@@ -274,6 +275,17 @@ window.StemLab = window.StemLab || {
           upd({
             viewMode: 'multidigit', multiDims: { a: a2, b: b2 },
             challenge: { a: a2, b: b2, answer: a2 * b2, question: 'Use partial products to find ' + a2 + ' \u00d7 ' + b2 + ' = ?', mode: 'multidigit' },
+            answer: '', feedback: null, challengeTypesUsed: newTypes
+          });
+        } else if (mode === 'word') {
+          // "Next Challenge" and the N key call genChallenge('word'); with no branch they did nothing.
+          var maxW = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
+          var aw = randInt(2, maxW);
+          var bw = randInt(2, maxW);
+          var ctxIdxW = Math.floor(Math.random() * WORD_CONTEXTS.length);
+          upd({
+            viewMode: 'word', wordCtxIdx: ctxIdxW, wordDims: { a: aw, b: bw },
+            challenge: { a: aw, b: bw, answer: aw * bw, question: WORD_CONTEXTS[ctxIdxW].replace(/\{a\}/g, aw).replace(/\{b\}/g, bw), mode: 'word' },
             answer: '', feedback: null, challengeTypesUsed: newTypes
           });
         }

@@ -131,7 +131,7 @@ window.StemLab = window.StemLab || {
     '6x12': { trick: '6×12 = 72. Split: 6×12 = 6×10 + 6×2 = 60 + 12 = 72.', icon: '✂️' },
     '7x12': { trick: '7×12 = 84. Split: 7×12 = 7×10 + 7×2 = 70 + 14 = 84.', icon: '✂️' },
     '8x12': { trick: '8×12 = 96. Split: 8×12 = 8×10 + 8×2 = 80 + 16 = 96.', icon: '✂️' },
-    '9x11': { trick: '9×11 = 99. 9s digits sum to 9 AND 11s repeat the digit.', icon: '🎯' },
+    '9x11': { trick: '9×11 = 99. 11s repeat the digit (9 and 9), and 99 is one less than 100.', icon: '🎯' },
     '9x12': { trick: '9×12 = 108. Split: 9×12 = 9×10 + 9×2 = 90 + 18 = 108.', icon: '✂️' },
     '11x12':{ trick: '11×12 = 132. Split: 11×12 = 11×10 + 11×2 = 110 + 22 = 132.', icon: '✂️' },
     '12x12':{ trick: '12×12 = 144. A gross. Worth memorizing.',     icon: '⭐' }

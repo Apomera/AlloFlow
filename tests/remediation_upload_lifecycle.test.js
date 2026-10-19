@@ -355,14 +355,18 @@ describe('host document-selection lifecycle', () => {
   });
 
   it('bounds a pending lazy module load so the audit UI can offer Retry', () => {
-    const loader = section(host, 'var expireModuleLoad = function() {', 's.onload = () => {');
+    // a9ae02cb5 (2026-09-30): the watchdog records when it was armed and re-arms once when a
+    // hidden tab's throttled timers are the likely cause, before it settles the load as failed.
+    const loader = section(host, 'var expireModuleLoad = function(armedAt) {', 's.onload = () => {');
     expect(loader).toContain("entry.status === 'pending'");
     expect(loader).toContain('entry.loadGeneration === loadGeneration');
     expect(loader).toContain('s.remove()');
     expect(loader).toContain('entry.fallbackScript.remove()');
     expect(loader).toContain('entry.loadGeneration = loadGeneration + 1');
     expect(loader).toContain("__alloSetModuleStatus(name, 'failed')");
-    expect(loader.match(/setTimeout\(expireModuleLoad, 30000\)/g)).toHaveLength(2);
+    expect(loader).toContain("if (_alloModuleWatchdogShouldWait(armedAt, Date.now(), typeof document !== 'undefined' && document.hidden, watchdogRearmed)) {");
+    // initial arm, the one hidden-tab re-arm, and the fallback request's arm
+    expect(loader.match(/setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\)/g)).toHaveLength(3);
     expect(host).toContain('if (!source) return;');
     expect(host).not.toContain('window.onerror = function(msg, src, line, col, err)');
   });
@@ -484,19 +488,33 @@ describe('auto-continue dependency wiring', () => {
     const sentinels = Object.fromEntries(dependencyNames.map((name) => [name, { dependency: name }]));
     const saveProjectToFileRef = { current: vi.fn(() => 'saved') };
     const delegated = vi.fn(async () => 'loop-result');
+    // a9ae02cb5 (2026-09-30): the wrapper first awaits the MiscHandlers module and drops a
+    // request that was superseded (or whose document changed) while it waited.
+    const autoFixLoadRequestRef = { current: 0 };
+    let duringWait = () => {};
+    const _alloAwaitModules = vi.fn(async () => { duringWait(); });
     const makeWrapper = new Function(
       'window',
       'saveProjectToFileRef',
+      'autoFixLoadRequestRef',
+      '_alloAwaitModules',
       ...dependencyNames,
       `return (${functionExpression});`,
     );
     const runAutoFixLoop = makeWrapper(
       { AlloModules: { MiscHandlers: { runAutoFixLoop: delegated } } },
       saveProjectToFileRef,
+      autoFixLoadRequestRef,
+      _alloAwaitModules,
       ...dependencyNames.map((name) => sentinels[name]),
     );
 
+    duringWait = () => { autoFixLoadRequestRef.current += 1; };
+    await expect(runAutoFixLoop(6)).resolves.toEqual({ started: false, reason: 'superseded' });
+    expect(delegated).not.toHaveBeenCalled();
+    duringWait = () => {};
     await expect(runAutoFixLoop(6)).resolves.toBe('loop-result');
+    expect(_alloAwaitModules).toHaveBeenCalledWith([['MiscHandlersModule', 'MiscHandlers']], 'document auto-continue');
     expect(delegated).toHaveBeenCalledTimes(1);
     const [rounds, received] = delegated.mock.calls[0];
     expect(rounds).toBe(6);

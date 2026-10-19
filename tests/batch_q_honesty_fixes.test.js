@@ -62,13 +62,39 @@ describe('C6 — audit-only refresh inherits prior deterministic evidence on unc
 });
 
 describe('A3 — futile verification refresh is skipped when EA is environmentally dead', () => {
-  it('pipeline exports equalAccessUnavailable and tracks a load-failure streak', () => {
+  it('pipeline exports equalAccessUnavailable and tracks a load-failure streak', async () => {
     expect(pipe).toContain('equalAccessUnavailable: _equalAccessUnavailable');
     expect(pipe).toContain('const _equalAccessUnavailable = () => _eaEngineLoadFailStreak >= 2;');
     expect(module_).toContain('equalAccessUnavailable: _equalAccessUnavailable');
-    // Streak increments on BOTH terminal load-failure shapes and resets on success.
-    expect(occurrences(pipe, '_eaEngineLoadFailStreak++')).toBe(2);
+    // Streak increments on BOTH terminal load-failure shapes and resets on success. Since
+    // ed897988b (2026-09-07) a load without the engine falls through to the next mirror, so both
+    // shapes reach the one exhausted-mirrors increment. Drive the real loader through each.
+    expect(occurrences(pipe, '_eaEngineLoadFailStreak++')).toBe(1);
     expect(pipe).toContain('_eaEngineLoadFailStreak = 0; resolve();');
+    const start = pipe.indexOf('  const _ACE_CDN_URLS = [');
+    const end = pipe.indexOf('  const runEqualAccessAudit = async (htmlContent) => {', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    let outcome = 'error';
+    const fakeWindow = {};
+    const fakeDocument = {
+      createElement: () => ({ setAttribute() {}, remove() {} }),
+      head: { appendChild: (s) => queueMicrotask(() => {
+        if (outcome === 'error') s.onerror();
+        else { if (outcome === 'ok') fakeWindow.ace = { Checker: function () {} }; s.onload(); }
+      }) },
+    };
+    const loader = new Function('window', 'document', pipe.slice(start, end) + '\nreturn { _ensureAce, _equalAccessUnavailable, streak: () => _eaEngineLoadFailStreak };')(fakeWindow, fakeDocument);
+    await expect(loader._ensureAce()).rejects.toThrow(/CDN mirrors/);
+    expect(loader.streak()).toBe(1);
+    expect(loader._equalAccessUnavailable()).toBe(false);
+    outcome = 'html-without-engine';
+    await expect(loader._ensureAce()).rejects.toThrow(/CDN mirrors/);
+    expect(loader.streak()).toBe(2);
+    expect(loader._equalAccessUnavailable()).toBe(true);
+    outcome = 'ok';
+    await expect(loader._ensureAce()).resolves.toBeUndefined();
+    expect(loader.streak()).toBe(0);
   });
   it('host skips the refresh only when EA is the sole blocker', () => {
     for (const src of [host, hostMirror]) {

@@ -147,7 +147,9 @@ describe('aquaculture checkpoint quiz', () => {
 describe('weldlab exams', () => {
   const src = read('stem_tool_weldlab.js');
   const examRaw = extractArray(src, 'var examQuestions = [', 'examQuestions');
-  const examProcessed = extract(src, 'var examQuestions = [', 'if (qpView ===', ['examQuestions']).examQuestions;
+  // The bank is now shown as authored (keys spread A-D, no rotation code), and
+  // the view code after it is stateful, so the slice stops right after the bank.
+  const examProcessed = extract(src, 'var examQuestions = [', 'var N = examQuestions.length;', ['examQuestions']).examQuestions;
   const symRaw = extractArray(src, 'var symbolQuestions = [', 'symbolQuestions');
   const symProcessed = extract(src, 'var symbolQuestions = [', 'function renderSymbolViz', ['symbolQuestions']).symbolQuestions;
 

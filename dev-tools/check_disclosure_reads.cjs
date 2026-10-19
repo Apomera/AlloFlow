@@ -35,7 +35,8 @@ const CONTRACT = [
   {
     field: 'fidelityNotes (the persistent panel list)',
     producer: /fidelityNotes: _structuralFidelityNotes/,
-    readers: [{ src: 'view', re: /pdfFixResult\.fidelityNotes\.map/ }, { src: 'dp', re: /opts\.fidelityNotes\.forEach/ }],
+    // The panel now drops null notes before mapping (`.filter(Boolean).map`); either form renders.
+    readers: [{ src: 'view', re: /pdfFixResult\.fidelityNotes(?:\.filter\(Boolean\))?\.map/ }, { src: 'dp', re: /opts\.fidelityNotes\.forEach/ }],
     all: true, // both the live panel AND the downloadable report must render the notes
   },
   {
@@ -122,7 +123,8 @@ const CONTRACT = [
   {
     field: 'veraPdfAutoSkipped (M25: silent auto-validation skip)',
     producerSrc: 'view',
-    producer: /setVeraPdfAutoSkipped\('transport-blocked'\)/,
+    // A user stop is now told apart from a blocked transport: setVeraPdfAutoSkipped(_stopped() ? 'user-stopped' : 'transport-blocked').
+    producer: /setVeraPdfAutoSkipped\([^;]*'transport-blocked'\)/,
     readers: [{ src: 'view', re: /!_ltv && veraPdfAutoSkipped/ }],
   },
 ];

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "مشاهدات مأموریت",
+  "stem.flightsim.mission_journal_targets": "هدف‌های ثبت‌شده: {captured} از {total}.",
+  "stem.flightsim.mission_journal_complete": "همهٔ هدف‌های مأموریت و فرود پس از بازگشت ثبت شدند.",
+  "stem.flightsim.mission_journal_ended": "مأموریت پیش از ثبت همهٔ شواهد تکمیل پایان یافت.",
+  "stem.flightsim.mission_journal_recovery": "ثبت نجات فرد بازمانده: {value}.",
+  "stem.flightsim.mission_journal_return": "ثبت فرود در پایگاه پس از بازگشت: {value}.",
+  "stem.flightsim.mission_guidance_title": "راهنمای مأموریت",
+  "stem.flightsim.mission_route": "{target} · سمت {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "نقطهٔ برخاست",
+  "stem.flightsim.mission_read_status": "خواندن وضعیت مأموریت",
+  "stem.flightsim.mission_return_criterion": "در فاصلهٔ کمتر از {distance} nm از {target} فرود بیایید؛ سرعت نسبت به زمین کمتر از {speed} kt و نرخ نزول کمتر از {fpm} fpm باشد.",
+  "stem.flightsim.mission_unavailable": "داده‌های هدف مأموریت در دسترس نیست. این پرواز را پایان دهید و مأموریت تازه‌ای آغاز کنید.",
+  "stem.flightsim.mission_capture_criterion": "به مدت {hold} s در فاصلهٔ کمتر از {distance} ft، بالاتر از {min} و پایین‌تر از {max} ft از سطح زمین و با سرعت زمینی کمتر از {speed} kt بمانید."
+}

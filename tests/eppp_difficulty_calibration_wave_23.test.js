@@ -177,7 +177,28 @@ describe('EPPP exam-like difficulty calibration wave 23', () => {
     const beforeFiles = new Map(protectedPaths.map((relativePath) => [relativePath, read(relativePath)]));
     const diagnostics = runIsolatedAudit();
 
-    expect(diagnostics.summary).toEqual(expectedAfter);
+    // Later waves (through the wave-49 cleanup) kept lowering the global counts, so the isolated
+    // replay must land at or below wave 23's own after-state rather than on it exactly.
+    expect(diagnostics.summary).toMatchObject({
+      totalItems: expectedAfter.totalItems,
+      warningOnly: true,
+      forbiddenAggregateChoices: 0,
+    });
+    for (const metric of [
+      'uniqueKeyStemLexicalLeakageCandidates',
+      'asymmetricExtremeDistractorCandidates',
+      'advancedDirectRecallCandidates',
+      'semanticConceptDuplicatePairs',
+      'semanticConceptDuplicateClusters',
+      'editorialAnchorsWithActiveWarnings',
+      'priorityDocketItems',
+    ]) {
+      expect(diagnostics.summary[metric], metric).toBeLessThanOrEqual(expectedAfter[metric]);
+    }
+    expect(diagnostics.summary.editorialAnchorsWithNoCurrentWarning)
+      .toBeGreaterThanOrEqual(expectedAfter.editorialAnchorsWithNoCurrentWarning);
+    expect(diagnostics.summary.editorialAnchorsWithActiveWarnings + diagnostics.summary.editorialAnchorsWithNoCurrentWarning)
+      .toBe(expectedAfter.editorialAnchorsWithActiveWarnings + expectedAfter.editorialAnchorsWithNoCurrentWarning);
     expect(diagnostics.uniqueKeyStemLexicalLeakage
       .some((entry) => selectedIdSet.has(entry.id))).toBe(false);
     expect(diagnostics.asymmetricExtremeDistractors
@@ -188,13 +209,13 @@ describe('EPPP exam-like difficulty calibration wave 23', () => {
       (pair) => selectedIdSet.has(pair.leftId) || selectedIdSet.has(pair.rightId),
     )).toBe(false);
     expect(diagnostics.summary.asymmetricExtremeDistractorCandidates)
-      .toBe(wave23.warningCountsBefore.asymmetricExtremeDistractorCandidates - 4);
+      .toBeLessThanOrEqual(wave23.warningCountsBefore.asymmetricExtremeDistractorCandidates - 4);
     expect(diagnostics.summary.advancedDirectRecallCandidates)
-      .toBe(wave23.warningCountsBefore.advancedDirectRecallCandidates - 3);
+      .toBeLessThanOrEqual(wave23.warningCountsBefore.advancedDirectRecallCandidates - 3);
     expect(diagnostics.summary.semanticConceptDuplicatePairs)
-      .toBe(wave23.warningCountsBefore.semanticConceptDuplicatePairs - 1);
+      .toBeLessThanOrEqual(wave23.warningCountsBefore.semanticConceptDuplicatePairs - 1);
     expect(diagnostics.summary.semanticConceptDuplicateClusters)
-      .toBe(wave23.warningCountsBefore.semanticConceptDuplicateClusters - 1);
+      .toBeLessThanOrEqual(wave23.warningCountsBefore.semanticConceptDuplicateClusters - 1);
 
     for (const relativePath of protectedPaths) {
       expect(read(relativePath)).toBe(beforeFiles.get(relativePath));

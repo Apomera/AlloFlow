@@ -1,0 +1,102 @@
+[
+  {
+    "resourceId": "cd-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "THE PULLS",
+      "bullets": [
+        "Red badges and buzzes",
+        "Streaks that break",
+        "Autoplay",
+        "Tested on millions, kept because they work"
+      ],
+      "iconPrompt": "a phone with a small magnet shape above it"
+    },
+    "to": {
+      "label": "THE PULLS",
+      "bullets": [
+        "Red badges and buzzes",
+        "Streaks that break",
+        "Autoplay",
+        "Tested on millions, kept because they work"
+      ],
+      "iconPrompt": "a phone with a small magnet shape above it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cd-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "THE HIDDEN COST",
+      "bullets": [
+        "Not only the time looking",
+        "The attention spent not looking",
+        "A buzz you ignore still pulls"
+      ],
+      "iconPrompt": "a phone in a hoodie pocket with a small buzz mark and a faint dotted line to a student's head"
+    },
+    "to": {
+      "label": "THE HIDDEN COST",
+      "bullets": [
+        "Not only the time looking",
+        "The attention spent not looking",
+        "A buzz you ignore still pulls"
+      ],
+      "iconPrompt": "a phone in a hoodie pocket with a small buzz mark and a faint dotted line to a student's head",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cd-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "BOUNDARY, NOT BAN",
+      "bullets": [
+        "Chosen ahead of time",
+        "Phone in the bag, not the pocket",
+        "Notifications off 8 to 3",
+        "One set time to check"
+      ],
+      "iconPrompt": "a closed backpack with a small zipper"
+    },
+    "to": {
+      "label": "BOUNDARY, NOT BAN",
+      "bullets": [
+        "Chosen ahead of time",
+        "Phone in the bag, not the pocket",
+        "Notifications off 8 to 3",
+        "One set time to check"
+      ],
+      "iconPrompt": "a closed backpack with a small zipper",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cd-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "MINDFUL MEANS",
+      "bullets": [
+        "Notice where it went",
+        "Do not judge it",
+        "The answer is information"
+      ],
+      "iconPrompt": "a simple compass"
+    },
+    "to": {
+      "label": "MINDFUL MEANS",
+      "bullets": [
+        "Notice where it went",
+        "Do not judge it",
+        "The answer is information"
+      ],
+      "iconPrompt": "a simple compass",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

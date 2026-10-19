@@ -28,6 +28,19 @@ const ids = [
 const expectedKeys = [2, 2, 1, 2, 0, 1, 1, 1];
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|without|regardless|automatically|guarantee(?:d|s)?|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim)\b/i;
+// Question-quality waves 43/44 deliberately re-authored these wave-09 items (same keys); see
+// eppp_question_quality_audit_wave_43.json / _44.json.
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-intervention-031', 'eppp-native-quality-wave-43'],
+  ['eppp-v3-social-cultural-025', 'eppp-native-quality-wave-43'],
+  ['eppp-v3-professional-041', 'eppp-native-quality-wave-44'],
+  ['eppp-v3-professional-074', 'eppp-native-quality-wave-44'],
+]);
+// The full replay re-applies wave 09 to the near-final bank, so its audit honestly records a
+// semantic-duplicate pair that the later wave-49 cleanup pass (wordingCleanupWave) resolves.
+const laterCleanupWaveById = new Map([
+  ['eppp-v3-biological-046', 'eppp-native-quality-wave-49'],
+]);
 
 describe('EPPP distractor-quality repair wave 09', () => {
   it('contains eight source-backed application or analysis rewrites with preserved keys', () => {
@@ -41,7 +54,7 @@ describe('EPPP distractor-quality repair wave 09', () => {
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(['application', 'analysis']).toContain(item.cognitiveProcess);
-      expect(item.wordingReviewWave).toBe('eppp-native-quality-wave-09');
+      expect(item.wordingReviewWave, id).toBe(supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-09');
       expect(item.prompt).not.toMatch(/^complete the statement\b/i);
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices.map((choice) => choice.toLowerCase())).size).toBe(4);
@@ -75,12 +88,18 @@ describe('EPPP distractor-quality repair wave 09', () => {
       appliedOrAnalysisItems: 8,
       keyPositionsPreserved: 8,
       optionSpecificExplanations: 32,
-      selectedItemsWithWarningsAfter: 0,
-      selectedWarningIdsAfter: [],
-      status: 'pass',
+      selectedItemsWithWarningsAfter: laterCleanupWaveById.size,
+      selectedWarningIdsAfter: [...laterCleanupWaveById.keys()],
+      status: 'review-required',
     });
     expect(audit.items.map((item) => item.id)).toEqual(ids);
-    expect(audit.items.every((item) => item.diagnosticsAfter.length === 0)).toBe(true);
+    expect(audit.items.every((item) => (
+      item.diagnosticsAfter.length === 0 || laterCleanupWaveById.has(item.id)
+    ))).toBe(true);
+    const bankById = new Map(JSON.parse(fs.readFileSync(sourcePath, 'utf8')).map((item) => [item.id, item]));
+    for (const [id, cleanupWave] of laterCleanupWaveById) {
+      expect(bankById.get(id).wordingCleanupWave, id).toBe(cleanupWave);
+    }
 
     const diagnostics = JSON.parse(fs.readFileSync(diagnosticsPath, 'utf8'));
     const selected = new Set(ids);
@@ -148,8 +167,16 @@ describe('EPPP distractor-quality repair wave 09', () => {
   it('synchronizes the revised bank into both lazy pack assets', () => {
     const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
     expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
-    expect(sourcePack).toContain('markedly below chance on an easy two-choice recognition task');
-    expect(sourcePack).toContain('after retirement, describing loss of professional identity');
-    expect(sourcePack).toContain('essential equipment is broken');
+    expect(sourcePack.includes('markedly below chance on an easy two-choice recognition task')).toBe(true);
+    expect(sourcePack.includes('after retirement, describing loss of professional identity')).toBe(true);
+    // The runtime pack carries the canonical record for every item in this tranche, including
+    // those later superseded by waves 43/44 ("essential equipment is broken" is now wave 43's preimage).
+    const canonical = new Map(JSON.parse(fs.readFileSync(sourcePath, 'utf8')).map((item) => [item.id, item]));
+    const runtime = new Map(JSON.parse(sourcePack).items.map((item) => [item.id, item]));
+    for (const id of ids) {
+      for (const field of ['prompt', 'choices', 'answerIndex', 'rationale', 'choiceRationales']) {
+        expect(runtime.get(id)?.[field], id + ' ' + field).toEqual(canonical.get(id)[field]);
+      }
+    }
   });
 });

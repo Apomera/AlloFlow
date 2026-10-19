@@ -1,0 +1,56 @@
+{
+  "apply": true,
+  "languageCount": 1,
+  "canonicalKeyCount": 725,
+  "selectedKeyCount": 725,
+  "scope": {
+    "fullAudit": false,
+    "language": "french",
+    "keys": null
+  },
+  "totalIdentities": 314,
+  "totalRecoverable": 2,
+  "totalApproved": 2,
+  "totalUnreviewed": 0,
+  "totalAmbiguous": 0,
+  "totalContextSkipped": 1,
+  "totalWritten": 2,
+  "reviewNote": "Exact English matches identify candidates, not translation correctness. Writes require a value-bound review of the specific language and source-to-command pair.",
+  "contextSensitiveKeys": [
+    "cmd.read_this_page_of"
+  ],
+  "perPack": {
+    "french": {
+      "recoverable": 2,
+      "ambiguous": 0,
+      "contextSkipped": 1,
+      "approved": 2,
+      "unreviewed": 0,
+      "recoverableKeys": [
+        "cmd.read_page_aloud_hint",
+        "palette.group.recent"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.read_page_aloud_hint",
+          "english": "Starts reading the current page aloud",
+          "value": "Ouvre le lecteur de page",
+          "sourceKeys": [
+            "cmd.read_this_page_hint"
+          ],
+          "approved": true
+        },
+        {
+          "key": "palette.group.recent",
+          "english": "Recent",
+          "value": "Récents",
+          "sourceKeys": [
+            "stem.geology.ui.recent"
+          ],
+          "approved": true
+        }
+      ],
+      "ambiguousKeys": []
+    }
+  }
+}

@@ -45,7 +45,10 @@ describe('Beehive evidence handoff actions', () => {
     let action = host.querySelector('[data-beehive-handoff-action="beekeeper"]');
     expect(action).toBeTruthy();
     expect(action.textContent).toContain('Open Colony Network');
-    expect(action.getAttribute('aria-label')).toContain('field report to colony network map');
+    // 79e3e5eae: the visible text is the accessible name (no aria-label override);
+    // the handoff paragraph explains what opening the network does.
+    expect(action.hasAttribute('aria-label')).toBe(false);
+    expect(host.querySelector('[data-beehive-handoff="beekeeper"]').textContent).toContain('Opening the network view does not start a new match.');
     await act(async () => { action.click(); await Promise.resolve(); });
     expect(latest.beehive.viewMode).toBe('queen');
 
@@ -55,7 +58,7 @@ describe('Beehive evidence handoff actions', () => {
     expect(latest.beehive.viewMode).toBe('drone');
 
     action = host.querySelector('[data-beehive-handoff-action="drone"]');
-    expect(action.textContent).toContain('Open Science Notebook');
+    expect(action.textContent).toContain('Write Notebook synthesis');
     await act(async () => { action.click(); await Promise.resolve(); });
     expect(latest.beehive.notebookOpen).toBe(true);
   });

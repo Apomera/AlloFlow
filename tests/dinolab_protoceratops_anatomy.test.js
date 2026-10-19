@@ -85,10 +85,13 @@ describe('Protoceratops cranial profile', () => {
     expect(p.browHornScale).toBe(0); expect(p.noseHornScale).toBe(0);
     expect(p.note).toMatch(/vary between specimens/); expect(p.note).toMatch(/representative/); expect(p.note).toMatch(/inferred/);
   });
-  it('keeps every other catalogue cranial profile byte-equivalent to the preceding source', () => {
+  it('keeps every other catalogue cranial profile pinned after the reviewed mature-tyrannosaur metadata update', () => {
     expect(baseline.baselineSourceHash).toBe('10c657f495715888606763e27b954f7c5714f49e5a12758123512d8c3117d28a');
     const profiles = api.DINOS.filter(d => d.id !== 'protoceratops').map(d => [d.id, api.cranialSurfaceProfileFor(d)]);
-    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe(baseline.otherProfilesHash);
+    // Later reviewed changes add mature-tyrannosaur metadata and two Alioramini
+    // envelopes. Keep the earlier fixture frozen; pin all current profiles here.
+    expect(baseline.otherProfilesHash).toBe('9cd0652a44724aae2881d782d555e1d5aed4ec66aac943a1cbb809562d942a2a');
+    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe('528cb5198ab8d3c1df69f6a81898e625b24570045f35f44533d57d7d46a65b45');
   });
   it('does not assign the species explanation from a display name or partial ID', () => {
     for (const id of ['Protoceratops', 'protoceratops-extra', 'triceratops', '']) {

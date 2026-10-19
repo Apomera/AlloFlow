@@ -60,12 +60,16 @@ const SEED = {
   interiorDone: {}, seenModules: {}, seenHours: {},
 };
 
+// Mounting the Orbit tab alone takes about 3-4 s in jsdom (a ~400 KB tree) before axe runs,
+// so the 5 s default timed out, and the still-running axe then broke the next test.
+const ORBIT_TIMEOUT = 120000;
+
 describe('orbit lab additions — accessibility', () => {
   it('the prediction gate has no axe violations while closed', async () => {
     resetStemLab();
     loadTool('desktop/web-app/public/stem_lab/stem_tool_spacestation.js', 'spaceStation');
     expect(await auditRegion('#iss-orbit-predict', SEED)).toEqual([]);
-  });
+  }, ORBIT_TIMEOUT);
 
   it('the prediction gate has no axe violations once committed', async () => {
     resetStemLab();
@@ -74,7 +78,7 @@ describe('orbit lab additions — accessibility', () => {
       orbitPredictLog: [{ from: 420, to: 250, pick: 'faster', truth: 'faster', correct: true, fromV: 7.66, toV: 7.76 },
                         { from: 300, to: 420, pick: 'faster', truth: 'slower', correct: false, fromV: 7.73, toV: 7.66 }] };
     expect(await auditRegion('#iss-orbit-predict', committed)).toEqual([]);
-  });
+  }, ORBIT_TIMEOUT);
 
   it('the challenge deck has no axe violations, answered or not', async () => {
     resetStemLab();
@@ -85,5 +89,5 @@ describe('orbit lab additions — accessibility', () => {
     expect(await auditRegion(SEL, SEED)).toEqual([]);
     expect(await auditRegion(SEL,
       { ...SEED, orbitChallengePick: 'slowdown', orbitChallengeDone: { phasing: true } })).toEqual([]);
-  });
+  }, ORBIT_TIMEOUT);
 });

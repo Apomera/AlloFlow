@@ -63,14 +63,14 @@ window.StemLab = window.StemLab || {
     { id: 'triceratops', name: 'Triceratops horridus', common: 'Triceratops', say: 'try-SERR-uh-tops', meaning: 'three-horned face', group: 'ornithischian', clade: 'Ceratopsidae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 68, myaLo: 66, lengthM: 8, heightM: 3, weightKg: 8000, speedKmh: 25, region: 'North America', formation: 'Hell Creek', named: 1889, namedBy: 'Othniel Charles Marsh', blurb: 'A massive horned dinosaur with a bony neck frill and three facial horns, sharing its world with T. rex.', traits: ['Two long brow horns and one nose horn', 'Solid bony frill', 'Beak plus shearing tooth batteries'], facts: ['Hundreds of skulls are known.', 'The frill and horns may have signaled to rivals and mates as much as defended.'], uncertain: 'Whether the frill was mainly for defense, display, or species recognition is argued. Torosaurus may be a mature Triceratops.', howKnow: 'Abundant skulls and skeletons across the American West.' },
     { id: 'velociraptor', name: 'Velociraptor mongoliensis', common: 'Velociraptor', say: 'vel-OSS-ih-RAP-tor', meaning: 'swift thief', group: 'theropod', clade: 'Dromaeosauridae', diet: 'carnivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 75, myaLo: 71, lengthM: 1.8, heightM: 0.5, weightKg: 15, speedKmh: 40, region: 'Asia (Mongolia)', formation: 'Djadochta', named: 1924, namedBy: 'Henry Fairfield Osborn', blurb: 'A turkey-sized feathered predator with a sickle claw on each foot, far smaller than the movie version.', traits: ['Retractable sickle claw', 'Feathered arms with quill knobs', 'Long stiffened tail'], facts: ['The "Fighting Dinosaurs" fossil preserves it locked with a Protoceratops.', 'Quill knobs on the forearm confirm feathers.'], uncertain: 'It could not fly; the feathers were for insulation and display. Pack-hunting is suggested but not proven.', howKnow: 'Several skulls and skeletons, including the Fighting Dinosaurs specimen.' },
     { id: 'stegosaurus', name: 'Stegosaurus stenops', common: 'Stegosaurus', say: 'STEG-uh-SOR-us', meaning: 'roofed lizard', group: 'ornithischian', clade: 'Stegosauridae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 155, myaLo: 145, lengthM: 9, heightM: 4, weightKg: 3500, speedKmh: 7, region: 'North America', formation: 'Morrison', named: 1877, namedBy: 'Othniel Charles Marsh', blurb: 'A plated plant-eater with a famously small brain and a spiked tail weapon called a thagomizer.', traits: ['Two rows of tall back plates', 'Four tail spikes (the thagomizer)', 'Tiny head'], facts: ['The plates were rich in blood vessels.', 'Tail-spike injuries are found on Allosaurus bones.'], uncertain: 'Plate arrangement and their main function are still debated.', howKnow: 'Many skeletons from the Morrison Formation.' },
-    { id: 'brachiosaurus', name: 'Brachiosaurus altithorax', common: 'Brachiosaurus', say: 'BRACK-ee-uh-SOR-us', meaning: 'arm lizard', group: 'sauropod', clade: 'Brachiosauridae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 154, myaLo: 150, lengthM: 22, heightM: 12, weightKg: 35000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1903, namedBy: 'Elmer Riggs', blurb: 'A giraffe-postured giant with longer front legs than back legs, holding its head high to browse treetops.', traits: ['Longer forelimbs than hindlimbs', 'Tall arched nasal crest', 'Spoon-shaped teeth'], facts: ['It did not rear up to feed; its neck already reached high.', 'The African giant Giraffatitan was once lumped in with it.'], uncertain: 'Exact mass depends on assumed soft tissue and air-sac volume.', howKnow: 'Partial skeletons; much of the popular image comes from Giraffatitan.' },
+    { id: 'brachiosaurus', name: 'Brachiosaurus altithorax', common: 'Brachiosaurus', say: 'BRACK-ee-uh-SOR-us', meaning: 'arm lizard', group: 'sauropod', clade: 'Brachiosauridae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 154, myaLo: 150, lengthM: 22, heightM: 12, weightKg: 35000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1903, namedBy: 'Elmer Riggs', blurb: 'A giraffe-postured giant with longer front legs than back legs, holding its head high to browse treetops.', traits: ['Longer forelimbs than hindlimbs', 'Tall arched nasal crest', 'Spoon-shaped teeth'], facts: ['Long forelimbs helped raise the shoulders; exact neck posture and feeding behavior remain reconstructed.', 'The African giant Giraffatitan was once lumped in with it.'], uncertain: 'Exact mass depends on assumed soft tissue and air-sac volume.', howKnow: 'Partial skeletons; much of the popular image comes from Giraffatitan.' },
     { id: 'spinosaurus', name: 'Spinosaurus aegyptiacus', common: 'Spinosaurus', say: 'SPINE-uh-SOR-us', meaning: 'spine lizard', group: 'theropod', clade: 'Spinosauridae', diet: 'piscivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 99, myaLo: 93, lengthM: 15, heightM: 4, weightKg: 7400, speedKmh: 15, region: 'Africa (North Africa)', formation: 'Kem Kem', named: 1915, namedBy: 'Ernst Stromer', blurb: 'A sail-backed, crocodile-snouted giant that lived a semi-aquatic, fish-eating life along ancient rivers.', traits: ['Tall neural-spine sail', 'Conical fish-grabbing teeth', 'Paddle-like tail'], facts: ['The first fossils were destroyed in a 1944 bombing raid.', 'It is the longest known predatory dinosaur.'], uncertain: 'How aquatic it really was, and whether it actively swam, is debated.', howKnow: 'Snout, sail, and tail material from Morocco and Egypt; the 1912 material is lost.' },
     { id: 'ankylosaurus', name: 'Ankylosaurus magniventris', common: 'Ankylosaurus', say: 'ANG-kih-luh-SOR-us', meaning: 'fused lizard', group: 'ornithischian', clade: 'Ankylosauridae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 68, myaLo: 66, lengthM: 6.5, heightM: 1.7, weightKg: 6000, speedKmh: 10, region: 'North America', formation: 'Hell Creek', named: 1908, namedBy: 'Barnum Brown', blurb: 'A living tank covered in bony armor, with a heavy club at the end of its tail.', traits: ['Bony plates across the back', 'Tail club of fused bone', 'Wide gut for fermenting plants'], facts: ['A tail-club swing could likely break bone.', 'Even its eyelids had bony protection.'], uncertain: 'Whether the tail club was mainly for predators or rival contests is unsettled.', howKnow: 'Skulls, armor, and tail clubs, though no single complete skeleton is known.' },
     { id: 'allosaurus', name: 'Allosaurus fragilis', common: 'Allosaurus', say: 'AL-uh-SOR-us', meaning: 'different lizard', group: 'theropod', clade: 'Allosauridae', diet: 'carnivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 155, myaLo: 145, lengthM: 9.5, heightM: 3.3, weightKg: 2000, speedKmh: 30, region: 'North America', formation: 'Morrison', named: 1877, namedBy: 'Othniel Charles Marsh', blurb: 'The top Jurassic predator of North America, with a light skull and a hatchet-like bite.', traits: ['Short brow horns', 'Three-fingered grasping hands', 'Light, flexible skull'], facts: ['It may have used its upper jaw like a hatchet.', 'The Cleveland-Lloyd quarry holds dozens of individuals.'], uncertain: 'Whether the mass death sites mean group hunting or a predator trap is debated.', howKnow: 'One of the best-known theropods, from the Cleveland-Lloyd Quarry.' },
     { id: 'parasaurolophus', name: 'Parasaurolophus walkeri', common: 'Parasaurolophus', say: 'PAIR-uh-SOR-OL-uh-fus', meaning: 'near crested lizard', group: 'ornithischian', clade: 'Hadrosauridae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 76, myaLo: 73, lengthM: 9.5, heightM: 4, weightKg: 2500, speedKmh: 25, region: 'North America', formation: 'Dinosaur Park', named: 1922, namedBy: 'William Parks', blurb: 'A duck-billed dinosaur with a long hollow head crest that may have worked like a trumpet.', traits: ['Long curved hollow crest', 'Hundreds of grinding teeth', 'Walked on two or four legs'], facts: ['Air passages loop through the crest, so its likely call can be modeled.', 'The crest connected to the nostrils.'], uncertain: 'The exact sound is reconstructed from CT scans and physics, not recorded.', howKnow: 'Skulls with intact crests that can be CT-scanned.' },
-    { id: 'apatosaurus', name: 'Apatosaurus ajax', common: 'Apatosaurus', say: 'uh-PAT-uh-SOR-us', meaning: 'deceptive lizard', group: 'sauropod', clade: 'Diplodocidae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 152, myaLo: 151, lengthM: 23, heightM: 5, weightKg: 23000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1877, namedBy: 'Othniel Charles Marsh', blurb: 'A long-necked, whip-tailed giant once tangled up with the name "Brontosaurus".', traits: ['Very thick, strong neck', 'Whip-like tail', 'Peg-shaped teeth'], facts: ['The "Brontosaurus" mix-up began with mismatched bones and a wrong head.', 'Its tail tip may have cracked like a whip.'], uncertain: 'Whether Apatosaurus and Brontosaurus are separate genera is still discussed.', howKnow: 'Multiple skeletons; the head was corrected decades after the body was described.' },
+    { id: 'apatosaurus', name: 'Apatosaurus ajax', common: 'Apatosaurus', say: 'uh-PAT-uh-SOR-us', meaning: 'deceptive lizard', group: 'sauropod', clade: 'Diplodocidae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 152, myaLo: 151, lengthM: 23, heightM: 5, weightKg: 23000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1877, namedBy: 'Othniel Charles Marsh', blurb: 'A long-necked, whip-tailed giant once tangled up with the name "Brontosaurus".', traits: ['Very thick, strong neck', 'Whip-like tail', 'Peg-shaped teeth'], facts: ['The "Brontosaurus" mix-up began with mismatched bones and a wrong head.', 'A 2022 biomechanical study challenges the hypothesis of a supersonic tail crack.'], uncertain: 'Whether Apatosaurus and Brontosaurus are separate genera is still discussed.', howKnow: 'Multiple skeletons; the head was corrected decades after the body was described.' },
     { id: 'archaeopteryx', name: 'Archaeopteryx lithographica', common: 'Archaeopteryx', say: 'ar-kee-OP-ter-iks', meaning: 'ancient wing', group: 'theropod', clade: 'Avialae', diet: 'carnivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 150, myaLo: 148, lengthM: 0.5, heightM: 0.25, weightKg: 1, speedKmh: 0, region: 'Europe (Germany)', formation: 'Solnhofen', named: 1861, namedBy: 'Hermann von Meyer', blurb: 'A crow-sized link between feathered dinosaurs and birds, with wings and teeth and a bony tail.', traits: ['Flight feathers on the arms', 'Toothed jaws', 'Clawed fingers and a long bony tail'], facts: ['It was found just two years after Darwin published On the Origin of Species.', 'The Solnhofen limestone preserves feather impressions.'], uncertain: 'How well it actually flew, versus glided, is still studied.', howKnow: 'About a dozen skeletons and a feather, all from Solnhofen.' },
-    { id: 'diplodocus', name: 'Diplodocus carnegii', common: 'Diplodocus', say: 'dih-PLOD-uh-kus', meaning: 'double beam', group: 'sauropod', clade: 'Diplodocidae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 154, myaLo: 152, lengthM: 26, heightM: 4.5, weightKg: 12000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1878, namedBy: 'Othniel Charles Marsh', blurb: 'An extremely long, slender sauropod whose casts stand in museums around the world.', traits: ['Very long neck and even longer tail', 'Forward-raking comb-like teeth', 'Lightly built'], facts: ['Casts donated by Andrew Carnegie spread copies across Europe.', 'It probably held its neck closer to horizontal.'], uncertain: 'Neck posture and browsing height are reconstructed from bone shape.', howKnow: 'Several good skeletons; the Carnegie cast is one of the most-copied fossils.' },
+    { id: 'diplodocus', name: 'Diplodocus carnegii', common: 'Diplodocus', say: 'dih-PLOD-uh-kus', meaning: 'double beam', group: 'sauropod', clade: 'Diplodocidae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 154, myaLo: 152, lengthM: 26, heightM: 4.5, weightKg: 12000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1878, namedBy: 'Othniel Charles Marsh', blurb: 'An extremely long, slender sauropod whose casts stand in museums around the world.', traits: ['Very long neck and even longer tail', 'Forward-raking comb-like teeth', 'Lightly built'], facts: ['Casts donated by Andrew Carnegie spread copies across Europe.', 'Its usual neck posture and browsing height remain reconstructed.'], uncertain: 'Neck posture and browsing height are reconstructed from bone shape.', howKnow: 'Several good skeletons; the Carnegie cast is one of the most-copied fossils.' },
     { id: 'iguanodon', name: 'Iguanodon bernissartensis', common: 'Iguanodon', say: 'ig-WA-nuh-don', meaning: 'iguana tooth', group: 'ornithischian', clade: 'Iguanodontia', diet: 'herbivore', period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 126, myaLo: 122, lengthM: 10, heightM: 3, weightKg: 3000, speedKmh: 24, region: 'Europe (Belgium)', formation: 'Bernissart', named: 1825, namedBy: 'Gideon Mantell', blurb: 'One of the first dinosaurs ever named, famous for a thumb spike once mistaken for a nose horn.', traits: ['Cone-shaped thumb spike', 'Flexible fifth finger', 'Walked on two or four legs'], facts: ['A coal mine in Bernissart yielded dozens of skeletons.', 'Early reconstructions put the thumb spike on the snout.'], uncertain: 'The thumb spike’s use (defense, foraging, display) is uncertain.', howKnow: 'Dozens of skeletons from the Bernissart coal mine.' },
     { id: 'compsognathus', name: 'Compsognathus longipes', common: 'Compsognathus', say: 'komp-SOG-nay-thus', meaning: 'elegant jaw', group: 'theropod', clade: 'Compsognathidae', diet: 'carnivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 150, myaLo: 148, lengthM: 1.1, heightM: 0.3, weightKg: 3, speedKmh: 40, region: 'Europe (Germany/France)', formation: 'Solnhofen', named: 1859, namedBy: 'Johann A. Wagner', blurb: 'A chicken-sized hunter long held up as one of the smallest known dinosaurs.', traits: ['Light, fast build', 'Two-fingered hands', 'Long legs for sprinting'], facts: ['A lizard was found preserved in one specimen’s gut.', 'It shared the Solnhofen lagoons with Archaeopteryx.'], uncertain: 'Whether it had simple feather-like filaments is not yet shown for this genus.', howKnow: 'Two good skeletons, one from Germany and one from France.' },
     { id: 'therizinosaurus', name: 'Therizinosaurus cheloniformis', common: 'Therizinosaurus', say: 'THERR-ih-ZINE-uh-SOR-us', meaning: 'scythe lizard', group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 68, lengthM: 10, heightM: 4.5, weightKg: 5000, speedKmh: 10, region: 'Asia (Mongolia)', formation: 'Nemegt', named: 1954, namedBy: 'Evgeny Maleev', blurb: 'A bizarre plant-eating theropod with the longest claws of any known animal, up to a meter long.', traits: ['Enormous hand claws', 'Pot belly for digesting plants', 'Small head on a long neck'], facts: ['Despite being a theropod, it ate plants.', 'Researchers debate feeding and display as possible roles for the giant claws.'], uncertain: 'Exact claw use is inferred from shape; no behavior is preserved.', howKnow: 'Originally known mostly from the giant claws; relatives fill in the rest.' },
@@ -1806,11 +1806,11 @@ window.StemLab = window.StemLab || {
       period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 68,
       lengthM: 5, heightM: 1.7, weightKg: 370, speedKmh: 35,
       region: 'Asia (Mongolia)', formation: 'Nemegt',
-      named: 1976, namedBy: 'Sergei Kurzanov',
+      named: 2009, namedBy: 'Stephen Brusatte and colleagues',
       blurb: 'A slender, long-snouted tyrannosaur with a row of small bony horns along its nose.',
       traits: ['Long, low snout', 'Row of nasal horns', 'Slender for a tyrannosaur'],
       facts: ['Its narrow skull set it apart from bulky cousins like Tarbosaurus.', 'It shared its world with the much larger Tarbosaurus.'],
-      uncertain: 'Whether some specimens are young Tarbosaurus is debated.',
+      uncertain: 'The known Alioramus altai individual was young. Its exact adult size and hunting behavior remain uncertain; long-snouted tyrannosaurs were a distinct lineage.',
       howKnow: 'A good skull and skeleton from Mongolia.'
     },
     {
@@ -5345,6 +5345,270 @@ window.StemLab = window.StemLab || {
   function periodName(id) { var p = periodOf(id); if (p) return p.name; return id ? id.charAt(0).toUpperCase() + id.slice(1) : id; }
   function pColor(id) { return PERIOD_COLOR[id] || '#64748b'; }
   function dColor(id) { return DIET_COLOR[id] || '#64748b'; }
+  // These four body plans summarize comparative osteology. The authored ratios
+  // and resting poses are illustrative; they do not measure a complete individual.
+  // Representative mature facial envelopes for the four reviewed ceratopsids.
+  // The published skulls support the anatomical relationships and variation,
+  // not these authored proportions, colors, or a measured living tissue depth.
+  function dinoCeratopsidCraniumProfileFor(dn) {
+    if (!dn || dn.group !== 'ornithischian' || dn.clade !== 'Ceratopsidae') return null;
+    var profiles = {
+      triceratops: { id:'triceratops-horridus-face', span:0.130, length:0.075, height:0.043, depth:0.039,
+        muzzleHeight:0.98, muzzleTip:1.00, brows:1, nasal:0.30,
+        source:'https://doi.org/10.1080/02724634.1996.10011312',
+        evidence:'Triceratops horridus has an elongate, relatively shallow rostrum, long postorbital horns and a smaller nasal horn.',
+        limit:'The face and horns vary among individuals and through growth; this is one representative mature reconstruction.' },
+      styracosaurus: { id:'styracosaurus-albertensis-face', span:0.115, length:0.070, height:0.044, depth:0.041,
+        muzzleHeight:1.10, muzzleTip:1.05, brows:0, nasal:1,
+        source:'https://doi.org/10.1671/0272-4634(2007)27[944:AROTLC]2.0.CO;2',
+        evidence:'Styracosaurus albertensis has a substantial beaked face and a dominant nasal horn; its frill spikes and supraorbital region vary among individuals and through growth.',
+        limit:'The six frill spikes sample a representative arrangement; outline, horn angles, sheaths and tissue dimensions are not exact fossil measurements.' },
+      centrosaurus: { id:'centrosaurus-apertus-face', span:0.116, length:0.068, height:0.044, depth:0.040,
+        muzzleHeight:1.10, muzzleTip:1.05, brows:0, nasal:1,
+        source:'https://doi.org/10.7717/peerj.252',
+        evidence:'Centrosaurus apertus has a prominent nasal horn. Postorbital horns can be reduced or resorbed in mature individuals.',
+        limit:'The nasal horn changes curvature during growth, and supraorbital relief varies. This representative mature face is not an age or sex diagnosis.' },
+      chasmosaurus: { id:'chasmosaurus-belli-face', span:0.130, length:0.072, height:0.041, depth:0.038,
+        muzzleHeight:0.98, muzzleTip:1.03, brows:0.15, nasal:0.24,
+        source:'https://doi.org/10.11646/zootaxa.2963.1.1',
+        evidence:'Chasmosaurus belli has an elongate beaked face. Short brow horns occur in specimens such as NHMUK R4948, while horn form varies among individuals.',
+        limit:'Short horns are a representative choice, not a character that distinguishes every specimen of Chasmosaurus belli; growth and individual variation matter.' }
+    };
+    var profile = profiles[dn.id];
+    if (!profile) return null;
+    profile.sources = [profile.source];
+    if (dn.id === 'triceratops') profile.sources.push('https://doi.org/10.1139/cjes-2024-0170');
+    if (dn.id === 'chasmosaurus') profile.sources.push('https://doi.org/10.1371/journal.pone.0145805');
+    return profile;
+  }
+
+  // These anchors and reference axes never read the selected tissue hypothesis.
+  function dinoCeratopsidCraniumFrame(THREE, dn, head, len, ht) {
+    var profile = dinoCeratopsidCraniumProfileFor(dn);
+    if (!profile || !head || ![head.x,head.y,head.z,len,ht].every(Number.isFinite) || !(len > 0 && ht > 0)) return null;
+    var length = len * profile.length, height = len * profile.height, depth = len * profile.depth;
+    return { profile:profile, head:head.clone(), snout:head.clone().add(new THREE.Vector3(-len * profile.span,-ht * 0.025,0)),
+      length:length, height:height, depth:depth,
+      boneLength:length * 0.70, boneHeight:height * 0.75, boneDepth:depth * 0.82,
+      metadata:{ profile:profile.id, head:head.toArray(), snout:head.clone().add(new THREE.Vector3(-len * profile.span,-ht * 0.025,0)).toArray(),
+        referenceHalfAxes:[length,height,depth], skeletalHalfAxes:[length * 0.70,height * 0.75,depth * 0.82],
+        sources:profile.sources.slice(), representative:true, dimensionsAreInterpretive:true,
+        tissueHypothesisIndependentAnchors:true, skeletalDisplayProxies:true,
+        evidence:profile.evidence, limit:profile.limit } };
+  }
+
+  function dinoCeratopsidCranialDisplay(THREE, species, head, snout, length, height, depth) {
+    if (!dinoCeratopsidCraniumProfileFor(species)) return null;
+    var span = head.distanceTo(snout);
+    return { refined:true,
+      vaultCenter:head.clone().add(new THREE.Vector3(-length * 0.08,-height * 0.06,0)),
+      vaultScale:new THREE.Vector3(length * 0.40,height * 0.82,depth * 0.75),
+      rostrumCenter:head.clone().lerp(snout,0.60),
+      rostrumScale:new THREE.Vector3(span * 0.34,height * 0.42,depth * 0.64) };
+  }
+
+  function dinoCeratopsidHeadEnvelope(THREE, frame, neckJunction, height, depth) {
+    if (!frame || !neckJunction || !(height > 0 && depth > 0)) return null;
+    var head=frame.head, snout=frame.snout, length=frame.length, profile=frame.profile;
+    return { points:[neckJunction.point.clone(),neckJunction.point.clone().lerp(head,0.25),
+        neckJunction.point.clone().lerp(head,0.65),head.clone(),head.clone().lerp(snout,0.58),snout.clone(),
+        snout.clone().add(new THREE.Vector3(-length * 0.25,-height * 0.03,0))],
+      radii:[[neckJunction.radius,neckJunction.radius],[height * 0.76,depth * 0.80],[height * 0.98,depth * 0.96],[height,depth],
+        [height * 0.62 * profile.muzzleHeight,depth * 0.72 * 1.12],
+        [height * 0.45 * profile.muzzleTip,depth * 0.62 * profile.muzzleTip],[height * 0.025,depth * 0.04]] };
+  }
+
+  // Styracosaurus retains its existing six-spike/nasal helper below. The other
+  // three taxa use shared fixed cores and a nested representative sheath here.
+  function dinoCeratopsidHornLandmarks(THREE, dn, frame, len) {
+    if (!frame || !dinoCeratopsidCraniumProfileFor(dn) || dn.id === 'styracosaurus' || !(len > 0)) return [];
+    var head=frame.head, snout=frame.snout, height=frame.height, depth=frame.depth, landmarks=[];
+    if (dn.id !== 'centrosaurus') [-1,1].forEach(function (side) {
+      var long = dn.id === 'triceratops';
+      landmarks.push({ id:'brow-' + side, kind:'brow', side:side,
+        base:head.clone().add(new THREE.Vector3(-frame.length * 0.12,height * 0.68,side * depth * 0.55)),
+        direction:new THREE.Vector3(-len * (long ? 0.075 : 0.010),len * (long ? 0.025 : 0.012),side * depth * 0.12),
+        radius:height * (long ? 0.18 : 0.12) });
+    });
+    var nasalReach = dn.id === 'centrosaurus' ? 0.070 : dn.id === 'triceratops' ? 0.020 : 0.018;
+    landmarks.push({ id:'nasal', kind:'nasal', side:0,
+      base:head.clone().lerp(snout,0.68).add(new THREE.Vector3(0,height * 0.40,0)),
+      direction:new THREE.Vector3(-len * (dn.id === 'centrosaurus' ? 0.014 : 0.006),len * nasalReach,0),
+      radius:height * (dn.id === 'centrosaurus' ? 0.22 : 0.13) });
+    return landmarks;
+  }
+
+  function dinoAddCeratopsidHorns(THREE, dn, model, frame, len, mat, core, headSurface) {
+    var landmarks=dinoCeratopsidHornLandmarks(THREE,dn,frame,len), meshes=[];
+    landmarks.forEach(function (landmark) {
+      var geometry=dinoKeratinGeometry(THREE,landmark.direction,landmark.radius * (core ? 0.68 : 1),'horn',core ? 0.86 : 1);
+      if (!geometry) return;
+      var mesh=new THREE.Mesh(geometry,mat);
+      mesh.position.copy(landmark.base);
+      mesh.name=dn.id + '-' + landmark.id + (core ? '-core' : '-sheath');
+      mesh.userData.dinoFeature=core ? 'horn-core' : 'keratin-horn';
+      mesh.userData.dinoPartIds=['horns']; mesh.userData.dinoRegion='head';
+      mesh.userData.dinoCeratopsidHorn={ id:landmark.id,kind:landmark.kind,core:!!core,representative:true,
+        tissueHypothesisIndependentAnchors:true,source:frame.profile.source };
+      mesh.castShadow=true; mesh.receiveShadow=true;
+      model.add(mesh);
+      if (!core && headSurface) dinoSeatHornRoot(THREE,mesh,headSurface);
+      meshes.push(mesh);
+    });
+    return meshes;
+  }
+
+  // A local reconstructed dorsal nape covers the fixed axis spine in the
+  // lowered Triceratops pose. This does not change bone or measured anatomy.
+  function dinoCeratopsidNapeGeometry(THREE, dn, mesh, frame, tissueScale) {
+    if (!dn || dn.id !== 'triceratops' || !mesh || !mesh.geometry || !frame ||
+      !frame.head || ![frame.length,frame.height,tissueScale].every(Number.isFinite) ||
+      !(frame.length > 0 && frame.height > 0 && tissueScale > 0)) return false;
+    var positions=mesh.geometry.attributes.position;
+    if (!positions) return false;
+    mesh.updateMatrix();
+    if (Math.abs(mesh.matrix.determinant()) < 1e-12) return false;
+    var inverse=mesh.matrix.clone().invert(), center=frame.head.x + frame.length * 0.60, width=frame.length * 0.55;
+    var threshold=frame.head.y - frame.height * 0.18, transition=frame.height * 0.12, rise=frame.height * 0.20 * tissueScale;
+    var point=new THREE.Vector3();
+    for (var i=0;i<positions.count;i++) {
+      point.fromBufferAttribute(positions,i).applyMatrix4(mesh.matrix);
+      var x=(point.x-center)/width, longitudinal=Math.max(0,1-x*x);
+      var dorsal=Math.max(0,Math.min(1,(point.y-threshold)/transition));
+      dorsal=dorsal*dorsal*(3-2*dorsal);
+      point.y += rise * longitudinal * longitudinal * longitudinal * dorsal;
+      point.applyMatrix4(inverse);
+      positions.setXYZ(i,point.x,point.y,point.z);
+    }
+    positions.needsUpdate=true;mesh.geometry.computeVertexNormals();
+    var uv=mesh.geometry.attributes.uv, normals=mesh.geometry.attributes.normal;
+    if (uv && normals) for (var first=0;first<uv.count;first++) {
+      if (uv.getY(first) !== 0) continue;
+      var last=first;
+      while (last+1<uv.count && uv.getX(last+1) === uv.getX(first) && uv.getY(last+1) >= uv.getY(last)) last++;
+      if (last === first || uv.getY(last) !== 1) continue;
+      var blend=new THREE.Vector3().fromBufferAttribute(normals,first).add(new THREE.Vector3().fromBufferAttribute(normals,last));
+      if (blend.lengthSq() > 1e-16) {
+        blend.normalize();normals.setXYZ(first,blend.x,blend.y,blend.z);normals.setXYZ(last,blend.x,blend.y,blend.z);
+      }
+      first=last;
+    }
+    mesh.geometry.computeBoundingBox();mesh.geometry.computeBoundingSphere();
+    mesh.userData.dinoCeratopsidNape={representative:true,softTissueOnly:true,fixedSkeleton:true};
+    return true;
+  }
+
+  function dinoSauropodBodyProfileFor(dn) {
+    if (!dn || dn.group !== 'sauropod') return null;
+    var sharedLimit = 'Body dimensions, transverse width, tissue thickness and joint pose are reconstructed. Sampled vertebrae are not an exact count or a map of preserved material.';
+    var profiles = {
+      brachiosaurus: { id: 'brachiosaurus-body', source: 'https://doi.org/10.1671/039.029.0309',
+        evidence: 'Brachiosaurus altithorax has long forelimbs, a long trunk and a tall proximal tail. Its neck and transverse trunk width rely substantially on comparison; the popular complete skeleton often represents Giraffatitan.',
+        hip: [.115,.180], shoulder: [-.190,.215], head: [-.360,.480], tail: [.520,.150], bodyHeight: .080, bodyDepth: .068,
+        foreDrop: .30, hindDrop: .26, upperFront: .47, upperHind: .54, wrist: .20, ankle: .12, cervicalScale: 1.12,
+        neckWeights: [1,.90,.74,.60,.46,.26,0], neckBend: [0,.02,.06,.10,.07,.02,0],
+        reconstruction: { label: 'Brachiosaurus: long forequarters and deep trunk', torsoLength: 1, neckBase: 1.15, neckTip: .92, tailBase: 1.13, tailTip: .70 },
+        postcranial: { id: 'high-shouldered-sauropod', shortLabel: 'Brachiosaurus body', shoulderFullness: 1.13, ribcageFullness: 1.08, bellyFullness: 1.02, pelvicFullness: 1.02, neckFullness: 1.04, tailBaseFullness: 1.12, tailHeightScale: 1.05, tailDepthScale: 1, thighFullness: 1.04, calfFullness: 1.04, jointFullness: 1.08 },
+        skeletal: { forelimbRobustness: 1.16, hindlimbRobustness: 1.20 } },
+      diplodocus: { id: 'diplodocus-body', source: 'https://doi.org/10.7717/peerj.857',
+        evidence: 'Diplodocus carnegii supports an elongated neck and very long tail with a lighter limb and cervical frame than Apatosaurus. Neck posture and the restored distal tail remain interpretations.',
+        hip: [.025,.120], shoulder: [-.170,.115], head: [-.420,.165], tail: [.520,.104], bodyHeight: .057, bodyDepth: .052,
+        foreDrop: .28, hindDrop: .10, upperFront: .45, upperHind: .52, wrist: .16, ankle: .12, cervicalScale: 1.08,
+        neckWeights: [1,.80,.62,.46,.32,.18,0], neckBend: [0,.02,.06,.10,.07,.02,0],
+        reconstruction: { label: 'Diplodocus: slender frame and long distal tail', torsoLength: 1, neckBase: 1.05, neckTip: .84, tailBase: .94, tailTip: .50 },
+        postcranial: { id: 'long-low-sauropod', shortLabel: 'Slender diplodocid', shoulderFullness: .96, ribcageFullness: .94, bellyFullness: .96, pelvicFullness: .98, neckFullness: .94, tailBaseFullness: .94, tailHeightScale: .88, tailDepthScale: .88, thighFullness: 1, calfFullness: 1, jointFullness: 1.04 },
+        skeletal: { forelimbRobustness: 1, hindlimbRobustness: 1.08 } },
+      apatosaurus: { id: 'apatosaurus-body', source: 'https://doi.org/10.7717/peerj.857',
+        evidence: 'Apatosaurus has more heavily built cervicals and limbs than Diplodocus. The represented A. ajax material is incomplete and partly mixed; relatives inform the complete body plan.',
+        hip: [.065,.135], shoulder: [-.170,.130], head: [-.420,.190], tail: [.520,.116], bodyHeight: .076, bodyDepth: .071,
+        foreDrop: .30, hindDrop: .10, upperFront: .46, upperHind: .54, wrist: .16, ankle: .12, cervicalScale: 2.05,
+        neckWeights: [1,.94,.82,.68,.52,.32,0], neckBend: [0,.03,.08,.12,.08,.02,0],
+        reconstruction: { label: 'Apatosaurus: robust neck, trunk and limbs', torsoLength: 1, neckBase: 1.35, neckTip: .90, tailBase: 1.18, tailTip: .55 },
+        postcranial: { id: 'long-low-sauropod', shortLabel: 'Robust apatosaur', shoulderFullness: 1.09, ribcageFullness: 1.07, bellyFullness: 1.06, pelvicFullness: 1.08, neckFullness: 1.18, tailBaseFullness: 1.16, tailHeightScale: 1, tailDepthScale: 1, thighFullness: 1.12, calfFullness: 1.08, jointFullness: 1.12 },
+        skeletal: { forelimbRobustness: 1.40, hindlimbRobustness: 1.48 } },
+      camarasaurus: { id: 'camarasaurus-body', source: 'https://www.miketaylor.org.uk/dino/out-of-copyright/OsbornMook1921-Camarasaurus-Amphicoelias-and-other-sauropods-of-cope.pdf',
+        evidence: 'Camarasaurus has a comparatively compact neck and deep trunk. C. supremus remains are disarticulated and composite; the famous complete juvenile belongs to C. lentus and is not a direct adult C. supremus template.',
+        hip: [.115,.145], shoulder: [-.140,.145], head: [-.370,.270], tail: [.520,.122], bodyHeight: .082, bodyDepth: .076,
+        foreDrop: .30, hindDrop: .10, upperFront: .49, upperHind: .55, wrist: .18, ankle: .12, cervicalScale: 1.40,
+        neckWeights: [1,.91,.78,.62,.47,.26,0], neckBend: [0,.02,.07,.11,.07,.02,0],
+        reconstruction: { label: 'Camarasaurus: compact neck and deep barrel', torsoLength: 1, neckBase: 1.14, neckTip: .90, tailBase: 1.10, tailTip: .78 },
+        postcranial: { id: 'columnar-sauropod', shortLabel: 'Compact macronarian', shoulderFullness: 1.08, ribcageFullness: 1.13, bellyFullness: 1.10, pelvicFullness: 1.08, neckFullness: 1.12, tailBaseFullness: 1.08, tailHeightScale: 1, tailDepthScale: 1, thighFullness: 1.10, calfFullness: 1.06, jointFullness: 1.10 },
+        skeletal: { forelimbRobustness: 1.20, hindlimbRobustness: 1.36 } }
+    };
+    var profile = profiles[dn.id];
+    if (!profile) return null;
+    profile.sources = [profile.source,'https://doi.org/10.7717/peerj.12810','https://doi.org/10.7717/peerj.10721'];
+    profile.limit = sharedLimit;
+    return profile;
+  }
+
+  function dinoSauropodBodyFrame(THREE, dn, len, ht) {
+    var profile = dinoSauropodBodyProfileFor(dn);
+    if (!profile || ![len,ht].every(Number.isFinite) || !(len > 0 && ht > 0)) return null;
+    function at(pair) { return new THREE.Vector3(pair[0] * len,pair[1] * len,0); }
+    var frame = { hip: at(profile.hip), shoulder: at(profile.shoulder), head: at(profile.head), tail: at(profile.tail),
+      bodyHeight: len * profile.bodyHeight, bodyDepth: len * profile.bodyDepth };
+    frame.snout = frame.head.clone().add(new THREE.Vector3(-len * .030,-ht * .020,0));
+    frame.bodyCenter = frame.hip.clone().add(frame.shoulder).multiplyScalar(.5);
+    frame.bodyLen = Math.abs(frame.hip.x - frame.shoulder.x) * .72;
+    frame.metadata = { family: 'sauropods', profile: profile.id, sources: profile.sources.slice(),
+      anchors: { hip: frame.hip.toArray(), shoulder: frame.shoulder.toArray(), head: frame.head.toArray(), tail: frame.tail.toArray(), snout: frame.snout.toArray() },
+      dimensionsInterpretive: true, poseInterpretive: true, transverseWidthInterpretive: true, tissueThicknessInterpretive: true,
+      neckAxisShared: true, sampledSkeleton: true, evidence: profile.evidence, limit: profile.limit, limbs: [] };
+    return frame;
+  }
+
+  function dinoSauropodBodyNeck(THREE, dn, shoulder, head, bodyHeight, baseRadius, tipRadius) {
+    var profile = dinoSauropodBodyProfileFor(dn);
+    if (!profile || ![bodyHeight,baseRadius,tipRadius].every(Number.isFinite) || !(bodyHeight > 0 && baseRadius > 0 && tipRadius > 0)) return null;
+    var fractions = [0,.14,.31,.50,.69,.86,1];
+    return { points: fractions.map(function (t,index) { return shoulder.clone().lerp(head,t).add(new THREE.Vector3(0,bodyHeight * profile.neckBend[index],0)); }),
+      radii: profile.neckWeights.map(function (weight) { return tipRadius + (baseRadius - tipRadius) * weight; }) };
+  }
+
+  // The fixed minimum envelope bounds the schematic centra, arches and spines.
+  // Reading a selected tissue hypothesis here would change the fossil skeleton.
+  function dinoSauropodBodyCervicalRadius(THREE, dn, t, legacyRadius, len, ht, bodyHeight) {
+    var profile = dinoSauropodBodyProfileFor(dn);
+    if (!profile) return legacyRadius;
+    var reconstruction = reconstructionProfileFor(dn), cranial = cranialSurfaceProfileFor(dn), detail = Math.min(1,ht / 2);
+    var base = bodyHeight * .91 * .42 * .88 * reconstruction.neckBase * profile.postcranial.neckFullness;
+    var headHeight = Math.max(.045 * detail,ht * .030) * reconstruction.head * .90 * cranial.headHeightScale;
+    var headDepth = Math.max(.035 * detail,ht * .050) * reconstruction.head * .90 * cranial.headDepthScale;
+    var tip = Math.min(Math.max(.028 * detail,ht * .038) * .88 * reconstruction.neckTip * Math.max(.82,profile.postcranial.neckFullness), Math.min(headHeight,headDepth) * .66);
+    var radii = profile.neckWeights.map(function (weight) { return tip + (base - tip) * weight; });
+    return Math.min(legacyRadius * profile.cervicalScale,dinoLoftRadius(radii,Math.max(0,Math.min(1,t)) * 6,0) * .24);
+  }
+
+  function dinoSauropodBodyLimb(THREE, dn, frame) {
+    var profile = dinoSauropodBodyProfileFor(dn);
+    if (!profile || !frame || ![frame.len,frame.ht,frame.bodyHeight,frame.bodyDepth,frame.x,frame.z].every(Number.isFinite) || !(frame.len > 0 && frame.ht > 0 && frame.bodyHeight > 0 && frame.bodyDepth > 0) || !frame.foot || !frame.knee || !frame.ankle) return null;
+    var front = frame.front === true, axial = front ? frame.shoulder : frame.hip;
+    var top = new THREE.Vector3(frame.x,axial.y - frame.bodyHeight * (front ? profile.foreDrop : profile.hindDrop),frame.z * .84);
+    var foot = frame.foot.clone(), reach = top.y - foot.y;
+    if (!(reach > 0)) return null;
+    var knee = frame.knee.clone(), ankle = frame.ankle.clone();
+    knee.x = frame.x + (knee.x - frame.x) * .75;
+    knee.y = top.y - reach * (front ? profile.upperFront : profile.upperHind);
+    ankle.y = foot.y + reach * (front ? profile.wrist : profile.ankle);
+    if (!(top.y > knee.y && knee.y > ankle.y && ankle.y > foot.y)) return null;
+    return { topPoint: top, knee: knee, ankle: ankle, foot: foot };
+  }
+
+  function dinoSauropodBodyGlenoid(THREE, dn, shoulder, bodyHeight, bodyDepth, detailScale, stanceWidth, side) {
+    var profile = dinoSauropodBodyProfileFor(dn);
+    return profile ? new THREE.Vector3(shoulder.x,shoulder.y - bodyHeight * profile.foreDrop,
+      side * Math.max(.055 * detailScale,bodyDepth * .68) * stanceWidth * .84) : null;
+  }
+
+  function dinoSauropodBodyRib(THREE, dn, points, t, len, ht, bodyHeight, side) {
+    if (!dinoSauropodBodyProfileFor(dn)) return null;
+    var curve = new THREE.CatmullRomCurve3(points,false,'centripetal');
+    var radius = dinoSauropodBodyCervicalRadius(THREE,dn,t,bodyHeight,len,ht,bodyHeight) / .24;
+    return { base: curve.getPoint(t).add(new THREE.Vector3(0,-radius * .18,side * radius * .18)),
+      tip: curve.getPoint(Math.max(0,t - .06)).add(new THREE.Vector3(0,-radius * .32,side * radius * .34)), radius: radius * .025 };
+  }
+
   function reconstructionProfileFor(dn) {
     var clade = String((dn && dn.clade) || '');
     var profile = { label: 'General clade proportions', stance: 1, shoulder: 1, neck: 1, tail: 1, bodyHeight: 1, bodyDepth: 1, head: 1, torsoLength: 1, chestFullness: 1, hipFullness: 1, neckBase: 1, neckTip: 1, tailBase: 1, tailTip: 1 };
@@ -5358,6 +5622,8 @@ window.StemLab = window.StemLab || {
     else if (/Ankylosaur/i.test(clade)) profile = { label: 'Low, broad armored herbivore', stance: 0.82, shoulder: 1, neck: 0.96, tail: 0.90, bodyHeight: 0.88, bodyDepth: 1.28, head: 0.88, torsoLength: 1.00, chestFullness: 1.16, hipFullness: 1.18, neckBase: 0.98, neckTip: 0.76, tailBase: 1.18, tailTip: 0.56 };
     else if (/Stegosaur/i.test(clade)) profile = { label: 'Plated, high-backed herbivore', stance: 0.90, shoulder: 0.92, neck: 0.92, tail: 0.94, bodyHeight: 1.10, bodyDepth: 1.08, head: 0.82, torsoLength: 1.02, chestFullness: 1.08, hipFullness: 1.04, neckBase: 0.92, neckTip: 0.68, tailBase: 0.92, tailTip: 0.48 };
     else if (/Hadrosaur|Lambeosaur|Iguanodont/i.test(clade)) profile = { label: 'Deep-bodied facultative quadruped', stance: 0.96, shoulder: 0.98, neck: 1, tail: 1.02, bodyHeight: 1.08, bodyDepth: 1.12, head: 1.02, torsoLength: 1.04, chestFullness: 1.10, hipFullness: 1.06, neckBase: 0.98, neckTip: 0.78, tailBase: 1.02, tailTip: 0.56 };
+    if (dn && dn.group === 'theropod' && /^(alioramus|qianzhousaurus)$/.test(dn.id || '')) profile.label = 'Long-snouted alioramin tyrannosaur';
+    if (dn && dn.group === 'sauropod' && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) Object.assign(profile,dinoSauropodBodyProfileFor(dn).reconstruction);
     var evidence = String((dn && dn.howKnow) || '').toLowerCase();
     var strongEvidence = /abundant|hundreds|dozens|many skeletons|multiple skeletons|several good|complete skeleton/.test(evidence)
       && !/no (single )?complete skeleton|no complete|never found a complete/.test(evidence);
@@ -5882,7 +6148,7 @@ window.StemLab = window.StemLab || {
     if (id === 'microraptor') evidence = {
       direct: true,
       label: 'Melanosome-supported iridescent black',
-      note: 'Fossil melanosomes support iridescent black plumage; sheen and viewing angle remain reconstructed.'
+      note: 'Fossil melanosomes support iridescent black plumage; the displayed sheen, hue shifts, and viewing angles are illustrative rather than measured.'
     };
     else if (id === 'sinosauropteryx') evidence = {
       direct: true,
@@ -5897,7 +6163,7 @@ window.StemLab = window.StemLab || {
     else if (id === 'anchiornis') evidence = {
       direct: true,
       label: 'Melanosome-mapped grey, red, and pale bands',
-      note: 'Melanosome mapping supports a grey body, reddish crest, and pale wing bands; fine pattern edges remain reconstructed.'
+      note: 'Melanosome mapping supports a grey body, reddish crest, and pale wing bands. Preserved contour feathers support open, shaggy vanes; fine pattern edges and the rendered fringe remain reconstructed.'
     };
     else if (id === 'borealopelta') evidence = {
       direct: true,
@@ -5961,8 +6227,160 @@ window.StemLab = window.StemLab || {
       profile.patternColor = 'rgba(25,20,14,0.16)';
       if (evidence.direct) profile.evidenceNote += ' This display mode intentionally uses a simplified palette.';
     }
+    profile.openVaneContour = id === 'anchiornis';
     return profile;
   }
+  // Limb proportions constrain this shared bone/life frame. Resting flexion,
+  // muscle envelopes and external contours remain illustrative reconstruction.
+  function dinoOrnithopodBodyProfileFor(dn) {
+    if (!dn || dn.group !== 'ornithischian') return null;
+    var scalingSource = { title: 'Maidment and colleagues (2012): ornithischian limb proportions', url: 'https://doi.org/10.1371/journal.pone.0036904' };
+    var profiles = {
+      iguanodon: { id: 'robust-iguanodon-support', radiusHumerus: 0.65, tibiaFemur: 0.85, foreFlex: 1.16,
+        proportionBasis: 'The shortened forelimb and relatively short radius follow Iguanodon limb anatomy. The displayed ratio is rounded and is not a specimen reconstruction.',
+        sources: [{ title: 'Norman (1980): Iguanodon bernissartensis anatomy', url: 'https://biblio.naturalsciences.be/rbins-publications/memoirs-of-the-royal-belgian-institute-of-natural-sciences-first-series/178-1980/vol-178-013074p-text.pdf' },
+          { title: 'Gonet and colleagues (2026): locomotor reassessment', url: 'https://doi.org/10.3897/fr.29.173614' }],
+        locomotorLimit: 'A 2026 analysis favors obligate quadrupedality for Iguanodon but is sensitive to how hadrosaur locomotion is coded; earlier facultative interpretations remain part of the research debate.',
+        surface: { shoulderFullness: 1.08, ribcageFullness: 1.12, bellyFullness: 1.10, pelvicFullness: 1.16, thighFullness: 1.18, calfFullness: 1.04, tailBaseFullness: 1.14, neckFullness: 0.96 } },
+      edmontosaurus: { id: 'hindlimb-dominant-edmontosaurus', radiusHumerus: 0.94, tibiaFemur: 0.82, foreFlex: 1.10,
+        proportionBasis: 'Edmontosaurus annectens ROM 801 has a 675 mm humerus and 633 mm radius in the published dataset (ratio 0.938). The rounded display parameter is not an individual scan.',
+        sources: [scalingSource],
+        locomotorLimit: 'Weight-bearing hands and limb anatomy support a quadrupedal stance. This resting pose does not determine gait frequency, running speed or age-dependent behavior.',
+        surface: { shoulderFullness: 1.02, ribcageFullness: 1.12, bellyFullness: 1.06, pelvicFullness: 1.18, thighFullness: 1.20, calfFullness: 1.04, tailBaseFullness: 1.22, neckFullness: 0.96 } },
+      maiasaura: { id: 'comparative-maiasaura-support', radiusHumerus: 0.90, tibiaFemur: 0.88, foreFlex: 1.10,
+        proportionBasis: 'The forearm parameter is a comparative hadrosaur reconstruction, not an adult Maiasaura mean. The dataset includes the much smaller ROM 44771 (230 mm humerus, 185 mm radius); it is not used as an adult template.',
+        sources: [scalingSource, { title: 'Dilkes (2001): Maiasaura locomotor ontogeny', url: 'https://doi.org/10.1139/e01-016' },
+          { title: 'Chapelle and colleagues (2020): testing locomotor shifts', url: 'https://doi.org/10.1111/pala.12451' }],
+        locomotorLimit: 'An age-dependent shift to quadrupedality has been proposed and challenged by different analyses. This representative supported pose does not settle that disagreement.',
+        surface: { shoulderFullness: 1.02, ribcageFullness: 1.10, bellyFullness: 1.06, pelvicFullness: 1.14, thighFullness: 1.14, calfFullness: 1.02, tailBaseFullness: 1.18, neckFullness: 0.96 } }
+    };
+    return profiles[dn.id] || null;
+  }
+
+  function dinoOrnithopodBodyAnchors(THREE, dn, frame) {
+    var profile = dinoOrnithopodBodyProfileFor(dn);
+    if (!profile) return null;
+    var hip = frame.hip.clone(), shoulder = frame.shoulder.clone(), head = frame.head.clone(), tail = frame.tail.clone();
+    var hipRise = hip.y * 0.20, shoulderDrop = shoulder.y * 0.18;
+    hip.y += hipRise; shoulder.y -= shoulderDrop;
+    head.y -= shoulderDrop * 0.60; tail.y += hipRise;
+    return { hip: hip, shoulder: shoulder, head: head, tail: tail };
+  }
+
+  function dinoOrnithopodBodyLimb(THREE, dn, frame) {
+    var profile = dinoOrnithopodBodyProfileFor(dn);
+    if (!profile) return null;
+    var topPoint = frame.topPoint.clone(), ankle = frame.ankle.clone(), foot = frame.foot.clone();
+    var delta = ankle.clone().sub(topPoint), distance = delta.length();
+    if (!(distance > 0) || !isFinite(distance)) return null;
+    var ratio = frame.front ? profile.radiusHumerus : profile.tibiaFemur;
+    var total = distance * (frame.front ? profile.foreFlex : 1.24);
+    var proximalLength = total / (1 + ratio), distalLength = proximalLength * ratio;
+    var along = delta.clone().divideScalar(distance);
+    var projection = (proximalLength * proximalLength - distalLength * distalLength + distance * distance) / (2 * distance);
+    var lift = Math.sqrt(Math.max(0, proximalLength * proximalLength - projection * projection));
+    // The sagittal bend is perpendicular to the full 3D joint axis. Elbows
+    // point posteriorly; knees anteriorly. The planted foot remains exact.
+    var bend = new THREE.Vector3(-delta.y, delta.x, 0).normalize();
+    if (!frame.front) bend.negate();
+    var knee = topPoint.clone().addScaledVector(along, projection).addScaledVector(bend, lift);
+    return { topPoint: topPoint, knee: knee, ankle: ankle, foot: foot };
+  }
+
+  // Fixed skeletal proportions and representative flexion distinguish these
+  // four ceratopsids. Soft fullness and resting head height are interpretive.
+  function dinoCeratopsidBodyProfileFor(dn) {
+    if (!dn || dn.group !== 'ornithischian') return null;
+    var proportions = { title: 'Maidment and colleagues (2012): ornithischian limb measurements', url: 'https://doi.org/10.1371/journal.pone.0036904' };
+    var stance = { title: 'Thompson and Holmes (2007): comparative ceratopsid forelimb reconstruction', url: 'https://palaeo-electronica.org/2007_1/step/index.html' };
+    var centrosaurine = { title: 'Senter and Mackey (2023): centrosaurine forelimb function', url: 'https://doi.org/10.26879/1289' };
+    var profiles = {
+      triceratops: { id: 'deep-forequarter-triceratops', radiusHumerus: 0.60, tibiaFemur: 0.82, hipScale: 1.13, shoulderScale: 0.91, headDrop: 0.095,
+        evidence: 'Triceratops horridus CM 1618 has a 680 mm humerus and 405 mm radius in the published dataset. The rounded 0.60 display ratio follows that individual rather than defining a species mean.',
+        sources: [proportions, stance],
+        surface: { shoulderFullness: 1.26, ribcageFullness: 1.18, bellyFullness: 1.18, pelvicFullness: 1.14, neckFullness: 1.24, thighFullness: 1.18, calfFullness: 1.06 } },
+      centrosaurus: { id: 'compact-centrosaurus-support', radiusHumerus: 0.62, tibiaFemur: 0.84, hipScale: 1.12, shoulderScale: 0.91, headDrop: 0.080,
+        evidence: 'Centrosaurus apertus ROM 767 has a 538 mm humerus and 335 mm radius in the published dataset. The rounded 0.62 display ratio follows that individual; exact body fullness is reconstructed.',
+        sources: [proportions, centrosaurine],
+        surface: { shoulderFullness: 1.17, ribcageFullness: 1.12, bellyFullness: 1.16, pelvicFullness: 1.12, neckFullness: 1.16, thighFullness: 1.14, calfFullness: 1.04 } },
+      styracosaurus: { id: 'robust-styracosaurus-support', radiusHumerus: 0.63, tibiaFemur: 0.75, hipScale: 1.12, shoulderScale: 0.92, headDrop: 0.080,
+        evidence: 'Styracosaurus albertensis CMN 344 has left/right humeri of 595/630 mm, radii of 380/390 mm and femora of 840/810 mm. Rounded display proportions follow this individual; crushing and incomplete cartilage preclude exact joint-axis lengths.',
+        sources: [{ title: 'Holmes and Ryan (2013): Styracosaurus postcranial anatomy', url: 'https://biostor.org/reference/193168' }, centrosaurine],
+        surface: { shoulderFullness: 1.22, ribcageFullness: 1.15, bellyFullness: 1.18, pelvicFullness: 1.14, neckFullness: 1.20, thighFullness: 1.16, calfFullness: 1.06 } },
+      chasmosaurus: { id: 'longer-forearm-chasmosaurus', radiusHumerus: 0.72, tibiaFemur: 0.86, hipScale: 1.10, shoulderScale: 0.90, headDrop: 0.080,
+        evidence: 'Chasmosaurus belli CMN 2245 has a 500 mm humerus and 360 mm radius in the published dataset. The 0.72 display ratio follows that individual; the posture study used the related taxon now called Vagaceratops irvinensis.',
+        sources: [proportions, stance],
+        surface: { shoulderFullness: 1.16, ribcageFullness: 1.10, bellyFullness: 1.16, pelvicFullness: 1.10, neckFullness: 1.14, thighFullness: 1.12, calfFullness: 1.02 } }
+    };
+    var profile = profiles[dn.id];
+    if (!profile) return null;
+    profile.limit = 'The hindlimb segment factors, resting head height, joint flexion, modest elbow eversion, muscle fullness and skin are representative reconstructions. Comparative postures do not establish one habitual gait, speed or behavior, and between-species soft-volume differences are not fossil measurements.';
+    return profile;
+  }
+
+  function dinoCeratopsidBodyAnchors(THREE, dn, frame) {
+    var profile = dinoCeratopsidBodyProfileFor(dn);
+    if (!profile) return null;
+    var hip = frame.hip.clone(), shoulder = frame.shoulder.clone(), head = frame.head.clone(), tail = frame.tail.clone();
+    var hipRise = hip.y * (profile.hipScale - 1);
+    hip.y *= profile.hipScale; shoulder.y *= profile.shoulderScale;
+    head.y -= frame.ht * profile.headDrop; tail.y += hipRise * 0.85;
+    return { hip: hip, shoulder: shoulder, head: head, tail: tail };
+  }
+
+  function dinoCeratopsidBodyLimb(THREE, dn, frame) {
+    var profile = dinoCeratopsidBodyProfileFor(dn);
+    if (!profile) return null;
+    if (!frame || !frame.topPoint || !frame.ankle || !frame.foot) return null;
+    var topPoint = frame.topPoint.clone(), ankle = frame.ankle.clone(), foot = frame.foot.clone();
+    var delta = ankle.clone().sub(topPoint), distance = delta.length();
+    if (!(distance > 0) || !isFinite(distance)) return null;
+    var ratio = frame.front ? profile.radiusHumerus : profile.tibiaFemur;
+    var total = distance * (frame.front ? 1.22 : 1.20), proximal = total / (1 + ratio), distal = proximal * ratio;
+    var along = delta.clone().divideScalar(distance), projection = (proximal * proximal - distal * distal + distance * distance) / (2 * distance);
+    var bend = new THREE.Vector3(-delta.y, delta.x, 0).normalize();
+    if (frame.front) {
+      // Keep the fixed foot planted while moderately everting the elbow.
+      // This chosen resting angle is not a direct fossil joint measurement.
+      var lateral = new THREE.Vector3(0, 0, frame.z < 0 ? -1 : 1);
+      lateral.addScaledVector(along, -lateral.dot(along)).normalize();
+      bend.multiplyScalar(Math.cos(Math.PI / 9)).addScaledVector(lateral, Math.sin(Math.PI / 9));
+      bend.addScaledVector(along, -bend.dot(along)).normalize();
+    } else bend.negate();
+    var knee = topPoint.clone().addScaledVector(along, projection).addScaledVector(bend, Math.sqrt(Math.max(0, proximal * proximal - projection * projection)));
+    return { topPoint: topPoint, knee: knee, ankle: ankle, foot: foot };
+  }
+
+  // The rear thorax narrows toward the pelvis. Keep the fixed rib roots,
+  // longitudinal stations and proximal head articulations; taper only the
+  // reconstructed lower shaft sweep. It never follows the selected skin mode.
+  function dinoCeratopsidBodyRib(THREE, dn, points, root, t) {
+    if (!dinoCeratopsidBodyProfileFor(dn)) return points;
+    if (!Array.isArray(points) || points.length !== 5 || !root || !isFinite(t)) return points;
+    var posterior = Math.max(0, Math.min(1, (t - 0.55) / 0.35));
+    posterior = posterior * posterior * (3 - 2 * posterior);
+    return points.map(function (point, index) {
+      if (index === 0) return point;
+      var lower = Math.min(1, index / 2);
+      return new THREE.Vector3(point.x,
+        root.y + (point.y - root.y) * (1 - lower * (0.06 + posterior * 0.22)),
+        root.z + (point.z - root.z) * (1 - lower * (0.08 + posterior * 0.22)));
+    });
+  }
+
+  // Ceratopsid ribs describe a deep, comparatively narrow anterior chest and
+  // a broader, shallower rear thorax. Relative station factors are illustrative;
+  // retain native closures and the shoulder/hip attachment sections exactly.
+  function dinoCeratopsidBodyTorsoRadii(dn, radii) {
+    if (!dinoCeratopsidBodyProfileFor(dn)) return radii;
+    if (!Array.isArray(radii) || radii.length !== 7 || !radii.every(function (pair) { return Array.isArray(pair) && pair.length === 2 && pair.every(function (r) { return r > 0 && isFinite(r); }); })) return radii;
+    var result = radii.map(function (pair) { return pair.slice(); });
+    result[2][0] *= 1.06; result[2][1] *= 0.96;
+    result[3][0] *= 0.98; result[3][1] *= 1.10;
+    result[4][0] *= 0.96; result[4][1] *= 1.10;
+    return result;
+  }
+
   function postureProfileFor(dn) {
     var clade = String((dn && dn.clade) || '');
     var profile = {
@@ -6054,6 +6472,32 @@ window.StemLab = window.StemLab || {
       profile.browHornScale = hornless ? 0 : (/brow horn|two long|eye horn/i.test(descriptor) ? 1 : (/Ceratopsidae/i.test(clade) && /horn/i.test(descriptor) ? 0.52 : 0));
       profile.noseHornScale = hornless ? 0 : (/nose horn|nasal horn/i.test(descriptor) ? 0.68 : 0);
     }
+    // Alioramini retain a long, low snout into maturity: Lü et al. 2014,
+    // https://doi.org/10.1038/ncomms4788. Factors are interpretive envelopes,
+    // not specimen measurements; the shared bone/life snout is extended below.
+    if (group === 'theropod' && /^(alioramus|qianzhousaurus)$/.test(speciesId)) {
+      profile.id = 'alioramin-long-low'; profile.shortLabel = 'Long low tyrannosaur snout';
+      profile.label = 'Long, low alioramin tyrannosaur cranial silhouette';
+      var alioraminValues = [1.04,0.94,1,1,1,1,0.94,1.04,0.90,0.94,0.92,0.96,1,0.98,1,0.88,1,0.96];
+      keys.forEach(function (key, index) { profile[key] = alioraminValues[index]; });
+      profile.note = 'Alioramus and Qianzhousaurus have an elongated, low snout, rather than the deep face of adult Tyrannosaurus. Bone proportions support this difference; exact soft-tissue thickness, colors, and procedural shape factors remain inferred (Lü and colleagues, 2014, doi:10.1038/ncomms4788).';
+    }
+    if (group === 'theropod' && /^(baryonyx|suchomimus)$/.test(speciesId)) {
+      profile.muzzleLengthScale = 1;
+      profile.shortLabel = 'Long snout with rosette';
+      profile.label = 'Baryonychine rostrum with a narrow shaft and expanded tooth-bearing tip';
+      profile.note += ' Baryonyx and Suchomimus fossils support a long, narrow snout, expanded tooth-bearing ends of both jaws, and setback nares. Procedural proportions, tissue thickness and colors are illustrative (Charig and Milner, 1997; Sereno and colleagues, 1998, doi:10.1126/science.282.5392.1298).';
+    }
+    if (group === 'theropod' && /^Tyrannosauridae$/i.test(clade) && !/^(alioramus|qianzhousaurus)$/.test(speciesId)) {
+      profile.matureTyrannosaur = true;
+      profile.note += ' The broad, deep muzzle and muscular S-shaped neck represent a mature tyrannosaurid; precise tissue thickness and resting flexion remain inferred (Snively and Russell, 2007, doi:10.1002/ar.20563).';
+    }
+    var ceratopsidFace = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(speciesId) ? dinoCeratopsidCraniumProfileFor(dn) : null;
+    if (ceratopsidFace) {
+      profile.muzzleLengthScale = 1; profile.muzzleHeightScale = ceratopsidFace.muzzleHeight; profile.muzzleTipScale = ceratopsidFace.muzzleTip;
+      profile.browHornScale = ceratopsidFace.brows; profile.noseHornScale = ceratopsidFace.nasal;
+      profile.note += ' ' + ceratopsidFace.evidence + ' ' + ceratopsidFace.limit + ' The displayed dimensions and living tissue depths are illustrative.';
+    }
     if (speciesId === 'protoceratops') {
       // Skull form varies between specimens; these proportions are interpretive.
       // https://www.amnh.org/explore/ology/paleontology/face-to-fossil2/do-you-have-any-secrets-to-share
@@ -6112,9 +6556,24 @@ window.StemLab = window.StemLab || {
     else if (/Stegosaur/i.test(clade)) apply({ id: 'high-pelvis', shortLabel: 'High pelvic arch', label: 'Low shoulders rising to a high pelvic arch and muscular tail', shoulderFullness: 0.92, ribcageFullness: 1.02, bellyFullness: 1.04, bellyDrop: 0.07, pelvicFullness: 1.24, dorsalRise: 0.14, neckBaseCurve: -0.10, neckMidCurve: -0.05, neckFullness: 0.90, tailProximalCurve: 0.10, tailMidCurve: 0.04, tailBaseFullness: 1.14, thighFullness: 1.16, calfFullness: 1.08, jointFullness: 1.14 });
     else if (/Hadrosaur|Lambeosaur/i.test(clade)) apply({ id: 'deep-hadrosaur-barrel', shortLabel: 'Deep tail-driven body', label: 'Deep ribcage with a powerful pelvic and tail-base transition', shoulderFullness: 1.08, ribcageFullness: 1.16, bellyFullness: 1.12, bellyDrop: 0.10, pelvicFullness: 1.14, dorsalRise: 0.06, neckBaseCurve: -0.07, neckMidCurve: 0.03, neckFullness: 1.02, tailProximalCurve: 0.07, tailMidCurve: 0.02, tailBaseFullness: 1.18, thighFullness: 1.14, calfFullness: 1.04, jointFullness: 1.08 });
     else if (/Iguanodont|Rhabdodont|Ornithopod|Dryosaur|Thescelosaur/i.test(clade)) apply({ id: 'ornithopod-athletic', shortLabel: 'Athletic herbivore', label: 'Rounded herbivore ribcage with a strong pelvic transition', shoulderFullness: 1.02, ribcageFullness: 1.08, bellyFullness: 1.06, bellyDrop: 0.07, pelvicFullness: 1.10, dorsalRise: 0.04, neckBaseCurve: -0.07, neckMidCurve: 0.04, neckFullness: 0.96, tailProximalCurve: 0.06, tailMidCurve: 0.02, tailBaseFullness: 1.10, thighFullness: 1.10, calfFullness: 1.02, jointFullness: 1.02 });
+    if (group === 'sauropod' && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) Object.assign(profile,dinoSauropodBodyProfileFor(dn).postcranial);
     if (/pot belly|pot-bell/i.test(descriptor)) { profile.bellyFullness = Math.max(profile.bellyFullness, 1.28); profile.bellyDrop = Math.max(profile.bellyDrop, 0.16); }
     if (/wide hips|broad pelvis|huge hip|thunder thighs|enormous thigh/i.test(descriptor)) { profile.pelvicFullness = Math.max(profile.pelvicFullness, 1.24); profile.thighFullness = Math.max(profile.thighFullness, 1.36); }
     if (/deep tail|paddle-like tail|tall.*tail/i.test(descriptor)) profile.tailHeightScale = Math.max(profile.tailHeightScale, 1.42);
+    var ceratopsidBodySurface = dinoCeratopsidBodyProfileFor(dn);
+    if (ceratopsidBodySurface) {
+      Object.keys(ceratopsidBodySurface.surface).forEach(function (key) { profile[key] = ceratopsidBodySurface.surface[key]; });
+      profile.id = ceratopsidBodySurface.id; profile.shortLabel = 'Ceratopsid support frame';
+      profile.label = 'Deep forequarters, lower neck and differentiated weight-bearing limbs';
+      profile.note = ceratopsidBodySurface.evidence + ' ' + ceratopsidBodySurface.limit;
+    }
+    var ornithopodBodySurface = dinoOrnithopodBodyProfileFor(dn);
+    if (ornithopodBodySurface) {
+      Object.keys(ornithopodBodySurface.surface).forEach(function (key) { profile[key] = ornithopodBodySurface.surface[key]; });
+      profile.id = ornithopodBodySurface.id; profile.shortLabel = 'Differentiated ornithopod body';
+      profile.label = 'Deep trunk with a higher pelvis, shorter forelimbs and opposed limb bends';
+      profile.note = ornithopodBodySurface.proportionBasis + ' Exact joint flexion, muscle fullness and resting neck or tail contour are interpretive. ' + ornithopodBodySurface.locomotorLimit;
+    }
     return profile;
   }  function skeletalAnatomyProfileFor(dn) {
     var clade = String((dn && dn.clade) || '');
@@ -6258,6 +6717,14 @@ window.StemLab = window.StemLab || {
       profile.toothed = false;
       profile.dentition = 'The jaws end in a toothless keratinous beak; no marginal tooth row is reconstructed.';
       profile.extremities = 'Three-fingered hands and long, three-toed cursorial hind limbs are emphasized.';
+      // Kobayashi & Lu 2003, pp. 252-253: ornithomimid pedal formula
+      // 0-3-4-5-0; basal ornithomimosaurs can retain digit I.
+      // https://www.app.pan.pl/archive/published/app48/app48-235.pdf
+      if (/Ornithomimidae/i.test(clade)) {
+        profile.hallux = false;
+        profile.extremities += ' Ornithomimid feet have lost digit I; no elevated dewclaw is added.';
+        profile.distalLimbEvidence = 'Articulated ornithomimid feet document a 0-3-4-5-0 pedal phalangeal formula. The lateral toes are shorter than digit III; their exact rendered proportions and spread remain illustrative.';
+      }
     } else if (/Oviraptor|Caenagnath/i.test(clade)) {
       profile.label = 'Toothless oviraptorosaur';
       profile.toothed = false;
@@ -6271,6 +6738,10 @@ window.StemLab = window.StemLab || {
       profile.tailBaseMuscleScale = isBasalTyrannosauroid ? 1.10 : 1.28;
       profile.softTissue = isBasalTyrannosauroid ? 'A lighter jaw, thigh, and tail-base envelope accompanies the longer forelimb of an early tyrannosauroid; exact muscle thickness is inferred.' : 'Expanded temporal jaw muscles and a powerful caudofemoral tail-base retractor follow large attachment regions; cheek-side tissues are shown but their exact composition is unresolved.';
       profile.toothProfile = isBasalTyrannosauroid ? 'ziphodont' : 'incrassate';
+      // Alioramus altai has laterally compressed crowns (Brusatte et al. 2009,
+      // https://doi.org/10.1073/pnas.0906911106). Qianzhousaurus retains more
+      // robust crowns, so its long snout does not imply this tooth shape.
+      if (speciesId === 'alioramus') profile.toothProfile = 'ziphodont';
       profile.armScale = isBasalTyrannosauroid ? 0.86 : 0.52;
       profile.handScale = isBasalTyrannosauroid ? 0.94 : 0.70;
       profile.hindlimbRobustness = isBasalTyrannosauroid ? 1.02 : 1.22;
@@ -6321,6 +6792,18 @@ window.StemLab = window.StemLab || {
       profile.pubisMode = 'posterior';
       profile.pelvis = 'Incipiently opisthopubic therizinosaur pelvis with a posteroventrally directed pubis.';
       profile.extremities = 'Three greatly elongated manual unguals are shown with a broad, weight-bearing hind foot.';
+      // Derived Therizinosauridae regained a robust weight-bearing digit I;
+      // basal Falcarius-grade therizinosaurs retain an elevated first toe.
+      // Fiorillo et al. 2018, https://doi.org/10.1038/s41598-018-30110-8.
+      if (/Therizinosauridae/i.test(clade)) {
+        profile.pedalDigits = 4;
+        profile.pedalUnguals = 4;
+        profile.pedalPhalanxFormula = [2, 3, 4, 5];
+        profile.hallux = false;
+        profile.extremities = 'Three greatly elongated manual unguals accompany four robust weight-bearing toes. Digit I joins the foot at ground level, rather than appearing as an elevated dewclaw.';
+        profile.distalLimbMode = 'Inward-facing grasping hands and a broad, functionally four-toed hind foot distinguish derived therizinosaurids from the typical three-toed theropod condition.';
+        profile.distalLimbEvidence = 'Derived therizinosaurid skeletons and attributed tetradactyl tracks support four robust weight-bearing toes. The exact skin pad, toe spread, and resting flexion remain reconstructed.';
+      }
     }
     if (/Spinosaur/i.test(clade)) profile.toothProfile = 'conical';
     if (/Diplodoc|Rebbachisaur/i.test(clade)) profile.toothProfile = 'pencil';
@@ -6636,6 +7119,7 @@ window.StemLab = window.StemLab || {
     profile.caveat += ' Vertebral centra and processes are regionalized, but zygapophyseal facets are orientation proxies rather than claims about exact joint clearance or habitual spinal flexibility.';
     profile.caveat += ' Rib heads and shafts show functional architecture, not specimen-exact costovertebral clearance; distal cartilage, sternal mobility, and thoracic excursion are not preserved as fixed bony shapes.';
     profile.caveat += ' Sacral contacts and haemal arches show load paths and regional change, not a specimen-exact fusion state, chevron formula, or fixed tail-transition vertebra.';
+    if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) Object.assign(profile,dinoSauropodBodyProfileFor(dn).skeletal);
     return profile;
   }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
@@ -7109,6 +7593,19 @@ var CLASSIFY_CASES = [
     });
     return out;
   }
+  // Inquiry controls belong to a species; prose stays in the shared notebook
+  // so moving between the specimen file and notebook never copies over a draft.
+  function specimenInquiryState(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    DINOS.forEach(function (dn) {
+      if (!Object.prototype.hasOwnProperty.call(raw, dn.id)) return;
+      var entry = raw[dn.id];
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+      out[dn.id] = { open: entry.open === true, source: ['fossil', 'catalog', 'model'].indexOf(entry.source) >= 0 ? entry.source : '', reviewed: entry.reviewed === true };
+    });
+    return out;
+  }
   function catalogList(state) {
     var saved = specimenMap(state.savedSpecimens), opened = specimenMap(state.seen);
     var terms = catalogText(state.query).trim().split(/\s+/).filter(Boolean);
@@ -7125,11 +7622,14 @@ var CLASSIFY_CASES = [
       return delta || a.common.localeCompare(b.common);
     });
   }
-  function notebookText(notes) {
+  function notebookText(notes, inquiryState) {
     var lines = ['DINO LAB | FIELD NOTEBOOK', 'Student observations and explanations', 'Catalog measurements are estimates. Model observations are not direct observations of living extinct animals.', ''];
+    var inquiry = specimenInquiryState(inquiryState);
     DINO_CATALOG_ORDER.forEach(function (dn) {
       var note = notes[dn.id]; if (!note) return;
       lines.push(dn.common + ' (' + dn.name + ')', dn.epoch + ' | ' + fmtMya(dn) + ' | ' + dn.region, 'Catalog evidence: ' + dn.howKnow, 'Catalog uncertainty: ' + dn.uncertain, '');
+      var source = inquiry[dn.id] && inquiry[dn.id].source;
+      if (source) lines.push('Student evidence source: ' + ({ fossil: 'Reported fossil evidence in the specimen file', catalog: 'Catalog estimate or reconstruction', model: 'Observation of an illustrative model' })[source], 'Written reasoning has not been automatically assessed.', '');
       NOTE_FIELDS.forEach(function (field) { lines.push(field.label + ':', note[field.id] || '(not recorded)', ''); });
       lines.push('---', '');
     });
@@ -7186,12 +7686,179 @@ var CLASSIFY_CASES = [
       place: { aFormation: aFormation, bFormation: bFormation, aRegion: aRegion, bRegion: bRegion, sameFormation: !!(aFormation && bFormation && !/^(various|unknown|unspecified)$/i.test(aFormation) && aFormation.toLowerCase() === bFormation.toLowerCase()), sameRegion: !!(aRegion && bRegion && !/^(various|unknown|unspecified)$/i.test(aRegion) && aRegion.toLowerCase() === bRegion.toLowerCase()) }
     };
   }
+  var DINO_SHAPE_STUDY_FAMILIES = [
+    { id: 'crests', label: 'Head crests', reference: 'parasaurolophus', choices: ['corythosaurus', 'lambeosaurus', 'olorotitan', 'edmontosaurus'], region: 'head',
+      question: 'Predict how the raised skull outline differs. Compare the same head region from more than one direction.',
+      limit: 'These species are separate branches, not growth stages. Edmontosaurus has no tall bony crest in this model; this does not rule out soft-tissue ornaments. Outer shape does not reveal complete internal passages or prove a particular call.' },
+    { id: 'armor', label: 'Back armor', reference: 'stegosaurus', choices: ['kentrosaurus', 'tuojiangosaurus', 'hesperosaurus'], region: 'full',
+      question: 'Predict how plates and spines change from the front of the back toward the tail. Compare the full outlines.',
+      limit: 'These are sampled, reconstructed arrangements. Plate and spine shapes can be compared, but exact fossil counts, positions, coverings and their functions are not established by these models.' },
+    { id: 'sauropods', label: 'Sauropod body plans', reference: 'brachiosaurus', choices: ['diplodocus', 'apatosaurus', 'camarasaurus'], region: 'full', fullBody: true,
+      sources: [{ title: 'Brachiosaurus skeletal reassessment (Taylor, 2009)', url: 'https://doi.org/10.1671/039.029.0309' }, { title: 'Diplodocid skeletal comparisons (Tschopp and colleagues, 2015)', url: 'https://doi.org/10.7717/peerj.857' }, { title: 'Sauropod neck reconstruction limits (Taylor, 2022)', url: 'https://doi.org/10.7717/peerj.12810' }],
+      question: 'Predict how limb proportions, trunk depth, neck and tail change the whole outline. Compare these different sauropod reconstructions from a shared direction.',
+      limit: 'The models summarize skeletal relationships with illustrative dimensions and soft tissue. Neck posture, body volume and missing anatomy remain reconstructed. A fitted silhouette does not measure habitual browsing height, speed, mass or a precise limb ratio.' },
+    { id: 'ornithopods', label: 'Ornithopod body plans', reference: 'edmontosaurus', choices: ['iguanodon', 'maiasaura'], region: 'full', fullBody: true,
+      sources: [{ title: 'Fossil limb proportions (Maidment and colleagues, 2012)', url: 'https://doi.org/10.1371/journal.pone.0036904' }],
+      question: 'Predict how the trunk, forelimbs, hindlimbs and tail differ across these ornithopod reconstructions. Trace the whole body before examining one region.',
+      limit: 'These are different species, not growth stages or a sequence of ancestors. This displayed stance does not establish how often an animal used two or four limbs. Exact posture, tissue volume, speed and living appearance need evidence beyond these model outlines.' },
+    { id: 'ceratopsids', label: 'Ceratopsid body plans', reference: 'triceratops', choices: ['styracosaurus', 'centrosaurus', 'chasmosaurus'], region: 'full', fullBody: true,
+      sources: [{ title: 'Fossil limb proportions (Maidment and colleagues, 2012)', url: 'https://doi.org/10.1371/journal.pone.0036904' }, { title: 'Ceratopsid forelimb articulation (Senter and Mackey, 2023)', url: 'https://doi.org/10.26879/1289' }],
+      question: 'Predict how the forequarters, trunk, limbs and tail change the whole outline. Check the supporting body as well as the horns and frill, then test the contrast from a second direction.',
+      limit: 'Fossil bones constrain limb proportions, but displayed joint centers, elbow flexion, tissue width and resting pose are reconstructed. A single pose or fitted outline does not establish habitual posture, speed, exact bone ratios or a measured motion range.' }
+  ];
+
+  var DINO_FULL_BODY_STUDY_LENSES = [
+    { id: 'outline', label: 'Whole outline', ids: [],
+      prompt: 'Predict which body region will differ most. Switch A and B, then use a second direction to check whether perspective changes your first impression.' },
+    { id: 'limbs', label: 'Limb support', ids: ['forelimb', 'thigh'],
+      prompt: 'Find the marked forelimb and thigh, then trace each limb toward its foot. Compare the complete limb outlines and the shoulder-to-hip slope. Marker spacing is not a bone-length measurement.' },
+    { id: 'allocation', label: 'Neck, trunk and tail', ids: ['neck', 'trunk', 'tail'],
+      prompt: 'Follow the three marked regions. Compare how much of the reconstructed outline lies in front of the trunk and behind it. Check bone and life views before revising your prediction.' }
+  ];
+
+  function dinoShapeStudyLensFor(family, id) {
+    if (!family || family.fullBody !== true) return null;
+    return DINO_FULL_BODY_STUDY_LENSES.find(function (lens) { return lens.id === id; }) || DINO_FULL_BODY_STUDY_LENSES[0];
+  }
+
+  function dinoShapeStudyLandmarkIds(study, parts) {
+    if (!study || !study.family || !study.lens || study.family.fullBody !== true || !Array.isArray(parts)) return [];
+    var lens = dinoShapeStudyLensFor(study.family, study.lens.id);
+    return lens.ids.filter(function (id) {
+      return parts.some(function (part) { return part.id === id && !part.inferredProxy; });
+    });
+  }
+
+  function dinoShapeStudyFor(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var family = DINO_SHAPE_STUDY_FAMILIES.find(function (entry) { return entry.id === raw.family; });
+    if (!family || family.choices.indexOf(raw.b) < 0 || ['a', 'b'].indexOf(raw.active) < 0) return null;
+    var a = byId(family.reference), b = byId(raw.b);
+    if (!a || !b || a.group === 'other' || b.group === 'other') return null;
+    var species = raw.active === 'a' ? a : b;
+    return { family: family, a: a, b: b, active: raw.active, species: species,
+      key: family.id + '|' + a.id + '|' + b.id, region: family.region, lens: dinoShapeStudyLensFor(family, raw.lens),
+      partId: family.fullBody ? 'trunk' : (family.id === 'armor' ? 'plates' : (species.id === 'edmontosaurus' ? 'skull' : 'crest')) };
+  }
+
+  function dinoShapeStudyPairFor(a, b) {
+    if (!a || !b || a.id === b.id) return null;
+    var family = DINO_SHAPE_STUDY_FAMILIES.find(function (entry) {
+      return (a.id === entry.reference && entry.choices.indexOf(b.id) >= 0) || (b.id === entry.reference && entry.choices.indexOf(a.id) >= 0);
+    });
+    return family ? dinoShapeStudyFor({ family: family.id, b: a.id === family.reference ? b.id : a.id, active: 'a' }) : null;
+  }
+
+  // The existing one-slot field-progress record remains the resume record.
+  // Only data whose explicit species provenance matches the displayed animal
+  // may become its scan, assembly or claim state during model comparison.
+  function dinoShapeStudyNavigationPatch(state, raw, progress) {
+    state = state && typeof state === 'object' ? state : {};
+    var old = dinoShapeStudyFor(state.field3dShapeStudy);
+    var request = raw && raw.family && raw.family.id ? { family: raw.family.id, b: raw.b && raw.b.id, active: raw.active, lens: raw.lens && raw.lens.id } : raw;
+    if (request && request.lens === undefined && old && old.lens && request.family === old.family.id) request = Object.assign({}, request, { lens: old.lens.id });
+    var study = dinoShapeStudyFor(request);
+    if (!study) return null;
+    var target = study.species.id, starting = !old || old.key !== study.key;
+    var scanSource = state.field3dScanSpecies === target ? state : progress && progress.speciesId === target && progress.scanSpecies === target ? {
+      field3dScanLogged: progress.scanLogged, field3dScanTargetIdx: progress.scanTargetIdx, field3dWorkflowStarted: progress.workflowStarted } : null;
+    var assemblySource = state.field3dAssemblySpecies === target ? state : progress && progress.speciesId === target && progress.assemblySpecies === target ? {
+      field3dAssemblyPlaced: progress.assemblyPlaced, field3dAssemblyFocusIdx: progress.assemblyFocusIdx, field3dWorkflowStarted: progress.workflowStarted } : null;
+    var claimSource = state.field3dClaimBoneSpecies === target ? state : progress && progress.speciesId === target && progress.claimBoneSpecies === target ? {
+      field3dClaimBone: progress.claimBone, field3dClaimFocus: progress.claimFocus } : null;
+    function map(value, allowed) {
+      var out = {};
+      if (value && typeof value === 'object' && !Array.isArray(value)) allowed.forEach(function (id) { if (value[id] === true) out[id] = true; });
+      return out;
+    }
+    function index(value) { return Math.max(0, Math.min(1000, Math.floor(Number(value) || 0))); }
+    var scan = map(scanSource && scanSource.field3dScanLogged, ['skull', 'shoulder', 'hip']);
+    var assembly = map(assemblySource && assemblySource.field3dAssemblyPlaced, ['skull', 'spine', 'ribs', 'pelvis', 'hindlimb', 'tail']);
+    var bone = claimSource && ['skull', 'spine', 'ribs', 'pelvis', 'hindlimb', 'tail'].indexOf(claimSource.field3dClaimBone) >= 0 ? claimSource.field3dClaimBone : null;
+    var patch = {
+      tab: 'field3d', selected: target, field3dSelected: target,
+      field3dShapeStudy: Object.assign({ family: study.family.id, b: study.b.id, active: study.active }, study.lens ? { lens: study.lens.id } : {}),
+      field3dFocusMode: false, field3dDrawerOpen: false, field3dOrientationDismissed: true,
+      field3dWorkflowStarted: !!((scanSource && scanSource.field3dWorkflowStarted) || (assemblySource && assemblySource.field3dWorkflowStarted) || Object.keys(scan).length || Object.keys(assembly).length),
+      field3dScanLogged: scan, field3dScanSpecies: target, field3dScanTargetIdx: index(scanSource && scanSource.field3dScanTargetIdx),
+      field3dAssemblyPlaced: assembly, field3dAssemblySpecies: target, field3dAssemblyFocusIdx: index(assemblySource && assemblySource.field3dAssemblyFocusIdx),
+      field3dClaimBone: bone, field3dClaimBoneSpecies: target, field3dClaimFocus: bone && claimSource.field3dClaimFocus || 'scale',
+      field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0,
+      field3dProgress: progress || null
+    };
+    if (starting) Object.assign(patch, { field3dReconstructionMode: 'evidence', field3dLabelMode: 'anatomy', field3dShowSkeleton: true, field3dShowBody: false, field3dBodyOpacity: 28 });
+    return patch;
+  }
+
+  function dinoShapeStudyPose(previous, speciesId, study, previousKey) {
+    if (!study) return previous && previous.speciesId === speciesId ? previous : { speciesId: speciesId, value: 0.35, pitch: 0.18, zoom: 1 };
+    if (previousKey === study.key && previous && [previous.value, previous.pitch, previous.zoom].every(Number.isFinite)) {
+      return Object.assign({}, previous, { speciesId: speciesId, study: study.region, framing: 'full', scanKey: '' });
+    }
+    return { speciesId: speciesId, value: 0, pitch: 0.16, zoom: 1, study: study.region, framing: 'full', scanKey: '' };
+  }
+
+  function dinoShapeViewContextKey(study, hypothesis) {
+    return study && study.family.fullBody ? [study.key, study.lens.id, hypothesis].join('|') : '';
+  }
+
+  function dinoShapeViewCapture(study, raw, parts) {
+    if (!study || !study.family.fullBody || !raw || raw.key !== study.key || raw.species !== study.species.id || !Array.isArray(parts)) return null;
+    if (![raw.yaw, raw.pitch, raw.zoom].every(Number.isFinite) || raw.pitch < 0.04 || raw.pitch > 1.50 || raw.zoom < 0.68 || raw.zoom > 1.65 || typeof raw.hypothesis !== 'string' || !raw.hypothesis) return null;
+    var visible = Array.isArray(raw.visible) ? raw.visible : [];
+    var ids = parts.filter(function (part) { return !part.inferredProxy && visible.indexOf(part.id) >= 0; }).map(function (part) { return part.id; });
+    var layer = raw.showSkeleton && raw.showBody ? 'Bone and surface' : raw.showSkeleton ? 'Bone structure' : raw.showBody ? 'Life surface' : 'Layers hidden';
+    var sources = [];
+    if (Array.isArray(raw.sources)) raw.sources.forEach(function (source) {
+      var url = typeof source === 'string' ? source : source && source.url;
+      if (typeof url === 'string' && /^https:\/\/\S+$/.test(url) && url.length <= 220 && sources.indexOf(url) < 0 && sources.length < 3) sources.push(url);
+    });
+    return { context: dinoShapeViewContextKey(study, raw.hypothesis), key: study.key, species: raw.species, lens: study.lens.id,
+      hypothesis: raw.hypothesis, yaw: Math.atan2(Math.sin(raw.yaw), Math.cos(raw.yaw)), pitch: raw.pitch, zoom: raw.zoom,
+      layer: layer, opacity: Math.max(0, Math.min(100, Number(raw.opacity) || 0)), visible: ids, sources: sources };
+  }
+
+  function dinoShapeViewAngle(a, b) {
+    if (!a || !b) return 0;
+    var dot = Math.sin(a.pitch) * Math.sin(b.pitch) + Math.cos(a.pitch) * Math.cos(b.pitch) * Math.cos(a.yaw - b.yaw);
+    return Math.acos(Math.max(-1, Math.min(1, dot))) * 180 / Math.PI;
+  }
+
+  function dinoShapeViewCaption(pin, parts) {
+    var species = pin && byId(pin.species);
+    if (!species) return '';
+    var degrees = function (radians) { return Math.round(radians * 180 / Math.PI); };
+    var names = parts.filter(function (part) { return pin.visible.indexOf(part.id) >= 0; }).map(function (part) { return part.label; });
+    return species.common + ' · ' + pin.layer + (pin.layer !== 'Bone structure' && pin.layer !== 'Layers hidden' ? ' (' + pin.opacity + '% surface opacity)' : '') + ' · view rotation ' + degrees(pin.yaw) + '°, elevation ' + degrees(pin.pitch) + '°, zoom ' + Math.round(100 / pin.zoom) + '% · visible labels: ' + (names.length ? names.join(', ') : 'none');
+  }
+
+  function dinoShapeViewNotebookAppend(raw, study, pins, parts, hypothesis) {
+    var state = comparisonInquiryState(raw), context = dinoShapeViewContextKey(study, hypothesis);
+    if (!context || !Array.isArray(pins) || pins.length !== 2 || !pins[0] || !pins[1] || pins.some(function (pin) { return pin.context !== context || pin.key !== study.key || pin.lens !== study.lens.id || pin.hypothesis !== hypothesis || [study.a.id, study.b.id].indexOf(pin.species) < 0; })) return { state: state, added: false, reason: 'views' };
+    var sources = [];
+    pins.forEach(function (pin) { pin.sources.forEach(function (url) { if (sources.indexOf(url) < 0 && sources.length < 3) sources.push(url); }); });
+    var text = '3D view context (reconstruction; not fossil proof): ' + study.lens.label + ' / ' + hypothesis + '\n'
+      + pins.map(function (pin, index) { return (index + 1) + '. ' + dinoShapeViewCaption(pin, parts); }).join('\n')
+      + '\nCamera directions replay across independently fitted models; layers stay as currently selected.'
+      + (sources.length ? '\nModel reconstruction references: ' + sources.join('; ') : '');
+    var key = comparisonPairKey(study.a, study.b), ids = [study.a.id, study.b.id].sort();
+    var entry = state.pairs.find(function (pair) { return pair.key === key; }) || { key: key, a: ids[0], b: ids[1], step: 'predict', prediction: '', evidence: [], explanation: '', limit: '' };
+    if (entry.explanation.indexOf(text) >= 0) return { state: state, added: false, reason: 'duplicate' };
+    var explanation = entry.explanation + (entry.explanation ? '\n\n' : '') + text;
+    if (explanation.length > 1800) return { state: state, added: false, reason: 'full' };
+    var evidence = entry.evidence.slice(); if (evidence.indexOf('model') < 0) evidence.push('model');
+    var pairs = state.pairs.filter(function (pair) { return pair.key !== key; });
+    pairs.push(Object.assign({}, entry, { explanation: explanation, evidence: evidence }));
+    return { state: comparisonInquiryState({ pairs: pairs }), added: true, reason: 'added' };
+  }
+
   var COMPARISON_EVIDENCE = [
     { id: 'length', label: 'Estimated length on one linear ruler' },
     { id: 'time', label: 'Catalog age ranges on one geological axis' },
     { id: 'place', label: 'Listed fossil region and formation' },
     { id: 'traits', label: 'Catalog traits and diet' },
-    { id: 'fossils', label: 'How we know and open questions' }
+    { id: 'fossils', label: 'How we know and open questions' },
+    { id: 'model', label: '3D model observation (reconstruction)' }
   ];
   function comparisonInquiryState(raw) {
     raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
@@ -7212,11 +7879,11 @@ var CLASSIFY_CASES = [
   function comparisonInquiryText(raw) {
     var pairs = comparisonInquiryState(raw).pairs.filter(function (q) { return q.prediction.trim() || q.evidence.length || q.explanation.trim() || q.limit.trim(); });
     if (!pairs.length) return '';
-    var lines = ['\nCOMPARISON INVESTIGATIONS', 'Catalog values are estimates; selected evidence describes catalog entries, not direct specimen measurements. Written reasoning has not been automatically assessed.', ''];
+    var lines = ['\nCOMPARISON INVESTIGATIONS', 'Catalog values are estimates. Model observations describe illustrative reconstructions, not new fossil evidence or direct specimen measurements. Written reasoning has not been automatically assessed.', ''];
     pairs.forEach(function (q) {
       var a = byId(q.a), b = byId(q.b), facts = comparisonFacts(a, b);
       var timeText = facts.time.kind === 'separate' ? 'Recorded age ranges are separated by ' + facts.time.gap + ' million years.' : facts.time.kind === 'boundary' ? 'Recorded age ranges touch at ' + facts.time.low + ' mya; this is not a positive-duration overlap.' : facts.time.kind === 'overlap' ? 'Recorded age ranges overlap from ' + facts.time.high + ' to ' + facts.time.low + ' mya.' : 'Recorded age information is insufficient.';
-      lines.push(a.common + ' (' + a.name + ') and ' + b.common + ' (' + b.name + ')', 'Initial prediction: ' + (q.prediction || '(not recorded)'), 'Catalog age estimates: ' + a.common + ' ' + fmtMya(a) + '; ' + b.common + ' ' + fmtMya(b), timeText, 'Catalog fossil context: ' + a.common + ' — ' + a.formation + ' / ' + a.region + '; ' + b.common + ' — ' + b.formation + ' / ' + b.region, 'Cited comparison evidence: ' + (q.evidence.length ? COMPARISON_EVIDENCE.filter(function (e) { return q.evidence.indexOf(e.id) >= 0; }).map(function (e) { return e.label; }).join('; ') : '(not recorded)'), 'My explanation: ' + (q.explanation || '(not recorded)'), 'A limit or next question: ' + (q.limit || '(not recorded)'), 'Time or formation matches alone do not establish that the animals lived together or interacted.', '---', '');
+      lines.push(a.common + ' (' + a.name + ') and ' + b.common + ' (' + b.name + ')', 'Initial prediction: ' + (q.prediction || '(not recorded)'), 'Catalog age estimates: ' + a.common + ' ' + fmtMya(a) + '; ' + b.common + ' ' + fmtMya(b), timeText, 'Catalog fossil context: ' + a.common + ' — ' + a.formation + ' / ' + a.region + '; ' + b.common + ' — ' + b.formation + ' / ' + b.region, 'Cited observations and evidence: ' + (q.evidence.length ? COMPARISON_EVIDENCE.filter(function (e) { return q.evidence.indexOf(e.id) >= 0; }).map(function (e) { return e.label; }).join('; ') : '(not recorded)'), 'My explanation: ' + (q.explanation || '(not recorded)'), 'A limit or next question: ' + (q.limit || '(not recorded)'), 'Time or formation matches alone do not establish that the animals lived together or interacted.', '---', '');
     });
     return lines.join('\n');
   }
@@ -7953,6 +8620,52 @@ var CLASSIFY_CASES = [
     return profile;
   }
 
+  // DINO_BILATERAL_DISTAL_ANATOMY_V1
+  // Rays run medial to lateral on BOTH sides; world-Z alone is not anatomical
+  // left/right. Relative lengths are conservative teaching envelopes, not
+  // specimen measurements. Mesaxonic theropod tracks emphasize digit III:
+  // Milner et al. 2009, https://doi.org/10.1371/journal.pone.0004591.
+  // Raised deinonychosaur digit II follows articular evidence, not a claim
+  // about claw use: https://doi.org/10.1038/s41467-024-44832-z.
+  function dinoDistalDigitLandmarks(THREE, root, baseLength, spreadUnit, height, detailScale, front, side, digitIndex, digitCount, compactManus, clade) {
+    var offset = digitIndex - (digitCount - 1) * 0.5;
+    var ratios = digitCount === 3 ? [0.84, 1, 0.90] : (digitCount === 4 ? [0.72, 0.90, 1, 0.84] : [0.76, 0.96, 1, 0.80, 0.58]);
+    if (front && digitCount === 3) ratios = [0.76, 1, 0.86];
+    if (digitCount === 2) ratios = [0.84, 1];
+    if (digitCount === 1) ratios = [1];
+    var paravianPes = !front && /Dromaeosaur|Troodont/i.test(String(clade || ''));
+    var raised = paravianPes && digitIndex === 0;
+    if (paravianPes) ratios = [0.76, 1, 0.92];
+    var length = baseLength * (ratios[digitIndex] || 0.70) * (front && compactManus ? 0.86 : 1);
+    var spread = side * offset * spreadUnit * (front && compactManus ? 0.56 : 1);
+    var metapodialRoot = root.clone().add(new THREE.Vector3(0, Math.max(0.012 * detailScale, height * 0.004), spread * 0.10));
+    var metapodialEnd = root.clone().add(new THREE.Vector3(-length * 0.30, raised ? Math.max(0.040 * detailScale, height * 0.016) : 0.014 * detailScale, spread * 0.46));
+    var tip = root.clone().add(new THREE.Vector3(-length, raised ? Math.max(0.11 * detailScale, height * 0.050) : 0.004 * detailScale, spread));
+    var clawTip = tip.clone().add(new THREE.Vector3(-length * (raised ? 0.30 : 0.18), raised ? -Math.max(0.10 * detailScale, height * 0.045) : -Math.max(0.015 * detailScale, height * 0.006), spread * 0.05));
+    return { length: length, spread: spread, raised: raised, metapodialRoot: metapodialRoot, metapodialEnd: metapodialEnd, tip: tip, clawTip: clawTip };
+  }
+
+  // Palms face each other in a neutral theropod forelimb, with the thumb on
+  // the dorsal side. Fingers therefore fan in a near-vertical plane, rather
+  // than repeating a palm-down foot fan. Milner et al. 2009, above. Exact
+  // resting flexion and relative lengths remain interpretive. Preserve the
+  // separately curated folded-wing tract and its feather attachment points.
+  function dinoManualDigitLandmarks(THREE, wrist, handLength, spreadUnit, digitIndex, digitCount, side, foldedWing) {
+    var offset = digitIndex - (digitCount - 1) * 0.5;
+    if (foldedWing) return {
+      metacarpalEnd: wrist.clone().add(new THREE.Vector3(-handLength * 0.28, -handLength * 0.035, offset * spreadUnit * 0.42)),
+      tip: wrist.clone().add(new THREE.Vector3(-handLength, -handLength * 0.14, offset * spreadUnit * 1.22)),
+      palmNormal: new THREE.Vector3(0, -1, 0), folded: true
+    };
+    var ratios = digitCount === 2 ? [0.84, 1] : (digitCount === 3 ? [0.76, 1, 0.86] : (digitCount === 4 ? [0.78, 1, 0.88, 0.58] : [0.72, 0.94, 1, 0.80, 0.55]));
+    var fingerLength = handLength * (digitCount === 1 ? 1 : ratios[digitIndex] || 0.70);
+    return {
+      metacarpalEnd: wrist.clone().add(new THREE.Vector3(-handLength * 0.28, -handLength * 0.035 - offset * spreadUnit * 0.42, -side * handLength * 0.025)),
+      tip: wrist.clone().add(new THREE.Vector3(-fingerLength, -handLength * 0.14 - offset * spreadUnit * 1.08, -side * handLength * 0.075)),
+      palmNormal: new THREE.Vector3(0, 0, -side), folded: false
+    };
+  }
+
   // Rounded dorsal contour with a broad, truly planar contact surface at soleY.
   // radiusX/radiusZ are half-widths; height is total plantar-to-dorsal thickness.
   function dinoPlantarGeometry(THREE, radiusX, radiusZ, height, soleY, mode) {
@@ -8388,7 +9101,15 @@ var CLASSIFY_CASES = [
       }
       for (var j = 0; j <= sides; j++) {
         var angle = j / sides * Math.PI * 2;
-        var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * ry).addScaledVector(binormal, Math.sin(angle) * rz);
+        var sectionY = Math.cos(angle), sectionZ = Math.sin(angle);
+        if (typeof options.sectionPower === 'number' && options.sectionPower < 1) {
+          var sectionBlend = Math.min(1, t / 0.38) * Math.min(1, (1 - t) / 0.16);
+          sectionBlend = sectionBlend * sectionBlend * (3 - 2 * sectionBlend);
+          var sectionPower = 1 - (1 - Math.max(0.65, options.sectionPower)) * sectionBlend;
+          sectionY = Math.sign(sectionY) * Math.pow(Math.abs(sectionY), sectionPower);
+          sectionZ = Math.sign(sectionZ) * Math.pow(Math.abs(sectionZ), sectionPower);
+        }
+        var vertex = center.clone().addScaledVector(normal, sectionY * ry).addScaledVector(binormal, sectionZ * rz);
         if (dorsalLift > 0) {
           var dorsalWeight = Math.max(0, Math.cos(angle));
           vertex.y += normal.y * dorsalLift * dorsalWeight * dorsalWeight;
@@ -8425,6 +9146,7 @@ var CLASSIFY_CASES = [
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     geometry.userData.dinoSmoothProfile = !!options.smoothProfile;
     geometry.userData.dinoTransportedFrame = true;
+    if (typeof options.sectionPower === 'number' && options.sectionPower < 1) geometry.userData.dinoSectionPower = Math.max(0.65, options.sectionPower);
     if (dorsalWaist) geometry.userData.dinoDorsalWaist = { start: 2 / 6, end: 4 / 6, inferred: true };
     return geometry;
   }
@@ -8437,18 +9159,274 @@ var CLASSIFY_CASES = [
     function factor(key) { var value = Number(profile[key]); return isFinite(value) && value > 0 ? value : 1; }
     return [
       [junctionRadius, junctionRadius], [height * 0.40, depth * 0.40], [height * 0.86, depth],
-      [height * 0.70 * factor('muzzleHeightScale'), depth * 0.72 * factor('muzzleDepthScale') * factor('muzzleBaseScale')],
-      [height * 0.48 * factor('muzzleHeightScale') * factor('muzzleTipScale'), depth * 0.60 * factor('muzzleDepthScale') * factor('muzzleTipScale')],
+      [height * (profile.matureTyrannosaur ? 0.78 : 0.70) * factor('muzzleHeightScale'), depth * 0.72 * factor('muzzleDepthScale') * factor('muzzleBaseScale')],
+      [height * (profile.matureTyrannosaur ? 0.64 : 0.48) * factor('muzzleHeightScale') * factor('muzzleTipScale'), depth * (profile.matureTyrannosaur ? 0.70 : 0.60) * factor('muzzleDepthScale') * factor('muzzleTipScale')],
       [height * 0.025, depth * 0.04]
     ];
   }
 
-  // Interpretive skin envelope. Shoulder and skull anchors retain their existing
-  // positions; these clade-level contours do not alter the fossil skeleton.
-  function dinoCervicalEnvelope(THREE, shoulder, head, bodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, clade) {
+  // Mature tyrannosaurids have a short, robust craniocervical silhouette, rather
+  // than the same extended neck as every cursorial theropod. The paired anchor
+  // translation retains the model's head-to-tail span; it is a representative
+  // pose, not an estimate of one specimen's intervertebral cartilage.
+  // Snively & Russell 2007: https://doi.org/10.1002/ar.20563
+  function dinoTyrannosaurPose(dn, shoulder, head, tail) {
+    if (!dn || dn.group !== 'theropod' || !/^Tyrannosauridae$/i.test(dn.clade || '') || /^(alioramus|qianzhousaurus)$/.test(dn.id || '')) return { head: head, tail: tail, active: false };
+    var advance = Math.max(0, shoulder.x - head.x) * 0.30;
+    var posedHead = head.clone(), posedTail = tail.clone();
+    posedHead.x += advance; posedTail.x += advance;
+    return { head: posedHead, tail: posedTail, active: true, advance: advance };
+  }
+
+  // A shared anchor lengthens both the bony frame and life surface. Preserve
+  // the posterior skull, neck and tail; the 1.40 multiplier is an illustrative
+  // reconstruction, not a measurement of the fossil's preorbital fraction.
+  // Lü et al. 2014: https://doi.org/10.1038/ncomms4788
+  function dinoLongSnoutedTyrannosaurAnchors(THREE, dn, head, snout) {
+    if (!dn || dn.group !== 'theropod' || !/^(alioramus|qianzhousaurus)$/.test(dn.id || '')) return { snout: snout, active: false };
+    return { snout: head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(1.40)), active: true };
+  }
+
+  // Fossil-supported nasal counts differ between the represented species:
+  // Alioramus altai has three discrete midline bumps (not A. remotus's six).
+  // https://doi.org/10.1073/pnas.0906911106
+  // Qianzhousaurus has four broader, smoother hillocks; relief is less prominent
+  // in proportion through maturity. https://doi.org/10.1080/02724634.2021.1999251
+  // Spacing, amplitude and the living covering below are illustrative, not
+  // measurements from a specimen or a reconstruction of its display behavior.
+  // Preserved Baryonyx and Suchomimus snouts support a long, narrow rostrum,
+  // expanded tooth-bearing ends of both jaws and posteriorly placed nares:
+  // Charig & Milner 1997: https://biostor.org/reference/110558
+  // Sereno et al. 1998: https://doi.org/10.1126/science.282.5392.1298
+  // The factors below are illustrative relationships, never specimen measures.
+  function dinoBaryonychineRostrumFor(dn) {
+    if (!dn || dn.group !== 'theropod' || !/^(baryonyx|suchomimus)$/.test(dn.id || '')) return null;
+    return { id: 'baryonychine-rosette', snoutScale: 1.42, waist: 0.76, tip: 0.91,
+      waistWidth: 0.76, tipWidth: 1.60, lowerTipScale: 1.28, boneWidthScale: 0.40, boneHeightScale: 0.45, boneTipInset: 0.02,
+      source: dn.id === 'baryonyx' ? 'https://biostor.org/reference/110558' : 'https://doi.org/10.1126/science.282.5392.1298',
+      interpretive: true };
+  }
+
+  // Transfer the existing life-only elongation into the shared anatomical
+  // snout anchor. With muzzleLengthScale=1 for these two species, the life
+  // endpoint, eye position, and setback nostril position remain unchanged.
+  function dinoBaryonychineSnoutAnchor(THREE, dn, head, snout) {
+    var profile = dinoBaryonychineRostrumFor(dn);
+    if (!profile || !head || !snout) return { snout: snout, active: false };
+    return { snout: head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(profile.snoutScale)), active: true };
+  }
+
+  function dinoBaryonychineWidthAt(profile, t, lower) {
+    if (!profile || !Number.isFinite(t)) return 1;
+    function smooth(value) { value = Math.max(0, Math.min(1, value)); return value * value * (3 - 2 * value); }
+    var stations = [0.68, profile.waist, profile.tip, 1.02, 1.14], widths = [1, profile.waistWidth, profile.tipWidth, 1.35, 1];
+    var width = 1;
+    for (var i = 0; i < stations.length - 1; i++) {
+      if (t < stations[i] || t > stations[i + 1]) continue;
+      width = widths[i] + (widths[i + 1] - widths[i]) * smooth((t - stations[i]) / (stations[i + 1] - stations[i]));
+      break;
+    }
+    if (lower) width *= 1 + (profile.lowerTipScale - 1) * smooth((t - 0.68) / (profile.tip - 0.68)) * (1 - smooth((t - 1.04) / 0.10));
+    return width;
+  }
+
+  // Sparse two-ring bars cannot follow a nonlinear waist/rosette profile between
+  // their endpoints. Add longitudinal samples to these native cylinders only;
+  // retain their primitive dimensions, material, transform and draw-call count.
+  function dinoBaryonychineBoneGeometry(THREE, dn, geometry, matrix, head, snout) {
+    var parameters = geometry && geometry.parameters;
+    if (!dinoBaryonychineRostrumFor(dn) || !parameters || geometry.type !== 'CylinderGeometry' || parameters.heightSegments >= 16) return geometry;
+    if (matrix && head && snout) {
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
+      var bounds = geometry.boundingBox.clone().applyMatrix4(matrix);
+      var span = head.x - snout.x;
+      if (bounds.min.x >= head.x - span * 0.30 || bounds.max.x <= head.x - span * 1.14) return geometry;
+    }
+    return new THREE.CylinderGeometry(parameters.radiusTop, parameters.radiusBottom, parameters.height,
+      parameters.radialSegments, 16, parameters.openEnded, parameters.thetaStart, parameters.thetaLength);
+  }
+
+  // Shape native mesh buffers through the same specimen-space stations. Life
+  // changes start ahead of the existing setback nostril; posterior landmarks
+  // stay in place. The fixed bone map does not read soft-tissue hypotheses.
+  // Move teeth rigidly: their conical crowns must not become flattened blades.
+  function dinoShapeBaryonychineRostrum(THREE, dn, mesh, head, snout, kind) {
+    var profile = dinoBaryonychineRostrumFor(dn);
+    if (!profile || !mesh || !mesh.geometry || !mesh.parent || !head || !snout) return false;
+    mesh.updateMatrix();
+    // Both anchors and the mesh's local matrix share the specimen parent frame;
+    // changing the model's world pose cannot shear or disable this shape map.
+    var start = head.clone(), end = snout.clone();
+    var span = start.x - end.x;
+    if (!(span > 0) || !Number.isFinite(span) || !(mesh.matrix.determinant() > 0)) return false;
+    if (kind === 'bone') {
+      var sampled = dinoBaryonychineBoneGeometry(THREE, dn, mesh.geometry, mesh.matrix, head, snout);
+      if (sampled !== mesh.geometry) { mesh.geometry.dispose(); mesh.geometry = sampled; }
+    }
+    function boneMix(t) { var mix = Math.max(0, Math.min(1, (t - 0.30) / 0.34)); return mix * mix * (3 - 2 * mix); }
+    function boneTip(t) { var u = Math.max(0, Math.min(1, (t - 0.90) / 0.10)); return t - profile.boneTipInset * u * u * (3 - 2 * u); }
+    function factor(t) {
+      var width = dinoBaryonychineWidthAt(profile, t, kind === 'lower');
+      if (/^bone/.test(kind || '')) {
+        width *= 1 + (profile.boneWidthScale - 1) * boneMix(t);
+      }
+      return width;
+    }
+    var changed = false;
+    if (kind === 'bone-tooth') {
+      var center = mesh.position.clone(), t = (start.x - center.x) / span, scale = factor(t);
+      if (scale !== 1) {
+        center.z = start.z + (center.z - start.z) * scale;
+        var axisY = start.y + (end.y - start.y) * t;
+        center.y = axisY + (center.y - axisY) * (1 + (profile.boneHeightScale - 1) * boneMix(t));
+        center.x = start.x - boneTip(t) * span;
+        mesh.position.copy(center); changed = true;
+      }
+    } else {
+      var positions = mesh.geometry.attributes.position;
+      if (!positions) return false;
+      var inverse = new THREE.Matrix4().copy(mesh.matrix).invert();
+      for (var vertex = 0; vertex < positions.count; vertex++) {
+        var point = new THREE.Vector3().fromBufferAttribute(positions, vertex).applyMatrix4(mesh.matrix);
+        var t = (start.x - point.x) / span, width = factor(t);
+        if (width === 1) continue;
+        point.z = start.z + (point.z - start.z) * width;
+        if (/^bone/.test(kind || '')) {
+          // Keep the fixed mandibular frame inside the shallower life envelope;
+          // this is an illustrative skeletal display proportion, not cartilage.
+          var axisY = start.y + (end.y - start.y) * t;
+          point.y = axisY + (point.y - axisY) * (1 + (profile.boneHeightScale - 1) * boneMix(t));
+          point.x = start.x - boneTip(t) * span;
+        }
+        point.applyMatrix4(inverse);
+        positions.setXYZ(vertex, point.x, point.y, point.z); changed = true;
+      }
+      if (changed) {
+        positions.needsUpdate = true; mesh.geometry.computeVertexNormals();
+        mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere();
+      }
+    }
+    if (changed) mesh.userData.dinoBaryonychineRostrum = { profile: profile.id, kind: kind, source: profile.source,
+      waist: profile.waist, tip: profile.tip, interpretive: true, dentalCrownPreserved: kind === 'bone-tooth' };
+    return changed;
+  }
+
+  function dinoNasalRugosityProfileFor(dn) {
+    if (!dn || dn.group !== 'theropod' || !/^(alioramus|qianzhousaurus)$/.test(dn.id || '')) return null;
+    var alioramus = dn.id === 'alioramus';
+    return {
+      species: dn.id, count: alioramus ? 3 : 4,
+      fractions: alioramus ? [0.40, 0.59, 0.78] : [0.35, 0.49, 0.63, 0.77],
+      lengthScale: alioramus ? 0.052 : 0.058,
+      heightScale: alioramus ? 0.14 : 0.085,
+      widthScale: alioramus ? 0.16 : 0.22,
+      source: alioramus ? 'https://doi.org/10.1073/pnas.0906911106' : 'https://doi.org/10.1080/02724634.2021.1999251',
+      interpretive: true
+    };
+  }
+
+  // A shallow dorsal patch follows the supporting mesh at every radial sample.
+  // point and radii [halfLength, height, halfWidth] are world-space coordinates;
+  // the returned geometry is surface-local, ready to attach directly to surface.
+  // Fail closed when a footprint is unsupported rather than leave a floating cap.
+  function dinoNasalRugosityGeometry(THREE, surface, point, radii) {
+    if (!surface || !surface.geometry || !point || !radii || radii.length !== 3 ||
+        ![point.x, point.y, point.z].every(Number.isFinite) ||
+        !radii.every(function (value) { return Number.isFinite(value) && value > 0; })) return null;
+    surface.updateWorldMatrix(true, false);
+    var determinant = surface.matrixWorld.determinant();
+    if (!Number.isFinite(determinant) || determinant <= 0) return null;
+    var box = new THREE.Box3().setFromObject(surface), extent = box.getSize(new THREE.Vector3());
+    var reach = Math.max(extent.y, radii[1] * 8), top = box.max.y + reach;
+    if (!(reach > 0) || !Number.isFinite(top)) return null;
+    var rings = 6, sides = 24, positions = [], indices = [], uv = [];
+    function sample(r, angle) {
+      var x = point.x + Math.cos(angle) * radii[0] * r;
+      var z = point.z + Math.sin(angle) * radii[2] * r;
+      var anchor = dinoSurfaceAnchor(THREE, surface, new THREE.Vector3(x, top, z), new THREE.Vector3(0, -1, 0), reach * 3);
+      if (!anchor || anchor.normal.y < 0.30) return false;
+      var falloff = 1 - r * r;
+      var local = surface.worldToLocal(anchor.point.clone().addScaledVector(anchor.normal, radii[1] * (falloff * falloff - 0.018)));
+      if (![local.x, local.y, local.z].every(Number.isFinite)) return false;
+      positions.push(local.x, local.y, local.z);
+      uv.push(0.5 + Math.cos(angle) * r * 0.5, 0.5 + Math.sin(angle) * r * 0.5);
+      return true;
+    }
+    if (!sample(0, 0)) return null;
+    for (var ring = 1; ring <= rings; ring++) {
+      for (var side = 0; side < sides; side++) if (!sample(ring / rings, side / sides * Math.PI * 2)) return null;
+    }
+    for (var column = 0; column < sides; column++) indices.push(0, 1 + (column + 1) % sides, 1 + column);
+    for (var band = 0; band < rings - 1; band++) {
+      var inner = 1 + band * sides, outer = inner + sides;
+      for (var facet = 0; facet < sides; facet++) {
+        var next = (facet + 1) % sides;
+        indices.push(inner + facet, inner + next, outer + facet, inner + next, outer + next, outer + facet);
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoNasalRugosity = { surfaceSeated: true, interpretive: true, rings: rings, sides: sides };
+    return geometry;
+  }
+
+  // Shared longitudinal stations carry through both views. The bone surface and
+  // its dimensions are independent of the selectable soft-tissue hypothesis.
+  function dinoAddNasalRugosities(THREE, dn, surface, head, snout, height, material, core) {
+    var profile = dinoNasalRugosityProfileFor(dn), meshes = [];
+    if (!profile || !surface || !surface.parent || !(height > 0)) return meshes;
+    surface.parent.updateWorldMatrix(true, false);
+    var start = surface.parent.localToWorld(head.clone()), end = surface.parent.localToWorld(snout.clone());
+    var scale = surface.parent.getWorldScale(new THREE.Vector3());
+    var worldHeight = height * Math.abs(scale.y);
+    var radii = [Math.abs(end.x - start.x) * profile.lengthScale, worldHeight * profile.heightScale, worldHeight * profile.widthScale];
+    profile.fractions.forEach(function (fraction, index) {
+      var point = start.clone().lerp(end, fraction), geometry = dinoNasalRugosityGeometry(THREE, surface, point, radii);
+      if (!geometry) return;
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.name = 'nasal-rugosity-' + (core ? 'bone-' : 'life-') + index;
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.userData.dinoRegion = 'head'; mesh.userData.dinoFeature = 'nasal-rugosity';
+      mesh.userData.dinoPartIds = ['head', 'skull', 'snout', 'nasal-rugosities'];
+      mesh.userData.dinoNasalRugosity = { species: profile.species, index: index, count: profile.count,
+        fraction: fraction, core: !!core, source: profile.source, surfaceSeated: true, interpretive: true };
+      surface.add(mesh); meshes.push(mesh);
+    });
+    return meshes;
+  }
+
+  function dinoCervicalAxisCurve(THREE, envelope, end) {
+    var start = envelope.points[0], last = envelope.points[envelope.points.length - 1];
+    var axis = last.clone().sub(start), denominator = axis.lengthSq();
+    if (!(denominator > 0)) return null;
+    var endT = end.clone().sub(start).dot(axis) / denominator;
+    var points = envelope.points.filter(function (point, index) {
+      return index === 0 || point.clone().sub(start).dot(axis) / denominator < endT - 0.06;
+    }).map(function (point) { return point.clone(); });
+    points.push(end.clone());
+    return new THREE.CatmullRomCurve3(points, false, 'centripetal');
+  }
+
+  // Interpretive skin envelope between the posed shoulder and skull anchors.
+  // The mature robust tyrannosaur branch also guides the displayed cervical axis.
+  function dinoCervicalEnvelope(THREE, shoulder, head, bodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, clade, matureTyrannosaur) {
     var profile = postcranialSurface || {};
     var baseCurve = Number(profile.neckBaseCurve) || 0;
     var midCurve = Number(profile.neckMidCurve) || 0;
+    if (!isSauropod && matureTyrannosaur === true && /^Tyrannosauridae$/i.test(clade || '')) {
+      var fractions = [0, 0.22, 0.50, 0.78, 1], flexion = [0, -0.16, 0.04, 0.18, 0];
+      return {
+        points: fractions.map(function (t, index) {
+          if (index === 0) return shoulder;
+          if (index === fractions.length - 1) return head;
+          return shoulder.clone().lerp(head, t).add(new THREE.Vector3(0, bodyHeight * flexion[index], 0));
+        }),
+        radii: [neckBaseRadius, neckBaseRadius * 0.98, neckBaseRadius * 0.74 + neckTipRadius * 0.26,
+          neckBaseRadius * 0.30 + neckTipRadius * 0.70, neckTipRadius]
+      };
+    }
     if (!isSauropod) return {
       points: [shoulder,
         shoulder.clone().lerp(head, 0.34).add(new THREE.Vector3(0, bodyHeight * baseCurve, 0)),
@@ -8513,10 +9491,125 @@ var CLASSIFY_CASES = [
     return { point: curve.getPoint(t), radius: radius, t: t, distance: distance };
   }
 
+  // Mature crest outlines are authored from published skull anatomy, not scans.
+  // The two meshes show external envelopes only: no lumen or measured wall is
+  // reconstructed. Their dimensions and the simple life covering are interpretive.
+  function dinoLambeosaurCrestProfileFor(dn) {
+    if (!dn || dn.group !== 'ornithischian' || !/Hadrosaur|Lambeosaur/i.test(dn.clade || '')) return null;
+    var profiles = {
+      parasaurolophus: { id: 'parasaurolophus-tube', shape: 'long backswept tube', specimen: 'ROM 768',
+        source: 'https://doi.org/10.7717/peerj.10669', center: [0, 1.85], depth: 0.34,
+        outline: [[-0.22,0.30],[-0.25,1.12],[-0.29,1.63],[0.22,2.12],[0.91,2.57],[1.60,2.95],[1.95,3.00],[2.08,2.82],[1.90,2.60],[1.40,2.35],[0.75,1.95],[0.12,1.43],[0.02,0.30]] },
+      corythosaurus: { id: 'corythosaurus-helmet', shape: 'rounded helmet', specimen: 'ROM 1933',
+        source: 'https://doi.org/10.1002/ar.70125', center: [0.04, 1.72], depth: 0.34,
+        outline: [[-0.22,0.30],[-0.30,1.15],[-0.43,2.25],[-0.19,2.95],[0.15,3.12],[0.49,2.78],[0.62,1.95],[0.30,1.10],[0.10,0.30]] },
+      lambeosaurus: { id: 'lambeosaurus-hatchet', shape: 'hatchet with a rear process', specimen: 'TMP 1982.038.0001',
+        source: 'https://doi.org/10.1002/ar.70125', center: [-0.25, 1.90], depth: 0.31,
+        outline: [[-0.22,0.30],[-0.30,1.17],[-0.63,2.34],[-0.43,2.83],[-0.10,2.96],[0.15,2.67],[0.25,2.02],[0.91,1.57],[1.13,1.37],[0.89,1.24],[0.20,1.35],[0.10,0.30]] },
+      olorotitan: { id: 'olorotitan-fan', shape: 'tall rearward fan', specimen: 'AEHM 2/845',
+        source: 'https://doi.org/10.4202/app.2011.0051', center: [0.20, 1.74], depth: 0.32,
+        outline: [[-0.22,0.30],[-0.30,1.18],[-0.37,2.16],[-0.04,3.32],[0.42,3.72],[0.91,3.63],[1.25,3.14],[1.39,2.42],[1.17,1.66],[0.30,1.04],[0.10,0.30]] }
+    };
+    return profiles[dn.id] || null;
+  }
+
+  function dinoLambeosaurCrestGeometry(THREE, dn, head, len, ht, headScale, core) {
+    var profile = dinoLambeosaurCrestProfileFor(dn);
+    if (!profile || !head || ![head.x,head.y,head.z,len,ht,headScale].every(Number.isFinite) || !(len > 0 && ht > 0 && headScale > 0)) return null;
+    var crestDetail = Math.min(1, ht / 2);
+    var length = Math.max(0.20 * crestDetail, len * 0.066) * headScale;
+    var height = Math.max(0.045 * crestDetail, ht * 0.058) * headScale;
+    var depth = Math.max(0.035 * crestDetail, ht * 0.058) * headScale * profile.depth;
+    var center = head.clone().add(new THREE.Vector3(length * profile.center[0], height * profile.center[1], 0));
+    var outline = new THREE.CatmullRomCurve3(profile.outline.slice().reverse().map(function (point) {
+      return new THREE.Vector3(head.x + point[0] * length, head.y + point[1] * height, head.z);
+    }), true, 'centripetal');
+    var sides = 96, rows = 20, positions = [], uvs = [], indices = [];
+    var planeScale = core ? 1 : 1.055, depthScale = core ? 1 : 1.15;
+    function add(point, u, v) { positions.push(point.x,point.y,point.z); uvs.push(u,v); }
+    add(center.clone().add(new THREE.Vector3(0,0,depth * depthScale)),0.5,0);
+    for (var row = 1; row < rows; row++) {
+      var phi = Math.PI * row / rows, radius = Math.sin(phi);
+      for (var side = 0; side < sides; side++) {
+        var point = outline.getPoint(side / sides).sub(center);
+        point.x *= radius * planeScale; point.y *= radius * planeScale;
+        point.z = Math.cos(phi) * depth * depthScale;
+        add(point.add(center),side / sides,row / rows);
+      }
+    }
+    var bottom = positions.length / 3;
+    add(center.clone().add(new THREE.Vector3(0,0,-depth * depthScale)),0.5,1);
+    for (var side = 0; side < sides; side++) {
+      indices.push(0,1 + side,1 + (side + 1) % sides);
+      for (var row = 0; row < rows - 2; row++) {
+        var a = 1 + row * sides + side, b = 1 + row * sides + (side + 1) % sides;
+        indices.push(a,a + sides,b,a + sides,b + sides,b);
+      }
+      var last = 1 + (rows - 2) * sides;
+      indices.push(last + side,bottom,last + (side + 1) % sides);
+    }
+    // A single consistent winding joins the rounded poles and both sides. The
+    // sampled, star-shaped outline avoids folds; no face is individually flipped.
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoLambeosaurCrest = { profile: profile.id, shape: profile.shape, specimen: profile.specimen, source: profile.source,
+      core: !!core, root: head.clone().add(new THREE.Vector3(-length * 0.12,height * 0.65,0)).toArray(), center: center.toArray(),
+      frame: { length: length, height: height, halfDepth: depth }, sides: sides, rows: rows,
+      dimensionsInterpretive: true, coveringInterpretive: true, lumenModeled: false, wallThicknessMeasured: false };
+    return geometry;
+  }
+
+  function dinoAddLambeosaurCrest(THREE, dn, model, head, len, ht, headScale, mat, core, surface) {
+    if (!model) return null;
+    var geometry = dinoLambeosaurCrestGeometry(THREE,dn,head,len,ht,headScale,core);
+    if (!geometry) return null;
+    var mesh = new THREE.Mesh(geometry,mat), metadata = Object.assign({},geometry.userData.dinoLambeosaurCrest);
+    mesh.name = metadata.profile + (core ? '-bone' : '-life');
+    mesh.castShadow = true; mesh.receiveShadow = true; mesh.renderOrder = core ? 8 : 10;
+    mesh.userData.dinoFeature = core ? 'bony-crest-envelope' : 'crest-covering';
+    mesh.userData.dinoRegion = 'head'; mesh.userData.dinoLambeosaurCrest = metadata;
+    mesh.userData.dinoPartIds = ['crest']; model.add(mesh);
+    model.updateWorldMatrix(true,false);
+    if (surface) {
+      var root = new THREE.Vector3().fromArray(metadata.root), reach = metadata.frame.height * 4;
+      var origin = model.localToWorld(root.clone().add(new THREE.Vector3(0,reach,0)));
+      var direction = new THREE.Vector3(0,-1,0).transformDirection(model.matrixWorld);
+      var scale = model.getWorldScale(new THREE.Vector3());
+      var anchor = dinoSurfaceAnchor(THREE,surface,origin,direction,reach * 2 * Math.max(scale.x,scale.y,scale.z));
+      if (anchor) {
+        var local = model.worldToLocal(anchor.point.clone());
+        metadata.surfaceSeated = root.y < local.y;
+        metadata.skullRoof = local.toArray();
+      }
+    }
+    model.userData.dinoLambeosaurCrest = { profile: metadata.profile, shape: metadata.shape, specimen: metadata.specimen, source: metadata.source,
+      root: metadata.root.slice(), dimensionsInterpretive: true, coveringInterpretive: true, lumenModeled: false, wallThicknessMeasured: false };
+    return mesh;
+  }
+
   // Bulk cranial fill is an interpretive display volume; the anatomical frame
   // and its landmarks are constructed separately. A fixed species profile keeps
   // this volume independent of the selectable soft-tissue hypotheses.
   function dinoCranialDisplayProfile(THREE, species, head, snout, length, height, depth, detailScale, isTheropod) {
+    var ceratopsidDisplay = species && /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(species.id) ? dinoCeratopsidCranialDisplay(THREE,species,head,snout,length,height,depth) : null;
+    if (ceratopsidDisplay) return ceratopsidDisplay;
+    if (isTheropod === true && species && /^(baryonyx|suchomimus)$/.test(species.id || '')) {
+      return { refined: true,
+        vaultCenter: head.clone(), vaultScale: new THREE.Vector3(length * 0.50, height * 0.77, depth * 0.76),
+        rostrumCenter: head.clone().lerp(snout, 0.60),
+        rostrumScale: new THREE.Vector3(Math.abs(snout.x - head.x) * 0.38, height * 0.28, depth * 0.40) };
+    }
+    if (isTheropod === true && species && /^(alioramus|qianzhousaurus)$/.test(species.id || '')) {
+      return {
+        refined: true,
+        vaultCenter: head.clone(),
+        vaultScale: new THREE.Vector3(length * 0.50, height * 0.77, depth * 0.76),
+        rostrumCenter: head.clone().lerp(snout, 0.63),
+        rostrumScale: new THREE.Vector3(Math.abs(snout.x - head.x) * 0.38, height * 0.38, depth * 0.48)
+      };
+    }
     if (isTheropod === true && cranialSurfaceProfileFor(species).id === 'slender-theropod') {
       // Compact interpretive fill for a low, narrow skull. Keep the separately
       // constructed bone frame and all head/snout landmarks unchanged.
@@ -8556,7 +9649,7 @@ var CLASSIFY_CASES = [
     var compactRostrum = shape.compactRostrum === true && radii.length === 6 &&
       isFinite(rostrumX) && isFinite(rostrumSpan) && rostrumSpan > 0;
     var geometry = dinoSurfaceGeometry(THREE, points, radii, {
-      rings: 72, sides: 40, smoothProfile: true, sculptCaps: compactRostrum,
+      rings: 72, sides: 40, smoothProfile: true, sculptCaps: compactRostrum, sectionPower: shape.robustSection ? 0.74 : 1,
       sculpt: function (vertex) {
         var x = (vertex.x - shape.center.x) / (shape.length * 0.85);
         var y = (vertex.y - shape.center.y) / (shape.height * 0.62);
@@ -9041,14 +10134,365 @@ var CLASSIFY_CASES = [
     armor: { title: 'Natural History Museum: armored dinosaurs', url: 'https://www.nhm.ac.uk/discover/ankylosaurs-the-dinosaurs-with-built-in-armour.html' },
     club: { title: 'Arbour and colleagues: tail clubs and rival combat', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9727678/' },
     crest: { title: 'Natural History Museum: Parasaurolophus crests', url: 'https://www.nhm.ac.uk/discover/dino-directory/parasaurolophus.html' },
+    parasaurolophusCrest: { title: 'Gates and colleagues (2021): Parasaurolophus skull and crest comparisons', url: 'https://doi.org/10.7717/peerj.10669' },
+    lambeosaurCrest: { title: 'Dudgeon and colleagues (2026): mature Corythosaurus and Lambeosaurus crests', url: 'https://doi.org/10.1002/ar.70125' },
+    olorotitanCrest: { title: 'Godefroit and colleagues (2012): Olorotitan skull reconstruction', url: 'https://doi.org/10.4202/app.2011.0051' },
+    hadrosaurCovering: { title: 'Sharpe and colleagues (2026): evidence and limits for hadrosaur crest coverings', url: 'https://doi.org/10.1002/ar.70098' },
     sail: { title: 'Ibrahim and colleagues: Spinosaurus anatomy', url: 'https://d3qi0qp55mx5f5.cloudfront.net/paulsereno/i/docs/14-SCI-Spinosaurus.pdf' },
     plumage: { title: 'AMNH: fossil feathers', url: 'https://www.amnh.org/exhibitions/dinosaurs-ancient-fossils/liaoning-diorama/figuring-out-feathers' },
     giantClaws: { title: 'Qin and colleagues: unusual dinosaur hand claws', url: 'https://doi.org/10.1038/s42003-023-04552-4' },
+    alioramusNasal: { title: 'Brusatte and colleagues (2009): Alioramus altai nasal ornamentation', url: 'https://doi.org/10.1073/pnas.0906911106' },
+    qianzhousaurusNasal: { title: 'Foster and colleagues (2022): Qianzhousaurus nasal anatomy', url: 'https://doi.org/10.1080/02724634.2021.1999251' },
+    deepTail: { title: 'Ibrahim and colleagues (2020): Spinosaurus tail bones', url: 'https://doi.org/10.1038/s41586-020-2190-3' },
     thumb: { title: 'Natural History Museum: reconstructing Iguanodon', url: 'https://www.nhm.ac.uk/discover/the-discovery-of-iguanodon.html' },
     dome: { title: 'Peterson and colleagues: dome injuries and possible combat', url: 'https://pubmed.ncbi.nlm.nih.gov/23874691/' },
     respiratory: { title: 'Sereno and colleagues: fossil evidence for dinosaur air sacs', url: 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0003303' },
     muscles: { title: 'Voegele and colleagues: reconstructing dinosaur muscle attachments', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7309294/' }
   });
+
+  // Paired inspections change visibility at the selected landmark, never the
+  // anatomy, evidence or reconstruction hypothesis. A bone view is a composite
+  // model, not a claim that every displayed element was found for this species.
+  function dinoPartInspectionFor(dn, part) {
+    if (!dn || !part || dn.group === 'other' || part.inferredProxy) return null;
+    var inspection = {
+      question: 'Keep the marker in view. Which parts of this landmark remain in bone view, and what does the life surface add?',
+      bone: 'Trace the supporting bones at the marker. Their arrangement constrains the body; this composite is not a map of preserved specimen material.',
+      life: 'Compare the outer contour around the same marker. Muscles, skin and other coverings add volume around the bones.',
+      limit: 'A change in visibility is a display choice, not a change in fossil certainty.'
+    };
+    var profile = skeletalAnatomyProfileFor(dn);
+    var reviewedCrest = part.id === 'crest' && /^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id) ? dinoLambeosaurCrestProfileFor(dn) : null;
+    if (/^(plates|spikes)$/.test(part.id) && dinoStegosaurArmorProfileFor(dn)) {
+      var regionalArmorInspection = dinoStegosaurArmorProfileFor(dn);
+      inspection.question = dn.id === 'kentrosaurus' ? 'Trace the small anterior plates toward the paired posterior spines. Which change is easiest to see from the side, and which from above?' : dn.id === 'tuojiangosaurus' ? 'Trace plate outlines from front to back. Where do pear-shaped, triangular and narrow pointed elements appear? Compare side and overhead views.' : 'Compare a plate from the side and above. Is its front-to-back length greater than its height, and which view makes thickness easier to judge?';
+      inspection.bone = 'Follow the bony osteoderms: they are skin bones, separate from the vertebrae. ' + regionalArmorInspection.note;
+      inspection.life = 'Follow the same fixed bony arrangement under its reconstructed covering. Changing the skin hypothesis changes the surrounding body, not the osteoderm anchors.';
+      inspection.limit = 'This is a sampled regional arrangement, not an exact fossil count, spacing or orientation. Covering thickness and colors are illustrative. Shape alone does not establish display, heat exchange or a tested defensive behavior.';
+      inspection.source = { title: dn.id === 'kentrosaurus' ? 'Mallison (2014): stegosaur osteoderm distribution' : dn.id === 'tuojiangosaurus' ? 'Dong and colleagues (1983): Tuojiangosaurus armor' : 'Hayashi and colleagues (2012): Hesperosaurus plate shape', url: regionalArmorInspection.source };
+    } else if (reviewedCrest) {
+      inspection.question = 'Trace the crest from its skull-roof root. Compare the outline in bone and life, then turn to the front. Which apparent dimensions change?';
+      inspection.bone = dn.id === 'parasaurolophus' ? 'Follow the long, backswept bony crest. The represented species is Parasaurolophus walkeri; shorter, more curved crests occur in other species and growing individuals.' : dn.id === 'corythosaurus' ? 'Trace the rounded, helmet-shaped bony outline above the skull. The mature Corythosaurus casuarius skull ROM 1933 provides an anatomical reference.' : dn.id === 'lambeosaurus' ? 'Find the broad upright front of the crest and the narrower rear nasal process. This hatchet-like outline differs from the rounded helmet of Corythosaurus.' : 'Trace the tall crest fanning behind the skull. The posterior nasal bone is incomplete and restored in the published Olorotitan outline.';
+      inspection.life = 'The life view adds a simple illustrative covering around the same bony outline. Its thickness and color are not preserved measurements; the model does not assume a thick keratin sheath.';
+      inspection.limit = 'These outlines summarize published skull anatomy with illustrative dimensions and rounded display envelopes. Internal nasal passages and bony wall thickness are not modeled. Crest growth, living covering, color, exact calls and behavior need evidence beyond this shape.';
+      if (dn.id === 'olorotitan') inspection.limit += ' The internal nasal passage of the incomplete Olorotitan crest remains unknown.';
+      inspection.source = DINO_ANATOMY_SOURCES[dn.id === 'parasaurolophus' ? 'parasaurolophusCrest' : dn.id === 'olorotitan' ? 'olorotitanCrest' : 'lambeosaurCrest'];
+    } else if (/^(snout|jaw|teeth)$/.test(part.id) && dinoBaryonychineRostrumFor(dn)) {
+      inspection.question = 'Trace the narrow snout toward its expanded tooth-bearing tip. Compare both jaw ends in bone and life views, then look from above. Where is the tip broader than the shaft behind it?';
+      inspection.bone = 'Fossils support an elongated, narrow snout with expanded tooth-bearing ends of the premaxillae and dentaries. Follow the tooth row toward the broader terminal region; this schematic does not reproduce an exact tooth formula.';
+      inspection.life = 'Follow the same expanded tip and narrow shaft beneath the reconstructed covering. The setback nostrils lie behind this terminal region.';
+      inspection.limit = 'The broad anatomical relationships are fossil-supported. Exact proportions, including simplified bone widths and depths, living covering and colors are illustrative. Shape alone does not establish an exclusive fish diet, a measured bite force or exposed teeth in life.';
+      inspection.source = { title: dn.id === 'baryonyx' ? 'Charig and Milner (1997): Baryonyx snout and jaws' : 'Sereno and colleagues (1998): Suchomimus snout and jaws', url: dinoBaryonychineRostrumFor(dn).source };
+    } else if (part.id === 'nasal-rugosities' && dinoNasalRugosityProfileFor(dn)) {
+      inspection.question = 'Trace the raised nasal bumps in side view, then turn above. Do they form paired horns or one midline row? Compare bone and life surfaces.';
+      inspection.bone = dn.id === 'alioramus' ? 'Find three bumps on the fused nasal bones of Alioramus altai. The separate species Alioramus remotus has six mounds.' : 'Find four nasal mounds. Qianzhousaurus fossils show broader, smoother hillocks than the sharper relief of the smaller Alioramus altai specimen.';
+      inspection.life = 'Follow the same midline row under the reconstructed covering. The outer patches follow the head surface.';
+      inspection.limit = 'Fossils support bony count and placement. Exact spacing, relief, living covering, color and any signaling role remain inferred.';
+      inspection.source = DINO_ANATOMY_SOURCES[dn.id === 'alioramus' ? 'alioramusNasal' : 'qianzhousaurusNasal'];
+    } else if (part.id === 'tail' && dn.id === 'spinosaurus') {
+      inspection.question = 'Compare the tail from the side and above. Which bones support its vertical depth, and how does the life covering change the outline?';
+      inspection.bone = 'Find the tall neural spines above the vertebrae and elongate chevrons below them. The displayed elements sample the structure, not an exact vertebral count.';
+      inspection.life = 'Follow the deep, laterally narrow tail. Bone supports its overall form; the smooth contour and soft-tissue thickness are reconstructed.';
+      inspection.limit = 'Tail anatomy is evidence for shape. Whole-animal swimming and hunting behavior remain debated; this model is not a hydrodynamic experiment.';
+      inspection.source = DINO_ANATOMY_SOURCES.deepTail;
+    } else if (/^(head|skull|snout)$/.test(part.id) && /^(alioramus|qianzhousaurus)$/.test(dn.id || '')) {
+      inspection.question = 'Find the eye socket, then trace the snout in front of it. How does that long, low outline carry through into life view? Turn the head to inspect its width too.';
+      inspection.bone = 'Compare the elongated rostrum with the back of the skull. Alioramin fossils support a long-snouted tyrannosaur form, rather than a juvenile stage of the deep face of Tyrannosaurus.';
+      inspection.life = 'Follow the same snout and eye position beneath the added tissue. Skin and muscle change the contour while the long, low facial plan remains visible.';
+      inspection.limit = 'The fossil proportions support this contrast. The model is a procedural reconstruction, not a scan or a way to measure a fossil; its exact tissue thickness and shape factors are illustrative.';
+      inspection.source = { title: 'Lü and colleagues (2014): long-snouted tyrannosaur diversity', url: 'https://doi.org/10.1038/ncomms4788' };
+    } else if (/^(head|skull|jaw|snout|teeth)$/.test(part.id) && dn.group === 'theropod' && profile.toothed && !profile.keratinBeak) {
+      inspection.question = 'Find the tooth row in bone view. How does the life surface change the outline of the mouth around it?';
+      inspection.bone = 'Locate teeth, jaw edges and the hinge. Bone constrains their positions; an exposed tooth row in a skeleton does not establish exposed teeth in life.';
+      inspection.life = 'Compare the mouth margin with the tooth row. Gingiva and labial scales can cover teeth when a theropod closes its mouth.';
+      inspection.limit = 'Cullen and colleagues (2023) support tooth-covering tissues using tooth wear and anatomical comparisons. Their exact form remains debated; this surface is a hypothesis.';
+      inspection.source = { title: 'Cullen and colleagues (2023): testing theropod facial tissues', url: 'https://doi.org/10.1126/science.abo7877' };
+    } else if (part.id === 'eyes') {
+      inspection.question = 'Compare the eye socket in bone view with the eye and lids in life view. Does the living eye fill the whole bony opening?';
+      inspection.bone = 'Locate the eye socket in the skull. The opening is bone; it is not an outline of a preserved eyeball.';
+      inspection.life = 'Find the eye surface and eyelids inside the reconstructed head. Their size, seating and color involve soft-tissue inference.';
+    } else if (/^(claws|thumbspike)$/.test(part.id)) {
+      inspection.question = 'Compare the bony digit tip with its outer covering. Where does bone end and the reconstructed sheath continue?';
+      inspection.bone = 'Follow the digit to its terminal bone. The claw core is part of the skeleton.';
+      inspection.life = 'Compare the keratin-covered tip with the bony core. Sheath length and thickness can change the apparent outline.';
+      inspection.limit = 'A sharp-looking model does not demonstrate a particular behavior or a measured force.';
+    } else if (/^(horns|frill|dome|plates|spikes|armor|tailclub)$/.test(part.id)) {
+      inspection.question = 'Compare this feature in both views. Which raised structures are bone, and which changes come from the outer covering?';
+      inspection.bone = part.id === 'tailclub' ? 'Locate the stiffened tail handle and bony knob. The knob is made of enlarged osteoderms, distinct from the vertebrae.' : 'Find the bony structure at the marker. Some conspicuous external ornaments are part of the skeleton or bony skin armor.';
+      inspection.life = 'Compare the silhouette and covering over that structure. Living tissue, inferred sheaths and color affect its appearance.';
+      inspection.limit = 'The bony shape can constrain a reconstruction without establishing the feature\'s exact color or every way it was used.';
+      if (part.id === 'tailclub') inspection.source = { title: 'Arbour and Currie (2015): tail-club handle and knob', url: 'https://doi.org/10.1111/joa.12363' };
+    } else if (/^(wing|feathers|hindwings|tailfeathers|feathercrest|bristles|skin)$/.test(part.id)) {
+      inspection.question = 'Switch from bone to life surface. Which parts of the outer silhouette cannot be traced from bones alone?';
+      inspection.bone = 'Trace the supporting skeleton. Switching the covering off does not mean that feathers, bristles or skin were absent.';
+      inspection.life = 'Compare the added covering with the bones below it. Fossil skin, feathers or attachment marks can support some coverings; other regions use relatives.';
+      inspection.limit = 'The selected covering hypothesis controls this surface. Its complete three-dimensional arrangement is not a preserved fossil map.';
+      if (dn.id === 'velociraptor') {
+        inspection.limit = 'Velociraptor forearm quill knobs support attached feathers, not powered flight or an exact whole-body coat. These tiny attachment marks are not drawn at this scale.';
+        inspection.source = { title: 'Turner and colleagues (2007): Velociraptor quill knobs', url: 'https://doi.org/10.1126/science.1145076' };
+      } else if (dn.id === 'anchiornis' && /^(wing|feathers|hindwings)$/.test(part.id)) {
+        inspection.question = 'In life view, find a limb feather shaft and compare the vane widths on either side. Switch to bone view to locate the limb supporting those feathers.';
+        inspection.life = 'The reviewed limb feathers have nearly equal vanes on either side of the shaft. Follow an individual shaft before comparing neighboring overlapping feathers.';
+        inspection.limit = 'Fossils support near-symmetrical limb vanes. Exact breadth, spacing and this pose are reconstructed; feather symmetry alone does not measure flight performance.';
+        inspection.source = { title: 'Hu and colleagues (2009): Anchiornis limb feathers', url: 'https://doi.org/10.1038/nature08322' };
+      } else if (dn.id === 'caudipteryx' && /^(tailfeathers|feathers)$/.test(part.id)) {
+        inspection.question = 'Find the shafts in the terminal tail fan. Compare the vanes on either side, then switch to bone view to locate the end of the bony tail.';
+        inspection.life = 'The terminal fan uses symmetrical vanes around each shaft. This correction is limited to the tail fan; the arms use a separate schematic profile.';
+        inspection.limit = 'Tail-feather fossils support the fan. Its full spread and exact dimensions are reconstructed; the model does not infer flight ability from symmetry.';
+        inspection.source = { title: 'Ji and colleagues (1998): Caudipteryx tail feathers', url: 'https://doi.org/10.1038/31635' };
+      }
+    }
+    var bodyInspectionPart = /^(trunk|neck|tail|forelimb|thigh|shin|knee|elbow|wrist|ankle)$/.test(part.id);
+    var sauropodBodyInspection = bodyInspectionPart ? dinoSauropodBodyProfileFor(dn) : null;
+    var ornithopodBodyInspection = bodyInspectionPart ? dinoOrnithopodBodyProfileFor(dn) : null;
+    var ceratopsidBodyInspection = bodyInspectionPart ? dinoCeratopsidBodyProfileFor(dn) : null;
+    if (sauropodBodyInspection) {
+      inspection.question = part.id === 'neck' ? 'Trace the curved neck in bone and life. Predict its front outline, then turn the model. Does a long neck also look broad?' : 'Trace this region into the rest of the body. Compare forelimbs with hindlimbs, then follow the neck and tail. Which differences remain from a second direction?';
+      inspection.bone = (part.id === 'neck' ? 'The sampled cervical bones follow the same curved axis used by the life surface. ' : 'The shoulder socket and limb joints share one fixed frame in bone and life. ') + sauropodBodyInspection.evidence;
+      inspection.life = 'The life surface adds reconstructed tissues around the same skeletal landmarks. Compare the neck taper, trunk depth and limb columns; skin thickness and body width are illustrative.';
+      inspection.limit = sauropodBodyInspection.limit + ' The displayed neck position does not establish a habitual feeding height. Tail shape does not demonstrate a whip crack or a tested defensive behavior.';
+      inspection.source = { title: 'Published anatomy behind this sauropod body plan', url: sauropodBodyInspection.source };
+    } else if (ornithopodBodyInspection) {
+      inspection.question = /^(forelimb|elbow|wrist)$/.test(part.id) ? 'Trace the upper arm from shoulder to elbow, then the forearm to the wrist. Predict how their relative lengths compare with another ornithopod.' : 'Find the higher hip and shorter forelimb. Trace the elbow and knee bends toward the feet, then turn the model to check what the first view hid.';
+      inspection.bone = part.id === 'forelimb' ? ornithopodBodyInspection.proportionBasis : 'The forelimbs are shorter than the hindlimbs in this reconstruction. Elbows bend toward the rear and knees toward the front; the bone and life views use the same joint positions.';
+      inspection.life = 'Follow the same joints beneath the reconstructed muscle and skin. The fuller trunk and pelvic transition summarize tissue around the skeleton; their exact volume is inferred.';
+      inspection.limit = 'Joint angles, hindlimb proportions and tissue contours are illustrative. This model is not a specimen scan or a measurement of speed. ' + ornithopodBodyInspection.locomotorLimit;
+      inspection.source = ornithopodBodyInspection.sources[0];
+    } else if (ceratopsidBodyInspection) {
+      inspection.question = /^(forelimb|elbow|wrist)$/.test(part.id) ? 'Trace the upper arm to the elbow, then the shorter forearm to the wrist. Predict what a front view will reveal about the bend; check the same joints in bone and life.' : part.id === 'trunk' ? 'Compare the depth of the front chest with its width, then follow the broader rear trunk. Does the side outline tell you the same thing as the front or overhead view?' : 'Trace this region into the shoulder, hip and planted feet. Compare the elbow and knee bends, then check the same body from another direction.';
+      inspection.bone = part.id === 'trunk' ? 'Comparative ceratopsid ribs support a deeper, narrower anterior chest and a broader rear thorax. The model samples rib positions; its station widths and curved sweeps are illustrative.' : /^(forelimb|elbow|wrist)$/.test(part.id) ? ceratopsidBodyInspection.evidence + ' The upper arm bends toward the rear, with modest lateral elbow eversion; the forearm bones run beside each other without crossing.' : /^(thigh|shin|knee|ankle)$/.test(part.id) ? 'Trace the femur from the pelvis toward the forward knee bend, then follow the lower leg to the planted foot. These fixed joints are shared by bone and life; hindlimb segment factors and joint angles are illustrative.' : 'The neck, shoulders, pelvis and tail share one fixed skeletal frame beneath the life surface. Their positions describe this representative resting reconstruction; the sampled chain does not resolve every vertebra or fused element.';
+      inspection.life = 'The reconstructed muscle and skin surround the same fixed joints and ribcage. Follow the shoulder, chest and pelvic transitions instead of treating the outer width as a bone measurement.';
+      inspection.limit = ceratopsidBodyInspection.limit + ' Sampled bones are schematic; they do not reproduce every vertebra, fusion, cartilage surface or original fossil.';
+      inspection.source = part.id === 'trunk' ? { title: 'Holmes and Ryan (2013): ceratopsid rib and body anatomy', url: 'https://biostor.org/reference/193168' } : ceratopsidBodyInspection.sources[0];
+    }
+    var ceratopsidFaceInspection = /^(head|skull|snout|beak|jaw|teeth|horns|frill)$/.test(part.id) ? dinoCeratopsidCraniumProfileFor(dn) : null;
+    if (ceratopsidFaceInspection) {
+      inspection.question = part.id === 'horns' ? 'Predict which facial horns will remain prominent from the front. Turn the model, then compare the bony cores with their reconstructed coverings. Could horn shape alone establish age or behavior?' : 'Follow the beaked face into the cheek, frill and neck. Keep a side view, then check the same region from the front. Which differences come from width, overlap or the reconstructed covering?';
+      inspection.bone = ceratopsidFaceInspection.evidence + ' The beak and skull share fixed landmarks with the life surface; the internal display volumes remain schematic.';
+      inspection.life = 'A fuller facial envelope connects the beak, cheek and neck. Horn sheaths cover smaller bony cores; skin, covering thickness and colors are reconstructed.';
+      inspection.limit = ceratopsidFaceInspection.limit + (part.id === 'frill' ? ' The frill display does not resolve fossil fenestrae or their exact bony margins.' : '') + ' This model does not identify sex, prove a display or combat behavior, or measure living tissue thickness.';
+      inspection.source = { title: 'Published skull anatomy and variation for this ceratopsid', url: ceratopsidFaceInspection.source };
+    }
+    return inspection;
+  }
+
+  function dinoPartInspectionLayers(mode) {
+    if (mode !== 'bone' && mode !== 'life') return null;
+    return { field3dShowSkeleton: mode === 'bone', field3dShowBody: mode === 'life', field3dBodyOpacity: mode === 'life' ? 100 : 28 };
+  }
+
+  // Two projections test an interpretation of one visible landmark. Choosing a
+  // view never scores an observation or establishes a fossil fact.
+  function dinoPartViewpointTaskFor(dn, part) {
+    if (!dn || !part || ['head', 'body', 'tail', 'full'].indexOf(part.region) < 0 || !dinoPartInspectionFor(dn, part)) return null;
+    var side = { id: 'side', label: 'Side', yaw: 0, pitch: 0.16,
+      prompt: 'Follow the selected marker and the outline around it. Which nearby structures overlap from this side?' };
+    var endOn = { id: 'front', label: 'Front', yaw: Math.PI / 2, pitch: 0.16,
+      prompt: 'Keep the same marker in view. Look for width, paired structures and features hidden by overlap in side view.' };
+    var overhead = { id: 'overhead', label: 'Overhead', yaw: 0, pitch: 1.45,
+      prompt: 'Look down on the same region. Check width and spacing that were compressed or hidden in side view.' };
+    var task = {
+      question: 'Predict what a second viewpoint might hide or reveal. Then check the same landmark from both directions.',
+      views: [side, endOn],
+      limit: 'A viewpoint changes the image, not the anatomy. Views fit the region independently; apparent overlap or size in an image is not a fossil measurement or evidence that a hidden feature is absent.'
+    };
+    if (part.id === 'crest' && /^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id) && dinoLambeosaurCrestProfileFor(dn)) {
+      task.question = 'Does a broad or long side-view crest also have great sideways width? Predict the front outline, then turn the same landmark.';
+      side.prompt = 'Trace the crest above the skull and follow its rear extent. Compare its characteristic outline in bone and life views.';
+      endOn.prompt = 'Check the rounded sideways thickness and midline position of the same crest. Its long or tall side outline can overlap the skull from this direction.';
+      task.limit = 'The two views show a procedural external outline, not the internal nasal passages or a measured bony wall. Perspective, crest shape and this illustrative covering do not establish exact sounds, sex or behavior.';
+    } else if (/^(snout|jaw|teeth)$/.test(part.id) && dinoBaryonychineRostrumFor(dn)) {
+      task.question = 'Does the narrow side silhouette hide a broader tooth-bearing tip? Predict its width, then inspect the same snout from above.';
+      side.prompt = 'Trace the snout and both jaw ends along their length. Locate the tooth-bearing tip and the setback nostril region.';
+      overhead.prompt = 'Compare the expanded terminal region with the narrower shaft behind it. In bone view, trace how the tooth rows follow this change in breadth.';
+      task.views = [side, overhead];
+      task.limit = 'Fossils support the rosette and long narrow shaft. These procedural shape factors and bone-display proportions are illustrative; perspective does not measure the original fossil or establish a particular feeding behavior.';
+    } else if (part.id === 'nasal-rugosities') {
+      task.question = 'Trace the raised snout outline from the side, then check whether the bumps form one midline row from above.';
+      side.prompt = 'Follow the separate bumps along the top of the snout. Use the selected marker to keep their location relative to the eye and snout tip.';
+      overhead.prompt = 'Check the midline arrangement from above. The far side of a bump can overlap another shape; compare bone and life at this same viewpoint if needed.';
+      task.views = [side, overhead];
+      task.limit = 'Fossil bone constrains the bumps and their placement. The living cover, color and any display behavior remain interpretations; this procedural model is not a fossil measurement.';
+    } else if (part.id === 'tail') {
+      task.question = dn.id === 'spinosaurus'
+        ? 'Does a deep-looking tail from the side also look wide from above? Check both outlines before explaining its shape.'
+        : 'Does the taper look the same from the side and from above? Follow the selected tail marker in both views.';
+      side.prompt = dn.id === 'spinosaurus'
+        ? 'Follow the tall tail outline and compare it with the bony supports in bone view. The reconstruction includes neural spines above and chevrons below the tail vertebrae.'
+        : 'Trace the tail from its base toward the tip. Notice which parts of the vertebral chain are hidden by the outer covering.';
+      overhead.prompt = dn.id === 'spinosaurus'
+        ? 'Check the narrower top-view outline of the same tail region. Vertical depth and sideways width are different dimensions.'
+        : 'Look for the width of the tail base and its taper. A narrow projection can hide vertebrae or other features behind one another.';
+      task.views = [side, overhead];
+      task.limit = dn.id === 'spinosaurus'
+        ? 'Tail fossils constrain a deep, narrow reconstruction. Shape alone does not establish habitual swimming or swimming performance; those interpretations require additional evidence.'
+        : 'A reconstructed curve does not establish habitual posture, flexibility or a particular tail movement.';
+    } else if (part.id === 'hand') {
+      var profile = skeletalAnatomyProfileFor(dn);
+      task.question = profile.weightBearingForelimbs
+        ? 'How does the front foot support the limb? Compare the side outline with the arrangement of digits from the front.'
+        : 'Which way do the palms and digits face? Check the hand from the side and the front before describing its orientation.';
+      side.prompt = 'Follow the forelimb through the wrist to the digits. Notice where several digits overlap in this view.';
+      endOn.prompt = profile.weightBearingForelimbs
+        ? 'Check the front-foot width and digit arrangement around the selected marker. Compare the bony supports with the life surface.'
+        : 'Find the palms relative to one another and follow the curved digits. Overlap in side view can conceal their arrangement.';
+      task.limit = 'This is a representative pose. A visible palm or claw direction does not establish the full range of joint motion, grip or behavior.';
+    } else if (part.id === 'foot') {
+      task.question = 'Which toe tips are hidden by the side silhouette? Predict their spread, then check from above.';
+      side.prompt = 'Trace the ankle into the toes. Notice which digit tips overlap and which lie above the ground.';
+      overhead.prompt = 'Check how the toes spread around the selected foot marker. A toe hidden from the side was not necessarily absent.';
+      task.views = [side, overhead];
+      task.limit = 'The rig summarizes digit arrangement. It does not reproduce a particular footprint, preserve soft pads, or establish how much load each toe carried.';
+    } else if (/^(wing|feathers|hindwings|tailfeathers|feathercrest|bristles|skin)$/.test(part.id)) {
+      task.question = 'Which parts of the covering extend beyond the supporting bones? Check the side outline and its width from above.';
+      side.prompt = 'Follow the outer covering around the selected marker. Notice its depth above or below the skeletal supports.';
+      overhead.prompt = 'Check the span or width of the covering. Switch between bone and life at this viewpoint to inspect which outer edges need more than bones to reconstruct.';
+      task.views = [side, overhead];
+      task.limit = 'The active covering hypothesis determines this surface. Its full three-dimensional spread and this displayed pose are reconstructed; the model does not demonstrate flight performance.';
+    } else if (part.id === 'neck') {
+      task.question = 'Follow the neck curve from the side, then check what the front view hides. Does apparent shortening mean fewer neck bones?';
+      side.prompt = 'Trace the connection from the shoulder to the back of the skull. Compare the bony chain with the surrounding tissue.';
+      endOn.prompt = 'Find the same neck marker from the front. Parts of the neck now overlap along the viewing direction.';
+      task.limit = 'Foreshortening changes the picture, not the bone chain. Vertebrae constrain neck form, while tissue thickness and habitual posture require inference.';
+    } else if (/^(head|skull|snout|jaw|teeth|beak|nostrils|eyes)$/.test(part.id)) {
+      task.question = 'Compare head depth in side view with width in front view. Which details overlap or disappear when you turn it?';
+      side.prompt = 'Follow the snout, eye region and jaw around the selected marker. This view shows their lengthwise arrangement.';
+      endOn.prompt = 'Check width and the paired sides of the head. A feature hidden behind another shape has not changed its anatomy.';
+      task.limit = 'The same reconstruction is shown twice. Perspective and overlap change its image; its exact soft-tissue dimensions and colors remain inferred.';
+    }
+    return task;
+  }
+
+  // Relations use the currently available anatomical parts. They are locator
+  // activities, not additional fossil records, motion tests or scored answers.
+  function dinoSupportingRelationsFor(dn, parts) {
+    if (!dn || dn.group === 'other' || !Array.isArray(parts)) return [];
+    var proposals = [
+      { id: 'knee-ankle', ids: ['knee', 'ankle'], region: 'body', title: 'Knee to ankle',
+        predict: 'Before tracing: which joint meets the thigh, and which meets the foot?',
+        observe: 'Follow the lower-leg bones between A and B in bone view. In life view, check how the covering hides the two separate joints.',
+        revise: 'After exploring, explain which landmark helped you distinguish knee from ankle. You can revise your existing bone/life comparison below.',
+        limit: 'These markers locate joints in a representative pose. They do not measure the full range of motion or show how the animal walked.' },
+      { id: 'elbow-wrist', ids: ['elbow', 'wrist'], region: 'body', title: 'Elbow to wrist',
+        predict: 'Before tracing: which joint lies next to the upper arm, and which lies next to the hand or front foot?',
+        observe: 'In bone view, follow the radius and ulna between A and B. Switch to life view and check which joint positions remain easy to locate.',
+        revise: 'After exploring, explain how tracing a connected bone segment changed or confirmed your prediction.',
+        limit: 'The forearm links these joints. This reconstructed pose does not establish wrist rotation, a complete motion range or a particular behavior.' },
+      { id: 'forearm-wing', ids: ['forearm', 'wing'], region: 'body', title: 'Forearm and wing covering',
+        predict: 'Before tracing: which edges of this wing could you locate from the forearm bones alone?',
+        observe: 'Compare A, the forearm, with B, the wing covering. Switch between bone and life while keeping both locations in the same view.',
+        revise: 'After exploring, separate the support you can trace in bone from the outer shape that needs feather evidence and reconstruction.',
+        limit: 'This pair relates a supporting region to its covering. The markers are not feather attachment measurements and do not demonstrate powered flight.' },
+      { id: 'skull-nasal', ids: ['skull', 'nasal-rugosities'], region: 'head', title: 'Skull and nasal bumps',
+        predict: 'Before tracing: are the nasal bumps separate objects or raised regions of the skull?',
+        observe: 'Locate the skull at A and the midline nasal bumps at B. Compare the bone and life surfaces from the same angle.',
+        revise: 'After exploring, distinguish the bony relationship from the inferred living covering or any proposed signaling role.',
+        limit: 'The two rings are location guides. They do not mark separate bones, exact fossil dimensions or evidence of a particular display behavior.' }
+    ];
+    if (/^(baryonyx|suchomimus)$/.test(dn.id || '')) proposals.push({
+      id: 'snout-teeth', ids: ['snout', 'teeth'], region: 'head', title: 'Expanded snout tip and tooth row',
+      predict: 'Before tracing: where would you look for teeth around the expanded snout tip?',
+      observe: 'Compare the snout at A with the tooth row at B. Use side and overhead views to check the expanded tip against the narrower shaft, then compare bone and life.',
+      revise: 'After exploring, explain which shape relationships you observed and which details still depend on reconstruction.',
+      limit: 'The skull and teeth constrain their relationship. This model does not establish an exact tooth formula, bite force or an exclusive fish diet.'
+    });
+    return proposals.filter(function (relation) {
+      return relation.ids.every(function (id) {
+        var part = parts.find(function (entry) { return entry.id === id; });
+        return part && part.region === relation.region && !part.inferredProxy && !!dinoPartInspectionFor(dn, part);
+      });
+    });
+  }
+
+  function dinoSupportingRelationBounds(THREE, relation, partBounds) {
+    if (!THREE || !relation || !Array.isArray(relation.ids) || relation.ids.length !== 2 || relation.ids[0] === relation.ids[1] || !partBounds) return null;
+    var boxes = relation.ids.map(function (id) { return partBounds[id]; });
+    if (!boxes.every(function (box) {
+      return box && box.isBox3 && !box.isEmpty() && box.min.toArray().concat(box.max.toArray()).every(Number.isFinite);
+    })) return null;
+    return boxes[0].clone().union(boxes[1]);
+  }
+
+  // Student layer observations belong to one species, landmark and surface
+  // hypothesis. They are model observations, never newly discovered fossils.
+  function dinoPartComparisonContext(dn, partId, mode) {
+    dn = dn && byId(dn.id);
+    if (!dn || typeof partId !== 'string' || ['evidence', 'conservative', 'classic', 'avian'].indexOf(mode) < 0) return null;
+    var profile = skeletalAnatomyProfileFor(dn);
+    var hypothesis = reconstructionHypothesesFor(dn, profile, mode).active;
+    if (hypothesis.id !== mode) return null;
+    var part = dinoDetailedBodyPartDefinitions(dn, profile.weightBearingForelimbs, hypothesis).find(function (item) { return item.id === partId; });
+    var inspection = part && dinoPartInspectionFor(dn, part);
+    if (!inspection) return null;
+    return { key: dn.id + '|' + part.id + '|' + hypothesis.id, species: dn, part: part, mode: hypothesis.id,
+      hypothesisLabel: hypothesis.label, inspection: inspection,
+      source: inspection.source || DINO_ANATOMY_SOURCES[part.source] || DINO_ANATOMY_SOURCES.bones };
+  }
+
+  function dinoPartComparisonReady(entry) {
+    return !!(entry && typeof entry.bone === 'string' && entry.bone.trim() && typeof entry.life === 'string' && entry.life.trim());
+  }
+
+  function dinoPartComparisonState(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    function writing(value) {
+      value = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      return { bone: typeof value.bone === 'string' ? value.bone.slice(0, 600) : '',
+        life: typeof value.life === 'string' ? value.life.slice(0, 600) : '',
+        question: typeof value.question === 'string' ? value.question.slice(0, 400) : '' };
+    }
+    Object.keys(raw).slice(-120).forEach(function (key) {
+      var ids = key.split('|');
+      if (ids.length !== 3) return;
+      var context = dinoPartComparisonContext(byId(ids[0]), ids[1], ids[2]);
+      var value = raw[key];
+      if (!context || context.key !== key || !value || typeof value !== 'object' || Array.isArray(value)) return;
+      var draft = writing(value), record = writing(value.record);
+      draft.record = dinoPartComparisonReady(record) ? record : null;
+      if (draft.bone || draft.life || draft.question || draft.record) out[key] = draft;
+    });
+    return out;
+  }
+
+  function dinoPartComparisonUpdate(raw, dn, partId, mode, patch, record) {
+    var next = dinoPartComparisonState(raw), context = dinoPartComparisonContext(dn, partId, mode);
+    if (!context) return next;
+    var previous = next[context.key] || { bone: '', life: '', question: '', record: null };
+    var draft = Object.assign({}, previous);
+    ['bone', 'life', 'question'].forEach(function (field) {
+      if (patch && Object.prototype.hasOwnProperty.call(patch, field) && typeof patch[field] === 'string') draft[field] = patch[field].slice(0, field === 'question' ? 400 : 600);
+    });
+    if (record === true && dinoPartComparisonReady(draft)) draft.record = { bone: draft.bone, life: draft.life, question: draft.question };
+    if (draft.bone || draft.life || draft.question || draft.record) next[context.key] = draft; else delete next[context.key];
+    return dinoPartComparisonState(next);
+  }
+
+  function dinoPartComparisonIsRecorded(entry) {
+    return !!(entry && dinoPartComparisonReady(entry.record) && ['bone', 'life', 'question'].every(function (field) { return entry[field] === entry.record[field]; }));
+  }
+
+  function dinoPartComparisonNotebookText(raw) {
+    var state = dinoPartComparisonState(raw), keys = Object.keys(state);
+    if (!keys.length) return '';
+    var lines = ['', 'DINO LAB | MODEL LANDMARK COMPARISONS',
+      'These are student observations of an illustrative reconstruction. Bone view is a composite, not a map of the bones preserved for this species. Written reasoning has not been automatically assessed.', ''];
+    function append(label, response) {
+      lines.push(label, 'Bone-view observation (student): ' + (response.bone || '(not written)'),
+        'Life-view observation (student): ' + (response.life || '(not written)'),
+        'Next evidence question (student): ' + (response.question || '(not written)'), '');
+    }
+    keys.forEach(function (key) {
+      var ids = key.split('|'), context = dinoPartComparisonContext(byId(ids[0]), ids[1], ids[2]), entry = state[key];
+      lines.push(context.species.common + ' (' + context.species.name + ')', 'Landmark: ' + context.part.label,
+        'Surface hypothesis: ' + context.hypothesisLabel, 'Comparison question: ' + context.inspection.question, '');
+      if (entry.record) append('Latest recorded comparison', entry.record);
+      if (!dinoPartComparisonIsRecorded(entry)) append('Current unrecorded draft', entry);
+      lines.push('Interpretation limit: ' + context.inspection.limit,
+        'Reference to investigate: ' + context.source.title + ' | ' + context.source.url, '---', '');
+    });
+    return lines.join('\n');
+  }
 
   // Each record uses the existing guide contract plus layer/section/characteristics.
   // `layer` means where the landmark can be inspected, not fossil certainty.
@@ -9255,6 +10699,18 @@ var CLASSIFY_CASES = [
       'Find projections above the eyes or along the nasal region where this model has them.',
       'Bony projections support an outer covering; shape and placement differ among species.',
       'Fossil horn cores and injuries provide clues. No fossil records every use of a horn or the exact living sheath.', 'horned');
+    var nasalRugosity = dinoNasalRugosityProfileFor(dn);
+    if (nasalRugosity) add('nasal-rugosities', 'Nasal bumps', 'head', 'both', specialSection,
+      'These raised areas belong to the nasal bones. A visual signaling role is a hypothesis.',
+      'Trace the bumps along the top of the snout from the side, then check their midline row from above.',
+      dn.id === 'alioramus' ? 'Alioramus altai has three discrete nasal bumps. Six mounds belong to Alioramus remotus.' : 'Qianzhousaurus has four broader, smoother nasal mounds with lower relative relief than the sharper bumps in the young Alioramus specimen.',
+      'Bony count and arrangement are fossil-supported. Model spacing, height, living covering, color and function remain inferred.',
+      dn.id === 'alioramus' ? 'alioramusNasal' : 'qianzhousaurusNasal');
+    if (dn.id === 'spinosaurus') revise('tail', {
+      characteristics: 'Tall caudal neural spines and elongate chevrons support a deep, laterally narrow tail.',
+      look: 'Use side and overhead views to compare vertical depth with sideways width; compare the covering with the bones below it.',
+      evidence: 'Tail fossils described in 2020 support the deep form. Exact tissue thickness, pose and sampling are illustrative; swimming performance and habitual behavior remain debated.', source: 'deepTail'
+    });
     if (/Tyrannosaur/i.test(clade)) add('brow', 'Brow ridges', 'head', 'both', specialSection,
       'Brow ridges are part of the skull around the eyes. Their outer appearance may also have provided visual signals.',
       'Look just above the eyes for the low raised surfaces.',
@@ -9270,22 +10726,33 @@ var CLASSIFY_CASES = [
       'Find the tall projection rising above the skull.',
       'This is a simplified bony skull crest, rather than a feather tuft.',
       'Skull fossils constrain crest shape. Color, outer covering, and behavior remain reconstructed.');
+    if (/^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id)) {
+      var reviewedCrest = dinoLambeosaurCrestProfileFor(dn);
+      if (reviewedCrest) revise('crest', {
+        purpose: 'The crest is part of the skull. Visual and acoustic functions are scientific hypotheses; this model illustrates its outside shape.',
+        look: 'Trace the ' + reviewedCrest.shape + ' from the skull roof in side view, then turn to the front to compare its rounded thickness.',
+        characteristics: dn.id === 'parasaurolophus' ? 'Parasaurolophus walkeri has a long, backswept bony tube. Its outline differs from shorter-crested relatives and growing individuals.' : dn.id === 'corythosaurus' ? 'A mature Corythosaurus casuarius skull supports the rounded helmet-like crest. Fossil CT studies reveal internal passages that are not drawn here.' : dn.id === 'lambeosaurus' ? 'Lambeosaurus lambei has a broad upright front and a narrower rear nasal process. The hatchet-like outline differs from the Corythosaurus helmet.' : 'Olorotitan arharensis has a tall hollow crest extending well behind the skull. Its incomplete posterior nasal is restored in the published outline; its internal passage remains unknown.',
+        evidence: 'Published skulls constrain the broad outline. These rounded envelopes, dimensions and simple living covering are illustrative. Internal passages and bony wall thickness are not modeled; growth, covering, color and exact calls are not measured by this shape.',
+        source: dn.id === 'parasaurolophus' ? 'parasaurolophusCrest' : dn.id === 'olorotitan' ? 'olorotitanCrest' : 'lambeosaurCrest'
+      });
+    }
     if (/Pachycephalosaur/i.test(clade)) add('dome', cranial.domeScale > 0.2 ? 'Skull dome' : 'Low skull roof', 'head', 'both', specialSection,
       'A thickened skull roof may have served display or contests. Scientists continue to test these ideas.',
       'Compare the top of the skull with the eye and snout regions.',
       cranial.domeScale > 0.2 ? 'Thick skull-roof bones form a rounded dome in this reconstruction.' : 'This model has a low skull roof; it does not have the tall dome shown in some relatives.',
       'Bone shape and some skull injuries support tests of possible combat. They do not establish one behavior for every age or species.', 'dome');
     if (/Stegosaur/i.test(clade)) {
-      add('plates', 'Back plates', 'body', 'both', specialSection,
-        'Plates may have served visual signaling or heat exchange. Their main function is still debated.',
-        'Look for the tall structures in two rows along the upper body.',
+      var regionalArmor = dinoStegosaurArmorProfileFor(dn);
+      add('plates', dn.id === 'kentrosaurus' ? 'Anterior plates' : regionalArmor ? 'Regional back plates' : 'Back plates', 'body', 'both', specialSection,
+        regionalArmor ? 'Compare regional shape and orientation. Shape alone does not establish a single function.' : 'Plates may have served visual signaling or heat exchange. Their main function is still debated.',
+        regionalArmor ? (dn.id === 'kentrosaurus' ? 'Follow the small plates forward of the pointed posterior spines.' : dn.id === 'hesperosaurus' ? 'Compare front-to-back length with height in side view.' : 'Trace the transition from anterior pear-shaped plates to tall, narrow posterior elements.') : 'Look for the tall structures in two rows along the upper body.',
         'These bony skin structures are osteoderms, distinct from the vertebrae underneath.',
-        'Fossil plates preserve shape and internal structure. This schematic arrangement is not a specimen-exact count.', 'plates');
-      add('spikes', 'Tail spikes', 'tail', 'both', specialSection,
+        regionalArmor ? regionalArmor.note + ' Displayed elements sample regional differences; their count and spacing are not a fossil formula.' : 'Fossil plates preserve shape and internal structure. This schematic arrangement is not a specimen-exact count.', 'plates');
+      add('spikes', dn.id === 'kentrosaurus' ? 'Posterior spines' : 'Tail spikes', dn.id === 'kentrosaurus' ? 'full' : 'tail', 'both', specialSection,
         'Tail spikes could act as weapons; their strength and possible use are studied from fossils.',
-        'Find the pointed projections near the far end of the tail.',
-        'Bony spikes project from the tail surface and were covered by living tissue.',
-        'Preserved spikes constrain their shape. Their position and sheath extent are summarized in this model.', 'armor');
+        dn.id === 'kentrosaurus' ? 'Follow paired spines from the rear trunk along the tail; compare their orientation from above.' : 'Find the pointed projections near the far end of the tail.',
+        dn.id === 'kentrosaurus' ? 'Pointed bony osteoderms replace broad plates posteriorly in this reconstruction.' : 'Bony spikes project from the tail surface and were covered by living tissue.',
+        regionalArmor ? regionalArmor.note + ' Sampled positions, angles and covering thickness remain interpretive.' : 'Preserved spikes constrain their shape. Their position and sheath extent are summarized in this model.', 'armor');
     }
     if (/Spinosaur/i.test(clade) && /spinosaurus|sail/i.test([dn.name, dn.common, (dn.traits || []).join(' ')].join(' '))) add('sail', 'Back sail', 'body', 'both', specialSection,
       'A tall back structure may have served display or other tasks. Its exact function is uncertain.',
@@ -9383,7 +10850,7 @@ var CLASSIFY_CASES = [
     return core.concat(distinctive);
   }
 
-  function dinoBodyLabelLayout(points, width, height, top, bottom, selectedId, previous, initialPriorityIds) {
+  function dinoBodyLabelLayout(points, width, height, top, bottom, selectedId, previous, initialPriorityIds, focusIds) {
     var placed = [], pad = 8, limit = width < 560 ? 4 : 8;
     previous = previous || [];
     function overlaps(a, b) { return a.x < b.x + b.width + pad && a.x + a.width + pad > b.x && a.y < b.y + b.height + pad && a.y + a.height + pad > b.y; }
@@ -9431,12 +10898,15 @@ var CLASSIFY_CASES = [
     });
     ordered.forEach(function (point) {
       var selected = point.id === selectedId;
-      if (placed.length >= limit || !isFinite(point.x) || !isFinite(point.y) || point.x < pad || point.x > width - pad || point.y < (selected ? pad : top) || point.y > height - (selected ? pad : bottom)) return;
+      // A trace partner needs the same safe callout search as the selected
+      // endpoint, while retaining its own unselected styling and real anchor.
+      var focused = selected || (Array.isArray(focusIds) && focusIds.indexOf(point.id) >= 0);
+      if (placed.length >= limit || !isFinite(point.x) || !isFinite(point.y) || point.x < pad || point.x > width - pad || point.y < (focused ? pad : top) || point.y > height - (focused ? pad : bottom)) return;
       var w = isFinite(point.width) && point.width > 0 ? point.width : 96;
       var h = isFinite(point.height) && point.height > 0 ? point.height : 28;
       var candidates = [[-w / 2, -h - 26], [22, -h / 2], [-w - 22, -h / 2], [-w / 2, 26],
         [22, -h - 42], [-w - 22, -h - 42], [22, 42], [-w - 22, 42]];
-      if (selected) {
+      if (focused) {
         for (var row = top; row + h <= height - bottom; row += h + pad) {
           [pad, width - pad - w].forEach(function (x) { candidates.push([x - point.x, row - point.y]); });
         }
@@ -9486,6 +10956,33 @@ var CLASSIFY_CASES = [
   function dinoFrameDistance(halfWidth, halfHeight, halfDepth, verticalFov, aspect) {
     var tangent = Math.tan(verticalFov * Math.PI / 360);
     return Math.max(halfHeight / tangent, halfWidth / (tangent * Math.max(0.1, aspect))) * 1.24 + halfDepth;
+  }
+
+  // Tall neural spines and elongate chevrons support a deep, narrow tail in
+  // S. aegyptiacus (Ibrahim et al. 2020, doi:10.1038/s41586-020-2190-3).
+  // These smooth proportions and sampling stations are illustrative, not
+  // vertebral measurements or evidence of a particular swimming performance.
+  function dinoSpinosaurusTailSection(dn, t, height) {
+    if (!dn || dn.id !== 'spinosaurus' || dn.group !== 'theropod' || !(height > 0) || !isFinite(height) || !isFinite(t)) return null;
+    var stations = [[0,0.19,0.095],[0.15,0.16,0.066],[0.32,0.16,0.039],[0.52,0.135,0.025],[0.72,0.09,0.013],[0.89,0.045,0.006],[1,0.005,0.0045]];
+    t = Math.max(0, Math.min(1, t));
+    var next = 1;
+    while (next < stations.length - 1 && stations[next][0] < t) next++;
+    var a = stations[next - 1], b = stations[next], f = (t - a[0]) / (b[0] - a[0]);
+    return { height: (a[1] + (b[1] - a[1]) * f) * height, width: (a[2] + (b[2] - a[2]) * f) * height };
+  }
+
+  function dinoSpinosaurusTailEnvelope(THREE, dn, envelope, hip, tip, height, tissueScale) {
+    if (!dinoSpinosaurusTailSection(dn, 0, height)) return envelope;
+    tissueScale = isFinite(tissueScale) && tissueScale > 0 ? tissueScale : 1;
+    var axis = new THREE.CatmullRomCurve3(envelope.points.slice(1), false, 'centripetal');
+    var points = [envelope.points[0], hip], radii = [envelope.radii[0], envelope.radii[1]];
+    [0.15,0.32,0.52,0.72,0.89,1].forEach(function (t) {
+      var section = dinoSpinosaurusTailSection(dn, t, height);
+      points.push(t === 1 ? tip : axis.getPointAt(t));
+      radii.push([section.height * tissueScale, section.width * tissueScale]);
+    });
+    return { points: points, radii: radii };
   }
 
   // Align vanes with their feather tract instead of a fixed world-up plane.
@@ -9705,12 +11202,15 @@ var CLASSIFY_CASES = [
 
 
   function dinoKeratinGeometry(THREE, direction, radius, kind, coverage) {
+    // Optional sixth argument follows a manual claw's flexion plane. Other
+    // claws and horns retain their established vertical curvature.
+    var bendAxis = arguments[5];
     var length = direction.length();
     coverage = coverage == null ? 1 : coverage;
     if (!isFinite(coverage) || coverage <= 0 || coverage > 1) return null;
     if (!isFinite(length) || !isFinite(radius) || length <= 0 || radius <= 0) return null;
     var horn = kind === 'horn', bow = horn ? 0.065 : 0.16, breadth = horn ? 1 : 0.58;
-    var along = direction.clone().normalize(), bend = new THREE.Vector3(0, 1, 0);
+    var along = direction.clone().normalize(), bend = bendAxis && bendAxis.isVector3 ? bendAxis.clone() : new THREE.Vector3(0, 1, 0);
     bend.addScaledVector(along, -bend.dot(along));
     if (bend.lengthSq() < 0.000001) {
       bend.set(1, 0, 0); bend.addScaledVector(along, -bend.dot(along));
@@ -9909,6 +11409,10 @@ var CLASSIFY_CASES = [
       totalArea += area; triangles.push({ ids: [ia, ib, ic], end: totalArea });
     }
     if (!triangles.length || !(options.length > 0) || !(options.count > 0)) return null;
+    // Contour feathers overlap as a low coat rather than a layer of broad scales.
+    // Ratios and spacing are illustrative; Anchiornis keeps its open-vane profile
+    // (Saitta et al. 2018, https://doi.org/10.1111/pala.12342).
+    var streamlined = !!(options.pennaceous && options.streamlined), openVane = streamlined && !!options.openVane;
     var positions = [], normalData = [], rootPositions = [], rootNormals = [], colors = [], uvs = [], vanes = [], indices = [];
     var count = Math.min(1600, Math.round(options.count));
     for (var rootIndex = 0; rootIndex < count; rootIndex++) {
@@ -9940,14 +11444,14 @@ var CLASSIFY_CASES = [
       var shade = 0.90 + random() * 0.12, blades = pennaceous ? 1 : 3;
       for (var blade = 0; blade < blades; blade++) {
         var start = positions.length / 3, fan = pennaceous ? 0 : (blade - 1) * 0.22;
-        var breadth = length * (pennaceous ? 0.18 : 0.014), rows = pennaceous ? 8 : 5, columns = pennaceous ? 2 : 1;
+        var breadth = length * (pennaceous ? (streamlined ? (openVane ? 0.12 : 0.105) : 0.18) : 0.014), rows = pennaceous ? (streamlined ? 5 : 8) : 5, columns = pennaceous ? 2 : 1;
         // A narrow, cambered vane lays along the skin instead of reading as a flat scale.
         for (var row = 0; row <= rows; row++) {
           var t = row / rows, envelope = Math.sin(Math.PI * t);
           // Simple filaments narrow toward the tip rather than widening into a vane.
           // Diameter and curvature remain illustrative; seeded roots and coverage stay fixed.
           var width = pennaceous ? breadth * Math.pow(envelope, 0.85) * (1 - t * 0.24) : breadth * (1 - t * t);
-          var lift = length * (pennaceous ? 0.015 + 0.18 * t - 0.10 * t * t + 0.065 * envelope : 0.015 + 0.64 * t - 0.08 * t * t);
+          var lift = length * (pennaceous ? (streamlined ? 0.012 + (openVane ? 0.15 : 0.11) * t - (openVane ? 0.06 : 0.055) * t * t + (openVane ? 0.045 : 0.035) * envelope : 0.015 + 0.18 * t - 0.10 * t * t + 0.065 * envelope) : 0.015 + 0.64 * t - 0.08 * t * t);
           var point = root.clone().addScaledVector(along, length * t).addScaledVector(n, lift).addScaledVector(across, fan * length * t * t);
           // Light each filament along its curved strip, independently of the skin
           // normal retained below for rooted pigment and regional pattern sampling.
@@ -9956,7 +11460,7 @@ var CLASSIFY_CASES = [
           for (var column = 0; column <= columns; column++) {
             var side = column / columns * 2 - 1;
             var p = point.clone().addScaledVector(across, width * side)
-              .addScaledVector(n, pennaceous ? length * 0.028 * envelope * (1 - side * side) : 0);
+              .addScaledVector(n, pennaceous ? length * (streamlined ? 0.014 : 0.028) * envelope * (1 - side * side) : 0);
             positions.push(p.x, p.y, p.z); normalData.push(stripNormal.x, stripNormal.y, stripNormal.z);
             rootPositions.push(root.x, root.y, root.z); rootNormals.push(n.x, n.y, n.z);
             var tone = shade * (pennaceous ? 0.96 + 0.04 * t : 0.92 + 0.08 * t); colors.push(tone, tone, tone); uvs.push(rootU, (side + 1) / 2);
@@ -9990,18 +11494,42 @@ var CLASSIFY_CASES = [
     }
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     geometry.parameters = { roots: count, pennaceous: !!options.pennaceous, length: options.length, dorsalOnly: !!options.dorsalOnly, taper: options.taper || null };
+    if (streamlined) { geometry.parameters.streamlined = true; geometry.parameters.openVane = openVane; }
     return geometry;
   }
 
-  // Curved, asymmetric feather vane with a root pivot and tapered tip.
+  // Fossils preserve symmetrical vanes in these reviewed tracts. The equal
+  // .84 scales redistribute the existing total breadth around the rachis;
+  // they are a display choice, not a measured fossil vane-width ratio.
+  function dinoFeatherVaneProfile(dn, tract) {
+    var id = String(dn && dn.id || '').toLowerCase();
+    var wing = /^(forewing|manual-wing|hind-wing)$/.test(String(tract || ''));
+    if (id === 'anchiornis' && wing) {
+      return { id: 'anchiornis-symmetric-remiges', leftScale: 0.84, rightScale: 0.84,
+        note: 'Anchiornis preserves slender feathers with symmetrical vanes. The model centers these reviewed limb vanes on the shaft; exact breadth, camber, and feather spacing are reconstructed. Symmetry alone does not establish how the animal moved through air.',
+        source: { label: 'Hu et al. (2009), Anchiornis feather anatomy', url: 'https://doi.org/10.1038/nature08322' } };
+    }
+    if (id === 'caudipteryx' && tract === 'tail-fan') {
+      return { id: 'caudipteryx-symmetric-vanes', leftScale: 0.84, rightScale: 0.84,
+        note: 'Caudipteryx preserves symmetrical terminal tail feather vanes. These display vanes are centered on the shaft; exact proportions and spacing are reconstructed. Arm feathers are excluded: primary vanes retain some asymmetry in later studies (doi:10.1073/pnas.2306639121).',
+        source: { label: 'Ji et al. (1998), Caudipteryx feather anatomy', url: 'https://doi.org/10.1038/31635' } };
+    }
+    return null;
+  }
+
+  // Curved feather vane with a root pivot and tapered tip. The unreviewed
+  // default remains the existing schematic; a reviewed profile can center it.
   function dinoFeatherGeometry(THREE, length, width) {
+    var vaneProfile = arguments[3];
+    var leftScale = vaneProfile && Number.isFinite(vaneProfile.leftScale) && vaneProfile.leftScale > 0 ? vaneProfile.leftScale : 0.68;
+    var rightScale = vaneProfile && Number.isFinite(vaneProfile.rightScale) && vaneProfile.rightScale > 0 ? vaneProfile.rightScale : 1;
     var positions = [], uvs = [], indices = [], rows = 20, columns = 4;
     for (var i = 0; i <= rows; i++) {
       var t = i / rows;
       var span = width * Math.pow(Math.sin(Math.PI * t), 0.72) * (0.70 + 0.30 * t);
       for (var j = 0; j <= columns; j++) {
         var across = j / columns * 2 - 1;
-        positions.push(across * span * (across < 0 ? 0.68 : 1), length * t,
+        positions.push(across * span * (across < 0 ? leftScale : rightScale), length * t,
           length * 0.045 * Math.sin(Math.PI * t) + width * 0.14 * across * across * Math.sin(Math.PI * t));
         uvs.push(j / columns, t);
         if (i < rows && j < columns) {
@@ -10066,6 +11594,137 @@ var CLASSIFY_CASES = [
   }
 
   // DINO_DISPLAY_SHELL_START
+  // Regional osteoderm shapes follow the cited specimens. Counts, spacing,
+  // angles and the extent of a covering are representative reconstruction choices.
+  function dinoStegosaurArmorProfileFor(dn) {
+    if (!dn || dn.group !== 'ornithischian') return null;
+    var profiles = {
+      kentrosaurus: { id: 'small-plates-to-paired-spines', source: 'https://doi.org/10.5194/fr-17-33-2014',
+        note: 'Small anterior plates give way to paired posterior spines. Most exact positions remain uncertain; the debated shoulder or hip spike is omitted.' },
+      tuojiangosaurus: { id: 'regional-pointed-plates', source: 'https://naturalhistory.si.edu/sites/default/files/media/translated_publications/Dong%26amp%3B_83.pdf',
+        note: 'Anterior pear-shaped plates grade into triangular dorsal and high flattened sacral or proximal caudal elements. Terminal spikes are inferred: the described specimen lacks terminal armor.' },
+      hesperosaurus: { id: 'long-low-plates', source: 'https://doi.org/10.1111/j.1475-4983.2011.01122.x',
+        note: 'Plates in HMNS 14 are longer from front to back than tall. This sampled arrangement does not establish a fossil count or exact spacing.' }
+    };
+    return profiles[dn.id] || null;
+  }
+
+  // A private, fixed minimal envelope seats rigid osteoderms in specimen space.
+  // It is independent of the active skin hypothesis and never enters the scene.
+  // Native lofts and their native default sampling are retained exactly.
+  function dinoStegosaurArmorReference(THREE, dn, frame) {
+    if (!dinoStegosaurArmorProfileFor(dn)) return null;
+    var height = frame.bodyHeight * 0.90, depth = frame.bodyDepth * 0.89;
+    var profile = frame.postcranialSurface, reconstruction = frame.reconstructionProfile;
+    var base = Math.max(0.045 * frame.detailScale, frame.ht * 0.075) * 0.90 * reconstruction.tailBase * profile.tailBaseFullness;
+    var midA = frame.hip.clone().lerp(frame.tail, 0.28).add(new THREE.Vector3(0, height * profile.tailProximalCurve, 0));
+    var midB = frame.hip.clone().lerp(frame.tail, 0.64).add(new THREE.Vector3(0, height * profile.tailMidCurve, 0));
+    var tipRadius = Math.max(0.006 * frame.detailScale, frame.ht * 0.005) * 0.90 * reconstruction.tailTip;
+    var radii = [base, base * 0.72, base * 0.38, tipRadius].map(function (radius) { return [radius * profile.tailHeightScale, radius * profile.tailDepthScale]; });
+    radii[0] = [Math.min(radii[0][0] * 1.16, height * 0.70 * 0.92), Math.min(radii[0][1] * 1.16, depth * 0.76 * 0.92)];
+    var envelope = dinoTailSkinEnvelope(THREE, frame.hip.clone().lerp(frame.pelvisCenter, 0.30), frame.hip, midA, midB, frame.tail, radii);
+    var material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    var torso = new THREE.Mesh(dinoSurfaceGeometry(THREE, frame.torsoPoints, dinoTorsoRadii(height, depth, profile), { smoothProfile: true }), material);
+    var tail = new THREE.Mesh(dinoSurfaceGeometry(THREE, envelope.points, envelope.radii, { smoothProfile: true }), material);
+    torso.updateMatrixWorld(true); tail.updateMatrixWorld(true);
+    return { torso: torso, tail: tail, envelope: envelope, height: height, depth: depth,
+      dispose: function () { torso.geometry.dispose(); tail.geometry.dispose(); material.dispose(); } };
+  }
+
+  function dinoStegosaurArmorLayout(THREE, dn, frame) {
+    var profile = dinoStegosaurArmorProfileFor(dn);
+    if (!profile) return null;
+    var reference = dinoStegosaurArmorReference(THREE, dn, frame), entries = [];
+    var span = Math.abs(frame.hip.x - frame.shoulder.x), ray = new THREE.Raycaster();
+    function roof(region, x, z) {
+      ray.set(new THREE.Vector3(x, frame.ht * 4, z), new THREE.Vector3(0, -1, 0));
+      var hits = ray.intersectObject(region === 'tail' ? reference.tail : reference.torso, false);
+      return hits.length ? hits[0].point.y : null;
+    }
+    function add(kind, region, station, side, width, height, shape) {
+      var center = region === 'tail' ? frame.hip.clone().lerp(frame.tail, station) : frame.shoulder.clone().lerp(frame.hip, station);
+      var breadth = region === 'tail' ? frame.bodyDepth * (1 - station) * 0.095 : frame.bodyDepth * 0.20;
+      center.z = side * breadth;
+      var y = roof(region, center.x, center.z);
+      if (y == null) return;
+      var entry = { kind: kind, region: region, station: station, side: side, width: width, height: height, shape: shape,
+        root: [center.x, y - frame.bodyHeight * 0.045, center.z], bury: frame.bodyHeight * 0.045, source: profile.source,
+        profile: profile.id, sampling: true, placementIsInterpretive: true };
+      if (kind === 'plate') {
+        // Following a small set of actual native surface samples bends only the
+        // basal attachment contour; it prevents a flat plate root bridging air.
+        entry.roof = [];
+        for (var sample = 0; sample <= 12; sample++) {
+          var dx = width * (sample / 12 - 0.5), sampleY = roof(region, center.x + dx, center.z);
+          entry.roof.push(sampleY == null ? y : sampleY);
+        }
+      } else {
+        var lateral = region === 'tail' ? height * 0.88 : height * 0.52;
+        entry.direction = [region === 'tail' ? -height * 0.16 : -height * 0.06, height * (region === 'tail' ? 0.48 : 0.90), side * lateral];
+        entry.radius = Math.min(height * 0.085, frame.bodyDepth * (region === 'tail' ? 0.10 * (1 - station) : 0.14));
+        var spikeBury = Math.max(entry.bury, entry.radius * 1.35);
+        entry.root[1] -= spikeBury - entry.bury; entry.bury = spikeBury;
+      }
+      entries.push(entry);
+    }
+    function pair(kind, region, station, width, height, shape) {
+      [-1, 1].forEach(function (side) { add(kind, region, station, side, width, height, shape); });
+    }
+    try {
+      if (dn.id === 'kentrosaurus') {
+        [0.06, 0.24, 0.42, 0.60].forEach(function (t, index) { pair('plate', 'torso', t, span * 0.145, frame.bodyHeight * (0.30 + index * 0.085), 'pear'); });
+        pair('spike', 'torso', 0.88, 0, frame.ht * 0.29, 'spine');
+        [0.17, 0.40, 0.65, 0.88].forEach(function (t, index) { pair('spike', 'tail', t, 0, frame.ht * (0.29 - index * 0.025), 'spine'); });
+      } else if (dn.id === 'tuojiangosaurus') {
+        [0.06, 0.24, 0.42, 0.60, 0.78, 0.96].forEach(function (t, index) {
+          pair('plate', 'torso', t, span * (index < 2 ? 0.14 : index < 4 ? 0.185 : 0.135), frame.bodyHeight * (0.42 + index * 0.16), index < 2 ? 'pear' : index < 4 ? 'triangle' : 'lance');
+        });
+        pair('plate', 'tail', 0.16, span * 0.10, frame.bodyHeight * 0.92, 'lance');
+        [0.76, 0.90].forEach(function (t) { pair('spike', 'tail', t, 0, frame.ht * 0.20, 'inferred-terminal'); });
+      } else {
+        [0.05, 0.24, 0.43, 0.62, 0.81, 0.98].forEach(function (t, index) {
+          var envelope = Math.sin(Math.PI * (index + 1) / 8);
+          add('plate', 'torso', t, index % 2 ? -1 : 1, span * (0.23 + envelope * 0.035), frame.bodyHeight * (0.30 + envelope * 0.12), 'low');
+        });
+        [0.19, 0.42].forEach(function (t, index) { add('plate', 'tail', t, index % 2 ? -1 : 1, span * 0.18, frame.bodyHeight * (index ? 0.22 : 0.30), 'low'); });
+        [0.76, 0.90].forEach(function (t) { pair('spike', 'tail', t, 0, frame.ht * 0.18, 'terminal'); });
+      }
+    } finally { reference.dispose(); }
+    return entries;
+  }
+
+  function dinoStegosaurArmorGeometry(THREE, entry, core) {
+    var geometry;
+    if (entry.kind === 'spike') {
+      geometry = dinoKeratinGeometry(THREE, new THREE.Vector3().fromArray(entry.direction), entry.radius * (core ? 0.68 : 1), 'horn', core ? 0.88 : 1);
+    } else {
+      var width = entry.width, height = entry.height;
+      geometry = dinoPlateGeometry(THREE, width, height, Math.min(width * 0.10, height * 0.09));
+      var positions = geometry.attributes.position;
+      for (var vertex = 0; vertex < positions.count; vertex++) {
+        var x = positions.getX(vertex), y = positions.getY(vertex), z = positions.getZ(vertex);
+        var fraction = Math.max(0, Math.min(1, y / height));
+        // Regional width differences retain the native rounded, closed shell.
+        if (entry.shape === 'lance') x *= 0.64 + 0.36 * (1 - fraction);
+        else if (entry.shape === 'pear') x *= 0.88 + 0.22 * Math.sin(Math.PI * fraction);
+        if (core) {
+          var uv = geometry.attributes.uv, radial = Math.hypot(uv.getX(vertex) - 0.5, uv.getY(vertex) - 0.5) * 2;
+          var dome = width * 0.018 * (1 - radial * radial), innerDome = width * 0.018 * (1 - radial * radial * 0.81);
+          x *= 0.90; y = height * 0.42 + (y - height * 0.42) * 0.90;
+          z = innerDome + (z - dome) * 0.60;
+        }
+        var roofT = Math.max(0, Math.min(12, (x / width + 0.5) * 12)), lower = Math.min(11, Math.floor(roofT));
+        var floor = entry.roof[lower] + (entry.roof[lower + 1] - entry.roof[lower]) * (roofT - lower);
+        positions.setXYZ(vertex, x, y + floor - entry.root[1] - entry.bury, z + entry.side * y * 0.075);
+      }
+      positions.needsUpdate = true;
+      geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    }
+    geometry.userData.dinoStegosaurArmor = { profile: entry.profile, shape: entry.shape, core: !!core,
+      sampledArrangement: true, placementIsInterpretive: true, source: entry.source };
+    return geometry;
+  }
+
   // A bounded closed surface with a rounded perimeter. Thickness is a visual
   // reconstruction choice, never a specimen measurement or an added fossil claim.
   function dinoDisplayShellGeometry(THREE, sample, normal, thickness, thicknessAt, angularSamples) {
@@ -10565,14 +12224,20 @@ var CLASSIFY_CASES = [
 
   // Feather-local detail is independent of the fossil-informed pigment coordinates.
   // Filter the fine barbs with screen derivatives so distant coats do not shimmer.
-  function dinoCoatShading(material) {
+  function dinoCoatShading(material, profile) {
     var skinCompile = material.onBeforeCompile;
+    // Anchiornis contour feathers preserve open vanes and a bifurcated outline
+    // (Saitta et al., 2018, doi:10.1111/pala.12342). This filtered edge is an
+    // illustration of that morphology, not a measured map of individual barbs.
+    var openVane = !!(profile && profile.openVaneContour);
+    material.userData.dinoOpenVaneContour = openVane;
     material.extensions = Object.assign({}, material.extensions, { derivatives: true });
     material.onBeforeCompile = function (shader) {
       skinCompile.call(this, shader);
+      shader.uniforms.dinoContourOpenVane = { value: openVane ? 1 : 0 };
       shader.vertexShader = 'attribute vec3 dinoCoatVane;\nvarying vec3 vDinoCoatVane;\n' + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoCoatVane = dinoCoatVane;');
-      shader.fragmentShader = 'varying vec3 vDinoCoatVane;\n' + shader.fragmentShader;
+      shader.fragmentShader = 'varying vec3 vDinoCoatVane;\nuniform float dinoContourOpenVane;\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'float coatAcross = abs(vDinoCoatVane.x);',
@@ -10581,10 +12246,45 @@ var CLASSIFY_CASES = [
         'float coatBarbs = sin(coatPhase) * coatResolved;',
         'float coatShaft = (1.0 - smoothstep(0.025, 0.09 + fwidth(coatAcross), coatAcross))',
         '  * smoothstep(0.05, 0.2, vDinoCoatVane.y) * (1.0 - smoothstep(0.80, 1.0, vDinoCoatVane.y));',
-        'diffuseColor.rgb *= 1.0 + vDinoCoatVane.z * (0.035 * coatBarbs + 0.045 * coatShaft);'
+        'diffuseColor.rgb *= 1.0 + vDinoCoatVane.z * (0.035 * coatBarbs + 0.045 * coatShaft);',
+        // Keep depth-writing opaque vanes. Fade the fine cuts out when they are
+        // smaller than a pixel, instead of adding alpha-sorting or shimmer.
+        'float coatOpen = dinoContourOpenVane * vDinoCoatVane.z * coatResolved;',
+        'float coatFringe = 0.5 + 0.5 * sin(coatPhase);',
+        'float coatEdge = 1.0 - coatOpen * smoothstep(0.12, 0.65, vDinoCoatVane.y)',
+        '  * (0.06 + 0.23 * (1.0 - smoothstep(0.25, 0.65, coatFringe)));',
+        'float coatFork = coatOpen * smoothstep(0.58, 0.94, vDinoCoatVane.y) * 0.26;',
+        'if (coatAcross > coatEdge || (vDinoCoatVane.y > 0.58 && coatAcross < coatFork)) discard;'
       ].join('\n'));
     };
-    material.customProgramCacheKey = function () { return 'dinolab-contour-feathers-v1'; };
+    material.customProgramCacheKey = function () { return 'dinolab-contour-feathers-v2'; };
+    return material;
+  }
+
+  // Microraptor melanosomes support iridescent black plumage (Li et al., 2012,
+  // doi:10.1126/science.1213780), but do not recover an exact angular spectrum.
+  // A restrained nonmetallic rim sheen makes that distinction explorable while
+  // retaining black pigment, ordinary scene lighting, and existing geometry.
+  function dinoFeatherOptics(material, profile) {
+    var enabled = !!(profile && profile.pattern === 'iridescent' && profile.directEvidence);
+    material.userData.dinoFeatherIridescence = enabled;
+    if (!enabled) return material;
+    var previousCompile = material.onBeforeCompile;
+    var previousKey = material.customProgramCacheKey;
+    if (material.roughness != null) material.roughness = 0.58;
+    if (material.shininess != null) material.shininess = 18;
+    material.onBeforeCompile = function (shader) {
+      previousCompile.call(this, shader);
+      shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+        'float featherFacing = clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0);',
+        'float featherRim = pow(1.0 - featherFacing, 1.65);',
+        'vec3 featherSheen = mix(vec3(0.010, 0.029, 0.034), vec3(0.030, 0.015, 0.037), smoothstep(0.12, 0.90, featherFacing));',
+        'float featherLight = clamp(dot(reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular, vec3(5.0)), 0.12, 1.0);',
+        'gl_FragColor.rgb += featherSheen * featherRim * featherLight;',
+        '#include <tonemapping_fragment>'
+      ].join('\n'));
+    };
+    material.customProgramCacheKey = function () { return previousKey.call(this) + '-iridescent-v1'; };
     return material;
   }
 
@@ -13156,6 +14856,7 @@ var CLASSIFY_CASES = [
           tab: 'explore',
           selected: null,
           field3dProgress: null,
+          field3dShapeStudy: null,
           field3dSelected: null,
           field3dWorkflowStarted: false,
           field3dDrawerOpen: false,
@@ -13217,6 +14918,15 @@ var CLASSIFY_CASES = [
         var merged = {};
         for (var key in d) if (Object.prototype.hasOwnProperty.call(d, key)) merged[key] = d[key];
         for (var nextKey in patch) if (Object.prototype.hasOwnProperty.call(patch, nextKey)) merged[nextKey] = patch[nextKey];
+        var previousShapeStudy = dinoShapeStudyFor(d.field3dShapeStudy);
+        var nextShapeStudy = dinoShapeStudyFor(merged.field3dShapeStudy);
+        if (nextShapeStudy && (nextShapeStudy.species.id !== (merged.field3dSelected || merged.selected) || patch.field3dShowHuman === true || patch.field3dShowEvidence === true || patch.field3dAutoRotate === true || patch.field3dStage === 'habitat' || patch.field3dWorkflowStarted === true)) {
+          patch.field3dShapeStudy = null; nextShapeStudy = null;
+        }
+        if (previousShapeStudy || nextShapeStudy) {
+          patch.field3dProgress = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : null;
+          return patch;
+        }
         patch.field3dProgress = fieldProgressRecordFor(merged);
         return patch;
       }
@@ -13477,9 +15187,10 @@ var CLASSIFY_CASES = [
         var active = tab === tb.id;
         return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { flexShrink: 0, minHeight: 44, padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
-      var tabNavigation = el('nav', { 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
+      var tabNavigation = el('nav', { className: 'dinolab-navigation', 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
         el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
-          el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, activeTabGroup),
+          el('div', { className: 'dinolab-wordmark' }, el('span', { 'aria-hidden': 'true', className: 'dinolab-wordmark-symbol' }, 'D.'), el('span', null, el('strong', null, t('stem.dinolab.studio_name', 'Dino Lab')), el('small', null, t('stem.dinolab.studio_subtitle', 'Paleontology studio')))),
+          el('span', { className: 'dinolab-current-group', style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, t('stem.dinolab.nav_' + (activeTabGroup === 'Practice and teach' ? 'practice' : activeTabGroup.toLowerCase()), activeTabGroup)),
           el('select', { id: 'dino-section-picker', 'aria-label': __alloT('stem.dinolab.jump_to_section', 'Jump to a lab section'), value: tab, onChange: function (event) { var target = event.target.value; if (!TABS.some(function (tb) { return tb.id === target; })) return; upd('tab', target); focusSoon('dinotab-' + target); }, style: { marginLeft: 'auto', flex: '0 1 260px', minWidth: 0, maxWidth: '70%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 700 } },
             [['Discover', 'nav_discover'], ['Investigate', 'nav_investigate'], ['Explain', 'nav_explain'], ['Practice and teach', 'nav_practice']].map(function (group) {
               return el('optgroup', { key: group[0], label: t('stem.dinolab.' + group[1], group[0]) }, TABS.filter(function (tb) { return tabGroupFor(tb.id) === group[0]; }).map(function (tb) { return el('option', { key: tb.id, value: tb.id }, tb.label); }));
@@ -13487,6 +15198,68 @@ var CLASSIFY_CASES = [
         ),
         tabBar
       );
+
+      function renderSpecimenInquiry(dn) {
+        var inquiries = specimenInquiryState(d.specimenInquiry), inquiry = inquiries[dn.id] || { open: false, source: '', reviewed: false };
+        var note = notebook[dn.id] || {}, prefix = 'dino-specimen-inquiry-';
+        function it(key, fallback) { return t('stem.dinolab.specimen_inquiry_' + key, fallback); }
+        function change(patch, notePatch) {
+          var next = Object.assign({}, inquiries); next[dn.id] = Object.assign({}, inquiry, patch);
+          var update = { specimenInquiry: next };
+          if (notePatch) {
+            var notes = Object.assign({}, notebook), nextNote = Object.assign({}, note, notePatch);
+            if (NOTE_FIELDS.some(function (field) { return nextNote[field.id]; })) notes[dn.id] = nextNote; else delete notes[dn.id];
+            update.notebook = notes;
+          }
+          upd(update);
+        }
+        var fields = [
+          { id: 'observation', label: it('notice', '1 · Describe the evidence'), hint: it('notice_hint', 'Name one specific feature or record. Say whether you are describing a reported fossil, a catalog estimate, or the model.') },
+          { id: 'inference', label: it('explain', '2 · Connect it to an explanation'), hint: it('explain_hint', 'What might the evidence mean? Explain why it supports your idea. Consider another explanation for the same feature.') },
+          { id: 'uncertainty', label: it('test', '3 · Plan the next test'), hint: it('test_hint', 'Name a limit of this evidence and a new fossil, measurement, or comparison that could help test your idea.') }
+        ];
+        var filled = fields.filter(function (field) { return (note[field.id] || '').trim(); }).length;
+        var sourceFeedback = {
+          fossil: it('source_fossil_feedback', 'You are using reported fossil evidence. Name the fossil feature, then separate what it preserves from your interpretation of it.'),
+          catalog: it('source_catalog_feedback', 'You are using a catalog estimate or reconstruction. Explain the estimate as an inference and name what could make it change.'),
+          model: it('source_model_feedback', 'You are describing an illustrative model. Its shape or movement can suggest a question; find fossil evidence before making a claim about the living animal.')
+        };
+        var box = { marginTop: 14, padding: 14, borderRadius: 12, border: '1px solid ' + T.border, background: T.deeper };
+        var help = { fontSize: 12, lineHeight: 1.6, color: T.soft, margin: '6px 0 10px' };
+        var writingStyle = { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 9, border: '1px solid ' + T.border, background: T.panel, color: T.text, font: 'inherit', fontSize: 13, lineHeight: 1.6, resize: 'vertical' };
+        return el('section', { key: 'inquiry-' + dn.id, className: 'dinolab-specimen-inquiry', 'aria-labelledby': prefix + 'heading', style: box },
+          el('div', { style: { color: T.soft, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.09em', fontWeight: 800, marginBottom: 5 } }, it('eyebrow', 'Think like a paleontologist')),
+          el('h3', { id: prefix + 'heading', style: { margin: 0, fontSize: 17, lineHeight: 1.4 } }, it('title', 'Turn a fact into an explanation')),
+          el('p', { style: help }, it('intro', 'A feature is a starting point. Make a claim, connect the evidence, and decide what would help you test it.')),
+          el('button', { type: 'button', 'aria-expanded': inquiry.open, 'aria-controls': prefix + 'workspace', style: Object.assign({}, actionStyle, { width: '100%', minHeight: 44, textAlign: 'left' }), onClick: function () { change({ open: !inquiry.open }); } }, inquiry.open ? it('close', 'Close the investigation') : it('open', 'Investigate this specimen')),
+          el('div', { id: prefix + 'workspace' }, inquiry.open ? el('div', { style: { paddingTop: 14 } },
+            el('label', { htmlFor: prefix + 'source', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, it('source', 'What is the source of your evidence?')),
+            el('select', { id: prefix + 'source', value: inquiry.source, 'aria-describedby': prefix + 'source-help', onChange: function (event) { change({ source: event.target.value, reviewed: false }); }, style: Object.assign({}, actionStyle, { width: '100%', minHeight: 44, fontWeight: 500 }) },
+              el('option', { value: '' }, it('source_choose', 'Choose a source…')),
+              el('option', { value: 'fossil' }, it('source_fossil', 'Reported fossil evidence')),
+              el('option', { value: 'catalog' }, it('source_catalog', 'Catalog estimate or reconstruction')),
+              el('option', { value: 'model' }, it('source_model', 'The illustrative model'))),
+            el('p', { id: prefix + 'source-help', style: help }, sourceFeedback[inquiry.source] || it('source_hint', '“How we know” reports the fossil record. Size values are reconstructions; a model is an illustration of an interpretation.')),
+            el('div', { style: { marginBottom: 14 } },
+              el('label', { htmlFor: prefix + 'question', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, it('question', 'My investigation question (optional)')),
+              el('textarea', { id: prefix + 'question', value: note.question || '', rows: 2, maxLength: 2000, onChange: function (event) { change({ reviewed: false }, { question: event.target.value.slice(0, 2000) }); }, style: writingStyle })),
+            fields.map(function (field) { return el('div', { key: field.id, style: { marginBottom: 14 } },
+              el('label', { htmlFor: prefix + field.id, style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, field.label),
+              el('p', { id: prefix + field.id + '-hint', style: help }, field.hint),
+              el('textarea', { id: prefix + field.id, value: note[field.id] || '', rows: 3, maxLength: 2000, 'aria-describedby': prefix + field.id + '-hint', onChange: function (event) { var patch = {}; patch[field.id] = event.target.value.slice(0, 2000); change({ reviewed: false }, patch); }, style: writingStyle })); }),
+            el('details', { style: { marginBottom: 14 } },
+              el('summary', { style: { fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 30 } }, it('starters_title', 'Need a way to begin?')),
+              el('p', { style: help }, it('starters', '“The fossil report / estimate / model shows… This could support… because… Another possible explanation is… To test this, I would look for…”'))),
+            el('button', { type: 'button', style: Object.assign({}, actionStyle, { minHeight: 44 }), onClick: function () { change({ reviewed: true }); focusSoon(prefix + 'feedback'); } }, it('review', 'Review my explanation')),
+            inquiry.reviewed ? el('div', { id: prefix + 'feedback', tabIndex: -1, role: 'status', 'aria-live': 'polite', style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 9, background: T.panel } },
+              el('p', { style: { margin: '0 0 8px', fontSize: 13, fontWeight: 800, lineHeight: 1.6 } }, filled + '/3 ' + it('filled', 'writing prompts filled. This checks completeness only.')),
+              !inquiry.source ? el('p', { style: help }, it('missing_source', 'Choose a source so a reader can distinguish reported fossils, estimates, and model observations.')) : el('p', { style: help }, sourceFeedback[inquiry.source]),
+              fields.filter(function (field) { return !(note[field.id] || '').trim(); }).map(function (field) { return el('p', { key: field.id, style: help }, field.label + ': ' + field.hint); }),
+              el('p', { style: help }, it('review_prompt', 'Read your explanation aloud or share it with a partner: did you explain why the evidence supports the claim, consider an alternative, and propose evidence that could change your mind?')),
+              el('p', { style: Object.assign({}, help, { marginBottom: 0 }) }, it('not_graded', 'Written reasoning has not been automatically assessed.'))) : null,
+            el('p', { style: help }, it('saved', 'Your writing is kept in this specimen’s field notebook as you type. Continue there to revise it or download a copy.')),
+            el('button', { type: 'button', style: Object.assign({}, actionStyle, { minHeight: 44 }), onClick: function () { openNotebook(dn); } }, it('notebook', 'Continue in my notebook'))) : null));
+      }
 
       function renderDetail(dn) {
         if (!dn) return null;
@@ -13510,7 +15283,8 @@ var CLASSIFY_CASES = [
           el('div', { key: 'tr', style: { marginTop: 10 } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 4 } }, 'Standout traits'), el('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.5 } }, dn.traits.map(function (tr, i) { return el('li', { key: i }, tr); }))),
           el('div', { key: 'fa', style: { marginTop: 10 } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 4 } }, 'Did you know'), el('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.5 } }, dn.facts.map(function (fa, i) { return el('li', { key: i }, fa); }))),
           el('div', { key: 'hk', style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.35)' } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 3 } }, '🔎 How we know'), el('div', { style: { fontSize: 12.5, lineHeight: 1.5 } }, dn.howKnow)),
-          el('div', { key: 'un', style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 3 } }, '⚖️ What we are not sure about'), el('div', { style: { fontSize: 12.5, lineHeight: 1.5 } }, dn.uncertain))
+          el('div', { key: 'un', style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)' } }, el('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 3 } }, '⚖️ What we are not sure about'), el('div', { style: { fontSize: 12.5, lineHeight: 1.5 } }, dn.uncertain)),
+          renderSpecimenInquiry(dn)
         ]);
       }
 
@@ -13537,7 +15311,7 @@ var CLASSIFY_CASES = [
         Array.from(new Set(DINOS.map(function (dn) { return continentOf(dn.region); }))).sort().forEach(function (name) { places.push([name, name]); });
         Object.keys(GROUP_LABEL).forEach(function (id) { groups.push([id, GROUP_LABEL[id]]); });
         var controls = el('div', { className: 'dinolab-catalog-controls', style: { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 14, marginBottom: 12 } },
-          el('h2', { style: { margin: '0 0 4px', fontSize: 20 } }, __alloT('stem.dinolab.species_field_guide', 'Species field guide')),
+          el('h2', { id: 'dino-field-guide-heading', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 20 } }, __alloT('stem.dinolab.species_field_guide', 'Species field guide')),
           el('p', { style: { margin: '0 0 12px', color: T.soft, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.dinolab.catalog_intro', 'Follow a trait, a place, or a question. Save specimens to revisit as your ideas develop.')),
           el('input', { type: 'search', value: query, placeholder: __alloT('stem.dinolab.catalog_search_hint', 'Try feathers, Morrison, or Mongolia…'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { filter('query', e.target.value); }, style: Object.assign({}, actionStyle, { width: '100%', boxSizing: 'border-box', fontSize: 14, marginBottom: 12, fontWeight: 400 }) }),
           el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.catalog_collection', 'Specimen collection'), style: { marginBottom: 10 } },
@@ -13841,6 +15615,9 @@ var CLASSIFY_CASES = [
         var cameraRef = React.useRef(null);
         var rendererRef = React.useRef(null);
         var cameraControlRef = React.useRef(null);
+        var partInspectionFrameRef = React.useRef(null);
+        var supportingRelationRef = React.useRef(null);
+        var supportingRelationState = React.useState(null), supportingRelationChoice = supportingRelationState[0], setSupportingRelationChoice = supportingRelationState[1];
         var visualMaterialsRef = React.useRef(null);
         var lightingControlRef = React.useRef(null);
         var renderRequestRef = React.useRef(null);
@@ -13901,6 +15678,14 @@ var CLASSIFY_CASES = [
         var surfaceHypothesis = hypothesisSet.active;
         var bodyPartDefinitions = dinoDetailedBodyPartDefinitions(props.species, skeletalProfile.weightBearingForelimbs, surfaceHypothesis);
         var selectedBodyPart = bodyPartDefinitions.find(function (part) { return part.id === selectedBodyPartId; });
+        var supportingRelations = dinoSupportingRelationsFor(props.species, bodyPartDefinitions);
+        var activeSupportingRelation = supportingRelationChoice && supportingRelationChoice.speciesId === props.species.id && supportingRelationChoice.mode === surfaceHypothesis.id
+          ? supportingRelations.find(function (relation) { return relation.id === supportingRelationChoice.id; }) : null;
+        supportingRelationRef.current = activeSupportingRelation || null;
+        React.useEffect(function () {
+          supportingRelationRef.current = null; setSupportingRelationChoice(null);
+          partInspectionFrameRef.current = null;
+        }, [props.species.id, surfaceHypothesis.id]);
         selectedBodyPartRef.current = selectedBodyPart ? selectedBodyPart.id : '';
         React.useEffect(function () {
           if (!selectedBodyPartId || selectedBodyPart) return;
@@ -13931,15 +15716,70 @@ var CLASSIFY_CASES = [
         var integumentEvidence = integumentEvidenceFor(props.species);
         var studyViewState = React.useState({ speciesId: props.species.id, region: 'full' }), studyView = studyViewState[0], setStudyView = studyViewState[1];
         var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';
-        var externalViewReadouts = activeStudy === 'size' || !!selectedBodyPart;
+        React.useEffect(function () {
+          var relation = supportingRelationRef.current;
+          if (relation && relation.region !== activeStudy) {
+            supportingRelationRef.current = null; setSupportingRelationChoice(null);
+            partInspectionFrameRef.current = null;
+          }
+        }, [props.species.id, activeStudy]);
+        var externalViewReadouts = activeStudy === 'size' || !!selectedBodyPart || !!(props.shapeStudy && props.shapeStudy.family.fullBody);
         var cameraPresetState = React.useState(null), cameraPreset = cameraPresetState[0], setCameraPreset = cameraPresetState[1];
 
         var yawRef = React.useRef({ speciesId: props.species.id, value: 0.35, pitch: 0.18, zoom: 1 });
+        var shapeStudyPoseKeyRef = React.useRef(null);
+        var shapeStudyRef = React.useRef(props.shapeStudy);
+        shapeStudyRef.current = props.shapeStudy;
+        var shapeStudyLandmarks = dinoShapeStudyLandmarkIds(props.shapeStudy, bodyPartDefinitions);
+        var shapeViewContext = dinoShapeViewContextKey(props.shapeStudy, props.reconstructionMode);
+        var shapeViewState = React.useState({ context: '', pins: [] }), shapeViews = shapeViewState[0], setShapeViews = shapeViewState[1];
+        var shapeViewMessageState = React.useState(''), shapeViewMessage = shapeViewMessageState[0], setShapeViewMessage = shapeViewMessageState[1];
+        var keptShapeViews = shapeViews.context === shapeViewContext ? shapeViews.pins : [];
+        React.useEffect(function () { setShapeViews({ context: shapeViewContext, pins: [] }); setShapeViewMessage(''); }, [shapeViewContext]);
+        // Capture the current spatial frame before the layer effect replaces
+        // geometry. Bone and life can then be inspected without a fitting jump.
+        React.useLayoutEffect(function () {
+          if (props.shapeStudy && cameraControlRef.current && cameraControlRef.current.preserveInspectionFrame) cameraControlRef.current.preserveInspectionFrame();
+        }, [props.showSkeleton, props.showBody]);
+        function keepShapeView(index) {
+          var control = cameraControlRef.current;
+          if (!shapeViewContext || !control || !control.captureShapeView) { setShapeViewMessage('Wait for the displayed model to finish loading before keeping its view.'); return; }
+          var pin = control.captureShapeView();
+          if (!pin || pin.context !== shapeViewContext) { setShapeViewMessage('The displayed view is not ready. Try again after the model loads.'); return; }
+          setShapeViews(function (old) { var pins = old.context === shapeViewContext ? old.pins.slice() : []; pins[index] = pin; return { context: shapeViewContext, pins: pins }; });
+          setShapeViewMessage('View ' + (index + 1) + ' kept: ' + dinoShapeViewCaption(pin, bodyPartDefinitions) + '. This keeps a model view; add your own observation.');
+          requestSceneRender();
+        }
+        function replayShapeView(index) {
+          var pin = keptShapeViews[index];
+          if (!pin || !props.shapeStudy || !cameraControlRef.current) return;
+          cameraControlRef.current(pin.yaw, pin.pitch, pin.zoom, 'View ' + (index + 1) + ' direction restored. Current species and layers are retained.', 'full');
+          setShapeViewMessage('View ' + (index + 1) + ' direction restored. ' + props.species.common + ' and the current layers remain displayed; the saved caption describes the original capture.');
+          requestSceneRender();
+        }
+        function appendShapeViews() {
+          if (!props.onShapeStudyViewsAppend || keptShapeViews.filter(Boolean).length !== 2) return;
+          var result = props.onShapeStudyViewsAppend(keptShapeViews, bodyPartDefinitions);
+          setShapeViewMessage(result === 'added' ? 'View contexts appended to your existing comparison explanation. Add your own reasoning about what persists across views and what the covering adds.' : result === 'duplicate' ? 'These view contexts are already in your explanation.' : result === 'full' ? 'Your explanation has no room for both view contexts. Your writing is unchanged; open the notebook to edit it.' : 'Keep two views in this investigation before appending their context.');
+        }
+        React.useEffect(function () { requestSceneRender(); }, [props.shapeStudy && props.shapeStudy.lens ? props.shapeStudy.lens.id : null]);
         var autoRotateRef = React.useRef(props.autoRotate);
         var readySpeciesRef = React.useRef(null);
         var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
         autoRotateRef.current = props.autoRotate;
-        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: 0.35, pitch: 0.18, zoom: 1 };
+        yawRef.current = dinoShapeStudyPose(yawRef.current, props.species.id, props.shapeStudy, shapeStudyPoseKeyRef.current);
+        shapeStudyPoseKeyRef.current = props.shapeStudy ? props.shapeStudy.key : null;
+        React.useEffect(function () {
+          if (!props.shapeStudy) return;
+          var part = bodyPartDefinitions.find(function (entry) { return entry.id === props.shapeStudy.partId; });
+          selectedBodyPartRef.current = part ? part.id : '';
+          setBodyPartSelection({ speciesId: props.species.id, id: part ? part.id : '' });
+          partInspectionFrameRef.current = null;
+          yawRef.current.study = props.shapeStudy.region;
+          setStudyView({ speciesId: props.species.id, region: props.shapeStudy.region });
+          if (readySpeciesRef.current === props.species.id && cameraControlRef.current) cameraControlRef.current(yawRef.current.value, yawRef.current.pitch, yawRef.current.zoom, 'Shape comparison. This model is fitted independently at the shared viewing direction.', props.shapeStudy.region);
+          requestSceneRender();
+        }, [props.species.id, props.shapeStudy ? props.shapeStudy.key : null]);
 
         function notifyOrientationInteraction() {
           if (props.orientationCueVisible && typeof props.onOrientationDismiss === 'function') props.onOrientationDismiss();
@@ -14385,6 +16225,7 @@ var CLASSIFY_CASES = [
             // Palette swatches are sRGB, like the skin canvas; lighting operates in linear color.
             filamentMat.color.convertSRGBToLinear();
             featherVaneMat.color.convertSRGBToLinear();
+            dinoFeatherOptics(featherVaneMat, integument);
             var coatMat = null;
             if (props.showBody && surfaceHypothesis.filamentCoverage > 0) {
               coatMat = filamentMat.clone();
@@ -14399,7 +16240,8 @@ var CLASSIFY_CASES = [
               contourCoatMat.roughness = 0.96;
               contourCoatMat.userData.dinoContourCoat = true;
               dinoSkinMapping(THREE, contourCoatMat, Math.max(len * 0.20, ht * 0.60), 0.07, integument);
-              dinoCoatShading(contourCoatMat);
+              dinoCoatShading(contourCoatMat, integument);
+              dinoFeatherOptics(contourCoatMat, integument);
             }
             // A shared, restrained barb pattern follows each vane's own UVs.
             if (props.showBody && (surfaceHypothesis.wingFeathers || surfaceHypothesis.hindWingFeathers || surfaceHypothesis.tailFan || surfaceHypothesis.tailFrond)) {
@@ -14650,48 +16492,69 @@ var CLASSIFY_CASES = [
               return spine;
             }
 
-            function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region) {
+            function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region, centerline) {
               if (!props.showSkeleton) return;
+              var caudalDetailScale = region === 'caudal' && dn.id === 'spinosaurus' ? Math.min(1, ht / 4) : 1;
+              var reviewedCervical = region === 'cervical' && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id) && dn.group === 'sauropod';
+              if (reviewedCervical) {
+                centerline = dinoCervicalAxisCurve(THREE,cervicalEnvelope,end);
+                caudalDetailScale = Math.min(1,ht / 2);
+              }
               var chainAxis = new THREE.Vector3().subVectors(end, start);
               if (!chainAxis.lengthSq()) return;
               chainAxis.normalize();
               var previous = start.clone();
               for (var vertebraIndex = 0; vertebraIndex <= count; vertebraIndex++) {
                 var vertebraT = vertebraIndex / count;
-                var point = new THREE.Vector3().copy(start).lerp(end, vertebraT);
+                var point = centerline ? centerline.getPoint(vertebraT) : new THREE.Vector3().copy(start).lerp(end, vertebraT);
+                if (centerline) chainAxis.copy(centerline.getTangent(vertebraT)).normalize();
                 var radius = startRadius + (endRadius - startRadius) * vertebraT;
-                if (vertebraIndex > 0) addTaperedBoneSegment(previous, point, Math.max(0.006, radius * 0.44), Math.max(0.005, radius * 0.38), boneMat);
+                if (reviewedCervical) radius = dinoSauropodBodyCervicalRadius(THREE,dn,vertebraT,radius,len,ht,bodyHeight);
+                if (vertebraIndex > 0) addTaperedBoneSegment(previous, point, Math.max(0.006 * caudalDetailScale, radius * 0.44), Math.max(0.005 * caudalDetailScale, radius * 0.38), boneMat);
                 var centrumLengthScale = region === 'cervical' ? 1.34 : (region === 'caudal' ? 1.08 : 1.16);
                 var centrum = addSkeletonEllipsoid(point, vec(radius * centrumLengthScale, radius * 0.72, radius * 0.82), boneMat);
                 if (centrum) centrum.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), chainAxis);
+                if (centrum && centerline && region === 'cervical') {
+                  centrum.name = 'curved-cervical-centrum';
+                  centrum.userData.dinoCervicalStation = vertebraT;
+                }
                 if (vertebraIndex > 0 && vertebraIndex < count) {
                   var archHeight = radius * (region === 'caudal' ? 0.58 : 0.82);
                   var archCenter = point.clone().add(vec(0, archHeight, 0));
-                  addBone(point.clone().add(vec(0, radius * 0.10, -radius * 0.34)), archCenter.clone().add(vec(0, 0, -radius * 0.22)), Math.max(0.0035, radius * 0.13));
-                  addBone(point.clone().add(vec(0, radius * 0.10, radius * 0.34)), archCenter.clone().add(vec(0, 0, radius * 0.22)), Math.max(0.0035, radius * 0.13));
+                  addBone(point.clone().add(vec(0, radius * 0.10, -radius * 0.34)), archCenter.clone().add(vec(0, 0, -radius * 0.22)), Math.max(0.0035 * caudalDetailScale, radius * 0.13));
+                  addBone(point.clone().add(vec(0, radius * 0.10, radius * 0.34)), archCenter.clone().add(vec(0, 0, radius * 0.22)), Math.max(0.0035 * caudalDetailScale, radius * 0.13));
                   var spineHeight = radius * (processScale || 1.5) * (region === 'caudal' ? 0.72 : 1);
                   var spineTip = archCenter.clone().add(vec(0, spineHeight, 0));
                   if (region === 'caudal') spineTip.add(chainAxis.clone().multiplyScalar(radius * 0.30));
-                  if (region === 'dorsal') addDorsalSpine(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
-                  else addTaperedBoneSegment(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
+                  var deepTailSection = region === 'caudal' && dn.id === 'spinosaurus' ? dinoSpinosaurusTailSection(dn, vertebraT * 0.975, ht) : null;
+                  if (deepTailSection) spineTip.y = point.y + Math.max(archHeight + radius * 0.50, deepTailSection.height * 0.70);
+                  if (region === 'dorsal') addDorsalSpine(archCenter, spineTip, Math.max(0.004 * caudalDetailScale, radius * 0.20), Math.max(0.003 * caudalDetailScale, radius * 0.09), boneMat);
+                  else {
+                    var regionalSpine = addTaperedBoneSegment(archCenter, spineTip, Math.max(0.004 * caudalDetailScale, radius * 0.20), Math.max(0.003 * caudalDetailScale, radius * 0.09), boneMat);
+                    if (deepTailSection && regionalSpine) {
+                      regionalSpine.name = 'spinosaurus-caudal-neural-spine';
+                      regionalSpine.userData.dinoRegion = 'tail'; regionalSpine.userData.dinoPartIds = ['tail', 'tail-root'];
+                      regionalSpine.userData.dinoTailSupport = { start: archCenter.toArray(), end: spineTip.toArray(), station: vertebraT * 0.975, inferred: true };
+                    }
+                  }
                   if (region === 'dorsal' && vertebraIndex % 2 === 0) {
                     [-1, 1].forEach(function (processSide) {
-                      addTaperedBoneSegment(archCenter, archCenter.clone().add(vec(0, -radius * 0.08, processSide * radius * 1.38)), Math.max(0.004, radius * 0.16), Math.max(0.003, radius * 0.08), boneMat);
+                      addTaperedBoneSegment(archCenter, archCenter.clone().add(vec(0, -radius * 0.08, processSide * radius * 1.38)), Math.max(0.004 * caudalDetailScale, radius * 0.16), Math.max(0.003 * caudalDetailScale, radius * 0.08), boneMat);
                     });
                   } else if (region === 'caudal' && vertebraIndex <= skeletalProfile.proximalCaudalProcessCount) {
                     var caudalProcessFade = 1 - (vertebraIndex - 1) / Math.max(1, skeletalProfile.proximalCaudalProcessCount);
                     [-1, 1].forEach(function (caudalSide) {
                       var caudalProcessBase = point.clone().add(vec(0, radius * 0.24, caudalSide * radius * 0.22));
                       var caudalProcessTip = caudalProcessBase.clone().add(vec(0, -radius * 0.06, caudalSide * radius * (0.72 + caudalProcessFade * 0.92))).add(chainAxis.clone().multiplyScalar(radius * 0.16));
-                      addTaperedBoneSegment(caudalProcessBase, caudalProcessTip, Math.max(0.0035, radius * 0.16), Math.max(0.0025, radius * 0.065), boneMat);
+                      addTaperedBoneSegment(caudalProcessBase, caudalProcessTip, Math.max(0.0035 * caudalDetailScale, radius * 0.16), Math.max(0.0025 * caudalDetailScale, radius * 0.065), boneMat);
                     });
                   }
                   if (vertebraIndex % 2 === 1) {
                     [-1, 1].forEach(function (facetSide) {
                       var facetBase = archCenter.clone().add(vec(0, radius * 0.05, facetSide * radius * 0.24));
                       var facetTip = facetBase.clone().add(chainAxis.clone().multiplyScalar(radius * 0.68)).add(vec(0, radius * 0.12, facetSide * radius * 0.10));
-                      addTaperedBoneSegment(facetBase, facetTip, Math.max(0.003, radius * 0.11), Math.max(0.0025, radius * 0.07), boneMat);
-                      addSkeletonEllipsoid(facetTip, vec(Math.max(0.005, radius * 0.16), Math.max(0.0035, radius * 0.09), Math.max(0.004, radius * 0.12)), jointMat);
+                      addTaperedBoneSegment(facetBase, facetTip, Math.max(0.003 * caudalDetailScale, radius * 0.11), Math.max(0.0025 * caudalDetailScale, radius * 0.07), boneMat);
+                      addSkeletonEllipsoid(facetTip, vec(Math.max(0.005 * caudalDetailScale, radius * 0.16), Math.max(0.0035 * caudalDetailScale, radius * 0.09), Math.max(0.004 * caudalDetailScale, radius * 0.12)), jointMat);
                     });
                   }
                 }
@@ -14803,7 +16666,7 @@ var CLASSIFY_CASES = [
             }
             function addKeratinCone(base, tip, radius, kind) {
               if (!props.showBody) return null;
-              var geometry = dinoKeratinGeometry(THREE, new THREE.Vector3().subVectors(tip, base), radius, kind);
+              var geometry = dinoKeratinGeometry(THREE, new THREE.Vector3().subVectors(tip, base), radius, kind, undefined, arguments[4]);
               if (!geometry) return null;
               var mesh = new THREE.Mesh(geometry, keratinMat);
               mesh.position.copy(base);
@@ -14836,7 +16699,9 @@ var CLASSIFY_CASES = [
               if (!props.showBody) return null;
               var dir = new THREE.Vector3().subVectors(tip, base), dist = dir.length();
               if (!dist) return null;
-              var vane = new THREE.Mesh(dinoFeatherGeometry(THREE, dist, width), featherVaneMat);
+              var vaneProfile = dinoFeatherVaneProfile(dn, tract);
+              var vane = new THREE.Mesh(dinoFeatherGeometry(THREE, dist, width, vaneProfile), featherVaneMat);
+              if (vaneProfile) vane.userData.dinoFeatherVaneProfile = vaneProfile;
               vane.position.copy(base);
               vane.quaternion.copy(dinoFeatherFrame(THREE, dir, spreadAxis));
               vane.castShadow = true; vane.receiveShadow = true; vane.renderOrder = 12;
@@ -14941,12 +16806,57 @@ var CLASSIFY_CASES = [
             var shoulder = vec(-len * (isTheropod ? 0.12 : 0.18), Math.max(0.12 * detailScale, isSauropod ? ht * 0.55 : ht * (isTheropod ? 0.73 : 0.48)) * reconstructionProfile.stance * reconstructionProfile.shoulder * posture.shoulderHeight, 0);
             var tail = vec(len * 0.52, Math.max(0.10 * detailScale, ht * (isTheropod ? 0.65 : 0.34)) * reconstructionProfile.stance * reconstructionProfile.tail * posture.tailHeight, 0);
             var head = vec(-len * (isSauropod ? 0.42 : 0.30), Math.max(0.16 * detailScale, isSauropod ? ht * 1.06 : ht * (isTheropod ? 0.93 : 0.68)) * reconstructionProfile.neck * posture.headHeight, 0);
+            var ornithopodBodyPose = /^(iguanodon|edmontosaurus|maiasaura)$/.test(dn.id) ? dinoOrnithopodBodyAnchors(THREE, dn, { hip: hip, shoulder: shoulder, head: head, tail: tail }) : null;
+            if (ornithopodBodyPose) {
+              hip = ornithopodBodyPose.hip; shoulder = ornithopodBodyPose.shoulder;
+              head = ornithopodBodyPose.head; tail = ornithopodBodyPose.tail;
+              var ornithopodBodyProfile = dinoOrnithopodBodyProfileFor(dn);
+              model.userData.dinoFullBodyAnatomy = { family: 'ornithopods', profile: ornithopodBodyProfile.id, sources: ornithopodBodyProfile.sources,
+                anchors: { hip: hip.toArray(), shoulder: shoulder.toArray(), head: head.toArray(), tail: tail.toArray() },
+                forearmRatio: ornithopodBodyProfile.radiusHumerus, proportionBasis: ornithopodBodyProfile.proportionBasis,
+                interpretive: true, jointAnglesAreInterpretive: true, softFormIsInterpretive: true,
+                locomotorLimit: ornithopodBodyProfile.locomotorLimit };
+            }
+
+            var ceratopsidBodyPose = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidBodyAnchors(THREE, dn, { ht: ht, hip: hip, shoulder: shoulder, head: head, tail: tail }) : null;
+            if (ceratopsidBodyPose) {
+              hip = ceratopsidBodyPose.hip; shoulder = ceratopsidBodyPose.shoulder;
+              head = ceratopsidBodyPose.head; tail = ceratopsidBodyPose.tail;
+              var ceratopsidBodyProfile = dinoCeratopsidBodyProfileFor(dn);
+              model.userData.dinoFullBodyAnatomy = { family: 'ceratopsids', profile: ceratopsidBodyProfile.id, sources: ceratopsidBodyProfile.sources,
+                anchors: { hip: hip.toArray(), shoulder: shoulder.toArray(), head: head.toArray(), tail: tail.toArray() },
+                forearmRatio: ceratopsidBodyProfile.radiusHumerus, evidence: ceratopsidBodyProfile.evidence, limit: ceratopsidBodyProfile.limit,
+                interpretive: true, jointAnglesAreInterpretive: true, softFormIsInterpretive: true, limbs: [] };
+            }
+
+            var matureTyrannosaurPose = dinoTyrannosaurPose(dn, shoulder, head, tail);
+            head = matureTyrannosaurPose.head; tail = matureTyrannosaurPose.tail;
+            if (matureTyrannosaurPose.active) model.userData.dinoMatureTyrannosaurPose = { inferred: true, anchorAdvance: matureTyrannosaurPose.advance, source: 'https://doi.org/10.1002/ar.20563' };
             var snoutLength = len * (isSauropod ? 0.030 : (/Stegosaur|Ankylosaur|Nodosaur/i.test(dn.clade || '') ? 0.035 : (isTheropod ? 0.085 : 0.075)));
             var snout = head.clone().add(vec(-snoutLength, -ht * 0.020, 0));
+            var ceratopsidCranium = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidCraniumFrame(THREE,dn,head,len,ht) : null;
+            if (ceratopsidCranium) { snout.copy(ceratopsidCranium.snout); model.userData.dinoCeratopsidCranium = ceratopsidCranium.metadata; }
+            var longSnoutedTyrannosaur = dinoLongSnoutedTyrannosaurAnchors(THREE, dn, head, snout);
+            snout = longSnoutedTyrannosaur.snout;
+            if (longSnoutedTyrannosaur.active) model.userData.dinoLongSnoutedTyrannosaur = { inferred: true, snoutScale: 1.40, source: 'https://doi.org/10.1038/ncomms4788' };
+            var baryonychineRostrum = /^(baryonyx|suchomimus)$/.test(dn.id) ? dinoBaryonychineSnoutAnchor(THREE, dn, head, snout) : { snout: snout, active: false };
+            snout = baryonychineRostrum.snout;
+            if (baryonychineRostrum.active) {
+              var baryonychineProfile = dinoBaryonychineRostrumFor(dn);
+              model.userData.dinoBaryonychineRostrum = { profile: baryonychineProfile.id, source: baryonychineProfile.source,
+                head: head.toArray(), tip: snout.toArray(), waist: head.clone().lerp(snout, baryonychineProfile.waist).toArray(),
+                rosette: head.clone().lerp(snout, baryonychineProfile.tip).toArray(), snoutScale: baryonychineProfile.snoutScale, interpretive: true };
+            }
             var bodyCenter = new THREE.Vector3().copy(hip).add(shoulder).multiplyScalar(0.5);
             var bodyLen = Math.max(0.45 * detailScale, Math.abs(hip.x - shoulder.x) * 0.72) * reconstructionProfile.torsoLength;
             var bodyHeight = Math.max(0.065 * detailScale, ht * (isSauropod ? 0.18 : 0.19)) * reconstructionProfile.bodyHeight * reconstructionProfile.chestFullness;
             var bodyDepth = Math.max(0.050 * detailScale, bodyHeight * (isTheropod ? 0.92 : 1.08)) * reconstructionProfile.bodyDepth * reconstructionProfile.hipFullness;
+            var sauropodBody = isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id) ? dinoSauropodBodyFrame(THREE,dn,len,ht) : null;
+            if (sauropodBody) {
+              hip.copy(sauropodBody.hip); shoulder.copy(sauropodBody.shoulder); head.copy(sauropodBody.head); tail.copy(sauropodBody.tail); snout.copy(sauropodBody.snout);
+              bodyCenter.copy(sauropodBody.bodyCenter); bodyLen = sauropodBody.bodyLen; bodyHeight = sauropodBody.bodyHeight; bodyDepth = sauropodBody.bodyDepth;
+              model.userData.dinoFullBodyAnatomy = sauropodBody.metadata;
+            }
             var evidenceAnchorPoints = { skull: head, shoulder: shoulder, hip: hip };
 
             var surveyDecorations = new THREE.Group();
@@ -14999,6 +16909,7 @@ var CLASSIFY_CASES = [
               hip.clone(), hip.clone().add(vec(bodyLen * 0.24, 0, 0))
             ];
             var torsoRadii = dinoTorsoRadii(surfaceBodyHeight, surfaceBodyDepth, postcranialSurface);
+            if (/^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id)) torsoRadii = dinoCeratopsidBodyTorsoRadii(dn, torsoRadii);
             var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat, null,
               isSauropod && postcranialSurface.id === 'long-low-sauropod' ? { smoothProfile: true, compactChest: true } :
                 postcranialSurface.id === 'powerful-theropod' ? { smoothProfile: true, dorsalWaist: true } : null)[0] || null;
@@ -15045,7 +16956,37 @@ var CLASSIFY_CASES = [
                 if (before.indexOf(part) === -1) dinoMarkSpecialPart(part, id);
               });
             }
+            var reviewedStegosaurArmor = null;
+            function addRegionalStegosaurArmor(mat, core, kind) {
+              if (!dinoStegosaurArmorProfileFor(dn)) return false;
+              if (!reviewedStegosaurArmor) reviewedStegosaurArmor = dinoStegosaurArmorLayout(THREE, dn, {
+                ht: ht, detailScale: detailScale, hip: hip, shoulder: shoulder, tail: tail, pelvisCenter: pelvisCenter,
+                bodyHeight: bodyHeight, bodyDepth: bodyDepth, torsoPoints: torsoPoints,
+                postcranialSurface: postcranialSurface, reconstructionProfile: reconstructionProfile });
+              var id = kind === 'plate' ? 'plates' : 'spikes';
+              if (!hasAnatomyPart(id)) return true;
+              reviewedStegosaurArmor.forEach(function (entry, index) {
+                if (entry.kind !== kind) return;
+                var ornament = new THREE.Mesh(dinoStegosaurArmorGeometry(THREE, entry, core), mat);
+                ornament.position.fromArray(entry.root);
+                ornament.name = dn.id + '-' + kind + '-' + index + (core ? '-core' : '-covering');
+                ornament.castShadow = true; ornament.receiveShadow = true;
+                ornament.userData.dinoFeature = kind === 'plate' ? 'dorsal-plate' : entry.region === 'torso' ? 'dorsal-spike' : 'tail-spike';
+                ornament.userData.dinoRegion = entry.region;
+                ornament.userData.dinoStegosaurArmor = { profile: entry.profile, station: entry.station, side: entry.side,
+                  shape: entry.shape, core: core, sampledArrangement: true, placementIsInterpretive: true, source: entry.source };
+                if (kind === 'plate') ornament.userData.plateRow = entry.side;
+                dinoMarkSpecialPart(ornament, id); model.add(ornament);
+                // Keep the existing hip-pivot tail motion, with a fixed rest pose.
+                if (entry.region === 'tail' && idleMotion.tail) idleMotion.tail.attach(ornament);
+              });
+              model.userData.dinoStegosaurArmor = { profile: dinoStegosaurArmorProfileFor(dn).id,
+                sampledArrangement: true, placementIsInterpretive: true, referenceIndependentOfSkin: true };
+              return true;
+            }
+
             function addDorsalPlates(mat, outerScale) {
+              if (addRegionalStegosaurArmor(mat, mat === boneMat, 'plate')) return;
               if (!hasAnatomyPart('plates')) return;
               for (var plateIndex = 0; plateIndex < 17; plateIndex++) {
                 var u = plateIndex / 16, t = -0.10 + u * 1.52;
@@ -15064,6 +17005,7 @@ var CLASSIFY_CASES = [
               }
             }
             function addTailSpikes(mat, surface) {
+              if (addRegionalStegosaurArmor(mat, !surface, 'spike')) return;
               if (!hasAnatomyPart('spikes')) return;
               var thagomizerBase = new THREE.Vector3().copy(hip).lerp(tail, 0.76);
               [-1, 1].forEach(function (side) {
@@ -15077,17 +17019,18 @@ var CLASSIFY_CASES = [
             }
             function addFrillSurface(mat, size) {
               if (!hasAnatomyPart('frill')) return null;
-              var nestedBone = mat === boneMat && (props.species.id === 'triceratops' || props.species.id === 'styracosaurus' || props.species.id === 'protoceratops');
+              var nestedBone = mat === boneMat && /^(triceratops|styracosaurus|centrosaurus|chasmosaurus|protoceratops)$/.test(props.species.id);
               var frillScale = cranialSurface.frillScale * (nestedBone ? 1 : size);
               var center = head.clone().add(vec(len * 0.025 * frillScale, ht * 0.052, 0));
-              var height = ht * 0.20 * frillScale, width = surfaceBodyDepth * 0.86 * frillScale;
+              var height = ht * 0.20 * frillScale, width = (ceratopsidCranium ? bodyDepth : surfaceBodyDepth) * 0.86 * frillScale;
               var geometry = props.species.id === 'protoceratops' ?
                 dinoProtoceratopsFrillGeometry(THREE,height,width,len * 0.010 * frillScale) :
                 dinoFrillGeometry(THREE, height, width, len * 0.010, props.species.id === 'triceratops');
               if (nestedBone) {
                 var envelope = geometry;
-                if (props.species.id === 'styracosaurus') envelope.userData.dinoDisplayShell.maxThickness = envelope.userData.dinoDisplayShell.thickness * 1.12;
-                geometry = props.species.id === 'styracosaurus' ? dinoStyracosaurusBonyFrillGeometry(THREE,envelope,height) : dinoBonyFrillGeometry(THREE,envelope);
+                var clippedFrillCore = /^(styracosaurus|centrosaurus|chasmosaurus)$/.test(props.species.id);
+                if (clippedFrillCore) envelope.userData.dinoDisplayShell.maxThickness = envelope.userData.dinoDisplayShell.thickness * 1.12;
+                geometry = clippedFrillCore ? dinoStyracosaurusBonyFrillGeometry(THREE,envelope,height) : dinoBonyFrillGeometry(THREE,envelope);
                 envelope.dispose();
               }
               geometry.translate(center.x, center.y, center.z);
@@ -15100,7 +17043,7 @@ var CLASSIFY_CASES = [
             }
             function addStyracosaurusOrnaments(core) {
               if (props.species.id !== 'styracosaurus') return;
-              var landmarks = dinoStyracosaurusOrnaments(THREE,props.species.id,head,surfaceSnout,surfaceHeadHeight,len,ht,cranialSurface.frillScale,surfaceBodyDepth);
+              var landmarks = dinoStyracosaurusOrnaments(THREE,props.species.id,head,surfaceSnout,ceratopsidCranium ? ceratopsidCranium.height : surfaceHeadHeight,len,ht,cranialSurface.frillScale,ceratopsidCranium ? bodyDepth : surfaceBodyDepth);
               landmarks.forEach(function (landmark) {
                 var part = landmark.placement === 'frill' ? 'frill' : 'horns';
                 if (!hasAnatomyPart(part)) return;
@@ -15124,17 +17067,27 @@ var CLASSIFY_CASES = [
             var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (/Tyrannosaur|Abelisaur/i.test(cladeName) ? 0.12 : (isTheropod ? 0.085 : (isSauropod ? 0.030 : 0.055)))) * surfaceHeadFactor * cranialSurface.headHeightScale;
             var surfaceHeadDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.082 : 0.050)) * surfaceHeadFactor * cranialSurface.headDepthScale;
             var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));
+            if (ceratopsidCranium) {
+              surfaceHeadLength = ceratopsidCranium.length * surfaceHypothesis.headSoftTissueScale;
+              surfaceHeadHeight = ceratopsidCranium.height * surfaceHypothesis.headSoftTissueScale;
+              surfaceHeadDepth = ceratopsidCranium.depth * surfaceHypothesis.headSoftTissueScale;
+              surfaceSnout.copy(snout);
+            }
             var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
+            if (matureTyrannosaurPose.active) neckBaseRadius *= 1.20;
             var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
-            neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.66);
-            var cervicalEnvelope = dinoCervicalEnvelope(THREE, shoulder, head, surfaceBodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, cladeName);
+            neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * (matureTyrannosaurPose.active ? 0.90 : 0.66));
+            var cervicalEnvelope = dinoCervicalEnvelope(THREE, shoulder, head, surfaceBodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, cladeName, matureTyrannosaurPose.active);
+            if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) cervicalEnvelope = dinoSauropodBodyNeck(THREE,dn,shoulder,head,bodyHeight,neckBaseRadius,neckTipRadius);
             var neckPoints = cervicalEnvelope.points;
             var neckRadii = cervicalEnvelope.radii;
+            if (matureTyrannosaurPose.active) model.userData.dinoCervicalProfile = { points: neckPoints.map(function (point) { return point.toArray(); }), radii: neckRadii.slice(), inferred: true };
             var neckJunction = dinoNeckJunction(THREE, neckPoints, neckRadii, surfaceHeadLength * 1.10);
             var cranialShape = { center: head.clone().lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, 0)),
               length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale,
-              compactRostrum: cranialSurface.id === 'slender-theropod' };
-            var headShell = isTheropod ? addSoftTissueChain([
+              compactRostrum: cranialSurface.id === 'slender-theropod', robustSection: cranialSurface.matureTyrannosaur === true };
+            var ceratopsidHeadEnvelope = ceratopsidCranium ? dinoCeratopsidHeadEnvelope(THREE,ceratopsidCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth) : null;
+            var headShell = ceratopsidHeadEnvelope ? addSoftTissueChain(ceratopsidHeadEnvelope.points,ceratopsidHeadEnvelope.radii,headMat,cranialShape)[0] : isTheropod ? addSoftTissueChain([
               neckJunction.point, head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.28, 0, 0))
             ], dinoTheropodCranialRadii(surfaceHeadHeight, surfaceHeadDepth, neckJunction.radius, cranialSurface), headMat, cranialShape)[0] : addSoftTissueChain([
@@ -15149,11 +17102,13 @@ var CLASSIFY_CASES = [
               [surfaceHeadHeight * 0.45 * cranialSurface.muzzleTipScale, surfaceHeadDepth * 0.62 * cranialSurface.muzzleTipScale],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
             ], headMat, cranialShape)[0];
+            if (/^(baryonyx|suchomimus)$/.test(dn.id)) dinoShapeBaryonychineRostrum(THREE, dn, headShell, head, surfaceSnout, 'upper');
             if (headShell) {
               headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface';
               headShell.userData.dinoNeckJunction = { point: neckJunction.point.toArray(), radius: neckJunction.radius, t: neckJunction.t };
             }
             registerCranialMotion(headShell);
+            if (props.showBody && /^(alioramus|qianzhousaurus)$/.test(dn.id)) dinoAddNasalRugosities(THREE, dn, headShell, head, surfaceSnout, surfaceHeadHeight, headMat, false);
               var faceScale = reconstructionProfile.head;
             var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
             var eyeCenterX = head.x - surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale;
@@ -15176,6 +17131,7 @@ var CLASSIFY_CASES = [
                 /Ceratops/i.test(cladeName) && hasAnatomyPart('frill'));
               var neckMeshes = addSoftTissueChain(neckSkinEnvelope.points, neckSkinEnvelope.radii, bodyMat, null,
                 isSauropod ? { smoothProfile: true, taperRoot: true } : null);
+              if (dn.id === 'triceratops' && ceratopsidCranium && neckMeshes[0]) dinoCeratopsidNapeGeometry(THREE,dn,neckMeshes[0],ceratopsidCranium,surfaceHypothesis.neckSoftTissueScale);
               if (neckMeshes[0]) {
                 neckMeshes[0].userData.dinoRegion = 'neck';
                 neckMeshes[0].userData.dinoNeckTip = head.toArray();
@@ -15198,9 +17154,11 @@ var CLASSIFY_CASES = [
               var tailSkinRadii = tailRadii.map(function (r) { return [r * postcranialSurface.tailHeightScale, r * postcranialSurface.tailDepthScale]; });
               tailSkinRadii[0] = [Math.min(tailSkinRadii[0][0] * 1.16, surfaceBodyHeight * 0.70 * 0.92), Math.min(tailSkinRadii[0][1] * 1.16, surfaceBodyDepth * 0.76 * 0.92)];
               var tailSkinEnvelope = dinoTailSkinEnvelope(THREE, tailSkinRoot, hip, tailMidA, tailMidB, tail, tailSkinRadii);
+              if (dn.id === 'spinosaurus') tailSkinEnvelope = dinoSpinosaurusTailEnvelope(THREE, dn, tailSkinEnvelope, hip, tail, ht, surfaceHypothesis.tailSoftTissueScale);
               var tailMeshes = addSoftTissueChain(tailSkinEnvelope.points, tailSkinEnvelope.radii, bodyMat);
               if (tailMeshes[0]) {
                 tailMeshes[0].userData.dinoRegion = 'tail';
+                if (dn.id === 'spinosaurus') tailMeshes[0].userData.dinoDeepTail = { inferred: true, source: 'https://doi.org/10.1038/s41586-020-2190-3', stations: tailSkinEnvelope.points.length };
                 dinoSurfacePartIds(tailMeshes[0], ['tail', 'tail-root']);
                 // Keep the established hip pivot for tail motion and attached details.
                 var tailPivotOffset = tailSkinRoot.clone().sub(hip);
@@ -15397,11 +17355,12 @@ var CLASSIFY_CASES = [
               var jawHeightScale = isTheropod ? Math.min(1.12, cranialSurface.jawHeightScale) : 1;
               var jawMuzzleDepth = isTheropod ? Math.min(1, cranialSurface.muzzleDepthScale * cranialSurface.muzzleBaseScale) : 1;
               var jawMuzzleTip = isTheropod ? Math.min(1, cranialSurface.muzzleHeightScale * cranialSurface.muzzleTipScale) : 1;
-              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale) * jawMuzzleDepth;
+              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale) * jawMuzzleDepth * (ceratopsidCranium ? 1.16 : 1);
               var lowerJawStart = head.clone().lerp(surfaceSnout, 0.12).add(vec(0, -surfaceHeadHeight * 0.44 * Math.min(1, jawHeightScale), 0));
-              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37 * jawMuzzleTip, 0));
+              var lowerJawEnd = head.clone().lerp(surfaceSnout, ceratopsidCranium ? 1.06 : 0.98).add(vec(0, -surfaceHeadHeight * 0.37 * jawMuzzleTip, 0));
               var jawProfile = dinoJawProfile(THREE, lowerJawStart, lowerJawEnd, surfaceHeadHeight * jawHeightScale, jawDepth, surfaceHeadLength);
               var lowerJawShell = addSoftTissueChain(jawProfile.points, jawProfile.radii, headMat)[0];
+              if (/^(baryonyx|suchomimus)$/.test(dn.id)) dinoShapeBaryonychineRostrum(THREE, dn, lowerJawShell, head, surfaceSnout, 'lower');
               addBodyContour(lowerJawShell);
               if (lowerJawShell) {
                 lowerJawShell.userData.dinoRegion = 'head'; lowerJawShell.name = 'lower-jaw-surface';
@@ -15527,6 +17486,10 @@ if (/Ceratops/i.test(cladeName)) {
                 if (hasAnatomyPart('frill') && cranialSurface.frillScale > 0.08) {
                   addFrillSurface(anatomyAccentMat, 1);
                 }
+                if (ceratopsidCranium) {
+                  if (hasAnatomyPart('horns')) dinoAddCeratopsidHorns(THREE,dn,model,ceratopsidCranium,len,keratinMat,false,headShell);
+                  if (dn.id === 'styracosaurus') addStyracosaurusOrnaments(false);
+                } else {
                 if (hasAnatomyPart('horns') && cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (side) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * surfaceHeadDepth * 0.62));
                   dinoSeatHornRoot(THREE, addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06 * detailScale, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024 * detailScale, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)), 'horn'), headShell);
@@ -15535,6 +17498,7 @@ if (/Ceratops/i.test(cladeName)) {
                 else if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) {
                   var noseHornBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.58).add(vec(0, surfaceHeadHeight * 0.60, 0));
                   dinoSeatHornRoot(THREE, addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)), 'horn'), headShell);
+                }
                 }
                 captureCranialMotion(cranialFeatureBefore);
                 } else if (/Stegosaur/i.test(cladeName)) {
@@ -15572,6 +17536,9 @@ if (/Ceratops/i.test(cladeName)) {
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
                   var cranialFeatureBefore = model.children.slice();
                 if (hasAnatomyPart('crest') && cranialSurface.crestMode !== 'none') {
+                  if (/^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id)) {
+                    dinoAddLambeosaurCrest(THREE, dn, model, head, len, ht, reconstructionProfile.head, anatomyAccentMat, false, headShell);
+                  } else {
                   var crestBase = head.clone().add(vec(len * 0.010, surfaceHeadHeight * 0.70, 0));
                   if (cranialSurface.crestMode === 'tube') {
                     var tubularCrest = addSoftTissueCylinder(crestBase, crestBase.clone().add(vec(Math.max(0.24 * detailScale, len * 0.075), Math.max(0.12 * detailScale, ht * 0.060), 0)), Math.max(0.045 * detailScale, ht * 0.020), Math.max(0.026 * detailScale, ht * 0.012), anatomyAccentMat);
@@ -15580,6 +17547,7 @@ if (/Ceratops/i.test(cladeName)) {
                     addEllipsoid(crestBase.clone().add(vec(len * 0.018, ht * 0.040, 0)), vec(Math.max(0.12 * detailScale, len * 0.030), Math.max(0.13 * detailScale, ht * 0.070), Math.max(0.07 * detailScale, surfaceHeadDepth * 0.54)), anatomyAccentMat);
                   } else {
                     addEllipsoid(crestBase.clone().add(vec(-len * 0.010, ht * 0.018, 0)), vec(Math.max(0.08 * detailScale, len * 0.018), Math.max(0.07 * detailScale, ht * 0.035), Math.max(0.06 * detailScale, surfaceHeadDepth * 0.48)), anatomyAccentMat);
+                  }
                   }
                 }
                 dinoTagSpecialParts(cranialFeatureBefore, 'crest');
@@ -15624,19 +17592,21 @@ if (/Ceratops/i.test(cladeName)) {
 
             if (props.showSkeleton) {
               addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.055 * detailScale, ht * 0.019), 1.55, 'dorsal');
-              addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.014 * detailScale, ht * 0.0045), 1.20, 'caudal');
+              addVertebralChain(hip, dn.id === 'spinosaurus' ? hip.clone().lerp(tail, 0.975) : tail, isSauropod ? 18 : 14, dn.id === 'spinosaurus' ? ht * 0.017 : Math.max(0.050 * detailScale, ht * 0.017), dn.id === 'spinosaurus' ? ht * 0.0045 : Math.max(0.014 * detailScale, ht * 0.0045), 1.20, 'caudal');
               var cranialBoneBefore = model.children.slice();
               var skullLength = Math.max(0.20 * detailScale, len * (isSauropod ? 0.040 : 0.066)) * reconstructionProfile.head;
               var skullHeight = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.080 : 0.058)) * reconstructionProfile.head;
               var skullDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.073 : 0.058)) * reconstructionProfile.head;
+              if (ceratopsidCranium) { skullLength=ceratopsidCranium.boneLength; skullHeight=ceratopsidCranium.boneHeight; skullDepth=ceratopsidCranium.boneDepth; }
               var neckAxis = new THREE.Vector3().subVectors(shoulder, head).normalize();
               var axisCenter = skeletalProfile.craniocervicalDetail ? head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.84)) : head.clone();
-              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');
+              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical', matureTyrannosaurPose.active ? dinoCervicalAxisCurve(THREE, cervicalEnvelope, axisCenter) : null);
 
               var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout, skullLength, skullHeight, skullDepth, detailScale, isTheropod);
               var cranialVault = addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);
               var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);
               var cranialRostrum = addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);
+              if (/^(alioramus|qianzhousaurus)$/.test(dn.id)) dinoAddNasalRugosities(THREE, dn, cranialRostrum, head, snout, skullHeight, boneMat, true);
               if (cranialDisplay.refined) {
                 [[cranialVault, 'vault'], [cranialRostrum, 'rostrum']].forEach(function (entry) {
                   if (!entry[0]) return;
@@ -15696,7 +17666,7 @@ if (/Ceratops/i.test(cladeName)) {
                 }
                 var temporalOpening = addSkeletonEllipsoid(head.clone().add(vec(skullLength * 0.30, skullHeight * 0.02, sideZ * 0.96)), vec(skullLength * 0.17, skullHeight * 0.28, Math.max(0.010 * detailScale, skullDepth * 0.14)), skeletonCavityMat);
                 if (temporalOpening) temporalOpening.renderOrder = 13;
-                var nasalOpening = addSkeletonEllipsoid(rostrumCenter.clone().lerp(snout, 0.45).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008 * detailScale, skullDepth * 0.10)), skeletonCavityMat);
+                var nasalOpening = addSkeletonEllipsoid((/^(baryonyx|suchomimus)$/.test(dn.id) ? head.clone().lerp(snout, 0.64) : rostrumCenter.clone().lerp(snout, 0.45)).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008 * detailScale, skullDepth * 0.10)), skeletonCavityMat);
                 if (nasalOpening) nasalOpening.renderOrder = 13;
                 if (skeletalProfile.antorbitalFenestra) {
                   var antorbitalFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(head).lerp(rostrumCenter, 0.62).add(vec(0, -skullHeight * 0.02, skullSide * skullDepth * 0.64)), vec(skullLength * 0.19, skullHeight * (/Spinosaur/i.test(cladeName) ? 0.20 : 0.30), Math.max(0.009 * detailScale, skullDepth * 0.12)), skeletonCavityMat);
@@ -15704,7 +17674,7 @@ if (/Ceratops/i.test(cladeName)) {
                 }
 
                 // Modular cranial frame: homologous load paths remain visible around the fenestrae.
-                var cranialBarRadius = Math.max(0.007 * detailScale, ht * 0.0027);
+                var cranialBarRadius = Math.max(0.007 * (ceratopsidCranium ? Math.min(detailScale,ht / dn.heightM) : detailScale), ht * 0.0027);
                 var jawHinge = head.clone().add(vec(skullLength * 0.34, -skullHeight * 0.52, skullSide * skullDepth * 0.52));
                 var jawTip = snout.clone().add(vec(0, -skullHeight * 0.42, skullSide * skullDepth * 0.38));
                 var premaxillaUpper = snout.clone().add(vec(skullLength * 0.04, skullHeight * 0.18, skullSide * skullDepth * 0.38));
@@ -15783,16 +17753,27 @@ if (/Ceratops/i.test(cladeName)) {
                 if (hasAnatomyPart('frill') && cranialSurface.frillScale > 0.08) {
                   addFrillSurface(boneMat, 0.95);
                 }
+                if (ceratopsidCranium) {
+                  if (hasAnatomyPart('horns')) dinoAddCeratopsidHorns(THREE,dn,model,ceratopsidCranium,len,boneMat,true,null);
+                  if (dn.id === 'styracosaurus') addStyracosaurusOrnaments(true);
+                } else {
                 if (hasAnatomyPart('horns') && cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (hornSide) {
                   var hornCore = head.clone().add(vec(-len * 0.018, ht * 0.055, hornSide * skullDepth * 0.62));
                   dinoMarkSpecialPart(addSkeletonCone(hornCore, hornCore.clone().add(vec(-Math.max(0.10 * detailScale, len * 0.052 * cranialSurface.browHornScale), Math.max(0.05 * detailScale, ht * 0.048 * cranialSurface.browHornScale), hornSide * skullDepth * 0.08 * cranialSurface.browHornScale)), Math.max(0.016 * detailScale, ht * 0.010 * Math.sqrt(cranialSurface.browHornScale)), boneMat), 'horns');
                 });
                 if (props.species.id === 'styracosaurus') addStyracosaurusOrnaments(true);
                 else if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) dinoMarkSpecialPart(addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014 * detailScale, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat), 'horns');
+                }
                 captureCranialMotion(cranialFeatureBefore);
                 } else if (/Spinosaur/i.test(cladeName)) {
-                var spinosaurRostrum = new THREE.Vector3().copy(head).lerp(snout, 0.76);
-                registerCranialMotion(addSkeletonEllipsoid(spinosaurRostrum, vec(skullLength * 0.92, skullHeight * 0.34, skullDepth * 0.46), boneMat));
+                if (/^(baryonyx|suchomimus)$/.test(dn.id)) {
+                  model.children.filter(function (part) { return cranialBoneBefore.indexOf(part) < 0; }).forEach(function (part) {
+                    if (part.isMesh) dinoShapeBaryonychineRostrum(THREE, dn, part, head, snout, part.material === toothMat ? 'bone-tooth' : 'bone');
+                  });
+                } else {
+                  var spinosaurRostrum = new THREE.Vector3().copy(head).lerp(snout, 0.76);
+                  registerCranialMotion(addSkeletonEllipsoid(spinosaurRostrum, vec(skullLength * 0.92, skullHeight * 0.34, skullDepth * 0.46), boneMat));
+                }
                 for (var neuralSpineIndex = 1; neuralSpineIndex < 9; neuralSpineIndex++) {
                   var neuralSpineT = neuralSpineIndex / 9;
                   var neuralSpineBase = new THREE.Vector3().copy(shoulder).lerp(hip, neuralSpineT);
@@ -15806,12 +17787,16 @@ if (/Ceratops/i.test(cladeName)) {
                 addSkeletonEllipsoid(duckBillCenter, vec(skullLength * 0.34, skullHeight * 0.20, skullDepth * 0.92), boneMat);
                 if (hasAnatomyPart('crest') && cranialSurface.crestMode !== 'none') {
                   var crestPartsBefore = model.children.slice();
+                  if (/^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id)) {
+                    dinoAddLambeosaurCrest(THREE, dn, model, head, len, ht, reconstructionProfile.head, boneMat, true, cranialVault);
+                  } else {
                   var crestBaseBone = head.clone().add(vec(skullLength * 0.12, skullHeight * 0.64, 0));
                   if (cranialSurface.crestMode === 'tube') {
                     var crestTipBone = crestBaseBone.clone().add(vec(Math.max(0.18 * detailScale, len * 0.064), Math.max(0.10 * detailScale, ht * 0.058), 0));
                     addSkeletonCone(crestBaseBone, crestTipBone, Math.max(0.038 * detailScale, ht * 0.016), boneMat);
                   } else {
                     addSkeletonEllipsoid(crestBaseBone.clone().add(vec(skullLength * 0.08, skullHeight * 0.24, 0)), vec(skullLength * 0.34, skullHeight * (cranialSurface.crestMode === 'helmet' ? 0.48 : 0.24), skullDepth * 0.48), boneMat);
+                  }
                   }
                   dinoTagSpecialParts(crestPartsBefore, 'crest');
                 }
@@ -15894,6 +17879,7 @@ if (/Ceratops/i.test(cladeName)) {
                     addBone(ribSpine, ribNeck, ribBoneRadius);
                   }
                   var ribPoints = [ribNeck, ribUpper, ribLateral, ribLower, ribVentral];
+                  if (/^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id)) ribPoints = dinoCeratopsidBodyRib(THREE, dn, ribPoints, ribSpine, ribT);
                   addCurvedBone(ribPoints, ribBoneRadius, ribBoneRadius * 0.55, boneMat);
                   ribDistalAnchors[ribIndex][ribSide > 0 ? 1 : 0] = ribVentral.clone();
                   if (skeletalProfile.uncinateProcesses && ribIndex >= 1 && ribIndex < 1 + skeletalProfile.uncinateCount) {
@@ -15931,14 +17917,20 @@ if (/Ceratops/i.test(cladeName)) {
                 var cervicalRibBase = new THREE.Vector3().copy(shoulder).lerp(head, cervicalRibT);
                 var cervicalRibLength = Math.max(0.10 * detailScale, len * (isSauropod ? 0.030 : 0.016)) * (1 - cervicalRibT * 0.42);
                 [-1, 1].forEach(function (cervicalSide) {
+                  if (/^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id) && isSauropod) {
+                    var reviewedCervicalRib = dinoSauropodBodyRib(THREE,dn,neckPoints,cervicalRibT,len,ht,bodyHeight,cervicalSide);
+                    addBone(reviewedCervicalRib.base,reviewedCervicalRib.tip,reviewedCervicalRib.radius);
+                  } else {
                   var cervicalRibTip = cervicalRibBase.clone().add(vec(cervicalRibLength, -Math.max(0.025 * detailScale, ht * 0.012), cervicalSide * Math.max(0.035 * detailScale, bodyDepth * 0.16)));
                   addBone(cervicalRibBase, cervicalRibTip, Math.max(0.005 * detailScale, ht * 0.0020));
+                  }
                 });
               }
               if (skeletalProfile.axialPneumaticity) {
                 for (var pneumaticIndex = 1; pneumaticIndex <= skeletalProfile.pneumaticCervicals; pneumaticIndex++) {
                   var pneumaticT = pneumaticIndex / (skeletalProfile.pneumaticCervicals + 1);
                   var pneumaticCenter = new THREE.Vector3().copy(shoulder).lerp(head, pneumaticT);
+                  if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) pneumaticCenter = new THREE.CatmullRomCurve3(neckPoints,false,'centripetal').getPoint(pneumaticT);
                   [-1, 1].forEach(function (pneumaticSide) {
                     var pneumaticSideOffset = pneumaticSide * Math.max(0.020 * detailScale, ht * 0.008);
                     var pneumaticFossa = addSkeletonEllipsoid(pneumaticCenter.clone().add(vec(0, 0, pneumaticSideOffset)), vec(Math.max(0.025 * detailScale, ht * 0.010), Math.max(0.016 * detailScale, ht * 0.006), Math.max(0.008 * detailScale, ht * 0.003)), skeletonCavityMat);
@@ -15965,10 +17957,13 @@ if (/Ceratops/i.test(cladeName)) {
                   });
                 }
               }
-              for (var chevronIndex = 1; chevronIndex <= skeletalProfile.chevronCount; chevronIndex++) {
-                var chevronT = chevronIndex / (skeletalProfile.chevronCount + 2);
+              var displayedChevronCount = dn.id === 'spinosaurus' ? 12 : skeletalProfile.chevronCount;
+              for (var chevronIndex = 1; chevronIndex <= displayedChevronCount; chevronIndex++) {
+                var chevronT = chevronIndex / (displayedChevronCount + 2);
                 var chevronBase = new THREE.Vector3().copy(hip).lerp(tail, chevronT);
                 var chevronLength = Math.max(0.055 * detailScale, bodyHeight * 0.32 * (1 - chevronT * 0.72));
+                var deepChevron = dn.id === 'spinosaurus' ? dinoSpinosaurusTailSection(dn, chevronT, ht) : null;
+                if (deepChevron) chevronLength = deepChevron.height * 0.68;
                 var chevronRadius = Math.max(0.004 * detailScale, ht * 0.0020) * (1 - chevronT * 0.28);
                 var chevronRootSpread = Math.max(0.012 * detailScale, ht * 0.0050) * (1 - chevronT * 0.52);
                 var chevronLeftRoot = chevronBase.clone().add(vec(0, -chevronLength * 0.05, -chevronRootSpread));
@@ -15977,7 +17972,11 @@ if (/Ceratops/i.test(cladeName)) {
                 var chevronTip = chevronBase.clone().add(vec(len * 0.006, -chevronLength, 0));
                 addTaperedBoneSegment(chevronLeftRoot, chevronJunction, chevronRadius * 1.10, chevronRadius, boneMat);
                 addTaperedBoneSegment(chevronRightRoot, chevronJunction, chevronRadius * 1.10, chevronRadius, boneMat);
-                addTaperedBoneSegment(chevronJunction, chevronTip, chevronRadius, chevronRadius * 0.52, boneMat);
+                var haemalSpine = addTaperedBoneSegment(chevronJunction, chevronTip, chevronRadius, chevronRadius * 0.52, boneMat);
+                if (deepChevron && haemalSpine) {
+                  haemalSpine.name = 'spinosaurus-elongate-chevron'; haemalSpine.userData.dinoRegion = 'tail'; haemalSpine.userData.dinoPartIds = ['tail', 'tail-root'];
+                  haemalSpine.userData.dinoTailSupport = { start: chevronJunction.toArray(), end: chevronTip.toArray(), station: chevronT, inferred: true };
+                }
                 addSkeletonEllipsoid(chevronLeftRoot, vec(chevronRadius * 1.48, chevronRadius * 0.78, chevronRadius * 1.18), jointMat);
                 addSkeletonEllipsoid(chevronRightRoot, vec(chevronRadius * 1.48, chevronRadius * 0.78, chevronRadius * 1.18), jointMat);
               }
@@ -16025,6 +18024,7 @@ if (/Ceratops/i.test(cladeName)) {
               var shoulderHalf = Math.max(0.13 * detailScale, bodyDepth * 0.66);
               [-1, 1].forEach(function (girdleSide) {
                 var shoulderSocket = shoulder.clone().add(vec(0, 0, girdleSide * shoulderHalf));
+                if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) shoulderSocket = dinoSauropodBodyGlenoid(THREE,dn,shoulder,bodyHeight,bodyDepth,detailScale,skeletalProfile.stanceWidth,girdleSide);
                 var scapulaMid = shoulder.clone().add(vec(len * 0.046, bodyHeight * 0.30, girdleSide * shoulderHalf * 0.80));
                 var scapulaTip = shoulder.clone().add(vec(len * 0.115, bodyHeight * 0.56, girdleSide * shoulderHalf * 0.68));
                 var scapularWidth = Math.max(0.050 * detailScale, bodyHeight * 0.15) * skeletalProfile.scapularBladeScale;
@@ -16147,30 +18147,27 @@ if (/Ceratops/i.test(cladeName)) {
                 for (var metacarpalIndex = 0; metacarpalIndex < digitCount; metacarpalIndex++) {
                   var manusAngle = -Math.PI * 0.62 + (Math.PI * 1.24 * metacarpalIndex / Math.max(1, digitCount - 1));
                   var manusOffsetX = Math.cos(manusAngle) * manusRadius * 0.34;
-                  var manusOffsetZ = Math.sin(manusAngle) * manusRadius;
+                  var manusOffsetZ = sideSign * Math.sin(manusAngle) * manusRadius;
                   var metacarpalTop = root.clone().add(vec(manusOffsetX + baseLength * 0.10, Math.max(0.060 * detailScale, ht * 0.024), manusOffsetZ * 0.84));
                   var metacarpalBase = root.clone().add(vec(manusOffsetX - baseLength * 0.16, 0.010, manusOffsetZ * 1.04));
                   addTaperedBoneSegment(metacarpalTop, metacarpalBase, Math.max(0.014 * detailScale, ht * 0.0052), Math.max(0.010 * detailScale, ht * 0.0038), boneMat);
                   addLimbJoint(metacarpalBase, new THREE.Vector3().subVectors(metacarpalBase, metacarpalTop), Math.max(0.013 * detailScale, ht * 0.0048), 1.10);
                   if (metacarpalIndex < ungualCount) {
-                    var manusClawTip = metacarpalBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010 * detailScale, ht * 0.004), sideSign * manusOffsetZ * 0.05));
+                    var manusClawTip = metacarpalBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010 * detailScale, ht * 0.004), manusOffsetZ * 0.05));
                     addSkeletonCone(metacarpalBase, manusClawTip, Math.max(0.006 * detailScale, ht * 0.0024), toothMat);
 
                   }
                 }
                 return;
               }
-              var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;
               for (var digitIndex = 0; digitIndex < digitCount; digitIndex++) {
                 if (digitIndex === 0 && dinoIguanodontThumbEnabled(dn, front)) continue;
-                var digitOffset = digitIndex - (digitCount - 1) * 0.5;
-                var digitSpread = digitOffset * Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
-                var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10) * (front && skeletalProfile.compactManus ? 0.86 : 1);
-                var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 0;
-                var metapodialEnd = root.clone().add(vec(-digitLength * 0.30, sickleDigit ? Math.max(0.040 * detailScale, ht * 0.016) : 0.014, digitSpread * 0.46));
-                addTaperedBoneSegment(root.clone().add(vec(0, Math.max(0.012 * detailScale, ht * 0.004), digitSpread * 0.10)), metapodialEnd, Math.max(0.010 * detailScale, ht * 0.0038), Math.max(0.008 * detailScale, ht * 0.0030), boneMat);
+                var digitLayout = dinoDistalDigitLandmarks(THREE, root, baseLength * (front ? 1 : (skeletalProfile.distalLegScale || 1)), Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)), ht, detailScale, front, sideSign, digitIndex, digitCount, skeletalProfile.compactManus, cladeName);
+                var digitSpread = digitLayout.spread, digitLength = digitLayout.length, sickleDigit = digitLayout.raised;
+                var metapodialEnd = digitLayout.metapodialEnd;
+                addTaperedBoneSegment(digitLayout.metapodialRoot, metapodialEnd, Math.max(0.010 * detailScale, ht * 0.0038), Math.max(0.008 * detailScale, ht * 0.0030), boneMat);
                 addLimbJoint(metapodialEnd, new THREE.Vector3().subVectors(metapodialEnd, root), Math.max(0.010 * detailScale, ht * 0.0038), 1.12);
-                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11 * detailScale, ht * 0.050) : 0.004, digitSpread));
+                var digitTip = digitLayout.tip;
                 var visibleUngual = digitIndex < ungualCount;
                 var formulaCount = phalangealFormula && phalangealFormula[digitIndex] ? phalangealFormula[digitIndex] : (visibleUngual ? 3 : 2);
                 var nonUngualCount = Math.max(0, Math.min(4, formulaCount - 1));
@@ -16184,7 +18181,7 @@ if (/Ceratops/i.test(cladeName)) {
                   if (phalanxIndex < nonUngualCount - 1) addLimbJoint(phalanxEnd, new THREE.Vector3().subVectors(phalanxEnd, previousPhalanx), phalanxRadius * 1.34, 1.18);
                   previousPhalanx = phalanxEnd;
                 }
-                var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.18), sickleDigit ? -Math.max(0.10 * detailScale, ht * 0.045) : -Math.max(0.015 * detailScale, ht * 0.006), sideSign * digitSpread * 0.05));
+                var clawTip = digitLayout.clawTip;
                 if (visibleUngual) {
                   addSkeletonCone(digitTip, clawTip, Math.max(0.005 * detailScale, ht * 0.0022), toothMat);
 
@@ -16194,8 +18191,8 @@ if (/Ceratops/i.test(cladeName)) {
                 }
               }
               if (!front && skeletalProfile.hallux) {
-                var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025 * detailScale, ht * 0.010), 0));
-                var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015 * detailScale, ht * 0.006), sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
+                var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025 * detailScale, ht * 0.010), -sideSign * bodyDepth * 0.025));
+                var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015 * detailScale, ht * 0.006), -sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
                 addTaperedBoneSegment(halluxBase, halluxTip, Math.max(0.007 * detailScale, ht * 0.0027), Math.max(0.005 * detailScale, ht * 0.0020), boneMat);
                 addLimbJoint(halluxBase, new THREE.Vector3().subVectors(halluxTip, halluxBase), Math.max(0.009 * detailScale, ht * 0.0034), 1.08);
               }
@@ -16273,22 +18270,21 @@ if (/Ceratops/i.test(cladeName)) {
                 return;
               }
               // Non-columnar feet keep articulated, unequal digits and raised paravian digit II.
-              var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;
               tagDistalSurface(addEllipsoid(root.clone().add(vec(-baseLength * 0.12, Math.max(0.020 * detailScale, ht * 0.008), 0)), vec(baseLength * (front ? 0.34 : 0.42) * (distalScale || 1), Math.max(0.026 * detailScale, ht * 0.011), padDepth), headMat), front, sideSign, [partId], 'digital-pad');
               var digitAnchorAdded = false, clawAnchorAdded = false;
               for (var digitIndex = 0; digitIndex < digitCount; digitIndex++) {
                 if (digitIndex === 0 && dinoIguanodontThumbEnabled(dn, front)) continue;
-                var digitOffset = digitIndex - (digitCount - 1) * 0.5;
-                var digitSpread = digitOffset * Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
-                var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10) * (front && skeletalProfile.compactManus ? 0.86 : 1) * (distalScale || 1);
-                var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 0;
+                var digitLayout = dinoDistalDigitLandmarks(THREE, root, baseLength * (distalScale || 1), Math.max(0.045 * detailScale, bodyDepth * (front ? 0.14 : 0.19)), ht, detailScale, front, sideSign, digitIndex, digitCount, skeletalProfile.compactManus, cladeName);
+                var digitSpread = digitLayout.spread, digitLength = digitLayout.length, sickleDigit = digitLayout.raised;
                 var digitBase = root.clone().add(vec(-digitLength * 0.12, Math.max(0.018 * detailScale, ht * 0.007), digitSpread * 0.12));
-                var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11 * detailScale, ht * 0.050) : Math.max(0.012 * detailScale, ht * 0.0045), digitSpread));
+                var digitTip = digitLayout.tip.clone();
+                if (!sickleDigit) digitTip.y += Math.max(0.012 * detailScale, ht * 0.0045) - 0.004 * detailScale;
                 var digitRadius = Math.max(0.012 * detailScale, ht * (front ? 0.0048 : 0.0062));
                 tagDistalSurface(addSoftTissueCylinder(digitBase, digitTip, digitRadius * 1.18, digitRadius * 0.72, headMat), front, sideSign, [partId, digitId], 'digit-envelope');
                 if (!digitAnchorAdded && !sickleDigit) { addBodyPartAnchor(digitId, digitBase.clone().lerp(digitTip, 0.65)); digitAnchorAdded = true; }
                 if (digitIndex < ungualCount) {
-                  var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.20), sickleDigit ? -Math.max(0.10 * detailScale, ht * 0.045) : -Math.max(0.015 * detailScale, ht * 0.006), sideSign * digitSpread * 0.05));
+                  var clawTip = digitLayout.clawTip.clone();
+                  clawTip.y += digitTip.y - digitLayout.tip.y;
                   tagDistalSurface(addKeratinCone(digitTip, new THREE.Vector3().copy(digitTip).lerp(clawTip, 1.12), Math.max(0.007 * detailScale, ht * 0.0030)), front, sideSign, [partId, digitId, 'claws'], 'keratin-claw');
                   if (!clawAnchorAdded) { addBodyPartAnchor('claws', digitTip.clone().lerp(clawTip, 0.45)); clawAnchorAdded = true; }
                 } else {
@@ -16297,10 +18293,10 @@ if (/Ceratops/i.test(cladeName)) {
                 }
               }
               if (!front && skeletalProfile.hallux) {
-                var halluxBase = root.clone().add(vec(baseLength * 0.08, Math.max(0.025 * detailScale, ht * 0.010), 0));
-                var halluxTip = root.clone().add(vec(baseLength * 0.38, Math.max(0.015 * detailScale, ht * 0.006), sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
+                var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025 * detailScale, ht * 0.010), -sideSign * bodyDepth * 0.025));
+                var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015 * detailScale, ht * 0.006), -sideSign * Math.max(0.025 * detailScale, bodyDepth * 0.08)));
                 tagDistalSurface(addSoftTissueCylinder(halluxBase, halluxTip, Math.max(0.009 * detailScale, ht * 0.0036), Math.max(0.006 * detailScale, ht * 0.0025), headMat), front, sideSign, [partId, 'toes'], 'hallux-envelope');
-                tagDistalSurface(addKeratinCone(halluxTip, halluxTip.clone().add(vec(baseLength * 0.16, -Math.max(0.012 * detailScale, ht * 0.005), sideSign * Math.max(0.006 * detailScale, bodyDepth * 0.018))), Math.max(0.006 * detailScale, ht * 0.0024)), front, sideSign, [partId, 'toes', 'claws'], 'keratin-claw');
+                tagDistalSurface(addKeratinCone(halluxTip, halluxTip.clone().add(vec(baseLength * 0.16, -Math.max(0.012 * detailScale, ht * 0.005), -sideSign * Math.max(0.006 * detailScale, bodyDepth * 0.018))), Math.max(0.006 * detailScale, ht * 0.0024)), front, sideSign, [partId, 'toes', 'claws'], 'keratin-claw');
               }
             }
             function surfaceAnchor(surface, center, outward) {
@@ -16339,9 +18335,13 @@ if (/Ceratops/i.test(cladeName)) {
             }
             function addContourPlumage(surface, count, length, dorsalOnly, minX, maxU, taper) {
               if (!surface || !contourCoatMat) return;
+              // 1.5 times as many 18-vertex vanes fit the former 27-vertex budget.
+              // Every tract remains one mesh with the same rooted pigment mapping.
+              var pennaceousCoat = skeletalProfile.integumentMode === 'pennaceous';
+              var coatRoots = Math.round(count * surfaceHypothesis.filamentCoverage);
               var geometry = dinoCoatGeometry(THREE, surface.geometry, {
-                count: count * surfaceHypothesis.filamentCoverage, length: length * (0.70 + surfaceHypothesis.filamentCoverage * 0.30),
-                pennaceous: skeletalProfile.integumentMode === 'pennaceous', seed: integumentSeed + count,
+                count: pennaceousCoat ? Math.floor(coatRoots * 1.5) : coatRoots, length: length * (0.70 + surfaceHypothesis.filamentCoverage * 0.30),
+                pennaceous: pennaceousCoat, streamlined: pennaceousCoat, openVane: !!integument.openVaneContour, seed: integumentSeed + count,
                 dorsalOnly: dorsalOnly, minX: minX, maxU: maxU, taper: taper
               });
               if (!geometry) return;
@@ -16470,6 +18470,33 @@ if (/Ceratops/i.test(cladeName)) {
               var knee = vec(x + (front ? -len * 0.012 : (isTheropod ? -len * 0.043 : len * 0.018)) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
               var ankle = vec(x + (front ? -len * 0.026 : len * (isTheropod ? 0.025 : 0.050) * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
               var foot = vec(x + (front ? -len * 0.050 : len * (isTheropod ? 0.005 : 0.065) * distalScale) * posture.footReach * columnFactor, Math.max(0.008, ht * 0.010), z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
+              var ceratopsidBodyLimb = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidBodyLimb(THREE, dn, {
+                len: len, ht: ht, detailScale: detailScale, x: x, z: z, front: front, shoulder: shoulder, hip: hip,
+                bodyHeight: bodyHeight, bodyDepth: bodyDepth, topPoint: topPoint, knee: knee, ankle: ankle, foot: foot }) : null;
+              if (ceratopsidBodyLimb) {
+                topPoint = ceratopsidBodyLimb.topPoint; knee = ceratopsidBodyLimb.knee; ankle = ceratopsidBodyLimb.ankle; foot = ceratopsidBodyLimb.foot;
+                if (model.userData.dinoFullBodyAnatomy) model.userData.dinoFullBodyAnatomy.limbs.push({ front: !!front, side: sideSign,
+                  top: topPoint.toArray(), joint: knee.toArray(), distal: ankle.toArray(), contact: foot.toArray() });
+              }
+              var ornithopodBodyLimb = /^(iguanodon|edmontosaurus|maiasaura)$/.test(dn.id) ? dinoOrnithopodBodyLimb(THREE, dn, {
+                len: len, ht: ht, detailScale: detailScale, x: x, z: z, front: front, shoulder: shoulder, hip: hip,
+                bodyHeight: bodyHeight, bodyDepth: bodyDepth, topPoint: topPoint, knee: knee, ankle: ankle, foot: foot }) : null;
+              if (ornithopodBodyLimb) {
+                topPoint = ornithopodBodyLimb.topPoint; knee = ornithopodBodyLimb.knee; ankle = ornithopodBodyLimb.ankle; foot = ornithopodBodyLimb.foot;
+                if (model.userData.dinoFullBodyAnatomy) {
+                  var ornithopodLimbRecords = model.userData.dinoFullBodyAnatomy.limbs || [];
+                  ornithopodLimbRecords.push({ front: !!front, side: sideSign, top: topPoint.toArray(), joint: knee.toArray(), distal: ankle.toArray(), contact: foot.toArray() });
+                  model.userData.dinoFullBodyAnatomy.limbs = ornithopodLimbRecords;
+                }
+              }
+              var ornithopodBoneDetailScale = ornithopodBodyLimb || ceratopsidBodyLimb || (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) ? Math.min(detailScale, ht / dn.heightM) : detailScale;
+              if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) {
+                var reviewedSauropodLimb = dinoSauropodBodyLimb(THREE,dn,{ len:len,ht:ht,detailScale:detailScale,x:x,z:z,front:front,shoulder:shoulder,hip:hip,bodyHeight:bodyHeight,bodyDepth:bodyDepth,topPoint:topPoint,knee:knee,ankle:ankle,foot:foot });
+                if (reviewedSauropodLimb) {
+                  topPoint = reviewedSauropodLimb.topPoint; knee = reviewedSauropodLimb.knee; ankle = reviewedSauropodLimb.ankle; foot = reviewedSauropodLimb.foot;
+                  if (model.userData.dinoFullBodyAnatomy) model.userData.dinoFullBodyAnatomy.limbs.push({ front:front,side:sideSign,top:topPoint.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray() });
+                }
+              }
               var footSurfaceProfile = dinoFootSurfaceProfileFor(dn, skeletalProfile, front);
               var contactX = footSurfaceProfile.padded ? Math.max(0.040 * detailScale, ht * footSurfaceProfile.lengthScale, bodyDepth * (front ? 0.20 : 0.23)) : Math.max(0.075 * detailScale, len * (front ? 0.018 : 0.026));
               var contactZ = footSurfaceProfile.padded ? Math.max(0.042 * detailScale, ht * footSurfaceProfile.widthScale, bodyDepth * (front ? 0.20 : 0.23)) : Math.max(0.040 * detailScale, bodyDepth * (front ? 0.12 : 0.16));
@@ -16484,14 +18511,19 @@ if (/Ceratops/i.test(cladeName)) {
                 limbAnchors.push(addBodyPartAnchor('knee', knee));
                 limbAnchors.push(addBodyPartAnchor('ankle', ankle));
               }
-              var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
-              var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
+              var upperRadius = Math.max(0.034 * ornithopodBoneDetailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
+              var lowerRadius = Math.max(0.028 * ornithopodBoneDetailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
               var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;
               addLongBone(topPoint, knee, upperRadius, upperBoneBow, front ? -sideSign : sideSign, front ? 1.42 : 1.30, front ? 1.22 : 1.34);
               addLongBone(knee, ankle, lowerRadius, skeletalProfile.columnarLimbs ? 0.002 : upperBoneBow * 0.42, -sideSign, 1.34, 1.18);
               var pairedOffset = sideSign * Math.max(0.018 * detailScale, bodyDepth * 0.075);
+              if (ornithopodBodyLimb || ceratopsidBodyLimb) pairedOffset *= 0.60;
               var companionProximal = knee.clone().add(vec(front ? -lowerRadius * 0.22 : lowerRadius * 0.18, lowerRadius * 0.16, pairedOffset * 0.54));
               var companionDistal = ankle.clone().add(vec(0, 0, pairedOffset * 0.82));
+              if (ceratopsidBodyLimb && front) {
+                companionProximal.x = knee.x + lowerRadius * 0.22;
+                companionDistal.x += lowerRadius * 0.18;
+              }
               addLongBone(companionProximal, companionDistal, Math.max(0.008 * detailScale, lowerRadius * skeletalProfile.companionBoneScale), skeletalProfile.columnarLimbs ? 0.001 : 0.006, sideSign, 1.28, 1.10);
               if (front) {
                 var deltopectoralBase = new THREE.Vector3().copy(topPoint).lerp(knee, 0.24);
@@ -16515,9 +18547,9 @@ if (/Ceratops/i.test(cladeName)) {
               } else {
                 addBone(ankle, foot, Math.max(0.016 * detailScale, ht * 0.0065) * limbRobustness);
               }
-              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046 * detailScale, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);
-              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050 * detailScale, ht * 0.017) * limbRobustness, 1.34);
-              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * detailScale, ht * 0.012) * limbRobustness, 1.20);
+              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046 * ornithopodBoneDetailScale, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);
+              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050 * ornithopodBoneDetailScale, ht * 0.017) * limbRobustness, 1.34);
+              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * ornithopodBoneDetailScale, ht * 0.012) * limbRobustness * (ceratopsidBodyLimb ? 0.94 : 1), 1.20);
               addDigitFan(foot, front, sideSign);
               addSoftTissueDigitFan(foot, front, sideSign, distalScale);
               if (dinoIguanodontThumbEnabled(dn, front)) addIguanodontThumb(foot, sideSign, limbAnchors.find(function (anchor) { return anchor && anchor.userData.dinoBodyPart === 'hand'; }));
@@ -16598,16 +18630,26 @@ if (/Ceratops/i.test(cladeName)) {
                 var handWingProfile = handWingProfileFor(dn, surfaceHypothesis);
                 var handLength = Math.max(0.07 * detailScale, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
                 addBodyPartAnchor('hand', wrist.clone().add(vec(-handLength * 0.62, -handLength * 0.10, 0)));
-                if (props.showBody) addBodyContour(addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, Math.max(0.014 * detailScale, ht * 0.0055), Math.max(0.025 * detailScale, bodyDepth * 0.085)), headMat));
+                if (props.showBody) {
+                  var palmThickness = Math.max(0.014 * detailScale, ht * 0.0055), palmWidth = Math.max(0.025 * detailScale, bodyDepth * 0.085);
+                  var palmSurface = addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, wingRestProfile ? palmThickness : palmWidth, wingRestProfile ? palmWidth : palmThickness), headMat);
+                  palmSurface.userData.dinoRegion = 'hand-' + armSide;
+                  dinoSurfacePartIds(palmSurface, ['hand', 'wrist', 'fingers']);
+                  addBodyContour(palmSurface);
+                }
                 for (var handDigitIndex = 0; handDigitIndex < handDigits; handDigitIndex++) {
-                  var handSpread = (handDigitIndex - (handDigits - 1) * 0.5) * Math.max(0.025 * detailScale, bodyDepth * 0.10);
+                  var manualLayout = dinoManualDigitLandmarks(THREE, wrist, handLength, Math.max(0.025 * detailScale, bodyDepth * 0.10), handDigitIndex, handDigits, armSide, !!wingRestProfile);
                   var manualFormulaCount = skeletalProfile.manualPhalanxFormula && skeletalProfile.manualPhalanxFormula[handDigitIndex] ? skeletalProfile.manualPhalanxFormula[handDigitIndex] : 3;
                   var manualUngualVisible = handDigitIndex < skeletalProfile.manualUnguals;
                   var manualNonUngualCount = Math.max(0, Math.min(4, manualFormulaCount - 1));
-                  var metacarpalEnd = wrist.clone().add(vec(-handLength * 0.28, -handLength * 0.035, handSpread * 0.42));
-                  var fingerTip = wrist.clone().add(vec(-handLength, -handLength * 0.14, handSpread * 1.22));
+                  var metacarpalEnd = manualLayout.metacarpalEnd;
+                  var fingerTip = manualLayout.tip;
                   if (props.showBody) {
                     var fingerShell = addSoftTissueCylinder(metacarpalEnd, fingerTip, Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.005 * detailScale, ht * 0.0021), headMat);
+                    if (fingerShell) {
+                      fingerShell.userData.dinoRegion = 'hand-' + armSide;
+                      dinoSurfacePartIds(fingerShell, ['hand', 'fingers', 'wrist']);
+                    }
                     addBodyContour(fingerShell);
                     if (fingerShell && handWingProfile && handDigitIndex === 1) {
                       fingerShell.userData.dinoRegion = 'hand-' + armSide;
@@ -16621,7 +18663,7 @@ if (/Ceratops/i.test(cladeName)) {
                   for (var manualPhalanxIndex = 0; manualPhalanxIndex < manualNonUngualCount; manualPhalanxIndex++) {
                     var manualPhalanxT = (manualPhalanxIndex + 1) / manualNonUngualCount;
                     var manualPhalanxEnd = new THREE.Vector3().copy(metacarpalEnd).lerp(fingerTip, manualPhalanxT);
-                    manualPhalanxEnd.y -= Math.sin(Math.PI * manualPhalanxT) * handLength * 0.035;
+                    manualPhalanxEnd.addScaledVector(manualLayout.palmNormal, Math.sin(Math.PI * manualPhalanxT) * handLength * 0.035);
                     var manualPhalanxRadius = Math.max(0.0045 * detailScale, ht * (0.0023 - manualPhalanxIndex * 0.00018));
                     addTaperedBoneSegment(previousManualPhalanx, manualPhalanxEnd, manualPhalanxRadius * 1.22, manualPhalanxRadius, boneMat);
                     if (manualPhalanxIndex < manualNonUngualCount - 1) addLimbJoint(manualPhalanxEnd, new THREE.Vector3().subVectors(manualPhalanxEnd, previousManualPhalanx), manualPhalanxRadius * 1.30, 1.16);
@@ -16632,19 +18674,20 @@ if (/Ceratops/i.test(cladeName)) {
                     // The giant Therizinosaurus claws belong on the fingers, not the shoulder.
                     // This is a schematic length envelope, not a measured specimen reconstruction.
                     var manualClawLength = dn.id === 'therizinosaurus' ? len * 0.085 : handLength * manualUngualScale;
-                    var handClawTip = fingerTip.clone().add(vec(-manualClawLength, -manualClawLength * 0.30, 0));
+                    var handClawTip = fingerTip.clone().add(vec(-manualClawLength, 0, 0)).addScaledVector(manualLayout.palmNormal, manualClawLength * 0.30);
+                    var manualClawBend = manualLayout.folded ? null : manualLayout.palmNormal.clone().negate();
                     var manualBone = addSkeletonCone(fingerTip, handClawTip, Math.max(0.004 * detailScale, ht * 0.0018), toothMat);
                     var manualClawRadius = dn.id === 'therizinosaurus' ? Math.max(0.021 * detailScale, ht * 0.007) : Math.max(0.006 * detailScale, ht * 0.0025);
                     var manualSheathTip = new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14);
                     if (dn.id === 'therizinosaurus' && manualBone) {
                       manualBone.geometry.dispose();
-                      manualBone.geometry = dinoKeratinGeometry(THREE, manualSheathTip.clone().sub(fingerTip), manualClawRadius * 0.66, 'claw', 1 / 1.14);
+                      manualBone.geometry = dinoKeratinGeometry(THREE, manualSheathTip.clone().sub(fingerTip), manualClawRadius * 0.66, 'claw', 1 / 1.14, manualClawBend);
                       manualBone.position.copy(fingerTip); manualBone.quaternion.identity();
                       manualBone.userData.dinoFeature = 'manual-ungual';
                       manualBone.userData.dinoManualAttachment = { side: armSide, digit: handDigitIndex + 1, root: fingerTip.toArray() };
                     }
                     if (props.showBody) {
-                      var manualClaw = addKeratinCone(fingerTip, manualSheathTip, manualClawRadius);
+                      var manualClaw = addKeratinCone(fingerTip, manualSheathTip, manualClawRadius, undefined, manualClawBend);
                       if (manualClaw) manualClaw.userData.dinoManualAttachment = { side: armSide, digit: handDigitIndex + 1, root: fingerTip.toArray() };
                     }
                   }
@@ -16685,7 +18728,7 @@ if (/Ceratops/i.test(cladeName)) {
             // Fine surface features supply their own centers; hidden layers still
             // have anatomical landmarks so their descriptions remain inspectable.
             var anatomyMeshParts = {};
-            var featurePartIds = { eye: ['eyes'], nostril: ['nostrils'], 'keratin-beak': ['beak'],
+            var featurePartIds = { eye: ['eyes'], nostril: ['nostrils'], 'keratin-beak': ['beak'], 'nasal-rugosity': ['nasal-rugosities'],
               'keratin-horn': ['horns'], 'keratin-claw': ['claws'], 'manual-ungual': ['claws'],
               'dorsal-plate': ['plates'], 'tail-spike': ['spikes'], frill: ['frill'],
               sail: ['sail'], 'sail-support': ['sail'], 'crest-feather': ['feathercrest', 'feathers'],
@@ -16831,7 +18874,7 @@ if (/Ceratops/i.test(cladeName)) {
             }
 
             // Match the exposed tail collar to the established pelvic shading.
-            if (isSauropod && bodyShell && tailMeshes && tailMeshes[0]) {
+            if ((isSauropod || dn.id === 'spinosaurus') && bodyShell && tailMeshes && tailMeshes[0]) {
               tailMeshes[0].userData.dinoTailNormalBlend = dinoBlendSurfaceNormals(THREE,
                 bodyShell, tailMeshes[0], Math.min(tailBaseRadius, surfaceBodyHeight, surfaceBodyDepth) * 0.45, null, true);
             }
@@ -16890,6 +18933,10 @@ if (/Ceratops/i.test(cladeName)) {
               model.userData.anatomyPartBounds[id] = { min: bodyPartStudyBounds[id].min.toArray(), max: bodyPartStudyBounds[id].max.toArray() };
             });
             function boundsForStudy(region) {
+              if (props.shapeStudy && region === 'head') return studyBounds.head;
+              var relation = supportingRelationRef.current;
+              var relationBounds = relation && relation.region === region ? dinoSupportingRelationBounds(THREE, relation, bodyPartStudyBounds) : null;
+              if (relationBounds) return relationBounds;
               var part = bodyPartDefinitions.find(function (item) { return item.id === selectedBodyPartRef.current; });
               return part && part.region === region ? bodyPartStudyBounds[part.id] : studyBounds[region];
             }
@@ -17363,6 +19410,8 @@ if (/Ceratops/i.test(cladeName)) {
                 cameraReadoutRef.current.textContent = nextReadout; lastCameraReadout = nextReadout;
               }
             }
+            var currentCameraFrame = null;
+            var inspectionFrameContext = [props.species.id, props.reconstructionMode, props.stage, props.showHuman, props.showEvidence, props.scanTarget].join('|');
             function updateCameraView(scheduleRender) {
               var trayVisible = !!assemblyTray && (cameraStudy === 'tray' || (cameraStudy === 'full' && !cameraTargetIsEvidence));
               if (assemblyTray) assemblyTray.visible = trayVisible;
@@ -17371,23 +19420,39 @@ if (/Ceratops/i.test(cladeName)) {
               surveyDecorations.visible = cameraStudy !== 'size';
               evidenceDisplayParts.forEach(function (part) { part.visible = cameraStudy !== 'size'; });
               var viewHalf = cameraStudy === 'full' ? (fullOverview ? overviewHalf : modelHalf) : boundsForStudy(cameraStudy).getSize(new THREE.Vector3()).multiplyScalar(0.5);
+              var targetForView = fullOverview ? overviewCenter.clone() : cameraTarget.clone();
+              // Paired evidence inspection uses one spatial frame for both layers.
+              // Bone and skin have different bounds; refitting on each swap would
+              // move the landmark even though the learner kept the same view.
+              var inspectionFrame = partInspectionFrameRef.current;
+              var inspectionPartKey = supportingRelationRef.current ? 'support:' + supportingRelationRef.current.id : selectedBodyPartRef.current;
+              if (inspectionFrame && inspectionFrame.context === inspectionFrameContext && inspectionFrame.part === inspectionPartKey && inspectionFrame.study === cameraStudy) {
+                viewHalf = inspectionFrame.half.clone(); targetForView = inspectionFrame.target.clone();
+              }
+              currentCameraFrame = { context: inspectionFrameContext, part: inspectionPartKey, study: cameraStudy, half: viewHalf.clone(), target: targetForView.clone() };
               var rotatedWidth = Math.abs(Math.cos(yaw)) * viewHalf.x + Math.abs(Math.sin(yaw)) * viewHalf.z;
               var rotatedDepth = Math.abs(Math.sin(yaw)) * viewHalf.x + Math.abs(Math.cos(yaw)) * viewHalf.z;
               var verticalSpan = viewHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
               var depthSpan = viewHalf.y * Math.sin(pitch) + rotatedDepth * Math.cos(pitch);
               var fitDistance = dinoFrameDistance(rotatedWidth, verticalSpan, depthSpan, camera.fov, camera.aspect);
               var distance = Math.max(cameraStudy === 'full' ? 0.4 : 0.015, fitDistance) * zoom * (cameraTargetIsEvidence ? 0.76 : 1);
-              var targetForView = fullOverview ? overviewCenter.clone() : cameraTarget.clone();
               targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
               camera.position.set(targetForView.x, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
               camera.near = Math.max(cameraStudy === 'full' ? 0.005 : 0.0001, distance / 500);
               camera.far = Math.max(200, distance * 8, len * 20);
               camera.updateProjectionMatrix(); camera.lookAt(targetForView); camera.updateMatrixWorld(true);
-              yawRef.current.pitch = pitch; yawRef.current.zoom = zoom;
+              yawRef.current.value = yaw; yawRef.current.pitch = pitch; yawRef.current.zoom = zoom;
+              model.userData.dinoShapeComparison = props.shapeStudy ? { key: props.shapeStudy.key, family: props.shapeStudy.family.id, reference: props.shapeStudy.a.id, comparison: props.shapeStudy.b.id, active: props.shapeStudy.active, species: props.species.id, region: props.shapeStudy.region, yaw: yaw, pitch: pitch, zoom: zoom, independentlyFitted: true, hypothesis: props.reconstructionMode } : null;
+              if (model.userData.dinoShapeComparison) {
+                var liveStudy = shapeStudyRef.current;
+                model.userData.dinoShapeComparison.lens = liveStudy && liveStudy.lens ? liveStudy.lens.id : null;
+                model.userData.dinoShapeComparison.landmarkIds = dinoShapeStudyLandmarkIds(liveStudy, bodyPartDefinitions).filter(function (id) { return anchorsForPart(id).length > 0; });
+              }
               updateCameraReadout();
               if (scheduleRender !== false) requestSceneRender();
             }
             activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy) {
+              partInspectionFrameRef.current = null;
               if (nextStudy) cameraStudy = studyBounds[nextStudy] ? nextStudy : 'full';
               yawRef.current.study = cameraStudy;
               setStudyView({ speciesId: props.species.id, region: cameraStudy });
@@ -17399,6 +19464,7 @@ if (/Ceratops/i.test(cladeName)) {
               updateCameraView(); setStatus(message);
             };
             activeCameraControl.focusEvidence = function () {
+              partInspectionFrameRef.current = null;
               if (!evidenceAnchorPoints[scanTargetId]) return;
               cameraStudy = 'full';
               cameraTargetIsEvidence = true;
@@ -17409,10 +19475,21 @@ if (/Ceratops/i.test(cladeName)) {
               updateCameraView();
               setStatus('Camera centered on ' + cap(scanTargetId) + ' evidence anchor.');
             };
+            activeCameraControl.preserveInspectionFrame = function () {
+              if (currentCameraFrame && selectedBodyPartRef.current) partInspectionFrameRef.current = currentCameraFrame;
+            };
+            activeCameraControl.captureShapeView = function () {
+              var study = shapeStudyRef.current;
+              if (!study || !study.family.fullBody || study.species.id !== props.species.id || readySpeciesRef.current !== props.species.id) return null;
+              updateCameraView(false); model.rotation.y = yaw; layoutBodyPartLabels(); requestSceneRender();
+              return dinoShapeViewCapture(study, { key: study.key, species: props.species.id, hypothesis: props.reconstructionMode,
+                yaw: yaw, pitch: pitch, zoom: zoom, showSkeleton: props.showSkeleton, showBody: props.showBody, opacity: bodyOpacityRef.current,
+                visible: latestShapeViewLabels, sources: model.userData.dinoFullBodyAnatomy ? model.userData.dinoFullBodyAnatomy.sources : [] }, bodyPartDefinitions);
+            };
             cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
-            var previousBodyLabels = [], bodyLabelContext = '', bodyLabelMetricKey = '', bodyLabelMetrics = {};
+            var previousBodyLabels = [], bodyLabelContext = '', bodyLabelMetricKey = '', bodyLabelMetrics = {}, latestShapeViewLabels = [];
             function layoutBodyPartLabels() {
               var overlay = bodyLabelOverlayRef.current;
               if (!overlay) return;
@@ -17421,10 +19498,10 @@ if (/Ceratops/i.test(cladeName)) {
               function reportPartVisibility(message) {
                 if (bodyPartVisibilityRef.current && bodyPartVisibilityRef.current.textContent !== message) bodyPartVisibilityRef.current.textContent = message;
               }
-              if (!active) { previousBodyLabels = []; reportPartVisibility('Show the body or skeleton to locate this part.'); return; }
+              if (!active) { previousBodyLabels = []; latestShapeViewLabels = []; if (model.userData.dinoShapeComparison) model.userData.dinoShapeComparison.visibleLandmarks = []; reportPartVisibility('Show the body or skeleton to locate this part.'); return; }
               var width = canvas.clientWidth, height = canvas.clientHeight, projectedParts = {};
               var labelNodes = Array.prototype.slice.call(overlay.querySelectorAll('[data-dino-part-label]'));
-              var metricKey = width + '|' + (labelNodes[0] ? window.getComputedStyle(labelNodes[0]).font : '') + '|' + (document.fonts ? document.fonts.status : '') + '|' + labelNodes.map(function (node) { return node.textContent; }).join('|');
+              var metricKey = width + '|' + (labelNodes[0] ? window.getComputedStyle(labelNodes[0]).font : '') + '|' + (document.fonts ? document.fonts.status : '') + '|' + labelNodes.map(function (node) { return node.textContent; }).join('|') + '|' + (supportingRelationRef.current ? supportingRelationRef.current.id : '');
               if (metricKey !== bodyLabelMetricKey) {
                 bodyLabelMetricKey = metricKey; bodyLabelMetrics = {};
                 var maxWidth = Math.max(1, Math.min(width - 16, width < 560 ? 144 : 176));
@@ -17445,7 +19522,12 @@ if (/Ceratops/i.test(cladeName)) {
                   node.style.width = metric.width + 'px'; node.style.height = metric.height + 'px'; node.style.visibility = ''; node.style.display = 'none';
                 });
               }
-              var context = metricKey + '|' + height + '|' + cameraStudy + '|' + selectedBodyPartRef.current;
+              var relation = supportingRelationRef.current;
+              var pairVisible = relation && relation.region === cameraStudy;
+              var shapeLensIds = dinoShapeStudyLandmarkIds(shapeStudyRef.current, bodyPartDefinitions);
+              var shapeLensVisible = shapeLensIds.length > 0 && cameraStudy === 'full';
+              model.userData.dinoSupportingTrace = pairVisible ? { id: relation.id, ids: relation.ids.slice(), region: relation.region, selectedPart: selectedBodyPartRef.current } : null;
+              var context = metricKey + '|' + height + '|' + cameraStudy + '|' + selectedBodyPartRef.current + '|' + (pairVisible ? relation.id : '') + '|' + shapeLensIds.join(',');
               if (context !== bodyLabelContext) { previousBodyLabels = []; bodyLabelContext = context; }
               model.updateMatrixWorld(true); camera.updateMatrixWorld(true);
               bodyPartAnchors.forEach(function (anchor) {
@@ -17454,7 +19536,7 @@ if (/Ceratops/i.test(cladeName)) {
                 var id = anchor.userData.dinoBodyPart;
                 if (!projectedParts[id] || view.z > projectedParts[id].depth) projectedParts[id] = { id: id, x: (clip.x + 1) * width / 2, y: (1 - clip.y) * height / 2, depth: view.z };
               });
-              var points = bodyPartDefinitions.filter(function (part) { return projectedParts[part.id] && (cameraStudy === 'full' || part.region === cameraStudy); }).map(function (part) {
+              var points = bodyPartDefinitions.filter(function (part) { return projectedParts[part.id] && (cameraStudy === 'full' || part.region === cameraStudy) && (!pairVisible || relation.ids.indexOf(part.id) >= 0) && (!shapeLensVisible || shapeLensIds.indexOf(part.id) >= 0); }).map(function (part) {
                 var point = projectedParts[part.id], metric = bodyLabelMetrics[part.id];
                 if (metric) { point.width = metric.width; point.height = metric.height; }
                 return point;
@@ -17463,10 +19545,11 @@ if (/Ceratops/i.test(cladeName)) {
               var top = Math.max(64, readouts ? readouts.offsetTop + readouts.offsetHeight + 12 : 64);
               // Selected views place their lower readouts below the canvas.
               var bottom = selectedBodyPartRef.current ? 18 : (width < 560 ? 132 : 88);
-              var layouts = dinoBodyLabelLayout(points, width, height, top, bottom, selectedBodyPartRef.current, previousBodyLabels, cameraStudy === 'full' ? dinoInitialBodyLabelPriority(points) : null);
-              previousBodyLabels = layouts;
+              var layouts = dinoBodyLabelLayout(points, width, height, top, bottom, selectedBodyPartRef.current, previousBodyLabels, pairVisible ? relation.ids : (shapeLensVisible ? shapeLensIds : (cameraStudy === 'full' ? dinoInitialBodyLabelPriority(points) : null)), pairVisible ? relation.ids : (shapeLensVisible ? shapeLensIds : null));
+              previousBodyLabels = layouts; latestShapeViewLabels = layouts.map(function (item) { return item.id; });
+              if (model.userData.dinoShapeComparison) model.userData.dinoShapeComparison.visibleLandmarks = shapeLensVisible ? layouts.map(function (item) { return item.id; }) : [];
               var selectedLayout = layouts.some(function (item) { return item.selected; });
-              reportPartVisibility(selectedLayout ? 'The double-ring marker identifies the selected part.' : 'The selected marker is outside this view or has no clear label space. Use Show part to bring it into view.');
+              reportPartVisibility(shapeLensVisible ? (layouts.length === shapeLensIds.length ? 'The labels locate reconstructed anatomical regions for this full-body investigation. Marker spacing is not a measured bone ratio.' : 'Some investigation markers overlap or lie outside this view. Orbit to locate them; the full-body frame is retained.') : pairVisible ? (layouts.length === 2 ? 'A and B locate the two parts in this supporting trace. The white ring marks the selected endpoint; the dashed ring marks its partner.' : 'One or both trace markers overlap or lie outside this view. Orbit to inspect them, or select an endpoint to read its guide.') : (selectedLayout ? 'The double-ring marker identifies the selected part.' : 'The selected marker is outside this view or has no clear label space. Use Show part to bring it into view.'));
               overlay.querySelectorAll('[data-dino-part-label]').forEach(function (node) { node.style.display = 'none'; });
               overlay.querySelectorAll('[data-dino-part-line]').forEach(function (node) { node.style.display = 'none'; });
               layouts.forEach(function (item) {
@@ -17482,7 +19565,12 @@ if (/Ceratops/i.test(cladeName)) {
                 var line = group.firstChild, dot = group.lastChild, ring = group.querySelector('[data-dino-part-ring]');
                 line.setAttribute('stroke', item.selected ? '#ffffff' : '#99f6e4');
                 line.setAttribute('stroke-width', item.selected ? 2.5 : 1.5);
-                if (ring) { ring.style.display = item.selected ? 'block' : 'none'; ring.setAttribute('cx', item.anchorX); ring.setAttribute('cy', item.anchorY); }
+                if (ring) {
+                  ring.style.display = item.selected || pairVisible || shapeLensVisible ? 'block' : 'none';
+                  ring.setAttribute('cx', item.anchorX); ring.setAttribute('cy', item.anchorY);
+                  ring.setAttribute('stroke', item.selected ? '#ffffff' : '#fbbf24');
+                  ring.setAttribute('stroke-dasharray', item.selected || (!pairVisible && !shapeLensVisible) ? '' : '3 2');
+                }
                 line.setAttribute('x1', item.anchorX); line.setAttribute('y1', item.anchorY); line.setAttribute('x2', item.lineX); line.setAttribute('y2', item.lineY);
                 dot.setAttribute('cx', item.anchorX); dot.setAttribute('cy', item.anchorY);
               });
@@ -17677,7 +19765,7 @@ if (/Ceratops/i.test(cladeName)) {
               function animate() {
               if (!alive || !renderer || !scene || !camera) return;
               if (model) {
-                var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;
+                var motionRunning = !motionPausedRef.current && !reducedMotionRef.current && !props.shapeStudy;
                 var motionDelta = dinoMotionStep(motionClockRef.current, performance.now(), motionRunning);
                 var idleTime = motionClockRef.current.elapsed;
                 if (waterScenery) waterScenery.normalMap.offset.set(idleTime * 0.008, idleTime * 0.004);
@@ -17792,7 +19880,7 @@ if (/Ceratops/i.test(cladeName)) {
               cancelFrame: function (id) { window.cancelAnimationFrame(id); },
               draw: animate,
               canRender: function () { return alive && !!renderer && !!scene && !!camera && !contextLost && inViewport && pageVisible; },
-              isAnimating: function () { return !motionPausedRef.current && !reducedMotionRef.current; },
+              isAnimating: function () { return !motionPausedRef.current && !reducedMotionRef.current && !props.shapeStudy; },
               resetClock: function () { motionClockRef.current.last = null; }
             });
             activeRenderControl = syncAnimation;
@@ -17812,7 +19900,7 @@ if (/Ceratops/i.test(cladeName)) {
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
 
           };
-        }, [props.species.id, props.reconstructionMode, props.stage, props.scanActive, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
+        }, [props.species.id, props.reconstructionMode, props.stage, props.scanActive, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor, props.shapeStudy ? props.shapeStudy.key : null]);
 
         React.useEffect(function () {
           return function () {
@@ -17840,6 +19928,8 @@ if (/Ceratops/i.test(cladeName)) {
         }, []);
 
         function applyCameraPreset(preset) { notifyOrientationInteraction();
+          if (preset === 'reset' && props.shapeStudy && props.onShapeStudyExit) props.onShapeStudyExit();
+          if (preset === 'reset') endSupportingRelation(false);
           setCameraPreset(preset);
           if (preset === 'reset') { yawRef.current.study = 'full'; setStudyView({ speciesId: props.species.id, region: 'full' }); }
           if (!cameraControlRef.current) return;
@@ -17863,6 +19953,8 @@ if (/Ceratops/i.test(cladeName)) {
         }
         function renderBodyPartGuide(part, selectedGuide) {
           var source = DINO_ANATOMY_SOURCES[part.source] || DINO_ANATOMY_SOURCES.bones;
+          var inspection = selectedGuide && props.onPartLayerInspect ? dinoPartInspectionFor(props.species, part) : null;
+          var inspectedLayer = props.showSkeleton && !props.showBody ? 'bone' : (!props.showSkeleton && props.showBody && bodyOpacity >= 98 ? 'life' : '');
           var layerHelp = part.requiresTranslucentBody && props.showBody && props.bodyOpacity >= 98
             ? 'These inferred tissue shapes are inside the body. Reduce Body outline opacity to inspect them beneath the life surface.'
             : part.layer === 'skeleton' && !props.showSkeleton
@@ -17876,6 +19968,24 @@ if (/Ceratops/i.test(cladeName)) {
             style: { marginTop: 10, padding: '12px 14px', borderRadius: 9, border: '1px solid ' + T.border,
               background: T.panel, fontSize: 12.5, lineHeight: 1.6, color: T.text } },
             el('h3', { style: { margin: '0 0 8px', fontSize: 17, color: T.text } }, part.label),
+            inspection ? el('div', { className: 'dinolab-part-inspection', style: { padding: '10px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper } },
+              el('p', { style: { margin: '0 0 8px', fontWeight: 800 } }, 'Compare at this landmark'),
+              el('p', { style: { margin: '0 0 9px', color: T.soft } }, inspection.question),
+              el('div', { role: 'group', 'aria-label': 'Compare bone and life surface at ' + part.label, style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, ['bone', 'life'].map(function (mode) {
+                var active = inspectedLayer === mode;
+                return el('button', { key: mode, type: 'button', 'data-dino-part-inspect': mode, 'aria-pressed': active ? 'true' : 'false', 'aria-controls': 'dinolab-part-inspection-note',
+                  onClick: function () {
+                    if (cameraControlRef.current && cameraControlRef.current.preserveInspectionFrame) cameraControlRef.current.preserveInspectionFrame();
+                    props.onPartLayerInspect(mode, part.label, inspection[mode]);
+                  },
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + (active ? '#0f766e' : T.border), background: active ? '#0f766e' : T.panel, color: active ? '#fff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, mode === 'bone' ? '1. Bone structure' : '2. Life surface');
+              })),
+              el('p', { id: 'dinolab-part-inspection-note', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '9px 0 0', color: T.soft } }, inspectedLayer ? inspection[inspectedLayer] : 'Choose a view, then compare the same marker in the other view. Your selected part and study view stay in place.'),
+              el('p', { style: { margin: '6px 0 0', color: T.soft, fontSize: 11.5 } }, inspection.limit),
+              inspection.source ? el('a', { href: inspection.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', minHeight: 44, padding: '10px 0', boxSizing: 'border-box', color: T.text, textDecoration: 'underline' }, 'aria-label': inspection.source.title + ' (opens in a new tab)' }, inspection.source.title) : null) : null,
+            selectedGuide ? renderPartViewpointTask(part) : null,
+            selectedGuide ? renderSupportingRelation(part) : null,
+            inspection ? renderPartComparison(part) : null,
             layerHelp ? el('p', { className: 'dinolab-part-layer-help', style: { margin: '0 0 8px', color: T.soft } }, layerHelp) : null,
             part.requiresTranslucentBody && props.showBody && props.bodyOpacity >= 98 && props.onBodyOpacityChange
               ? el('button', { type: 'button', onClick: function () { props.onBodyOpacityChange(45); window.requestAnimationFrame(function () { if (anatomyGuideRef.current) anatomyGuideRef.current.focus({ preventScroll: true }); }); },
@@ -17886,6 +19996,114 @@ if (/Ceratops/i.test(cladeName)) {
             })),
             el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Read more: ' + source.title + ' (opens in a new tab)',
               style: { display: 'inline-block', minHeight: 44, padding: '10px 0', boxSizing: 'border-box', color: T.text, textDecoration: 'underline' } }, 'Read more: ' + source.title));
+        }
+        function renderPartViewpointTask(part) {
+          var task = dinoPartViewpointTaskFor(props.species, part);
+          if (!task) return null;
+          var activeView = task.views.find(function (view) { return cameraPreset === view.id; });
+          return el('details', { key: props.species.id + '|' + part.id, className: 'dinolab-part-viewpoint', style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.deeper } },
+            el('summary', { style: { cursor: 'pointer', minHeight: 44, fontSize: 13, fontWeight: 800, padding: '8px 0', boxSizing: 'border-box' } }, 'Check a second viewpoint'),
+            el('p', { style: { margin: '6px 0 10px', lineHeight: 1.6, color: T.soft } }, task.question),
+            el('div', { role: 'group', 'aria-label': 'Viewpoint investigation at ' + part.label, style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, task.views.map(function (view) {
+              var active = cameraPreset === view.id;
+              return el('button', { key: view.id, type: 'button', 'data-dino-part-view': view.id,
+                'aria-label': view.label + ' view for ' + part.label, 'aria-pressed': active ? 'true' : 'false', 'aria-controls': 'dinolab-part-viewpoint-note',
+                onClick: function () {
+                  notifyOrientationInteraction(); setCameraPreset(view.id);
+                  yawRef.current.study = part.region;
+                  setStudyView({ speciesId: props.species.id, region: part.region });
+                  if (cameraControlRef.current) cameraControlRef.current(view.yaw, view.pitch, 1, view.label + ' view at ' + part.label + '. ' + view.prompt, part.region);
+                },
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + (active ? '#0f766e' : T.border), background: active ? '#0f766e' : T.panel, color: active ? '#fff' : T.text, font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, view.label);
+            })),
+            el('p', { id: 'dinolab-part-viewpoint-note', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '10px 0 6px', lineHeight: 1.6, color: T.soft } }, activeView ? activeView.prompt : 'Choose a starting direction, then compare the second view. The selected landmark stays selected; you can also orbit with the canvas arrow keys.'),
+            el('p', { style: { margin: 0, fontSize: 11.5, lineHeight: 1.6, color: T.soft } }, task.limit));
+        }
+        function beginSupportingRelation(relation) {
+          if (props.shapeStudy && props.onShapeStudyExit) props.onShapeStudyExit();
+          supportingRelationRef.current = relation;
+          setSupportingRelationChoice({ speciesId: props.species.id, mode: surfaceHypothesis.id, id: relation.id });
+          partInspectionFrameRef.current = null;
+          notifyOrientationInteraction(); setCameraPreset('side');
+          yawRef.current.study = relation.region;
+          setStudyView({ speciesId: props.species.id, region: relation.region });
+          if (cameraControlRef.current) cameraControlRef.current(0, 0.16, 1, relation.title + '. Both labelled locations share one view. ' + relation.observe, relation.region);
+          window.requestAnimationFrame(function () {
+            var guide = anatomyGuideRef.current;
+            var endpoint = guide && guide.querySelector('[data-dino-support-endpoint="' + selectedBodyPartRef.current + '"]');
+            if (endpoint) endpoint.focus({ preventScroll: true });
+          });
+        }
+        function selectSupportingEndpoint(id) {
+          var relation = supportingRelationRef.current;
+          if (!relation || relation.ids.indexOf(id) < 0) return;
+          selectedBodyPartRef.current = id;
+          setBodyPartSelection({ speciesId: props.species.id, id: id });
+          requestSceneRender();
+        }
+        function endSupportingRelation(refit) {
+          var previousRelation = supportingRelationRef.current;
+          supportingRelationRef.current = null; setSupportingRelationChoice(null);
+          partInspectionFrameRef.current = null;
+          if (refit && selectedBodyPart && cameraControlRef.current) cameraControlRef.current(yawRef.current.value, yawRef.current.pitch, yawRef.current.zoom, 'Supporting trace ended. ' + selectedBodyPart.label + ' remains selected.', selectedBodyPart.region);
+          if (refit && previousRelation) window.requestAnimationFrame(function () {
+            var guide = anatomyGuideRef.current;
+            var start = guide && guide.querySelector('[data-dino-support-start="' + previousRelation.id + '"]');
+            if (start) start.focus({ preventScroll: true });
+          });
+        }
+        function renderSupportingRelation(part) {
+          var relation = activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? activeSupportingRelation : supportingRelations.find(function (item) { return item.ids.indexOf(part.id) >= 0; });
+          if (!relation) return null;
+          var active = !!activeSupportingRelation && activeSupportingRelation.id === relation.id;
+          return el('details', { key: 'support|' + props.species.id + '|' + surfaceHypothesis.id + '|' + relation.id, className: 'dinolab-supporting-relation', 'data-dino-support-relation': relation.id,
+            style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.deeper } },
+            el('summary', { style: { minHeight: 44, padding: '8px 0', boxSizing: 'border-box', cursor: 'pointer', fontWeight: 800, fontSize: 13 } }, 'Trace connected parts · ' + relation.title),
+            el('p', { style: { color: T.soft, lineHeight: 1.6 } }, relation.predict),
+            !active ? el('button', { type: 'button', 'data-dino-support-start': relation.id, 'aria-controls': 'dinolab-supporting-relation-status', onClick: function () { beginSupportingRelation(relation); },
+              style: { minHeight: 44, padding: '8px 12px', border: '1px solid #0f766e', borderRadius: 7, background: '#0f766e', color: '#fff', font: 'inherit', fontWeight: 800, cursor: 'pointer' } }, 'Show both landmarks') : el(React.Fragment, null,
+              el('div', { role: 'group', 'aria-label': 'Inspect the two landmarks in ' + relation.title, style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, relation.ids.map(function (id, index) {
+                var endpoint = bodyPartDefinitions.find(function (entry) { return entry.id === id; }), selected = selectedBodyPartId === id;
+                return el('button', { key: id, type: 'button', 'data-dino-support-endpoint': id, 'aria-pressed': selected ? 'true' : 'false', 'aria-controls': 'dinolab-selected-part-guide dinolab-supporting-relation-status',
+                  onClick: function () { selectSupportingEndpoint(id); },
+                  style: { minHeight: 44, padding: '8px 12px', border: '1px solid ' + (selected ? '#0f766e' : T.border), borderRadius: 7, background: selected ? '#0f766e' : T.panel, color: selected ? '#fff' : T.text, font: 'inherit', fontWeight: 800, cursor: 'pointer' } }, (index ? 'B · ' : 'A · ') + endpoint.label);
+              })),
+              el('p', { style: { color: T.soft, lineHeight: 1.6 } }, relation.observe),
+              el('p', { style: { color: T.soft, lineHeight: 1.6 } }, relation.revise),
+              el('button', { type: 'button', 'data-dino-support-end': relation.id, onClick: function () { endSupportingRelation(true); },
+                style: { minHeight: 44, padding: '8px 12px', border: '1px solid ' + T.border, borderRadius: 7, background: T.panel, color: T.text, font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'End trace')),
+            el('p', { id: 'dinolab-supporting-relation-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: T.soft, lineHeight: 1.6, fontSize: 12 } }, active ? 'A and B remain in one camera frame. Select either endpoint to read its guide; bone/life comparisons keep this frame. Rings show locations and can overlap or be hidden from some angles.' : 'Make a prediction, then show the pair. Your existing observations stay in the comparison notebook.'),
+            el('p', { style: { color: T.soft, lineHeight: 1.6, fontSize: 11.5 } }, relation.limit));
+        }
+        function renderPartComparison(part) {
+          if (!props.onPartComparisonChange) return null;
+          var context = dinoPartComparisonContext(props.species, part.id, props.reconstructionMode);
+          if (!context) return null;
+          var entry = dinoPartComparisonState(props.partComparisons)[context.key] || { bone: '', life: '', question: '', record: null };
+          var recorded = dinoPartComparisonIsRecorded(entry), ready = dinoPartComparisonReady(entry);
+          return el('details', { key: context.key, className: 'dinolab-part-comparison', style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.deeper } },
+            el('summary', { style: { cursor: 'pointer', minHeight: 44, fontSize: 13, fontWeight: 800, padding: '8px 0', boxSizing: 'border-box' } }, 'Record my comparison'),
+            el('p', { style: { color: T.soft, margin: '6px 0 10px', lineHeight: 1.6 } }, props.species.common + ' · ' + part.label + ' · ' + context.hypothesisLabel),
+            el('p', { style: { color: T.soft, margin: '0 0 12px', fontSize: 12, lineHeight: 1.6 } }, 'Write what you notice in the two model layers. These are observations of a reconstruction; bone view does not show which bones were actually found for this species.'),
+            [
+              { id: 'bone', label: 'In bone view, I notice…', max: 600 },
+              { id: 'life', label: 'In life view, I notice…', max: 600 },
+              { id: 'question', label: 'What evidence or measurement would help me check this? (optional)', max: 400 }
+            ].map(function (field) {
+              var id = 'dinolab-part-comparison-' + field.id;
+              return el('div', { key: field.id, style: { marginBottom: 12 } },
+                el('label', { htmlFor: id, style: { display: 'block', fontSize: 12.5, fontWeight: 800, marginBottom: 5 } }, field.label),
+                el('textarea', { id: id, rows: 2, maxLength: field.max, value: entry[field.id], 'aria-describedby': 'dinolab-part-comparison-help',
+                  onChange: function (event) { var patch = {}; patch[field.id] = event.target.value; props.onPartComparisonChange(part.id, patch, false); },
+                  style: { width: '100%', boxSizing: 'border-box', minWidth: 0, padding: 9, borderRadius: 7, border: '1px solid ' + T.border, background: T.panel, color: T.text, font: 'inherit', fontSize: 13, lineHeight: 1.5, resize: 'vertical' } }));
+            }),
+            el('p', { id: 'dinolab-part-comparison-help', style: { color: T.soft, fontSize: 11.5, lineHeight: 1.6 } }, 'Add your own observations in both views to record the comparison. Drafts are kept as you type, separately for each feature and covering hypothesis. Keeps up to 120 comparisons; download the notebook to keep a copy.'),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              el('button', { type: 'button', 'data-dino-part-comparison-record': 'true', 'aria-describedby': 'dinolab-part-comparison-help', disabled: !ready || recorded,
+                onClick: function () { props.onPartComparisonChange(part.id, {}, true); },
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + T.border, background: ready && !recorded ? '#0f766e' : T.panel, color: ready && !recorded ? '#fff' : T.soft, font: 'inherit', fontWeight: 800, cursor: ready && !recorded ? 'pointer' : 'default' } }, recorded ? 'Comparison recorded' : 'Record comparison'),
+              props.onPartComparisonNotebook ? el('button', { type: 'button', onClick: props.onPartComparisonNotebook, style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + T.border, background: T.panel, color: T.text, font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'Open comparison notebook') : null),
+            el('p', { id: 'dinolab-part-comparison-status', role: 'status', 'aria-live': 'polite', style: { color: T.soft, margin: '8px 0 0', fontSize: 12 } }, recorded ? 'Your comparison is recorded. Writing is not automatically assessed.' : (entry.record ? 'You have an unrecorded revision. Your last recorded comparison is kept.' : 'Draft · record after describing both layers.')));
         }
         function renderBodyPartDirectory() {
           var sections = [];
@@ -17951,6 +20169,9 @@ if (/Ceratops/i.test(cladeName)) {
             ) : null);
         }
         function selectBodyPart(id, focusGuide) {
+          if (props.shapeStudy && props.onShapeStudyExit) props.onShapeStudyExit();
+          endSupportingRelation(false);
+          partInspectionFrameRef.current = null;
           var part = bodyPartDefinitions.find(function (item) { return item.id === id; });
           selectedBodyPartRef.current = part ? part.id : '';
           setBodyPartSelection({ speciesId: props.species.id, id: part ? part.id : '' });
@@ -17975,6 +20196,8 @@ if (/Ceratops/i.test(cladeName)) {
           });
         }
         function applyStudyView(region) { notifyOrientationInteraction();
+          if (props.shapeStudy && props.onShapeStudyExit) props.onShapeStudyExit();
+          if (supportingRelationRef.current && supportingRelationRef.current.region !== region) endSupportingRelation(false);
           if (selectedBodyPart && region !== 'full' && region !== selectedBodyPart.region) {
             selectedBodyPartRef.current = '';
             setBodyPartSelection({ speciesId: props.species.id, id: '' });
@@ -18094,16 +20317,16 @@ var evidenceRoute = [
                 el('circle', { r: 3, fill: '#0f172a', stroke: '#99f6e4', strokeWidth: 1.5 }));
             })),
             bodyPartDefinitions.map(function (part) { return el('button', {
-              key: part.id, type: 'button', 'data-dino-part-label': part.id,
-              'aria-label': 'Describe ' + part.label, 'aria-controls': 'dinolab-anatomy-browser',
+              key: part.id, type: 'button', 'data-dino-part-label': part.id, 'data-dino-shape-landmark': shapeStudyLandmarks.indexOf(part.id) >= 0 ? 'true' : undefined,
+              'aria-label': (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'Endpoint B: ' : 'Endpoint A: ') : '') + 'Describe ' + part.label, 'aria-controls': 'dinolab-anatomy-browser',
               'aria-pressed': selectedBodyPartId === part.id,
-              onClick: function (event) { event.stopPropagation(); selectBodyPart(part.id, true); },
+              onClick: function (event) { event.stopPropagation(); if (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0) selectSupportingEndpoint(part.id); else selectBodyPart(part.id, true); },
               style: { display: 'none', position: 'absolute', pointerEvents: 'auto', left: 0, top: 0,
                 width: 'max-content', minWidth: 96, maxWidth: 176, minHeight: 44, padding: '7px 10px', boxSizing: 'border-box',
                 border: '1px solid #5eead4', borderRadius: 7, background: '#0f172a', color: '#f0fdfa',
                 textAlign: 'center', fontFamily: 'inherit', fontSize: 12, fontWeight: 800, lineHeight: '18px',
                 whiteSpace: 'normal', overflowWrap: 'anywhere', cursor: 'pointer' }
-              }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
+              }, (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'B · ' : 'A · ') : '') + __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
           ),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
@@ -18131,6 +20354,27 @@ var evidenceRoute = [
           el('div', { className: 'dinolab-viewer-actions', style: { position: externalViewReadouts ? 'static' : 'absolute', left: 12,
             bottom: externalViewReadouts ? 0 : 52, marginTop: externalViewReadouts ? 8 : 0,
             display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: 'calc(100% - 24px)', zIndex: 7 } },
+            props.shapeStudy && props.onShapeStudySideChange ? el('div', { className: 'dinolab-shape-switch-dock', role: 'group', 'aria-label': 'Switch the displayed comparison model', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7, flexBasis: '100%', width: '100%', maxWidth: '100%' } }, ['a', 'b'].map(function (side) {
+              var animal = side === 'a' ? props.shapeStudy.a : props.shapeStudy.b;
+              var active = props.shapeStudy.active === side;
+              return el('button', { key: side, type: 'button', 'data-dino-shape-dock-side': side, 'aria-pressed': active ? 'true' : 'false', onClick: function () { props.onShapeStudySideChange(side); },
+                style: { minHeight: 44, minWidth: 0, padding: '8px 10px', borderRadius: 9, border: '2px solid ' + (active ? '#5eead4' : '#94a3b8'), background: active ? '#115e59' : '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, overflowWrap: 'anywhere', cursor: 'pointer' }
+              }, side.toUpperCase() + ' · ' + animal.common);
+            })) : null,
+            shapeViewContext ? el('details', { className: 'dinolab-view-check', style: { flexBasis: '100%', width: '100%', maxWidth: '100%', border: '1px solid #94a3b8', borderRadius: 9, background: '#0f172a', color: '#f8fafc', padding: '0 10px', boxSizing: 'border-box' } },
+              el('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 0', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Keep and check a view'),
+              el('p', { style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5 } }, 'Keep one direction, orbit to check another, then replay either across A/B and bone/life. Does the contrast persist? Which outer shape comes from reconstructed tissue?'),
+              [0, 1].map(function (index) {
+                var pin = keptShapeViews[index];
+                return el('div', { key: index, style: { marginBottom: 8 } },
+                  el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    el('button', { type: 'button', 'data-dino-shape-keep-view': index + 1, 'aria-controls': 'dinolab-shape-view-check-status', onClick: function () { keepShapeView(index); }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid #5eead4', background: '#115e59', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, (pin ? 'Replace' : 'Keep') + ' view ' + (index + 1)),
+                    el('button', { type: 'button', 'data-dino-shape-replay-view': index + 1, disabled: !pin, onClick: function () { replayShapeView(index); }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid #94a3b8', background: '#0f172a', color: pin ? '#f8fafc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: pin ? 'pointer' : 'default' } }, 'Replay direction ' + (index + 1))),
+                  pin ? el('p', { 'data-dino-shape-view-caption': index + 1, style: { fontSize: 11.5, lineHeight: 1.5, overflowWrap: 'anywhere', margin: '5px 0' } }, dinoShapeViewCaption(pin, bodyPartDefinitions)) : null);
+              }),
+              keptShapeViews.filter(Boolean).length === 2 ? el('p', { 'data-dino-shape-view-angle': 'true', style: { fontSize: 11.5, lineHeight: 1.5, margin: '5px 0 8px' } }, dinoShapeViewAngle(keptShapeViews[0], keptShapeViews[1]) >= 25 ? 'These directions differ by at least 25°. Check whether the same contrast is visible in both; this does not verify your conclusion.' : 'These directions are similar. Orbit farther or change elevation to test whether perspective shaped your first impression.') : null,
+              el('button', { type: 'button', 'data-dino-shape-append-views': 'true', disabled: keptShapeViews.filter(Boolean).length !== 2, onClick: appendShapeViews, style: { minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Append view contexts to my explanation'),
+              el('p', { id: 'dinolab-shape-view-check-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '8px 0', fontSize: 11.5, lineHeight: 1.5 } }, shapeViewMessage || 'Pins last for this pair, investigation lens and reconstruction hypothesis. They save camera context, not fossil evidence. Replay changes the camera only; current layers stay selected.')) : null,
             el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); },
               style: { minHeight: 44, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
             el('button', { type: 'button', 'data-dino-explore-anatomy': 'true', 'aria-label': 'Explore anatomy',
@@ -18205,12 +20449,12 @@ var evidenceRoute = [
                 style: { padding: '9px 12px', minHeight: 44, borderRadius: 8, border: '1px solid ' + T.border, background: activeStudy === 'tray' ? '#0f766e' : T.deeper, color: activeStudy === 'tray' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fossil_tray', 'Fossil tray')),
               el('span', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.4 } }, (props.assemblyTotal - (props.assemblyPlacedCount || 0)) + (props.assemblyTotal - (props.assemblyPlacedCount || 0) === 1 ? ' fossil left to place.' : ' fossils left to place.'))) : null,
           el('div', { className: 'dinolab-motion-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
-            el('button', { type: 'button', disabled: deviceReducedMotion, onClick: toggleMotionPause,
+            el('button', { type: 'button', disabled: deviceReducedMotion || !!props.shapeStudy, onClick: toggleMotionPause,
               'aria-pressed': motionPaused || deviceReducedMotion ? 'true' : 'false',
               style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 12, fontWeight: 800, cursor: deviceReducedMotion ? 'default' : 'pointer' } },
-              deviceReducedMotion ? __alloT('stem.dinolab.motion_reduced', 'Motion reduced') : (motionPaused ? __alloT('stem.dinolab.resume_motion', 'Resume motion') : __alloT('stem.dinolab.pause_motion', 'Pause motion'))),
+              props.shapeStudy ? 'Motion paused for shape comparison' : deviceReducedMotion ? __alloT('stem.dinolab.motion_reduced', 'Motion reduced') : (motionPaused ? __alloT('stem.dinolab.resume_motion', 'Resume motion') : __alloT('stem.dinolab.pause_motion', 'Pause motion'))),
             el('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 220px', fontSize: 11.5, color: T.soft, lineHeight: 1.4 } },
-              deviceReducedMotion ? __alloT('stem.dinolab.device_motion_paused', 'Motion is paused by your device preference.') : (motionPaused ? __alloT('stem.dinolab.motion_paused_help', 'Motion paused. You can still rotate and zoom.') : __alloT('stem.dinolab.motion_help', 'Pause breathing, the head turn, the leg gait, feather movement, and auto spin.')))
+              props.shapeStudy ? 'Rotate and zoom freely. Both models use the same viewing direction and a separate fit.' : deviceReducedMotion ? __alloT('stem.dinolab.device_motion_paused', 'Motion is paused by your device preference.') : (motionPaused ? __alloT('stem.dinolab.motion_paused_help', 'Motion paused. You can still rotate and zoom.') : __alloT('stem.dinolab.motion_help', 'Pause breathing, the head turn, the leg gait, feather movement, and auto spin.')))
           ),
           renderEvidenceRoute(),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
@@ -18244,6 +20488,77 @@ var evidenceRoute = [
       function renderField3D() {
         var fieldId = d.field3dSelected || selected || 'tyrannosaurus';
         var dn = byId(fieldId) || byId('tyrannosaurus') || DINOS[0];
+        var shapeStudy = dinoShapeStudyFor(d.field3dShapeStudy);
+        if (shapeStudy && shapeStudy.species.id !== dn.id) shapeStudy = null;
+        function shapeStudyProgress() {
+          if (shapeStudy && !fieldProgressIsValid(d.field3dProgress)) return null;
+          var record = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
+          return fieldProgressIsValid(record) ? record : null;
+        }
+        function navigateShapeStudy(raw) {
+          var patch = dinoShapeStudyNavigationPatch(d, raw, shapeStudyProgress());
+          if (!patch) return;
+          upd(patch);
+          announceToSR('Shape comparison showing ' + byId(patch.field3dSelected).common + '. The shared viewing direction is retained; this model is fitted independently.');
+        }
+        function exitShapeStudy() {
+          if (shapeStudy) upd({ field3dShapeStudy: null, field3dProgress: d.field3dProgress || null });
+        }
+        function openShapeStudyNotebook() {
+          if (!shapeStudy) return;
+          upd({ tab: 'compare', compareA: shapeStudy.a.id, compareB: shapeStudy.b.id, compareInquiryOpen: true, field3dShapeStudy: null, field3dProgress: d.field3dProgress || null });
+          focusSoon('dino-compare-inquiry-heading');
+        }
+        function renderShapeStudyControls() {
+          var buttonStyle = Object.assign({}, actionStyle, { minHeight: 44 });
+          function selectionStyle(active) {
+            return Object.assign({}, buttonStyle, { border: '2px solid ' + (active ? '#0f766e' : T.border), background: active ? 'rgba(20,184,166,0.18)' : buttonStyle.background });
+          }
+          var inquiry = shapeStudy && comparisonInquiryState(d.compareInquiry).pairs.find(function (entry) { return entry.key === comparisonPairKey(shapeStudy.a, shapeStudy.b); });
+          return el('details', { className: 'dinolab-shape-study', open: shapeStudy ? true : undefined, style: { margin: '0 0 12px', padding: 12, border: '1px solid ' + T.border, borderRadius: 10, background: T.panel } },
+            el('summary', { style: { minHeight: 44, padding: '8px 0', boxSizing: 'border-box', fontSize: 14, fontWeight: 900, cursor: 'pointer' } }, 'Compare anatomical shapes'),
+            el('h3', { id: 'dinolab-shape-study-heading', tabIndex: -1, style: { margin: '8px 0', fontSize: 16 } }, shapeStudy ? shapeStudy.family.label + ' · A and B' : 'Choose a shape investigation'),
+            el('div', { role: 'group', 'aria-label': 'Shape investigation family', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, DINO_SHAPE_STUDY_FAMILIES.map(function (family) {
+              return el('button', { key: family.id, type: 'button', 'data-dino-shape-family': family.id, 'aria-pressed': shapeStudy && shapeStudy.family.id === family.id ? 'true' : 'false', style: selectionStyle(shapeStudy && shapeStudy.family.id === family.id),
+                onClick: function () { navigateShapeStudy({ family: family.id, b: shapeStudy && shapeStudy.family.id === family.id ? shapeStudy.b.id : (family.choices.indexOf(dn.id) >= 0 ? dn.id : family.choices[0]), active: 'a' }); } }, family.label);
+            })),
+            shapeStudy ? el(React.Fragment, null,
+              el('p', { style: { color: T.soft, lineHeight: 1.6 } }, shapeStudy.family.question),
+              shapeStudy.lens ? el('fieldset', { className: 'dinolab-shape-study-lenses', style: { border: '1px solid ' + T.border, borderRadius: 9, padding: 10, margin: '10px 0' } },
+                el('legend', { style: { fontWeight: 800, padding: '0 5px' } }, 'Choose what to investigate'),
+                el('div', { role: 'group', 'aria-label': 'Full-body anatomy investigation', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, DINO_FULL_BODY_STUDY_LENSES.map(function (lens) {
+                  return el('button', { key: lens.id, type: 'button', 'data-dino-shape-lens': lens.id, 'aria-pressed': shapeStudy.lens.id === lens.id ? 'true' : 'false', 'aria-controls': 'dinolab-shape-lens-prompt', style: selectionStyle(shapeStudy.lens.id === lens.id),
+                    onClick: function () { upd({ field3dShapeStudy: Object.assign({}, d.field3dShapeStudy, { lens: lens.id }), field3dLabelMode: 'anatomy' }); announceToSR(lens.label + '. The full-body view is retained; labels mark reconstructed anatomical regions.'); }
+                  }, lens.label);
+                })),
+                el('p', { id: 'dinolab-shape-lens-prompt', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '10px 0 0', color: T.soft, lineHeight: 1.6 } }, shapeStudy.lens.prompt),
+                el('p', { style: { marginBottom: 0, fontSize: 12, color: T.soft, lineHeight: 1.6 } }, 'The labels follow actual model landmarks. An unshown marker may be outside this view or lack clear label space; orbit to find it. Selecting an individual part opens its guide and ends this comparison.')) : null,
+              inquiry && inquiry.prediction.trim() ? el('blockquote', { style: { margin: '10px 0', padding: 10, borderLeft: '3px solid #0f766e', color: T.text, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, 'My prediction: ' + inquiry.prediction) : el('p', { style: { color: T.soft, lineHeight: 1.6 } }, 'Before switching to B, make a prediction. Use the comparison investigation to keep your idea and revise it after exploring.'),
+              el('label', { htmlFor: 'dinolab-shape-study-species', style: { display: 'block', fontWeight: 800, marginBottom: 6 } }, 'Comparison model B'),
+              el('select', { id: 'dinolab-shape-study-species', value: shapeStudy.b.id, style: Object.assign({}, buttonStyle, { maxWidth: '100%', width: '100%', boxSizing: 'border-box' }), onChange: function (event) { navigateShapeStudy({ family: shapeStudy.family.id, b: event.target.value, active: 'b' }); } }, shapeStudy.family.choices.map(function (id) {
+                var animal = byId(id);
+                return el('option', { key: id, value: id }, animal.common + (id === 'edmontosaurus' ? ' · no tall bony crest in this model' : ''));
+              })),
+              el('div', { role: 'group', 'aria-label': 'Displayed anatomical comparison model', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, ['a', 'b'].map(function (side) {
+                var animal = side === 'a' ? shapeStudy.a : shapeStudy.b;
+                return el('button', { key: side, type: 'button', 'data-dino-shape-side': side, 'aria-pressed': shapeStudy.active === side ? 'true' : 'false', style: selectionStyle(shapeStudy.active === side),
+                  onClick: function () { navigateShapeStudy({ family: shapeStudy.family.id, b: shapeStudy.b.id, active: side }); } }, side.toUpperCase() + ' · ' + animal.common + (side === 'a' ? ' · reference' : ''));
+              })),
+              el('div', { role: 'group', 'aria-label': 'Shared comparison layer', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, ['bone', 'life'].map(function (mode) {
+                var active = mode === 'bone' ? d.field3dShowSkeleton !== false && d.field3dShowBody === false : d.field3dShowSkeleton === false && d.field3dShowBody !== false && Number(d.field3dBodyOpacity) >= 98;
+                return el('button', { key: mode, type: 'button', 'data-dino-shape-layer': mode, 'aria-pressed': active ? 'true' : 'false', style: selectionStyle(active), onClick: function () { upd(dinoPartInspectionLayers(mode)); } }, mode === 'bone' ? 'Bone structure' : 'Life surface');
+              })),
+              el('p', { id: 'dinolab-shape-study-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: T.soft, lineHeight: 1.6 } }, (shapeStudy.active === 'a' ? 'A · ' + shapeStudy.a.common : 'B · ' + shapeStudy.b.common) + '. Rotate or zoom, then switch models to keep that viewing direction. Both use the same layer and reconstruction hypothesis.'),
+              el('p', { style: { fontWeight: 800, lineHeight: 1.6 } }, 'Each model is fitted independently. Compare shape here; use the Compare ruler for estimated physical size.'),
+              el('p', { style: { color: T.soft, fontSize: 12, lineHeight: 1.6 } }, shapeStudy.family.limit),
+              shapeStudy.family.sources ? el('p', { className: 'dinolab-shape-study-sources', style: { fontSize: 12, lineHeight: 1.6, overflowWrap: 'anywhere' } }, 'Anatomical sources and reconstruction limits: ', shapeStudy.family.sources.map(function (source, index) {
+                return el(React.Fragment, { key: source.url }, index ? '; ' : '', el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer', style: { color: T.link || T.text } }, source.title));
+              })) : null,
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                el('button', { type: 'button', 'data-dino-shape-notebook': 'true', style: buttonStyle, onClick: openShapeStudyNotebook }, 'Open prediction and explanation'),
+                el('button', { type: 'button', 'data-dino-shape-exit': 'true', style: buttonStyle, onClick: exitShapeStudy }, 'End shape comparison')))
+              : el('p', { style: { color: T.soft, fontSize: 12, lineHeight: 1.6 } }, 'Predict, inspect two actual 3D reconstructions from a shared direction, then revise your explanation in the existing comparison notebook.'));
+        }
         var reconstructionProfile = reconstructionProfileFor(dn);
         var habitat = habitatProfileFor(dn);
         var posture = postureProfileFor(dn);
@@ -18256,10 +20571,10 @@ var evidenceRoute = [
         var activeHypothesis = hypothesisSet.active;
         var showSkeleton = d.field3dShowSkeleton !== false;
         var showBody = d.field3dShowBody !== false;
-        var showHuman = d.field3dShowHuman !== false;
-        var showEvidence = d.field3dShowEvidence !== false;
+        var showHuman = !shapeStudy && d.field3dShowHuman !== false;
+        var showEvidence = !shapeStudy && d.field3dShowEvidence !== false;
         var bodyOpacitySetting = Math.max(10, Math.min(100, Number(d.field3dBodyOpacity) || 28));
-        var autoRotate = d.field3dAutoRotate !== false;
+        var autoRotate = !shapeStudy && d.field3dAutoRotate !== false;
         var focusMode = d.field3dFocusMode === true;
         var scanTargets = [
           { id: 'skull', label: 'Skull', prompt: 'Check how skull evidence constrains head size, bite posture, and sensory placement.', why: 'Skull shape, teeth, and jaw joints are direct anatomy clues for feeding and sensory claims. Use them to constrain head proportions without treating missing muscles or behavior as directly observed.' },
@@ -18509,39 +20824,69 @@ var evidenceRoute = [
           el('span', { style: { color: activeHypothesis.id === 'classic' ? '#fbbf24' : T.soft } }, activeHypothesis.warning),
           el('span', { style: { display: 'block', marginTop: 4, fontWeight: 800, color: '#cbd5e1' } }, 'Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.')
         );
+        function lt(key, fallback) { return t('stem.dinolab.model_lens_' + key, fallback); }
         var viewPresets = [
-          { id: 'full', label: 'Full model', detail: 'All evidence layers', skeleton: true, body: true, human: true, evidence: true, opacity: 28 },
-          { id: 'life', label: 'Life view', detail: 'Opaque surface', skeleton: false, body: true, human: false, evidence: false, opacity: 100 },
-          { id: 'anchors', label: 'Fossil anchors', detail: 'Bones + markers', skeleton: true, body: false, human: false, evidence: true, opacity: 28 },
-          { id: 'body', label: 'Body inference', detail: 'Soft tissue focus', skeleton: true, body: true, human: false, evidence: false, opacity: 62 },
-          { id: 'scale', label: 'Scale check', detail: 'Size comparison', skeleton: false, body: true, human: true, evidence: false, opacity: 72 }
+          { id: 'full', label: 'Full model', detail: 'See the layers together', skeleton: true, body: true, human: true, evidence: true, opacity: 28,
+            question: lt('full_question', 'Trace one bone inside the body outline. What does the outline add?'),
+            limit: lt('full_limit', 'The skeleton is a composite reconstruction; a visible bone does not mean that bone was found for this species.') },
+          { id: 'life', label: 'Life view', detail: 'Opaque surface', skeleton: false, body: true, human: false, evidence: false, opacity: 100,
+            question: lt('life_question', 'Compare this silhouette with Fossil anchors. Which features disappear?'),
+            limit: lt('life_limit', 'Skin thickness and much of the color are hypotheses. A lifelike surface is not direct fossil evidence.') },
+          { id: 'anchors', label: 'Fossil anchors', detail: 'Locate bone landmarks', skeleton: true, body: false, human: false, evidence: true, opacity: 28,
+            question: lt('anchors_question', 'Inspect the skull, shoulder and hip. What could their shapes help you infer?'),
+            limit: lt('anchors_limit', 'Markers locate study regions. This composite skeleton is not a map of the bones preserved in a specimen.') },
+          { id: 'body', label: 'Body inference', detail: 'Explore added tissues', skeleton: true, body: true, human: false, evidence: false, opacity: 62,
+            question: lt('body_question', 'Find the space around the bones. What has been added to suggest a living body?'),
+            limit: lt('body_limit', 'Tissue volumes and organs are inferred proxies. Opacity changes visibility, not confidence.') },
+          { id: 'scale', label: 'Scale check', detail: 'Compare with a person', skeleton: false, body: true, human: true, evidence: false, opacity: 72,
+            question: lt('scale_question', 'Compare the animal with the person and reference bars. About how many people long is it?'),
+            limit: lt('scale_limit', 'Bars use catalog estimates. The modeled pose can differ, and size varies across individuals.') }
         ];
         function presetActive(preset) {
           return showSkeleton === preset.skeleton && showBody === preset.body && showHuman === preset.human && showEvidence === preset.evidence && (!preset.body || bodyOpacitySetting === preset.opacity);
         }
         function applyPreset(preset) {
           upd({ field3dShowSkeleton: preset.skeleton, field3dShowBody: preset.body, field3dShowHuman: preset.human, field3dShowEvidence: preset.evidence, field3dBodyOpacity: preset.opacity });
-          announceToSR('3D field station view preset: ' + preset.label + (preset.id === 'life' ? '. Analytical overlays hidden; opaque reconstructed surface shown.' : '.'));
+          announceToSR('3D field station view preset: ' + preset.label + '. ' + preset.question + ' ' + preset.limit);
         }
-        var presetStrip = el('div', { className: 'dinolab-surface-presets', role: 'group', 'aria-label': __alloT('stem.dinolab.surface_views', 'Reconstruction views'), style: { margin: '0 0 10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 7 } }, viewPresets.map(function (preset) {
-          var active = presetActive(preset);
-          return el('button', {
-            key: preset.id,
-            onClick: function () { applyPreset(preset); },
-            'aria-pressed': active ? 'true' : 'false',
-            style: {
-              minHeight: 54,
-              textAlign: 'left',
-              borderRadius: 9,
-              border: '1px solid ' + (active ? '#14b8a6' : T.border),
-              background: active ? 'rgba(20,184,166,0.18)' : T.deeper,
-              color: T.text,
-              padding: '8px 10px',
-              cursor: 'pointer',
-              boxShadow: active ? '0 0 0 2px rgba(20,184,166,0.18)' : 'none'
-            }
-          }, el('span', { style: { display: 'block', fontSize: 12.5, fontWeight: 900, marginBottom: 2 } }, preset.label), el('span', { style: { display: 'block', fontSize: 11, color: T.soft, lineHeight: 1.25 } }, preset.detail));
-        }));
+        function modelLensArt(preset) {
+          // These small schematics explain display layers, not species anatomy
+          // or specimen completeness. Scientific evidence stays in the record.
+          var bone = '#f3e6c8', surface = '#5eead4', marker = '#fbbf24';
+          return el('svg', { className: 'dinolab-lens-art', viewBox: '0 0 132 60', 'aria-hidden': 'true', focusable: 'false' },
+            el('path', { d: 'M8 52H124M8 11V52M36 11V52M64 11V52M92 11V52M120 11V52', fill: 'none', stroke: '#29434b', strokeWidth: .6 }),
+            preset.body ? el('path', { d: 'M17 22L11 21L9 16Q10 12 17 13L27 16L35 25Q43 19 56 22L78 27Q95 26 121 15L104 29L87 34L83 44L88 51H78L72 38L56 35L51 46L55 51H45L44 37L33 32L28 25Z', fill: surface, fillOpacity: preset.id === 'life' ? .87 : preset.opacity / 120, stroke: surface, strokeWidth: 1.5, strokeLinejoin: 'round' }) : null,
+            preset.skeleton ? el('g', { fill: 'none', stroke: bone, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' },
+              el('path', { d: 'M11 17L18 16L25 19L24 23L13 22ZM25 21L35 28L49 27L64 28L80 31L101 24L120 16M48 27L46 34L52 38M55 28L54 35L59 39M62 29L62 35L66 39M70 30L71 36L75 39M79 31L75 39L80 47L85 50M48 29L46 39L49 47L53 50M36 29L31 36L36 38' }),
+              [36, 48, 64, 80].map(function (x, i) { return el('circle', { key: x, cx: x, cy: [28, 27, 28, 31][i], r: 1.7, fill: bone, stroke: 'none' }); })) : null,
+            preset.evidence ? el('g', { fill: '#0c252c', stroke: marker, strokeWidth: 1.4 }, [
+              [19, 19], [48, 28], [80, 31]
+            ].map(function (point, index) { return el('g', { key: index }, el('circle', { cx: point[0], cy: point[1], r: 4.6 }), el('circle', { cx: point[0], cy: point[1], r: 1.2, fill: marker, stroke: 'none' })); })) : null,
+            preset.human ? el('g', { fill: 'none', stroke: '#c9dce6', strokeWidth: 1.5, strokeLinecap: 'round' }, el('circle', { cx: 17, cy: 36, r: 2.2, fill: '#c9dce6', stroke: 'none' }), el('path', { d: 'M17 39V45M13 42L17 40L21 42M17 45L14 51M17 45L20 51' })) : null,
+            preset.id === 'scale' ? el('path', { d: 'M30 7H120M30 4V10M120 4V10M124 16V51M121 16H127M121 51H127', fill: 'none', stroke: '#38bdf8', strokeWidth: 1.2 }) : null);
+        }
+        var activeLens = viewPresets.filter(presetActive)[0];
+        var lensQuestion = activeLens ? activeLens.question : lt('custom_question', 'Which visible parts are bone shapes, inferred tissues or reference guides? Compare two views to check.');
+        var lensLimit = activeLens ? activeLens.limit : lt('custom_limit', 'Display layers show how the model is constructed. They do not measure fossil completeness or certainty.');
+        var presetStrip = el('section', { className: 'dinolab-model-lenses', 'aria-labelledby': 'dinolab-model-lenses-title', style: { marginBottom: 10 } },
+          el('style', null, '.dinolab-model-lenses .dinolab-lens-art{display:block;width:100%;height:40px;background:#102a32;border-radius:5px;margin-bottom:6px}.dinolab-model-lenses .dinolab-lens-note{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.dinolab-model-lenses .dinolab-lens-choice:hover{border-color:#14b8a6!important}.dinolab-model-lenses .dinolab-lens-choice[aria-pressed=true] .dinolab-lens-art{background:#123c42}.dinolab-model-lenses .dinolab-lens-choice:focus-visible{outline:3px solid #5eead4;outline-offset:3px}@media(max-width:620px){.dinolab-model-lenses .dinolab-surface-presets{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-model-lenses .dinolab-lens-note{grid-template-columns:minmax(0,1fr);gap:7px}.dinolab-model-lenses .dinolab-lens-art{height:32px}}@media(prefers-reduced-motion:no-preference){.dinolab-model-lenses .dinolab-lens-choice{transition:border-color .15s,background-color .15s}}'),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '3px 10px', marginBottom: 7 } },
+            el('h3', { id: 'dinolab-model-lenses-title', style: { margin: 0, color: T.text, fontSize: 13, fontWeight: 900 } }, lt('title', 'Read the model')),
+            el('span', { style: { color: T.soft, fontSize: 11.5 } }, lt('intro', 'Switch layers. Ask what each view can show.'))),
+          el('div', { className: 'dinolab-surface-presets', role: 'group', 'aria-label': __alloT('stem.dinolab.surface_views', 'Reconstruction views'), style: { display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', gap: 7 } }, viewPresets.map(function (preset) {
+            var active = presetActive(preset);
+            return el('button', {
+              key: preset.id, type: 'button', className: 'dinolab-lens-choice', 'data-dino-model-lens': preset.id,
+              onClick: function () { applyPreset(preset); },
+              'aria-pressed': active ? 'true' : 'false', 'aria-controls': 'dinolab-model-lens-note',
+              style: { minHeight: 86, minWidth: 0, textAlign: 'left', borderRadius: 9, border: '1px solid ' + (active ? '#14b8a6' : T.border), background: active ? 'rgba(20,184,166,0.12)' : T.deeper, color: T.text, padding: '7px 8px', cursor: 'pointer', boxShadow: active ? 'inset 0 -3px 0 #14b8a6' : 'none' }
+            }, modelLensArt(preset),
+              el('span', { style: { display: 'block', fontSize: 12, fontWeight: 900, lineHeight: 1.3, marginBottom: 2 } }, preset.label),
+              el('span', { style: { display: 'block', fontSize: 10.5, color: T.soft, lineHeight: 1.3 } }, preset.detail));
+          })),
+          el('div', { id: 'dinolab-model-lens-note', className: 'dinolab-lens-note', 'data-dino-active-lens': activeLens ? activeLens.id : 'custom', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '9px 2px 0', color: T.soft, fontSize: 11.5, lineHeight: 1.5 } },
+            el('p', { style: { margin: 0 } }, el('strong', { style: { color: T.text } }, lt('look_for', 'Look for: ')), lensQuestion),
+            el('p', { style: { margin: 0 } }, el('strong', { style: { color: T.text } }, lt('keep_in_mind', 'Keep in mind: ')), lensLimit)));
         function keyItem(color, label, detail) {
           return el('div', { key: label, style: { display: 'grid', gridTemplateColumns: '14px 1fr', gap: 8, alignItems: 'start', padding: '7px 0', borderBottom: '1px solid ' + T.border } },
             el('span', { 'aria-hidden': 'true', style: { width: 12, height: 12, borderRadius: 999, background: color, marginTop: 2, boxShadow: '0 0 0 2px rgba(255,255,255,0.08)' } }),
@@ -18995,14 +21340,14 @@ var evidenceRoute = [
           el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative', background: T.canvas, color: T.text, overflowY: focusMode ? 'auto' : undefined } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
-                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dShapeStudy: null, field3dWorkflowStarted: false, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
                 el('div', { className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_model_view_controls', '3D model view controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
-                  el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin'),
-                  focusMode ? null : el('button', { id: 'dinolab-field-tools-toggle', type: 'button', onClick: drawerOpen ? closeFieldDrawer : openCurrentWorkflowTools, 'aria-expanded': drawerOpen ? 'true' : 'false', 'aria-controls': 'dinolab-field-drawer', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (drawerOpen ? '#5eead4' : T.border), background: drawerOpen ? 'rgba(20,184,166,0.16)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, drawerOpen ? 'Close field tools' : 'Open field tools'),
+                  el('button', { disabled: !!shapeStudy, onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin'),
+                  focusMode ? null : el('button', { id: 'dinolab-field-tools-toggle', type: 'button', onClick: function () { exitShapeStudy(); if (drawerOpen) closeFieldDrawer(); else openCurrentWorkflowTools(); }, 'aria-expanded': drawerOpen ? 'true' : 'false', 'aria-controls': 'dinolab-field-drawer', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (drawerOpen ? '#5eead4' : T.border), background: drawerOpen ? 'rgba(20,184,166,0.16)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, drawerOpen ? 'Close field tools' : 'Open field tools'),
                   el('button', { id: 'dinolab-field-focus-toggle', type: 'button', onClick: toggleFieldFocus, 'aria-pressed': focusMode ? 'true' : 'false', 'aria-keyshortcuts': focusMode ? 'Escape' : null, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (focusMode ? '#5eead4' : '#15803d'), background: focusMode ? 'rgba(20,184,166,0.16)' : '#15803d', color: focusMode ? T.text : '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, focusMode ? 'Exit focus view' : 'Focus model')
                 )
               ),
-              el('div', { className: 'dinolab-field-workflow', hidden: focusMode, role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_field_station_workflow', 'Field Station workflow'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
+              el('div', { className: 'dinolab-field-workflow', hidden: focusMode || !!shapeStudy, role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_field_station_workflow', 'Field Station workflow'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
                 // teal-300 sits at 1.33:1 on the light "current" card; same
                 // render-time theme sniff the file uses for dinoCueInk.
                 var stepCurrentInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
@@ -19021,12 +21366,13 @@ var evidenceRoute = [
                   )
                 );
               })),
+              renderShapeStudyControls(),
               presetStrip,
               el('button', { id: 'dinolab-compare-coverings', type: 'button', onClick: function () { openFieldDrawer('reconstruct'); }, 'aria-controls': 'dinolab-field-drawer', 'aria-expanded': drawerOpen && drawerSection === 'reconstruct' ? 'true' : 'false', style: Object.assign({}, actionStyle, { minHeight: 44, marginBottom: 10, textAlign: 'left' }) }, 'Compare coverings: ' + activeHypothesis.shortLabel),
               el('div', { className: 'dinolab-presentation-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10 } },
                 el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.scene_lighting', 'Scene lighting') },
-                  pill(d.field3dStage !== 'habitat', __alloT('stem.dinolab.studio_lighting', 'Studio'), function () { upd('field3dStage', 'studio'); }, 'studio'),
-                  pill(d.field3dStage === 'habitat', __alloT('stem.dinolab.habitat_lighting', 'Habitat'), function () { upd('field3dStage', 'habitat'); }, 'habitat')),
+                  pill(!!shapeStudy || d.field3dStage !== 'habitat', __alloT('stem.dinolab.studio_lighting', 'Studio'), function () { upd('field3dStage', 'studio'); }, 'studio'),
+                  pill(!shapeStudy && d.field3dStage === 'habitat', __alloT('stem.dinolab.habitat_lighting', 'Habitat'), function () { upd('field3dStage', 'habitat'); }, 'habitat')),
                 el('label', { htmlFor: 'dino-scene-labels', style: { fontSize: 12, fontWeight: 700, color: T.soft } }, __alloT('stem.dinolab.model_labels', 'Model labels')),
                 el('select', { id: 'dino-scene-labels', value: asOptionValue(d.field3dLabelMode) || 'key', onChange: function (event) { upd('field3dLabelMode', event.target.value); }, style: actionStyle },
                   el('option', { value: 'key' }, __alloT('stem.dinolab.key_labels', 'Key labels')),
@@ -19034,8 +21380,26 @@ var evidenceRoute = [
                   el('option', { value: 'all' }, __alloT('stem.dinolab.all_labels', 'All labels')),
                   el('option', { value: 'off' }, __alloT('stem.dinolab.labels_off', 'Labels off'))),
                 el('span', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.studio_note', 'Studio lighting shows form; habitat scenes and surface colors are interpretations.'))),
-              el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
-              el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
+              el(DinoFieldStation3DStable, { species: dn, shapeStudy: shapeStudy, onShapeStudyExit: exitShapeStudy, onShapeStudyViewsAppend: function (pins, parts) {
+                  var result = dinoShapeViewNotebookAppend(d.compareInquiry, shapeStudy, pins, parts, activeHypothesis.id);
+                  if (result.added) upd('compareInquiry', result.state);
+                  return result.reason;
+                }, onShapeStudySideChange: function (side) { if (shapeStudy && (side === 'a' || side === 'b')) navigateShapeStudy({ family: shapeStudy.family.id, b: shapeStudy.b.id, active: side }); }, stage: shapeStudy ? 'studio' : (d.field3dStage || 'studio'), labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); },
+                partComparisons: d.field3dPartComparisons,
+                onPartComparisonChange: function (partId, patch, record) {
+                  var next = dinoPartComparisonUpdate(d.field3dPartComparisons, dn, partId, activeHypothesis.id, patch, record);
+                  upd('field3dPartComparisons', next);
+                  if (record === true && dinoPartComparisonIsRecorded(next[dn.id + '|' + partId + '|' + activeHypothesis.id])) announceToSR('Model comparison recorded for ' + dn.common + '. Your writing has not been automatically assessed.');
+                },
+                onPartComparisonNotebook: function () { upd({ tab: 'notes', notebookSpecies: dn.id }); focusSoon('dino-model-comparisons-notebook'); },
+                onPartLayerInspect: function (mode, label, observation) {
+                  var patch = dinoPartInspectionLayers(mode);
+                  if (!patch) return;
+                  upd(patch);
+                  announceToSR((mode === 'bone' ? 'Bone structure' : 'Life surface') + ' at ' + label + '. ' + observation);
+                },
+                autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: shapeStudy ? false : workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: shapeStudy ? {} : scanLogged, loggedAnchorKey: shapeStudy ? '' : scanLoggedKey, loggedCount: shapeStudy ? 0 : scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: shapeStudy ? 0 : scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: shapeStudy ? {} : assemblyPlaced, assemblyPlacedKey: shapeStudy ? '' : assemblyPlacedKey, assemblyPlacedCount: shapeStudy ? 0 : assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: shapeStudy ? false : assemblyUnlocked, claimEvidenceFocus: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: shapeStudy ? null : claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el('div', { key: 'evidenceContext', hidden: !!shapeStudy, className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
                   el('div', { style: { color: T.soft, fontSize: 11.5, lineHeight: 1.35 } }, claimEvidenceTrailLabel ? 'Linked trail: ' + claimEvidenceTrailLabel : 'Keep observations separate from inference as you explore')
@@ -19179,6 +21543,7 @@ var evidenceRoute = [
       function renderComparisonInvestigation(a, b) {
         function cpt(key, fallback) { return t('stem.dinolab.compare_' + key, fallback); }
         var model = comparisonInquiryState(d.compareInquiry), key = comparisonPairKey(a, b);
+        var shapeStudyPair = dinoShapeStudyPairFor(a, b);
         if (!key) return null;
         var ids = [a.id, b.id].sort();
         var q = model.pairs.find(function (entry) { return entry.key === key; }) || { key: key, a: ids[0], b: ids[1], step: 'predict', prediction: '', evidence: [], explanation: '', limit: '' };
@@ -19201,7 +21566,7 @@ var evidenceRoute = [
             el('button', { type: 'button', disabled: !q.prediction.trim(), style: actionStyle, onClick: function () { save({ step: 'inspect' }, true); } }, cpt('inspect_evidence', 'Inspect comparison evidence')));
         } else if (stage === 'inspect') {
           body = el('div', null,
-            el('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.soft } }, cpt('evidence_hint', 'Use the charts and fossil context above, then cite the evidence that supports your question. Size and diet alone cannot establish that animals met.')),
+            el('p', { style: { fontSize: 13, lineHeight: 1.6, color: T.soft } }, cpt('evidence_hint', 'Use the charts, source context and any 3D observations you made. Name the kind of evidence: a model observation is not new fossil evidence. Size and diet alone cannot establish that animals met.')),
             el('fieldset', { style: { border: '1px solid ' + T.border, borderRadius: 9, padding: 12, marginBottom: 14 } },
               el('legend', { style: { fontSize: 13, fontWeight: 900, padding: '0 5px' } }, cpt('evidence_legend', 'Evidence I will cite')),
               COMPARISON_EVIDENCE.map(function (item) { return el('label', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, fontSize: 13, lineHeight: 1.5, cursor: 'pointer' } },
@@ -19213,7 +21578,7 @@ var evidenceRoute = [
         } else {
           body = el('div', null,
             el('p', { style: { fontSize: 12, lineHeight: 1.6 } }, el('strong', null, cpt('prediction_label', 'My prediction') + ': '), q.prediction),
-            field('dino-compare-explanation', cpt('explanation_label', 'My explanation'), q.explanation, 1800, 'explanation', cpt('explanation_hint', 'Use at least one actual catalog value or range. Explain whether your prediction changed and why. Your writing is recorded without automatic grading.')),
+            field('dino-compare-explanation', cpt('explanation_label', 'My explanation'), q.explanation, 1800, 'explanation', cpt('explanation_hint', 'Use a catalog value, range or a specific model observation, naming which kind it is. Explain whether your prediction changed and why. Your writing is recorded without automatic grading.')),
             field('dino-compare-limit', cpt('limit_label', 'A limit or next question'), q.limit, 1000, 'limit', cpt('limit_hint', 'What can these records not tell you? For an encounter, consider local fossil context, dating precision, and evidence of interaction.')),
             el('button', { type: 'button', style: actionStyle, onClick: function () { save({ step: 'inspect' }, true); } }, cpt('return_evidence', 'Return to evidence')));
         }
@@ -19223,6 +21588,11 @@ var evidenceRoute = [
           el('p', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6 } }, cpt('inquiry_scope', 'The charts remain available while you predict, inspect, and explain. Drafts stay attached to this species pair when you swap the display. Keeps up to 12 recent pair investigations; download a copy to keep independently.')),
           el('ol', { 'aria-label': cpt('stages_label', 'Comparison investigation stages'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px 20px', padding: 0, listStyle: 'none', fontSize: 12, marginBottom: 16 } }, ['predict', 'inspect', 'explain'].map(function (step, i) { return el('li', { key: step, 'aria-current': stage === step ? 'step' : undefined, style: { fontWeight: stage === step ? 900 : 400, borderBottom: stage === step ? '2px solid ' + T.text : '2px solid transparent', paddingBottom: 4 } }, (i + 1) + '. ' + cpt('stage_' + step, cap(step))); })),
           body,
+          shapeStudyPair ? el('button', { type: 'button', 'data-dino-shape-resume': shapeStudyPair.family.id, style: Object.assign({}, actionStyle, { minHeight: 44, marginBottom: 10 }), onClick: function () {
+            var record = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
+            upd(dinoShapeStudyNavigationPatch(d, shapeStudyPair, fieldProgressIsValid(record) ? record : null));
+            focusSoon('dinolab-shape-study-heading');
+          } }, 'Inspect these shapes in 3D') : null,
           el('p', { style: { fontSize: 11, color: T.soft, lineHeight: 1.6 } }, cpt('draft_kept', 'Responses are kept as you type. Citing a record does not automatically verify your conclusion.')),
           el('button', { type: 'button', disabled: !hasWork, style: Object.assign({}, actionStyle, { marginTop: 6 }), onClick: function () { upd('tab', 'notes'); focusSoon('dino-comparison-notebook'); } }, cpt('open_notebook', 'Open comparison notebook')));
       }
@@ -20316,6 +22686,8 @@ var evidenceRoute = [
       }
 
       function renderNotes() {
+        var partComparisons = dinoPartComparisonState(d.field3dPartComparisons);
+        var partComparisonKeys = Object.keys(partComparisons);
         var classification = classificationInquiryState(d.classificationInquiry);
         var classificationCases = CLASSIFY_CASES.filter(function (task) { return classificationHasWork(classification.cases[task.id]); });
         var comparisonRecords = comparisonInquiryState(d.compareInquiry).pairs.filter(function (q) { return q.prediction.trim() || q.evidence.length || q.explanation.trim() || q.limit.trim(); });
@@ -20329,18 +22701,22 @@ var evidenceRoute = [
         var digReferenceClues = digReference ? digReference.clues.filter(function (clue) { return arrVal(digContext.clues).indexOf(clue.id) >= 0; }) : [];
         var digReferenceText = digReference && notebook[digReference.chosen.id] ? '\nREFERENCE CONTEXT | Catalog excavation exercise #' + digReference.seed + '\nCandidate: ' + digReference.chosen.common + '\nCited catalog clues:\n' + digReferenceClues.map(function (clue) { return clue.text; }).join('\n') + '\nPrompt: Which clue ruled out your closest alternative? What would you still need to identify a real fossil?\nThe grid fragments are symbolic. These clues are catalog information, not observations of an actual fossil.\n' : '';
         var entry = notebook[dn.id] || {};
+        var inquirySource = (specimenInquiryState(d.specimenInquiry)[dn.id] || {}).source;
+        var inquirySourceLabels = { fossil: t('stem.dinolab.specimen_inquiry_source_fossil', 'Reported fossil evidence'), catalog: t('stem.dinolab.specimen_inquiry_source_catalog', 'Catalog estimate or reconstruction'), model: t('stem.dinolab.specimen_inquiry_source_model', 'The illustrative model') };
         var noteIds = DINO_CATALOG_ORDER.filter(function (animal) { return notebook[animal.id]; });
         function edit(field, value) {
           var next = Object.assign({}, notebook), note = Object.assign({}, entry);
           note[field] = value.slice(0, 2000);
           // Keep whitespace while writing; cleanup only removes truly empty entries.
           if (NOTE_FIELDS.some(function (item) { return note[item.id]; })) next[dn.id] = note; else delete next[dn.id];
-          upd('notebook', next);
+          var patch = { notebook: next }, inquiries = specimenInquiryState(d.specimenInquiry);
+          if (inquiries[dn.id]) { inquiries[dn.id] = Object.assign({}, inquiries[dn.id], { reviewed: false }); patch.specimenInquiry = inquiries; }
+          upd(patch);
         }
         function downloadNotebook() {
           var url = null;
           try {
-            url = URL.createObjectURL(new Blob([notebookText(notebook) + classificationNotebookText(d.classificationInquiry) + comparisonInquiryText(d.compareInquiry) + timeInquiryText(d.timeInquiry) + digReferenceText + evidenceWorkbenchText(d.evidenceWorkbench) + kpgNotebookText(d.kpgInvestigation)], { type: 'text/plain;charset=utf-8' }));
+            url = URL.createObjectURL(new Blob([notebookText(notebook, d.specimenInquiry) + classificationNotebookText(d.classificationInquiry) + comparisonInquiryText(d.compareInquiry) + timeInquiryText(d.timeInquiry) + digReferenceText + evidenceWorkbenchText(d.evidenceWorkbench) + kpgNotebookText(d.kpgInvestigation) + dinoPartComparisonNotebookText(partComparisons)], { type: 'text/plain;charset=utf-8' }));
             var link = document.createElement('a'); link.href = url; link.download = 'dino-lab-field-notebook.txt';
             document.body.appendChild(link); link.click(); link.remove();
             window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
@@ -20357,6 +22733,7 @@ var evidenceRoute = [
             el('select', { id: 'dino-notebook-specimen', value: dn.id, onChange: function (event) { upd('notebookSpecies', event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%' }) },
               DINO_CATALOG_ORDER.map(function (animal) { return el('option', { key: animal.id, value: animal.id }, animal.common + (notebook[animal.id] ? ' •' : '')); }))),
           el('div', { style: { fontSize: 12, color: T.soft, marginBottom: 12 } }, dn.name + ' · ' + fmtMya(dn)),
+          inquirySource ? el('p', { style: { fontSize: 12, color: T.soft, lineHeight: 1.6, margin: '0 0 14px' } }, el('strong', null, t('stem.dinolab.specimen_inquiry_note_source', 'My selected evidence source: ')), inquirySourceLabels[inquirySource]) : null,
           digReference && digReference.chosen.id === dn.id ? el('section', { 'aria-label': __alloT('stem.dinolab.dig_notebook_context', 'Excavation exercise context'), style: { padding: 12, marginBottom: 14, background: T.deeper, border: '1px solid ' + T.border, borderRadius: 10, fontSize: 13, lineHeight: 1.6 } },
             el('h3', { style: { fontSize: 14, margin: '0 0 8px' } }, __alloT('stem.dinolab.dig_notebook_title', 'Your catalog excavation evidence') + ' · #' + digReference.seed),
             el('ul', { style: { paddingLeft: 20, margin: '0 0 10px' } }, digReferenceClues.map(function (clue) { return el('li', { key: clue.id }, clue.text); })),
@@ -20374,7 +22751,7 @@ var evidenceRoute = [
               el('div', { style: { textAlign: 'right', fontSize: 10, color: T.soft } }, (entry[field.id] || '').length + ' / 2000'));
           }),
           el('p', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.notes_retained', 'Changes are kept in the activity as you type.')),
-          el('button', { type: 'button', disabled: !noteIds.length && !classificationCases.length && !comparisonRecords.length && !inquiry.started && !benchCases.length && !kpgHasWork(kpg), style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
+          el('button', { type: 'button', disabled: !noteIds.length && !classificationCases.length && !comparisonRecords.length && !inquiry.started && !benchCases.length && !kpgHasWork(kpg) && !partComparisonKeys.length, style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
         var collection = el('aside', { 'aria-label': __alloT('stem.dinolab.notebook_entries', 'Notebook entries'), style: { minWidth: 0 } },
           panel([
             el('h3', { key: 'h', style: { margin: '0 0 5px', fontSize: 16 } }, __alloT('stem.dinolab.your_investigations', 'Your investigations')),
@@ -20392,6 +22769,26 @@ var evidenceRoute = [
           ])));
         var cards = MYTHS.map(function (m) { return panel([el('div', { key: 'm', style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 6 } }, '❌ Myth: ' + m.myth), el('div', { key: 'r', style: { fontSize: 13, marginBottom: 6, lineHeight: 1.5 } }, el('strong', { style: { color: T.text } }, '✅ Reality: '), m.reality), el('div', { key: 'w', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, m.why)], { key: m.id }); });
         return el('div', null,
+          partComparisonKeys.length ? el('section', { 'aria-labelledby': 'dino-model-comparisons-notebook', className: 'dinolab-model-comparisons-notebook', style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
+            el('h2', { id: 'dino-model-comparisons-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 19 } }, 'My model landmark comparisons'),
+            el('p', { style: { fontSize: 12.5, color: T.soft, lineHeight: 1.6 } }, 'These are your observations of an illustrative reconstruction. Bone view is a composite, not a map of preserved fossil material. Your writing is included in the notebook download without automatic assessment.'),
+            el('div', { style: { display: 'grid', gap: 10 } }, partComparisonKeys.map(function (key) {
+              var ids = key.split('|'), context = dinoPartComparisonContext(byId(ids[0]), ids[1], ids[2]), comparison = partComparisons[key];
+              function response(label, value) {
+                if (!value) return null;
+                return el('div', { style: { marginTop: 12 } },
+                  el('h4', { style: { margin: '0 0 6px', fontSize: 13 } }, label),
+                  [['Bone-view observation', value.bone], ['Life-view observation', value.life], ['Next evidence question', value.question]].map(function (row) {
+                    return row[1] ? el('p', { key: row[0], style: { margin: '0 0 7px', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 13, lineHeight: 1.6 } }, el('strong', null, row[0] + ': '), row[1]) : null;
+                  }));
+              }
+              return el('details', { key: key, 'data-dino-part-comparison-note': key, style: { padding: 12, borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper } },
+                el('summary', { style: { cursor: 'pointer', minHeight: 44, padding: '8px 0', boxSizing: 'border-box', fontWeight: 800, lineHeight: 1.5 } }, context.species.common + ' · ' + context.part.label + ' · ' + context.hypothesisLabel),
+                response('Latest recorded comparison', comparison.record),
+                !dinoPartComparisonIsRecorded(comparison) ? response('Current unrecorded draft', comparison) : null,
+                el('p', { style: { fontSize: 12, lineHeight: 1.6, color: T.soft } }, context.inspection.limit),
+                el('a', { href: context.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', minHeight: 44, padding: '10px 0', boxSizing: 'border-box', fontSize: 12.5, color: T.text, textDecoration: 'underline' }, 'aria-label': context.source.title + ' (opens in a new tab)' }, context.source.title));
+            }))) : null,
           classificationCases.length ? el('section', { 'aria-labelledby': 'dino-classification-notebook', style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
             el('h2', { id: 'dino-classification-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 19 } }, clt('notebook_title', 'My classification investigations')),
             el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, clt('notebook_intro', 'Your first checked interpretation, first explanation, latest record, and current draft are included in the download. Written reasoning has not been automatically assessed.')),
@@ -20416,14 +22813,14 @@ var evidenceRoute = [
             }))) : null,
           comparisonRecords.length ? el('section', { 'aria-labelledby': 'dino-comparison-notebook', style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
             el('h2', { id: 'dino-comparison-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 19 } }, t('stem.dinolab.compare_notebook_title', 'My comparison investigations')),
-            el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, t('stem.dinolab.compare_notebook_intro', 'Your predictions, cited catalog evidence, explanations, and open questions are kept with each pair and included in the download. Written reasoning has not been automatically assessed.')),
+            el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, t('stem.dinolab.compare_notebook_intro', 'Your predictions, cited observations and evidence, explanations, and open questions are kept with each pair and included in the download. Model observations describe reconstructions. Written reasoning has not been automatically assessed.')),
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 12 } }, comparisonRecords.map(function (q) {
               var a = byId(q.a), b = byId(q.b);
               function response(label, value) { return value ? el('div', { style: { marginBottom: 10 } }, el('strong', { style: { fontSize: 12 } }, label), el('p', { style: { margin: '4px 0 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 13, lineHeight: 1.6 } }, value)) : null; }
               return el('article', { key: q.key, 'data-comparison-note': q.key, style: { padding: 14, borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, minWidth: 0 } },
                 el('h3', { style: { margin: '0 0 10px', fontSize: 16 } }, a.common + ' + ' + b.common),
                 response(t('stem.dinolab.compare_note_prediction', 'My prediction'), q.prediction),
-                q.evidence.length ? el('p', { style: { fontSize: 12, lineHeight: 1.6, margin: '0 0 10px' } }, el('strong', null, t('stem.dinolab.compare_note_evidence', 'Cited catalog evidence: ')), COMPARISON_EVIDENCE.filter(function (item) { return q.evidence.indexOf(item.id) >= 0; }).map(function (item) { return t('stem.dinolab.compare_evidence_' + item.id, item.label); }).join('; ')) : null,
+                q.evidence.length ? el('p', { style: { fontSize: 12, lineHeight: 1.6, margin: '0 0 10px' } }, el('strong', null, t('stem.dinolab.compare_note_evidence', 'Cited observations and evidence: ')), COMPARISON_EVIDENCE.filter(function (item) { return q.evidence.indexOf(item.id) >= 0; }).map(function (item) { return t('stem.dinolab.compare_evidence_' + item.id, item.label); }).join('; ')) : null,
                 response(t('stem.dinolab.compare_note_explanation', 'My explanation'), q.explanation),
                 response(t('stem.dinolab.compare_note_limit', 'A limit or next question'), q.limit),
                 el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'compare', compareA: q.a, compareB: q.b, compareInquiryOpen: true }); focusSoon('dino-compare-heading'); } }, t('stem.dinolab.compare_resume', 'Resume this comparison')));
@@ -20626,8 +23023,54 @@ var evidenceRoute = [
         content = el('div', { style: { padding: 20, color: T.text } },
           el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
           el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
-          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dReconstructionMode: 'evidence', field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, field3dProgress: null, field3dWorkflowStarted: false, field3dDrawerOpen: false, field3dFocusMode: false, field3dOrientationDismissed: false, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dReconstructionMode: 'evidence', field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, field3dProgress: null, field3dShapeStudy: null, field3dWorkflowStarted: false, field3dDrawerOpen: false, field3dFocusMode: false, field3dOrientationDismissed: false, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
         );
+      }
+
+
+      // Separate plates avoid suggesting a shared habitat; dates stay hidden until prediction.
+      function renderInquiryPlates() {
+        return el('figure', { className: 'dinolab-inquiry-plates' },
+          el('div', { className: 'dinolab-plate-heading', 'aria-hidden': 'true' }, el('span', null, t('stem.dinolab.plate_label', 'COMPARATIVE FIELD STUDY')), el('span', null, '01 / 02')),
+          ['tyrannosaurus', 'stegosaurus'].map(function (id, i) {
+            var animal = byId(id);
+            return el('div', { key: id, className: 'dinolab-study-plate dinolab-study-plate-' + i },
+              el('span', { className: 'dinolab-plate-number', 'aria-hidden': 'true' }, '0' + (i + 1)), catalogGlyph(animal),
+              el('div', { className: 'dinolab-plate-caption' }, el('strong', null, animal.common), el('span', null, animal.name)),
+              el('div', { className: 'dinolab-plate-ruler', 'aria-hidden': 'true' }));
+          }),
+          el('figcaption', null, t('stem.dinolab.inquiry_schematic', 'Schematic silhouettes · not to scale')));
+      }
+
+      function renderLearningRoutes() {
+        var routes = [
+          { id: 'field3d', number: '01', kind: 'layers', title: t('stem.dinolab.route_model_title', 'How do bones become an animal?'), copy: t('stem.dinolab.route_model_copy', 'Peel back a reconstruction. Separate fossil clues from the choices in a model.'), action: t('stem.dinolab.route_model_action', 'Open the 3D field station'), label: t('stem.dinolab.route_model_label', 'RECONSTRUCT') },
+          { id: 'anatomy', number: '02', kind: 'feather', title: t('stem.dinolab.route_evidence_title', 'What can a fossil really tell us?'), copy: t('stem.dinolab.route_evidence_copy', 'Inspect feather and scale evidence. Build a claim and name its limits.'), action: t('stem.dinolab.route_evidence_action', 'Investigate the evidence'), label: t('stem.dinolab.route_evidence_label', 'REASON') },
+          { id: 'dig', number: '03', kind: 'strata', title: t('stem.dinolab.route_dig_title', 'What clues survive underground?'), copy: t('stem.dinolab.route_dig_copy', 'Reveal a fossil carefully. Use its shape and rock context to test an identification.'), action: t('stem.dinolab.route_dig_action', 'Visit the dig site'), label: t('stem.dinolab.route_dig_label', 'DISCOVER') }
+        ];
+        function routeArt(kind) {
+          var art = kind === 'layers' ? [
+            el('path', { key: 'a', d: 'M9 40L39 25L77 40L47 56Z', fill: 'currentColor', opacity: .12 }),
+            el('path', { key: 'b', d: 'M9 30L39 15L77 30L47 46Z', fill: 'currentColor', opacity: .24 }),
+            el('path', { key: 'c', d: 'M9 20L39 5L77 20L47 36Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+            el('path', { key: 'd', d: 'M26 21L35 17L44 19L52 15L59 17L57 22L49 23L44 28L40 25L32 25Z', fill: 'currentColor' })
+          ] : kind === 'feather' ? [
+            el('path', { key: 'a', d: 'M23 52Q23 20 61 5Q70 40 23 52Z', fill: 'currentColor', opacity: .14 }),
+            el('path', { key: 'b', d: 'M18 59L60 7M27 46L28 30M35 35L38 20M43 25L47 14M27 46L44 45M35 35L55 34M43 25L62 23', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' })
+          ] : [
+            el('path', { key: 'a', d: 'M8 18L27 15L43 20L64 14L78 18V56H8Z', fill: 'currentColor', opacity: .08 }),
+            el('path', { key: 'b', d: 'M8 18L27 15L43 20L64 14L78 18M8 32L29 28L49 34L78 27M8 45L27 42L51 47L78 41M8 56H78', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+            el('path', { key: 'c', d: 'M35 24Q30 19 28 23Q25 27 32 29L49 36Q56 40 58 35Q60 31 54 31L35 24Z', fill: 'var(--dino-paper)', stroke: 'currentColor', strokeWidth: 1.5 })
+          ];
+          return el('svg', { viewBox: '0 0 86 66', width: 86, height: 66, 'aria-hidden': 'true', focusable: 'false' }, art);
+        }
+        return el('section', { className: 'dinolab-learning-routes', 'aria-labelledby': 'dino-routes-heading' },
+          el('div', { className: 'dinolab-routes-heading' }, el('h2', { id: 'dino-routes-heading' }, t('stem.dinolab.routes_heading', 'Follow another question')), el('span', null, t('stem.dinolab.routes_hint', 'Choose a way to investigate'))),
+          el('div', { className: 'dinolab-route-grid' }, routes.map(function (route) {
+            return el('button', { key: route.id, type: 'button', className: 'dinolab-route-card', 'data-dino-route': route.id, onClick: function () { upd('tab', route.id); focusSoon('dinotab-' + route.id); announceToSR(route.action); } },
+              el('div', { className: 'dinolab-route-top', 'aria-hidden': 'true' }, el('span', null, route.number + ' / ' + route.label), routeArt(route.kind)),
+              el('h3', null, route.title), el('p', null, route.copy), el('span', { className: 'dinolab-route-action' }, route.action, el('span', { 'aria-hidden': 'true' }, ' ↗')));
+          })));
       }
 
       function renderTimeInquiry() {
@@ -20662,14 +23105,17 @@ var evidenceRoute = [
         }
         var body;
         if (!q.started) {
-          body = el('div', { className: 'dinolab-inquiry-intro', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', gap: 20, alignItems: 'center' } },
-            el('div', null,
-              el('p', { style: copyStyle }, ti('invitation', 'Make a prediction. Read the fossil dates. Build an explanation you can defend.')),
-              el('button', { type: 'button', style: primary, onClick: function () { change({ started: true }, true); } }, ti('start', 'Start the investigation')),
-              el('p', { style: { fontSize: 12, color: T.soft, margin: '12px 0 0' } }, ti('free_explore', 'Or explore a specimen in the field guide below.'))),
-            el('div', { 'aria-hidden': 'true', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: T.deeper, padding: 12, borderRadius: 12 } },
-              ['tyrannosaurus', 'stegosaurus'].map(function (id) { var animal = byId(id); return el('div', { key: id, style: { textAlign: 'center', minWidth: 0 } }, catalogGlyph(animal), el('div', { style: { fontSize: 12, fontWeight: 800 } }, animal.common)); }),
-              el('div', { style: { gridColumn: '1 / -1', textAlign: 'center', fontSize: 11, color: T.soft } }, ti('schematic', 'Schematic silhouettes · not to scale'))));
+          return el('section', { className: 'dinolab-entry-investigation', 'aria-labelledby': 'dino-inquiry-heading', 'data-time-inquiry': 'intro' },
+            el('div', { className: 'dinolab-entry-copy' },
+              el('p', { className: 'dinolab-eyebrow' }, ti('eyebrow', 'Investigate a prehistoric encounter')),
+              el('h2', { id: 'dino-inquiry-heading', tabIndex: -1 }, title),
+              el('p', { className: 'dinolab-entry-invitation' }, ti('invitation', 'Make a prediction. Read the fossil dates. Build an explanation you can defend.')),
+              el('div', { className: 'dinolab-entry-actions' },
+                el('button', { type: 'button', className: 'dinolab-entry-primary', style: primary, onClick: function () { change({ started: true }, true); } }, ti('start', 'Start the investigation'), el('span', { 'aria-hidden': 'true' }, ' →')),
+                el('button', { type: 'button', className: 'dinolab-entry-browse', onClick: function () { focusSoon('dino-field-guide-heading'); } }, ti('browse', 'Browse the species guide'))),
+              el('ol', { className: 'dinolab-entry-method', 'aria-label': ti('method', 'How this investigation works') },
+                [ti('predict', 'Predict'), ti('inspect', 'Inspect'), ti('explain', 'Explain'), ti('transfer_short', 'Test again')].map(function (stage, i) { return el('li', { key: i }, el('span', { 'aria-hidden': 'true' }, '0' + (i + 1)), stage); }))),
+            renderInquiryPlates());
         } else if (q.step === 0) {
           body = el('div', null,
             el('p', { style: copyStyle }, ti('prediction_prompt', 'What do you think before looking at the dates? A prediction is a starting idea, not a score.')),
@@ -20718,6 +23164,7 @@ var evidenceRoute = [
         var savedSpecies = fieldProgressIsValid(savedProgress) ? byId(savedProgress.speciesId) : null;
         return el('div', { 'data-dinolab-command': 'true' },
           renderTimeInquiry(),
+          !timeInquiryState(d.timeInquiry).started || timeInquiryState(d.timeInquiry).step === 4 ? renderLearningRoutes() : null,
           savedSpecies ? el('section', { className: 'dinolab-resume-card', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 12, marginBottom: 14, borderRadius: 10, background: T.deeper, border: '1px solid ' + T.border } },
             el('div', { style: { flex: '1 1 180px', fontSize: 13, lineHeight: 1.6 } },
               el('strong', null, savedSpecies.common),
@@ -20774,7 +23221,19 @@ var evidenceRoute = [
       ].join('');
       accessibilityStyles += '.dinolab-root .dinolab-kpg-options{border:0;padding:0;margin:14px 0 0;min-width:0}.dinolab-root .dinolab-kpg-options legend{font-size:13px;line-height:1.6;margin-bottom:8px}.dinolab-root .dinolab-kpg-options label{display:flex;align-items:flex-start;gap:9px;padding:10px;margin:8px 0;border:1px solid var(--allo-stem-border,#334155);border-radius:8px;cursor:pointer;min-height:44px;box-sizing:border-box}.dinolab-root .dinolab-kpg-options label.is-picked{border-color:var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-kpg-options input{margin:3px 0 0}.dinolab-root .dinolab-kpg-options span{min-width:0;overflow-wrap:anywhere}.dinolab-root .dinolab-kpg-links h4,.dinolab-root .dinolab-kpg h5{font-weight:800}';
       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
-      return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
+      accessibilityStyles += [
+        '.dinolab-root{font-family:inherit}.dinolab-root #dinopanel{max-width:1440px;margin-inline:auto;box-sizing:border-box;padding:24px!important}.dinolab-root .dinolab-navigation{border-bottom:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-section-cue{max-width:1440px;margin:auto;padding:12px 24px 0!important;min-height:52px}.dinolab-root .dinolab-wordmark{display:flex;align-items:center;gap:10px;color:var(--dino-ink);flex-shrink:0}.dinolab-root .dinolab-wordmark-symbol{display:grid;place-items:center;width:34px;height:38px;border:1px solid var(--dino-accent);border-radius:5px 12px 5px 5px;color:var(--dino-accent);font:700 25px Georgia,serif}.dinolab-root .dinolab-wordmark strong{display:block;font-size:17px;letter-spacing:-.03em}.dinolab-root .dinolab-wordmark small{display:block;font-size:10px;letter-spacing:.045em;margin-top:2px;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-current-group{margin-left:18px;font-size:10px}.dinolab-root .dinolab-tablist{max-width:1440px;margin:auto;box-sizing:border-box;padding:10px 24px!important;scrollbar-width:thin;scrollbar-color:var(--allo-stem-border,#334155) transparent}.dinolab-root .dinolab-tablist>button{font-size:12px!important;border-radius:6px!important;box-shadow:none!important}.dinolab-root .dinolab-tablist>button[aria-selected=true]{background:var(--dino-accent)!important;color:var(--dino-on-accent)!important}',
+        '.dinolab-root .dinolab-entry-investigation{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:30px;align-items:center;padding:30px 34px;margin-bottom:24px;border:1px solid var(--allo-stem-border,#334155);border-radius:18px;background:linear-gradient(115deg,var(--dino-paper),var(--allo-stem-panel,#1e293b) 65%);position:relative;overflow:hidden}.dinolab-root .dinolab-entry-copy{min-width:0}.dinolab-root .dinolab-eyebrow{font-size:10px;line-height:1.6;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--dino-accent);margin:0 0 16px}.dinolab-root .dinolab-entry-investigation h2{font-family:Georgia,Times,serif;font-size:clamp(30px,3.8vw,49px);letter-spacing:-.045em;font-weight:400;line-height:1.09;margin:0;max-width:600px;text-wrap:balance}.dinolab-root .dinolab-entry-invitation{font-size:15px;line-height:1.75;max-width:430px;color:var(--allo-stem-text-soft,#94a3b8);margin:20px 0}.dinolab-root .dinolab-entry-actions{display:flex;align-items:center;flex-wrap:wrap;gap:14px}.dinolab-root .dinolab-entry-primary{padding:12px 18px!important;border-radius:7px!important;background:var(--dino-accent)!important;border-color:var(--dino-accent)!important;color:var(--dino-on-accent)!important;font-weight:700}.dinolab-root .dinolab-entry-primary>span{margin-left:12px}.dinolab-root .dinolab-entry-browse{font:600 12px/1.5 inherit;font-family:inherit;font-size:12px;min-height:44px;padding:8px 0;color:var(--dino-ink);background:transparent;border:0;border-bottom:1px solid var(--allo-stem-border,#334155);cursor:pointer}.dinolab-root .dinolab-entry-method{display:flex;flex-wrap:wrap;gap:10px 20px;list-style:none;padding:18px 0 0;margin:24px 0 0;border-top:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-entry-method li{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700}.dinolab-root .dinolab-entry-method li>span{font:11px ui-monospace,monospace;color:var(--dino-accent)}',
+        '.dinolab-root .dinolab-inquiry-plates{margin:0;padding:18px 20px 12px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--dino-paper);min-width:0;box-shadow:7px 7px 0 color-mix(in srgb,var(--dino-accent) 7%,transparent)}.dinolab-root .dinolab-plate-heading{display:flex;justify-content:space-between;gap:12px;font:9px/1.6 ui-monospace,monospace;letter-spacing:.08em;color:var(--allo-stem-text-soft,#94a3b8);padding-bottom:12px;border-bottom:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-study-plate{position:relative;padding:8px 16px 12px;margin-top:12px;border:1px solid var(--allo-stem-border,#334155);background-color:var(--allo-stem-panel,#1e293b);background-image:linear-gradient(color-mix(in srgb,var(--allo-stem-border,#334155) 28%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--allo-stem-border,#334155) 28%,transparent) 1px,transparent 1px);background-size:20px 20px;border-radius:4px}.dinolab-root .dinolab-plate-number{position:absolute;top:10px;left:10px;font:10px ui-monospace,monospace;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-study-plate svg{height:95px;color:var(--dino-accent)!important}.dinolab-root .dinolab-plate-caption{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}.dinolab-root .dinolab-plate-caption strong{font:700 14px Georgia,serif}.dinolab-root .dinolab-plate-caption>span{font-size:9px;font-style:italic;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-plate-ruler{height:5px;border-bottom:1px solid var(--allo-stem-border,#334155);background:repeating-linear-gradient(90deg,var(--allo-stem-border,#334155) 0 1px,transparent 1px 12px);margin-top:9px}.dinolab-root .dinolab-inquiry-plates figcaption{text-align:center;font-size:9px;line-height:1.6;color:var(--allo-stem-text-soft,#94a3b8);margin-top:10px}',
+        '.dinolab-root .dinolab-learning-routes{margin:24px 0 30px}.dinolab-root .dinolab-routes-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}.dinolab-root .dinolab-routes-heading h2{font-size:14px;font-weight:800;letter-spacing:-.01em;margin:0}.dinolab-root .dinolab-routes-heading>span{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-route-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.dinolab-root .dinolab-route-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;padding:16px 20px 18px;background:var(--allo-stem-panel,#1e293b);color:var(--dino-ink);border:1px solid var(--allo-stem-border,#334155);border-radius:12px;font-family:inherit;cursor:pointer;min-width:0}.dinolab-root .dinolab-route-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px;color:var(--dino-accent)}.dinolab-root .dinolab-route-top>span{font:9px/1.6 ui-monospace,monospace;letter-spacing:.08em}.dinolab-root .dinolab-route-top svg{width:65px;height:48px;flex-shrink:0}.dinolab-root .dinolab-route-card h3{font:400 23px/1.2 Georgia,Times,serif;letter-spacing:-.025em;margin:0 0 10px;max-width:270px;text-wrap:balance}.dinolab-root .dinolab-route-card p{font-size:12px;line-height:1.75;color:var(--allo-stem-text-soft,#94a3b8);margin:0 0 16px;max-width:350px}.dinolab-root .dinolab-route-action{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;color:var(--dino-accent);border-top:1px solid var(--allo-stem-border,#334155);padding-top:11px;margin-top:auto}.dinolab-root .dinolab-route-action>span{font-size:19px;line-height:1}',
+        '.dinolab-root .dinolab-catalog-controls{padding:20px!important;border-radius:12px!important}.dinolab-root .dinolab-catalog-controls h2{font-size:30px!important;letter-spacing:-.03em;font-weight:400}.dinolab-root .dinolab-catalog-controls input[type=search]{background:var(--allo-stem-canvas,#0f172a)!important;border-radius:7px!important}.dinolab-root .dinolab-species-grid{gap:12px!important}.dinolab-root .dinolab-species-grid [data-dino-card]{padding:12px!important;box-shadow:none!important}.dinolab-root .dinolab-specimen-portrait{background:var(--dino-paper)!important}.dinolab-root .dinolab-specimen-portrait svg{height:84px}.dinolab-root .dinolab-resume-card{border-left:3px solid var(--dino-accent)!important}.dinolab-root [data-time-inquiry]:not([data-time-inquiry=intro]){max-width:960px;margin-inline:auto!important;padding:26px!important;border-top-color:var(--dino-accent)!important}.dinolab-root [data-time-inquiry]:not([data-time-inquiry=intro]) h2{font-family:Georgia,Times,serif;font-size:32px!important;font-weight:400;letter-spacing:-.025em}',
+        '@media(min-width:1100px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1.65fr) minmax(320px,.9fr)!important}.dinolab-root .dinolab-catalog-filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}}@media(hover:hover){.dinolab-root .dinolab-route-card:hover{border-color:var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-species-grid [data-dino-card]:hover{border-color:var(--dino-accent)!important}}',
+        '@media(max-width:800px){.dinolab-root #dinopanel{padding:16px!important}.dinolab-root .dinolab-entry-investigation{padding:24px;gap:22px;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr)}.dinolab-root .dinolab-entry-investigation h2{font-size:36px}.dinolab-root .dinolab-inquiry-plates{padding:12px}.dinolab-root .dinolab-plate-caption>span{display:none}.dinolab-root .dinolab-route-card{padding:14px}.dinolab-root .dinolab-route-card h3{font-size:20px}.dinolab-root .dinolab-current-group{display:none}}',
+        '@media(max-width:600px){.dinolab-root .dinolab-section-cue{padding:8px 12px 0!important}.dinolab-root .dinolab-wordmark small{display:none}.dinolab-root .dinolab-wordmark-symbol{width:27px;height:30px;font-size:21px}.dinolab-root .dinolab-wordmark strong{font-size:15px}.dinolab-root .dinolab-entry-investigation{grid-template-columns:minmax(0,1fr);padding:22px!important;gap:20px}.dinolab-root .dinolab-entry-investigation h2{font-size:36px}.dinolab-root .dinolab-entry-invitation{font-size:14px;margin:16px 0}.dinolab-root .dinolab-entry-method{gap:8px 15px;margin-top:18px;padding-top:14px}.dinolab-root .dinolab-inquiry-plates{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.dinolab-root .dinolab-plate-heading,.dinolab-root .dinolab-inquiry-plates figcaption{grid-column:1/-1;margin:0}.dinolab-root .dinolab-plate-heading{padding-bottom:7px}.dinolab-root .dinolab-study-plate{margin:0;padding:5px 8px 8px}.dinolab-root .dinolab-study-plate svg{height:65px}.dinolab-root .dinolab-plate-number{font-size:8px;top:5px;left:5px}.dinolab-root .dinolab-plate-caption strong{font-size:12px}.dinolab-root .dinolab-route-grid{grid-template-columns:minmax(0,1fr);gap:10px}.dinolab-root .dinolab-route-card{position:relative;padding:16px 18px}.dinolab-root .dinolab-route-top{margin-bottom:10px;padding-right:70px}.dinolab-root .dinolab-route-top svg{position:absolute;right:12px;top:12px;width:60px;height:46px}.dinolab-root .dinolab-route-card h3{font-size:24px;max-width:250px;padding-right:25px}.dinolab-root .dinolab-route-card p{font-size:13px;max-width:none}.dinolab-root .dinolab-catalog-controls{padding:16px!important}.dinolab-root [data-time-inquiry]:not([data-time-inquiry=intro]){padding:18px!important}}',
+        '.theme-contrast .dinolab-root .dinolab-entry-investigation,.theme-contrast .dinolab-root .dinolab-study-plate{background:var(--allo-stem-panel,#000)}@media(forced-colors:active){.dinolab-root .dinolab-entry-investigation,.dinolab-root .dinolab-study-plate{background:Canvas}.dinolab-root .dinolab-entry-primary{background:ButtonFace!important;color:ButtonText!important;border:2px solid ButtonText!important}.dinolab-root .dinolab-tablist>button[aria-selected=true]{color:HighlightText!important;background:Highlight!important}.dinolab-root .dinolab-route-card{border:1px solid ButtonText}.dinolab-root .dinolab-route-card svg,.dinolab-root .dinolab-study-plate svg{color:CanvasText!important}}'
+      ].join('');
+      accessibilityStyles += '.dinolab-root.is-field-focus #dinopanel{max-width:none;padding:10px!important}';
+      return el('div', { className: 'dinolab-root' + (fieldFocusActive ? ' is-field-focus' : ''), style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

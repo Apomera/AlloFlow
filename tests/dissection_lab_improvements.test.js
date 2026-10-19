@@ -146,7 +146,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).not.toContain('__alloDissectionReplayTimer');
       expect(source).not.toContain('__alloDissectionCompareReplayTimer');
       expect(source).toContain('_incisionAnim: null, _layerTransition: null');
-      expect(source).toContain("quizExplanation: d.practicalMode ? null : quizQ.fn.split('.')");
+      expect(source).toContain("quizExplanation: d.practicalMode ? null : dissectionStructureCue(quizQ, 'explanation')");
       expect(source).not.toContain('d.practicalMode && !correct ? null');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('Comparison paths shown at the final frame because reduced motion is active.');
@@ -622,7 +622,11 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('relationshipMotion: relationshipMotion');
       expect(source).toContain('sceneDetail: data.sceneDetail !== false');
       expect(source).toContain('relationshipMotion: data.relationshipMotion !== false');
-      expect(source).toContain('var depthAtlasEnabled = advancedWorkspace && d.depthAtlas !== false;');
+      // Workspace settings own Essentials gating and retained Advanced preferences;
+      // dissection_settings_integrity.test.js exercises those settings through save/reload.
+      expect(source).toContain('var workspaceSettings = dissectionWorkspaceSettings(d, workspaceMode);');
+      expect(source).toContain('drawState = Object.assign({}, drawState, dissectionWorkspaceSettings(drawState, drawWorkspaceMode));');
+      expect(source).toContain('var depthAtlasEnabled = workspaceSettings.depthAtlas;');
       expect(source).toContain('var depthAtlasCounts = organs.reduce');
       expect(source).toContain('function drawDepthAtlasMarker(x, y, depth, selected, hovered, muted)');
       expect(source).toContain('Shape-coded depth landmarks pair color, geometry, and line style so depth never depends on hue alone.');
@@ -645,17 +649,17 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("var hoverDepthLabel = anatomicalDepthLabel(structureOpticalDepth(hovOrg))");
       expect(source).toContain("var hoverExposure = structureExposureState(hovOrg, currentProcedure)");
       expect(source).toContain("var hoverMorphology = structureInspectionFootprint(hovOrg).morphologyLabel.toLowerCase()");
-      expect(source).toContain('Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths');
-      expect(source).toContain("'; structure inspection footprint: front and back depth edges, exposure line styles, and boundary-attached relationships encoded; morphology contours: tubular, lobed, chambered, layered, and compact patterns encoded; relationship pathways: type-specific line rhythms and marker shapes encoded'");
+      expect(source).toContain('Selected and hovered structures retain a target and depth label. Teaching modes and covered anatomy also show a projected depth outline');
+      expect(source).toContain("'; structure inspection: targets and depth labels retained; projected depth outlines in teaching modes and for covered anatomy; relationship pathways: type-specific line rhythms and marker shapes encoded'");
       expect(source).toContain('Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced.');
-      expect(source).toContain('Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels');
+      expect(source).toContain('Teaching overlays distinguish tubes, lobes, chambers, layers, and compact structures with shapes and labels');
       expect(source).toContain("layout.depth === 'deep' ? [1.2, 3.2]");
       expect(source).toContain('depthAtlas: depthAtlasEnabled');
       expect(source).toContain('depthAtlas: data.depthAtlas !== false');
       expect(source).toContain('Toggle anatomical depth atlas with shape-coded landmarks');
       expect(source).toContain('className: "diss-depth-key"');
       expect(source).toContain('Anatomical depth visual key:');
-      expect(source).toContain('var tissueReliefEnabled = d.tissueRelief !== false;');
+      expect(source).toContain('var tissueReliefEnabled = workspaceSettings.tissueRelief;');
       expect(source).toContain('function drawSpecimenTissueRelief()');
       expect(source).toContain('Responsive tissue relief gives visible structures elevation, recess, and contact shadow before labels are drawn.');
       expect(source).toContain('function drawAnatomicalExposureVeil()');
@@ -4869,7 +4873,9 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('function prepareNextProcedureStep(focusTarget)');
-      expect(source).toContain("focusDissectionTarget('diss-instrument-' + nextTool)");
+      // 91652c2fe made the focus function injectable; it still defaults to focusDissectionTarget.
+      expect(source.includes('var prepareFocus = typeof focusTarget === \'function\' ? focusTarget : focusDissectionTarget;'), 'default focus helper').toBe(true);
+      expect(source.includes("prepareFocus('diss-instrument-' + nextTool);"), 'planner focuses the next instrument').toBe(true);
       expect(source).toContain('No setup was changed automatically.');
       expect(source).not.toContain("selectProcedureInstrument(nextTool, 'next-step planner')");
       expect(source).toContain('function selectProcedureInstrument(toolId, inputMethod)');
@@ -9103,33 +9109,40 @@ expect(html).toContain('Scenario center');
     });
   }
 
+  function guidedEvidenceChoices(panel) {
+    const all = Array.from(panel.querySelectorAll('.diss-learning-check__option'));
+    const correct = all.find(choice => choice.querySelector('.diss-learning-check__answer').textContent.includes('Lighter, thinner ventral surface'));
+    expect(correct, 'the ventral-skin observation is present').toBeTruthy();
+    return { all, correct, wrong: all.filter(choice => choice !== correct) };
+  }
+
   it('checkpoint coaching supports Guided retries without granting identification credit', async () => {
     const fixture = await mountMarkingFixture(checkpointCoachingGuidedState(null));
     try {
       const panel = fixture.host.querySelector('#diss-guided-observation-check');
-      const choices = Array.from(panel.querySelectorAll('.diss-learning-check__option'));
+      const { all: choices, correct, wrong } = guidedEvidenceChoices(panel);
       expect(choices).toHaveLength(3);
       const before = checkpointCoachingWorkProof(fixture.state);
       const coaching = 'That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.';
-      choices[1].focus();
-      await clickEvidenceControl(choices[1]);
-      expect(document.activeElement).toBe(choices[1]);
-      const firstFeedback = expectSelectedCoaching(panel, choices[1], 'diss-guided-observation-feedback', coaching);
+      wrong[0].focus();
+      await clickEvidenceControl(wrong[0]);
+      expect(document.activeElement).toBe(wrong[0]);
+      const firstFeedback = expectSelectedCoaching(panel, wrong[0], 'diss-guided-observation-feedback', coaching);
       expect(fixture.state.guidedStep).toBe(0);
       expect(fixture.state.guidedObservationPending).toBe('ventral_skin');
       expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
-      choices[2].focus();
-      await clickEvidenceControl(choices[2]);
-      expect(document.activeElement).toBe(choices[2]);
+      wrong[1].focus();
+      await clickEvidenceControl(wrong[1]);
+      expect(document.activeElement).toBe(wrong[1]);
       expect(firstFeedback.isConnected).toBe(false);
-      expectSelectedCoaching(panel, choices[2], 'diss-guided-observation-feedback', coaching);
+      expectSelectedCoaching(panel, wrong[1], 'diss-guided-observation-feedback', coaching);
       const beforeBrowsing = JSON.parse(JSON.stringify(fixture.state.guidedObservationFeedback));
-      await act(async () => { choices[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })); });
+      await act(async () => { wrong[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })); });
       expect(document.activeElement).toBe(choices[0]);
       expect(fixture.state.guidedObservationFeedback).toEqual(beforeBrowsing);
       expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
       expect(fixture.awardXP).not.toHaveBeenCalled();
-      await clickEvidenceControl(choices[0]);
+      await clickEvidenceControl(correct);
       expect(fixture.host.querySelector('#diss-guided-observation-check')).toBeNull();
       expect(fixture.host.querySelector('#diss-guided-observation-feedback')).toBeNull();
       expect(document.activeElement).toBe(fixture.host.querySelector('#diss-canvas'));
@@ -9205,7 +9218,7 @@ expect(html).toContain('Scenario center');
       expect(feedback.textContent).toContain(savedFeedback);
       expect(feedback.closest('.diss-learning-check__choice')).toBeNull();
       expect(panel.querySelector('.diss-learning-check__option[aria-describedby]')).toBeNull();
-      const wrong = panel.querySelectorAll('.diss-learning-check__option')[1];
+      const wrong = guidedEvidenceChoices(panel).wrong[0];
       wrong.focus();
       await clickEvidenceControl(wrong);
       expect(document.activeElement).toBe(wrong);
@@ -9225,14 +9238,14 @@ expect(html).toContain('Scenario center');
     try {
       const panel = fixture.host.querySelector('#diss-guided-observation-check');
       const before = checkpointCoachingWorkProof(fixture.state);
-      const choices = panel.querySelectorAll('.diss-learning-check__option');
-      expect(choices[0].getAttribute('aria-pressed')).toBe('true');
-      expect(choices[0].hasAttribute('aria-describedby')).toBe(false);
+      const { correct, wrong } = guidedEvidenceChoices(panel);
+      expect(correct.getAttribute('aria-pressed')).toBe('true');
+      expect(correct.hasAttribute('aria-describedby')).toBe(false);
       expect(panel.querySelector('#diss-guided-observation-feedback')).toBeNull();
-      choices[1].focus();
-      await clickEvidenceControl(choices[1]);
-      expect(document.activeElement).toBe(choices[1]);
-      expectSelectedCoaching(panel, choices[1], 'diss-guided-observation-feedback', 'That observation belongs to a different structure.');
+      wrong[0].focus();
+      await clickEvidenceControl(wrong[0]);
+      expect(document.activeElement).toBe(wrong[0]);
+      expectSelectedCoaching(panel, wrong[0], 'diss-guided-observation-feedback', 'That observation belongs to a different structure.');
       expect(fixture.state.guidedStep).toBe(0);
       expect(fixture.state.guidedObservationPending).toBe('ventral_skin');
       expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);

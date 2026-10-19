@@ -596,24 +596,26 @@ function normalizeAppliedChallengeValidationCycles(value, fallbackFamily) {
         question: _apsString(imported.question, 1e3).trim()
       },
       disposition: source === "ai" ? disposition : "use",
-      dispositionReason: _apsString(raw.dispositionReason, 1600).trim(),
+      // Keep editable prose intact between keystrokes. Readiness checks trim it
+      // when deciding whether a field contains a meaningful response.
+      dispositionReason: _apsString(raw.dispositionReason, 1600),
       plan: {
         methodId: methods.some((method) => method.id === plan.methodId) ? plan.methodId : methods[0].id,
-        testQuestion: _apsString(plan.testQuestion, 2e3).trim(),
-        criterion: _apsString(plan.criterion, 1400).trim(),
-        expectedFinding: _apsString(plan.expectedFinding, 1600).trim(),
-        changeThreshold: _apsString(plan.changeThreshold, 1800).trim(),
+        testQuestion: _apsString(plan.testQuestion, 2e3),
+        criterion: _apsString(plan.criterion, 1400),
+        expectedFinding: _apsString(plan.expectedFinding, 1600),
+        changeThreshold: _apsString(plan.changeThreshold, 1800),
         evidenceMode: Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_EVIDENCE_MODES, plan.evidenceMode) ? plan.evidenceMode : "notes"
       },
       observation: {
-        evidence: _apsString(observation.evidence, 4e3).trim(),
+        evidence: _apsString(observation.evidence, 4e3),
         outcome: Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_VALIDATION_OUTCOMES, observation.outcome) ? observation.outcome : "pending"
       },
       decision: {
         action: Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_VALIDATION_DECISIONS, decision.action) ? decision.action : "pending",
-        reasoning: _apsString(decision.reasoning, 3e3).trim(),
-        revisionSummary: _apsString(decision.revisionSummary, 2200).trim(),
-        nextStep: _apsString(decision.nextStep, 1800).trim()
+        reasoning: _apsString(decision.reasoning, 3e3),
+        revisionSummary: _apsString(decision.revisionSummary, 2200),
+        nextStep: _apsString(decision.nextStep, 1800)
       },
       createdAt: _apsString(raw.createdAt, 80).trim(),
       completedAt: _apsString(raw.completedAt, 80).trim()
@@ -1388,17 +1390,17 @@ function parseAppliedChallengeFeedback(value) {
   ].some((item) => _apsString(item, 20).trim()));
   if (value && typeof value === "object") {
     const normalized = normalizeAppliedChallengeFeedback(value);
-    if (useful(normalized)) return normalized;
-    value = "";
+    return useful(normalized) ? normalized : null;
   }
   let text = _apsString(value, 14e3).trim();
   const fence = String.fromCharCode(96).repeat(3);
   if (text.toLowerCase().startsWith(fence + "json")) text = text.slice(7).trim();
   else if (text.startsWith(fence)) text = text.slice(3).trim();
   if (text.endsWith(fence)) text = text.slice(0, -3).trim();
+  if (!text) return null;
   try {
     const normalized = normalizeAppliedChallengeFeedback(JSON.parse(text));
-    if (useful(normalized)) return normalized;
+    return useful(normalized) ? normalized : null;
   } catch (_) {
   }
   const start = text.indexOf("{");
@@ -1406,21 +1408,16 @@ function parseAppliedChallengeFeedback(value) {
   if (start >= 0 && end > start) {
     try {
       const normalized = normalizeAppliedChallengeFeedback(JSON.parse(text.slice(start, end + 1)));
-      if (useful(normalized)) return normalized;
+      return useful(normalized) ? normalized : null;
     } catch (_) {
     }
   }
-  return normalizeAppliedChallengeFeedback({
-    strength: text && !text.startsWith("{") ? text : "You developed a response connected to the challenge.",
-    lessonConnectionCheck: "Compare the response with each teacher-checked lesson fact.",
-    evidenceOrConstraintCheck: "Mark which claims are supported, uncertain, or assumed.",
-    nextStep: "Revise one part after testing it against a criterion or strong alternative.",
-    question: "What evidence or constraint should influence your next revision most?",
-    status: "developing"
-  });
+  if (text.includes("{") || text.includes("[") || text.startsWith('"')) return null;
+  return normalizeAppliedChallengeFeedback({ nextStep: text, status: "developing" });
 }
 function finalizeAppliedChallengeFeedback(value, challengeValue) {
   const feedback = parseAppliedChallengeFeedback(value);
+  if (!feedback) return null;
   const data = normalizeAppliedChallengeData(challengeValue);
   const ledgerNeedsCheck = data.evidenceLedger.some((row) => (row.claim.trim() || row.evidence.trim() || row.tradeoff.trim()) && row.status === "needs-check");
   if ((!data.brief.factVerified || ledgerNeedsCheck || data.sourceRecords.some((source) => !source.reviewNote.trim())) && feedback.status === "grounded") feedback.status = "needs-check";
@@ -1647,17 +1644,21 @@ function renderAppliedChallengePreset(value, preset, t) {
   const esc = (value2) => String(value2 == null ? "" : value2).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   const list = (values) => "<ul>" + values.filter(Boolean).map((item) => "<li>" + esc(item) + "</li>").join("") + "</ul>";
   const text = (value2) => '<p class="aps-copy-text">' + esc(value2) + "</p>";
+  const labeled = (label, value2) => value2 ? '<p class="aps-copy-text"><strong>' + esc(label) + "</strong><br>" + esc(value2) + "</p>" : "";
+  const checkStage = (label, body2) => '<section class="aps-copy-check-stage"><h4>' + esc(label) + "</h4>" + body2 + "</section>";
   const section = (label, body2) => "<section><h2>" + esc(label) + "</h2>" + body2 + "</section>";
   const blank = '<div class="aps-copy-lines" aria-label="' + esc(tr("export.writing_space", "Writing space")) + '"></div>';
   const teaching = mode === "task" || mode === "paper";
   const labels = { task: tr("export.preset.task", "Student task"), response: tr("export.preset.response", "My response"), teacher: tr("export.preset.teacher", "Teacher review"), paper: tr("export.preset.paper", "Paper organizer") };
   let body = "<h1>" + esc(data.title) + "</h1><p>" + esc(labels[mode]) + "</p>";
   if (data.plan.learningTarget) body += text(data.plan.learningTarget);
+  if (data.instructions) body += text(data.instructions);
   if (teaching || mode === "teacher") {
     body += section(tr("brief.heading", "Challenge brief"), text(data.brief.context) + text(data.brief.drivingQuestion || data.brief.seedDirection) + text(data.brief.deliverable));
     body += section(m.brief.factHeading, list(data.brief.lockedLessonFacts));
     body += section(tr("reference.criteria", "What your response needs"), list(data.brief.criteria));
     body += section(tr("reference.limits", "Limits and unknowns"), list([...data.brief.constraints, ...data.brief.openQuestions]) + text(data.plan.materials));
+    if (data.brief.evidenceBoundary) body += section(tr("brief.evidence_boundary_label", "Evidence boundary:"), text(data.brief.evidenceBoundary));
     if (data.visual.image && data.visual.reviewed && data.visual.alt.trim()) body += '<figure><img src="' + esc(data.visual.image) + '" alt="' + esc(data.visual.alt) + '"><figcaption>' + esc(data.visual.purpose) + "</figcaption></figure>";
     if (data.plan.supportLevel === "example" && data.supports.parallelExample.move) body += section(tr("help.example", "See a parallel example"), text(data.supports.parallelExample.context) + text(data.supports.parallelExample.move) + text(data.supports.parallelExample.whyItHelps));
   }
@@ -1674,7 +1675,16 @@ function renderAppliedChallengePreset(value, preset, t) {
     if (m.reasoningReferences.length) body += section(tr("references.heading", "Where I explained my reasoning"), m.reasoningReferences.map((ref) => "<article><h3>" + esc(ref.label) + "</h3>" + text(ref.summary) + "</article>").join(""));
     if (m.evidenceLedger.length) body += section(tr("export.evidence", "Evidence connections"), m.evidenceLedger.map((row) => "<article><h3>" + esc(row.claim) + "</h3>" + text(row.evidence) + (row.sourceText ? text(tr("export.source_fact", "Linked lesson fact:") + " " + row.sourceText) : "") + text(row.statusLabel) + text(row.tradeoff) + "</article>").join(""));
     if (m.artifactUrl || m.artifactDescription) body += section(tr("artifact.heading", "Linked work and explanation"), (m.artifactUrl ? '<p><a href="' + esc(m.artifactUrl) + '" rel="noopener noreferrer">' + esc(m.artifactUrl) + "</a></p>" : "") + text(m.artifactDescription));
-    if (m.validationCycles.length) body += section(tr("validation.heading", "Test, observe, decide"), m.validationCycles.map((cycle) => "<article><h3>" + esc(cycle.sourceLabel) + "</h3>" + text(cycle.source === "ai" ? cycle.dispositionLabel + ": " + cycle.dispositionReason : "") + text(tr("export.planned", "Planned check:") + " " + cycle.plan.testQuestion) + text(tr("export.threshold", "What could change my mind:") + " " + cycle.plan.changeThreshold) + text(tr("export.observed", "Reported observation:") + " " + cycle.observation.evidence) + text(cycle.decision.actionLabel + ": " + cycle.decision.reasoning) + text(cycle.decision.revisionSummary) + "</article>").join(""));
+    if (m.validationCycles.length) body += section(tr("validation.heading", "Test, observe, decide"), m.validationCycles.map((cycle) => "<article><h3>" + esc(cycle.sourceLabel) + "</h3>" + (cycle.source === "ai" ? labeled(tr("cycle.challenge_label", "Challenge:"), cycle.importedChallenge.challenge) + labeled(tr("stress.why", "Why it matters"), cycle.importedChallenge.whyItMatters) + labeled(tr("stress.question", "Question for your revision"), cycle.importedChallenge.question) + labeled(tr("cycle.your_choice", "Your choice"), cycle.dispositionLabel) + labeled(tr("cycle.why", "Why?"), cycle.dispositionReason) : "") + checkStage(
+      tr("cycle.plan_legend", "1. Plan the check"),
+      labeled(tr("cycle.method", "Check method"), cycle.plan.methodLabel) + labeled(tr("cycle.evidence_form", "Evidence form"), cycle.plan.evidenceModeLabel) + labeled(tr("cycle.test_question", "What exactly will you check?"), cycle.plan.testQuestion) + labeled(tr("cycle.criterion", "Criterion or constraint"), cycle.plan.criterion) + labeled(tr("cycle.expected", "What do you expect?") + " (" + tr("cycle.expected_note", "a prediction, not a result") + ")", cycle.plan.expectedFinding) + labeled(tr("cycle.threshold", "What result could change your mind or draft?"), cycle.plan.changeThreshold)
+    ) + checkStage(
+      tr("cycle.observe_legend", "2. Observe or gather evidence"),
+      labeled(tr("cycle.outcome", "Outcome"), cycle.observation.outcomeLabel) + labeled(tr("cycle.observed", "What evidence or observation did you actually encounter?"), cycle.observation.evidence)
+    ) + checkStage(
+      tr("cycle.decide_legend", "3. Decide and revise"),
+      labeled(tr("cycle.decision", "Decision"), cycle.decision.actionLabel) + labeled(tr("cycle.reasoning", "Why does the evidence support that decision?"), cycle.decision.reasoning) + labeled(tr("cycle.revision_summary", "What changed in your response?"), cycle.decision.revisionSummary) + labeled(tr("cycle.next_step", "Next check or action"), cycle.decision.nextStep)
+    ) + "</article>").join(""));
     if (mode === "teacher") {
       body += section(tr("self_check.heading", "Self-check against the brief"), m.selfCheck.map((row) => "<article><h3>" + esc(row.text) + "</h3>" + text(row.ratingLabel) + (row.needsReview ? text(tr("self_check.changed", "This requirement changed. Review your earlier note before rating it again.")) : "") + text(row.note) + "</article>").join(""));
       if (m.feedback) body += section(tr("feedback.heading", "Feedback for revision"), text(m.feedbackOutdated ? tr("feedback.earlier", "Feedback for an earlier draft or brief. Review before relying on it.") : m.feedback.statusLabel) + text(appliedChallengeCoverageText(m.feedback.coverage, t)) + text(m.feedback.strength) + text(m.feedback.lessonConnectionCheck) + text(m.feedback.evidenceOrConstraintCheck) + text(m.feedback.nextStep) + text(m.feedback.question));
@@ -1990,7 +2000,7 @@ function AppliedChallengeView(props) {
   const visualToken = React.useRef(0);
   React.useEffect(() => () => {
     visualToken.current++;
-  }, [resourceId, isTeacherMode, props.previewMode]);
+  }, [resourceId, props.activeProfileId, isTeacherMode, props.previewMode]);
   const visual = data.visual;
   React.useEffect(() => {
     setArtifactLink(data.workspace.artifactUrl);
@@ -2003,6 +2013,11 @@ function AppliedChallengeView(props) {
     setVisualError("");
   }, [resourceId, props.activeProfileId, props.previewMode, isTeacherMode]);
   const updateVisual = (patch) => commitField("visual", (current) => ({ ...normalizeAppliedChallengeVisual(current), ...patch, reviewed: patch.reviewed === true }));
+  const cancelVisualGeneration = () => {
+    visualToken.current++;
+    setVisualBusy(false);
+    setVisualError("");
+  };
   const generateVisual = async () => {
     if (!isTeacherMode || !props.callImagen || visualBusy || !visual.purpose.trim()) return;
     const token = ++visualToken.current;
@@ -2011,7 +2026,7 @@ function AppliedChallengeView(props) {
     try {
       const result = await props.callImagen("Create an instructional scenario illustration. No answer, proposed solution, data labels, quantities, or invented research results. Show only the supplied situation. Context: " + data.brief.context + "\nInstructional purpose: " + visual.purpose, 768, 0.85);
       if (token !== visualToken.current) return;
-      if (latestDataRef.current.visual.purpose !== visual.purpose || latestDataRef.current.brief.context !== data.brief.context) throw Error("Visual context changed");
+      if (latestDataRef.current.visual.image !== visual.image || latestDataRef.current.visual.purpose !== visual.purpose || latestDataRef.current.brief.context !== data.brief.context) throw Error("Visual context changed");
       const image = normalizeAppliedChallengeVisual({ image: result?.dataUrl || result?.url || result }).image;
       if (!image) throw Error("No usable image");
       updateVisual({ image, alt: "", reviewed: false, source: "generated" });
@@ -2478,7 +2493,9 @@ function AppliedChallengeView(props) {
         addToast(tx("applied_challenge.toast.feedback_stale", "Your work changed while feedback was being prepared. Request feedback again for the current draft."), "info");
         return;
       }
-      const feedback = Object.assign(finalizeAppliedChallengeFeedback(raw, data), {
+      const parsedFeedback = finalizeAppliedChallengeFeedback(raw, data);
+      if (!parsedFeedback) throw Error("No usable feedback");
+      const feedback = Object.assign(parsedFeedback, {
         coverage: appliedChallengeFeedbackContext(data, { sourceExcerpt: feedbackSourceExcerpt, gradeLevel: feedbackGradeLevel }).coverage,
         draftFingerprint: appliedChallengeDraftFingerprint(data),
         contextFingerprint: appliedChallengeHashText(requestFingerprint),
@@ -2490,7 +2507,7 @@ function AppliedChallengeView(props) {
       addToast(tx("applied_challenge.toast.feedback_added", "Feedback added without changing your work."), "success");
     } catch (_) {
       if (!requestIsCurrent(requestToken)) return;
-      addToast(tx("applied_challenge.toast.feedback_failed", "Feedback could not be generated. Your work is still saved."), "error");
+      addToast(tx("applied_challenge.toast.feedback_failed", "Feedback could not be generated. Your work and earlier feedback are still saved. Try again."), "error");
     } finally {
       if (requestIsCurrent(requestToken)) setBusy("");
     }
@@ -2668,14 +2685,14 @@ function AppliedChallengeView(props) {
     const question = key === "lessonUse" ? tx("applied_challenge.quality.lesson_question", "Could a learner meet the criteria without applying the lesson idea? Tighten the task if so.") : key === "alternatives" ? tx("applied_challenge.quality.choices_question", "Can learners compare defensible approaches and explain a real tradeoff?") : tx("applied_challenge.quality.feasible_question", "Can learners create and check this product with the time, materials, and access they actually have?");
     return /* @__PURE__ */ React.createElement("section", { key, className: "rounded-xl border p-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold" }, label), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-700" }, question), key === "lessonUse" && !data.sourceExcerpt.trim() && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-amber-950" }, tx("applied_challenge.quality.missing_source", "Source excerpt missing: lesson alignment needs a teacher check against the original lesson.")), key === "feasibility" && (!data.plan.availableTime.trim() || !data.plan.materials.trim()) && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-amber-950" }, tx("applied_challenge.quality.missing_limits", "Add available time and materials in task settings so feasibility can be reviewed.")), item && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm font-bold" }, item.status === "supported" ? tx("applied_challenge.quality.supported", "AI found supporting task wording") : item.status === "revise" ? tx("applied_challenge.quality.revise", "Revision suggested") : tx("applied_challenge.quality.unknown", "More information needed")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 whitespace-pre-wrap text-sm" }, item.reason), item.nextStep && /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm" }, /* @__PURE__ */ React.createElement("strong", null, tx("applied_challenge.quality.next", "Teacher next step:")), " ", item.nextStep)));
   }))), details(tx("applied_challenge.teacher.source", "Review source connections"), /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, tx("applied_challenge.teacher.excerpt_note", "This excerpt was available during generation. It may cover only part of a long lesson.")), /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-sm" }, data.sourceExcerpt), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, tx("applied_challenge.source.boundary", "Matching a quotation only locates its words. Check that it supports the fact in context before marking lesson facts reviewed. An unmatched quotation may be elsewhere in the full lesson.")), data.brief.factSources.map((fact, index) => /* @__PURE__ */ React.createElement("section", { key: fact.id, className: "rounded-xl border p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold" }, fact.text), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-700", role: "status" }, appliedChallengeSourceStatusLabel(appliedChallengeSourceReview(data)[index].status, t)), ["sourceQuote", "sourceLocation"].map((key) => /* @__PURE__ */ React.createElement("label", { key, className: "mt-2 block text-sm" }, tx("applied_challenge.source." + key, key === "sourceQuote" ? "Supporting source excerpt" : "Source location"), /* @__PURE__ */ React.createElement(AcTextarea, { value: fact[key], onChange: (event) => updateBrief({ factSources: data.brief.factSources.map((item) => item.id === fact.id ? { ...item, [key]: event.target.value } : item), factVerified: false }), rows: 2, className: "mt-1 w-full rounded-xl border p-2" }))))))), details(tx("applied_challenge.teacher.supports", "Edit prompts and parallel example"), /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-sm" }, tx("applied_challenge.supports.starter", "Optional question starter"), /* @__PURE__ */ React.createElement(AcTextarea, { value: data.supports.frameStarter, onChange: (event) => updateSupports({ frameStarter: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border p-3" })), ["frameChoices", "coachPrompts"].map((key) => /* @__PURE__ */ React.createElement("label", { key, className: "block text-sm" }, tx("applied_challenge.supports." + key, key === "frameChoices" ? "Possible directions (one per line)" : "Thinking prompts (one per line)"), /* @__PURE__ */ React.createElement(AcListTextarea, { value: data.supports[key].join("\n"), onChange: (event) => updateSupports({ [key]: event.target.value.split("\n") }), rows: 3, className: "mt-2 w-full rounded-xl border p-3" }))), ["context", "move", "whyItHelps"].map((key) => /* @__PURE__ */ React.createElement("label", { key, className: "block text-sm" }, tx("applied_challenge.example." + key, { context: "Parallel example context", move: "Reasoning move", whyItHelps: "What to notice" }[key]), /* @__PURE__ */ React.createElement(AcTextarea, { value: data.supports.parallelExample[key], onChange: (event) => updateSupports({ parallelExample: { ...data.supports.parallelExample, [key]: event.target.value } }), rows: 3, className: "mt-2 w-full rounded-xl border p-3" }))), visiblePhases.map((item) => /* @__PURE__ */ React.createElement("label", { key: item.id, className: "block text-sm" }, appliedChallengePhaseLabel(item, data.family, t), /* @__PURE__ */ React.createElement(AcTextarea, { value: data.supports.phasePrompts[item.id], onChange: (event) => updateSupports({ phasePrompts: { ...data.supports.phasePrompts, [item.id]: event.target.value } }), rows: 2, className: "mt-2 w-full rounded-xl border p-3" }))))), details(tx("applied_challenge.visual.heading", "Visual support"), /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: data.plan.visualMode === "organizer", onChange: (event) => commitField("plan", { ...data.plan, visualMode: event.target.checked ? "organizer" : "none" }) }), tx("applied_challenge.visual.organizer", "Offer an editable organizer matched to this challenge")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, tx("applied_challenge.visual.optional", "A scenario illustration is optional. It must support understanding without supplying the solution or inventing evidence.")), /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold" }, tx("applied_challenge.visual.purpose", "What should the illustration help learners understand?"), /* @__PURE__ */ React.createElement(AcTextarea, { value: visual.purpose, onChange: (event) => updateVisual({ purpose: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border p-3" })), /* @__PURE__ */ React.createElement("button", { type: "button", className: "aps-button", disabled: !props.callImagen || !visual.purpose.trim() || visualBusy, onClick: generateVisual }, visualBusy ? tx("applied_challenge.visual.creating", "Creating illustration\u2026") : tx("applied_challenge.visual.create", "Generate optional illustration")), ImagePicker && /* @__PURE__ */ React.createElement(ImagePicker, { label: tx("applied_challenge.visual.upload", "Upload a scenario illustration"), onLoaded: (result) => {
-    visualToken.current++;
-    setVisualBusy(false);
+    cancelVisualGeneration();
     setVisualEditor(result.dataUrl);
   }, onError: () => setVisualError(tx("applied_challenge.visual.upload_failed", "The image could not be opened. Use a PNG, JPEG, or WebP file.")) }), visualError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-sm text-rose-800" }, visualError), visual.image && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: visual.image, alt: visual.alt || tx("applied_challenge.visual.unreviewed", "Unreviewed scenario illustration"), className: "max-h-72 max-w-full rounded-xl object-contain" }), /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold" }, tx("applied_challenge.visual.alt", "Image description"), /* @__PURE__ */ React.createElement(AcTextarea, { value: visual.alt, onChange: (event) => updateVisual({ alt: event.target.value }), rows: 3, className: "mt-2 w-full rounded-xl border p-3" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "aps-button", disabled: !visual.alt.trim(), "aria-pressed": visual.reviewed, onClick: () => updateVisual({ reviewed: !visual.reviewed }) }, visual.reviewed ? tx("applied_challenge.visual.unapprove", "Mark for re-review") : tx("applied_challenge.visual.approve", "Approve description and illustration")), ImageEditor && visual.image.startsWith("data:") && /* @__PURE__ */ React.createElement("button", { type: "button", className: "aps-button", onClick: () => setVisualEditor(visual.image) }, tx("applied_challenge.visual.crop", "Fit or crop illustration")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "aps-button", onClick: () => {
     visualToken.current++;
     setVisualBusy(false);
     updateVisual({ image: "", alt: "", reviewed: false });
   } }, tx("applied_challenge.visual.remove", "Remove illustration")))), visualEditor && ImageEditor && /* @__PURE__ */ React.createElement(ImageEditor, { sourceDataUrl: visualEditor, onApply: (result) => {
+    cancelVisualGeneration();
     updateVisual({ image: result.dataUrl });
     setVisualEditor(null);
   }, onCancel: () => setVisualEditor(null) }), !props.callImagen && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, tx("applied_challenge.visual.unavailable", "Image generation is unavailable. The editable organizer and text challenge remain available."))))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("nav", { className: "aps-stage-nav applied-challenge-no-print", "aria-label": tx("applied_challenge.navigation", "Problem-solving stages") }, APPLIED_CHALLENGE_STAGES.map((stage, index) => /* @__PURE__ */ React.createElement("button", { key: stage.id, type: "button", className: "aps-button", "aria-label": index + 1 + ". " + stageLabel(stage), "aria-current": !reviewOpen && index === stageIndex ? "step" : void 0, onClick: () => goToStage(index) }, /* @__PURE__ */ React.createElement("span", { className: "aps-stage-number", "aria-hidden": "true" }, index + 1, "."), " ", /* @__PURE__ */ React.createElement("span", null, stageLabel(stage))))), /* @__PURE__ */ React.createElement("div", { className: "my-3 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600", "aria-live": "polite" }, reviewOpen ? tx("applied_challenge.review.heading", "Review my response") : _apsFill(tx("applied_challenge.workspace.stage_progress", "{stage} \xB7 Step {number} of 5"), { stage: stageLabel(currentStage), number: stageIndex + 1 })), /* @__PURE__ */ React.createElement("button", { type: "button", className: "aps-button applied-challenge-no-print", "aria-pressed": !focusMode, onClick: () => {

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "অনুসন্ধানের ফল: {topics}টি বিষয়ে {cards}টি কার্ড।",
+  "stem.flightsim.learn_library_counts": "{cards}টি কার্ড · {topics}টি বিষয়",
+  "stem.flightsim.learn_search_clear": "অনুসন্ধান মুছুন",
+  "stem.flightsim.learn_search_empty": "“{query}” এর সঙ্গে কোনো শেখার কার্ড মেলেনি। অন্য শব্দ লিখুন বা অনুসন্ধান মুছুন।",
+  "stem.flightsim.learn_search_none": "কোনো শেখার কার্ড মেলেনি",
+  "stem.flightsim.learn_search_cards": "{count}টি শেখার কার্ড",
+  "stem.flightsim.quiz_review_progress": "{total}টি প্রশ্নের মধ্যে {answered}টির উত্তর দেওয়া হয়েছে · {missed}টি ভুল",
+  "stem.flightsim.quiz_review_missed": "ভুল উত্তরগুলো পর্যালোচনা করুন",
+  "stem.flightsim.quiz_next_unanswered": "পরবর্তী অনুত্তরিত প্রশ্ন",
+  "stem.flightsim.quiz_review_all_answered": "প্রতিটি প্রশ্নের প্রথম উত্তর সংরক্ষিত আছে। নম্বরবিহীন অনুশীলনের জন্য ভুল উত্তরগুলো পর্যালোচনা করুন, অথবা নতুন প্রচেষ্টা শুরু করুন।",
+  "stem.flightsim.planner_drone_agl": "ভূমির ওপরে {ft} ফুট",
+  "stem.flightsim.sprint_native_title": "ভূগোলের দ্রুত চ্যালেঞ্জ",
+  "stem.flightsim.sprint_timed_hint": "আপনি উত্তর দেওয়ার সময়ও পথে অগ্রগতি হয়। পড়তে বিরতি দিন; উত্তর বাছার আগে আবার চালু করুন।",
+  "stem.flightsim.sprint_warp_reference": "এই ভূগোল কার্যক্রমে যাত্রা দ্রুত করা হয়েছে। গতির পাঠে নির্ধারিত ক্রুজ গতি দেখানো হয়; এই পথ দিয়ে উড়োজাহাজের কর্মক্ষমতা মাপা হয় না।",
+  "stem.flightsim.sprint_save_menu": "চ্যালেঞ্জ সংরক্ষণ করে মেনুতে ফিরুন",
+  "stem.flightsim.sprint_next_stop": "পরবর্তী গন্তব্য: {place}",
+  "stem.flightsim.geoq_approaching_city": "আপনি কোন শহরের কাছে আসছেন?",
+  "stem.flightsim.sprint_time_remaining": "অবশিষ্ট সময়: {seconds} সেকেন্ড"
+}

@@ -1240,8 +1240,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
   } = deps || {};
     const rejectIncompleteResource = () => {
         const key = 'history.resource_incomplete';
-        const value = typeof t === 'function' ? t(key) : null;
-        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
+        const tr = (k, fb) => { const v = typeof t === 'function' ? t(k) : null; return typeof v === 'string' && v.trim() && v !== k ? v : fb; };
+        if (typeof addToast === 'function') addToast(tr(key, 'This saved resource is incomplete and could not be opened. Your current work is still available.'), 'error');
         return false;
     };
     let restoredTranscript = '';

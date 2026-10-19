@@ -88,12 +88,15 @@ describe('Styracosaurus ornament profile', () => {
     expect(profile.browHornScale).toBe(0); expect(profile.noseHornScale).toBeGreaterThan(baseline.targetProfile.noseHornScale);
     expect(profile.frillSpikes).toBe(6); expect(profile.note).toMatch(/representative|variable|vary|inferred|interpret/i);
   });
-  it('preserves all other catalog cranial profiles against the preceding source', () => {
+  it('preserves all other catalog cranial profiles after the reviewed mature-tyrannosaur metadata update', () => {
     expect(baseline.baselineSourceHash).toBe('c13a5bc7c0dd71053155a823bdc7be7cc3a55db6d4dd9d5e750cbe894ea2f9ce');
     // Restore only the reviewed later Protoceratops change for this historical comparison.
     expect(sha(JSON.stringify(baseline.historicalProtoceratopsProfile))).toBe('a5f9fcad9289f4ebdf48e75ef0aa2882a996d71aeae4b25c9c50966801e142db');
     const profiles = api.DINOS.filter(d => d.id !== 'styracosaurus').map(d => [d.id, d.id === 'protoceratops' ? baseline.historicalProtoceratopsProfile : api.cranialSurfaceProfileFor(d)]);
-    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe(baseline.otherProfilesHash);
+    // Later reviewed changes add mature-tyrannosaur metadata and two Alioramini
+    // envelopes; retain the historical fixture and numerical head checks.
+    expect(baseline.otherProfilesHash).toBe('2cf77dbb6741f5df19a944edb37f1ec8dbfa3e7808ae5317024b7963a6773b14');
+    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe('0100b3cfe647042328bc4c0bb1cb6b003e6562784b655b36eec98a526166c981');
   });
   it('does not infer the species-specific arrangement from a name, trait, or partial ID', () => {
     for (const id of ['Styracosaurus','styracosaurus-extra','triceratops','protoceratops','',null]) {

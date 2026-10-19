@@ -19,8 +19,10 @@
     var animal = new THREE.Group(); animal.name = 'woodland-gray-squirrel'; root.add(animal);
     function keep(value) { resources.push(value); return value; }
     function color(value) { return new THREE.Color(value).convertSRGBToLinear(); }
-    var gray = color('#7c7f78'), warmGray = color('#767165'), pale = color('#c8c5b4'), dark = color('#3b3b35');
-    var fur = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .96 }));
+    // Mid-gray with a brownish wash; the scene's filmic lighting lifted the
+    // lighter original palette to near white.
+    var gray = color('#66655d'), warmGray = color('#7a6550'), pale = color('#c8c5b4'), dark = color('#3b3b35');
+    var fur = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .96, side: THREE.DoubleSide }));
     fur.extensions = { derivatives: true };
     fur.onBeforeCompile = function (shader) {
       shader.vertexShader = 'varying vec2 blSquirrelUV;\n' + shader.vertexShader;
@@ -192,22 +194,33 @@
         var radial = width * fuzz, ny = -dz / length, nz = dy / length;
         var shade = .83 + .20 * Math.abs(Math.cos(theta)) + .08 * Math.sin(tr * 5 + ts * 3.2);
         var tailColor = { r: gray.r * shade, g: gray.g * shade, b: gray.b * shade };
-        vertex(tailData, Math.cos(theta) * radial, cy + Math.sin(theta) * radial * ny,
-          cz + Math.sin(theta) * radial * nz, tailColor, ts / tailSides, t);
+        // The plume is flattened side to side, wider than it is deep.
+        vertex(tailData, Math.cos(theta) * radial * 1.22, cy + Math.sin(theta) * radial * .82 * ny,
+          cz + Math.sin(theta) * radial * .82 * nz, tailColor, ts / tailSides, t);
       }
     }
     for (var ring = 0; ring < tailRows; ring++) for (var sector = 0; sector < tailSides; sector++) {
       var lower = ring * (tailSides + 1) + sector, upper = lower + tailSides + 1;
       tailData.indices.push(lower, upper, lower + 1, lower + 1, upper, upper + 1);
     }
+    // Banded guard hairs end in white tips, giving the plume its silvery
+    // fringe. Longest along the flattened edges and mid-tail; the double-sided
+    // fur shows each single blade from both sides without extra vertices.
     for (var hairRing = 3; hairRing < tailRows; hairRing += high ? 1 : 2) for (var hairSide = 0; hairSide < tailSides; hairSide++) {
-      var sourceIndex = (hairRing * (tailSides + 1) + hairSide) * 3, hairFirst = tailData.positions.length / 3;
+      var sourceIndex = (hairRing * (tailSides + 1) + hairSide) * 3;
       var hx = tailData.positions[sourceIndex], hy = tailData.positions[sourceIndex + 1], hz = tailData.positions[sourceIndex + 2];
-      var hairAngle = hairSide / tailSides * TAU, hairLength = .004 + .004 * (.5 + .5 * Math.sin(hairRing * 7.5 + hairSide * 12.3));
-      vertex(tailData, hx - .00032, hy, hz, pale, 0, hairRing / tailRows);
-      vertex(tailData, hx + .00032, hy, hz, pale, 1, hairRing / tailRows);
-      vertex(tailData, hx + Math.cos(hairAngle) * hairLength, hy + hairLength * .65,
-        hz + Math.sin(hairAngle) * hairLength * .4, gray, .5, (hairRing + 1) / tailRows);
+      var hairT = hairRing / tailRows, hairAngle = hairSide / tailSides * TAU;
+      var hairDy = .245 + .024 * Math.PI * Math.cos(Math.PI * hairT), hairDz = -.137 * Math.PI * .93 * Math.cos(Math.PI * hairT * .93);
+      var hairSpan = Math.hypot(hairDy, hairDz), tyAxis = hairDy / hairSpan, tzAxis = hairDz / hairSpan;
+      var ox = Math.cos(hairAngle), oy = Math.sin(hairAngle) * -tzAxis, oz = Math.sin(hairAngle) * tyAxis;
+      var lateral = Math.pow(Math.abs(ox), 1.4), vary = .5 + .5 * Math.sin(hairRing * 7.5 + hairSide * 12.3);
+      var hairLength = (.006 + .013 * lateral + .004 * vary) * (.55 + .45 * Math.sin(Math.PI * Math.min(1, hairT * 1.08)));
+      var tipX = hx + ox * hairLength, tipY = hy + (oy + tyAxis * .45) * hairLength, tipZ = hz + (oz + tzAxis * .45) * hairLength;
+      var banded = { r: gray.r * .78, g: gray.g * .78, b: gray.b * .76 };
+      var hairFirst = tailData.positions.length / 3;
+      vertex(tailData, hx, hy - tyAxis * .0013, hz - tzAxis * .0013, banded, 0, hairT);
+      vertex(tailData, hx, hy + tyAxis * .0013, hz + tzAxis * .0013, banded, 1, hairT);
+      vertex(tailData, tipX, tipY, tipZ, pale, .5, (hairRing + 1) / tailRows);
       tailData.indices.push(hairFirst, hairFirst + 1, hairFirst + 2);
     }
     var tail = mesh(tailData, 'squirrel-tail', animal); tail.position.set(0, .092, -.103);

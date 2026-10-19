@@ -142,8 +142,12 @@ describe('O3/O4: learner 3D and palace work stays out of the teacher resource', 
 describe('O1: interactive layout edits are saved to the resource', () => {
   it('drag, add, link, delete, reset and auto layout mark the layout edited, and an id-bound debounced write saves it', () => {
     const anti = antiSource();
+    // 6a0c48749 (2026-10-05) moved the mark into the host handlers themselves: ANTI keeps a plain
+    // forwarding shim and each moved body marks the layout edited before doing anything else.
+    const hostHandlers = readFileSync(process.env.FIX0927_ORG_HANDLERS || resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
     for (const handler of ['handleNodeClick', 'handleAddManualNode', 'handleResetLayout']) {
-      expect(anti, handler).toMatch(new RegExp('const ' + handler + ' = \\(\\.\\.\\.__a\\) => \\{ markOrganizerLayoutEdited\\(\\); return _alloHostHandlers\\(\\)\\.' + handler));
+      expect(anti.includes('const ' + handler + ' = (...__a) => _alloHostHandlers().' + handler + '(...__a);'), handler + ' shim').toBe(true);
+      expect(new RegExp('\\nconst ' + handler + ' = \\([^)]*\\) => \\{\\r?\\n\\s*__d\\.markOrganizerLayoutEdited\\(\\);').test(hostHandlers), handler + ' marks first').toBe(true);
     }
     expect(anti).toMatch(/handleAutoLayout: \(\.\.\.__a\) => \{ markOrganizerLayoutEdited\(\); return handleAutoLayout\(\.\.\.__a\); \}/);
     expect(anti).toMatch(/e\.preventDefault\(\);\n\s+markOrganizerLayoutEdited\(\);/);

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Sakamakon bincike: katuna {cards} a cikin batutuwa {topics}.",
+  "stem.flightsim.learn_library_counts": "Katuna {cards} · batutuwa {topics}",
+  "stem.flightsim.learn_search_clear": "Share bincike",
+  "stem.flightsim.learn_search_empty": "Babu katin koyo da ya dace da “{query}”. Gwada wata kalma ko share binciken.",
+  "stem.flightsim.learn_search_none": "Babu katunan koyo da suka dace",
+  "stem.flightsim.learn_search_cards": "Katunan koyo {count}",
+  "stem.flightsim.quiz_review_progress": "An amsa tambayoyi {answered} cikin {total} · an yi kuskure {missed}",
+  "stem.flightsim.quiz_review_missed": "Bitar amsoshin da aka yi kuskure",
+  "stem.flightsim.quiz_next_unanswered": "Tambaya ta gaba da ba a amsa ba",
+  "stem.flightsim.quiz_review_all_answered": "Kowace tambaya tana da amsar farko. Yi bitar tambayoyin da ka yi kuskure don atisaye marar maki, ko fara sabon yunƙuri.",
+  "stem.flightsim.planner_drone_agl": "Ƙafa {ft} sama da ƙasa",
+  "stem.flightsim.sprint_native_title": "Gasar ilimin ƙasa mai sauri",
+  "stem.flightsim.sprint_timed_hint": "Hanyar tana ci gaba yayin da kake amsawa. Dakatar da ita don karantawa; ci gaba kafin ka zaɓi amsa.",
+  "stem.flightsim.sprint_warp_reference": "An hanzarta tafiya don wannan aikin ilimin ƙasa. Ma’aunin gudu yana nuna gudun tafiya da aka sanar; wannan hanya ba ta auna aikin jirgin sama.",
+  "stem.flightsim.sprint_save_menu": "Ajiye gasar ka koma menu",
+  "stem.flightsim.sprint_next_stop": "Tasha ta gaba: {place}",
+  "stem.flightsim.geoq_approaching_city": "Wane birni kake kusantowa?",
+  "stem.flightsim.sprint_time_remaining": "Lokacin da ya rage: daƙiƙa {seconds}"
+}

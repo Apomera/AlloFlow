@@ -13,7 +13,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const MODULE = read('student_analytics_module.js');
@@ -29,15 +33,32 @@ function loadBuilder() {
   return new Function(`${body} return { buildDecodablePassage, DECODABLE_ORF_FRAMES };`)();
 }
 
-/** Execute the real norm-mapping guard. */
+/** Execute the real norm-mapping guard (it reads the shared AlloSheet measure table). */
 function loadProbeTypeAndScore() {
   const start = MODULE.indexOf('var _probeTypeAndScore = function');
   const end = MODULE.indexOf('var _internals', start);
   expect(start, '_probeTypeAndScore not found').toBeGreaterThan(0);
   expect(end).toBeGreaterThan(start);
-  const body = MODULE.slice(start, end);
+  const mStart = MODULE.indexOf('var SA_ALLOSHEET_MEASURES = {');
+  const mEnd = MODULE.indexOf('function saAlloSheetGrade', mStart);
+  expect(mStart, 'measure table not found').toBeGreaterThan(0);
+  expect(mEnd).toBeGreaterThan(mStart);
+  const body = MODULE.slice(mStart, mEnd) + MODULE.slice(start, end);
   // eslint-disable-next-line no-new-func
   return new Function(`${body} return _probeTypeAndScore;`)();
+}
+
+/** The whole module, rendered once so the reference engine is registered. */
+function loadAnalytics() {
+  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  const ReactDOMServer = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
+  globalThis.React = window.React = React;
+  window.ReactDOM = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom'));
+  loadAlloModule('student_analytics_module.js');
+  try {
+    ReactDOMServer.renderToStaticMarkup(React.createElement(window.AlloModules.StudentAnalytics, { isOpen: true, onClose: () => {}, students: [], dashboardData: null }));
+  } catch (e) { /* the engine registers before the render can throw */ }
+  return window.AlloModules.StudentAnalytics._meta;
 }
 
 describe('the passage is built from the pack', () => {
@@ -86,11 +107,38 @@ describe('the passage is built from the pack', () => {
 });
 
 describe('the score never touches grade-level machinery', () => {
-  it('_probeTypeAndScore maps orf to norms and orf_decodable to NOTHING', () => {
+  // 2026-10 (f238731dd): _probeTypeAndScore keeps every score with its unit and the
+  // reference engine refuses anything that is not a reviewed grade-level ORF. So the
+  // guard is checked end to end: decodable WCPM never reaches the ORF norms.
+  it('_probeTypeAndScore maps orf to the norms and orf_decodable away from them', () => {
     const fn = loadProbeTypeAndScore();
-    expect(fn({ activity: 'orf', wcpm: 45 })).toEqual({ probeType: 'orf', score: 45 });
-    // The whole point: never guess a clinical score for controlled text.
-    expect(fn({ activity: 'orf_decodable', wcpm: 45 })).toBe(null);
+    expect(fn({ activity: 'orf', wcpm: 45 })).toEqual({ probeType: 'orf', score: 45, unit: 'wcpm' });
+    const decodable = fn({ activity: 'orf_decodable', wcpm: 45 });
+    expect(decodable && decodable.probeType).not.toBe('orf');
+    expect(decodable && decodable.unit).toBe('wcpm_decodable_text');
+  });
+
+  it('a decodable record gets no benchmark, even with a complete ORF administration record', () => {
+    const meta = loadAnalytics();
+    const context = { referenceId: 'hasbrouck-tindal-2017-orf', measure: 'orf', unit: 'wcpm', grade: '3', season: 'winter',
+      language: 'en', durationSeconds: 60, material: 'unpracticed-grade-level', scoring: 'standardized',
+      reviewedByEducator: true, formId: 'reviewed-external-form' };
+    const record = (activity) => ({ activity, grade: '3', wcpm: 40, timestamp: Date.parse('2026-01-20'), benchmarkContext: context });
+    // Control: the same administration as grade-level ORF IS compared, so the check below can fail.
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Wren: [record('orf')] }));
+    expect(meta.getTrendSeries('Wren')[0].benchmark).toBe(97);
+    expect(meta.getRTITier('Wren').perProbe[0].comparisonAvailable).toBe(true);
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Wren: [record('orf_decodable')] }));
+    const series = meta.getTrendSeries('Wren');
+    expect(series[0].points[0].value).toBe(40);
+    expect(series[0].benchmark).toBe(null);
+    const tier = meta.getRTITier('Wren');
+    for (const p of (tier ? tier.perProbe : [])) {
+      expect(p.comparisonAvailable).toBe(false);
+      expect(p.reference).toBe(null);
+      expect(p.tier).toBe(0);
+    }
+    localStorage.removeItem('alloflow_probe_history');
   });
 
   it('the AlloSheet measure exists but carries no clinical probeType', () => {

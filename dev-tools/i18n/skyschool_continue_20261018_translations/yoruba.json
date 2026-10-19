@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "A ti rí ẹ̀rí pé àwọn àfojúsùn ìpèníjà náà ṣẹ. Ní atẹ̀lé, nínú àdánwò ìṣàkóso agbára, fi ìsọ̀kalẹ̀ nígbà tí ẹ̀rọ ń ṣiṣẹ́ lọ́ra wé ìgòkè pẹ̀lú agbára ẹ̀rọ.",
+  "stem.flightsim.coaching_energy_complete": "A ti rí ẹ̀rí pé àwọn àfojúsùn ìṣàkóso agbára ṣẹ. Ní atẹ̀lé, ṣe àdánwò ṣíṣàkóso agbára ní ìsúnmọ́ kúkúrú sí pápá ọkọ̀ òfuurufú, lẹ́yìn náà fi ìwọ̀n ìsọ̀kalẹ̀ àti ìfọwọ́kan ilẹ̀ wé ara wọn.",
+  "stem.flightsim.drone_battery_low": "Bátírì kù díẹ̀: {pct}% ló kù. Padà sí ibi tí o ti gbéra kí o sì balẹ̀ láìpẹ́.",
+  "stem.flightsim.drone_battery_depleted_title": "Bátírì ọkọ̀ òfuurufú aláìní awakọ̀ ti tán",
+  "stem.flightsim.drone_battery_depleted_body": "A dá ìfò dúró nígbà tí bátírì dé 0%. Parí iṣẹ́ náà láti ṣe àyẹ̀wò ìgbìyànjú yìí, lẹ́yìn náà bẹ̀rẹ̀ iṣẹ́ tuntun pẹ̀lú bátírì tó kún.",
+  "stem.flightsim.end_drone_mission": "Parí iṣẹ́ náà kí o sì ṣe àyẹ̀wò",
+  "stem.flightsim.geoq_nearest_place": "Ibi wo ló sún mọ́ ibi tí o wà lọ́wọ́lọ́wọ́ jù lọ?",
+  "stem.flightsim.geoq_paused": "A dá ìfò dúró fún ìbéèrè yìí. Pa ìdánwò náà dé, lẹ́yìn náà yan Tẹ̀síwájú nígbà tí o bá ti ṣetán láti fò.",
+  "stem.flightsim.geoq_close": "Pa ìdánwò dé",
+  "stem.flightsim.geoq_unavailable": "Kò sí ìbéèrè nípa ẹ̀kọ́ ilẹ̀ ayé tó wà ní àgbègbè yìí. Tẹ̀síwájú nínú ìṣàwárí kí o sì tún gbìyànjú.",
+  "stem.flightsim.geoq_answer_feedback": "Ìdáhùn rẹ: {answer}. Ìdáhùn tó tọ́: {expected}."
+}

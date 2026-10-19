@@ -1342,7 +1342,11 @@ describe('Plate Boundary Simulator: the quake log reads the slab dip off the dat
     expect(Number(guess.getAttribute('y1'))).toBe(14);
     expect(host.querySelector('[data-pt-quake-axis="distance"]').textContent).toContain('overriding plate');
     expect(log.querySelector('svg').getAttribute('aria-label')).toContain('70 km or deeper');
-    expect(log.querySelectorAll('svg text')).toHaveLength(9);
+    // 79e3e5eae extended the distance axis to the seaward side of the boundary (XMIN = -150 km).
+    const axisLabels = axis => [...log.querySelectorAll('svg text[data-pt-quake-axis-label="' + axis + '"]')].map(text => text.getAttribute('data-km'));
+    expect(axisLabels('depth')).toEqual(['0', '200', '400', '600']);
+    expect(axisLabels('distance')).toEqual(['-150', '0', '200', '400', '600', '800']);
+    expect(log.querySelectorAll('svg text')).toHaveLength(10);
     expect([...log.querySelectorAll('svg text')].every(text => Number(text.getAttribute('font-size')) >= 14)).toBe(true);
     const deltaX = Number(guess.getAttribute('x2')) - Number(guess.getAttribute('x1'));
     const deltaY = Number(guess.getAttribute('y2')) - Number(guess.getAttribute('y1'));

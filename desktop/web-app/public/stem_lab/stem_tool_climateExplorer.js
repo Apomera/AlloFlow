@@ -141,7 +141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       defaultState: { decarb: 20, resilience: 30, support: 50 }, targets: { decarb: 35, resilience: 75, support: 70 },
       deepDive: {
         knowledge: 'Adaptation includes coastal protection (seawalls, managed retreat, salt-marsh restoration), urban heat (cooling centers, tree planting, building reflectivity), inland flooding (stormwater systems, floodplain restoration), wildfire (defensible space, prescribed burning), and infrastructure resilience (grid hardening, road elevation). Some adaptation reduces emissions too (urban trees, salt marshes); some does not (seawalls). Just-transition framing matters: who benefits from adaptation investment is a justice question.',
-        casework: 'The Gulf of Maine has warmed faster than 99% of the global ocean. Maine\'s lobster industry has shifted northward and inland landings have dropped. The 2018 and 2023 coastal storms damaged hundreds of working waterfronts. Maine has begun coastal-bluff retreat planning in towns like South Portland. Federal BRIC (Building Resilient Infrastructure and Communities) grants have funded several Maine projects.',
+        casework: 'The Gulf of Maine has warmed faster than about 97% of the global ocean. Maine\'s lobster industry has shifted northward and inland landings have dropped. The 2018 and 2023 coastal storms damaged hundreds of working waterfronts. Maine has begun coastal-bluff retreat planning in towns like South Portland. Federal BRIC (Building Resilient Infrastructure and Communities) grants have funded several Maine projects.',
         modernContext: 'The hardest adaptation questions are about managed retreat: when does the state stop subsidizing coastal property insurance? Maine\'s Coastal Hazards Office and the Casco Bay Estuary Partnership lead a lot of this work. Wabanaki coastal communities (Sipayik, Indian Township, Pleasant Point) face acute sea-level and erosion risks.'
       }
     },
@@ -683,7 +683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           opts: [
             { label: t('stem.climateExplorer.walk_bike', 'Walk / Bike'), emoji: '\uD83D\uDEB6', kg: 0, desc: t('stem.climateExplorer.zero_emissions_your_legs_are_the_green', 'Zero emissions! Your legs are the greenest engine.') },
             { label: t('stem.climateExplorer.school_bus', 'School Bus'), emoji: '\uD83D\uDE8C', kg: 300, desc: t('stem.climateExplorer.shared_ride_about_0_3_kg_co_per_studen', 'Shared ride \u2014 about 0.3 kg CO\u2082 per student per trip.') },
-            { label: t('stem.climateExplorer.car_alone', 'Car (alone)'), emoji: '\uD83D\uDE97', kg: 1200, desc: t('stem.climateExplorer.a_car_emits_0_21_kg_co_km_solo_trips_a', 'A car emits ~0.21 kg CO\u2082/km. Solo trips add up fast.') },
+            { label: t('stem.climateExplorer.car_alone', 'Car (alone)'), emoji: '\uD83D\uDE97', kg: 1200, desc: t('stem.climateExplorer.a_car_emits_0_21_kg_co_km_solo_trips_a', 'A car emits ~0.24 kg CO\u2082/km. Solo trips add up fast.') },
             { label: t('stem.climateExplorer.carpool', 'Carpool'), emoji: '\uD83D\uDE99', kg: 400, desc: t('stem.climateExplorer.splitting_rides_cuts_per_person_emissi', 'Splitting rides cuts per-person emissions by 50-75%.') }
           ]
         },
@@ -728,14 +728,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ══════════════════════════════════════
       //  GRANULAR HABIT TRACKER
       //  kg CO₂e per activity (sourced from IPCC AR6, Our World in Data, Poore & Nemecek 2018,
-      //  Berners-Lee "How Bad Are Bananas?" 3rd ed., IEA, Netflix sustainability report)
+      //  Berners-Lee "How Bad Are Bananas?" 3rd ed., IEA 2020 streaming estimate, Google 2025 AI prompt estimate)
       // ══════════════════════════════════════
       // Each item: id, emoji, label, kg (per activity occurrence), unit ('days/week' or 'per year'),
       // max (max frequency for slider), default freq, category, freqLabel
       var GRANULAR_ITEMS = {
         transport: [
-          { id: 'car_solo',    emoji: '🚗', label: t('stem.climateExplorer.drive_solo_avg_25_km_trip', 'Drive solo (avg 25 km trip)'),   kg: 5.3,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.typical_us_gas_car_0_21_kg_co_e_km', 'Typical US gas car: 0.21 kg CO₂e/km.') },
-          { id: 'car_pool',    emoji: '🚙', label: t('stem.climateExplorer.carpool_25_km_split_3', 'Carpool (25 km, split ×3)'),     kg: 1.8,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.carpool_of_3_cuts_per_person_emissions', 'Carpool of 3 cuts per-person emissions 65%.') },
+          { id: 'car_solo',    emoji: '🚗', label: t('stem.climateExplorer.drive_solo_avg_25_km_trip', 'Drive solo (avg 25 km trip)'),   kg: 6.1,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.typical_us_gas_car_0_21_kg_co_e_km', 'Typical US gas car: about 0.24 kg CO₂e/km.') },
+          { id: 'car_pool',    emoji: '🚙', label: t('stem.climateExplorer.carpool_25_km_split_3', 'Carpool (25 km, split ×3)'),     kg: 2.0,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.carpool_of_3_cuts_per_person_emissions', 'Carpool of 3 cuts per-person emissions 65%.') },
           { id: 'bus',         emoji: '🚌', label: t('stem.climateExplorer.bus_ride_25_km', 'Bus ride (25 km)'),              kg: 1.2,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.city_bus_avg_0_05_kg_passenger_km', 'City bus avg: 0.05 kg/passenger-km.') },
           { id: 'train',       emoji: '🚆', label: t('stem.climateExplorer.train_subway_25_km', 'Train / subway (25 km)'),       kg: 0.9,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.electric_rail_is_4_cleaner_than_a_car', 'Electric rail is 4× cleaner than a car.') },
           { id: 'ev',          emoji: '🔌', label: t('stem.climateExplorer.ev_on_mixed_grid_25_km', 'EV on mixed grid (25 km)'),     kg: 1.3,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.improves_as_the_grid_decarbonizes', 'Improves as the grid decarbonizes.') },
@@ -756,7 +756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           { id: 'foodwaste',   emoji: '🗑️', label: t('stem.climateExplorer.food_thrown_away_1_meal', 'Food thrown away (1 meal)'),   kg: 1.3,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.food_waste_8_of_global_emissions', 'Food waste = 8% of global emissions.') }
         ],
         energy: [
-          { id: 'heat_gas',    emoji: '🔥', label: t('stem.climateExplorer.gas_heating_running_1_hr', 'Gas heating running (1 hr)'),  kg: 1.5,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.natural_gas_2_kg_therm_winter_only', 'Natural gas: ~2 kg/therm. Winter-only.') },
+          { id: 'heat_gas',    emoji: '🔥', label: t('stem.climateExplorer.gas_heating_running_1_hr', 'Gas heating running (1 hr)'),  kg: 1.5,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.natural_gas_2_kg_therm_winter_only', 'Natural gas: about 5.3 kg CO₂ per therm. Winter only.') },
           { id: 'ac',          emoji: '❄️', label: t('stem.climateExplorer.ac_running_1_hr', 'AC running (1 hr)'),           kg: 0.9,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.us_grid_average_lower_in_ca_higher_in_', 'US grid average; lower in CA, higher in WV.') },
           { id: 'heat_pump',   emoji: '🌡️', label: t('stem.climateExplorer.heat_pump_1_hr_heating', 'Heat pump (1 hr heating)'),   kg: 0.3,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.4_more_efficient_than_gas_furnace', '4× more efficient than gas furnace.') },
           { id: 'shower',      emoji: '🚿', label: t('stem.climateExplorer.10_minute_hot_shower', '10-minute hot shower'),        kg: 0.7,  max: 14,  unit: 'showers/week', note: t('stem.climateExplorer.shorter_shower_linear_savings', 'Shorter shower = linear savings.') },
@@ -765,14 +765,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           { id: 'dishwasher',  emoji: '🍽️', label: t('stem.climateExplorer.dishwasher_cycle', 'Dishwasher cycle'),            kg: 0.5,  max: 14,  unit: 'cycles/week', note: t('stem.climateExplorer.full_loads_2_more_efficient', 'Full loads 2× more efficient.') }
         ],
         digital: [
-          { id: 'netflix_hd',  emoji: '📺', label: t('stem.climateExplorer.streaming_hd_video_1_hr', 'Streaming HD video (1 hr)'),   kg: 0.036, max: 50, unit: 'hours/week', note: t('stem.climateExplorer.netflix_2023_report_lower_than_older_e', 'Netflix 2023 report — lower than older estimates.') },
-          { id: 'stream_4k',   emoji: '🎬', label: t('stem.climateExplorer.streaming_4k_video_1_hr', 'Streaming 4K video (1 hr)'),   kg: 0.12,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.4k_uses_4_the_bandwidth_of_hd', '4K uses ~4× the bandwidth of HD.') },
+          { id: 'netflix_hd',  emoji: '📺', label: t('stem.climateExplorer.streaming_hd_video_1_hr', 'Streaming HD video (1 hr)'),   kg: 0.036, max: 50, unit: 'hours/week', note: t('stem.climateExplorer.netflix_2023_report_lower_than_older_e', 'IEA 2020 estimate, lower than older estimates.') },
+          { id: 'stream_4k',   emoji: '🎬', label: t('stem.climateExplorer.streaming_4k_video_1_hr', 'Streaming 4K video (1 hr)'),   kg: 0.12,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.4k_uses_4_the_bandwidth_of_hd', '4K uses about 2 to 3 times the data of HD.') },
           { id: 'gaming',      emoji: '🎮', label: t('stem.climateExplorer.console_gaming_1_hr', 'Console gaming (1 hr)'),       kg: 0.1,   max: 50, unit: 'hours/week', note: t('stem.climateExplorer.ps5_xbox_draw_150_200w', 'PS5/Xbox draw 150-200W.') },
           { id: 'videocall',   emoji: '📹', label: t('stem.climateExplorer.video_call_1_hr', 'Video call (1 hr)'),           kg: 0.06,  max: 40, unit: 'hours/week', note: t('stem.climateExplorer.camera_off_reduces_by_95', 'Camera-off reduces by ~95%.') },
           { id: 'pc_work',     emoji: '💻', label: t('stem.climateExplorer.pc_work_school_1_hr', 'PC work / school (1 hr)'),     kg: 0.05,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.laptop_1_3_of_desktop', 'Laptop ~1/3 of desktop.') },
-          { id: 'ai_text',     emoji: '💬', label: t('stem.climateExplorer.ai_text_chat_chatgpt_claude_gemini', 'AI text chat (ChatGPT/Claude/Gemini)'), kg: 0.003, max: 500, unit: 'queries/week', note: t('stem.climateExplorer.3g_co_e_per_text_prompt_long_context_1', '~3g CO\u2082e per text prompt. Long-context (1M token) queries cost ~3× more.') },
-          { id: 'ai_image',    emoji: '🎨', label: t('stem.climateExplorer.ai_image_generation', 'AI image generation'),                   kg: 0.015, max: 100, unit: 'images/week', note: t('stem.climateExplorer.dall_e_midjourney_stable_diffusion_10_', 'DALL-E / Midjourney / Stable Diffusion: ~10–30g per image. 5–10× heavier than text.') },
-          { id: 'ai_video',    emoji: '🎥', label: t('stem.climateExplorer.ai_video_generation_short_clip', 'AI video generation (short clip)'),      kg: 0.15,  max: 50,  unit: 'clips/week', note: t('stem.climateExplorer.sora_runway_kling_100_500g_per_clip_sc', 'Sora / Runway / Kling: ~100–500g per clip. Scales linearly with clip length + resolution. 50×+ heavier than text.') },
+          { id: 'ai_text',     emoji: '💬', label: t('stem.climateExplorer.ai_text_chat_chatgpt_claude_gemini', 'AI text chat (ChatGPT/Claude/Gemini)'), kg: 0.00003, max: 500, unit: 'queries/week', note: t('stem.climateExplorer.3g_co_e_per_text_prompt_long_context_1', 'Well under 1g CO\u2082e per text prompt (Google 2025: about 0.03g). Long prompts cost more.') },
+          { id: 'ai_image',    emoji: '🎨', label: t('stem.climateExplorer.ai_image_generation', 'AI image generation'),                   kg: 0.015, max: 100, unit: 'images/week', note: t('stem.climateExplorer.dall_e_midjourney_stable_diffusion_10_', 'DALL-E / Midjourney / Stable Diffusion: ~10 to 30g per image. Much heavier than a text prompt.') },
+          { id: 'ai_video',    emoji: '🎥', label: t('stem.climateExplorer.ai_video_generation_short_clip', 'AI video generation (short clip)'),      kg: 0.15,  max: 50,  unit: 'clips/week', note: t('stem.climateExplorer.sora_runway_kling_100_500g_per_clip_sc', 'Sora / Runway / Kling: ~100 to 500g per clip. Scales linearly with clip length + resolution. Much heavier than a text prompt.') },
           { id: 'ai_voice',    emoji: '🎙️', label: t('stem.climateExplorer.ai_voice_tts_generation', 'AI voice / TTS generation'),            kg: 0.002, max: 100, unit: 'clips/week', note: t('stem.climateExplorer.elevenlabs_murf_openai_tts_1_3g_per_sh', 'ElevenLabs / Murf / OpenAI TTS: ~1–3g per short clip.') },
           { id: 'ai_code',     emoji: '👨‍💻', label: t('stem.climateExplorer.ai_code_assistant_completion', 'AI code assistant completion'),         kg: 0.005, max: 500, unit: 'completions/week', note: t('stem.climateExplorer.copilot_cursor_claude_code_long_contex', 'Copilot / Cursor / Claude Code: long-context code prompts ~5g each.') }
         ],
@@ -1019,37 +1019,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'pacific', name: t('stem.climateExplorer.pacific_island_nations', 'Pacific Island Nations'), emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: '12M',
           story: 'Tuvalu, Kiribati, and the Marshall Islands may face severe flooding by 2100, yet produce less than 0.03% of global emissions. Young activists like Litokne Kabua lead advocacy campaigns.',
           resilience: 'Coral reef restoration, floating architecture, legal sovereignty campaigns',
-          voice: { name: t('stem.climateExplorer.anote_tong', 'Anote Tong'), role: 'Former President of Kiribati', quote: 'We are not just talking about losing land. We are talking about losing our identity, our culture, our home.', source: 'UN General Assembly addresses, 2013\u20132016' } },
+          voice: { name: t('stem.climateExplorer.anote_tong', 'Anote Tong'), role: 'Former President of Kiribati', about: 'As President of Kiribati, Tong warned the world that rising seas threaten his nation, and planned for his people to be able to migrate with dignity if they must leave.', source: 'Speeches as President of Kiribati, 2003 to 2016' } },
         { id: 'arctic', name: t('stem.climateExplorer.arctic_communities', 'Arctic Communities'), emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: 0.1, pop: '4M',
           story: 'Indigenous Arctic peoples have sustained cultures for millennia. Warming is 3-4\u00D7 faster here. Traditional food systems are changing, but communities lead climate monitoring.',
           resilience: 'Traditional ecological knowledge, community monitoring networks, ice cellars',
-          voice: { name: t('stem.climateExplorer.sheila_watt_cloutier', 'Sheila Watt-Cloutier'), role: 'Inuk activist; Nobel Peace Prize nominee', quote: 'Our right to be cold is a human right.', source: 'The Right to Be Cold (2015) and earlier IPCC briefings' } },
-        { id: 'sahel', name: t('stem.climateExplorer.sahel_region_africa', 'Sahel Region (Africa)'), emoji: '\uD83C\uDDFF\uD83C\uDDE6', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
+          voice: { name: t('stem.climateExplorer.sheila_watt_cloutier', 'Sheila Watt-Cloutier'), role: 'Inuk activist; Nobel Peace Prize nominee', about: 'Watt-Cloutier led a 2005 Inuit petition arguing that climate change harms Inuit human rights, a claim she calls the right to be cold.', source: 'The Right to Be Cold (2015); 2005 Inuit petition to the Inter-American Commission on Human Rights' } },
+        { id: 'sahel', name: t('stem.climateExplorer.sahel_region_africa', 'Sahel Region (Africa)'), emoji: '\uD83C\uDF0D', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
           story: 'The Sahel spans 5,400 km across Africa. Despite minimal emissions, it faces severe drought cycles. The Great Green Wall project aims to restore 100 million hectares.',
           resilience: 'Great Green Wall reforestation, solar-powered irrigation, drought-resistant crops',
-          voice: { name: t('stem.climateExplorer.hindou_oumarou_ibrahim', 'Hindou Oumarou Ibrahim'), role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', quote: 'Indigenous peoples are not victims. We are part of the solution.', source: 'UN Climate Action Summit 2019; TED 2019' } },
+          voice: { name: t('stem.climateExplorer.hindou_oumarou_ibrahim', 'Hindou Oumarou Ibrahim'), role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', about: 'Ibrahim founded AFPAT, an association of Indigenous Mbororo women and peoples in Chad, and speaks for Indigenous peoples at UN climate talks. She spoke at the 2016 Paris Agreement signing.', source: 'AFPAT; Paris Agreement signing ceremony, New York, April 2016' } },
         { id: 'bangladesh', name: t('stem.climateExplorer.bangladesh_south_asia', 'Bangladesh & South Asia'), emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.4, pop: '170M',
           story: 'Bangladesh contributes 0.4% of emissions but faces some of the worst flooding. Millions may be displaced by 2050. Yet Bangladeshi engineers pioneer floating schools and farms.',
           resilience: 'Floating schools, cyclone shelters, mangrove restoration, early warning systems',
-          voice: { name: t('stem.climateExplorer.saleemul_huq_1952_2023', 'Saleemul Huq (1952\u20132023)'), role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'Loss and damage is happening now. Adaptation has its limits.', source: 'COP21\u2013COP27 statements; Climate Home News interviews' } },
+          voice: { name: t('stem.climateExplorer.saleemul_huq_1952_2023', 'Saleemul Huq (1952\u20132023)'), role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'What is clear already is that the world has stepped into the era of Loss and Damage from human-induced climate change.', source: 'ICCCAD blog on the COP27 Loss and Damage Fund, 29 November 2022' } },
         { id: 'caribbean', name: t('stem.climateExplorer.caribbean_islands', 'Caribbean Islands'), emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: 0.2, pop: '44M',
           story: 'Caribbean nations face intensifying hurricanes. Hurricane Maria (2017) devastated Dominica and Puerto Rico. Islands now lead in renewable energy transitions.',
           resilience: 'Hurricane-resilient building codes, community solar, coral nurseries',
-          voice: { name: t('stem.climateExplorer.mia_mottley', 'Mia Mottley'), role: 'Prime Minister of Barbados', quote: 'We were the people whose ancestors escaped slavery only to find ourselves on the front lines of climate change.', source: 'COP26 plenary, Glasgow, 2021' } },
+          voice: { name: t('stem.climateExplorer.mia_mottley', 'Mia Mottley'), role: 'Prime Minister of Barbados', quote: '1.5 is what we need to survive. Two degrees is a death sentence for the people of Antigua and Barbuda, for the people of the Maldives...', source: 'COP26 World Leaders Summit opening, Glasgow, 1 November 2021' } },
         { id: 'ej_usa', name: t('stem.climateExplorer.us_environmental_justice', 'US Environmental Justice'), emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: 15.0, pop: '~40M affected',
           story: 'In the US, communities of color are 75% more likely to live near polluting facilities. Heat islands in cities can be 10\u00B0F hotter. Environmental justice movements fight for equitable protection.',
           resilience: 'Community air monitoring, urban tree canopy programs, clean energy access initiatives',
-          voice: { name: t('stem.climateExplorer.catherine_coleman_flowers', 'Catherine Coleman Flowers'), role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', quote: 'We are not a sacrifice zone.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); Senate testimony 2021' } },
+          voice: { name: t('stem.climateExplorer.catherine_coleman_flowers', 'Catherine Coleman Flowers'), role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', about: 'Flowers brought national attention to failing sewage systems in rural Lowndes County, Alabama, and links clean water and sanitation to environmental justice.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); House Oversight subcommittee testimony, June 2021' } },
         { id: 'seasia', name: t('stem.climateExplorer.southeast_asia_coastal', 'Southeast Asia Coastal'), emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
           story: 'Vietnam, Philippines, and Indonesia face rising seas and intensifying storms. Jakarta is sinking so fast Indonesia is building a new capital. Communities lead mangrove restoration.',
           resilience: 'Mangrove planting, floating communities, aquaculture adaptation',
-          voice: { name: t('stem.climateExplorer.yeb_sa_o', 'Yeb Sa\u00F1o'), role: 'Filipino climate negotiator; walked out of COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
+          voice: { name: t('stem.climateExplorer.yeb_sa_o', 'Yeb Sa\u00F1o'), role: 'Filipino climate negotiator; fasted for two weeks at COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
         { id: 'andes', name: t('stem.climateExplorer.andean_communities', 'Andean Communities'), emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
           story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
           resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation',
-          voice: { name: t('stem.climateExplorer.tarcila_rivera_zea', 'Tarcila Rivera Zea'), role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); FAO Special Ambassador for Indigenous Peoples', quote: 'We do not inherit the land from our ancestors. We borrow it from our grandchildren \u2014 and the climate crisis is the bill coming due.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
+          voice: { name: t('stem.climateExplorer.tarcila_rivera_zea', 'Tarcila Rivera Zea'), role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); member of the UN Permanent Forum on Indigenous Issues (2017 to 2019)', about: 'Rivera Zea has spent more than 30 years defending the rights and cultures of Indigenous peoples in Peru, and founded networks of Indigenous women across the Americas.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
         { id: 'wabanaki', name: t('stem.climateExplorer.wabanaki_nations_maine', 'Wabanaki Nations (Maine)'), emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
-          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the legal recognition of natural rivers as rights-bearing entities.',
+          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the restoration of the Penobscot River.',
           resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners',
           voice: { name: t('stem.climateExplorer.sherri_mitchell_weh_na_ha_mu_kwasset', 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)'), role: 'Penobscot lawyer, organizer, and author', quote: 'We are taught to consider how our actions today will impact the next seven generations.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (2018); TEDx talks' } }
       ];
@@ -1057,23 +1057,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var riskColors = { extreme: '#ef4444', high: '#f59e0b', moderate: '#3b82f6' };
 
       // ══════════════════════════════════════
-      //  HISTORICAL CUMULATIVE CO₂ EMISSIONS (1850–2024, Gt)
-      //  Source: Carbon Brief 2023 analysis + Our World in Data
+      //  HISTORICAL CUMULATIVE CO₂ EMISSIONS (1850 to 2021, Gt, land use included)
+      //  Source: Carbon Brief 2021 analysis; pct = share of its 2,504 Gt total
       //  Shows who is actually responsible for the CO₂ already in the atmosphere
       // ══════════════════════════════════════
       var HISTORICAL_EMISSIONS = [
-        { country: 'USA',            emoji: '🇺🇸', gt: 509, pctGlobal: 25.0 },
-        { country: 'China',          emoji: '🇨🇳', gt: 284, pctGlobal: 14.0 },
-        { country: 'Russia/USSR',    emoji: '🇷🇺', gt: 172, pctGlobal: 8.5 },
-        { country: 'Brazil',         emoji: '🇧🇷', gt: 113, pctGlobal: 5.6 },
-        { country: 'Indonesia',      emoji: '🇮🇩', gt: 103, pctGlobal: 5.1 },
-        { country: 'Germany',        emoji: '🇩🇪', gt: 88,  pctGlobal: 4.3 },
-        { country: 'UK',             emoji: '🇬🇧', gt: 78,  pctGlobal: 3.9 },
-        { country: 'Japan',          emoji: '🇯🇵', gt: 68,  pctGlobal: 3.3 },
-        { country: 'India',          emoji: '🇮🇳', gt: 54,  pctGlobal: 2.7 },
-        { country: 'Canada',         emoji: '🇨🇦', gt: 34,  pctGlobal: 1.7 },
-        { country: 'France',         emoji: '🇫🇷', gt: 34,  pctGlobal: 1.7 },
-        { country: 'All of Africa',  emoji: '🌍', gt: 65,  pctGlobal: 3.2, note: t('stem.climateExplorer.1_4_billion_people', '1.4 billion people.') }
+        { country: 'USA',            emoji: '🇺🇸', gt: 509, pctGlobal: 20.3 },
+        { country: 'China',          emoji: '🇨🇳', gt: 284, pctGlobal: 11.4 },
+        { country: 'Russia/USSR',    emoji: '🇷🇺', gt: 172, pctGlobal: 6.9 },
+        { country: 'Brazil',         emoji: '🇧🇷', gt: 113, pctGlobal: 4.5 },
+        { country: 'Indonesia',      emoji: '🇮🇩', gt: 103, pctGlobal: 4.1 },
+        { country: 'Germany',        emoji: '🇩🇪', gt: 88,  pctGlobal: 3.5 },
+        { country: 'India',          emoji: '🇮🇳', gt: 85,  pctGlobal: 3.4 },
+        { country: 'UK',             emoji: '🇬🇧', gt: 75,  pctGlobal: 3.0 },
+        { country: 'Japan',          emoji: '🇯🇵', gt: 68,  pctGlobal: 2.7 },
+        { country: 'Canada',         emoji: '🇨🇦', gt: 65,  pctGlobal: 2.6 },
+        { country: 'France',         emoji: '🇫🇷', gt: 34,  pctGlobal: 1.4 },
+        { country: 'All of Africa',  emoji: '🌍', gt: 65,  pctGlobal: 2.6, note: t('stem.climateExplorer.1_4_billion_people', '1.4 billion people.') }
       ];
 
       // ══════════════════════════════════════
@@ -1107,9 +1107,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var SOLUTIONS = [
         { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: t('stem.climateExplorer.solar_power_revolution', 'Solar Power Revolution'), what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Solar is now the cheapest electricity in history. Could power 40% of US electricity from rooftops alone.' },
         { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: t('stem.climateExplorer.wind_energy', 'Wind Energy'), what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (55% wind-powered), UK, US, China.', impact: 'One offshore turbine can power 16,000 homes. Wind jobs are among the fastest-growing.' },
-        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (80% of new cars are electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
+        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (about 96% of new cars sold in 2025 were electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
         { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests take up about 2.6 billion tons of CO\u2082 a year. Land ecosystems together absorb roughly 30% of what humans emit \u2014 forests are the largest single part of that.' },
-        { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: t('stem.climateExplorer.carbon_capture', 'Carbon Capture'), what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early \u2014 current plants capture 36,000 tons/year. Goal: billions by 2050.' },
+        { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: t('stem.climateExplorer.carbon_capture', 'Carbon Capture'), what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early. The biggest plant is built to capture up to 36,000 tons a year, but captures far less so far. Goal: billions by 2050.' },
         { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: t('stem.climateExplorer.ocean_kelp_farms', 'Ocean Kelp Farms'), what: 'Kelp grows 60\u00D7 faster than land trees, absorbing massive CO\u2082 while creating habitat.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Could sequester 1-10 Gt CO\u2082/year while providing food, fertilizer, and biofuel.' },
         { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: t('stem.climateExplorer.green_cities', 'Green Cities'), what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities concentrate about 70% of energy-related emissions, so urban design decides how much energy millions of people need in the first place. That leverage is why it ranks high, not that any single change tops the list.' },
         { id: 'youth', cat: 'all', emoji: '\u270A', title: t('stem.climateExplorer.youth_climate_movement', 'Youth Climate Movement'), what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (170+ countries), Sunrise Movement.', impact: 'Youth pressure helped pass the EU Green Deal and influenced the Paris Agreement.', highlight: true }
@@ -1125,9 +1125,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { y: 1985, ppm: 346.1 }, { y: 1990, ppm: 354.4 }, { y: 1995, ppm: 360.9 },
         { y: 2000, ppm: 369.5 }, { y: 2005, ppm: 379.8 }, { y: 2010, ppm: 389.9 },
         { y: 2013, ppm: 396.5 }, { y: 2015, ppm: 401.0 }, { y: 2018, ppm: 408.5 },
-        { y: 2020, ppm: 414.2 }, { y: 2022, ppm: 418.5 }, { y: 2024, ppm: 422.8 }
+        { y: 2020, ppm: 414.2 }, { y: 2022, ppm: 418.5 }, { y: 2024, ppm: 424.6 }
       ];
-      // Global mean surface temperature anomaly (°C above 1880-1910 baseline)
+      // Global mean surface temperature anomaly (°C above the 1951-1980 average)
       // Source: NASA GISS GISTEMP v4
       var GLOBAL_TEMP = [
         { y: 1958, t: 0.07 }, { y: 1965, t: -0.10 }, { y: 1970, t: 0.04 },
@@ -1139,9 +1139,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       ];
       var KEELING_MILESTONES = [
         { ppm: 280, label: t('stem.climateExplorer.pre_industrial_1750', 'Pre-industrial (1750)'), note: t('stem.climateExplorer.stable_for_10_000_years_holocene_clima', 'Stable for 10,000 years. Holocene climate that all human civilization grew up in.') },
-        { ppm: 315, label: t('stem.climateExplorer.keeling_starts_measuring_1958', 'Keeling starts measuring (1958)'), note: t('stem.climateExplorer.charles_david_keeling_begins_continuou', 'Charles David Keeling begins continuous CO\u2082 monitoring at Mauna Loa. His curve proved human-caused warming was real.') },
+        { ppm: 315, label: t('stem.climateExplorer.keeling_starts_measuring_1958', 'Keeling starts measuring (1958)'), note: t('stem.climateExplorer.charles_david_keeling_begins_continuou', 'Charles David Keeling begins continuous CO\u2082 monitoring at Mauna Loa. His curve proved that CO\u2082 in the air rises year after year.') },
         { ppm: 350, label: t('stem.climateExplorer.350_ppm_1988', '350 ppm (1988)'), note: t('stem.climateExplorer.climate_scientist_james_hansen_tells_u', 'Climate scientist James Hansen tells US Congress warming has begun. 350 ppm is considered the "safe" ceiling by 350.org.') },
-        { ppm: 400, label: t('stem.climateExplorer.400_ppm_2013', '400 ppm (2013)'), note: t('stem.climateExplorer.first_time_atmospheric_co_crossed_400_', 'First time atmospheric CO\u2082 crossed 400 ppm in 3+ million years. Earth\'s last 400 ppm era: tropical forests at the poles.') },
+        { ppm: 400, label: t('stem.climateExplorer.400_ppm_2013', '400 ppm (2013)'), note: t('stem.climateExplorer.first_time_atmospheric_co_crossed_400_', 'First time atmospheric CO\u2082 crossed 400 ppm in 3+ million years. Earth\'s last 400 ppm era: forests grew in the Arctic and seas were much higher.') },
         { ppm: 420, label: t('stem.climateExplorer.420_ppm_2023', '420 ppm (2023)'), note: t('stem.climateExplorer.current_level_highest_in_at_least_800_', 'Around the 2023 annual level. Concentrations are the highest in at least 800,000 years in ice-core records; temperature is not determined by one concentration value alone.') },
         { ppm: 450, label: t('stem.climateExplorer.450_ppm_projected_2035', '450 ppm (projected ~2035)'), note: t('stem.climateExplorer.threshold_associated_with_2_c_warming_', 'Threshold associated with 2\u00B0C warming if sustained. Paris Agreement target: keep below 1.5\u00B0C.') }
       ];
@@ -1152,13 +1152,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ══════════════════════════════════════
       var TIPPING_POINTS = [
         { id: 'coral', emoji: '\uD83E\uDEB8', name: t('stem.climateExplorer.tropical_coral_reef_die_off', 'Tropical Coral Reef Die-off'), threshold: 1.5, status: 'happening',
-          desc: t('stem.climateExplorer.mass_coral_bleaching_events_hit_the_gr', 'Mass coral bleaching events hit the Great Barrier Reef in 2016, 2017, 2020, 2022, and 2024. At 1.5\u00B0C warming, 70\u201390% of tropical coral reefs die. At 2\u00B0C, 99% die.'),
+          desc: t('stem.climateExplorer.mass_coral_bleaching_events_hit_the_gr', 'Mass coral bleaching events hit the Great Barrier Reef in 2016, 2017, 2020, 2022, 2024, and 2025. The IPCC projects that tropical coral reefs would decline by a further 70 to 90% at 1.5\u00B0C of warming. At 2\u00B0C, more than 99% would be lost.'),
           cascade: 'Loss of 25% of marine biodiversity; collapse of fisheries feeding 500M people; loss of coastal storm protection.' },
         { id: 'greenland', emoji: '\u2744\uFE0F', name: t('stem.climateExplorer.greenland_ice_sheet_collapse', 'Greenland Ice Sheet Collapse'), threshold: 1.5, status: 'at-risk',
           desc: t('stem.climateExplorer.the_greenland_ice_sheet_holds_enough_w', 'The Greenland ice sheet holds enough water to raise sea levels 7 meters (23 ft). At ~1.5\u00B0C sustained, melt becomes irreversible over centuries to millennia.'),
           cascade: 'Multi-meter sea level rise over centuries. Coastal cities flooded. Freshwater pulse disrupts Atlantic circulation (see AMOC).' },
-        { id: 'amoc', emoji: '\uD83C\uDF0A', name: t('stem.climateExplorer.amoc_collapse_gulf_stream', 'AMOC Collapse (Gulf Stream)'), threshold: 2.0, status: 'weakening',
-          desc: t('stem.climateExplorer.the_atlantic_meridional_overturning_ci', 'The Atlantic Meridional Overturning Circulation moves heat from the tropics to Europe. It has weakened 15% since 1950. A full shutdown would cool northern Europe dramatically while disrupting monsoons in Africa and Asia.'),
+        { id: 'amoc', emoji: '\uD83C\uDF0A', name: t('stem.climateExplorer.amoc_collapse_gulf_stream', 'AMOC Collapse (Gulf Stream)'), threshold: 4.0, status: 'weakening',
+          desc: t('stem.climateExplorer.the_atlantic_meridional_overturning_ci', 'The Atlantic Meridional Overturning Circulation moves heat from the tropics to Europe. One study estimates it has weakened about 15% since about 1950, but scientists still debate this. Collapse is estimated at about 4\u00B0C of warming, within a range of 1.4 to 8\u00B0C. A full shutdown would cool northern Europe dramatically while disrupting monsoons in Africa and Asia.'),
           cascade: 'Europe cools 5\u201310\u00B0C. African/Asian monsoons fail. Sea levels rise on US East Coast. Food systems disrupted for billions.' },
         { id: 'amazon', emoji: '\uD83C\uDF34', name: t('stem.climateExplorer.amazon_rainforest_dieback', 'Amazon Rainforest Dieback'), threshold: 3.5, status: 'at-risk',
           desc: t('stem.climateExplorer.the_amazon_generates_half_its_own_rain', 'The Amazon generates half its own rainfall. With 20\u201325% deforestation + rising temperatures, it risks flipping from rainforest to savanna. Some studies suggest the threshold is closer to 2\u00B0C with current deforestation rates.'),
@@ -1173,8 +1173,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           desc: t('stem.climateExplorer.northern_coniferous_forests_russia_can', 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.'),
           cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' },
         { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: t('stem.climateExplorer.gulf_of_maine_rapid_warming', 'Gulf of Maine Rapid Warming'), threshold: 1.0, status: 'happening',
-          desc: t('stem.climateExplorer.the_gulf_of_maine_has_warmed_faster_th', 'The Gulf of Maine has warmed faster than 99% of the world\u2019s oceans since 1980 \u2014 about 0.5\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.'),
-          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show ~7 inches of sea level rise since 1950 with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
+          desc: t('stem.climateExplorer.the_gulf_of_maine_has_warmed_faster_th', 'The Gulf of Maine has warmed faster than about 97% of the world\u2019s oceans since 1982, about 0.84\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.'),
+          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show about 7.5 inches of sea level rise since 1912, with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
       ];
 
       // ══════════════════════════════════════
@@ -1205,32 +1205,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       ];
 
       // ══════════════════════════════════════
-      //  GLOBAL EMISSIONS BY SECTOR (2023, % of total ~54 Gt CO₂e including land use)
-      //  Source: WRI Climate Watch / Our World in Data
+      //  GLOBAL EMISSIONS BY SECTOR (2019, % of ~59 Gt CO₂e net, direct emissions)
+      //  Source: IPCC AR6 WGIII SPM B.2.1 (energy supply 34, industry 24, AFOLU 22, transport 15, buildings 6)
       // ══════════════════════════════════════
       var EMISSIONS_BY_SECTOR = [
-        { id: 'electricity', emoji: '⚡', name: t('stem.climateExplorer.electricity_heat', 'Electricity & Heat'),    pct: 25, color: '#ef4444', lever: 'Fastest lever: renewable grids, heat pumps, energy efficiency.' },
-        { id: 'agriculture', emoji: '🌾', name: t('stem.climateExplorer.agriculture_land_use', 'Agriculture + Land Use'),pct: 24, color: ceInk.amber, lever: 'Reduce beef/dairy, restore forests and peatlands, prevent food waste.' },
-        { id: 'industry',    emoji: '🏭', name: t('stem.climateExplorer.industry', 'Industry'),              pct: 21, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
-        { id: 'transport',   emoji: '🚗', name: t('stem.climateExplorer.transport', 'Transport'),             pct: 16, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
-        { id: 'buildings',   emoji: '🏢', name: t('stem.climateExplorer.buildings', 'Buildings'),             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' },
-        { id: 'other',       emoji: '🌐', name: t('stem.climateExplorer.other_waste_fugitive_aviation_bunkers', 'Other (waste, fugitive, aviation bunkers)'), pct: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
+        { id: 'electricity', emoji: '⚡', name: t('stem.climateExplorer.electricity_heat', 'Energy Supply (electricity, heat, fuels)'),    pct: 34, color: '#ef4444', lever: 'Fastest lever: renewable grids, heat pumps, energy efficiency, fixing methane leaks.' },
+        { id: 'agriculture', emoji: '🌾', name: t('stem.climateExplorer.agriculture_land_use', 'Agriculture + Land Use'),pct: 22, color: ceInk.amber, lever: 'Reduce beef/dairy, restore forests and peatlands, prevent food waste.' },
+        { id: 'industry',    emoji: '🏭', name: t('stem.climateExplorer.industry', 'Industry'),              pct: 24, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
+        { id: 'transport',   emoji: '🚗', name: t('stem.climateExplorer.transport', 'Transport'),             pct: 15, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
+        { id: 'buildings',   emoji: '🏢', name: t('stem.climateExplorer.buildings', 'Buildings'),             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' }
       ];
 
       // ══════════════════════════════════════
       //  CARBON BUDGET (remaining emissions for 50% chance of staying below warming limit)
-      //  Source: IPCC AR6 WG1 Table 5.8 + annual update for 2024
+      //  Source: Global Carbon Budget 2025 (ESSD 2026), counted from the start of 2026
       // ══════════════════════════════════════
       var CARBON_BUDGETS = [
-        { limit: 1.5, gtRemaining: 250, color: '#ef4444', badge: 'lockout' },
-        { limit: 1.7, gtRemaining: 550, color: '#f97316', badge: 'severe' },
-        { limit: 2.0, gtRemaining: 900, color: ceInk.amber, badge: 'major risk' }
+        { limit: 1.5, gtRemaining: 170, color: '#ef4444', badge: 'lockout' },
+        { limit: 1.7, gtRemaining: 525, color: '#f97316', badge: 'severe' },
+        { limit: 2.0, gtRemaining: 1055, color: ceInk.amber, badge: 'major risk' }
       ];
-      var GLOBAL_EMISSIONS_RATE = 40; // Gt CO₂/year (approximate 2023/2024)
+      var GLOBAL_EMISSIONS_RATE = 42; // Gt CO₂/year (Global Carbon Budget 2025: 42.2 in 2025)
 
       // ══════════════════════════════════════
       //  IPCC FUTURE SCENARIOS (SSP pathways)
-      //  Source: IPCC AR6 WG1 SPM.8 (temperature by 2100, relative to 1850-1900)
+      //  Source: IPCC AR6 WG1 Table SPM.1 (temperature by 2100, relative to 1850-1900)
       // ══════════════════════════════════════
       var IPCC_SCENARIOS = [
         { id: 'ssp119', label: 'SSP1-1.9', name: t('stem.climateExplorer.very_low_emissions_paris_aligned', 'Very Low Emissions — Paris-Aligned'),
@@ -1242,22 +1241,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           temp2100: 1.8, tempRange: [1.3, 2.4], emissions2050: 7, color: '#84cc16',
           likelihood: 'achievable with current commitments if fully implemented',
           requires: 'Net-zero CO\u2082 by ~2075. Rapid renewable expansion + moderate carbon capture. Strong but slower than SSP1-1.9.',
-          impacts: 'Warming around 2°C. Some tipping points triggered (coral bleaching, Greenland slow loss). Sea level rise: 0.4–0.7m.' },
+          impacts: 'Warming around 2°C. Some tipping points triggered (coral bleaching, Greenland slow loss). Sea level rise: 0.3 to 0.6m.' },
         { id: 'ssp245', label: 'SSP2-4.5', name: t('stem.climateExplorer.middle_of_the_road_current_pledges', 'Middle of the Road — Current Pledges'),
-          temp2100: 2.7, tempRange: [2.1, 3.5], emissions2050: 25, color: ceInk.amber,
+          temp2100: 2.7, tempRange: [2.1, 3.5], emissions2050: 40, color: ceInk.amber,
           likelihood: 'roughly where current policies are heading',
           requires: 'Gradual shift from fossil fuels. Renewable growth continues but not fast enough.',
-          impacts: 'Warming ~2.7°C. Major tipping points likely (AMOC weakening, Amazon stress, coral reefs mostly gone). Sea level rise: 0.5–0.9m.' },
+          impacts: 'Warming ~2.7°C. Major tipping points likely (AMOC weakening, Amazon stress, coral reefs mostly gone). Sea level rise: 0.4 to 0.8m.' },
         { id: 'ssp370', label: 'SSP3-7.0', name: t('stem.climateExplorer.high_emissions_regional_rivalry', 'High Emissions — Regional Rivalry'),
           temp2100: 3.6, tempRange: [2.8, 4.6], emissions2050: 55, color: '#f97316',
           likelihood: 'emissions still rising; weak policy',
           requires: 'Continued fossil fuel expansion. Limited climate cooperation between countries.',
-          impacts: 'Warming ~3.6°C. Multiple cascading tipping points. Amazon dieback likely. Sea level rise: 0.6–1.1m by 2100, multi-meter locked in long-term.' },
+          impacts: 'Warming ~3.6°C. Multiple cascading tipping points. Amazon dieback likely. Sea level rise: 0.6 to 0.9m by 2100, multi-meter locked in long-term.' },
         { id: 'ssp585', label: 'SSP5-8.5', name: t('stem.climateExplorer.very_high_fossil_fueled_growth', 'Very High — Fossil-Fueled Growth'),
           temp2100: 4.4, tempRange: [3.3, 5.7], emissions2050: 85, color: '#ef4444',
           likelihood: 'requires active acceleration of coal/oil/gas use',
           requires: 'Quadrupling coal use, massive fossil fuel expansion. Considered unlikely but reveals worst-case physics.',
-          impacts: 'Warming 4°C+. Mass tipping-point cascade. Parts of Earth uninhabitable for humans in summer. Sea level rise: 0.7–1.4m by 2100, 5+ m locked in.' }
+          impacts: 'Warming 4°C+. Mass tipping-point cascade. Parts of Earth uninhabitable for humans in summer. Sea level rise: 0.6 to 1.0m by 2100, 5+ m locked in.' }
       ];
 
       var ACTIONS = [
@@ -1302,11 +1301,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Justice ──
         { q: 'What share of global emissions comes from the richest 10% of people?', opts: ['~5%', '~20%', '~50%', '~80%'], a: 2 },
         // ── New content coverage: sectors, Drawdown, budget ──
-        { q: 'What single sector produces roughly 25% of global greenhouse emissions?', opts: ['Road transportation', 'Electricity & heat', 'Aviation', 'Agriculture'], a: 1 },
-        { q: 'Agriculture + land use accounts for roughly what share of global emissions?', opts: ['~5%', '~10%', '~24%', '~50%'], a: 2 },
+        { q: 'What single sector produces roughly a third of global greenhouse emissions?', opts: ['Road transportation', 'Electricity & heat', 'Aviation', 'Agriculture'], a: 1 },
+        { q: 'Agriculture + land use accounts for roughly what share of global emissions?', opts: ['~5%', '~10%', '~22%', '~50%'], a: 2 },
         { q: 'According to Project Drawdown, which solution has the largest gigaton avoidance potential by 2050?', opts: ['Electric vehicles', 'Onshore wind turbines', 'Rooftop solar', 'Direct air capture plants'], a: 1 },
         { q: 'One of Drawdown\'s top-ranked solutions is not a technology — it is:', opts: ['Skyscrapers', 'Girls\' education + family planning', 'Next-generation nuclear fission plants', 'Carbon trading'], a: 1 },
-        { q: 'Roughly how many years of emissions remain in the 1.5°C carbon budget at today\'s burn rate?', opts: ['~60 years', '~25 years', '~6 years', 'Already exceeded'], a: 2 },
+        { q: 'Roughly how many years of emissions remain in the 1.5°C carbon budget at today\'s burn rate?', opts: ['~60 years', '~25 years', '~4 years', 'Already exceeded'], a: 2 },
         { q: 'Which AI workload has the LARGEST per-use carbon footprint?', opts: ['Text chat', 'Image generation', 'Video generation', 'Voice TTS'], a: 2 },
         { q: 'Global temperature has risen approximately how much above pre-industrial levels (as of 2024)?', opts: ['+0.3°C', '+1.3°C', '+2.5°C', '+4.0°C'], a: 1 },
         // ── IPCC scenarios ──
@@ -1314,14 +1313,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { q: 'Current policies put the world roughly on which IPCC pathway?', opts: ['SSP1-1.9 (Paris-aligned)', 'SSP1-2.6 (strong action)', 'SSP2-4.5 (middle)', 'SSP5-8.5 (fossil-fueled)'], a: 2 },
         { q: 'What does "SSP" stand for in IPCC future scenarios?', opts: ['Solar and Storage Plan', 'Shared Socioeconomic Pathway', 'State Science Policy', 'Sustainable Systems Planning Project'], a: 1 },
         // ── Historical responsibility ──
-        { q: 'Which single country is responsible for approximately 25% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'United Kingdom', 'United States', 'India'], a: 2 },
+        { q: 'Which single country is responsible for approximately 20% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'United Kingdom', 'United States', 'India'], a: 2 },
         { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company that is owned by the United Nations', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
         { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 },
         // \u2500\u2500 Per-capita inversion + climate justice deepening \u2500\u2500
-        { q: 'An average American has emitted roughly 1,545 tons of CO\u2082 over their lifetime. An average Bangladeshi has emitted about 13 tons. The American per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
-        { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 99% of them'], a: 3 },
+        { q: 'Since 1850, the US has emitted roughly 1,545 tons of CO\u2082 for each person living there today. For Bangladesh the figure is about 13 tons. The US per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
+        { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 97% of them'], a: 3 },
         { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half (around 50%)', 'About 10% (around one tenth)', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
-        { q: 'Approximately how many people have been internally displaced by weather disasters since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
+        { q: 'Approximately how many internal displacements have weather disasters caused since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
         { q: 'The Wabanaki Nations \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
         { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for asylum in any country that has signed the Convention'], a: 2 }
       ];
@@ -1973,7 +1972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 900 } }, (sectorsExpanded ? '▼ ' : '▶ ') + '🌐 Global Emissions by Sector'),
                       el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 2 } }, 'Personal action matters. Structural change matters more. Here\'s where global emissions actually come from.')
                     ),
-                    el('span', { style: { color: '#60a5fa', fontSize: 11, fontWeight: 700 } }, '~54 Gt CO\u2082e/yr')
+                    el('span', { style: { color: '#60a5fa', fontSize: 11, fontWeight: 700 } }, '~59 Gt CO\u2082e/yr (2019)')
                   )
                 ),
                 sectorsExpanded && el('div', { style: { marginTop: 4 } },
@@ -1985,14 +1984,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('span', { style: { color: sec.color, fontSize: 12, fontWeight: 900, fontFamily: 'monospace' } }, sec.pct + '%')
                       ),
                       el('div', { style: { height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden', marginBottom: 3 } },
-                        el('div', { style: { width: (sec.pct * 3.5) + '%', height: '100%', background: sec.color } })
+                        el('div', { style: { width: (sec.pct * 2.5) + '%', height: '100%', background: sec.color } })
                       ),
                       el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5, paddingLeft: 26, fontStyle: 'italic' } }, sec.lever)
                     );
                   }),
                   el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                     el('strong', { style: { color: '#60a5fa' } }, '🔑 Why this matters:'),
-                    ' Personal footprint lives mostly inside transport + buildings + food choices (~28% of total emissions). The other ~72% — electricity, industry, agriculture at scale — requires policy, infrastructure, and corporate change. Both matter. The biggest personal leverage is voting + advocacy + demanding structural change.')
+                    ' Personal footprint lives mostly inside transport, buildings and food choices. Most of the rest, electricity, industry and agriculture at scale, requires policy, infrastructure, and corporate change. Both matter. The biggest personal leverage is voting + advocacy + demanding structural change.')
                 )
               );
             })(),
@@ -2568,12 +2567,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   c.fillText(tmark.toFixed(1) + '°C', w - padR + 4, ty + 3);
                 });
                 // Paris 1.5°C danger line
-                var parisY = t2py(1.5);
+                var parisY = t2py(1.5 - 0.19); // Paris 1.5 is vs 1850-1900; NASA 2024: 1.28 on this scale, ~1.47 vs 1850-1900
                 c.strokeStyle = 'rgba(239,68,68,0.6)'; c.lineWidth = 1; c.setLineDash([2, 3]);
                 c.beginPath(); c.moveTo(padL, parisY); c.lineTo(padL + plotW, parisY); c.stroke();
                 c.setLineDash([]);
                 c.fillStyle = '#ef4444'; c.font = 'bold 9px system-ui'; c.textAlign = 'right';
-                c.fillText('Paris 1.5°C', w - padR - 4, parisY - 3);
+                c.fillText('Paris 1.5°C (vs 1850 to 1900)', w - padR - 4, parisY - 3);
                 // Temperature line
                 c.strokeStyle = '#ef4444'; c.lineWidth = 2;
                 c.beginPath();
@@ -2600,7 +2599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 c.fillStyle = '#93c5fd'; c.font = '9px system-ui'; c.textAlign = 'left';
                 c.fillText('CO\u2082 (left axis)', padL + 20, 10);
                 c.fillStyle = '#ef4444'; c.fillRect(padL + 110, 4, 10, 3);
-                c.fillStyle = '#fca5a5'; c.fillText('Temp anomaly (right axis)', padL + 124, 10);
+                c.fillStyle = '#fca5a5'; c.fillText('Temp vs 1951 to 1980 avg (right axis)', padL + 124, 10);
                 // Y-axis labels
                 c.save(); c.translate(12, padT + plotH / 2); c.rotate(-Math.PI / 2);
                 c.fillStyle = '#94a3b8'; c.font = '11px system-ui'; c.textAlign = 'center';
@@ -2608,13 +2607,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 c.save(); c.translate(w - 4, padT + plotH / 2); c.rotate(Math.PI / 2);
                 c.fillStyle = '#f87171'; c.font = '11px system-ui'; c.textAlign = 'center';
                 c.fillText('\u0394T (°C)', 0, 0); c.restore();
-              }, style: { display: 'block', width: '100%', height: '260px' }, role: 'img', 'aria-label': 'Dual-axis chart showing atmospheric CO2 rising from 315 to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm alongside global temperature anomaly rising from 0 to ' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + ' degrees Celsius' })
+              }, style: { display: 'block', width: '100%', height: '260px' }, role: 'img', 'aria-label': 'Dual-axis chart showing atmospheric CO2 rising from 315 to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm alongside global temperature anomaly rising from 0 to ' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + ' degrees Celsius above the 1951 to 1980 average' })
             ),
             // Causation note
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 12 } },
               el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔥 CO₂ drives warming — the two lines track together'),
               el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
-                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm in the 2024 annual mean. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
+                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm in the 2024 annual mean. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above the 1951 to 1980 average (NASA puts 2024 at about 1.47°C above pre-industrial). This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
             ),
             // CL3: weather vs. climate — the sawtooth IS the teachable contrast
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.22)', marginBottom: 12 } },
@@ -2690,20 +2689,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     style: { width: '100%', accentColor: '#ef4444', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
-                    el('span', null, '20 (halved)'),
-                    el('span', null, '40 (today ▼)'),
+                    el('span', null, '21 (halved)'),
+                    el('span', null, '42 (today ▼)'),
                     el('span', null, '50 (growth)')
                   ),
                   el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
                     userBurnRate === 0 ? '🌟 Net-zero: budgets stop shrinking. Warming stabilizes.' :
                     userBurnRate <= 10 ? '✨ Aggressive decline. Warming slowdown becomes possible.' :
-                    userBurnRate <= 20 ? '👍 Halved from today. 1.5°C budget lasts 25 years instead of 6.' :
+                    userBurnRate <= 21 ? '👍 Halved from today. 1.5°C budget lasts about 8 years instead of 4.' :
                     userBurnRate <= 30 ? '⚠️ Modest reduction. Blows the 1.5°C budget but 2°C may hold.' :
-                    userBurnRate <= 40 ? '🔥 Business-as-usual. 1.5°C budget exhausted by ~2030.' :
+                    userBurnRate <= 44 ? '🔥 Business-as-usual. 1.5°C budget gone by about 2030.' :
                     '🚨 Growth trajectory. Paris targets impossible. 2°C likely breached.')
                 ),
                 el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
-                  '📚 Budgets are from IPCC AR6 WG1 (50% probability of staying below limit). Every Gt emitted permanently reduces the remaining budget — unlike a bank, there\'s no way to "earn it back." Negative emissions (direct air capture) are still early and expensive. Emission reduction is far cheaper per ton.')
+                  '📚 Budgets are from the Global Carbon Budget 2025, counted from the start of 2026 (50% probability of staying below limit). Every Gt emitted permanently reduces the remaining budget — unlike a bank, there\'s no way to "earn it back." Negative emissions (direct air capture) are still early and expensive. Emission reduction is far cheaper per ton.')
               );
             })(),
 
@@ -2747,7 +2746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ),
                   el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5, marginBottom: 10 } },
                     el('strong', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Temperature by 2100: '),
-                    '+' + picked.temp2100.toFixed(1) + '°C (likely range ' + picked.tempRange[0] + '–' + picked.tempRange[1] + '°C)'),
+                    '+' + picked.temp2100.toFixed(1) + '°C (very likely range ' + picked.tempRange[0] + '–' + picked.tempRange[1] + '°C)'),
                   el('div', { style: { marginBottom: 8 } },
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '📉 Emissions required by 2050'),
                     el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
@@ -2829,9 +2828,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var SLR_IMPACTS = {
                 0:  { displaced: 0,    cities: [], desc: t('stem.climateExplorer.baseline_today_s_coastlines', 'Baseline — today\'s coastlines.') },
                 1:  { displaced: 150,  cities: ['Miami Beach', 'parts of New Orleans', 'Maldives'],
-                      desc: t('stem.climateExplorer.locked_in_at_1_5_c_sustained_warming_m', 'Locked in at ~1.5°C sustained warming. Most coastal adaptation still possible with seawalls, managed retreat.') },
+                      desc: t('stem.climateExplorer.locked_in_at_1_5_c_sustained_warming_m', 'Upper end for 2100 under very high emissions. Most coastal adaptation still possible with seawalls, managed retreat.') },
                 2:  { displaced: 280,  cities: ['Most of Bangladesh coast', 'Alexandria (Egypt)', 'Shanghai waterfront', 'Jakarta (already sinking)'],
-                      desc: t('stem.climateExplorer.associated_with_2_5_c_warming_displace', 'Associated with ~2.5°C warming. Displaces more people than any war in history. Hurricane surge becomes catastrophic for inland areas.') },
+                      desc: t('stem.climateExplorer.associated_with_2_5_c_warming_displace', 'Over 2,000 years, even 1.5°C of warming commits 2 to 3 m. Displaces more people than any war in history. Hurricane surge becomes catastrophic for inland areas.') },
                 3:  { displaced: 410,  cities: ['Florida peninsula mostly submerged', 'Netherlands without dikes', 'Bangkok'],
                       desc: t('stem.climateExplorer.likely_by_2300_at_3_c_entire_nations_l', 'Likely by 2300 at 3°C. Entire nations lose viable territory. New Orleans, Venice, much of Vietnam.') },
                 5:  { displaced: 700,  cities: ['Boston Harbor', 'London (without Thames barrier)', 'Tokyo Bay', 'San Francisco Bay'],
@@ -3106,10 +3105,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       }
                     },
                       el('div', { style: { color: '#60a5fa', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
-                      el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
-                        '\u201C', r.voice.quote, '\u201D'),
+                      r.voice.quote ? el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
+                        '\u201C', r.voice.quote, '\u201D')
+                        : r.voice.about && el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.55, marginBottom: 4 } }, r.voice.about),
                       el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700 } },
-                        '\u2014 ', r.voice.name),
+                        r.voice.quote ? '\u2014 ' : '', r.voice.name),
                       el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
                         r.voice.role),
                       el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
@@ -3148,7 +3148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' } },
                 el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔑 The climate injustice in numbers'),
                 el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
-                  '• The USA alone (4% of world population) is responsible for ~25% of all historical CO\u2082.',
+                  '• The USA alone (4% of world population) is responsible for ~20% of all historical CO\u2082.',
                   el('br'),
                   '• Europe + USA combined: ~40% of historical emissions from <15% of current population.',
                   el('br'),
@@ -3166,7 +3166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // explicitly designed to address climate injustice — high-emit
             // countries pay into a pool for "particularly vulnerable"
             // developing nations. AOSIS (small island states) first
-            // proposed it at COP1 in Berlin (1995). It took 27 years to
+            // proposed it in 1991, in the UNFCCC talks. It took 31 years to
             // create. Pedagogically: shows that policy CAN respond to
             // inequity, but the gap between pledged and needed is itself
             // the next chapter of the climate justice story.
@@ -3181,7 +3181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 { country: 'Ireland',     emoji: '🇮🇪', amountUSD: 27,   note: 'COP28' },
                 { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: t('stem.climateExplorer.25m_cop28', '€25M, COP28') },
                 { country: 'Norway',      emoji: '🇳🇴', amountUSD: 25,   note: 'COP28' },
-                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: t('stem.climateExplorer.cop28_note_25_of_all_historical_co', 'COP28 — note: ~25% of all historical CO₂') },
+                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: t('stem.climateExplorer.cop28_note_25_of_all_historical_co', 'COP28; note: ~20% of all historical CO₂') },
                 { country: 'Japan',       emoji: '🇯🇵', amountUSD: 10,   note: 'COP28' },
                 { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11,   note: 'COP28' }
               ];
@@ -3201,7 +3201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', null,
                     el('div', { style: { color: '#7dd3fc', fontSize: 14, fontWeight: 900 } }, 'Loss & Damage Fund — what the world is doing about it'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
-                      'Proposed by small island states at COP1 (1995). Created at COP27 (2022). Capitalized at COP28 (2023). First disbursements 2024 — 27 years from proposal to first dollar paid.')
+                      'Proposed by small island states in 1991. Created at COP27 (2022). Capitalized at COP28 (2023). First call for projects in December 2025, 34 years after the proposal.')
                   )
                 ),
                 // Pledged-vs-needed visual
@@ -3251,7 +3251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                   '🎙️ ',
                   el('strong', { style: { color: '#7dd3fc' } }, 'Saleemul Huq'),
-                  ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. The fund is sometimes called "the Saleemul Huq fund" by negotiators who worked with him.'),
+                  ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. His institute, ICCCAD, petitioned to name it the Loss & Damage Huq Fund.'),
                 el('div', {
                   style: {
                     marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
@@ -3381,7 +3381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                   '⚖️ ',
                   el('strong', { style: { color: '#7dd3fc' } }, 'The legal gap:'),
-                  ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee ruled in Teitiota v. New Zealand that countries cannot deport people back to climate-existential danger — a landmark non-binding step. The legal category of "climate refugee" is still being built.'),
+                  ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee, in Teitiota v. New Zealand, upheld his removal but said countries may not send people back to places where climate change puts their lives at real risk. A landmark non-binding step. The legal category of "climate refugee" is still being built.'),
                 el('div', {
                   style: {
                     marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
@@ -3445,7 +3445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'Anyone, ongoing',
                   difficultyColor: '#86efac',
                   connects: 'Climate Displacement panel',
-                  why: 'About 376 million people have already been forced to flee weather disasters since 2008. Maine resettles refugees every year — many through Portland — and welcoming them is climate action you can do without leaving your zip code.',
+                  why: 'IDMC has recorded about 376 million displacements from weather disasters since 2008. Maine resettles refugees every year — many through Portland — and welcoming them is climate action you can do without leaving your zip code.',
                   how: 'Volunteer with Catholic Charities Maine, Greater Portland Family Promise, or the Immigrant Resource Center of Maine. Tutoring, food drives, and English-conversation partnerships are the most-asked-for roles.'
                 },
                 {
@@ -3454,7 +3454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'Anyone, ~5 minutes',
                   difficultyColor: '#fbbf24',
                   connects: 'Loss & Damage Fund tracker',
-                  why: 'The US pledged $17.5M to the fund despite causing ~25% of historical CO₂. A 100× increase would still be a fraction of what proportional responsibility implies. Constituent calls move this kind of number more than people think.',
+                  why: 'The US pledged $17.5M to the fund despite causing ~20% of historical CO₂. A 100× increase would still be a fraction of what proportional responsibility implies. Constituent calls move this kind of number more than people think.',
                   how: 'Maine has two Senators (Collins, King) and two Representatives (Pingree, Golden), each with constituent comment lines. Call one. Say: "I want to see the US contribution to the COP27 Loss and Damage Fund increased to match our historical responsibility."'
                 },
                 {
@@ -3554,18 +3554,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // UN documents.
             (function() {
               var TIMELINE = [
-                { year: 1990, label: t('stem.climateExplorer.ipcc_first_assessment_report', 'IPCC First Assessment Report'), what: 'The IPCC tells the world, with scientific consensus for the first time, that human emissions are warming the planet.', tag: 'science', color: '#60a5fa' },
+                { year: 1990, label: t('stem.climateExplorer.ipcc_first_assessment_report', 'IPCC First Assessment Report'), what: 'The IPCC warns that human emissions are building up greenhouse gases and will warm the planet, but says clear proof in temperature records is a decade or more away.', tag: 'science', color: '#60a5fa' },
+                { year: 1991, label: t('stem.climateExplorer.aosis_proposes_loss_damage_at_cop1_ber', 'Vanuatu, for AOSIS, proposes a Loss & Damage fund'), what: 'During the talks that created the UNFCCC, Vanuatu, speaking for the Alliance of Small Island States, proposes an international insurance pool for sea level rise damage. Wealthy nations decline.', tag: 'demand', color: ceInk.amber },
                 { year: 1992, label: t('stem.climateExplorer.un_framework_convention_on_climate_cha', 'UN Framework Convention on Climate Change'), what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
-                { year: 1995, label: t('stem.climateExplorer.aosis_proposes_loss_damage_at_cop1_ber', 'AOSIS proposes Loss & Damage at COP1 Berlin'), what: 'The Alliance of Small Island States, led by Vanuatu, formally proposes an international financial mechanism for unavoidable climate damage. Wealthy nations decline.', tag: 'demand', color: ceInk.amber },
                 { year: 2008, label: t('stem.climateExplorer.idmc_begins_tracking_weather_displacem', 'IDMC begins tracking weather displacement'), what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
                 { year: 2009, label: t('stem.climateExplorer.cop15_copenhagen_100b_yr_finance_pledg', 'COP15 Copenhagen — $100B/yr finance pledge'), what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: ceInk.amber },
                 { year: 2015, label: t('stem.climateExplorer.paris_agreement_article_8_mentions_l_d', 'Paris Agreement — Article 8 mentions L&D'), what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
-                { year: 2020, label: t('stem.climateExplorer.un_hrc_teitiota_v_new_zealand_ruling', 'UN HRC Teitiota v. New Zealand ruling'), what: 'The UN Human Rights Committee rules countries cannot deport people back to climate-existential danger. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
+                { year: 2020, label: t('stem.climateExplorer.un_hrc_teitiota_v_new_zealand_ruling', 'UN HRC Teitiota v. New Zealand ruling'), what: 'The UN Human Rights Committee finds New Zealand could return Teitiota, but says countries may not send people back to places where climate change puts their lives at real risk. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
                 { year: 2021, label: t('stem.climateExplorer.world_bank_groundswell_part_ii_report', 'World Bank Groundswell Part II report'), what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
-                { year: 2022, label: t('stem.climateExplorer.cop27_sharm_el_sheikh_l_d_fund_created', 'COP27 Sharm el-Sheikh — L&D Fund created'), what: 'After 27 years, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq calls it "the most important COP outcome since Paris."', tag: 'win', color: '#86efac' },
-                { year: 2023, label: t('stem.climateExplorer.cop28_dubai_l_d_fund_capitalized', 'COP28 Dubai — L&D Fund capitalized'), what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; the fund is sometimes informally called by his name.', tag: 'win', color: '#86efac' },
-                { year: 2024, label: t('stem.climateExplorer.first_l_d_fund_disbursements', 'First L&D Fund disbursements'), what: 'The fund makes its first small payments to vulnerable countries. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
-                { year: 2030, label: t('stem.climateExplorer.ipcc_1_5_c_deadline_target_year', 'IPCC 1.5°C deadline (target year)'), what: 'The Paris Agreement target year for emissions to peak and begin declining. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
+                { year: 2022, label: t('stem.climateExplorer.cop27_sharm_el_sheikh_l_d_fund_created', 'COP27 Sharm el-Sheikh — L&D Fund created'), what: 'After about 30 years of demands, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq writes that "the world has stepped into the era of Loss and Damage."', tag: 'win', color: '#86efac' },
+                { year: 2023, label: t('stem.climateExplorer.cop28_dubai_l_d_fund_capitalized', 'COP28 Dubai — L&D Fund capitalized'), what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; his institute petitions to name it the Loss & Damage Huq Fund.', tag: 'win', color: '#86efac' },
+                { year: 2025, label: t('stem.climateExplorer.first_l_d_fund_disbursements', 'L&D Fund opens its first call'), what: 'The fund opened its first call for projects in December 2025, with $250 million for a pilot phase. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
+                { year: 2030, label: t('stem.climateExplorer.ipcc_1_5_c_deadline_target_year', 'IPCC 1.5°C checkpoint (2030)'), what: 'To keep 1.5°C in reach, the IPCC says emissions must fall about 43% below 2019 levels by 2030. The Paris Agreement asks for emissions to peak as soon as possible. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
               ];
               return el('div', {
                 style: {
@@ -3579,7 +3579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', null,
                     el('div', { style: { color: '#c4b5fd', fontSize: 14, fontWeight: 900 } }, 'Climate justice timeline — how long it actually takes'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
-                      'From the first scientific consensus (1990) to the first dollar of Loss & Damage payment (2024) is 34 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
+                      'From the first IPCC report (1990) to the fund\'s first call for projects (2025) is 35 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
                   )
                 ),
                 el('div', { style: { marginTop: 12, paddingLeft: 12, borderLeft: '2px solid rgba(139,92,246,0.30)' } },
@@ -3658,7 +3658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Climate displacement: '),
-                    '~376 million people have been internally displaced since 2008 — almost all within their own country. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
+                    'IDMC has recorded ~376 million weather-related displacements inside countries since 2008. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Front-line voices: '),

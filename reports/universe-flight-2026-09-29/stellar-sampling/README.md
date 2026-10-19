@@ -36,5 +36,5 @@ Omit `--recheck` for fresh native captures. The recheck verifies stored PNG byte
 
 | View | Before | Refined |
 | --- | --- | --- |
-| Amber, medium disk | ![Original medium star](dpr1-baseline-amber-192-high.png) | ![Refined medium star](dpr1-refined-amber-192-high.png) |
-| Amber, larger disk | ![Original larger star](dpr1-baseline-amber-384-high.png) | ![Refined larger star](dpr1-refined-amber-384-high.png) |
+| Amber, medium disk | ![Original medium star](cap16-baseline-amber-192-high.png) | ![Refined medium star](cap16-refined-amber-192-high.png) |
+| Amber, larger disk | ![Original larger star](cap16-baseline-amber-384-high.png) | ![Refined larger star](cap16-refined-amber-384-high.png) |

@@ -20,8 +20,13 @@ describe('beehive causal evidence chain', () => {
     expect(html).toContain('data-causal-step="field"');
     expect(html).toContain('data-causal-step="command"');
     expect(html).toContain('data-causal-step="flight"');
-    expect(html).toContain('Feeds Queen start');
-    expect(html).toContain('Interprets the flight debrief; does not alter route physics');
-    expect(html).toContain('Feeds Notebook');
+    // 79e3e5eae rewrote the chain as "Evidence across roles": each card states
+    // what its evidence can and cannot cause (old copy: "Feeds Queen start",
+    // "does not alter route physics", "Feeds Notebook").
+    expect(html).toContain('Inspect colony condition before choosing a network opening or launching a flight.');
+    expect(html).toContain('Flight launch reserve comes from colony condition; a network victory does not set flight energy.');
+    expect(html).toContain('Record the conditions and compare one control choice on another attempt.');
+    expect(html).toContain('data-beehive-handoff="queen"');
+    expect(html).toContain('Open Drone Flight');
   });
 });

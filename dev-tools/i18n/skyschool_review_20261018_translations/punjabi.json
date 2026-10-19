@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ਕੁਇਜ਼ ਦੀਆਂ ਪਿਛਲੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ",
+  "stem.flightsim.quiz_history_scope": "ਨਵੀਂ ਕੋਸ਼ਿਸ਼ ਸ਼ੁਰੂ ਕਰਨ ਨਾਲ ਪਹਿਲੇ ਜਵਾਬ ਦਰਜ ਵਾਲੀਆਂ ਪਿਛਲੀਆਂ ਵੱਧ ਤੋਂ ਵੱਧ ਚਾਰ ਕੋਸ਼ਿਸ਼ਾਂ ਸੰਭਾਲੀਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਉਨ੍ਹਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰਨ ਨਾਲ ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਕੁਇਜ਼ ਨਹੀਂ ਬਦਲਦੀ।",
+  "stem.flightsim.quiz_history_empty": "ਕੁਇਜ਼ ਦੀ ਕੋਈ ਪਿਛਲੀ ਕੋਸ਼ਿਸ਼ ਹਾਲੇ ਸੰਭਾਲੀ ਨਹੀਂ ਗਈ ਹੈ।",
+  "stem.flightsim.quiz_history_attempt": "{date} ਨੂੰ ਸੰਭਾਲਿਆ · ਪਹਿਲੇ ਜਵਾਬਾਂ ਵਿੱਚੋਂ {score}/{answered} ਸਹੀ",
+  "stem.flightsim.quiz_history_progress": "{total} ਵਿੱਚੋਂ {answered} ਸਵਾਲ ਦਰਜ · {unanswered} ਬਿਨਾਂ ਜਵਾਬ ਦੇ",
+  "stem.flightsim.quiz_history_question": "ਸਵਾਲ {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ਸਹੀ ਜਵਾਬ: {answer}",
+  "stem.flightsim.quiz_history_changed": "ਸੰਭਾਲੇ ਗਏ {count} ਸਵਾਲ ਹੁਣ ਇਸ ਕੁਇਜ਼ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ। ਅੰਕਾਂ ਲਈ ਸਿਰਫ਼ ਮੇਲ ਖਾਂਦੇ ਸਵਾਲਾਂ ਦੇ ਰਿਕਾਰਡ ਵਰਤੇ ਜਾਂਦੇ ਹਨ।"
+}

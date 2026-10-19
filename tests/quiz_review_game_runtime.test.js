@@ -62,6 +62,26 @@ afterEach(async () => {
 });
 
 describe('Review Game mixed-format experience', () => {
+  it('withholds a disputed key and team points, then scores a corrected key despite old review metadata', async () => {
+    awarded = vi.fn();
+    const disputed = { ...fixtures[0], keyCheck: { status: 'disputed', checkedKey: 'Solid' } };
+    await mount([disputed, { ...disputed, correctAnswer: 'Liquid' }]);
+    await click(host.querySelector('[data-review-tile="0"]'));
+    await click(button('Reveal answer'));
+    expect(host.querySelector('[data-review-key-under-review]').textContent).toContain('points are paused');
+    expect(button('Team One').disabled).toBe(true);
+    await click(button('Team One'));
+    expect(awarded).not.toHaveBeenCalled();
+    expect(host.querySelector('[data-review-answer-guide]').textContent).not.toContain('Answer: Solid');
+    await click(button('No points'));
+    await click(host.querySelector('[data-review-tile="1"]'));
+    await click(button('Reveal answer'));
+    expect(host.querySelector('[data-review-key-under-review]')).toBeNull();
+    expect(host.querySelector('[data-review-answer-guide]').textContent).toContain('Answer: Liquid');
+    expect(button('Team One').disabled).toBe(false);
+    await click(button('Team One'));
+    expect(awarded).toHaveBeenCalledTimes(1);
+  });
   it.each(fixtures)('opens and reveals the $type answer guide, then awards and completes that tile', async question => {
     awarded = vi.fn();
     await mount();
@@ -106,5 +126,19 @@ describe('Review Game mixed-format experience', () => {
     await click(button('No points'));
     expect(host.querySelector('[data-review-tile]').disabled).toBe(true);
     expect(host.querySelector('[data-review-progress]').textContent).toBe('1 of 1 items completed · 1 category');
+  });
+
+  it('retains illustrated and translated answer choices before and after reveal', async () => {
+    await mount([{ ...fixtures[0], options_en: ['Water as liquid', 'Water as ice'], optionImageUrls: ['liquid.png', 'ice.png'], optionImageAltTexts: ['Water in a glass', 'An ice cube'] }]);
+    await click(host.querySelector('[data-review-tile]'));
+    const dialog = host.querySelector('[role="dialog"]');
+    expect(dialog.textContent).toContain('Water as liquid');
+    expect(dialog.textContent).toContain('Water as ice');
+    expect(dialog.querySelector('img[alt="Water in a glass"]').getAttribute('src')).toBe('liquid.png');
+    expect(dialog.querySelector('img[alt="An ice cube"]').getAttribute('src')).toBe('ice.png');
+    expect(dialog.querySelector('[data-review-answer-guide]')).toBeNull();
+    await click(button('Reveal answer'));
+    expect(dialog.querySelectorAll('img')).toHaveLength(2);
+    expect(dialog.textContent).toContain('Water as ice');
   });
 });

@@ -150,7 +150,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('yawRef.current.value = yaw;');
     expect(source).toContain('yawRef.current.pitch = pitch;');
     expect(source).toContain('yawRef.current.zoom = zoom;');
-    expect(source).toContain('function updateCameraView()');
+    // 79e3e5eae gave it an optional scheduleRender argument; callers below still use updateCameraView().
+    expect(source.includes('function updateCameraView(scheduleRender)'), 'camera view updater').toBe(true);
     expect(source).toContain('var cameraReadoutRef = React.useRef(null);');
     expect(source).toContain('var FIELD_PROGRESS_VERSION = 1;');
     expect(source).toContain('function fieldProgressRecordFor(state)');
@@ -212,9 +213,12 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions)');
     expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
     expect(source).toContain("var torsoRadii = dinoTorsoRadii(surfaceBodyHeight, surfaceBodyDepth, postcranialSurface);");
-    expect(source).toContain("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;");
-    expect(source).toContain('var neckPoints = [shoulder, neckMidA, neckMidB, head];');
-    expect(source).toContain('var tailMeshes = addSoftTissueChain([tailSkinRoot, tailMidA, tailMidB, tail]');
+    // The torso chain now takes per-profile surface options: compact chest (79e3e5eae), dorsal waist (f7b4d993f).
+    expect(source.includes("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat, null,"), 'torso chain caller').toBe(true);
+    expect(source.includes("postcranialSurface.id === 'powerful-theropod' ? { smoothProfile: true, dorsalWaist: true } : null)[0] || null;"), 'torso options end in the ordinary surface').toBe(true);
+    // 79e3e5eae+ build the neck and tail from cervical / tail skin envelopes.
+    expect(source.includes('var neckPoints = cervicalEnvelope.points;'), 'neck from the cervical envelope').toBe(true);
+    expect(source.includes('var tailMeshes = addSoftTissueChain(tailSkinEnvelope.points, tailSkinEnvelope.radii, bodyMat);'), 'tail skin envelope').toBe(true);
     expect(source).toContain('idleMotion.tailSegments.forEach(function (tailEntry, tailIndex)');
     expect(source).toContain("readoutChip('Body ' + postcranialSurface.shortLabel");
     expect(source).toContain("'Visible body silhouette: '");
@@ -226,7 +230,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'Species head silhouette'");
     expect(source).toContain("cranialSurface.crestMode !== 'none'");
     expect(source).toContain('cranialSurface.frillScale > 0.08');
-    expect(source).toContain("/crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))");
+    // 6a0c48749: ornaments are gated by the species' anatomy part list instead of a blurb keyword.
+    expect(source.includes('return bodyPartDefinitions.some(function (part) { return part.id === id; });'), 'hasAnatomyPart gate').toBe(true);
     expect(source).toContain("profile.label = 'Toothless ornithomimid runner'");
     expect(source).toContain("profile.label = 'Toothless oviraptorosaur'");
     expect(source).toContain('profile.manualDigits = isBasalTyrannosauroid ? 3 : 2;');
@@ -249,8 +254,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addSoftTissueCylinder(a, b, startRadius, endRadius, mat)');
     expect(source).toContain('function addBodyContour(mesh)');
     expect(source).toContain("side: THREE.BackSide, depthWrite: false");
-    expect(source).toContain('var neckMeshes = addSoftTissueChain(neckPoints, neckRadii, bodyMat);');
-    expect(source).toContain('var armShell = addSoftTissueChain([armStart');
+    expect(source.includes('var neckMeshes = addSoftTissueChain(neckSkinEnvelope.points, neckSkinEnvelope.radii, bodyMat, null,'), 'neck skin envelope').toBe(true);
+    expect(source.includes('var armShell = addSoftTissueChain([armSkinRoot, armStart'), 'arm shell starts at its skin root').toBe(true);
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
     expect(source).toContain('(parent || model).add(sprite);');
     expect(source).toContain('function referenceLabel(tick, position, color, axis)');
@@ -280,33 +285,35 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var intersectionObserver = null;');
     expect(source).toContain("document.addEventListener('visibilitychange', visibilityChanged)");
     expect(source).toContain('new window.IntersectionObserver(function (entries)');
-    expect(source).toContain('if (inViewport && pageVisible)');
+    // 79e3e5eae folded the offscreen/hidden check into the shared canRender gate.
+    expect(source.includes('canRender: function () { return alive && !!renderer && !!scene && !!camera && !contextLost && inViewport && pageVisible; },'), 'render only when visible').toBe(true);
     expect(source).toContain('intersectionObserver.disconnect()');
     expect(source).toContain("if (/Ceratops/i.test(cladeName))");
     expect(source).toContain("else if (/Stegosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Spinosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Ankylosaur/i.test(cladeName))");
-    expect(source).toContain("else if (/Pachycephalosaur/i.test(cladeName))");
+    expect(source.includes("else if (/Pachycephalosaur/i.test(cladeName) && hasAnatomyPart('dome'))"), 'dome ornament').toBe(true);
     expect(source).not.toContain('var clawBase = shoulder.clone()');
     expect(source).toContain('manualClaw.userData.dinoManualAttachment');
     expect(source).toContain("var manualClawLength = dn.id === 'therizinosaurus' ? len * 0.085 : handLength * manualUngualScale;");
     expect(source).toContain('if (isPennaraptoran) {');
-    expect(source).toContain("else if (/Tyrannosaur/i.test(cladeName))");
-    expect(source).toContain("else if (/Abelisaur/i.test(cladeName) && /horn/i.test");
-    expect(source).toContain("else if (/Oviraptor/i.test(cladeName) && /crest/i.test");
-    expect(source).toContain("else if (/Iguanodont/i.test(cladeName))");
+    expect(source.includes("else if (/Tyrannosaur/i.test(cladeName) && hasAnatomyPart('brow'))"), 'tyrannosaur brow').toBe(true);
+    expect(source.includes("else if (/Abelisaur/i.test(cladeName) && hasAnatomyPart('horns'))"), 'abelisaur horns').toBe(true);
+    expect(source.includes("else if (/Oviraptor/i.test(cladeName) && hasAnatomyPart('crest'))"), 'oviraptor crest').toBe(true);
+    // The iguanodont thumb spike moved to the hand builder, gated by dinoIguanodontThumbEnabled.
+    expect(source.includes('if (dinoIguanodontThumbEnabled(dn, front)) addIguanodontThumb(foot, sideSign,'), 'iguanodont thumb').toBe(true);
     expect(source).toContain('var browRadius = eye.geometry.parameters.radius;');
     expect(source).toContain('var oviraptorCrest = addAccentCone');
-    expect(source).toContain('var thumbBase = vec(');
+    expect(source.includes('function addIguanodontThumb(hand, sideSign, handOwner) {'), 'thumb spike builder').toBe(true);
     expect(source).toContain('var ribCount = isSauropod ? 10 : 9;');
     expect(source).toContain("ribHeadDetail: group !== 'other'");
     expect(source).toContain('function addCurvedBone(points, startRadius, endRadius, mat)');
     expect(source).toContain('var capitulumFacet = ribSpine.clone()');
     expect(source).toContain('var tuberculumFacet = ribSpine.clone()');
-    expect(source).toContain('addCurvedBone([ribNeck, ribUpper, ribLateral, ribLower, ribVentral]');
+    expect(source.includes('var ribPoints = [ribNeck, ribUpper, ribLateral, ribLower, ribVentral];') && source.includes('addCurvedBone(ribPoints, ribBoneRadius, ribBoneRadius * 0.55, boneMat);'), 'curved rib through its five points').toBe(true);
     expect(source).toContain("uncinateProcesses: /Oviraptor|Caenagnath|Dromaeosaur|Avialae/i.test(clade)");
     expect(source).toContain('if (skeletalProfile.uncinateProcesses && ribIndex >= 1');
-    expect(source).toContain('var uncinateBase = new THREE.Vector3()');
+    expect(source.includes("var uncinateBase = new THREE.CatmullRomCurve3(ribPoints, false, 'centripetal').getPoint(uncinateT);"), 'uncinate process sits on the rib curve').toBe(true);
     expect(source).toContain('var pelvisHalf = Math.max(');
     expect(source).toContain("girdleDetail: group !== 'other'");
     expect(source).toContain('function addGirdleBlade(a, b, width, thickness, mat)');
@@ -573,7 +580,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8');
     expect(source).toContain("digStatusText = 'Site #'");
     expect(source).toContain("digGridDesc = 'Dig grid with '");
-    expect(source).toContain("'aria-disabled': isDug ? 'true' : 'false'");
+    // 6a0c48749: in inspection-only review a dug cell stays operable ("Press to inspect.").
+    expect(source.includes("'aria-disabled': !inspectionOnly && isDug ? 'true' : 'false'"), 'dug cells are aria-disabled outside inspection').toBe(true);
     expect(source).toContain("var cellLabel = 'Cell ' + (cellIdx + 1)");
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_identify_the_find_choices', 'Identify the find choices')`);
     expect(source).toContain("'aria-pressed': (picked || isAnswer) ? 'true' : 'false'");

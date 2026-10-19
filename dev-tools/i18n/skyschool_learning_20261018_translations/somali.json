@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Dhammaystirka hawsha iyo soo degista marka la soo noqday waa la diiwaangeliyey. Hawshan mar kale isku day adigoo si ula kac ah u beddelaya hal hab oo xakamayn ah ama waddada, dabadeedna isbarbar dhig wixii la arkay ee la kaydiyey.",
+  "stem.flightsim.coaching_mission_depleted": "Dallacaddii baytariga diyaaradda aan duuliyaha lahayn way dhammaatay. Bilow hawl cusub, isticmaal waddooyin gaagaaban, oo qorshee soo noqoshada ka hor inta uusan baytarigu yaraan.",
+  "stem.flightsim.coaching_mission_unknown": "Caddaynta hawshani waa mid aan dhammaystirnayn ama iskhilaafsan. Dib u eeg wixii la diiwaangeliyey, dabadeedna bilow isku day cusub.",
+  "stem.flightsim.coaching_mission_capture": "Bartilmaameedyada qaarkood weli sawir lagama qaadin. Hawl cusub gudaheeda, hal bartilmaameed mar u dhowow oo ku sug xadka joogga iyo xawaaraha marka dhulka loo eego ee la muujiyey ilaa sawir qaadista la diiwaangeliyo.",
+  "stem.flightsim.coaching_mission_recovery": "Qofkii badbaaday lama soo qaadin. Samatabbixin cusub gudaheeda, ku tababaro ku hakashada hawada adigoo deggan oo ku jira xadka joogga, leexashada booska iyo xawaaraha toosan ee la muujiyey ka hor intaadan saldhigga ku noqon.",
+  "stem.flightsim.coaching_mission_return": "Ujeeddooyinka soo qaadista ama sawir qaadista waa la diiwaangeliyey; waxaa harsan soo noqoshada iyo soo degistu. Bilow hawl cusub, dabadeedna waqti iyo baytari u reeb ku soo noqoshada saldhigga.",
+  "stem.flightsim.mission_reflection_prompt": "Go’aankee ku saabsan bartilmaameedka, ku hakashada hawada ama soo noqoshada ayaad beddeli lahayd? Adeegso wixii laga arkay hawsha si aad doorashadaada u sharaxdo una qorshayso hal isbeddel oo isku day cusub ah. Sharaxaaddaada waxaa lala kaydinayaa duullimaadkan.",
+  "stem.flightsim.journal_different_airport": "Soo dhowaanshahan degista waxaa loo isticmaalay garoomo diyaaradeed oo kala duwan. Si gooni ah u eeg wixii laga arkay; kala duwanaanta cabbirrada lama xisaabinayo.",
+  "stem.flightsim.journal_approach_airport": "Garoonka loo soo dhowaanayo si loogu dego: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "CADDAYNTA HAWSHA",
+  "stem.flightsim.challenge_brake_release": "Sii daa furaha X oo ka dami biriigyada taayirrada guddiga xakamaynta ka hor intaadan awoodda kordhin."
+}

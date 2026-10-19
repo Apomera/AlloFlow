@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Gusoza igikorwa no kugaruka kwururuka vyanditswe. Subira ugerageze iki gikorwa uhindure ikintu kimwe wavyiyumviriyeko mu kugenzura canke mu nzira, hanyuma ugereranye ivyabonetse vyabitswe.",
+  "stem.flightsim.coaching_mission_depleted": "Batiri ya dorone yaheze. Tangura igikorwa gishasha, ukoreshe inzira ngufi kandi utegure kugaruka imbere y’uko umuriro wa batiri uba muke.",
+  "stem.flightsim.coaching_mission_unknown": "Iki gikorwa gifise ibimenyetso bituzuye canke bivuguruzanya. Suzuma ivyanditswe, hanyuma utangure igerageza rishasha.",
+  "stem.flightsim.coaching_mission_capture": "Intumbero zimwe ntizirafatwa. Mu gikorwa gishasha, egereza intumbero imwe imwe kandi ugume mu mbibe z’ubuhagarike n’umuvuduko ugereranije n’ubutaka vyerekanywe gushika ifatwa ryanditswe.",
+  "stem.flightsim.coaching_mission_recovery": "Uwarokotse ntiyatabawe. Mu gikorwa gishasha co gutabara, imenyereze kuguma hamwe mu kirere udahungabana mu mbibe z’ubuhagarike, gutwarwa uva aho uri n’umuvuduko wo kuduga canke kumanuka vyerekanywe imbere yo gusubira ku kirindiro.",
+  "stem.flightsim.coaching_mission_return": "Intumbero zo gutabara canke gufata amashusho zanditswe; kugaruka kwururuka biracasigaye. Tangura igikorwa gishasha, hanyuma usigaze umwanya n’umuriro wa batiri vyo gusubira ku kirindiro.",
+  "stem.flightsim.mission_reflection_prompt": "Ni iyihe ngingo yerekeye intumbero, kuguma hamwe mu kirere canke kugaruka wohindura? Koresha ivyabonetse mu gikorwa usigure ivyo wahisemwo kandi utegure ihinduka rimwe ry’igerageza rishasha. Insiguro yawe ibikwa hamwe n’uru rugendo rw’indege.",
+  "stem.flightsim.journal_different_airport": "Ubu buryo bwo kwegera ikibuga bwakoresheje ibibuga vy’indege bitandukanye. Suzuma ivyabonetse kuri bumwe bumwe ukwavyo; amahinduka y’ibipimo ntaharurwa.",
+  "stem.flightsim.journal_approach_airport": "Ikibuga c’indege cegerewe: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "IBIMENYETSO VY’IGIKORWA",
+  "stem.flightsim.challenge_brake_release": "Rekura X kandi uzimye feri z’amapine muri Deck imbere yo kwongera inguvu."
+}

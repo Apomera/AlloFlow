@@ -75,6 +75,31 @@ describe('SkySchool recorded event identification', () => {
         .toEqual([{ kind: 'stall', index: 0, referenceIndex: null }]);
     }
   });
+  it('does not link normal flow to a stall across a missing recording interval', () => {
+    const log = [row(0, { stalling: true, aoa: 20 }), row(4.1), row(6.1)];
+    expect(FS.flightEvidenceSegments(log)).toHaveLength(2);
+    expect(FS.flightEvidenceEvents(log)).toEqual([{ kind: 'stall', index: 0, referenceIndex: null }]);
+  });
+  it('starts fresh stall and advisory episodes after a recorder gap', () => {
+    expect(FS.flightEvidenceEvents([
+      row(0, { stalling: true, aoa: 20, lowAirspeed: true }),
+      row(8, { stalling: true, aoa: 20, lowAirspeed: true }), row(10),
+      row(12, { lowAirspeed: true }), row(18, { lowAirspeed: true }),
+    ])).toEqual([
+      { kind: 'stall', index: 0, referenceIndex: null },
+      { kind: 'stall', index: 1, referenceIndex: null },
+      { kind: 'normal_after_stall', index: 2, referenceIndex: 1 },
+      { kind: 'low_airspeed', index: 3, referenceIndex: null },
+      { kind: 'low_airspeed', index: 4, referenceIndex: null },
+    ]);
+  });
+  it('retains the recording boundary: four seconds can link observations; a longer gap cannot', () => {
+    expect(FS.flightEvidenceEvents([row(0, { stalling: true, aoa: 20 }), row(4)]))
+      .toEqual([{ kind: 'stall', index: 0, referenceIndex: null },
+        { kind: 'normal_after_stall', index: 1, referenceIndex: 0 }]);
+    expect(FS.flightEvidenceEvents([row(0, { stalling: true, aoa: 20 }), row(4.0001)]))
+      .toEqual([{ kind: 'stall', index: 0, referenceIndex: null }]);
+  });
   it('requires recorded angle and no low-airspeed advisory for normal-flow shortcuts', () => {
     const found = FS.flightEvidenceEvents([row(0, { stalling: true, aoa: 20 }), row(2, { aoa: null }), row(4, { lowAirspeed: true }), row(6)]);
     expect(found).toEqual([
@@ -127,5 +152,13 @@ describe('SkySchool event navigation', () => {
     await mount([{ t: 0, lat: 43, lon: -70, alt: 5000, spd: 110, hdg: 90 }]);
     expect(host.querySelector('#debrief-recorded-event').disabled).toBe(true);
     expect(host.textContent).not.toContain('No stall occurred');
+  });
+  it('shows recorder gaps without offering a linked normal-flow shortcut across them', async () => {
+    await mount([row(0, { stalling: true, aoa: 20 }), row(6), row(8)]);
+    expect(host.querySelector('[data-evidence-gap-note]')).toBeTruthy();
+    expect([...host.querySelector('#debrief-recorded-event').options].map(option => option.textContent))
+      .toEqual(['Choose a recorded event', 'Recorded stall · 0:00.0']);
+    await choose('0');
+    expect(latest.debriefSampleIndex).toBe(0);
   });
 });

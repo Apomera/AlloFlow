@@ -49,7 +49,10 @@ describe('H-3: OCR recovery logs LENGTH only — no document text (PII) in the d
 describe('H-4: reading-order WARN is wired into the high-volume AI fix path (was magnitude-only)', () => {
   it('acceptFixedHtmlDetailed computes the order check and returns readingOrderWarn (non-blocking)', () => {
     const fn = dp.slice(dp.indexOf('const acceptFixedHtmlDetailed = (fixed, original, opts) => {'), dp.indexOf('const acceptFixedHtml = (fixed, original, opts) =>'));
-    expect(fn).toMatch(/checkReadingOrderPreserved\(original, fixed\)/);
+    // 78799283f (2026-09-10): the check reads the same pair through readingInput/readingOutput,
+    // which start as original/fixed and are only re-serialized from their parsed bodies.
+    expect(fn).toMatch(/let readingInput = original, readingOutput = fixed;/);
+    expect(fn).toMatch(/checkReadingOrderPreserved\(readingInput, readingOutput\)/);
     expect(fn).toMatch(/readingOrderWarn: _roWarn/);
     // it must NOT flip `accepted` to false on a reorder (WARN-only this increment)
     expect(fn).not.toMatch(/accepted: false, reason: 'reading-order'/);

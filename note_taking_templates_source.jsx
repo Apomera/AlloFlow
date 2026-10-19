@@ -1600,7 +1600,7 @@ const NotebookOverlay = React.memo((props) => {
       return;
     }
     if (noteEntries.length < 2) {
-      addToast(t('note_insights.need_more_entries') || 'Save at least 2 note-taking entries before generating insights.', 'info');
+      addToast(t('note_insights.need_more_entries'), 'info');
       return;
     }
     setInsightsOpen(true);

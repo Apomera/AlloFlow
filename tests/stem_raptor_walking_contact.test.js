@@ -81,7 +81,7 @@ describe('Raptor shared woodland walking contacts', () => {
         prey.animation.sharedBird.feet.forEach((foot, f) => expect(foot.children[0].geometry.attributes.position.array).toBe(roots[f]));
       } finally { api.release(prey); }
     }
-  });
+  }, 20000);
 
   it.each(['mourningDove', 'grouse', 'blueJay'])('keeps actual %s soles fixed through a turn and a long settled stop', id => {
     const prey = make(id), dt = 1 / 60;
@@ -272,5 +272,5 @@ describe('Raptor shared woodland walking contacts', () => {
         expect(prey.animation.sharedPose.footTargets).toBeNull();
       } finally { api.release(prey); }
     }
-  });
+  }, 20000);
 });

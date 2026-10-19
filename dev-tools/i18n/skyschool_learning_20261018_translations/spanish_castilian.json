@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Se han registrado la finalización de la misión y el aterrizaje de regreso. Repite esta misión con un cambio intencionado en los mandos o la ruta y después compara las observaciones guardadas.",
+  "stem.flightsim.coaching_mission_depleted": "El dron se ha quedado sin carga. Empieza una misión nueva, utiliza rutas cortas y planifica el regreso antes de que quede poca batería.",
+  "stem.flightsim.coaching_mission_unknown": "Esta misión tiene pruebas incompletas o contradictorias. Revisa lo que se ha registrado y después empieza un nuevo intento.",
+  "stem.flightsim.coaching_mission_capture": "Aún quedan objetivos sin fotografiar. En una misión nueva, acércate a un objetivo cada vez y mantente dentro de los límites de altura y velocidad respecto al suelo que se muestran hasta que se registre la captura.",
+  "stem.flightsim.coaching_mission_recovery": "No se ha recogido al superviviente. En una nueva misión de rescate, practica un vuelo estacionario estable dentro de los límites de altura, deriva y velocidad vertical que se muestran antes de volver a la base.",
+  "stem.flightsim.coaching_mission_return": "Se han registrado los objetivos de recogida o captura; queda el aterrizaje de regreso. Empieza una misión nueva y reserva tiempo y batería para volver a la base.",
+  "stem.flightsim.mission_reflection_prompt": "¿Qué decisión sobre un objetivo, el vuelo estacionario o el regreso cambiarías? Usa las observaciones de la misión para explicar tu elección y planificar un cambio para un nuevo intento. Tu explicación se guarda con este vuelo.",
+  "stem.flightsim.journal_different_airport": "Estas aproximaciones se hicieron en aeropuertos distintos. Revisa sus observaciones por separado; no se calculan las diferencias entre mediciones.",
+  "stem.flightsim.journal_approach_airport": "Aeropuerto de aproximación: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "PRUEBAS DE LA MISIÓN",
+  "stem.flightsim.challenge_brake_release": "Suelta la tecla X y desactiva los frenos de las ruedas en el panel de mandos antes de aumentar la potencia."
+}

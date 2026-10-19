@@ -175,7 +175,8 @@ function answerIndex(answer, options, fallbacks = []) {
     if (Number.isInteger(value) && value >= 0 && value < options.length) return value;
     if (typeof value === 'string') { const wanted = collapse(value).toLowerCase(), byText = options.findIndex(option => collapse(option).toLowerCase() === wanted); if (byText >= 0) return byText; if (/^\d+$/.test(wanted) && Number(wanted) < options.length) return Number(wanted); if (/^[a-e]$/.test(wanted) && wanted.charCodeAt(0) - 97 < options.length) return wanted.charCodeAt(0) - 97; }
   }
-  return Number.isInteger(answer) ? answer : 0;
+  // Never guess a key: an unreadable one stays invalid for repair or salvage.
+  return Number.isInteger(answer) ? answer : -1;
 }
 const optionTexts = (raw, max) => list(raw).map(option => clip(option, max));
 const flagged = raw => list(raw).findIndex(option => isObject(option) && (option.correct === true || option.isCorrect === true));
@@ -237,7 +238,7 @@ function healLocation(raw, index, context) {
   node.reward = pairOf(n.reward, 3); if (JSON.stringify(node.reward) !== JSON.stringify(n.reward)) fixes.add('rewards');
   if (kind === 'choice') {
     let options = optionTexts(n.options, 220), answer = answerIndex(n.answer, options, [n.correctIndex, n.correctAnswer, n.correct, flagged(n.options)]);
-    if (options.length > 5) { const keep = [answer, ...options.map((_, i) => i).filter(i => i !== answer)].slice(0, 5).sort((a, b) => a - b); answer = keep.indexOf(answer); options = keep.map(i => options[i]); fixes.add('options'); }
+    if (options.length > 5) { const keep = [...(answer >= 0 && answer < options.length ? [answer] : []), ...options.map((_, i) => i).filter(i => i !== answer)].slice(0, 5).sort((a, b) => a - b); answer = keep.indexOf(answer); options = keep.map(i => options[i]); fixes.add('options'); }
     node.options = options; node.answer = answer; if (answer !== n.answer || JSON.stringify(options) !== JSON.stringify(n.options)) fixes.add('answers');
   } else if (isPuzzle(node)) {
     // Normalize only explicit authored numbers. Missing keys stay invalid for

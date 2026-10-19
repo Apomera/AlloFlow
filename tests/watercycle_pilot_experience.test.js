@@ -106,7 +106,10 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('var snowField = new THREE.Points');
     expect(source).toContain("? 'rain-streaks' : showingSnow ? 'snow-crystals' : 'hidden'");
     expect(source).toContain("var cloudImmersion = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
-    expect(source).toContain('var fogFarGoal = cloudImmersion ? 145 : 2300;');
+    const fogRange = source.match(/var fogFarGoal = cloudImmersion \? (\d+) : (\d+);/);
+    expect(fogRange).not.toBeNull();
+    expect(Number(fogRange[1])).toBeLessThan(250);
+    expect(Number(fogRange[2])).toBeGreaterThan(1500);
     expect(source).toContain('freeDrops.material.size = waterView ? 1.45 : 3.1;');
     expect(source).toContain('shoreFoam.children.forEach(function(foamMesh) { updateSunlightSurface(foamMesh); });');
     expect(source).toContain('shader.uniforms.pilotCoastTime = pilotWaterUniforms.rippleTime;');
@@ -124,7 +127,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('function molecularPhaseForForm(formName)');
     expect(source).toContain("if (formName === 'vapor') return 'gas';");
     expect(source).toContain("var molecularModel = snap.form === 'vapor'");
-    expect(source).toContain("if (formName === 'ice' || formName === 'snow') return 'solid';");
+    expect(source).toContain("if (formName === 'ice' || formName === 'snow' || formName === 'snowpack') return 'solid';");
     expect(source).toContain('var moleculeTime = motionReduced ? 0 : visualTime;');
     expect(source).toContain('updateMolecularLens(f, waterView, t);');
     expect(source).toContain("? 'gas-far-apart' : molecularPhase === 'solid'");
@@ -208,7 +211,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("canvasEl.dataset.forestRendering = 'instanced-layered-canopy';");
 
     expect(source).toContain('scene.fog.color.setHex(isDesert ? 0xe1c99e');
-    expect(source).toContain("var landscapeDescription = scenarioId === 'mountainWinter'");
+    expect(source).toContain("var landscapeDescription = env.terrain === 'mountain'");
     expect(source).toContain('A snow-covered mountain catchment stores water above a connected stream, lake, and ocean.');
     expect(source).toContain('A forested mountain catchment drains through a visible stream and lake to the ocean.');
   });
@@ -218,11 +221,13 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source.indexOf('var WATER_GLINT_COUNT = 124;')).toBeLessThan(frameIndex);
     expect(source.indexOf('var STREAM_FLOW_COUNT = 28;')).toBeLessThan(frameIndex);
     expect(source.indexOf('var WIND_STREAK_COUNT = 54;')).toBeLessThan(frameIndex);
-    expect(source.indexOf('var cloudShadow = new THREE.Mesh')).toBeLessThan(frameIndex);
+    const shadowSetupIndex = source.indexOf('var cloudShadow = new THREE.Group();');
+    expect(shadowSetupIndex).toBeGreaterThan(0);
+    expect(shadowSetupIndex).toBeLessThan(frameIndex);
     expect(source.indexOf('var cloudVeil = new THREE.Group();')).toBeLessThan(frameIndex);
     expect(source).toContain("canvasEl.dataset.waterSurface = 'depth-layer-glints-foam';");
     expect(source).toContain("canvasEl.dataset.windVisual = showingWind ? 'advection-inland' : 'hidden';");
-    expect(source).toContain("canvasEl.dataset.cloudShadow = showingCloudShadow ? 'projected' : 'hidden';");
+    expect(source).toContain("cloudShadow.userData.model = 'sun-projected-receiver-shader';");
     expect(source).toContain("cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
     expect(source).toContain('var waterGlintT = pilotWaterUniforms.rippleTime.value;');
     expect(source).toContain('var windPhase = motionReduced');
@@ -314,7 +319,11 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("'rain>soil': {");
     expect(source).toContain("t('stem.watercycle.pilot_why_you_changed', 'Why you changed')");
     expect(source).toContain("className: 'wc-pilot-transition-evidence'");
-    expect(source).toContain("setPilot({ snapshot: null, lastChange: null, lastCycle: null");
+    const resetStart = source.indexOf('function resetRun()');
+    const resetBlock = source.slice(resetStart, source.indexOf('function togglePause()', resetStart));
+    expect(resetBlock).toContain('setPilot({ snapshot: null');
+    expect(resetBlock).toContain('lastChange: null, lastCycle: null');
+    expect(resetBlock).toContain("resumeCheckpoint:null,resumeToken:''");
   });
 
   it('continues landfall through visible, playable watershed pathways', () => {
@@ -366,7 +375,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("var landingRouteByForm = { liquid: 'water', runoff: 'runoff', soil: 'infiltration', plant: 'plant' };");
     expect(source).toContain("note: sim.note || ''");
     expect(source).toContain('var isLiveTransition = WCPK.isLiveTransition(prevSnap, next);');
-    expect(source).toContain("if (isLiveTransition && next.note === 'landed' && landingRoute)");
+    expect(source).toContain("if (isLiveTransition && (next.note === 'landed' || (prevSnap && prevSnap.form === 'snowpack' && next.form !== 'vapor')) && landingRoute)");
     expect(source).toContain("className: 'wc-pilot-route-history', role: 'region'");
     expect(source).toContain("t('stem.watercycle.pilot_try_next_route', 'Try next: land on {surface}.')");
     expect(source).toContain('var done = !!pilotStagesSeen[stageId];');
@@ -409,7 +418,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("t('stem.watercycle.pilot_compare_clear', 'Clear pinned journeys')");
   });
 
-  it('turns all four climates into a responsive visual evidence lab with causal findings', () => {
+  it('turns every climate into a responsive visual evidence lab with causal findings', () => {
     expect(source).toContain("className: 'wc-pilot-compare-lab'");
     expect(source).toContain("'data-pins': String(pinnedPilotComparisonCount)");
     expect(source).toContain("'data-current-scenario': scenarioId");
@@ -640,7 +649,8 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("'aria-describedby': 'wcPilotFreezeChallengePrompt wcPilotFreezeChallengeScope'");
     expect(source).toContain("className: 'wc-pilot-sky-freeze-choices'");
     expect(source).toContain("role: 'group'");
-    expect(source).toContain('[0, 1, 2, 3, 4].map(function(forecastCount)');
+    expect(source).toMatch(/Array\.from\(\{\s*length:\s*pilotComparisonRows\.length\s*\+\s*1\s*\}/);
+    expect(source).toContain('.map(function(forecastCount)');
     expect(source).toContain("'aria-pressed': String(forecastSelected)");
     expect(source).toContain('thermalForecastCount: forecastCount');
     expect(source).toContain('thermalForecastProbeM: pilotComparisonProbeM');
@@ -656,7 +666,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('@media print{.wc-pilot-sky-thermal{');
   });
 
-  it('guides a four-climate comparison without presenting it as a single-variable test', () => {
+  it('guides comparison across climates without presenting it as a single-variable test', () => {
     expect(source).toContain('var pilotPinnedComparisonRows = pilotComparisonRows.filter(function(row)');
     expect(source).toContain('var pilotUnpinnedComparisonRows = pilotComparisonRows.filter(function(row)');
     expect(source).toContain('var pilotNextComparisonRow = pilotUnpinnedComparisonRows.reduce(function(best, row)');
@@ -746,9 +756,44 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
 });
 
 describe('Be the Water guided comparison render', () => {
+  it('renders stored snow as solid H2O with measured conditions and no invented cycle credit', () => {
+    resetStemLab();
+    loadTool(WATER_CYCLE_PATHS[0], 'waterCycle');
+    const K = window.WaterCyclePilotKernel;
+    const snapshot = window.WaterCyclePilotNotebook.normalizeSnapshot({ ...K.practiceState('snow'), form: 'snowpack', altitudeM: 0,
+      snowLandingSurface: 'permeable', snowTempC: 6, snowHumidity: 35,
+      meltProgress: 0, sublimationProgress: 0.25 });
+    const html = renderTool('waterCycle', {
+      _threeLoaded: true,
+      waterCycle: { wcMode: 'pilot', pilot: { onboardingComplete: true,
+        scenario: 'frozenHighlands', snapshot } },
+    });
+    expect(html).toContain('data-molecular-phase="solid"');
+    expect(html).toContain('Solid - open lattice, vibrating');
+    expect(html).toContain('Stored snow');
+    expect(html).toContain('Frozen highlands');
+    expect(html).toContain('Air above snow: 6°C; humidity 35%.');
+    expect(html).toMatch(/id="wcPilotSnowTemp"[^>]*value="6"/);
+    expect(html).toMatch(/id="wcPilotSnowHumidity"[^>]*value="35"/);
+    const rendered = document.createElement('div');
+    rendered.innerHTML = html;
+    const alternative = rendered.querySelector('#wcPilotCanvas').getAttribute('aria-label');
+    expect(alternative).toContain('solid water stored as snow on land');
+    expect(alternative).toContain('Air above the snow is 6 degrees Celsius, humidity 35 percent.');
+    expect(alternative).toContain('Melt exposure is 0 of 100 and sublimation exposure is 25 of 100.');
+    expect(alternative).not.toContain('rising on your own');
+    expect(alternative).not.toContain('you need lift');
+    expect(html).not.toContain('Cycle complete');
+    expect(snapshot.loops).toBe(0);
+  }, 30_000);
+
   it('server-renders the unlocked climate conclusion from two pinned journeys', () => {
     resetStemLab();
     loadTool(WATER_CYCLE_PATHS[0], 'waterCycle');
+    const K = window.WaterCyclePilotKernel;
+    const climateCount = Object.keys(K.scenarios).length;
+    expect(climateCount).toBe(5);
+    expect(K.scenarios.frozenHighlands.surfaceTempC).toBe(-8);
     const html = renderTool('waterCycle', {
       _threeLoaded: true,
       waterCycle: {
@@ -756,7 +801,7 @@ describe('Be the Water guided comparison render', () => {
         pilot: {
           onboardingComplete: true,
           profileProbeM: 1500,
-          thermalForecastCount: 1,
+          thermalForecastCount: 2,
           thermalForecastProbeM: 1500,
           scenario: 'temperateCoast',
           comparisons: {
@@ -791,10 +836,10 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toContain('Climate sky profile');
     expect(html).toContain('Shared model scale');
     expect(html).toContain('cloud-base spread');
-    expect(html).toContain('All four climates use the same 0-6 km model scale');
+    expect(html).toContain('All starting climates use the same 0-6 km model scale');
     expect(html).toContain('Pinned: Raindrop at 1400 m');
     expect(html).toContain('Pinned: Snowflake at 2200 m');
-    expect(html.match(/class="wc-pilot-sky-profile-column"/g) || []).toHaveLength(4);
+    expect(html.match(/class="wc-pilot-sky-profile-column"/g) || []).toHaveLength(climateCount);
     expect(html).toContain('data-cloud-base-m=');
     expect(html).toContain('data-freezing-m=');
     expect(html).toContain('Altitude probe');
@@ -808,22 +853,22 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toContain('Cloud ice possible');
     expect(html).toContain('Below cloud base');
     expect(html).toContain('Supercooled liquid can remain below 0°C.');
-    expect(html.match(/class="wc-pilot-sky-probe-line"/g) || []).toHaveLength(4);
-    expect(html.match(/class="wc-pilot-sky-profile-probe-result"/g) || []).toHaveLength(4);
+    expect(html.match(/class="wc-pilot-sky-probe-line"/g) || []).toHaveLength(climateCount);
+    expect(html.match(/class="wc-pilot-sky-profile-probe-result"/g) || []).toHaveLength(climateCount);
     expect(html).toContain('data-probe-state="cloud"');
     expect(html).toContain('data-probe-state="ice"');
     expect(html).toContain('data-probe-state="air"');
     expect(html).toContain('Conditions at this altitude');
-    expect(html).toContain('At 1.5 km, the probe is above cloud base in 3 of 4 climates and at or above the freezing level in 1.');
+    expect(html).toContain('At 1.5 km, the probe is above cloud base in 4 of 5 climates and at or above the freezing level in 2.');
     expect(html).toContain('class="wc-pilot-sky-probe-states"');
     expect(html).toContain('data-probe-state="air" data-count="1"');
     expect(html).toContain('data-probe-state="cold" data-count="0"');
     expect(html).toContain('data-probe-state="cloud" data-count="2"');
-    expect(html).toContain('data-probe-state="ice" data-count="1"');
-    expect(html).toContain('0 / 4 climates');
-    expect(html).toContain('2 / 4 climates');
-    expect(html.match(/class="wc-pilot-sky-condition-zone is-cloud"/g) || []).toHaveLength(4);
-    expect(html.match(/class="wc-pilot-sky-condition-zone is-freezing"/g) || []).toHaveLength(4);
+    expect(html).toContain('data-probe-state="ice" data-count="2"');
+    expect(html).toContain(`0 / ${climateCount} climates`);
+    expect(html).toContain(`2 / ${climateCount} climates`);
+    expect(html.match(/class="wc-pilot-sky-condition-zone is-cloud"/g) || []).toHaveLength(climateCount);
+    expect(html.match(/class="wc-pilot-sky-condition-zone is-freezing"/g) || []).toHaveLength(climateCount);
     expect(html).toContain('data-zone="cloud" data-active="true"');
     expect(html).toContain('data-zone="cloud" data-active="false"');
     expect(html).toContain('data-zone="freezing" data-active="true"');
@@ -842,7 +887,7 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toContain('data-crossed="false"');
     expect(html).toContain('data-next="true"');
     expect(html).toContain('Next crossing:');
-    expect(html.match(/class="wc-pilot-sky-probe-temperature"/g) || []).toHaveLength(4);
+    expect(html.match(/class="wc-pilot-sky-probe-temperature"/g) || []).toHaveLength(climateCount);
     expect(html).toContain('data-freezing="true"');
     expect(html).toContain('data-freezing="false"');
     expect(html).toContain('Thermal cross-section');
@@ -851,17 +896,19 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toContain('class="wc-pilot-sky-thermal"');
     expect(html).toContain('aria-labelledby="wcPilotSkyThermalTitle"');
     expect(html).toContain('aria-describedby="wcPilotSkyThermalSummary"');
-    expect(html).toContain('data-scale-min-c="-40"');
+    // The shared scale must contain the coldest climate at the 6 km ceiling.
+    const coldestCeilingC = Math.min(...Object.keys(K.scenarios).map((id) => K.ambientTempC(K.environment(id), K.CEILING_M)));
+    expect(html).toContain(`data-scale-min-c="${Math.floor(coldestCeilingC / 5) * 5}"`);
     expect(html).toContain('data-scale-max-c="40"');
-    expect(html).toContain('data-spread-c="36"');
+    expect(html).toContain('data-spread-c="46"');
     expect(html).toContain('data-lapse-rate-c-km="6.5"');
     expect(html).toContain('data-cooling-c="9.8"');
-    expect(html).toContain('36°C spread');
+    expect(html).toContain('46°C spread');
     expect(html).toContain('Shared ambient-temperature scale');
     expect(html).toContain('class="wc-pilot-sky-thermal-zero"');
-    expect(html.match(/class="wc-pilot-sky-thermal-path"/g) || []).toHaveLength(4);
-    expect(html.match(/class="wc-pilot-sky-thermal-surface"/g) || []).toHaveLength(4);
-    expect(html.match(/class="wc-pilot-sky-thermal-marker"/g) || []).toHaveLength(4);
+    expect(html.match(/class="wc-pilot-sky-thermal-path"/g) || []).toHaveLength(climateCount);
+    expect(html.match(/class="wc-pilot-sky-thermal-surface"/g) || []).toHaveLength(climateCount);
+    expect(html.match(/class="wc-pilot-sky-thermal-marker"/g) || []).toHaveLength(climateCount);
     expect(html).toContain('class="wc-pilot-sky-cooling-rule"');
     expect(html).toContain('aria-labelledby="wcPilotCoolingRuleTitle"');
     expect(html).toContain('aria-describedby="wcPilotCoolingRuleSummary"');
@@ -882,23 +929,25 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toContain('Freeze-line forecast');
     expect(html).toContain('How many climate markers sit at or below 0°C at 1.5 km?');
     expect(html).toContain('class="wc-pilot-sky-freeze-choices"');
-    expect((html.match(/Forecast [0-4] climate profiles at or below 0°C/g) || []).length).toBe(5);
-    expect(html).toContain('aria-label="Forecast 1 climate profiles at or below 0°C" aria-pressed="true"');
+    expect((html.match(/Forecast \d+ climate profiles at or below 0°C/g) || []).length).toBe(climateCount + 1);
+    expect(html).toContain('aria-label="Forecast 2 climate profiles at or below 0°C" aria-pressed="true"');
     expect(html).toContain('data-outcome="correct"');
     expect(html).toContain('Evidence matched');
-    expect(html).toContain('Confirmed: 1 of 4 climate profiles sit at or below 0°C at 1.5 km: Mountain winter.');
+    expect(html).toContain('Confirmed: 2 of 5 climate profiles sit at or below 0°C at 1.5 km: Mountain winter, Frozen highlands.');
     expect(html).toContain('Counts ambient temperature markers only. Below-freezing air does not guarantee that every water parcel is ice.');
     expect(html).toContain('class="wc-pilot-sky-thermal-legend"');
-    expect((html.match(/model cooling 9.8°C./g) || []).length).toBe(4);
-    expect((html.match(/surface starting temperature [+-]/g) || []).length).toBe(4);
+    expect((html.match(/model cooling 9.8°C./g) || []).length).toBe(climateCount);
+    expect((html.match(/surface starting temperature [+-]/g) || []).length).toBe(climateCount);
     expect(html).toContain('data-extreme="coldest"');
     expect(html).toContain('data-extreme="warmest"');
     expect(html).toContain('Surface +2°C');
+    expect(html).toContain('Surface -8°C');
     expect(html).toContain('Surface +38°C');
-    expect(html).toContain('At 1.5 km, Mountain winter is coldest at -8°C; Desert basin is warmest at +28°C. The 36°C spread comes from different surface starting temperatures in this shared-lapse-rate model.');
-    expect(html).toContain('2 of 4 climates pinned');
+    expect(html).toContain('At 1.5 km, Frozen highlands is coldest at -18°C; Desert basin is warmest at +28°C. The 46°C spread comes from different surface starting temperatures in this shared-lapse-rate model.');
+    expect(html).toContain(`2 of ${climateCount} climates pinned`);
     expect(html).toContain('Tropical ocean');
     expect(html).toContain('Mountain winter');
+    expect(html).toContain('Frozen highlands');
     expect(html).not.toContain('Pin one more climate to unlock a conclusion');
   }, 30_000);
 
@@ -928,13 +977,13 @@ describe('Be the Water guided comparison render', () => {
     const staleChallenge = renderForecast(1, 1000);
     expect(staleChallenge).toContain('data-state="ready"');
     expect(staleChallenge).toContain('data-correct="false"');
-    expect(staleChallenge).toContain('Read the dashed freezing line, then choose 0–4.');
+    expect(staleChallenge).toContain('Read the dashed freezing line, then choose 0–5.');
     expect(staleChallenge).not.toContain('aria-pressed="true"');
 
-    const retryChallenge = renderForecast(2, 1500);
+    const retryChallenge = renderForecast(1, 1500);
     expect(retryChallenge).toContain('data-state="retry"');
     expect(retryChallenge).toContain('data-correct="false"');
-    expect(retryChallenge).toContain('aria-label="Forecast 2 climate profiles at or below 0°C" aria-pressed="true"');
+    expect(retryChallenge).toContain('aria-label="Forecast 1 climate profiles at or below 0°C" aria-pressed="true"');
     expect(retryChallenge).toContain('data-outcome="retry"');
     expect(retryChallenge).toContain('Check the line');
     expect(retryChallenge).toContain('Try again. Count the markers on or left of the dashed 0°C line.');
@@ -1008,7 +1057,7 @@ describe.each([
     expect(uiSource).toContain('"pilot_compare_freeze_prompt": "How many climate markers sit at or below 0°C at {altitude}?"');
     expect(uiSource).toContain('"pilot_compare_freeze_confirmed": "Confirmed: {count} of {total} climate profiles sit at or below 0°C at {altitude}: {climates}."');
     expect(uiSource).toContain('"pilot_compare_freeze_retry": "Try again. Count the markers on or left of the dashed 0°C line."');
-    expect(uiSource).toContain('"pilot_compare_freeze_hint": "Read the dashed freezing line, then choose 0–4."');
+    expect(uiSource).toContain('"pilot_compare_freeze_hint": "Read the dashed freezing line, then choose 0–{total}."');
     expect(uiSource).toContain('"pilot_compare_freeze_kicker": "Science challenge"');
     expect(uiSource).toContain('"pilot_compare_freeze_title": "Freeze-line forecast"');
     expect(uiSource).toContain('"pilot_compare_freeze_choices_aria": "Freeze-line forecast choices"');
@@ -1018,7 +1067,7 @@ describe.each([
     expect(uiSource).toContain('"pilot_compare_probe_state_cloud": "Liquid cloud possible"');
     expect(uiSource).toContain('"pilot_compare_probe_state_ice": "Cloud ice possible"');
     expect(uiSource).toContain('"pilot_compare_probe_science": "Thresholds describe environmental conditions, not a guaranteed parcel phase. Supercooled liquid can remain below 0°C."');
-    expect(uiSource).toContain('"pilot_compare_profile_caption": "All four climates use the same 0-{ceiling} km model scale. Tinted sky above each marker shows where that threshold has been crossed; higher markers require a farther climb."');
+    expect(uiSource).toContain('"pilot_compare_profile_caption": "All starting climates use the same 0-{ceiling} km model scale. Tinted sky above each marker shows where that threshold has been crossed; higher markers require a farther climb."');
     expect(uiSource).toContain('"pilot_journey_guide": "Journey guide"');
     expect(uiSource).toContain('"pilot_last_change": "Last change"');
     expect(uiSource).toContain('"pilot_journey_started": "Journey started"');

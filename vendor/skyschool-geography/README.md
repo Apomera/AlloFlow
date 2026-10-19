@@ -28,7 +28,7 @@ Both source replacements are staged in their own directories, flushed, and check
 
 The default grid is 36,000 columns by 18,000 rows at 0.01 degree. RLE rows run north to south; columns run west to east. Commas separate base36 lengths. Semicolons separate rows. Each row starts with a water run and alternates water/land. An initial or final zero-length run is valid. Runtime decoders must use an upper-bound search when looking up cumulative run ends, so zero-length runs do not change classification.
 
-The source archives and generated JSON are development/provenance assets. The simulator embeds the generated RLE so existing offline/single-file tool loading still works. No global 648-million-byte raster is required at runtime: each decoded row needs at most 177 Uint16 run ends. The total of all run ends occupies about 1.4 MB before cache limits; the RLE text is about 1.84 MB.
+The source archives and generated JSON are development/provenance assets. `--embed` writes the generated RLE into `stem_lab/stem_data_skyschool_geo.js`, which the STEM loader fetches before the simulator, so offline tool loading still works. No global 648-million-byte raster is required at runtime: each decoded row needs at most 177 Uint16 run ends. The total of all run ends occupies about 1.4 MB before cache limits; the RLE text is about 1.84 MB.
 
 ## Scope and limits
 

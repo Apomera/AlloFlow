@@ -1,0 +1,11 @@
+{
+  "beforeSHA256": "a8a3c8449ac396d75833932457ed6b25ec5e40e0e8597ec95e47ebfc23a6c99c",
+  "afterSHA256": "996a3dcf5ec2ff4564e19c18f0f6f960b6418596c805de3ed2c5896999f0e9b8",
+  "edits": [
+    {
+      "name": "committed LF after the hand study forced-colors rule",
+      "old": ".fr-hand-study-key{color:CanvasText!important}}',\r\n      '.fr-child-hands{",
+      "new": ".fr-hand-study-key{color:CanvasText!important}}',\n      '.fr-child-hands{"
+    }
+  ]
+}

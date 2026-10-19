@@ -59,6 +59,23 @@ const genericFeedbackPattern = /\b(?:is not best because|does not meet the defin
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|regardless|automatically|guaranteed|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const wordCount = (value) => String(value || '').trim().split(/\s+/).filter(Boolean).length;
+// Question-quality waves 33-47 (2026-08-20/21) re-authored most of these items with the same keys;
+// each records the wave-10 difficulty as its preimage and sets itself as the wording and
+// option-feedback refinement wave. The wave-49 cleanup pass (wordingCleanupWave) later reworded
+// some stems/keys in place. Their data files hold the text the item must match.
+const waveData = (wave) => {
+  const match = /^eppp-native-quality-wave-(\d+)$/.exec(wave || '');
+  return match ? require(`../dev-tools/eppp_native_quality_wave_${match[1]}_data.cjs`) : null;
+};
+const laterRevisionFor = (item) => {
+  if (!item || item.optionFeedbackRefinementWave !== item.wordingReviewWave) return null;
+  return waveData(item.wordingReviewWave)?.revisions.find((revision) => revision.id === item.id) || null;
+};
+const cleanupFor = (item) => {
+  const data = waveData(item?.wordingCleanupWave);
+  const revision = data?.revisions.find((entry) => entry.id === item.id);
+  return revision ? { ...revision, reviewedAt: data.reviewedAt } : null;
+};
 
 describe('EPPP incorrect-option explanation repair wave 10', () => {
   it('replays wave 10 after wave 09 and before the canonical audits', () => {
@@ -83,32 +100,49 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
     ids.forEach((id, index) => {
       const revision = revisions[id];
       const item = byId.get(id);
-      const deepReview = item?.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
+      const later = laterRevisionFor(item);
+      const cleanup = later ? null : cleanupFor(item);
+      const deepReview = !later && item?.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
+      const ownWave = !later && !deepReview;
       const authoredChoices = [0, 1, 2, 3].map((optionIndex) => revision.choices[optionIndex]);
+      const cleanedChoices = cleanup?.choices
+        || authoredChoices.map((choice, optionIndex) => (cleanup && optionIndex === expectedKeys[index] ? cleanup.key : choice));
       const incorrectIndexes = [0, 1, 2, 3].filter((optionIndex) => optionIndex !== expectedKeys[index]);
 
       expect(item).toBeTruthy();
       expect(revision.expectedAnswerIndex).toBe(expectedKeys[index]);
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(['intermediate', 'advanced']).toContain(revision.difficulty);
-      expect(item.difficulty).toBe(revision.difficulty);
-      expect(item.optionFeedbackRefinementWave).toBe('eppp-option-feedback-wave-10');
-      expect(item.optionFeedbackRefinedAt).toBe('2026-07-18');
-      expect(item.qaReviewedAt).toBe(deepReview ? '2026-07-25' : '2026-07-18');
+      if (later) {
+        expect(later.expectedAnswerIndex, id).toBe(expectedKeys[index]);
+        expect(later.expectedDifficulty, id).toBe(revision.difficulty);
+        expect(item.difficulty, id).toBe(later.targetDifficulty);
+        expect(item.optionFeedbackRefinedAt > '2026-07-18', id).toBe(true);
+        expect(item.qaReviewedAt, id).toBe(item.optionFeedbackRefinedAt);
+        expect(item.prompt, id).toBe(later.prompt);
+        expect(item.choices, id).toEqual(later.choices);
+        expect(item.rationale, id).toBe(later.rationale);
+      } else {
+        expect(item.difficulty, id).toBe(revision.difficulty);
+        expect(item.optionFeedbackRefinementWave, id).toBe('eppp-option-feedback-wave-10');
+        expect(item.optionFeedbackRefinedAt, id).toBe('2026-07-18');
+        expect(item.qaReviewedAt, id).toBe(cleanup ? cleanup.reviewedAt : deepReview ? '2026-07-25' : '2026-07-18');
+      }
+      if (cleanup) expect(cleanup.answerIndex, id).toBe(expectedKeys[index]);
       expect(revision.sourceCheck.length).toBeGreaterThanOrEqual(100);
       expect(revision.feedbackDesign).toHaveLength(3);
       expect(new Set(revision.feedbackDesign).size).toBe(3);
       expect(revision.qualityFlags.length).toBeGreaterThan(0);
 
-      if (!deepReview) expect(item.prompt).toBe(revision.prompt);
-      else expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
+      if (ownWave) expect(item.prompt).toBe(cleanup ? cleanup.prompt : revision.prompt);
+      else if (deepReview) expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
       expect(item.prompt.length).toBeGreaterThanOrEqual(120);
-      if (!deepReview) expect(item.choices).toEqual(authoredChoices);
+      if (ownWave) expect(item.choices).toEqual(cleanedChoices);
       expect(item.choices.every((choice) => choice.length >= 40)).toBe(true);
       expect(new Set(item.choices.map(normalize)).size).toBe(4);
       expect(item.choices.some((choice) => extremeCuePattern.test(choice))).toBe(false);
       expect(item.choices.some((choice) => /\b(?:all|none) of the above\b/i.test(choice))).toBe(false);
-      if (!deepReview) expect(item.rationale).toBe(revision.rationale);
+      if (ownWave) expect(item.rationale).toBe(revision.rationale);
       else expect(item.rationale.length).toBeGreaterThanOrEqual(120);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales[item.answerIndex]).toBe(item.rationale);
@@ -118,7 +152,8 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
       incorrectIndexes.forEach((optionIndex) => {
         const feedback = item.choiceRationales[optionIndex];
         explanations.push(normalize(feedback));
-        if (!deepReview) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        if (later) expect(feedback, id).toBe(later.feedback[optionIndex]);
+        else if (ownWave) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
         else expect(item.qualityCampaignReview.feedbackModes[optionIndex]).toBeTruthy();
         expect(feedback.length).toBeGreaterThanOrEqual(100);
         expect(wordCount(feedback)).toBeGreaterThanOrEqual(16);

@@ -141,22 +141,55 @@ test('wind: arming a feature and clicking the field places it', async ({ page })
 });
 
 test('wind: the Lines/Dots toggle changes what is drawn', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await harness.mount(page, {
     migration: { tab: 'wind', windObjects: [{ type: 'mountain', x: 200, y: 240 }] },
   }, undefined, MOUNT);
-  await page.waitForTimeout(1800);
 
-  const dots = await page.evaluate(() => (window as any).__mgEdges());
-  // The button is labelled for the mode it switches TO: it reads "Dots" while
-  // streamlines are off. Searching for "Lines" here matches nothing, clicks no
-  // button, and reads exactly like a dead toggle.
+  // Observe the real particle strokes while preserving the native draw calls.
+  // Edge density is not monotonic here: Lines removes the filled dots while
+  // lengthening their tails, and two animated samples contain different random
+  // particle positions, turbulence, and cloud edges. The submitted commands
+  // establish whether the already-mounted canvas reads the changed mode.
+  await page.evaluate(() => {
+    const canvas = document.querySelector('#wrap canvas') as HTMLCanvasElement;
+    const context = canvas.getContext('2d')!;
+    const originalClear = context.clearRect;
+    const originalStroke = context.stroke;
+    let active = { dots: 0, lines: 0 };
+    (window as any).__mgParticleFrame = null;
+    context.clearRect = function(...args: Parameters<CanvasRenderingContext2D['clearRect']>) {
+      // The next clear starts a new frame, so publish only a completed frame.
+      (window as any).__mgParticleFrame = { ...active };
+      active = { dots: 0, lines: 0 };
+      return originalClear.apply(this, args);
+    };
+    context.stroke = function(...args: any[]) {
+      if (this.strokeStyle instanceof CanvasGradient) {
+        if (Math.abs(this.lineWidth - 1.4) < 0.01) active.dots++;
+        if (Math.abs(this.lineWidth - 1.8) < 0.01) active.lines++;
+      }
+      return originalStroke.apply(this, args as []);
+    };
+  });
+  async function expectParticleMode(mode: 'dots' | 'lines') {
+    const other = mode === 'dots' ? 'lines' : 'dots';
+    await expect.poll(async () => page.evaluate(({ mode, other }) => {
+      const frame = (window as any).__mgParticleFrame;
+      return !!frame && frame[mode] > 100 && frame[other] === 0;
+    }, { mode, other }), { message: `completed canvas frame did not draw ${mode} particles` }).toBe(true);
+  }
+
+  await expectParticleMode('dots');
+  // The visible label names the current mode. Operate the real mounted control.
   expect(await page.evaluate(() => (window as any).__mgClick('Dots'))).toBe(true);
-  await page.waitForTimeout(1800);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.migration.showStreamlines)).toBe(true);
+  await expectParticleMode('lines');
 
-  expect(await page.evaluate(() => (window as any).__toolData.migration.showStreamlines)).toBeTruthy();
-  const lines = await page.evaluate(() => (window as any).__mgEdges());
-  expect(Math.abs(lines - dots), `toggle did not reach the canvas (dots ${dots}% vs lines ${lines}%)`)
-    .toBeGreaterThan(0.35);
+  // Verify the reverse transition too; a one-time repaint cannot satisfy both.
+  expect(await page.evaluate(() => (window as any).__mgClick('Lines'))).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.migration.showStreamlines)).toBe(false);
+  await expectParticleMode('dots');
 });
 
 test('routes: picking a species animates its route', async ({ page }) => {

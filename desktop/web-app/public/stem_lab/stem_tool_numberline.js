@@ -537,6 +537,20 @@ window.StemLab = window.StemLab || {
             else if (rL <= 100) { steps = 10; minorSteps = 10; }
             else if (rL <= 1000) { steps = 10; minorSteps = 10; }
             else { steps = 10; minorSteps = 5; }
+            // Wide lines whose ends sit on a 1/2/5 x 10^k grid get ticks on that grid. rL/10
+            // ticks labelled 30..60 as 30, 33, 36... (no 40 or 50 for "round 47 to the nearest
+            // 10") and spaced -20..20 minor ticks 0.8 apart under integer arrows.
+            if (rL > 20) {
+              var niceMag = Math.pow(10, Math.floor(Math.log10(rL / 10)));
+              var niceMant = rL / 10 / niceMag;
+              var niceMant2 = niceMant <= 1 ? 1 : niceMant <= 2 ? 2 : niceMant <= 5 ? 5 : 10;
+              var niceMajor = niceMant2 * niceMag;
+              var onNiceGrid = function(v) { var q = v / niceMajor; return Math.abs(q - Math.round(q)) < 1e-9; };
+              if (onNiceGrid(rMin) && onNiceGrid(rMax)) {
+                steps = Math.round(rL / niceMajor);
+                minorSteps = niceMant2 === 2 ? 4 : niceMant2 === 5 ? 5 : 10;
+              }
+            }
 
             if (steps <= 0) steps = 1;
             var ticks = [];
@@ -1010,20 +1024,20 @@ window.StemLab = window.StemLab || {
 
             // Place-value expansion: 0.625 = 6/10 + 2/100 + 5/1000
             var expansion = (function() {
+              // Expand the same 4-place value `decimal` shows, in integer units.
+              // A minus sign negates the WHOLE sum: -0.25 printed "-2/10 + 5/100" (= -0.15).
               var parts = [];
-              var sign = fdValue < 0 ? '-' : '';
-              var abs = Math.abs(fdValue);
-              var intPart = Math.floor(abs);
-              if (intPart !== 0) parts.push(sign + intPart);
-              var frac = abs - intPart;
+              var units = Math.round(Math.abs(fdValue) * 10000);
+              var intPart = Math.floor(units / 10000), rest = units % 10000;
+              if (intPart !== 0) parts.push(String(intPart));
               var divisors = [10, 100, 1000, 10000];
-              for (var p = 0; p < 4 && frac > 0.00001; p++) {
-                frac *= 10;
-                var digit = Math.floor(frac + 0.0000001);
-                frac -= digit;
-                if (digit !== 0) parts.push((p === 0 && sign ? sign : '') + digit + '/' + divisors[p]);
+              for (var p = 0; p < 4; p++) {
+                var digit = Math.floor(rest / (10000 / divisors[p])) % 10;
+                if (digit !== 0) parts.push(digit + '/' + divisors[p]);
               }
-              return parts.join(' + ') || '0';
+              if (!parts.length) return '0';
+              if (fdValue >= 0) return parts.join(' + ');
+              return parts.length > 1 ? '-(' + parts.join(' + ') + ')' : '-' + parts[0];
             })();
 
             // Mixed-number form for values ≥ 1 (improper → mixed)

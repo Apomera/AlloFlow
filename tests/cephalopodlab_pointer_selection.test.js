@@ -17,6 +17,8 @@ const fixtureCode=`
   function updateTrackedPrey(){calls.push('tracked');}function updateMission(){calls.push('mission');}function clAnnounce(message){calls.push(message);}function clHuntInputCue(key,touch){return options.touch?touch:key;}
   function toggleInspection(){}function closeSettings(){}function setPaused(){}function cycleCamera(){}function cycleTarget(){}function toggleForage(){}
   var settingsPanel=null;
+  // onClick also tests reef rocks in front of prey (see pointer_occlusion); this open-water fixture has none.
+  var rocks=[];
   ${region('function onKeyDown(e){','function onKeyUp(e){')}
   ${region('var targetRay=new THREE.Raycaster(),pointerPoint=new THREE.Vector2();','canvasEl.addEventListener(\'keydown\'')}
   function uiButton(label,handler){return {label:label,activate:handler};}

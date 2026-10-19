@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ملاحظات المهمة",
+  "stem.flightsim.mission_journal_targets": "الأهداف الملتقطة: {captured} من {total}.",
+  "stem.flightsim.mission_journal_complete": "سُجّلت جميع أهداف المهمة والهبوط بعد العودة.",
+  "stem.flightsim.mission_journal_ended": "انتهت المهمة قبل تسجيل جميع أدلة الإكمال.",
+  "stem.flightsim.mission_journal_recovery": "تسجيل إنقاذ الناجي: {value}.",
+  "stem.flightsim.mission_journal_return": "تسجيل الهبوط في القاعدة بعد العودة: {value}.",
+  "stem.flightsim.mission_guidance_title": "إرشادات المهمة",
+  "stem.flightsim.mission_route": "{target} · الاتجاه {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "نقطة الإقلاع",
+  "stem.flightsim.mission_read_status": "قراءة حالة المهمة",
+  "stem.flightsim.mission_return_criterion": "اهبط ضمن مسافة {distance} nm من {target}، بسرعة أرضية أقل من {speed} kt ومعدل هبوط أقل من {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "بيانات هدف المهمة غير متاحة. أنهِ هذه الرحلة وابدأ مهمة جديدة.",
+  "stem.flightsim.mission_capture_criterion": "ابقَ ضمن مسافة {distance} ft، وعلى ارتفاع أعلى من {min} وأقل من {max} ft فوق سطح الأرض، وبسرعة أرضية أقل من {speed} kt لمدة {hold} s."
+}

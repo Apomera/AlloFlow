@@ -32,7 +32,8 @@ describe('Water column continuity',()=>{
   // This historical camera region predates the accepted Pass54 Hunt camera
   // and Pass57 selection changes; compare it after the exact later-pass reversals.
   assert.equal(region(pass45,'        function updateDiveCamera(','        var lastTime = performance.now();'),region(prior,'        function updateDiveCamera(','        var lastTime = performance.now();'));
-  for(const [a,b]of [['        var rocks = [];','        // ─── Curved branching coral colonies'],['            gameState.dayTime = ((','            // ─── Pressure strain']])assert.equal(region(source,a,b),region(prior,a,b));
+  // Pass74 later re-keys the rock mineral program inside the rock region; compare at pass45 likewise.
+  for(const [a,b]of [['        var rocks = [];','        // ─── Curved branching coral colonies'],['            gameState.dayTime = ((','            // ─── Pressure strain']])assert.equal(region(pass45,a,b),region(prior,a,b));
  });
  it('owns and disposes independent static water resources once',()=>{const a=water().backdrop,b=water().backdrop,counts=[0,0];assert.notEqual(a.geometry,b.geometry);assert.notEqual(a.material,b.material);assert.notEqual(a.material.uniforms.bottomColor.value,b.material.uniforms.bottomColor.value);[a,b].forEach((o,i)=>{o.geometry.addEventListener('dispose',()=>counts[i]++);o.material.addEventListener('dispose',()=>counts[i]++);});a.geometry.dispose();a.material.dispose();owned.delete(a.geometry);owned.delete(a.material);assert.deepEqual(counts,[2,0]);assert.equal(b.geometry.attributes.position.count,425);});
 });

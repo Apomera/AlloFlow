@@ -1,0 +1,5064 @@
+// Coral Reef Survey Lab: survey a reef with the methods reef monitors use
+// (point-intercept transect for the bottom, belt transect for indicator fish),
+// then run a reef-health scenario model forward in time and survey the result.
+// The sites are fictional teaching sites. The scenario model is a simplified
+// teaching model: every parameter in MODEL_PARAMS says where its value comes
+// from, and the tool says on screen what the model leaves out.
+// The optional 3D dive loads stem_lab/reef_3d_habitat.js + reef_3d_engine.js.
+(function () {
+  'use strict';
+  if (!window.StemLab || window.StemLab.isRegistered('coralReef')) return;
+
+  // ── Survey method ────────────────────────────────────────────────────────
+  // One 20 m transect, a point every 0.5 m (40 points), a 5 m wide fish belt
+  // (2.5 m each side of the tape), so one belt covers 100 m2.
+  var TRANSECT_M = 20;
+  var POINT_SPACING_M = 0.5;
+  var POINT_COUNT = 40;
+  var BELT_HALF_WIDTH_M = 2.5;
+  var BELT_AREA_M2 = TRANSECT_M * BELT_HALF_WIDTH_M * 2;
+
+  var CATEGORY_IDS = ['hard_coral', 'bleached_coral', 'recently_dead_coral', 'macroalgae', 'rock', 'rubble', 'sand'];
+  // Reef Check substrate codes. Reef Check records a bleached colony as live
+  // hard coral (HC) and notes the bleaching; this lab gives it its own button.
+  var CATEGORY_CODE = { hard_coral: 'HC', bleached_coral: 'HC', recently_dead_coral: 'RKC', macroalgae: 'NIA', rock: 'RC', rubble: 'RB', sand: 'SD' };
+  var CORAL_CATEGORIES = { hard_coral: true, bleached_coral: true, recently_dead_coral: true };
+  var CORAL_FORMS = ['branching', 'massive', 'plate', 'encrusting'];
+  var FISH_FAMILIES = ['parrotfish', 'surgeonfish', 'butterflyfish', 'grouper', 'snapper'];
+  // Fish kept clear of the belt edge so "inside or outside" is never a coin flip.
+  var FISH_IN_MAX_M = 2.2;
+  var FISH_OUT_MIN_M = 3.0;
+  var FISH_OUT_MAX_M = 4.6;
+
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function round1(v) { return Math.round(v * 10) / 10; }
+
+  // Seeded generator, so a site's transect is the same for a whole class.
+  function mulberry32(seed) {
+    var a = (seed >>> 0) || 1;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ── Fictional teaching sites ─────────────────────────────────────────────
+  // cover = fraction of the bottom in each category (sums to 1).
+  // fish = indicator fish inside one 100 m2 belt.
+  var SITES = [
+    { id: 'reserve', seed: 4127, depthM: 9,
+      cover: { hard_coral: 0.42, bleached_coral: 0, recently_dead_coral: 0.02, macroalgae: 0.05, rock: 0.26, rubble: 0.1, sand: 0.15 },
+      forms: { branching: 0.4, massive: 0.3, plate: 0.2, encrusting: 0.1 },
+      fish: { parrotfish: 6, surgeonfish: 8, butterflyfish: 5, grouper: 2, snapper: 3 } },
+    { id: 'harbor', seed: 9083, depthM: 6,
+      cover: { hard_coral: 0.14, bleached_coral: 0, recently_dead_coral: 0.04, macroalgae: 0.36, rock: 0.2, rubble: 0.14, sand: 0.12 },
+      forms: { branching: 0.15, massive: 0.5, plate: 0.05, encrusting: 0.3 },
+      fish: { parrotfish: 1, surgeonfish: 2, butterflyfish: 1, grouper: 0, snapper: 1 } },
+    { id: 'heatwave', seed: 2251, depthM: 7,
+      cover: { hard_coral: 0.13, bleached_coral: 0.2, recently_dead_coral: 0.1, macroalgae: 0.07, rock: 0.24, rubble: 0.12, sand: 0.14 },
+      forms: { branching: 0.45, massive: 0.25, plate: 0.2, encrusting: 0.1 },
+      fish: { parrotfish: 4, surgeonfish: 6, butterflyfish: 2, grouper: 1, snapper: 2 } },
+    // A rubble field left by blast fishing, and a field like it four years
+    // after Reef Stars were installed (values modeled on published Reef Star
+    // results; see the science sources).
+    { id: 'rubble', seed: 6311, depthM: 5,
+      cover: { hard_coral: 0.04, bleached_coral: 0, recently_dead_coral: 0.02, macroalgae: 0.06, rock: 0.06, rubble: 0.7, sand: 0.12 },
+      forms: { branching: 0.5, massive: 0.2, plate: 0.1, encrusting: 0.2 },
+      fish: { parrotfish: 1, surgeonfish: 2, butterflyfish: 0, grouper: 0, snapper: 1 } },
+    { id: 'restored', seed: 6427, depthM: 5,
+      cover: { hard_coral: 0.5, bleached_coral: 0, recently_dead_coral: 0.02, macroalgae: 0.04, rock: 0.12, rubble: 0.2, sand: 0.12 },
+      forms: { branching: 0.65, massive: 0.1, plate: 0.15, encrusting: 0.1 },
+      fish: { parrotfish: 4, surgeonfish: 5, butterflyfish: 4, grouper: 1, snapper: 2 } }
+  ];
+  function siteById(id) { for (var i = 0; i < SITES.length; i++) if (SITES[i].id === id) return SITES[i]; return null; }
+
+  function weightedPick(weights, rand) {
+    var sum = 0, k;
+    for (k in weights) if (Object.prototype.hasOwnProperty.call(weights, k)) sum += weights[k];
+    var r = rand() * sum;
+    for (k in weights) if (Object.prototype.hasOwnProperty.call(weights, k)) { r -= weights[k]; if (r <= 0 && weights[k] > 0) return k; }
+    for (k in weights) if (weights[k] > 0) return k;
+    return null;
+  }
+
+  // Two fish this close overlap on the belt map (about 1.3 m by 0.6 m per fish).
+  var FISH_GAP_ALONG_M = 1.4, FISH_GAP_OFF_M = 0.7;
+  function crowded(list, along, off) {
+    for (var i = 0; i < list.length; i++) if (Math.abs(list[i].alongM - along) < FISH_GAP_ALONG_M && Math.abs(list[i].offsetM - off) < FISH_GAP_OFF_M) return true;
+    return false;
+  }
+
+  // Poisson draw (Knuth), for fish counts that vary from belt to belt.
+  function poisson(lambda, rand) {
+    if (!(lambda > 0)) return 0;
+    var L = Math.exp(-lambda), k = 0, p = 1;
+    do { k += 1; p *= rand(); } while (p > L && k < 200);
+    return k - 1;
+  }
+  // Chance that a point repeats the previous point's category: a colony or a
+  // sand patch often spans two or three points. The long-run share of each
+  // category still equals the site's cover.
+  var PATCHINESS = 0.35;
+
+  // A site + seed -> the transect a diver would see. A site's cover is the
+  // reef-wide average; each 20 m transect samples it, so two transects at one
+  // reef differ the way real ones do. Fish counts vary around the site's
+  // average, and every fish sits clearly inside or clearly outside the belt.
+  function buildTransect(site, seed) {
+    var rand = mulberry32((seed >>> 0) ^ 0x9E3779B9);
+    var points = [], prev = null, colony = 0, prevForm = null;
+    for (var i = 0; i < POINT_COUNT; i++) {
+      var cat = (prev && rand() < PATCHINESS) ? prev : weightedPick(site.cover, rand);
+      var form = null;
+      if (CORAL_CATEGORIES[cat]) {
+        if (cat === prev && prevForm && rand() < 0.7) form = prevForm;
+        else { form = weightedPick(site.forms, rand); colony += 1; }
+      } else if (cat !== prev) colony += 1;
+      // Reef Check drops the plumb line at 0.0, 0.5 ... 19.5 m: 40 points.
+      points.push({ index: i, distanceM: i * POINT_SPACING_M, category: cat, coralForm: form, colony: colony, variant: Math.floor(rand() * 1000) });
+      prev = cat; prevForm = form;
+    }
+    var fish = [], n = 0;
+    for (var f = 0; f < FISH_FAMILIES.length; f++) {
+      var fam = FISH_FAMILIES[f];
+      var inside = poisson(site.fish[fam] || 0, rand);
+      var outside = Math.round(inside * 0.5) + (rand() < 0.6 ? 1 : 0);
+      for (var a = 0; a < inside + outside; a++) {
+        var isIn = a < inside, along = 0, off = 0;
+        // Keep fish apart on the map so every one can be counted.
+        for (var tries = 0; tries < 40; tries++) {
+          var side = rand() < 0.5 ? -1 : 1;
+          off = round1(isIn ? side * (0.2 + rand() * (FISH_IN_MAX_M - 0.2)) : side * (FISH_OUT_MIN_M + rand() * (FISH_OUT_MAX_M - FISH_OUT_MIN_M)));
+          along = round1(0.6 + rand() * (TRANSECT_M - 1.2));
+          if (!crowded(fish, along, off)) break;
+        }
+        n += 1;
+        fish.push({ id: 'f' + n, family: fam, alongM: along, offsetM: off, heightM: round1(0.3 + rand() * 1.6), inBelt: isIn });
+      }
+    }
+    // Shuffle so the list view does not group fish by family.
+    for (var s = fish.length - 1; s > 0; s--) { var j = Math.floor(rand() * (s + 1)); var tmp = fish[s]; fish[s] = fish[j]; fish[j] = tmp; }
+    return {
+      version: 1, siteId: site.id, seed: seed >>> 0,
+      lengthM: TRANSECT_M, spacingM: POINT_SPACING_M, beltHalfWidthM: BELT_HALF_WIDTH_M, depthM: site.depthM,
+      points: points, fish: fish,
+      // Read by reef_3d_habitat.js normalizeLayout: each 0 to 1, from the SITE
+      // (the reef around this transect), so the decorative reef matches it.
+      background: {
+        coralCover: (site.cover.hard_coral || 0) + (site.cover.bleached_coral || 0),
+        bleaching: ((site.cover.hard_coral || 0) + (site.cover.bleached_coral || 0)) > 0 ? (site.cover.bleached_coral || 0) / ((site.cover.hard_coral || 0) + (site.cover.bleached_coral || 0)) : 0,
+        algae: site.cover.macroalgae || 0
+      }
+    };
+  }
+
+  // Observable features of a point, without naming its category, so the
+  // identification stays a task for a screen-reader user too.
+  function pointFeatures(point) {
+    var shape = point.coralForm ? 'shape_' + point.coralForm : null;
+    switch (point.category) {
+      case 'hard_coral': return [shape, 'color_pigmented', 'texture_living_tissue', 'polyps_visible'];
+      case 'bleached_coral': return [shape, 'color_bright_white', 'texture_living_tissue', 'polyps_visible'];
+      case 'recently_dead_coral': return [shape, 'color_dull_white', 'texture_fuzzy_film', 'polyps_none'];
+      case 'macroalgae': return ['shape_leafy_clump', 'color_olive_brown', 'texture_fleshy_blades'];
+      case 'rock': return ['shape_hard_flat', 'color_grey_pink', 'texture_short_turf'];
+      case 'rubble': return ['shape_loose_pieces', 'color_grey', 'texture_broken_branches'];
+      default: return ['shape_flat_loose', 'color_pale', 'texture_grains_ripples'];
+    }
+  }
+
+  // ── Survey arithmetic ────────────────────────────────────────────────────
+  function emptyCover() { var o = {}; for (var i = 0; i < CATEGORY_IDS.length; i++) o[CATEGORY_IDS[i]] = 0; return o; }
+  // Percent cover = points in a category / all points x 100.
+  function coverFromRecords(records, n) {
+    var out = emptyCover(), total = n || POINT_COUNT, recorded = 0;
+    for (var k in records) {
+      if (!Object.prototype.hasOwnProperty.call(records, k)) continue;
+      var cat = records[k];
+      if (Object.prototype.hasOwnProperty.call(out, cat)) { out[cat] += 1; recorded += 1; }
+    }
+    for (var i = 0; i < CATEGORY_IDS.length; i++) out[CATEGORY_IDS[i]] = round1(out[CATEGORY_IDS[i]] / total * 100);
+    out._recorded = recorded;
+    return out;
+  }
+  function trueCover(layout) {
+    var rec = {};
+    for (var i = 0; i < layout.points.length; i++) rec[i] = layout.points[i].category;
+    var c = coverFromRecords(rec, layout.points.length);
+    delete c._recorded;
+    return c;
+  }
+  function fishInBelt(layout) {
+    var out = {};
+    for (var f = 0; f < FISH_FAMILIES.length; f++) out[FISH_FAMILIES[f]] = 0;
+    for (var i = 0; i < layout.fish.length; i++) if (layout.fish[i].inBelt) out[layout.fish[i].family] += 1;
+    return out;
+  }
+  // Density per 100 m2 = count / belt area x 100.
+  function densityPer100(count, areaM2) { return round1((count || 0) / (areaM2 || BELT_AREA_M2) * 100); }
+
+  // Health indicators read off a cover table (percent values).
+  function indicators(cover) {
+    var live = (cover.hard_coral || 0) + (cover.bleached_coral || 0);
+    return {
+      liveCoral: round1(live),
+      bleachedShare: live > 0 ? Math.round((cover.bleached_coral || 0) / live * 100) : 0,
+      macroalgae: round1(cover.macroalgae || 0),
+      coralToAlgae: (cover.macroalgae || 0) > 0 ? round1(live / cover.macroalgae) : null
+    };
+  }
+
+  function scoreSurvey(layout, records, fishCounts) {
+    var mismatches = [], agree = 0;
+    for (var i = 0; i < layout.points.length; i++) {
+      var truth = layout.points[i].category, got = records[i];
+      if (got === truth) agree += 1;
+      else mismatches.push({ index: i, recorded: got || null, truth: truth });
+    }
+    var trueFish = fishInBelt(layout), fish = [];
+    for (var f = 0; f < FISH_FAMILIES.length; f++) {
+      var fam = FISH_FAMILIES[f], counted = Math.max(0, Math.round((fishCounts || {})[fam] || 0));
+      fish.push({ family: fam, counted: counted, inBelt: trueFish[fam], density: densityPer100(counted, BELT_AREA_M2), trueDensity: densityPer100(trueFish[fam], BELT_AREA_M2) });
+    }
+    return { agreement: agree, total: layout.points.length, mismatches: mismatches, cover: coverFromRecords(records, layout.points.length), trueCover: trueCover(layout), fish: fish };
+  }
+
+  // ── Reef-health scenario model ───────────────────────────────────────────
+  // A simplified teaching model of one reef. State: live coral C and fleshy
+  // macroalgae M as fractions of the bottom. Only the hard bottom (A) can be
+  // settled; the rest is sand and loose rubble. Within each year, in 20 small
+  // steps: coral regrows into free space and loses a little to storms, disease
+  // and predators; seaweed grows into free space and overgrows some coral;
+  // grazing fish crop seaweed, their grazing spread over all the seaweed and
+  // free space they can reach. At the end of the year, that year's heat
+  // stress in Degree Heating Weeks (DHW) kills a share of the coral.
+  // basis: 'sourced' | 'derived' | 'assumption'; the sources are in sourceList().
+  var MODEL_PARAMS = {
+    hardBottom: { value: 0.8, basis: 'assumption' },
+    // Reproduces Scott Reef's regrowth from 9% to 44% cover in about 12 years
+    // (Gilmour et al. 2013) and the 10 to 15 year recovery in Hughes et al. 2018.
+    coralGrowth: { value: 0.45, basis: 'derived' },
+    coralBackgroundLoss: { value: 0.15, basis: 'assumption' },
+    coralRecruit: { value: 0.003, basis: 'assumption' },
+    algaeGrowth: { value: 0.6, basis: 'assumption' },
+    algaeOvergrowth: { value: 0.1, basis: 'assumption' },
+    grazing: { value: 0.5, basis: 'assumption' },
+    nutrientBoost: { value: 0.5, basis: 'assumption' },
+    // About 15% slower calcification per unit fall in aragonite saturation
+    // (Chan and Connolly 2013); applying it to cover growth is an assumption.
+    calcLossPerOmega: { value: 0.15, basis: 'sourced' },
+    // Tropical surface waters about 2010 (Jiang et al. 2023).
+    omegaReference: { value: 3.5, basis: 'sourced' },
+    // A typical project of about 100 m2 with 60 to 70% survival on a 1 hectare
+    // reef (Bostrom-Einarsson et al. 2020): roughly half a percent a year.
+    restorationPerYear: { value: 0.005, basis: 'derived' },
+    // Rubble stabilization (Reef Stars). Loose rubble cannot be settled
+    // (untreated blast rubble at Komodo stayed near 3% coral for 17 years,
+    // Fox et al. 2019). Frames fix most of it into stable ground over one to
+    // three years (Williams et al. 2019 laid theirs over 2013 to 2015), with
+    // coral fragments tied on: 0.15 of the new area starts as coral (start
+    // cover 10 to 17%, Williams 2019, Lange et al. 2024). Coral on the frames
+    // is mostly fast branching coral: 0.70 a year reproduces Lange's 17% to
+    // 56% in four years with this model's own update rule.
+    stabilizationRate: { value: 0.6, basis: 'sourced' },
+    stabilizedShare: { value: 0.9, basis: 'assumption' },
+    fragmentCover: { value: 0.15, basis: 'derived' },
+    restoredGrowth: { value: 0.7, basis: 'derived' },
+    // Reef structures (Reef Balls): a little settling surface. No extra coral
+    // recruitment (Hylkema et al. 2023) and no extra grazing: whether such
+    // structures make new fish or only gather them is unresolved.
+    structureBottom: { value: 0.02, basis: 'assumption' }
+  };
+  function P(name) { return MODEL_PARAMS[name].value; }
+  var OMEGA_START = 3.4;
+  var MODEL_STEPS_PER_YEAR = 20;
+
+  function interpolate(curve, x) {
+    if (x <= curve[0][0]) return curve[0][1];
+    for (var i = 1; i < curve.length; i++) {
+      if (x <= curve[i][0]) { var a = curve[i - 1], b = curve[i]; return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); }
+    }
+    return curve[curve.length - 1][1];
+  }
+  // Share of living coral killed by one year's heat stress.
+  // sensitive: measured on shallow Great Barrier Reef reefs after the 2016
+  //   heatwave (Hughes et al. 2018): almost none up to 3 DHW, 40% at 4, 66% at
+  //   8, over 80% above 9.
+  // tolerant: follows NOAA Coral Reef Watch alert levels (over 50% of corals at
+  //   16 DHW, over 80% at 20); the values at 8 and 12 are assumptions.
+  var MORTALITY_CURVES = {
+    sensitive: [[0, 0], [3, 0], [4, 0.4], [8, 0.66], [10, 0.85], [24, 0.9]],
+    tolerant: [[0, 0], [4, 0], [8, 0.1], [12, 0.3], [16, 0.5], [20, 0.8], [24, 0.85]]
+  };
+  // Share of living coral that looks bleached at the peak of the year's heat.
+  // Teaching assumption shaped by NOAA's alert levels (reef-wide bleaching
+  // likely from 4 DHW) and Hughes et al. 2018 (a severe event bleaches over 30%).
+  var BLEACH_CURVE = [[0, 0], [1, 0.02], [4, 0.35], [8, 0.7], [12, 0.85], [24, 0.9]];
+  function bleachedShare(dhw) { return interpolate(BLEACH_CURVE, Math.max(0, dhw || 0)); }
+  function heatMortality(dhw, sensitivity) { return interpolate(MORTALITY_CURVES[sensitivity === 'tolerant' ? 'tolerant' : 'sensitive'], Math.max(0, dhw || 0)); }
+  function acidFactor(omega) { return clamp(1 - P('calcLossPerOmega') * (P('omegaReference') - omega), 0, 1.1); }
+
+  var LEVELS = { low: 0, medium: 1, high: 2 };
+  var HERBIVORE_INDEX = [0.3, 0.6, 0.9];
+  var NUTRIENT_INDEX = [0, 0.5, 1];
+  function levelValue(table, level) { return table[LEVELS[level] != null ? LEVELS[level] : 1]; }
+
+  // heatInterval / heatPeak move from the start value to the end value over
+  // the run. recent: severe bleaching now returns about every 6 years (median
+  // across 100 reefs, Hughes et al. 2018). warmer: annual severe heat stress is
+  // projected for most reefs within decades (van Hooidonk et al. 2016). cooler
+  // is an optimistic what-if, not a projection. omegaEnd values are rounded
+  // from Jiang et al. 2023 (tropics about 3.5 in 2010; 2100 near 3.4 with very
+  // low emissions and near 1.9 with very high emissions), read at year 30.
+  var SCENARIOS = [
+    { id: 'recent', heatInterval: [6, 6], heatPeak: [8, 8], herbivores: 'medium', nutrients: 'medium', omegaEnd: 3.05 },
+    { id: 'reserve', heatInterval: [6, 6], heatPeak: [8, 8], herbivores: 'high', nutrients: 'low', omegaEnd: 3.05 },
+    { id: 'warmer', heatInterval: [6, 1], heatPeak: [8, 12], herbivores: 'medium', nutrients: 'medium', omegaEnd: 2.7 },
+    { id: 'cooler', heatInterval: [6, 10], heatPeak: [8, 6], herbivores: 'medium', nutrients: 'medium', omegaEnd: 3.35 },
+    // A reef reduced to loose rubble by blast fishing (about 3% coral, as at
+    // Komodo), restored with Reef Stars and coral gardening; the comparison
+    // line shows the same field left alone.
+    { id: 'rubble', heatInterval: [6, 6], heatPeak: [8, 8], herbivores: 'medium', nutrients: 'low', omegaEnd: 3.05,
+      start: { coral: 0.03, algae: 0.02, hardBottom: 0.08 }, actions: { rubbleStabilization: true, restoration: true } }
+  ];
+  var ACTION_KEYS = ['rubbleStabilization', 'reefStructures', 'restoration'];
+  function scenarioById(id) { for (var i = 0; i < SCENARIOS.length; i++) if (SCENARIOS[i].id === id) return SCENARIOS[i]; return SCENARIOS[0]; }
+  function scenarioSettings(id) {
+    var s = scenarioById(id), start = s.start || {}, actions = s.actions || {};
+    return { scenarioId: s.id, heatIntervalStart: s.heatInterval[0], heatIntervalEnd: s.heatInterval[1], heatPeakStart: s.heatPeak[0], heatPeakEnd: s.heatPeak[1],
+      herbivores: s.herbivores, nutrients: s.nutrients, acidification: true, omegaEnd: s.omegaEnd, sensitivity: 'tolerant',
+      rubbleStabilization: !!actions.rubbleStabilization, reefStructures: !!actions.reefStructures, restoration: !!actions.restoration,
+      years: 30, startCoral: start.coral != null ? start.coral : 0.4, startAlgae: start.algae != null ? start.algae : 0.05,
+      startHardBottom: start.hardBottom != null ? start.hardBottom : null };
+  }
+  function hasActions(settings) { for (var i = 0; i < ACTION_KEYS.length; i++) if (settings[ACTION_KEYS[i]]) return true; return false; }
+  // The same run with every restoration action switched off, for comparison.
+  function withoutActions(settings) {
+    var out = Object.assign({}, settings);
+    for (var i = 0; i < ACTION_KEYS.length; i++) out[ACTION_KEYS[i]] = false;
+    return out;
+  }
+
+  // Severe heat years: the gap between them and their strength move linearly
+  // from start to end values; seeded jitter keeps them off a perfect clock.
+  // Other years carry 0 to 3 DHW of background heat.
+  function heatSchedule(settings, seed) {
+    var rand = mulberry32((seed >>> 0) ^ 0x51ED270B);
+    var years = settings.years, dhw = [], next = 2 + Math.floor(rand() * 3);
+    for (var t = 0; t < years; t++) {
+      var f = years > 1 ? t / (years - 1) : 0;
+      var background = round1(rand() * 3);
+      if (t === next) {
+        var peak = settings.heatPeakStart + (settings.heatPeakEnd - settings.heatPeakStart) * f;
+        dhw.push(round1(Math.max(background, peak * (0.85 + rand() * 0.3))));
+        var interval = settings.heatIntervalStart + (settings.heatIntervalEnd - settings.heatIntervalStart) * f;
+        next = t + Math.max(1, Math.round(interval + (interval > 1.5 ? rand() * 2 - 1 : 0)));
+      } else dhw.push(background);
+    }
+    return dhw;
+  }
+
+  function runScenario(settings, seed) {
+    var dhw = heatSchedule(settings, seed);
+    var H = levelValue(HERBIVORE_INDEX, settings.herbivores), N = levelValue(NUTRIENT_INDEX, settings.nutrients);
+    var A = settings.startHardBottom != null ? clamp(settings.startHardBottom, 0.02, 0.95) : P('hardBottom'), dt = 1 / MODEL_STEPS_PER_YEAR;
+    // Rubble is whatever is neither hard bottom nor sand.
+    var rubble0 = Math.max(0, 1 - A - MODEL_SAND);
+    var targetA = Math.min(1 - MODEL_SAND, A + (settings.rubbleStabilization ? P('stabilizedShare') * rubble0 : 0) + (settings.reefStructures ? P('structureBottom') : 0));
+    var growth = settings.rubbleStabilization ? P('restoredGrowth') : P('coralGrowth');
+    var C = clamp(settings.startCoral, 0, A), M = clamp(settings.startAlgae, 0, A - C);
+    var omega0 = OMEGA_START;
+    var rows = [{ year: 0, coral: C, algae: M, dhw: 0, bleached: 0, killed: 0, omega: omega0, hardBottom: A }];
+    for (var t = 0; t < settings.years; t++) {
+      var omega = settings.acidification ? omega0 + (settings.omegaEnd - omega0) * ((t + 1) / settings.years) : omega0;
+      var fO = acidFactor(omega);
+      // New stable ground from stabilized rubble or added structures, with
+      // the coral fragments planted on Reef Star frames.
+      if (targetA > A + 1e-6) {
+        var added = (targetA - A) * (settings.rubbleStabilization ? P('stabilizationRate') : 0.5);
+        A += added;
+        if (settings.rubbleStabilization) C = Math.min(A - M, C + added * P('fragmentCover'));
+      }
+      for (var s = 0; s < MODEL_STEPS_PER_YEAR; s++) {
+        var F = Math.max(0, A - C - M);
+        var dC = growth * fO * C * F / A + P('coralRecruit') * F / A - P('coralBackgroundLoss') * C - P('algaeOvergrowth') * M * C;
+        var dM = P('algaeGrowth') * (1 + P('nutrientBoost') * N) * M * F / A + P('algaeOvergrowth') * M * C - P('grazing') * H * M / Math.max(1e-6, M + F);
+        C = clamp(C + dC * dt, 0, A);
+        M = clamp(M + dM * dt, 0, A - C);
+      }
+      var heat = dhw[t], killed = C * heatMortality(heat, settings.sensitivity);
+      C -= killed;
+      if (settings.restoration) C = Math.min(A - M, C + P('restorationPerYear'));
+      rows.push({ year: t + 1, coral: C, algae: M, dhw: heat, bleached: bleachedShare(heat), killed: killed, omega: Math.round(omega * 100) / 100, hardBottom: A });
+    }
+    return rows;
+  }
+
+  // Turn one model year into a site a student can survey. Off the hard bottom:
+  // sand and rubble. On it: coral (some bleached that year), seaweed, coral
+  // killed that year, and bare rock. The fish follow stated teaching rules:
+  // grazers and predators track protection, butterflyfish (coral feeders)
+  // track live coral.
+  var MODEL_SAND = 0.12;
+  function siteFromModelYear(row, settings, seed) {
+    var A = row.hardBottom != null ? row.hardBottom : P('hardBottom');
+    var live = row.coral, bleached = live * row.bleached;
+    var dead = Math.min(row.killed, Math.max(0, A - live - row.algae));
+    var rock = Math.max(0, A - live - row.algae - dead);
+    var sand = Math.min(MODEL_SAND, 1 - A), rubble = Math.max(0, 1 - A - sand);
+    var H = levelValue(HERBIVORE_INDEX, settings.herbivores);
+    return {
+      id: 'model', seed: seed >>> 0, depthM: 8, modelYear: row.year,
+      cover: { hard_coral: live - bleached, bleached_coral: bleached, recently_dead_coral: dead, macroalgae: row.algae, rock: rock, rubble: rubble, sand: sand },
+      forms: { branching: 0.35, massive: 0.35, plate: 0.15, encrusting: 0.15 },
+      fish: { parrotfish: Math.round(7 * H), surgeonfish: Math.round(9 * H), butterflyfish: Math.round(12 * live), grouper: Math.round(2.5 * H), snapper: Math.round(3.5 * H) }
+    };
+  }
+
+  // ── Theme ────────────────────────────────────────────────────────────────
+  // Ink and grounds per host theme. Muted ink clears 4.5:1 on its card;
+  // accent fills carry their own ink (accentInk) at 4.5:1 or better.
+  // border outlines cards only; controls use ctlBorder, which clears 3:1.
+  function palette(theme) {
+    if (theme === 'contrast') return { bg: '#000000', card: '#000000', cardAlt: '#111111', text: '#ffffff', muted: '#f1f5f9', border: '#fbbf24', ctlBorder: '#fbbf24', accent: '#fbbf24', accentInk: '#000000', good: '#86efac', warn: '#fde047', bad: '#fca5a5', line: '#ffffff', coralLine: '#fb7185', algaeLine: '#86efac', heatBar: '#fde047' };
+    if (theme === 'dark') return { bg: '#081e25', card: '#102e36', cardAlt: '#163740', text: '#ecf6f2', muted: '#b3cecc', border: '#31545c', ctlBorder: '#8ba9ad', accent: '#8fe3d1', accentInk: '#082b2b', good: '#8cddb1', warn: '#f3cc86', bad: '#ff9b93', line: '#a3bcbe', coralLine: '#ffa6b5', algaeLine: '#8cddb1', heatBar: '#efbb77' };
+    return { bg: '#eff5f2', card: '#ffffff', cardAlt: '#f5f8f5', text: '#173c42', muted: '#476366', border: '#d3e1da', ctlBorder: '#6a817d', accent: '#12695f', accentInk: '#ffffff', good: '#20744a', warn: '#956214', bad: '#b53a35', line: '#647b7d', coralLine: '#b63c60', algaeLine: '#20744a', heatBar: '#b87516' };
+  }
+
+  // ── Labels (literal keys so the i18n registration gate can see them) ─────
+  function categoryNames(__alloT) {
+    return {
+      hard_coral: __alloT('stem.coralreef.cat_hard_coral', 'Live hard coral'),
+      bleached_coral: __alloT('stem.coralreef.cat_bleached_coral', 'Bleached coral (alive)'),
+      recently_dead_coral: __alloT('stem.coralreef.cat_recently_dead_coral', 'Recently dead coral'),
+      macroalgae: __alloT('stem.coralreef.cat_macroalgae', 'Fleshy seaweed (macroalgae)'),
+      rock: __alloT('stem.coralreef.cat_rock', 'Rock'),
+      rubble: __alloT('stem.coralreef.cat_rubble', 'Rubble'),
+      sand: __alloT('stem.coralreef.cat_sand', 'Sand')
+    };
+  }
+  function categoryGuides(__alloT) {
+    return {
+      hard_coral: __alloT('stem.coralreef.guide_hard_coral', 'Living stony coral. It has color from the algae living in its tissue, and you can see its polyps.'),
+      bleached_coral: __alloT('stem.coralreef.guide_bleached_coral', 'Coral that has lost its colorful algae and looks bright white. The tissue and polyps are still there, so it is still alive and can recover if the water cools.'),
+      recently_dead_coral: __alloT('stem.coralreef.guide_recently_dead_coral', 'Coral that died within about the last year. The skeleton is still white or its small cup shapes are still clear, with no living tissue, and a fuzzy film of turf algae is starting to cover it. Reef Check calls this recently killed coral (RKC).'),
+      macroalgae: __alloT('stem.coralreef.guide_macroalgae', 'Fleshy seaweed taller than about 3 cm. Short turf, pink crusty algae and hard, chalky algae do not count here. Reef Check calls it nutrient indicator algae (NIA). Lots of it can mean too few grazing fish or too many nutrients.'),
+      rock: __alloT('stem.coralreef.guide_rock', 'Hard reef rock with no living coral on it, including coral that died more than about a year ago. It may carry short turf or pink crusts of coralline algae.'),
+      rubble: __alloT('stem.coralreef.guide_rubble', 'Loose pieces of broken coral, about 0.5 to 15 cm across, that can roll around. Young corals struggle to settle on it.'),
+      sand: __alloT('stem.coralreef.guide_sand', 'Grains smaller than 0.5 cm. Nothing is attached to it.')
+    };
+  }
+  function formNames(__alloT) {
+    return {
+      branching: __alloT('stem.coralreef.form_branching', 'Branching'),
+      massive: __alloT('stem.coralreef.form_massive', 'Boulder (massive)'),
+      plate: __alloT('stem.coralreef.form_plate', 'Plate or table'),
+      encrusting: __alloT('stem.coralreef.form_encrusting', 'Encrusting')
+    };
+  }
+  function featureText(__alloT) {
+    return {
+      shape_branching: __alloT('stem.coralreef.feat_shape_branching', 'a cluster of upright branches'),
+      shape_massive: __alloT('stem.coralreef.feat_shape_massive', 'a rounded boulder with winding grooves'),
+      shape_plate: __alloT('stem.coralreef.feat_shape_plate', 'a flat table on a short stem'),
+      shape_encrusting: __alloT('stem.coralreef.feat_shape_encrusting', 'a low lumpy sheet stuck to the rock'),
+      shape_leafy_clump: __alloT('stem.coralreef.feat_shape_leafy_clump', 'a clump of leafy blades that sway in the water'),
+      shape_hard_flat: __alloT('stem.coralreef.feat_shape_hard_flat', 'a hard, flat surface'),
+      shape_loose_pieces: __alloT('stem.coralreef.feat_shape_loose_pieces', 'a pile of loose pieces'),
+      shape_flat_loose: __alloT('stem.coralreef.feat_shape_flat_loose', 'a flat, soft bottom'),
+      color_pigmented: __alloT('stem.coralreef.feat_color_pigmented', 'brown, green or purple color'),
+      color_bright_white: __alloT('stem.coralreef.feat_color_bright_white', 'bright, clean white color'),
+      color_dull_white: __alloT('stem.coralreef.feat_color_dull_white', 'dull white to grey color'),
+      color_olive_brown: __alloT('stem.coralreef.feat_color_olive_brown', 'olive to brown color'),
+      color_grey_pink: __alloT('stem.coralreef.feat_color_grey_pink', 'grey with pink crusty patches'),
+      color_grey: __alloT('stem.coralreef.feat_color_grey', 'grey color'),
+      color_pale: __alloT('stem.coralreef.feat_color_pale', 'pale tan color'),
+      texture_living_tissue: __alloT('stem.coralreef.feat_texture_living_tissue', 'a smooth surface of soft tissue'),
+      texture_fuzzy_film: __alloT('stem.coralreef.feat_texture_fuzzy_film', 'a thin brown fuzzy film starting to cover it'),
+      texture_fleshy_blades: __alloT('stem.coralreef.feat_texture_fleshy_blades', 'soft, fleshy blades'),
+      texture_short_turf: __alloT('stem.coralreef.feat_texture_short_turf', 'a short fuzz of turf'),
+      texture_broken_branches: __alloT('stem.coralreef.feat_texture_broken_branches', 'broken stick-like pieces'),
+      texture_grains_ripples: __alloT('stem.coralreef.feat_texture_grains_ripples', 'fine grains in small ripples'),
+      polyps_visible: __alloT('stem.coralreef.feat_polyps_visible', 'tiny polyps with tentacles'),
+      polyps_none: __alloT('stem.coralreef.feat_polyps_none', 'no polyps')
+    };
+  }
+  function describeFeatures(point, __alloT) {
+    var F = featureText(__alloT), parts = [];
+    var keys = pointFeatures(point);
+    for (var i = 0; i < keys.length; i++) if (keys[i] && F[keys[i]]) parts.push(F[keys[i]]);
+    return parts.join('; ');
+  }
+  function fishNames(__alloT) {
+    return {
+      parrotfish: __alloT('stem.coralreef.fish_parrotfish', 'Parrotfish'),
+      surgeonfish: __alloT('stem.coralreef.fish_surgeonfish', 'Surgeonfish'),
+      butterflyfish: __alloT('stem.coralreef.fish_butterflyfish', 'Butterflyfish'),
+      grouper: __alloT('stem.coralreef.fish_grouper', 'Grouper'),
+      snapper: __alloT('stem.coralreef.fish_snapper', 'Snapper')
+    };
+  }
+  function fishRoles(__alloT) {
+    return {
+      parrotfish: __alloT('stem.coralreef.role_parrotfish', 'Grazer. Scrapes algae off rock and dead coral with a beak of fused teeth, which keeps space open for young corals.'),
+      surgeonfish: __alloT('stem.coralreef.role_surgeonfish', 'Grazer. Crops algae. Together with parrotfish, a sign of how much grazing the reef gets.'),
+      butterflyfish: __alloT('stem.coralreef.role_butterflyfish', 'Many species feed on living coral polyps, so they tend to decline when live coral is lost.'),
+      grouper: __alloT('stem.coralreef.role_grouper', 'Large predator and a popular catch. Few groupers often means heavy fishing.'),
+      snapper: __alloT('stem.coralreef.role_snapper', 'Predator and a popular catch. Another sign of fishing pressure.')
+    };
+  }
+  function siteText(__alloT) {
+    return {
+      reserve: { name: __alloT('stem.coralreef.site_reserve', 'Outer reef in a no-take reserve'), about: __alloT('stem.coralreef.site_reserve_about', 'Fishing has been banned here for many years. The water is clear and far from rivers.') },
+      harbor: { name: __alloT('stem.coralreef.site_harbor', 'Fringing reef near a river and a fishing harbor'), about: __alloT('stem.coralreef.site_harbor_about', 'Runoff from farms and town reaches this reef after rain, and fishing boats work here every day.') },
+      heatwave: { name: __alloT('stem.coralreef.site_heatwave', 'Reef during a marine heatwave'), about: __alloT('stem.coralreef.site_heatwave_about', 'The water has been unusually warm for weeks. Divers have reported white corals.') },
+      rubble: { name: __alloT('stem.coralreef.site_rubble', 'Rubble field after blast fishing'), about: __alloT('stem.coralreef.site_rubble_about', 'Years ago, fishing with explosives broke this reef into loose rubble. Young corals that settle here get rolled over and buried.') },
+      restored: { name: __alloT('stem.coralreef.site_restored', 'Rubble field, 4 years after Reef Stars'), about: __alloT('stem.coralreef.site_restored_about', 'A field like the one next door was fixed in place with linked Reef Star frames carrying coral fragments. Its coral is modeled on published results (about 17% to 56% in four years); its fish counts are illustrative. Compare your two surveys.') },
+      model: { name: __alloT('stem.coralreef.site_model', 'Your modeled reef'), about: __alloT('stem.coralreef.site_model_about', 'A reef built from one year of your scenario run.') }
+    };
+  }
+  function scenarioText(__alloT) {
+    return {
+      recent: { name: __alloT('stem.coralreef.scn_recent', 'Recent pattern'), about: __alloT('stem.coralreef.scn_recent_about', 'A severe heatwave about every 6 years, the recent average across reefs worldwide, with some fishing and some runoff.') },
+      reserve: { name: __alloT('stem.coralreef.scn_reserve', 'Protected reef'), about: __alloT('stem.coralreef.scn_reserve_about', 'The same heatwaves, but grazing fish are protected and runoff is low.') },
+      warmer: { name: __alloT('stem.coralreef.scn_warmer', 'Faster warming'), about: __alloT('stem.coralreef.scn_warmer_about', 'Heatwaves grow stronger and by year 30 arrive almost every year, as projected for most reefs if emissions stay high.') },
+      cooler: { name: __alloT('stem.coralreef.scn_cooler', 'Optimistic what-if'), about: __alloT('stem.coralreef.scn_cooler_about', 'Heatwaves become rarer and weaker. Even fast cuts to emissions are not expected to bring this within 30 years; it shows what easing the heat would do.') },
+      rubble: { name: __alloT('stem.coralreef.scn_rubble', 'Restore a rubble field'), about: __alloT('stem.coralreef.scn_rubble_about', 'Blast fishing left this reef as loose rubble that young corals cannot hold on to. People fix the rubble in place with Reef Stars and tie on coral fragments. The grey line shows the same reef with no help.') },
+      custom: { name: __alloT('stem.coralreef.scn_custom', 'Your settings'), about: __alloT('stem.coralreef.scn_custom_about', 'Settings you changed by hand.') }
+    };
+  }
+  function levelNames(__alloT) {
+    return { low: __alloT('stem.coralreef.level_low', 'Low'), medium: __alloT('stem.coralreef.level_medium', 'Medium'), high: __alloT('stem.coralreef.level_high', 'High') };
+  }
+
+  // Simple coral glyphs (160 x 110 box) for the data and science figures.
+  function coralBody(h, form, fill, stroke, key) {
+    if (form === 'branching') {
+      return h('g', { key: key, stroke: fill, strokeWidth: 7, strokeLinecap: 'round', fill: 'none' },
+        h('path', { d: 'M80 98 L80 62 M80 76 L64 52 M80 70 L97 48 M64 52 L58 36 M64 52 L72 38 M97 48 L92 32 M97 48 L106 36 M80 62 L82 40' }),
+        h('path', { d: 'M80 98 L80 62 M80 76 L64 52 M80 70 L97 48', stroke: stroke, strokeWidth: 1.2 }));
+    }
+    if (form === 'massive') {
+      return h('g', { key: key },
+        h('path', { d: 'M38 98 Q38 46 80 44 Q122 46 122 98 Z', fill: fill, stroke: stroke, strokeWidth: 1.5 }),
+        h('path', { d: 'M50 84 Q60 70 70 82 T90 80 T110 84 M54 66 Q66 56 78 66 T104 64 M64 54 Q76 48 90 54', fill: 'none', stroke: stroke, strokeWidth: 1.6 }));
+    }
+    if (form === 'plate') {
+      return h('g', { key: key },
+        h('rect', { x: 74, y: 70, width: 12, height: 28, fill: fill, stroke: stroke, strokeWidth: 1.2 }),
+        h('ellipse', { cx: 80, cy: 66, rx: 52, ry: 11, fill: fill, stroke: stroke, strokeWidth: 1.5 }),
+        h('path', { d: 'M34 66 L126 66 M44 60 L116 72 M44 72 L116 60', fill: 'none', stroke: stroke, strokeWidth: 0.9 }));
+    }
+    return h('g', { key: key },
+      h('path', { d: 'M24 98 Q30 80 46 84 Q56 72 70 80 Q84 70 98 80 Q114 72 124 84 Q136 86 138 98 Z', fill: fill, stroke: stroke, strokeWidth: 1.5 }));
+  }
+  // Points that lie ON each growth form's drawn surface, so polyps and turf
+  // fuzz sit on the coral rather than in the water around it.
+  var FORM_SURFACE = {
+    branching: [[80, 90], [80, 80], [72, 64], [64, 52], [61, 44], [68, 45], [58, 37], [72, 39], [88, 59], [97, 48], [94, 40], [102, 42], [81, 50], [82, 41]],
+    massive: [[60, 64], [72, 56], [88, 55], [102, 62], [112, 78], [48, 80], [80, 70], [96, 82], [64, 88], [80, 52], [104, 90], [56, 94]],
+    plate: [[40, 66], [52, 62], [66, 60], [80, 58], [94, 60], [108, 62], [120, 66], [58, 70], [78, 72], [100, 70], [80, 66], [46, 68]],
+    encrusting: [[32, 92], [44, 88], [56, 84], [70, 85], [84, 81], [98, 85], [112, 81], [124, 88], [132, 94], [60, 94], [90, 93], [116, 94]]
+  };
+  function polypDots(h, form, color, key) {
+    var dots = [], pts = FORM_SURFACE[form] || FORM_SURFACE.massive;
+    for (var i = 0; i < pts.length; i++) dots.push(h('circle', { key: key + i, cx: pts[i][0], cy: pts[i][1], r: 1.6, fill: color }));
+    return dots;
+  }
+  // ── Illustrations ────────────────────────────────────────────────────────
+  // A close-up of what lies under one survey point, drawn like a field-guide
+  // plate of an underwater photo: water lit from above, a hazy reef behind,
+  // the subject on a textured bottom. Each picture shows the features
+  // pointFeatures() lists and nothing that belongs to another category:
+  // polyps with tentacles only on living coral (colored or bleached), bare
+  // skeleton cups and brown turf film only on recently dead coral. Shapes come
+  // from the point's colony (one colony keeps its look across neighboring
+  // points) and variant, so the same point always looks the same.
+  var ART_W = 320, ART_H = 220;
+  // Living tissue: brown, green, purple, golden brown. Each has a paler
+  // growing tip and pale polyps.
+  var HEALTHY_TONES = [
+    { base: '#8a5a35', dark: '#4a2f1b', light: '#b48556', tip: '#dcc097', tent: '#ead3a6', mouth: '#4a2e18' },
+    { base: '#5f7c36', dark: '#2f4519', light: '#87a653', tip: '#c9dd94', tent: '#dcebb4', mouth: '#2a3c18' },
+    { base: '#7a4b8e', dark: '#3f244d', light: '#a27ab4', tip: '#d8bce3', tent: '#e8d4ee', mouth: '#3a2046' },
+    { base: '#9a6a2c', dark: '#573912', light: '#c49552', tip: '#e6cb93', tent: '#f0dcb0', mouth: '#4d3312' }
+  ];
+  // Bleached tissue is clear, so the white skeleton shows through; some
+  // colonies keep a faint pastel glow at the tips.
+  var BLEACHED_TIPS = ['#ffffff', '#fbe3ee', '#e2edfc', '#f7f1cf', '#eee4fa'];
+  var BLEACHED_LOOK = { base: '#eef5f6', dark: '#b6c9d2', light: '#ffffff', tent: '#ffffff', edge: '#8fa7b4', mouth: '#a9bbc4' };
+  var DEAD_LOOK = { base: '#bdb9ae', dark: '#7d796f', light: '#d6d3cb', rim: '#66625a', cup: '#d2cec4', pit: '#4b4842', turf: '#7d5c2d', hair: '#4f381b' };
+  var ART_LIGHT = [-0.45, -0.89];
+
+  function f1(n) { return Math.round(n * 10) / 10; }
+  function artStop(h, o, c, a) { return h('stop', { key: String(o), offset: o, stopColor: c, stopOpacity: a == null ? 1 : a }); }
+  function artUse(h, key, ref, props) { return h('use', Object.assign({ key: key, href: '#' + ref }, props || {})); }
+  function circD(cx, cy, rx, ry) {
+    if (ry == null) ry = rx;
+    return 'M' + f1(cx - rx) + ' ' + f1(cy) + 'a' + f1(rx) + ' ' + f1(ry) + ' 0 1 0 ' + f1(2 * rx) + ' 0a' + f1(rx) + ' ' + f1(ry) + ' 0 1 0 ' + f1(-2 * rx) + ' 0Z';
+  }
+  // A polygon wound the same way as circD, so overlapping pieces of one path
+  // fill as a union under the nonzero rule.
+  function polyD(pts) {
+    var s = 0, i;
+    for (i = 0; i < pts.length; i++) { var a = pts[i], b = pts[(i + 1) % pts.length]; s += a[0] * b[1] - b[0] * a[1]; }
+    if (s > 0) pts = pts.slice().reverse();
+    var d = 'M' + f1(pts[0][0]) + ' ' + f1(pts[0][1]);
+    for (i = 1; i < pts.length; i++) d += 'L' + f1(pts[i][0]) + ' ' + f1(pts[i][1]);
+    return d + 'Z';
+  }
+  // A smooth curve through points (Catmull-Rom drawn as cubic Beziers).
+  function smoothD(pts, closed) {
+    var n = pts.length, d = 'M' + f1(pts[0][0]) + ' ' + f1(pts[0][1]), last = closed ? n : n - 1;
+    for (var i = 0; i < last; i++) {
+      var p0 = pts[closed ? (i - 1 + n) % n : Math.max(i - 1, 0)], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[closed ? (i + 2) % n : Math.min(i + 2, n - 1)];
+      d += 'C' + f1(p1[0] + (p2[0] - p0[0]) / 6) + ' ' + f1(p1[1] + (p2[1] - p0[1]) / 6) + ' ' + f1(p2[0] - (p3[0] - p1[0]) / 6) + ' ' + f1(p2[1] - (p3[1] - p1[1]) / 6) + ' ' + f1(p2[0]) + ' ' + f1(p2[1]);
+    }
+    return closed ? d + 'Z' : d;
+  }
+  function lineD(pts) {
+    var d = 'M' + f1(pts[0][0]) + ' ' + f1(pts[0][1]);
+    for (var i = 1; i < pts.length; i++) d += 'L' + f1(pts[i][0]) + ' ' + f1(pts[i][1]);
+    return d;
+  }
+  function blobPts(cx, cy, rx, ry, rand, n, jit, rot) {
+    var pts = [], ph = rand() * 6.28, c = Math.cos(rot || 0), s = Math.sin(rot || 0);
+    for (var i = 0; i < n; i++) {
+      var a = i / n * Math.PI * 2, k = 1 + (rand() - 0.5) * 2 * jit + Math.sin(a * 2 + ph) * jit * 0.6;
+      var x = Math.cos(a) * rx * k, y = Math.sin(a) * ry * k;
+      pts.push([cx + x * c - y * s, cy + x * s + y * c]);
+    }
+    return pts;
+  }
+  function inPoly(pts, x, y) {
+    var c = false;
+    for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      var a = pts[i], b = pts[j];
+      if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c;
+    }
+    return c;
+  }
+  function ellipseScatter(rand, cx, cy, rx, ry, n) {
+    var out = [];
+    for (var i = 0; i < n; i++) { var a = rand() * 6.283, r = Math.sqrt(rand()); out.push([cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r]); }
+    return out;
+  }
+  // Zero lines of a field over a unit grid (marching squares), chained into
+  // polylines. A brain coral's valleys wind like these lines.
+  function zeroLines(f, nx, ny) {
+    var v = [], i, j, segs = [];
+    for (j = 0; j <= ny; j++) { v.push([]); for (i = 0; i <= nx; i++) v[j].push(f(i / nx, j / ny)); }
+    function cut(ia, ja, ib, jb) {
+      var a = v[ja][ia], b = v[jb][ib], t = a / (a - b);
+      return { k: ia + ',' + ja + ',' + ib + ',' + jb, u: (ia + (ib - ia) * t) / nx, w: (ja + (jb - ja) * t) / ny };
+    }
+    for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
+      var a = v[j][i] > 0, b = v[j][i + 1] > 0, c = v[j + 1][i + 1] > 0, d = v[j + 1][i] > 0, e = [];
+      if (a !== b) e.push(cut(i, j, i + 1, j));
+      if (b !== c) e.push(cut(i + 1, j, i + 1, j + 1));
+      if (c !== d) e.push(cut(i, j + 1, i + 1, j + 1));
+      if (d !== a) e.push(cut(i, j, i, j + 1));
+      if (e.length >= 2) segs.push([e[0], e[1]]);
+      if (e.length === 4) segs.push([e[2], e[3]]);
+    }
+    var byKey = {}, used = [], lines = [], n;
+    for (n = 0; n < segs.length; n++) for (var s = 0; s < 2; s++) (byKey[segs[n][s].k] = byKey[segs[n][s].k] || []).push(n);
+    for (n = 0; n < segs.length; n++) {
+      if (used[n]) continue;
+      used[n] = true;
+      var line = [segs[n][0], segs[n][1]];
+      for (var dir = 0; dir < 2; dir++) {
+        for (var guard = 0; guard < 5000; guard++) {
+          var end = dir === 0 ? line[line.length - 1] : line[0], cands = byKey[end.k] || [], next = -1;
+          for (var q = 0; q < cands.length; q++) if (!used[cands[q]]) { next = cands[q]; break; }
+          if (next < 0) break;
+          used[next] = true;
+          var other = segs[next][0].k === end.k ? segs[next][1] : segs[next][0];
+          if (dir === 0) line.push(other); else line.unshift(other);
+        }
+      }
+      if (line.length > 3) lines.push(line);
+    }
+    return lines;
+  }
+  // Polyps: a disc with a mouth and a ring of tentacles (stony corals carry
+  // them in multiples of six). sq flattens them on a surface seen at a slant.
+  // On round polyps (sq 1) each disc is a zero-length line with a round cap,
+  // which keeps the path data small; slanted ones are drawn as ellipses.
+  function polypLayer(h, key, id, list, r, sq, look, bleached) {
+    var tent = '', dots = '', mouth = '', round = sq === 1, kids = [], ref = id + key;
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i], rr = r * (p[2] || 1), n = rr >= 2.3 ? 12 : 6;
+      if (round) dots += 'M' + f1(p[0]) + ' ' + f1(p[1]) + 'h0';
+      else { dots += circD(p[0], p[1], rr, rr * sq); mouth += circD(p[0], p[1], rr * 0.36, rr * 0.36 * sq); }
+      for (var k = 0; k < n; k++) {
+        var a = (k + (i % 2) * 0.5) / n * 6.2832, c = Math.cos(a), s = Math.sin(a) * sq;
+        tent += 'M' + f1(p[0] + c * rr * 0.7) + ' ' + f1(p[1] + s * rr * 0.7) + 'l' + f1(c * rr * 1.25) + ' ' + f1(s * rr * 1.25);
+      }
+    }
+    kids.push(h('defs', { key: 'df' }, h('path', { id: ref + 't', d: tent }), h('path', { id: ref + 'd', d: dots })));
+    if (bleached) kids.push(artUse(h, 'te', ref + 't', { stroke: look.edge, strokeWidth: 1.35, strokeLinecap: 'round', fill: 'none', opacity: 0.6 }));
+    kids.push(artUse(h, 't', ref + 't', { 'data-part': 'tentacles', stroke: look.tent, strokeWidth: bleached ? 0.65 : 0.7, strokeLinecap: 'round', fill: 'none', opacity: bleached ? 1 : 0.85 }));
+    if (round) {
+      if (bleached) kids.push(artUse(h, 'de', ref + 'd', { stroke: look.edge, strokeWidth: r * 2 + 0.8, strokeLinecap: 'round', opacity: 0.8 }));
+      kids.push(artUse(h, 'd', ref + 'd', { stroke: bleached ? '#ffffff' : look.light, strokeWidth: r * 2, strokeLinecap: 'round' }));
+      kids.push(artUse(h, 'm', ref + 'd', { stroke: look.mouth, strokeWidth: r * 0.72, strokeLinecap: 'round', opacity: bleached ? 0.8 : 0.9 }));
+    } else {
+      kids.push(artUse(h, 'd', ref + 'd', { fill: bleached ? '#ffffff' : look.light, stroke: bleached ? look.edge : look.tip, strokeWidth: 0.4, strokeOpacity: 0.8 }));
+      kids.push(h('path', { key: 'm', d: mouth, fill: look.mouth, opacity: bleached ? 0.8 : 0.9 }));
+    }
+    return h('g', { key: key, 'data-part': 'polyps' }, kids);
+  }
+  // Empty skeleton cups (corallites) of a dead colony: crisp rims, dark pits.
+  function cupLayer(h, key, list, r, sq, extra) {
+    var rim = '', pit = '';
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i], rr = r * (p[2] || 1);
+      rim += circD(p[0], p[1], rr, rr * sq);
+      pit += circD(p[0] + rr * 0.15, p[1] + rr * 0.15 * sq, rr * 0.5, rr * 0.5 * sq);
+    }
+    return h('g', { key: key, 'data-part': 'cups' },
+      extra ? h('path', { key: 'x', d: extra, stroke: DEAD_LOOK.rim, strokeWidth: 0.6, fill: 'none', opacity: 0.85 }) : null,
+      h('path', { key: 'r', d: rim, fill: DEAD_LOOK.cup, stroke: DEAD_LOOK.rim, strokeWidth: 0.55 }),
+      h('path', { key: 'p', d: pit, fill: DEAD_LOOK.pit, opacity: 0.85 }));
+  }
+  // A thin brown turf film creeping over the dead skeleton in patches,
+  // clipped to the colony so it sits on the coral, never in the water.
+  function turfLayer(h, rand, patches, clipId) {
+    var film = '', hair = '';
+    for (var i = 0; i < patches.length; i++) {
+      var q = patches[i];
+      film += smoothD(blobPts(q[0], q[1], q[2], q[3], rand, 10, 0.32, q[4] || 0), true);
+      var spots = ellipseScatter(rand, q[0], q[1], q[2] * 1.15, q[3] * 1.15, 24 + Math.round(q[2] * 1.5));
+      for (var k = 0; k < spots.length; k++) {
+        var a = -1.57 + (rand() - 0.5) * 2.6, len = 1.2 + rand() * 1.7;
+        hair += 'M' + f1(spots[k][0]) + ' ' + f1(spots[k][1]) + 'l' + f1(Math.cos(a) * len) + ' ' + f1(Math.sin(a) * len);
+      }
+    }
+    return h('g', { key: 'turf', 'data-part': 'turf', clipPath: 'url(#' + clipId + ')' },
+      h('path', { key: 'f', d: film, fill: DEAD_LOOK.turf, opacity: 0.6 }),
+      h('path', { key: 'h', d: hair, stroke: DEAD_LOOK.hair, strokeWidth: 0.6, strokeLinecap: 'round', fill: 'none', opacity: 0.85 }));
+  }
+  function coralLook(cat, seed) {
+    if (cat === 'hard_coral') return HEALTHY_TONES[seed % HEALTHY_TONES.length];
+    if (cat === 'bleached_coral') return Object.assign({ tip: BLEACHED_TIPS[seed % BLEACHED_TIPS.length] }, BLEACHED_LOOK);
+    return Object.assign({ tip: DEAD_LOOK.light }, DEAD_LOOK);
+  }
+  // The skin of a colony: polyps on living tissue; cups and turf on a dead
+  // skeleton.
+  function coralSkin(h, key, id, cat, rand, polyps, r, sq, look, clipId, turfPatches, extraCups) {
+    if (cat === 'recently_dead_coral') return [cupLayer(h, key + 'c', polyps, r * 0.78, sq, extraCups)].concat(turfPatches ? [turfLayer(h, rand, turfPatches, clipId)] : []);
+    return [polypLayer(h, key + 'p', id, polyps, r, sq, look, cat === 'bleached_coral')];
+  }
+
+  // ── Coral growth forms, on a 320 x 220 canvas ──
+  // Each returns { parts, hit(x, y) } or a touch(x) for the plumb line.
+  function capsuleD(s) {
+    var dx = s.x2 - s.x, dy = s.y2 - s.y, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L, a = s.w0 / 2, b = s.w1 / 2;
+    return polyD([[s.x + nx * a, s.y + ny * a], [s.x2 + nx * b, s.y2 + ny * b], [s.x2 - nx * b, s.y2 - ny * b], [s.x - nx * a, s.y - ny * a]]) + circD(s.x2, s.y2, b) + circD(s.x, s.y, a);
+  }
+  function inCapsule(s, x, y) {
+    var dx = s.x2 - s.x, dy = s.y2 - s.y, L2 = dx * dx + dy * dy || 1;
+    var t = clamp(((x - s.x) * dx + (y - s.y) * dy) / L2, 0, 1), px = s.x + dx * t - x, py = s.y + dy * t - y;
+    var r = (s.w0 + (s.w1 - s.w0) * t) / 2;
+    return px * px + py * py <= r * r;
+  }
+  // Upright branches that fork and taper to paler growing tips. Alternate
+  // stems stand further back and sit in deeper shade.
+  function branchingCoral(h, id, cat, rand, look, cx, baseY) {
+    var segs = [], tips = [];
+    function grow(x, y, ang, len, w, depth, layer) {
+      var r = ang * Math.PI / 180, x2 = x + Math.cos(r) * len, y2 = y + Math.sin(r) * len, w1 = w * 0.8;
+      var s = { x: x, y: y, x2: x2, y2: y2, w0: w, w1: w1, depth: depth, layer: layer };
+      segs.push(s);
+      if (depth >= 3 || len < 11) { tips.push(s); return; }
+      var k = rand() < 0.3 ? 3 : 2;
+      for (var j = 0; j < k; j++) {
+        var a = ang + (j - (k - 1) / 2) * (24 + rand() * 14) + (rand() - 0.5) * 10;
+        a = clamp(a + (-90 - a) * 0.32, -150, -30);
+        grow(x2, y2, a, len * (0.72 + rand() * 0.12), w1 * 0.95, depth + 1, layer);
+      }
+    }
+    var n = 4 + (rand() < 0.5 ? 1 : 0);
+    for (var i = 0; i < n; i++) {
+      var off = i - (n - 1) / 2;
+      grow(cx + off * 7, baseY, -90 + off * (16 + rand() * 8) + (rand() - 0.5) * 8, 40 + rand() * 12, 13, 0, i % 2);
+    }
+    var dead = cat === 'recently_dead_coral', clipId = id + 'cb', parts = [], clipKids = [], turf = [], defsKids = [];
+    for (var layer = 0; layer < 2; layer++) {
+      var body = '', shade = '', hi = '', tip = '', polyps = [];
+      for (var q = 0; q < segs.length; q++) {
+        var s = segs[q];
+        if (s.layer !== layer) continue;
+        var dx = s.x2 - s.x, dy = s.y2 - s.y, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L;
+        body += capsuleD(s);
+        var sg = (nx * ART_LIGHT[0] + ny * ART_LIGHT[1]) > 0 ? -1 : 1, a0 = s.w0 / 2, b0 = s.w1 / 2;
+        shade += polyD([[s.x + sg * nx * a0 * 0.1, s.y + sg * ny * a0 * 0.1], [s.x2 + sg * nx * b0 * 0.1, s.y2 + sg * ny * b0 * 0.1], [s.x2 + sg * nx * b0, s.y2 + sg * ny * b0], [s.x + sg * nx * a0, s.y + sg * ny * a0]]);
+        hi += 'M' + f1(s.x - sg * nx * a0 * 0.5) + ' ' + f1(s.y - sg * ny * a0 * 0.5) + 'L' + f1(s.x2 - sg * nx * b0 * 0.5) + ' ' + f1(s.y2 - sg * ny * b0 * 0.5);
+        var cnt = Math.max(1, Math.floor(L / 11));
+        for (var c = 0; c < cnt; c++) {
+          var t = (c + 0.5) / cnt, w = s.w0 + (s.w1 - s.w0) * t, side = ((c + q) % 2 ? 1 : -1) * (0.16 + rand() * 0.12);
+          polyps.push([s.x + dx * t + nx * w * side, s.y + dy * t + ny * w * side, clamp(w / 10, 0.75, 1)]);
+        }
+        if (s.depth <= 2 && rand() < 0.4) turf.push([s.x + dx * 0.5, s.y + dy * 0.5, L * (0.3 + rand() * 0.25), s.w0 * 0.9, Math.atan2(dy, dx)]);
+      }
+      for (var p = 0; p < tips.length; p++) {
+        var ts = tips[p];
+        if (ts.layer !== layer) continue;
+        var tx = ts.x + (ts.x2 - ts.x) * 0.66, ty = ts.y + (ts.y2 - ts.y) * 0.66;
+        tip += capsuleD({ x: tx, y: ty, x2: ts.x2, y2: ts.y2, w0: ts.w1 * 0.98, w1: ts.w1 * 1.02 });
+        polyps.push([ts.x2, ts.y2, 1.05]);
+      }
+      var ref = id + 'bp' + layer;
+      defsKids.push(h('path', { key: 'bp' + layer, id: ref, d: body }));
+      clipKids.push(artUse(h, 'c' + layer, ref));
+      parts.push(h('g', { key: 'layer' + layer },
+        [artUse(h, 'body', ref, { fill: look.base }),
+          h('path', { key: 'shade', d: shade, fill: look.dark, opacity: 0.55 }),
+          h('path', { key: 'hi', d: hi, stroke: look.light, strokeWidth: 2, strokeLinecap: 'round', fill: 'none', opacity: dead ? 0.45 : 0.65 }),
+          dead ? null : h('path', { key: 'tip', d: tip, fill: look.tip, opacity: 0.85 }),
+          artUse(h, 'depth', ref, { fill: 'url(#' + id + 'dp)' })]
+          .concat(coralSkin(h, 'skin' + layer, id, cat, rand, polyps, 1.75, 1, look, clipId, null))
+          .concat(layer === 0 ? [artUse(h, 'haze', ref, { fill: '#123d48', opacity: 0.26 })] : [])));
+    }
+    if (!turf.length && segs.length) turf.push([segs[0].x2, segs[0].y2 + 8, 10, 6, -1.57]);
+    parts.unshift(h('defs', { key: 'bd' }, defsKids, h('clipPath', { id: clipId }, clipKids)));
+    if (dead) parts.push(turfLayer(h, rand, turf, clipId));
+    return { parts: parts, hit: function (x, y) { for (var i = 0; i < segs.length; i++) if (inCapsule(segs[i], x, y)) return true; return false; } };
+  }
+  // A dome seen from a little above. surf() maps latitude/longitude on the
+  // dome to the picture.
+  function domeSurface(cx, baseY, a, H, c) {
+    return function (phi, lam) { return [cx + a * Math.cos(phi) * Math.sin(lam), baseY - H * Math.sin(phi) + c * Math.cos(phi) * Math.cos(lam)]; };
+  }
+  function domeOutline(rand, cx, baseY, a, H, c, lumpy) {
+    var out = [], ph1 = rand() * 6.28, ph2 = rand() * 6.28, i;
+    for (i = 0; i <= 20; i++) {
+      var t = Math.PI - i / 20 * Math.PI, k = 1 + lumpy * (Math.sin(t * 3 + ph1) + 0.6 * Math.sin(t * 7 + ph2));
+      out.push([cx + Math.cos(t) * a * k, baseY - Math.sin(t) * H * k]);
+    }
+    for (i = 1; i < 10; i++) { var u = i / 10 * Math.PI; out.push([cx + Math.cos(u) * a * 0.99, baseY + Math.sin(u) * c]); }
+    return out;
+  }
+  // A boulder with winding, brain-like valleys.
+  function massiveCoral(h, id, cat, rand, look, cx, baseY) {
+    var a = 96 + rand() * 14, H = 90 + rand() * 14, c = a * 0.16;
+    var outline = domeOutline(rand, cx, baseY, a, H, c, 0.03), surf = domeSurface(cx, baseY, a, H, c);
+    // Valleys: zero lines of a sum of waves with one wavelength running in
+    // many directions, which winds like a maze at an even spacing.
+    var waves = [], K = 23 + rand() * 3;
+    for (var wv = 0; wv < 9; wv++) { var th = rand() * 6.283, zc = rand() * 2 - 1, rr = Math.sqrt(1 - zc * zc); waves.push([rr * Math.cos(th) * K, zc * K, rr * Math.sin(th) * K, rand() * 6.283]); }
+    var lines = zeroLines(function (u, w) {
+      var lam = (u - 0.5) * 3.1, phi = w * 1.55, px = Math.cos(phi) * Math.sin(lam), py = Math.sin(phi), pz = Math.cos(phi) * Math.cos(lam), sum = 0;
+      for (var q = 0; q < waves.length; q++) sum += Math.cos(waves[q][0] * px + waves[q][1] * py + waves[q][2] * pz + waves[q][3]);
+      return sum;
+    }, 72, 34);
+    var valleys = '', septa = '', polyps = [], i, j;
+    for (i = 0; i < lines.length; i++) {
+      var pts = lines[i].map(function (q) { return surf(q.w * 1.55, (q.u - 0.5) * 3.1); });
+      valleys += lineD(pts);
+      for (j = 1; j < pts.length - 1; j++) {
+        var tx = pts[j + 1][0] - pts[j - 1][0], ty = pts[j + 1][1] - pts[j - 1][1], tl = Math.sqrt(tx * tx + ty * ty) || 1, nx = -ty / tl * 1.8, ny = tx / tl * 1.8;
+        if (j % 4 === 1) polyps.push([pts[j][0], pts[j][1], 0.8 + rand() * 0.15]);
+        septa += 'M' + f1(pts[j][0] - nx) + ' ' + f1(pts[j][1] - ny) + 'l' + f1(nx * 2) + ' ' + f1(ny * 2);
+      }
+    }
+    var turf = [];
+    for (var z = 0; z < 4 + Math.floor(rand() * 2); z++) { var sp = surf(0.15 + rand() * 0.9, -1.2 + rand() * 2.4); turf.push([sp[0], sp[1], 14 + rand() * 9, 8 + rand() * 5, rand() * 3]); }
+    var dead = cat === 'recently_dead_coral', clipId = id + 'cb', ref = id + 'bp', vref = id + 'vl';
+    var parts = [
+      h('defs', { key: 'bd' }, h('path', { id: ref, d: smoothD(outline, true) }), h('path', { id: vref, d: valleys }),
+        h('clipPath', { id: clipId }, artUse(h, 'c', ref)),
+        h('radialGradient', { id: id + 'mg', cx: 0.38, cy: 0.26, r: 0.85 }, artStop(h, 0, look.light), artStop(h, 0.5, look.base), artStop(h, 1, look.dark))),
+      artUse(h, 'body', ref, { fill: 'url(#' + id + 'mg)' }),
+      h('g', { key: 'grooves', clipPath: 'url(#' + clipId + ')', fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' },
+        artUse(h, 'r', vref, { stroke: dead ? look.light : look.tip, strokeWidth: 1.2, opacity: dead ? 0.75 : 0.5, transform: 'translate(0 -1.9)' }),
+        artUse(h, 'v', vref, { stroke: look.dark, strokeWidth: dead ? 2.4 : 2.2, opacity: dead ? 0.85 : 0.6 })),
+      artUse(h, 'depth', ref, { fill: 'url(#' + id + 'dp)' })
+    ];
+    if (dead) parts = parts.concat([h('g', { key: 'cupclip', clipPath: 'url(#' + clipId + ')' }, cupLayer(h, 'cups', polyps.filter(function (q, n) { return n % 2 === 0; }), 1.5, 0.8, septa)), turfLayer(h, rand, turf, clipId)]);
+    else parts.push(h('g', { key: 'pclip', clipPath: 'url(#' + clipId + ')' }, polypLayer(h, 'pp', id, polyps, 1.6, 1, look, cat === 'bleached_coral')));
+    return { parts: parts, touch: function (x) { var u = (x - cx) / (a * Math.cos(0.95)); if (Math.abs(u) > 0.9) return null; return surf(0.95, Math.asin(u))[1]; } };
+  }
+  // A table coral: a wide flat top seen at a slant, a thick rim, a short stem.
+  function plateCoral(h, id, cat, rand, look, cx, baseY) {
+    var rx = 110 + rand() * 16, ry = 25 + rand() * 5, ty = 100 + rand() * 10, th = 7, ph = rand() * 6.28, tilt = (rand() - 0.5) * 0.08;
+    var rim = [], i;
+    for (i = 0; i < 40; i++) {
+      var t = i / 40 * Math.PI * 2, k = 1 + 0.03 * Math.sin(9 * t + ph) + 0.02 * Math.sin(4 * t + ph * 2);
+      rim.push([cx + Math.cos(t) * rx * k, ty + Math.sin(t) * ry * k + Math.cos(t) * rx * tilt]);
+    }
+    var front = rim.filter(function (q, n) { return n <= 20; }), band = polyD(front.concat(front.slice().reverse().map(function (q) { return [q[0], q[1] + th]; })));
+    var stem = smoothD([[cx - 10, ty + 4], [cx - 11, ty + 30], [cx - 16, baseY - 2], [cx + 16, baseY - 2], [cx + 12, ty + 30], [cx + 10, ty + 4]], true);
+    var rays = '', rings = '', polyps = [], turf = [];
+    for (i = 0; i < 36; i++) {
+      var a2 = i / 36 * Math.PI * 2 + 0.05, e = rim[Math.round(i / 36 * 40) % 40];
+      var mx = cx + (e[0] - cx) * 0.55 + Math.sin(a2) * 3, my = ty + (e[1] - ty) * 0.55;
+      rays += 'M' + f1(cx + (e[0] - cx) * 0.08) + ' ' + f1(ty + (e[1] - ty) * 0.08) + 'Q' + f1(mx) + ' ' + f1(my) + ' ' + f1(cx + (e[0] - cx) * 0.96) + ' ' + f1(ty + (e[1] - ty) * 0.96);
+    }
+    for (i = 1; i <= 3; i++) rings += circD(cx, ty, rx * (0.25 + i * 0.2), ry * (0.25 + i * 0.2));
+    var rr = [0.2, 0.37, 0.53, 0.68, 0.82];
+    for (var ring = 0; ring < rr.length; ring++) {
+      var m = Math.round(7 + rr[ring] * 20);
+      for (var j = 0; j < m; j++) { var ang = (j + ring * 0.5) / m * Math.PI * 2; polyps.push([cx + Math.cos(ang) * rx * rr[ring], ty + Math.sin(ang) * ry * rr[ring] + Math.cos(ang) * rx * rr[ring] * tilt, 0.8 + rr[ring] * 0.3]); }
+    }
+    for (i = 0; i < 4; i++) { var ta = rand() * 6.28, trr = 0.3 + rand() * 0.55; turf.push([cx + Math.cos(ta) * rx * trr, ty + Math.sin(ta) * ry * trr, 15 + rand() * 10, 5 + rand() * 3, 0]); }
+    var dead = cat === 'recently_dead_coral', clipId = id + 'cb', ref = id + 'bp';
+    var parts = [
+      h('defs', { key: 'bd' }, h('path', { id: ref, d: smoothD(rim, true) }), h('clipPath', { id: clipId }, artUse(h, 'c', ref), h('path', { d: band })),
+        h('linearGradient', { id: id + 'pg', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, look.light), artStop(h, 1, look.base))),
+      h('path', { key: 'stem', d: stem, fill: look.dark }),
+      h('path', { key: 'stemhi', d: 'M' + f1(cx - 8) + ' ' + f1(ty + 12) + 'Q' + f1(cx - 11) + ' ' + f1(ty + 40) + ' ' + f1(cx - 13) + ' ' + f1(baseY - 4), stroke: look.base, strokeWidth: 3, fill: 'none', opacity: 0.55 }),
+      h('path', { key: 'band', d: band, fill: look.base }),
+      h('path', { key: 'bandsh', d: band, fill: look.dark, opacity: 0.45 }),
+      artUse(h, 'top', ref, { fill: 'url(#' + id + 'pg)' }),
+      h('g', { key: 'tex', clipPath: 'url(#' + clipId + ')', fill: 'none' },
+        h('path', { key: 'ra', d: rays, stroke: look.dark, strokeWidth: 0.7, opacity: dead ? 0.6 : 0.4 }),
+        h('path', { key: 'ri', d: rings, stroke: look.light, strokeWidth: 0.7, opacity: 0.45 }),
+        dead ? null : artUse(h, 'margin', ref, { stroke: look.tip, strokeWidth: 5, opacity: 0.85 }))
+    ].concat(coralSkin(h, 'skin', id, cat, rand, polyps, 1.6, 0.55, look, clipId, turf));
+    return { parts: parts, touch: function (x) { var u = (x - cx) / rx; if (Math.abs(u) > 0.8) return null; return ty + ry * 0.3 * Math.sqrt(1 - u * u) + u * rx * tilt; }, shadow: [cx, baseY + 2, rx * 0.95, 15] };
+  }
+  // An encrusting colony: a thin, lumpy living sheet over the top of a low
+  // reef rock, with bare rock showing around its edge.
+  function encrustingCoral(h, id, cat, rand, look, cx, baseY) {
+    var a = 128 + rand() * 12, H = 62 + rand() * 10, c = a * 0.2, surf = domeSurface(cx, baseY, a, H, c);
+    var rock = domeOutline(rand, cx, baseY, a, H, c, 0.05), p1 = rand() * 6.28, p2 = rand() * 6.28;
+    var lo = function (lam) { return 0.24 + 0.09 * Math.sin(3 * lam + p1) + 0.05 * Math.sin(7 * lam + p2) + 0.3 * Math.pow(lam / 1.57, 2); };
+    var edge = [], lam, i;
+    for (lam = -1.5; lam <= 1.5001; lam += 0.1) edge.push(surf(lo(lam), lam));
+    var tR = lo(1.5), tL = lo(-1.5), back = [];
+    for (i = 0; i <= 12; i++) { var t = tR + (Math.PI - tL - tR) * i / 12; back.push([cx + Math.cos(t) * (a + 1.5) * Math.cos(0.03), baseY - Math.sin(t) * (H + 3)]); }
+    var sheetPts = edge.concat(back);
+    var lumps = '', lumpSh = '', polyps = [], turf = [];
+    for (i = 0; i < 10; i++) {
+      var lmb = -1.25 + rand() * 2.5, ph = lo(lmb) + 0.1 + rand() * (1.3 - lo(lmb)), q = surf(ph, lmb), sc = 0.6 + 0.4 * Math.cos(ph) * Math.cos(lmb);
+      var lrx = (10 + rand() * 8) * sc, lry = (6 + rand() * 4) * sc;
+      lumps += smoothD(blobPts(q[0], q[1], lrx, lry, rand, 8, 0.12), true);
+      lumpSh += circD(q[0] + lrx * 0.15, q[1] + lry * 0.55, lrx * 0.95, lry * 0.6);
+    }
+    for (lam = -1.4; lam <= 1.4; lam += 0.13) {
+      for (var ph2 = lo(lam) + 0.06; ph2 < 1.45; ph2 += 0.17) { var pp = surf(ph2 + (rand() - 0.5) * 0.12, lam + (rand() - 0.5) * 0.11); polyps.push([pp[0], pp[1], 0.8 + rand() * 0.2]); }
+    }
+    for (i = 0; i < 4; i++) { var tl2 = -1.1 + rand() * 2.2, tp = surf(lo(tl2) + 0.15 + rand() * 0.5, tl2); turf.push([tp[0], tp[1], 15 + rand() * 9, 7 + rand() * 3, rand()]); }
+    var dead = cat === 'recently_dead_coral', clipId = id + 'cb', ref = id + 'bp', rref = id + 'rp';
+    var parts = [
+      h('defs', { key: 'bd' }, h('path', { id: ref, d: smoothD(sheetPts, true) }), h('path', { id: rref, d: smoothD(rock, true) }),
+        h('clipPath', { id: clipId }, artUse(h, 'c', ref)), h('clipPath', { id: id + 'rc' }, artUse(h, 'c', rref)),
+        h('linearGradient', { id: id + 'eg', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, look.light), artStop(h, 0.6, look.base), artStop(h, 1, look.dark)),
+        h('radialGradient', { id: id + 'el', cx: 0.4, cy: 0.3, r: 0.75 }, artStop(h, 0, look.light), artStop(h, 1, look.base, 0))),
+      artUse(h, 'rock', rref, { fill: 'url(#' + id + 'rk)' }),
+      artUse(h, 'rocktex', rref, { fill: 'url(#' + id + 'rt)', opacity: 0.85 }),
+      h('g', { key: 'sheet', clipPath: 'url(#' + id + 'rc)' },
+        [h('path', { key: 'edgesh', d: smoothD(edge, false), stroke: '#1d2526', strokeWidth: 3.2, fill: 'none', opacity: 0.4, transform: 'translate(0 2)' }),
+          artUse(h, 'sheet', ref, { fill: 'url(#' + id + 'eg)' }),
+          h('g', { key: 'lumps', clipPath: 'url(#' + clipId + ')' },
+            h('path', { key: 's', d: lumpSh, fill: look.dark, opacity: 0.5 }),
+            h('path', { key: 'l', d: lumps, fill: 'url(#' + id + 'el)' })),
+          h('path', { key: 'lip', d: smoothD(edge, false), stroke: look.tip, strokeWidth: 2.2, fill: 'none', opacity: 0.9, strokeLinecap: 'round' })]
+          .concat(coralSkin(h, 'skin', id, cat, rand, polyps, 1.6, 1, look, clipId, turf)))
+    ];
+    return { parts: parts, noShadow: true, touch: function (x) {
+      var phi = 0.95, u = (x - cx) / (a * Math.cos(phi));
+      if (Math.abs(u) > 0.85) return null;
+      var lm = Math.asin(u);
+      return phi > lo(lm) + 0.1 ? surf(phi, lm)[1] : null;
+    } };
+  }
+
+  // ── Bottom that is not coral ──
+  function qPt(x0, y0, cx, cy, x1, y1, t) { var u = 1 - t; return [u * u * x0 + 2 * u * t * cx + t * t * x1, u * u * y0 + 2 * u * t * cy + t * t * y1]; }
+  function seaweedClump(h, rand, cx, baseY, style) {
+    var hx = cx + (rand() - 0.5) * 10, hy = baseY - 9, sway = (rand() < 0.5 ? -1 : 1) * (12 + rand() * 12);
+    var shades = ['#8a7430', '#9d8636', '#74702c'], segs = [], polys = [];
+    var rockPts = blobPts(hx, baseY + 4, 50 + rand() * 10, 15, rand, 10, 0.12);
+    if (style === 'ribbon') {
+      // Forked, flat ribbons with rounded tips.
+      var rib = ['', '', ''], sheen = '';
+      var fork = function (x, y, ang, len, w, depth) {
+        var r = ang * Math.PI / 180, ex = x + Math.cos(r) * len, ey = y + Math.sin(r) * len, mx = (x + ex) / 2 + sway * 0.12 * (depth + 1), my = (y + ey) / 2;
+        var k = Math.floor(rand() * 3);
+        rib[k] += 'M' + f1(x) + ' ' + f1(y) + 'Q' + f1(mx) + ' ' + f1(my) + ' ' + f1(ex) + ' ' + f1(ey);
+        sheen += 'M' + f1(x - 1) + ' ' + f1(y) + 'Q' + f1(mx - 1) + ' ' + f1(my) + ' ' + f1(ex - 0.8) + ' ' + f1(ey + 1);
+        for (var qt = 0; qt < 1; qt += 0.25) { var a1 = qPt(x, y, mx, my, ex, ey, qt), a2 = qPt(x, y, mx, my, ex, ey, qt + 0.25); segs.push({ x: a1[0], y: a1[1], x2: a2[0], y2: a2[1], w0: 6, w1: 6 }); }
+        if (depth >= 3) return;
+        var spread = 14 + rand() * 10;
+        fork(ex, ey, clamp(ang - spread + sway * 0.2, -165, -15), len * (0.8 + rand() * 0.1), w * 0.94, depth + 1);
+        fork(ex, ey, clamp(ang + spread + sway * 0.2, -165, -15), len * (0.8 + rand() * 0.1), w * 0.94, depth + 1);
+      };
+      for (var m = 0; m < 5; m++) fork(hx + (m - 2) * 5, hy, -90 + (m - 2) * 20 + sway * 0.3, 34 + rand() * 8, 7.5, 0);
+      var rparts = [];
+      for (var k2 = 0; k2 < 3; k2++) {
+        rparts.push(h('path', { key: 'ro' + k2, d: rib[k2], stroke: '#3f3512', strokeWidth: 8.4 - k2 * 0.5, strokeLinecap: 'round', fill: 'none' }));
+        rparts.push(h('path', { key: 'rb' + k2, d: rib[k2], stroke: shades[k2], strokeWidth: 7.2 - k2 * 0.5, strokeLinecap: 'round', fill: 'none' }));
+      }
+      rparts.push(h('path', { key: 'sh', d: sheen, stroke: '#d8c77e', strokeWidth: 1.3, fill: 'none', opacity: 0.55, strokeLinecap: 'round' }));
+      return { rock: rockPts, parts: rparts, hit: function (x, y) { for (var i = 0; i < segs.length; i++) if (inCapsule(segs[i], x, y)) return true; return false; } };
+    }
+    // Sargassum-like: stalks with toothed leafy blades and small round air
+    // bladders that hold the clump up in the water.
+    var leaves = ['', '', ''], ribs = '', stems = '', bladders = '', blHi = '', nSt = 6 + (rand() < 0.5 ? 1 : 0);
+    for (var s = 0; s < nSt; s++) {
+      var spread2 = (s - (nSt - 1) / 2) * 15 + (rand() - 0.5) * 6, height = 118 + rand() * 30 - Math.abs(spread2) * 0.45;
+      var x0 = hx + spread2 * 0.1, ex2 = hx + spread2 * 1.6 + sway, ey2 = hy - height, cx2 = hx + spread2 * 0.5 - sway * 0.25, cy2 = hy - height * 0.55;
+      stems += 'M' + f1(x0) + ' ' + f1(hy) + 'Q' + f1(cx2) + ' ' + f1(cy2) + ' ' + f1(ex2) + ' ' + f1(ey2);
+      var bx = function (t) { return (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx2 + t * t * ex2; };
+      var by = function (t) { return (1 - t) * (1 - t) * hy + 2 * (1 - t) * t * cy2 + t * t * ey2; };
+      for (var tt = 0; tt < 1; tt += 0.1) segs.push({ x: bx(tt), y: by(tt), x2: bx(tt + 0.1), y2: by(tt + 0.1), w0: 2.6, w1: 2.6 });
+      var side = s % 2 ? 1 : -1;
+      for (var t = 0.08 + rand() * 0.04; t < 1; t += 0.065 + rand() * 0.02) {
+        side = -side;
+        var px = bx(t), py = by(t), dxx = bx(Math.min(1, t + 0.02)) - px, dyy = by(Math.min(1, t + 0.02)) - py, base = Math.atan2(dyy, dxx);
+        var ang2 = base + side * (0.6 + rand() * 0.35) + sway * 0.005, L = (25 - t * 8) + rand() * 6, w2 = 4.2 + rand() * 1.8;
+        var dxl = Math.cos(ang2), dyl = Math.sin(ang2), tipx = px + dxl * L, tipy = py + dyl * L + 2.5;
+        var q1 = [px + dxl * L * 0.45 - dyl * w2, py + dyl * L * 0.45 + dxl * w2], q2 = [px + dxl * L * 0.5 + dyl * w2, py + dyl * L * 0.5 - dxl * w2];
+        leaves[Math.floor(rand() * 3)] += 'M' + f1(px) + ' ' + f1(py) + 'Q' + f1(q1[0]) + ' ' + f1(q1[1]) + ' ' + f1(tipx) + ' ' + f1(tipy) + 'Q' + f1(q2[0]) + ' ' + f1(q2[1]) + ' ' + f1(px) + ' ' + f1(py) + 'Z';
+        ribs += 'M' + f1(px) + ' ' + f1(py) + 'L' + f1(px + dxl * L * 0.85) + ' ' + f1(py + dyl * L * 0.85 + 1.8);
+        var lf = [[px, py]], t2;
+        for (t2 = 0.25; t2 < 1; t2 += 0.25) lf.push(qPt(px, py, q1[0], q1[1], tipx, tipy, t2));
+        lf.push([tipx, tipy]);
+        for (t2 = 0.25; t2 < 1; t2 += 0.25) lf.push(qPt(tipx, tipy, q2[0], q2[1], px, py, t2));
+        polys.push(lf);
+        if (rand() < 0.38) {
+          var vx = px - dyl * side * 3.5 + dxl * 2, vy = py + dxl * side * 3.5 + dyl * 2, vr = 2 + rand() * 0.8;
+          bladders += circD(vx, vy, vr) + circD(vx + vr * 1.6, vy - vr * 0.6, vr * 0.85);
+          blHi += circD(vx - vr * 0.35, vy - vr * 0.35, vr * 0.35);
+        }
+      }
+    }
+    var lp = [];
+    for (var qq = 0; qq < 3; qq++) lp.push(h('path', { key: 'lf' + qq, d: leaves[qq], fill: shades[qq], stroke: '#43380f', strokeWidth: 0.6, strokeLinejoin: 'round' }));
+    return { rock: rockPts, parts: [h('path', { key: 'st', d: stems, stroke: '#54471a', strokeWidth: 2.6, fill: 'none', strokeLinecap: 'round' })].concat(lp, [
+      h('path', { key: 'rib', d: ribs, stroke: '#5b4c18', strokeWidth: 0.7, fill: 'none', opacity: 0.75 }),
+      h('path', { key: 'bl', d: bladders, fill: '#958037', stroke: '#43380f', strokeWidth: 0.5 }),
+      h('path', { key: 'blh', d: blHi, fill: '#efe0a6', opacity: 0.8 })]),
+      hit: function (x, y) { for (var i = 0; i < polys.length; i++) if (inPoly(polys[i], x, y)) return true; return false; } };
+  }
+  // Short turf: a low fuzz of hairs.
+  function turfFuzz(rand, cx, cy, rx, ry, n, len) {
+    var d = '', pts = ellipseScatter(rand, cx, cy, rx, ry, n);
+    for (var i = 0; i < pts.length; i++) { var a = -1.57 + (rand() - 0.5) * 1.4, l = (len || 1.8) * (0.8 + rand()); d += 'M' + f1(pts[i][0]) + ' ' + f1(pts[i][1]) + 'l' + f1(Math.cos(a) * l) + ' ' + f1(Math.sin(a) * l); }
+    return d;
+  }
+  // Flat reef rock filling the view: grey, pitted, with pink crusts of
+  // coralline algae and a short fuzz of turf.
+  function rockSlab(h, id, rand, v, plumbX) {
+    var top = [], front = [], i;
+    for (i = 0; i <= 8; i++) top.push([-10 + i * 42.5, 104 + Math.sin(i * 1.7 + v) * 3 + rand() * 3]);
+    for (i = 8; i >= 0; i--) front.push([-10 + i * 42.5, 200 + Math.sin(i * 2.1 + v * 0.7) * 4 + rand() * 3]);
+    var slab = smoothD(top, false) + 'L' + front.map(function (q) { return f1(q[0]) + ' ' + f1(q[1]); }).join('L') + 'Z';
+    var face = smoothD(front.slice().reverse(), false) + 'L330 214L-10 214Z';
+    var cca = '', knobs = '', fuzz = '', holes = '', pale = '', dark = '';
+    for (i = 0; i < 9; i++) {
+      var my = 112 + rand() * 82, ms = 0.55 + (my - 110) / 90 * 0.6, mb = smoothD(blobPts(rand() * 320, my, (24 + rand() * 30) * ms, (8 + rand() * 8) * ms, rand, 9, 0.25), true);
+      if (i % 2) pale += mb; else dark += mb;
+    }
+    for (i = 0; i < 6; i++) {
+      var py = 116 + (i % 3) * 28 + rand() * 14, sc = 0.55 + (py - 110) / 90 * 0.6, px = (i < 3 ? 25 : 175) + (i % 3) * 45 + rand() * 50;
+      if (Math.abs(px - plumbX) < 22 && Math.abs(py - 170) < 16) px += 50;
+      var prx = (14 + rand() * 12) * sc;
+      cca += smoothD(blobPts(px, py, prx, prx * 0.45, rand, 11, 0.24), true);
+      for (var k = 0; k < 5; k++) knobs += circD(px + (rand() - 0.5) * prx * 1.2, py + (rand() - 0.5) * prx * 0.35, (0.9 + rand() * 0.9) * sc, (0.6 + rand() * 0.4) * sc);
+    }
+    for (i = 0; i < 8; i++) { var fy = 118 + rand() * 72, fs = 0.55 + (fy - 110) / 90 * 0.6; fuzz += turfFuzz(rand, 10 + i * 42 + rand() * 30, fy, (24 + rand() * 14) * fs, (7 + rand() * 4) * fs, 90, 2.4 * fs); }
+    fuzz += turfFuzz(rand, plumbX, 172, 22, 7, 80, 2.2);
+    for (i = 0; i < 4; i++) { var hy = 118 + rand() * 70, hs = 0.55 + (hy - 110) / 90 * 0.6; holes += smoothD(blobPts(30 + rand() * 260, hy, (3 + rand() * 3) * hs, (1.6 + rand() * 1.2) * hs, rand, 7, 0.2), true); }
+    return [h('g', { key: 'subject', 'data-part': 'rock' },
+      h('path', { key: 'face', d: face, fill: '#454a4b' }),
+      h('path', { key: 'slab', d: slab, fill: 'url(#' + id + 'rk)' }),
+      h('path', { key: 'tex', d: slab, fill: 'url(#' + id + 'rt)' }),
+      h('path', { key: 'pale', d: pale, fill: '#b2b3ac', opacity: 0.35 }),
+      h('path', { key: 'dark', d: dark, fill: '#4d5152', opacity: 0.3 }),
+      h('path', { key: 'holes', d: holes, fill: '#262a2b', opacity: 0.8 }),
+      h('path', { key: 'crack', d: 'M' + f1(40 + rand() * 80) + ' 128q36 14 64 9t52 22', stroke: '#363a3b', strokeWidth: 1.1, fill: 'none', opacity: 0.7 }),
+      h('g', { key: 'cca', 'data-part': 'cca' },
+        h('path', { key: 'f', d: cca, fill: '#c57592' }),
+        h('path', { key: 'r', d: cca, fill: 'none', stroke: '#efc2d1', strokeWidth: 1.3, opacity: 0.9 }),
+        h('path', { key: 'k', d: knobs, fill: '#a35a75', opacity: 0.8 })),
+      h('path', { key: 'turf', 'data-part': 'rock-turf', d: fuzz, stroke: '#646a34', strokeWidth: 0.85, strokeLinecap: 'round', fill: 'none' }))];
+  }
+  // Loose broken branches in a pile, with sand between them.
+  function rubblePile(h, rand, cx) {
+    var pieces = [], n = 30 + Math.floor(rand() * 8), i;
+    for (i = 0; i < n; i++) {
+      // Heaped toward the middle: more pieces, and higher, near the center.
+      var u = (rand() + rand() + rand()) / 3 - 0.5, py = 120 + rand() * 86, k = 0.55 + (py - 120) / 86 * 0.65;
+      py -= (1 - Math.abs(u) * 2) * 10 * k;
+      pieces.push({ x: cx + u * 2 * 170 * (0.6 + k * 0.4), y: py, len: (32 + rand() * 34) * k, w: (8 + rand() * 5) * k,
+        ang: (rand() - 0.5) * (rand() < 0.2 ? 2.2 : 1.2), fork: rand() < 0.35, crust: rand(), tone: Math.floor(rand() * 3) });
+    }
+    pieces.sort(function (p, q) { return p.y - q.y; });
+    var tones = ['#a6a296', '#9a968a', '#b2aea3'], parts = [], segsAll = [];
+    for (i = 0; i < pieces.length; i++) {
+      var p = pieces[i], c = Math.cos(p.ang), s = Math.sin(p.ang), hl = p.len / 2;
+      var ax = p.x - c * hl, ay = p.y - s * hl, bx = p.x + c * hl, by = p.y + s * hl;
+      var segs = p.segs = [{ x: ax, y: ay, x2: bx, y2: by, w0: p.w, w1: p.w * 0.72 }];
+      if (p.fork) { var fa = p.ang + (rand() < 0.5 ? -0.7 : 0.7); segs.push({ x: p.x + c * hl * 0.1, y: p.y + s * hl * 0.1, x2: p.x + c * hl * 0.1 + Math.cos(fa) * p.len * 0.35, y2: p.y + s * hl * 0.1 + Math.sin(fa) * p.len * 0.35, w0: p.w * 0.7, w1: p.w * 0.55 }); }
+      var body = '', under = '', top = '', pits = '';
+      for (var k2 = 0; k2 < segs.length; k2++) {
+        var g = segs[k2], dx = g.x2 - g.x, dy = g.y2 - g.y, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L;
+        if (ny < 0) { nx = -nx; ny = -ny; }
+        body += capsuleD(g);
+        under += polyD([[g.x + nx * g.w0 * 0.05, g.y + ny * g.w0 * 0.05], [g.x2 + nx * g.w1 * 0.05, g.y2 + ny * g.w1 * 0.05], [g.x2 + nx * g.w1 * 0.5, g.y2 + ny * g.w1 * 0.5], [g.x + nx * g.w0 * 0.5, g.y + ny * g.w0 * 0.5]]);
+        top += 'M' + f1(g.x - nx * g.w0 * 0.22) + ' ' + f1(g.y - ny * g.w0 * 0.22) + 'L' + f1(g.x2 - nx * g.w1 * 0.22) + ' ' + f1(g.y2 - ny * g.w1 * 0.22);
+        for (var t = 0.12; t < 0.9; t += 0.15) pits += circD(g.x + dx * t - nx * g.w0 * 0.08, g.y + dy * t - ny * g.w0 * 0.08, 0.35 + g.w0 * 0.05);
+        segsAll.push(g);
+      }
+      var kids = [h('path', { key: 'b', d: body, fill: tones[p.tone] }), h('path', { key: 'u', d: under, fill: '#5d5951', opacity: 0.6 }),
+        h('path', { key: 't', d: top, stroke: '#e0ddd5', strokeWidth: p.w * 0.17, strokeLinecap: 'round', fill: 'none', opacity: 0.6 }),
+        h('path', { key: 'p', d: pits, fill: '#6b675e', opacity: 0.5 }),
+        h('path', { key: 'e', d: circD(ax + c * p.w * 0.06, ay + s * p.w * 0.06, p.w * 0.3, p.w * 0.38), fill: '#cdc8bb', opacity: 0.9 })];
+      if (p.crust < 0.11) kids.push(h('path', { key: 'c', d: smoothD(blobPts(p.x + c * hl * 0.3, p.y + s * hl * 0.3 - p.w * 0.1, hl * 0.22, p.w * 0.3, rand, 8, 0.2, p.ang), true), fill: '#c57592', opacity: 0.85 }));
+      else if (p.crust > 0.8) kids.push(h('path', { key: 'z', d: turfFuzz(rand, p.x - c * hl * 0.2, p.y - s * hl * 0.2 - p.w * 0.25, hl * 0.35, p.w * 0.2, 16, 1.6), stroke: '#5c5a2c', strokeWidth: 0.6, fill: 'none' }));
+      parts.push(h('path', { key: 'sh' + i, d: smoothD(blobPts(p.x, p.y + p.w * 0.55, hl * 1.02, p.w * 0.5, rand, 8, 0.05, p.ang), true), fill: '#3a3529', opacity: 0.3 }));
+      parts.push(h('g', { key: 'pc' + i }, kids));
+    }
+    return { parts: parts, pieces: pieces, segs: segsAll };
+  }
+  // Rippled sand: crests catch the light, troughs hold shadow.
+  function sandRipples(h, rand) {
+    var crest = '', trough = '', y0 = 104, i;
+    for (i = 0; i < 13; i++) {
+      y0 += 3.5 + i * 0.95;
+      var pts = [], pts2 = [], amp = 0.8 + i * 0.2, ph = rand() * 6.28;
+      for (var xx = -10; xx <= 330; xx += 20) { var yy = y0 + Math.sin(xx / (24 + i * 3) + ph) * amp * 1.5; pts.push([xx, yy]); pts2.push([xx, yy + 1 + i * 0.22]); }
+      crest += smoothD(pts, false); trough += smoothD(pts2, false);
+    }
+    return h('g', { key: 'ripples', 'data-part': 'ripples', fill: 'none' },
+      h('path', { key: 't', d: trough, stroke: '#a08b5d', strokeWidth: 1.6, opacity: 0.5 }),
+      h('path', { key: 'c', d: crest, stroke: '#fbf3dc', strokeWidth: 1.1, opacity: 0.85 }));
+  }
+
+  // ── Whole picture ──
+  var ART_CACHE = {}, ART_CACHE_KEYS = [];
+  function artScene(h, point, id) {
+    var key = id + '|' + point.category + '|' + (point.coralForm || '') + '|' + (point.variant || 0) + '|' + (point.colony == null ? '' : point.colony);
+    if (ART_CACHE[key]) return ART_CACHE[key];
+    var cat = point.category, form = point.coralForm || 'massive', v = (point.variant || 0) >>> 0;
+    var colonySeed = point.colony != null ? (point.colony | 0) : v;
+    var catNo = CATEGORY_IDS.indexOf(cat) + 1, formNo = CORAL_FORMS.indexOf(form) + 1;
+    // Coral shape does not depend on the category, so one colony drawn alive,
+    // bleached and dead has the same branches.
+    var G = mulberry32(((colonySeed + 1) * 2654435761 ^ (CORAL_CATEGORIES[cat] ? 0 : catNo * 97) ^ formNo * 7919) >>> 0);
+    var B = mulberry32(((v + 3) * 40503 ^ catNo * 131) >>> 0);
+    var isCoral = !!CORAL_CATEGORIES[cat], look = isCoral ? coralLook(cat, colonySeed) : null;
+    var flat = cat === 'rock' || cat === 'rubble' || cat === 'sand', horizon = flat ? 100 : 144;
+    // A coral colony stays put; neighboring points on it only move the plumb
+    // line. Other bottom types shift a little so the pictures differ.
+    var dx = ((v % 7) - 3) * 7, cx = isCoral ? 160 : 160 + dx * 0.6, baseY = 192, plumbX = 160 + dx, defs = [], kids = [], subject = null, i;
+    // Water lit from above, fading to deep blue.
+    defs.push(
+      h('linearGradient', { key: 'w', id: id + 'w', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#62b4c4'), artStop(h, 0.45, '#25788f'), artStop(h, 1, '#0f4a5e')),
+      h('radialGradient', { key: 's', id: id + 's', cx: 0.5, cy: -0.25, r: 0.95 }, artStop(h, 0, '#ecfdff', 0.6), artStop(h, 1, '#ecfdff', 0)),
+      h('linearGradient', { key: 'hz', id: id + 'hz', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#2c7f93', 0.95), artStop(h, 1, '#2c7f93', 0)),
+      h('linearGradient', { key: 'dp', id: id + 'dp', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0.35, '#0b2a33', 0), artStop(h, 1, '#0b2a33', 0.42)),
+      h('radialGradient', { key: 'sh', id: id + 'sh' }, artStop(h, 0, '#06202a', 0.6), artStop(h, 1, '#06202a', 0)),
+      h('radialGradient', { key: 'vg', id: id + 'vg', cx: 0.5, cy: 0.42, r: 0.78 }, artStop(h, 0.6, '#03141c', 0), artStop(h, 1, '#03141c', 0.42)),
+      h('filter', { key: 'bl', id: id + 'bl', x: '-10%', y: '-30%', width: '120%', height: '160%' }, h('feGaussianBlur', { stdDeviation: 2.4 })),
+      h('pattern', { key: 'gr', id: id + 'gr', width: 23, height: 17, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-9)' },
+        h('path', { d: circD(1.5, 1.2, 0.5) + circD(6.2, 3.8, 0.45) + circD(13.8, 2.1, 0.35) + circD(19.5, 6.6, 0.55) + circD(9.1, 9.4, 0.4) + circD(3.2, 13.5, 0.5) + circD(15.7, 12.8, 0.35) + circD(21.4, 15.2, 0.45), fill: '#7d6a45', opacity: 0.55 }),
+        h('path', { d: circD(4.6, 1.5, 0.5) + circD(10.1, 5.2, 0.4) + circD(17.2, 9.4, 0.55) + circD(0.8, 7.4, 0.4) + circD(12.4, 15.1, 0.5) + circD(7.3, 15.9, 0.35) + circD(21.9, 1.9, 0.4), fill: '#fff7de', opacity: 0.7 })),
+      // Dappled light: an irregular net of bright lines, flattened onto the
+      // bottom and turned so the tile does not line up with the picture.
+      h('pattern', { key: 'ca', id: id + 'ca', width: 96, height: 58, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-11) scale(1 0.55)' },
+        h('path', { d: 'M0 12C9 4 18 10 26 6S41 1 50 9 66 15 73 8 88 4 96 12M0 40C7 31 16 36 22 30S31 18 26 6M22 30C30 37 39 33 46 38S57 49 66 44 79 31 73 8M66 44C74 52 85 50 96 40M50 9C47 18 51 26 46 38M46 38C44 47 38 52 30 58M88 4C85 16 92 27 96 40M0 40C5 49 3 53 6 58M79 31C86 33 90 37 96 40', fill: 'none', stroke: '#f2feff', strokeWidth: 1.5, strokeLinecap: 'round' })),
+      h('linearGradient', { key: 'rk', id: id + 'rk', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#8e908c'), artStop(h, 1, '#5a5e5f')),
+      h('pattern', { key: 'rt', id: id + 'rt', width: 31, height: 19, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-4)' },
+        h('path', { d: circD(2, 2, 1.1, 0.7) + circD(9, 6, 0.8, 0.5) + circD(16, 3, 1.3, 0.8) + circD(24, 9, 0.7, 0.5) + circD(6, 14, 1, 0.6) + circD(19, 16, 0.6) + circD(28, 2, 0.5) + circD(13, 11, 0.5), fill: '#3e4243', opacity: 0.5 }),
+        h('path', { d: circD(5, 4.5, 0.6) + circD(11.5, 2.2, 0.5) + circD(21, 6, 0.7) + circD(27, 14, 0.6) + circD(3, 10, 0.5) + circD(15, 17, 0.6) + circD(9, 17, 0.4), fill: '#b7b9b3', opacity: 0.55 })));
+    kids.push(h('rect', { key: 'water', width: ART_W, height: ART_H, fill: 'url(#' + id + 'w)' }));
+    kids.push(h('rect', { key: 'sun', width: ART_W, height: 150, fill: 'url(#' + id + 's)' }));
+    var rays = '';
+    for (i = 0; i < 4; i++) { var rx0 = 40 + i * 78 + B() * 30, rw = 8 + B() * 14; rays += polyD([[rx0, -2], [rx0 + rw, -2], [rx0 + rw * 2.4 - 60, horizon + 20], [rx0 - 70, horizon + 20]]); }
+    kids.push(h('path', { key: 'rays', d: rays, fill: '#e3fbff', opacity: 0.075 }));
+    // Out-of-focus reef far behind, tinted by the water in between.
+    var far = '', farBr = '', fish = '';
+    for (i = 0; i < 4; i++) far += smoothD(blobPts(20 + i * 90 + B() * 40, horizon, 26 + B() * 26, 12 + B() * 14, B, 9, 0.16), true);
+    for (i = 0; i < 3; i++) { var bx = 30 + B() * 260, bh = 24 + B() * 16; farBr += 'M' + f1(bx) + ' ' + horizon + 'l-4 ' + f1(-bh) + 'M' + f1(bx) + ' ' + (horizon - 6) + 'l10 ' + f1(-bh * 0.8) + 'M' + f1(bx - 2) + ' ' + (horizon - 10) + 'l-12 ' + f1(-bh * 0.6); }
+    for (i = 0; i < 5; i++) { var fxx = 30 + B() * 260, fy = horizon - 70 + B() * 46, fs = 2.2 + B() * 1.6; fish += 'M' + f1(fxx) + ' ' + f1(fy) + 'q' + f1(fs * 2) + ' ' + f1(-fs) + ' ' + f1(fs * 4) + ' 0q' + f1(-fs * 2) + ' ' + f1(fs) + ' ' + f1(-fs * 4) + ' 0l' + f1(-fs) + ' ' + f1(-fs * 0.8) + 'l0 ' + f1(fs * 1.6) + 'Z'; }
+    kids.push(h('g', { key: 'far', filter: 'url(#' + id + 'bl)', opacity: 0.7, 'aria-hidden': 'true' },
+      h('path', { key: 'b', d: far, fill: '#1f6476' }),
+      h('path', { key: 'r', d: farBr, stroke: '#1f6476', strokeWidth: 5, strokeLinecap: 'round', fill: 'none' }),
+      h('path', { key: 'f', d: fish, fill: '#184f5e', opacity: 0.8 })));
+    // The bottom, rising gently into the haze.
+    var bedTop = [];
+    for (i = 0; i <= 8; i++) bedTop.push([-10 + i * 42.5, horizon + 2 + Math.sin(i * 1.3 + v) * 3 + B() * 3]);
+    var bed = smoothD(bedTop, false) + 'L330 230L-10 230Z', sandy = cat === 'sand' || cat === 'rubble';
+    defs.push(h('linearGradient', { key: 'bd', id: id + 'bd', x1: 0, y1: 0, x2: 0, y2: 1 },
+      artStop(h, 0, sandy ? '#b5a985' : '#8d8a77'), artStop(h, 1, sandy ? (cat === 'sand' ? '#e6d8b2' : '#d6c8a1') : '#aaa085')));
+    defs.push(h('clipPath', { key: 'bc', id: id + 'bc' }, h('path', { d: bed })));
+    kids.push(h('path', { key: 'bed', d: bed, fill: 'url(#' + id + 'bd)' }));
+    kids.push(h('path', { key: 'grain', d: bed, fill: 'url(#' + id + 'gr)', opacity: cat === 'sand' ? 0.95 : 0.7 }));
+    if (cat === 'sand') kids.push(sandRipples(h, G));
+    kids.push(h('rect', { key: 'caustic', x: -10, y: horizon - 10, width: 340, height: 240 - horizon, fill: 'url(#' + id + 'ca)', clipPath: 'url(#' + id + 'bc)', opacity: sandy ? 0.3 : 0.2 }));
+    kids.push(h('rect', { key: 'haze', x: 0, y: horizon - 8, width: ART_W, height: 34, fill: 'url(#' + id + 'hz)' }));
+    var touch = null, hit = null;
+    if (isCoral) {
+      // The colony grows from a piece of reef rock.
+      if (form !== 'encrusting') kids.push(h('path', { key: 'base', d: smoothD(blobPts(cx, baseY + 4, 40 + G() * 14, 11, G, 9, 0.15), true), fill: '#6a685d' }));
+      if (form === 'branching') subject = branchingCoral(h, id, cat, G, look, cx, baseY);
+      else if (form === 'plate') subject = plateCoral(h, id, cat, G, look, cx, baseY);
+      else if (form === 'encrusting') subject = encrustingCoral(h, id, cat, G, look, cx, baseY + 6);
+      else subject = massiveCoral(h, id, cat, G, look, cx, baseY);
+      if (!subject.noShadow) { var shp = subject.shadow || [cx, baseY + 4, 96, 14]; kids.push(h('ellipse', { key: 'contact', cx: shp[0], cy: shp[1], rx: shp[2], ry: shp[3], fill: 'url(#' + id + 'sh)' })); }
+      kids.push(h('g', { key: 'subject', 'data-part': 'coral' }, subject.parts));
+      hit = subject.hit;
+      if (subject.touch) for (i = 0; i < 16 && !touch; i++) { var tx = plumbX + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 6, ty = subject.touch(tx); if (ty != null) touch = [tx, ty]; }
+    } else if (cat === 'macroalgae') {
+      var weed = seaweedClump(h, G, cx, baseY, colonySeed % 3 === 2 ? 'ribbon' : 'sargassum');
+      kids.push(h('ellipse', { key: 'contact', cx: cx, cy: baseY + 7, rx: 74, ry: 12, fill: 'url(#' + id + 'sh)' }));
+      kids.push(h('path', { key: 'rock', d: smoothD(weed.rock, true), fill: 'url(#' + id + 'rk)' }));
+      kids.push(h('path', { key: 'rocktex', d: smoothD(weed.rock, true), fill: 'url(#' + id + 'rt)' }));
+      kids.push(h('g', { key: 'subject', 'data-part': 'seaweed' }, weed.parts));
+      hit = weed.hit;
+    } else if (cat === 'rock') {
+      kids = kids.concat(rockSlab(h, id, G, v, plumbX));
+      touch = [plumbX, 172];
+    } else if (cat === 'rubble') {
+      var pile = rubblePile(h, G, cx);
+      kids.push(h('g', { key: 'subject', 'data-part': 'rubble' }, pile.parts));
+      // The tip lands on the upper face of a piece near the middle that no
+      // piece in front of it covers at that spot.
+      var best = null;
+      for (i = 0; i < pile.pieces.length; i++) {
+        var pc = pile.pieces[i], tp = [pc.x, pc.y - pc.w * 0.2], dd = Math.abs(tp[0] - plumbX) + Math.abs(tp[1] - 170) * 1.5, covered = false;
+        for (var j2 = i + 1; j2 < pile.pieces.length && !covered; j2++) for (var k3 = 0; k3 < pile.pieces[j2].segs.length; k3++) if (inCapsule(pile.pieces[j2].segs[k3], tp[0], tp[1] - 3) || inCapsule(pile.pieces[j2].segs[k3], tp[0], tp[1] + 2)) { covered = true; break; }
+        if (!covered && (!best || dd < best.d)) best = { d: dd, p: tp };
+      }
+      if (best) touch = best.p;
+    } else {
+      touch = [plumbX, 174 + (v % 3) * 4];
+    }
+    // For upright subjects, follow the plumb line down to the first thing it
+    // meets, so the tip always rests on the subject.
+    if (!touch && hit) {
+      for (i = 0; i < 24 && !touch; i++) {
+        var cxp = plumbX + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 4;
+        for (var y = 18; y < 205; y += 0.5) {
+          if (!hit(cxp, y)) continue;
+          // Rest the tip in the middle of what the line first crosses.
+          var y1 = y;
+          while (y1 < y + 5 && hit(cxp, y1 + 0.5)) y1 += 0.5;
+          if (y1 - y >= 1.5) touch = [cxp, y + (y1 - y) / 2];
+          break;
+        }
+      }
+    }
+    if (!touch) touch = [plumbX, 180];
+    // Marine snow and a soft lens vignette.
+    var snow = '';
+    for (i = 0; i < 14; i++) snow += circD(B() * ART_W, B() * (horizon + 20), 0.5 + B() * 0.8);
+    kids.push(h('path', { key: 'snow', d: snow, fill: '#eefcff', opacity: 0.4 }));
+    kids.push(h('rect', { key: 'vig', width: ART_W, height: ART_H, fill: 'url(#' + id + 'vg)' }));
+    // The survey tape across the top and the plumb line hanging from it.
+    var ticks = '';
+    for (i = 0; i < 40; i++) ticks += 'M' + (i * 8 + 4) + ' 4v' + (i % 5 ? 3 : 5);
+    kids.push(h('g', { key: 'tape', 'data-part': 'tape' },
+      h('rect', { key: 'b', x: -2, y: 3, width: ART_W + 4, height: 8, fill: '#f3c84b' }),
+      h('rect', { key: 'e', x: -2, y: 10, width: ART_W + 4, height: 1.4, fill: '#a8801c' }),
+      h('path', { key: 't', d: ticks, stroke: '#3b2f0b', strokeWidth: 0.8 })));
+    var tx0 = f1(touch[0]), ty0 = f1(touch[1]);
+    kids.push(h('g', { key: 'plumb', 'data-part': 'plumb' },
+      h('line', { key: 'u', x1: tx0, y1: 11, x2: tx0, y2: ty0 - 6.5, stroke: '#0a1c24', strokeWidth: 3.4, opacity: 0.5 }),
+      h('line', { key: 'l', x1: tx0, y1: 11, x2: tx0, y2: ty0 - 6.5, stroke: '#facc15', strokeWidth: 1.8, strokeDasharray: '5 3' }),
+      h('circle', { key: 'ru', cx: tx0, cy: ty0, r: 6.5, fill: 'none', stroke: '#0a1c24', strokeWidth: 4, opacity: 0.55 }),
+      h('circle', { key: 'r', cx: tx0, cy: ty0, r: 6.5, fill: 'none', stroke: '#facc15', strokeWidth: 2.2 }),
+      h('circle', { key: 'tip', 'data-part': 'plumb-tip', cx: tx0, cy: ty0, r: 1.9, fill: '#facc15', stroke: '#111827', strokeWidth: 0.8 })));
+    var out = [h('defs', { key: 'defs' }, defs)].concat(kids);
+    ART_CACHE[key] = out; ART_CACHE_KEYS.push(key);
+    if (ART_CACHE_KEYS.length > 60) delete ART_CACHE[ART_CACHE_KEYS.shift()];
+    return out;
+  }
+  // props: h, point, label (states the features, never the category), size
+  // (largest width in px; the picture shrinks to fit), idPrefix (unique per
+  // picture on a page, so gradient ids never collide).
+  function PointArt(props) {
+    var h = props.h, point = props.point, size = props.size || 320;
+    var id = 'cra' + String(props.idPrefix || ((point.category || '') + (point.coralForm || '') + (point.variant || 0) + '_' + (point.colony == null ? '' : point.colony))).replace(/[^A-Za-z0-9]/g, '') + '-';
+    return h('svg', { viewBox: '0 0 ' + ART_W + ' ' + ART_H, role: 'img', 'aria-label': props.label, focusable: 'false',
+      style: { display: 'block', width: '100%', maxWidth: size, height: 'auto', aspectRatio: ART_W + ' / ' + ART_H, borderRadius: 10 } }, artScene(h, point, id));
+  }
+  // Fish for the belt map, drawn side-on like map symbols so each family reads
+  // by its shape: parrotfish beak and big scales, surgeonfish scalpel spine at
+  // the tail, butterflyfish round disk and eye bar, grouper heavy body, big
+  // mouth and spots, snapper slim body and forked tail. Every fish of a family
+  // is drawn the same way, so on the map only its position says whether it is
+  // inside the belt. Each fits a 32 by 20 box around (0, 0), head to the right.
+  var FISH_STYLE = {
+    parrotfish: { fill: '#26a88f', stroke: '#0b3d35', accent: '#efe8c8', detail: '#0d5a4d', letter: 'P' },
+    surgeonfish: { fill: '#4169c9', stroke: '#0f1f4a', accent: '#f6c62f', detail: '#1a2c72', letter: 'S' },
+    butterflyfish: { fill: '#f4c430', stroke: '#4a3a07', accent: '#fdf9ea', detail: '#17130a', letter: 'B' },
+    grouper: { fill: '#8e5b3a', stroke: '#2b190d', accent: '#efd4aa', detail: '#3f2414', letter: 'G' },
+    snapper: { fill: '#d6473c', stroke: '#4a1410', accent: '#f9c5b8', detail: '#7d231c', letter: 'N' }
+  };
+  function dotsPath(list, r) {
+    var d = '';
+    for (var i = 0; i < list.length; i++) d += 'M' + round1(list[i][0] - r) + ' ' + round1(list[i][1]) + 'a' + r + ' ' + r + ' 0 1 0 ' + round1(2 * r) + ' 0a' + r + ' ' + r + ' 0 1 0 ' + round1(-2 * r) + ' 0Z';
+    return d;
+  }
+  var FISH_PATHS = {
+    parrotfish: { tail: 'M-9 0L-14 -5.6Q-12.4 0 -14 5.6Z', body: 'M-10.2 0C-8 -6.6 3 -7.2 8 -3.8L9.4 -1.8L9.4 1.8L8 3.8C3 7.2 -8 6.6 -10.2 0Z',
+      patch: 'M8 -3.8Q11.8 -2.6 12.2 0Q11.8 2.6 8 3.8Z', lines: 'M-6 -4q2.4 1.7 0 3.6M-1.8 -4.9q2.4 1.7 0 3.6M2.4 -4.5q2.4 1.7 0 3.6M-6 0.6q2.4 1.7 0 3.6M-1.8 0q2.4 1.7 0 3.6M2.4 0.5q2.4 1.7 0 3.6M9.2 0L12 0', eye: [6.2, -1.9] },
+    surgeonfish: { tail: 'M-7.6 0L-13.8 -6.2Q-11 0 -13.8 6.2Z', body: 'M-8.4 0C-8.4 -7.4 4 -8.2 9.2 -1.6Q10.4 0 9.2 1.6C4 8.2 -8.4 7.4 -8.4 0Z',
+      patch: 'M-9.4 0.5L-4.4 -1.9L-3.2 0.5Z', lines: 'M-6.6 -4.8C-2.4 -8.1 3.6 -7.8 7.2 -4M-6.6 4.8C-2.4 8.1 3.6 7.8 7.2 4', eye: [5.6, -2] },
+    butterflyfish: { tail: 'M-6.4 0L-11.4 -3.9L-11.4 3.9Z', body: 'M-7.2 0C-7.2 -8.6 5 -9 7.4 -1.6L10.4 -0.5L10.4 0.5L7.4 1.6C5 9 -7.2 8.6 -7.2 0Z',
+      patch: 'M0.2 -7.8C4.4 -6.8 7 -4.2 7.4 -1.6L10.4 -0.5L10.4 0.5L7.4 1.6C7 4.2 4.4 6.8 0.2 7.8Q2.2 0 0.2 -7.8Z', bar: 'M3.4 -6.9L5.9 -6L5.9 6L3.4 6.9Z', eye: [4.65, -1.7], eyeR: 0.75, eyeFill: '#fdf9ea' },
+    grouper: { tail: 'M-10 0L-14.6 -4.9Q-16.2 0 -14.6 4.9Z', body: 'M-11.2 0C-10.2 -6.9 3 -7.9 9 -4.5L12.6 -1.7L9.2 -0.2L12.6 1.4C9 6.7 -10.2 7.1 -11.2 0Z',
+      dots: dotsPath([[-7.2, -1.8], [-3.6, -4], [0.4, -2.4], [4, -4], [-5.2, 2.2], [-1.2, 1.2], [2.8, 2.8], [-8.6, 1.8], [6, 1.4], [-1.6, -5.6]], 0.95), lines: 'M9.2 -0.2L5.8 0.9', eye: [6.4, -2.9] },
+    snapper: { tail: 'M-8.4 0L-14.8 -5.6L-11 0L-14.8 5.6Z', body: 'M-9.8 0C-7 -4.9 4 -5.7 9 -2.6L11.8 -0.4L9.6 0.9C5 4.9 -7 4.7 -9.8 0Z',
+      patch: 'M-8.2 1.2C-3 3.9 4.8 3.7 9.2 1C5 4.7 -6.2 4.7 -8.2 1.2Z', lines: 'M-4.8 -4.3L-1.4 -6.8L3.2 -5.2', eye: [6.7, -1.7] }
+  };
+  function fishShape(h, family, x, y, key, flip) {
+    var st = FISH_STYLE[family] || FISH_STYLE.parrotfish, fp = FISH_PATHS[family] || FISH_PATHS.parrotfish, s = flip ? -1 : 1;
+    return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + s + ' 1)', strokeLinejoin: 'round' },
+      h('path', { d: fp.tail, fill: st.fill, stroke: st.stroke, strokeWidth: 0.9 }),
+      h('path', { d: fp.body, fill: st.fill, stroke: st.stroke, strokeWidth: 0.9 }),
+      fp.patch ? h('path', { d: fp.patch, fill: st.accent, stroke: st.stroke, strokeWidth: 0.6 }) : null,
+      fp.bar ? h('path', { d: fp.bar, fill: st.detail }) : null,
+      fp.dots ? h('path', { d: fp.dots, fill: st.accent }) : null,
+      fp.lines ? h('path', { d: fp.lines, fill: 'none', stroke: st.detail, strokeWidth: 0.8, strokeLinecap: 'round' }) : null,
+      h('circle', { cx: fp.eye[0], cy: fp.eye[1], r: fp.eyeR || 1.15, fill: fp.eyeFill || '#111827' }));
+  }
+
+  // ── Shared UI pieces ─────────────────────────────────────────────────────
+  var SECTIONS = ['hub', 'explore', 'guide', 'methods', 'survey', 'compare', 'model', 'science', 'teacher'];
+  var STRIP_CODE = { hard_coral: 'HC', bleached_coral: 'BL', recently_dead_coral: 'RKC', macroalgae: 'NIA', rock: 'RC', rubble: 'RB', sand: 'SD' };
+  var MAX_LOG = 40;
+
+  function sectionNames(__alloT) {
+    return {
+      hub: __alloT('stem.coralreef.nav_hub', 'Start'),
+      methods: __alloT('stem.coralreef.nav_methods', 'Survey methods'),
+      survey: __alloT('stem.coralreef.nav_survey', 'Field survey'),
+      compare: __alloT('stem.coralreef.nav_compare', 'Compare reefs'),
+      model: __alloT('stem.coralreef.nav_model', 'Reef future'),
+      science: __alloT('stem.coralreef.nav_science', 'Reef science'),
+      teacher: __alloT('stem.coralreef.nav_teacher', 'For teachers'),
+      explore: __alloT('stem.coralreef.nav_explore', 'Dive and explore'),
+      guide: __alloT('stem.coralreef.nav_guide', 'Species guide')
+    };
+  }
+  function cardStyle(P, extra) { return Object.assign({ background: P.card, border: '1px solid ' + P.border, borderRadius: 18, padding: 22, marginBottom: 18 }, extra || {}); }
+  function btnStyle(P, active, extra) {
+    return Object.assign({ minHeight: 42, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + (active ? P.accent : P.ctlBorder), background: active ? P.accent : P.cardAlt,
+      color: active ? P.accentInk : P.text, cursor: 'pointer', font: 'inherit', fontWeight: 600, lineHeight: 1.3 }, extra || {});
+  }
+  function h3Style(P) { return { margin: '0 0 12px', fontSize: 20, fontWeight: 700, letterSpacing: '-0.025em', color: P.text }; }
+  function mutedStyle(P, extra) { return Object.assign({ color: P.muted, margin: '0 0 8px' }, extra || {}); }
+  var SR_ONLY = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+
+  // Scoped to the tool, including embedded hosts. No network fonts or image assets.
+  var REEF_UI_CSS = `
+    [data-coralreef-root]{padding:clamp(14px,2.5vw,36px);font-family:inherit;font-size:15px;isolation:isolate}
+    [data-coralreef-root] *{box-sizing:border-box}
+    [data-coralreef-root] button{transition:background .16s,box-shadow .16s,transform .16s}
+    [data-coralreef-root] button:not(:disabled):hover{box-shadow:0 3px 12px #062d291c;filter:brightness(.96)}
+    [data-coralreef-root] button:focus-visible,[data-coralreef-root] a:focus-visible,[data-coralreef-root] summary:focus-visible,[data-coralreef-root] input:focus-visible,[data-coralreef-root] select:focus-visible{outline:3px solid var(--reef-accent);outline-offset:4px}
+    [data-coralreef-root] button:disabled{cursor:default}
+    [data-coralreef-root] input,[data-coralreef-root] select{accent-color:var(--reef-accent)}
+    [data-coralreef-root] .cr-masthead{display:flex;gap:16px;align-items:center;margin-bottom:24px}
+    [data-coralreef-root] .cr-brand{display:flex;align-items:center;gap:13px;flex:1;min-width:0}
+    [data-coralreef-root] .cr-brand-mark{width:48px;height:48px;display:grid;place-items:center;background:var(--reef-accent);color:var(--reef-accent-ink);border-radius:15px;flex:none}
+    [data-coralreef-root] .cr-eyebrow{font-size:11px;line-height:1.5;font-weight:750;letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px}
+    [data-coralreef-root] .cr-nav{margin:0 0 24px;border-bottom:1px solid var(--reef-border);padding-bottom:12px}
+    [data-coralreef-root] .cr-nav ul{display:flex;flex-wrap:wrap;gap:5px;list-style:none;margin:0;padding:0}
+    [data-coralreef-root] .cr-nav button{display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:13px!important;padding:10px 12px!important}
+    [data-coralreef-root] .cr-hero{position:relative;overflow:hidden;border-radius:24px;background:#073c48;color:#f4fff8;min-height:430px;margin-bottom:22px;box-shadow:0 16px 36px #073c4814}
+    [data-coralreef-root] .cr-vista{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    [data-coralreef-root] .cr-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#062f3cf5 0%,#062f3cea 25%,#062f3c8c 48%,#062f3c00 77%);pointer-events:none}
+    [data-coralreef-root] .cr-hero-copy{position:relative;z-index:1;padding:clamp(24px,4vw,52px);max-width:600px}
+    [data-coralreef-root] .cr-hero h3{font:500 clamp(34px,4.6vw,62px)/1.04 Georgia,'Times New Roman',serif;letter-spacing:-.045em;margin:18px 0;color:#f4fff8;text-wrap:balance}
+    [data-coralreef-root] .cr-hero-description{font-size:16px;line-height:1.7;max-width:400px;color:#d5eeea;margin:0 0 24px}
+    [data-coralreef-root] .cr-hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    [data-coralreef-root] .cr-hero-actions button{min-height:46px;padding:12px 18px;display:flex;align-items:center;gap:12px;border-radius:10px;font:inherit;font-weight:650;cursor:pointer}
+    [data-coralreef-root] .cr-primary{background:#d8f3b3;border:1px solid #d8f3b3;color:#173c32}
+    [data-coralreef-root] .cr-secondary{background:#113e49;border:1px solid #91bcb9;color:#edfcf5}
+    [data-coralreef-root] .cr-hero button:focus-visible{outline-color:#f4fff8}
+    [data-coralreef-root] .cr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 30px;padding:0 10px}
+    [data-coralreef-root] .cr-stat{display:flex;align-items:center;gap:14px;padding:8px 18px;border-inline-start:1px solid var(--reef-border)}
+    [data-coralreef-root] .cr-stat:first-child{border-inline-start:0}
+    [data-coralreef-root] .cr-stat strong{font:500 34px/1 Georgia,'Times New Roman',serif;color:var(--reef-text);white-space:nowrap}
+    [data-coralreef-root] .cr-stat span{font-size:13px;color:var(--reef-muted);max-width:130px}
+    [data-coralreef-root] .cr-journey{margin:0 0 26px}
+    [data-coralreef-root] .cr-journey-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;list-style:none;margin:0;padding:0}
+    [data-coralreef-root] .cr-journey-list>li{display:flex;flex-direction:column;align-items:flex-start;padding:20px 17px;background:var(--reef-card);border:1px solid var(--reef-border);border-radius:16px}
+    [data-coralreef-root] .cr-step-top{display:flex;width:100%;justify-content:space-between;align-items:center;margin-bottom:22px;color:var(--reef-muted)}
+    [data-coralreef-root] .cr-step-number{font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.1em}
+    [data-coralreef-root] .cr-journey-list strong{font-size:16px;line-height:1.4;letter-spacing:-.02em;margin-bottom:9px}
+    [data-coralreef-root] .cr-journey-list p{font-size:13px;flex:1}
+    [data-coralreef-root] .cr-journey-list button{margin-top:12px;width:100%;display:flex;align-items:center;justify-content:space-between}
+    [data-coralreef-root] .cr-hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    [data-coralreef-root] .cr-hub-grid>section{margin-bottom:0!important}
+    [data-coralreef-root] .cr-hub-grid p,[data-coralreef-root] .cr-hub-grid li{font-size:14px;line-height:1.8}
+    [data-coralreef-root] .cr-honesty{margin-top:18px;font-size:14px}
+    [data-coralreef-root] .cr-honesty summary{font-weight:650;cursor:pointer}
+    [data-coralreef-root] .cr-honesty ul{padding-inline-start:22px;margin-bottom:0}
+    [data-coralreef-root] .cr-site-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+    [data-coralreef-root] .cr-site-grid button{text-align:start;display:flex;gap:12px;align-items:center;padding:15px!important}
+    [data-coralreef-root] .cr-site-marker{height:32px;width:32px;display:grid;place-items:center;flex:none;border-radius:50%;background:var(--reef-card);color:var(--reef-accent)}
+    [data-coralreef-root] .cr-dive-stage{padding:12px!important;overflow:hidden}
+    [data-coralreef-root] .cr-dive-stage>h3{margin:7px 10px 16px!important}
+    [data-coralreef-root] .cr-dive-stage canvas{height:clamp(340px,52vw,620px)!important;border-radius:12px!important}
+    [data-coralreef-root] .cr-dive-stage .cr-hero{margin:0;min-height:390px;border-radius:12px;box-shadow:none}
+    [data-coralreef-root] .cr-dive-stage .cr-hero h3{font-size:clamp(32px,4vw,50px)}
+    [data-coralreef-root] .cr-dive-controls{background:var(--reef-alt);border:1px solid var(--reef-border);border-radius:12px;padding:12px}
+    [data-coralreef-root] .cr-nearby{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:8px;list-style:none;margin:0;padding:0}
+    [data-coralreef-root] .cr-nearby>li{padding:12px;border:1px solid var(--reef-border);border-radius:10px;background:var(--reef-alt)}
+    [data-coralreef-root] .cr-species-card{overflow:hidden;display:flex;flex-direction:column}
+    [data-coralreef-root] .cr-species-art{position:relative;display:grid;place-items:center;min-height:140px;margin:-10px -10px 14px;background:linear-gradient(145deg,#164f5a,#082c3d);color:#b4d9c9;border-bottom:1px solid var(--reef-border)}
+    [data-coralreef-root] .cr-species-art img{width:100%;height:auto;display:block}
+    [data-coralreef-root] .cr-species-art small{position:absolute;inset:auto 14px 10px;font-size:11px;color:#d5eeea}
+    [data-coralreef-root][data-theme=contrast] .cr-hero{border:2px solid #fbbf24;background:#000}
+    [data-coralreef-root][data-theme=contrast] .cr-hero:after{background:#000}
+    [data-coralreef-root][data-theme=contrast] .cr-hero .cr-vista{display:none}
+    [data-coralreef-root][data-theme=contrast] .cr-primary{background:#fbbf24;color:#000;border-color:#fbbf24}
+    [data-coralreef-root][data-theme=contrast] .cr-secondary{background:#000;color:#fff;border-color:#fff}
+    @media(max-width:1000px){[data-coralreef-root] .cr-journey-list{grid-template-columns:repeat(3,minmax(0,1fr))}[data-coralreef-root] .cr-nav{overflow-x:auto}[data-coralreef-root] .cr-nav ul{flex-wrap:nowrap}}
+    @media(max-width:640px){[data-coralreef-root]{font-size:14px}[data-coralreef-root] .cr-masthead{align-items:flex-start;margin-bottom:18px}[data-coralreef-root] .cr-brand-mark{width:40px;height:40px;border-radius:12px}[data-coralreef-root] .cr-tagline{display:none}[data-coralreef-root] .cr-hero{min-height:470px}[data-coralreef-root] .cr-hero:after{background:linear-gradient(180deg,#062f3cf5 0%,#062f3ce3 36%,#062f3c33 100%)}[data-coralreef-root] .cr-hero-copy{padding:26px 22px}[data-coralreef-root] .cr-hero h3{max-width:310px}[data-coralreef-root] .cr-hero-description{max-width:320px;font-size:14px}[data-coralreef-root] .cr-stats{gap:0;padding:0}[data-coralreef-root] .cr-stat{display:block;padding:3px 10px}[data-coralreef-root] .cr-stat strong{font-size:28px;display:block;margin-bottom:6px}[data-coralreef-root] .cr-stat span{font-size:11px;display:block}[data-coralreef-root] .cr-journey-list{grid-template-columns:1fr 1fr;gap:8px}[data-coralreef-root] .cr-journey-list>li{padding:15px}[data-coralreef-root] .cr-journey-list strong{font-size:14px}[data-coralreef-root] .cr-hub-grid{grid-template-columns:1fr}[data-coralreef-root] .cr-site-grid{grid-template-columns:1fr 1fr}[data-coralreef-root] .cr-site-grid button{font-size:12px;padding:10px!important;gap:8px}[data-coralreef-root] .cr-site-marker{width:26px;height:26px}[data-coralreef-root] .cr-dive-stage .cr-hero{min-height:440px}}
+    @media(prefers-reduced-motion:reduce){[data-coralreef-root] button{transition:none}}
+    @media(forced-colors:active){[data-coralreef-root] .cr-vista{display:none}[data-coralreef-root] button{border:1px solid ButtonText!important}}
+  `;
+
+  function reefIcon(h, kind, size) {
+    var paths = {
+      hub: 'M12 21V6M12 12L6 7V3M6 7L3 5M12 16L18 10V5M18 10L22 7M12 8L16 4',
+      explore: 'M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0M16 8l-3 6-5 2 3-6z',
+      guide: 'M3 4h7l2 2 2-2h7v16h-7l-2 1-2-1H3zM12 6v15M6 8h3M15 8h3M6 12h3M15 12h3',
+      methods: 'M4 5h16v14H4zM7 5v5M11 5v3M15 5v5M7 15h10',
+      survey: 'M8 5H5v16h14V5h-3M9 3h6v4H9zM8 12h8M8 16h6',
+      compare: 'M4 20V10h5v10M10 20V4h5v16M16 20v-8h5v8M2 20h21',
+      model: 'M4 18l5-5 4 2 7-10M15 5h5v5M4 4v16h17',
+      science: 'M9 3h6M10 3v7L4 20h16l-6-10V3M8 14h8',
+      teacher: 'M2 8l10-5 10 5-10 5zM6 10v7q6 5 12 0v-7M22 8v8',
+      arrow: 'M4 12h16M14 6l6 6-6 6',
+      fish: 'M4 12Q12 1 21 12Q12 23 4 12L1 6v12zM16 10h.01',
+      turtle: 'M7 8Q12 3 17 8Q21 14 15 17Q10 20 7 15zM17 8l4-4M18 15l4 3M7 8L3 4M8 16l-4 5M11 6V2',
+      shell: 'M5 20L2 10Q1 3 7 4Q12-2 17 4Q23 3 22 10L19 20ZM5 20h14M12 19V4M10 19L6 6M14 19L18 6M8 19L3 10M16 19l5-9'
+    };
+    return h('svg', { width: size || 18, height: size || 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.65, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } }, h('path', { d: paths[kind] || paths.hub }));
+  }
+
+  // A lightweight, original reef illustration. It remains available before WebGL loads.
+  function ReefVista(props) {
+    var h = props.env.h, uid = 'reef-vista-' + props.env.React.useId().replace(/:/g, '');
+    var sea = uid + '-sea', glow = uid + '-glow', floor = uid + '-floor';
+    var fish = [], branches = [], polyps = [], school = [];
+    for (var i = 0; i < 22; i++) {
+      var x = 650 + (i * 79 % 490), y = 90 + (i * 37 % 170), scale = 0.35 + (i % 5) * 0.12;
+      school.push(h('path', { key: i, d: 'M-15 0Q0-12 16 0Q0 12-15 0L-23-8V8Z', transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')', fill: i % 4 ? '#80d1c6' : '#efd290', opacity: 0.25 + (i % 3) * 0.13 }));
+    }
+    for (var b = 0; b < 15; b++) {
+      var bx = 850 + b * 23, by = 480 + Math.sin(b * 2) * 18, ht = 50 + b % 4 * 23;
+      branches.push(h('path', { key: b, d: 'M' + bx + ' ' + by + 'q-15 -30 0 -' + ht + 'm-4 30q-30-4-34-37m35 15q25-12 30-38m-28 24q-12-18-10-36', fill: 'none', stroke: ['#d68c86','#dcb899','#9d96be','#e6a49a'][b % 4], strokeWidth: 7 + b % 3, strokeLinecap: 'round' }));
+    }
+    for (var p = 0; p < 50; p++) polyps.push(h('circle', { key: p, cx: 645 + (p * 19 % 112), cy: 407 + (p * 13 % 63), r: 2.5, fill: '#a5c7a6', opacity: .65 }));
+    fish.push(h('g', { key: 'turtle', transform: 'translate(951 190) rotate(-16)' },
+      h('path', { d: 'M-33-8Q-67-66-43-60L-6-24M25-9Q72-55 66-29L38 7M-30 14L-46 38-16 27M24 18L46 37 35 12', fill: '#598e82' }),
+      h('ellipse', { cx: 1, cy: 0, rx: 43, ry: 27, fill: '#97b49a', stroke: '#457a70', strokeWidth: 3 }),
+      h('path', { d: 'M-23-17L-4-23 16-16 24 2 10 20-11 21-27 6ZM-23-17L-27 6M-4-23L-7-3 10 20M-7-3L24 2M16-16L-7-3', fill: 'none', stroke: '#527d70', strokeWidth: 2 }),
+      h('ellipse', { cx: 48, cy: -1, rx: 13, ry: 10, fill: '#a0bda2' }), h('circle', { cx: 53, cy: -4, r: 2, fill: '#143e40' })));
+    return h('svg', { viewBox: '0 0 1200 520', preserveAspectRatio: 'xMidYMid slice', className: 'cr-vista', 'aria-hidden': 'true', focusable: 'false' },
+      h('defs', null,
+        h('linearGradient', { id: sea, x2: '0', y2: '1' }, h('stop', { stopColor: '#347e88' }), h('stop', { offset: '.5', stopColor: '#105565' }), h('stop', { offset: '1', stopColor: '#073c4c' })),
+        h('radialGradient', { id: glow, cx: '.72', cy: '0', r: '.8' }, h('stop', { stopColor: '#b0e0c7', stopOpacity: '.65' }), h('stop', { offset: '1', stopColor: '#83d6be', stopOpacity: '0' })),
+        h('linearGradient', { id: floor, x2: '0', y2: '1' }, h('stop', { stopColor: '#52867b' }), h('stop', { offset: '1', stopColor: '#174e51' }))),
+      h('rect', { width: 1200, height: 520, fill: 'url(#' + sea + ')' }), h('rect', { width: 1200, height: 520, fill: 'url(#' + glow + ')' }),
+      h('g', { fill: '#d1f3da', opacity: .065 }, h('path', { d: 'M720 0H780L520 520H240Z' }), h('path', { d: 'M850 0H875L920 520H740Z' }), h('path', { d: 'M930 0H950L1200 420V520H1100Z' })),
+      school,
+      h('path', { d: 'M0 426Q190 342 350 397T650 397Q810 300 947 359T1200 322V520H0Z', fill: '#165466', opacity: .8 }),
+      h('path', { d: 'M0 479Q236 370 424 435T742 414Q864 368 1000 426T1200 405V520H0Z', fill: 'url(#' + floor + ')' }),
+      h('g', { fill: 'none', stroke: '#67aa98', strokeWidth: 2, opacity: .25 }, h('path', { d: 'M412 467q110-37 205-8M439 485q108-35 210-9M484 504q100-28 184-8' })),
+      h('g', { fill: '#28736e', stroke: '#3d9182', strokeWidth: 4 }, h('path', { d: 'M590 443V335M590 385L560 355V320M590 370L623 338V311M590 345L578 317' }), h('path', { d: 'M1130 405V256M1130 344L1096 304V271M1130 319L1168 280V246' })),
+      h('path', { d: 'M630 480Q616 394 683 391Q754 380 775 475Z', fill: '#668f77' }), polyps,
+      h('g', { fill: '#ba9675', stroke: '#ddbb95', strokeWidth: 3 },
+        h('path', { d: 'M785 452L794 371 805 450Z', fill: '#827363', stroke: 'none' }),
+        h('path', { d: 'M727 375Q789 351 854 373Q821 404 762 393Z' }),
+        h('path', { d: 'M766 416Q815 394 862 411Q833 435 788 432Z' }),
+        h('path', { d: 'M737 348Q776 330 814 345Q793 367 755 361Z' })),
+      fish, branches,
+      h('g', { fill: '#d1b464', stroke: '#ad8f52', strokeWidth: 2, transform: 'translate(820 283) rotate(-8)' }, h('path', { d: 'M-20 0Q0-28 21 0Q0 28-20 0L-31-12V12Z' }), h('path', { d: 'M12-11L8 12', stroke: '#183f4b', strokeWidth: 6 }), h('circle', { cx: 16, cy: -2, r: 2, fill: '#10313b', stroke: 'none' })),
+      h('path', { d: 'M0 518Q181 468 295 503T552 503Q670 472 768 509T1200 476V520H0Z', fill: '#073b43' }));
+  }
+
+  function CoralReefLab(props) {
+    var ctx = props.ctx, React = ctx.React, h = React.createElement;
+    var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    // Fills {name}-style placeholders, so a translation can reorder them.
+    var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+    var d = (ctx.toolData && ctx.toolData.coralReef) || {};
+    var theme = ctx.theme || (ctx.isContrast ? 'contrast' : ctx.isDark ? 'dark' : 'light');
+    var P = palette(theme);
+    function set(patch) {
+      if (typeof ctx.setToolData === 'function') {
+        ctx.setToolData(function (prev) { var out = Object.assign({}, prev); out.coralReef = Object.assign({}, (prev && prev.coralReef) || {}, patch); return out; });
+      } else if (typeof ctx.updateMulti === 'function') ctx.updateMulti('coralReef', patch);
+    }
+    function say(msg) { if (msg && typeof ctx.announceToSR === 'function') ctx.announceToSR(msg); }
+    var section = SECTIONS.indexOf(d.section) >= 0 ? d.section : 'hub';
+    var headingRef = React.useRef(null);
+    var lastSection = React.useRef(section);
+    React.useEffect(function () {
+      if (lastSection.current === section) return;
+      lastSection.current = section;
+      if (headingRef.current && typeof headingRef.current.focus === 'function') headingRef.current.focus();
+    }, [section]);
+    var names = sectionNames(__alloT);
+    function go(id) { set({ section: id }); say(__alloFill(__alloT('stem.coralreef.sr_section_opened', '{name} opened.'), { name: names[id] })); }
+    var env = { ctx: ctx, React: React, h: h, t: __alloT, fill: __alloFill, P: P, d: d, set: set, say: say, go: go, theme: theme };
+
+    var body;
+    if (section === 'methods') body = h(MethodsSection, { env: env });
+    else if (section === 'survey') body = h(SurveySection, { env: env });
+    else if (section === 'compare') body = h(CompareSection, { env: env });
+    else if (section === 'model') body = h(ModelSection, { env: env });
+    else if (section === 'science') body = h(ScienceSection, { env: env });
+    else if (section === 'teacher') body = h(TeacherSection, { env: env });
+    else if (section === 'explore') body = h(ExploreSection, { env: env });
+    else if (section === 'guide') body = h(GuideSection, { env: env });
+    else body = h(HubSection, { env: env });
+
+    var canLeave = !ctx.embedded && typeof ctx.setStemLabTool === 'function';
+    return h('section', { 'data-coralreef-root': 'true', 'data-theme': theme, 'aria-label': __alloT('stem.coralreef.lab_title', 'Coral Reef Survey Lab'),
+      style: { background: P.bg, color: P.text, borderRadius: 20, lineHeight: 1.6, '--allo-stem-text': P.text, '--allo-stem-text-soft': P.muted,
+        '--reef-text': P.text, '--reef-muted': P.muted, '--reef-border': P.border, '--reef-accent': P.accent, '--reef-accent-ink': P.accentInk, '--reef-card': P.card, '--reef-alt': P.cardAlt } },
+      h('style', null, REEF_UI_CSS),
+      h('header', { className: 'cr-masthead' },
+        h('div', { className: 'cr-brand' },
+          h('span', { className: 'cr-brand-mark' }, reefIcon(h, 'hub', 29)),
+          h('div', { style: { minWidth: 0 } },
+            h('h2', { ref: headingRef, tabIndex: -1, style: { margin: 0, fontSize: 'clamp(18px,2.2vw,26px)', letterSpacing: '-0.035em', lineHeight: 1.2, color: P.text } }, __alloT('stem.coralreef.lab_title', 'Coral Reef Survey Lab'), h('span', { style: SR_ONLY }, ': ', names[section])),
+            h('p', { className: 'cr-tagline', style: mutedStyle(P, { fontSize: 13, margin: '5px 0 0' }) }, __alloT('stem.coralreef.lab_tagline', 'Survey a reef the way reef monitors do, then test what could happen to it over 30 years.')))),
+        canLeave ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { ctx.setStemLabTool(null); say(__alloT('stem.coralreef.sr_returned', 'Returned to the STEM Lab tools.')); } },
+          __alloT('stem.coralreef.back', 'Back to tools')) : null),
+      h('nav', { className: 'cr-nav', 'aria-label': __alloT('stem.coralreef.nav_label', 'Coral Reef Survey Lab sections') },
+        h('ul', null,
+          SECTIONS.map(function (id) {
+            var on = id === section;
+            return h('li', { key: id }, h('button', { type: 'button', 'aria-current': on ? 'page' : undefined, style: btnStyle(P, on, { borderColor: on ? P.accent : 'transparent', background: on ? P.accent : 'transparent' }), onClick: function () { if (!on) go(id); } }, reefIcon(h, id, 16), names[id]));
+          }))),
+      h('div', null, body));
+  }
+
+  // ── Start ────────────────────────────────────────────────────────────────
+  function HubSection(props) {
+    var env = props.env, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var practiceDone = Object.keys(d.practice || {}).length;
+    var log = Array.isArray(d.surveyLog) ? d.surveyLog : [];
+    var sitesSurveyed = {};
+    for (var i = 0; i < log.length; i++) sitesSurveyed[log[i].siteId] = true;
+    var found = SPECIES_META.filter(function (m) { return m.group !== 'structure' && (d.speciesLog || {})[m.id]; }).length;
+    var speciesTotal = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
+    var steps = [
+      { id: 'explore', title: __alloT('stem.coralreef.hub_step_explore', 'Dive a reef and identify what lives there'), done: found >= 10,
+        detail: __alloFill(__alloT('stem.coralreef.hub_step_explore_detail', 'Species identified: {n}.'), { n: found }) },
+      { id: 'methods', title: __alloT('stem.coralreef.hub_step_methods', 'Learn the two survey methods'), done: practiceDone >= PRACTICE_POINTS.length,
+        detail: __alloFill(__alloT('stem.coralreef.hub_step_methods_detail', 'Practice points identified: {n} of {total}.'), { n: practiceDone, total: PRACTICE_POINTS.length }) },
+      { id: 'survey', title: __alloT('stem.coralreef.hub_step_survey', 'Survey a reef along a 20 m tape'), done: log.length > 0,
+        detail: __alloFill(__alloT('stem.coralreef.hub_step_survey_detail', 'Surveys saved: {n}.'), { n: log.length }) },
+      { id: 'compare', title: __alloT('stem.coralreef.hub_step_compare', 'Compare reefs with evidence'), done: Object.keys(sitesSurveyed).length >= 2,
+        detail: __alloFill(__alloT('stem.coralreef.hub_step_compare_detail', 'Different reefs surveyed: {n}.'), { n: Object.keys(sitesSurveyed).length }) },
+      { id: 'model', title: __alloT('stem.coralreef.hub_step_model', 'Model the reef 30 years ahead'), done: !!d.modelRevealed || Object.keys(d.modelRevealedFor || {}).some(function (k) { return !!d.modelRevealedFor[k]; }),
+        detail: d.modelRevealed || Object.keys(d.modelRevealedFor || {}).some(function (k) { return !!d.modelRevealedFor[k]; }) ? __alloT('stem.coralreef.hub_step_model_done', 'You made a prediction and ran the model.') : __alloT('stem.coralreef.hub_step_model_todo', 'Make a prediction, then run the model.') }
+    ];
+    return h('div', null,
+      h('section', { className: 'cr-hero', 'aria-labelledby': 'cr-welcome-title' },
+        h(ReefVista, { env: env }),
+        h('div', { className: 'cr-hero-copy' },
+          h('p', { className: 'cr-eyebrow', style: { color: '#c5e8d7' } }, __alloT('stem.coralreef.hero_eyebrow', 'Your underwater field station')),
+          h('h3', { id: 'cr-welcome-title' }, __alloT('stem.coralreef.hero_title', 'A whole world beneath the surface.')),
+          h('p', { className: 'cr-hero-description' }, __alloT('stem.coralreef.hero_intro', 'Meet the life of a coral reef. Learn to read its clues, record what you find, and explore what its future could hold.')),
+          h('div', { className: 'cr-hero-actions' },
+            h('button', { type: 'button', className: 'cr-primary', onClick: function () { env.go('explore'); } }, __alloT('stem.coralreef.hero_dive', 'Explore the reef'), reefIcon(h, 'arrow')),
+            h('button', { type: 'button', className: 'cr-secondary', onClick: function () { env.go('methods'); } }, __alloT('stem.coralreef.hero_methods', 'Learn to survey'))))),
+      h('div', { className: 'cr-stats' },
+        h('div', { className: 'cr-stat' }, h('strong', null, speciesTotal), h('span', null, __alloT('stem.coralreef.hero_species', 'species to discover'))),
+        h('div', { className: 'cr-stat' }, h('strong', null, '20 m'), h('span', null, __alloT('stem.coralreef.hero_transect', 'of reef to survey'))),
+        h('div', { className: 'cr-stat' }, h('strong', null, '30'), h('span', null, __alloT('stem.coralreef.hero_years', 'years of change to explore')))),
+      h('section', { className: 'cr-journey' },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.hub_path_title', 'Your investigation')),
+        h('ol', { className: 'cr-journey-list' }, steps.map(function (s, index) {
+          return h('li', { key: s.id },
+            h('div', { className: 'cr-step-top' }, h('span', { className: 'cr-step-number', 'aria-hidden': 'true' }, '0' + (index + 1)), reefIcon(h, s.id, 23)),
+            h('strong', null, s.title),
+            h('p', { style: mutedStyle(P, { margin: '0 0 8px' }) }, s.detail),
+            h('span', { style: { color: s.done ? P.good : P.muted, fontWeight: 600, fontSize: 12 } }, s.done ? '✓ ' : '', s.done ? __alloT('stem.coralreef.status_done', 'Done') : __alloT('stem.coralreef.status_not_yet', 'Not yet')),
+            h('button', { type: 'button', style: btnStyle(P, false), 'aria-label': __alloT('stem.coralreef.open', 'Open') + ': ' + s.title, onClick: function () { env.go(s.id); } }, __alloT('stem.coralreef.open', 'Open'), reefIcon(h, 'arrow', 16)));
+        }))),
+      h('div', { className: 'cr-hub-grid' },
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.hub_why_title', 'Why survey a reef?')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.hub_why_1', 'Coral reefs change from year to year. Volunteers and scientists check on them by swimming along a measuring tape and writing down what is underneath it and which fish swim nearby. Those numbers show whether a reef is healthy, bleaching, or being taken over by seaweed.')),
+        h('p', { style: { margin: 0 } }, __alloT('stem.coralreef.hub_why_2', 'In this lab you dive a reef and meet the animals that live there, survey reefs with the same two methods the monitors use, and use a model to see what heatwaves, fishing, runoff and restoration could do to a reef over 30 years. The survey reefs are fictional teaching sites.'))),
+      h('section', { style: cardStyle(P, { borderColor: P.good }) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.hope_title', 'Reasons for hope')),
+        h('ul', { style: { margin: '0 0 8px', paddingLeft: 22 } }, hopeFacts(__alloT).map(function (t, i) { return h('li', { key: i, style: { marginBottom: 4 } }, t); })),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { env.set({ diveSiteId: 'restoration' }); env.go('explore'); } }, __alloT('stem.coralreef.hope_dive', 'Dive a restoration site')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.set({ model: scenarioSettings('rubble') }); env.go('model'); } }, __alloT('stem.coralreef.hope_model', 'Model a restoration'))))),
+      h('details', { className: 'cr-honesty', style: cardStyle(P) },
+        h('summary', null, __alloT('stem.coralreef.hub_honest_title', 'What is real here, and what is simplified')),
+        h('ul', { style: { margin: 0, paddingLeft: 22 } },
+          h('li', null, __alloT('stem.coralreef.hub_honest_1', 'The survey methods follow the point-intercept and belt transect methods used by reef monitoring programs such as Reef Check.')),
+          h('li', null, __alloT('stem.coralreef.hub_honest_2', 'The reefs are fictional. Their numbers were chosen to look like real surveys, not copied from one.')),
+          h('li', null, __alloT('stem.coralreef.hub_honest_3', 'The reef future is a simplified teaching model. It shows how the pieces push on each other, not a forecast for any real reef.')))));
+  }
+
+  // ── Survey methods ───────────────────────────────────────────────────────
+  // Practice points: the bleached / dead pair is the distinction that matters
+  // most, so it appears twice.
+  var PRACTICE_POINTS = [
+    { index: 0, category: 'hard_coral', coralForm: 'massive', variant: 1 },
+    { index: 1, category: 'bleached_coral', coralForm: 'branching', variant: 2 },
+    { index: 2, category: 'recently_dead_coral', coralForm: 'plate', variant: 3 },
+    { index: 3, category: 'macroalgae', coralForm: null, variant: 4 },
+    { index: 4, category: 'rubble', coralForm: null, variant: 5 },
+    { index: 5, category: 'bleached_coral', coralForm: 'massive', variant: 6 },
+    { index: 6, category: 'recently_dead_coral', coralForm: 'branching', variant: 7 },
+    { index: 7, category: 'rock', coralForm: null, variant: 8 }
+  ];
+  // The three coral cards show the same colony alive, bleached and recently
+  // dead, so the differences between them stand out.
+  var GUIDE_SAMPLES = {
+    hard_coral: { category: 'hard_coral', coralForm: 'branching', variant: 0 },
+    bleached_coral: { category: 'bleached_coral', coralForm: 'branching', variant: 0 },
+    recently_dead_coral: { category: 'recently_dead_coral', coralForm: 'branching', variant: 0 },
+    macroalgae: { category: 'macroalgae', coralForm: null, variant: 2 },
+    rock: { category: 'rock', coralForm: null, variant: 3 },
+    rubble: { category: 'rubble', coralForm: null, variant: 4 },
+    sand: { category: 'sand', coralForm: null, variant: 5 }
+  };
+
+  // ── Method diagrams ──
+  // Both span the 20 m tape from x 40 to x 600 (28 units per meter). Labels
+  // are HTML chips over or under the art, in the theme's colors, so they stay
+  // readable on a phone.
+  var MD_X0 = 40, MD_PER_M = 28;
+  function mdX(m) { return MD_X0 + m * MD_PER_M; }
+  // side: 'left' or 'right' puts the chip 7 px beside the point, at any size.
+  function mdChip(P, x, y, w, hgt, extra, side) {
+    var tr = side === 'left' ? 'translate(calc(-100% - 7px), -50%)' : side === 'right' ? 'translate(7px, -50%)' : 'translate(-50%, -50%)';
+    return Object.assign({ position: 'absolute', left: (x / w * 100) + '%', top: (y / hgt * 100) + '%', transform: tr, background: P.card, color: P.text,
+      border: '1px solid ' + P.ctlBorder, borderRadius: 6, padding: '0 6px', fontSize: 12, fontWeight: 700, lineHeight: '18px', whiteSpace: 'nowrap', pointerEvents: 'none' }, extra || {});
+  }
+  function mdWater(h, id, w, hgt) {
+    return [
+      h('defs', { key: 'd' },
+        h('linearGradient', { id: id + 'w', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#62b4c4'), artStop(h, 0.5, '#25788f'), artStop(h, 1, '#0f4a5e')),
+        h('linearGradient', { id: id + 's', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#b3a682'), artStop(h, 1, '#d9cba3')),
+        h('filter', { id: id + 'b', x: '-10%', y: '-40%', width: '120%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 2.5 }))),
+      h('rect', { key: 'w', width: w, height: hgt, fill: 'url(#' + id + 'w)' }),
+      h('path', { key: 'r', d: polyD([[90, 0], [112, 0], [70, 200], [20, 200]]) + polyD([[300, 0], [316, 0], [290, 200], [250, 200]]) + polyD([[500, 0], [530, 0], [500, 200], [440, 200]]), fill: '#e3fbff', opacity: 0.08 })
+    ];
+  }
+  // A small plumb line from the tape to the bottom, ending in a ring.
+  function mdPlumb(h, key, x, y0, y1) {
+    return h('g', { key: key },
+      h('line', { x1: x, y1: y0, x2: x, y2: y1 - 4.5, stroke: '#0a1c24', strokeWidth: 2.8, opacity: 0.5 }),
+      h('line', { x1: x, y1: y0, x2: x, y2: y1 - 4.5, stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 2.5' }),
+      h('circle', { cx: x, cy: y1, r: 4.5, fill: 'none', stroke: '#0a1c24', strokeWidth: 3.2, opacity: 0.55 }),
+      h('circle', { cx: x, cy: y1, r: 4.5, fill: 'none', stroke: '#facc15', strokeWidth: 1.8 }),
+      h('circle', { cx: x, cy: y1, r: 1.3, fill: '#facc15', stroke: '#111827', strokeWidth: 0.6 }));
+  }
+  // A stroked branch with a dark edge and pale tips.
+  function mdBranches(h, key, lines, tips, tone) {
+    var d = lines.map(function (l) { return lineD(l); }).join(''), t = '';
+    for (var i = 0; i < tips.length; i++) t += 'M' + tips[i][0] + ' ' + tips[i][1] + 'h0';
+    return h('g', { key: key, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' },
+      h('path', { d: d, stroke: tone.dark, strokeWidth: 6.4 }),
+      h('path', { d: d, stroke: tone.base, strokeWidth: 4.6 }),
+      h('path', { d: t, stroke: tone.tip, strokeWidth: 4.8 }));
+  }
+  // Method 1, from the side: the tape stretched over a reef, a mark every
+  // 0.5 m, and a few plumb lines dropping to what lies below.
+  function sideTransect(h, id) {
+    var W = 640, H = 240, kids = mdWater(h, id, W, H), i;
+    var gY = function (x) { return 210 + 2.5 * Math.sin(x / 41) + 1.5 * Math.sin(x / 17); };
+    var far = '';
+    for (i = 0; i < 8; i++) far += circD(30 + i * 84, 200, 30 + (i % 3) * 10, 16 + (i % 2) * 9);
+    kids.push(h('path', { key: 'far', d: far, fill: '#1f6476', opacity: 0.55, filter: 'url(#' + id + 'b)' }));
+    var ground = [];
+    for (i = 0; i <= 32; i++) ground.push([i * 20, gY(i * 20)]);
+    kids.push(h('path', { key: 'ground', d: lineD(ground) + 'L640 240L0 240Z', fill: 'url(#' + id + 's)' }));
+    var rip = '';
+    for (i = 0; i < 26; i++) rip += 'M' + (8 + i * 25) + ' ' + f1(gY(8 + i * 25) + 8 + (i % 3) * 7) + 'q6 -2 12 0';
+    kids.push(h('path', { key: 'rip', d: rip, stroke: '#a28d5f', strokeWidth: 1, fill: 'none', opacity: 0.7 }));
+    var HC = HEALTHY_TONES[0], GR = HEALTHY_TONES[1], PU = HEALTHY_TONES[2];
+    // 0 to 1.7 m: flat rock with pink crusts and turf.
+    kids.push(h('g', { key: 'rock' },
+      h('path', { d: 'M38 212L43 180L89 180L94 212Z', fill: '#74787a' }),
+      h('path', { d: 'M43 180L89 180L90 185L42 185Z', fill: '#9fa3a1' }),
+      h('path', { d: circD(55, 182, 6, 2) + circD(79, 182.5, 5, 1.7), fill: '#c57592' }),
+      h('path', { d: 'M47 180l0.6 -2.4M62 180l-0.5 -2.6M66 180l0.4 -2.2M70 180l0.7 -2.4M84 180l-0.4 -2.4', stroke: '#5c6131', strokeWidth: 1 })));
+    // 2 to 4.3 m: a branching colony; line A at 3 m touches a tip.
+    kids.push(mdBranches(h, 'brA', [[[127, 211], [126, 178], [108, 150], [96, 124]], [[108, 150], [113, 122]], [[126, 178], [124, 140], [124, 104]], [[124, 140], [136, 116]], [[126, 178], [145, 152], [156, 128]], [[145, 152], [146, 124]]],
+      [[96, 124], [113, 122], [124, 104], [136, 116], [156, 128], [146, 124]], HC));
+    // 4.5 to 6 m: rubble.
+    var rub = '';
+    for (i = 0; i < 7; i++) { var rx = 168 + i * 6.5, ry = gY(rx) - 3 - (i % 2) * 4; rub += capsuleD({ x: rx - 7, y: ry + (i % 3) - 1, x2: rx + 8, y2: ry - (i % 3) + 1, w0: 4.6, w1: 3.8 }); }
+    kids.push(h('path', { key: 'rub', d: rub, fill: '#aaa69a', stroke: '#6b675e', strokeWidth: 0.6 }));
+    // 6.2 to 8.4 m: a boulder coral with winding grooves.
+    kids.push(h('g', { key: 'boulder' },
+      h('path', { d: 'M204.4 212A40 58 0 0 1 284.4 212Z', fill: GR.base }),
+      h('path', { d: 'M214 204q7 -16 16 -7t16 -9t18 5t14 -4M212 186q9 -18 20 -11t16 -12t20 9M218 170q9 -14 18 -6t16 -6t16 4M228 158q8 -8 16 -3t16 0', stroke: GR.dark, strokeWidth: 1.5, fill: 'none', opacity: 0.8 }),
+      h('path', { d: 'M270 208A30 48 0 0 0 279 172', stroke: GR.dark, strokeWidth: 6, fill: 'none', opacity: 0.35 })));
+    // 8.6 to 10 m: a clump of seaweed.
+    var blades = '';
+    for (i = 0; i < 8; i++) { var ang = -1.95 + i * 0.12, L = 46 + (i % 3) * 10, bx = 302 + (i - 3.5) * 2.5; blades += 'M' + bx + ' 209Q' + f1(bx + Math.cos(ang) * L * 0.5 - 6) + ' ' + f1(209 + Math.sin(ang) * L * 0.5) + ' ' + f1(bx + Math.cos(ang) * L + 5) + ' ' + f1(209 + Math.sin(ang) * L) + 'Q' + f1(bx + Math.cos(ang) * L * 0.5 + 6) + ' ' + f1(209 + Math.sin(ang) * L * 0.5) + ' ' + bx + ' 209Z'; }
+    kids.push(h('path', { key: 'weed', d: blades, fill: '#8a7430', stroke: '#43380f', strokeWidth: 0.6 }));
+    // 10.3 to 12 m: a table coral.
+    kids.push(h('g', { key: 'plate' },
+      h('path', { d: 'M346 160L343 212L359 212L356 160Z', fill: HC.dark }),
+      h('ellipse', { cx: 351, cy: 158, rx: 35, ry: 7.5, fill: HC.base }),
+      h('ellipse', { cx: 351, cy: 156.4, rx: 33, ry: 5.8, fill: HC.light }),
+      h('path', { d: 'M318 157.6q33 7 66 0', stroke: HC.tip, strokeWidth: 1.3, fill: 'none' })));
+    // 14.3 to 16.2 m: rock with an encrusting coral over its top.
+    kids.push(h('g', { key: 'crust' },
+      h('path', { d: 'M431 213A35 33 0 0 1 501 213Z', fill: '#74787a' }),
+      h('path', { d: 'M437 196Q444 177.5 466 177.5Q488 177.5 495 196Q480 190 466 193Q451 190 437 196Z', fill: PU.base, stroke: PU.tip, strokeWidth: 1.2 })));
+    // 16.4 to 17.4 m: rubble; 17.6 to 19.6 m: another branching colony.
+    var rub2 = '';
+    for (i = 0; i < 5; i++) { var rx2 = 500 + i * 6.5; rub2 += capsuleD({ x: rx2 - 6, y: gY(rx2) - 3 + (i % 2) * 2, x2: rx2 + 7, y2: gY(rx2) - 5, w0: 4.4, w1: 3.6 }); }
+    kids.push(h('path', { key: 'rub2', d: rub2, fill: '#aaa69a', stroke: '#6b675e', strokeWidth: 0.6 }));
+    kids.push(mdBranches(h, 'brB', [[[561, 211], [560, 186], [546, 162], [540, 140]], [[560, 186], [563, 156], [558, 132]], [[563, 156], [574, 140]], [[560, 186], [576, 166], [584, 146]]],
+      [[540, 140], [558, 132], [574, 140], [584, 146]], PU));
+    // The tape, its stakes, and a mark at every point.
+    kids.push(h('path', { key: 'stakes', d: 'M35 64L35 ' + f1(gY(35) + 2) + 'M605 64L605 ' + f1(gY(605) + 2), stroke: '#3f4650', strokeWidth: 3, strokeLinecap: 'round' }));
+    kids.push(h('rect', { key: 'tape', x: 33, y: 66, width: 574, height: 5, rx: 1, fill: '#f3c84b', stroke: '#a8801c', strokeWidth: 0.6 }));
+    var ticks = '';
+    for (i = 0; i < POINT_COUNT; i++) ticks += 'M' + f1(mdX(i * POINT_SPACING_M)) + ' 71v' + (i % 10 ? 4 : 8);
+    kids.push(h('path', { key: 'ticks', 'data-part': 'point-marks', d: ticks, stroke: '#ffffff', strokeWidth: 1.4 }));
+    var drops = [[1, 180.5], [3, 100.8], [7, 155.3], [12.5, f1(gY(mdX(12.5)) - 0.5)], [15, 178.6]];
+    for (i = 0; i < drops.length; i++) kids.push(mdPlumb(h, 'pl' + i, mdX(drops[i][0]), 75, drops[i][1]));
+    return { kids: kids, W: W, H: H, marks: [[mdX(3), 100.8], [mdX(12.5), gY(mdX(12.5)) - 0.5]] };
+  }
+  // A diver seen from above, swimming toward +x.
+  function mdDiver(h, x, y) {
+    return h('g', { key: 'diver', transform: 'translate(' + x + ' ' + y + ')' },
+      h('path', { d: 'M-50 -12L-33 -7L-33 -2L-52 -4ZM-50 12L-33 7L-33 2L-52 4Z', fill: '#f2b632', stroke: '#3b2f0b', strokeWidth: 0.6 }),
+      h('path', { d: 'M-33 -5L-12 -6M-33 5L-12 6', stroke: '#1e293b', strokeWidth: 6, strokeLinecap: 'round' }),
+      h('ellipse', { cx: 0, cy: 0, rx: 15, ry: 10, fill: '#1e293b' }),
+      h('rect', { x: -11, y: -3.4, width: 22, height: 6.8, rx: 3.4, fill: '#cbd5e1', stroke: '#64748b', strokeWidth: 0.6 }),
+      h('path', { d: 'M10 -8L27 -7M10 8L27 7', stroke: '#1e293b', strokeWidth: 4, strokeLinecap: 'round' }),
+      h('rect', { x: 27, y: -8, width: 8, height: 16, rx: 1, fill: '#f8fafc', stroke: '#64748b', strokeWidth: 0.6 }),
+      h('circle', { cx: 19, cy: 0, r: 5.6, fill: '#1e293b' }),
+      h('path', { d: 'M21.5 -3.4h3v6.8h-3z', fill: '#7dd3fc' }),
+      h('path', { d: circD(10, -16, 2.2) + circD(5, -22, 1.6) + circD(12, -25, 1.2) + circD(2, -29, 0.9), fill: '#ecfeff', opacity: 0.85 }));
+  }
+  // Method 2, from above: the belt reaches 2.5 m to each side of the tape.
+  function beltFromAbove(h, id) {
+    var W = 640, H = 300, Yc = 150, half = BELT_HALF_WIDTH_M * MD_PER_M, kids = [], i;
+    var R = mulberry32(5150);
+    kids.push(h('defs', { key: 'd' },
+      h('filter', { id: id + 'b', x: '-20%', y: '-20%', width: '140%', height: '140%' }, h('feGaussianBlur', { stdDeviation: 1.2 })),
+      h('pattern', { id: id + 'k', width: 96, height: 58, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-11)' },
+        h('path', { d: 'M0 12C9 4 18 10 26 6S41 1 50 9 66 15 73 8 88 4 96 12M0 40C7 31 16 36 22 30S31 18 26 6M22 30C30 37 39 33 46 38S57 49 66 44 79 31 73 8M66 44C74 52 85 50 96 40M50 9C47 18 51 26 46 38M46 38C44 47 38 52 30 58M88 4C85 16 92 27 96 40M0 40C5 49 3 53 6 58M79 31C86 33 90 37 96 40', fill: 'none', stroke: '#f2feff', strokeWidth: 1.6, strokeLinecap: 'round' }))));
+    kids.push(h('rect', { key: 'sand', width: W, height: H, fill: '#d2e2d6' }));
+    // Patches of reef seen from above: coral heads, rock, seaweed, rubble.
+    var tones = [HEALTHY_TONES[0].light, HEALTHY_TONES[1].light, HEALTHY_TONES[2].light, HEALTHY_TONES[3].light, '#9a9d98', '#8f7a31'];
+    var heads = [[], [], [], [], [], []], hl = '', sh = '';
+    for (i = 0; i < 34; i++) {
+      var px = R() * W, py = R() * H, r = 9 + R() * 16, k = Math.floor(R() * tones.length), pts = blobPts(px, py, r, r * (0.7 + R() * 0.3), R, 9, 0.18);
+      heads[k].push(smoothD(pts, true));
+      sh += smoothD(pts.map(function (q) { return [q[0] + 3, q[1] + 3]; }), true);
+      if (k < 4) hl += circD(px - r * 0.25, py - r * 0.25, r * 0.4);
+    }
+    kids.push(h('path', { key: 'sh', d: sh, fill: '#3b3528', opacity: 0.25, filter: 'url(#' + id + 'b)' }));
+    for (i = 0; i < tones.length; i++) kids.push(h('path', { key: 'p' + i, d: heads[i].join(''), fill: tones[i] }));
+    kids.push(h('path', { key: 'hl', d: hl, fill: '#ffffff', opacity: 0.22 }));
+    // Water over the reef, and the area outside the belt shaded a little.
+    kids.push(h('rect', { key: 'tint', width: W, height: H, fill: '#2fa3c6', opacity: 0.2 }));
+    kids.push(h('rect', { key: 'light', width: W, height: H, fill: 'url(#' + id + 'k)', opacity: 0.22 }));
+    kids.push(h('path', { key: 'out', d: 'M0 0H640V' + (Yc - half) + 'H0ZM0 ' + (Yc + half) + 'H640V300H0Z', fill: '#06364a', opacity: 0.3 }));
+    kids.push(h('rect', { key: 'belt', 'data-part': 'belt', x: mdX(0), y: Yc - half, width: TRANSECT_M * MD_PER_M, height: half * 2, fill: '#ffffff', fillOpacity: 0.1, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '9 6' }));
+    kids.push(h('line', { key: 'tape', x1: mdX(0) - 4, y1: Yc, x2: mdX(TRANSECT_M) + 4, y2: Yc, stroke: '#f3c84b', strokeWidth: 4 }));
+    var stops = '';
+    for (i = 5; i < TRANSECT_M; i += 5) stops += 'M' + mdX(i) + ' ' + (Yc - 6) + 'v12';
+    kids.push(h('path', { key: 'stops', d: stops, stroke: '#3b2f0b', strokeWidth: 1.6 }));
+    // Width arrows at the far end: tape to each belt edge.
+    var ax = mdX(TRANSECT_M) + 17;
+    kids.push(h('path', { key: 'dim', d: 'M' + ax + ' ' + (Yc - 2) + 'V' + (Yc - half + 2) + 'M' + (ax - 4) + ' ' + (Yc - half + 8) + 'L' + ax + ' ' + (Yc - half + 2) + 'L' + (ax + 4) + ' ' + (Yc - half + 8) +
+      'M' + ax + ' ' + (Yc + 2) + 'V' + (Yc + half - 2) + 'M' + (ax - 4) + ' ' + (Yc + half - 8) + 'L' + ax + ' ' + (Yc + half - 2) + 'L' + (ax + 4) + ' ' + (Yc + half - 8), stroke: '#ffffff', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' }));
+    kids.push(mdDiver(h, mdX(6.5), Yc));
+    // Three fish inside the belt (counted) and two outside it (not counted).
+    var fish = [['surgeonfish', 3, Yc - 40, false], ['parrotfish', 11.5, Yc - 28, false], ['butterflyfish', 15.5, Yc + 38, true], ['grouper', 13.5, Yc + half + 34, true], ['snapper', 8.5, Yc - half - 32, false]];
+    for (i = 0; i < fish.length; i++) kids.push(h('g', { key: 'f' + i, transform: 'translate(' + mdX(fish[i][1]) + ' ' + fish[i][2] + ') scale(1.3)' }, fishShape(h, fish[i][0], 0, 0, 'fs', fish[i][3])));
+    return { kids: kids, W: W, H: H };
+  }
+  function MethodDiagram(props) {
+    var h = props.h, P = props.P, __alloT = props.t, __alloFill = props.fill, belt = props.belt;
+    var dist = function (m) { return __alloFill(__alloT('stem.coralreef.m_dist_m', '{m} m'), { m: m }); };
+    var sc = belt ? beltFromAbove(h, 'crmd2-') : sideTransect(h, 'crmd1-'), W = sc.W, H = sc.H, chips = [];
+    if (belt) {
+      var ax = mdX(TRANSECT_M) + 17, half = BELT_HALF_WIDTH_M * MD_PER_M;
+      chips.push(h('span', { key: 'u', style: mdChip(P, ax - 2, 150 - half / 2, W, H, null, 'left') }, dist(2.5)));
+      chips.push(h('span', { key: 'd', style: mdChip(P, ax - 2, 150 + half / 2, W, H, null, 'left') }, dist(2.5)));
+    } else {
+      chips.push(h('span', { key: 'a', style: mdChip(P, sc.marks[0][0], sc.marks[0][1], W, H, { background: P.accent, color: P.accentInk, borderColor: P.accent }, 'left') }, __alloT('stem.coralreef.m_pit_mark_a', 'A')));
+      chips.push(h('span', { key: 'b', style: mdChip(P, sc.marks[1][0], sc.marks[1][1], W, H, { background: P.accent, color: P.accentInk, borderColor: P.accent }, 'right') }, __alloT('stem.coralreef.m_pit_mark_b', 'B')));
+    }
+    var axis = h('div', { 'aria-hidden': 'true', style: { position: 'relative', height: 24 } },
+      h('span', { style: mdChip(P, mdX(0), 10, W, 20, { border: 0, background: 'transparent', fontWeight: 600 }) }, dist(0)),
+      h('span', { style: mdChip(P, mdX(TRANSECT_M), 10, W, 20, { border: 0, background: 'transparent', fontWeight: 600 }) }, dist(TRANSECT_M)));
+    var legendItem = function (mark, text) {
+      return h('li', { style: { display: 'flex', gap: 8, alignItems: 'baseline' } },
+        h('span', { 'aria-hidden': 'true', style: { flex: 'none', minWidth: 22, textAlign: 'center', borderRadius: 6, background: P.accent, color: P.accentInk, fontWeight: 700, fontSize: 12, lineHeight: '18px' } }, mark), text);
+    };
+    return h('div', { style: { margin: '6px 0 10px', maxWidth: 720 } },
+      h('div', { style: { position: 'relative' } },
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': props.label, focusable: 'false', style: { width: '100%', height: 'auto', aspectRatio: W + ' / ' + H, display: 'block', borderRadius: 10 } }, sc.kids),
+        h('div', { 'aria-hidden': 'true' }, chips)),
+      axis,
+      belt ? null : h('ul', { style: { listStyle: 'none', margin: '2px 0 0', padding: 0, display: 'grid', gap: 4, fontSize: 14 } },
+        legendItem(__alloT('stem.coralreef.m_pit_mark_a', 'A'), __alloT('stem.coralreef.m_pit_example_a', 'At 3 m the line touches live hard coral, so you record HC.')),
+        legendItem(__alloT('stem.coralreef.m_pit_mark_b', 'B'), __alloT('stem.coralreef.m_pit_example_b', 'At 12.5 m it touches sand, so you record SD.'))));
+  }
+
+  function MethodsSection(props) {
+    var env = props.env, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var CN = categoryNames(__alloT), CG = categoryGuides(__alloT), FN = fishNames(__alloT), FR = fishRoles(__alloT);
+    var practice = d.practice || {};
+    var right = 0;
+    for (var i = 0; i < PRACTICE_POINTS.length; i++) if (practice[i] === PRACTICE_POINTS[i].category) right += 1;
+    function choose(i, cat) {
+      var next = Object.assign({}, practice); next[i] = cat;
+      env.set({ practice: next });
+      var truth = PRACTICE_POINTS[i].category;
+      env.say(cat === truth ? __alloFill(__alloT('stem.coralreef.sr_practice_right', 'Correct: {name}.'), { name: CN[truth] }) : __alloFill(__alloT('stem.coralreef.sr_practice_wrong', 'Not quite. This one is {name}.'), { name: CN[truth] }));
+    }
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.m_pit_title', 'Method 1: point-intercept transect (the bottom)')),
+        h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_pit_1', 'Lay a 20 m tape along the reef. At 0 m, 0.5 m, 1 m and so on up to 19.5 m, drop a weighted line straight down from the tape and record what it touches. That gives 40 points.')),
+        h(MethodDiagram, { h: h, P: P, t: __alloT, fill: __alloFill, belt: false, label: __alloT('stem.coralreef.m_pit_diagram_side', 'Diagram from the side: a 20 meter tape stretched over a reef, with a mark every half meter, 40 points in all. Weighted lines drop from some marks to the bottom. At 3 meters (A) one touches live hard coral; at 12.5 meters (B) one touches sand.') }),
+        h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_pit_2', 'Percent cover is the share of points in each category: points in the category divided by 40, times 100. Eighteen points of live coral out of 40 is 45% live coral cover.')),
+        h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.m_pit_3', 'Reef Check surveys four 20 m stretches like this one and averages them, and recommends surveying a reef three to five times. Forty points is a small sample: on a reef with 30% cover, one 20 m stretch can read about 14 percentage points higher or lower just by chance, and more when one colony spans several points.'))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.m_belt_title', 'Method 2: belt transect (the fish)')),
+        h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_belt_1', 'Swim slowly along the same tape, stopping every 5 m, and count chosen indicator fish inside a belt 2.5 m to each side of it. The belt is 20 m long and 5 m wide, so it covers 100 square meters. Fish outside the belt do not count.')),
+        h(MethodDiagram, { h: h, P: P, t: __alloT, fill: __alloFill, belt: true, label: __alloT('stem.coralreef.m_belt_diagram_above', 'Diagram from above: a diver swims along the 20 meter tape and counts fish inside a belt that reaches 2.5 meters to each side of it. Three fish swim inside the belt and are counted; two swim outside it and are not.') }),
+        h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_belt_2', 'Density is fish per 100 square meters: the count divided by the belt area, times 100. Because one belt covers exactly 100 square meters, the count and the density are the same number here.')),
+        h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.m_belt_3', 'Each program picks its own fish. Reef Check counts butterflyfish, snapper, groupers over 30 cm and parrotfish over 20 cm, among others; the AGRRA program also counts surgeonfish. This lab counts five families from those lists, and counts every size.'))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.m_guide_title', 'Field guide: what can be under a point')),
+        h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 12 } },
+          CATEGORY_IDS.map(function (id) {
+            return h('li', { key: id, style: { background: P.cardAlt, border: '1px solid ' + P.border, borderRadius: 10, padding: 10 } },
+              h(PointArt, { h: h, point: GUIDE_SAMPLES[id], size: 420, idPrefix: 'g' + id, label: __alloFill(__alloT('stem.coralreef.guide_art_label', 'Example of {name}: {features}.'), { name: CN[id], features: describeFeatures(GUIDE_SAMPLES[id], __alloT) }) }),
+              h('p', { style: { margin: '8px 0 2px', fontWeight: 700 } }, CN[id], ' ', h('span', { style: { color: P.muted, fontWeight: 600 } }, '(' + STRIP_CODE[id] + ')')),
+              h('p', { style: mutedStyle(P, { margin: 0 }) }, CG[id]));
+          })),
+        h('p', { style: mutedStyle(P, { margin: '10px 0 0' }) }, __alloT('stem.coralreef.m_guide_note', 'Reef Check records a bleached colony as live hard coral and notes that it is bleached. This lab gives bleached coral its own button (BL) so you can count it.'))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.m_fish_title', 'Indicator fish and what they tell you')),
+        h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } }, FISH_FAMILIES.map(function (f) {
+          return h('li', { key: f, style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 } },
+            h('svg', { viewBox: '-16 -10 32 20', width: 56, height: 35, 'aria-hidden': 'true', focusable: 'false', style: { background: '#1d5f7a', borderRadius: 6, flex: '0 0 auto' } }, fishShape(h, f, 0, 0, 'g', false)),
+            h('div', null, h('strong', null, FN[f]), h('p', { style: mutedStyle(P, { margin: 0 }) }, FR[f])));
+        }))),
+      h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-practice-title' },
+        h('h3', { id: 'cr-practice-title', style: h3Style(P) }, __alloT('stem.coralreef.m_practice_title', 'Practice: what is under each point?')),
+        h('p', { style: mutedStyle(P) }, __alloFill(__alloT('stem.coralreef.m_practice_score', 'Correct so far: {right} of {total}. Look closely at the white corals: is the tissue still there?'), { right: right, total: PRACTICE_POINTS.length })),
+        h('ol', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 12 } },
+          PRACTICE_POINTS.map(function (pt, i) {
+            var got = practice[i], answered = got != null, ok = got === pt.category;
+            var groupLabel = __alloFill(__alloT('stem.coralreef.m_practice_point', 'Practice point {n}'), { n: i + 1 });
+            return h('li', { key: i, style: { background: P.cardAlt, border: '1px solid ' + P.border, borderRadius: 10, padding: 10 } },
+              h('p', { style: { margin: '0 0 6px', fontWeight: 700 } }, groupLabel),
+              h(PointArt, { h: h, point: pt, size: 420, idPrefix: 'p' + i, label: __alloFill(__alloT('stem.coralreef.point_art_label', 'Close-up under the point: {features}.'), { features: describeFeatures(pt, __alloT) }) }),
+              h('div', { role: 'group', 'aria-label': groupLabel, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+                CATEGORY_IDS.map(function (cat) {
+                  return h('button', { key: cat, type: 'button', 'aria-pressed': got === cat ? 'true' : 'false', style: btnStyle(P, got === cat, { fontSize: 13, padding: '4px 8px', minHeight: 32 }), onClick: function () { choose(i, cat); } }, CN[cat]);
+                })),
+              answered ? h('p', { style: { margin: '8px 0 0', color: ok ? P.good : P.bad, fontWeight: 600 } },
+                ok ? __alloT('stem.coralreef.m_practice_ok', 'Correct.') : __alloFill(__alloT('stem.coralreef.m_practice_fix', 'Not quite: this is {name}.'), { name: CN[pt.category] })) : null,
+              answered ? h('p', { style: mutedStyle(P, { margin: '4px 0 0' }) }, CG[pt.category]) : null);
+          })),
+        h('div', { style: { marginTop: 12 } },
+          h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { env.go('survey'); } }, __alloT('stem.coralreef.m_to_survey', 'Start a field survey')))));
+  }
+
+  // ── 3D dive loader ───────────────────────────────────────────────────────
+  // Companions resolve beside this file and KEEP its query string, so the
+  // deploy cache tag (?v=...) reaches them too.
+  var MODULE_SRC = (function () {
+    try {
+      var s = document.currentScript;
+      if (s && s.src && s.src.indexOf('stem_tool_coralreef') !== -1) return s.src;
+      // The STEM hub script lives in the same stem_lab/ folder and carries the
+      // same deploy tag, so it is a safe second anchor.
+      var q = document.querySelector('script[src*="stem_tool_coralreef.js"]') || document.querySelector('script[src*="stem_lab/stem_lab_module.js"]');
+      return q ? q.src : '';
+    } catch (e) { return ''; }
+  })();
+  function companionUrl(name) {
+    if (!MODULE_SRC) return 'stem_lab/' + name;
+    try {
+      var query = MODULE_SRC.split('#')[0].split('?')[1];
+      return new URL(name, MODULE_SRC).href.split('?')[0] + (query ? '?' + query : '');
+    } catch (e) { return 'stem_lab/' + name; }
+  }
+  function reef3dReady() {
+    var e = window.Reef3D, hb = window.Reef3DHabitat;
+    return !!(e && typeof e.mount === 'function' && /^1\./.test(String(e.version || '')) && hb && typeof hb.create === 'function' && /^1\./.test(String(hb.version || '')));
+  }
+  function loadCompanion(name) {
+    return new Promise(function (resolve, reject) {
+      var el = document.createElement('script'), done = false;
+      var timer = setTimeout(function () { finish(new Error('Timed out loading ' + name)); }, 20000);
+      function finish(err) {
+        if (done) return; done = true; clearTimeout(timer); el.onload = el.onerror = null;
+        if (err) { if (el.parentNode) el.parentNode.removeChild(el); reject(err); } else resolve();
+      }
+      el.src = companionUrl(name); el.async = true; el.setAttribute('data-coralreef-3d', name);
+      el.onload = function () { finish(null); };
+      el.onerror = function () { finish(new Error('Could not load ' + name)); };
+      document.head.appendChild(el);
+    });
+  }
+  var reef3dPromise = null;
+  function ensureReef3D() {
+    if (reef3dReady() && window.THREE) return Promise.resolve(window.THREE);
+    if (reef3dPromise) return reef3dPromise;
+    var three = (window.StemLab && typeof window.StemLab.ensureThree === 'function') ? window.StemLab.ensureThree({ orbit: false }) : Promise.resolve(window.THREE);
+    reef3dPromise = Promise.resolve(three).then(function () {
+      if (!window.THREE) throw new Error('The 3D engine is not available.');
+      return (window.Reef3DHabitat ? Promise.resolve() : loadCompanion('reef_3d_habitat.js'))
+        .then(function () { return window.Reef3D ? null : loadCompanion('reef_3d_engine.js'); })
+        .then(function () { if (!reef3dReady()) throw new Error('The 3D reef files did not load.'); return window.THREE; });
+    }).catch(function (e) { reef3dPromise = null; throw e; });
+    return reef3dPromise;
+  }
+
+  function Dive3D(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
+    var canvasRef = React.useRef(null), ctlRef = React.useRef(null);
+    var onPointRef = React.useRef(props.onPoint); onPointRef.current = props.onPoint;
+    var indexRef = React.useRef(props.pointIndex); indexRef.current = props.pointIndex;
+    // The engine reports its own starting point when it mounts. Until it has
+    // reached the survey's point, its reports are not the student moving.
+    var syncedRef = React.useRef(false);
+    var st = React.useState('loading'), status = st[0], setStatus = st[1];
+    var at = React.useState(0), attempt = at[0], setAttempt = at[1];
+    var layout = props.layout;
+    React.useEffect(function () {
+      var cancelled = false;
+      syncedRef.current = false;
+      setStatus('loading');
+      ensureReef3D().then(function (THREE) {
+        if (cancelled || !canvasRef.current) return;
+        try {
+          ctlRef.current = window.Reef3D.mount(canvasRef.current, {
+            THREE: THREE, layout: layout, seed: layout.seed, reducedMotion: !!env.ctx.reduceMotion,
+            onState: function (snap) {
+              if (!snap || typeof snap.pointIndex !== 'number') return;
+              if (!syncedRef.current) { if (snap.pointIndex === indexRef.current) syncedRef.current = true; return; }
+              if (snap.pointIndex !== indexRef.current && onPointRef.current) onPointRef.current(snap.pointIndex);
+            },
+            onError: function () { if (!cancelled) setStatus('error'); }
+          });
+          ctlRef.current.goToPoint(indexRef.current || 0);
+          var now = ctlRef.current.getState ? ctlRef.current.getState() : null;
+          if (now && now.pointIndex === indexRef.current) syncedRef.current = true;
+          setStatus('ready');
+        } catch (e) { setStatus('error'); }
+      }).catch(function () { if (!cancelled) setStatus('error'); });
+      return function () {
+        cancelled = true;
+        if (ctlRef.current) { try { ctlRef.current.dispose(); } catch (e) {} ctlRef.current = null; }
+      };
+    }, [layout, attempt]);
+    React.useEffect(function () {
+      var c = ctlRef.current;
+      if (c && status === 'ready') { var s = c.getState ? c.getState() : null; if (!s || s.pointIndex !== props.pointIndex) c.goToPoint(props.pointIndex); }
+    }, [props.pointIndex, status]);
+    return h('div', { style: { position: 'relative', marginBottom: 12 } },
+      h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
+        'aria-label': __alloT('stem.coralreef.dive_canvas_label', '3D dive along the survey tape. Left and right arrow keys move between survey points; Page Up and Page Down jump 2 meters; Home and End go to the ends; Space pauses the fish.'),
+        style: { width: '100%', height: 360, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
+      status === 'loading' ? h('p', { role: 'status', style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.dive_loading', 'Loading the 3D reef...')) : null,
+      status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.dive_error', 'The 3D view could not start on this device. The close-up pictures below show the same reef, so you can keep surveying.')),
+        h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setAttempt(attempt + 1); } }, __alloT('stem.coralreef.dive_retry', 'Try the 3D view again'))) : null,
+      status === 'ready' ? h('p', { style: mutedStyle(P, { margin: '6px 0 0', fontSize: 14 }) }, __alloFill(__alloT('stem.coralreef.dive_hint', 'The orange plumb line hangs from the tape and touches what lies under point {n}; the small ring marks that spot. Drag to look around.'), { n: props.pointIndex + 1 })) : null);
+  }
+
+  // ── Field survey ─────────────────────────────────────────────────────────
+  function currentSite(d) {
+    if (d.surveySiteId === 'model' && d.modelSite && d.modelSite.cover) return d.modelSite;
+    return siteById(d.surveySiteId) || SITES[0];
+  }
+  function freshSurvey(site, seed, transectNo) {
+    return { surveySeed: seed >>> 0, surveyTransect: transectNo || 1, records: {}, fishCounts: {}, pointIndex: 0, surveyStage: 'points', surveySaved: false };
+  }
+
+  function SurveySection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var ST = siteText(__alloT);
+    var site = currentSite(d);
+    var seed = d.surveySeed != null ? d.surveySeed >>> 0 : site.seed;
+    var siteKey = site.id + ':' + seed + ':' + (site.modelYear != null ? site.modelYear : '');
+    var layout = React.useMemo(function () { return buildTransect(site, seed); }, [siteKey]);
+    var pend = React.useState(null), pending = pend[0], setPending = pend[1];
+    var records = d.records || {};
+    var recorded = Object.keys(records).length;
+    var stage = d.surveyStage === 'fish' || d.surveyStage === 'results' ? d.surveyStage : 'points';
+    var siteIds = SITES.map(function (s) { return s.id; });
+    if (d.modelSite && d.modelSite.cover) siteIds.push('model');
+    function switchSite(id) {
+      var target = id === 'model' ? d.modelSite : siteById(id);
+      if (!target) return;
+      env.set(Object.assign({ surveySiteId: id }, freshSurvey(target, target.seed, 1)));
+      setPending(null);
+      env.say(__alloFill(__alloT('stem.coralreef.sr_site_ready', 'New survey at {site}. Point 1 of 40.'), { site: ST[id].name }));
+    }
+    function requestSite(id) {
+      if (id === site.id) return;
+      if (recorded > 0 && !d.surveySaved) setPending(id); else switchSite(id);
+    }
+    var stages = [
+      { id: 'points', label: __alloFill(__alloT('stem.coralreef.stage_points', '1. Bottom points ({n} of 40)'), { n: recorded }) },
+      { id: 'fish', label: __alloT('stem.coralreef.stage_fish', '2. Fish in the belt') },
+      { id: 'results', label: __alloT('stem.coralreef.stage_results', '3. Results') }
+    ];
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.s_site_title', 'Choose a reef')),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.s_site_group', 'Survey sites'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          siteIds.map(function (id) {
+            var on = id === site.id;
+            return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { requestSite(id); } },
+              ST[id].name, id === 'model' && d.modelSite ? ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: d.modelSite.modelYear }) + ')' : '');
+          })),
+        pending ? h('div', { role: 'alert', style: { marginTop: 10, padding: 10, border: '1px solid ' + P.warn, borderRadius: 8 } },
+          h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.s_switch_warn', 'You have records that are not saved to your survey log. Switching reefs clears them.')),
+          h('button', { type: 'button', style: btnStyle(P, false, { marginRight: 8 }), onClick: function () { switchSite(pending); } }, __alloT('stem.coralreef.s_switch_yes', 'Switch and clear my records')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setPending(null); } }, __alloT('stem.coralreef.s_switch_no', 'Stay here'))) : null,
+        h('p', { style: { margin: '10px 0 0' } }, h('strong', null, ST[site.id].name), ': ', ST[site.id].about),
+        h('p', { style: mutedStyle(P, { margin: '4px 0 0' }) }, __alloFill(__alloT('stem.coralreef.s_site_meta', 'Transect {n} at this reef. Depth about {depth} m.'), { n: d.surveyTransect || 1, depth: site.depthM }))),
+      h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.s_stage_group', 'Survey steps'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+        stages.map(function (s) {
+          var on = s.id === stage;
+          return h('button', { key: s.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { env.set({ surveyStage: s.id }); } }, s.label);
+        })),
+      stage === 'points' ? h(PointsStage, { env: env, layout: layout }) : null,
+      stage === 'fish' ? h(FishStage, { env: env, layout: layout }) : null,
+      stage === 'results' ? h(ResultsStage, { env: env, layout: layout, site: site }) : null);
+  }
+
+  // A small texture per category for the tape strip. It always sits beside
+  // the category's code, so color is never the only cue.
+  var STRIP_SWATCH = {
+    hard_coral: 'radial-gradient(circle, #ead3a6 0 1px, transparent 1.6px) 0 0 / 5px 5px, #8a5a35',
+    bleached_coral: 'radial-gradient(circle, #8fa7b4 0 0.9px, transparent 1.4px) 0 0 / 5px 5px, #f4f8f9',
+    recently_dead_coral: 'radial-gradient(circle, #6b4f27 0 1.2px, transparent 1.7px) 1px 1px / 6px 5px, #bdb9ae',
+    macroalgae: 'repeating-linear-gradient(100deg, #9d8636 0 3px, #54471a 3px 4px)',
+    rock: 'radial-gradient(circle, #c57592 0 1.7px, transparent 2.2px) 2px 1px / 9px 7px, #7f8385',
+    rubble: 'repeating-linear-gradient(135deg, #b2aea3 0 3px, #66625a 3px 4px)',
+    sand: 'radial-gradient(circle, #a08b5d 0 0.7px, transparent 1.1px) 0 0 / 3px 3px, #e3d4ab'
+  };
+  // A picture of the tape, 0 to 20 m: what has been recorded so far, and a
+  // plumb line hanging at the current point. The buttons below carry the
+  // same information for screen readers, so this is hidden from them.
+  function TapeOverview(props) {
+    var h = props.h, P = props.P, records = props.records, idx = props.idx, __alloT = props.t, __alloFill = props.fill, cells = [], labels = [];
+    for (var i = 0; i < POINT_COUNT; i++) {
+      var rec = records[i], left = i * POINT_SPACING_M / TRANSECT_M * 100;
+      cells.push(h('span', { key: i, style: { position: 'absolute', top: 24, height: 12, left: 'calc(' + left + '% - 1.25% + 1px)', width: 'calc(2.5% - 2px)', borderRadius: 2,
+        background: rec ? STRIP_SWATCH[rec] : 'transparent', border: rec ? '1px solid ' + P.ctlBorder : '1px dashed ' + P.border, boxSizing: 'border-box' } }));
+    }
+    for (var m = 0; m <= TRANSECT_M; m += 5) labels.push(h('span', { key: m, style: { position: 'absolute', top: 40, left: (m / TRANSECT_M * 100) + '%', transform: 'translateX(-50%)', fontSize: 11, color: P.muted, whiteSpace: 'nowrap' } },
+      __alloFill(__alloT('stem.coralreef.m_dist_m', '{m} m'), { m: m })));
+    var at = idx * POINT_SPACING_M / TRANSECT_M * 100;
+    return h('div', { 'aria-hidden': 'true', 'data-part': 'tape-overview', style: { position: 'relative', height: 56, margin: '0 14px 10px' } },
+      h('div', { style: { position: 'absolute', left: 0, right: 0, top: 6, height: 11, borderRadius: 2, background: 'repeating-linear-gradient(90deg, #3b2f0b 0 2px, transparent 2px 25%) 0 0 / 100% 100%, repeating-linear-gradient(90deg, #3b2f0b 0 1px, transparent 1px 2.5%) 0 100% / 100% 45% no-repeat, #f3c84b', boxShadow: 'inset 0 -2px 0 #a8801c' } }),
+      cells,
+      h('span', { style: { position: 'absolute', left: at + '%', top: 0, width: 0, height: 24, borderLeft: '2px dashed ' + P.text, transform: 'translateX(-1px)' } }),
+      h('span', { style: { position: 'absolute', left: at + '%', top: 21, width: 18, height: 18, transform: 'translateX(-50%)', borderRadius: '50%', border: '3px solid ' + P.accent, boxSizing: 'border-box', background: 'transparent' } }),
+      labels);
+  }
+  function PointsStage(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var layout = props.layout, CN = categoryNames(__alloT);
+    var records = d.records || {};
+    var idx = clamp(d.pointIndex | 0, 0, POINT_COUNT - 1);
+    var point = layout.points[idx];
+    var autoAdvance = d.autoAdvance !== false;
+    var dive = d.surveyView === '3d';
+    var btnRefs = React.useRef({});
+    var focusWanted = React.useRef(false);
+    React.useEffect(function () {
+      if (!focusWanted.current) return;
+      focusWanted.current = false;
+      var el = btnRefs.current[idx];
+      if (el && typeof el.focus === 'function') el.focus();
+    }, [idx]);
+    function moveTo(i, focus) {
+      var n = clamp(i, 0, POINT_COUNT - 1);
+      if (focus) focusWanted.current = true;
+      env.set({ pointIndex: n });
+      var rec = records[n];
+      env.say(__alloFill(__alloT('stem.coralreef.sr_point', 'Point {n} of 40, at {m} m. {status}'), { n: n + 1, m: layout.points[n].distanceM,
+        status: rec ? __alloFill(__alloT('stem.coralreef.sr_point_recorded', 'Recorded: {name}.'), { name: CN[rec] }) : __alloT('stem.coralreef.sr_point_empty', 'Not recorded yet.') }));
+    }
+    function record(cat) {
+      var next = Object.assign({}, records); next[idx] = cat;
+      var patch = { records: next, surveySaved: false };
+      var done = Object.keys(next).length;
+      if (autoAdvance && idx < POINT_COUNT - 1) patch.pointIndex = idx + 1;
+      env.set(patch);
+      env.say(__alloFill(__alloT('stem.coralreef.sr_recorded', 'Point {n}: {name}. {done} of 40 recorded.'), { n: idx + 1, name: CN[cat], done: done }));
+    }
+    function stripKey(e) {
+      var k = e.key, to = null;
+      if (k === 'ArrowRight' || k === 'ArrowDown') to = idx + 1;
+      else if (k === 'ArrowLeft' || k === 'ArrowUp') to = idx - 1;
+      else if (k === 'Home') to = 0;
+      else if (k === 'End') to = POINT_COUNT - 1;
+      if (to != null) { e.preventDefault(); moveTo(to, true); }
+    }
+    var features = describeFeatures(point, __alloT);
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.p_tape_title', 'The tape: 40 points, 0.5 m apart')),
+        h(TapeOverview, { h: h, P: P, records: records, idx: idx, t: __alloT, fill: __alloFill }),
+        h('div', { role: 'toolbar', 'aria-label': __alloT('stem.coralreef.p_strip_label', 'Survey points along the tape. Use the arrow keys to move.'), onKeyDown: stripKey,
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))', gap: 4 } },
+          layout.points.map(function (pt, i) {
+            var rec = records[i], on = i === idx;
+            // Each button shows its point number, and once recorded, the
+            // category code over a matching swatch.
+            return h('button', { key: i, type: 'button', ref: function (el) { btnRefs.current[i] = el; }, tabIndex: on ? 0 : -1,
+              'aria-current': on ? 'true' : undefined, 'data-code': rec ? STRIP_CODE[rec] : undefined,
+              'aria-label': __alloFill(__alloT('stem.coralreef.p_strip_item', 'Point {n}, at {m} m, {status}'), { n: i + 1, m: pt.distanceM, status: rec ? CN[rec] : __alloT('stem.coralreef.p_not_recorded', 'not recorded') }),
+              onClick: function () { moveTo(i, false); },
+              style: { minHeight: 48, padding: '3px 2px 4px', borderRadius: 7, cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', gap: 1,
+                border: on ? '2px solid ' + P.accent : '1px solid ' + (rec ? P.ctlBorder : P.border), background: on ? P.accent : (rec ? P.cardAlt : P.card), color: on ? P.accentInk : P.text,
+                boxShadow: on ? '0 0 0 2px ' + P.card + ', 0 0 0 4px ' + P.accent : undefined } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: rec ? 11 : 12, fontWeight: rec ? 600 : 700, lineHeight: 1.2, color: on ? P.accentInk : (rec ? P.muted : P.text) } }, String(i + 1)),
+              rec ? h('span', { 'aria-hidden': 'true', style: { fontSize: 12, fontWeight: 800, lineHeight: 1.1, letterSpacing: '0.02em' } }, STRIP_CODE[rec]) : null,
+              h('span', { 'aria-hidden': 'true', style: { display: 'block', width: '80%', height: 6, borderRadius: 3, boxSizing: 'border-box',
+                background: rec ? STRIP_SWATCH[rec] : 'transparent', border: rec ? '1px solid ' + (on ? P.accentInk : P.ctlBorder) : '1px dashed ' + (on ? P.accentInk : P.border) } }));
+          })),
+        h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, __alloFill(__alloT('stem.coralreef.p_progress', '{n} of 40 points recorded.'), { n: Object.keys(records).length }))),
+      h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-point-title' },
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 } },
+          h('h3', { id: 'cr-point-title', style: Object.assign(h3Style(P), { margin: 0 }) }, __alloFill(__alloT('stem.coralreef.p_point_title', 'Point {n} of 40, at {m} m'), { n: idx + 1, m: point.distanceM })),
+          h('button', { type: 'button', 'aria-pressed': dive ? 'true' : 'false', style: btnStyle(P, dive), onClick: function () { env.set({ surveyView: dive ? '2d' : '3d' }); } },
+            dive ? __alloT('stem.coralreef.p_view_2d', 'Back to close-up pictures') : __alloT('stem.coralreef.p_view_3d', 'Dive view (3D)'))),
+        dive ? h(Dive3D, { env: env, layout: layout, pointIndex: idx, onPoint: function (i) { moveTo(i, false); } }) : null,
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' } },
+          dive ? null : h('div', { style: { flex: '1 1 320px', maxWidth: 560 } },
+            h(PointArt, { h: h, point: point, size: 560, idPrefix: 's', label: __alloFill(__alloT('stem.coralreef.point_art_label', 'Close-up under the point: {features}.'), { features: features }) })),
+          h('div', { style: { flex: '1 1 260px' } },
+            h('p', { style: { margin: '0 0 8px' } }, h('strong', null, __alloT('stem.coralreef.p_you_see', 'What you can see: ')), features, '.'),
+            h('div', { role: 'group', 'aria-label': __alloFill(__alloT('stem.coralreef.p_record_group', 'Record point {n}'), { n: idx + 1 }), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              CATEGORY_IDS.map(function (cat) {
+                var on = records[idx] === cat;
+                return h('button', { key: cat, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { record(cat); } }, CN[cat], ' (', STRIP_CODE[cat], ')');
+              })),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 } },
+              h('input', { type: 'checkbox', checked: autoAdvance, onChange: function (e) { env.set({ autoAdvance: !!e.target.checked }); } }),
+              __alloT('stem.coralreef.p_auto_advance', 'Move to the next point after I record one')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+              h('button', { type: 'button', style: btnStyle(P, false), disabled: idx === 0, onClick: function () { moveTo(idx - 1, false); } }, __alloT('stem.coralreef.p_prev', 'Previous point')),
+              h('button', { type: 'button', style: btnStyle(P, false), disabled: idx === POINT_COUNT - 1, onClick: function () { moveTo(idx + 1, false); } }, __alloT('stem.coralreef.p_next', 'Next point')),
+              h('button', { type: 'button', style: btnStyle(P, Object.keys(records).length === POINT_COUNT), onClick: function () { env.set({ surveyStage: 'fish' }); } }, __alloT('stem.coralreef.p_to_fish', 'Go to the fish count')))))));
+  }
+
+  // ── Survey data pictures ─────────────────────────────────────────────────
+  // One color map for every survey figure (tape strip, cover bars, reef
+  // comparison, modeled reef). Hues follow the real bottom (rose coral, white
+  // bleached coral, olive seaweed, sand yellow) and are stepped so that
+  // neighbors in a stack stay apart for color-blind readers (checked in OKLab:
+  // adjacent pairs 18 or more apart under protan and deutan simulation, 20 or
+  // more for normal vision). Every use also shows the code or a texture.
+  var CAT_FILL = { hard_coral: '#c8436a', bleached_coral: '#f2f5f7', recently_dead_coral: '#c9b08a', macroalgae: '#4a7520', rock: '#4f74ad', rubble: '#b7a9d8', sand: '#e9c766' };
+  var CAT_INK = { hard_coral: '#ffffff', bleached_coral: '#13212b', recently_dead_coral: '#13212b', macroalgae: '#ffffff', rock: '#ffffff', rubble: '#13212b', sand: '#13212b' };
+  // Textures echo the bottom: polyp dots, fuzzy film, seaweed blades,
+  // rock grain, broken sticks, sand ripples.
+  var CAT_TEXTURE = {
+    hard_coral: 'radial-gradient(circle,rgba(255,255,255,.42) 0 1px,transparent 1.5px) 0 0/6px 6px',
+    bleached_coral: 'radial-gradient(circle,rgba(55,85,105,.55) 0 1px,transparent 1.5px) 0 0/6px 6px',
+    recently_dead_coral: 'repeating-linear-gradient(135deg,rgba(92,64,22,.5) 0 1px,transparent 1px 4px)',
+    macroalgae: 'repeating-linear-gradient(70deg,rgba(255,255,255,.28) 0 1.2px,transparent 1.2px 5px)',
+    rock: 'repeating-linear-gradient(45deg,rgba(255,255,255,.24) 0 1px,transparent 1px 6px),repeating-linear-gradient(-45deg,rgba(255,255,255,.24) 0 1px,transparent 1px 6px)',
+    rubble: 'linear-gradient(25deg,transparent 40%,rgba(48,36,92,.55) 40% 60%,transparent 60%) 0 0/9px 5px',
+    sand: 'repeating-linear-gradient(0deg,rgba(120,88,20,.4) 0 1px,transparent 1px 4px)'
+  };
+  var MISSING_TEXTURE = 'repeating-linear-gradient(45deg,rgba(0,0,0,.18) 0 2px,transparent 2px 6px),#d8d4cc';
+  var LANE_CSS_B = (function () {
+    var r = '[data-coralreef-root] ', css = '';
+    for (var i = 0; i < CATEGORY_IDS.length; i++) {
+      var id = CATEGORY_IDS[i];
+      css += r + '.crb-cat-' + id + '{background:' + CAT_TEXTURE[id] + ',' + CAT_FILL[id] + ';color:' + CAT_INK[id] + '}';
+    }
+    css += r + '.crb-cat-missing{background:' + MISSING_TEXTURE + ';color:#13212b}' +
+      r + '.crb-swatch{display:inline-block;width:18px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);flex:none}' +
+      r + '.crb-legend{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;margin:8px 0 0;padding:0;font-size:13px}' +
+      r + '.crb-legend li{display:flex;align-items:center;gap:6px}' +
+      r + '.crb-strip{container:crb-strip/inline-size;margin:4px 0 12px}' +
+      r + '.crb-chunks{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}' +
+      r + '.crb-chunk{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;align-items:stretch}' +
+      r + '.crb-head,.crb-rowlab{grid-column:1/-1;font-size:12px;color:var(--reef-muted)}' +
+      r + '.crb-rowlab{font-weight:650;align-self:center}' +
+      r + '.crb-cell{min-height:28px;display:flex;align-items:center;justify-content:center;font:inherit;font-size:11px;font-weight:750;line-height:1;border:0;border-radius:3px;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}' +
+      r + 'button.crb-cell{cursor:pointer}' +
+      r + '.crb-miss{box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 0 0 2px var(--crb-bad)}' +
+      r + '.crb-empty{background:var(--reef-card);color:var(--reef-muted);box-shadow:inset 0 0 0 1px var(--crb-ctl),0 0 0 2px var(--crb-bad)}' +
+      r + '.crb-mark{min-height:16px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;line-height:1;color:var(--crb-bad)}' +
+      '@container crb-strip (min-width:760px){' +
+        r + '.crb-chunks{grid-template-columns:96px repeat(4,minmax(0,1fr));gap:0 2px}' +
+        r + '.crb-chunk:first-child{grid-column:span 2;grid-template-columns:96px repeat(10,minmax(0,1fr))}' +
+        r + '.crb-chunk:first-child .crb-rowlab{grid-column:auto;padding-right:6px}' +
+        r + '.crb-chunk:first-child .crb-head{grid-column:2/-1}' +
+        r + '.crb-chunk:not(:first-child) .crb-rowlab{display:none}}' +
+      r + '.crb-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;align-items:center;margin:0 0 10px}' +
+      r + '.crb-bar{display:flex;height:30px;border-radius:6px;overflow:hidden;box-shadow:0 0 0 1px var(--crb-ctl)}' +
+      r + '.crb-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:750;white-space:nowrap;border-right:2px solid var(--reef-card);min-width:0}' +
+      r + '.crb-seg:last-child{border-right:0}' +
+      r + '.crb-seg{container-type:inline-size}' +
+      '@container (max-width:30px){' + r + '.crb-pct-3{display:none}}' +
+      '@container (max-width:38px){' + r + '.crb-pct-4{display:none}}' +
+      '@container (max-width:46px){' + r + '.crb-pct-5{display:none}}' +
+      '@supports not (container-type:inline-size){' + r + '.crb-pct-sm{display:none}}' +
+      r + '.crb-cmp{container:crb-cmp/inline-size;margin:0 0 14px}' +
+      r + '.crb-cmp-row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 14px;align-items:center;padding:8px 0;border-top:1px solid var(--reef-border)}' +
+      r + '.crb-cmp-head{font-size:12px;font-weight:650;color:var(--reef-muted);border-top:0;padding-top:0}' +
+      r + '.crb-fish{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}' +
+      r + '.crb-fishmark{display:grid;grid-template-columns:auto 1fr;gap:0 4px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}' +
+      r + '.crb-fishbar{grid-column:1/-1;height:5px;border-radius:0 3px 3px 0;background:var(--crb-line);margin-top:2px}' +
+      r + '.crb-cmp-head .crb-fish{font-size:11px;font-weight:600}' +
+      '@container crb-cmp (min-width:700px){' +
+        r + '.crb-cmp-row{grid-template-columns:200px minmax(0,1fr) 230px}}' +
+      '@media(min-width:700px){' + r + '.crb-stack{grid-template-columns:110px minmax(0,1fr)}}' +
+      r + '.crb-year{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-start}' +
+      r + '.crb-year>figure{flex:1 1 320px;max-width:480px;margin:0}' +
+      r + '.crb-year>div{flex:1 1 260px}' +
+      r + '.crb-yearnums{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 12px;list-style:none;margin:6px 0 0;padding:0;font-size:13px}' +
+      r + '.crb-yearnums li{display:flex;align-items:center;gap:6px}';
+    return css;
+  })();
+  function catLegend(h, CN, extraMissing, missingLabel, label) {
+    var ids = CATEGORY_IDS.slice();
+    return h('ul', { className: 'crb-legend', 'aria-label': label },
+      ids.map(function (id) {
+        return h('li', { key: id }, h('span', { className: 'crb-swatch crb-cat-' + id, 'aria-hidden': 'true' }), h('span', null, CN[id], ' (', STRIP_CODE[id], ')'));
+      }),
+      extraMissing ? h('li', { key: 'missing' }, h('span', { className: 'crb-swatch crb-cat-missing', 'aria-hidden': 'true' }), h('span', null, missingLabel)) : null);
+  }
+
+  // Top-down drawings of the bottom for the belt map. The strip under the
+  // tape shows each survey point's own category at its distance; the rest
+  // of the map repeats nearby points sideways, so what you see across the
+  // belt matches what the tape recorded. Seeded, so a transect always looks
+  // the same.
+  var MAP_CORAL_TONES = [['#b14d7c', '#6e2448', '#ecb1cf'], ['#c27a35', '#76400f', '#f3cc98'], ['#6a8a35', '#344d12', '#c3db92'], ['#7656a6', '#3d2869', '#cbb8ee'], ['#a8653c', '#5c3014', '#e6b88f']];
+  var MAP_BLEACHED = ['#f6f9fa', '#93a9b6', '#ffffff'], MAP_DEAD = ['#c6bfae', '#6f5c30', '#a59a82'];
+  var MAP_GROUND = { sand: '#e0cfa2', rubble: '#b3ab9c', hard: '#a39987' };
+  function mapCoral(bucket, form, cx, cy, r, rot) {
+    var k, a, d;
+    if (form === 'branching') {
+      d = '';
+      // Staghorn thicket from above: branches out from the middle, every
+      // other one forked.
+      for (k = 0; k < 8; k++) {
+        a = rot + k * Math.PI / 4;
+        var ex = cx + Math.cos(a) * r, ey = cy + Math.sin(a) * r;
+        bucket.branches += 'M' + round1(cx) + ' ' + round1(cy) + 'L' + round1(ex) + ' ' + round1(ey);
+        if (k % 2) {
+          var mx = cx + Math.cos(a) * r * 0.5, my = cy + Math.sin(a) * r * 0.5, fx = mx + Math.cos(a + 0.6) * r * 0.42, fy = my + Math.sin(a + 0.6) * r * 0.42;
+          bucket.branches += 'M' + round1(mx) + ' ' + round1(my) + 'L' + round1(fx) + ' ' + round1(fy);
+        }
+        bucket.tips += 'M' + round1(ex) + ' ' + round1(ey) + 'h.1';
+      }
+      bucket.width = Math.max(bucket.width, r * 0.24);
+      return;
+    }
+    if (form === 'plate') {
+      // Table coral from above: a wide flat disc with growth rings.
+      bucket.body += dotsPath([[cx, cy]], round1(r * 1.25));
+      bucket.lines += dotsPath([[cx, cy]], round1(r * 0.85)) + dotsPath([[cx, cy]], round1(r * 0.42));
+      for (k = 0; k < 6; k++) { a = rot + k * Math.PI / 3; bucket.lines += 'M' + round1(cx + Math.cos(a) * r * 0.42) + ' ' + round1(cy + Math.sin(a) * r * 0.42) + 'L' + round1(cx + Math.cos(a) * r * 1.2) + ' ' + round1(cy + Math.sin(a) * r * 1.2); }
+      return;
+    }
+    if (form === 'encrusting') {
+      var pts = [];
+      for (k = 0; k < 6; k++) { a = rot + k * Math.PI / 3; pts.push([cx + Math.cos(a) * r * (k % 2 ? 0.8 : 1), cy + Math.sin(a) * r * (k % 2 ? 0.8 : 1)]); }
+      d = 'M' + round1(pts[0][0]) + ' ' + round1(pts[0][1]);
+      for (k = 0; k < 6; k++) {
+        var p = pts[(k + 1) % 6], ca = rot + (k + 0.5) * Math.PI / 3;
+        d += 'Q' + round1(cx + Math.cos(ca) * r * 1.3) + ' ' + round1(cy + Math.sin(ca) * r * 1.3) + ' ' + round1(p[0]) + ' ' + round1(p[1]);
+      }
+      bucket.body += d + 'Z';
+      bucket.tips += 'M' + round1(cx - r * 0.35) + ' ' + round1(cy) + 'h.1M' + round1(cx + r * 0.3) + ' ' + round1(cy - r * 0.3) + 'h.1M' + round1(cx + r * 0.1) + ' ' + round1(cy + r * 0.4) + 'h.1';
+      bucket.width = Math.max(bucket.width, r * 0.3);
+      return;
+    }
+    // Boulder (massive): a dome with winding grooves, like brain coral.
+    bucket.body += dotsPath([[cx, cy]], round1(r));
+    bucket.lines += 'M' + round1(cx - r * 0.7) + ' ' + round1(cy - r * 0.3) + 'q' + round1(r * 0.35) + ' ' + round1(-r * 0.45) + ' ' + round1(r * 0.7) + ' 0t' + round1(r * 0.7) + ' 0' +
+      'M' + round1(cx - r * 0.6) + ' ' + round1(cy + r * 0.3) + 'q' + round1(r * 0.3) + ' ' + round1(-r * 0.4) + ' ' + round1(r * 0.6) + ' 0t' + round1(r * 0.6) + ' 0';
+  }
+  function mapSeaweed(cx, cy, r, rot) {
+    var d = '';
+    for (var k = 0; k < 6; k++) {
+      var a = rot + k * Math.PI / 3, tx = cx + Math.cos(a) * r, ty = cy + Math.sin(a) * r;
+      d += 'M' + round1(cx) + ' ' + round1(cy) + 'Q' + round1(cx + Math.cos(a - 0.45) * r * 0.75) + ' ' + round1(cy + Math.sin(a - 0.45) * r * 0.75) + ' ' + round1(tx) + ' ' + round1(ty) +
+        'Q' + round1(cx + Math.cos(a + 0.45) * r * 0.75) + ' ' + round1(cy + Math.sin(a + 0.45) * r * 0.75) + ' ' + round1(cx) + ' ' + round1(cy) + 'Z';
+    }
+    return d;
+  }
+  function roundRectPath(x0, y0, x1, y1, rad) {
+    var w = x1 - x0, ht = y1 - y0, q = Math.min(rad, w / 2, ht / 2);
+    return 'M' + round1(x0 + q) + ' ' + round1(y0) + 'H' + round1(x1 - q) + 'Q' + round1(x1) + ' ' + round1(y0) + ' ' + round1(x1) + ' ' + round1(y0 + q) + 'V' + round1(y1 - q) + 'Q' + round1(x1) + ' ' + round1(y1) + ' ' + round1(x1 - q) + ' ' + round1(y1) +
+      'H' + round1(x0 + q) + 'Q' + round1(x0) + ' ' + round1(y1) + ' ' + round1(x0) + ' ' + round1(y1 - q) + 'V' + round1(y0 + q) + 'Q' + round1(x0) + ' ' + round1(y0) + ' ' + round1(x0 + q) + ' ' + round1(y0) + 'Z';
+  }
+  function groundOf(cat) { return cat === 'sand' ? 'sand' : cat === 'rubble' ? 'rubble' : 'hard'; }
+  var BELT_MAP = { W: 428, H: 232, floor: 208 };
+  function beltX(m) { return 14 + m * 20; }
+  function beltY(off) { return 112 - off * 19; }
+  // Builds the bottom as a handful of merged paths (one per ground type and
+  // per coral form and color), so the map stays light however busy it looks.
+  function beltBottom(h, layout) {
+    var rand = mulberry32(((layout.seed >>> 0) ^ 0x5EAB0770) >>> 0);
+    var pts = layout.points, n = pts.length, rows = [], i, c;
+    var tapeRow = [];
+    for (i = 0; i < n; i++) {
+      var dm = pts[i].distanceM;
+      tapeRow.push({ x0: i === 0 ? 0 : beltX(dm - 0.25), x1: i === n - 1 ? BELT_MAP.W : beltX(dm + 0.25), y0: beltY(0.55), y1: beltY(-0.55), pt: pts[i], cx: beltX(dm), cy: beltY(0) + (rand() - 0.5) * 3, r: 5 + rand() * 1.4 });
+    }
+    rows.push(tapeRow);
+    for (var b = 1; b <= 6; b++) {
+      for (var side = -1; side <= 1; side += 2) {
+        var off = side * b;
+        if (off < -5 || off > 6) continue;
+        var row = [];
+        for (c = -1; c <= 20; c++) {
+          var drift = Math.round((rand() - 0.5) * (1.5 + b * 1.6));
+          var idx = clamp(c * 2 + (rand() < 0.5 ? 0 : 1) + drift, 0, n - 1);
+          row.push({ x0: c < 0 ? 0 : beltX(c), x1: c >= 20 ? BELT_MAP.W : beltX(c + 1), y0: beltY(off + 0.5), y1: beltY(off - 0.5), pt: pts[idx],
+            cx: beltX(c + 0.5) + (rand() - 0.5) * 7, cy: beltY(off) + (rand() - 0.5) * 6, r: 6.2 + rand() * 2.6 });
+        }
+        rows.push(row);
+      }
+    }
+    var ground = { rubble: '', hard: '' }, crust = '', sticks = '', weedA = '', weedB = '', buckets = {}, order = [];
+    function bucketFor(cat, form, tone) {
+      var key = cat + ':' + form + ':' + tone;
+      if (!buckets[key]) {
+        var t = cat === 'bleached_coral' ? MAP_BLEACHED : cat === 'recently_dead_coral' ? MAP_DEAD : MAP_CORAL_TONES[tone];
+        buckets[key] = { key: key, form: form, colors: t, body: '', lines: '', branches: '', tips: '', width: 1.6, dead: cat === 'recently_dead_coral' };
+        order.push(key);
+      }
+      return buckets[key];
+    }
+    for (var ri = 0; ri < rows.length; ri++) {
+      var cells = rows[ri], start = 0;
+      // Merge neighbors on the same ground into one rounded patch.
+      for (c = 1; c <= cells.length; c++) {
+        if (c < cells.length && groundOf(cells[c].pt.category) === groundOf(cells[start].pt.category)) continue;
+        var g = groundOf(cells[start].pt.category);
+        if (g !== 'sand') ground[g] += roundRectPath(cells[start].x0 - 1.5, cells[start].y0 - 1.5, cells[c - 1].x1 + 1.5, cells[start].y1 + 1.5, 6);
+        start = c;
+      }
+      for (c = 0; c < cells.length; c++) {
+        var cell = cells[c], cat = cell.pt.category, rot = rand() * Math.PI;
+        if (CORAL_CATEGORIES[cat]) {
+          var tone = cat === 'hard_coral' ? (cell.pt.colony + (cell.pt.variant || 0)) % MAP_CORAL_TONES.length : 0;
+          mapCoral(bucketFor(cat, cell.pt.coralForm || 'massive', tone), cell.pt.coralForm || 'massive', cell.cx, cell.cy, cell.r, rot);
+        } else if (cat === 'macroalgae') {
+          if ((cell.pt.variant || 0) % 2) weedA += mapSeaweed(cell.cx, cell.cy, cell.r * 1.05, rot); else weedB += mapSeaweed(cell.cx, cell.cy, cell.r * 1.05, rot);
+        } else if (cat === 'rock') {
+          crust += dotsPath([[round1(cell.cx - 3 + rand() * 2), round1(cell.cy - 2)], [round1(cell.cx + 3), round1(cell.cy + 2 + rand() * 2)]], round1(1.4 + rand() * 1.2));
+        } else if (cat === 'rubble') {
+          for (var s = 0; s < 4; s++) {
+            var sx = cell.cx + (rand() - 0.5) * (cell.x1 - cell.x0 - 4), sy = cell.cy + (rand() - 0.5) * 12, sa = rand() * Math.PI, sl = 2.2 + rand() * 1.6;
+            sticks += 'M' + round1(sx - Math.cos(sa) * sl) + ' ' + round1(sy - Math.sin(sa) * sl) + 'L' + round1(sx + Math.cos(sa) * sl) + ' ' + round1(sy + Math.sin(sa) * sl);
+          }
+        }
+      }
+    }
+    var ripples = '';
+    for (var ry = 6; ry < BELT_MAP.floor; ry += 8) {
+      ripples += 'M0 ' + ry + 'q7 -2.6 14 0';
+      for (var rx = 14; rx < BELT_MAP.W; rx += 14) ripples += 't14 0';
+    }
+    var kids = [
+      h('rect', { key: 'sand', x: 0, y: 0, width: BELT_MAP.W, height: BELT_MAP.floor, fill: MAP_GROUND.sand }),
+      h('path', { key: 'ripples', d: ripples, fill: 'none', stroke: '#bba26f', strokeWidth: 0.9 }),
+      ground.rubble ? h('path', { key: 'g-rubble', d: ground.rubble, fill: MAP_GROUND.rubble }) : null,
+      ground.hard ? h('path', { key: 'g-hard', d: ground.hard, fill: MAP_GROUND.hard }) : null,
+      crust ? h('path', { key: 'crust', d: crust, fill: '#d18499' }) : null,
+      sticks ? h('path', { key: 'sticks-s', d: sticks, transform: 'translate(0.7 0.9)', stroke: '#5f5a50', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }) : null,
+      sticks ? h('path', { key: 'sticks', d: sticks, stroke: '#f1ebdc', strokeWidth: 1.7, strokeLinecap: 'round', fill: 'none' }) : null,
+      weedA ? h('path', { key: 'weedA', d: weedA, fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.6 }) : null,
+      weedB ? h('path', { key: 'weedB', d: weedB, fill: '#8a6a28', stroke: '#45330f', strokeWidth: 0.6 }) : null
+    ];
+    order.forEach(function (key) {
+      var bk = buckets[key], col = bk.colors;
+      if (bk.branches) kids.push(h('path', { key: key + 'br', d: bk.branches, fill: 'none', stroke: col[0], strokeWidth: round1(bk.width * 1.15), strokeLinecap: 'round' }));
+      if (bk.body) kids.push(h('path', { key: key + 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.8 }));
+      if (bk.lines) kids.push(h('path', { key: key + 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.9, strokeLinecap: 'round' }));
+      if (bk.tips) kids.push(h('path', { key: key + 't', d: bk.tips, fill: 'none', stroke: bk.dead ? col[1] : col[2], strokeWidth: round1(bk.width * (bk.dead ? 0.9 : 1.25)), strokeLinecap: 'round' }));
+    });
+    return kids;
+  }
+
+  // On a narrow screen the map is shown as two halves, 0 to 10 m above 10 to
+  // 20 m, so each fish is drawn twice as large. The halves share a little of
+  // the bottom at 10 m, but each fish is drawn in one half only.
+  function BeltMap(props) {
+    var h = props.h, React = props.React, layout = props.layout;
+    var uid = 'crb-belt-' + React.useId().replace(/:/g, '');
+    var bottom = React.useMemo(function () { return beltBottom(h, layout); }, [layout]);
+    var wrap = React.useRef(null), sp = React.useState(false), split = sp[0], setSplit = sp[1];
+    React.useEffect(function () {
+      var el = wrap.current;
+      if (!el || typeof ResizeObserver === 'undefined') return undefined;
+      var ro = new ResizeObserver(function (entries) { var w = entries[0] && entries[0].contentRect.width; if (w > 0) setSplit(w < 520); });
+      ro.observe(el);
+      return function () { ro.disconnect(); };
+    }, []);
+    var W = BELT_MAP.W, half = beltX(TRANSECT_M / 2);
+    // Built once per transect and layout, so counting clicks do not redraw the map.
+    var views = React.useMemo(function () {
+      return split ? [beltKids(h, layout, bottom, uid + 'a', 'a'), beltKids(h, layout, bottom, uid + 'b', 'b')] : [beltKids(h, layout, bottom, uid, 'full')];
+    }, [layout, bottom, uid, split]);
+    if (!split) {
+      return h('div', { ref: wrap, style: { maxWidth: 760 } },
+        h('svg', { viewBox: '0 0 ' + W + ' ' + BELT_MAP.H, role: 'img', 'aria-label': props.label, focusable: 'false', 'data-belt-map': 'true', style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 } }, views[0]));
+    }
+    return h('div', { ref: wrap, style: { display: 'grid', gap: 6 } },
+      h('svg', { viewBox: '0 0 ' + (half + 16) + ' ' + BELT_MAP.H, role: 'img', 'aria-label': props.label, focusable: 'false', 'data-belt-map': 'a', style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 } }, views[0]),
+      h('svg', { viewBox: (half - 16) + ' 0 ' + (W - half + 16) + ' ' + BELT_MAP.H, 'aria-hidden': 'true', focusable: 'false', 'data-belt-map': 'b', style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 } }, views[1]));
+  }
+  function beltKids(h, layout, bottom, uid, view) {
+    var X = beltX, Y = beltY, W = BELT_MAP.W, F = BELT_MAP.floor;
+    var kids = [h('defs', { key: 'defs' }, h('filter', { id: uid + '-sh', x: '-30%', y: '-40%', width: '160%', height: '180%' },
+      h('feDropShadow', { dx: 1.4, dy: 2.2, stdDeviation: 1, floodColor: '#04202b', floodOpacity: 0.55 })))];
+    kids = kids.concat(bottom);
+    // Water over the bottom; a little darker outside the belt. The fish sit
+    // above all of it, drawn identically wherever they are.
+    var bTop = Y(BELT_HALF_WIDTH_M), bBot = Y(-BELT_HALF_WIDTH_M);
+    kids.push(h('rect', { key: 'water', x: 0, y: 0, width: W, height: F, fill: '#8fd0de', opacity: 0.3 }));
+    kids.push(h('path', { key: 'outside', d: 'M0 0H' + W + 'V' + bTop + 'H0Z M0 ' + bBot + 'H' + W + 'V' + F + 'H0Z', fill: '#0a4258', opacity: 0.3 }));
+    var beltD = 'M' + X(0) + ' ' + bTop + 'H' + X(TRANSECT_M) + 'V' + bBot + 'H' + X(0) + 'Z';
+    kids.push(h('path', { key: 'belt-u', d: beltD, fill: 'none', stroke: '#0b2a3a', strokeWidth: 3.6 }));
+    kids.push(h('path', { key: 'belt', d: beltD, fill: 'none', stroke: '#facc15', strokeWidth: 2, strokeDasharray: '6 4' }));
+    // The tape: yellow with dark marks every meter, longer every 5 m.
+    var ticks = '';
+    for (var tm = 0; tm <= TRANSECT_M; tm += 1) ticks += 'M' + X(tm) + ' ' + (Y(0) - (tm % 5 ? 2.4 : 4.6)) + 'V' + (Y(0) + (tm % 5 ? 2.4 : 4.6));
+    kids.push(h('path', { key: 'tape-u', d: 'M' + X(0) + ' ' + Y(0) + 'H' + X(TRANSECT_M), stroke: '#0b2a3a', strokeWidth: 5.4, strokeLinecap: 'round', fill: 'none' }));
+    kids.push(h('path', { key: 'tape', d: 'M' + X(0) + ' ' + Y(0) + 'H' + X(TRANSECT_M), stroke: '#facc15', strokeWidth: 3.2, fill: 'none' }));
+    kids.push(h('path', { key: 'tape-t', d: ticks, stroke: '#0b2a3a', strokeWidth: 1.3, fill: 'none' }));
+    var fish = [];
+    for (var i = 0; i < layout.fish.length; i++) {
+      var f = layout.fish[i];
+      if ((view === 'a' && f.alongM >= TRANSECT_M / 2) || (view === 'b' && f.alongM < TRANSECT_M / 2)) continue;
+      fish.push(h('g', { key: f.id, 'data-fish': f.family, 'data-x': X(f.alongM), 'data-y': Y(-f.offsetM) }, fishShape(h, f.family, X(f.alongM), Y(-f.offsetM), 'f', i % 2 === 1)));
+    }
+    kids.push(h('g', { key: 'fish', filter: 'url(#' + uid + '-sh)' }, fish));
+    kids.push(h('rect', { key: 'band', x: 0, y: F, width: W, height: BELT_MAP.H - F, fill: '#0b3446' }));
+    var mid = TRANSECT_M / 2;
+    for (var m = 0; m <= TRANSECT_M; m += 5) {
+      if ((view === 'a' && m > mid) || (view === 'b' && m < mid)) continue;
+      kids.push(h('text', { key: 'm' + m, x: X(m), y: F + 17, fill: '#ffffff', fontSize: 11, textAnchor: 'middle' }, m + ' m'));
+    }
+    return kids;
+  }
+  // Small legend tiles drawn with the same top-down shapes as the map.
+  function bottomTile(h, cat) {
+    var bk = { body: '', lines: '', branches: '', tips: '', width: 1.6 }, kids = [], ground = groundOf(cat);
+    kids.push(h('rect', { key: 'g', x: 0, y: 0, width: 36, height: 24, fill: MAP_GROUND[ground] }));
+    if (cat === 'sand') kids.push(h('path', { key: 'r', d: 'M0 7q4.5 -2.2 9 0t9 0t9 0t9 0M0 15q4.5 -2.2 9 0t9 0t9 0t9 0', fill: 'none', stroke: '#bba26f', strokeWidth: 0.9 }));
+    if (cat === 'rubble') {
+      var st = 'M5 7L11 9M14 15L20 12M24 6L29 10M8 18L13 20M25 17L31 15';
+      kids.push(h('path', { key: 's1', d: st, transform: 'translate(0.7 0.9)', stroke: '#5f5a50', strokeWidth: 2, strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 's2', d: st, stroke: '#f1ebdc', strokeWidth: 1.7, strokeLinecap: 'round' }));
+    }
+    if (cat === 'rock') kids.push(h('path', { key: 'c', d: dotsPath([[10, 9], [24, 15], [17, 5]], 2), fill: '#d18499' }));
+    if (cat === 'macroalgae') kids.push(h('path', { key: 'w', d: mapSeaweed(18, 12, 9, 0.3), fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.6 }));
+    if (CORAL_CATEGORIES[cat]) {
+      var col = cat === 'bleached_coral' ? MAP_BLEACHED : cat === 'recently_dead_coral' ? MAP_DEAD : MAP_CORAL_TONES[0];
+      mapCoral(bk, 'massive', 9.5, 12, 6.5, 0);
+      mapCoral(bk, 'branching', 26, 12, 7.5, 0.4);
+      kids.push(h('path', { key: 'br', d: bk.branches, fill: 'none', stroke: col[0], strokeWidth: round1(bk.width * 1.15), strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.8 }));
+      kids.push(h('path', { key: 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.9 }));
+      kids.push(h('path', { key: 't', d: bk.tips, fill: 'none', stroke: cat === 'recently_dead_coral' ? col[1] : col[2], strokeWidth: round1(bk.width * 1.2), strokeLinecap: 'round' }));
+    }
+    kids.push(h('rect', { key: 'w2', x: 0, y: 0, width: 36, height: 24, fill: '#8fd0de', opacity: 0.3 }));
+    return h('svg', { viewBox: '0 0 36 24', width: 36, height: 24, 'aria-hidden': 'true', focusable: 'false', style: { borderRadius: 4, flex: 'none' } }, kids);
+  }
+
+  function FishStage(props) {
+    var env = props.env, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var layout = props.layout, FN = fishNames(__alloT), CN = categoryNames(__alloT);
+    var counts = d.fishCounts || {};
+    var listView = d.fishView === 'list';
+    function setCount(fam, n) {
+      var next = Object.assign({}, counts); next[fam] = clamp(Math.round(n) || 0, 0, 99);
+      env.set({ fishCounts: next, surveySaved: false });
+      env.say(__alloFill(__alloT('stem.coralreef.sr_fish_count', '{name}: {n}.'), { name: FN[fam], n: next[fam] }));
+    }
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.f_title', 'Count indicator fish inside the belt')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.f_rule', 'Count only the five indicator families, and only fish inside the dashed belt: no more than 2.5 m from the tape on either side. Fish outside the belt are left out.')),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.f_view_group', 'How to show the fish'), style: { display: 'flex', gap: 6, marginBottom: 10 } },
+          h('button', { type: 'button', 'aria-pressed': listView ? 'false' : 'true', style: btnStyle(P, !listView), onClick: function () { env.set({ fishView: 'map' }); } }, __alloT('stem.coralreef.f_view_map', 'Map')),
+          h('button', { type: 'button', 'aria-pressed': listView ? 'true' : 'false', style: btnStyle(P, listView), onClick: function () { env.set({ fishView: 'list' }); } }, __alloT('stem.coralreef.f_view_list', 'List with distances'))),
+        listView ? h('table', { style: { borderCollapse: 'collapse', width: '100%', maxWidth: 640 } },
+          h('caption', { style: { textAlign: 'left', color: P.muted, marginBottom: 4 } }, __alloT('stem.coralreef.f_list_caption', 'Every fish seen from the tape, with how far it was from the tape.')),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col', style: { textAlign: 'left', borderBottom: '1px solid ' + P.border, padding: 4 } }, __alloT('stem.coralreef.f_col_fish', 'Fish')),
+            h('th', { scope: 'col', style: { textAlign: 'right', borderBottom: '1px solid ' + P.border, padding: 4 } }, __alloT('stem.coralreef.f_col_along', 'Along the tape')),
+            h('th', { scope: 'col', style: { textAlign: 'right', borderBottom: '1px solid ' + P.border, padding: 4 } }, __alloT('stem.coralreef.f_col_from', 'Distance from the tape')))),
+          h('tbody', null, layout.fish.map(function (f) {
+            return h('tr', { key: f.id },
+              h('td', { style: { padding: 4 } }, FN[f.family]),
+              h('td', { style: { padding: 4, textAlign: 'right' } }, f.alongM.toFixed(1) + ' m'),
+              h('td', { style: { padding: 4, textAlign: 'right' } }, __alloFill(f.offsetM < 0 ? __alloT('stem.coralreef.f_left', '{m} m left') : __alloT('stem.coralreef.f_right', '{m} m right'), { m: Math.abs(f.offsetM).toFixed(1) })));
+          })))
+          : h('div', null,
+            h('style', null, LANE_CSS_B),
+            h(BeltMap, { h: h, React: env.React, layout: layout, label: __alloT('stem.coralreef.f_map_label_reef', 'Top view of the reef along the 20 meter tape, with the belt 2.5 meters to each side. The bottom is drawn from this transect: coral, seaweed, rock, rubble and sand. Fish are drawn where they were seen. Choose List with distances for the same fish in words.') }),
+            h('p', { style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.f_edge', 'Yellow line: the tape. Dashed box: the belt edge, 2.5 m from the tape on each side.')),
+            h('ul', { 'aria-label': __alloT('stem.coralreef.f_legend', 'Fish shapes'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px 14px', listStyle: 'none', padding: 0, margin: '8px 0 0' } },
+              FISH_FAMILIES.map(function (fam) {
+                return h('li', { key: fam, style: { display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 } },
+                  h('svg', { viewBox: '-17.5 -10.5 35 21', width: 50, height: 30, 'aria-hidden': 'true', focusable: 'false', style: { background: '#c9d9cf', borderRadius: 5, flex: 'none' } }, fishShape(h, fam, 0, 0, 'l', false)), FN[fam]);
+              })),
+            h('ul', { 'aria-label': __alloT('stem.coralreef.f_bottom_legend', 'What the bottom drawings show'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px 14px', listStyle: 'none', padding: 0, margin: '10px 0 0', fontSize: 13, color: P.muted } },
+              CATEGORY_IDS.map(function (cat) {
+                return h('li', { key: cat, style: { display: 'flex', alignItems: 'center', gap: 6 } }, bottomTile(h, cat), CN[cat]);
+              })))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.f_counts_title', 'Your counts (inside the belt)')),
+        h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } }, FISH_FAMILIES.map(function (fam) {
+          var n = counts[fam] || 0;
+          return h('li', { key: fam, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+            h('span', { style: { minWidth: 120, fontWeight: 600 } }, FN[fam]),
+            h('button', { type: 'button', style: btnStyle(P, false, { minWidth: 36 }), disabled: n <= 0, 'aria-label': __alloFill(__alloT('stem.coralreef.f_minus', 'One fewer {name}'), { name: FN[fam] }), onClick: function () { setCount(fam, n - 1); } }, '−'),
+            h('input', { type: 'number', min: 0, max: 99, value: n, 'aria-label': __alloFill(__alloT('stem.coralreef.f_count_label', '{name} count'), { name: FN[fam] }),
+              onChange: function (e) { setCount(fam, parseInt(e.target.value, 10)); }, style: { width: 64, minHeight: 34, padding: 4, borderRadius: 6, border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text, font: 'inherit' } }),
+            h('button', { type: 'button', style: btnStyle(P, false, { minWidth: 36 }), 'aria-label': __alloFill(__alloT('stem.coralreef.f_plus', 'One more {name}'), { name: FN[fam] }), onClick: function () { setCount(fam, n + 1); } }, '+'));
+        })),
+        h('button', { type: 'button', style: btnStyle(P, true, { marginTop: 6 }), onClick: function () { env.set({ surveyStage: 'results' }); } }, __alloT('stem.coralreef.f_to_results', 'See my results'))));
+  }
+
+  // The tape, point by point: what you recorded above what the reef key
+  // says, one cell per 0.5 m. A point you got wrong is ringed and marked,
+  // and pressing it opens that point. Four 5 m pieces sit side by side on a
+  // wide screen and stack on a narrow one.
+  function TransectStrip(props) {
+    var h = props.h, P = props.P, layout = props.layout, records = props.records, __alloT = props.t, __alloFill = props.fill, CN = props.CN;
+    var miss = {}, chunks = [], i;
+    for (i = 0; i < props.mismatches.length; i++) miss[props.mismatches[i].index] = props.mismatches[i];
+    for (var c = 0; c < 4; c++) {
+      var lo = c * 10, kids = [];
+      kids.push(h('div', { key: 'hd', className: 'crb-head', 'aria-hidden': 'true' }, __alloFill(__alloT('stem.coralreef.r_strip_range', '{a} to {b} m'), { a: c * 5, b: c * 5 + 5 })));
+      kids.push(h('div', { key: 'ly', className: 'crb-rowlab', 'aria-hidden': 'true' }, __alloT('stem.coralreef.r_strip_yours', 'Your records')));
+      for (i = lo; i < lo + 10; i++) {
+        var rec = records[i], m = miss[i], cls = 'crb-cell ' + (rec && CN[rec] ? 'crb-cat-' + rec : 'crb-empty') + (m ? ' crb-miss' : ''), code = rec && STRIP_CODE[rec] ? STRIP_CODE[rec] : '?';
+        if (m) {
+          var say = __alloFill(rec ? __alloT('stem.coralreef.r_strip_miss', 'Point {n} ({dist} m): you recorded {got}; the reef key says {truth}. Go to this point.') : __alloT('stem.coralreef.r_strip_missing', 'Point {n} ({dist} m): not recorded; the reef key says {truth}. Go to this point.'),
+            { n: i + 1, dist: layout.points[i].distanceM, got: rec ? CN[rec] : '', truth: CN[m.truth] });
+          kids.push(h('button', { key: 'y' + i, type: 'button', className: cls, 'aria-label': say, title: say, 'data-strip': 'yours', 'data-point': i, 'data-code': code, 'data-miss': 'true',
+            onClick: (function (idx) { return function () { props.onGo(idx); }; })(i) }, code));
+        } else kids.push(h('span', { key: 'y' + i, className: cls, 'aria-hidden': 'true', 'data-strip': 'yours', 'data-point': i, 'data-code': code }, code));
+      }
+      kids.push(h('div', { key: 'lm', className: 'crb-rowlab', 'aria-hidden': 'true' }));
+      for (i = lo; i < lo + 10; i++) kids.push(h('span', { key: 'm' + i, className: 'crb-mark', 'aria-hidden': 'true' }, miss[i] ? '≠' : ''));
+      kids.push(h('div', { key: 'lk', className: 'crb-rowlab', 'aria-hidden': 'true' }, __alloT('stem.coralreef.r_strip_key', 'Reef key')));
+      for (i = lo; i < lo + 10; i++) {
+        var truth = layout.points[i].category;
+        kids.push(h('span', { key: 'k' + i, className: 'crb-cell crb-cat-' + truth, 'aria-hidden': 'true', 'data-strip': 'key', 'data-point': i, 'data-code': STRIP_CODE[truth] }, STRIP_CODE[truth]));
+      }
+      chunks.push(h('div', { key: c, className: 'crb-chunk' }, kids));
+    }
+    return h('figure', { className: 'crb-strip', 'data-transect-strip': 'true', style: { '--crb-bad': P.bad, '--crb-ctl': P.ctlBorder } },
+      h('figcaption', { style: { margin: '0 0 6px' } },
+        h('strong', { style: { display: 'block' } }, __alloT('stem.coralreef.r_strip_title', 'The tape, point by point')),
+        h('span', { style: { color: P.muted, fontSize: 14 } }, __alloT('stem.coralreef.r_strip_note', 'Each cell is half a meter of tape, with its code. A ring and the sign ≠ mark a point where your record and the reef key differ. Press it to go back to that point.')),
+        h('span', { style: SR_ONLY }, __alloFill(__alloT('stem.coralreef.r_strip_sr', '{n} of 40 points match the reef key. Each point that does not match has its own button below.'), { n: 40 - props.mismatches.length }))),
+      h('div', { className: 'crb-chunks' }, chunks));
+  }
+
+  // Each segment hides its percent when it is too narrow for it (a container
+  // query on the segment); without container queries, only roomy ones show.
+  function segLabel(h, v) {
+    var txt = v + '%', len = Math.min(5, Math.max(3, txt.length));
+    return h('span', { className: 'crb-pct crb-pct-' + len + (v >= txt.length * 2.6 ? '' : ' crb-pct-sm') }, txt);
+  }
+  function coverSegments(h, cover, missingLabel, missing) {
+    var segs = [], sum = 0, i;
+    for (i = 0; i < CATEGORY_IDS.length; i++) sum += cover[CATEGORY_IDS[i]] || 0;
+    // Widths are scaled to fill the bar exactly, so rounded means still add up.
+    var rest = missing != null ? missing : round1(Math.max(0, 100 - sum)), scale = sum + rest > 0 ? 100 / (sum + rest) : 1;
+    for (i = 0; i < CATEGORY_IDS.length; i++) {
+      var id = CATEGORY_IDS[i], v = cover[id] || 0;
+      if (v <= 0) continue;
+      segs.push(h('div', { key: id, className: 'crb-seg crb-cat-' + id, 'data-cat': id, 'data-pct': v, style: { width: round1(v * scale * 1000) / 1000 + '%' } }, segLabel(h, v)));
+    }
+    if (rest > 0.05) segs.push(h('div', { key: 'missing', className: 'crb-seg crb-cat-missing', 'data-cat': 'missing', 'data-pct': rest, title: missingLabel, style: { width: round1(rest * scale * 1000) / 1000 + '%' } }, segLabel(h, rest)));
+    return segs;
+  }
+  // Two 100% stacked bars of percent cover, the same colors and textures as
+  // the strip. A percent is printed inside a segment only when it fits; the
+  // table below always has every number.
+  function CoverStack(props) {
+    var h = props.h, P = props.P;
+    return h('div', { role: 'img', 'aria-label': props.label, style: { '--crb-ctl': P.ctlBorder, margin: '0 0 6px' } },
+      props.bars.map(function (bar) {
+        return h('div', { key: bar.id, className: 'crb-stack' },
+          h('div', { 'aria-hidden': 'true', style: { fontWeight: 650, fontSize: 13 } }, bar.label),
+          h('div', { className: 'crb-bar', 'data-bar': bar.id }, coverSegments(h, bar.cover, props.missingLabel)));
+      }));
+  }
+
+  // The accessible numbers behind the bars.
+  function CoverBars(props) {
+    var h = props.h, P = props.P, rows = props.rows;
+    return h('table', { style: { borderCollapse: 'collapse', width: '100%', maxWidth: 560, marginTop: 6 } },
+      h('caption', { style: { textAlign: 'left', color: P.muted, marginBottom: 4 } }, props.caption),
+      h('thead', null, h('tr', null,
+        h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + P.border } }, props.colName),
+        props.cols.map(function (c) { return h('th', { key: c, scope: 'col', style: { textAlign: 'right', padding: 4, borderBottom: '1px solid ' + P.border } }, c); }))),
+      h('tbody', null, rows.map(function (r) {
+        return h('tr', { key: r.id },
+          h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: 600 } },
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, h('span', { className: 'crb-swatch crb-cat-' + r.id, 'aria-hidden': 'true' }), r.name, ' (', STRIP_CODE[r.id], ')')),
+          r.values.map(function (v, i) { return h('td', { key: i, style: { textAlign: 'right', padding: 4, fontVariantNumeric: 'tabular-nums' } }, v == null ? '-' : v + props.unit); }));
+      })));
+  }
+
+  function ResultsStage(props) {
+    var env = props.env, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var layout = props.layout, site = props.site, CN = categoryNames(__alloT), CG = categoryGuides(__alloT), FN = fishNames(__alloT), ST = siteText(__alloT);
+    var records = d.records || {};
+    var recorded = Object.keys(records).length;
+    var score = scoreSurvey(layout, records, d.fishCounts || {});
+    var mine = indicators(score.cover), truth = indicators(score.trueCover);
+    var log = Array.isArray(d.surveyLog) ? d.surveyLog : [];
+    var entryId = site.id + ':' + layout.seed + ':' + (site.modelYear != null ? site.modelYear : '');
+    var saved = d.surveySaved || log.some(function (e) { return e.id === entryId; });
+    function save() {
+      var fishD = {};
+      for (var i = 0; i < score.fish.length; i++) fishD[score.fish[i].family] = score.fish[i].density;
+      var entry = { id: entryId, siteId: site.id, seed: layout.seed, transect: d.surveyTransect || 1, modelYear: site.modelYear != null ? site.modelYear : null,
+        at: Date.now(), agreement: score.agreement, recorded: recorded, cover: score.cover, indicators: mine, fish: fishD };
+      var next = log.filter(function (e) { return e.id !== entryId; }).concat([entry]).slice(-MAX_LOG);
+      env.set({ surveyLog: next, surveySaved: true });
+      env.say(__alloT('stem.coralreef.sr_saved', 'Survey saved to your log.'));
+    }
+    function another() {
+      var n = (d.surveyTransect || 1) + 1;
+      env.set(freshSurvey(site, (site.seed + n * 7919) >>> 0, n));
+      env.say(__alloFill(__alloT('stem.coralreef.sr_new_transect', 'Transect {n} at this reef. Point 1 of 40.'), { n: n }));
+    }
+    var coverRows = CATEGORY_IDS.map(function (id) { return { id: id, name: CN[id], values: [score.cover[id], score.trueCover[id]] }; });
+    var notRecorded = __alloT('stem.coralreef.r_seg_missing', 'Not recorded');
+    return h('div', null,
+      h('style', null, LANE_CSS_B),
+      recorded < POINT_COUNT ? h('p', { role: 'note', style: cardStyle(P, { borderColor: P.warn }) }, __alloFill(__alloT('stem.coralreef.r_incomplete', 'You recorded {n} of 40 points. Unrecorded points count as missing, so your percentages add up to less than 100.'), { n: recorded })) : null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.r_cover_title', 'Percent cover')),
+        h(CoverStack, { h: h, P: P, missingLabel: notRecorded,
+          label: __alloT('stem.coralreef.r_stack_label', 'Two stacked bars, each 100% of the bottom: your survey on top, the reef key below. The table after the bars lists every number.'),
+          bars: [{ id: 'yours', label: __alloT('stem.coralreef.r_col_yours', 'Your survey'), cover: score.cover }, { id: 'key', label: __alloT('stem.coralreef.r_col_key', 'Reef key'), cover: score.trueCover }] }),
+        catLegend(h, CN, recorded < POINT_COUNT, notRecorded, __alloT('stem.coralreef.r_legend', 'Colors and codes')),
+        h(CoverBars, { h: h, P: P, rows: coverRows, unit: '%', colName: __alloT('stem.coralreef.r_col_category', 'Category'),
+          cols: [__alloT('stem.coralreef.r_col_yours', 'Your survey'), __alloT('stem.coralreef.r_col_key', 'Reef key')],
+          caption: __alloT('stem.coralreef.r_cover_table_caption', 'Your percent cover next to the reef key for this transect.') }),
+        h('ul', { style: { margin: '10px 0 0', paddingLeft: 22 } },
+          h('li', null, __alloFill(__alloT('stem.coralreef.r_ind_live', 'Live coral (healthy plus bleached): {v}% in your survey, {k}% in the reef key.'), { v: mine.liveCoral, k: truth.liveCoral })),
+          h('li', null, __alloFill(__alloT('stem.coralreef.r_ind_bleached', 'Share of live coral that is bleached: {v}% in your survey.'), { v: mine.bleachedShare })),
+          h('li', null, __alloFill(__alloT('stem.coralreef.r_ind_algae', 'Fleshy seaweed: {v}% in your survey.'), { v: mine.macroalgae })),
+          h('li', null, mine.coralToAlgae == null ? __alloT('stem.coralreef.r_ind_ratio_none', 'You recorded no seaweed, so there is no coral to seaweed ratio.') : __alloFill(__alloT('stem.coralreef.r_ind_ratio', 'Live coral to seaweed ratio: {v} to 1. Below 1 means more seaweed than coral.'), { v: mine.coralToAlgae })))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.r_check_title', 'Check against the reef key')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloFill(__alloT('stem.coralreef.r_check_score', 'Your records match the reef key at {n} of 40 points.'), { n: score.agreement })),
+        h(TransectStrip, { h: h, P: P, t: __alloT, fill: __alloFill, CN: CN, layout: layout, records: records, mismatches: score.mismatches,
+          onGo: function (idx) { env.set({ surveyStage: 'points', pointIndex: idx }); } }),
+        score.mismatches.length ? h('ul', { style: { margin: 0, paddingLeft: 22 } }, score.mismatches.slice(0, 12).map(function (m) {
+          return h('li', { key: m.index, style: { marginBottom: 6 } },
+            __alloFill(m.recorded ? __alloT('stem.coralreef.r_mismatch', 'Point {n} ({dist} m): you recorded {got}; the reef key says {truth}.') : __alloT('stem.coralreef.r_missing', 'Point {n} ({dist} m): not recorded; the reef key says {truth}.'),
+              { n: m.index + 1, dist: layout.points[m.index].distanceM, got: m.recorded ? CN[m.recorded] : '', truth: CN[m.truth] }), ' ',
+            h('span', { style: { color: P.muted } }, CG[m.truth]), ' ',
+            h('button', { type: 'button', style: btnStyle(P, false, { minHeight: 30, padding: '2px 8px', fontSize: 13 }), onClick: function () { env.set({ surveyStage: 'points', pointIndex: m.index }); } }, __alloT('stem.coralreef.r_go_point', 'Go to this point')));
+        })) : h('p', { style: { margin: 0, color: P.good, fontWeight: 600 } }, __alloT('stem.coralreef.r_all_match', 'Every point matches.')),
+        score.mismatches.length > 12 ? h('p', { style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloFill(__alloT('stem.coralreef.r_more', 'And {n} more.'), { n: score.mismatches.length - 12 })) : null),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.r_fish_title', 'Fish per 100 square meters')),
+        h('table', { style: { borderCollapse: 'collapse', width: '100%', maxWidth: 560 } },
+          h('caption', { style: { textAlign: 'left', color: P.muted, marginBottom: 4 } }, __alloT('stem.coralreef.r_fish_caption', 'One belt covers 100 square meters, so each count is also a density per 100 square meters.')),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + P.border } }, __alloT('stem.coralreef.f_col_fish', 'Fish')),
+            h('th', { scope: 'col', style: { textAlign: 'right', padding: 4, borderBottom: '1px solid ' + P.border } }, __alloT('stem.coralreef.r_col_counted', 'You counted')),
+            h('th', { scope: 'col', style: { textAlign: 'right', padding: 4, borderBottom: '1px solid ' + P.border } }, __alloT('stem.coralreef.r_col_inbelt', 'In the belt')))),
+          h('tbody', null, score.fish.map(function (f) {
+            return h('tr', { key: f.family },
+              h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: 600 } }, FN[f.family]),
+              h('td', { style: { textAlign: 'right', padding: 4, color: f.counted === f.inBelt ? P.text : P.bad, fontWeight: f.counted === f.inBelt ? 400 : 700 } }, String(f.counted)),
+              h('td', { style: { textAlign: 'right', padding: 4 } }, String(f.inBelt)));
+          })))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.r_think_title', 'Think like a reef scientist')),
+        h('ul', { style: { margin: '0 0 10px', paddingLeft: 22 } },
+          h('li', null, __alloT('stem.coralreef.r_think_1', 'Is this reef dominated by coral, by seaweed, or by bare rock and rubble? Use two numbers from your survey as evidence.')),
+          h('li', null, __alloT('stem.coralreef.r_think_2', 'What could explain the grazing fish you counted? How might they affect the seaweed?')),
+          h('li', null, __alloT('stem.coralreef.r_think_3', 'One transect is a small sample. Would a second transect at the same reef give exactly the same numbers? Try it.'))),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          h('button', { type: 'button', style: btnStyle(P, !saved), disabled: saved, onClick: save }, saved ? __alloT('stem.coralreef.r_saved', 'Saved to your survey log') : __alloT('stem.coralreef.r_save', 'Save to my survey log')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: another }, __alloT('stem.coralreef.r_another', 'Survey another transect at this reef')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.go('compare'); } }, __alloT('stem.coralreef.r_to_compare', 'Compare reefs'))),
+        h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, __alloFill(__alloT('stem.coralreef.r_site_line', 'Reef: {site}.'), { site: ST[site.id].name }))));
+  }
+
+  // ── Compare reefs ────────────────────────────────────────────────────────
+  function meanOf(list) { if (!list.length) return 0; var s = 0; for (var i = 0; i < list.length; i++) s += list[i]; return round1(s / list.length); }
+  function summarizeLog(log) {
+    var order = ['reserve', 'harbor', 'heatwave', 'rubble', 'restored', 'model'], groups = {};
+    for (var i = 0; i < log.length; i++) {
+      var e = log[i], key = e.siteId === 'model' ? 'model:' + e.modelYear : e.siteId;
+      if (!groups[key]) groups[key] = { key: key, siteId: e.siteId, modelYear: e.modelYear, entries: [] };
+      groups[key].entries.push(e);
+    }
+    return Object.keys(groups).sort(function (a, b) {
+      var ga = groups[a], gb = groups[b];
+      return order.indexOf(ga.siteId) - order.indexOf(gb.siteId) || (ga.modelYear || 0) - (gb.modelYear || 0);
+    }).map(function (k) {
+      var g = groups[k], live = g.entries.map(function (e) { return e.indicators.liveCoral; });
+      g.liveMean = meanOf(live); g.liveMin = Math.min.apply(null, live); g.liveMax = Math.max.apply(null, live);
+      g.algaeMean = meanOf(g.entries.map(function (e) { return e.indicators.macroalgae; }));
+      g.grazers = meanOf(g.entries.map(function (e) { return (e.fish.parrotfish || 0) + (e.fish.surgeonfish || 0); }));
+      g.butterfly = meanOf(g.entries.map(function (e) { return e.fish.butterflyfish || 0; }));
+      g.predators = meanOf(g.entries.map(function (e) { return (e.fish.grouper || 0) + (e.fish.snapper || 0); }));
+      // Mean cover of every category, for the comparison bars.
+      g.cover = {};
+      CATEGORY_IDS.forEach(function (id) { g.cover[id] = meanOf(g.entries.map(function (e) { return (e.cover && e.cover[id]) || 0; })); });
+      g.missing = meanOf(g.entries.map(function (e) { var s = 0; CATEGORY_IDS.forEach(function (id) { s += (e.cover && e.cover[id]) || 0; }); return Math.max(0, round1(100 - s)); }));
+      return g;
+    });
+  }
+
+  // One row per reef: a 100% bar of the bottom and three small fish marks,
+  // each fish mark scaled to the largest value of its kind in the log.
+  var COMPARE_FISH = [['grazers', 'parrotfish'], ['butterfly', 'butterflyfish'], ['predators', 'grouper']];
+  function fishIcon(h, family, size) {
+    return h('svg', { viewBox: '-15 -9 30 18', width: size || 26, height: Math.round((size || 26) * 0.6), 'aria-hidden': 'true', focusable: 'false', style: { flex: 'none', overflow: 'visible' } }, fishShape(h, family, 0, 0, 'i', false));
+  }
+  function CompareChart(props) {
+    var h = props.h, P = props.P, groups = props.groups, max = {};
+    COMPARE_FISH.forEach(function (f) { max[f[0]] = Math.max(1, Math.max.apply(null, groups.map(function (g) { return g[f[0]] || 0; }))); });
+    return h('div', { className: 'crb-cmp', 'data-compare-chart': 'true', style: { '--crb-ctl': P.ctlBorder, '--crb-line': P.line } },
+      h('p', { style: mutedStyle(P, { fontSize: 14 }) }, props.caption),
+      h('div', { role: 'img', 'aria-label': props.label },
+        groups.map(function (g) {
+          return h('div', { key: g.key, className: 'crb-cmp-row', 'data-reef': g.key },
+            h('div', { style: { fontWeight: 650, fontSize: 14, lineHeight: 1.35 } }, props.groupName(g),
+              h('span', { style: { display: 'block', fontWeight: 400, fontSize: 12, color: P.muted } }, props.transects(g.entries.length))),
+            h('div', { className: 'crb-bar', 'data-bar': g.key }, coverSegments(h, g.cover, props.missingLabel, g.missing)),
+            h('div', { className: 'crb-fish' }, COMPARE_FISH.map(function (f) {
+              var v = g[f[0]] || 0;
+              return h('div', { key: f[0], className: 'crb-fishmark', 'data-fish-mark': f[0], 'data-value': v },
+                fishIcon(h, f[1], 30), h('span', { style: { fontWeight: 650 } }, String(v)),
+                h('span', { className: 'crb-fishbar', style: { width: round1(v / max[f[0]] * 100) + '%' } }));
+            })));
+        })),
+      h('ul', { className: 'crb-legend', 'aria-label': props.fishLegendLabel, style: { marginTop: 10 } }, COMPARE_FISH.map(function (f) {
+        return h('li', { key: f[0] }, fishIcon(h, f[1], 30), h('span', null, props.fishNames[f[0]]));
+      })),
+      catLegend(h, props.CN, groups.some(function (g) { return g.missing > 0; }), props.missingLabel, props.legendLabel));
+  }
+
+  function CompareSection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var ST = siteText(__alloT);
+    var log = Array.isArray(d.surveyLog) ? d.surveyLog : [];
+    var cl = React.useState(false), confirmClear = cl[0], setConfirmClear = cl[1];
+    if (!log.length) {
+      return h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.c_empty_title', 'No surveys saved yet')),
+        h('p', { style: { margin: '0 0 10px' } }, __alloT('stem.coralreef.c_empty', 'Save a survey from the results step and it appears here. Survey at least two different reefs to compare them.')),
+        h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { env.go('survey'); } }, __alloT('stem.coralreef.m_to_survey', 'Start a field survey')));
+    }
+    var groups = summarizeLog(log);
+    var th = function (txt, align) { return h('th', { scope: 'col', style: { textAlign: align || 'right', padding: 4, borderBottom: '1px solid ' + P.border } }, txt); };
+    function groupName(g) { return g.siteId === 'model' ? ST.model.name + ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: g.modelYear }) + ')' : ST[g.siteId].name; }
+    function most(field) { return groups.reduce(function (m, g) { return g[field] > m[field] ? g : m; }, groups[0]); }
+    var topCoral = most('liveMean'), topAlgae = most('algaeMean'), topGrazers = most('grazers');
+    var chartLabel = __alloFill(__alloT('stem.coralreef.c_chart_label', 'Chart of the bottom and the fish at each reef you surveyed ({n} in all). Most live coral: {coralReef}, {coral}%. Most seaweed: {algaeReef}, {algae}%. Most grazing fish: {grazerReef}, {grazers} per 100 square meters. The table below lists every number.'),
+      { n: groups.length, coralReef: groupName(topCoral), coral: topCoral.liveMean, algaeReef: groupName(topAlgae), algae: topAlgae.algaeMean, grazerReef: groupName(topGrazers), grazers: topGrazers.grazers });
+    return h('div', null,
+      h('style', null, LANE_CSS_B),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.c_title', 'Your reefs side by side')),
+        h(CompareChart, { h: h, P: P, groups: groups, groupName: groupName, CN: categoryNames(__alloT), label: chartLabel,
+          caption: __alloT('stem.coralreef.c_chart_caption', 'Each bar is the whole bottom along your tapes at one reef, split into the share of points in each category. Beside it: fish per 100 square meters.'),
+          transects: function (n) { return __alloFill(__alloT('stem.coralreef.c_transects_n', 'Transects: {n}'), { n: n }); },
+          missingLabel: __alloT('stem.coralreef.r_seg_missing', 'Not recorded'), legendLabel: __alloT('stem.coralreef.r_legend', 'Colors and codes'),
+          fishLegendLabel: __alloT('stem.coralreef.c_fish_legend', 'Fish marks'),
+          fishNames: { grazers: __alloT('stem.coralreef.c_fish_grazers', 'Grazing fish (parrotfish and surgeonfish)'), butterfly: __alloT('stem.coralreef.c_col_butterfly', 'Butterflyfish'), predators: __alloT('stem.coralreef.c_col_predators', 'Grouper and snapper') } }),
+        h('div', { style: { overflowX: 'auto' } },
+          h('table', { style: { borderCollapse: 'collapse', width: '100%', minWidth: 560 } },
+            h('caption', { style: { textAlign: 'left', color: P.muted, marginBottom: 4 } }, __alloT('stem.coralreef.c_caption', 'Averages over every saved transect at each reef. Fish are per 100 square meters.')),
+            h('thead', null, h('tr', null,
+              th(__alloT('stem.coralreef.c_col_reef', 'Reef'), 'left'), th(__alloT('stem.coralreef.c_col_n', 'Transects')),
+              th(__alloT('stem.coralreef.c_col_live', 'Live coral')), th(__alloT('stem.coralreef.c_col_algae', 'Seaweed')),
+              th(__alloT('stem.coralreef.c_col_grazers', 'Grazing fish')), th(__alloT('stem.coralreef.c_col_butterfly', 'Butterflyfish')), th(__alloT('stem.coralreef.c_col_predators', 'Grouper and snapper')))),
+            h('tbody', null, groups.map(function (g) {
+              var range = g.entries.length > 1 ? ' (' + __alloFill(__alloT('stem.coralreef.c_range', '{a} to {b}'), { a: g.liveMin, b: g.liveMax }) + ')' : '';
+              return h('tr', { key: g.key },
+                h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: 600 } }, groupName(g)),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, String(g.entries.length)),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, g.liveMean + '%' + range),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, g.algaeMean + '%'),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, String(g.grazers)),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, String(g.butterfly)),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, String(g.predators)));
+            }))))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.c_q_title', 'Questions to answer with your data')),
+        h('ol', { style: { margin: '0 0 10px', paddingLeft: 22 } },
+          h('li', null, __alloT('stem.coralreef.c_q1', 'Which reef has the most live coral? Which has the most seaweed? Give the numbers.')),
+          h('li', null, __alloT('stem.coralreef.c_q2', 'Compare the grazing fish at each reef. Does more grazing go with less seaweed in your data?')),
+          h('li', null, __alloT('stem.coralreef.c_q3', 'Where you surveyed more than one transect, how much did live coral vary? Why do monitors survey several transects at each reef?')),
+          h('li', null, __alloT('stem.coralreef.c_q4', 'A reef can be bleached without having lost its coral yet. Which reef shows that, and what could happen next?'))),
+        h('label', { htmlFor: 'cr-compare-notes', style: { display: 'block', fontWeight: 600, marginBottom: 4 } }, __alloT('stem.coralreef.c_notes_label', 'Your claim and evidence')),
+        h('textarea', { id: 'cr-compare-notes', rows: 4, value: d.compareNotes || '', onChange: function (e) { env.set({ compareNotes: e.target.value.slice(0, 2000) }); },
+          style: { width: '100%', boxSizing: 'border-box', padding: 8, borderRadius: 8, border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text, font: 'inherit' } })),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.c_log_title', 'Survey log')),
+        h('ul', { style: { margin: '0 0 10px', paddingLeft: 22 } }, log.map(function (e) {
+          return h('li', { key: e.id }, __alloFill(__alloT('stem.coralreef.c_log_item', '{site}, transect {n}: live coral {live}%, seaweed {algae}%, matched the reef key at {match} of 40 points.'),
+            { site: e.siteId === 'model' ? ST.model.name + ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: e.modelYear }) + ')' : ST[e.siteId].name, n: e.transect, live: e.indicators.liveCoral, algae: e.indicators.macroalgae, match: e.agreement }));
+        })),
+        confirmClear ? h('div', { role: 'alert' },
+          h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.c_clear_warn', 'This removes every saved survey from this device.')),
+          h('button', { type: 'button', style: btnStyle(P, false, { marginRight: 8 }), onClick: function () { env.set({ surveyLog: [], surveySaved: false }); setConfirmClear(false); env.say(__alloT('stem.coralreef.sr_log_cleared', 'Survey log cleared.')); } }, __alloT('stem.coralreef.c_clear_yes', 'Remove all surveys')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setConfirmClear(false); } }, __alloT('stem.coralreef.c_clear_no', 'Keep them')))
+          : h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setConfirmClear(true); } }, __alloT('stem.coralreef.c_clear', 'Clear the survey log'))));
+  }
+
+  // ── Reef future (scenario model) ─────────────────────────────────────────
+  var PREDICTION_IDS = ['higher', 'same', 'lower'];
+  function outcomeOf(rows) {
+    var a = rows[0].coral, b = rows[rows.length - 1].coral;
+    return b > a + 0.05 ? 'higher' : b < a - 0.05 ? 'lower' : 'same';
+  }
+  function modelSettingsOf(d) {
+    var base = scenarioSettings((d.model && d.model.scenarioId) || 'recent');
+    return Object.assign(base, d.model || {});
+  }
+
+  function ModelChart(props) {
+    var h = props.h, P = props.P, rows = props.rows, mark = props.markYear, kids = [], heat = [];
+    // On a narrow screen the chart is drawn narrower with larger text, the
+    // end labels give way to the legend, and the picked year's values move
+    // under the chart.
+    var React = props.React, wrap = React ? React.useRef(null) : null, cs = React ? React.useState(false) : [false], compact = cs[0];
+    if (React) React.useEffect(function () {
+      var el = wrap.current;
+      if (!el || typeof ResizeObserver === 'undefined') return undefined;
+      var ro = new ResizeObserver(function (entries) { var w = entries[0] && entries[0].contentRect.width; if (w > 0) cs[1](w < 560); });
+      ro.observe(el);
+      return function () { ro.disconnect(); };
+    }, []);
+    var VW = compact ? 380 : 740, VH = compact ? 236 : 216, fs = compact ? 14 : 11;
+    var L = compact ? 38 : 52, R = compact ? VW - 12 : 600, T = 14, B = VH - 20, years = rows.length - 1;
+    var cmp = props.compareRows;
+    var top = Math.max(70, Math.ceil(Math.max.apply(null, rows.concat(cmp || []).map(function (r) { return Math.max(r.coral, r.algae) * 100; })) / 10) * 10);
+    var X = function (y) { return L + (R - L) * y / years; }, Y = function (p) { return B - (B - T) * p / top; };
+    for (var g = 0; g <= top; g += 20) {
+      kids.push(h('line', { key: 'g' + g, x1: L, y1: Y(g), x2: R, y2: Y(g), stroke: P.border, strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gt' + g, x: L - 6, y: Y(g) + 4, fill: P.muted, fontSize: fs, textAnchor: 'end' }, g + '%'));
+    }
+    for (var yr = 0; yr <= years; yr += (compact ? 10 : 5)) kids.push(h('text', { key: 'yt' + yr, x: X(yr), y: B + 16, fill: P.muted, fontSize: fs, textAnchor: 'middle' }, String(yr)));
+    function path(list, field) { return list.map(function (r, i) { return (i ? 'L' : 'M') + X(r.year).toFixed(1) + ' ' + Y(r[field] * 100).toFixed(1); }).join(' '); }
+    // Severe heatwave years (8 or more DHW): a band over the year in which
+    // the heat came, the same span as that year's heat bar, and a marker.
+    var step = (R - L) / years, severeD = '';
+    for (var sv = 1; sv < rows.length; sv++) {
+      if (!(rows[sv].dhw >= 8)) continue;
+      var sx = X(rows[sv].year);
+      kids.push(h('rect', { key: 'sv' + sv, x: round1(sx - step), y: T, width: round1(step), height: B - T, fill: P.heatBar, opacity: 0.16, 'data-severe-year': rows[sv].year }));
+      severeD += 'M' + round1(sx - step / 2 - 4) + ' 3H' + round1(sx - step / 2 + 4) + 'L' + round1(sx - step / 2) + ' 10Z';
+    }
+    if (severeD) kids.push(h('path', { key: 'svm', d: severeD, fill: P.heatBar }));
+    if (mark != null) kids.push(h('line', { key: 'mark', x1: X(mark), y1: T, x2: X(mark), y2: B, stroke: P.text, strokeWidth: 1, strokeDasharray: '4 3' }));
+    // Without the restoration actions: same heatwaves, thin grey dotted line.
+    if (cmp) kids.push(h('path', { key: 'cmp', d: path(cmp, 'coral'), fill: 'none', stroke: P.line, strokeWidth: 2, strokeDasharray: '2 4' }));
+    kids.push(h('path', { key: 'coral', d: path(rows, 'coral'), fill: 'none', stroke: P.coralLine, strokeWidth: 3 }));
+    kids.push(h('path', { key: 'algae', d: path(rows, 'algae'), fill: 'none', stroke: P.algaeLine, strokeWidth: 3, strokeDasharray: '7 4' }));
+    var last = rows[rows.length - 1];
+    // End labels, nudged apart so none overlap.
+    var labels = [{ key: 'cl', y: Y(last.coral * 100), text: props.coralLabel }, { key: 'al', y: Y(last.algae * 100), text: props.algaeLabel }];
+    if (cmp) labels.push({ key: 'ml', y: Y(cmp[cmp.length - 1].coral * 100), text: props.compareLabel, muted: true });
+    labels.sort(function (a, b) { return a.y - b.y; });
+    for (var li = 1; li < labels.length; li++) if (labels[li].y - labels[li - 1].y < 14) labels[li].y = labels[li - 1].y + 14;
+    if (!compact) labels.forEach(function (lb) { kids.push(h('text', { key: lb.key, x: R + 4, y: lb.y + 4, fill: lb.muted ? P.muted : P.text, fontSize: 12, fontWeight: lb.muted ? 400 : 700 }, lb.text)); });
+    // The year picked below: dots on each line and its values in a small box
+    // placed where it covers the fewest line points.
+    var mr = mark != null ? rows[mark] : null;
+    if (mr) {
+      var dots = [[mr.coral, P.coralLine, 'mdc'], [mr.algae, P.algaeLine, 'mda']];
+      if (cmp && cmp[mark]) dots.push([cmp[mark].coral, P.line, 'mdm']);
+      dots.forEach(function (dd) { kids.push(h('circle', { key: dd[2], cx: X(mark), cy: round1(Y(dd[0] * 100)), r: 4.5, fill: dd[1], stroke: P.card, strokeWidth: 2 })); });
+    }
+    if (mr && props.markText && !compact) {
+      var mx = X(mark), lines = [props.markText].concat(props.markText2 ? [props.markText2] : []);
+      var bw2 = Math.max.apply(null, lines.map(function (t) { return t.length; })) * 6.1 + 12, bh = lines.length * 15 + 6;
+      var bx = mx > (L + R) / 2 ? mx - 8 - bw2 : mx + 8;
+      bx = clamp(bx, L + 2, R + 136 - bw2);
+      var pts = [];
+      [rows, cmp].forEach(function (list) { if (list) list.forEach(function (r) { pts.push([X(r.year), Y(r.coral * 100)]); pts.push([X(r.year), Y(r.algae * 100)]); }); });
+      var best = null;
+      [T + 2, T + (B - T) * 0.42, B - bh - 4].forEach(function (by) {
+        var hits = pts.filter(function (p) { return p[0] >= bx - 4 && p[0] <= bx + bw2 + 4 && p[1] >= by - 4 && p[1] <= by + bh + 4; }).length;
+        if (!best || hits < best.hits) best = { y: by, hits: hits };
+      });
+      kids.push(h('rect', { key: 'mbox', x: round1(bx), y: round1(best.y), width: round1(bw2), height: bh, rx: 4, fill: P.card, stroke: P.border, opacity: 0.94 }));
+      lines.forEach(function (t, i) { kids.push(h('text', { key: 'mt' + i, x: round1(bx + 6), y: round1(best.y + 15 + i * 15), fill: P.text, fontSize: 11.5, fontWeight: i ? 400 : 700 }, t)); });
+    }
+    var hT = compact ? 26 : 10, hB = compact ? 100 : 92, hVH = compact ? 112 : 104, hMax = 16, HY = function (v) { return hB - (hB - hT) * Math.min(v, hMax) / hMax; }, bw = (R - L) / years * 0.7;
+    [4, 8, 12].forEach(function (lvl) {
+      heat.push(h('line', { key: 'hl' + lvl, x1: L, y1: HY(lvl), x2: R, y2: HY(lvl), stroke: P.border, strokeDasharray: '3 3' }));
+      heat.push(h('text', { key: 'ht' + lvl, x: L - 6, y: HY(lvl) + 4, fill: P.muted, fontSize: fs, textAnchor: 'end' }, String(lvl)));
+    });
+    for (var i = 1; i < rows.length; i++) heat.push(h('rect', { key: 'b' + i, x: X(rows[i].year) - bw / 2 - (R - L) / years / 2, y: HY(rows[i].dhw), width: bw, height: hB - HY(rows[i].dhw), fill: P.heatBar,
+      stroke: mark === rows[i].year ? P.text : 'none', strokeWidth: 2 }));
+    heat.push(compact ? h('text', { key: 'hu', x: L - 6, y: 15, fill: P.text, fontSize: fs, textAnchor: 'end' }, props.heatLabel) : h('text', { key: 'hu', x: R + 4, y: HY(8) + 4, fill: P.text, fontSize: 11 }, props.heatLabel));
+    var lg = props.legend || {}, sw = function (kids2) { return h('svg', { viewBox: '0 0 30 14', width: 30, height: 14, 'aria-hidden': 'true', focusable: 'false', style: { flex: 'none' } }, kids2); };
+    var keyItems = [
+      ['coral', sw([h('line', { key: 'l', x1: 1, y1: 7, x2: 29, y2: 7, stroke: P.coralLine, strokeWidth: 3 })]), lg.coral],
+      ['algae', sw([h('line', { key: 'l', x1: 1, y1: 7, x2: 29, y2: 7, stroke: P.algaeLine, strokeWidth: 3, strokeDasharray: '7 4' })]), lg.algae],
+      cmp ? ['without', sw([h('line', { key: 'l', x1: 1, y1: 7, x2: 29, y2: 7, stroke: P.line, strokeWidth: 2, strokeDasharray: '2 4' })]), lg.without] : null,
+      ['severe', sw([h('rect', { key: 'r', x: 8, y: 0, width: 14, height: 14, fill: P.heatBar, opacity: 0.25 }), h('path', { key: 'm', d: 'M11 0H19L15 6Z', fill: P.heatBar })]), lg.severe],
+      mark != null ? ['year', sw([h('line', { key: 'l', x1: 15, y1: 0, x2: 15, y2: 14, stroke: P.text, strokeWidth: 1.5, strokeDasharray: '3 2' }), h('circle', { key: 'c', cx: 15, cy: 7, r: 4, fill: P.coralLine, stroke: P.card, strokeWidth: 2 })]), lg.year] : null
+    ].filter(Boolean);
+    return h('div', { ref: wrap },
+      h('svg', { viewBox: '0 0 ' + VW + ' ' + VH, role: 'img', 'aria-label': props.label, focusable: 'false', 'data-model-chart': 'true', style: { width: '100%', height: 'auto', display: 'block' } }, kids),
+      h('svg', { viewBox: '0 0 ' + VW + ' ' + hVH, role: 'img', 'aria-label': props.heatAria, focusable: 'false', style: { width: '100%', height: 'auto', display: 'block' } }, heat),
+      compact && props.markText ? h('p', { style: { margin: '6px 0 0', fontSize: 14 } }, h('strong', null, props.markText), props.markText2 ? h('span', { style: { display: 'block' } }, props.markText2) : null) : null,
+      lg.label ? h('ul', { 'aria-label': lg.label, style: { display: 'flex', flexWrap: 'wrap', gap: '4px 16px', listStyle: 'none', margin: '6px 0 0', padding: 0, fontSize: 13, color: P.text } },
+        keyItems.map(function (it) { return h('li', { key: it[0], style: { display: 'flex', alignItems: 'center', gap: 6 } }, it[1], it[2]); })) : null);
+  }
+
+  // ── The reef in one model year ──
+  // A side view with 24 fixed spots on the bottom, 12 in front and 12
+  // behind. Each spot is about 4% of the reef, filled from that year's cover
+  // as siteFromModelYear works it out, so the picture follows the model's own
+  // numbers: live coral (white where bleached in a heatwave year), coral the
+  // heat killed that year, seaweed, bare rock, rubble and sand.
+  var YEAR_SPOTS = 24, YEAR_VB_H = 150;
+  // Fill order: coral and the rest of the hard bottom take spots from the
+  // front of this list, sand and rubble from the back, so coral that grows
+  // keeps its place and new coral appears spread across the reef.
+  var YEAR_SPOT_ORDER = [4, 16, 9, 21, 1, 13, 7, 19, 11, 23, 2, 14, 6, 18, 0, 12, 10, 22, 3, 15, 8, 20, 5, 17];
+  var YEAR_FORMS = ['branching', 'massive', 'plate', 'branching', 'encrusting', 'massive', 'branching', 'plate', 'massive', 'branching', 'encrusting', 'plate'];
+  function yearSpots(cover) {
+    // Largest remainder over live coral (healthy and bleached together) and
+    // the other five kinds of bottom, then the live spots split by the
+    // bleached share, so the live coral count stays as close as it can be.
+    var share = { live: (cover.hard_coral || 0) + (cover.bleached_coral || 0) }, groups = ['live', 'recently_dead_coral', 'macroalgae', 'rock', 'rubble', 'sand'];
+    var counts = {}, rem = [], total = 0, k;
+    groups.forEach(function (id, i) { var x = Math.max(0, id === 'live' ? share.live : cover[id] || 0) * YEAR_SPOTS; counts[id] = Math.floor(x + 1e-9); total += counts[id]; rem.push([x - counts[id], i, id]); });
+    rem.sort(function (a, b) { return b[0] - a[0] || a[1] - b[1]; });
+    for (k = 0; total < YEAR_SPOTS && k < rem.length; k++, total++) counts[rem[k][2]] += 1;
+    var nLive = counts.live, nB = share.live > 0 ? Math.round(nLive * (cover.bleached_coral || 0) / share.live) : 0;
+    counts.bleached_coral = nB; counts.hard_coral = nLive - nB; delete counts.live;
+    var spots = [], front = 0, back = YEAR_SPOTS - 1;
+    // Bleached corals spread evenly among the live ones.
+    for (k = 0; k < nLive; k++) spots[YEAR_SPOT_ORDER[front++]] = (Math.floor((k + 1) * nB / nLive) > Math.floor(k * nB / nLive)) ? 'bleached_coral' : 'hard_coral';
+    ['recently_dead_coral', 'macroalgae', 'rock'].forEach(function (id) { for (var j = 0; j < counts[id]; j++) spots[YEAR_SPOT_ORDER[front++]] = id; });
+    ['sand', 'rubble'].forEach(function (id) { for (var j = 0; j < counts[id] && back >= front; j++) spots[YEAR_SPOT_ORDER[back--]] = id; });
+    for (k = 0; k < YEAR_SPOTS; k++) if (!spots[k]) spots[k] = 'rock';
+    return { spots: spots, counts: counts, hardSpots: front };
+  }
+  var YEAR_FISH_SPOTS = (function () {
+    var rand = mulberry32(4242), out = [];
+    for (var tries = 0; out.length < 30 && tries < 2000; tries++) {
+      var x = 20 + rand() * 320, y = 14 + rand() * 62, ok = true;
+      for (var i = 0; i < out.length; i++) if (Math.abs(out[i][0] - x) < 22 && Math.abs(out[i][1] - y) < 11) { ok = false; break; }
+      if (ok) out.push([round1(x), round1(y)]);
+    }
+    return out;
+  })();
+  function yearReefArt(h, uid, row, startRow, settings) {
+    var site = siteFromModelYear(row, settings, 0), sp = yearSpots(site.cover), kids = [];
+    // Spots on ground that Reef Stars added since year 0 carry a frame.
+    var hard0 = settings.rubbleStabilization ? Math.round(clamp(startRow.hardBottom != null ? startRow.hardBottom : P('hardBottom'), 0, 1) * YEAR_SPOTS) : YEAR_SPOTS;
+    var framed = {};
+    for (var o = hard0; o < sp.hardSpots; o++) framed[YEAR_SPOT_ORDER[o]] = true;
+    kids.push(h('defs', { key: 'defs' },
+      h('linearGradient', { id: uid + '-sea', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#5fb5c9' }), h('stop', { offset: 1, stopColor: '#17627c' })),
+      h('linearGradient', { id: uid + '-heat', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#f59e0b', stopOpacity: 0.55 }), h('stop', { offset: 1, stopColor: '#f59e0b', stopOpacity: 0 }))));
+    kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: 360, height: YEAR_VB_H, fill: 'url(#' + uid + '-sea)' }));
+    kids.push(h('path', { key: 'rays', d: 'M60 0H86L46 112H18ZM170 0H186L176 112H150ZM262 0H292L318 112H286Z', fill: '#e4fbff', opacity: 0.08 }));
+    if (row.dhw >= 4) kids.push(h('rect', { key: 'heat', x: 0, y: 0, width: 360, height: 100, fill: 'url(#' + uid + '-heat)', opacity: clamp(row.dhw / 12, 0.35, 1), 'data-heat': 'true' }));
+    var GROUND = { sand: '#e0cd9e', rubble: '#b3ab9c' };
+    // Two strips of reef floor; each spot adds its own patch and object.
+    kids.push(h('path', { key: 'floor-b', d: 'M0 108Q60 101 120 106T240 104T360 106V' + YEAR_VB_H + 'H0Z', fill: '#a39886' }));
+    function spot(i) {
+      var backRow = i >= 12, j = backRow ? i - 12 : i, k = backRow ? 0.74 : 1;
+      var x = backRow ? 24 + j * 28.4 : 14 + j * 30 + (j % 2 ? 2 : -2), base = backRow ? 109 : 129, s = 0.56 * k;
+      var cat = sp.spots[i], g = groundOf(cat), out = [];
+      if (g !== 'hard') out.push(h('ellipse', { key: 'g', cx: round1(x), cy: round1(base + 2 * k), rx: round1(16 * k), ry: round1(5 * k), fill: GROUND[g] }));
+      if (cat === 'sand') out.push(h('path', { key: 's', d: 'M' + round1(x - 10 * k) + ' ' + round1(base + 2 * k) + 'q' + round1(2.5 * k) + ' ' + round1(-1.6 * k) + ' ' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0', fill: 'none', stroke: '#b59c66', strokeWidth: 0.9 }));
+      if (cat === 'rubble') {
+        var st = '';
+        for (var r = 0; r < 5; r++) { var rx = x + (r - 2) * 5.5 * k, ry = base - (r % 2 ? 3 : 0.5) * k, ra = (i * 37 + r * 53) % 180 * Math.PI / 180, rl = 3.4 * k; st += 'M' + round1(rx - Math.cos(ra) * rl) + ' ' + round1(ry - Math.sin(ra) * rl * 0.5) + 'L' + round1(rx + Math.cos(ra) * rl) + ' ' + round1(ry + Math.sin(ra) * rl * 0.5); }
+        out.push(h('path', { key: 'r0', d: st, transform: 'translate(0.6 0.8)', stroke: '#5f5a50', strokeWidth: round1(2.4 * k), strokeLinecap: 'round' }));
+        out.push(h('path', { key: 'r1', d: st, stroke: '#efe8d6', strokeWidth: round1(2 * k), strokeLinecap: 'round' }));
+      }
+      if (framed[i]) out.push(h('path', { key: 'f', 'data-frame': 'true', d: 'M' + round1(x - 15 * k) + ' ' + round1(base + 1) + 'L' + round1(x - 7 * k) + ' ' + round1(base - 8 * k) + 'H' + round1(x + 7 * k) + 'L' + round1(x + 15 * k) + ' ' + round1(base + 1) + 'M' + round1(x - 7 * k) + ' ' + round1(base - 8 * k) + 'L' + round1(x) + ' ' + round1(base + 1) + 'L' + round1(x + 7 * k) + ' ' + round1(base - 8 * k), fill: 'none', stroke: '#2f343b', strokeWidth: round1(1.4 * k) }));
+      if (cat === 'rock') {
+        out.push(h('path', { key: 'k', d: 'M' + round1(x - 13 * k) + ' ' + round1(base + 1) + 'Q' + round1(x - 11 * k) + ' ' + round1(base - 7 * k) + ' ' + round1(x - 2 * k) + ' ' + round1(base - 7.5 * k) + 'Q' + round1(x + 9 * k) + ' ' + round1(base - 8 * k) + ' ' + round1(x + 13 * k) + ' ' + round1(base + 1) + 'Z', fill: '#8a8379', stroke: '#57524a', strokeWidth: 0.8 }));
+        out.push(h('path', { key: 'c', d: dotsPath([[x - 5 * k, base - 4 * k], [x + 4 * k, base - 3 * k]], round1(1.8 * k)), fill: '#d18499' }));
+      }
+      if (cat === 'macroalgae') {
+        var wd = '';
+        for (var b2 = 0; b2 < 5; b2++) {
+          var bx = x + (b2 - 2) * 3.4 * k, tip = base - (15 + (b2 % 2) * 6) * k, lean = (b2 - 2) * 2.2 * k;
+          wd += 'M' + round1(bx - 1.6 * k) + ' ' + round1(base) + 'Q' + round1(bx - 4 * k + lean) + ' ' + round1((base + tip) / 2) + ' ' + round1(bx + lean) + ' ' + round1(tip) + 'Q' + round1(bx + 3.4 * k + lean) + ' ' + round1((base + tip) / 2) + ' ' + round1(bx + 1.6 * k) + ' ' + round1(base) + 'Z';
+        }
+        out.push(h('path', { key: 'w', d: wd, fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.7 }));
+      }
+      if (CORAL_CATEGORIES[cat]) {
+        var form = framed[i] ? 'branching' : YEAR_FORMS[i % YEAR_FORMS.length], tone = MAP_CORAL_TONES[(i * 7) % MAP_CORAL_TONES.length];
+        var fillC = cat === 'bleached_coral' ? '#f7f9f6' : cat === 'recently_dead_coral' ? '#c9c3b4' : tone[0], strokeC = cat === 'bleached_coral' ? '#8e9ba4' : cat === 'recently_dead_coral' ? '#7d7462' : tone[1];
+        var fs = s * (form === 'plate' || form === 'encrusting' ? 0.78 : form === 'massive' ? 0.86 : 1.05);
+        out.push(h('g', { key: 'c', transform: 'translate(' + round1(x - 80 * fs) + ' ' + round1(base + 1 - 98 * fs) + ') scale(' + round1(fs * 1000) / 1000 + ')' }, coralBody(h, form, fillC, strokeC, 'b')));
+      }
+      return h('g', { key: 'spot' + i, 'data-spot': i, 'data-spot-cat': cat }, out);
+    }
+    for (var bi = 12; bi < 24; bi++) kids.push(spot(bi));
+    kids.push(h('rect', { key: 'haze', x: 0, y: 0, width: 360, height: 120, fill: '#2a7f98', opacity: 0.2 }));
+    kids.push(h('path', { key: 'floor-f', d: 'M0 126Q90 119 180 125T360 123V' + YEAR_VB_H + 'H0Z', fill: '#ab9f8b' }));
+    for (var fi = 0; fi < 12; fi++) kids.push(spot(fi));
+    // Fish follow the teaching rules in siteFromModelYear: grazers and
+    // predators track protection, butterflyfish track live coral.
+    var fishOrder = ['butterflyfish', 'parrotfish', 'surgeonfish', 'grouper', 'snapper'], fk = 0, fishKids = [];
+    fishOrder.forEach(function (fam) {
+      for (var n = 0; n < (site.fish[fam] || 0) && fk < YEAR_FISH_SPOTS.length; n++, fk++) {
+        var fp = YEAR_FISH_SPOTS[fk];
+        fishKids.push(h('g', { key: 'yf' + fk, 'data-fish': fam, transform: 'translate(' + fp[0] + ' ' + fp[1] + ') scale(0.62)' }, fishShape(h, fam, 0, 0, 'f', fk % 3 === 1)));
+      }
+    });
+    kids.push(h('g', { key: 'fish' }, fishKids));
+    return { kids: kids, counts: sp.counts, framed: Object.keys(framed).length, site: site };
+  }
+  function YearFigure(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, row = props.row, settings = props.settings;
+    var CN = categoryNames(__alloT);
+    var uid = 'crb-year-' + React.useId().replace(/:/g, '');
+    var art = React.useMemo(function () { return yearReefArt(h, uid, row, props.startRow, settings); }, [row, props.startRow, settings.rubbleStabilization, settings.herbivores, uid]);
+    var c = art.site.cover, pc = function (v) { return Math.round(v * 100); };
+    var live = art.counts.hard_coral + art.counts.bleached_coral;
+    var label = __alloFill(__alloT('stem.coralreef.mo_year_art_label', 'Drawing of the modeled reef in year {n}: live coral {live}% ({bleached}% of it bleached), recently dead coral {dead}%, seaweed {algae}%, bare rock {rock}%, rubble {rubble}% and sand {sand}%.'),
+      { n: row.year, live: pc(row.coral), bleached: pc(row.coral > 0 ? row.bleached : 0), dead: pc(c.recently_dead_coral), algae: pc(c.macroalgae), rock: pc(c.rock), rubble: pc(c.rubble), sand: pc(c.sand) });
+    return h('figure', { style: { margin: 0 } },
+      h('h4', { style: { margin: '0 0 6px', fontSize: 16, color: P.text } }, __alloFill(__alloT('stem.coralreef.mo_year_title', 'The reef in year {n}'), { n: row.year })),
+      h('svg', { viewBox: '0 0 360 ' + YEAR_VB_H, role: 'img', 'aria-label': label, focusable: 'false', 'data-year-art': row.year, 'data-live-spots': live, 'data-bleached-spots': art.counts.bleached_coral, 'data-frames': art.framed,
+        style: { width: '100%', height: 'auto', display: 'block', borderRadius: 10 } }, art.kids),
+      h('figcaption', { style: { fontSize: 14, marginTop: 6 } },
+        h('p', { style: { margin: '0 0 2px', fontWeight: 700 } }, pc(row.coral > 0 ? row.bleached : 0) > 0
+          ? __alloFill(__alloT('stem.coralreef.mo_year_live', 'Live coral: {v}% of the bottom ({b}% of it bleached).'), { v: pc(row.coral), b: pc(row.bleached) })
+          : __alloFill(__alloT('stem.coralreef.mo_year_live_plain', 'Live coral: {v}% of the bottom.'), { v: pc(row.coral) })),
+        row.year > 0 ? h('p', { style: { margin: '0 0 2px' } }, __alloFill(__alloT('stem.coralreef.mo_year_heat', 'Heat stress that year: {dhw} Degree Heating Weeks.'), { dhw: row.dhw }),
+          row.dhw >= 8 ? ' ' + __alloT('stem.coralreef.mo_year_severe', 'A severe heatwave year: many corals turn white, and some die.') : '') : null,
+        h('ul', { className: 'crb-yearnums', 'aria-label': __alloT('stem.coralreef.mo_year_list', 'The bottom that year') }, CATEGORY_IDS.map(function (id) {
+          return h('li', { key: id, 'data-year-cat': id }, h('span', { className: 'crb-swatch crb-cat-' + id, 'aria-hidden': 'true' }), h('span', null, CN[id], ' ', h('strong', null, pc(c[id]) + '%')));
+        })),
+        h('p', { style: mutedStyle(P, { margin: '6px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.mo_year_note', 'Each of the 24 spots on the bottom stands for about 4% of the reef.'),
+          art.framed ? ' ' + __alloT('stem.coralreef.mo_year_frames', 'Dark frames: Reef Stars holding the old rubble still, with coral growing on them.') : '')));
+  }
+
+  function RangeControl(props) {
+    var h = props.h, P = props.P;
+    return h('label', { style: { display: 'block', marginBottom: 10 } },
+      h('span', { style: { display: 'block', fontWeight: 600 } }, props.label, ': ', h('span', { style: { fontWeight: 400 } }, props.valueText)),
+      h('input', { type: 'range', min: props.min, max: props.max, step: props.step || 1, value: props.value, 'aria-valuetext': props.valueText,
+        onChange: function (e) { props.onChange(Number(e.target.value)); }, style: { width: '100%', maxWidth: 360 } }));
+  }
+  function LevelControl(props) {
+    var h = props.h, P = props.P;
+    return h('div', { role: 'group', 'aria-label': props.label, style: { marginBottom: 10 } },
+      h('span', { style: { display: 'block', fontWeight: 600, marginBottom: 4 } }, props.label),
+      h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, ['low', 'medium', 'high'].map(function (lv) {
+        var on = props.value === lv;
+        return h('button', { key: lv, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { props.onChange(lv); } }, props.names[lv]);
+      })));
+  }
+
+  function ModelSection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var SC = scenarioText(__alloT), LV = levelNames(__alloT);
+    var settings = modelSettingsOf(d);
+    var seed = d.modelSeed != null ? d.modelSeed >>> 0 : 11;
+    var key = JSON.stringify(settings) + ':' + seed;
+    var rows = React.useMemo(function () { return runScenario(settings, seed); }, [key]);
+    var acting = hasActions(settings);
+    var compareRows = React.useMemo(function () { return acting ? runScenario(withoutActions(settings), seed) : null; }, [key]);
+    var preds = d.modelPredictions || {};
+    var revealedFor = d.modelRevealedFor || {};
+    var sid = settings.scenarioId;
+    var revealed = sid === 'custom' || !!revealedFor[sid];
+    var pred = preds[sid] || {};
+    var PN = { higher: __alloT('stem.coralreef.pred_higher', 'Higher than today'), same: __alloT('stem.coralreef.pred_same', 'About the same'), lower: __alloT('stem.coralreef.pred_lower', 'Lower than today') };
+    var surveyYear = clamp(d.modelSurveyYear != null ? d.modelSurveyYear : settings.years, 0, settings.years);
+    function pickScenario(id) { env.set({ model: scenarioSettings(id) }); env.say(__alloFill(__alloT('stem.coralreef.sr_scenario', 'Scenario: {name}.'), { name: SC[id].name })); }
+    function change(patch) { env.set({ model: Object.assign({}, settings, patch, { scenarioId: 'custom' }) }); }
+    function setPred(patch) { var next = Object.assign({}, preds); next[sid] = Object.assign({}, pred, patch); env.set({ modelPredictions: next }); }
+    function reveal() {
+      var next = Object.assign({}, revealedFor); next[sid] = true;
+      env.set({ modelRevealedFor: next, modelRevealed: true });
+      var out = outcomeOf(rows);
+      env.say(__alloFill(__alloT('stem.coralreef.sr_model_result', 'Model run. Live coral went from {a}% to {b}%. That is {outcome}.'), { a: Math.round(rows[0].coral * 100), b: Math.round(rows[rows.length - 1].coral * 100), outcome: PN[out] }));
+    }
+    function surveyYearNow() {
+      var row = rows[surveyYear];
+      var site = siteFromModelYear(row, settings, (seed * 31 + surveyYear) >>> 0);
+      env.set(Object.assign({ modelSite: site, surveySiteId: 'model', section: 'survey' }, freshSurvey(site, site.seed, 1)));
+      env.say(__alloFill(__alloT('stem.coralreef.sr_model_survey', 'Survey of the modeled reef in year {n}. Point 1 of 40.'), { n: surveyYear }));
+    }
+    function diveYearNow() {
+      env.set({ diveModelSite: exploreSiteFromModel(rows[surveyYear], settings), diveSiteId: 'model', section: 'explore' });
+      env.say(__alloFill(__alloT('stem.coralreef.sr_model_dive', 'Dive of the modeled reef in year {n}.'), { n: surveyYear }));
+    }
+    var first = rows[0], last = rows[rows.length - 1];
+    var severe = rows.filter(function (r) { return r.year > 0 && r.dhw >= 8; }).length;
+    var watch = rows.filter(function (r) { return r.year > 0 && r.dhw >= 4 && r.dhw < 8; }).length;
+    var summary = __alloFill(__alloT('stem.coralreef.mo_summary', 'Over {years} years, live coral went from {a}% to {b}% and seaweed from {c}% to {e}%. {severe} years reached 8 or more Degree Heating Weeks and {watch} more reached 4 to 8.'),
+      { years: settings.years, a: Math.round(first.coral * 100), b: Math.round(last.coral * 100), c: Math.round(first.algae * 100), e: Math.round(last.algae * 100), severe: severe, watch: watch });
+    var without = compareRows ? Math.round(compareRows[compareRows.length - 1].coral * 100) : null;
+    var withAct = Math.round(last.coral * 100);
+    // The best year shows that reefs regrow between heatwaves.
+    var best = rows.reduce(function (m, r) { return r.coral > m.coral ? r : m; }, rows[0]);
+    function toggleAction(keyName, on) { var p = {}; p[keyName] = on; change(p); }
+    var actionDefs = [
+      { k: 'rubbleStabilization', label: __alloT('stem.coralreef.act_stars', 'Stabilize loose rubble with Reef Stars'), hint: __alloT('stem.coralreef.act_stars_hint', 'Linked steel frames hold rubble still and carry coral fragments. Matters most where rubble covers the bottom.') },
+      { k: 'reefStructures', label: __alloT('stem.coralreef.act_structures', 'Add reef structures (Reef Balls)'), hint: __alloT('stem.coralreef.act_structures_hint', 'Hollow concrete domes that fish gather around. They add a little surface, but studies have not found that they help young corals survive or grow, so the model gives them only a small effect.') },
+      { k: 'restoration', label: __alloT('stem.coralreef.act_garden', 'Coral gardening'), hint: __alloT('stem.coralreef.act_garden_hint', 'Grow coral fragments in nurseries and plant them back on the reef.') }
+    ];
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.mo_title', 'What could happen to a reef in 30 years?')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.mo_intro', 'This is a simplified teaching model of one reef. Each year it adds up heat stress, coral loss, coral regrowth, seaweed growth, grazing and anything people do to help. Pick a scenario, predict, then run it. Most scenarios start from a reef with 40% live coral; the rubble field starts almost bare.')),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.mo_scenarios', 'Scenarios'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          SCENARIOS.map(function (s) {
+            var on = sid === s.id;
+            return h('button', { key: s.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { pickScenario(s.id); } }, SC[s.id].name);
+          })),
+        h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, h('strong', null, SC[sid].name, ': '), SC[sid].about)),
+      !revealed ? h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.mo_predict_title', 'Predict first')),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.mo_predict_q', 'In year 30, live coral cover will be:'), style: { marginBottom: 8 } },
+          h('p', { style: { margin: '0 0 6px', fontWeight: 600 } }, __alloT('stem.coralreef.mo_predict_q', 'In year 30, live coral cover will be:')),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, PREDICTION_IDS.map(function (id) {
+            var on = pred.choice === id;
+            return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { setPred({ choice: id }); } }, PN[id]);
+          }))),
+        h('label', { htmlFor: 'cr-pred-reason', style: { display: 'block', fontWeight: 600, marginBottom: 4 } }, __alloT('stem.coralreef.mo_reason', 'Why do you think so? (optional)')),
+        h('textarea', { id: 'cr-pred-reason', rows: 2, value: pred.reason || '', onChange: function (e) { setPred({ reason: e.target.value.slice(0, 600) }); },
+          style: { width: '100%', boxSizing: 'border-box', padding: 8, borderRadius: 8, border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text, font: 'inherit', marginBottom: 8 } }),
+        h('button', { type: 'button', style: btnStyle(P, !!pred.choice), disabled: !pred.choice, onClick: reveal }, __alloT('stem.coralreef.mo_run', 'Run the model')),
+        !pred.choice ? h('p', { style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.mo_need_pred', 'Choose a prediction to run the model.')) : null) : null,
+      revealed ? h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-model-result' },
+        h('h3', { id: 'cr-model-result', style: h3Style(P) }, __alloT('stem.coralreef.mo_result_title', 'Model result')),
+        pred.choice && sid !== 'custom' ? h('p', { style: { margin: '0 0 8px', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.mo_vs_pred', 'You predicted: {pred}. The model shows: {out}.'), { pred: PN[pred.choice], out: PN[outcomeOf(rows)] })) : null,
+        h('p', { style: { margin: '0 0 4px' } }, summary),
+        without != null ? h('p', { style: { margin: '0 0 4px', fontWeight: 700, color: withAct > without ? P.good : P.text } },
+          withAct > without
+            ? __alloFill(__alloT('stem.coralreef.mo_saved', 'With the restoration actions, live coral in year {years} is {w}%. Without them it would be {n}%.'), { years: settings.years, w: withAct, n: without })
+            : __alloFill(__alloT('stem.coralreef.mo_saved_none', 'In this run the restoration actions made little difference by year {years} ({w}% with them, {n}% without). Try them on a rubble field, or ease the heatwaves.'), { years: settings.years, w: withAct, n: without })) : null,
+        best.year > 0 && best.coral > first.coral + 0.03 ? h('p', { style: mutedStyle(P) }, __alloFill(__alloT('stem.coralreef.mo_best', 'Reefs regrow between heatwaves: live coral reached {v}% in year {y}.'), { v: Math.round(best.coral * 100), y: best.year })) : null,
+        h('p', { style: mutedStyle(P) }, (settings.sensitivity || 'tolerant') === 'tolerant'
+          ? __alloT('stem.coralreef.mo_used_tolerant', 'Coral death in heatwaves: mixed reef, based on NOAA alert levels. You can switch to a heat-sensitive reef below.')
+          : __alloT('stem.coralreef.mo_used_sensitive', 'Coral death in heatwaves: heat-sensitive reef, as measured on the Great Barrier Reef in 2016. You can switch this below.')),
+        h('style', null, LANE_CSS_B),
+        h(ModelChart, { h: h, React: React, P: P, rows: rows, markYear: surveyYear, compareRows: compareRows,
+          markText: __alloFill(__alloT('stem.coralreef.mo_mark_text', 'Year {n}: live coral {c}%, seaweed {a}%'), { n: surveyYear, c: Math.round(rows[surveyYear].coral * 100), a: Math.round(rows[surveyYear].algae * 100) }),
+          markText2: compareRows ? __alloFill(__alloT('stem.coralreef.mo_mark_without', 'Without actions: live coral {c}%'), { c: Math.round(compareRows[surveyYear].coral * 100) }) : null,
+          legend: { label: __alloT('stem.coralreef.mo_legend', 'Chart key'), coral: __alloT('stem.coralreef.mo_col_coral', 'Live coral'), algae: __alloT('stem.coralreef.mo_col_algae', 'Seaweed'),
+            without: __alloT('stem.coralreef.mo_leg_without', 'Live coral on the same reef without the actions'), severe: __alloT('stem.coralreef.mo_leg_severe', 'Severe heatwave year (8 or more Degree Heating Weeks)'),
+            year: __alloT('stem.coralreef.mo_leg_year', 'The year you picked below') },
+          compareLabel: without != null ? __alloFill(__alloT('stem.coralreef.mo_compare_label', 'Without actions {v}%'), { v: without }) : '',
+          coralLabel: __alloFill(__alloT('stem.coralreef.mo_coral_label', 'Live coral {v}%'), { v: Math.round(last.coral * 100) }),
+          algaeLabel: __alloFill(__alloT('stem.coralreef.mo_algae_label', 'Seaweed {v}%'), { v: Math.round(last.algae * 100) }),
+          heatLabel: __alloT('stem.coralreef.mo_heat_label', 'DHW'),
+          label: __alloFill(__alloT('stem.coralreef.mo_chart_label', 'Line chart of live coral (solid line) and seaweed (dashed line) cover over {years} years. {summary}'), { years: settings.years, summary: summary }) +
+            (without != null ? ' ' + __alloFill(__alloT('stem.coralreef.mo_chart_compare', 'A dotted grey line shows live coral without the restoration actions, ending at {v}%.'), { v: without }) : '') +
+            (severe ? ' ' + __alloFill(__alloT('stem.coralreef.mo_chart_severe', 'Shaded bands mark the severe heatwave years ({n} in all).'), { n: severe }) : '') + ' ' +
+            __alloFill(__alloT('stem.coralreef.mo_chart_mark', 'A dashed line marks year {n}: live coral {c}%, seaweed {a}%.'), { n: surveyYear, c: Math.round(rows[surveyYear].coral * 100), a: Math.round(rows[surveyYear].algae * 100) }),
+          heatAria: __alloFill(__alloT('stem.coralreef.mo_heat_aria', 'Bar chart of heat stress each year in Degree Heating Weeks, with guide lines at 4, 8 and 12. {severe} years reached 8 or more.'), { severe: severe }) }),
+        h('details', { style: { marginTop: 8 } },
+          h('summary', { style: { cursor: 'pointer', fontWeight: 600 } }, __alloT('stem.coralreef.mo_table_summary', 'Show the numbers year by year')),
+          h('div', { style: { overflowX: 'auto' } }, h('table', { style: { borderCollapse: 'collapse', minWidth: 420 } },
+            h('thead', null, h('tr', null, [__alloT('stem.coralreef.mo_col_year', 'Year'), __alloT('stem.coralreef.mo_col_coral', 'Live coral'), __alloT('stem.coralreef.mo_col_algae', 'Seaweed'), __alloT('stem.coralreef.mo_col_dhw', 'Heat stress (DHW)'), __alloT('stem.coralreef.mo_col_killed', 'Coral cover lost to heat')].map(function (c, i) {
+              return h('th', { key: i, scope: 'col', style: { textAlign: 'right', padding: 4, borderBottom: '1px solid ' + P.border } }, c);
+            }))),
+            h('tbody', null, rows.map(function (r) {
+              return h('tr', { key: r.year },
+                h('th', { scope: 'row', style: { textAlign: 'right', padding: 4 } }, String(r.year)),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, Math.round(r.coral * 100) + '%'),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, Math.round(r.algae * 100) + '%'),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, r.year ? String(r.dhw) : '-'),
+                h('td', { style: { textAlign: 'right', padding: 4 } }, r.year ? round1(r.killed * 100) + '%' : '-'));
+            }))))),
+        h('div', { className: 'crb-year', style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid ' + P.border } },
+          h(YearFigure, { env: env, row: rows[surveyYear], startRow: rows[0], settings: settings }),
+          h('div', null,
+            h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.mo_survey_year', 'Year to survey'), min: 0, max: settings.years, value: surveyYear,
+              valueText: __alloFill(__alloT('stem.coralreef.mo_year_value', 'year {n}'), { n: surveyYear }), onChange: function (v) { env.set({ modelSurveyYear: v }); } }),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              h('button', { type: 'button', style: btnStyle(P, true), onClick: surveyYearNow }, __alloFill(__alloT('stem.coralreef.mo_survey_btn', 'Survey this reef in year {n}'), { n: surveyYear })),
+              h('button', { type: 'button', style: btnStyle(P, false), onClick: diveYearNow }, __alloFill(__alloT('stem.coralreef.mo_dive_btn', 'Dive this reef in year {n}'), { n: surveyYear })))))) : null,
+      revealed ? h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.mo_controls_title', 'Change the conditions')),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.mo_interval_now', 'Years between severe heatwaves, at the start'), min: 2, max: 12, value: settings.heatIntervalStart,
+          valueText: __alloFill(__alloT('stem.coralreef.mo_years_value', 'every {n} years'), { n: settings.heatIntervalStart }), onChange: function (v) { change({ heatIntervalStart: v }); } }),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.mo_interval_end', 'Years between severe heatwaves, by year 30'), min: 1, max: 12, value: settings.heatIntervalEnd,
+          valueText: __alloFill(__alloT('stem.coralreef.mo_years_value', 'every {n} years'), { n: settings.heatIntervalEnd }), onChange: function (v) { change({ heatIntervalEnd: v }); } }),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.mo_peak_now', 'Heatwave strength at the start'), min: 4, max: 16, value: settings.heatPeakStart,
+          valueText: __alloFill(__alloT('stem.coralreef.mo_dhw_value', '{n} Degree Heating Weeks'), { n: settings.heatPeakStart }), onChange: function (v) { change({ heatPeakStart: v }); } }),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.mo_peak_end', 'Heatwave strength by year 30'), min: 4, max: 16, value: settings.heatPeakEnd,
+          valueText: __alloFill(__alloT('stem.coralreef.mo_dhw_value', '{n} Degree Heating Weeks'), { n: settings.heatPeakEnd }), onChange: function (v) { change({ heatPeakEnd: v }); } }),
+        h(LevelControl, { h: h, P: P, names: LV, label: __alloT('stem.coralreef.mo_herbivores', 'Protection for grazing fish'), value: settings.herbivores, onChange: function (v) { change({ herbivores: v }); } }),
+        h(LevelControl, { h: h, P: P, names: LV, label: __alloT('stem.coralreef.mo_nutrients', 'Nutrient runoff from land'), value: settings.nutrients, onChange: function (v) { change({ nutrients: v }); } }),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.mo_sens', 'How quickly the corals die in a heatwave'), style: { marginBottom: 10 } },
+          h('span', { style: { display: 'block', fontWeight: 600, marginBottom: 4 } }, __alloT('stem.coralreef.mo_sens', 'How quickly the corals die in a heatwave')),
+          h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, ['tolerant', 'sensitive'].map(function (id) {
+            var on = (settings.sensitivity || 'tolerant') === id;
+            return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { change({ sensitivity: id }); } },
+              id === 'sensitive' ? __alloT('stem.coralreef.mo_sens_sensitive', 'Heat-sensitive reef (measured, Great Barrier Reef 2016)') : __alloT('stem.coralreef.mo_sens_tolerant', 'Mixed reef (based on NOAA alert levels)'));
+          })),
+          h('p', { style: mutedStyle(P, { margin: '4px 0 0' }) }, __alloT('stem.coralreef.mo_sens_note', 'Scientists do not agree on one number here. Shallow Great Barrier Reef corals died fast in 2016; NOAA\'s alert levels describe slower losses for a mix of corals. Try both and see how much the answer depends on it.'))),
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+          h('input', { type: 'checkbox', checked: !!settings.acidification, onChange: function (e) { change({ acidification: !!e.target.checked }); } }),
+          __alloT('stem.coralreef.mo_acid', 'Ocean acidification slows coral growth')),
+        h('fieldset', { style: { border: '1px solid ' + P.border, borderRadius: 10, padding: '8px 12px 4px', margin: '6px 0 12px' } },
+          h('legend', { style: { fontWeight: 700, padding: '0 4px' } }, __alloT('stem.coralreef.act_title', 'What people can do on the reef')),
+          actionDefs.map(function (a) {
+            return h('label', { key: a.k, style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 } },
+              h('input', { type: 'checkbox', checked: !!settings[a.k], onChange: function (e) { toggleAction(a.k, !!e.target.checked); }, style: { marginTop: 4 } }),
+              h('span', null, h('span', { style: { fontWeight: 600 } }, a.label), h('span', { style: { display: 'block', color: P.muted } }, a.hint)));
+          }),
+          h('p', { style: mutedStyle(P, { margin: '0 0 6px' }) }, __alloT('stem.coralreef.act_note', 'Protecting grazing fish and cutting runoff (above) help too. When any of these three is on, a dotted grey line shows the same reef without them.'))),
+        h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.set({ modelSeed: (seed + 1) >>> 0 }); env.say(__alloT('stem.coralreef.sr_new_weather', 'New run with different heatwave timing.')); } },
+          __alloT('stem.coralreef.mo_new_seed', 'Run again with different heatwave timing'))) : null,
+      h(ModelLimits, { env: env }));
+  }
+
+  function ModelLimits(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t;
+    var basisName = { sourced: __alloT('stem.coralreef.basis_sourced', 'From published research'), derived: __alloT('stem.coralreef.basis_derived', 'Worked out from published research'), assumption: __alloT('stem.coralreef.basis_assumption', 'Teaching assumption') };
+    var rows = paramRows(__alloT);
+    return h('section', { style: cardStyle(P) },
+      h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.mo_limits_title', 'What this model leaves out')),
+      h('ul', { style: { margin: '0 0 10px', paddingLeft: 22 } },
+        h('li', null, __alloT('stem.coralreef.mo_limit_1', 'Real reefs are made of many coral species that react differently. Here all coral is one number.')),
+        h('li', null, __alloT('stem.coralreef.mo_limit_2', 'Regrowth is matched to one reef (Scott Reef, Australia) and coral death to one heatwave (Great Barrier Reef, 2016). That is why you can switch to a tougher reef.')),
+        h('li', null, __alloT('stem.coralreef.mo_limit_3', 'Storms, disease and crown-of-thorns starfish are lumped into one small yearly loss. Heat stress is one number per year.')),
+        h('li', null, __alloT('stem.coralreef.mo_limit_4', 'The grazing and runoff numbers are illustrative, and the switch to seaweed is sharper than on most real reefs.')),
+        h('li', null, __alloT('stem.coralreef.mo_limit_5', 'Corals may adapt to warmer water over time. The model does not include that.')),
+        h('li', null, __alloT('stem.coralreef.mo_limit_6', 'Heatwave timing is randomized. Use "Run again" to see how much the timing alone changes the result. This is a teaching model, not a forecast for any real reef.'))),
+      h('details', null,
+        h('summary', { style: { cursor: 'pointer', fontWeight: 600 } }, __alloT('stem.coralreef.mo_params_summary', 'The rules and numbers inside the model')),
+        h('table', { style: { borderCollapse: 'collapse', width: '100%', marginTop: 6 } },
+          h('thead', null, h('tr', null, [__alloT('stem.coralreef.mo_col_rule', 'Rule'), __alloT('stem.coralreef.mo_col_value', 'Value'), __alloT('stem.coralreef.mo_col_basis', 'Where it comes from')].map(function (c, i) {
+            return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + P.border } }, c);
+          }))),
+          h('tbody', null, rows.map(function (r) {
+            return h('tr', { key: r.id },
+              h('td', { style: { padding: 4, verticalAlign: 'top' } }, r.rule),
+              h('td', { style: { padding: 4, verticalAlign: 'top', whiteSpace: 'nowrap' } }, r.value),
+              h('td', { style: { padding: 4, verticalAlign: 'top' } }, basisName[r.basis], r.source ? h('span', { style: { color: P.muted } }, '. ', r.source) : null));
+          })))));
+  }
+
+  // ── Science text, model rules and sources ────────────────────────────────
+  // NOAA Coral Reef Watch Bleaching Alert Area levels (levels 3 to 5 added on
+  // 15 December 2023). They describe RISK from satellite heat stress, not what
+  // divers have seen.
+  function alertText(__alloT) {
+    return [
+      __alloT('stem.coralreef.alert_none', 'No bleaching alert'),
+      __alloT('stem.coralreef.alert_warning', 'Bleaching Warning: risk of possible bleaching'),
+      __alloT('stem.coralreef.alert_1', 'Alert Level 1: risk of reef-wide bleaching'),
+      __alloT('stem.coralreef.alert_2', 'Alert Level 2: risk of reef-wide bleaching with death of heat-sensitive corals'),
+      __alloT('stem.coralreef.alert_3', 'Alert Level 3: risk of death across many coral species'),
+      __alloT('stem.coralreef.alert_4', 'Alert Level 4: risk of severe death across many species, over half of the corals'),
+      __alloT('stem.coralreef.alert_5', 'Alert Level 5: risk that nearly all corals die, over 80%')
+    ];
+  }
+  function paramRows(__alloT) {
+    return [
+      { id: 'sens', basis: 'sourced', rule: __alloT('stem.coralreef.pr_sensitive', 'Coral killed by heat, heat-sensitive reef'), value: __alloT('stem.coralreef.pr_sensitive_v', 'almost none up to 3 DHW; 40% at 4; 66% at 8; over 80% above 9'), source: 'Hughes et al. 2018, Nature (Great Barrier Reef, 2016)' },
+      { id: 'tol', basis: 'assumption', rule: __alloT('stem.coralreef.pr_tolerant', 'Coral killed by heat, tougher reef'), value: __alloT('stem.coralreef.pr_tolerant_v', 'none up to 4 DHW; 10% at 8; 30% at 12; 50% at 16; 80% at 20'), source: 'NOAA Coral Reef Watch alert levels 4 and 5; the values at 8 and 12 are assumptions' },
+      { id: 'bleach', basis: 'assumption', rule: __alloT('stem.coralreef.pr_bleach', 'Share of coral that looks bleached'), value: __alloT('stem.coralreef.pr_bleach_v', '35% at 4 DHW; 70% at 8; 85% at 12'), source: 'shaped by NOAA alert levels and Hughes et al. 2018, Science' },
+      { id: 'interval', basis: 'sourced', rule: __alloT('stem.coralreef.pr_interval', 'Years between severe heatwaves now'), value: __alloT('stem.coralreef.pr_interval_v', 'about 6'), source: 'Hughes et al. 2018, Science (median across 100 reef locations)' },
+      { id: 'growth', basis: 'derived', rule: __alloT('stem.coralreef.pr_growth', 'How fast coral regrows into open space'), value: String(P('coralGrowth')), source: 'fits Scott Reef regrowing from 9% to 44% cover in about 12 years (Gilmour et al. 2013)' },
+      { id: 'loss', basis: 'assumption', rule: __alloT('stem.coralreef.pr_loss', 'Coral lost each year to storms, disease and predators'), value: Math.round(P('coralBackgroundLoss') * 100) + '%', source: '' },
+      { id: 'recruit', basis: 'assumption', rule: __alloT('stem.coralreef.pr_recruit', 'New young corals settling each year'), value: String(P('coralRecruit')), source: '' },
+      { id: 'algae', basis: 'assumption', rule: __alloT('stem.coralreef.pr_algae', 'How fast seaweed spreads into open space'), value: String(P('algaeGrowth')), source: '' },
+      { id: 'over', basis: 'assumption', rule: __alloT('stem.coralreef.pr_over', 'How fast seaweed overgrows coral'), value: String(P('algaeOvergrowth')), source: '' },
+      { id: 'grazing', basis: 'assumption', rule: __alloT('stem.coralreef.pr_grazing', 'How strongly grazing fish remove seaweed'), value: String(P('grazing')), source: 'grazing spread over all reachable area, after Mumby et al. 2007' },
+      { id: 'nutrients', basis: 'assumption', rule: __alloT('stem.coralreef.pr_nutrients', 'Extra seaweed growth at high runoff'), value: '+' + Math.round(P('nutrientBoost') * 100) + '%', source: '' },
+      { id: 'acid', basis: 'sourced', rule: __alloT('stem.coralreef.pr_acid', 'Slower coral growth for each 1 unit drop in aragonite saturation'), value: Math.round(P('calcLossPerOmega') * 100) + '%', source: 'Chan and Connolly 2013; applying it to cover growth is an assumption' },
+      { id: 'omega', basis: 'derived', rule: __alloT('stem.coralreef.pr_omega', 'Aragonite saturation of the water'), value: __alloT('stem.coralreef.pr_omega_v', '3.4 now; 2.7 to 3.35 by year 30'), source: 'rounded from Jiang et al. 2023' },
+      { id: 'restore', basis: 'derived', rule: __alloT('stem.coralreef.pr_restore', 'Coral cover added each year by restoration'), value: round1(P('restorationPerYear') * 100) + '%', source: 'a typical project size and survival from Bostrom-Einarsson et al. 2020' },
+      { id: 'hard', basis: 'assumption', rule: __alloT('stem.coralreef.pr_hard', 'Share of the bottom where coral and seaweed can settle'), value: Math.round(P('hardBottom') * 100) + '%', source: '' },
+      { id: 'rubble', basis: 'sourced', rule: __alloT('stem.coralreef.pr_rubble', 'Coral on loose rubble that is left alone'), value: __alloT('stem.coralreef.pr_rubble_v', 'stays near 3%'), source: 'Komodo, 17 years (Fox et al. 2019)' },
+      { id: 'stab', basis: 'sourced', rule: __alloT('stem.coralreef.pr_stab', 'Loose rubble fixed in place by Reef Stars each year'), value: Math.round(P('stabilizationRate') * 100) + '%', source: 'a 2 hectare project laid over three years (Williams et al. 2019)' },
+      { id: 'frag', basis: 'derived', rule: __alloT('stem.coralreef.pr_frag', 'Coral tied onto newly fixed ground'), value: Math.round(P('fragmentCover') * 100) + '%', source: 'starting cover of 10 to 17% (Williams et al. 2019; Lange et al. 2024)' },
+      { id: 'regrow', basis: 'derived', rule: __alloT('stem.coralreef.pr_regrow', 'How fast coral grows on Reef Star frames'), value: String(P('restoredGrowth')), source: 'reproduces 17% to 56% cover in four years (Lange et al. 2024)' },
+      { id: 'structures', basis: 'assumption', rule: __alloT('stem.coralreef.pr_structures', 'Ground added by reef structures'), value: Math.round(P('structureBottom') * 100) + '%', source: 'no extra coral recruitment found (Hylkema et al. 2023)' }
+    ];
+  }
+  function scienceCards(__alloT) {
+    return [
+      { id: 'symbiosis', title: __alloT('stem.coralreef.sc_sym_title', 'Corals and the algae inside them'),
+        body: [__alloT('stem.coralreef.sc_sym_1', 'Reef-building corals are animals. Tiny algae from the family Symbiodiniaceae live inside their tissue, use sunlight to make food and pass much of it to the coral; in bright light that can be most of the coral\'s energy. The algae also give corals most of their color.')] },
+      { id: 'bleaching', title: __alloT('stem.coralreef.sc_bleach_title', 'Bleached is not dead'),
+        body: [__alloT('stem.coralreef.sc_bleach_1', 'When the water stays too warm for too long, corals lose these algae and turn white. A bleached coral is still alive but starving, and if the water cools in time the algae can return.'),
+          __alloT('stem.coralreef.sc_bleach_2', 'How long and how hot matters. In the 2016 Great Barrier Reef heatwave, reefs with less than about 3 Degree Heating Weeks lost almost no coral, while reefs that reached 8 lost about two thirds of their coral within eight months.')] },
+      { id: 'return', title: __alloT('stem.coralreef.sc_return_title', 'Heatwaves are coming back faster'),
+        body: [__alloT('stem.coralreef.sc_return_1', 'Across 100 reef locations worldwide, severe bleaching came back about once every 25 to 30 years in the early 1980s. By 2016 the typical gap was about 6 years. The fastest-growing corals usually need 10 to 15 years to recover, so many reefs are hit again before they have recovered.'),
+          __alloT('stem.coralreef.sc_return_2', 'In the fourth global bleaching event, from 2023 to 2025, about 84% of the world\'s reef area had heat stress at bleaching levels.')] },
+      { id: 'grazers', title: __alloT('stem.coralreef.sc_graze_title', 'Grazers, seaweed and runoff'),
+        body: [__alloT('stem.coralreef.sc_graze_1', 'Parrotfish and surgeonfish graze algae and keep open space where young corals can settle. In a marine reserve in the Bahamas where parrotfish were protected, grazing doubled and seaweed cover fell to about a quarter.'),
+          __alloT('stem.coralreef.sc_graze_2', 'Losing grazers and adding nutrients from land can tip a damaged reef toward seaweed, as happened on Jamaica\'s reefs in the 1980s. Scientists still debate how often this happens: one large study found that few reefs were dominated by seaweed.')] },
+      { id: 'acid', title: __alloT('stem.coralreef.sc_acid_title', 'Ocean acidification'),
+        body: [__alloT('stem.coralreef.sc_acid_1', 'The ocean absorbs carbon dioxide, which leaves less of the carbonate corals use to build limestone. Scientists track this with the aragonite saturation state: about 4.2 in tropical waters before industry and about 3.5 by 2010. Above 1, corals can still build, but more slowly: roughly 15% slower for each 1 unit drop, with a wide spread between studies.')] },
+      { id: 'forms', title: __alloT('stem.coralreef.sc_forms_title', 'Not all corals are equally tough'),
+        body: [__alloT('stem.coralreef.sc_forms_1', 'When reefs off Okinawa bleached in 1998, finely branched corals were hit hardest while many boulder and encrusting corals survived. These are tendencies: boulder corals can die too. A reef can keep some coral cover while losing many of its species.')] },
+      { id: 'warming', title: __alloT('stem.coralreef.sc_warm_title', 'What more warming means'),
+        body: [__alloT('stem.coralreef.sc_warm_1', 'The IPCC projects that warm-water coral reefs will decline by a further 70 to 90% if global warming reaches 1.5 degrees C (high confidence), with larger losses of more than 99% at 2 degrees C (very high confidence).')] },
+      { id: 'restore', title: __alloT('stem.coralreef.sc_restore_title', 'What restoration can and cannot do'),
+        body: [__alloT('stem.coralreef.sc_restore_1', 'Coral gardening grows corals in nurseries and plants them back on the reef. A review of restoration projects found a typical one covers about 100 square meters, with 60 to 70% of the planted corals surviving. Its authors warn that restoration is not a replacement for action on climate change.')] }
+    ];
+  }
+  // Citations stay in their original language.
+  function sourceList() {
+    return [
+      { id: 'crw', text: 'NOAA Coral Reef Watch. Degree Heating Week and Bleaching Alert Area products (alert levels 3 to 5 added 15 December 2023).', url: 'https://coralreefwatch.noaa.gov/product/5km/index_5km_baa-max-7d.php', urlLabel: 'coralreefwatch.noaa.gov' },
+      { id: 'rc', text: 'Hodgson, G., Hill, J., Kiene, W., et al. (2006). Reef Check Instruction Manual: A Guide to Reef Check Coral Reef Monitoring. Reef Check Foundation.', url: 'https://www.reefcheck.org/', urlLabel: 'reefcheck.org' },
+      { id: 'agrra', text: 'Lang, J. C., Marks, K. W., Kramer, P. A., et al. (2010). AGRRA Protocols Version 5.4. Atlantic and Gulf Rapid Reef Assessment.', url: 'https://www.agrra.org/', urlLabel: 'agrra.org' },
+      { id: 'h18n', text: 'Hughes, T. P., Kerry, J. T., Baird, A. H., et al. (2018). Global warming transforms coral reef assemblages. Nature, 556, 492-496.' },
+      { id: 'h18s', text: 'Hughes, T. P., Anderson, K. D., Connolly, S. R., et al. (2018). Spatial and temporal patterns of mass bleaching of corals in the Anthropocene. Science, 359, 80-83.' },
+      { id: 'gil', text: 'Gilmour, J. P., Smith, L. D., Heyward, A. J., Baird, A. H., & Pratchett, M. S. (2013). Recovery of an isolated coral reef system following severe disturbance. Science, 340, 69-71.' },
+      { id: 'vh', text: 'van Hooidonk, R., Maynard, J., Tamelander, J., et al. (2016). Local-scale projections of coral reef futures and implications of the Paris Agreement. Scientific Reports, 6, 39666.' },
+      { id: 'cc', text: 'Chan, N. C. S., & Connolly, S. R. (2013). Sensitivity of coral calcification to ocean acidification: a meta-analysis. Global Change Biology, 19, 282-290.' },
+      { id: 'jiang', text: 'Jiang, L.-Q., Dunne, J., Carter, B. R., et al. (2023). Global surface ocean acidification indicators from 1750 to 2100. Journal of Advances in Modeling Earth Systems, 15, e2022MS003563.' },
+      { id: 'mumby', text: 'Mumby, P. J., Dahlgren, C. P., Harborne, A. R., et al. (2006). Fishing, trophic cascades, and the process of grazing on coral reefs. Science, 311, 98-101.' },
+      { id: 'hughes94', text: 'Hughes, T. P. (1994). Catastrophes, phase shifts, and large-scale degradation of a Caribbean coral reef. Science, 265, 1547-1551.' },
+      { id: 'bruno', text: 'Bruno, J. F., Sweatman, H., Precht, W. F., Selig, E. R., & Schutte, V. G. W. (2009). Assessing evidence of phase shifts from coral to macroalgal dominance on coral reefs. Ecology, 90, 1478-1484.' },
+      { id: 'loya', text: 'Loya, Y., Sakai, K., Yamazato, K., et al. (2001). Coral bleaching: the winners and the losers. Ecology Letters, 4, 122-131.' },
+      { id: 'ipcc', text: 'IPCC (2018). Summary for Policymakers. In: Global Warming of 1.5 degrees C, statement B.4.2.' },
+      { id: 'bost', text: 'Bostrom-Einarsson, L., Babcock, R. C., Bayraktarov, E., et al. (2020). Coral restoration: a systematic review of current methods, successes, failures and future directions. PLoS ONE, 15, e0226631.' },
+      { id: 'lange', text: 'Lange, I. D., et al. (2024). Coral restoration can drive rapid reef carbonate budget recovery. Current Biology, 34, 1341-1348.' },
+      { id: 'williams', text: 'Williams, S. L., et al. (2019). Large-scale coral reef rehabilitation after blast fishing in Indonesia. Restoration Ecology, 27, 447-456.' },
+      { id: 'fox', text: 'Fox, H. E., et al. (2019). Rebuilding coral reefs: success (and failure) 16 years after low-cost, low-tech restoration. Restoration Ecology, 27, 862-869.' },
+      { id: 'hylkema', text: 'Hylkema, A., et al. (2020, 2023). Artificial reef designs and their fish and coral communities. Ecological Engineering, 157, 105994; 188, 106882.' },
+      { id: 'biorock', text: 'Knoester, E. G., et al. (2024). PLoS ONE, 19, e0315475; Cook, N., et al. (2023). Ecological Management and Restoration, 24, 107-118; Sabater, M. G., & Yap, H. T. (2004). Journal of Experimental Marine Biology and Ecology, 311, 355-374.' },
+      { id: 'russ', text: 'Russ, G. R., et al. (2004). Marine reserve benefits local fisheries. Ecological Applications, 14, 597-606.' },
+      { id: 'edgar', text: 'Edgar, G. J., et al. (2014). Global conservation outcomes depend on marine protected areas with five key features. Nature, 506, 216-220.' },
+      { id: 'macneil', text: 'MacNeil, M. A., et al. (2019). Water quality mediates resilience on the Great Barrier Reef. Nature Ecology and Evolution, 3, 620-627; Matthews, S. A., et al. (2024). PLoS ONE, 19, e0298073.' },
+      { id: 'harrison', text: 'Harrison, P. L., et al. (2021). Increased coral larval supply enhances recruitment for coral and fish habitat restoration. Frontiers in Marine Science, 8, 750210.' },
+      { id: 'aims', text: 'Australian Institute of Marine Science. Long-Term Monitoring Program annual summary reports of coral reef condition, 2022 to 2025.' },
+      { id: 'veron', text: 'Veron, J. E. N., et al. (2009). Delineating the Coral Triangle. Galaxea, 11, 91-100.' },
+      { id: 'barker', text: 'Barker, N. H. L., & Roberts, C. M. (2004). Scuba diver behaviour and the management of diving impacts on coral reefs. Biological Conservation, 120, 481-489.' },
+      { id: 'cotw-pocillopora', text: 'Veron, J. E. N., Stafford-Smith, M. G., Turak, E., and DeVantier, L. M. Corals of the World. Pocillopora verrucosa species factsheet (accessed October 2026).', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/pocillopora-verrucosa/', urlLabel: 'coralsoftheworld.org' },
+      { id: 'cotw-montipora', text: 'Veron, J. E. N., Stafford-Smith, M. G., Turak, E., and DeVantier, L. M. Corals of the World. Montipora foliosa species factsheet (accessed October 2026).', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/montipora-foliosa/', urlLabel: 'coralsoftheworld.org' },
+      { id: 'iucn2024-corals', text: 'IUCN (2024). Red List version 2024-2, Table 7: changes in Red List category. Montipora foliosa and Pocillopora verrucosa are listed as Endangered.', url: 'https://nc.iucnredlist.org/redlist/content/attachment_files/2024-2_RL_Table_7.pdf', urlLabel: 'iucnredlist.org' },
+      { id: 'iucn2025', text: 'IUCN (2025). Red List update, October 2025 (green turtle reassessed as Least Concern).' }
+    ];
+  }
+
+  // ── Reef science ─────────────────────────────────────────────────────────
+  // Index into alertText(): 0 none, 1 Warning (0 < DHW < 4), 2..6 Alert Levels 1..5.
+  function alertLevel(dhw) { return dhw >= 20 ? 6 : dhw >= 16 ? 5 : dhw >= 12 ? 4 : dhw >= 8 ? 3 : dhw >= 4 ? 2 : dhw > 0 ? 1 : 0; }
+  function dhwFor(anomalyC, weeks) { return anomalyC >= 1 ? round1(anomalyC * Math.min(12, Math.max(0, weeks))) : 0; }
+
+  // ── Science figures ──────────────────────────────────────────────────────
+  // One diagram per science card, showing that card's own numbers and nothing
+  // more. Drawn 320 units wide and shown 290 to 380 px wide, so 13.5 unit
+  // labels stay at 12 px or more on a phone. Ink comes from the palette;
+  // corals and water keep fixed natural colours on their own backgrounds.
+  var LANE_CSS_C = [
+    '[data-coralreef-root] .cr-sci-row{display:flex;flex-wrap:wrap;gap:14px 30px;align-items:flex-start}',
+    '[data-coralreef-root] .cr-sci-text{flex:1 1 300px;min-width:0}',
+    '[data-coralreef-root] .cr-sci-fig{flex:0 1 380px;min-width:0;margin:0}',
+    '[data-coralreef-root] .cr-sci-fig svg{width:100%;height:auto;display:block}',
+    '@media(max-width:480px){[data-coralreef-root] .cr-sci-card,[data-coralreef-root] .cr-help-card{padding:16px!important}}',
+    '[data-coralreef-root] .cr-guide-search{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:4px 0 12px}',
+    '[data-coralreef-root] .cr-guide-search label{flex:1 0 100%;font-weight:600}',
+    '[data-coralreef-root] .cr-guide-search input{flex:1 1 220px;max-width:420px;min-height:44px;padding:9px 12px;border-radius:10px;font:inherit}',
+    '[data-coralreef-root] .cr-guide-search input::placeholder{color:var(--reef-muted);opacity:1}',
+    '[data-coralreef-root] .cr-guide-jump{position:sticky;top:0;z-index:4;display:flex;gap:6px;overflow-x:auto;padding:8px 2px 10px;margin:0 0 16px}',
+    '[data-coralreef-root] .cr-guide-jump button{flex:none;display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:6px 12px!important;min-height:44px}',
+    '[data-coralreef-root] .cr-guide-jump button:disabled{opacity:.55}',
+    '[data-coralreef-root] .cr-guide-jump small{font-size:12px;font-weight:500}',
+    '[data-coralreef-root] .cr-guide-group>h3,[data-coralreef-root] .cr-species-card,[data-coralreef-root] .cr-guide-search input{scroll-margin-top:88px}',
+    '[data-coralreef-root] .cr-guide-group>h3:focus,[data-coralreef-root] .cr-sp-name:focus{outline:2px solid var(--reef-accent);outline-offset:3px}',
+    '[data-coralreef-root] .cr-species-card:has(.cr-sp-name:focus){outline:3px solid var(--reef-accent);outline-offset:3px}',
+    '[data-coralreef-root] .cr-species-card:has(.cr-sp-name:focus) .cr-sp-name{outline:none}',
+    '[data-coralreef-root] .cr-looks{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px}',
+    '[data-coralreef-root] .cr-look-chip{min-height:32px;padding:4px 11px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:start}'
+  ].join('\n');
+  var FIG_FONT = 13.5;
+  function fr(v) { return Math.round(v * 10) / 10; }
+  // Splits a label into lines of at most `max` characters, at spaces.
+  function figLines(str, max) {
+    var words = String(str).split(' '), lines = [], cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var next = cur ? cur + ' ' + words[i] : words[i];
+      if (cur && max && next.length > max) { lines.push(cur); cur = words[i]; } else cur = next;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+  function figText(h, key, x, y, str, fill, o) {
+    o = o || {};
+    var size = o.size || FIG_FONT, lines = figLines(str, o.max);
+    return h('text', { key: key, x: x, y: y, fill: fill, fontSize: size, fontWeight: o.bold ? 700 : 400, textAnchor: o.anchor || 'start', transform: o.transform },
+      lines.map(function (ln, i) { return h('tspan', { key: i, x: x, dy: i ? fr(size * 1.2) : 0 }, ln); }));
+  }
+  // A straight arrow, or a curved one bent toward (cx, cy).
+  function figArrow(h, key, x1, y1, x2, y2, color, o) {
+    o = o || {};
+    var cx = o.cx != null ? o.cx : (x1 + x2) / 2, cy = o.cy != null ? o.cy : (y1 + y2) / 2;
+    var a = Math.atan2(y2 - cy, x2 - cx), L = o.head || 9, W = L * 0.55, ca = Math.cos(a), sa = Math.sin(a);
+    var bx = x2 - ca * L, by = y2 - sa * L;
+    return h('g', { key: key },
+      h('path', { d: 'M' + fr(x1) + ' ' + fr(y1) + ' Q' + fr(cx) + ' ' + fr(cy) + ' ' + fr(x2 - ca * L * 0.7) + ' ' + fr(y2 - sa * L * 0.7), fill: 'none', stroke: color, strokeWidth: o.width || 2.5, strokeDasharray: o.dash, strokeLinecap: 'round' }),
+      h('path', { d: 'M' + fr(x2) + ' ' + fr(y2) + ' L' + fr(bx - sa * W) + ' ' + fr(by + ca * W) + ' L' + fr(bx + sa * W) + ' ' + fr(by - ca * W) + ' Z', fill: color }));
+  }
+  function figLeader(h, key, pts, P) {
+    var last = pts[pts.length - 1];
+    return h('g', { key: key },
+      h('polyline', { points: pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' '), fill: 'none', stroke: P.muted, strokeWidth: 1.2 }),
+      h('circle', { cx: last[0], cy: last[1], r: 2.2, fill: P.muted }));
+  }
+  var FIG_CORAL = { live: '#c27a4e', liveInk: '#5e3417', white: '#f7f9f6', whiteInk: '#7d8a92', dead: '#bdb6a6', deadInk: '#5f574a', water: '#1d5f7a', sand: '#b9ab88' };
+  // coralBody() drawn in a 160 x 110 box, placed with its base at (cx, baseY).
+  function figCoral(h, key, form, look, cx, baseY, s) {
+    var C = FIG_CORAL, fill = look === 'live' ? C.live : look === 'white' ? C.white : C.dead;
+    var ink = look === 'live' ? C.liveInk : look === 'white' ? C.whiteInk : C.deadInk, kids = [coralBody(h, form, fill, ink, 'b')];
+    if (look === 'live') kids = kids.concat(polypDots(h, form, '#f1d9a8', 'p'));
+    if (look === 'dead') {
+      var surf = FORM_SURFACE[form] || FORM_SURFACE.massive;
+      for (var i = 0; i < surf.length; i++) kids.push(h('path', { key: 'z' + i, d: 'M' + (surf[i][0] - 2) + ' ' + (surf[i][1] + 1) + ' l2 -3 l2 3', stroke: '#5b4a22', strokeWidth: 1.6, fill: 'none' }));
+    }
+    return h('g', { key: key, transform: 'translate(' + fr(cx - 80 * s) + ' ' + fr(baseY - 98 * s) + ') scale(' + s + ')' }, kids);
+  }
+  // A small coral mound for counting pictures: live, maybe, or lost (dashed outline).
+  function figDome(h, key, x, y, state, P) {
+    var d = 'M' + (x - 11) + ' ' + y + ' Q' + (x - 11) + ' ' + (y - 15) + ' ' + x + ' ' + (y - 15) + ' Q' + (x + 11) + ' ' + (y - 15) + ' ' + (x + 11) + ' ' + y + ' Z';
+    if (state === 'live') return h('path', { key: key, d: d, fill: FIG_CORAL.live, stroke: FIG_CORAL.liveInk, strokeWidth: 1.5 });
+    return h('path', { key: key, d: d, fill: state === 'maybe' ? FIG_CORAL.live : 'none', fillOpacity: state === 'maybe' ? 0.45 : undefined, stroke: P.muted, strokeWidth: 1.6, strokeDasharray: '3 2' });
+  }
+  function figWater(h, key, x, y, w, ht, fill) {
+    return h('g', { key: key },
+      h('rect', { x: x, y: y, width: w, height: ht, rx: 9, fill: fill || FIG_CORAL.water }),
+      h('path', { d: 'M' + x + ' ' + (y + ht - 10) + ' H' + (x + w) + ' V' + (y + ht - 9) + ' a9 9 0 0 1 -9 9 H' + (x + 9) + ' a9 9 0 0 1 -9 -9 Z', fill: FIG_CORAL.sand }));
+  }
+
+  // Corals and the algae inside them: a cutaway polyp.
+  function figSymbiosis(h, P, __alloT) {
+    var k = [], tissue = '#e3a083', tissueInk = '#9c5338', alga = '#8f6410', algaInk = '#4f3606', bone = '#ece6d6', boneInk = '#857b67', food = '#1f6b3a';
+    k.push(h('circle', { key: 'sun', cx: 22, cy: 24, r: 11, fill: '#fcd34d', stroke: P.heatBar, strokeWidth: 2 }));
+    for (var r = 0; r < 8; r++) {
+      var a = r * Math.PI / 4;
+      k.push(h('line', { key: 'ray' + r, x1: fr(22 + Math.cos(a) * 15), y1: fr(24 + Math.sin(a) * 15), x2: fr(22 + Math.cos(a) * 20), y2: fr(24 + Math.sin(a) * 20), stroke: P.heatBar, strokeWidth: 2, strokeLinecap: 'round' }));
+    }
+    k.push(figText(h, 'sunl', 46, 21, __alloT('stem.coralreef.fig_sym_sun', 'Sunlight'), P.text, { bold: true }));
+    k.push(figArrow(h, 'sa1', 30, 42, 60, 70, P.heatBar, { dash: '5 4', width: 2.2 }));
+    k.push(figArrow(h, 'sa2', 42, 34, 84, 50, P.heatBar, { dash: '5 4', width: 2.2 }));
+    // The limestone cup the polyp sits in.
+    k.push(h('rect', { key: 'base', x: 40, y: 212, width: 144, height: 16, rx: 3, fill: bone, stroke: boneInk, strokeWidth: 1.5 }));
+    k.push(h('path', { key: 'cup', d: 'M54 138 L62 214 L162 214 L170 138 L158 138 L153 182 L71 182 L66 138 Z', fill: bone, stroke: boneInk, strokeWidth: 1.5, strokeLinejoin: 'round' }));
+    [82, 97, 112, 127, 142].forEach(function (x, i) { k.push(h('line', { key: 'sep' + i, x1: x, y1: 188, x2: x, y2: 208, stroke: boneInk, strokeWidth: 1.2 })); });
+    k.push(h('path', { key: 'body', d: 'M72 94 L74 182 L150 182 L152 94 Z', fill: tissue, stroke: tissueInk, strokeWidth: 1.5, strokeLinejoin: 'round' }));
+    k.push(h('path', { key: 'gut', d: 'M88 104 L90 172 L134 172 L136 104 Z', fill: '#f8e2d6', stroke: '#c98a70', strokeWidth: 1 }));
+    var tent = [[76, 60, 58], [90, 78, 50], [104, 100, 46], [120, 124, 46], [134, 146, 50], [148, 164, 58]];
+    tent.forEach(function (t, i) { k.push(h('line', { key: 'to' + i, x1: t[0], y1: 92, x2: t[1], y2: t[2], stroke: tissueInk, strokeWidth: 11, strokeLinecap: 'round' })); });
+    tent.forEach(function (t, i) { k.push(h('line', { key: 'ti' + i, x1: t[0], y1: 92, x2: t[1], y2: t[2], stroke: tissue, strokeWidth: 8, strokeLinecap: 'round' })); });
+    k.push(h('ellipse', { key: 'disc', cx: 112, cy: 94, rx: 42, ry: 8, fill: tissue, stroke: tissueInk, strokeWidth: 1.5 }));
+    k.push(h('ellipse', { key: 'mouth', cx: 112, cy: 94, rx: 8, ry: 3.5, fill: '#5b2617' }));
+    [[81, 112], [82, 130], [80, 148], [83, 166], [143, 112], [141, 130], [144, 148], [141, 166], [68, 75], [84, 71], [102, 68], [122, 68], [140, 71], [156, 75], [94, 95], [130, 95]].forEach(function (c, i) {
+      k.push(h('circle', { key: 'al' + i, cx: c[0], cy: c[1], r: 3, fill: alga, stroke: algaInk, strokeWidth: 0.8 }));
+    });
+    k.push(figArrow(h, 'f1', 140, 121, 114, 134, food, { cx: 124, cy: 118, width: 2.2, head: 7 }));
+    k.push(figArrow(h, 'f2', 140, 158, 114, 150, food, { cx: 124, cy: 162, width: 2.2, head: 7 }));
+    k.push(figArrow(h, 'f3', 84, 139, 108, 146, food, { cx: 94, cy: 134, width: 2.2, head: 7 }));
+    k.push(figText(h, 'lt', 188, 50, __alloT('stem.coralreef.fig_sym_tentacles', 'Tentacles'), P.text, { max: 17 }));
+    k.push(figLeader(h, 'llt', [[184, 46], [168, 56]], P));
+    k.push(figText(h, 'lm', 188, 84, __alloT('stem.coralreef.fig_sym_mouth', 'Mouth'), P.text, { max: 17 }));
+    k.push(figLeader(h, 'llm', [[184, 80], [162, 101], [122, 96]], P));
+    k.push(figText(h, 'la', 188, 118, __alloT('stem.coralreef.fig_sym_algae', 'Tiny algae in the tissue'), P.text, { max: 17 }));
+    k.push(figLeader(h, 'lla', [[184, 114], [147, 112]], P));
+    k.push(figText(h, 'lf', 188, 156, __alloT('stem.coralreef.fig_sym_food', 'Food passed to the coral'), P.text, { max: 17, bold: true }));
+    k.push(figLeader(h, 'llf', [[184, 152], [128, 160]], P));
+    k.push(figText(h, 'ls', 188, 200, __alloT('stem.coralreef.fig_sym_skeleton', 'Limestone skeleton'), P.text, { max: 17 }));
+    k.push(figLeader(h, 'lls', [[184, 196], [166, 198]], P));
+    return { height: 236, kids: k, label: __alloT('stem.coralreef.fig_sym_aria', 'Cutaway drawing of one coral polyp. Tentacles and a mouth sit on top, tiny algae live inside its soft tissue, and a limestone skeleton cup lies underneath. Sunlight reaches the algae, and the algae pass food to the coral.') };
+  }
+
+  // Bleached is not dead: what happens next, and the 2016 numbers.
+  function figBleaching(h, P, __alloT) {
+    var k = [], s = 0.56;
+    k.push(figWater(h, 'w1', 14, 34, 76, 46)); k.push(figWater(h, 'w2', 130, 34, 76, 46));
+    k.push(figCoral(h, 'c1', 'massive', 'live', 52, 74, s)); k.push(figCoral(h, 'c2', 'massive', 'white', 168, 74, s));
+    k.push(figText(h, 'l1', 52, 98, __alloT('stem.coralreef.fig_bl_healthy', 'Healthy'), P.text, { bold: true, anchor: 'middle' }));
+    k.push(figText(h, 'l2', 168, 98, __alloT('stem.coralreef.fig_bl_bleached', 'Bleached'), P.text, { bold: true, anchor: 'middle' }));
+    k.push(figText(h, 'l2b', 168, 114, __alloT('stem.coralreef.fig_bl_starving', 'alive but starving'), P.muted, { anchor: 'middle' }));
+    k.push(figArrow(h, 'a1', 94, 57, 126, 57, P.heatBar, { width: 3 }));
+    k.push(figText(h, 'a1t', 110, 14, __alloT('stem.coralreef.fig_bl_too_warm', 'Too warm for too long'), P.text, { anchor: 'middle', max: 14 }));
+    k.push(figArrow(h, 'a2', 148, 122, 84, 158, P.good, { width: 3, cx: 112, cy: 126 }));
+    k.push(figText(h, 'a2t', 90, 128, __alloT('stem.coralreef.fig_bl_cools', 'Water cools in time'), P.text, { anchor: 'end', max: 11 }));
+    k.push(figArrow(h, 'a3', 188, 122, 252, 158, P.bad, { width: 3, cx: 224, cy: 126 }));
+    k.push(figText(h, 'a3t', 318, 128, __alloT('stem.coralreef.fig_bl_heat_lasts', 'Heat goes on too long'), P.text, { anchor: 'end', max: 11 }));
+    k.push(figWater(h, 'w3', 14, 162, 76, 46)); k.push(figWater(h, 'w4', 230, 162, 76, 46));
+    k.push(figCoral(h, 'c3', 'massive', 'live', 52, 202, s)); k.push(figCoral(h, 'c4', 'massive', 'dead', 268, 202, s));
+    k.push(figText(h, 'l3', 52, 226, __alloT('stem.coralreef.fig_bl_recovers', 'Algae return'), P.text, { bold: true, anchor: 'middle' }));
+    k.push(figText(h, 'l4', 268, 226, __alloT('stem.coralreef.fig_bl_dies', 'Coral dies'), P.text, { bold: true, anchor: 'middle' }));
+    k.push(h('line', { key: 'div', x1: 0, y1: 242, x2: 320, y2: 242, stroke: P.border, strokeWidth: 1.5 }));
+    k.push(figText(h, 'gt', 0, 264, __alloT('stem.coralreef.fig_bl_gbr', 'Great Barrier Reef, 2016'), P.text, { bold: true }));
+    k.push(figText(h, 'gs', 0, 282, __alloT('stem.coralreef.fig_bl_gbr_sub', 'Coral lost within eight months'), P.muted));
+    var rows = [[0, 320, ['live', 'live', 'live'], __alloT('stem.coralreef.fig_bl_under3', 'Under about 3 DHW'), __alloT('stem.coralreef.fig_bl_none_lost', 'almost none lost')],
+      [1, 366, ['live', 'lost', 'lost'], __alloT('stem.coralreef.fig_bl_at8', 'About 8 DHW'), __alloT('stem.coralreef.fig_bl_two_thirds', 'about two thirds lost')]];
+    rows.forEach(function (r) {
+      r[2].forEach(function (st, i) { k.push(figDome(h, 'd' + r[0] + i, 18 + i * 27, r[1], st, P)); });
+      k.push(figText(h, 'rt' + r[0], 104, r[1] - 12, r[3], P.text, { bold: true }));
+      k.push(figText(h, 'rv' + r[0], 104, r[1] + 5, r[4], P.text));
+    });
+    k.push(figText(h, 'def', 0, 398, __alloT('stem.coralreef.fig_bl_dhw', 'DHW: Degree Heating Weeks'), P.muted));
+    return { height: 408, kids: k, label: __alloT('stem.coralreef.fig_bl_aria', 'Diagram. A healthy coral kept in water that is too warm for too long loses its algae and turns white: it is bleached, alive but starving. If the water cools in time, the algae return. If the heat goes on too long, the coral dies. Below, the 2016 Great Barrier Reef heatwave: reefs with under about 3 Degree Heating Weeks lost almost no coral, and reefs with about 8 lost about two thirds of their coral within eight months.') };
+  }
+
+  // Heatwaves are coming back faster: the gap between them versus recovery time.
+  function figReturn(h, P, __alloT) {
+    var k = [], X = function (y) { return fr(20 + y * 28 / 3); };
+    k.push(h('rect', { key: 'band', x: X(10), y: 24, width: X(15) - X(10), height: 92, fill: P.good, fillOpacity: 0.13 }));
+    k.push(figText(h, 'r1', 20, 18, __alloT('stem.coralreef.fig_rt_1980', 'Early 1980s'), P.text, { bold: true }));
+    k.push(figText(h, 'g1', 300, 18, __alloT('stem.coralreef.fig_rt_gap_1980', 'gap: 25 to 30 years'), P.text, { anchor: 'end' }));
+    k.push(h('rect', { key: 'rb1', x: X(0), y: 30, width: X(10) - X(0), height: 14, fill: P.good }));
+    k.push(h('rect', { key: 'rb1b', x: X(10), y: 30, width: X(15) - X(10), height: 14, fill: P.good, fillOpacity: 0.45, stroke: P.good, strokeDasharray: '4 3' }));
+    k.push(figText(h, 'ok', X(15) + 6, 42, __alloT('stem.coralreef.fig_rt_recovered', 'recovered'), P.text));
+    k.push(h('rect', { key: 'h1', x: X(0) - 3, y: 26, width: 6, height: 22, fill: P.bad }));
+    k.push(h('rect', { key: 'h2', x: X(25), y: 26, width: X(30) - X(25), height: 22, fill: P.bad, fillOpacity: 0.5, stroke: P.bad, strokeWidth: 1.5 }));
+    k.push(figText(h, 'r2', 20, 80, __alloT('stem.coralreef.fig_rt_2016', 'By 2016'), P.text, { bold: true }));
+    k.push(figText(h, 'g2', 300, 80, __alloT('stem.coralreef.fig_rt_gap_2016', 'gap: about 6 years'), P.text, { anchor: 'end' }));
+    k.push(h('rect', { key: 'rb2', x: X(0), y: 92, width: X(6) - X(0), height: 14, fill: P.good }));
+    k.push(h('rect', { key: 'rb2b', x: X(6), y: 92, width: X(15) - X(6), height: 14, fill: 'none', stroke: P.good, strokeWidth: 1.5, strokeDasharray: '4 3' }));
+    k.push(h('rect', { key: 'h3', x: X(0) - 3, y: 88, width: 6, height: 22, fill: P.bad }));
+    k.push(h('rect', { key: 'h4', x: X(6) - 3, y: 88, width: 6, height: 22, fill: P.bad }));
+    k.push(figText(h, 'hit', X(15) + 6, 104, __alloT('stem.coralreef.fig_rt_hit_again', 'hit again before recovering'), P.text, { max: 17 }));
+    k.push(h('line', { key: 'ax', x1: X(0), y1: 134, x2: X(30), y2: 134, stroke: P.line, strokeWidth: 1.5 }));
+    for (var y = 0; y <= 30; y += 5) {
+      k.push(h('line', { key: 't' + y, x1: X(y), y1: 134, x2: X(y), y2: 139, stroke: P.line, strokeWidth: 1.5 }));
+      k.push(figText(h, 'tl' + y, X(y), 154, String(y), P.muted, { anchor: 'middle' }));
+    }
+    k.push(figText(h, 'axt', 160, 174, __alloT('stem.coralreef.fig_rt_axis', 'Years after a severe heatwave'), P.text, { anchor: 'middle' }));
+    k.push(h('rect', { key: 'k1', x: 20, y: 188, width: 6, height: 16, fill: P.bad }));
+    k.push(figText(h, 'k1t', 34, 201, __alloT('stem.coralreef.fig_rt_key_heat', 'Severe bleaching'), P.text));
+    k.push(h('rect', { key: 'k2', x: 14, y: 214, width: 18, height: 12, fill: P.good }));
+    k.push(figText(h, 'k2t', 40, 225, __alloT('stem.coralreef.fig_rt_key_recovery', 'Recovery of fast corals: 10 to 15 years'), P.text, { max: 42 }));
+    return { height: 246, kids: k, label: __alloT('stem.coralreef.fig_rt_aria', 'Timeline in years. In the early 1980s, severe bleaching came back about every 25 to 30 years, so the fastest-growing corals had their 10 to 15 years to recover. By 2016 the gap was about 6 years, so reefs were hit again before they had recovered.') };
+  }
+
+  // Grazers, seaweed and runoff: cause and effect, then the Bahamas reserve.
+  function figGrazers(h, P, __alloT) {
+    var k = [];
+    k.push(h('g', { key: 'fish', transform: 'translate(50 44) scale(1.7)' }, fishShape(h, 'parrotfish', -8, -6, 'p', false), fishShape(h, 'surgeonfish', 8, 7, 's', false)));
+    k.push(figText(h, 'lg', 50, 84, __alloT('stem.coralreef.fig_gr_grazers', 'Grazing fish'), P.text, { bold: true, anchor: 'middle', max: 13 }));
+    for (var b = 0; b < 5; b++) {
+      var bx = 146 + b * 7, tilt = (b - 2) * 9;
+      k.push(h('ellipse', { key: 'sw' + b, cx: bx, cy: 46, rx: 4.5, ry: 19, fill: b % 2 ? '#5d7a22' : '#6f6a1f', stroke: '#2e3d0f', strokeWidth: 1, transform: 'rotate(' + tilt + ' ' + bx + ' 66)' }));
+    }
+    k.push(figText(h, 'ls', 160, 84, __alloT('stem.coralreef.fig_gr_seaweed', 'Seaweed'), P.text, { bold: true, anchor: 'middle' }));
+    [[256, 30], [272, 44], [288, 32]].forEach(function (c, i) {
+      k.push(h('path', { key: 'dr' + i, d: 'M' + c[0] + ' ' + (c[1] - 10) + ' Q' + (c[0] + 7) + ' ' + c[1] + ' ' + c[0] + ' ' + (c[1] + 6) + ' Q' + (c[0] - 7) + ' ' + c[1] + ' ' + c[0] + ' ' + (c[1] - 10) + ' Z', fill: '#8a6a3a', stroke: '#4a3516', strokeWidth: 1 }));
+    });
+    k.push(h('path', { key: 'river', d: 'M238 62 Q258 54 274 62 T306 62', fill: 'none', stroke: '#3b82c4', strokeWidth: 4, strokeLinecap: 'round' }));
+    k.push(figText(h, 'ln', 272, 84, __alloT('stem.coralreef.fig_gr_nutrients', 'Nutrients from land'), P.text, { bold: true, anchor: 'middle', max: 12 }));
+    k.push(figArrow(h, 'ae', 86, 46, 132, 46, P.text));
+    k.push(figText(h, 'aet', 109, 36, __alloT('stem.coralreef.fig_gr_eat', 'eat'), P.text, { anchor: 'middle' }));
+    k.push(figArrow(h, 'af', 236, 46, 188, 46, P.text));
+    k.push(figText(h, 'aft', 212, 36, __alloT('stem.coralreef.fig_gr_feed', 'feed'), P.text, { anchor: 'middle' }));
+    k.push(figArrow(h, 'ac', 160, 94, 160, 140, P.text));
+    k.push(figText(h, 'act', 168, 122, __alloT('stem.coralreef.fig_gr_crowds', 'crowds out'), P.text));
+    k.push(figArrow(h, 'ak', 56, 114, 126, 160, P.text, { dash: '5 4' }));
+    k.push(figText(h, 'akt', 86, 150, __alloT('stem.coralreef.fig_gr_keep_open', 'keep space open'), P.text, { anchor: 'end', max: 10 }));
+    k.push(h('rect', { key: 'rock', x: 122, y: 176, width: 76, height: 10, rx: 4, fill: '#8d9196' }));
+    [[136, 0.3], [160, 0.36], [184, 0.3]].forEach(function (c, i) { k.push(figCoral(h, 'yc' + i, 'branching', 'live', c[0], 178, c[1])); });
+    k.push(figText(h, 'ly', 160, 204, __alloT('stem.coralreef.fig_gr_young', 'Young corals need open space'), P.text, { bold: true, anchor: 'middle', max: 22 }));
+    k.push(h('line', { key: 'div', x1: 0, y1: 236, x2: 320, y2: 236, stroke: P.border, strokeWidth: 1.5 }));
+    k.push(figText(h, 'bt', 0, 258, __alloT('stem.coralreef.fig_gr_bahamas', 'Bahamas marine reserve'), P.text, { bold: true }));
+    k.push(figText(h, 'bs', 0, 276, __alloT('stem.coralreef.fig_gr_protected', 'parrotfish protected'), P.muted));
+    k.push(figText(h, 'hg', 100, 300, __alloT('stem.coralreef.fig_gr_grazing', 'Grazing'), P.text, { bold: true }));
+    k.push(figText(h, 'hs', 226, 300, __alloT('stem.coralreef.fig_gr_cover', 'Seaweed cover'), P.text, { bold: true }));
+    k.push(figText(h, 'rf', 0, 324, __alloT('stem.coralreef.fig_gr_fished', 'Fished reef'), P.text, { max: 12 }));
+    k.push(figText(h, 'rr', 0, 350, __alloT('stem.coralreef.fig_gr_reserve', 'Reserve'), P.text, { max: 12 }));
+    k.push(h('rect', { key: 'g0', x: 100, y: 313, width: 34, height: 14, fill: P.accent, fillOpacity: 0.3, stroke: P.accent, strokeWidth: 1.5 }));
+    k.push(h('rect', { key: 'g1', x: 100, y: 339, width: 68, height: 14, fill: P.accent }));
+    k.push(figText(h, 'g1t', 172, 351, __alloT('stem.coralreef.fig_gr_twice', 'twice'), P.text, { bold: true }));
+    k.push(h('rect', { key: 's0', x: 226, y: 313, width: 76, height: 14, fill: P.algaeLine, fillOpacity: 0.3, stroke: P.algaeLine, strokeWidth: 1.5 }));
+    k.push(h('rect', { key: 's1', x: 226, y: 339, width: 19, height: 14, fill: P.algaeLine }));
+    k.push(figText(h, 's1t', 250, 351, __alloT('stem.coralreef.fig_gr_quarter', 'about 1/4'), P.text, { bold: true }));
+    return { height: 362, kids: k, label: __alloT('stem.coralreef.fig_gr_aria', 'Cause and effect diagram. Grazing fish eat seaweed and keep space open where young corals can settle. Nutrients from land feed the seaweed, and seaweed crowds out young corals. Below, a marine reserve in the Bahamas where parrotfish were protected: grazing was twice as high as on a fished reef, and seaweed cover was about a quarter as high.') };
+  }
+
+  // Ocean acidification: the saturation scale and slower building.
+  function figAcid(h, P, __alloT) {
+    var k = [], X = function (v) { return fr(20 + v * 56); };
+    k.push(figText(h, 'tt', 0, 16, __alloT('stem.coralreef.fig_ac_title', 'Aragonite saturation'), P.text, { bold: true }));
+    k.push(figText(h, 'pre', 300, 42, __alloT('stem.coralreef.fig_ac_pre', 'Before industry: about 4.2'), P.text, { anchor: 'end' }));
+    k.push(h('line', { key: 'prel', x1: X(4.2), y1: 47, x2: X(4.2), y2: 76, stroke: P.text, strokeWidth: 1.5 }));
+    k.push(figText(h, 'now', X(3.5) - 6, 66, __alloT('stem.coralreef.fig_ac_2010', 'By 2010: about 3.5'), P.text, { anchor: 'end' }));
+    k.push(h('line', { key: 'nowl', x1: X(3.5), y1: 58, x2: X(3.5), y2: 76, stroke: P.text, strokeWidth: 1.5 }));
+    k.push(h('rect', { key: 'low', x: X(0), y: 78, width: X(1) - X(0), height: 14, fill: P.cardAlt, stroke: P.line, strokeWidth: 1.2 }));
+    k.push(h('rect', { key: 'ok', x: X(1), y: 78, width: X(5) - X(1), height: 14, fill: P.accent, fillOpacity: 0.28, stroke: P.accent, strokeWidth: 1.2 }));
+    k.push(h('circle', { key: 'm42', cx: X(4.2), cy: 85, r: 5, fill: P.card, stroke: P.text, strokeWidth: 2.5 }));
+    k.push(h('circle', { key: 'm35', cx: X(3.5), cy: 85, r: 5, fill: P.text }));
+    k.push(h('line', { key: 'one', x1: X(1), y1: 72, x2: X(1), y2: 98, stroke: P.text, strokeWidth: 2, strokeDasharray: '3 2' }));
+    for (var v = 0; v <= 5; v++) k.push(figText(h, 'tk' + v, X(v), 112, String(v), P.muted, { anchor: 'middle' }));
+    k.push(figText(h, 'onet', X(1) + 6, 134, __alloT('stem.coralreef.fig_ac_one', 'Above 1, corals can still build'), P.text, { max: 34 }));
+    k.push(h('line', { key: 'div', x1: 0, y1: 150, x2: 320, y2: 150, stroke: P.border, strokeWidth: 1.5 }));
+    k.push(figText(h, 'st', 0, 172, __alloT('stem.coralreef.fig_ac_speed', 'Building speed for each 1 unit drop'), P.text, { bold: true, max: 40 }));
+    k.push(figText(h, 's0', 0, 199, __alloT('stem.coralreef.fig_ac_start', 'Start'), P.text, { max: 12 }));
+    k.push(h('rect', { key: 'b0', x: 96, y: 187, width: 160, height: 15, fill: P.accent }));
+    k.push(figText(h, 'b0t', 262, 199, '100%', P.text, { bold: true }));
+    k.push(figText(h, 's1', 0, 225, __alloT('stem.coralreef.fig_ac_lower', '1 unit lower'), P.text, { max: 12 }));
+    k.push(h('rect', { key: 'b1', x: 96, y: 213, width: 136, height: 15, fill: P.accent, fillOpacity: 0.6, stroke: P.accent, strokeWidth: 1.2 }));
+    k.push(figText(h, 'b1t', 238, 225, __alloT('stem.coralreef.fig_ac_85', 'about 85%'), P.text, { bold: true }));
+    k.push(figText(h, 'note', 0, 252, __alloT('stem.coralreef.fig_ac_spread', 'Studies vary widely.'), P.muted));
+    return { height: 260, kids: k, label: __alloT('stem.coralreef.fig_ac_aria', 'Scale of aragonite saturation from 0 to 5. In tropical waters it was about 4.2 before industry and about 3.5 by 2010. Above 1, corals can still build. Below, building speed: each 1 unit drop makes corals build roughly 15% slower, about 85% of the speed before, and studies vary widely.') };
+  }
+
+  // Not all corals are equally tough: growth forms in the 1998 Okinawa bleaching.
+  function figForms(h, P, __alloT) {
+    var k = [], FN = formNames(__alloT);
+    k.push(figText(h, 'tt', 0, 16, __alloT('stem.coralreef.fig_fo_title', 'Okinawa, 1998 bleaching'), P.text, { bold: true }));
+    k.push(figWater(h, 'w', 0, 26, 320, 76));
+    k.push(figCoral(h, 'c1', 'branching', 'dead', 54, 94, 0.66));
+    k.push(figCoral(h, 'c2', 'massive', 'live', 160, 94, 0.66));
+    k.push(figCoral(h, 'c3', 'encrusting', 'live', 266, 94, 0.66));
+    [[54, FN.branching, __alloT('stem.coralreef.fig_fo_hardest', 'hit hardest'), P.bad], [160, __alloT('stem.coralreef.fig_fo_boulder', 'Boulder'), __alloT('stem.coralreef.fig_fo_survived', 'many survived'), P.good],
+      [266, FN.encrusting, __alloT('stem.coralreef.fig_fo_survived', 'many survived'), P.good]].forEach(function (c, i) {
+      k.push(figText(h, 'n' + i, c[0], 122, c[1], P.text, { bold: true, anchor: 'middle' }));
+      k.push(figText(h, 'o' + i, c[0], 140, c[2], c[3], { bold: true, anchor: 'middle' }));
+    });
+    k.push(figText(h, 'note', 0, 166, __alloT('stem.coralreef.fig_fo_tendency', 'These are tendencies: boulder corals can die too.'), P.muted, { max: 50 }));
+    k.push(h('line', { key: 'div', x1: 0, y1: 196, x2: 320, y2: 196, stroke: P.border, strokeWidth: 1.5 }));
+    k.push(figWater(h, 'wb', 0, 206, 150, 54)); k.push(figWater(h, 'wa', 170, 206, 150, 54));
+    [['branching', 24], ['plate', 60], ['massive', 96], ['encrusting', 128]].forEach(function (c, i) { k.push(figCoral(h, 'b' + i, c[0], 'live', c[1], 254, 0.34)); });
+    [['massive', 204], ['encrusting', 244], ['massive', 286]].forEach(function (c, i) { k.push(figCoral(h, 'a' + i, c[0], 'live', c[1], 254, 0.34)); });
+    k.push(figText(h, 'bl', 75, 282, __alloT('stem.coralreef.fig_fo_before', 'Before: many kinds'), P.text, { bold: true, anchor: 'middle', max: 20 }));
+    k.push(figText(h, 'al', 245, 282, __alloT('stem.coralreef.fig_fo_after', 'After: some coral, fewer kinds'), P.text, { bold: true, anchor: 'middle', max: 20 }));
+    return { height: 316, kids: k, label: __alloT('stem.coralreef.fig_fo_aria', 'Three coral shapes in the 1998 bleaching off Okinawa. Branching corals were hit hardest, while many boulder and encrusting corals survived. These are tendencies: boulder corals can die too. Below, a reef before and after: it keeps some coral but has fewer kinds.') };
+  }
+
+  // What more warming means: the IPCC projections as bars.
+  function figWarming(h, P, __alloT) {
+    var k = [], X = function (p) { return fr(4 + p * 2.96); };
+    k.push(figText(h, 'tt', 0, 16, __alloT('stem.coralreef.fig_wa_title', 'Further decline of warm-water coral reefs'), P.text, { bold: true, max: 32 }));
+    function row(key, y, name, value, conf, lo, hi) {
+      k.push(figText(h, key + 'n', 4, y, name, P.text, { bold: true }));
+      k.push(figText(h, key + 'v', 300, y, value, P.text, { bold: true, anchor: 'end' }));
+      k.push(h('rect', { key: key + 'tr', x: X(0), y: y + 8, width: X(100) - X(0), height: 20, rx: 3, fill: P.cardAlt, stroke: P.border }));
+      k.push(h('rect', { key: key + 'lo', x: X(0), y: y + 8, width: X(lo) - X(0), height: 20, rx: 3, fill: P.bad }));
+      if (hi > lo) k.push(h('rect', { key: key + 'hi', x: X(lo), y: y + 8, width: X(hi) - X(lo), height: 20, fill: P.bad, fillOpacity: 0.5, stroke: P.bad, strokeWidth: 1.5, strokeDasharray: '4 3' }));
+      k.push(figText(h, key + 'c', 4, y + 46, conf, P.muted));
+    }
+    row('a', 62, __alloT('stem.coralreef.fig_wa_15', 'At 1.5 degrees C'), __alloT('stem.coralreef.fig_wa_15v', '70 to 90%'), __alloT('stem.coralreef.fig_wa_high', 'high confidence'), 70, 90);
+    row('b', 136, __alloT('stem.coralreef.fig_wa_2', 'At 2 degrees C'), __alloT('stem.coralreef.fig_wa_2v', 'more than 99%'), __alloT('stem.coralreef.fig_wa_vhigh', 'very high confidence'), 99, 99);
+    [[0, 'start'], [50, 'middle'], [100, 'end']].forEach(function (t) { k.push(figText(h, 'x' + t[0], X(t[0]), 210, t[0] + '%', P.muted, { anchor: t[1] })); });
+    return { height: 218, kids: k, label: __alloT('stem.coralreef.fig_wa_aria', 'Bar chart of how much warm-water coral reefs are projected to decline further, according to the IPCC: 70 to 90% if global warming reaches 1.5 degrees C, with high confidence, and more than 99% at 2 degrees C, with very high confidence.') };
+  }
+
+  // What restoration can and cannot do: the size of a typical project and how many corals survive.
+  function figRestore(h, P, __alloT) {
+    var k = [], x0 = 26, y0 = 34, side = 104;
+    k.push(figText(h, 'pt', 0, 16, __alloT('stem.coralreef.fig_re_project', 'Typical project'), P.text, { bold: true }));
+    k.push(h('rect', { key: 'sq', x: x0, y: y0, width: side, height: side, fill: P.accent, fillOpacity: 0.14, stroke: P.accent, strokeWidth: 2 }));
+    for (var g = 1; g < 10; g++) {
+      k.push(h('line', { key: 'gx' + g, x1: fr(x0 + g * side / 10), y1: y0, x2: fr(x0 + g * side / 10), y2: y0 + side, stroke: P.accent, strokeOpacity: 0.3 }));
+      k.push(h('line', { key: 'gy' + g, x1: x0, y1: fr(y0 + g * side / 10), x2: x0 + side, y2: fr(y0 + g * side / 10), stroke: P.accent, strokeOpacity: 0.3 }));
+    }
+    k.push(h('rect', { key: 'tb', x: x0 + 8, y: y0 + 32, width: side - 16, height: 42, rx: 6, fill: P.card, fillOpacity: 0.92 }));
+    k.push(figText(h, 'area', x0 + side / 2, y0 + 50, __alloT('stem.coralreef.fig_re_area', 'about 100 square meters'), P.text, { bold: true, anchor: 'middle', max: 11 }));
+    k.push(figText(h, 'w', x0 + side / 2, y0 + side + 18, __alloT('stem.coralreef.fig_re_10m', '10 m'), P.text, { anchor: 'middle' }));
+    k.push(figText(h, 'hgt', 16, y0 + side / 2, __alloT('stem.coralreef.fig_re_10m', '10 m'), P.text, { anchor: 'middle', transform: 'rotate(-90 16 ' + (y0 + side / 2) + ')' }));
+    k.push(figText(h, 'cls', x0 + side / 2, y0 + side + 40, __alloT('stem.coralreef.fig_re_classroom', 'about a classroom or two'), P.muted, { anchor: 'middle', max: 18 }));
+    k.push(figText(h, 'ct', 172, 16, __alloT('stem.coralreef.fig_re_planted', 'Of 10 planted corals'), P.text, { bold: true, max: 19 }));
+    for (var i = 0; i < 10; i++) k.push(figDome(h, 'd' + i, 186 + (i % 5) * 27, i < 5 ? 66 : 98, i < 6 ? 'live' : i === 6 ? 'maybe' : 'lost', P));
+    k.push(figText(h, 'sv', 172, 130, __alloT('stem.coralreef.fig_re_survive', '6 to 7 survive'), P.text, { bold: true }));
+    k.push(figText(h, 'sp', 172, 148, __alloT('stem.coralreef.fig_re_pct', '60 to 70%'), P.text));
+    k.push(figDome(h, 'kl', 183, 180, 'live', P));
+    k.push(figText(h, 'klt', 200, 179, __alloT('stem.coralreef.fig_re_alive', 'survives'), P.text));
+    k.push(figDome(h, 'kd', 183, 204, 'lost', P));
+    k.push(figText(h, 'kdt', 200, 203, __alloT('stem.coralreef.fig_re_lost', 'lost'), P.text));
+    return { height: 214, kids: k, label: __alloT('stem.coralreef.fig_re_aria', 'A typical restoration project covers about 100 square meters, a square about 10 m on each side, about the size of a classroom or two. Of every 10 corals planted, about 6 to 7 survive, which is 60 to 70%.') };
+  }
+
+  var SCIENCE_FIGS = { symbiosis: figSymbiosis, bleaching: figBleaching, 'return': figReturn, grazers: figGrazers, acid: figAcid, forms: figForms, warming: figWarming, restore: figRestore };
+  function scienceFigures(h, P, __alloT) {
+    var out = {};
+    Object.keys(SCIENCE_FIGS).forEach(function (id) {
+      var f = SCIENCE_FIGS[id](h, P, __alloT);
+      out[id] = h('svg', { viewBox: '0 0 320 ' + f.height, role: 'img', 'aria-label': f.label, focusable: 'false', 'data-figure': id }, f.kids);
+    });
+    return out;
+  }
+
+  // ── What helps reefs: one figure per help card ───────────────────────────
+  // Same rules as the science figures: each shows only its own card's facts.
+  var FIG_BITS = { steel: '#d6c9a4', steelInk: '#6d5f40', ground: '#c9bfa6', rubble: '#aaa596', rubbleInk: '#5f5a4d', concrete: '#a3a8ad', concreteInk: '#4d5358',
+    murky: '#5e6a46', night: '#0f2f45', star: '#8a5aa8', starInk: '#3b2150', spawn: '#f4a6c0', mesh: '#e3edf0' };
+  var FIG_TONES = [['#c27a4e', '#5e3417'], ['#a06aa3', '#4a2b4c'], ['#8f9440', '#454a17']];
+  // Loose rubble seen from above.
+  function figRubble(h, key, x, y, w, ht, seed) {
+    var kids = [h('rect', { key: 'g', x: x, y: y, width: w, height: ht, rx: 9, fill: FIG_BITS.ground })];
+    for (var i = 0; i < 22; i++) {
+      var px = x + 9 + ((i * 37 + seed * 11) % (w - 18)), py = y + 8 + ((i * 23 + seed * 7) % (ht - 16)), ang = (i * 47 + seed * 13) % 180;
+      kids.push(h('rect', { key: 'p' + i, x: fr(px - 7), y: fr(py - 2.5), width: 14, height: 5, rx: 2.5, fill: FIG_BITS.rubble, stroke: FIG_BITS.rubbleInk, strokeWidth: 0.9, transform: 'rotate(' + ang + ' ' + fr(px) + ' ' + fr(py) + ')' }));
+    }
+    return h('g', { key: key }, kids);
+  }
+  // A six-sided, sand-coated Reef Star frame seen from above: rim and spokes.
+  function figHex(h, key, cx, cy, r) {
+    var pts = [], kids = [];
+    for (var i = 0; i < 6; i++) { var a = Math.PI / 6 + i * Math.PI / 3; pts.push([fr(cx + r * Math.cos(a)), fr(cy + r * Math.sin(a))]); }
+    var poly = pts.map(function (p) { return p.join(','); }).join(' ');
+    [[FIG_BITS.steelInk, 3.6], [FIG_BITS.steel, 1.8]].forEach(function (s, j) {
+      kids.push(h('polygon', { key: 'r' + j, points: poly, fill: 'none', stroke: s[0], strokeWidth: s[1], strokeLinejoin: 'round' }));
+      pts.forEach(function (p, i) { kids.push(h('line', { key: 's' + j + i, x1: fr(cx), y1: fr(cy), x2: p[0], y2: p[1], stroke: s[0], strokeWidth: s[1] - 0.6, strokeLinecap: 'round' })); });
+    });
+    return h('g', { key: key }, kids);
+  }
+  // A coral seen from above: a rounded colony with polyp dots.
+  function figCoralTop(h, key, cx, cy, r, tone) {
+    var T = FIG_TONES[tone % FIG_TONES.length], kids = [h('circle', { key: 'c', cx: fr(cx), cy: fr(cy), r: r, fill: T[0], stroke: T[1], strokeWidth: 1.2 })];
+    if (r >= 5) for (var i = 0; i < 5; i++) { var a = i * 1.257 + tone; kids.push(h('circle', { key: 'd' + i, cx: fr(cx + Math.cos(a) * r * 0.55), cy: fr(cy + Math.sin(a) * r * 0.55), r: 1.1, fill: '#f1d9a8' })); }
+    return h('g', { key: key }, kids);
+  }
+  // A coral tree nursery: a buoyed pole with crossbars, held off the sand, coral pieces hanging from lines.
+  function figTree(h, key, cx, y, ht, frag) {
+    var base = y + ht - 9, kids = [];
+    kids.push(h('rect', { key: 'an', x: cx - 5, y: base - 4, width: 10, height: 5, fill: '#5f5a4d' }));
+    kids.push(h('line', { key: 'ln', x1: cx, y1: base - 4, x2: cx, y2: base - 20, stroke: '#e3edf0', strokeWidth: 1.2, strokeDasharray: '2 2' }));
+    kids.push(h('line', { key: 'pole', x1: cx, y1: base - 20, x2: cx, y2: y + 15, stroke: '#e8e2d0', strokeWidth: 3 }));
+    kids.push(h('circle', { key: 'buoy', cx: cx, cy: y + 10, r: 5, fill: '#f2c14e', stroke: '#6b4f0a', strokeWidth: 1 }));
+    [y + 26, y + 44, y + 62].forEach(function (by, b) {
+      kids.push(h('line', { key: 'bar' + b, x1: cx - 32, y1: by, x2: cx + 32, y2: by, stroke: '#e8e2d0', strokeWidth: 2.4, strokeLinecap: 'round' }));
+      [-26, -13, 13, 26].forEach(function (dx, j) {
+        kids.push(h('line', { key: 'h' + b + j, x1: cx + dx, y1: by, x2: cx + dx, y2: by + 6, stroke: '#e3edf0', strokeWidth: 1 }));
+        kids.push(figCoralTop(h, 'f' + b + j, cx + dx, by + 6 + frag, frag, b + j));
+      });
+    });
+    return h('g', { key: key }, kids);
+  }
+  function figReefBall(h, key, cx, base, r) {
+    var kids = [h('path', { key: 'd', d: 'M' + (cx - r) + ' ' + base + ' A' + r + ' ' + r + ' 0 0 1 ' + (cx + r) + ' ' + base + ' Z', fill: FIG_BITS.concrete, stroke: FIG_BITS.concreteInk, strokeWidth: 1.5 })];
+    [[-0.5, 0.35], [0, 0.62], [0.5, 0.35], [-0.25, 0.75], [0.25, 0.75], [-0.72, 0.12], [0.72, 0.12], [0, 0.3]].forEach(function (p, i) {
+      kids.push(h('circle', { key: 'o' + i, cx: fr(cx + p[0] * r), cy: fr(base - p[1] * r), r: fr(r * 0.13), fill: '#123f4f' }));
+    });
+    return h('g', { key: key }, kids);
+  }
+  // A crown-of-thorns starfish from above; `ghost` marks the spot one was removed from.
+  function figCots(h, key, cx, cy, r, ghost, ink) {
+    var pts = [];
+    for (var i = 0; i < 24; i++) { var a = i * Math.PI / 12, rr = i % 2 ? r * 0.55 : r; pts.push(fr(cx + rr * Math.cos(a)) + ',' + fr(cy + rr * Math.sin(a))); }
+    return h('polygon', { key: key, points: pts.join(' '), fill: ghost ? 'none' : FIG_BITS.star, stroke: ghost ? FIG_BITS.mesh : ink || FIG_BITS.starInk, strokeWidth: ink ? 1.6 : 1.2, strokeDasharray: ghost ? '3 2' : undefined, strokeLinejoin: 'round' });
+  }
+  function figSeaweed(h, key, x, base, n) {
+    var kids = [];
+    for (var b = 0; b < n; b++) kids.push(h('ellipse', { key: b, cx: x + b * 5, cy: base - 9, rx: 2.6, ry: 9, fill: b % 2 ? '#5d7a22' : '#6f6a1f', stroke: '#2e3d0f', strokeWidth: 0.8, transform: 'rotate(' + ((b - (n - 1) / 2) * 12) + ' ' + (x + b * 5) + ' ' + base + ')' }));
+    return h('g', { key: key }, kids);
+  }
+  // Small marks for checklists: a tick, an equals sign, a plus, a minus, an up or down arrow.
+  function figMark(h, key, kind, x, y, P) {
+    if (kind === 'tick') return h('path', { key: key, d: 'M' + (x - 7) + ' ' + y + ' l5 5 l9 -11', fill: 'none', stroke: P.good, strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' });
+    if (kind === 'equal') return h('g', { key: key, stroke: P.text, strokeWidth: 2.6, strokeLinecap: 'round' }, h('line', { x1: x - 7, y1: y - 3, x2: x + 7, y2: y - 3 }), h('line', { x1: x - 7, y1: y + 3, x2: x + 7, y2: y + 3 }));
+    if (kind === 'plus') return h('g', { key: key, stroke: P.text, strokeWidth: 2.6, strokeLinecap: 'round' }, h('line', { x1: x - 7, y1: y, x2: x + 7, y2: y }), h('line', { x1: x, y1: y - 7, x2: x, y2: y + 7 }));
+    if (kind === 'minus') return h('line', { key: key, x1: x - 7, y1: y, x2: x + 7, y2: y, stroke: P.bad, strokeWidth: 3, strokeLinecap: 'round' });
+    return figArrow(h, key, x, kind === 'up' ? y + 8 : y - 8, x, kind === 'up' ? y - 8 : y + 8, kind === 'up' ? P.good : P.bad, { width: 3, head: 8 });
+  }
+  function figSun(h, key, cx, cy, P) {
+    var kids = [h('circle', { key: 'c', cx: cx, cy: cy, r: 5.5, fill: '#fcd34d', stroke: P.heatBar, strokeWidth: 1.5 })];
+    for (var r = 0; r < 8; r++) { var a = r * Math.PI / 4; kids.push(h('line', { key: 'r' + r, x1: fr(cx + Math.cos(a) * 8), y1: fr(cy + Math.sin(a) * 8), x2: fr(cx + Math.cos(a) * 11), y2: fr(cy + Math.sin(a) * 11), stroke: P.heatBar, strokeWidth: 1.6, strokeLinecap: 'round' })); }
+    return h('g', { key: key }, kids);
+  }
+
+  // Labels stacked downward from y, each below the last one's wrapped lines,
+  // so a longer translation pushes what follows down instead of overlapping it.
+  // Returns the y where the next line can start.
+  function figStack(h, k, key, x, y, items) {
+    items.forEach(function (it, i) {
+      var size = it.size || FIG_FONT;
+      k.push(figText(h, key + i, x, y, it.str, it.fill, { bold: it.bold, anchor: it.anchor, max: it.max, size: it.size }));
+      y += figLines(it.str, it.max).length * fr(size * 1.2) + (it.gap != null ? it.gap : 2);
+    });
+    return y;
+  }
+  // Three tiles in a row with headers above and captions below; returns the y below the tallest caption.
+  // Bold labels are kept to about 13 characters a line and plain ones to 15 to fit a 96 unit tile.
+  function figTriptych(h, k, P, key, heads, top, captions) {
+    var bottom = 0;
+    [0, 112, 224].forEach(function (x, i) {
+      var lines = figLines(heads[i], 13).length;
+      figStack(h, k, key + 'h' + i, x + 48, top - 9 - (lines - 1) * 16.2, [{ str: heads[i], fill: P.text, bold: true, anchor: 'middle', max: 13 }]);
+      if (captions) bottom = Math.max(bottom, figStack(h, k, key + 'c' + i, x + 48, captions.y, [{ str: captions.items[i][0], fill: P.text, bold: true, anchor: 'middle', max: 13 }, { str: captions.items[i][1], fill: P.muted, anchor: 'middle', max: 15 }]));
+    });
+    return bottom;
+  }
+  // Tile top for a row of headers: room for the one that wraps to the most lines.
+  function figHeadTop(heads) { var n = 1; heads.forEach(function (s) { n = Math.max(n, figLines(s, 13).length); }); return fr(n * 16.2 + 8); }
+
+  // Reef Stars: rubble left alone versus a pinned web of frames, then the same web four years on.
+  function figHelpStars(h, P, __alloT) {
+    var heads = [__alloT('stem.coralreef.fig_hs_left', 'Rubble left alone'), __alloT('stem.coralreef.fig_hs_laid', 'Reef Stars laid'), __alloT('stem.coralreef.fig_hs_later', 'Four years later')];
+    var k = [], top = figHeadTop(heads), ht = 92;
+    var hexes = [[22, 26], [48, 26], [74, 26], [35, 48.5], [61, 48.5], [22, 71], [48, 71], [74, 71]];
+    [0, 112, 224].forEach(function (x, i) { k.push(figRubble(h, 'rb' + i, x, top, 96, ht, i)); });
+    k.push(figCoralTop(h, 'lone', 70, top + 60, 5, 0));
+    hexes.forEach(function (c, i) {
+      k.push(figHex(h, 'a' + i, 112 + c[0], top + c[1], 15));
+      k.push(figCoralTop(h, 'af' + i, 112 + c[0] + 5, top + c[1] - 3, 2.6, i));
+      k.push(figHex(h, 'b' + i, 224 + c[0], top + c[1], 15));
+    });
+    hexes.forEach(function (c, i) {
+      k.push(figCoralTop(h, 'bc' + i, 224 + c[0], top + c[1], 8.5, i));
+      k.push(figCoralTop(h, 'bd' + i, 224 + c[0] - 7, top + c[1] + 6, 5.5, i + 1));
+      k.push(figCoralTop(h, 'be' + i, 224 + c[0] + 8, top + c[1] - 5, 5, i + 2));
+    });
+    k.push(figArrow(h, 'ar', 209, top + 46, 223, top + 46, P.text, { head: 7, width: 2.2 }));
+    var y = figTriptych(h, k, P, 't', heads, top,
+      { y: top + ht + 18, items: [[__alloT('stem.coralreef.fig_hs_3', 'near 3%'), __alloT('stem.coralreef.fig_hs_17y', 'coral after 17 years')],
+        [__alloT('stem.coralreef.fig_hs_17', 'about 17%'), __alloT('stem.coralreef.fig_hs_tied', 'coral, small pieces tied on')],
+        [__alloT('stem.coralreef.fig_hs_56', 'about 56%'), __alloT('stem.coralreef.fig_hs_grown', 'coral, frames overgrown')]] });
+    y = figStack(h, k, 'n', 0, y + 14, [{ str: __alloT('stem.coralreef.fig_hs_above', 'Seen from above.'), fill: P.muted, max: 52, gap: 4 },
+      { str: __alloT('stem.coralreef.fig_hs_branching', 'Most of the new corals are branching ones that bleach easily.'), fill: P.muted, max: 52 }]);
+    return { height: Math.ceil(y), kids: k, label: __alloT('stem.coralreef.fig_hs_aria', 'Three views of the sea floor from above. Loose rubble left alone stayed near 3% coral after 17 years. Divers pin the rubble under a linked web of six-sided, sand-coated steel Reef Stars and tie small corals onto them, starting at about 17% coral cover. Four years later the frames are overgrown, at about 56%. Most of the new corals are branching corals that bleach easily.') };
+  }
+
+  // Coral gardening: nursery, growing, planting, and how many survive.
+  function figHelpGarden(h, P, __alloT) {
+    var heads = [__alloT('stem.coralreef.fig_hg_nursery', 'Pieces in a nursery'), __alloT('stem.coralreef.fig_hg_grow', 'They grow'), __alloT('stem.coralreef.fig_hg_plant', 'Planted on the reef')];
+    var k = [], top = figHeadTop(heads), ht = 100;
+    [0, 112, 224].forEach(function (x, i) { k.push(figWater(h, 'w' + i, x, top, 96, ht)); });
+    k.push(figTree(h, 't1', 48, top, ht, 2.4));
+    k.push(figTree(h, 't2', 160, top, ht, 4.4));
+    k.push(h('path', { key: 'rock', d: 'M230 ' + (top + ht - 8) + ' Q248 ' + (top + ht - 24) + ' 272 ' + (top + ht - 20) + ' T314 ' + (top + ht - 8) + ' Z', fill: '#8d9196', stroke: '#55595e', strokeWidth: 1 }));
+    [[246, 'branching', 0.42, 0], [272, 'massive', 0.36, 4], [298, 'branching', 0.38, 0]].forEach(function (c, i) { k.push(figCoral(h, 'pc' + i, c[1], 'live', c[0], top + ht - 17 - c[3], c[2])); });
+    k.push(figArrow(h, 'a1', 97, top + 50, 111, top + 50, P.text, { head: 7, width: 2.2 }));
+    k.push(figArrow(h, 'a2', 209, top + 50, 223, top + 50, P.text, { head: 7, width: 2.2 }));
+    figTriptych(h, k, P, 't', heads, top);
+    var y0 = top + ht + 34;
+    ['live', 'live', 'lost'].forEach(function (st, i) { k.push(figDome(h, 'd' + i, 14 + i * 27, y0 + 6, st, P)); });
+    var y = figStack(h, k, 's', 96, y0 - 4, [{ str: __alloT('stem.coralreef.fig_hg_survive', 'about 2 of 3 survive'), fill: P.text, bold: true, max: 30 },
+      { str: __alloT('stem.coralreef.fig_hg_typical', 'in a typical project'), fill: P.muted, max: 34 }]);
+    y = figStack(h, k, 'a', 0, Math.max(y, y0 + 12) + 18, [{ str: __alloT('stem.coralreef.fig_hg_area', 'Most projects cover about a classroom or two.'), fill: P.text, max: 52 }]);
+    return { height: Math.ceil(y), kids: k, label: __alloT('stem.coralreef.fig_hg_aria', 'Coral gardening in three steps. Small pieces of coral hang on a coral tree nursery, held up off the sand. They grow bigger. Divers plant them on a damaged reef. About two out of three planted corals survive in a typical project, and most projects cover about a classroom or two.') };
+  }
+
+  // No-take reserves: a fished area beside a well-enforced reserve.
+  function figHelpReserves(h, P, __alloT) {
+    var k = [], ht = 96, W = 152;
+    var fished = __alloT('stem.coralreef.fig_hr_fished', 'Fished area');
+    var top = Math.max(figStack(h, k, 'h0', 76, 18, [{ str: fished, fill: P.text, bold: true, anchor: 'middle', max: 21 }]),
+      figStack(h, k, 'h1', 244, 18, [{ str: __alloT('stem.coralreef.fig_hr_reserve', 'Well-enforced reserve'), fill: P.text, bold: true, anchor: 'middle', max: 21 }])) - 2, base = top + ht - 9;
+    k.push(figWater(h, 'w0', 0, top, W, ht)); k.push(figWater(h, 'w1', 168, top, W, ht));
+    k.push(h('g', { key: 'bf0', transform: 'translate(46 ' + (top + 28) + ') scale(1.8)' }, fishShape(h, 'grouper', 0, 0, 'g', false)));
+    k.push(h('g', { key: 'pf0', transform: 'translate(114 ' + (top + 42) + ') scale(1.3)' }, fishShape(h, 'parrotfish', 0, 0, 'p', true)));
+    [[16, 5], [56, 4], [92, 5], [124, 4]].forEach(function (s, i) { k.push(figSeaweed(h, 'sw' + i, s[0], base, s[1])); });
+    k.push(figCoral(h, 'c0', 'massive', 'live', 78, base, 0.22));
+    [[200, 16], [262, 14], [292, 36], [226, 40], [270, 58]].forEach(function (f, i) { k.push(h('g', { key: 'bf' + (i + 1), transform: 'translate(' + f[0] + ' ' + (top + f[1]) + ') scale(1.6)' }, fishShape(h, 'grouper', 0, 0, 'g', i % 2 === 1))); });
+    [[190, 62], [236, 66], [304, 64]].forEach(function (f, i) { k.push(h('g', { key: 'pf' + (i + 1), transform: 'translate(' + f[0] + ' ' + (top + f[1]) + ') scale(1.2)' }, fishShape(h, 'parrotfish', 0, 0, 'p', i === 1))); });
+    k.push(figSeaweed(h, 'sw9', 306, base, 2));
+    [[198, 0.24, 'massive'], [236, 0.26, 'branching'], [276, 0.24, 'massive']].forEach(function (c, i) { k.push(figCoral(h, 'c' + (i + 1), c[2], 'live', c[0], base, c[1])); });
+    var y = figStack(h, k, 'g', 244, top + ht + 18, [{ str: __alloT('stem.coralreef.fig_hr_grazers', 'grazing fish keep seaweed down'), fill: P.text, anchor: 'middle', max: 22 }]);
+    y = figStack(h, k, 'bt', 0, y + 16, [{ str: __alloT('stem.coralreef.fig_hr_biomass', 'Large fish (biomass)'), fill: P.text, bold: true, max: 44, gap: 8 }]);
+    k.push(figText(h, 'r0', 0, y + 11, fished, P.text, { max: 14 }));
+    k.push(h('rect', { key: 'b0', x: 96, y: y, width: 24, height: 14, fill: P.accent, fillOpacity: 0.3, stroke: P.accent, strokeWidth: 1.5 }));
+    k.push(figText(h, 'r1', 0, y + 35, __alloT('stem.coralreef.fig_gr_reserve', 'Reserve'), P.text, { max: 14 }));
+    k.push(h('rect', { key: 'b1', x: 96, y: y + 24, width: 120, height: 14, fill: P.accent }));
+    k.push(figText(h, 'b1t', 222, y + 36, __alloT('stem.coralreef.fig_hr_five', 'about 5 times'), P.text, { bold: true }));
+    y = figStack(h, k, 'nt', 0, y + 70, [{ str: __alloT('stem.coralreef.fig_hr_bleaching', 'Reserves cannot stop bleaching, but they help reefs bounce back afterwards.'), fill: P.muted, max: 50 }]);
+    return { height: Math.ceil(y), kids: k, label: __alloT('stem.coralreef.fig_hr_aria', 'A fished area beside a large, old, well-enforced no-take reserve. The reserve holds about five times the biomass of large fish, and its grazing fish keep seaweed down so young corals can grow. Reserves cannot stop bleaching, but they can help reefs bounce back afterwards.') };
+  }
+
+  // Cleaner water and crown-of-thorns control.
+  function figHelpWater(h, P, __alloT) {
+    var k = [], W = 152, ht = 70;
+    var y0 = figStack(h, k, 'h0', 0, 15, [{ str: __alloT('stem.coralreef.fig_hw_water', 'Cleaner water'), fill: P.text, bold: true, max: 44 }]) + 2, b0 = y0 + ht - 9;
+    k.push(figWater(h, 'mk', 0, y0, W, ht, FIG_BITS.murky));
+    for (var p = 0; p < 26; p++) k.push(h('circle', { key: 'pt' + p, cx: 6 + (p * 41) % 140, cy: y0 + 6 + (p * 17) % 50, r: 1.4, fill: '#a8986a' }));
+    k.push(figCoral(h, 'mc', 'massive', 'dead', 76, b0, 0.3));
+    k.push(figWater(h, 'cw', 168, y0, W, ht));
+    [[200, 'branching', 0.36], [244, 'massive', 0.36], [290, 'branching', 0.34]].forEach(function (c, i) { k.push(figCoral(h, 'cc' + i, c[1], 'live', c[0], b0, c[2])); });
+    var y = Math.max(figStack(h, k, 'l0', 76, y0 + ht + 18, [{ str: __alloT('stem.coralreef.fig_hw_murky', 'Murky water'), fill: P.muted, anchor: 'middle', max: 25 }]),
+      figStack(h, k, 'l1', 244, y0 + ht + 18, [{ str: __alloT('stem.coralreef.fig_hw_faster', 'recovered faster after damage'), fill: P.text, bold: true, anchor: 'middle', max: 21 }]));
+    var y1 = figStack(h, k, 'h1', 0, y + 18, [{ str: __alloT('stem.coralreef.fig_hw_cots', 'Crown-of-thorns starfish'), fill: P.text, bold: true, max: 44 }]) + 2, b1 = y1 + ht - 9;
+    k.push(figWater(h, 'sw0', 0, y1, W, ht)); k.push(figWater(h, 'sw1', 168, y1, W, ht));
+    [[34, 0.3], [76, 0.34], [118, 0.3]].forEach(function (c, i) { k.push(figCoral(h, 'dc' + i, 'massive', i === 1 ? 'live' : 'white', c[0], b1, c[1])); });
+    [[30, b1 - 14], [80, b1 - 20], [116, b1 - 12]].forEach(function (s, i) { k.push(figCots(h, 'st' + i, s[0], s[1], 8, false)); });
+    [[202, 0.3], [244, 0.34], [286, 0.3]].forEach(function (c, i) { k.push(figCoral(h, 'rc' + i, 'massive', 'live', c[0], b1, c[1])); });
+    k.push(figCots(h, 'gone', 244, b1 - 20, 8, true));
+    k.push(figArrow(h, 'lift', 254, b1 - 28, 278, y1 + 18, FIG_BITS.mesh, { width: 2, head: 7, dash: '4 3' }));
+    k.push(figCots(h, 'up', 292, y1 + 14, 8, false));
+    var c0 = figStack(h, k, 's0', 76, y1 + ht + 18, [{ str: __alloT('stem.coralreef.fig_hw_left', 'Left to spread'), fill: P.text, bold: true, anchor: 'middle', max: 21 }]);
+    var c1 = figStack(h, k, 's1', 244, y1 + ht + 18, [{ str: __alloT('stem.coralreef.fig_hw_removed', 'Removed early and thoroughly'), fill: P.text, bold: true, anchor: 'middle', max: 21 }]);
+    var ym = Math.max(c0, c1) + 14;
+    k.push(figMark(h, 'dn', 'down', 34, ym - 5, P));
+    k.push(figText(h, 'f0', 48, ym, __alloT('stem.coralreef.fig_hw_falls', 'coral falls'), P.text));
+    k.push(figMark(h, 'upm', 'up', 202, ym - 5, P));
+    k.push(figText(h, 'f1', 216, ym, __alloT('stem.coralreef.fig_hw_rose', 'coral rose'), P.text));
+    return { height: Math.ceil(ym + 12), kids: k, label: __alloT('stem.coralreef.fig_hw_aria', 'Two comparisons from the Great Barrier Reef. Reefs in cleaner water recovered faster after damage than reefs in murky water. Where divers removed coral-eating crown-of-thorns starfish early and thoroughly, coral cover rose instead of falling.') };
+  }
+
+  // Reseeding with coral larvae: spawning night, net tents, young breeding corals.
+  function figHelpLarvae(h, P, __alloT) {
+    var heads = [__alloT('stem.coralreef.fig_hl_night', 'Spawning night'), __alloT('stem.coralreef.fig_hl_tents', 'Net tents'), __alloT('stem.coralreef.fig_hl_later', 'Two to three years later')];
+    var k = [], top = figHeadTop(heads), ht = 92, base = top + ht - 9;
+    [0, 112, 224].forEach(function (x, i) { k.push(figWater(h, 'w' + i, x, top, 96, ht, i === 0 ? FIG_BITS.night : null)); });
+    k.push(h('circle', { key: 'moon', cx: 76, cy: top + 17, r: 8, fill: '#f4ecc2' }));
+    k.push(h('circle', { key: 'moon2', cx: 80, cy: top + 14, r: 7, fill: FIG_BITS.night }));
+    k.push(figCoral(h, 'sc', 'massive', 'live', 36, base, 0.3));
+    for (var s = 0; s < 14; s++) k.push(h('circle', { key: 'sp' + s, cx: 22 + (s * 13) % 30, cy: base - 22 - (s * 9) % 44, r: 1.8, fill: FIG_BITS.spawn }));
+    k.push(figRubbleSide(h, 'rs', 112, base, 96));
+    k.push(h('path', { key: 'tent', d: 'M124 ' + base + ' Q124 ' + (base - 52) + ' 160 ' + (base - 52) + ' Q196 ' + (base - 52) + ' 196 ' + base, fill: FIG_BITS.mesh, fillOpacity: 0.12, stroke: FIG_BITS.mesh, strokeWidth: 1.6, strokeDasharray: '3 2' }));
+    [140, 160, 180].forEach(function (x, i) { k.push(h('line', { key: 'm' + i, x1: x, y1: base - (i === 1 ? 52 : 44), x2: x, y2: base, stroke: FIG_BITS.mesh, strokeWidth: 0.8, strokeDasharray: '2 3' })); });
+    for (var l = 0; l < 10; l++) k.push(h('circle', { key: 'lv' + l, cx: 136 + (l * 17) % 48, cy: base - 8 - (l * 11) % 34, r: 1.6, fill: FIG_BITS.spawn }));
+    k.push(figRubbleSide(h, 'rs2', 224, base, 96));
+    [[240, 0.26], [262, 0.3], [284, 0.26], [305, 0.22]].forEach(function (c, i) { k.push(figCoral(h, 'yc' + i, i % 2 ? 'branching' : 'massive', 'live', c[0], base, c[1])); });
+    k.push(figArrow(h, 'a1', 97, top + 46, 111, top + 46, P.text, { head: 7, width: 2.2 }));
+    k.push(figArrow(h, 'a2', 209, top + 46, 223, top + 46, P.text, { head: 7, width: 2.2 }));
+    var y = figTriptych(h, k, P, 't', heads, top,
+      { y: top + ht + 18, items: [[__alloT('stem.coralreef.fig_hl_millions', 'millions of larvae'), __alloT('stem.coralreef.fig_hl_collected', 'collected')],
+        [__alloT('stem.coralreef.fig_hl_damaged', 'on a damaged reef'), __alloT('stem.coralreef.fig_hl_most_died', 'most died')],
+        [__alloT('stem.coralreef.fig_hl_220', 'about 220 corals'), __alloT('stem.coralreef.fig_hl_spawn', 'big enough to spawn')]] });
+    y = figStack(h, k, 'n', 0, y + 14, [{ str: __alloT('stem.coralreef.fig_hl_note', 'Most died, as wild coral babies do. The survivors started a new breeding group.'), fill: P.muted, max: 52 }]);
+    return { height: Math.ceil(y), kids: k, label: __alloT('stem.coralreef.fig_hl_aria', 'Reseeding a reef in three steps. On a spawning night, scientists collected millions of coral larvae. They released them under net tents on a damaged Philippine reef. Most died, as wild coral babies do, but within two to three years about 220 grew into corals big enough to spawn, starting a new breeding group.') };
+  }
+  // Loose rubble seen from the side, along the bottom of a water tile.
+  function figRubbleSide(h, key, x, base, w) {
+    var kids = [];
+    for (var i = 0; i < 9; i++) {
+      var px = x + 8 + i * (w - 16) / 8, py = base + 3 - (i % 3), ang = (i * 53) % 40 - 20;
+      kids.push(h('rect', { key: i, x: fr(px - 6), y: fr(py - 2), width: 12, height: 4, rx: 2, fill: FIG_BITS.rubble, stroke: FIG_BITS.rubbleInk, strokeWidth: 0.8, transform: 'rotate(' + ang + ' ' + fr(px) + ' ' + fr(py) + ')' }));
+    }
+    return h('g', { key: key }, kids);
+  }
+
+  // Reef Balls and shipwrecks: what they do and what is still unknown.
+  function figHelpStructures(h, P, __alloT) {
+    var k = [], top = 22, ht = 118, W = 150, base = top + ht - 9;
+    k.push(figWater(h, 'w', 0, top, W, ht));
+    k.push(figReefBall(h, 'rb', 44, base, 28));
+    k.push(h('path', { key: 'hull', d: 'M88 ' + base + ' L95 ' + (base - 22) + ' L140 ' + (base - 26) + ' L145 ' + base + ' Z', fill: '#6e5a4a', stroke: '#3b2e24', strokeWidth: 1.4 }));
+    k.push(h('line', { key: 'mast', x1: 118, y1: base - 25, x2: 112, y2: base - 62, stroke: '#3b2e24', strokeWidth: 2.4 }));
+    [['butterflyfish', 30, top + 26], ['snapper', 62, top + 18], ['surgeonfish', 74, top + 52], ['parrotfish', 20, top + 56], ['grouper', 104, top + 32], ['snapper', 132, top + 50], ['butterflyfish', 128, top + 16]].forEach(function (f, i) {
+      k.push(fishShape(h, f[0], f[1], f[2], 'f' + i, i % 2 === 1));
+    });
+    var yb = Math.max(figStack(h, k, 'rbl', 40, top + ht + 18, [{ str: __alloT('stem.coralreef.fig_ht_ball', 'Reef Ball'), fill: P.text, bold: true, anchor: 'middle', max: 10 }]),
+      figStack(h, k, 'wkl', 114, top + ht + 18, [{ str: __alloT('stem.coralreef.fig_ht_wreck', 'Shipwreck'), fill: P.text, bold: true, anchor: 'middle', max: 10 }]));
+    var y = 38;
+    [['tick', __alloT('stem.coralreef.fig_ht_fish', 'Fish gather quickly'), true], ['ask', __alloT('stem.coralreef.fig_ht_new_fish', 'New fish, or fish from nearby? Still being studied.'), false],
+      ['equal', __alloT('stem.coralreef.fig_ht_corals', 'Young corals: no better survival or growth found'), false]].forEach(function (row, i) {
+      if (row[0] === 'ask') k.push(figText(h, 'm' + i, 170, y + 3, '?', P.text, { bold: true, size: 22 }));
+      else k.push(figMark(h, 'm' + i, row[0], 175, y - 5, P));
+      y = figStack(h, k, 'r' + i, 192, y, [{ str: row[1], fill: P.text, bold: row[2], max: 20 }]) + 18;
+    });
+    return { height: Math.ceil(Math.max(yb, y - 18) + 8), kids: k, label: __alloT('stem.coralreef.fig_ht_aria', 'A Reef Ball, a hollow concrete dome with holes, and a shipwreck, with fish gathered around them. Fish gather quickly. Whether these structures create new fish or mostly gather fish that already lived nearby is still being studied. Studies of Reef Balls have not found that they help young corals survive or grow better.') };
+  }
+
+  // Biorock: the claim, the fair tests, and what a fair test compares.
+  function figHelpBiorock(h, P, __alloT) {
+    var k = [];
+    function column(x, head, sub, rows) {
+      var y = figStack(h, k, 'c' + x, x, 16, [{ str: head, fill: P.text, bold: true, max: 21 }, { str: sub, fill: P.muted, max: 24, gap: 12 }]);
+      rows.forEach(function (r, i) {
+        k.push(figMark(h, 'm' + x + i, r[0], x + 8, y - 5, P));
+        y = figStack(h, k, 'r' + x + i, x + 22, y, [{ str: r[1], fill: P.text, max: 20 }]) + 10;
+      });
+      return y;
+    }
+    var yl = column(0, __alloT('stem.coralreef.fig_hb_claim', 'The claim'), __alloT('stem.coralreef.fig_hb_inventors', 'reported by the inventors'),
+      [['plus', __alloT('stem.coralreef.fig_hb_faster', 'corals grow faster')], ['plus', __alloT('stem.coralreef.fig_hb_heat', 'survive heat better')]]);
+    var yr = column(170, __alloT('stem.coralreef.fig_hb_tests', 'Fair tests'), __alloT('stem.coralreef.fig_hb_places', 'Australia, Kenya, Philippines'),
+      [['equal', __alloT('stem.coralreef.fig_hb_none', 'mostly no lasting benefit')], ['minus', __alloT('stem.coralreef.fig_hb_harm', 'one case: harm')]]);
+    var yd = Math.max(yl, yr);
+    k.push(h('line', { key: 'mid', x1: 160, y1: 4, x2: 160, y2: yd - 8, stroke: P.border, strokeWidth: 1.5 }));
+    k.push(h('line', { key: 'div', x1: 0, y1: yd, x2: 320, y2: yd, stroke: P.border, strokeWidth: 1.5 }));
+    var y = figStack(h, k, 'fh', 0, yd + 22, [{ str: __alloT('stem.coralreef.fig_hb_fair', 'A fair test changes one thing'), fill: P.text, bold: true, max: 44 }]) + 2;
+    var ht = 72, base = y + ht - 9;
+    [0, 168].forEach(function (x, i) {
+      k.push(figWater(h, 'w' + i, x, y, 152, ht));
+      k.push(h('path', { key: 'fr' + i, d: 'M' + (x + 30) + ' ' + base + ' Q' + (x + 30) + ' ' + (base - 48) + ' ' + (x + 76) + ' ' + (base - 48) + ' Q' + (x + 122) + ' ' + (base - 48) + ' ' + (x + 122) + ' ' + base, fill: 'none', stroke: FIG_BITS.steel, strokeWidth: 4 }));
+      k.push(h('line', { key: 'rod' + i, x1: x + 76, y1: base - 48, x2: x + 76, y2: base, stroke: FIG_BITS.steel, strokeWidth: 3 }));
+      [[54, 0.24], [98, 0.24]].forEach(function (c, j) { k.push(figCoral(h, 'c' + i + j, 'branching', 'live', x + c[0], base - 26, c[1])); });
+    });
+    k.push(h('path', { key: 'bolt', d: 'M' + 24 + ' ' + (y + 8) + ' l-10 18 h8 l-6 16 l16 -22 h-9 l7 -12 Z', fill: '#facc15', stroke: '#7a5a00', strokeWidth: 1 }));
+    var yc = Math.max(figStack(h, k, 'with', 76, y + ht + 18, [{ str: __alloT('stem.coralreef.fig_hb_with', 'with the current'), fill: P.text, anchor: 'middle', max: 25 }]),
+      figStack(h, k, 'without', 244, y + ht + 18, [{ str: __alloT('stem.coralreef.fig_hb_without', 'without it'), fill: P.text, anchor: 'middle', max: 25 }]));
+    yc = figStack(h, k, 'same', 160, yc + 2, [{ str: __alloT('stem.coralreef.fig_hb_same', 'same corals, same place'), fill: P.muted, anchor: 'middle', max: 50 }]);
+    yc = figStack(h, k, 'end', 0, yc + 18, [{ str: __alloT('stem.coralreef.fig_hb_check', 'Good science checks big claims with fair tests.'), fill: P.text, bold: true, max: 46 }]);
+    return { height: Math.ceil(yc), kids: k, label: __alloT('stem.coralreef.fig_hb_aria', 'A claim and its tests. The inventors of Biorock, steel frames with a gentle electric current, report that corals grow faster and survive heat better. Careful tests with fair comparisons in Australia, Kenya and the Philippines mostly found no lasting benefit, and in one case found harm. A fair test compares frames with and without the current, with everything else the same. Good science means checking big claims with fair tests.') };
+  }
+
+  // Fast but fragile: the 2022 high and the 2024 drops.
+  function figHelpFragile(h, P, __alloT) {
+    var k = [], W = 140;
+    var top = figStack(h, k, 'tt', 0, 14, [{ str: __alloT('stem.coralreef.fig_hf_where', 'Parts of the Great Barrier Reef'), fill: P.text, bold: true, max: 44, gap: 4 }]) + 16;
+    var ht = 96, base = top + ht - 9;
+    k.push(figText(h, 'y0', 70, top - 8, '2022', P.text, { bold: true, anchor: 'middle' }));
+    k.push(figText(h, 'y1', 250, top - 8, '2024', P.text, { bold: true, anchor: 'middle' }));
+    k.push(figWater(h, 'w0', 0, top, W, ht)); k.push(figWater(h, 'w1', 180, top, W, ht));
+    [[28, 'plate', 0.4], [70, 'branching', 0.42], [112, 'plate', 0.38], [48, 'branching', 0.3], [94, 'branching', 0.3]].forEach(function (c, i) { k.push(figCoral(h, 'a' + i, c[1], 'live', c[0], base - (i > 2 ? 0 : 6), c[2])); });
+    [[208, 'plate', 0.4, 'dead'], [250, 'branching', 0.42, 'white'], [292, 'plate', 0.38, 'dead'], [272, 'branching', 0.26, 'live']].forEach(function (c, i) { k.push(figCoral(h, 'b' + i, c[1], c[3], c[0], base - (i > 2 ? 0 : 6), c[2])); });
+    k.push(figRubbleSide(h, 'rb', 180, base, W));
+    k.push(figSun(h, 'sun', 160, top + 16, P));
+    // A cyclone as a swirl.
+    var sw = [];
+    for (var t = 0; t <= 26; t++) { var a = t * 0.36, r = 1.2 + t * 0.34; sw.push(fr(160 + r * Math.cos(a)) + ',' + fr(top + 44 + r * Math.sin(a))); }
+    k.push(h('polyline', { key: 'cyc', points: sw.join(' '), fill: 'none', stroke: P.text, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+    k.push(figCots(h, 'st', 160, top + 70, 7, false, P.text));
+    k.push(figArrow(h, 'ar', 143, top + 90, 177, top + 90, P.text, { head: 7, width: 2.2 }));
+    var y = Math.max(
+      figStack(h, k, 'l', 70, top + ht + 18, [{ str: __alloT('stem.coralreef.fig_hf_high', 'highest coral cover in 36 years'), fill: P.text, bold: true, anchor: 'middle', max: 19 },
+        { str: __alloT('stem.coralreef.fig_hf_fast', 'fast-growing branching and table corals'), fill: P.muted, anchor: 'middle', max: 22 }]),
+      figStack(h, k, 'r', 250, top + ht + 18, [{ str: __alloT('stem.coralreef.fig_hf_drop', 'largest one-year drops on record'), fill: P.text, bold: true, anchor: 'middle', max: 19 },
+        { str: __alloT('stem.coralreef.fig_hf_causes', 'after heat, cyclones and starfish'), fill: P.muted, anchor: 'middle', max: 22 }]));
+    y = figStack(h, k, 'end', 0, y + 18, [{ str: __alloT('stem.coralreef.fig_hf_ease', 'Recovery is real, and it lasts longest when heatwaves ease.'), fill: P.text, bold: true, max: 46 }]);
+    return { height: Math.ceil(y), kids: k, label: __alloT('stem.coralreef.fig_hf_aria', 'Parts of the Great Barrier Reef in 2022 and 2024. In 2022 they had their highest coral cover in 36 years, much of it fast-growing branching and table corals. In 2024 heat, cyclones and starfish caused the largest one-year drops on record. Recovery is real, and it lasts longest when heatwaves ease.') };
+  }
+
+  var HELP_FIGS = { stars: figHelpStars, garden: figHelpGarden, reserves: figHelpReserves, water: figHelpWater, larvae: figHelpLarvae, structures: figHelpStructures, biorock: figHelpBiorock, fragile: figHelpFragile };
+  function helpFigures(h, P, __alloT) {
+    var out = {};
+    Object.keys(HELP_FIGS).forEach(function (id) {
+      var f = HELP_FIGS[id](h, P, __alloT);
+      out[id] = h('svg', { viewBox: '0 0 320 ' + f.height, role: 'img', 'aria-label': f.label, focusable: 'false', 'data-figure': 'help-' + id }, f.kids);
+    });
+    return out;
+  }
+
+  function ScienceSection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
+    var an = React.useState(1.5), anomaly = an[0], setAnomaly = an[1];
+    var wk = React.useState(6), weeks = wk[0], setWeeks = wk[1];
+    var dhw = dhwFor(anomaly, weeks), lvl = alertLevel(dhw);
+    var LVL = alertText(__alloT);
+    var cards = scienceCards(__alloT);
+    // The figures only change with the theme or the language, not with the sliders below.
+    var figs = React.useMemo(function () { return scienceFigures(h, P, __alloT); }, [env.theme, cards[0].title]);
+    var helpFigs = React.useMemo(function () { return helpFigures(h, P, __alloT); }, [env.theme, cards[0].title]);
+    return h('div', null,
+      h('style', null, LANE_CSS_C),
+      cards.map(function (c) {
+        return h('section', { key: c.id, className: 'cr-sci-card', style: cardStyle(P) }, h('h3', { style: h3Style(P) }, c.title),
+          h('div', { className: 'cr-sci-row' },
+            h('div', { className: 'cr-sci-text' }, c.body.map(function (p, i) { return h('p', { key: i, style: { margin: i ? '8px 0 0' : 0 } }, p); })),
+            figs[c.id] ? h('figure', { className: 'cr-sci-fig' }, figs[c.id]) : null));
+      }),
+      h('h3', { style: Object.assign(h3Style(P), { fontSize: 20, margin: '18px 0 10px' }) }, __alloT('stem.coralreef.help_heading', 'What helps reefs')),
+      helpCards(__alloT).map(function (c) {
+        return h('section', { key: c.id, className: 'cr-help-card', 'data-help': c.id, style: cardStyle(P, { borderColor: c.id === 'biorock' || c.id === 'structures' || c.id === 'fragile' ? P.border : P.good }) },
+          h('h4', { style: Object.assign(h3Style(P), { fontSize: 17 }) }, c.title),
+          h('div', { className: 'cr-sci-row' },
+            h('div', { className: 'cr-sci-text' }, c.body.map(function (p, i) { return h('p', { key: i, style: { margin: i ? '8px 0 0' : 0 } }, p); })),
+            helpFigs[c.id] ? h('figure', { className: 'cr-sci-fig' }, helpFigs[c.id]) : null));
+      }),
+      h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-dhw-title' },
+        h('h3', { id: 'cr-dhw-title', style: h3Style(P) }, __alloT('stem.coralreef.dhw_title', 'Try it: Degree Heating Weeks')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.dhw_intro', 'NOAA Coral Reef Watch compares the water with the usual warmest month of the year. Each week that is at least 1 degree C warmer than that adds its extra degrees, counted over the last 12 weeks. A reef 2 degrees C too warm for 4 weeks has 8 Degree Heating Weeks.')),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.dhw_anomaly', 'How much warmer than the usual warmest month'), min: 0, max: 4, step: 0.5, value: anomaly,
+          valueText: __alloFill(__alloT('stem.coralreef.dhw_anomaly_value', '{n} degrees C'), { n: anomaly }), onChange: setAnomaly }),
+        h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.dhw_weeks', 'For how many of the last 12 weeks'), min: 0, max: 12, value: weeks,
+          valueText: __alloFill(__alloT('stem.coralreef.dhw_weeks_value', '{n} weeks'), { n: weeks }), onChange: setWeeks }),
+        h('p', { 'aria-live': 'polite', style: { margin: '6px 0 0', fontWeight: 700 } },
+          __alloFill(__alloT('stem.coralreef.dhw_result', '{dhw} Degree Heating Weeks: {level}'), { dhw: dhw, level: LVL[lvl] })),
+        anomaly > 0 && anomaly < 1 ? h('p', { style: mutedStyle(P, { margin: '4px 0 0' }) }, __alloT('stem.coralreef.dhw_below_one', 'Less than 1 degree C above the usual warmest month does not add to Degree Heating Weeks. NOAA calls this a Bleaching Watch: warmer than usual, but below the bleaching threshold.')) : null,
+        h('p', { style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.dhw_risk_note', 'These alert levels describe risk worked out from satellite water temperatures. Divers still have to check what actually happens on each reef.'))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.src_title', 'Sources')),
+        h('ul', { style: { margin: 0, paddingLeft: 22 } }, sourceList().map(function (s) {
+          return h('li', { key: s.id, style: { marginBottom: 4 } }, s.text, s.url ? h('span', null, ' ', h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer', style: { color: P.accent } }, s.urlLabel || s.url)) : null);
+        }))));
+  }
+
+  // ── For teachers ─────────────────────────────────────────────────────────
+  function TeacherSection(props) {
+    var env = props.env, h = env.h, P = env.P, ctx = env.ctx, __alloT = env.t, __alloFill = env.fill;
+    var SC = scenarioText(__alloT);
+    var canJump = typeof ctx.setStemLabTool === 'function' && !ctx.embedded;
+    var links = [
+      { id: 'aquarium', name: __alloT('stem.coralreef.t_link_aquarium', 'Aquaculture & Ocean Lab: coral care, water chemistry and bleaching in a tank') },
+      { id: 'scaleExplorer', name: __alloT('stem.coralreef.t_link_scale', 'Scale Explorer: the Great Barrier Reef at true scale') },
+      { id: 'climateExplorer', name: __alloT('stem.coralreef.t_link_climate', 'Climate Explorer: warming and tipping points') },
+      { id: 'cephalopodLab', name: __alloT('stem.coralreef.t_link_cephalopod', 'Cephalopod Lab: hunt as an octopus on a reef') }
+    ];
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.t_flow_title_four', 'A suggested sequence (about four class periods)')),
+        h('ol', { className: 'cr-teacher-flow', style: { margin: 0, paddingLeft: 22 } },
+          h('li', { style: { marginBottom: 4 } }, __alloT('stem.coralreef.t_flow_dive', 'Dive and identify. Dive the healthy reef and identify what you meet, using the field marks in the species guide. Then dive the heatwave, damaged and restoration sites and note what is different: coral color, seaweed, and which animals are missing or more common.')),
+          h('li', { style: { marginBottom: 4 } }, __alloT('stem.coralreef.t_flow_1', 'Survey methods and practice points. Focus on telling bleached (alive) from recently dead coral.')),
+          h('li', { style: { marginBottom: 4 } }, __alloT('stem.coralreef.t_flow_2', 'Field survey of two reefs, ideally two transects each. Groups can split reefs and pool their logs.')),
+          h('li', { style: { marginBottom: 4 } }, __alloT('stem.coralreef.t_flow_3', 'Compare reefs: claim, evidence and reasoning from the survey table.')),
+          // Scenario names come from the model itself, so the list cannot drift from it.
+          h('li', null, __alloFill(__alloT('stem.coralreef.t_flow_future', 'Reef future: predict, then run all {n} scenarios. Survey or dive a future year, and discuss which actions help and which do not.'), { n: SCENARIOS.length }),
+            h('ul', { style: { margin: '4px 0 0', paddingLeft: 20 } }, SCENARIOS.map(function (s) { return h('li', { key: s.id }, SC[s.id] ? SC[s.id].name : s.id); }))))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.t_ngss_title', 'Standards connections (NGSS)')),
+        h('ul', { style: { margin: 0, paddingLeft: 22 } },
+          h('li', null, __alloT('stem.coralreef.t_ngss_1', 'MS-LS2-4: construct an argument that changes to an ecosystem affect its populations.')),
+          h('li', null, __alloT('stem.coralreef.t_ngss_2', 'MS-LS2-5: evaluate competing design solutions for maintaining biodiversity and ecosystem services.')),
+          h('li', null, __alloT('stem.coralreef.t_ngss_3', 'HS-LS2-6: evaluate claims that ecosystems keep stable conditions, but changing conditions may produce a new ecosystem.')),
+          h('li', null, __alloT('stem.coralreef.t_ngss_4', 'HS-LS2-7: design, evaluate and refine a solution for reducing human impacts on the environment and biodiversity.')),
+          h('li', null, __alloT('stem.coralreef.t_ngss_5', 'Practices: planning and carrying out investigations, analyzing data, and developing and using models.')))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.t_mis_title', 'Common misconceptions to listen for')),
+        h('ul', { style: { margin: 0, paddingLeft: 22 } },
+          h('li', null, __alloT('stem.coralreef.t_mis_1', '"Bleached coral is dead." Bleached coral is alive and can recover if the heat stress ends; it dies if the stress goes on too long.')),
+          h('li', null, __alloT('stem.coralreef.t_mis_2', '"Seaweed on a reef is always bad." Algae are part of every reef. The warning sign is fleshy seaweed spreading where coral used to be.')),
+          h('li', null, __alloT('stem.coralreef.t_mis_3', '"Planting corals can fix reefs." Restoration helps small areas. It cannot keep up with reef-wide losses unless heatwaves become less frequent.')),
+          h('li', null, __alloT('stem.coralreef.t_mis_4', '"One survey tells you how the whole reef is doing." One transect is a sample. Monitors repeat transects to see how much the numbers vary.')),
+          h('li', null, __alloT('stem.coralreef.t_mis_5', '"Artificial reefs bring the coral back." Fish gather around Reef Balls quickly, but studies have not found that Reef Balls help young corals survive or grow better.')))),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.t_links_title', 'Related tools')),
+        h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } }, links.map(function (l) {
+          return h('li', { key: l.id, style: { marginBottom: 6 } }, canJump
+            ? h('button', { type: 'button', style: btnStyle(P, false, { textAlign: 'left' }), onClick: function () { ctx.setStemLabTool(l.id); } }, l.name)
+            : l.name);
+        }))));
+  }
+
+  // ── Registration ─────────────────────────────────────────────────────────
+
+  // ── Species of the dive reef (an Indo-Pacific reef in the Coral Triangle) ─
+  // SPECIES_META and speciesText() are generated from the sourced fact sheet.
+  // @@SPECIES_DATA_START
+  // Generated from the sourced species fact sheet; edit there, not here.
+  var SPECIES_META = [
+    { id: 'clownfish', group: 'fish', scientific: 'Amphiprion ocellaris', iucn: 'LC', iucnYear: 2021, lookalikes: [] },
+    { id: 'blue_tang', group: 'fish', scientific: 'Paracanthurus hepatus', iucn: 'LC', iucnYear: 2010, lookalikes: [] },
+    { id: 'parrotfish', group: 'fish', scientific: 'Chlorurus bleekeri', iucn: 'LC', iucnYear: 2009, lookalikes: ['bumphead_parrotfish'] },
+    { id: 'bumphead_parrotfish', group: 'fish', scientific: 'Bolbometopon muricatum', iucn: 'VU', iucnYear: 2024, lookalikes: ['humphead_wrasse', 'parrotfish'] },
+    { id: 'moorish_idol', group: 'fish', scientific: 'Zanclus cornutus', iucn: 'LC', iucnYear: 2015, lookalikes: ['threadfin_butterflyfish'] },
+    { id: 'threadfin_butterflyfish', group: 'fish', scientific: 'Chaetodon auriga', iucn: 'LC', iucnYear: 2009, lookalikes: ['moorish_idol', 'emperor_angelfish'] },
+    { id: 'emperor_angelfish', group: 'fish', scientific: 'Pomacanthus imperator', iucn: 'LC', iucnYear: 2009, lookalikes: ['threadfin_butterflyfish'] },
+    { id: 'anthias', group: 'fish', scientific: 'Pseudanthias squamipinnis', iucn: 'LC', iucnYear: 2015, lookalikes: ['blue_green_chromis'] },
+    { id: 'blue_green_chromis', group: 'fish', scientific: 'Chromis viridis', iucn: 'LC', iucnYear: 2021, lookalikes: ['anthias'] },
+    { id: 'lionfish', group: 'fish', scientific: 'Pterois volitans', iucn: 'LC', iucnYear: 2015, lookalikes: [] },
+    { id: 'peacock_grouper', group: 'fish', scientific: 'Cephalopholis argus', iucn: 'LC', iucnYear: 2017, lookalikes: [] },
+    { id: 'humphead_wrasse', group: 'fish', scientific: 'Cheilinus undulatus', iucn: 'EN', iucnYear: 2024, lookalikes: ['bumphead_parrotfish'] },
+    { id: 'cleaner_wrasse', group: 'fish', scientific: 'Labroides dimidiatus', iucn: 'LC', iucnYear: 2008, lookalikes: [] },
+    { id: 'clown_triggerfish', group: 'fish', scientific: 'Balistoides conspicillum', iucn: 'LC', iucnYear: 2022, lookalikes: [] },
+    { id: 'porcupinefish', group: 'fish', scientific: 'Diodon hystrix', iucn: 'LC', iucnYear: 2011, lookalikes: ['yellow_boxfish'] },
+    { id: 'yellow_boxfish', group: 'fish', scientific: 'Ostracion cubicus', iucn: 'LC', iucnYear: 2023, lookalikes: ['porcupinefish'] },
+    { id: 'giant_moray', group: 'fish', scientific: 'Gymnothorax javanicus', iucn: 'LC', iucnYear: 2011, lookalikes: [] },
+    { id: 'whitetip_reef_shark', group: 'fish', scientific: 'Triaenodon obesus', iucn: 'VU', iucnYear: 2020, lookalikes: [] },
+    { id: 'bluespotted_stingray', group: 'fish', scientific: 'Taeniura lymma', iucn: 'LC', iucnYear: 2020, lookalikes: [] },
+    { id: 'bluestripe_snapper', group: 'fish', scientific: 'Lutjanus kasmira', iucn: 'LC', iucnYear: 2015, lookalikes: ['oriental_sweetlips'] },
+    { id: 'oriental_sweetlips', group: 'fish', scientific: 'Plectorhinchus vittatus', iucn: 'LC', iucnYear: 2018, lookalikes: ['bluestripe_snapper'] },
+    { id: 'reef_manta', group: 'fish', scientific: 'Mobula alfredi', iucn: 'VU', iucnYear: 2018, lookalikes: [] },
+    { id: 'green_turtle', group: 'reptile', scientific: 'Chelonia mydas', iucn: 'LC', iucnYear: 2025, lookalikes: ['hawksbill_turtle'] },
+    { id: 'hawksbill_turtle', group: 'reptile', scientific: 'Eretmochelys imbricata', iucn: 'CR', iucnYear: 2008, lookalikes: ['green_turtle'] },
+    { id: 'magnificent_anemone', group: 'invertebrate', scientific: 'Radianthus magnifica (long known as Heteractis magnifica)', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'giant_clam', group: 'invertebrate', scientific: 'Tridacna maxima', iucn: 'LC', iucnYear: 2024, lookalikes: [] },
+    { id: 'crown_of_thorns', group: 'invertebrate', scientific: 'Acanthaster sp. (Pacific lineage, often called A. cf. solaris; WoRMS still lists it under A. planci)', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'blue_sea_star', group: 'invertebrate', scientific: 'Linckia laevigata', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'long_spined_urchin', group: 'invertebrate', scientific: 'Diadema setosum', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'nudibranch', group: 'invertebrate', scientific: 'Chromodoris annae', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'cleaner_shrimp', group: 'invertebrate', scientific: 'Lysmata amboinensis', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'christmas_tree_worm', group: 'invertebrate', scientific: 'Spirobranchus corniculatus complex (Spirobranchus spp.)', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'day_octopus', group: 'invertebrate', scientific: 'Octopus cyanea', iucn: 'LC', iucnYear: 2014, lookalikes: [] },
+    { id: 'sea_cucumber', group: 'invertebrate', scientific: 'Holothuria edulis', iucn: 'LC', iucnYear: 2010, lookalikes: [] },
+    { id: 'sea_fan', group: 'invertebrate', scientific: 'Annella mollis', iucn: 'NE', iucnYear: null, lookalikes: ['soft_coral'] },
+    { id: 'barrel_sponge', group: 'invertebrate', scientific: 'Xestospongia testudinaria', iucn: 'NE', iucnYear: null, lookalikes: [] },
+    { id: 'soft_coral', group: 'invertebrate', scientific: 'Dendronephthya spp.', iucn: 'NE', iucnYear: null, lookalikes: ['sea_fan'] },
+    { id: 'brain_coral', group: 'coral', scientific: 'Platygyra spp. (e.g. Platygyra daedalea)', iucn: 'LC', iucnYear: 2023, lookalikes: ['boulder_coral'] },
+    { id: 'staghorn_coral', group: 'coral', scientific: 'Acropora spp. (branching), e.g. Acropora muricata (formerly A. formosa)', iucn: 'EN', iucnYear: null, lookalikes: ['table_coral'] },
+    { id: 'table_coral', group: 'coral', scientific: 'Acropora hyacinthus', iucn: 'EN', iucnYear: 2023, lookalikes: ['staghorn_coral'] },
+    { id: 'mushroom_coral', group: 'coral', scientific: 'Fungia fungites', iucn: 'LC', iucnYear: 2022, lookalikes: [] },
+    { id: 'boulder_coral', group: 'coral', scientific: 'Porites spp. (massive), e.g. Porites lutea', iucn: 'LC', iucnYear: 2023, lookalikes: ['brain_coral'] },
+    { id: 'cauliflower_coral', group: 'coral', scientific: 'Pocillopora verrucosa', iucn: 'EN', iucnYear: null, lookalikes: ['staghorn_coral'] },
+    { id: 'foliose_coral', group: 'coral', scientific: 'Montipora foliosa', iucn: 'EN', iucnYear: null, lookalikes: ['table_coral'] },
+    { id: 'reef_star', group: 'structure', scientific: null, iucn: null, iucnYear: null, lookalikes: [] },
+    { id: 'reef_ball', group: 'structure', scientific: null, iucn: null, iucnYear: null, lookalikes: [] },
+    { id: 'coral_tree_nursery', group: 'structure', scientific: null, iucn: null, iucnYear: null, lookalikes: [] }
+  ];
+  function speciesText(__alloT) {
+    return {
+      clownfish: { name: __alloT('stem.coralreef.sp_clownfish_name', 'Clown anemonefish (ocellaris clownfish)'),
+        marks: [__alloT('stem.coralreef.sp_clownfish_mark1', 'Bright orange body with three white bands: behind the eye, mid-body and near the tail'),
+          __alloT('stem.coralreef.sp_clownfish_mark2', 'White bands have little or no black edging'),
+          __alloT('stem.coralreef.sp_clownfish_mark3', 'Usually 11 spines in the front part of the back fin (orange clownfish usually has 10)'),
+          __alloT('stem.coralreef.sp_clownfish_mark4', 'Stays inside the tentacles of a large sea anemone')],
+        role: __alloT('stem.coralreef.sp_clownfish_role', 'Lives among the stinging tentacles of a host anemone (here the magnificent anemone, giant carpet anemone or Merten\'s carpet anemone), which shelters it from predators.'),
+        fact: __alloT('stem.coralreef.sp_clownfish_fact', 'Clownfish live in small groups ranked by size, with the biggest fish a female. If she disappears, her male partner changes sex to become the breeding female, and the largest non-breeder becomes the new breeding male.') },
+      blue_tang: { name: __alloT('stem.coralreef.sp_blue_tang_name', 'Palette surgeonfish (blue tang)'),
+        marks: [__alloT('stem.coralreef.sp_blue_tang_mark1', 'Royal-blue oval body'),
+          __alloT('stem.coralreef.sp_blue_tang_mark2', 'Black \'artist\'s palette\' pattern along the side'),
+          __alloT('stem.coralreef.sp_blue_tang_mark3', 'Yellow tail with a black stripe along its upper and lower edges'),
+          __alloT('stem.coralreef.sp_blue_tang_mark4', 'Sharp blade on each side of the tail base')],
+        role: __alloT('stem.coralreef.sp_blue_tang_role', 'Eats zooplankton and sometimes algae.'),
+        fact: __alloT('stem.coralreef.sp_blue_tang_fact', 'Young palette surgeonfish gather around isolated cauliflower-coral (Pocillopora) heads. When scared, they wedge themselves tightly between the branches.') },
+      parrotfish: { name: __alloT('stem.coralreef.sp_parrotfish_name', 'Bleeker\'s parrotfish'),
+        marks: [__alloT('stem.coralreef.sp_parrotfish_mark1', 'Beak-like front teeth used to scrape rock'),
+          __alloT('stem.coralreef.sp_parrotfish_mark2', 'Swims by flapping its side (pectoral) fins'),
+          __alloT('stem.coralreef.sp_parrotfish_mark3', 'Males: green with pink scale edges and a large whitish rectangle on the cheek'),
+          __alloT('stem.coralreef.sp_parrotfish_mark4', 'Females: dark brown with 3-4 broad pale bars')],
+        role: __alloT('stem.coralreef.sp_parrotfish_role', 'Grazes algae off dead coral and rock, helping keep seaweed from taking over space young corals need.'),
+        fact: __alloT('stem.coralreef.sp_parrotfish_fact', 'Parrotfish make sand. On one Maldives reef flat, parrotfish produced more than 85% of the new sand-grade sediment, about 5.7 kg per square metre each year, and that sediment helps build reef islands.') },
+      bumphead_parrotfish: { name: __alloT('stem.coralreef.sp_bumphead_parrotfish_name', 'Bumphead parrotfish (green humphead parrotfish)'),
+        marks: [__alloT('stem.coralreef.sp_bumphead_parrotfish_mark1', 'The largest parrotfish: a huge blue-green to grey fish'),
+          __alloT('stem.coralreef.sp_bumphead_parrotfish_mark2', 'Big bulging bump on the forehead'),
+          __alloT('stem.coralreef.sp_bumphead_parrotfish_mark3', 'Usually seen feeding in schools'),
+          __alloT('stem.coralreef.sp_bumphead_parrotfish_mark4', 'Exposed beak-like teeth')],
+        role: __alloT('stem.coralreef.sp_bumphead_parrotfish_role', 'Bites off chunks of live coral, dead coral and algae, and grinds them up. This recycles reef rock into sand.'),
+        fact: __alloT('stem.coralreef.sp_bumphead_parrotfish_fact', 'Each bumphead parrotfish swallows over 5 tonnes of reef limestone a year, and almost half of it is living coral.') },
+      moorish_idol: { name: __alloT('stem.coralreef.sp_moorish_idol_name', 'Moorish idol'),
+        marks: [__alloT('stem.coralreef.sp_moorish_idol_mark1', 'Long tube-shaped snout with a yellow-orange saddle on top'),
+          __alloT('stem.coralreef.sp_moorish_idol_mark2', 'Two broad black vertical bands on a white and yellow body'),
+          __alloT('stem.coralreef.sp_moorish_idol_mark3', 'Very long white streamer trailing from the top fin'),
+          __alloT('stem.coralreef.sp_moorish_idol_mark4', 'Mostly black fins (bannerfish have a yellow tail)')],
+        role: __alloT('stem.coralreef.sp_moorish_idol_role', 'Feeds mostly on encrusting sponges, plus coral polyps and tunicates.'),
+        fact: __alloT('stem.coralreef.sp_moorish_idol_fact', 'It is the only species in its whole family (Zanclidae). It looks so much like a bannerfish (a butterflyfish) that Reef Check training warns surveyors not to count it as one.') },
+      threadfin_butterflyfish: { name: __alloT('stem.coralreef.sp_threadfin_butterflyfish_name', 'Threadfin butterflyfish'),
+        marks: [__alloT('stem.coralreef.sp_threadfin_butterflyfish_mark1', 'White body with thin dark lines meeting at an angle in a chevron pattern'),
+          __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark2', 'Black band running down through the eye'),
+          __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark3', 'Rear of body and fins yellow'),
+          __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark4', 'Adults: black eyespot near the rear of the top fin with a thin thread trailing behind')],
+        role: __alloT('stem.coralreef.sp_threadfin_butterflyfish_role', 'Picks at the reef, tearing bits off polychaete worms, anemones, coral polyps and algae.'),
+        fact: __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact', 'Reef Check volunteers count every butterflyfish they see, because butterflyfish are collected for the aquarium trade. Their numbers help show where collecting is affecting a reef.') },
+      emperor_angelfish: { name: __alloT('stem.coralreef.sp_emperor_angelfish_name', 'Emperor angelfish'),
+        marks: [__alloT('stem.coralreef.sp_emperor_angelfish_mark1', 'Adults: many thin diagonal yellow and blue-purple stripes'),
+          __alloT('stem.coralreef.sp_emperor_angelfish_mark2', 'Black mask across the eyes with a blue edge'),
+          __alloT('stem.coralreef.sp_emperor_angelfish_mark3', 'Large black patch behind the head and gills'),
+          __alloT('stem.coralreef.sp_emperor_angelfish_mark4', 'Juveniles: dark blue with white and blue rings')],
+        role: __alloT('stem.coralreef.sp_emperor_angelfish_role', 'Feeds mainly on sponges and other encrusting animals, plus tunicates.'),
+        fact: __alloT('stem.coralreef.sp_emperor_angelfish_fact', 'Young emperor angelfish look like a completely different fish: dark blue with white and blue rings. They keep this pattern until they are up to about 14 cm long, then change to the striped adult colours.') },
+      anthias: { name: __alloT('stem.coralreef.sp_anthias_name', 'Sea goldie (scalefin anthias)'),
+        marks: [__alloT('stem.coralreef.sp_anthias_mark1', 'Small fish hovering in large orange clouds just above the reef'),
+          __alloT('stem.coralreef.sp_anthias_mark2', 'Females: golden-orange with a violet streak below the eye'),
+          __alloT('stem.coralreef.sp_anthias_mark3', 'Males: purplish-pink with a red patch on the side (pectoral) fin'),
+          __alloT('stem.coralreef.sp_anthias_mark4', 'Males: long third spine on the back fin')],
+        role: __alloT('stem.coralreef.sp_anthias_role', 'Picks zooplankton from the water above the reef.'),
+        fact: __alloT('stem.coralreef.sp_anthias_fact', 'A group is mostly females with a few males. If a male is removed, a female changes sex and becomes a male within 2-4 weeks.') },
+      blue_green_chromis: { name: __alloT('stem.coralreef.sp_blue_green_chromis_name', 'Blue-green chromis (blue green damselfish)'),
+        marks: [__alloT('stem.coralreef.sp_blue_green_chromis_mark1', 'Small pale apple-green to blue-green fish'),
+          __alloT('stem.coralreef.sp_blue_green_chromis_mark2', 'Hovers in big groups above branching Acropora coral and drops into the branches for shelter'),
+          __alloT('stem.coralreef.sp_blue_green_chromis_mark3', 'No black spot at the base of the side fin (the black-axil chromis has one)')],
+        role: __alloT('stem.coralreef.sp_blue_green_chromis_role', 'Picks tiny plankton from the water above the coral, and shelters in branching coral.'),
+        fact: __alloT('stem.coralreef.sp_blue_green_chromis_fact', 'Males build nests on sand and rubble and spawn with several females. They guard the eggs and fan them with their tails until the eggs hatch 2-3 days later.') },
+      lionfish: { name: __alloT('stem.coralreef.sp_lionfish_name', 'Red lionfish'),
+        marks: [__alloT('stem.coralreef.sp_lionfish_mark1', 'Bold red-brown and white vertical stripes'),
+          __alloT('stem.coralreef.sp_lionfish_mark2', 'Huge fan-like side fins'),
+          __alloT('stem.coralreef.sp_lionfish_mark3', 'Long, separate spines along the back (venomous)')],
+        role: __alloT('stem.coralreef.sp_lionfish_role', 'Night hunter of small fishes, shrimps and crabs. It herds prey into a corner with its spread fins, then swallows it in one gulp.'),
+        fact: __alloT('stem.coralreef.sp_lionfish_fact', 'On this reef the lionfish is a native. In the western Atlantic it is an invader: the first one was caught near Dania, Florida, in 1985, and by the early 2000s lionfish were established there.') },
+      peacock_grouper: { name: __alloT('stem.coralreef.sp_peacock_grouper_name', 'Peacock grouper (peacock hind)'),
+        marks: [__alloT('stem.coralreef.sp_peacock_grouper_mark1', 'Dark brown body covered in small black-edged blue spots'),
+          __alloT('stem.coralreef.sp_peacock_grouper_mark2', 'Often 5-6 pale bars on the rear half of the body'),
+          __alloT('stem.coralreef.sp_peacock_grouper_mark3', 'Large pale area over the chest'),
+          __alloT('stem.coralreef.sp_peacock_grouper_mark4', 'Rests on the bottom with a big mouth and protruding lower jaw')],
+        role: __alloT('stem.coralreef.sp_peacock_grouper_role', 'Ambush predator. Adults eat mainly fishes (75-95% of the diet), plus crustaceans.'),
+        fact: __alloT('stem.coralreef.sp_peacock_grouper_fact', 'Peacock groupers live in social groups of up to 12 adults with one dominant male, in territories as large as 2,000 square metres.') },
+      humphead_wrasse: { name: __alloT('stem.coralreef.sp_humphead_wrasse_name', 'Humphead wrasse (Napoleon wrasse)'),
+        marks: [__alloT('stem.coralreef.sp_humphead_wrasse_mark1', 'Huge greenish-blue fish, swimming slowly by flapping its side fins'),
+          __alloT('stem.coralreef.sp_humphead_wrasse_mark2', 'Bulging hump on the forehead of large adults'),
+          __alloT('stem.coralreef.sp_humphead_wrasse_mark3', 'Thick lips'),
+          __alloT('stem.coralreef.sp_humphead_wrasse_mark4', 'Eyes that move independently')],
+        role: __alloT('stem.coralreef.sp_humphead_wrasse_role', 'Eats molluscs, fishes, sea urchins, crustaceans and other invertebrates. It is one of the few predators of toxic animals such as sea hares, boxfishes and crown-of-thorns starfish.'),
+        fact: __alloT('stem.coralreef.sp_humphead_wrasse_fact', 'This giant can live at least 32 years, but it is Endangered. Since 2004 it has been listed on CITES Appendix II, which controls international trade in the species.') },
+      cleaner_wrasse: { name: __alloT('stem.coralreef.sp_cleaner_wrasse_name', 'Bluestreak cleaner wrasse'),
+        marks: [__alloT('stem.coralreef.sp_cleaner_wrasse_mark1', 'Small, slim fish with a black stripe from snout to tail that widens toward the tail'),
+          __alloT('stem.coralreef.sp_cleaner_wrasse_mark2', 'Pale front half, bright blue rear half'),
+          __alloT('stem.coralreef.sp_cleaner_wrasse_mark3', 'Bobs up and down in a \'dance\' at a cleaning station while bigger fish wait')],
+        role: __alloT('stem.coralreef.sp_cleaner_wrasse_role', 'Runs cleaning stations where it eats parasites (mostly tiny gnathiid isopods) and mucus off visiting fish.'),
+        fact: __alloT('stem.coralreef.sp_cleaner_wrasse_fact', 'On the Great Barrier Reef, a single cleaner wrasse inspected about 2,300 fish a day and ate about 1,200 parasites.') },
+      clown_triggerfish: { name: __alloT('stem.coralreef.sp_clown_triggerfish_name', 'Clown triggerfish'),
+        marks: [__alloT('stem.coralreef.sp_clown_triggerfish_mark1', 'Black body with large white spots on the belly'),
+          __alloT('stem.coralreef.sp_clown_triggerfish_mark2', 'Yellow net-like pattern on the back'),
+          __alloT('stem.coralreef.sp_clown_triggerfish_mark3', 'Yellow-orange mouth and a pale band across the snout in front of the eyes'),
+          __alloT('stem.coralreef.sp_clown_triggerfish_mark4', 'Broad white band across the tail')],
+        role: __alloT('stem.coralreef.sp_clown_triggerfish_role', 'Eats sea urchins, crabs and other crustaceans, molluscs and tunicates.'),
+        fact: __alloT('stem.coralreef.sp_clown_triggerfish_fact', 'Its \'trigger\' is a locking spine. The base of the second back spine slots into a groove in the first, holding it upright, so triggerfish can wedge themselves into crevices.') },
+      porcupinefish: { name: __alloT('stem.coralreef.sp_porcupinefish_name', 'Spotted porcupinefish'),
+        marks: [__alloT('stem.coralreef.sp_porcupinefish_mark1', 'Pale body covered in small black spots, including on the fins'),
+          __alloT('stem.coralreef.sp_porcupinefish_mark2', 'Long spines lying flat against the body'),
+          __alloT('stem.coralreef.sp_porcupinefish_mark3', 'Large eyes and a beak-like mouth'),
+          __alloT('stem.coralreef.sp_porcupinefish_mark4', 'Puffs up into a spiky ball when threatened')],
+        role: __alloT('stem.coralreef.sp_porcupinefish_role', 'Solitary night hunter of hard-shelled animals such as sea urchins, snails and hermit crabs, which it crushes with fused, beak-like teeth.'),
+        fact: __alloT('stem.coralreef.sp_porcupinefish_fact', 'When threatened it swallows water to blow itself up into a spiky ball. Its spines are modified scales.') },
+      yellow_boxfish: { name: __alloT('stem.coralreef.sp_yellow_boxfish_name', 'Yellow boxfish'),
+        marks: [__alloT('stem.coralreef.sp_yellow_boxfish_mark1', 'Box-shaped body inside a hard bony shell'),
+          __alloT('stem.coralreef.sp_yellow_boxfish_mark2', 'Juveniles: bright yellow with black spots'),
+          __alloT('stem.coralreef.sp_yellow_boxfish_mark3', 'Adults: dull mustard to bluish, with fewer, smaller spots and yellowish seams between the plates'),
+          __alloT('stem.coralreef.sp_yellow_boxfish_mark4', 'Small mouth; hovers and paddles slowly with its fins')],
+        role: __alloT('stem.coralreef.sp_yellow_boxfish_role', 'Eats algae, microorganisms and small animals such as sponges, molluscs, worms and crustaceans.'),
+        fact: __alloT('stem.coralreef.sp_yellow_boxfish_fact', 'When stressed, boxfish release a toxin called pahutoxin from their skin. Scientists found it in the defensive skin secretion of this very species in the Red Sea.') },
+      giant_moray: { name: __alloT('stem.coralreef.sp_giant_moray_name', 'Giant moray'),
+        marks: [__alloT('stem.coralreef.sp_giant_moray_mark1', 'Very large, thick eel with its head out of a hole'),
+          __alloT('stem.coralreef.sp_giant_moray_mark2', 'Opens and closes its mouth as it breathes'),
+          __alloT('stem.coralreef.sp_giant_moray_mark3', 'Leopard-like dark spots behind the head'),
+          __alloT('stem.coralreef.sp_giant_moray_mark4', 'Black patch around the gill opening')],
+        role: __alloT('stem.coralreef.sp_giant_moray_role', 'Top predator that eats mainly fish and some crustaceans.'),
+        fact: __alloT('stem.coralreef.sp_giant_moray_fact', 'In the Red Sea, roving coral groupers recruit giant morays as hunting partners. The grouper shakes its head at the moray\'s hole, and the moray came out in 58% of cases. The eel then chases fish out of cracks while the grouper catches those that flee into open water.') },
+      whitetip_reef_shark: { name: __alloT('stem.coralreef.sp_whitetip_reef_shark_name', 'Whitetip reef shark'),
+        marks: [__alloT('stem.coralreef.sp_whitetip_reef_shark_mark1', 'Slim grey shark with bright white tips on the first back fin and the upper tail'),
+          __alloT('stem.coralreef.sp_whitetip_reef_shark_mark2', 'Often lies still on sand or in caves during the day'),
+          __alloT('stem.coralreef.sp_whitetip_reef_shark_mark3', 'Short, broad, blunt snout')],
+        role: __alloT('stem.coralreef.sp_whitetip_reef_shark_role', 'Rests by day and hunts at night, entering caves and crevices for fishes, octopuses, spiny lobsters and crabs.'),
+        fact: __alloT('stem.coralreef.sp_whitetip_reef_shark_fact', 'Unlike many sharks, it does not have to keep swimming to breathe, so it can rest motionless on the bottom.') },
+      bluespotted_stingray: { name: __alloT('stem.coralreef.sp_bluespotted_stingray_name', 'Bluespotted ribbontail ray'),
+        marks: [__alloT('stem.coralreef.sp_bluespotted_stingray_mark1', 'Oval, yellowish-brown disc covered in bright electric-blue spots'),
+          __alloT('stem.coralreef.sp_bluespotted_stingray_mark2', 'Pair of blue stripes running along the tail'),
+          __alloT('stem.coralreef.sp_bluespotted_stingray_mark3', 'Venomous sting set farther back along the tail than in most stingrays')],
+        role: __alloT('stem.coralreef.sp_bluespotted_stingray_role', 'Moves onto shallow sand on the rising tide to feed on molluscs, worms, shrimps and crabs.'),
+        fact: __alloT('stem.coralreef.sp_bluespotted_stingray_fact', 'In 2016 scientists described a look-alike from Melanesia, the Oceania fantail ray (Taeniura lessoni), which has no blue stripes on its tail. Checking the tail tells the two apart.') },
+      bluestripe_snapper: { name: __alloT('stem.coralreef.sp_bluestripe_snapper_name', 'Common bluestripe snapper'),
+        marks: [__alloT('stem.coralreef.sp_bluestripe_snapper_mark1', 'Bright yellow body with four narrow, brilliant blue stripes'),
+          __alloT('stem.coralreef.sp_bluestripe_snapper_mark2', 'Pale underside'),
+          __alloT('stem.coralreef.sp_bluestripe_snapper_mark3', 'Forms large schools by day around coral heads, caves and wrecks'),
+          __alloT('stem.coralreef.sp_bluestripe_snapper_mark4', 'Thin lips and a gently sloping forehead (sweetlips have thick lips)')],
+        role: __alloT('stem.coralreef.sp_bluestripe_snapper_role', 'Eats fishes, shrimps, crabs, mantis shrimps, squid and octopus, and planktonic crustaceans.'),
+        fact: __alloT('stem.coralreef.sp_bluestripe_snapper_fact', 'In 1958, 2,435 bluestripe snappers were shipped from the Marquesas Islands and released off O\'ahu, Hawai\'i, to start a fishery, and the species spread through the Hawaiian Islands.') },
+      oriental_sweetlips: { name: __alloT('stem.coralreef.sp_oriental_sweetlips_name', 'Oriental sweetlips'),
+        marks: [__alloT('stem.coralreef.sp_oriental_sweetlips_mark1', 'Black and white horizontal stripes (black stripes wider on the back)'),
+          __alloT('stem.coralreef.sp_oriental_sweetlips_mark2', 'Yellow fins, snout and forehead'),
+          __alloT('stem.coralreef.sp_oriental_sweetlips_mark3', 'Black spots on the yellow back, belly and tail fins'),
+          __alloT('stem.coralreef.sp_oriental_sweetlips_mark4', 'Thick, rubbery lips; rests in small groups under ledges by day')],
+        role: __alloT('stem.coralreef.sp_oriental_sweetlips_role', 'Night-time hunter (nocturnal carnivore). By day it rests alone or in small groups.'),
+        fact: __alloT('stem.coralreef.sp_oriental_sweetlips_fact', 'Young oriental sweetlips look nothing like adults. They have yellow heads and irregular broad black stripes or blotches, which slowly break up into the neat adult stripes.') },
+      reef_manta: { name: __alloT('stem.coralreef.sp_reef_manta_name', 'Reef manta ray'),
+        marks: [__alloT('stem.coralreef.sp_reef_manta_mark1', 'Huge diamond-shaped ray with two flaps (head fins) beside a wide mouth at the front of the head'),
+          __alloT('stem.coralreef.sp_reef_manta_mark2', 'Black back with pale shoulder patches that blur into a \'V\' shape (oceanic mantas have a sharp \'T\')'),
+          __alloT('stem.coralreef.sp_reef_manta_mark3', 'White belly with dark spots, often between the gill slits')],
+        role: __alloT('stem.coralreef.sp_reef_manta_role', 'Filter-feeds on zooplankton and probably small fishes, often near coral reefs.'),
+        fact: __alloT('stem.coralreef.sp_reef_manta_fact', 'Every reef manta has its own pattern of spots on its belly. Scientists photograph the belly to identify individuals, like a fingerprint.') },
+      green_turtle: { name: __alloT('stem.coralreef.sp_green_turtle_name', 'Green turtle'),
+        marks: [__alloT('stem.coralreef.sp_green_turtle_mark1', 'One pair of large scales between the eyes (hawksbill has two pairs)'),
+          __alloT('stem.coralreef.sp_green_turtle_mark2', 'Rounded head with a short, blunt beak (no hawk-like point)'),
+          __alloT('stem.coralreef.sp_green_turtle_mark3', 'Smooth, dark brown to olive shell with plates that do not overlap; pale yellow-white underside')],
+        role: __alloT('stem.coralreef.sp_green_turtle_role', 'Adults are mainly plant-eaters, grazing seagrass and algae.'),
+        fact: __alloT('stem.coralreef.sp_green_turtle_fact', 'It is named for the green colour of its fat, not its shell. And good news: in October 2025 the IUCN moved it from Endangered to Least Concern, after protection helped its numbers grow about 28% since the 1970s.') },
+      hawksbill_turtle: { name: __alloT('stem.coralreef.sp_hawksbill_turtle_name', 'Hawksbill turtle'),
+        marks: [__alloT('stem.coralreef.sp_hawksbill_turtle_mark1', 'Narrow head with a sharp, hawk-like pointed beak'),
+          __alloT('stem.coralreef.sp_hawksbill_turtle_mark2', 'Two pairs of scales between the eyes'),
+          __alloT('stem.coralreef.sp_hawksbill_turtle_mark3', 'Shell mottled amber, orange, red, yellow, black and brown, with overlapping plates and a jagged (serrated) rear edge')],
+        role: __alloT('stem.coralreef.sp_hawksbill_turtle_role', 'Specialist predator of sponges; it also eats algae, corals, molluscs and other animals.'),
+        fact: __alloT('stem.coralreef.sp_hawksbill_turtle_fact', 'It is the only sea turtle that can survive on a diet mostly of sponges, which are full of tiny glassy spikes. One study called it \'a diet of glass\'.') },
+      magnificent_anemone: { name: __alloT('stem.coralreef.sp_magnificent_anemone_name', 'Magnificent sea anemone'),
+        marks: [__alloT('stem.coralreef.sp_magnificent_anemone_mark1', 'Big anemone sitting on top of exposed rock or coral'),
+          __alloT('stem.coralreef.sp_magnificent_anemone_mark2', 'Column (the \'stalk\') often bright red to purple and fully visible'),
+          __alloT('stem.coralreef.sp_magnificent_anemone_mark3', 'Dense finger-like tentacles (up to about 7.5 cm) with rounded, often brightly coloured tips'),
+          __alloT('stem.coralreef.sp_magnificent_anemone_mark4', 'When disturbed it pulls into a ball rather than vanishing into the reef')],
+        role: __alloT('stem.coralreef.sp_magnificent_anemone_role', 'Home base for clownfish, which shelter among its stinging tentacles. It also carries symbiotic algae in its tissues that make food from sunlight.'),
+        fact: __alloT('stem.coralreef.sp_magnificent_anemone_fact', 'Only about 10 kinds of sea anemone host anemonefish at all, and this one can host 12 different anemonefish species.') },
+      giant_clam: { name: __alloT('stem.coralreef.sp_giant_clam_name', 'Elongate giant clam (maxima clam)'),
+        marks: [__alloT('stem.coralreef.sp_giant_clam_mark1', 'Brightly patterned mantle (blue, green, brown or gold) fills the wavy gap between the two shell halves'),
+          __alloT('stem.coralreef.sp_giant_clam_mark2', 'Shell often partly sunk into rock or coral'),
+          __alloT('stem.coralreef.sp_giant_clam_mark3', 'Shell ridges carry rows of short, close-set scales (the fluted giant clam has big leaf-like scales)')],
+        role: __alloT('stem.coralreef.sp_giant_clam_role', 'Filter-feeds on plankton and also \'farms\' symbiotic algae in its colourful mantle, which make food from sunlight.'),
+        fact: __alloT('stem.coralreef.sp_giant_clam_fact', 'Giant clams have several hundred tiny pinhole eyes dotted over their exposed mantle.') },
+      crown_of_thorns: { name: __alloT('stem.coralreef.sp_crown_of_thorns_name', 'Crown-of-thorns starfish'),
+        marks: [__alloT('stem.coralreef.sp_crown_of_thorns_mark1', 'Large sea star with many arms (up to 21) covered in long, sharp spines'),
+          __alloT('stem.coralreef.sp_crown_of_thorns_mark2', 'Colour varies: grey, purple, reddish or blue-green'),
+          __alloT('stem.coralreef.sp_crown_of_thorns_mark3', 'By day often tucked under plate corals or inside branching thickets'),
+          __alloT('stem.coralreef.sp_crown_of_thorns_mark4', 'Fresh, bright-white patches of bare coral skeleton nearby (feeding scars, often over 15 cm)')],
+        role: __alloT('stem.coralreef.sp_crown_of_thorns_role', 'Eats living coral tissue, preferring plate and branching Acropora. A single crown-of-thorns can eat up to about 10 m² of living coral a year, so outbreaks can strip whole reefs.'),
+        fact: __alloT('stem.coralreef.sp_crown_of_thorns_fact', 'An average-sized female releases about 29-38 million eggs in one spawning season, and more than 100 million has been recorded. That is how outbreaks can explode.') },
+      blue_sea_star: { name: __alloT('stem.coralreef.sp_blue_sea_star_name', 'Blue sea star (blue linckia)'),
+        marks: [__alloT('stem.coralreef.sp_blue_sea_star_mark1', 'Bright blue sea star (sometimes pale blue or purplish)'),
+          __alloT('stem.coralreef.sp_blue_sea_star_mark2', 'Five long, smooth, tube-shaped arms with blunt tips'),
+          __alloT('stem.coralreef.sp_blue_sea_star_mark3', 'Often sits out in the open on rock, rubble or dead coral')],
+        role: __alloT('stem.coralreef.sp_blue_sea_star_role', 'Feeds on detritus and the thin film of organic matter on rock and dead coral.'),
+        fact: __alloT('stem.coralreef.sp_blue_sea_star_fact', 'Blue sea stars are often seen regrowing lost arms. Some close relatives in the same genus can grow a whole new star from a single arm, which for a while looks like a comet: one long arm with tiny new ones.') },
+      long_spined_urchin: { name: __alloT('stem.coralreef.sp_long_spined_urchin_name', 'Long-spined sea urchin (black diadema urchin)'),
+        marks: [__alloT('stem.coralreef.sp_long_spined_urchin_mark1', 'Black ball bristling with very long, thin, needle-sharp spines'),
+          __alloT('stem.coralreef.sp_long_spined_urchin_mark2', 'Bright orange (sometimes red) ring around the raised cone on top'),
+          __alloT('stem.coralreef.sp_long_spined_urchin_mark3', 'Five small white spots on the body between the spines')],
+        role: __alloT('stem.coralreef.sp_long_spined_urchin_role', 'Night-time grazer of algae on dead coral and rubble, keeping seaweed in check. It hides in crevices by day.'),
+        fact: __alloT('stem.coralreef.sp_long_spined_urchin_fact', 'Reef Check counts Diadema urchins on every survey and calls them \'the keystone algae-grazers\', essential for keeping algae under control.') },
+      nudibranch: { name: __alloT('stem.coralreef.sp_nudibranch_name', 'Anna\'s chromodoris (nudibranch)'),
+        marks: [__alloT('stem.coralreef.sp_nudibranch_mark1', 'Soft, slug-like body, bright blue with black lines running lengthwise'),
+          __alloT('stem.coralreef.sp_nudibranch_mark2', 'Tiny dark specks in the blue areas (a key clue)'),
+          __alloT('stem.coralreef.sp_nudibranch_mark3', 'Orange-yellow feathery gills on the back and two orange-yellow \'horns\' (rhinophores)'),
+          __alloT('stem.coralreef.sp_nudibranch_mark4', 'Orange-yellow border around the edge of the body')],
+        role: __alloT('stem.coralreef.sp_nudibranch_role', 'Grazes on sponges.'),
+        fact: __alloT('stem.coralreef.sp_nudibranch_fact', 'It eats toxic sponges and stores a sponge toxin (latrunculin A) mostly in the rim of its body, the part a predator would bite first. Its bright colours are thought to warn predators away.') },
+      cleaner_shrimp: { name: __alloT('stem.coralreef.sp_cleaner_shrimp_name', 'Pacific cleaner shrimp (skunk cleaner shrimp)'),
+        marks: [__alloT('stem.coralreef.sp_cleaner_shrimp_mark1', 'A white stripe down the middle of the back'),
+          __alloT('stem.coralreef.sp_cleaner_shrimp_mark2', 'Wider bright red bands on either side of the white stripe'),
+          __alloT('stem.coralreef.sp_cleaner_shrimp_mark3', 'Long white antennae'),
+          __alloT('stem.coralreef.sp_cleaner_shrimp_mark4', 'Waits at a cleaning station in a crevice or under a ledge')],
+        role: __alloT('stem.coralreef.sp_cleaner_shrimp_role', 'Picks parasites and dead tissue off fish that visit its cleaning station.'),
+        fact: __alloT('stem.coralreef.sp_cleaner_shrimp_fact', 'Each shrimp starts life as a male and later becomes a hermaphrodite that can produce both eggs and sperm at the same time.') },
+      christmas_tree_worm: { name: __alloT('stem.coralreef.sp_christmas_tree_worm_name', 'Christmas tree worm'),
+        marks: [__alloT('stem.coralreef.sp_christmas_tree_worm_mark1', 'Pair of colourful spiral \'Christmas trees\' sticking out of live coral'),
+          __alloT('stem.coralreef.sp_christmas_tree_worm_mark2', 'Many colours: red, orange, yellow, blue or white'),
+          __alloT('stem.coralreef.sp_christmas_tree_worm_mark3', 'Vanishes into its tube in a flash when startled, and plugs it with a lid (operculum)')],
+        role: __alloT('stem.coralreef.sp_christmas_tree_worm_role', 'Filter-feeds: its feathery crowns catch plankton and also act as gills. It lives in a hard tube embedded in living coral, often boulder coral (Porites).'),
+        fact: __alloT('stem.coralreef.sp_christmas_tree_worm_fact', 'By counting growth bands in the host coral around their tubes, scientists estimated that some Christmas tree worms were more than 40 years old.') },
+      day_octopus: { name: __alloT('stem.coralreef.sp_day_octopus_name', 'Day octopus (big blue octopus)'),
+        marks: [__alloT('stem.coralreef.sp_day_octopus_mark1', 'Octopus out hunting in daylight, often near a den in rubble or coral'),
+          __alloT('stem.coralreef.sp_day_octopus_mark2', 'Changes colour and skin texture constantly, from smooth to bumpy'),
+          __alloT('stem.coralreef.sp_day_octopus_mark3', 'Often trailed by fish such as goatfish and groupers while it hunts')],
+        role: __alloT('stem.coralreef.sp_day_octopus_role', 'Daytime hunter of crabs, clams and snails, which it finds by feeling into holes with its arms.'),
+        fact: __alloT('stem.coralreef.sp_day_octopus_fact', 'Day octopuses hunt in mixed teams with fish. The fish (especially goatfish) help choose where to search, but the octopus decides whether and when the group moves, and it sometimes punches fish partners, apparently to keep them in line.') },
+      sea_cucumber: { name: __alloT('stem.coralreef.sp_sea_cucumber_name', 'Pinkfish (pink sea cucumber)'),
+        marks: [__alloT('stem.coralreef.sp_sea_cucumber_mark1', 'Dark (black to reddish-black) on top, pink underneath'),
+          __alloT('stem.coralreef.sp_sea_cucumber_mark2', 'Smooth skin with no bumps or spikes'),
+          __alloT('stem.coralreef.sp_sea_cucumber_mark3', 'Round in cross-section, about the size of a hot dog'),
+          __alloT('stem.coralreef.sp_sea_cucumber_mark4', 'Lies on sand between coral patches')],
+        role: __alloT('stem.coralreef.sp_sea_cucumber_role', 'Swallows sand and digests the organic matter and microbes coating the grains, recycling nutrients on the reef floor.'),
+        fact: __alloT('stem.coralreef.sp_sea_cucumber_fact', 'Sea cucumbers are the reef\'s vacuum cleaners. On Heron Reef in Australia, sea cucumbers were estimated to move more than 64,000 tonnes of sediment a year.') },
+      sea_fan: { name: __alloT('stem.coralreef.sp_sea_fan_name', 'Giant sea fan (gorgonian)'),
+        marks: [__alloT('stem.coralreef.sp_sea_fan_mark1', 'A big, flat fan made of a fine mesh of branches, like a net'),
+          __alloT('stem.coralreef.sp_sea_fan_mark2', 'Stands upright, broadside to the current'),
+          __alloT('stem.coralreef.sp_sea_fan_mark3', 'On lower reef slopes and walls where tidal currents are strong')],
+        role: __alloT('stem.coralreef.sp_sea_fan_role', 'Thousands of tiny polyps on the fan strain plankton from the passing current. The fan is also home to tiny animals such as pygmy seahorses.'),
+        fact: __alloT('stem.coralreef.sp_sea_fan_fact', 'Denise\'s pygmy seahorse, usually less than 2 cm long, lives on sea fans like this one and blends in so well that divers rarely spot it.') },
+      barrel_sponge: { name: __alloT('stem.coralreef.sp_barrel_sponge_name', 'Giant barrel sponge'),
+        marks: [__alloT('stem.coralreef.sp_barrel_sponge_mark1', 'Huge barrel- or vase-shaped sponge with a wide opening at the top'),
+          __alloT('stem.coralreef.sp_barrel_sponge_mark2', 'Thick walls with a rough, ridged outer surface'),
+          __alloT('stem.coralreef.sp_barrel_sponge_mark3', 'Firm, hard body')],
+        role: __alloT('stem.coralreef.sp_barrel_sponge_role', 'Filter-feeds by pumping seawater through its body and straining out bacteria and tiny particles.'),
+        fact: __alloT('stem.coralreef.sp_barrel_sponge_fact', 'DNA tests at Lembeh, Indonesia, found that barrel sponges all identified as this one species actually belong to at least two separate lineages that do not seem to interbreed. Even big, obvious animals can hide surprises.') },
+      soft_coral: { name: __alloT('stem.coralreef.sp_soft_coral_name', 'Tree soft coral (carnation coral)'),
+        marks: [__alloT('stem.coralreef.sp_soft_coral_mark1', 'Brightly coloured (pink, red, orange, purple or white) branching \'tree\' with clusters of polyps at the tips'),
+          __alloT('stem.coralreef.sp_soft_coral_mark2', 'No hard skeleton: soft, fleshy and see-through-looking'),
+          __alloT('stem.coralreef.sp_soft_coral_mark3', 'Swells up and stands tall when the current flows; collapses when it stops')],
+        role: __alloT('stem.coralreef.sp_soft_coral_role', 'Catches drifting food with its polyps. Unlike reef-building corals, it has no symbiotic algae, so it relies entirely on what it catches.'),
+        fact: __alloT('stem.coralreef.sp_soft_coral_fact', 'It has no sunlight-powered algae, and scientists found that a Red Sea Dendronephthya feeds almost entirely on phytoplankton, the plant plankton. That makes it a coral \'herbivore\'.') },
+      brain_coral: { name: __alloT('stem.coralreef.sp_brain_coral_name', 'Brain coral (maze coral)'),
+        marks: [__alloT('stem.coralreef.sp_brain_coral_mark1', 'Rounded boulder covered in winding, maze-like valleys and ridges'),
+          __alloT('stem.coralreef.sp_brain_coral_mark2', 'Valleys separated by thick walls'),
+          __alloT('stem.coralreef.sp_brain_coral_mark3', 'Small ridges inside the valleys look ragged (in Leptoria they are neat and even)')],
+        role: __alloT('stem.coralreef.sp_brain_coral_role', 'Reef builder that lays down a stony limestone skeleton. Its polyps get much of their food from symbiotic algae in their tissues and also catch plankton.'),
+        fact: __alloT('stem.coralreef.sp_brain_coral_fact', 'In 2024 a worldwide check found 44% of reef-building coral species threatened with extinction. This common brain coral was one of the lucky ones, rated Least Concern.') },
+      staghorn_coral: { name: __alloT('stem.coralreef.sp_staghorn_coral_name', 'Staghorn coral (branching Acropora)'),
+        marks: [__alloT('stem.coralreef.sp_staghorn_coral_mark1', 'Antler-like branches forming dense thickets'),
+          __alloT('stem.coralreef.sp_staghorn_coral_mark2', 'Each branch ends in one slightly larger tip polyp'),
+          __alloT('stem.coralreef.sp_staghorn_coral_mark3', 'Small schooling fish (like chromis) often hover over and dive into the branches')],
+        role: __alloT('stem.coralreef.sp_staghorn_coral_role', 'Fast-growing reef builder. Its thickets shelter small fish, and it is a favourite food of crown-of-thorns starfish.'),
+        fact: __alloT('stem.coralreef.sp_staghorn_coral_fact', 'On the Great Barrier Reef, Acropora muricata branches grew about 5-13 cm a year. Fast-growing branching and plate corals like this drove the reef\'s recent record recovery, but they are also easily killed by heatwaves, storms and crown-of-thorns starfish.') },
+      table_coral: { name: __alloT('stem.coralreef.sp_table_coral_name', 'Table coral (brush coral)'),
+        marks: [__alloT('stem.coralreef.sp_table_coral_mark1', 'Flat, table-like plate held up on a central stalk'),
+          __alloT('stem.coralreef.sp_table_coral_mark2', 'Top surface made of fine upturned branchlets, like a brush'),
+          __alloT('stem.coralreef.sp_table_coral_mark3', 'On upper reef slopes and outer reef flats')],
+        role: __alloT('stem.coralreef.sp_table_coral_role', 'Fast-growing reef builder whose shady tables give shelter to fish.'),
+        fact: __alloT('stem.coralreef.sp_table_coral_fact', 'Large reef fish love the shade of table corals. Scientists found at least three times as many large fish (and three times the fish weight and time spent) under table corals as under other coral shapes.') },
+      mushroom_coral: { name: __alloT('stem.coralreef.sp_mushroom_coral_name', 'Mushroom coral'),
+        marks: [__alloT('stem.coralreef.sp_mushroom_coral_mark1', 'Single round, flat coral lying loose on sand or rubble'),
+          __alloT('stem.coralreef.sp_mushroom_coral_mark2', 'Radiating ridges (septa) like the gills under a mushroom cap'),
+          __alloT('stem.coralreef.sp_mushroom_coral_mark3', 'One central slit-shaped mouth')],
+        role: __alloT('stem.coralreef.sp_mushroom_coral_role', 'Reef coral with symbiotic algae. Adults lie loose on the bottom instead of being cemented to rock.'),
+        fact: __alloT('stem.coralreef.sp_mushroom_coral_fact', 'Each mushroom coral is one single giant polyp. It isn\'t glued down, and in a Red Sea study small mushroom corals turned themselves right side up and crept up to 6 cm a day.') },
+      boulder_coral: { name: __alloT('stem.coralreef.sp_boulder_coral_name', 'Boulder coral (massive Porites)'),
+        marks: [__alloT('stem.coralreef.sp_boulder_coral_mark1', 'Big rounded boulder or dome with a smooth, lumpy surface'),
+          __alloT('stem.coralreef.sp_boulder_coral_mark2', 'Tiny polyp cups, only about 1-1.5 mm across'),
+          __alloT('stem.coralreef.sp_boulder_coral_mark3', 'Often green, brown or blue')],
+        role: __alloT('stem.coralreef.sp_boulder_coral_role', 'Slow-growing, long-lived reef builder that forms much of the reef\'s framework. Christmas tree worms often live in it.'),
+        fact: __alloT('stem.coralreef.sp_boulder_coral_fact', 'Boulder corals grow about 1 cm a year and lay down yearly bands like tree rings, which record past ocean conditions. \'Big Momma\', a Porites colony in American Samoa, is more than 500 years old, over 6 m high and 41 m around.') },
+      cauliflower_coral: { name: __alloT('stem.coralreef.sp_cauliflower_coral_name', 'Cauliflower coral (rasp coral)'),
+        marks: [__alloT('stem.coralreef.sp_cauliflower_coral_mark1', 'Compact rounded colony of stout upright branches'),
+          __alloT('stem.coralreef.sp_cauliflower_coral_mark2', 'Irregular raised knobs cover the branches, giving them a rasp-like surface'),
+          __alloT('stem.coralreef.sp_cauliflower_coral_mark3', 'Usually cream, brown or pink, with paler branch tips')],
+        role: __alloT('stem.coralreef.sp_cauliflower_coral_role', 'A stony reef builder whose closely packed branches add small sheltered spaces to the reef.'),
+        fact: __alloT('stem.coralreef.sp_cauliflower_coral_fact', 'Its growth form responds to the water around it: colonies in exposed water have thick, compact branches, while sheltered colonies can be more open and slender.') },
+      foliose_coral: { name: __alloT('stem.coralreef.sp_foliose_coral_name', 'Foliose coral (leafy Montipora)'),
+        marks: [__alloT('stem.coralreef.sp_foliose_coral_mark1', 'Thin overlapping plates form tiers or curling whorls'),
+          __alloT('stem.coralreef.sp_foliose_coral_mark2', 'Fine ridges run toward the pale growing margins'),
+          __alloT('stem.coralreef.sp_foliose_coral_mark3', 'Tiny polyp cups lie in rows between the ridges')],
+        role: __alloT('stem.coralreef.sp_foliose_coral_role', 'A reef-building hard coral that adds layers and sheltered undersides to protected upper reef slopes.'),
+        fact: __alloT('stem.coralreef.sp_foliose_coral_fact', 'This coral may look like a leafy plant, but its thin plates are a shared stony skeleton covered by tiny coral animals. The rows of cups and raised ridges help distinguish it from similar Montipora.') },
+      reef_star: { name: __alloT('stem.coralreef.sp_reef_star_name', 'Reef Star'),
+        marks: [__alloT('stem.coralreef.sp_reef_star_mark1', 'A six-sided steel frame'),
+          __alloT('stem.coralreef.sp_reef_star_mark2', 'Coated in sand so it blends into the reef'),
+          __alloT('stem.coralreef.sp_reef_star_mark3', 'Linked to its neighbours in a web over loose rubble'),
+          __alloT('stem.coralreef.sp_reef_star_mark4', 'Small coral pieces tied onto the frame')],
+        role: __alloT('stem.coralreef.sp_reef_star_role', 'Holds loose rubble still, so the corals tied onto it and new coral larvae can settle and grow.'),
+        fact: __alloT('stem.coralreef.sp_reef_star_fact', 'On reefs blasted into rubble in Spermonde, Indonesia, coral cover on Reef Star sites rose from about 17% to about 56% in four years, and the reef was building new limestone as fast as healthy reefs nearby (Lange et al. 2024).') },
+      reef_ball: { name: __alloT('stem.coralreef.sp_reef_ball_name', 'Reef Ball'),
+        marks: [__alloT('stem.coralreef.sp_reef_ball_mark1', 'A hollow concrete dome'),
+          __alloT('stem.coralreef.sp_reef_ball_mark2', 'Round holes all over it'),
+          __alloT('stem.coralreef.sp_reef_ball_mark3', 'Set on sand or rubble')],
+        role: __alloT('stem.coralreef.sp_reef_ball_role', 'Gives fish shelter and a hard surface where corals and sponges can settle.'),
+        fact: __alloT('stem.coralreef.sp_reef_ball_fact', 'Fish gather around Reef Balls quickly, but studies so far have not found that they help young corals survive or grow better (Hylkema et al. 2023).') },
+      coral_tree_nursery: { name: __alloT('stem.coralreef.sp_coral_tree_nursery_name', 'Coral tree nursery'),
+        marks: [__alloT('stem.coralreef.sp_coral_tree_nursery_mark1', 'A pole with crossbars, like a bare tree'),
+          __alloT('stem.coralreef.sp_coral_tree_nursery_mark2', 'Coral pieces hanging from lines'),
+          __alloT('stem.coralreef.sp_coral_tree_nursery_mark3', 'Held up off the bottom, away from sand')],
+        role: __alloT('stem.coralreef.sp_coral_tree_nursery_role', 'Grows small coral pieces safely until they are big enough to plant back on a damaged reef.'),
+        fact: __alloT('stem.coralreef.sp_coral_tree_nursery_fact', 'In a review of 362 restoration projects, about two out of three planted corals survived, and a typical project covered about 100 square meters (Bostrom-Einarsson et al. 2020).') }
+    };
+  }
+  // @@SPECIES_DATA_END
+  function speciesMeta(id) { for (var i = 0; i < SPECIES_META.length; i++) if (SPECIES_META[i].id === id) return SPECIES_META[i]; return null; }
+  var SPECIES_GROUPS = ['fish', 'reptile', 'invertebrate', 'coral', 'structure'];
+  function groupNames(__alloT) {
+    return {
+      fish: __alloT('stem.coralreef.grp_fish', 'Fish'), reptile: __alloT('stem.coralreef.grp_reptile', 'Sea turtles'),
+      invertebrate: __alloT('stem.coralreef.grp_invertebrate', 'Invertebrates and sponges'), coral: __alloT('stem.coralreef.grp_coral', 'Corals'),
+      structure: __alloT('stem.coralreef.grp_structure', 'Restoration structures')
+    };
+  }
+  function iucnNames(__alloT) {
+    return {
+      LC: __alloT('stem.coralreef.iucn_lc', 'Least Concern'), NT: __alloT('stem.coralreef.iucn_nt', 'Near Threatened'), VU: __alloT('stem.coralreef.iucn_vu', 'Vulnerable'),
+      EN: __alloT('stem.coralreef.iucn_en', 'Endangered'), CR: __alloT('stem.coralreef.iucn_cr', 'Critically Endangered'), DD: __alloT('stem.coralreef.iucn_dd', 'Data Deficient'),
+      NE: __alloT('stem.coralreef.iucn_ne', 'Not Evaluated')
+    };
+  }
+  // Three choices for an identification: the true species plus look-alikes
+  // (or same-group species), in an order fixed by the organism's id so a
+  // re-render never reshuffles them and no position is favoured overall.
+  function hashString(s) { var x = 2166136261; for (var i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
+  function idChoices(speciesId, uid) {
+    var meta = speciesMeta(speciesId), pool = [], i;
+    if (!meta) return [speciesId];
+    var rand = mulberry32(hashString(String(uid) + ':' + speciesId));
+    var looks = (meta.lookalikes || []).filter(function (x) { return x !== speciesId && speciesMeta(x); });
+    for (i = 0; i < looks.length; i++) pool.push(looks[i]);
+    var same = SPECIES_META.filter(function (m) { return m.group === meta.group && m.id !== speciesId && pool.indexOf(m.id) < 0; }).map(function (m) { return m.id; });
+    while (pool.length < 2 && same.length) pool.push(same.splice(Math.floor(rand() * same.length), 1)[0]);
+    // Small groups (two turtles): fill from the other living things.
+    var rest = SPECIES_META.filter(function (m) { return m.id !== speciesId && m.group !== 'structure' && pool.indexOf(m.id) < 0; }).map(function (m) { return m.id; });
+    while (pool.length < 2 && rest.length) pool.push(rest.splice(Math.floor(rand() * rest.length), 1)[0]);
+    while (pool.length > 2) pool.splice(Math.floor(rand() * pool.length), 1);
+    var out = [speciesId].concat(pool);
+    for (i = out.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)), t = out[i]; out[i] = out[j]; out[j] = t; }
+    return out;
+  }
+
+  // ── Dive sites ───────────────────────────────────────────────────────────
+  // health feeds the explore engine; abundance scales the animals. A site's
+  // coral-dependent animals also scale with its live coral.
+  var EXPLORE_SITES = [
+    { id: 'healthy', seed: 5101, depthM: 9, health: { coralCover: 0.55, bleaching: 0, algae: 0.05 }, abundance: 1, restoration: null },
+    { id: 'restoration', seed: 5104, depthM: 7, health: { coralCover: 0.35, bleaching: 0, algae: 0.08 }, abundance: 0.8, restoration: { kind: 'reef_star', units: 30 } },
+    { id: 'heatwave', seed: 5102, depthM: 9, health: { coralCover: 0.45, bleaching: 0.6, algae: 0.08 }, abundance: 0.85, restoration: null },
+    { id: 'damaged', seed: 5103, depthM: 8, health: { coralCover: 0.12, bleaching: 0.05, algae: 0.35 }, abundance: 0.5, restoration: null }
+  ];
+  // [count on a healthy reef, how much it depends on live coral 0..1].
+  // Schools count as one each. Teaching assumptions, not census data.
+  var POPULATION = {
+    clownfish: [3, 0.8], blue_tang: [3, 0.6], parrotfish: [4, 0.3], bumphead_parrotfish: [1, 0.6], moorish_idol: [3, 0.5], threadfin_butterflyfish: [3, 0.9],
+    emperor_angelfish: [2, 0.6], anthias: [3, 0.7], blue_green_chromis: [3, 0.9], lionfish: [2, 0.4], peacock_grouper: [2, 0.5], humphead_wrasse: [1, 0.6],
+    cleaner_wrasse: [2, 0.5], clown_triggerfish: [1, 0.5], porcupinefish: [1, 0.4], yellow_boxfish: [2, 0.5], giant_moray: [1, 0.3], whitetip_reef_shark: [1, 0.3],
+    bluespotted_stingray: [1, 0.1], bluestripe_snapper: [2, 0.4], oriental_sweetlips: [2, 0.4], reef_manta: [1, 0.2], green_turtle: [1, 0.2], hawksbill_turtle: [1, 0.4],
+    magnificent_anemone: [3, 0.4], giant_clam: [3, 0.3], crown_of_thorns: [1, 0], blue_sea_star: [3, 0.2], long_spined_urchin: [4, 0], nudibranch: [4, 0.4],
+    cleaner_shrimp: [2, 0.4], christmas_tree_worm: [5, 0.8], day_octopus: [1, 0.4], sea_cucumber: [3, 0], sea_fan: [6, 0.5], barrel_sponge: [5, 0.2], soft_coral: [8, 0.6],
+    brain_coral: [10, 1], staghorn_coral: [12, 1], table_coral: [8, 1], mushroom_coral: [10, 1], boulder_coral: [8, 1], cauliflower_coral: [3, 1], foliose_coral: [3, 1]
+  };
+  function populationFor(site) {
+    var out = [], cover = site.health.coralCover / 0.55;
+    for (var id in POPULATION) {
+      if (!Object.prototype.hasOwnProperty.call(POPULATION, id)) continue;
+      var base = POPULATION[id][0], dep = POPULATION[id][1];
+      var n = Math.round(base * site.abundance * (1 - dep + dep * Math.min(1.2, cover)));
+      // Crown-of-thorns starfish and urchins are commoner on damaged reefs.
+      if (site.id === 'damaged' && (id === 'crown_of_thorns' || id === 'long_spined_urchin')) n = base + 2;
+      if (n > 0) out.push({ id: id, count: n });
+    }
+    return out;
+  }
+  function exploreSiteFromModel(row, settings) {
+    var H = levelValue(HERBIVORE_INDEX, settings.herbivores);
+    return { id: 'model', seed: 5200 + row.year, depthM: 8, modelYear: row.year,
+      health: { coralCover: clamp(row.coral, 0, 1), bleaching: clamp(row.bleached, 0, 1), algae: clamp(row.algae, 0, 1) },
+      abundance: clamp(0.35 + 0.7 * H * Math.min(1, row.coral / 0.4), 0.3, 1), restoration: settings.rubbleStabilization ? { kind: 'reef_star', units: 30 } : null };
+  }
+
+  // ── Loading the explore companions ───────────────────────────────────────
+  function exploreReady() {
+    var e = window.Reef3DExplore, s = window.Reef3DSpecies;
+    return !!(e && typeof e.mount === 'function' && /^1\./.test(String(e.version || '')) && s && typeof s.create === 'function' && /^1\./.test(String(s.version || '')));
+  }
+  var speciesPromise = null, explorePromise = null;
+  function ensureThreeOnly() {
+    var three = (window.StemLab && typeof window.StemLab.ensureThree === 'function') ? window.StemLab.ensureThree({ orbit: false }) : Promise.resolve(window.THREE);
+    return Promise.resolve(three).then(function () { if (!window.THREE) throw new Error('The 3D engine is not available.'); return window.THREE; });
+  }
+  function ensureSpecies() {
+    if (window.Reef3DSpecies && window.THREE) return Promise.resolve(window.THREE);
+    if (speciesPromise) return speciesPromise;
+    speciesPromise = ensureThreeOnly().then(function () {
+      return (window.Reef3DSpecies ? Promise.resolve() : loadCompanion('reef_3d_species.js')).then(function () {
+        if (!window.Reef3DSpecies || typeof window.Reef3DSpecies.create !== 'function') throw new Error('The reef species file did not load.');
+        return window.THREE;
+      });
+    }).catch(function (e) { speciesPromise = null; throw e; });
+    return speciesPromise;
+  }
+  function ensureExplore() {
+    if (exploreReady() && window.THREE) return Promise.resolve(window.THREE);
+    if (explorePromise) return explorePromise;
+    explorePromise = ensureSpecies().then(function () {
+      return (window.Reef3DExplore ? Promise.resolve() : loadCompanion('reef_3d_explore.js')).then(function () {
+        if (!exploreReady()) throw new Error('The dive files did not load.');
+        return window.THREE;
+      });
+    }).catch(function (e) { explorePromise = null; throw e; });
+    return explorePromise;
+  }
+
+  // ── Dive and explore ─────────────────────────────────────────────────────
+  function exploreSiteText(__alloT) {
+    return {
+      healthy: { name: __alloT('stem.coralreef.dive_healthy', 'A healthy reef'), about: __alloT('stem.coralreef.dive_healthy_about', 'A thriving coral garden in the Coral Triangle, the region with the most kinds of reef coral on Earth.') },
+      restoration: { name: __alloT('stem.coralreef.dive_restoration', 'A restoration site'), about: __alloT('stem.coralreef.dive_restoration_about', 'Blast fishing once left rubble here. People fixed it in place with Reef Stars and tied on coral fragments. Move the slider to see the site as the years pass.') },
+      heatwave: { name: __alloT('stem.coralreef.dive_heatwave', 'A reef in a heatwave'), about: __alloT('stem.coralreef.dive_heatwave_about', 'Many corals are bleached white. They are still alive and can recover if the water cools.') },
+      damaged: { name: __alloT('stem.coralreef.dive_damaged', 'A damaged reef'), about: __alloT('stem.coralreef.dive_damaged_about', 'Little live coral is left and seaweed is spreading. Look for the animals that remain, and think about what could help it recover.') },
+      model: { name: __alloT('stem.coralreef.dive_model', 'Your modeled reef'), about: __alloT('stem.coralreef.dive_model_about', 'The reef from one year of your Reef Future run.') }
+    };
+  }
+
+  function MovePad(props) {
+    var h = props.h, P = props.P, ctl = props.ctl, labels = props.labels;
+    function hold(input) {
+      return {
+        onPointerDown: function (e) { if (ctl()) { ctl().setInput(input); } if (e.currentTarget.setPointerCapture) try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} },
+        onPointerUp: function () { if (ctl()) ctl().setInput({ forward: 0, turn: 0, rise: 0 }); },
+        onPointerCancel: function () { if (ctl()) ctl().setInput({ forward: 0, turn: 0, rise: 0 }); },
+        // Keyboard and switch users: each press swims a short burst.
+        onClick: function (e) {
+          if (e.detail !== 0 || !ctl()) return;
+          ctl().setInput(input);
+          setTimeout(function () { if (ctl()) ctl().setInput({ forward: 0, turn: 0, rise: 0 }); }, 700);
+        }
+      };
+    }
+    var b = function (key, input, text) { return h('button', Object.assign({ key: key, type: 'button', style: btnStyle(P, false, { minWidth: 44, touchAction: 'none' }) }, hold(input)), text); };
+    return h('div', { role: 'group', 'aria-label': labels.group, style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+      b('f', { forward: 1, turn: 0, rise: 0 }, labels.forward), b('k', { forward: -1, turn: 0, rise: 0 }, labels.back),
+      b('l', { forward: 0, turn: -1, rise: 0 }, labels.left), b('r', { forward: 0, turn: 1, rise: 0 }, labels.right),
+      b('u', { forward: 0, turn: 0, rise: 1 }, labels.up), b('d', { forward: 0, turn: 0, rise: -1 }, labels.down));
+  }
+
+  function ExploreSection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var ST = exploreSiteText(__alloT), TX = speciesText(__alloT);
+    var siteId = d.diveSiteId === 'model' && d.diveModelSite ? 'model' : (EXPLORE_SITES.some(function (s) { return s.id === d.diveSiteId; }) ? d.diveSiteId : 'healthy');
+    var baseSite = siteId === 'model' ? d.diveModelSite : EXPLORE_SITES.filter(function (s) { return s.id === siteId; })[0];
+    var years = clamp(d.diveYears != null ? d.diveYears : 4, 0, 8);
+    var log = d.speciesLog || {};
+    var found = Object.keys(log).filter(function (k) { var meta = speciesMeta(k); return meta && meta.group !== 'structure'; }).length;
+    var total = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
+    var canvasRef = React.useRef(null), ctlRef = React.useRef(null);
+    var st = React.useState('idle'), status = st[0], setStatus = st[1];
+    var sn = React.useState(null), snap = sn[0], setSnap = sn[1];
+    var at = React.useState(0), attempt = at[0], setAttempt = at[1];
+    var ans = React.useState(null), answer = ans[0], setAnswer = ans[1];
+    var view = d.diveView === 'first' ? 'first' : 'third';
+    var siteKey = siteId + ':' + (siteId === 'restoration' ? years : '') + ':' + (baseSite && baseSite.modelYear != null ? baseSite.modelYear : '');
+    var started = status !== 'idle';
+    React.useEffect(function () {
+      if (!started) return undefined;
+      var cancelled = false;
+      setStatus('loading'); setSnap(null); setAnswer(null);
+      ensureExplore().then(function (THREE) {
+        if (cancelled || !canvasRef.current) return;
+        var site = baseSite;
+        try {
+          ctlRef.current = window.Reef3DExplore.mount(canvasRef.current, {
+            THREE: THREE, reducedMotion: !!env.ctx.reduceMotion, view: view,
+            site: { seed: site.seed, depthM: site.depthM, health: site.health, population: populationFor(site),
+              restoration: site.restoration ? { kind: site.restoration.kind, units: site.restoration.units, yearsSince: siteId === 'restoration' ? years : 6 } : null },
+            onState: function (s) { if (!cancelled) setSnap(s); },
+            onError: function () { if (!cancelled) setStatus('error'); }
+          });
+          setStatus('ready');
+        } catch (e) { setStatus('error'); }
+      }).catch(function () { if (!cancelled) setStatus('error'); });
+      return function () {
+        cancelled = true;
+        if (ctlRef.current) { try { ctlRef.current.dispose(); } catch (e) {} ctlRef.current = null; }
+      };
+    }, [started ? siteKey : 'off', attempt]);
+    React.useEffect(function () { if (ctlRef.current && status === 'ready') ctlRef.current.setView(view); }, [view, status]);
+    var focused = snap && snap.focused ? snap.focused : null;
+    var focusKey = focused ? focused.uid : null;
+    React.useEffect(function () {
+      setAnswer(null);
+      if (focused) env.say(__alloFill(__alloT('stem.coralreef.ex_focus_announce', 'Looking at organism {n}, {m} meters away.'), { n: (snap.nearby || []).findIndex(function (n) { return n.uid === focused.uid; }) + 1 || 1, m: Math.round(focused.distanceM) }));
+    }, [focusKey]);
+    function ctl() { return ctlRef.current; }
+    function pickSite(id) { env.set({ diveSiteId: id }); env.say(__alloFill(__alloT('stem.coralreef.sr_dive_site', 'Dive site: {name}.'), { name: ST[id].name })); }
+    function identify(choice) {
+      if (!focused) return;
+      var truth = focused.speciesId, name = TX[truth] ? TX[truth].name : truth;
+      if (choice === truth) {
+        var next = Object.assign({}, log);
+        if (!next[truth]) next[truth] = { firstSeen: Date.now(), site: siteId };
+        env.set({ speciesLog: next });
+        setAnswer({ uid: focused.uid, ok: true });
+        env.say(__alloFill(__alloT('stem.coralreef.sr_id_right', 'Yes, a {name}. Added to your species log.'), { name: name }));
+      } else {
+        setAnswer({ uid: focused.uid, ok: false, tried: choice });
+        env.say(__alloT('stem.coralreef.sr_id_wrong', 'Not quite. Check the field marks and try again.'));
+      }
+    }
+    var moveLabels = { group: __alloT('stem.coralreef.ex_move_group', 'Swim controls'), forward: __alloT('stem.coralreef.ex_forward', 'Swim forward'), back: __alloT('stem.coralreef.ex_back', 'Back up'),
+      left: __alloT('stem.coralreef.ex_left', 'Turn left'), right: __alloT('stem.coralreef.ex_right', 'Turn right'), up: __alloT('stem.coralreef.ex_up', 'Rise'), down: __alloT('stem.coralreef.ex_down', 'Sink') };
+    var siteIds = EXPLORE_SITES.map(function (s) { return s.id; }).concat(d.diveModelSite ? ['model'] : []);
+    var knownName = focused && log[focused.speciesId] && TX[focused.speciesId] ? TX[focused.speciesId].name : null;
+    var marks = focused && TX[focused.speciesId] ? TX[focused.speciesId].marks : [];
+    return h('div', null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.ex_title', 'Dive a coral reef')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_intro', 'You are a scuba diver on an Indo-Pacific reef in the Coral Triangle. Swim around, look closely, and identify the animals and corals you meet. Each one you identify goes into your species log.')),
+        h('div', { className: 'cr-site-grid', role: 'group', 'aria-label': __alloT('stem.coralreef.ex_sites', 'Dive sites') },
+          siteIds.map(function (id) {
+            var on = id === siteId;
+            return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { if (!on) pickSite(id); } },
+              h('span', { className: 'cr-site-marker' }, reefIcon(h, id === 'healthy' ? 'fish' : id === 'restoration' ? 'hub' : id === 'heatwave' ? 'science' : 'model', 18)),
+              h('span', null, ST[id].name, id === 'model' && d.diveModelSite ? ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: d.diveModelSite.modelYear }) + ')' : ''));
+          })),
+        h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, ST[siteId].about),
+        siteId === 'restoration' ? h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.ex_years', 'Years since the Reef Stars were put in'), min: 0, max: 8, value: years,
+          valueText: __alloFill(__alloT('stem.coralreef.ex_years_value', '{n} years'), { n: years }), onChange: function (v) { env.set({ diveYears: v }); } }) : null,
+        h('p', { style: { margin: '8px 0 0', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.ex_log_count', 'Species log: {n} of {total} found.'), { n: found, total: total }), ' ',
+          h('button', { type: 'button', style: btnStyle(P, false, { marginLeft: 6 }), onClick: function () { env.go('guide'); } }, __alloT('stem.coralreef.ex_open_guide', 'Open the species guide')))),
+      h('section', { className: 'cr-dive-stage', style: cardStyle(P), 'aria-labelledby': 'cr-dive-title' },
+        h('h3', { id: 'cr-dive-title', style: h3Style(P) }, ST[siteId].name),
+        !started ? h('div', { className: 'cr-hero' },
+          h(ReefVista, { env: env }),
+          h('div', { className: 'cr-hero-copy' },
+            h('p', { className: 'cr-eyebrow', style: { color: '#c5e8d7' } }, __alloT('stem.coralreef.ex_location', 'Indo-Pacific / Coral Triangle')),
+            h('h3', null, __alloT('stem.coralreef.ex_invitation', 'Take a breath. Dive into discovery.')),
+            h('p', { className: 'cr-hero-description' }, __alloT('stem.coralreef.ex_start_note', 'The dive loads a 3D reef. On older computers it may take a few seconds.')),
+            h('div', { className: 'cr-hero-actions' }, h('button', { type: 'button', className: 'cr-primary', onClick: function () { setStatus('loading'); } }, __alloT('stem.coralreef.ex_start', 'Start the dive'), reefIcon(h, 'arrow'))))) : null,
+        started ? h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
+          'aria-label': __alloT('stem.coralreef.ex_canvas_label', '3D reef dive. W and S or the up and down arrows swim forward and back; A and D or left and right turn; R and F rise and sink; N moves to the next nearby organism; Enter swims to it; Space pauses. The list below the view names what is nearby.'),
+          style: { width: '100%', height: 440, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }) : null,
+        status === 'loading' ? h('p', { role: 'status', style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.ex_loading', 'Loading the reef...')) : null,
+        status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
+          h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_error', 'The 3D dive could not start on this device. You can still learn every species in the species guide.')),
+          h('button', { type: 'button', style: btnStyle(P, false, { marginRight: 8 }), onClick: function () { setAttempt(attempt + 1); } }, __alloT('stem.coralreef.dive_retry', 'Try the 3D view again')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.go('guide'); } }, __alloT('stem.coralreef.ex_open_guide', 'Open the species guide'))) : null,
+        status === 'ready' ? h('div', { className: 'cr-dive-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 12 } },
+          h(MovePad, { h: h, P: P, ctl: ctl, labels: moveLabels }),
+          h('button', { type: 'button', 'aria-pressed': view === 'first' ? 'true' : 'false', style: btnStyle(P, view === 'first'), onClick: function () { env.set({ diveView: view === 'first' ? 'third' : 'first' }); } },
+            __alloT('stem.coralreef.ex_mask_view', 'Mask view')),
+          h('button', { type: 'button', 'aria-pressed': snap && snap.paused ? 'true' : 'false', style: btnStyle(P, !!(snap && snap.paused)), onClick: function () { if (ctl()) ctl().setPaused(!(snap && snap.paused)); } },
+            __alloT('stem.coralreef.ex_pause', 'Pause the reef')),
+          snap && snap.diver ? h('span', { style: { color: P.muted } }, __alloFill(__alloT('stem.coralreef.ex_depth', 'Depth: {m} m'), { m: Math.round(snap.diver.depthM) })) : null) : null),
+      status === 'ready' ? h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-focus-title' },
+        h('h3', { id: 'cr-focus-title', style: h3Style(P) }, __alloT('stem.coralreef.ex_focus_title', 'Look closer')),
+        !focused ? h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_no_focus', 'Click an organism in the view, press N, or choose Look in the list below.')) : null,
+        focused ? h('div', null,
+          knownName ? h('p', { style: { margin: '0 0 6px', fontWeight: 700 } }, __alloFill(__alloT('stem.coralreef.ex_known', 'This is a {name}. It is already in your log.'), { name: knownName }))
+            : h('p', { style: { margin: '0 0 6px', fontWeight: 700 } }, __alloFill(__alloT('stem.coralreef.ex_unknown', 'Something about {m} m away. What is it?'), { m: Math.round(focused.distanceM) })),
+          marks.length ? h('p', { style: { margin: '0 0 8px' } }, h('strong', null, __alloT('stem.coralreef.p_you_see', 'What you can see: ')), marks.join('; '), '.') : null,
+          !knownName ? h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.ex_choices', 'Identify it'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            idChoices(focused.speciesId, focused.uid).map(function (id) {
+              var wrong = answer && answer.uid === focused.uid && answer.tried === id;
+              return h('button', { key: id, type: 'button', disabled: wrong, style: btnStyle(P, false, wrong ? { opacity: 0.6 } : null), onClick: function () { identify(id); } }, TX[id] ? TX[id].name : id);
+            })) : null,
+          answer && answer.uid === focused.uid && !answer.ok ? h('p', { role: 'status', style: { margin: '8px 0 0', color: P.bad, fontWeight: 600 } },
+            __alloT('stem.coralreef.ex_wrong', 'Not quite. Compare the field marks with the species guide and try again.')) : null,
+          answer && answer.uid === focused.uid && answer.ok && TX[focused.speciesId] ? h(SpeciesFacts, { env: env, id: focused.speciesId, compact: true }) : null,
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+            h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { if (ctl()) ctl().swimTo(focused.uid); } }, __alloT('stem.coralreef.ex_swim_to', 'Swim closer')),
+            h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { if (ctl()) ctl().focusNext(); } }, __alloT('stem.coralreef.ex_next', 'Next organism')))) : null,
+        h('h4', { style: { margin: '12px 0 6px', color: P.text } }, __alloT('stem.coralreef.ex_nearby', 'Nearby')),
+        snap && snap.nearby && snap.nearby.length ? h('ul', { className: 'cr-nearby' }, snap.nearby.map(function (n, index) {
+          var name = log[n.speciesId] && TX[n.speciesId] ? TX[n.speciesId].name : __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet');
+          var isFocus = focused && focused.uid === n.uid;
+          return h('li', { key: n.uid, style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 } },
+            h('span', { style: { minWidth: 220, fontWeight: isFocus ? 700 : 400 } }, name, ', ', __alloFill(n.inView ? __alloT('stem.coralreef.ex_dist_ahead', '{m} m, in view') : __alloT('stem.coralreef.ex_dist_behind', '{m} m, out of view'), { m: Math.round(n.distanceM) })),
+            h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.coralreef.ex_look_label', 'Look: organism {n}, {name}, {m} m'), { n: index + 1, name: name, m: Math.round(n.distanceM) }), style: btnStyle(P, isFocus, { minHeight: 36, padding: '5px 10px' }), onClick: function () { if (ctl()) ctl().focus(n.uid); } }, __alloT('stem.coralreef.ex_look', 'Look')),
+            h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.coralreef.ex_swim_label', 'Swim to: organism {n}, {name}, {m} m'), { n: index + 1, name: name, m: Math.round(n.distanceM) }), style: btnStyle(P, false, { minHeight: 36, padding: '5px 10px' }), onClick: function () { if (ctl()) ctl().swimTo(n.uid); } }, __alloT('stem.coralreef.ex_swim', 'Swim to')));
+        })) : h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.ex_nothing_near', 'Nothing close by. Swim on to find more.'))) : null,
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.ex_tips_title', 'Diving the right way')),
+        h('ul', { style: { margin: 0, paddingLeft: 22 } }, diveTips(__alloT).map(function (t, i) { return h('li', { key: i }, t); }))));
+  }
+
+  // ── Species guide ────────────────────────────────────────────────────────
+  var THUMBS = {};
+  var thumbJob = null;
+  // Renders one small picture per species from the 3D models, once, off screen.
+  function renderThumbs(ids, onEach) {
+    if (thumbJob) return thumbJob;
+    thumbJob = ensureSpecies().then(function (THREE) {
+      var canvas = document.createElement('canvas'); canvas.width = 360; canvas.height = 240;
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true, alpha: false });
+      renderer.setPixelRatio(1); renderer.setSize(360, 240, false);
+      var derivatives = !!((renderer.capabilities && renderer.capabilities.isWebGL2) || (renderer.extensions && renderer.extensions.has && renderer.extensions.has('OES_standard_derivatives')));
+      if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+      var scene = new THREE.Scene(); scene.background = new THREE.Color(0x103e4b);
+      scene.add(new THREE.HemisphereLight(0xdff6ff, 0x3a5f6a, 1.1));
+      var sun = new THREE.DirectionalLight(0xffffff, 1.0); sun.position.set(2, 4, 3); scene.add(sun);
+      var camera = new THREE.PerspectiveCamera(35, 1.5, 0.01, 100);
+      var queue = ids.filter(function (id) { return !THUMBS[id]; });
+      return new Promise(function (resolve) {
+        function next() {
+          var id = queue.shift();
+          if (!id) { try { renderer.dispose(); if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (e) {} resolve(); return; }
+          try {
+            var info = window.Reef3DSpecies.info(id) || {}, model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
+            var r = Math.max(0.05, model.radius || 0.3), sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
+            scene.add(model.root);
+            // A species may name its own view (info.portrait, in model radii): a manta reads from above.
+            var pv = info.portrait && info.portrait.dir && info.portrait.dir.length === 3 ? info.portrait : null;
+            if (pv) camera.position.set(pv.dir[0] * r, pv.dir[1] * r, pv.dir[2] * r);
+            else camera.position.set(sessile ? r * 1.6 : 0, sessile ? r * 1.4 : r * 0.3, r * 3.2);
+            camera.lookAt(0, pv ? (pv.lookY || 0) * r : sessile ? r * 0.4 : 0, 0);
+            renderer.render(scene, camera);
+            THUMBS[id] = canvas.toDataURL('image/png');
+            scene.remove(model.root); model.dispose();
+            onEach(id);
+          } catch (e) { THUMBS[id] = 'none'; }
+          setTimeout(next, 0);
+        }
+        next();
+      });
+    }).catch(function () {
+      // Settle every placeholder, including a guide reopened during this job.
+      ids.forEach(function (id) { if (!THUMBS[id]) THUMBS[id] = 'none'; });
+      thumbJob = null;
+    });
+    return thumbJob;
+  }
+
+  function SpeciesFacts(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t;
+    var TX = props.TX || speciesText(__alloT), meta = speciesMeta(props.id), text = TX[props.id], IU = iucnNames(__alloT);
+    if (!meta || !text) return null;
+    return h('div', { style: { marginTop: props.compact ? 8 : 0 } },
+      props.compact ? h('p', { style: { margin: '0 0 4px', fontWeight: 700, color: P.good } }, __alloT('stem.coralreef.ex_correct', 'Correct!'), ' ', text.name, meta.scientific ? h('span', { style: { fontStyle: 'italic', fontWeight: 400, color: P.muted } }, ' (' + meta.scientific + ')') : null) : null,
+      // brief: the guide's compact cards keep the field marks and drop the longer text.
+      props.brief ? null : h('p', { style: { margin: '0 0 4px' } }, text.role),
+      props.brief ? null : h('p', { style: { margin: '0 0 4px' } }, h('strong', null, __alloT('stem.coralreef.g_fact', 'Did you know? ')), text.fact),
+      meta.iucn && IU[meta.iucn] ? h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.g_status', 'IUCN Red List: '), IU[meta.iucn], meta.iucnYear ? ' (' + meta.iucnYear + ')' : '') : null);
+  }
+
+  function GuideSection(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var TX = speciesText(__alloT), GN = groupNames(__alloT);
+    var log = d.speciesLog || {};
+    var filter = d.guideFilter === 'found' || d.guideFilter === 'missing' ? d.guideFilter : 'all';
+    var compact = !!d.guideCompact;
+    var tk = React.useState(0), setTick = tk[1];
+    var pics = React.useState(!!d.guidePictures), showPics = pics[0], setShowPics = pics[1];
+    var missing = React.useState({}), missingPictures = missing[0], setMissingPictures = missing[1];
+    // The name search is a passing lookup, so it stays local; the filter and compact view persist.
+    var qs = React.useState(''), query = qs[0], setQuery = qs[1];
+    var tg = React.useState(null), target = tg[0], setTarget = tg[1];
+    var cardEls = React.useRef({}), nameEls = React.useRef({}), groupEls = React.useRef({}), searchEl = React.useRef(null);
+    var uid = 'cr-guide-' + React.useId().replace(/:/g, '');
+    var reduce = !!env.ctx.reduceMotion;
+    React.useEffect(function () {
+      if (!showPics) return;
+      var alive = true;
+      renderThumbs(SPECIES_META.map(function (m) { return m.id; }), function () { if (alive) setTick(function (n) { return n + 1; }); }).then(function () {
+        if (alive) setTick(function (n) { return n + 1; });
+      });
+      return function () { alive = false; };
+    }, [showPics]);
+    var q = guideKey(query);
+    var shown = SPECIES_META.filter(function (m) { return filter === 'all' || (filter === 'found' ? !!log[m.id] : !log[m.id]); });
+    var list = q ? shown.filter(function (m) { return guideMatch(q, TX[m.id], m); }) : shown;
+    var foundCount = SPECIES_META.filter(function (m) { return m.group !== 'structure' && log[m.id]; }).length;
+    var total = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
+    var countText = list.length ? __alloFill(__alloT('stem.coralreef.g_search_count', 'Showing {n} of {total}.'), { n: list.length, total: shown.length }) : __alloT('stem.coralreef.g_search_none', 'No species match that name.');
+    // Say how many match once typing pauses, not on every key.
+    React.useEffect(function () {
+      if (!q) return undefined;
+      var timer = setTimeout(function () { env.say(countText); }, 600);
+      return function () { clearTimeout(timer); };
+    }, [q, filter]);
+    // Scroll a jumped-to group or card into view once it has rendered, and move focus to its name.
+    React.useEffect(function () {
+      if (!target) return;
+      var box = target.group ? groupEls.current[target.group] : cardEls.current[target.id];
+      if (!box) return;
+      guideReveal(box, target.group ? box : nameEls.current[target.id], reduce);
+      setTarget(null);
+    }, [target, q, filter]);
+    function goToSpecies(id) {
+      if (!list.some(function (m) { return m.id === id; })) {
+        setQuery('');
+        if (filter !== 'all') env.set({ guideFilter: 'all' });
+      }
+      setTarget({ id: id });
+    }
+    function clearSearch() {
+      setQuery('');
+      env.say(__alloT('stem.coralreef.g_search_cleared', 'Search cleared.'));
+      if (searchEl.current) searchEl.current.focus();
+    }
+    var stats = SPECIES_GROUPS.map(function (g) {
+      var all = SPECIES_META.filter(function (m) { return m.group === g; });
+      return { id: g, n: all.length, found: all.filter(function (m) { return !!log[m.id]; }).length, visible: list.filter(function (m) { return m.group === g; }).length };
+    });
+    return h('div', { className: 'cr-guide' },
+      h('style', null, LANE_CSS_C),
+      h('section', { style: cardStyle(P) },
+        h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.g_title', 'Species guide: an Indo-Pacific reef')),
+        h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.g_intro', 'Use the field marks to tell look-alikes apart. Species you identify on a dive are marked as found.')),
+        h('p', { style: { margin: '0 0 8px', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.ex_log_count', 'Species log: {n} of {total} found.'), { n: foundCount, total: total })),
+        h('div', { className: 'cr-guide-search' },
+          h('label', { htmlFor: uid + '-q' }, __alloT('stem.coralreef.g_search_label', 'Find a species by name')),
+          h('input', { id: uid + '-q', ref: searchEl, type: 'search', value: query, autoComplete: 'off', spellCheck: false,
+            placeholder: __alloT('stem.coralreef.g_search_hint', 'Common or scientific name'), 'aria-describedby': q ? uid + '-n' : undefined,
+            style: { border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text }, onChange: function (e) { setQuery(e.target.value); } }),
+          q ? h('span', { id: uid + '-n', className: 'cr-guide-count', style: { color: P.muted } }, countText) : null,
+          q ? h('button', { type: 'button', style: btnStyle(P, false), onClick: clearSearch }, __alloT('stem.coralreef.g_search_clear', 'Clear search')) : null),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'space-between' } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.g_filter', 'Show'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            [['all', __alloT('stem.coralreef.g_all', 'All species')], ['found', __alloT('stem.coralreef.g_found', 'Found on my dives')], ['missing', __alloT('stem.coralreef.g_missing', 'Not found yet')]].map(function (f) {
+              return h('button', { key: f[0], type: 'button', 'aria-pressed': filter === f[0] ? 'true' : 'false', style: btnStyle(P, filter === f[0]), onClick: function () { env.set({ guideFilter: f[0] }); } }, f[1]);
+            })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            h('button', { type: 'button', 'aria-pressed': compact ? 'true' : 'false', style: btnStyle(P, compact), onClick: function () { env.set({ guideCompact: !compact }); } }, __alloT('stem.coralreef.g_compact', 'Compact cards')),
+            !showPics && Object.keys(missingPictures).length ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setShowPics(true); env.set({ guidePictures: true }); } }, __alloT('stem.coralreef.g_pictures', 'Show 3D pictures')) : null))),
+      // Stays at the top while the long guide scrolls.
+      h('nav', { className: 'cr-guide-jump', 'aria-label': __alloT('stem.coralreef.g_jump_label', 'Jump to a group'), style: { background: P.bg, borderBottom: '1px solid ' + P.border } },
+        h('button', { type: 'button', style: btnStyle(P, false, { justifyContent: 'center' }), onClick: function () { guideReveal(searchEl.current, searchEl.current, reduce); } }, __alloT('stem.coralreef.g_jump_search', 'Back to search')),
+        stats.map(function (s) {
+          return h('button', { key: s.id, type: 'button', 'data-jump': s.id, disabled: !s.visible, style: btnStyle(P, false), onClick: function () { setTarget({ group: s.id }); } },
+            h('span', null, GN[s.id]),
+            h('small', { style: { color: P.muted } }, __alloFill(__alloT('stem.coralreef.g_group_found', '{found} of {n} found'), { found: s.found, n: s.n })));
+        })),
+      !shown.length ? h('section', { style: cardStyle(P), role: 'status' },
+        h('h3', { style: h3Style(P) }, filter === 'missing' ? __alloT('stem.coralreef.g_complete_title', 'Every discovery is in your log.') : __alloT('stem.coralreef.g_empty_title', 'Your discoveries start with a dive.')),
+        h('p', { style: mutedStyle(P) }, filter === 'missing' ? __alloT('stem.coralreef.g_complete', 'You have identified everything in this guide. Visit another reef to see how its community compares.') : __alloT('stem.coralreef.g_empty', 'Identify an organism on the reef to add it here. You can also explore all species in the guide.')),
+        h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { env.go('explore'); } }, __alloT('stem.coralreef.hero_dive', 'Explore the reef'))) : null,
+      shown.length && !list.length ? h('section', { style: cardStyle(P) },
+        h('p', { style: { margin: '0 0 10px', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.g_search_empty', 'Nothing here matches "{q}". Try part of a name, like "parrot" or "Acropora".'), { q: query.trim() })),
+        h('button', { type: 'button', style: btnStyle(P, false), onClick: clearSearch }, __alloT('stem.coralreef.g_search_clear', 'Clear search'))) : null,
+      SPECIES_GROUPS.map(function (g) {
+        var items = list.filter(function (m) { return m.group === g; });
+        if (!items.length) return null;
+        return h('section', { key: g, className: 'cr-guide-group', 'data-group': g, style: cardStyle(P) },
+          h('h3', { ref: function (el) { groupEls.current[g] = el; }, tabIndex: -1, style: h3Style(P) }, GN[g]),
+          h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: 12 } },
+            items.map(function (m) {
+              var tx = TX[m.id] || {}, isFound = !!log[m.id], pic = THUMBS[m.id];
+              var looks = (m.lookalikes || []).filter(function (x) { return x !== m.id && speciesMeta(x); });
+              return h('li', { key: m.id, ref: function (el) { cardEls.current[m.id] = el; }, 'data-species': m.id, className: 'cr-species-card', style: { background: P.cardAlt, border: '1px solid ' + (isFound ? P.good : P.border), borderRadius: 14, padding: 10 } },
+                h('div', { className: 'cr-species-art' }, (!showPics && !missingPictures[m.id]) || (showPics && pic && pic !== 'none')
+                  ? h('img', { src: showPics ? pic : companionUrl('assets/coralreef/species/' + m.id + '.webp'), width: showPics ? 240 : 320, height: showPics ? 160 : 210,
+                    loading: 'lazy', decoding: 'async', alt: __alloFill(__alloT('stem.coralreef.g_pic_alt', '3D model of a {name}'), { name: tx.name || m.id }),
+                    onError: showPics ? undefined : function () { setMissingPictures(function (prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } })
+                  : h(env.React.Fragment, null, reefIcon(h, m.group === 'coral' || m.group === 'structure' ? 'hub' : m.group === 'reptile' ? 'turtle' : m.group === 'fish' ? 'fish' : 'shell', 62),
+                    showPics ? h('small', null, pic === 'none' ? __alloT('stem.coralreef.g_pic_none', 'No picture on this device.') : __alloT('stem.coralreef.g_pic_loading', 'Drawing the picture...')) : null)),
+                h('p', { className: 'cr-sp-name', tabIndex: -1, ref: function (el) { nameEls.current[m.id] = el; }, style: { margin: 0, fontWeight: 700 } }, tx.name || m.id, isFound ? h('span', { style: { color: P.good, fontWeight: 700 } }, ' ✓ ', __alloT('stem.coralreef.g_found_badge', 'Found')) : null),
+                m.scientific ? h('p', { style: { margin: '0 0 6px', fontStyle: 'italic', color: P.muted } }, m.scientific) : null,
+                tx.marks && tx.marks.length ? h('div', null, h('p', { style: { margin: '0 0 2px', fontWeight: 600 } }, __alloT('stem.coralreef.g_marks', 'Field marks')),
+                  h('ul', { style: { margin: '0 0 6px', paddingLeft: 18 } }, tx.marks.map(function (k, i) { return h('li', { key: i }, k); }))) : null,
+                looks.length ? h('div', { className: 'cr-looks' },
+                  h('span', { style: { fontWeight: 600 } }, __alloT('stem.coralreef.g_lookalikes', 'Look-alikes:')),
+                  looks.map(function (x) {
+                    var full = (TX[x] || {}).name || x;
+                    return h('button', { key: x, type: 'button', className: 'cr-look-chip', 'data-lookalike': x, style: { border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text },
+                      'aria-label': __alloFill(__alloT('stem.coralreef.g_lookalike_go', 'Go to the look-alike: {name}'), { name: full }), onClick: function () { goToSpecies(x); } }, guideShortName(full));
+                  })) : null,
+                h(SpeciesFacts, { env: env, id: m.id, TX: TX, brief: compact }));
+            })));
+      }));
+  }
+  // Guide search: case, accents and punctuation do not matter, and every typed
+  // word must appear in the common name, the scientific name or the id.
+  var GUIDE_STRIP = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']|[\'.,()' + String.fromCharCode(0x2019) + '-]', 'g');
+  function guideKey(s) {
+    s = String(s || '').toLowerCase();
+    if (s.normalize) s = s.normalize('NFD');
+    return s.replace(GUIDE_STRIP, '').replace(/\s+/g, ' ').trim();
+  }
+  function guideMatch(q, tx, meta) {
+    var hay = guideKey((tx && tx.name) || '') + ' ' + guideKey(meta.scientific || '') + ' ' + meta.id.replace(/_/g, ' ');
+    return q.split(' ').every(function (w) { return hay.indexOf(w) >= 0; });
+  }
+  // "Bumphead parrotfish (green humphead parrotfish)" -> "Bumphead parrotfish" for a chip.
+  function guideShortName(name) { var s = String(name).replace(/\s*\([^)]*\)\s*$/, ''); return s || String(name); }
+  function guideReveal(box, focusEl, reduce) {
+    var still = reduce;
+    try { still = still || window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    try { if (box && box.scrollIntoView) box.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }); } catch (e) {}
+    if (focusEl) { try { focusEl.focus({ preventScroll: true }); } catch (e) { try { focusEl.focus(); } catch (e2) {} } }
+  }
+
+  // @@HOPE_START
+  function hopeFacts(__alloT) {
+    return [
+      __alloT('stem.coralreef.hope_1', 'Reefs can bounce back. After a 1998 heatwave killed most of its corals, Scott Reef off northwest Australia grew back from 9% to 44% coral cover in 12 years.'),
+      __alloT('stem.coralreef.hope_2', 'People are rebuilding reefs. In Spermonde, Indonesia, reefs blasted into rubble were fixed in place with Reef Stars and planted with corals. Coral cover on the frames rose from about 17% to 56% in four years.'),
+      __alloT('stem.coralreef.hope_3', 'Protection brings fish back. At Apo Island in the Philippines, fish in a small no-take reserve tripled over 18 years, and fishers outside it caught more fish per hour.'),
+      __alloT('stem.coralreef.hope_4', 'Green sea turtles recovered so much, thanks to protected nesting beaches, that in 2025 the IUCN moved them from Endangered to Least Concern.'),
+      __alloT('stem.coralreef.hope_5', 'The biggest help is cutting the greenhouse gases that warm the ocean: fewer and weaker heatwaves give reefs time to recover.')
+    ];
+  }
+  // What helps reefs, with the evidence and its limits (sources in sourceList).
+  function helpCards(__alloT) {
+    return [
+      { id: 'stars', title: __alloT('stem.coralreef.help_stars_title', 'Reef Stars: fixing rubble in place'),
+        body: [__alloT('stem.coralreef.help_stars_1', 'Blast fishing leaves reefs as loose rubble that rolls around and buries young corals, so it rarely recovers on its own: untreated rubble at Komodo stayed near 3% coral for 17 years. Divers pin the rubble under webs of sand-coated steel Reef Stars and tie small corals onto them.'),
+          __alloT('stem.coralreef.help_stars_2', 'In one large project in Indonesia, coral cover on the frames rose from about 17% to about 56% in four years, and the reef built new limestone as fast as nearby healthy reefs. Scientists caution that these new reefs are mostly branching corals that bleach easily.')] },
+      { id: 'garden', title: __alloT('stem.coralreef.help_garden_title', 'Coral gardening'),
+        body: [__alloT('stem.coralreef.help_garden_1', 'Like gardeners growing seedlings, divers grow small pieces of coral in underwater nurseries and plant them on damaged reefs. About two out of three planted corals survive in a typical project, and some plots have become dense coral thickets within a few years. Most projects cover an area about the size of a classroom or two, so gardening helps specific spots.')] },
+      { id: 'reserves', title: __alloT('stem.coralreef.help_reserves_title', 'No-take reserves'),
+        body: [__alloT('stem.coralreef.help_reserves_1', 'When fishing stops in a well-guarded reserve, fish come back, though big predators can take decades. Large, old, well-enforced no-take reserves held about five times the biomass of large fish found in fished areas. More grazing fish keep seaweed down so young corals can grow. Reserves cannot stop bleaching, but they can help reefs bounce back afterwards.')] },
+      { id: 'water', title: __alloT('stem.coralreef.help_water_title', 'Cleaner water and starfish control'),
+        body: [__alloT('stem.coralreef.help_water_1', 'On the Great Barrier Reef, reefs in cleaner water recovered faster after damage, and where divers removed coral-eating crown-of-thorns starfish early and thoroughly, coral cover rose instead of falling.')] },
+      { id: 'larvae', title: __alloT('stem.coralreef.help_larvae_title', 'Reseeding with coral larvae'),
+        body: [__alloT('stem.coralreef.help_larvae_1', 'Scientists collected millions of coral larvae on a spawning night and released them under net tents on a damaged Philippine reef. Most died, as wild coral babies do, but about 220 grew into corals big enough to spawn within two to three years, starting a new breeding group.')] },
+      { id: 'structures', title: __alloT('stem.coralreef.help_structures_title', 'Reef Balls and shipwrecks: more fish, not always more coral'),
+        body: [__alloT('stem.coralreef.help_structures_1', 'Fish quickly gather around Reef Balls, shipwrecks and other artificial reefs. Scientists are still working out whether these structures create new fish or mostly gather fish that already lived nearby. Studies of Reef Balls have not found that they help young corals survive or grow better.')] },
+      { id: 'biorock', title: __alloT('stem.coralreef.help_biorock_title', 'A claim to check: Biorock'),
+        body: [__alloT('stem.coralreef.help_biorock_1', 'Biorock frames run a gentle electric current through steel so rock-like minerals coat them. The inventors report that corals grow faster and survive heat better. Careful tests with fair comparisons in Australia, Kenya and the Philippines mostly found no lasting benefit, and in one case found harm. Good science means checking big claims with fair tests.')] },
+      { id: 'fragile', title: __alloT('stem.coralreef.help_fragile_title', 'Fast but fragile'),
+        body: [__alloT('stem.coralreef.help_fragile_1', 'In 2022 parts of the Great Barrier Reef had their highest coral cover in 36 years, much of it fast-growing branching and table corals. Heat, cyclones and starfish in 2024 then caused the largest one-year drops on record. Recovery is real, and it lasts longest when heatwaves ease.')] }
+    ];
+  }
+  // @@HOPE_END
+
+  // @@DIVE_TIPS_START
+  function diveTips(__alloT) {
+    return [
+      __alloT('stem.coralreef.tip_touch', 'Hover, don\'t touch. Coral is a thin layer of living animals over a stony skeleton, and a fin kick can break it.'),
+      __alloT('stem.coralreef.tip_camera', 'Divers carrying cameras touched the reef about four times as often as divers without them, so take extra care when taking photos.'),
+      __alloT('stem.coralreef.tip_feed', 'Never chase, touch or feed animals. It stresses them, can spread disease, and changes how they behave.'),
+      __alloT('stem.coralreef.tip_buddy', 'Real divers always dive with a buddy and stay within reach for the whole dive.'),
+      __alloT('stem.coralreef.tip_red', 'Where did the red go? Water soaks up red light first, so red fish look brown by about 10 m. A dive light brings the true colours back.'),
+      __alloT('stem.coralreef.tip_triangle', 'You are in the Coral Triangle, home to about three quarters of the world\'s reef-building coral species.')
+    ];
+  }
+  // @@DIVE_TIPS_END
+
+  window.StemLab.registerTool('coralReef', {
+    label: 'Coral Reef Survey Lab', icon: '🪸',
+    desc: 'Survey a reef the way reef monitors do, then model how heatwaves, fish and runoff change it over 30 years.',
+    category: 'science', color: 'cyan',
+    aliases: ['coral', 'reef', 'coral reef', 'bleaching', 'transect', 'reef survey', 'ocean warming'],
+    render: function (ctx) { return ctx.React.createElement(CoralReefLab, { ctx: ctx }); }
+  });
+
+  if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReef = {
+    constants: { TRANSECT_M: TRANSECT_M, POINT_SPACING_M: POINT_SPACING_M, POINT_COUNT: POINT_COUNT, BELT_HALF_WIDTH_M: BELT_HALF_WIDTH_M, BELT_AREA_M2: BELT_AREA_M2, FISH_IN_MAX_M: FISH_IN_MAX_M, FISH_OUT_MIN_M: FISH_OUT_MIN_M },
+    CATEGORY_IDS: CATEGORY_IDS, CATEGORY_CODE: CATEGORY_CODE, CORAL_FORMS: CORAL_FORMS, FISH_FAMILIES: FISH_FAMILIES, SITES: SITES, SCENARIOS: SCENARIOS, MODEL_PARAMS: MODEL_PARAMS,
+    mulberry32: mulberry32, buildTransect: buildTransect, pointFeatures: pointFeatures, PATCHINESS: PATCHINESS,
+    coverFromRecords: coverFromRecords, trueCover: trueCover, fishInBelt: fishInBelt, densityPer100: densityPer100, indicators: indicators, scoreSurvey: scoreSurvey,
+    bleachedShare: bleachedShare, heatMortality: heatMortality, acidFactor: acidFactor, heatSchedule: heatSchedule, runScenario: runScenario,
+    scenarioSettings: scenarioSettings, siteFromModelYear: siteFromModelYear, siteById: siteById,
+    palette: palette, alertLevel: alertLevel, dhwFor: dhwFor, companionUrl: companionUrl,
+    withoutActions: withoutActions, hasActions: hasActions, ACTION_KEYS: ACTION_KEYS,
+    SPECIES_META: SPECIES_META, speciesText: speciesText, idChoices: idChoices, populationFor: populationFor, EXPLORE_SITES: EXPLORE_SITES, POPULATION: POPULATION,
+    exploreSiteFromModel: exploreSiteFromModel, helpCards: helpCards, hopeFacts: hopeFacts
+  };
+})();

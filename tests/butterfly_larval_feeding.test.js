@@ -14,6 +14,20 @@ function supports(){const leaves=[];world.scene.traverse(o=>{if(o.userData.larva
 function resources(){const objects=[];world.scene.traverse(o=>{if(o.geometry)objects.push(o.geometry);if(o.material)objects.push(o.material);});return objects;}
 
 describe('Caterpillar feeding on a real milkweed leaf margin',()=>{
+ it('keeps a followed generation with its swaying leaf without accumulating motion',()=>{
+  const state=generation(),v=BF.lifecycleVisual(state),saved=JSON.stringify(state),anchor=[v.anchor.x,v.anchor.y,v.anchor.z];
+  world.syncLifecycle(v,1,false,'context');world.animate(7,false);
+  const moving=world.lifecycle.position.toArray();
+  expect(moving).not.toEqual(anchor);expect(moving[1]).toBe(anchor[1]);
+  expect(Math.hypot(moving[0]-anchor[0],moving[2]-anchor[2])).toBeLessThan(.5);
+  world.animate(7,false);expect(world.lifecycle.position.toArray()).toEqual(moving);
+  world.animate(19,false);world.animate(7,false);expect(world.lifecycle.position.toArray()).toEqual(moving);
+  world.animate(7,false,true);expect(world.lifecycle.position.toArray()).toEqual(anchor);
+  world.animate(19,true);expect(world.lifecycle.position.toArray()).toEqual(anchor);
+  expect(JSON.stringify(state)).toBe(saved);
+  world.syncLifecycle(null,1,true,'context');world.animate(0,true);
+ });
+
  it('normalizes progress, restricts feeding to a fed larva, and retains four bounded illustrative bites',()=>{
   const v=BF.lifecycleVisual(generation());
   for(const p of [undefined,NaN,Infinity,-Infinity,-3,0,.1,.5,1,3]){const m=BF.larvalFeeding(v,p);finite(m);expect(m.progress).toBeGreaterThanOrEqual(0);expect(m.progress).toBeLessThanOrEqual(1);expect(m.scale).toBe(.48);}

@@ -48,7 +48,7 @@ function fixture(spec) {
   for (const setter of ['setRegeneratingQuestions', 'setRepairingAssessment', 'setIsRefiningQuizImage', 'setQuizImageRefineInputs', 'setRefineOpen', 'setIsImprovingDistractor', 'setIsBulkImproving']) ctx[setter] = vi.fn();
   ctx.refineKey = new Function(functions.refineKey + '; return refineKey;')();
   const run = new Function(...Object.keys(ctx), functions[spec.method] + '\nreturn ' + spec.method + ';')(...Object.values(ctx));
-  return { ctx, request, latest, run: () => run(...spec.args(ctx)), callback: spec.callback === 'handleQuizQuestionAction' ? props.handleQuizQuestionAction : ctx[spec.callback], provider: spec.image ? ctx.callGeminiImageEdit : props.callGemini };
+  return { ctx, request, latest, invoke: run, run: () => run(...spec.args(ctx)), callback: spec.callback === 'handleQuizQuestionAction' ? props.handleQuizQuestionAction : ctx[spec.callback], provider: spec.image ? ctx.callGeminiImageEdit : props.callGemini };
 }
 describe('Assess actual AI authoring continuation guards', () => {
   it.each(specs)('$name applies a current response once and blocks duplicate requests', async spec => {
@@ -81,6 +81,90 @@ describe('Assess actual AI authoring continuation guards', () => {
     await expect(f.run()).resolves.toBeUndefined();
     expect(f.ctx.setIsBulkImproving).toHaveBeenLastCalledWith(false);
     expect(f.callback).not.toHaveBeenCalled();
+  });
+
+  it.each([[0, 1], [1, 0]])('keeps independent question results when completion order is %j', async (first, second) => {
+    const f = fixture(specs[0]);
+    const questions = f.ctx.generatedContent.data.questions;
+    questions.push({ type: 'numeric-response', question: 'Original second?', correctValue: 4 });
+    const waits = [f.request, deferred()];
+    f.provider.mockImplementationOnce(() => waits[0].promise).mockImplementationOnce(() => waits[1].promise);
+    f.callback.mockImplementation((index, action, replacement, guard) => {
+      const current = f.latest.props.generatedContent;
+      expect(guard).toMatchObject({ resourceId: current.id, questionIndex: index, question: current.data.questions[index], questionSignature: JSON.stringify(current.data.questions[index]) });
+      f.latest.props = { ...f.latest.props, generatedContent: { ...current, data: {
+        ...current.data, questions: current.data.questions.map((q, i) => i === index ? replacement : q),
+        actualItemTypeMix: { mcq: 1, 'numeric-response': 1 }, itemCountMismatch: false,
+      } } };
+      return { status: 'queued' };
+    });
+    const pending = questions.map((question, index) => f.invoke(index, question));
+    waits[first].resolve(JSON.stringify({ question: 'Regenerated ' + first, correctValue: 5 }));
+    await pending[first];
+    waits[second].resolve(JSON.stringify({ question: 'Regenerated ' + second, correctValue: 6 }));
+    await pending[second];
+    expect(f.callback).toHaveBeenCalledTimes(2);
+    expect(f.latest.props.generatedContent.data.questions.map(q => q.question)).toEqual(['Regenerated 0', 'Regenerated 1']);
+    expect(f.latest.props.generatedContent.data.questions.map(q => q.type)).toEqual(['mcq', 'numeric-response']);
+    expect(f.ctx.props.addToast).not.toHaveBeenCalled();
+  });
+
+  it('uses the latest host callback while preserving unrelated manual question edits', async () => {
+    const f = fixture(specs[0]);
+    f.ctx.generatedContent.data.questions.push({ type: 'mcq', question: 'Second?', options: ['A', 'B'], correctAnswer: 'A' });
+    const pending = f.run();
+    const content = f.latest.props.generatedContent;
+    const latestHandler = vi.fn().mockResolvedValue({ status: 'queued' });
+    f.latest.props = { ...f.latest.props, handleQuizQuestionAction: latestHandler, generatedContent: { ...content, data: { ...content.data, questions: [content.data.questions[0], { ...content.data.questions[1], question: 'Teacher edited second' }] } } };
+    f.request.resolve(JSON.stringify(specs[0].result)); await pending;
+    expect(f.callback).not.toHaveBeenCalled();
+    expect(latestHandler).toHaveBeenCalledWith(0, 'replace', specs[0].result, expect.objectContaining({ question: content.data.questions[0] }));
+  });
+
+  it.each(['move', 'delete', 'replace-identical', 'mutate', 'source', 'grade', 'role'])('rejects a question result after target/context changes: %s', async change => {
+    const f = fixture(specs[0]);
+    const content = f.latest.props.generatedContent, original = content.data.questions[0];
+    const clone = JSON.parse(JSON.stringify(original));
+    content.data.questions.push(clone);
+    const pending = f.run();
+    let questions = content.data.questions;
+    if (change === 'move') questions = [clone, original];
+    if (change === 'delete') questions = [clone];
+    if (change === 'replace-identical') questions = [JSON.parse(JSON.stringify(original)), clone];
+    if (change === 'mutate') original.question = 'Edited in place';
+    f.latest.props = { ...f.latest.props, generatedContent: { ...content, data: { ...content.data, questions } },
+      ...(change === 'source' ? { inputText: 'New source' } : {}),
+      ...(change === 'grade' ? { gradeLevel: '12th Grade' } : {}),
+      ...(change === 'role' ? { isTeacherMode: false } : {}),
+    };
+    f.request.resolve(JSON.stringify(specs[0].result)); await pending;
+    expect(f.callback).not.toHaveBeenCalled();
+  });
+
+  it('rejects a stale clicked question before making an AI request', async () => {
+    const f = fixture(specs[0]);
+    const staleQuestion = f.ctx.generatedContent.data.questions[0];
+    const current = f.latest.props.generatedContent;
+    f.latest.props = { ...f.latest.props, generatedContent: { ...current, data: { questions: [{ ...staleQuestion, question: 'Updated target' }] } } };
+    await f.invoke(0, staleQuestion);
+    expect(f.provider).not.toHaveBeenCalled();
+    expect(f.callback).not.toHaveBeenCalled();
+  });
+
+  it('does not let an old completion clear a newer request for the same question', async () => {
+    const f = fixture(specs[0]), second = deferred();
+    f.provider.mockImplementationOnce(() => f.request.promise).mockImplementationOnce(() => second.promise);
+    const old = f.run(), content = f.latest.props.generatedContent;
+    const edited = { ...content.data.questions[0], question: 'Manual revision' };
+    f.latest.props = { ...f.latest.props, generatedContent: { ...content, data: { questions: [edited] } } };
+    const current = f.invoke(0, edited);
+    expect(f.ctx.setRegeneratingQuestions).toHaveBeenCalledTimes(2);
+    f.request.resolve(JSON.stringify(specs[0].result)); await old;
+    expect(f.ctx.setRegeneratingQuestions).toHaveBeenCalledTimes(2);
+    expect(f.callback).not.toHaveBeenCalled();
+    second.resolve(JSON.stringify({ ...specs[0].result, question: 'Latest regeneration' })); await current;
+    expect(f.callback).toHaveBeenCalledTimes(1);
+    expect(f.ctx.setRegeneratingQuestions).toHaveBeenCalledTimes(3);
   });
 });
 

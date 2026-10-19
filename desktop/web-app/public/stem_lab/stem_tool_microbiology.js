@@ -7866,7 +7866,7 @@
         function submit() {
           if (done || result.missing.length) return;
           transition({ quizSubmitted: true, quizAnswers: answers, quizCorrect: result.correct, quizBestCorrect: Math.max(bestScore(), result.correct), quizMode: 'review', quizPractice: {}, quizReviewOnlyMissed: true }, 'review');
-          if (addToast) addToast(qt('score', 'Quiz score') + ': ' + result.correct + '/' + result.total, 'info');
+          if (addToast) addToast(__alloT('stem.microbiology.quiz_score_result', 'Quiz score: {score}/{total}').replace('{score}', result.correct).replace('{total}', result.total), 'info');
           if (awardXP && result.correct > bestScore()) awardXP((result.correct - bestScore()) * 5);
         }
         function reset() {
@@ -8566,7 +8566,7 @@
             link = document.createElement('a'); link.href = url; link.download = csv ? 'micro-lab-trials.csv' : 'micro-lab-notebook.txt';
             document.body.appendChild(link); link.click();
           } catch (error) {
-            if (addToast) addToast(gt('export_failed', 'The notebook could not download. Your saved trials are still here.'), 'error');
+            if (addToast) addToast(__alloT('stem.microbiology.investigation_export_failed', 'The notebook could not download. Your saved trials are still here.'), 'error');
           } finally {
             if (link) link.remove();
             if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
@@ -8580,7 +8580,7 @@
             link = document.createElement('a'); link.href = url; link.download = 'micro-lab-comparison-hour-' + review.hour + '.csv';
             document.body.appendChild(link); link.click();
           } catch (error) {
-            if (addToast) addToast(gt('review_export_failed', 'The comparison could not download. Your saved trials and selected hour are unchanged.'), 'error');
+            if (addToast) addToast(__alloT('stem.microbiology.investigation_review_export_failed', 'The comparison could not download. Your saved trials and selected hour are unchanged.'), 'error');
           } finally {
             if (link) link.remove();
             if (url) setTimeout(function() { URL.revokeObjectURL(url); }, 1000);

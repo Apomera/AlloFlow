@@ -37,6 +37,8 @@ const callback=onlyMatch(source,/        floor\.material\.onBeforeCompile=functi
 const cache=onlyMatch(source,/        floor\.material\.customProgramCacheKey=function\(\)\{[^\n]+\};/g,'actual sand cache key')[0];
 const materialSource=section('        var floor = new THREE.Mesh(floorGeo,','        var sandDownwelling=');
 const downwellingSource=onlyMatch(source,/        var sandDownwelling=\{value:[^\n]+\};/g,'actual sand downwelling object')[0];
+// Pass74 (f7b4d993f) also binds five world-space habitat beds to the floor program.
+const habitatSource=onlyMatch(source,/        var sandHabitat=\{value:[^\n]+\};/g,'actual sand habitat beds')[0];
 
 function plainShader(){return{uniforms:{sentinel:{value:7}},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};}
 function assembled(scalar={value:1}){
@@ -102,7 +104,7 @@ function numerical(enabled){
 }
 function liveMaterial(isWebGL2,derivatives){
   const requested=[],renderer={capabilities:{isWebGL2},extensions:{has(name){requested.push(name);return derivatives;}}};
-  const build=new Function('THREE','Math','renderer','floorGeo','sandTex','scene',materialSource+downwellingSource+helper+'\n'+callback+'\n'+cache+'\nreturn{floor:floor,sandDownwelling:sandDownwelling};');
+  const build=new Function('THREE','Math','renderer','floorGeo','sandTex','scene',materialSource+downwellingSource+'\n'+habitatSource+'\n'+helper+'\n'+callback+'\n'+cache+'\nreturn{floor:floor,sandDownwelling:sandDownwelling,sandHabitat:sandHabitat};');
   const floorGeo=new THREE.BufferGeometry(),sandTex=new THREE.Texture(),scene=new THREE.Scene();
   const live=build(THREE,visualMath,renderer,floorGeo,sandTex,scene);
   return{...live,floorGeo,sandTex,requested,dispose(){floorGeo.dispose();sandTex.dispose();live.floor.material.dispose();}};
@@ -138,7 +140,7 @@ describe('Cephalopod Hunter inherited shallow static sand relief',()=>{
         expect(live.floor.material.transparent).toBe(false);expect(live.floor.material.depthWrite).toBe(true);
         expect(live.floor.receiveShadow).toBe(true);
         const shader=plainShader();live.floor.material.onBeforeCompile(shader);
-        expect(shader.uniforms.clSandDownwelling).toBe(live.sandDownwelling);
+        expect(shader.uniforms.clSandDownwelling).toBe(live.sandDownwelling);expect(shader.uniforms.clSandHabitat).toBe(live.sandHabitat);expect(live.sandHabitat.value).toHaveLength(5);
         live.sandDownwelling.value=0.17;expect(shader.uniforms.clSandDownwelling.value).toBe(0.17);
       }finally{live.dispose();}
     }

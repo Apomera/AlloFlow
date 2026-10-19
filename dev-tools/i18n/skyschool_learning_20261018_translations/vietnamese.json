@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Đã ghi nhận việc hoàn thành nhiệm vụ và hạ cánh khi quay về. Hãy thử lại nhiệm vụ này với một thay đổi có chủ đích về cách điều khiển hoặc lộ trình, rồi so sánh các quan sát đã lưu.",
+  "stem.flightsim.coaching_mission_depleted": "Drone đã hết pin. Hãy bắt đầu nhiệm vụ mới, dùng lộ trình ngắn và lên kế hoạch quay về trước khi pin yếu.",
+  "stem.flightsim.coaching_mission_unknown": "Bằng chứng của nhiệm vụ này chưa đầy đủ hoặc mâu thuẫn nhau. Hãy xem lại những gì đã được ghi nhận, rồi bắt đầu lượt thử mới.",
+  "stem.flightsim.coaching_mission_capture": "Một số mục tiêu vẫn chưa được chụp ảnh. Trong nhiệm vụ mới, hãy tiếp cận từng mục tiêu và giữ trong giới hạn độ cao cùng tốc độ so với mặt đất được hiển thị cho đến khi việc chụp ảnh được ghi nhận.",
+  "stem.flightsim.coaching_mission_recovery": "Chưa đón được người sống sót. Trong nhiệm vụ cứu hộ mới, hãy tập bay treo ổn định trong các giới hạn độ cao, độ trôi và tốc độ thẳng đứng được hiển thị trước khi quay về căn cứ.",
+  "stem.flightsim.coaching_mission_return": "Đã ghi nhận các mục tiêu đón người hoặc chụp ảnh; vẫn còn bước quay về hạ cánh. Hãy bắt đầu nhiệm vụ mới và dành thời gian cùng lượng pin cho việc quay về căn cứ.",
+  "stem.flightsim.mission_reflection_prompt": "Bạn sẽ thay đổi quyết định nào về mục tiêu, bay treo hoặc quay về? Hãy dùng các quan sát trong nhiệm vụ để giải thích lựa chọn và lên kế hoạch cho một thay đổi ở lượt thử mới. Lời giải thích của bạn được lưu cùng chuyến bay này.",
+  "stem.flightsim.journal_different_airport": "Các lần tiếp cận hạ cánh này dùng những sân bay khác nhau. Hãy xem riêng các quan sát; hệ thống không tính chênh lệch giữa các số đo.",
+  "stem.flightsim.journal_approach_airport": "Sân bay tiếp cận hạ cánh: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "BẰNG CHỨNG NHIỆM VỤ",
+  "stem.flightsim.challenge_brake_release": "Hãy nhả phím X và tắt phanh bánh xe trong bảng điều khiển trước khi tăng công suất."
+}

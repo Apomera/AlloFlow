@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync('view_quiz_source.jsx', 'utf8');
+const gradingWindow = {};
+new Function('window', readFileSync('quiz_live_aggregators.js', 'utf8'))(gradingWindow);
 
 function extractHelpers(startMarker, endMarker, names) {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start);
   if (start < 0 || end <= start) throw new Error('Could not extract Assess helpers');
-  return new Function(source.slice(start, end) + '\nreturn {' + names.join(',') + '};')();
+  return new Function('_quizIsAnswerKeyDisputed', source.slice(start, end) + '\nreturn {' + names.join(',') + '};')(gradingWindow.AlloModules.QuizLiveAggregators.isAnswerKeyDisputed);
 }
 
 const numeric = extractHelpers(

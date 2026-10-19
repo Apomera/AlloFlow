@@ -57,7 +57,7 @@ describe('Word Sounds unified probe completion', () => {
 
   it('stops fixed forms on attempted item count at the exact configured goal', () => {
     expect(source).toMatch(
-      /const _goalMet = isProbeMode\s*\? postScore\.total >= probeItemGoal/,
+      /const _goalMet = isFixedForm\s*\? postScore\.total >= probeItemGoal/,
     );
     expect(source).not.toMatch(
       /isProbeMode\s*\? postScore\.total >= wordSoundsSessionGoal/,

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "已記錄任務完成與返航降落。再次嘗試本任務，有意識地改變一項操控或路線選擇，再比較已儲存的觀察紀錄。",
+  "stem.flightsim.coaching_mission_depleted": "無人機電量已耗盡。開始新任務，選擇較短路線，並計畫在電量偏低前返航。",
+  "stem.flightsim.coaching_mission_unknown": "本任務的證據不完整或互相矛盾。查看已有紀錄，再開始新的嘗試。",
+  "stem.flightsim.coaching_mission_capture": "部分目標尚未擷取。開始新任務後，每次接近一個目標，並保持在顯示的高度與地速限制內，直到擷取被記錄。",
+  "stem.flightsim.coaching_mission_recovery": "尚未救起倖存者。開始新的救援任務後，先練習在顯示的高度、漂移及垂直速度限制內穩定懸停，再返回基地。",
+  "stem.flightsim.coaching_mission_return": "已記錄救援或擷取目標的完成情況，但尚未返航降落。開始新任務，並為返回基地預留時間與電量。",
+  "stem.flightsim.mission_reflection_prompt": "你會改變哪項關於目標、懸停或返航的決定？利用任務觀察紀錄解釋你的選擇，並為新的嘗試計畫一項改變。你的解釋將隨本次飛行儲存。",
+  "stem.flightsim.journal_different_airport": "這些進場使用了不同機場。請分別查看觀察紀錄；系統不會計算測量值的變化。",
+  "stem.flightsim.journal_approach_airport": "進場機場：{airport}。",
+  "stem.flightsim.mission_evidence_heading": "任務證據",
+  "stem.flightsim.challenge_brake_release": "增加動力前，放開X，並在Deck中關閉機輪煞車。"
+}

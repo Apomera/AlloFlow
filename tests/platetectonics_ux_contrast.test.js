@@ -1597,13 +1597,16 @@ describe('The plate encyclopedia cards do something', () => {
     // KeyboardEvent.key - translating those would break the keyboard handler.
     const KEEP = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home']);
     const bare = [...body.matchAll(/'([A-Z][^']{8,})'/g)]
-      // aria-keyshortcuts uses standardized key tokens, not translated prose.
+      // aria-keyshortcuts uses standardized key tokens, not translated prose
+      // (79e3e5eae added Shift+Arrow modifiers for the 3D view).
       .filter((m) => !(/'aria-keyshortcuts':\s*$/.test(body.slice(Math.max(0, m.index - 45), m.index))
-        && /^(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\])(?:\s+(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\]))*$/.test(m[1])))
+        && /^(?:(?:Shift|Control|Alt|Meta)\+)?(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\])(?:\s+(?:(?:Shift|Control|Alt|Meta)\+)?(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\]))*$/.test(m[1])))
       // An SVG path's d attribute contains drawing commands, not a label.
       // Require both that property and a numeric path grammar: visible prose
-      // beginning with M still needs translation everywhere else.
-      .filter((m) => !(/(?:\{|,)\s*d:\s*$/.test(body.slice(Math.max(0, m.index - 40), m.index))
+      // beginning with M still needs translation everywhere else. The value may
+      // be a ternary of paths (79e3e5eae), so look back to the d: of the same
+      // expression: no comma or brace outside string literals since it.
+      .filter((m) => !(/(?:\{|,)\s*d:[^,{}]*$/.test(body.slice(Math.max(0, m.index - 240), m.index).replace(/'[^'\n]*'/g, "''"))
         && /^[Mm][MmLlHhVvCcSsQqTtAaZz\d+.,eE\s-]+$/.test(m[1]) && /\d/.test(m[1])))
       .filter((m) => !wrapped.has(a + m.index) && !KEEP.has(m[1]))
       .map((m) => m[1]);

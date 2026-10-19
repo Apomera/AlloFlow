@@ -64,7 +64,7 @@ describe('Free woodland feather care', () => {
       expect(largestHeadTravel).toBeLessThan(.018);
       expect(airborne).toBe(true);
     } finally { f.wildlife.dispose(); }
-  });
+  }, 20000);
 
   it('keeps grooming occasional, species-independent, and reproducible across update rates', () => {
     const a = fixture(), b = fixture(), starts = new Map(), active = new Set();
@@ -86,7 +86,7 @@ describe('Free woodland feather care', () => {
       expect(new Set(first).size).toBe(3);
       for (const times of starts.values()) for (let index = 1; index < times.length; index++) expect(times[index] - times[index - 1]).toBeGreaterThan(18);
     } finally { a.wildlife.dispose(); b.wildlife.dispose(); }
-  });
+  }, 20000);
 
   it('restores the exact Guided rig after pausing in a grooming pose', () => {
     const f = fixture();

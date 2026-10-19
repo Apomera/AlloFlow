@@ -18,7 +18,8 @@ const TOOLS = [
 describe('SEL badge popups announce to screen readers (A11Y-7)', () => {
   it.each(TOOLS)('sel_tool_%s.js announces the earned badge via announceToSR', (tool) => {
     const src = fs.readFileSync(path.join(process.cwd(), `sel_hub/sel_tool_${tool}.js`), 'utf8');
-    expect(src).toMatch(/announceToSR\('Badge earned: ' \+ badge\.name\)/);
+    // Localized tools (emotions) announce the same sentence through their key-plus-fallback helper.
+    expect(src).toMatch(/announceToSR\((?:'Badge earned: ' \+ badge\.name|__alloT\('sel\.\w+\.badge_announce', 'Badge earned: %s'\)\s*\.replace\('%s', _badgeName\(badge\)\))\)/);
   });
 
   it('digitalwellbeing (the reference pattern) already announces earned badges', () => {

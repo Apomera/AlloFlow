@@ -58,7 +58,7 @@ describe('Cephalopod Hunter streamed exploration dens', () => {
       for (const [index, den] of [[4, first], [5, second]]) {
         const material = den.children[0].material, expected = new THREE.Color([0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a][index % 4]).convertSRGBToLinear();
         assert.deepEqual(material.color.toArray(), expected.toArray()); assert.equal(material.name, 'cl-den-rock-material'); assert.equal(material.roughness, .9);
-        assert.equal(material.onBeforeCompile, derivatives ? item.shader : item.fallback); if (derivatives) assert.equal(material.customProgramCacheKey(), 'cl-rock-surface-v1');
+        assert.equal(material.onBeforeCompile, derivatives ? item.shader : item.fallback); if (derivatives) assert.equal(material.customProgramCacheKey(), 'cl-rock-minerals-v2');
       }
       const firstResources = new Set(first.children.flatMap(mesh => [mesh.geometry, mesh.material])), secondResources = new Set(second.children.flatMap(mesh => [mesh.geometry, mesh.material]));
       assert.equal(firstResources.size, 8); assert.ok([...firstResources].every(resource => !secondResources.has(resource)));

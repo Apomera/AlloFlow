@@ -90,7 +90,10 @@ describe('student-facing documents exclude teacher material', () => {
     expect(printOnly).toContain('PLAN QUESTION');
   });
   it('rewrites resource links to in-document anchors or plain names', () => {
-    const html = pipeline.generateFullPackHTML([plan, quiz], 'Leaves', false, {}, { includeTeacherKey: false, includeLessonPlan: true, includeQuiz: true });
+    // 6a0c48749 (2026-10-05): a no-key copy keeps only the learner-facing guide fields, so the
+    // teacher's plain-text hook is dropped; carry the links in an objective, which students keep.
+    const linkedPlan = { ...plan, data: { ...plan.data, objectives: [plan.data.hook] } };
+    const html = pipeline.generateFullPackHTML([linkedPlan, quiz], 'Leaves', false, {}, { includeTeacherKey: false, includeLessonPlan: true, includeQuiz: true });
     const doc = new DOMParser().parseFromString(html, 'text/html');
     expect(doc.querySelectorAll('a[href^="resource:"]')).toHaveLength(0);
     const link = Array.from(doc.querySelectorAll('a')).find((a) => a.textContent === 'the maple quiz');

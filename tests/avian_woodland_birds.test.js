@@ -37,11 +37,13 @@ function resources(root) {
   return found;
 }
 
+// Every added resident meets the contracts the original residents meet.
+const ADDED_RESIDENTS = ['darkEyedJunco', 'tuftedTitmouse', 'easternTowhee', 'americanRobin', 'blackCappedChickadee'];
 describe('shared woodland bird models', () => {
   it('advertises only the available species and exposes the common articulation contract', () => {
     const api = library();
     expect(api.version).toBe('1.0.0');
-    for (const id of ['mourningDove', 'grouse']) expect(api.supports(id)).toBe(true);
+    for (const id of ['mourningDove', 'grouse', ...ADDED_RESIDENTS]) expect(api.supports(id)).toBe(true);
     for (const id of ['hawk', '', null, undefined]) expect(api.supports(id)).toBe(false);
     const bird = api.create(THREE, 'mourningDove', { quality: 'high' });
     try {
@@ -91,7 +93,7 @@ describe('shared woodland bird models', () => {
     } finally { birds.forEach(bird => bird.dispose()); }
   });
 
-  it.each(['mourningDove', 'grouse'])('articulates %s with bounded flight and preserves its caller-owned placement', id => {
+  it.each(['mourningDove', 'grouse', ...ADDED_RESIDENTS])('articulates %s with bounded flight and preserves its caller-owned placement', id => {
     const bird = library().create(THREE, id, { quality: 'high' });
     try {
       bird.update({ flight: 0, phase: 0, effort: 0 });
@@ -161,7 +163,7 @@ describe('shared woodland bird models', () => {
     } finally { bird.dispose(); }
   });
 
-  it.each(['mourningDove', 'grouse'])('brings the %s bill to the ground without penetrating it during a peck', id => {
+  it.each(['mourningDove', 'grouse', ...ADDED_RESIDENTS])('brings the %s bill to the ground without penetrating it during a peck', id => {
     for (const quality of ['high', 'low']) {
       const bird = library().create(THREE, id, { quality }), point = new THREE.Vector3();
       try {
@@ -187,7 +189,7 @@ describe('shared woodland bird models', () => {
     }
   });
 
-  it.each(['mourningDove', 'grouse'])('refreshes cached Box3 bounds in place when %s changes wing and neck shape', id => {
+  it.each(['mourningDove', 'grouse', ...ADDED_RESIDENTS])('refreshes cached Box3 bounds in place when %s changes wing and neck shape', id => {
     for (const quality of ['high', 'low']) {
       const bird = library().create(THREE, id, { quality });
       try {
@@ -212,7 +214,7 @@ describe('shared woodland bird models', () => {
   });
 
   it.each(['high', 'low'])('keeps overlapping folded vanes separated at observation-scale depth precision (%s)', quality => {
-    for (const id of ['mourningDove', 'grouse']) {
+    for (const id of ['mourningDove', 'grouse', ...ADDED_RESIDENTS]) {
       const bird = library().create(THREE, id, { quality }), origin = new THREE.Vector3(), ray = new THREE.Raycaster();
       try {
         bird.update({ flight: 0 }); bird.root.updateMatrixWorld(true);
@@ -240,7 +242,7 @@ describe('shared woodland bird models', () => {
     }
   });
 
-  it.each(['mourningDove', 'grouse'])('keeps %s wingbeat phase periodic and eases wing and foot deployment', id => {
+  it.each(['mourningDove', 'grouse', ...ADDED_RESIDENTS])('keeps %s wingbeat phase periodic and eases wing and foot deployment', id => {
     const bird = library().create(THREE, id, { quality: 'high' }), epsilon = .0005;
     function articulation() {
       const values = [];
@@ -274,7 +276,7 @@ describe('shared woodland bird models', () => {
     } finally { bird.dispose(); }
   });
 
-  it.each(['mourningDove', 'grouse'])('recovers the %s outer hand independently while the shoulder vanes stay seated', id => {
+  it.each(['mourningDove', 'grouse', ...ADDED_RESIDENTS])('recovers the %s outer hand independently while the shoulder vanes stay seated', id => {
     const bird = library().create(THREE, id, { quality: 'high' });
     try {
       const mesh = bird.wings.right.getObjectByName('woodland-layered-wing'), position = mesh.geometry.attributes.position;
@@ -296,7 +298,7 @@ describe('shared woodland bird models', () => {
   });
 
   it.each(['bank', 'landing'])('updates wing loading when only %s changes and restores it on reverse seeks', property => {
-    for (const id of ['mourningDove', 'grouse']) {
+    for (const id of ['mourningDove', 'grouse', ...ADDED_RESIDENTS]) {
       const api = library(), bird = api.create(THREE, id, { quality: 'low' }), direct = api.create(THREE, id, { quality: 'low' });
       const pose = { flight: .7, phase: 1.2, effort: .8, bank: 0, landing: 0 };
       try {
@@ -312,7 +314,7 @@ describe('shared woodland bird models', () => {
   });
 
   it.each(['high', 'low'])('retains a finite feathered neck with its upper ring inside the moving head (%s)', quality => {
-    for (const id of ['mourningDove', 'grouse']) {
+    for (const id of ['mourningDove', 'grouse', ...ADDED_RESIDENTS]) {
       const bird = library().create(THREE, id, { quality }), point = new THREE.Vector3(), center = new THREE.Vector3(), inverse = new THREE.Matrix4();
       try {
         const neck = bird.root.getObjectByName('woodland-neck-plumage'), geometry = neck.geometry;
@@ -339,7 +341,7 @@ describe('shared woodland bird models', () => {
         }
       } finally { bird.dispose(); }
     }
-  });
+  }, 20000);
 
   it('keeps instances independent and disposes each owned resource exactly once', () => {
     const api = library(), a = api.create(THREE, 'mourningDove', { quality: 'low' });

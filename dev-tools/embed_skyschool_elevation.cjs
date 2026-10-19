@@ -13,7 +13,8 @@ for (const grid of elevation.grids) {
 const gridPayload = { format: elevation.format, units: elevation.units, verticalDatum: elevation.verticalDatum,
   grids: elevation.grids.map(g => ({id:g.id,lat0:g.lat0,lon0:g.lon0,step:g.step,width:g.width,height:g.height,rows:g.rows})) };
 const lakePayload = {format:lake.format,resolutionDegrees:lake.resolutionDegrees,width:lake.width,height:lake.height,units:lake.units,levelsMeters:lake.levelsMeters,rows:lake.rows};
-const files = ['stem_lab/stem_tool_flightsim.js','desktop/web-app/public/stem_lab/stem_tool_flightsim.js'].map(file => path.join(root,file));
+// The simulator reads these from stem_data_skyschool_geo.js, its loader dependency.
+const files = ['stem_lab/stem_data_skyschool_geo.js','desktop/web-app/public/stem_lab/stem_data_skyschool_geo.js'].map(file => path.join(root,file));
 const originals = files.map(file => fs.readFileSync(file,'utf8'));
 if (originals[0] !== originals[1]) throw Error('Source and desktop copy differ; reconcile before embedding');
 let source = originals[0];
@@ -27,11 +28,11 @@ for (const [name,payload] of [['FLIGHT_ELEVATION_DATA',gridPayload],['FLIGHT_LAK
 new vm.Script(source,{filename:files[0]});
 if (process.argv.includes('--check')) {
   if (source !== originals[0]) throw Error('Embedded elevation differs from committed packages');
-  console.log('Embedded elevation packages match both source copies.');
+  console.log('Embedded elevation packages match both geography data copies.');
 } else {
   for (const [i,file] of files.entries()) if (source !== originals[i]) {
     if (fs.readFileSync(file,'utf8') !== originals[i]) throw Error('Source changed during embedding');
     const stage = file+'.elevation-stage'; fs.writeFileSync(stage,source); fs.renameSync(stage,file);
   }
-  console.log('Offline elevation embedded in both source copies.');
+  console.log('Offline elevation embedded in both geography data copies.');
 }

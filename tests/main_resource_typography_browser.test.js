@@ -206,7 +206,9 @@ describe('main resource typography in Chromium', () => {
   });
 
   it('keeps voice enlargement monotonic throughout the supported size range', () => {
-    const source = readFileSync('AlloFlowANTI.txt', 'utf8');
+    // 09-13 (f900780bc): the AlloBot command context, with these voice handlers, moved
+    // out of the ANTI host into allo_command_context_source.js.
+    const source = readFileSync('allo_command_context_source.js', 'utf8');
     const bigger = source.match(/fontBigger: (\(\) => \{[^\n]+\}),/)[1];
     const setSize = source.match(/setFontSizeTo: (\(nv\) => \{[^\n]+\}),/)[1];
     for (const [current, expected] of [[16,18],[32,34],[40,42],[48,48]]) {

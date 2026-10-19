@@ -9,7 +9,7 @@ import {
 const SOURCE_PATH = 'stem_lab/stem_tool_watercycle.js';
 const MIRROR_PATH = 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js';
 const BASELINE_PATH = 'reports/watercycle-heat-actor-clarity/candidate-runtime.js';
-const BASELINE_SHA = '12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244';
+const BASELINE_SHA = '6896c1e948798afcc724bc1cab434450337834153e24fd1e27bee910b8d18d74';
 const LAND_STEPS = [
   ['ground_choice', 'Path choice', 'overview'],
   ['river_runoff', 'River runoff', 'surface'],
@@ -191,7 +191,8 @@ function expectChapterReading(s) {
 }
 
 beforeAll(() => {
-  nodes = declarations(source); priorNodes = declarations(baselineBytes.toString('utf8'));
+  // Compare committed (LF) text on both sides: Windows working copies can carry stray CRLF.
+  nodes = declarations(source.replace(/\r\n/g, '\n')); priorNodes = declarations(baselineBytes.toString('utf8').replace(/\r\n/g, '\n'));
   chapterHelper = new Function('var ' + nodes.WCJourneyChapters + '; return WCJourneyChapters;')();
   const traceNames = ['MATTER_ENERGY_TRACE', 'JOURNEY_MATTER_ENERGY_TRACE', 'JOURNEY_HYDROLOGIC_TIME_TRACE'];
   const traces = new Function(traceNames.map(name => 'var ' + nodes[name] + ';').join('\n') +
@@ -210,7 +211,8 @@ afterEach(() => {
 
 describe('Water Cycle grouped land pathway inspection', () => {
   it('retains the prior catalogs, resolver, scientific diagrams, callbacks, rewards and notebook declarations', () => {
-    expect(sha(baselineBytes)).toBe(BASELINE_SHA);
+    // Hash the committed (LF) text: the old raw-byte pin matched only a CRLF-mixed Windows working copy, so CI failed it.
+    expect(sha(baselineBytes.toString('utf8').replace(/\r\n/g, '\n'))).toBe(BASELINE_SHA);
     expect(Object.keys(nodes).sort()).toEqual([...PRESERVED].sort());
     expect(Object.keys(priorNodes).sort()).toEqual([...PRESERVED].sort());
     for (const name of PRESERVED) expect(nodes[name], name).toBe(priorNodes[name]);

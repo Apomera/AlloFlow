@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import * as engine from './lesson_board_engine.js';
 import {buildSite} from './lesson_board_spatial.js';
 import {Amounts} from './lesson_board_play_extras.jsx';
@@ -81,9 +82,9 @@ export function CommissionReminder({board,progress,commission,onInspect,t,receip
   </aside>;
 }
 
-export function CommissionUIStyles(){return <style>{`
+export function CommissionUIStyles(){return addBoardStyle(`
 .lb .lb-commission-offer{margin:14px 0;padding:12px;border:1px solid var(--gold);border-radius:12px;background:var(--panel);min-width:0}.lb .lb-commission-offer>summary{min-height:44px;align-content:center;font-weight:700;font-size:1.05em}.lb .lb-commission-heading{display:flex;align-items:center;gap:12px;min-width:0}.lb .lb-commission-heading>div{min-width:0}.lb .lb-commission-heading h5,.lb .lb-commission-preview h5{font-size:1em;margin:8px 0}.lb .lb-commission-offer fieldset{border:0;min-width:0;padding:0;margin:12px 0}.lb .lb-commission-options{display:grid;gap:8px}.lb .lb-commission-options label{display:flex;align-items:flex-start;gap:8px;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--panel);cursor:pointer}.lb .lb-commission-options label[data-commission-selected=true]{padding:10px;border:2px solid var(--route);background:var(--route-soft)}.lb .lb-commission-options input{width:22px;height:22px;min-width:22px;min-height:22px;accent-color:var(--route);margin:0}.lb .lb-commission-options label>span{min-width:0}.lb .lb-commission-options small{display:block;margin-top:5px}.lb .lb-commission-options .lb-tokens{margin-top:6px}.lb .lb-commission-preview{padding:10px;border:1px dashed var(--route);border-radius:9px;margin-bottom:10px}.lb .lb-commission-amounts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:10px;margin:8px 0}.lb .lb-commission-amounts>div{padding:8px;border:1px solid var(--line);border-radius:8px;min-width:0}.lb .lb-commission-amounts strong{font-size:.9em}.lb .lb-commission-amounts .lb-tokens{margin-top:6px}.lb .lb-commission-terms p{font-size:.9em}.lb .lb-commission-preview button,.lb .lb-commission-commit,.lb .lb-commission-reminder button{width:100%;text-align:start;white-space:normal;margin-top:5px;min-height:44px}.lb .lb-commission-commit{font-weight:700;border:2px solid var(--route)}.lb .lb-commission-note{font-size:.85em;line-height:1.5}.lb .lb-commission-reminder{min-width:0;padding:12px;margin:12px 0;border:1px solid var(--gold);border-inline-start:4px solid var(--gold);border-radius:10px;background:var(--panel);overflow-wrap:anywhere}.lb .lb-commission-reminder>small{display:block;margin-top:8px}
 .lb .lb-commission-options .lb-token{white-space:nowrap}.lb .lb-commission-options .lb-token>span:last-child{white-space:normal;min-width:0}
 @media(max-width:480px){.lb .lb-commission-heading{align-items:flex-start;flex-direction:column;gap:4px}}
 @media(forced-colors:active){.lb .lb-commission-offer,.lb .lb-commission-reminder,.lb .lb-commission-amounts>div{border-color:CanvasText}.lb .lb-commission-options label[data-commission-selected=true],.lb .lb-commission-preview,.lb .lb-commission-commit{border-color:Highlight}}
-`}</style>;}
+`);}

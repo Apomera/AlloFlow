@@ -1,6 +1,6 @@
 // Deterministic introductory city flight, using the simulator's own units/model.
 // Terrain is sampled along the short approach; this is not obstacle navigation.
-function getFlightCityStart(target, aircraft, groundElevationCallback) {
+function getFlightCityStart(target, aircraft, groundElevationCallback, thrustModel) {
   if (!target || !aircraft || typeof groundElevationCallback !== 'function' ||
       !Number.isFinite(target.lat) || Math.abs(target.lat) > 85 ||
       !Number.isFinite(target.lon) || Math.abs(target.lon) > 180 ||
@@ -83,7 +83,20 @@ function getFlightCityStart(target, aircraft, groundElevationCallback) {
     pitch = (lowPitch + highPitch) / 2;
     var cl = aircraft.cl0 + aircraft.clPerAoa * pitch;
     var drag = qS * (aircraft.cd0 + aircraft.cdK * cl * cl);
-    throttle = glider ? 0 : drag / (aircraft.maxThrust * Math.cos(pitch * Math.PI / 180));
+    var neededThrust = drag / Math.cos(pitch * Math.PI / 180);
+    if (glider) throttle = 0;
+    else if (typeof thrustModel === 'function') {
+      // Real engine thrust changes with airspeed and altitude, so find the
+      // lever setting whose thrust balances drag at this speed and height.
+      if (!(thrustModel(0.95, speedFps, altitude) >= neededThrust)) return null;
+      var lowLever = 0, highLever = 0.95;
+      for (var leverStep = 0; leverStep < 30; leverStep++) {
+        var middleLever = (lowLever + highLever) / 2;
+        if (thrustModel(middleLever, speedFps, altitude) < neededThrust) lowLever = middleLever;
+        else highLever = middleLever;
+      }
+      throttle = (lowLever + highLever) / 2;
+    } else throttle = neededThrust / aircraft.maxThrust;
     if (!Number.isFinite(throttle) || throttle < 0 || throttle > 0.95) return null;
   }
   return { lat: latitude, lon: longitude, heading: 0, altitude: altitude,

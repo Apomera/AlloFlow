@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Наблюдения по заданию",
+  "stem.flightsim.mission_journal_targets": "Отснятые цели: {captured} из {total}.",
+  "stem.flightsim.mission_journal_complete": "Зафиксированы все цели задания и посадка после возвращения.",
+  "stem.flightsim.mission_journal_ended": "Задание завершено до фиксации всех подтверждений выполнения.",
+  "stem.flightsim.mission_journal_recovery": "Подъём выжившего зафиксирован: {value}.",
+  "stem.flightsim.mission_journal_return": "Посадка после возвращения на базу зафиксирована: {value}.",
+  "stem.flightsim.mission_guidance_title": "Указания по заданию",
+  "stem.flightsim.mission_route": "{target} · пеленг {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Точка взлёта",
+  "stem.flightsim.mission_read_status": "Прочитать состояние задания",
+  "stem.flightsim.mission_return_criterion": "Приземлитесь в пределах {distance} nm от {target}, с путевой скоростью ниже {speed} kt и скоростью снижения ниже {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Данные цели задания недоступны. Завершите этот полёт и начните новое задание.",
+  "stem.flightsim.mission_capture_criterion": "Оставайтесь в радиусе {distance} ft, выше {min} и ниже {max} ft над землёй, с путевой скоростью ниже {speed} kt в течение {hold} s."
+}

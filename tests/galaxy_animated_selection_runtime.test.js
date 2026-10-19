@@ -260,6 +260,35 @@ describe('galaxy animated selection runtime', () => {
     assertClean();
   }, SCENE_TIMEOUT);
 
+  it('places every part of a core-collapse event at the rendered massive-star location', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyType: 'barredSpiral' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    clockMs += 180_000;
+    await React.act(async () => { loopController.step(); });
+    const event = canvas._triggerSupernova();
+    expect(event).not.toBeNull();
+    expect(['O', 'B']).toContain(event.spectral);
+    expect(event.illustrative).toBe(true);
+    const rendered = canvas._galaxyGetStarVisualState(event.sourceIndex);
+    expectPositionClose(event.position, rendered.animated, 6);
+    const visual = canvas._galaxyGetSupernovaVisualState().at(-1);
+    expectPositionClose(visual.sprite, rendered.animated, 6);
+    expectPositionClose(visual.ring, rendered.animated, 6);
+    expectPositionClose(visual.label, { ...rendered.animated, y: rendered.animated.y + 0.075 }, 6);
+    if (visual.light) expectPositionClose(visual.light, rendered.animated, 6);
+    await React.act(async () => { canvas._setLayerVisibility('arms', false); });
+    expect(canvas._triggerSupernova()).toBeNull();
+    assertClean();
+  }, SCENE_TIMEOUT);
+
+  it('does not invent a core-collapse progenitor in the old elliptical population', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyType: 'elliptical' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    expect(canvas._triggerSupernova()).toBeNull();
+    expect(canvas._galaxyGetSupernovaVisualState()).toEqual([]);
+    assertClean();
+  }, SCENE_TIMEOUT);
+
   it('does not raycast the undeformed star point geometry', () => {
     const source = readFileSync(FILE, 'utf8');
     expect(source).not.toMatch(/raycaster\s*\.\s*intersectObject\s*\(\s*starPoints\s*\)/);

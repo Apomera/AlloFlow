@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Ihe a hụrụ gosiri na e mezuru ebumnuche ihe ịma aka a. Ugbu a, n’ihe omume njikwa ike, tụnyere ịgbada mgbe injin na-arụ ọrụ nwayọọ na ịrị elu site n’ike injin.",
+  "stem.flightsim.coaching_energy_complete": "Ihe a hụrụ gosiri na e mezuru ebumnuche njikwa ike. Ugbu a, mụta ịchịkwa ike mgbe ị na-abịaru ọdụ ụgbọelu nso n’ụzọ dị mkpirikpi, wee tụnyere ọsọ ịgbada na mmetụ ala.",
+  "stem.flightsim.drone_battery_low": "Batrị dị ala: {pct}% fọdụrụ. Laghachi ebe i si felie ma rituo n’ala n’oge na-adịghị anya.",
+  "stem.flightsim.drone_battery_depleted_title": "Batrị ụgbọelu na-enweghị onye na-anya ya agwụla",
+  "stem.flightsim.drone_battery_depleted_body": "A kwụsịtụrụ efe ụgbọelu mgbe batrị ruru 0%. Mechie ọrụ a ka ị tụle mgbalị a, wee malite ọrụ ọhụrụ na batrị juputara.",
+  "stem.flightsim.end_drone_mission": "Mechie ọrụ ma tụlee ya",
+  "stem.flightsim.geoq_nearest_place": "Kedu ebe kacha nso ebe ị nọ ugbu a?",
+  "stem.flightsim.geoq_paused": "A kwụsịtụrụ efe ụgbọelu maka ajụjụ a. Mechie ule ahụ, wee họrọ Gaa n’ihu mgbe ị dị njikere ife.",
+  "stem.flightsim.geoq_close": "Mechie ule",
+  "stem.flightsim.geoq_unavailable": "Enweghị ajụjụ gbasara ọdịdị ala ebe dị nso. Gaa n’ihu nyocha ma nwalee ọzọ.",
+  "stem.flightsim.geoq_answer_feedback": "Azịza gị: {answer}. Azịza ziri ezi: {expected}."
+}

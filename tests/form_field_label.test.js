@@ -40,9 +40,15 @@ describe('#6 _deriveFieldLabel — human SR label, never a raw machine id', () =
     expect(label(null, null, 4)).toContain('Form field 5');
   });
 
+  it('flags machine field ids like the IRS "f1_01" (2026-10-17)', () => {
+    for (const bad of ['f1_01', 'c2_3', 'topmostSubform[0].Page1[0].f1_12[0]']) expect(_deriveFieldLabel('', bad, 0).needsReview, bad).toBe(true);
+    for (const ok of ['Email', 'Q1 answer', 'StudentName']) expect(_deriveFieldLabel('', ok, 0).needsReview, ok).toBe(false);
+  });
+
   it('anti-drift: the tag loop reads the source /TU and writes the derived label, not the raw name', () => {
     expect(src).toContain('const fieldLabelText = _deriveFieldLabel(_srcTU, fieldName, _fieldLabelIdx++).label;');
-    expect(src).toContain('Alt: PDFString.of(fieldLabelText),');
-    expect(src).toContain('_fieldDictObj.TU = PDFString.of(fieldLabelText);');
+    // hex strings since 2026-10-17: PDFString garbles non-Latin-1 labels
+    expect(src).toContain('Alt: PDFHexString.fromText(fieldLabelText),');
+    expect(src).toContain('_fieldDictObj.TU = PDFHexString.fromText(fieldLabelText);');
   });
 });

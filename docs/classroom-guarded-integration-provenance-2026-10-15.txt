@@ -1,0 +1,38 @@
+Guarded Classroom integration provenance
+October 15, 2026 (America/New_York)
+
+Original contribution
+Tyler <tyler@physher.com> designed the linked Classroom workflow: per-class keyed
+identities, retained codenames, reviewed helper-to-app handoff and teacher controls.
+Relevant original commits reviewed:
+  2c0497fb93dd41b202347f2fde1a79acbdd25a2d
+  ad7d5769b08b2cc18a79d9b52cc24ff65887ef27
+  b1b6888401db4b007d289ca7b21ce57c2786bdbc
+  d7bb1b940d2c96c91517f50f204ba76cfaf73035
+
+Selective adaptation
+This integration adapts the keyed converter and reviewed membership workflow,
+not the entire old teacher component. Private labels remain separate. Current
+reader, Guided, Family, materials and onboarding work is preserved. The existing
+safe-update planner is retained, with support for a public linked-class marker.
+
+New integration hardening
+Versioned/pair-approved MessageChannel sessions; revocation and operation IDs;
+atomic roster/key persistence with cooperating-tab conflict detection; exclusions
+from ordinary backup and Canvas preferences; explicit key recovery/management;
+first-link setup preservation; no silent random-ID downgrade or retired-name reuse.
+
+Future commit / GitHub credit
+When this local work is deliberately committed/published, include:
+  Co-authored-by: Tyler <tyler@physher.com>
+Reference the original commits in the PR and distinguish the integration/security
+hardening from Tyler's original design. Preserve existing source-commit coauthor
+metadata when carrying those commits, rather than rewriting their authorship.
+No GitHub username has been inferred. This file records attribution; it is not a
+claim that a commit, PR, push or deployment has occurred.
+
+Scope limits
+Google configuration stays disabled. Real accounts/student data were not used.
+Canvas cross-origin pairing is distinct from persistence: a sandbox without native
+storage/Web Locks fails closed and offers the browser workspace. A durable opaque-
+Canvas device-storage backend and Electron callback are not enabled by this work.

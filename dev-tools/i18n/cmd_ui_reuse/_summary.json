@@ -2,585 +2,652 @@
   "apply": false,
   "languageCount": 63,
   "canonicalKeyCount": 725,
-  "totalIdentities": 19809,
-  "totalRecoverable": 68,
+  "selectedKeyCount": 725,
+  "scope": {
+    "fullAudit": true,
+    "language": null,
+    "keys": null
+  },
+  "totalIdentities": 19740,
+  "totalRecoverable": 0,
+  "totalApproved": 0,
+  "totalUnreviewed": 0,
   "totalAmbiguous": 0,
   "totalContextSkipped": 63,
   "totalWritten": 0,
+  "reviewNote": "Exact English matches identify candidates, not translation correctness. Writes require a value-bound review of the specific language and source-to-command pair.",
   "contextSensitiveKeys": [
     "cmd.read_this_page_of"
   ],
   "perPack": {
     "acholi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "amharic": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "arabic": {
-      "recoverable": 2,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint",
-        "palette.group.recent"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "bengali": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "burmese": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "chin_falam": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "chin_hakha": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "chinese_simplified": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "chinese_traditional": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "dari": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "dutch": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "esperanto": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "farsi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "french": {
-      "recoverable": 2,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint",
-        "palette.group.recent"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "french_canadian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "german": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "greek": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "gujarati": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "haitian_creole": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "hausa": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "hebrew": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "hindi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "hmong": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "igbo": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "indonesian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "italian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "japanese": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "kannada": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "karen": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "khmer": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "kinyarwanda": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "kirundi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "korean": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "lao": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "latin": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "lingala": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "maay_maay": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "malayalam": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "marathi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "marshallese": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "nepali": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "pashto": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "polish": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "portuguese_angola": {
-      "recoverable": 2,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint",
-        "palette.group.recent"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "portuguese_brazil": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "portuguese_portugal": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "punjabi": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "romanian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "russian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "somali": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "spanish_castilian": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "spanish_latin_america": {
-      "recoverable": 2,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint",
-        "palette.group.recent"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "swahili": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "tagalog": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "tamil": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "telugu": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "thai": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "tigrinya": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "turkish": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "ukrainian": {
-      "recoverable": 2,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint",
-        "palette.group.recent"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "urdu": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "vietnamese": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     },
     "yoruba": {
-      "recoverable": 1,
+      "recoverable": 0,
       "ambiguous": 0,
       "contextSkipped": 1,
-      "recoverableKeys": [
-        "cmd.read_page_aloud_hint"
-      ],
+      "approved": 0,
+      "unreviewed": 0,
+      "recoverableKeys": [],
+      "recoverableEntries": [],
       "ambiguousKeys": []
     }
   }

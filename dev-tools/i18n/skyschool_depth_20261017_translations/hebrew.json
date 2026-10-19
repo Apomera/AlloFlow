@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "שמירה על מצב הטיסה הנוכחי",
+  "stem.flightsim.flight_assistance_targets": "כיוון {hdg}° · גובה {alt} ft MSL · מהירות {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "כיוון {hdg}° · גובה {alt} ft MSL · מהירות קדימה {spd} kt",
+  "stem.flightsim.challenge_turn_left": "יש לפנות שמאלה ב־{degrees}° לכיוון {airport}.",
+  "stem.flightsim.challenge_turn_right": "יש לפנות ימינה ב־{degrees}° לכיוון {airport}.",
+  "stem.flightsim.challenge_course_aligned": "הכיוון הוא אל {airport}. יש לעקוב אחר סמן הנתיב.",
+  "stem.flightsim.challenge_runway_reference": "מסלול אימון {runway}: כיוון {heading}°. יש להתיישר עם המסלול לפני ההנמכה לנחיתה."
+}

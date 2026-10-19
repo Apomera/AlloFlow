@@ -1,5 +1,6 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadTool, resetStemLab, React } from './helpers/stem_widgets_smoke_harness.js';
@@ -30,6 +31,25 @@ function runAxe(host, options) {
   return started;
 }
 
+// A failing toContain on the 2 MB tool source (or a whole rendered tab) makes
+// vitest print and diff the entire string, which looks like a hung suite. Whole-
+// string checks use this matcher: the same substring test, a one-line failure.
+expect.extend({
+  toIncludeText(received, needle) {
+    if (typeof received !== 'string' || typeof needle !== 'string') {
+      throw new TypeError('toIncludeText needs two strings, got ' + typeof received + ' and ' + typeof needle);
+    }
+    const pass = received.includes(needle);
+    return { pass, message: () => 'expected ' + received.length + ' characters of text ' +
+      (pass ? 'not ' : '') + 'to include ' + JSON.stringify(needle) };
+  },
+});
+
+// Many tests here mount the 2 MB tool many times (each mount re-parses its CSS
+// in jsdom), so several ran 5-6.5 s against vitest's 5 s default and failed on
+// machine load alone. As with the explicit caps below, the timeout catches a hang.
+vi.setConfig({ testTimeout: 30000 });
+
 const TOOL_PATHS = [
   'stem_lab/stem_tool_spacestation.js',
   'desktop/web-app/public/stem_lab/stem_tool_spacestation.js',
@@ -55,6 +75,30 @@ function mountCtx(toolData, setToolData) {
 // Stateful mount (mirrors stem_lab_module.js StemPluginBridge): the tool seeds
 // its bucket via setToolData on first render, then re-renders its real body.
 // `seed` lets each case pre-position the tool on a given tab/state.
+//
+// jsdom 29 keeps a <style>'s sheet in document.styleSheets when the element
+// leaves inside a removed subtree (React unmount), though a direct removal drops
+// it. Each mount left ~2,000 rules behind and axe's getComputedStyle calls match
+// every rule, so tabs slowed test by test until the late axe passes ran for
+// minutes. Detach the tool's styles before unmounting.
+//
+// jsdom also re-parses the tool's ~250 KB of CSS on every mount, and css-tree
+// builds a SyntaxError for each value it cannot validate, formatting its stack
+// at once (Object.assign runs the getter) through vitest's source-map hook.
+// That was ~45% of a mount; nothing reads those stacks, so the first render
+// runs with no captured frames.
+function renderTool(root, element) {
+  const limit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 0;
+  try { act(() => { root.render(element); }); } finally { Error.stackTraceLimit = limit; }
+}
+
+function unmountTool(root, host) {
+  host.querySelectorAll('style').forEach((style) => style.remove());
+  try { act(() => root.unmount()); } catch (_) {}
+  host.remove();
+}
+
 function mountWithSeed(seed) {
   const cfg = window.StemLab._registry.spaceStation;
   const host = document.createElement('div');
@@ -65,11 +109,10 @@ function mountWithSeed(seed) {
     return cfg.render(mountCtx(toolData, setToolData));
   }
   try {
-    act(() => { root.render(React.createElement(Harness)); });
+    renderTool(root, React.createElement(Harness));
     return host.innerHTML;
   } finally {
-    try { act(() => root.unmount()); } catch (_) {}
-    host.remove();
+    unmountTool(root, host);
   }
 }
 
@@ -82,12 +125,11 @@ function mountLiveWithSeed(seed) {
     const [toolData, setToolData] = React.useState({ spaceStation: seed });
     return cfg.render(mountCtx(toolData, setToolData));
   }
-  act(() => { root.render(React.createElement(Harness)); });
+  renderTool(root, React.createElement(Harness));
   return {
     host,
     cleanup() {
-      try { act(() => root.unmount()); } catch (_) {}
-      host.remove();
+      unmountTool(root, host);
     },
   };
 }
@@ -112,14 +154,14 @@ describe('space station tool', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain("window.StemLab.registerTool('spaceStation'");
-      expect(source).toContain('questHooks');
+      expect(source).toIncludeText("window.StemLab.registerTool('spaceStation'");
+      expect(source).toIncludeText('questHooks');
       // Nine tabs
       ['interior', 'operations', 'map', 'day', 'systems', 'orbit', 'missions', 'history', 'quiz'].forEach((tabId) => {
-        expect(source).toContain("id: '" + tabId + "'");
+        expect(source).toIncludeText("id: '" + tabId + "'");
       });
       // Self-guarding module pattern
-      expect(source).toContain("if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;");
+      expect(source).toIncludeText("if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;");
     });
   });
 
@@ -128,27 +170,27 @@ describe('space station tool', () => {
       const source = readFileSync(filePath, 'utf8');
 
       const moduleIds = ['zarya', 'unity', 'zvezda', 'destiny', 'quest', 'harmony', 'columbus', 'kibo', 'tranquility', 'cupola', 'leonardo', 'nauka', 'truss'];
-      moduleIds.forEach((id) => expect(source).toContain("id: '" + id + "'"));
+      moduleIds.forEach((id) => expect(source).toIncludeText("id: '" + id + "'"));
       // Anchor facts kept accurate
-      expect(source).toContain('Nov 20, 1998');            // Zarya launch
-      expect(source).toContain('Nov 2, 2000');             // continuous habitation
-      expect(source).toContain('7.66 km/s');               // orbital speed
-      expect(source).toContain('98%');                     // water recovery milestone
-      expect(source).toContain('Sabatier');                // CO2 -> water loop
-      expect(source).toContain('Whipple');                 // debris shielding
-      expect(source).toContain('Control Moment Gyroscopes');
+      expect(source).toIncludeText('Nov 20, 1998');            // Zarya launch
+      expect(source).toIncludeText('Nov 2, 2000');             // continuous habitation
+      expect(source).toIncludeText('7.66 km/s');               // orbital speed
+      expect(source).toIncludeText('98%');                     // water recovery milestone
+      expect(source).toIncludeText('Sabatier');                // CO2 -> water loop
+      expect(source).toIncludeText('Whipple');                 // debris shielding
+      expect(source).toIncludeText('Control Moment Gyroscopes');
       // Real orbital mechanics, not hardcoded outputs
       // One orbit implementation feeds the fast-facts card, the status strip,
       // the Orbit Lab readouts and the drag/reboost reference curve. They used
       // to derive it separately, and the card's static '~92 min' disagreed with
       // the strip's computed 93 on the very same screen.
-      expect(source).toContain('var ISS_GM = 398600.4418');
-      expect(source).toContain('function issOrbit(altKm)');
+      expect(source).toIncludeText('var ISS_GM = 398600.4418');
+      expect(source).toIncludeText('function issOrbit(altKm)');
       expect((source.match(/398600\.4418/g) || []).length).toBe(1);
-      expect(source).toContain('var v = Math.sqrt(ISS_GM / r)');   // v = sqrt(GM/r), once
+      expect(source).toIncludeText('var v = Math.sqrt(ISS_GM / r)');   // v = sqrt(GM/r), once
       // Future plans stay hedged
-      expect(source).toContain('Planned retirement');
-      expect(source).toContain('Deorbit Vehicle');
+      expect(source).toIncludeText('Planned retirement');
+      expect(source).toIncludeText('Deorbit Vehicle');
     });
   });
 
@@ -156,49 +198,50 @@ describe('space station tool', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('prefers-reduced-motion');
-      expect(source).toContain('min-width:24px');
-      expect(source).toContain('@media (forced-colors: active)');
-      expect(source).toContain('@media (prefers-contrast: more)');
-      expect(source).toContain('.iss-root *:before,.iss-root *:after');
-      expect(source).toContain('.iss-root summary{min-height:24px}');
-      expect(source).toContain('[aria-selected="true"]');
-      expect(source).toContain('overflow:visible;border:1px solid rgba(125,211,252,.24)');
-      expect(source).toContain('.iss-location-strip{flex-wrap:wrap;overflow-x:visible}');
+      expect(source).toIncludeText('prefers-reduced-motion');
+      expect(source).toIncludeText('min-width:24px');
+      expect(source).toIncludeText('@media (forced-colors: active)');
+      expect(source).toIncludeText('@media (prefers-contrast: more)');
+      expect(source).toIncludeText('.iss-root *:before,.iss-root *:after');
+      expect(source).toIncludeText('.iss-root summary{min-height:24px}');
+      expect(source).toIncludeText('[aria-selected="true"]');
+      expect(source).toIncludeText('overflow:visible;border:1px solid rgba(125,211,252,.24)');
+      expect(source).toIncludeText('.iss-location-strip{flex-wrap:wrap;overflow-x:visible}');
       // Phones keep TWO columns for the four short status readouts (a single
       // column made the header 4 rows tall on a 390px screen).
-      expect(source).toContain('@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}');
-      expect(source).toContain('iss-quiz-answer-state');
-      expect(source).toContain("role: 'application'");
-      expect(source).toContain("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");
-      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home F'");
-      expect(source).toContain("id: 'iss-map-status'");
-      expect(source).toContain("upd({ mapView: 'overview' })");
-      expect(source).toContain('cv._issCleanup = cleanup');
-      expect(source).toContain('cameraTween');
-      expect(source).toContain('cv._issCutaway');
-      expect(source).toContain('data-iss-camera-view');
-      expect(source).toContain('data-iss-module-marker');
-      expect(source).toContain('data-iss-light-phase');
-      expect(source).toContain('data-iss-focus-module');
-      expect(source).toContain('cv._issFocusModule');
-      expect(source).toContain('focusDistance');
-      expect(source).toContain('data-iss-orientation-widget');
-      expect(source).toContain("data-iss-axis': 'x'");
-      expect(source).toContain('_axisOrigin');
-      expect(source).toContain("cv.addEventListener('keydown', onKey)");
+      expect(source).toIncludeText('@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}');
+      expect(source).toIncludeText('iss-quiz-answer-state');
+      expect(source).toIncludeText("role: 'application'");
+      expect(source).toIncludeText("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");
+      expect(source).toIncludeText("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home F'");
+      expect(source).toIncludeText("id: 'iss-map-status'");
+      expect(source).toIncludeText("upd({ mapView: 'overview' })");
+      expect(source).toIncludeText('cv._issCleanup = cleanup');
+      expect(source).toIncludeText('cameraTween');
+      expect(source).toIncludeText('cv._issCutaway');
+      expect(source).toIncludeText('data-iss-camera-view');
+      expect(source).toIncludeText('data-iss-module-marker');
+      expect(source).toIncludeText('data-iss-light-phase');
+      expect(source).toIncludeText('data-iss-focus-module');
+      expect(source).toIncludeText('cv._issFocusModule');
+      expect(source).toIncludeText('focusDistance');
+      expect(source).toIncludeText('data-iss-orientation-widget');
+      expect(source).toIncludeText("data-iss-axis': 'x'");
+      expect(source).toIncludeText('_axisOrigin');
+      expect(source).toIncludeText("cv.addEventListener('keydown', onKey)");
       // Touch parity: without touchAction the browser steals the drag for page
       // scrolling and camera orbit is unavailable on touchscreens. Cancellation
       // must release the active gesture so subsequent input can take over.
-      expect(source).toContain("cv.style.touchAction = 'none'");
-      expect(source).toContain("window.addEventListener('pointercancel', onUp)");
-      expect(source).toContain("window.removeEventListener('pointercancel', onUp)");
-      expect(source).toContain('moduleDetails');
-      expect(source).toContain('trussBraceMat');
-      expect(source).toContain('if (!cv.isConnected) { cleanup(); return; }');
+      expect(source).toIncludeText("cv.style.touchAction = 'none'");
+      expect(source).toIncludeText("window.addEventListener('pointercancel', onUp)");
+      expect(source).toIncludeText("window.removeEventListener('pointercancel', onUp)");
+      expect(source).toIncludeText('moduleDetails');
+      // The backbone is one batched open lattice (built and counted below).
+      expect(source).toIncludeText('geo = issOpenTrussGeometry(THREE, len, m.size[0] * 2);');
+      expect(source).toIncludeText('if (!cv.isConnected) { cleanup(); return; }');
       // Module inspection works without the canvas (keyboard/AT path)
-      expect(source).toContain("'aria-pressed': on");
-      expect(source).toContain("role: 'tablist'");
+      expect(source).toIncludeText("'aria-pressed': on");
+      expect(source).toIncludeText("role: 'tablist'");
     });
   });
 
@@ -210,40 +253,40 @@ describe('space station tool', () => {
       const source = readFileSync(filePath, 'utf8');
 
       // Bloom rides the renderer and stays opt-out-able platform-wide.
-      expect(source).toContain('renderer._alloComposer');
-      expect(source).toContain('window.AlloPostFXEnabled === false');
+      expect(source).toIncludeText('renderer._alloComposer');
+      expect(source).toIncludeText('window.AlloPostFXEnabled === false');
       // Never let a post-FX failure blank the station.
-      expect(source).toContain('else renderMapScene();');
-      expect(source).toContain('renderer.render(planetScene, camera);');
-      expect(source).toContain('stationPass.clear = false');
+      expect(source).toIncludeText('else renderMapScene();');
+      expect(source).toIncludeText('renderer.render(planetScene, camera);');
+      expect(source).toIncludeText('stationPass.clear = false');
       // Composer must track canvas resizes or bloom detaches from the viewport.
-      expect(source).toContain('composer.setSize(');
+      expect(source).toIncludeText('composer.setSize(');
       // Reduced motion must not redraw an identical frame forever.
-      expect(source).toContain('_lastFrameSig');
-      expect(source).toContain('tick % 120 !== 0');
+      expect(source).toIncludeText('_lastFrameSig');
+      expect(source).toIncludeText('tick % 120 !== 0');
       // Solar arrays track through a group transform; their material reflects
       // sunlight rather than emitting an artificial glow in eclipse.
-      expect(source).toContain('wings[wi].quaternion.setFromEuler(arrayEuler)');
-      expect(source).not.toContain('0.16 + 0.62 * glint');
+      expect(source).toIncludeText('wings[wi].quaternion.setFromEuler(arrayEuler)');
+      expect(source).not.toIncludeText('0.16 + 0.62 * glint');
       // Canadarm2's booms must grow from a SHARED elbow. They previously had
       // independently-set centres, so their ends never met and the arm drew as
       // two disconnected sticks. Pin the derivation, and that the old
       // free-floating literal position is gone.
-      expect(source).toContain('arm1.position.copy(armBase.clone().add(armAxis1');
-      expect(source).toContain('arm2.position.copy(armElbow.clone().add(armAxis2');
-      expect(source).not.toContain('arm2.position.set(1.7, 1.25');
+      expect(source).toIncludeText('arm1.position.copy(armBase.clone().add(armAxis1');
+      expect(source).toIncludeText('arm2.position.copy(armElbow.clone().add(armAxis2');
+      expect(source).not.toIncludeText('arm2.position.set(1.7, 1.25');
       // A SAVED camera view has to reach the camera on build. d.mapView
       // persists and the view buttons render aria-pressed from it, but
       // _issSetView had only two call sites — the Home key and the button's
       // onClick — so after a tab switch the button stayed lit on "Earth-facing"
       // while the scene sat at the hardcoded overview pose. jsdom has no WebGL,
       // so a source pin is the only way to stop this being dropped again.
-      expect(source).toContain("if (d && d.mapView && d.mapView !== 'overview') cv._issSetView(d.mapView, true);");
+      expect(source).toIncludeText("if (d && d.mapView && d.mapView !== 'overview') cv._issSetView(d.mapView, true);");
       // ...and it must restore SILENTLY and without a tween: nothing was just
       // selected, so announcing it would lie to a screen reader, and swooping
       // from a pose the student never chose is worse than opening there.
-      expect(source).toContain('cv._issSetView = function (name, immediate)');
-      expect(source).toContain('if (_prefersReducedMotion || immediate)');
+      expect(source).toIncludeText('cv._issSetView = function (name, immediate)');
+      expect(source).toIncludeText('if (_prefersReducedMotion || immediate)');
       // Pin the INVARIANT, not the wording: the announcement must stay behind
       // `if (!immediate)` so the silent restore path cannot start narrating.
       // This used to pin the whole English sentence, which made it fail the
@@ -252,7 +295,7 @@ describe('space station tool', () => {
       // feedback_moved_code_breaks_text_pin_tests.
       expect(source).toMatch(/if \(!immediate\) announceToSR\(/);
       // The restore call itself must still pass `immediate = true`.
-      expect(source).toContain('cv._issSetView(d.mapView, true);');
+      expect(source).toIncludeText('cv._issSetView(d.mapView, true);');
     });
   });
 
@@ -263,46 +306,46 @@ describe('space station tool', () => {
       // The land mask is real Natural Earth data in the same base36 per-row RLE
       // the flight-sim tool uses. Pin the decoder's shape and the grid size: a
       // silent change to either draws a garbled planet that still "renders".
-      expect(source).toContain('ISS_LAND_W = 720, ISS_LAND_H = 360');
-      expect(source).toContain("ISS_LAND_RLE.split(';')");
-      expect(source).toContain("parseInt(runs[k], 36)");
+      expect(source).toIncludeText('ISS_LAND_W = 720, ISS_LAND_H = 360');
+      expect(source).toIncludeText("ISS_LAND_RLE.split(';')");
+      expect(source).toIncludeText("parseInt(runs[k], 36)");
       // 360 rows of latitude, one per line, or the decode walks off the mask.
       const rle = source.match(/var ISS_LAND_RLE = '([0-9a-z,;]+)'/);
       expect(rle).not.toBeNull();
       expect(rle[1].split(';').length).toBe(360);
 
       // Honesty: the tab must tell students which of what they see is data.
-      expect(source).toContain('the coastlines are real');
-      expect(source).toContain('Natural Earth');
-      expect(source).toContain('are schematic');
+      expect(source).toIncludeText('the coastlines are real');
+      expect(source).toIncludeText('Natural Earth');
+      expect(source).toIncludeText('are schematic');
 
       // Texture generation must stay deterministic. The GL smoke test compares
       // two mounts pixel-for-pixel; a Math.random() in the map painter would
       // either fail it or hide a real regression behind noise.
       const painter = source.slice(source.indexOf('function issEarthCanvases'), source.indexOf('function issGlowCanvas'));
       expect(painter.length).toBeGreaterThan(500);
-      expect(painter).not.toContain('Math.random');
+      expect(painter).not.toIncludeText('Math.random');
       // Painted once per quality tier and reused across mounts.
-      expect(source).toContain('_issEarthCanvases[key]');
+      expect(source).toIncludeText('_issEarthCanvases[key]');
 
       // City lights ride the same daylight term as the windows:
       // fixed emissive either blows them white over the day side or
       // leaves them invisible over the night side.
-      expect(source).toContain('earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn');
+      expect(source).toIncludeText('earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn');
 
       // The same modeled Sun direction lights both rendered scenes. Physical
       // orbit/beta/shadow geometry is covered by the focused lighting tests.
-      expect(source).toContain('sun.position.copy(_sunDir).multiplyScalar(40)');
-      expect(source).toContain('earthSun.position.copy(sun.position)');
-      expect(source).toContain('sun.intensity = lightModel.eclipse ? 0 : 1.35');
+      expect(source).toIncludeText('sun.position.copy(_sunDir).multiplyScalar(40)');
+      expect(source).toIncludeText('earthSun.position.copy(sun.position)');
+      expect(source).toIncludeText('sun.intensity = lightModel.eclipse ? 0 : 1.35');
 
       // Earth's surface is at y = -4.5 here, so an "Earth-facing" camera below
       // that sits inside the planet and renders a flat wash.
-      expect(source).toContain('nadir: { camera: [0, -3.8, 5.6]');
-      expect(source).not.toContain('nadir: { camera: [0, -11.5, 2.5]');
+      expect(source).toIncludeText('nadir: { camera: [0, -3.8, 5.6]');
+      expect(source).not.toIncludeText('nadir: { camera: [0, -11.5, 2.5]');
 
       // Per-renderer textures must be released with the renderer.
-      expect(source).toContain('earthTextures.forEach(');
+      expect(source).toIncludeText('earthTextures.forEach(');
     });
   });
 
@@ -314,21 +357,59 @@ describe('space station tool', () => {
       // night limb goes dark and the terminator gets its orange line. A flat
       // material colour here is the regression: it lit the night side's limb as
       // brightly as the day side's.
-      expect(source).toContain('function makeLimbShell(');
-      expect(source).toContain('vertexColors: true');
-      expect(source).toContain('limbShells[ls].update(_sunDir)');
-      expect(source).not.toContain("new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.15");
+      expect(source).toIncludeText('function makeLimbShell(');
+      expect(source).toIncludeText('vertexColors: true');
+      expect(source).toIncludeText('limbShells[ls].update(_sunDir)');
+      expect(source).not.toIncludeText("new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.15");
 
       // Repainting 2,665 vertices per shell must stay off the hot path, and
       // must still force ONE draw under reduced motion — the idle-render guard
       // would otherwise hold the pre-paint image on screen for two seconds.
-      expect(source).toContain('tick % 4 === 0 && limbShells.length');
-      expect(source).toContain("+ (_limbPainted ? 1 : 0)");
+      expect(source).toIncludeText('tick % 4 === 0 && limbShells.length');
+      expect(source).toIncludeText("+ (_limbPainted ? 1 : 0)");
 
       // The background is authored PRE tone-mapping: the post-FX chain runs the
       // clear colour through ACES, and the old value came out a milky navy.
-      expect(source).toContain('new THREE.Color(0x000102)');
-      expect(source).not.toContain('new THREE.Color(0x030712)');
+      expect(source).toIncludeText('new THREE.Color(0x000102)');
+      expect(source).not.toIncludeText('new THREE.Color(0x030712)');
+    });
+  });
+
+  it('builds the truss backbone as a braced open lattice, not a solid bar', () => {
+    // Four rails, a square frame at every bay boundary and one diagonal per face
+    // per bay make the 109-meter backbone read as structure. Build the real
+    // geometry with the vendored three.js the app ships.
+    const vendor = {};
+    runInNewContext(readFileSync('vendor/three-r128/three.min.js', 'utf8'), vendor);
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const start = source.indexOf('  function issOpenTrussGeometry(');
+      expect(start, filePath).toBeGreaterThan(-1);
+      const close = /\r?\n  \}\r?\n/.exec(source.slice(start));
+      expect(close, filePath).not.toBeNull();
+      const build = new Function(source.slice(start, start + close.index + close[0].length) + '\nreturn issOpenTrussGeometry;')();
+      for (const [length, width] of [[11, 0.4], [3.2, 0.3]]) {
+        const geometry = build(vendor.THREE, length, width);
+        const bays = Math.ceil(length / 0.5);
+        expect(geometry.userData.memberCount, filePath + ' ' + length).toBe(4 + 4 * (bays + 1) + 4 * bays);
+        const box = geometry.boundingBox;
+        expect(box.max.x - box.min.x).toBeGreaterThanOrEqual(length);
+        expect(box.max.x - box.min.x).toBeLessThan(length + 0.05);
+        for (const axis of ['y', 'z']) { // Float32 positions: allow single-precision rounding.
+          expect(box.max[axis] - box.min[axis]).toBeLessThanOrEqual(width + 1e-6);
+          expect(box.max[axis] - box.min[axis]).toBeGreaterThan(width * 0.9);
+        }
+        // Open: a ray through the middle of a bay passes between the diagonals,
+        // while the same ray at rail height hits a rail.
+        const mesh = new vendor.THREE.Mesh(geometry, new vendor.THREE.MeshBasicMaterial({ side: vendor.THREE.DoubleSide }));
+        const quarterBay = -length / 2 + (length / bays) / 4;
+        const inset = width / 2 - 0.018;
+        const hits = (y) => new vendor.THREE.Raycaster(new vendor.THREE.Vector3(quarterBay, y, -1),
+          new vendor.THREE.Vector3(0, 0, 1)).intersectObject(mesh).length;
+        expect(hits(0), filePath + ' bay center').toBe(0);
+        expect(hits(inset), filePath + ' rail').toBeGreaterThan(0);
+        geometry.dispose();
+      }
     });
   });
 
@@ -337,12 +418,12 @@ describe('space station tool', () => {
       const source = readFileSync(filePath, 'utf8');
       // Dragon on Harmony forward (module at z -3.4, half-length 0.8, so the
       // port is at z -4.2) and Progress on Zvezda aft (4.6 + 1.6 = 6.2).
-      expect(source).toContain("addVisitor(dragonCap, 'harmony')");
-      expect(source).toContain("addVisitor(progressCargo, 'zvezda')");
+      expect(source).toIncludeText("addVisitor(dragonCap, 'harmony')");
+      expect(source).toIncludeText("addVisitor(progressCargo, 'zvezda')");
       // Attached as details of their host module so the cutaway control dims
       // them together with it.
-      expect(source).toContain("mesh._issParentId = hostId");
-      expect(source).toContain('moduleDetails.push(mesh)');
+      expect(source).toIncludeText("mesh._issParentId = hostId");
+      expect(source).toIncludeText('moduleDetails.push(mesh)');
     });
   });
 
@@ -351,81 +432,82 @@ describe('space station tool', () => {
       const source = readFileSync(filePath, 'utf8');
 
       // Missions tab exists
-      expect(source).toContain("id: 'missions'");
+      expect(source).toIncludeText("id: 'missions'");
       // Docking sim runs real Clohessy-Wiltshire coupling, toggleable for contrast
-      expect(source).toContain('Clohessy-Wiltshire');
-      expect(source).toContain('3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy');
-      expect(source).toContain('-2 * N_ORBIT * st.vx');
-      expect(source).toContain('exaggerated');            // time-scaling disclosed honestly
-      expect(source).toContain('dockRealMode');
+      expect(source).toIncludeText('Clohessy-Wiltshire');
+      expect(source).toIncludeText('3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy');
+      expect(source).toIncludeText('-2 * N_ORBIT * st.vx');
+      expect(source).toIncludeText('exaggerated');            // time-scaling disclosed honestly
+      expect(source).toIncludeText('dockRealMode');
       // No per-frame React state: game state lives on the canvas element
-      expect(source).toContain('cv._dockState = st');
-      expect(source).toContain('cv._dockCleanup = cleanup');
-      expect(source).toContain("'data-dock-hud': 'true'");
-      expect(source).toContain("'aria-describedby': 'iss-dock-instructions iss-dock-status'");
-      expect(source).toContain('function holdKey(on)');
-      expect(source).toContain('onPointerCancel: press(false)');
-      expect(source).toContain('onKeyDown: holdKey(true)');
-      expect(source).toContain('function clearThrust()');
-      expect(source).toContain("window.addEventListener('blur', clearThrust)");
-      expect(source).toContain('st.trail');
-      expect(source).toContain('function coastForecast()');
-      expect(source).toContain('BRAKING DISTANCE');
-      expect(source).toContain('PROXIMITY ×');
-      expect(source).toContain('STOP MARGIN');
-      expect(source).toContain('TOTAL RATE');
-      expect(source).toContain('milestones.m15');
-      expect(source).toContain('renderDockDebrief');
-      expect(source).toContain('POST-APPROACH FLIGHT DATA');
-      expect(source).toContain('data-iss-dock-debrief');
+      expect(source).toIncludeText('cv._dockState = st');
+      expect(source).toIncludeText('cv._dockCleanup = cleanup');
+      expect(source).toIncludeText("'data-dock-hud': 'true'");
+      // Instructions and live status lead the list; the mount test resolves every id.
+      expect(source).toIncludeText("'aria-describedby': 'iss-dock-instructions iss-dock-status");
+      expect(source).toIncludeText('function holdKey(on)');
+      expect(source).toIncludeText('onPointerCancel: press(false)');
+      expect(source).toIncludeText('onKeyDown: holdKey(true)');
+      expect(source).toIncludeText('function clearThrust()');
+      expect(source).toIncludeText("window.addEventListener('blur', clearThrust)");
+      expect(source).toIncludeText('st.trail');
+      expect(source).toIncludeText('function coastForecast()');
+      expect(source).toIncludeText('BRAKING DISTANCE');
+      expect(source).toIncludeText('PROXIMITY ×');
+      expect(source).toIncludeText('STOP MARGIN');
+      expect(source).toIncludeText('TOTAL RATE');
+      expect(source).toIncludeText('milestones.m15');
+      expect(source).toIncludeText('renderDockDebrief');
+      expect(source).toIncludeText('POST-APPROACH FLIGHT DATA');
+      expect(source).toIncludeText('data-iss-dock-debrief');
       // EVA enforces the two-tether rule and consumables budget
-      expect(source).toContain('Moved WITHOUT clipping ahead');
-      expect(source).toContain('tetherA');
-      expect(source).toContain('Suit consumables');
-      expect(source).toContain('SUIT BUDGET');
-      expect(source).toContain('reserveFloor = 15');
-      expect(source).toContain('RESERVE BREACH');
-      expect(source).toContain('data-iss-eva-phase');
-      expect(source).toContain("phaseSteps = ['AIRLOCK', 'TRANSLATE', 'WORKSITE', 'SECURED']");
+      expect(source).toIncludeText('Moved WITHOUT clipping ahead');
+      expect(source).toIncludeText('tetherA');
+      expect(source).toIncludeText('Suit consumables');
+      expect(source).toIncludeText('SUIT BUDGET');
+      expect(source).toIncludeText('reserveFloor = 15');
+      expect(source).toIncludeText('RESERVE BREACH');
+      expect(source).toIncludeText('data-iss-eva-phase');
+      expect(source).toIncludeText("phaseSteps = ['AIRLOCK', 'TRANSLATE', 'WORKSITE', 'SECURED']");
       // Interior views wired to their modules
-      expect(source).toContain('renderCupolaInterior');
-      expect(source).toContain('renderSleepInterior');
-      expect(source).toContain("selModule.id === 'cupola' ? renderCupolaInterior()");
+      expect(source).toIncludeText('renderCupolaInterior');
+      expect(source).toIncludeText('renderSleepInterior');
+      expect(source).toIncludeText("selModule.id === 'cupola' ? renderCupolaInterior()");
       // New quest hooks
-      expect(source).toContain("id: 'iss_inside'");
-      expect(source).toContain("id: 'iss_freeflight'");
-      expect(source).toContain("id: 'iss_dock'");
-      expect(source).toContain("id: 'iss_eva'");
+      expect(source).toIncludeText("id: 'iss_inside'");
+      expect(source).toIncludeText("id: 'iss_freeflight'");
+      expect(source).toIncludeText("id: 'iss_dock'");
+      expect(source).toIncludeText("id: 'iss_eva'");
       // Interior shift is interactive, responsive, and exposes hotspot learning
-      expect(source).toContain('INTERIOR_ROOMS');
-      expect(source).toContain('data-iss-interior');
-      expect(source).toContain('iss-interior-layout');
-      expect(source).toContain('INTERIOR_3D_LAYOUT');
-      expect(source).toContain("var INTERIOR_ROUTE_IDS = ['harmony', 'destiny', 'unity', 'tranquility', 'cupola']");
-      expect(source).toContain('function interiorCanvasRef');
-      expect(source).toContain('data-iss-interior-canvas');
-      expect(source).toContain("'aria-describedby': 'iss-interior-flight-instructions iss-interior-transfer-instructions iss-interior-flight-status iss-interior-transfer-readout iss-interior-stow-readout iss-interior-cabin-airflow iss-interior-observation-readout'");
-      expect(source).toContain("id: 'iss-interior-transfer-instructions'");
-      expect(source).toContain("'aria-keyshortcuts': 'W A S D R F Q E B C V T P X ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'");
-      expect(source).toContain('cv._issInteriorState = state');
-      expect(source).toContain('cv._issInteriorSetControl');
-      expect(source).toContain('cv._issInteriorGrabRail');
-      expect(source).toContain('cv._issInteriorCargoAction = cargoAction');
-      expect(source).toContain('cv._issInteriorStowAction = stowAction');
-      expect(source).toContain('cv._issInteriorStowSceneItems = harmonyStowItems');
-      expect(source).toContain('cv._issInteriorWorksiteAction = setWorksiteAction');
-      expect(source).toContain('cv._issInteriorCenter');
-      expect(source).toContain('cv._issInteriorReset');
-      expect(source).toContain('cv._issInteriorCleanup = cleanup');
-      expect(source).toContain('state.velocity.addScaledVector');
-      expect(source).toContain("mode: 'STATIONARY'");
-      expect(source).toContain("state.mode = 'RAIL HOLD'");
-      expect(source).toContain('Math.ceil(elapsed / 0.04)');
-      expect(source).toContain('if (state.velocity.length() > 0.78)');
-      expect(source).toContain('COASTING // NO DRAG');
-      expect(source).toContain('function crossedConnectorPlane');
-      expect(source).toContain('function canOccupyFromRoom');
-      expect(source).toContain('canOccupyFromRoom(state.room, tempCandidate)');
+      expect(source).toIncludeText('INTERIOR_ROOMS');
+      expect(source).toIncludeText('data-iss-interior');
+      expect(source).toIncludeText('iss-interior-layout');
+      expect(source).toIncludeText('INTERIOR_3D_LAYOUT');
+      expect(source).toIncludeText("var INTERIOR_ROUTE_IDS = ['harmony', 'destiny', 'unity', 'tranquility', 'cupola']");
+      expect(source).toIncludeText('function interiorCanvasRef');
+      expect(source).toIncludeText('data-iss-interior-canvas');
+      expect(source).toIncludeText("'aria-describedby': 'iss-interior-flight-instructions iss-interior-transfer-instructions iss-interior-flight-status iss-interior-transfer-readout iss-interior-stow-readout iss-interior-cabin-airflow iss-interior-observation-readout'");
+      expect(source).toIncludeText("id: 'iss-interior-transfer-instructions'");
+      expect(source).toIncludeText("'aria-keyshortcuts': 'W A S D R F Q E B C V T P X ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'");
+      expect(source).toIncludeText('cv._issInteriorState = state');
+      expect(source).toIncludeText('cv._issInteriorSetControl');
+      expect(source).toIncludeText('cv._issInteriorGrabRail');
+      expect(source).toIncludeText('cv._issInteriorCargoAction = cargoAction');
+      expect(source).toIncludeText('cv._issInteriorStowAction = stowAction');
+      expect(source).toIncludeText('cv._issInteriorStowSceneItems = harmonyStowItems');
+      expect(source).toIncludeText('cv._issInteriorWorksiteAction = setWorksiteAction');
+      expect(source).toIncludeText('cv._issInteriorCenter');
+      expect(source).toIncludeText('cv._issInteriorReset');
+      expect(source).toIncludeText('cv._issInteriorCleanup = cleanup');
+      expect(source).toIncludeText('state.velocity.addScaledVector');
+      expect(source).toIncludeText("mode: 'STATIONARY'");
+      expect(source).toIncludeText("state.mode = 'RAIL HOLD'");
+      expect(source).toIncludeText('Math.ceil(elapsed / 0.04)');
+      expect(source).toIncludeText('if (state.velocity.length() > 0.78)');
+      expect(source).toIncludeText('COASTING // NO DRAG');
+      expect(source).toIncludeText('function crossedConnectorPlane');
+      expect(source).toIncludeText('function canOccupyFromRoom');
+      expect(source).toIncludeText('canOccupyFromRoom(state.room, tempCandidate)');
       const physicalTransitionStart = source.indexOf('var nextRoom = transitionRoom(state.room, state.position);');
       const physicalTransitionLastWant = source.indexOf('lastWant = nextRoom.id;', physicalTransitionStart);
       const physicalTransitionCanvasWant = source.indexOf('cv._issInteriorWantRoom = nextRoom.id;', physicalTransitionLastWant);
@@ -436,39 +518,39 @@ describe('space station tool', () => {
       expect(source.slice(physicalTransitionLastWant, physicalTransitionCanvasWantEnd).replace(/\s+/g, ' ')).toBe(
         'lastWant = nextRoom.id; cv._issInteriorWantRoom = nextRoom.id;',
       );
-      expect(source).toContain('function hullCollisionNormal');
-      expect(source).toContain('var normalImpactSpeed = state.velocity.dot(tempCollisionNormal)');
-      expect(source).toContain("normalSpeed: normalImpactSpeed");
-      expect(source).not.toContain('state.velocity.multiplyScalar(-0.18)');
-      expect(source).toContain('angularVelocity: 0');
-      expect(source).toContain('state.angularVelocity += rollInput');
-      expect(source).toContain('ROTATING // NO DRAG');
-      expect(source).toContain('railHeld: false');
-      expect(source).toContain('pushOffLatch: false');
-      expect(source).toContain('var railPushOffImpulse = 10');
-      expect(source).toContain("emit('rail-push-off'");
-      expect(source).toContain('state.pushOffLatch = true');
-      expect(source).toContain('cargoPosition: cargo.position');
-      expect(source).toContain('cargoVelocity: new THREE.Vector3');
-      expect(source).toContain("cargoMode: 'loose', cargoHeld: false, cargoSecured: false");
-      expect(source).toContain('function cargoAction()');
-      expect(source).toContain("emit('cargo-caught'");
-      expect(source).toContain("emit('cargo-secured'");
-      expect(source).toContain("event.type === 'cargo-secured'");
-      expect(source).toContain('nav.cargoSecured = true');
-      expect(source).toContain('(navigation.cargoClear || navigation.cargoSecured)');
+      expect(source).toIncludeText('function hullCollisionNormal');
+      expect(source).toIncludeText('var normalImpactSpeed = state.velocity.dot(tempCollisionNormal)');
+      expect(source).toIncludeText("normalSpeed: normalImpactSpeed");
+      expect(source).not.toIncludeText('state.velocity.multiplyScalar(-0.18)');
+      expect(source).toIncludeText('angularVelocity: 0');
+      expect(source).toIncludeText('state.angularVelocity += rollInput');
+      expect(source).toIncludeText('ROTATING // NO DRAG');
+      expect(source).toIncludeText('railHeld: false');
+      expect(source).toIncludeText('pushOffLatch: false');
+      expect(source).toIncludeText('var railPushOffImpulse = 10');
+      expect(source).toIncludeText("emit('rail-push-off'");
+      expect(source).toIncludeText('state.pushOffLatch = true');
+      expect(source).toIncludeText('cargoPosition: cargo.position');
+      expect(source).toIncludeText('cargoVelocity: new THREE.Vector3');
+      expect(source).toIncludeText("cargoMode: 'loose', cargoHeld: false, cargoSecured: false");
+      expect(source).toIncludeText('function cargoAction()');
+      expect(source).toIncludeText("emit('cargo-caught'");
+      expect(source).toIncludeText("emit('cargo-secured'");
+      expect(source).toIncludeText("event.type === 'cargo-secured'");
+      expect(source).toIncludeText('nav.cargoSecured = true');
+      expect(source).toIncludeText('(navigation.cargoClear || navigation.cargoSecured)');
       // A bulky bag follows the learner through the Harmony-Destiny hatch
       // with spring/damper lag. Its full visible envelope, not only the crew
       // body, must clear the reduced centerline aperture.
-      expect(source).toContain('var transferHatchZ = -8.45');
-      expect(source).toContain('var transferSafeRadius = 0.70');
-      expect(source).toContain('var transferAttachReach = 0.78');
-      expect(source).toContain('var transferBagMass = 12');
-      expect(source).toContain('var transferSpring = 5.6');
-      expect(source).toContain('var transferDamping = 2.8');
-      expect(source).toContain('function transferAction()');
-      expect(source).toContain('function resetTransfer(preserveCounters, outcome)');
-      expect(source).toContain('function updateHatchTransfer(dt)');
+      expect(source).toIncludeText('var transferHatchZ = -8.45');
+      expect(source).toIncludeText('var transferSafeRadius = 0.70');
+      expect(source).toIncludeText('var transferAttachReach = 0.78');
+      expect(source).toIncludeText('var transferBagMass = 12');
+      expect(source).toIncludeText('var transferSpring = 5.6');
+      expect(source).toIncludeText('var transferDamping = 2.8');
+      expect(source).toIncludeText('function transferAction()');
+      expect(source).toIncludeText('function resetTransfer(preserveCounters, outcome)');
+      expect(source).toIncludeText('function updateHatchTransfer(dt)');
       const transferPhysicsStart = source.indexOf('function updateHatchTransfer(dt)');
       const transferSpringForce = source.indexOf('.copy(tempTransferTarget).sub(state.transferPosition).multiplyScalar(transferSpring)', transferPhysicsStart);
       const transferDamperForce = source.indexOf('.addScaledVector(state.transferVelocity, -transferDamping)', transferSpringForce);
@@ -484,26 +566,26 @@ describe('space station tool', () => {
       const transferPhysicsEnd = source.indexOf('function setWorksiteVisualComplete', transferPhysicsStart);
       const transferPhysicsSource = source.slice(transferPhysicsStart, transferPhysicsEnd);
       expect(transferPhysicsEnd).toBeGreaterThan(transferPhysicsStart);
-      expect(source).toContain('transferPreviousBodyPosition: startDef.center.clone()');
-      expect(source).toContain('transferPreviousBagPosition: (persistedTransferComplete ? transferDockPoint : transferStagingPoint).clone()');
-      expect(source).toContain('transferBodyCrossed: persistedTransferComplete, transferBagCrossed: persistedTransferComplete');
-      expect(source).toContain('function interpolatedTransferRadius(previousPosition, currentPosition)');
-      expect(source).toContain('function failHatchTransferContact(culprit, bodyRadius, bagRadius)');
-      expect(transferPhysicsSource).toContain('var bodySweptForward = previousBodyPosition.z <= transferHatchZ && state.position.z > transferHatchZ;');
-      expect(transferPhysicsSource).toContain('var bagSweptForward = previousBagPosition.z <= transferHatchZ && state.transferPosition.z > transferHatchZ;');
-      expect(transferPhysicsSource).toContain('var bodySweptReverse = previousBodyPosition.z > transferHatchZ && state.position.z <= transferHatchZ;');
-      expect(transferPhysicsSource).toContain('var bagSweptReverse = previousBagPosition.z > transferHatchZ && state.transferPosition.z <= transferHatchZ;');
-      expect(transferPhysicsSource).toContain('if (bodySweptReverse) {');
-      expect(transferPhysicsSource).toContain('state.transferBodyCrossed = false;');
-      expect(transferPhysicsSource).toContain('state.transferBodyCrossingRadius = null;');
-      expect(transferPhysicsSource).toContain('if (bagSweptReverse) {');
-      expect(transferPhysicsSource).toContain('state.transferBagCrossed = false;');
-      expect(transferPhysicsSource).toContain('state.transferBagCrossingRadius = null;');
-      expect(transferPhysicsSource).toContain('state.transferBodyCrossingRadius = interpolatedTransferRadius(previousBodyPosition, state.position);');
-      expect(transferPhysicsSource).toContain('state.transferBagCrossingRadius = interpolatedTransferRadius(previousBagPosition, state.transferPosition);');
-      expect(transferPhysicsSource).toContain('var bodyUnsafe = bodySweptForward && state.transferBodyCrossingRadius > transferSafeRadius;');
-      expect(transferPhysicsSource).toContain('var bagUnsafe = bagSweptForward && state.transferBagCrossingRadius > transferSafeRadius;');
-      expect(transferPhysicsSource).toContain('failHatchTransferContact(culprit, state.transferBodyCrossingRadius, state.transferBagCrossingRadius);');
+      expect(source).toIncludeText('transferPreviousBodyPosition: startDef.center.clone()');
+      expect(source).toIncludeText('transferPreviousBagPosition: (persistedTransferComplete ? transferDockPoint : transferStagingPoint).clone()');
+      expect(source).toIncludeText('transferBodyCrossed: persistedTransferComplete, transferBagCrossed: persistedTransferComplete');
+      expect(source).toIncludeText('function interpolatedTransferRadius(previousPosition, currentPosition)');
+      expect(source).toIncludeText('function failHatchTransferContact(culprit, bodyRadius, bagRadius)');
+      expect(transferPhysicsSource).toIncludeText('var bodySweptForward = previousBodyPosition.z <= transferHatchZ && state.position.z > transferHatchZ;');
+      expect(transferPhysicsSource).toIncludeText('var bagSweptForward = previousBagPosition.z <= transferHatchZ && state.transferPosition.z > transferHatchZ;');
+      expect(transferPhysicsSource).toIncludeText('var bodySweptReverse = previousBodyPosition.z > transferHatchZ && state.position.z <= transferHatchZ;');
+      expect(transferPhysicsSource).toIncludeText('var bagSweptReverse = previousBagPosition.z > transferHatchZ && state.transferPosition.z <= transferHatchZ;');
+      expect(transferPhysicsSource).toIncludeText('if (bodySweptReverse) {');
+      expect(transferPhysicsSource).toIncludeText('state.transferBodyCrossed = false;');
+      expect(transferPhysicsSource).toIncludeText('state.transferBodyCrossingRadius = null;');
+      expect(transferPhysicsSource).toIncludeText('if (bagSweptReverse) {');
+      expect(transferPhysicsSource).toIncludeText('state.transferBagCrossed = false;');
+      expect(transferPhysicsSource).toIncludeText('state.transferBagCrossingRadius = null;');
+      expect(transferPhysicsSource).toIncludeText('state.transferBodyCrossingRadius = interpolatedTransferRadius(previousBodyPosition, state.position);');
+      expect(transferPhysicsSource).toIncludeText('state.transferBagCrossingRadius = interpolatedTransferRadius(previousBagPosition, state.transferPosition);');
+      expect(transferPhysicsSource).toIncludeText('var bodyUnsafe = bodySweptForward && state.transferBodyCrossingRadius > transferSafeRadius;');
+      expect(transferPhysicsSource).toIncludeText('var bagUnsafe = bagSweptForward && state.transferBagCrossingRadius > transferSafeRadius;');
+      expect(transferPhysicsSource).toIncludeText('failHatchTransferContact(culprit, state.transferBodyCrossingRadius, state.transferBagCrossingRadius);');
       const transferBodyReverse = transferPhysicsSource.indexOf('if (bodySweptReverse) {');
       const transferBagReverse = transferPhysicsSource.indexOf('if (bagSweptReverse) {', transferBodyReverse);
       const transferBodyForward = transferPhysicsSource.indexOf('if (bodySweptForward) {', transferBagReverse);
@@ -527,139 +609,139 @@ describe('space station tool', () => {
       const transferMoveToRoomSource = source.slice(transferMoveToRoomStart, transferMoveToRoomEnd);
       expect(transferMoveToRoomStart).toBeGreaterThan(-1);
       expect(transferMoveToRoomEnd).toBeGreaterThan(transferMoveToRoomStart);
-      expect(transferMoveToRoomSource).toContain("var transferCancelled = def.id !== previousRoom && state.transferMode === 'tethered' && !state.transferComplete;");
+      expect(transferMoveToRoomSource).toIncludeText("var transferCancelled = def.id !== previousRoom && state.transferMode === 'tethered' && !state.transferComplete;");
       const transferCancelReset = transferMoveToRoomSource.indexOf("resetTransfer(true, 'cancelled');");
       const transferTeleport = transferMoveToRoomSource.indexOf('state.position.copy(def.center);');
       expect(transferCancelReset).toBeGreaterThan(-1);
-      expect(transferMoveToRoomSource).toContain("emit('transfer-cancelled'");
+      expect(transferMoveToRoomSource).toIncludeText("emit('transfer-cancelled'");
       expect(transferTeleport).toBeGreaterThan(transferCancelReset);
       const transferResetStart = source.indexOf('function resetTransfer(preserveCounters, outcome)');
       const transferResetEnd = source.indexOf('function placeCrewAtTransferStaging()', transferResetStart);
       const transferResetSource = source.slice(transferResetStart, transferResetEnd);
       expect(transferResetStart).toBeGreaterThan(-1);
       expect(transferResetEnd).toBeGreaterThan(transferResetStart);
-      expect(transferResetSource).toContain('state.transferPreviousBodyPosition.copy(state.position);');
-      expect(transferResetSource).toContain('state.transferPreviousBagPosition.copy(state.transferPosition);');
-      expect(transferResetSource).toContain('state.transferBodyCrossed = !!state.transferComplete;');
-      expect(transferResetSource).toContain('state.transferBagCrossed = !!state.transferComplete;');
-      expect(transferResetSource).toContain('state.transferBodyCrossingRadius = state.transferComplete ? 0 : null;');
-      expect(transferResetSource).toContain('state.transferBagCrossingRadius = state.transferComplete ? 0 : null;');
-      expect(transferResetSource).toContain('state.transferPendingSafeCrossing = false;');
-      expect(source).toContain('n.transferComplete');
-      expect(source).toContain("transferMode: persistedTransferComplete ? 'docked' : 'staged'");
-      expect(source).toContain('transferPreviousZ: persistedTransferComplete ? transferDockPoint.z : transferStagingPoint.z');
-      expect(source).toContain("transferBag.name = 'iss-bulky-transfer-bag'");
-      expect(source).toContain('new THREE.BoxGeometry(0.78, 0.52, 0.58)');
-      expect(source).toContain('new THREE.TorusGeometry(0.47, 0.018');
-      expect(source).toContain('new THREE.TorusGeometry(transferSafeRadius, 0.035');
-      expect(source).toContain("transferTether.name = 'iss-bulky-transfer-tether'");
-      expect(source).toContain("transferClearanceCue.name = 'iss-hatch-transfer-clearance-cue'");
-      expect(source).toContain('transferTetherGeometry.attributes.position.needsUpdate = true');
-      expect(source).toContain("var tetherVisible = state.transferMode === 'tethered';");
-      expect(source).toContain('transferTether.visible = tetherVisible');
-      expect(source).toContain('var dockVisible = state.transferComplete;');
-      expect(source).toContain('transferDockCue.visible = dockVisible');
-      expect(source).toContain("state.transferMode === 'tethered' ? transferBagMass : 0");
-      expect(source).toContain("emit('transfer-attempt'");
-      expect(source).toContain("emit('transfer-contact'");
-      expect(source).toContain("emit('transfer-complete'");
-      expect(source).toContain("if (event.code === 'KeyB')");
-      expect(source).toContain('cv._issInteriorTransferAction = transferAction');
-      expect(source).toContain('cv._issInteriorTransferAttempts = state.transferAttempts');
-      expect(source).toContain('cv._issInteriorTransferContacts = state.transferContacts');
-      expect(source).toContain('cv._issInteriorTransferCompletions = state.transferCompletions');
-      expect(source).toContain('cv._issInteriorTransferComplete = state.transferComplete');
-      expect(source).toContain('cv._issInteriorTransferAction = null');
-      expect(source).toContain("event.type === 'transfer-attempt'");
-      expect(source).toContain("event.type === 'transfer-contact'");
-      expect(source).toContain("event.type === 'transfer-complete'");
-      expect(source).toContain('nav.transferAttempts = Math.max');
-      expect(source).toContain('nav.transferComplete = true');
-      expect(source).toContain("if (event.source !== 'diagram')");
+      expect(transferResetSource).toIncludeText('state.transferPreviousBodyPosition.copy(state.position);');
+      expect(transferResetSource).toIncludeText('state.transferPreviousBagPosition.copy(state.transferPosition);');
+      expect(transferResetSource).toIncludeText('state.transferBodyCrossed = !!state.transferComplete;');
+      expect(transferResetSource).toIncludeText('state.transferBagCrossed = !!state.transferComplete;');
+      expect(transferResetSource).toIncludeText('state.transferBodyCrossingRadius = state.transferComplete ? 0 : null;');
+      expect(transferResetSource).toIncludeText('state.transferBagCrossingRadius = state.transferComplete ? 0 : null;');
+      expect(transferResetSource).toIncludeText('state.transferPendingSafeCrossing = false;');
+      expect(source).toIncludeText('n.transferComplete');
+      expect(source).toIncludeText("transferMode: persistedTransferComplete ? 'docked' : 'staged'");
+      expect(source).toIncludeText('transferPreviousZ: persistedTransferComplete ? transferDockPoint.z : transferStagingPoint.z');
+      expect(source).toIncludeText("transferBag.name = 'iss-bulky-transfer-bag'");
+      expect(source).toIncludeText('new THREE.BoxGeometry(0.78, 0.52, 0.58)');
+      expect(source).toIncludeText('new THREE.TorusGeometry(0.47, 0.018');
+      expect(source).toIncludeText('new THREE.TorusGeometry(transferSafeRadius, 0.035');
+      expect(source).toIncludeText("transferTether.name = 'iss-bulky-transfer-tether'");
+      expect(source).toIncludeText("transferClearanceCue.name = 'iss-hatch-transfer-clearance-cue'");
+      expect(source).toIncludeText('transferTetherGeometry.attributes.position.needsUpdate = true');
+      expect(source).toIncludeText("var tetherVisible = state.transferMode === 'tethered';");
+      expect(source).toIncludeText('transferTether.visible = tetherVisible');
+      expect(source).toIncludeText('var dockVisible = state.transferComplete;');
+      expect(source).toIncludeText('transferDockCue.visible = dockVisible');
+      expect(source).toIncludeText("state.transferMode === 'tethered' ? transferBagMass : 0");
+      expect(source).toIncludeText("emit('transfer-attempt'");
+      expect(source).toIncludeText("emit('transfer-contact'");
+      expect(source).toIncludeText("emit('transfer-complete'");
+      expect(source).toIncludeText("if (event.code === 'KeyB')");
+      expect(source).toIncludeText('cv._issInteriorTransferAction = transferAction');
+      expect(source).toIncludeText('cv._issInteriorTransferAttempts = state.transferAttempts');
+      expect(source).toIncludeText('cv._issInteriorTransferContacts = state.transferContacts');
+      expect(source).toIncludeText('cv._issInteriorTransferCompletions = state.transferCompletions');
+      expect(source).toIncludeText('cv._issInteriorTransferComplete = state.transferComplete');
+      expect(source).toIncludeText('cv._issInteriorTransferAction = null');
+      expect(source).toIncludeText("event.type === 'transfer-attempt'");
+      expect(source).toIncludeText("event.type === 'transfer-contact'");
+      expect(source).toIncludeText("event.type === 'transfer-complete'");
+      expect(source).toIncludeText('nav.transferAttempts = Math.max');
+      expect(source).toIncludeText('nav.transferComplete = true');
+      expect(source).toIncludeText("if (event.source !== 'diagram')");
       const transferReducerStart = source.indexOf("} else if (event.type === 'transfer-attempt')");
       const transferReducerEnd = source.indexOf("} else if (event.type === 'stow-attempt')", transferReducerStart);
       const transferReducerSource = source.slice(transferReducerStart, transferReducerEnd);
       expect(transferReducerStart).toBeGreaterThan(-1);
       expect(transferReducerEnd).toBeGreaterThan(transferReducerStart);
-      expect(transferReducerSource).toContain('var reportedTransferContact = Number(event.contact);');
-      expect(transferReducerSource).toContain('? Math.max(Number(nav.transferContacts || 0), reportedTransferContact) : Number(nav.transferContacts || 0) + 1;');
-      expect(transferReducerSource).toContain("if (event.source !== 'diagram') {");
-      expect(transferReducerSource).toContain("nav.flightRoom = 'harmony';");
-      expect(transferReducerSource).toContain("} else if (event.type === 'transfer-cancelled') {");
-      expect(transferReducerSource).toContain("nav.transferLastOutcome = 'cancelled';");
-      expect(transferReducerSource).toContain('nav.transferCancelledTo = event.to || null;');
-      expect(transferReducerSource).toContain('if (!nav.transferComplete) nav.transferCompletions = Math.max');
-      expect(source).toContain("{ id: 'transfer', done: !!navigation.transferComplete");
-      expect(source).toContain("'data-iss-interior-transfer-action': 'true'");
-      expect(source).toContain("'data-iss-interior-transfer-readout': 'true'");
-      expect(source).toContain("'aria-describedby': 'iss-interior-transfer-readout'");
-      expect(source).toContain("'aria-keyshortcuts': 'B'");
-      expect(source).toContain('canvas._issInteriorTransferAttempts = Number(navigation.transferAttempts || 0)');
-      expect(source).toContain('canvas._issInteriorTransferContacts = Number(navigation.transferContacts || 0)');
-      expect(source).toContain('canvas._issInteriorTransferCompletions = Number(navigation.transferCompletions || 0)');
-      expect(source).toContain('canvas._issInteriorTransferComplete = !!navigation.transferComplete');
-      expect(source).toContain('cv._issInteriorTransferAttempts = null');
-      expect(source).toContain('cv._issInteriorTransferContacts = null');
-      expect(source).toContain('cv._issInteriorTransferCompletions = null');
-      expect(source).toContain('cv._issInteriorTransferComplete = null');
-      expect(source).toContain('function chooseHatchTransferDiagram(choice)');
-      expect(source).toContain("if (navigation.transferComplete) return;");
-      expect(source).toContain("'data-iss-hatch-transfer-diagram': 'true'");
-      expect(source).toContain("'aria-labelledby': 'iss-hatch-transfer-diagram-title'");
-      expect(source).toContain("'data-iss-hatch-transfer-clearance-cue': 'true'");
-      expect(source).toContain("'aria-labelledby': 'iss-hatch-transfer-svg-title iss-hatch-transfer-svg-desc'");
-      expect(source).toContain("h('title', { id: 'iss-hatch-transfer-svg-title' }");
-      expect(source).toContain("h('desc', { id: 'iss-hatch-transfer-svg-desc' }");
-      expect(source).toContain("'data-iss-hatch-transfer-choice': choice[0]");
-      expect(source).toContain("'data-iss-hatch-transfer-diagram-readout': 'true'");
-      expect(source).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
-      expect(source).toContain("['aligned', 'Align body + bag on centerline']");
-      expect(source).toContain("['body-only', 'Center my body only']");
-      expect(source).toContain("['pull-hard', 'Pull harder through the rim']");
-      expect(source).toContain('SAFE CENTER RADIUS 0.70 M');
+      expect(transferReducerSource).toIncludeText('var reportedTransferContact = Number(event.contact);');
+      expect(transferReducerSource).toIncludeText('? Math.max(Number(nav.transferContacts || 0), reportedTransferContact) : Number(nav.transferContacts || 0) + 1;');
+      expect(transferReducerSource).toIncludeText("if (event.source !== 'diagram') {");
+      expect(transferReducerSource).toIncludeText("nav.flightRoom = 'harmony';");
+      expect(transferReducerSource).toIncludeText("} else if (event.type === 'transfer-cancelled') {");
+      expect(transferReducerSource).toIncludeText("nav.transferLastOutcome = 'cancelled';");
+      expect(transferReducerSource).toIncludeText('nav.transferCancelledTo = event.to || null;');
+      expect(transferReducerSource).toIncludeText('if (!nav.transferComplete) nav.transferCompletions = Math.max');
+      expect(source).toIncludeText("{ id: 'transfer', done: !!navigation.transferComplete");
+      expect(source).toIncludeText("'data-iss-interior-transfer-action': 'true'");
+      expect(source).toIncludeText("'data-iss-interior-transfer-readout': 'true'");
+      expect(source).toIncludeText("'aria-describedby': 'iss-interior-transfer-readout'");
+      expect(source).toIncludeText("'aria-keyshortcuts': 'B'");
+      expect(source).toIncludeText('canvas._issInteriorTransferAttempts = Number(navigation.transferAttempts || 0)');
+      expect(source).toIncludeText('canvas._issInteriorTransferContacts = Number(navigation.transferContacts || 0)');
+      expect(source).toIncludeText('canvas._issInteriorTransferCompletions = Number(navigation.transferCompletions || 0)');
+      expect(source).toIncludeText('canvas._issInteriorTransferComplete = !!navigation.transferComplete');
+      expect(source).toIncludeText('cv._issInteriorTransferAttempts = null');
+      expect(source).toIncludeText('cv._issInteriorTransferContacts = null');
+      expect(source).toIncludeText('cv._issInteriorTransferCompletions = null');
+      expect(source).toIncludeText('cv._issInteriorTransferComplete = null');
+      expect(source).toIncludeText('function chooseHatchTransferDiagram(choice)');
+      expect(source).toIncludeText("if (navigation.transferComplete) return;");
+      expect(source).toIncludeText("'data-iss-hatch-transfer-diagram': 'true'");
+      expect(source).toIncludeText("'aria-labelledby': 'iss-hatch-transfer-diagram-title'");
+      expect(source).toIncludeText("'data-iss-hatch-transfer-clearance-cue': 'true'");
+      expect(source).toIncludeText("'aria-labelledby': 'iss-hatch-transfer-svg-title iss-hatch-transfer-svg-desc'");
+      expect(source).toIncludeText("h('title', { id: 'iss-hatch-transfer-svg-title' }");
+      expect(source).toIncludeText("h('desc', { id: 'iss-hatch-transfer-svg-desc' }");
+      expect(source).toIncludeText("'data-iss-hatch-transfer-choice': choice[0]");
+      expect(source).toIncludeText("'data-iss-hatch-transfer-diagram-readout': 'true'");
+      expect(source).toIncludeText("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+      expect(source).toIncludeText("['aligned', 'Align body + bag on centerline']");
+      expect(source).toIncludeText("['body-only', 'Center my body only']");
+      expect(source).toIncludeText("['pull-hard', 'Pull harder through the rim']");
+      expect(source).toIncludeText('SAFE CENTER RADIUS 0.70 M');
       const transferDiagramStart = source.indexOf('function chooseHatchTransferDiagram(choice)');
       const transferDiagramEnd = source.indexOf('function sceneArt()', transferDiagramStart);
       const transferDiagramSource = source.slice(transferDiagramStart, transferDiagramEnd);
       expect(transferDiagramStart).toBeGreaterThan(-1);
       expect(transferDiagramEnd).toBeGreaterThan(transferDiagramStart);
-      expect(transferDiagramSource).toContain("type: 'transfer-contact'");
-      expect(transferDiagramSource).toContain("type: 'transfer-complete'");
-      expect(transferDiagramSource).toContain("source: 'diagram'");
-      expect(transferDiagramSource).toContain('safeRadius: 0.70');
+      expect(transferDiagramSource).toIncludeText("type: 'transfer-contact'");
+      expect(transferDiagramSource).toIncludeText("type: 'transfer-complete'");
+      expect(transferDiagramSource).toIncludeText("source: 'diagram'");
+      expect(transferDiagramSource).toIncludeText('safeRadius: 0.70');
       // Harmony adds three independently drifting cabin items. Safe capture is
       // based on reach and relative velocity; restraint requires a stable rail
       // brace at the matching item-specific target.
-      expect(source).toContain("addHarmonyStowItem('bag', 'sleeping bag'");
-      expect(source).toContain("addHarmonyStowItem('tablet', 'crew tablet'");
-      expect(source).toContain("addHarmonyStowItem('cloth', 'damp washcloth'");
-      expect(source).toContain("target.name = 'iss-harmony-restraint-' + id");
-      expect(source).toContain('harmonyStowTargets.bag.add(bagStrap)');
-      expect(source).toContain('harmonyStowTargets.tablet.add(tabletDock)');
-      expect(source).toContain('harmonyStowTargets.cloth.add(hygienePouch)');
-      expect(source).toContain('var stowCatchReach = 0.65');
-      expect(source).toContain('var stowCatchRelativeSpeed = 0.2');
-      expect(source).toContain('function stowAction()');
-      expect(source).toContain('var stableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035');
-      expect(source).toContain("emit('stow-caught'");
-      expect(source).toContain("emit('stow-secured'");
-      expect(source).toContain("emit('stow-complete'");
-      expect(source).toContain("emit('stow-airflow-warning'");
-      expect(source).toContain("if (event.code === 'KeyX')");
-      expect(source).toContain("event.type === 'stow-attempt'");
-      expect(source).toContain("event.type === 'stow-caught'");
-      expect(source).toContain("event.type === 'stow-secured'");
-      expect(source).toContain("event.type === 'stow-complete'");
-      expect(source).toContain('station.cabinStow = { bag: true, tablet: true, cloth: true }');
-      expect(source).toContain("{ id: 'stow', done: cabinStowComplete");
-      expect(source).toContain('if (state.stowComplete)');
-      expect(source).toContain('stowEl.disabled = state.stowComplete');
+      expect(source).toIncludeText("addHarmonyStowItem('bag', 'sleeping bag'");
+      expect(source).toIncludeText("addHarmonyStowItem('tablet', 'crew tablet'");
+      expect(source).toIncludeText("addHarmonyStowItem('cloth', 'damp washcloth'");
+      expect(source).toIncludeText("target.name = 'iss-harmony-restraint-' + id");
+      expect(source).toIncludeText('harmonyStowTargets.bag.add(bagStrap)');
+      expect(source).toIncludeText('harmonyStowTargets.tablet.add(tabletDock)');
+      expect(source).toIncludeText('harmonyStowTargets.cloth.add(hygienePouch)');
+      expect(source).toIncludeText('var stowCatchReach = 0.65');
+      expect(source).toIncludeText('var stowCatchRelativeSpeed = 0.2');
+      expect(source).toIncludeText('function stowAction()');
+      expect(source).toIncludeText('var stableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035');
+      expect(source).toIncludeText("emit('stow-caught'");
+      expect(source).toIncludeText("emit('stow-secured'");
+      expect(source).toIncludeText("emit('stow-complete'");
+      expect(source).toIncludeText("emit('stow-airflow-warning'");
+      expect(source).toIncludeText("if (event.code === 'KeyX')");
+      expect(source).toIncludeText("event.type === 'stow-attempt'");
+      expect(source).toIncludeText("event.type === 'stow-caught'");
+      expect(source).toIncludeText("event.type === 'stow-secured'");
+      expect(source).toIncludeText("event.type === 'stow-complete'");
+      expect(source).toIncludeText('station.cabinStow = { bag: true, tablet: true, cloth: true }');
+      expect(source).toIncludeText("{ id: 'stow', done: cabinStowComplete");
+      expect(source).toIncludeText('if (state.stowComplete)');
+      expect(source).toIncludeText('stowEl.disabled = state.stowComplete');
       expect(source.indexOf('if (state.stowComplete)', source.indexOf('function stowAction()'))).toBeLessThan(
         source.indexOf('state.stowAttempts += 1', source.indexOf('function stowAction()')),
       );
-      expect(source).toContain('function freshInteriorNavigation()');
-      expect(source).toContain("interiorView: '3d', interiorNav: freshInteriorNavigation()");
-      expect(source).toContain('var startsFreshInteriorShift = patch && patch.interiorShiftComplete === false');
-      expect(source).toContain('if (startsFreshInteriorShift) patch = Object.assign({}, patch, { interiorNav: freshInteriorNavigation() })');
+      expect(source).toIncludeText('function freshInteriorNavigation()');
+      expect(source).toIncludeText("interiorView: '3d', interiorNav: freshInteriorNavigation()");
+      expect(source).toIncludeText('var startsFreshInteriorShift = patch && patch.interiorShiftComplete === false');
+      expect(source).toIncludeText('if (startsFreshInteriorShift) patch = Object.assign({}, patch, { interiorNav: freshInteriorNavigation() })');
       const cargoActionStart = source.indexOf('function cargoAction()');
       const stowActionStart = source.indexOf('function stowAction()');
       expect(cargoActionStart).toBeGreaterThan(-1);
@@ -670,10 +752,10 @@ describe('space station tool', () => {
       expect(source.indexOf("if (state.cargoMode === 'held')", stowActionStart)).toBeLessThan(
         source.indexOf('state.stowAttempts += 1', stowActionStart),
       );
-      expect(source).toContain("var stowHandsBusy = state.cargoMode === 'held'");
-      expect(source).toContain('is in reach and motion-matched. Press X to catch it.');
-      expect(source).not.toContain("nearestStowDistance.toFixed(2) + ' meters away at '");
-      expect(source).toContain('flowArrow.rotation.z = Math.PI / 2');
+      expect(source).toIncludeText("var stowHandsBusy = state.cargoMode === 'held'");
+      expect(source).toIncludeText('is in reach and motion-matched. Press X to catch it.');
+      expect(source).not.toIncludeText("nearestStowDistance.toFixed(2) + ' meters away at '");
+      expect(source).toIncludeText('flowArrow.rotation.z = Math.PI / 2');
       // Reduced motion removes decorative tumbling, never the pouch's actual
       // free-flight translation and collision response.
       const cargoPhysicsStart = source.indexOf("if (state.cargoMode === 'loose')");
@@ -683,186 +765,192 @@ describe('space station tool', () => {
       expect(cargoTranslation).toBeGreaterThan(cargoPhysicsStart);
       expect(cargoDecorationGuard).toBeGreaterThan(cargoTranslation);
       expect(source.indexOf('cargo.position.copy(tempCargoCandidate)', cargoTranslation)).toBeLessThan(cargoDecorationGuard);
-      expect(source).toContain('function updateMotionGuide');
-      expect(source).toContain('new THREE.ArrowHelper');
-      expect(source).toContain('motionGuideVisible');
-      expect(source).toContain('function addWayfindingPlacard');
-      expect(source).toContain('var hatchCollarMat');
-      expect(source).toContain('function updateRoomLighting');
-      expect(source).toContain('function setWorksiteAction(on)');
-      expect(source).toContain('var worksiteAngularImpulse = 0.14');
-      expect(source).toContain('var worksiteDuration = 1.5');
-      expect(source).toContain("emit('worksite-reaction'");
-      expect(source).toContain("emit('worksite-complete'");
-      expect(source).toContain("event.type === 'worksite-complete'");
-      expect(source).toContain('nav.worksiteComplete = true');
-      expect(source).toContain('var capillaryFlowRate = 1.3');
-      expect(source).toContain('var capillaryDoseMinimum = 2.7');
-      expect(source).toContain('var capillaryDoseMaximum = 3.3');
-      expect(source).toContain('Math.sqrt(state.capillaryDuration / capillaryWettingDuration)');
-      expect(source).toContain('function setCapillaryAction(on)');
-      expect(source).toContain('function cancelCapillaryAction(quiet)');
-      expect(source).toContain('function updateCapillary(dt, now)');
-      expect(source).toContain("emit('capillary-underfill'");
-      expect(source).toContain("emit('capillary-overflow'");
-      expect(source).toContain("emit('capillary-interrupted'");
-      expect(source).toContain("emit('capillary-complete'");
-      expect(source).toContain("event.type === 'capillary-complete'");
-      expect(source).toContain('nav.capillaryComplete = true');
-      expect(source).toContain('cv._issInteriorCapillaryAction = setCapillaryAction');
-      expect(source).toContain('cv._issInteriorCapillaryCancel = cancelCapillaryAction');
-      expect(source).toContain('cv._issInteriorCapillaryAction = null');
-      expect(source).toContain("'data-iss-interior-capillary-action': 'true'");
-      expect(source).toContain('cv._issInteriorResearchStep = null');
-      expect(source).toContain('cv._issInteriorCapillaryLastDose = null');
-      expect(source).toContain('if (wasActive) state.capillaryAttempts = Math.max(0, state.capillaryAttempts - 1)');
-      expect(source).toContain('onPointerLeave: capillaryCancel');
-      expect(source).toContain("'data-iss-interior-capillary-readout': 'true'");
-      expect(source).toContain('Target band reached. Release V now');
-      expect(source).toContain('SECURE SAMPLE FIRST // WATER VALVE LOCKED');
-      expect(source).toContain('Contained fluid transfer');
-      expect(source).toContain('var observationReach = 0.95');
-      expect(source).toContain('var observationDuration = 1.2');
-      expect(source).toContain('function setObservationAction(on)');
-      expect(source).toContain('function cancelObservationAction(quiet)');
-      expect(source).toContain('function updateObservation(dt, now)');
-      expect(source).toContain("emit('observation-blurred'");
-      expect(source).toContain("emit('observation-interrupted'");
-      expect(source).toContain("emit('observation-captured'");
-      expect(source).toContain("emit('observation-secured'");
-      expect(source).toContain('cv._issInteriorObservationAction = setObservationAction');
-      expect(source).toContain('cv._issInteriorObservationCancel = cancelObservationAction');
-      expect(source).toContain('cv._issInteriorObservationAction = null');
-      expect(source).toContain('cv._issInteriorObservationCancel = null');
-      expect(source).toContain('cv._issInteriorSecureCupola = null');
-      expect(source).toContain("'data-iss-interior-observation-action': 'true'");
-      expect(source).toContain("'data-iss-interior-observation-readout': 'true'");
-      expect(source).toContain("'data-iss-interior-stow-action': 'true'");
-      expect(source).toContain("'data-iss-interior-stow-status': cabinStowComplete ? 'complete' : 'approach'");
-      expect(source).toContain("'data-iss-interior-stow-item': 'none'");
-      expect(source).toContain("'data-iss-interior-stow-count': cabinStowComplete ? '3' : '0'");
-      expect(source).toContain("'data-iss-interior-stow-readout': 'true'");
-      expect(source).toContain("'data-iss-interior-cabin-airflow': 'true'");
-      expect(source).toContain("cabinAirflowEl.setAttribute('data-state', state.stowAirflowState)");
-      expect(source).toContain("state.stowAirflowState === 'blocked'");
-      expect(source).toContain("var cabinDiagramEnabled = d.interiorView === 'diagram'");
-      expect(source).toContain('Capture Earth frame (P)');
-      expect(source).toContain('releasing early blurs the frame');
-      expect(source).not.toContain('if (roomAt(tempCandidate))');
-      expect(source).toContain("emit('hatch'");
-      expect(source).toContain("emit('cargo-clear'");
-      expect(source).toContain("emit('orientation-recovered'");
-      expect(source).toContain("emit('route-complete'");
-      expect(source).toContain('if (!state.routeComplete)');
-      expect(source).toContain('if (!preserveProgress && !state.routeComplete)');
-      expect(source).toContain('nav.routeComplete = !!nav.routeComplete || !!canvasState.routeComplete');
-      expect(source).toContain('nav.flightRoom = event.to');
-      expect(source).toContain('storedNavigation.flightRoom');
-      expect(source).not.toContain('station.interiorRoom = event.to');
-      expect(source).toContain("'data-iss-interior-room-select': r.id");
-      expect(source).toContain("'data-iss-interior-reset-route': 'true'");
-      expect(source).toContain("if (interiorView !== 'diagram' || roomDone || captured) return;");
-      expect(source).toContain("recordInteriorNavigation({ type: 'observation-captured'");
-      expect(source).toContain("source: 'diagram'");
-      expect(source).toContain('function railDistance');
-      expect(source).toContain('function nextRouteTarget');
-      expect(source).toContain('distance > 0.68');
-      expect(source).toContain('speed >= 0.12 && speed <= 0.35');
-      expect(source).toContain('side: THREE.BackSide');
-      expect(source).toContain('THREE.CanvasTexture');
-      expect(source).toContain('issEarthCanvases(256)');
-      expect(source).toContain('new THREE.RingGeometry(aperture, bulkheadOuterRadius');
-      expect(source).toContain('polygonOffset: true');
-      expect(source).toContain('COUNTER-PUSH NOW // FAST');
-      expect(source).toContain('function addModulePlacard');
-      expect(source).toContain('function addActivityBeacon');
-      expect(source).toContain('function addModuleIdentityKit');
+      expect(source).toIncludeText('function updateMotionGuide');
+      expect(source).toIncludeText('new THREE.ArrowHelper');
+      expect(source).toIncludeText('motionGuideVisible');
+      expect(source).toIncludeText('function addWayfindingPlacard');
+      expect(source).toIncludeText('var hatchCollarMat');
+      expect(source).toIncludeText('function updateRoomLighting');
+      expect(source).toIncludeText('function setWorksiteAction(on)');
+      expect(source).toIncludeText('var worksiteAngularImpulse = 0.14');
+      expect(source).toIncludeText('var worksiteDuration = 1.5');
+      expect(source).toIncludeText("emit('worksite-reaction'");
+      expect(source).toIncludeText("emit('worksite-complete'");
+      expect(source).toIncludeText("event.type === 'worksite-complete'");
+      expect(source).toIncludeText('nav.worksiteComplete = true');
+      expect(source).toIncludeText('var capillaryFlowRate = 1.3');
+      expect(source).toIncludeText('var capillaryDoseMinimum = 2.7');
+      expect(source).toIncludeText('var capillaryDoseMaximum = 3.3');
+      expect(source).toIncludeText('Math.sqrt(state.capillaryDuration / capillaryWettingDuration)');
+      expect(source).toIncludeText('function setCapillaryAction(on)');
+      expect(source).toIncludeText('function cancelCapillaryAction(quiet)');
+      expect(source).toIncludeText('function updateCapillary(dt, now)');
+      expect(source).toIncludeText("emit('capillary-underfill'");
+      expect(source).toIncludeText("emit('capillary-overflow'");
+      expect(source).toIncludeText("emit('capillary-interrupted'");
+      expect(source).toIncludeText("emit('capillary-complete'");
+      expect(source).toIncludeText("event.type === 'capillary-complete'");
+      expect(source).toIncludeText('nav.capillaryComplete = true');
+      expect(source).toIncludeText('cv._issInteriorCapillaryAction = setCapillaryAction');
+      expect(source).toIncludeText('cv._issInteriorCapillaryCancel = cancelCapillaryAction');
+      expect(source).toIncludeText('cv._issInteriorCapillaryAction = null');
+      expect(source).toIncludeText("'data-iss-interior-capillary-action': 'true'");
+      expect(source).toIncludeText('cv._issInteriorResearchStep = null');
+      expect(source).toIncludeText('cv._issInteriorCapillaryLastDose = null');
+      expect(source).toIncludeText('if (wasActive) state.capillaryAttempts = Math.max(0, state.capillaryAttempts - 1)');
+      expect(source).toIncludeText('onPointerLeave: capillaryCancel');
+      expect(source).toIncludeText("'data-iss-interior-capillary-readout': 'true'");
+      expect(source).toIncludeText('Target band reached. Release V now');
+      expect(source).toIncludeText('SECURE SAMPLE FIRST // WATER VALVE LOCKED');
+      expect(source).toIncludeText('Contained fluid transfer');
+      expect(source).toIncludeText('var observationReach = 0.95');
+      expect(source).toIncludeText('var observationDuration = 1.2');
+      expect(source).toIncludeText('function setObservationAction(on)');
+      expect(source).toIncludeText('function cancelObservationAction(quiet)');
+      expect(source).toIncludeText('function updateObservation(dt, now)');
+      expect(source).toIncludeText("emit('observation-blurred'");
+      expect(source).toIncludeText("emit('observation-interrupted'");
+      expect(source).toIncludeText("emit('observation-captured'");
+      expect(source).toIncludeText("emit('observation-secured'");
+      expect(source).toIncludeText('cv._issInteriorObservationAction = setObservationAction');
+      expect(source).toIncludeText('cv._issInteriorObservationCancel = cancelObservationAction');
+      expect(source).toIncludeText('cv._issInteriorObservationAction = null');
+      expect(source).toIncludeText('cv._issInteriorObservationCancel = null');
+      expect(source).toIncludeText('cv._issInteriorSecureCupola = null');
+      expect(source).toIncludeText("'data-iss-interior-observation-action': 'true'");
+      expect(source).toIncludeText("'data-iss-interior-observation-readout': 'true'");
+      expect(source).toIncludeText("'data-iss-interior-stow-action': 'true'");
+      expect(source).toIncludeText("'data-iss-interior-stow-status': cabinStowComplete ? 'complete' : 'approach'");
+      expect(source).toIncludeText("'data-iss-interior-stow-item': 'none'");
+      expect(source).toIncludeText("'data-iss-interior-stow-count': cabinStowComplete ? '3' : '0'");
+      expect(source).toIncludeText("'data-iss-interior-stow-readout': 'true'");
+      expect(source).toIncludeText("'data-iss-interior-cabin-airflow': 'true'");
+      expect(source).toIncludeText("cabinAirflowEl.setAttribute('data-state', state.stowAirflowState)");
+      expect(source).toIncludeText("state.stowAirflowState === 'blocked'");
+      expect(source).toIncludeText("var cabinDiagramEnabled = d.interiorView === 'diagram'");
+      expect(source).toIncludeText('Capture Earth frame (P)');
+      expect(source).toIncludeText('releasing early blurs the frame');
+      expect(source).not.toIncludeText('if (roomAt(tempCandidate))');
+      expect(source).toIncludeText("emit('hatch'");
+      expect(source).toIncludeText("emit('cargo-clear'");
+      expect(source).toIncludeText("emit('orientation-recovered'");
+      expect(source).toIncludeText("emit('route-complete'");
+      expect(source).toIncludeText('if (!state.routeComplete)');
+      expect(source).toIncludeText('if (!preserveProgress && !state.routeComplete)');
+      expect(source).toIncludeText('nav.routeComplete = !!nav.routeComplete || !!canvasState.routeComplete');
+      expect(source).toIncludeText('nav.flightRoom = event.to');
+      expect(source).toIncludeText('storedNavigation.flightRoom');
+      expect(source).not.toIncludeText('station.interiorRoom = event.to');
+      expect(source).toIncludeText("'data-iss-interior-room-select': r.id");
+      expect(source).toIncludeText("'data-iss-interior-reset-route': 'true'");
+      expect(source).toIncludeText("if (interiorView !== 'diagram' || roomDone || captured) return;");
+      expect(source).toIncludeText("recordInteriorNavigation({ type: 'observation-captured'");
+      expect(source).toIncludeText("source: 'diagram'");
+      expect(source).toIncludeText('function railDistance');
+      expect(source).toIncludeText('function nextRouteTarget');
+      expect(source).toIncludeText('distance > 0.68');
+      expect(source).toIncludeText('speed >= 0.12 && speed <= 0.35');
+      expect(source).toIncludeText('side: THREE.BackSide');
+      expect(source).toIncludeText('THREE.CanvasTexture');
+      expect(source).toIncludeText('issEarthCanvases(256)');
+      expect(source).toIncludeText('new THREE.RingGeometry(aperture, bulkheadOuterRadius');
+      expect(source).toIncludeText('polygonOffset: true');
+      expect(source).toIncludeText('COUNTER-PUSH NOW // FAST');
+      expect(source).toIncludeText('function addModulePlacard');
+      expect(source).toIncludeText('function addActivityBeacon');
+      expect(source).toIncludeText('function addModuleIdentityKit');
       const identityKitStart = source.indexOf('function addModuleIdentityKit');
       const identityKitEnd = source.indexOf('function addRoom', identityKitStart);
       const identityKitSource = source.slice(identityKitStart, identityKitEnd);
       ['harmony', 'destiny', 'unity', 'tranquility', 'cupola'].forEach((roomId) =>
-        expect(identityKitSource).toContain("def.id === '" + roomId + "'"));
+        expect(identityKitSource).toIncludeText("def.id === '" + roomId + "'"));
       ['berth', 'scienceGlass', 'destinyWickDry', 'restraintRing', 'duct', 'controller'].forEach((landmark) =>
-        expect(identityKitSource).toContain(landmark));
-      expect(source).toContain('function updateCrewRig');
-      expect(source).toContain("handPose: 'tucked'");
-      expect(source).toContain('data-iss-hand-pose');
-      expect(source).toContain('cv._issInteriorRouteStep');
-      expect(source).toContain('cv._issInteriorRouteComplete');
-      expect(source).toContain('cv._issInteriorVisitedRooms');
-      expect(source).toContain('cv._issInteriorOrientationDone');
-      expect(source).toContain('iss-interior-route-map');
-      expect(source).toContain('iss-route-schematic');
-      expect(source).toContain('data-iss-interior-rail-distance');
-      expect(source).toContain('data-iss-interior-next-label');
-      expect(source).toContain('data-iss-interior-next-distance');
-      expect(source).toContain('data-iss-interior-next-arrow');
-      expect(source).toContain('data-iss-interior-event');
-      expect(source).toContain('data-iss-interior-objective');
-      expect(source).toContain('data-iss-interior-reticle');
-      expect(source).toContain('data-iss-interior-orientation');
-      expect(source).toContain('data-iss-interior-braking');
-      expect(source).toContain('data-iss-interior-impact-flash');
-      expect(source).toContain('data-iss-interior-cargo-action');
-      expect(source).toContain('data-iss-interior-cargo-status');
-      expect(source).toContain('data-iss-interior-worksite-action');
-      expect(source).toContain('data-iss-interior-worksite-status');
-      expect(source).toContain('grabEl.disabled = false');
-      expect(source).toContain("grabEl.setAttribute('aria-disabled', !state.railHeld && distanceToRail > 0.68 ? 'true' : 'false')");
-      expect(source).toContain('cv._issInteriorCargoAction = null');
-      expect(source).toContain('cv._issInteriorStowAction = null');
-      expect(source).toContain('cv._issInteriorStowSceneItems = null');
-      expect(source).toContain('cv._issInteriorCabinStow = null');
-      expect(source).toContain('cv._issInteriorCabinComplete = null');
-      expect(source).toContain('cv._issInteriorStowItems = null');
-      expect(source).toContain('cv._issInteriorStowAttempts = null');
-      expect(source).toContain('cv._issInteriorStowCatches = null');
-      expect(source).toContain('cv._issInteriorStowSecures = null');
-      expect(source).toContain('cv._issInteriorStowWarnings = null');
-      expect(source).toContain('cv._issInteriorWorksiteAction = null');
-      expect(source).toContain('cv._issInteriorEvent = null');
-      expect(source).toContain('cv._issInteriorWantRoom = null');
-      expect(source).toContain('renderer.forceContextLoss()');
-      expect(source).toContain('function handleInteriorInitFailure');
-      expect(source).toContain('cv._issInteriorRenderer = renderer');
-      expect(source).toContain("cv.addEventListener('webglcontextlost'");
-      expect(source).toContain("cv.removeEventListener('webglcontextlost'");
-      expect(source).toContain('data-iss-next-maneuver');
-      expect(source).toContain('data-iss-interior-fallback');
-      expect(source).toContain('function showInteriorFallback');
-      expect(source).toContain("shell.setAttribute('data-iss-webgl-state', 'unavailable')");
-      expect(source).toContain("shell.querySelectorAll('.iss-interior-controls button')");
-      expect(source).toContain('unavailableControls[controlIndex].disabled = true');
-      expect(source).toContain('.iss-interior-sim[data-iss-webgl-state="unavailable"] .iss-interior-controls{display:none}');
-      expect(source).toContain('chooseInterior');
-      expect(source).toContain('data-iss-lowg-sim');
-      expect(source).toContain('data-iss-lowg-trajectory');
-      expect(source).toContain('HANDRAIL CATCH WINDOW');
-      expect(source).toContain('var speed = impulse / 70');
-      expect(source).toContain('Learning guidance level');
-      expect(source).toContain('interiorInspected');
-      expect(source).toContain('data-iss-research-procedure');
-      expect(source).toContain('data-iss-capillary-visual');
-      expect(source).toContain('data-iss-maintenance-console');
-      expect(source).toContain('data-iss-maintenance-telemetry');
-      expect(source).toContain('data-iss-crew-notebook');
-      expect(source).toContain('data-iss-cabin-stow');
-      expect(source).toContain('data-iss-cabin-safety');
-      expect(source).toContain('LOOSE-ITEM SAFETY SCAN');
-      expect(source).toContain('data-iss-cupola-observation');
-      expect(source).toContain('data-iss-cupola-view');
-      expect(source).toContain('data-observation-state');
-      expect(source).toContain("'aria-describedby': 'iss-ask-count'");
-      expect(source).toContain("'aria-disabled': d.askLoading ? 'true' : undefined");
-      expect(source).toContain("'data-iss-quiz-next': 'true'");
-      expect(source).toContain('answerState');
+        expect(identityKitSource).toIncludeText(landmark));
+      expect(source).toIncludeText('function updateCrewRig');
+      expect(source).toIncludeText("handPose: 'tucked'");
+      expect(source).toIncludeText('data-iss-hand-pose');
+      expect(source).toIncludeText('cv._issInteriorRouteStep');
+      expect(source).toIncludeText('cv._issInteriorRouteComplete');
+      expect(source).toIncludeText('cv._issInteriorVisitedRooms');
+      expect(source).toIncludeText('cv._issInteriorOrientationDone');
+      expect(source).toIncludeText('iss-interior-route-map');
+      expect(source).toIncludeText('iss-route-schematic');
+      expect(source).toIncludeText('data-iss-interior-rail-distance');
+      expect(source).toIncludeText('data-iss-interior-next-label');
+      expect(source).toIncludeText('data-iss-interior-next-distance');
+      expect(source).toIncludeText('data-iss-interior-next-arrow');
+      expect(source).toIncludeText('data-iss-interior-event');
+      expect(source).toIncludeText('data-iss-interior-objective');
+      expect(source).toIncludeText('data-iss-interior-reticle');
+      expect(source).toIncludeText('data-iss-interior-orientation');
+      expect(source).toIncludeText('data-iss-interior-braking');
+      expect(source).toIncludeText('data-iss-interior-impact-flash');
+      expect(source).toIncludeText('data-iss-interior-cargo-action');
+      expect(source).toIncludeText('data-iss-interior-cargo-status');
+      expect(source).toIncludeText('data-iss-interior-worksite-action');
+      expect(source).toIncludeText('data-iss-interior-worksite-status');
+      expect(source).toIncludeText('grabEl.disabled = false');
+      expect(source).toIncludeText("grabEl.setAttribute('aria-disabled', !state.railHeld && distanceToRail > 0.68 ? 'true' : 'false')");
+      expect(source).toIncludeText('cv._issInteriorCargoAction = null');
+      expect(source).toIncludeText('cv._issInteriorStowAction = null');
+      expect(source).toIncludeText('cv._issInteriorStowSceneItems = null');
+      expect(source).toIncludeText('cv._issInteriorCabinStow = null');
+      expect(source).toIncludeText('cv._issInteriorCabinComplete = null');
+      expect(source).toIncludeText('cv._issInteriorStowItems = null');
+      expect(source).toIncludeText('cv._issInteriorStowAttempts = null');
+      expect(source).toIncludeText('cv._issInteriorStowCatches = null');
+      expect(source).toIncludeText('cv._issInteriorStowSecures = null');
+      expect(source).toIncludeText('cv._issInteriorStowWarnings = null');
+      expect(source).toIncludeText('cv._issInteriorWorksiteAction = null');
+      expect(source).toIncludeText('cv._issInteriorEvent = null');
+      expect(source).toIncludeText('cv._issInteriorWantRoom = null');
+      expect(source).toIncludeText('renderer.forceContextLoss()');
+      expect(source).toIncludeText('function handleInteriorInitFailure');
+      expect(source).toIncludeText('cv._issInteriorRenderer = renderer');
+      expect(source).toIncludeText("cv.addEventListener('webglcontextlost'");
+      expect(source).toIncludeText("cv.removeEventListener('webglcontextlost'");
+      expect(source).toIncludeText('data-iss-next-maneuver');
+      expect(source).toIncludeText('data-iss-interior-fallback');
+      expect(source).toIncludeText('function showInteriorFallback');
+      expect(source).toIncludeText("shell.setAttribute('data-iss-webgl-state', 'unavailable')");
+      expect(source).toIncludeText("shell.querySelectorAll('.iss-interior-controls button')");
+      expect(source).toIncludeText('unavailableControls[controlIndex].disabled = true');
+      expect(source).toIncludeText('.iss-interior-sim[data-iss-webgl-state="unavailable"] .iss-interior-controls{display:none}');
+      expect(source).toIncludeText('chooseInterior');
+      expect(source).toIncludeText('data-iss-lowg-sim');
+      expect(source).toIncludeText('data-iss-lowg-trajectory');
+      expect(source).toIncludeText('HANDRAIL CATCH WINDOW');
+      expect(source).toIncludeText('var speed = impulse / 70');
+      expect(source).toIncludeText('Learning guidance level');
+      expect(source).toIncludeText('interiorInspected');
+      expect(source).toIncludeText('data-iss-research-procedure');
+      expect(source).toIncludeText('data-iss-capillary-visual');
+      expect(source).toIncludeText('data-iss-maintenance-console');
+      expect(source).toIncludeText('data-iss-maintenance-telemetry');
+      expect(source).toIncludeText('data-iss-crew-notebook');
+      expect(source).toIncludeText('data-iss-cabin-stow');
+      expect(source).toIncludeText('data-iss-cabin-safety');
+      expect(source).toIncludeText('LOOSE-ITEM SAFETY SCAN');
+      expect(source).toIncludeText('data-iss-cupola-observation');
+      expect(source).toIncludeText('data-iss-cupola-view');
+      expect(source).toIncludeText('data-observation-state');
+      expect(source).toIncludeText("'aria-describedby': 'iss-ask-count'");
+      expect(source).toIncludeText("'aria-disabled': d.askLoading ? 'true' : undefined");
+      expect(source).toIncludeText("'data-iss-quiz-next': 'true'");
+      expect(source).toIncludeText('answerState');
     });
   });
 
   describe('mount smoke — every tab really renders', () => {
+    let sheetsBefore = 0;
     beforeEach(() => {
       resetStemLab();
       loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
+      sheetsBefore = document.styleSheets.length;
+    });
+    // A leaked sheet slows every later getComputedStyle call; fail where it starts.
+    afterEach(() => {
+      expect(document.styleSheets.length, 'stylesheets left behind by this test').toBe(sheetsBefore);
     });
 
     it('counts a completed bulky hatch transfer toward the free-flight quest', () => {
@@ -888,13 +976,13 @@ describe('space station tool', () => {
       // The station is the tool's opening image: a fresh bucket must land on
       // the 3-D map, not on the crew-shift interior it used to open with.
       const html = mountWithSeed(null);
-      expect(html).toContain('Space Station');
-      expect(html).toContain('iss-station-stage');
-      expect(html).toContain('ISS // ORBITAL VIEW');
-      expect(html).toContain('Interactive 3-D model of the International Space Station');
-      expect(html).toContain('Fast facts');
+      expect(html).toIncludeText('Space Station');
+      expect(html).toIncludeText('iss-station-stage');
+      expect(html).toIncludeText('ISS // ORBITAL VIEW');
+      expect(html).toIncludeText('Interactive 3-D model of the International Space Station');
+      expect(html).toIncludeText('Fast facts');
       // ...and the interior surface is NOT what greets them.
-      expect(html).not.toContain('data-iss-room-transition');
+      expect(html).not.toIncludeText('data-iss-room-transition');
       // The 3-D tab is also first in the tablist, so keyboard Home reaches it.
       const mapIndex = html.indexOf('iss-tab-map');
       const interiorIndex = html.indexOf('iss-tab-interior');
@@ -904,12 +992,12 @@ describe('space station tool', () => {
 
     it('still opens the interior crew shift when that tab is selected', () => {
       const html = mountWithSeed({ ...BASE, tab: 'interior' });
-      expect(html).toContain('Float inside. Work like an astronaut.');
-      expect(html).toContain('Crew quarters');
-      expect(html).toContain('CONNECTED INTERIOR ROUTE');
-      expect(html).toContain('PORT TURN // NADIR DESCENT');
-      expect(html).toContain('data-iss-room-transition');
-      expect(html).toContain('Stow your sleep station');
+      expect(html).toIncludeText('Float inside. Work like an astronaut.');
+      expect(html).toIncludeText('Crew quarters');
+      expect(html).toIncludeText('CONNECTED INTERIOR ROUTE');
+      expect(html).toIncludeText('PORT TURN // NADIR DESCENT');
+      expect(html).toIncludeText('data-iss-room-transition');
+      expect(html).toIncludeText('Stow your sleep station');
       const routeStart = html.indexOf('YOU // HARMONY');
       const routeDestiny = html.indexOf('>DESTINY<');
       const routeUnity = html.indexOf('>UNITY<');
@@ -1004,8 +1092,8 @@ describe('space station tool', () => {
         expect(worksiteAction.textContent).toContain('Service filter (T)');
         expect(live.host.querySelector('[data-iss-next-maneuver]')).not.toBeNull();
         expect(live.host.querySelector('[data-iss-interior-mode]').textContent).toBe('STATIONARY');
-        expect(live.host.textContent).toContain('Rotation continues after release');
-        expect(live.host.textContent).toContain('Grab handrail');
+        expect(live.host.textContent).toIncludeText('Rotation continues after release');
+        expect(live.host.textContent).toIncludeText('Grab handrail');
 
         act(() => { diagram.click(); });
         expect(live.host.querySelector('[data-iss-interior-canvas]')).toBeNull();
@@ -1121,8 +1209,8 @@ describe('space station tool', () => {
         expect(live.host.querySelector('[data-iss-nav-challenge="hatch"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="rail"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
-        expect(live.host.textContent).toContain('1 hatch transitions / 1 rail catches');
-        expect(live.host.textContent).toContain('1 hull contacts');
+        expect(live.host.textContent).toIncludeText('1 hatch transitions / 1 rail catches');
+        expect(live.host.textContent).toIncludeText('1 hull contacts');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('3 of 10 complete');
 
         act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
@@ -1330,7 +1418,7 @@ describe('space station tool', () => {
         expect(cargoChallenge.className).toContain('is-complete');
         expect(cargoChallenge.textContent).toContain('Pouch caught and restrained safely in Unity.');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
-        expect(live.host.textContent).toContain('1 pouches secured');
+        expect(live.host.textContent).toIncludeText('1 pouches secured');
 
         act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
         act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
@@ -1385,7 +1473,7 @@ describe('space station tool', () => {
         expect(canvas._issInteriorStowCatches).toBe(1);
         expect(canvas._issInteriorStowSecures).toBe(1);
         expect(canvas._issInteriorStowWarnings).toBe(1);
-        expect(live.host.textContent).toContain('0 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('0 / 5 jobs');
 
         act(() => {
           canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 3 });
@@ -1395,7 +1483,7 @@ describe('space station tool', () => {
         });
         expect(live.host.querySelector('[data-iss-nav-challenge="stow"]').className).not.toContain('is-complete');
         expect(canvas._issInteriorCabinStow).toEqual({ bag: true, tablet: true });
-        expect(live.host.textContent).toContain('0 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('0 / 5 jobs');
 
         act(() => {
           canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 5 });
@@ -1408,7 +1496,7 @@ describe('space station tool', () => {
         expect(stowChallenge.className).toContain('is-complete');
         expect(stowChallenge.textContent).toContain('Harmony air return clear');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
-        expect(live.host.textContent).toContain('0 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('0 / 5 jobs');
         expect(stowControl.disabled).toBe(true);
         expect(stowControl.getAttribute('data-iss-interior-stow-status')).toBe('complete');
         expect(stowControl.getAttribute('data-iss-interior-stow-count')).toBe('3');
@@ -1418,8 +1506,8 @@ describe('space station tool', () => {
           canvas._issInteriorEvent({ type: 'stow-complete', room: 'harmony', count: 3, attempt: 6, source: '3d' });
           canvas._issInteriorEvent({ type: 'stow-complete', room: 'harmony', count: 3, attempt: 6, source: '3d' });
         });
-        expect(live.host.textContent).toContain('1 / 5 jobs');
-        expect(live.host.textContent).toContain('Crew attempts: 1');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('Crew attempts: 1');
         expect(canvas._issInteriorCabinComplete).toBe(true);
         expect(canvas._issInteriorStowAttempts).toBe(6);
         expect(canvas._issInteriorStowCatches).toBe(3);
@@ -1456,7 +1544,7 @@ describe('space station tool', () => {
         const worksiteChallenge = live.host.querySelector('[data-iss-nav-challenge="worksite"]');
         expect(worksiteChallenge.className).not.toContain('is-complete');
         expect(worksiteChallenge.textContent).toContain('The tool spun you');
-        expect(live.host.textContent).toContain('1 reaction-torque events');
+        expect(live.host.textContent).toIncludeText('1 reaction-torque events');
 
         act(() => {
           canvas._issInteriorEvent({ type: 'worksite-complete', room: 'tranquility', duration: 1.5, maxSpeed: 0, maxAngularSpeed: 0, attempt: 2, braced: true });
@@ -1464,7 +1552,7 @@ describe('space station tool', () => {
         expect(worksiteChallenge.className).toContain('is-complete');
         expect(worksiteChallenge.textContent).toContain('Tranquility filter serviced without losing body position.');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
-        expect(live.host.textContent).toContain('1 filters serviced');
+        expect(live.host.textContent).toIncludeText('1 filters serviced');
 
         act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
         act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
@@ -1505,10 +1593,10 @@ describe('space station tool', () => {
         let capillaryChallenge = live.host.querySelector('[data-iss-nav-challenge="capillary"]');
         expect(capillaryChallenge.className).not.toContain('is-complete');
         expect(capillaryChallenge.textContent).toContain('Overflow stayed contained');
-        expect(live.host.textContent).toContain('1 wick underfills');
-        expect(live.host.textContent).toContain('1 contained overflows');
-        expect(live.host.textContent).toContain('0 wick transfers');
-        expect(live.host.textContent).toContain('3-D transfer interrupted');
+        expect(live.host.textContent).toIncludeText('1 wick underfills');
+        expect(live.host.textContent).toIncludeText('1 contained overflows');
+        expect(live.host.textContent).toIncludeText('0 wick transfers');
+        expect(live.host.textContent).toIncludeText('3-D transfer interrupted');
         expect(canvas._issInteriorCapillaryComplete).toBe(false);
         expect(canvas._issInteriorCapillaryAttempts).toBe(3);
         expect(canvas._issInteriorCapillaryUnderfills).toBe(1);
@@ -1523,8 +1611,8 @@ describe('space station tool', () => {
         expect(capillaryChallenge.className).toContain('is-complete');
         expect(capillaryChallenge.textContent).toContain('2.7');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
-        expect(live.host.textContent).toContain('1 wick transfers');
-        expect(live.host.textContent).toContain('Wick primed in 3-D at 2.94 mL');
+        expect(live.host.textContent).toIncludeText('1 wick transfers');
+        expect(live.host.textContent).toIncludeText('Wick primed in 3-D at 2.94 mL');
         expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('2');
         expect(canvas._issInteriorCapillaryComplete).toBe(true);
         expect(canvas._issInteriorCapillaryAttempts).toBe(4);
@@ -1543,7 +1631,7 @@ describe('space station tool', () => {
         expect(restoredCanvas._issInteriorCapillaryTransfers).toBe(1);
         expect(live.host.querySelector('[data-iss-nav-challenge="capillary"]').className).toContain('is-complete');
         expect(restoredCanvas._issInteriorCapillaryLastDose).toBeCloseTo(2.94, 5);
-        expect(live.host.textContent).toContain('1 wick transfers');
+        expect(live.host.textContent).toIncludeText('1 wick transfers');
       } finally {
         live.cleanup();
       }
@@ -1594,9 +1682,9 @@ describe('space station tool', () => {
         expect(observationChallenge.className).not.toContain('is-complete');
         expect(observationChallenge.textContent).toContain('Press P again to close all seven shutters');
         expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('0 of 10 complete');
-        expect(live.host.textContent).toContain('1 blurred Earth frames');
-        expect(live.host.textContent).toContain('1 interrupted frame locks');
-        expect(live.host.textContent).toContain('1 Earth frames captured');
+        expect(live.host.textContent).toIncludeText('1 blurred Earth frames');
+        expect(live.host.textContent).toIncludeText('1 interrupted frame locks');
+        expect(live.host.textContent).toIncludeText('1 Earth frames captured');
         expect(canvas._issInteriorCupolaTarget).toBe('aurora');
         expect(canvas._issInteriorCupolaCaptured).toBe(true);
         expect(canvas._issInteriorCupolaShutters).toBe(false);
@@ -1625,7 +1713,7 @@ describe('space station tool', () => {
         expect(observationChallenge.className).toContain('is-complete');
         expect(observationChallenge.textContent).toContain('all seven pressure-window shutters secured');
         expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('secured');
-        expect(live.host.textContent).toContain('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
       } finally {
         live.cleanup();
       }
@@ -1651,47 +1739,47 @@ describe('space station tool', () => {
 
     it('renders research, maintenance, and low-g activities inside the station', () => {
       const research = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'destiny' });
-      expect(research).toContain('Destiny laboratory');
-      expect(research).toContain('plant-water experiment');
-      expect(research).toContain('Secure the sample');
-      expect(research).toContain('Prime the wick');
-      expect(research).toContain('Start camera + baseline');
-      expect(research).toContain('data-iss-capillary-visual');
-      expect(research).toContain('CHAMBER UNLATCHED');
+      expect(research).toIncludeText('Destiny laboratory');
+      expect(research).toIncludeText('plant-water experiment');
+      expect(research).toIncludeText('Secure the sample');
+      expect(research).toIncludeText('Prime the wick');
+      expect(research).toIncludeText('Start camera + baseline');
+      expect(research).toIncludeText('data-iss-capillary-visual');
+      expect(research).toIncludeText('CHAMBER UNLATCHED');
       const maintenance = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'tranquility' });
-      expect(maintenance).toContain('Restore cabin airflow');
-      expect(maintenance).toContain('clogged inlet filter');
-      expect(maintenance).toContain('data-iss-maintenance-telemetry');
-      expect(maintenance).toContain('DIAGNOSE');
+      expect(maintenance).toIncludeText('Restore cabin airflow');
+      expect(maintenance).toIncludeText('clogged inlet filter');
+      expect(maintenance).toIncludeText('data-iss-maintenance-telemetry');
+      expect(maintenance).toIncludeText('DIAGNOSE');
       const lowG = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'unity' });
-      expect(lowG).toContain('Low-g practice');
-      expect(lowG).toContain('Push impulse');
-      expect(lowG).toContain('Predicted speed');
-      expect(lowG).toContain('data-iss-lowg-trajectory');
-      expect(lowG).toContain('HANDRAIL CATCH WINDOW');
-      expect(lowG).toContain('NO DRAG');
-      expect(lowG).toContain('Δv = impulse ÷ 70 kg');
+      expect(lowG).toIncludeText('Low-g practice');
+      expect(lowG).toIncludeText('Push impulse');
+      expect(lowG).toIncludeText('Predicted speed');
+      expect(lowG).toIncludeText('data-iss-lowg-trajectory');
+      expect(lowG).toIncludeText('HANDRAIL CATCH WINDOW');
+      expect(lowG).toIncludeText('NO DRAG');
+      expect(lowG).toIncludeText('Δv = impulse ÷ 70 kg');
     });
 
     it('turns Harmony morning life into a three-item freefall stow scan', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: 'diagram', interiorRoom: 'harmony' });
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
-        expect(live.host.textContent).toContain('0 / 3 secured');
+        expect(live.host.textContent).toIncludeText('0 / 3 secured');
         expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('risk-3');
-        expect(live.host.textContent).toContain('3 LOOSE OBJECTS');
+        expect(live.host.textContent).toIncludeText('3 LOOSE OBJECTS');
         act(() => { findButton('Sleeping bag').click(); });
-        expect(live.host.textContent).toContain('1 / 3 secured');
+        expect(live.host.textContent).toIncludeText('1 / 3 secured');
         expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('risk-2');
-        expect(live.host.textContent).toContain('BAG // SECURED');
+        expect(live.host.textContent).toIncludeText('BAG // SECURED');
         act(() => { findButton('Crew tablet').click(); });
         act(() => { findButton('Damp washcloth').click(); });
-        expect(live.host.textContent).toContain('Cabin clear');
-        expect(live.host.textContent).toContain('Air return unobstructed');
+        expect(live.host.textContent).toIncludeText('Cabin clear');
+        expect(live.host.textContent).toIncludeText('Air return unobstructed');
         expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('clear');
-        expect(live.host.textContent).toContain('CABIN CLEAR');
-        expect(live.host.textContent).toContain('1 / 5 jobs');
-        expect(live.host.textContent).toContain('Crew attempts: 1 • first-try bonus earned');
+        expect(live.host.textContent).toIncludeText('CABIN CLEAR');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('Crew attempts: 1 • first-try bonus earned');
       } finally {
         live.cleanup();
       }
@@ -1705,19 +1793,19 @@ describe('space station tool', () => {
         expect(live.host.querySelector('[data-iss-cupola-view]').getAttribute('data-iss-cupola-view')).toBe('day');
         expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('targeting');
         act(() => { findButton('Aurora curtain').click(); });
-        expect(live.host.textContent).toContain('Low light • steady camera');
+        expect(live.host.textContent).toIncludeText('Low light • steady camera');
         expect(live.host.querySelector('[data-iss-cupola-view]').getAttribute('data-iss-cupola-view')).toBe('aurora');
         act(() => { findButton('Capture image').click(); });
         expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('captured');
-        expect(live.host.textContent).toContain('FRAME CAPTURED');
-        expect(live.host.textContent).toContain('Aurora traces charged particles');
+        expect(live.host.textContent).toIncludeText('FRAME CAPTURED');
+        expect(live.host.textContent).toIncludeText('Aurora traces charged particles');
         expect(findButton('Close shutters').disabled).toBe(false);
         act(() => { findButton('Close shutters').click(); });
-        expect(live.host.textContent).toContain('WINDOWS SECURED');
-        expect(live.host.textContent).toContain('SHUTTERS CLOSED');
+        expect(live.host.textContent).toIncludeText('WINDOWS SECURED');
+        expect(live.host.textContent).toIncludeText('SHUTTERS CLOSED');
         expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('secured');
-        expect(live.host.textContent).toContain('1 / 5 jobs');
-        expect(live.host.textContent).toContain('Observation logged and Cupola secure');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('Observation logged and Cupola secure');
       } finally {
         live.cleanup();
       }
@@ -1727,21 +1815,21 @@ describe('space station tool', () => {
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         act(() => { findButton('Prime the wick').click(); });
-        expect(live.host.textContent).toContain('Sequence hold: complete step 1');
+        expect(live.host.textContent).toIncludeText('Sequence hold: complete step 1');
         act(() => { findButton('Secure the sample').click(); });
-        expect(live.host.textContent).toContain('Continue to step 2');
+        expect(live.host.textContent).toIncludeText('Continue to step 2');
         expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('1');
         act(() => { findButton('Prime the wick').click(); });
-        expect(live.host.textContent).toContain('Continue to step 3');
+        expect(live.host.textContent).toIncludeText('Continue to step 3');
         expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('2');
-        expect(live.host.textContent).toContain('CAPILLARY FRONT AT ROOTS');
+        expect(live.host.textContent).toIncludeText('CAPILLARY FRONT AT ROOTS');
         act(() => { findButton('Start camera + baseline').click(); });
-        expect(live.host.textContent).toContain('1 / 5 jobs');
-        expect(live.host.textContent).toContain('Baseline logged');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('Baseline logged');
         expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('3');
-        expect(live.host.textContent).toContain('BASELINE RECORDING');
-        expect(live.host.textContent).toContain('Science you used:');
-        expect(live.host.textContent).toContain('Crew attempts: 2');
+        expect(live.host.textContent).toIncludeText('BASELINE RECORDING');
+        expect(live.host.textContent).toIncludeText('Science you used:');
+        expect(live.host.textContent).toIncludeText('Crew attempts: 2');
       } finally {
         live.cleanup();
       }
@@ -1749,15 +1837,15 @@ describe('space station tool', () => {
     it('tracks inspected hotspots and lets learners remove guided support', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'harmony' });
       try {
-        expect(live.host.textContent).toContain('Flight hint:');
+        expect(live.host.textContent).toIncludeText('Flight hint:');
         const independent = [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes('Independent'));
         act(() => { independent.click(); });
-        expect(live.host.textContent).not.toContain('Flight hint:');
+        expect(live.host.textContent).not.toIncludeText('Flight hint:');
         const hotspot = [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes('Air return'));
         act(() => { hotspot.click(); });
-        expect(live.host.textContent).toContain('1/10');
+        expect(live.host.textContent).toIncludeText('1/10');
         expect(hotspot.textContent).toContain('✓ 🌬️ Air return');
-        expect(live.host.textContent).toContain('Air does not rise or fall here.');
+        expect(live.host.textContent).toIncludeText('Air does not rise or fall here.');
       } finally {
         live.cleanup();
       }
@@ -1769,18 +1857,18 @@ describe('space station tool', () => {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         expect(findButton('clogged inlet filter').disabled).toBe(true);
         act(() => { findButton('Fan motor current').click(); });
-        expect(live.host.textContent).toContain('motor is powered');
+        expect(live.host.textContent).toIncludeText('motor is powered');
         expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('focus-0');
         act(() => { findButton('Inlet pressure drop').click(); });
         expect(findButton('clogged inlet filter').disabled).toBe(false);
         expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('focus-1');
-        expect(live.host.textContent).toContain('EVIDENCE CORRELATED');
+        expect(live.host.textContent).toIncludeText('EVIDENCE CORRELATED');
         act(() => { findButton('clogged inlet filter').click(); });
-        expect(live.host.textContent).toContain('Airflow restored.');
-        expect(live.host.textContent).toContain('STABLE');
+        expect(live.host.textContent).toIncludeText('Airflow restored.');
+        expect(live.host.textContent).toIncludeText('STABLE');
         expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('restored');
-        expect(live.host.textContent).toContain('TRENDS STABILIZING');
-        expect(live.host.textContent).toContain('1 / 5 jobs');
+        expect(live.host.textContent).toIncludeText('TRENDS STABILIZING');
+        expect(live.host.textContent).toIncludeText('1 / 5 jobs');
       } finally {
         live.cleanup();
       }
@@ -1795,7 +1883,7 @@ describe('space station tool', () => {
           setValue.call(textarea, 'Airflow replaces natural convection in the cabin.');
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        expect(live.host.textContent).toContain('observation saved');
+        expect(live.host.textContent).toIncludeText('observation saved');
         expect(live.host.querySelector('[data-iss-crew-notebook] textarea').value).toContain('natural convection');
         const prompt = live.host.querySelector('#iss-notebook-prompt-harmony');
         const count = live.host.querySelector('#iss-notebook-count-harmony');
@@ -1812,12 +1900,12 @@ describe('space station tool', () => {
       try {
         const push = [...controlled.host.querySelectorAll('button')].find((button) => button.textContent.includes('Push off and test'));
         act(() => { push.click(); });
-        expect(controlled.host.textContent).toContain('Controlled arrival:');
-        expect(controlled.host.textContent).toContain('0.14 m/s');
+        expect(controlled.host.textContent).toIncludeText('Controlled arrival:');
+        expect(controlled.host.textContent).toIncludeText('0.14 m/s');
         expect(controlled.host.querySelector('[data-iss-lowg-trajectory]').getAttribute('data-iss-lowg-trajectory')).toBe('controlled');
-        expect(controlled.host.textContent).toContain('1 / 5 jobs');
+        expect(controlled.host.textContent).toIncludeText('1 / 5 jobs');
         act(() => { push.click(); });
-        expect(controlled.host.textContent).toContain('Crew attempts: 1 • first-try bonus earned');
+        expect(controlled.host.textContent).toIncludeText('Crew attempts: 1 • first-try bonus earned');
       } finally {
         controlled.cleanup();
       }
@@ -1826,11 +1914,11 @@ describe('space station tool', () => {
       try {
         const push = [...unsafe.host.querySelectorAll('button')].find((button) => button.textContent.includes('Push off and test'));
         act(() => { push.click(); });
-        expect(unsafe.host.textContent).toContain('Flight result:');
-        expect(unsafe.host.textContent).toContain('Approach too fast.');
+        expect(unsafe.host.textContent).toIncludeText('Flight result:');
+        expect(unsafe.host.textContent).toIncludeText('Approach too fast.');
         expect(unsafe.host.querySelector('[data-iss-lowg-trajectory]').getAttribute('data-iss-lowg-trajectory')).toBe('overspeed');
-        expect(unsafe.host.textContent).toContain('ARRIVAL OVERSPEED');
-        expect(unsafe.host.textContent).toContain('0 / 5 jobs');
+        expect(unsafe.host.textContent).toIncludeText('ARRIVAL OVERSPEED');
+        expect(unsafe.host.textContent).toIncludeText('0 / 5 jobs');
       } finally {
         unsafe.cleanup();
       }
@@ -1846,34 +1934,34 @@ describe('space station tool', () => {
         interiorLog: ['06:30 GMT — Stow your sleep station complete (first try)', '21:25 GMT — Secure the Cupola for sleep complete (first try)'],
         interiorNotes: { destiny: 'Capillary flow stayed contained.', tranquility: 'High pressure drop identified the blocked filter.' },
       });
-      expect(html).toContain('5 / 5 jobs');
-      expect(html).toContain('Science you used');
-      expect(html).toContain('Shift complete');
-      expect(html).toContain('Start another shift');
-      expect(html).toContain('First try');
-      expect(html).toContain('4/5');
-      expect(html).toContain('5/10');
-      expect(html).toContain('Notes');
-      expect(html).toContain('2/5');
+      expect(html).toIncludeText('5 / 5 jobs');
+      expect(html).toIncludeText('Science you used');
+      expect(html).toIncludeText('Shift complete');
+      expect(html).toIncludeText('Start another shift');
+      expect(html).toIncludeText('First try');
+      expect(html).toIncludeText('4/5');
+      expect(html).toIncludeText('5/10');
+      expect(html).toIncludeText('Notes');
+      expect(html).toIncludeText('2/5');
     });
 
     it('renders the Cupola interior and sleep-cabin interior when those modules are selected', () => {
       const cupola = mountWithSeed({ ...BASE, selModule: 'cupola' });
-      expect(cupola).toContain('Inside the Cupola');
-      expect(cupola).toContain('debris shutters');
+      expect(cupola).toIncludeText('Inside the Cupola');
+      expect(cupola).toIncludeText('debris shutters');
       const cabin = mountWithSeed({ ...BASE, selModule: 'harmony' });
-      expect(cabin).toContain('Inside a crew sleep cabin');
-      expect(cabin).toContain('Sleeping bag');
+      expect(cabin).toIncludeText('Inside a crew sleep cabin');
+      expect(cabin).toIncludeText('Sleeping bag');
     });
 
     it('exposes cinematic 3D view selection and module cutaway controls', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'map', selModule: 'destiny' });
       try {
-        expect(live.host.textContent).toContain('SELECTED // DESTINY');
+        expect(live.host.textContent).toIncludeText('SELECTED // DESTINY');
         expect(live.host.querySelector('[data-iss-module-marker]')).toBeTruthy();
         expect(live.host.querySelector('[data-iss-light-phase]')).toBeTruthy();
         expect(live.host.querySelector('[data-iss-orientation-widget]')).toBeTruthy();
-        expect(live.host.textContent).toContain('Orientation triad: X is port to starboard');
+        expect(live.host.textContent).toIncludeText('Orientation triad: X is port to starboard');
         expect(live.host.querySelector('[data-iss-focus-module="destiny"]')).toBeTruthy();
         expect(live.host.querySelector('[data-iss-focus-module="destiny"]').textContent).toContain('Center Destiny');
         const canvas = live.host.querySelector('canvas');
@@ -1889,24 +1977,24 @@ describe('space station tool', () => {
         const cutaway = live.host.querySelector('[data-iss-cutaway]');
         act(() => { cutaway.click(); });
         expect(live.host.querySelector('[data-iss-cutaway]').getAttribute('aria-pressed')).toBe('true');
-        expect(live.host.textContent).toContain('Cutaway ON');
+        expect(live.host.textContent).toIncludeText('Cutaway ON');
       } finally {
         live.cleanup();
       }
     });
     it('renders A Day Aboard with the exercise WHY', () => {
       const html = mountWithSeed({ ...BASE, tab: 'day', dayIdx: 4 });
-      expect(html).toContain('Exercise 1 of 2');
-      expect(html).toContain('1-1.5%');
-      expect(html).toContain('24-HOUR CREW TIMELINE');
-      expect(html).toContain('WORK + EXERCISE');
-      expect(html).toContain('24H ALLOCATION');
-      expect(html).toContain('WORK + EX 10.5h');
-      expect(html).toContain('data-iss-crew-day-timeline');
-      expect(html).toContain('data-iss-day-allocation="work"');
-      expect(html).toContain('ORBIT-CYCLE RIBBON');
-      expect(html).toContain('ORBIT 7 / 16');
-      expect(html).toContain('ECLIPSE');
+      expect(html).toIncludeText('Exercise 1 of 2');
+      expect(html).toIncludeText('1-1.5%');
+      expect(html).toIncludeText('24-HOUR CREW TIMELINE');
+      expect(html).toIncludeText('WORK + EXERCISE');
+      expect(html).toIncludeText('24H ALLOCATION');
+      expect(html).toIncludeText('WORK + EX 10.5h');
+      expect(html).toIncludeText('data-iss-crew-day-timeline');
+      expect(html).toIncludeText('data-iss-day-allocation="work"');
+      expect(html).toIncludeText('ORBIT-CYCLE RIBBON');
+      expect(html).toIncludeText('ORBIT 7 / 16');
+      expect(html).toIncludeText('ECLIPSE');
     });
 
     it('synchronizes crew schedule selections with the orbital light cycle', () => {
@@ -1914,12 +2002,12 @@ describe('space station tool', () => {
       try {
         expect(live.host.querySelector('[data-iss-day-light-phase]').getAttribute('data-iss-day-light-phase')).toBe('eclipse');
         expect(live.host.querySelector('[data-iss-day-allocation]').getAttribute('data-iss-day-allocation')).toBe('work');
-        expect(live.host.textContent).toContain('ORBIT 7 / 16');
+        expect(live.host.textContent).toIncludeText('ORBIT 7 / 16');
         const science = live.host.querySelector('[data-iss-day-slot="3"]');
         act(() => { science.click(); });
         expect(live.host.querySelector('[data-iss-day-light-phase]').getAttribute('data-iss-day-light-phase')).toBe('sunlight');
-        expect(live.host.textContent).toContain('ORBIT 6 / 16');
-        expect(live.host.textContent).toContain('ECLIPSE IN');
+        expect(live.host.textContent).toIncludeText('ORBIT 6 / 16');
+        expect(live.host.textContent).toIncludeText('ECLIPSE IN');
         const dinner = live.host.querySelector('[data-iss-day-slot="9"]');
         act(() => { dinner.click(); });
         const allocation = live.host.querySelector('[data-iss-day-allocation]');
@@ -1932,20 +2020,20 @@ describe('space station tool', () => {
 
     it('renders the connected Mission Operations simulations', () => {
       const integrated = mountWithSeed({ ...BASE, tab: 'operations' });
-      expect(integrated).toContain('Keep a city-sized spacecraft alive.');
-      expect(integrated).toContain('Simulate the next 92-minute orbit');
-      expect(integrated).toContain('Cabin CO₂');
-      expect(integrated).toContain('FLIGHT DIRECTOR DEBRIEF');
-      expect(integrated).toContain('NEXT-ORBIT MARGIN FORECAST');
-      expect(integrated).toContain('Nominal orbit');
-      expect(integrated).toContain('Science surge');
-      expect(integrated).toContain('RULE ≥ 25% · GO');
-      expect(integrated).toContain('data-iss-orbit-forecast');
-      expect(integrated).toContain('Scrub predicted orbit');
-      expect(integrated).toContain('T+0 MIN');
-      expect(integrated).toContain('5 / 5 FLIGHT RULES GO');
-      expect(integrated).toContain('All systems');
-      expect(integrated).toContain('Crew safety is the combined result');
+      expect(integrated).toIncludeText('Keep a city-sized spacecraft alive.');
+      expect(integrated).toIncludeText('Simulate the next 92-minute orbit');
+      expect(integrated).toIncludeText('Cabin CO₂');
+      expect(integrated).toIncludeText('FLIGHT DIRECTOR DEBRIEF');
+      expect(integrated).toIncludeText('NEXT-ORBIT MARGIN FORECAST');
+      expect(integrated).toIncludeText('Nominal orbit');
+      expect(integrated).toIncludeText('Science surge');
+      expect(integrated).toIncludeText('RULE ≥ 25% · GO');
+      expect(integrated).toIncludeText('data-iss-orbit-forecast');
+      expect(integrated).toIncludeText('Scrub predicted orbit');
+      expect(integrated).toIncludeText('T+0 MIN');
+      expect(integrated).toIncludeText('5 / 5 FLIGHT RULES GO');
+      expect(integrated).toIncludeText('All systems');
+      expect(integrated).toIncludeText('Crew safety is the combined result');
 
       // ── Ops-model fidelity ────────────────────────────────────────────────
       // These pin two properties the model got WRONG, both of which taught
@@ -1955,9 +2043,9 @@ describe('space station tool', () => {
       // storage. It may finish below the initial reserve because excess daylight
       // cannot be saved beyond capacity; the next cycle is sustainable.
       const fidelityPower = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'power', opsScenario: 'nominal' });
-      expect(fidelityPower).toContain('This setup supplies the full orbit.');
-      expect(fidelityPower).toContain('Battery reaches full');
-      expect(fidelityPower).toContain('RULE ≥ 25% · GO');
+      expect(fidelityPower).toIncludeText('This setup supplies the full orbit.');
+      expect(fidelityPower).toIncludeText('Battery reaches full');
+      expect(fidelityPower).toIncludeText('RULE ≥ 25% · GO');
 
       // 2. Cabin CO2 must read like a spacecraft, not an office. Real ISS cabin
       //    CO2 runs roughly 2-4 mmHg (~2600-5300 ppm) against Earth's ~420 ppm;
@@ -1966,38 +2054,38 @@ describe('space station tool', () => {
       const fidelityPpm = Number((fidelityEclss.match(/Modeled CO₂ (\d+) ppm/) || [])[1]);
       expect(fidelityPpm).toBeGreaterThan(2000);
       expect(fidelityPpm).toBeLessThan(5300);
-      expect(fidelityEclss).toContain('highest zone reading during this orbit');
-      expect(fidelityEclss).toContain('classroom comparison');
+      expect(fidelityEclss).toIncludeText('highest zone reading during this orbit');
+      expect(fidelityEclss).toIncludeText('classroom comparison');
 
       const comparison = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: 'science', opsResearch: 95 });
-      expect(comparison).toContain('Dashed = nominal orbit');
+      expect(comparison).toIncludeText('Dashed = nominal orbit');
 
       const power = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'power' });
-      expect(power).toContain('SUNLIGHT 57 MIN');
-      expect(power).toContain('Battery after one orbit');
+      expect(power).toIncludeText('SUNLIGHT 57 MIN');
+      expect(power).toIncludeText('Battery after one orbit');
       const eclss = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'eclss' });
-      expect(eclss).toContain('Water resupply gap');
-      expect(eclss).toContain('Cabin-air quality');
+      expect(eclss).toIncludeText('Water resupply gap');
+      expect(eclss).toIncludeText('Cabin-air quality');
       const debris = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'debris' });
-      expect(debris).toContain('HYPERVELOCITY TEST');
-      expect(debris).toContain('Impact energy');
+      expect(debris).toIncludeText('HYPERVELOCITY TEST');
+      expect(debris).toIncludeText('Impact energy');
       const human = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'human' });
-      expect(human).toContain('Modeled bone loss');
-      expect(human).toContain('Radiation exposure');
+      expect(human).toIncludeText('Modeled bone loss');
+      expect(human).toIncludeText('Radiation exposure');
 
       const coolingIncident = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: 'cooling' });
-      expect(coolingIncident).toContain('INCIDENT DISPLAY // EXTERNAL COOLING LOOP');
-      expect(coolingIncident).toContain('data-iss-emergency-visual="cooling"');
-      expect(coolingIncident).toContain('data-iss-emergency-state="active"');
-      expect(coolingIncident).toContain('LOOP PRESSURE LOW');
-      expect(coolingIncident).toContain('OUTLET WARMING');
+      expect(coolingIncident).toIncludeText('INCIDENT DISPLAY // EXTERNAL COOLING LOOP');
+      expect(coolingIncident).toIncludeText('data-iss-emergency-visual="cooling"');
+      expect(coolingIncident).toIncludeText('data-iss-emergency-state="active"');
+      expect(coolingIncident).toIncludeText('LOOP PRESSURE LOW');
+      expect(coolingIncident).toIncludeText('OUTLET WARMING');
 
       const rendezvous = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'rendezvous', opsRendezvousHold: 2 });
-      expect(rendezvous).toContain('RENDEZVOUS FLIGHT-DIRECTOR BOARD');
-      expect(rendezvous).toContain('data-iss-rendezvous-planner="2"');
-      expect(rendezvous).toContain('HOLD 3 / 4 // 30 M');
-      expect(rendezvous).toContain('USE SMALL CORRECTION PULSES');
-      expect(rendezvous).toContain('Representative sequence · vehicle routes vary');
+      expect(rendezvous).toIncludeText('RENDEZVOUS FLIGHT-DIRECTOR BOARD');
+      expect(rendezvous).toIncludeText('data-iss-rendezvous-planner="2"');
+      expect(rendezvous).toIncludeText('HOLD 3 / 4 // 30 M');
+      expect(rendezvous).toIncludeText('USE SMALL CORRECTION PULSES');
+      expect(rendezvous).toIncludeText('Representative sequence · vehicle routes vary');
     });
 
     it('inspects rendezvous hold points with synchronized flight-rule cues', () => {
@@ -2005,12 +2093,12 @@ describe('space station tool', () => {
       try {
         const captureHold = live.host.querySelector('[data-iss-rendezvous-hold="3"]');
         expect(live.host.querySelector('[data-iss-rendezvous-planner]').getAttribute('data-iss-rendezvous-planner')).toBe('0');
-        expect(live.host.textContent).toContain('ESTABLISH RELATIVE NAVIGATION');
+        expect(live.host.textContent).toIncludeText('ESTABLISH RELATIVE NAVIGATION');
         act(() => { captureHold.click(); });
         expect(captureHold.getAttribute('aria-pressed')).toBe('true');
         expect(live.host.querySelector('[data-iss-rendezvous-planner]').getAttribute('data-iss-rendezvous-planner')).toBe('3');
-        expect(live.host.textContent).toContain('CENTER, DAMP, THEN COAST');
-        expect(live.host.textContent).toContain('PORT CENTERED');
+        expect(live.host.textContent).toIncludeText('CENTER, DAMP, THEN COAST');
+        expect(live.host.textContent).toIncludeText('PORT CENTERED');
         expect(live.host.querySelector('[data-iss-rendezvous-planner] svg').getAttribute('aria-label')).toContain('hold point 4 of 4 at 10 m');
       } finally {
         live.cleanup();
@@ -2023,7 +2111,7 @@ describe('space station tool', () => {
         const thermal = live.host.querySelector('[data-iss-system-focus="thermal"]');
         act(() => { thermal.click(); });
         expect(live.host.querySelector('[data-iss-network-focus]').getAttribute('data-iss-network-focus')).toBe('thermal');
-        expect(live.host.textContent).toContain('coolant loops carry to radiators');
+        expect(live.host.textContent).toIncludeText('coolant loops carry to radiators');
         expect(live.host.querySelector('[data-iss-system-focus="thermal"]').getAttribute('aria-pressed')).toBe('true');
       } finally {
         live.cleanup();
@@ -2038,8 +2126,8 @@ describe('space station tool', () => {
           setValue.call(scrubber, '70');
           scrubber.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        expect(live.host.textContent).toContain('T+70 MIN');
-        expect(live.host.textContent).toContain('ECLIPSE');
+        expect(live.host.textContent).toIncludeText('T+70 MIN');
+        expect(live.host.textContent).toIncludeText('ECLIPSE');
         expect(live.host.querySelector('#iss-orbit-cursor').getAttribute('aria-valuetext')).toContain('eclipse');
         expect(live.host.querySelector('[data-iss-orbit-forecast] svg').getAttribute('aria-label')).toContain('T plus 70 minutes');
       } finally {
@@ -2053,19 +2141,19 @@ describe('space station tool', () => {
         expect(fault).toBeTruthy();
         act(() => { fault.click(); });
         expect(fault.getAttribute('aria-pressed')).toBe('true');
-        expect(live.host.textContent).toContain('Cascading fault');
-        expect(live.host.textContent).toContain('RULE ≥ 25% · CHECK');
+        expect(live.host.textContent).toIncludeText('Cascading fault');
+        expect(live.host.textContent).toIncludeText('RULE ≥ 25% · CHECK');
         // 4000 ppm ~= 3 mmHg, the level ISS crews work to stay under. The old
         // 1000 ppm rule was an office-air figure: real cabin CO2 runs 2-4 mmHg.
-        expect(live.host.textContent).toContain('RULE < 4000 ppm · CHECK');
+        expect(live.host.textContent).toIncludeText('RULE < 4000 ppm · CHECK');
         // Restricted cooling now heats the cabin beyond 27 C during the orbit.
         expect(live.host.querySelector('[data-flight-rule=\"thermal\"]').textContent).toContain('CHECK');
-        expect(live.host.textContent).toContain('5 FLIGHT RULES TO CHECK');
-        expect(live.host.textContent).toContain('too little battery reserve during this orbit');
+        expect(live.host.textContent).toIncludeText('5 FLIGHT RULES TO CHECK');
+        expect(live.host.textContent).toIncludeText('too little battery reserve during this orbit');
         const powerRule = live.host.querySelector('[data-flight-rule="power"]');
         act(() => { powerRule.click(); });
-        expect(live.host.textContent).toContain('Solar generation');
-        expect(live.host.textContent).toContain('Battery after one orbit');
+        expect(live.host.textContent).toIncludeText('Solar generation');
+        expect(live.host.textContent).toIncludeText('Battery after one orbit');
       } finally {
         live.cleanup();
       }
@@ -2076,7 +2164,7 @@ describe('space station tool', () => {
       try {
         const simulate = [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes('Simulate the next'));
         act(() => { simulate.click(); });
-        expect(live.host.textContent).toContain('ORBIT 1 // battery');
+        expect(live.host.textContent).toIncludeText('ORBIT 1 // battery');
         expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('92');
         expect(live.host.querySelector('[data-iss-mission-replay]')).toBeTruthy();
         const eclipseEvent = live.host.querySelector('[data-iss-replay-event="57"]');
@@ -2089,12 +2177,12 @@ describe('space station tool', () => {
       try {
         expect(emergency.host.querySelector('[data-iss-emergency-visual]').getAttribute('data-iss-emergency-visual')).toBe('leak');
         expect(emergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('active');
-        expect(emergency.host.textContent).toContain('PRESSURE ISOLATION');
+        expect(emergency.host.textContent).toIncludeText('PRESSURE ISOLATION');
         const isolate = [...emergency.host.querySelectorAll('button')].find((button) => button.textContent.includes('Close the suspected'));
         act(() => { isolate.click(); });
-        expect(emergency.host.textContent).toContain('PROCEDURE CORRECT');
+        expect(emergency.host.textContent).toIncludeText('PROCEDURE CORRECT');
         expect(emergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('contained');
-        expect(emergency.host.textContent).toContain('LEAK ISOLATED');
+        expect(emergency.host.textContent).toIncludeText('LEAK ISOLATED');
       } finally {
         emergency.cleanup();
       }
@@ -2102,18 +2190,18 @@ describe('space station tool', () => {
       try {
         const ventilate = [...heldEmergency.host.querySelectorAll('button')].find((button) => button.textContent.includes('Increase ventilation'));
         act(() => { ventilate.click(); });
-        expect(heldEmergency.host.textContent).toContain('PROCEDURE HOLD');
+        expect(heldEmergency.host.textContent).toIncludeText('PROCEDURE HOLD');
         expect(heldEmergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('hold');
-        expect(heldEmergency.host.textContent).toContain('HOLD // HAZARD ACTIVE');
+        expect(heldEmergency.host.textContent).toIncludeText('HOLD // HAZARD ACTIVE');
       } finally {
         heldEmergency.cleanup();
       }
     });
     it('renders Systems with the air loop and design challenge', () => {
       const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: 1 });
-      expect(html).toContain('Air loop');
-      expect(html).toContain('Sabatier');
-      expect(html).toContain('Design challenge');
+      expect(html).toIncludeText('Air loop');
+      expect(html).toIncludeText('Sabatier');
+      expect(html).toIncludeText('Design challenge');
     });
 
     it('shows how each system couples its inputs and outputs across the station', () => {
@@ -2122,15 +2210,15 @@ describe('space station tool', () => {
         let coupling = live.host.querySelector('[data-iss-system-coupling]');
         expect(coupling.getAttribute('data-iss-system-coupling')).toBe('air');
         expect(coupling.querySelector('svg').getAttribute('aria-label')).toContain('Inputs: WATER LOOP and ELECTRIC POWER');
-        expect(live.host.textContent).toContain('STATION COUPLING // INPUTS → FUNCTION → OUTPUTS');
-        expect(live.host.textContent).toContain('Cabin air depends on water processing');
+        expect(live.host.textContent).toIncludeText('STATION COUPLING // INPUTS → FUNCTION → OUTPUTS');
+        expect(live.host.textContent).toIncludeText('Cabin air depends on water processing');
 
         const power = [...live.host.querySelectorAll('.iss-system-tab')].find((button) => button.textContent.includes('Power'));
         act(() => { power.click(); });
         coupling = live.host.querySelector('[data-iss-system-coupling]');
         expect(coupling.getAttribute('data-iss-system-coupling')).toBe('power');
         expect(coupling.querySelector('svg').getAttribute('aria-label')).toContain('Inputs: SUNLIGHT and SOLAR ARRAYS');
-        expect(live.host.textContent).toContain('Every major station function becomes a managed electrical load.');
+        expect(live.host.textContent).toIncludeText('Every major station function becomes a managed electrical load.');
       } finally {
         live.cleanup();
       }
@@ -2142,8 +2230,8 @@ describe('space station tool', () => {
         expect(recover).toBeTruthy();
         act(() => { recover.click(); });
         expect(live.host.querySelector('[data-iss-system-step="4"]').getAttribute('aria-pressed')).toBe('true');
-        expect(live.host.textContent).toContain('RECOVER: scrub + Sabatier');
-        expect(live.host.textContent).toContain('STAGE 4 / 4');
+        expect(live.host.textContent).toIncludeText('RECOVER: scrub + Sabatier');
+        expect(live.host.textContent).toIncludeText('STAGE 4 / 4');
         const all = live.host.querySelector('[data-iss-system-step="0"]');
         act(() => { all.click(); });
         expect(live.host.querySelector('[data-iss-system-step="0"]').getAttribute('aria-pressed')).toBe('true');
@@ -2197,32 +2285,32 @@ describe('space station tool', () => {
       // absence is asserting the gate actually closed rather than that some
       // unrelated string changed.
       const gated = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420 });
-      expect(gated).toContain('predict first');
-      expect(gated).not.toContain('7.76 km/s');
+      expect(gated).toIncludeText('predict first');
+      expect(gated).not.toIncludeText('7.76 km/s');
       // The SETUP stays on screen: a student who cannot see what they changed
       // cannot form a prediction at all.
-      expect(gated).toContain('250 km');
-      expect(gated).toContain('Severe drag');
-      expect(gated).toContain('ALTITUDE ENVIRONMENT');
+      expect(gated).toIncludeText('250 km');
+      expect(gated).toIncludeText('Severe drag');
+      expect(gated).toIncludeText('ALTITUDE ENVIRONMENT');
 
       // Committing a direction reveals them.
       const open = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
-      expect(open).toContain('7.76 km/s');
-      expect(open).not.toContain('predict first');
+      expect(open).toIncludeText('7.76 km/s');
+      expect(open).not.toIncludeText('predict first');
     });
 
     it('grades the prediction from the same physics the readouts use', () => {
       // Dropping from 420 to 250 km makes the station FASTER -- the answer that
       // contradicts driving intuition, and the whole reason the gate is here.
       const right = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
-      expect(right).toContain('You predicted it');
+      expect(right).toIncludeText('You predicted it');
       const wrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 250 });
-      expect(wrong).toContain('Not what happened');
+      expect(wrong).toIncludeText('Not what happened');
       // Climbing is the mirror case: 420 -> 1500 km is SLOWER.
       const climbRight = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 1500 });
-      expect(climbRight).toContain('You predicted it');
+      expect(climbRight).toIncludeText('You predicted it');
       const climbWrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 1500 });
-      expect(climbWrong).toContain('Not what happened');
+      expect(climbWrong).toIncludeText('Not what happened');
     });
 
     it('explains the mechanism even when the student guessed right', () => {
@@ -2230,26 +2318,26 @@ describe('space station tool', () => {
       // as a wrong one does, so the explanation keys on the direction that
       // actually occurred rather than on whether the student was right.
       const right = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
-      expect(right).toContain('You predicted it');
-      expect(right).toContain('breaks driving intuition');
+      expect(right).toIncludeText('You predicted it');
+      expect(right).toIncludeText('breaks driving intuition');
       const wrong = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420, orbitPredictPick: 'slower', orbitPredictAlt: 250 });
-      expect(wrong).toContain('breaks driving intuition');
+      expect(wrong).toIncludeText('breaks driving intuition');
     });
 
     it('treats a prediction made at another altitude as a new question', () => {
       // The pick belongs to orbitPredictAlt 250, but the slider is now at 600:
       // the gate must close again rather than unlocking on a stale answer.
       const stale = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 600, orbitPredictRef: 420, orbitPredictPick: 'faster', orbitPredictAlt: 250 });
-      expect(stale).toContain('predict first');
-      expect(stale).toContain('no longer unlocks this one');
+      expect(stale).toIncludeText('predict first');
+      expect(stale).toIncludeText('no longer unlocks this one');
     });
 
     it('opens the gate at the reference altitude, where there is nothing to predict from', () => {
       // "Faster or slower than what?" has no answer when you have not moved,
       // so the gate opens rather than posing an unanswerable question.
       const atRef = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420, orbitPredictRef: 420 });
-      expect(atRef).not.toContain('predict first');
-      expect(atRef).toContain('7.66 km/s');
+      expect(atRef).not.toIncludeText('predict first');
+      expect(atRef).toIncludeText('7.66 km/s');
     });
 
     it('does not leak the answer through the diagram or the status strip', () => {
@@ -2257,36 +2345,36 @@ describe('space station tool', () => {
       // outright before it was covered; the diagram carried the signed delta,
       // which answers "which way did it go" more directly than the value does.
       const gated = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 420 });
-      expect(gated).not.toContain('7.76 km/s');
-      expect(gated).not.toContain('DELTA V');
-      expect(gated).toContain('SPEED HIDDEN UNTIL YOU PREDICT');
-      expect(gated).toContain('? km/s');
+      expect(gated).not.toIncludeText('7.76 km/s');
+      expect(gated).not.toIncludeText('DELTA V');
+      expect(gated).toIncludeText('SPEED HIDDEN UNTIL YOU PREDICT');
+      expect(gated).toIncludeText('? km/s');
       // On any OTHER tab there is no open question, so the live station
       // numbers belong in the strip exactly as they always did.
       const elsewhere = mountWithSeed({ ...BASE, tab: 'map', orbitAlt: 250, orbitPredictRef: 420 });
-      expect(elsewhere).toContain('7.76 km/s');
+      expect(elsewhere).toIncludeText('7.76 km/s');
     });
 
     it('offers orbit challenges whose numbers come from the orbital model', () => {
       const html = mountWithSeed({ ...BASE, tab: 'orbit' });
-      expect(html).toContain('Orbit challenges');
-      expect(html).toContain('0 of 4 solved');
+      expect(html).toIncludeText('Orbit challenges');
+      expect(html).toIncludeText('0 of 4 solved');
       // Opening a challenge shows its prompt and options but no verdict yet.
       const open = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing' });
-      expect(open).toContain('30 km BEHIND the station');
-      expect(open).toContain('lower, faster orbit');
-      expect(open).not.toContain('Takeaway');
+      expect(open).toIncludeText('30 km BEHIND the station');
+      expect(open).toIncludeText('lower, faster orbit');
+      expect(open).not.toIncludeText('Takeaway');
       // Answering correctly reveals the mechanism AND the takeaway. The
       // feedback quotes 7.66 km/s, which is issOrbit(420) -- derived from the
       // same function the readouts use, never a second hand-typed copy.
       const solved = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing', orbitChallengePick: 'slowdown', orbitChallengeDone: { phasing: true } });
-      expect(solved).toContain('7.66 km/s');
-      expect(solved).toContain('Takeaway');
-      expect(solved).toContain('1 of 4 solved');
+      expect(solved).toIncludeText('7.66 km/s');
+      expect(solved).toIncludeText('Takeaway');
+      expect(solved).toIncludeText('1 of 4 solved');
       // A wrong answer explains why it is wrong and withholds the takeaway.
       const missed = mountWithSeed({ ...BASE, tab: 'orbit', orbitChallenge: 'phasing', orbitChallengePick: 'speedup' });
-      expect(missed).toContain('driving answer');
-      expect(missed).not.toContain('Takeaway');
+      expect(missed).toIncludeText('driving answer');
+      expect(missed).not.toIncludeText('Takeaway');
     });
 
     it('survives a saved project whose prediction and challenge state is malformed', () => {
@@ -2300,10 +2388,10 @@ describe('space station tool', () => {
         orbitChallenge: 'no-such-challenge', orbitChallengePick: 'no-such-option',
         orbitChallengeDone: ['array', 'not', 'map'],
       });
-      expect(hostile).toContain('Orbit challenges');
+      expect(hostile).toIncludeText('Orbit challenges');
       // The bogus done-array must not inflate the tally above what is shown.
-      expect(hostile).toContain('0 of 4 solved');
-      expect(hostile).toContain('Pick a challenge above to begin');
+      expect(hostile).toIncludeText('0 of 4 solved');
+      expect(hostile).toIncludeText('Pick a challenge above to begin');
     });
 
     it('computes real orbital mechanics in the Orbit Lab', () => {
@@ -2312,23 +2400,23 @@ describe('space station tool', () => {
       // altitude and the solved rows are shown as they always were.
       const html = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250, orbitPredictRef: 250 });
       // v = sqrt(398600.4418 / 6621) = 7.76 km/s
-      expect(html).toContain('7.76 km/s');
-      expect(html).toContain('Severe drag');
-      expect(html).toContain('ALTITUDE ENVIRONMENT');
-      expect(html).toContain('SEVERE DRAG');
-      expect(html).toContain('VS 420 KM');
-      expect(html).toContain('DELTA V +');
+      expect(html).toIncludeText('7.76 km/s');
+      expect(html).toIncludeText('Severe drag');
+      expect(html).toIncludeText('ALTITUDE ENVIRONMENT');
+      expect(html).toIncludeText('SEVERE DRAG');
+      expect(html).toIncludeText('VS 420 KM');
+      expect(html).toIncludeText('DELTA V +');
       const high = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500, orbitPredictRef: 1500 });
-      expect(high).toContain('radiation');
-      expect(high).toContain('RADIATION EXPOSURE RISES');
+      expect(high).toIncludeText('radiation');
+      expect(high).toIncludeText('RADIATION EXPOSURE RISES');
       const issBand = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420 });
-      expect(issBand).toContain('CREWED LEO / ISS BAND');
-      expect(issBand).toContain('ISS REFERENCE // 420 KM');
-      expect(issBand).toContain('ORBIT MAINTENANCE / 30-DAY LAB');
-      expect(issBand).toContain('data-iss-drag-model="nominal"');
-      expect(issBand).toContain('data-iss-reboost-day="20"');
-      expect(issBand).toContain('calibrated to 75 m/day at 420 km');
-      expect(issBand).toContain('this model does not predict reentry');
+      expect(issBand).toIncludeText('CREWED LEO / ISS BAND');
+      expect(issBand).toIncludeText('ISS REFERENCE // 420 KM');
+      expect(issBand).toIncludeText('ORBIT MAINTENANCE / 30-DAY LAB');
+      expect(issBand).toIncludeText('data-iss-drag-model="nominal"');
+      expect(issBand).toIncludeText('data-iss-reboost-day="20"');
+      expect(issBand).toIncludeText('calibrated to 75 m/day at 420 km');
+      expect(issBand).toIncludeText('this model does not predict reentry');
     });
 
     it('models solar-driven drag and reboost as synchronized altitude trajectories', () => {
@@ -2351,7 +2439,7 @@ describe('space station tool', () => {
         expect(reboost.getAttribute('aria-pressed')).toBe('true');
         expect(live.host.querySelector('[data-iss-drag-model]').getAttribute('data-iss-reboost-day')).toBe('10');
         expect(reboostEnd).toBeGreaterThan(highSolarEnd);
-        expect(live.host.textContent).toContain('REBOOST +5 KM');
+        expect(live.host.textContent).toIncludeText('REBOOST +5 KM');
       } finally {
         live.cleanup();
       }
@@ -2364,21 +2452,21 @@ describe('space station tool', () => {
         dockDebrief: { range: 4.8, speed: 1.2, offset: 3.1, fuel: 72, elapsed: 89.6, mode: 'orbital' },
         eva: { pos: 6, tetherA: 6, tetherB: 6, freeTether: 'A', o2: 61, bolts: 4, done: true, failMsg: '', started: true, log: ['done'] },
       });
-      expect(html).toContain('Dock the cargo capsule');
-      expect(html).toContain('Mission report');
-      expect(html).toContain('POST-APPROACH FLIGHT DATA');
-      expect(html).toContain('HARD CONTACT');
-      expect(html).toContain('CONTACT RATE');
-      expect(html).toContain('CAPTURE ENVELOPE');
-      expect(html).toContain('data-iss-dock-debrief="bonk"');
-      expect(html).toContain('Pump worksite');
-      expect(html).toContain('Pump secured');
-      expect(html).toContain('PROJECTED');
-      expect(html).toContain('SUIT BUDGET');
-      expect(html).toContain('RESERVE +');
-      expect(html).toContain('NEXT MOVE SECURED');
-      expect(html).toContain('data-iss-eva-phase="SECURED"');
-      expect(html).toContain('Torque bolt');
+      expect(html).toIncludeText('Dock the cargo capsule');
+      expect(html).toIncludeText('Mission report');
+      expect(html).toIncludeText('POST-APPROACH FLIGHT DATA');
+      expect(html).toIncludeText('HARD CONTACT');
+      expect(html).toIncludeText('CONTACT RATE');
+      expect(html).toIncludeText('CAPTURE ENVELOPE');
+      expect(html).toIncludeText('data-iss-dock-debrief="bonk"');
+      expect(html).toIncludeText('Pump worksite');
+      expect(html).toIncludeText('Pump secured');
+      expect(html).toIncludeText('PROJECTED');
+      expect(html).toIncludeText('SUIT BUDGET');
+      expect(html).toIncludeText('RESERVE +');
+      expect(html).toIncludeText('NEXT MOVE SECURED');
+      expect(html).toIncludeText('data-iss-eva-phase="SECURED"');
+      expect(html).toIncludeText('Torque bolt');
     });
 
     it('supports keyboard-held docking thrusters and exposes textual telemetry', () => {
@@ -2388,7 +2476,10 @@ describe('space station tool', () => {
         const status = live.host.querySelector('[data-dock-hud]');
         const forward = [...live.host.querySelectorAll('button')].find((button) =>
           (button.getAttribute('aria-label') || '').startsWith('Thrust Forward'));
-        expect(canvas.getAttribute('aria-describedby')).toBe('iss-dock-instructions iss-dock-status');
+        // Every description the canvas points at must exist in the rendered tab.
+        const describedBy = canvas.getAttribute('aria-describedby').split(/\s+/);
+        expect(describedBy.slice(0, 2)).toEqual(['iss-dock-instructions', 'iss-dock-status']);
+        describedBy.forEach((id) => expect(live.host.querySelector('#' + id), id).not.toBeNull());
         expect(canvas.getAttribute('aria-keyshortcuts')).toContain('ArrowRight');
         expect(status.textContent).toContain('relative speed');
         expect(forward).toBeTruthy();
@@ -2435,8 +2526,8 @@ describe('space station tool', () => {
       });
       try {
         act(() => { findButton(fatal.host, 'Translate').click(); });
-        expect(fatal.host.textContent).toContain('Moved WITHOUT clipping ahead');
-        expect(fatal.host.textContent).toContain('Suit consumables exhausted');
+        expect(fatal.host.textContent).toIncludeText('Moved WITHOUT clipping ahead');
+        expect(fatal.host.textContent).toIncludeText('Suit consumables exhausted');
         // 8% - 12% floors at 0, and the penalty must survive the abort update.
         expect(suitPct(fatal.host)).toContain('Suit consumables 0 percent');
         expect(fatal.host.querySelector('[data-iss-eva-phase]').getAttribute('data-iss-eva-phase')).toBe('ABORTED');
@@ -2452,9 +2543,9 @@ describe('space station tool', () => {
       });
       try {
         act(() => { findButton(lastBolt.host, 'Torque bolt').click(); });
-        expect(lastBolt.host.textContent).toContain('Bolt 4/4 torqued');
+        expect(lastBolt.host.textContent).toIncludeText('Bolt 4/4 torqued');
         expect(suitPct(lastBolt.host)).toContain('Suit consumables 45 percent');
-        expect(lastBolt.host.textContent).toContain('Pump secured');
+        expect(lastBolt.host.textContent).toIncludeText('Pump secured');
         expect(lastBolt.host.querySelector('[data-iss-eva-phase]').getAttribute('data-iss-eva-phase')).toBe('SECURED');
       } finally {
         lastBolt.cleanup();
@@ -2475,8 +2566,8 @@ describe('space station tool', () => {
         expect(growth.getAttribute('data-iss-assembly-growth')).toBe('0');
         expect(growth.querySelector('svg').getAttribute('aria-label')).toContain('major elements 2');
         expect(growth.querySelector('svg').getAttribute('aria-label')).toContain('available power 18 kW');
-        expect(live.host.textContent).toContain('ASSEMBLY GROWTH PROFILE');
-        expect(live.host.textContent).toContain('1998');
+        expect(live.host.textContent).toIncludeText('ASSEMBLY GROWTH PROFILE');
+        expect(live.host.textContent).toIncludeText('1998');
       } finally {
         live.cleanup();
       }
@@ -2487,16 +2578,16 @@ describe('space station tool', () => {
       // Default is the station's real inclination, and the track's highest
       // latitude must equal it — that identity IS the orbital mechanics here.
       const iss = at(51.6);
-      expect(iss).toContain('data-iss-ground-track="51.6"');
-      expect(iss).toContain('Reaches 51.6°N to 51.6°S');
-      expect(at(28.5)).toContain('Reaches 28.5°N to 28.5°S');
-      expect(at(90)).toContain('Reaches 90.0°N to 90.0°S');
+      expect(iss).toIncludeText('data-iss-ground-track="51.6"');
+      expect(iss).toIncludeText('Reaches 51.6°N to 51.6°S');
+      expect(at(28.5)).toIncludeText('Reaches 28.5°N to 28.5°S');
+      expect(at(90)).toIncludeText('Reaches 90.0°N to 90.0°S');
 
       // Land coverage is COMPUTED from the embedded mask (cos-weighted for
       // area), not quoted: a band of zero width covers no land, a polar orbit
       // covers all of it, and 51.6° lands where the real geography puts it.
-      expect(at(0)).toContain('0% of Earth’s land');
-      expect(at(90)).toContain('100% of Earth’s land');
+      expect(at(0)).toIncludeText('0% of Earth’s land');
+      expect(at(90)).toIncludeText('100% of Earth’s land');
       expect(iss).toMatch(/flies over 7[01]% of Earth’s land/);
       expect(at(28.5)).toMatch(/flies over 4[123]% of Earth’s land/);
 
@@ -2515,15 +2606,15 @@ describe('space station tool', () => {
       expect(reach(at(28.5), 'Tanegashima')).toBe('no');     // 30.4°N
       expect(reach(at(28.5), 'Cape Canaveral')).toBe('yes');  // 28.5°N exactly
       expect(reach(at(28.5), 'Kourou')).toBe('yes');          // 5.2°N
-      expect(at(28.5)).toContain('3 of 5');
-      expect(iss).toContain('5 of 5');
+      expect(at(28.5)).toIncludeText('3 of 5');
+      expect(iss).toIncludeText('5 of 5');
 
       // Reachability must not be carried by colour alone: red/green is the
       // commonest colour-vision failure and axe cannot see the problem, because
       // both colours pass contrast against the map behind them. Unreachable
       // pads get a hollow ring with a strike through it, and the map's own
       // aria-label names them.
-      expect(at(28.5)).toContain('filled dot = pad can reach this orbit');
+      expect(at(28.5)).toIncludeText('filled dot = pad can reach this orbit');
       expect(at(28.5)).toMatch(/data-iss-site-reachable="no"[\s\S]{0,400}?fill="none"/);
       expect(at(28.5)).toMatch(/Tanegashima and Baikonur cannot reach this orbit directly/);
       // Derived from LAUNCH_SITES.length, not the literal "five" this used to
@@ -2532,23 +2623,23 @@ describe('space station tool', () => {
       // would have started lying the moment a sixth pad was added — invisibly,
       // since only a screen reader ever reads it. Pin the DERIVATION by
       // checking the count matches the site list rather than a frozen word.
-      expect(iss).toContain('All 5 marked launch sites can reach this orbit directly');
-      expect(iss).toContain('Pads that can reach it');
+      expect(iss).toIncludeText('All 5 marked launch sites can reach this orbit directly');
+      expect(iss).toIncludeText('Pads that can reach it');
 
       // The explanation must survive: you can aim higher than your latitude,
       // never lower.
-      expect(at(28.5)).toContain('cannot reach 28.5°');
-      expect(iss).toContain('Baikonur sits at about 46°N');
+      expect(at(28.5)).toIncludeText('cannot reach 28.5°');
+      expect(iss).toIncludeText('Baikonur sits at about 46°N');
       // The explanation of the REAL orbit must not follow the slider: it quotes
       // the land share at 51.6°, not at whatever the student has dragged to.
-      expect(at(10)).toContain('about 71% of Earth’s land');
-      expect(at(10)).toContain('flies over 14% of Earth’s land');   // the live readout does follow
+      expect(at(10)).toIncludeText('about 71% of Earth’s land');
+      expect(at(10)).toIncludeText('flies over 14% of Earth’s land');   // the live readout does follow
       // ...and the placeholder must actually be substituted, never shipped raw.
-      expect(iss).not.toContain('{pct}');
+      expect(iss).not.toIncludeText('{pct}');
       // London 51.5°N is inside the band and Berlin 52.5°N is outside — a
       // checkable anchor, and both cities are in the tool's own light list.
-      expect(iss).toContain('London at 51.5°N');
-      expect(iss).toContain('Berlin, at 52.5°N');
+      expect(iss).toIncludeText('London at 51.5°N');
+      expect(iss).toIncludeText('Berlin, at 52.5°N');
       // 30 s for the same reason the module/operations sweeps got it: this
       // renders the tool at many inclinations, and against vitest's 5 s default
       // it timed out on four separate runs while ASSERTING NOTHING WRONG. A
@@ -2566,13 +2657,13 @@ describe('space station tool', () => {
         // the debrief gauge. Adding an eleventh question moved the bar in some
         // of those and not others, so the gauge would have said FLIGHT
         // QUALIFIED at a score the quest refused to credit.
-        expect(source).toContain('var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7)');
-        expect(source).toContain("label: 'Score ' + QUIZ_PASS + '+ on the station quiz'");
-        expect(source).toContain('(s.quizBest || 0) >= QUIZ_PASS');
-        expect(source).toContain('d.quizScore >= QUIZ_PASS');
-        expect(source).toContain('finalScore >= QUIZ_PASS');
+        expect(source).toIncludeText('var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7)');
+        expect(source).toIncludeText("label: 'Score ' + QUIZ_PASS + '+ on the station quiz'");
+        expect(source).toIncludeText('(s.quizBest || 0) >= QUIZ_PASS');
+        expect(source).toIncludeText('d.quizScore >= QUIZ_PASS');
+        expect(source).toIncludeText('finalScore >= QUIZ_PASS');
         expect(source).not.toMatch(/score >= 7 \?/);
-        expect(source).not.toContain("'Score 7+ on the station quiz'");
+        expect(source).not.toIncludeText("'Score 7+ on the station quiz'");
       });
 
       // QUIZ and QUIZ_TOPIC_LABELS are parallel arrays read by index in the
@@ -2605,19 +2696,19 @@ describe('space station tool', () => {
       expect(entries.length).toBe(ids.length);
       entries.forEach((entry, index) => {
         const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: index, sysStep: 0 });
-        expect(html, 'system ' + entry.id + ' should render').toContain('iss-system-tabs');
+        expect(html, 'system ' + entry.id + ' should render').toIncludeText('iss-system-tabs');
         // React escapes & in the serialized markup, so compare like for like.
         const escaped = entry.name.replace(/&/g, '&amp;');
-        expect(html, 'system ' + entry.id + ' should show its own name').toContain(escaped);
-        expect(html, 'system ' + entry.id + ' should not render as NaN/undefined').not.toContain('undefined');
+        expect(html, 'system ' + entry.id + ' should show its own name').toIncludeText(escaped);
+        expect(html, 'system ' + entry.id + ' should not render as NaN/undefined').not.toIncludeText('undefined');
       });
 
       // The Operations tab pulls schematics by MEANING, not by position:
       // an index lookup silently drew the wrong loop if SYSTEMS was reordered.
-      expect(source).toContain("systemById('water')");
+      expect(source).toIncludeText("systemById('water')");
       // Thermal now renders its own coupled heat-path experiment.
-      expect(mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'thermal' })).toContain('data-iss-thermal-lab');
-      expect(source).toContain("systemById('body')");
+      expect(mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'thermal' })).toIncludeText('data-iss-thermal-lab');
+      expect(source).toIncludeText("systemById('body')");
       expect(source).not.toMatch(/renderSystemSchematic\(SYSTEMS\[\d\]\)/);
     });
 
@@ -2633,11 +2724,15 @@ describe('space station tool', () => {
       const modules = [...source.matchAll(/^ {4}\{ id: '([a-z0-9]+)', name: '([^']+)'/gm)]
         .map((m) => ({ id: m[1], name: m[2] }));
       expect(modules.length).toBe(13);
+      // The map's motion help uses "undefined" as a math word in fixed English
+      // fallbacks; remove exactly those phrases so any leaked value still fails.
+      const mathProse = ['path direction is undefined', 'the curve is undefined', 'rate of speed change is left undefined'];
+      const withoutMathProse = (html) => mathProse.reduce((text, phrase) => text.split(phrase).join(''), html);
       modules.forEach((mod) => {
         const html = mountWithSeed({ ...BASE, tab: 'map', selModule: mod.id });
-        expect(html, 'module ' + mod.id + ' should render its own card').toContain(esc(mod.name));
-        expect(html, 'module ' + mod.id + ' should not leak undefined').not.toContain('undefined');
-        expect(html, 'module ' + mod.id + ' should not leak NaN').not.toContain('NaN');
+        expect(html, 'module ' + mod.id + ' should render its own card').toIncludeText(esc(mod.name));
+        expect(withoutMathProse(html), 'module ' + mod.id + ' should not leak undefined').not.toIncludeText('undefined');
+        expect(html, 'module ' + mod.id + ' should not leak NaN').not.toIncludeText('NaN');
       });
 
       const dayBlock = source.match(/var DAY_SCHEDULE = \[([\s\S]*?)\n {2}\];/)[1];
@@ -2645,15 +2740,15 @@ describe('space station tool', () => {
       expect(daySlots.length).toBe(12);
       daySlots.forEach((time, index) => {
         const html = mountWithSeed({ ...BASE, tab: 'day', dayIdx: index });
-        expect(html, 'day slot ' + time + ' should render').toContain(time);
-        expect(html, 'day slot ' + time + ' should not leak undefined').not.toContain('undefined');
+        expect(html, 'day slot ' + time + ' should render').toIncludeText(time);
+        expect(html, 'day slot ' + time + ' should not leak undefined').not.toIncludeText('undefined');
       });
 
       const quizCount = (source.match(/^ {4}\{ q: '/gm) || []).length;
       for (let i = 0; i < quizCount; i++) {
         const html = mountWithSeed({ ...BASE, tab: 'quiz', quizIdx: i, quizPicked: null });
-        expect(html, 'quiz question ' + i + ' should render').toContain('iss-quiz-option-' + i + '-0');
-        expect(html, 'quiz question ' + i + ' should not leak undefined').not.toContain('undefined');
+        expect(html, 'quiz question ' + i + ' should render').toIncludeText('iss-quiz-option-' + i + '-0');
+        expect(html, 'quiz question ' + i + ' should not leak undefined').not.toIncludeText('undefined');
       }
       // ~50 full React mounts of an 800 KB tool. Measured on IDENTICAL code it
       // swings 3.5s-5.7s with machine load, so against vitest's 5s default it
@@ -2675,9 +2770,9 @@ describe('space station tool', () => {
       expect(modes).toContain('attitude');
       modes.forEach((mode) => {
         const html = mountWithSeed({ ...BASE, tab: 'operations', opsMode: mode });
-        expect(html, 'ops mode ' + mode + ' should render').toContain('iss-ops-grid');
-        expect(html, 'ops mode ' + mode + ' should not leak undefined').not.toContain('undefined');
-        expect(html, 'ops mode ' + mode + ' should not leak NaN').not.toContain('NaN');
+        expect(html, 'ops mode ' + mode + ' should render').toIncludeText('iss-ops-grid');
+        expect(html, 'ops mode ' + mode + ' should not leak undefined').not.toIncludeText('undefined');
+        expect(html, 'ops mode ' + mode + ' should not leak NaN').not.toIncludeText('NaN');
       });
 
       const scenarios = [...source.matchAll(/\{ id: '([a-z]+)', icon: '[^']*', label: '[^']*', note: '[^']*', patch:/g)]
@@ -2685,14 +2780,14 @@ describe('space station tool', () => {
       expect(scenarios).toEqual(['nominal', 'science', 'eclipse', 'crew', 'fault']);
       scenarios.forEach((scenario) => {
         const html = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: scenario });
-        expect(html, 'scenario ' + scenario + ' should render').toContain('iss-ops-grid');
-        expect(html, 'scenario ' + scenario + ' should not leak NaN').not.toContain('NaN');
+        expect(html, 'scenario ' + scenario + ' should render').toIncludeText('iss-ops-grid');
+        expect(html, 'scenario ' + scenario + ' should not leak NaN').not.toIncludeText('NaN');
       });
 
       ['leak', 'fire', 'cooling'].forEach((emergency) => {
         const html = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: emergency });
-        expect(html, 'emergency ' + emergency + ' should render').toContain('iss-ops-grid');
-        expect(html, 'emergency ' + emergency + ' should not leak undefined').not.toContain('undefined');
+        expect(html, 'emergency ' + emergency + ' should render').toIncludeText('iss-ops-grid');
+        expect(html, 'emergency ' + emergency + ' should not leak undefined').not.toIncludeText('undefined');
       });
       // ~50 full React mounts of an 800 KB tool. Measured on identical code it
       // swings 3.5s-5.7s with machine load, so against vitest's 5s default it
@@ -2702,7 +2797,7 @@ describe('space station tool', () => {
 
     it('derives the relay numbers from the same physics it teaches', () => {
       const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: 6, sysStep: 0 });
-      expect(html).toContain('Talking to the ground');
+      expect(html).toIncludeText('Talking to the ground');
 
       // Geostationary is not a quoted altitude — it is the ONE radius whose
       // period is a sidereal day, so it falls out of Kepler's third law.
@@ -2710,8 +2805,8 @@ describe('space station tool', () => {
       const rGeo = Math.cbrt((GM * SID * SID) / (4 * Math.PI * Math.PI));
       const alt = Math.round((rGeo - Re) / 100) * 100;
       expect(alt).toBe(35800);                         // published 35,786 km
-      expect(html).toContain(alt.toLocaleString() + ' km');
-      expect(html).toContain(Math.round((rGeo - Re) / ref) + '× higher');
+      expect(html).toIncludeText(alt.toLocaleString() + ' km');
+      expect(html).toIncludeText(Math.round((rGeo - Re) / ref) + '× higher');
 
       // ...and the delay is that path length over c, using the SHORT geometry
       // so the number quoted is a floor.
@@ -2719,7 +2814,7 @@ describe('space station tool', () => {
       const ms = Math.round(((2 * path) / C) * 1000 / 10) * 10;
       expect(ms).toBeGreaterThan(400);
       expect(ms).toBeLessThan(600);
-      expect(html).toContain(ms + ' ms');
+      expect(html).toIncludeText(ms + ' ms');
     });
 
     it('agrees with itself about the orbit on a single screen', () => {
@@ -2743,7 +2838,7 @@ describe('space station tool', () => {
       const r = 6371 + 420;
       const v = Math.sqrt(398600.4418 / r);
       expect(stripMinutes).toBe(Math.round((2 * Math.PI * r / v) / 60));
-      expect(html).toContain(v.toFixed(2) + ' km/s');
+      expect(html).toIncludeText(v.toFixed(2) + ' km/s');
     });
 
     it('survives a corrupted inclination instead of rendering NaN', () => {
@@ -2753,24 +2848,24 @@ describe('space station tool', () => {
       const bad = (orbitInc) => mountWithSeed({ ...BASE, tab: 'orbit', orbitInc });
       ['', 'abc', null, undefined, NaN].forEach((value) => {
         const html = bad(value);
-        expect(html).not.toContain('NaN');
-        expect(html).toContain('data-iss-ground-track="51.6"');
+        expect(html).not.toIncludeText('NaN');
+        expect(html).toIncludeText('data-iss-ground-track="51.6"');
       });
       // A real value still wins, out-of-range values clamp rather than fall
       // back, numeric strings are accepted, and a genuine 0 SURVIVES — it is
       // the Equatorial preset, not a missing value.
-      expect(bad(28.5)).toContain('data-iss-ground-track="28.5"');
-      expect(bad('28.5')).toContain('data-iss-ground-track="28.5"');
-      expect(bad(0)).toContain('data-iss-ground-track="0.0"');
-      expect(bad(-40)).toContain('data-iss-ground-track="0.0"');
-      expect(bad(400)).toContain('data-iss-ground-track="90.0"');
+      expect(bad(28.5)).toIncludeText('data-iss-ground-track="28.5"');
+      expect(bad('28.5')).toIncludeText('data-iss-ground-track="28.5"');
+      expect(bad(0)).toIncludeText('data-iss-ground-track="0.0"');
+      expect(bad(-40)).toIncludeText('data-iss-ground-track="0.0"');
+      expect(bad(400)).toIncludeText('data-iss-ground-track="90.0"');
 
       // Derived once: two copies of the clamp expression would let a changed
       // default disagree with itself between the map and the readouts.
       TOOL_PATHS.forEach((filePath) => {
         const source = readFileSync(filePath, 'utf8');
         expect((source.match(/Number\(_rawInc\)/g) || []).length).toBe(1);
-        expect(source).toContain("_rawInc == null || _rawInc === ''");
+        expect(source).toIncludeText("_rawInc == null || _rawInc === ''");
       });
     });
 
@@ -2782,8 +2877,8 @@ describe('space station tool', () => {
         // measured 157ms of pure compute per drag on a dev machine, which is
         // far worse on the Chromebooks this ships to. Row areas are built once
         // and the band is a prefix-sum difference.
-        expect(source).toContain('_issRowPrefix');
-        expect(source).toContain('function issLandRowAreas');
+        expect(source).toIncludeText('_issRowPrefix');
+        expect(source).toIncludeText('function issLandRowAreas');
         expect(source).toMatch(/_issRowPrefix\[lastExclusive\] - _issRowPrefix\[first\]/);
         // The old per-call full scan must not come back.
         expect(source).not.toMatch(/function issLandShareWithin[\s\S]{0,600}?for \(var col = 0; col < ISS_LAND_W/);
@@ -2794,7 +2889,7 @@ describe('space station tool', () => {
       // One mask, two surfaces. If the flat map ever stops agreeing with the
       // 3-D globe the tool is telling two different stories about the planet.
       const html = mountWithSeed({ ...BASE, tab: 'orbit' });
-      expect(html).toContain('Coastlines: Natural Earth (public domain)');
+      expect(html).toIncludeText('Coastlines: Natural Earth (public domain)');
       // Land is ONE path built from run-length subpaths. A world with almost no
       // subpaths means the mask decode silently produced an empty planet.
       const landPath = /<path d="((?:M[-\d.]+ [-\d.]+h[-\d.]+v[-\d.]+h-[-\d.]+z)+)"/.exec(html);
@@ -2820,8 +2915,8 @@ describe('space station tool', () => {
       // in the map render — cross-check it against the SOURCE, which is the
       // whole point of this test: the drawing and the prose must agree.
       const toolSource = readFileSync(TOOL_PATHS[0], 'utf8');
-      expect(toolSource).toContain('seven-window Cupola');
-      expect(toolSource).toContain('all seven pressure windows');
+      expect(toolSource).toIncludeText('seven-window Cupola');
+      expect(toolSource).toIncludeText('all seven pressure windows');
 
       // The truss blueprint's four wings hung 15-22 units clear of the beam
       // with nothing joining them; each now has a mast and a rotary joint.
@@ -2848,10 +2943,10 @@ describe('space station tool', () => {
 
       // The count is stated, not just drawn, so it reaches screen readers and
       // sits next to the power figure it explains.
-      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 0 })).toContain('0 / 8');
-      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 1 })).toContain('2 / 8');
-      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toContain('8 / 8');
-      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toContain('8 of 8 solar array wings');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 0 })).toIncludeText('0 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 1 })).toIncludeText('2 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toIncludeText('8 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toIncludeText('8 of 8 solar array wings');
 
       // P6 flew on the Z1 truss above Unity and was physically relocated to the
       // port truss in 2007 — it should not be drawn at its final home before
@@ -2868,36 +2963,36 @@ describe('space station tool', () => {
 
     it('renders History and a completed quiz debrief', () => {
       const history = mountWithSeed({ ...BASE, tab: 'history' });
-      expect(history).toContain('ORBITAL ASSEMBLY');
-      expect(history).toContain('AVAILABLE POWER');
-      expect(history).toContain('ASSEMBLY GROWTH PROFILE');
-      expect(history).toContain('data-iss-assembly-growth');
-      expect(history).toContain('Assembly to retirement');
-      expect(history).toContain('Previous');
-      expect(history).toContain('Next');
-      expect(history).toContain('iss-assembly-new');
-      expect(history).toContain('data-iss-assembly-install');
-      expect(history).toContain('data-iss-assembly-milestone');
-      expect(history).toContain('2002-2006');
+      expect(history).toIncludeText('ORBITAL ASSEMBLY');
+      expect(history).toIncludeText('AVAILABLE POWER');
+      expect(history).toIncludeText('ASSEMBLY GROWTH PROFILE');
+      expect(history).toIncludeText('data-iss-assembly-growth');
+      expect(history).toIncludeText('Assembly to retirement');
+      expect(history).toIncludeText('Previous');
+      expect(history).toIncludeText('Next');
+      expect(history).toIncludeText('iss-assembly-new');
+      expect(history).toIncludeText('data-iss-assembly-install');
+      expect(history).toIncludeText('data-iss-assembly-milestone');
+      expect(history).toIncludeText('2002-2006');
       // Derived the same way the tool derives it, so this assertion keeps
       // testing that the "you are here" marker renders without going stale.
-      expect(history).toContain(`${new Date().getFullYear()} (now)`);
-      expect(history).toContain('Spot the Station');
+      expect(history).toIncludeText(`${new Date().getFullYear()} (now)`);
+      expect(history).toIncludeText('Spot the Station');
       const retirement = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 12 });
-      expect(retirement).toContain('CONTROLLED REENTRY');
-      expect(retirement).toContain('iss-deorbit-path');
+      expect(retirement).toIncludeText('CONTROLLED REENTRY');
+      expect(retirement).toIncludeText('iss-deorbit-path');
       const kiboInstall = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
-      expect(kiboInstall).toContain('INSTALLED THIS STEP');
-      expect(kiboInstall).toContain('Kibo');
+      expect(kiboInstall).toIncludeText('INSTALLED THIS STEP');
+      expect(kiboInstall).toIncludeText('Kibo');
       const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8, quizResults: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: false, 9: false, 10: false } });
-      expect(quiz).toContain('8 / 11');
-      expect(quiz).toContain('Flight-controller material');
-      expect(quiz).toContain('MISSION KNOWLEDGE DEBRIEF');
-      expect(quiz).toContain('QUESTION FLIGHT RECORD');
-      expect(quiz).toContain('8 correct, 3 to review');
-      expect(quiz).toContain('data-iss-quiz-debrief="11"');
-      expect(quiz).toContain('SHIELDING');
-      expect(quiz).toContain('INCLINATION');
+      expect(quiz).toIncludeText('8 / 11');
+      expect(quiz).toIncludeText('Flight-controller material');
+      expect(quiz).toIncludeText('MISSION KNOWLEDGE DEBRIEF');
+      expect(quiz).toIncludeText('QUESTION FLIGHT RECORD');
+      expect(quiz).toIncludeText('8 correct, 3 to review');
+      expect(quiz).toIncludeText('data-iss-quiz-debrief="11"');
+      expect(quiz).toIncludeText('SHIELDING');
+      expect(quiz).toIncludeText('INCLINATION');
     });
 
     it('makes quiz outcomes color-independent and preserves keyboard focus', async () => {
@@ -2909,7 +3004,7 @@ describe('space station tool', () => {
         const correct = live.host.querySelector('#iss-quiz-option-0-2');
         const next = live.host.querySelector('[data-iss-quiz-next]');
         expect(selected.getAttribute('aria-pressed')).toBe('true');
-        expect(live.host.textContent).not.toContain('MISSION KNOWLEDGE DEBRIEF');
+        expect(live.host.textContent).not.toIncludeText('MISSION KNOWLEDGE DEBRIEF');
         expect(selected.textContent).toContain('Your answer — incorrect');
         expect(correct.textContent).toContain('Correct answer');
         expect(selected.getAttribute('aria-describedby')).toBe('iss-quiz-feedback');
@@ -2957,12 +3052,12 @@ describe('space station tool', () => {
 
   it('is registered in the catalog, loader lists, and build manifest', () => {
     const moduleSrc = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    expect(moduleSrc).toContain("id: 'spaceStation'");
-    expect(moduleSrc).toContain('spaceStation: true');
+    expect(moduleSrc).toIncludeText("id: 'spaceStation'");
+    expect(moduleSrc).toIncludeText('spaceStation: true');
 
     ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'build.js'].forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src, p + ' should load the space station tool').toContain("'stem_lab/stem_tool_spacestation.js'");
+      expect(src, p + ' should load the space station tool').toIncludeText("'stem_lab/stem_tool_spacestation.js'");
     });
     // Reads both ~44k-line ANTI copies plus App.jsx and build.js. That sat just
     // under vitest's 5s default and started timing out once the rest of the
@@ -2997,17 +3092,17 @@ describe('an unknown persisted tab resolves to a real tab', () => {
       const html = mountWithSeed({ tab });
       expect(selectedOn(html), `tab ${tab} marks a selection`).toBe(selectedOn(known));
       // and it lands on the 3-D Station, not the certification exam
-      expect(html).not.toContain('FLIGHT-CONTROLLER EXAM');
+      expect(html).not.toIncludeText('FLIGHT-CONTROLLER EXAM');
     }
     // the real quiz tab still reaches the exam
-    expect(mountWithSeed({ tab: 'quiz' })).toContain('FLIGHT-CONTROLLER EXAM');
+    expect(mountWithSeed({ tab: 'quiz' })).toIncludeText('FLIGHT-CONTROLLER EXAM');
   });
 
   it('derives the allow-list from TABS so a new tab is covered for free', () => {
     TOOL_PATHS.forEach((filePath) => {
       const src = readFileSync(filePath, 'utf8');
-      expect(src, filePath).toContain('var TAB_IDS = TABS.map(');
-      expect(src, filePath).toContain("TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'map'");
+      expect(src, filePath).toIncludeText('var TAB_IDS = TABS.map(');
+      expect(src, filePath).toIncludeText("TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'map'");
     });
   });
 });
@@ -3034,14 +3129,14 @@ describe('every press-and-hold control claims the touch gesture', () => {
         .forEach((sel) => expect(rule, sel + ' covered in ' + filePath).toContain(sel));
       // the handlers those selectors target must still exist
       ['worksiteHold(true)', 'capillaryHold(true)', 'observationHold(true)', 'setControl(true)']
-        .forEach((handler) => expect(src, handler + ' in ' + filePath).toContain('onPointerDown: ' + handler));
+        .forEach((handler) => expect(src, handler + ' in ' + filePath).toIncludeText('onPointerDown: ' + handler));
     });
   });
 
   it('ships the rule with the interior tab', () => {
     const html = mountWithSeed({ tab: 'interior' });
-    expect(html).toContain('data-iss-interior-worksite-action="true"');
-    expect(html).toContain('{touch-action:none}');
+    expect(html).toIncludeText('data-iss-interior-worksite-action="true"');
+    expect(html).toIncludeText('{touch-action:none}');
   });
 
   // A screen-reader user on a translated host got a MIX: most diagram
@@ -3058,11 +3153,22 @@ describe('every press-and-hold control claims the touch gesture', () => {
       // a single-quoted English phrase (3+ letters, a space, 3+ letters) but
       // no __alloT is an untranslated literal.
       const raw = [];
+      // Scoped helpers like `function text(key, fallback) { return __alloT(prefix
+      // + key, fallback); }` translate too; a call counts only if the file
+      // defines that name exactly this way.
+      const wrappers = new Set([...src.matchAll(/function (\w+)\(key, fallback\) \{ return __alloT\(/g)].map((w) => w[1]));
+      expect(wrappers.size, 'scoped __alloT helpers in ' + filePath).toBeGreaterThan(0);
+      // Every same-named helper must translate, or a call could reach a different one.
+      [...src.matchAll(/function (\w+)\((?:key, fallback)?[^)]*\) \{([^\n]*)/g)]
+        .filter(([, name]) => wrappers.has(name))
+        .forEach(([, name, body]) => expect(body.trimStart().startsWith('return __alloT('), name + ' helper in ' + filePath).toBe(true));
       const re = /'aria-label':\s*([^\n]{0,400})/g;
       let m;
       while ((m = re.exec(src))) {
         const expr = m[1];
         if (expr.includes('__alloT')) continue;
+        const call = /^(\w+)\(/.exec(expr);
+        if (call && wrappers.has(call[1])) continue;
         // `'aria-label': aria` / `summary` / `label` reference a variable that
         // is built (and translated) elsewhere; only literals matter here.
         if (!/'[A-Za-z]{3,}[^']*\s[A-Za-z]{3,}/.test(expr)) continue;
@@ -3134,7 +3240,7 @@ describe('every press-and-hold control claims the touch gesture', () => {
       // content on these tabs, and anything less lets a mislabel through.
       expect(junk, key + ' junk render differs from its default').toBe(good);
       // And the junk id must never be echoed anywhere a user can perceive it.
-      expect(junk).not.toContain('zzz_not_a_value');
+      expect(junk).not.toIncludeText('zzz_not_a_value');
     });
 
     // A clamp that swallows VALID input would be worse than the bug it fixes,
@@ -3162,7 +3268,7 @@ describe('every press-and-hold control claims the touch gesture', () => {
         const mapIds = (src.match(/var MAP_VIEW_IDS = \[([^\]]+)\]/) || [])[1];
         expect(mapIds, 'MAP_VIEW_IDS in ' + filePath).toBeTruthy();
         ['overview', 'truss', 'labs', 'russian', 'nadir']
-          .forEach((id) => expect(mapIds).toContain("'" + id + "'"));
+          .forEach((id) => expect(mapIds).toIncludeText("'" + id + "'"));
 
         const modeIds = (src.match(/var OPS_MODE_IDS = \[([^\]]+)\]/) || [])[1];
         expect(modeIds, 'OPS_MODE_IDS in ' + filePath).toBeTruthy();
@@ -3180,8 +3286,8 @@ describe('every press-and-hold control claims the touch gesture', () => {
 
         // These two derive their allow-list from the very array the buttons
         // are built from, so they cannot drift by construction. Pin that.
-        expect(src).toContain("var focusIds = ['all'].concat(nodes.map(");
-        expect(src).toContain('var scenarioIds = [\'custom\'].concat(scenarioPresets.map(');
+        expect(src).toIncludeText("var focusIds = ['all'].concat(nodes.map(");
+        expect(src).toIncludeText('var scenarioIds = [\'custom\'].concat(scenarioPresets.map(');
       });
     });
   });
@@ -3237,8 +3343,8 @@ describe('a hostile saved file cannot crash the tool', () => {
         expect(html, label + ' rendered nothing').toBeTruthy();
         // A student must never be shown "NaN" where a number belongs -- and a
         // screen-reader user must never hear "Cabin temp NaN degrees C".
-        expect(html, label + ' printed NaN').not.toContain('NaN');
-        expect(html, label + ' printed undefined').not.toContain('undefined');
+        expect(html, label + ' printed NaN').not.toIncludeText('NaN');
+        expect(html, label + ' printed undefined').not.toIncludeText('undefined');
       });
     },
   );
@@ -3249,8 +3355,8 @@ describe('a hostile saved file cannot crash the tool', () => {
   it('routes every persisted index through the integer guard', () => {
     TOOL_PATHS.forEach((filePath) => {
       const src = readFileSync(filePath, 'utf8');
-      expect(src, 'issIndex helper in ' + filePath).toContain('var issIndex = function (value, len, fallback)');
-      expect(src, 'issNum helper in ' + filePath).toContain('var issNum = function (value, min, max, fallback)');
+      expect(src, 'issIndex helper in ' + filePath).toIncludeText('var issIndex = function (value, len, fallback)');
+      expect(src, 'issNum helper in ' + filePath).toIncludeText('var issNum = function (value, min, max, fallback)');
       // Math.floor is what separates an index guard from a mere clamp.
       expect(src).toMatch(/var issIndex = function[^}]*Math\.floor\(n\)/);
       ['d.assemblyIdx', 'd.dayIdx', 'd.sysIdx', 'd.sysStep', 'd.quizIdx', 'd.researchStep']

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ယခင် ဉာဏ်စမ်းဖြေဆိုမှုများ",
+  "stem.flightsim.quiz_history_scope": "အသစ်စတင်ဖြေဆိုလျှင် ပထမအဖြေများ မှတ်တမ်းတင်ထားသော ယခင်ဖြေဆိုမှု လေးကြိမ်အထိ သိမ်းဆည်းထားသည်။ ၎င်းတို့ကို ပြန်ကြည့်ခြင်းက လက်ရှိဉာဏ်စမ်းဖြေဆိုမှုကို မပြောင်းလဲစေပါ။",
+  "stem.flightsim.quiz_history_empty": "ယခင် ဉာဏ်စမ်းဖြေဆိုမှုများကို မသိမ်းဆည်းရသေးပါ။",
+  "stem.flightsim.quiz_history_attempt": "သိမ်းဆည်းသည့်ရက် {date} · ပထမအဖြေ {answered} ခုအနက် {score} ခုမှန်",
+  "stem.flightsim.quiz_history_progress": "မေးခွန်း {total} ခုအနက် {answered} ခု မှတ်တမ်းတင်ထား · {unanswered} ခု မဖြေရသေး",
+  "stem.flightsim.quiz_history_question": "မေးခွန်း {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "အဖြေမှန်: {answer}",
+  "stem.flightsim.quiz_history_changed": "သိမ်းဆည်းထားသော မေးခွန်း {count} ခုသည် ယခုဉာဏ်စမ်းနှင့် မကိုက်ညီတော့ပါ။ ရမှတ်အတွက် ကိုက်ညီသော မေးခွန်းမှတ်တမ်းများကိုသာ အသုံးပြုသည်။"
+}

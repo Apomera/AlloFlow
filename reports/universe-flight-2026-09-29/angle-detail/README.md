@@ -12,7 +12,7 @@ The six oblique and shallow spiral portraits show more arm contrast. Their avera
 
 | Prior sampling | Refined sampling |
 | --- | --- |
-| ![Previous shallow spiral view](baseline-spiral-shallow.png) | ![Refined shallow spiral view](refined-spiral-shallow.png) |
+| ![Previous shallow spiral view](write-failure-spiral-shallow.png) | ![Refined shallow spiral view](refined-spiral-shallow.png) |
 | ![Previous shallow barred view](baseline-barred-shallow.png) | ![Refined shallow barred view](refined-barred-shallow.png) |
 
 The filter improves an illustrative atlas. The model's emission, object positions, camera paths, geometry and optical calculations remain unchanged. This pass adds no astronomical data or volumetric light transport.

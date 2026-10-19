@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 // Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
 // allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
 import { readFileSync } from './helpers/host_source.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const app = readFileSync('AlloFlowANTI.txt', 'utf8');
 const generatedApp = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
@@ -32,7 +33,11 @@ describe('AlloFlow focused workspace shell', () => {
     expect(app).toContain("if (guidedMode) {\n      // A new Guided step always starts beside its real authoring control.");
     expect(app).toContain("const needsPaneSwitch = !isWide && workspacePane !== 'create';");
     expect(app).toContain("window.requestAnimationFrame(() => window.requestAnimationFrame(focusTarget))");
-    expect(app).toContain("disabled={guidedMode}");
+    // 2026-10-16 onboarding integration (Tyler's 955d6d030, "Class & Materials in Guided Mode"):
+    // the compact materials tab stays usable during Guided Mode instead of being locked.
+    const materialsTab = sliceBetween(app, 'id="workspace-tab-history"', '{materialsTabLabel}', { file: 'AlloFlowANTI.txt', label: 'materials tab' });
+    expect(materialsTab).toContain("setWorkspacePane('history');");
+    expect(materialsTab).not.toContain('disabled={guidedMode}');
     expect(app).toContain("const hiddenToolCatalogSelector = (guidedMode || runTour || !hasToolCatalogControls) ? ''");
   });
 

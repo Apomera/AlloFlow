@@ -58,7 +58,9 @@ describe('Document Builder mixed education resource selection', () => {
 
   it('distinguishes durable local saving from session capture and a save failure', () => {
     expect(context._builderSaveStatusLabel('saved', 0)).toBe('Saved on this device');
-    expect(context._builderSaveStatusLabel('captured', 0)).toBe('Saved for this session');
+    // f5b045fc9 (2026-09-20): a session-only capture now tells the teacher to keep a backup.
+    expect(context._builderSaveStatusLabel('captured', 0)).toBe('Session only — download a backup');
+    expect(context._builderSaveStatusLabel('captured', 0)).not.toBe(context._builderSaveStatusLabel('saved', 0));
     expect(context._builderSaveStatusLabel('error', 0)).toBe('Changes not captured. Try Save again.');
     expect(context._builderSaveStatusLabel('capturing', Date.now())).toBe('Saving changes…');
   });

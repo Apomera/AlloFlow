@@ -44,12 +44,15 @@ describe('Cephalopod Hunter coral surface', () => {
       try {
         const p = geometry.attributes.position, a = geometry.attributes.clCoralSurface;
         assert.equal(a.itemSize, 4);assert.equal(a.count, p.count);
-        assert.equal(p.count, [675, 711, 972][index % 3]);assert.equal(geometry.index.count / 3, [984, 1024, 1320][index % 3]);
+        // Pass74 appends 5/3/5 young branchlets (63 vertices, 88 triangles each); living_coral_branches covers them.
+        const added = [5, 3, 5][index % 3], baseTriangles = [984, 1024, 1320][index % 3];
+        assert.equal(p.count, [675, 711, 972][index % 3] + added * 63);assert.equal(geometry.index.count / 3, baseTriangles + added * 88);
         assert.equal(Array.from(a.array).every(Number.isFinite), true);
         for (let row = 0; row < a.count; row += 9) {
           const period = a.getW(row), v = a.getY(row), fade = a.getZ(row);
           assert.equal(Number.isInteger(period) && period >= 6 && period <= 29, true);
-          assert.equal(v >= 0 && v < 319 && fade >= 0 && fade <= 1, true);
+          // Appended branchlets continue the colony's pore rows past the accepted 319.
+          assert.equal(v >= 0 && (row < p.count - added * 63 ? v < 319 : Number.isFinite(v)) && fade >= 0 && fade <= 1, true);
           for (let side = 0; side < 9; side++) {
             assert.equal(a.getX(row + side), side / 8 * period);assert.equal(a.getY(row + side), v);assert.equal(a.getZ(row + side), fade);assert.equal(a.getW(row + side), period);
           }
@@ -65,10 +68,10 @@ describe('Cephalopod Hunter coral surface', () => {
         assert.equal(a.getZ(0), 0);
         if (height === 1) memory += a.array.byteLength;
         const originalColors=restoredBuild(height,index);
-        try { protectedData.push({ height, index, position: Array.from(originalColors.attributes.position.array), normal: Array.from(originalColors.attributes.normal.array), color: Array.from(originalColors.attributes.color.array), indices: Array.from(geometry.index.array) }); } finally { originalColors.dispose(); }
+        try { protectedData.push({ height, index, position: Array.from(originalColors.attributes.position.array), normal: Array.from(originalColors.attributes.normal.array), color: Array.from(originalColors.attributes.color.array), indices: Array.from(geometry.index.array.subarray(0, baseTriangles * 3)) }); } finally { originalColors.dispose(); }
       } finally { geometry.dispose(); }
     }
-    assert.ok(tips > 500);assert.equal(memory, 226368);
+    assert.ok(tips > 500);assert.equal(memory, 226368 + 6 * (5 + 3 + 5) * 63 * 16);
     assert.equal(createHash('sha256').update(JSON.stringify(protectedData)).digest('hex'), '3a0ba84fb12bc9f6654bf090a07905e793cf8b99983c9c4ea4185151efd32f2c');
   }, 30000);
 
@@ -106,7 +109,8 @@ describe('Cephalopod Hunter coral surface', () => {
     expect(f.clCoralFilter(.2)).toBe(1);expect(f.clCoralFilter(.7)).toBe(0);
     expect(f.clCoralTone(-.85, 0)).toBe(f.clCoralTone(.18, 0));
     for (const magnitude of [0, 1e-12, .01, .079, .08, 1, 1e8]) {
-      const scale = f.clCoralSlopeLimit(magnitude);expect(Number.isFinite(scale)).toBe(true);expect(magnitude * scale).toBeLessThanOrEqual(.08000000000000002);
+      // Pass74 calyx relief raised the slope cap from .08 to .10 (coral_tissue test).
+      const scale = f.clCoralSlopeLimit(magnitude);expect(Number.isFinite(scale)).toBe(true);expect(magnitude * scale).toBeLessThanOrEqual(.10000000000000002);
     }
   });
 
@@ -117,7 +121,9 @@ describe('Cephalopod Hunter coral surface', () => {
     expect(shader.fragmentShader).toContain('#include <roughnessmap_fragment>\nroughnessFactor=clCoralRoughness(');
     expect(shader.fragmentShader).toContain('#include <normal_fragment_maps>\nvec3 clCoralDx=dFdx(-vViewPosition)');
     expect(shader.fragmentShader).toContain('if(abs(clCoralDet)>0.0000000001)');expect(shader.fragmentShader).not.toContain('\\n');
-    expect(helper).not.toMatch(/Math\.random|\btexture2D\b|\buniform\b|\btime\b|\bsin\(|\bcos\(|\bfor\s*\(/);
+    // Pass74's static living-tissue field is the only place allowed to use sin/cos.
+    const tissueField = helper.match(/'float clCoralTissueField\([^']*'/g);expect(tissueField).toHaveLength(1);
+    expect(helper.replace(tissueField[0], '')).not.toMatch(/Math\.random|\btexture2D\b|\buniform\b|\btime\b|\bsin\(|\bcos\(|\bfor\s*\(/);
     const field = shader.fragmentShader.match(/float clCoralPoreField\([^{}]+\{([^{}]+)\}/)[1];
     expect(field.match(/clCoralHash\(/g)).toHaveLength(2);
     expect(shader.fragmentShader).not.toMatch(/dFd[xy]\(clCoralAA/);
@@ -140,7 +146,7 @@ describe('Cephalopod Hunter coral surface', () => {
         expect(at).toBe(108);
       }
       expect(fixtures[0].calls).toEqual([]);
-      for (const fixture of fixtures.slice(0, 2)) for (const mesh of fixture.scene.children) { expect(mesh.material.onBeforeCompile.name).toBe('shadeCLHuntCoralSurface');expect(mesh.material.customProgramCacheKey()).toBe('cl-coral-surface-v14');expect(mesh.material.extensions.derivatives).toBe(true); }
+      for (const fixture of fixtures.slice(0, 2)) for (const mesh of fixture.scene.children) { expect(mesh.material.onBeforeCompile.name).toBe('shadeCLHuntCoralSurface');expect(mesh.material.customProgramCacheKey()).toBe('cl-coral-tissue-v15');expect(mesh.material.extensions.derivatives).toBe(true); }
       for (const mesh of fixtures[2].scene.children) expect(mesh.material.onBeforeCompile.name).toBe('reefSurface');
       expect(createHash('sha256').update(region('        function reefSurface(shader){', '        // ─── Reef rocks')).digest('hex')).toBe('b15de7c3fcb96e131a7e97eae8c215a685909cc10ce34f70456c9590c07323b5');
     } finally { fixtures.forEach(fixture => fixture.dispose()); }

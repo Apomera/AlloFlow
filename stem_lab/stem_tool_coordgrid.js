@@ -193,8 +193,20 @@ window.StemLab = window.StemLab || {
       // parens, x, and ^. Replace ^ with **. Wrap in Function('x', 'return ' + ...).
       // Returns null on parse error or non-finite y(0).
       var compileFunc = function(expr) {
-        var safe = (expr || '').replace(/[^0-9.+\-*\/()xX^ ]/g, '').replace(/\^/g, '**').replace(/X/g, 'x');
-        if (!safe) return null;
+        var raw = (expr || '').replace(/[^0-9.+\-*\/()xX^ ]/g, '').replace(/X/g, 'x').replace(/\*\*/g, '^');
+        if (!raw) return null;
+        // Unary signs: JS rejects -x**2 (SyntaxError, so "-x^2" could not be graphed)
+        // and reads --x / ++x as decrement / increment. A unary minus becomes (-1)*,
+        // which gives -x^2 = -(x^2); a unary plus is dropped. Right after ^ the sign
+        // stays, because 2**-x is valid.
+        var safe = '', prevSig = '';
+        for (var ui = 0; ui < raw.length; ui++) {
+          var uc = raw[ui];
+          var unary = (uc === '-' || uc === '+') && (prevSig === '' || '(+-*/'.indexOf(prevSig) !== -1);
+          if (unary) { if (uc === '-') safe += '(-1)*'; } else safe += uc;
+          if (uc !== ' ') prevSig = uc;
+        }
+        safe = safe.replace(/\^/g, '**');
         // Implicit multiplication: students type "2x+1" (the exact syntax the
         // error toast suggests), but `return 2x+1` is a JS SyntaxError — so
         // every suggested format failed with the warning that suggested it.
@@ -469,11 +481,20 @@ window.StemLab = window.StemLab || {
           var riseAns = Number.isSafeInteger(riseNumber) ? riseNumber : null;
           var runAns = Number.isSafeInteger(runNumber) ? runNumber : null;
           var slopeAns = ((gridFeedback && gridFeedback.slopeAnswer) || '').trim();
-          var slopeNumber = slopeAns === '' ? NaN : Number(slopeAns);
+          // A blank box is not an attempt: grading it printed every answer and reset the streak.
+          if (riseText === '' || runText === '' || slopeAns === '') {
+            setGridFeedback(function(prev) { return Object.assign({}, prev, { correct: false, msg: t('stem.coordgrid.fill_all_slope_boxes', 'Fill in rise, run, and slope, then check.') }); });
+            return;
+          }
+          // Read the slope as a number or a fraction, so -2/4 and the typographic minus count
+          // like -1/2 (decimals already did), and "Undefined" matches in any case.
+          var slopeText = slopeAns.replace(/\u2212/g, '-').replace(/\s+/g, '').toLowerCase();
+          var slopeParts = /^([+-]?\d+(?:\.\d+)?)\/([+-]?\d+(?:\.\d+)?)$/.exec(slopeText);
+          var slopeNumber = slopeParts ? (Number(slopeParts[2]) === 0 ? NaN : Number(slopeParts[1]) / Number(slopeParts[2])) : Number(slopeText);
           var riseOk = riseAns === cs.rise;
           var runOk = runAns === cs.run;
-          var slopeOk = slopeAns === cs.display || slopeAns === '' + cs.value ||
-            (cs.run !== 0 && Number.isFinite(slopeNumber) && Math.abs(slopeNumber - cs.value) < 0.01);
+          var slopeOk = cs.run === 0 ? slopeText === 'undefined' :
+            (slopeText === cs.display || (Number.isFinite(slopeNumber) && Math.abs(slopeNumber - cs.value) < 0.01));
           var hinted = gridFeedback && gridFeedback.hinted;
           var allCorrect = riseOk && runOk && slopeOk;
           var newStreak2 = allCorrect ? streak + 1 : 0;
@@ -502,6 +523,11 @@ window.StemLab = window.StemLab || {
 
         } else if (gridChallenge.type === 'distance') {
           var distAns = parseFloat((gridFeedback && gridFeedback.distanceAnswer) || '');
+          // Blank or non-numeric: ask again instead of grading "(you said NaN)" and resetting the streak.
+          if (!Number.isFinite(distAns)) {
+            setGridFeedback(function(prev) { return Object.assign({}, prev, { correct: false, msg: t('stem.coordgrid.enter_distance_number', 'Enter the distance as a number, such as 5.4, then check.') }); });
+            return;
+          }
           var expected = gridChallenge.distance;
           var dOk = Math.abs(distAns - expected) < 0.06;
           var newStreak3 = dOk ? streak + 1 : 0;
@@ -706,6 +732,7 @@ window.StemLab = window.StemLab || {
           // Build polyline segments, breaking on undefined / out-of-bounds samples
           var segments = [];
           var current = [];
+          var lastX = null, lastY = null;
           for (var si = 0; si <= samples; si++) {
             var x = gridRange.min + (si / samples) * range;
             var y;
@@ -721,7 +748,17 @@ window.StemLab = window.StemLab || {
               current = [];
               continue;
             }
+            // A pole between two in-range samples (0.5/(x - 0.25) gives -6 then 6) must not be
+            // bridged: across a sign change, a midpoint value beyond both neighbours is a pole.
+            if (current.length && lastY !== null && y * lastY < 0) {
+              var midY = fn((x + lastX) / 2);
+              if (!isFinite(midY) || Math.abs(midY) > Math.max(Math.abs(y), Math.abs(lastY))) {
+                if (current.length > 1) segments.push(current);
+                current = [];
+              }
+            }
             current.push(toSvg(x, 'x') + ',' + toSvg(y, 'y'));
+            lastX = x; lastY = y;
           }
           if (current.length > 1) segments.push(current);
           segments.forEach(function(seg, segIdx) {

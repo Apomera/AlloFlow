@@ -486,7 +486,8 @@ describe('galaxy 3-D scene builder', () => {
     const bases = (materials) => Object.fromEntries(Object.entries(materials).map(([name, material]) => [
       name, { baseSize: material.baseSize, baseOpacity: material.baseOpacity },
     ]));
-    const initialBases = bases(canvas._galaxyGetInstrumentVisualState().materials);
+    const nearMaterials = canvas._galaxyGetInstrumentVisualState().materials;
+    const initialBases = bases(nearMaterials);
     for (let i = 0; i < 7; i += 1) canvas._galaxyZoom('out');
     for (let frame = 0; frame < 180; frame += 1) expect(restoreLoops.step()).toBe(true);
     const distant = canvas._galaxyGetAdaptiveVisualState();
@@ -498,7 +499,9 @@ describe('galaxy 3-D scene builder', () => {
 
     let visuals = canvas._galaxyGetInstrumentVisualState();
     for (const name of ['microStars', 'armGlow', 'gas', 'openClusters', 'thickDisk']) {
-      expect(visuals.materials[name].sizeScale, name + ' size').toBeCloseTo(distant.pointScale, 6);
+      // Each signal can have a calibrated optical footprint. Camera distance
+      // must still apply the same relative LOD reduction to every dense layer.
+      expect(visuals.materials[name].sizeScale / nearMaterials[name].sizeScale, name + ' relative size').toBeCloseTo(distant.pointScale / near.pointScale, 6);
       expect(visuals.materials[name].opacityScale, name + ' opacity').toBeCloseTo(distant.opacity, 6);
       expect(visuals.materials[name].finite, name + ' finite').toBe(true);
     }

@@ -406,10 +406,21 @@ describe('Scale Explorer keeps the panel honest', () => {
   it('names a length in units a person can picture, at every scale', () => {
     // A sweep produced "4218 times the Earth-Sun distance" and, after a careless
     // fix, "420787623458 light years". Both are numbers nobody can hold.
-    const start = src.indexOf('function humanLength');
-    const body = src.slice(start, src.indexOf('function round2'));
-    expect(body).toMatch(/a >= 9\.461e15\) return bigCount/);
-    expect(body).toMatch(/a >= 1e14\) return round2/);
+    // Run the shipped helpers rather than pin their text (10-16 added the singular
+    // "1 light year", which reworded both branches).
+    const fn = (name) => {
+      const start = src.indexOf('function ' + name + '(');
+      let end = src.indexOf('{', start), depth = 1;
+      while (depth) { end++; if (src[end] === '{') depth++; if (src[end] === '}') depth--; }
+      return src.slice(start, end + 1);
+    };
+    const humanLength = vm.runInNewContext('(function () {' + fn('round2') + fn('bigCount') + fn('humanLength') + 'return humanLength; })()');
+    const LY = 9.461e15, AU = 1.496e11;
+    expect(humanLength(LY)).toBe('1 light year');
+    expect(humanLength(2.5e20)).toMatch(/^26\.4 thousand light years$|^26 thousand light years$/);
+    expect(humanLength(4218 * AU)).toMatch(/light years?$/); // not "4218 times the Earth-Sun distance"
+    expect(humanLength(420787623458 * LY)).toBe('421 billion light years'); // not a wall of digits
+    for (const exp of [-15, -9, -3, 0, 3, 11, 14, 16, 20, 26]) expect(humanLength(Math.pow(10, exp))).not.toMatch(/\d{5,}/);
   });
 });
 
@@ -718,8 +729,10 @@ describe('Scale Explorer tiling and population strip', () => {
     // light minute, a light month, the Coma Cluster, ten billion light years).
     // The catalog has no reference below the proton or at a hundred femtometres.
     // Orion's corrected 24-light-year span rounds to decade 17, leaving 18 empty.
-    expect(empties).toBe(3);
-    expect(counts[-16]).toBeUndefined(); expect(counts[-13]).toBeUndefined(); expect(counts[18]).toBeUndefined();
+    // 2026-10-12: the Virgo Supercluster became a 100-million-light-year reference span
+    // (9.461e23 m, was 3.1e23 m), moving it from decade 23 to 24 and leaving 23 empty.
+    expect(empties).toBe(4);
+    expect(counts[-16]).toBeUndefined(); expect(counts[-13]).toBeUndefined(); expect(counts[18]).toBeUndefined(); expect(counts[23]).toBeUndefined();
     for (const rel of UI_COPIES) {
       const sec = JSON.parse(read(rel)).stem.scaleExplorer;
       for (const k of ['fit_line', 'fit_line_close']) expect(sec[k], rel + ' ' + k).toBeTruthy();

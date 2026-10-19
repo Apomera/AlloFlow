@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Naitala ang pagkumpleto ng misyon at ang paglapag matapos bumalik. Subukan muli ang misyong ito na may isang sinadyang pagbabago sa pagkontrol o ruta, pagkatapos ay ihambing ang mga na-save na obserbasyon.",
+  "stem.flightsim.coaching_mission_depleted": "Naubos ang karga ng baterya ng drone. Magsimula ng bagong misyon, gumamit ng maiikling ruta, at planuhin ang pagbalik bago humina ang baterya.",
+  "stem.flightsim.coaching_mission_unknown": "Kulang o magkasalungat ang ebidensiya ng misyong ito. Suriin ang naitala, pagkatapos ay magsimula ng bagong pagsubok.",
+  "stem.flightsim.coaching_mission_capture": "May mga target pang hindi nakuhanan ng larawan. Sa bagong misyon, lapitan ang isang target sa bawat pagkakataon at manatili sa ipinapakitang mga limitasyon ng taas at bilis kaugnay ng lupa hanggang maitala ang pagkuha ng larawan.",
+  "stem.flightsim.coaching_mission_recovery": "Hindi naisakay ang nakaligtas. Sa bagong misyon ng pagsagip, magsanay munang lumutang nang matatag sa iisang lugar sa loob ng ipinapakitang mga limitasyon ng taas, pag-anod, at patayong bilis bago bumalik sa himpilan.",
+  "stem.flightsim.coaching_mission_return": "Naitala ang mga layunin sa pagsakay o pagkuha ng larawan; kailangan pang bumalik at lumapag. Magsimula ng bagong misyon at maglaan ng oras at baterya para sa pagbalik sa himpilan.",
+  "stem.flightsim.mission_reflection_prompt": "Aling pasya tungkol sa target, paglutang sa iisang lugar, o pagbalik ang babaguhin mo? Gamitin ang mga obserbasyon sa misyon upang ipaliwanag ang iyong pinili at magplano ng isang pagbabago para sa bagong pagsubok. Mase-save ang iyong paliwanag kasama ng paglipad na ito.",
+  "stem.flightsim.journal_different_airport": "Magkaibang paliparan ang ginamit sa mga paglapit na ito para lumapag. Suriin nang hiwalay ang kanilang mga obserbasyon; hindi kinakalkula ang mga pagkakaiba sa sukat.",
+  "stem.flightsim.journal_approach_airport": "Paliparan na nilalapitan para lumapag: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "EBIDENSIYA NG MISYON",
+  "stem.flightsim.challenge_brake_release": "Bitawan ang X at patayin ang mga preno ng gulong sa panel ng pagkontrol bago dagdagan ang lakas."
+}

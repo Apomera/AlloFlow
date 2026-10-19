@@ -159,6 +159,23 @@ function _mathFractionDenominatorLimit() {
   }
 }
 
+// "Try with cubes" volume from the answer's final quantity: "V = 4 × 3 × 2 =
+// 24 cm^3" is 24. Digits of separate numbers must never be joined ("8 cm^3"
+// used to become 83), and a decimal, fraction or list sets no challenge.
+function _mathCubeChallengeVolume(answer) {
+  try {
+    var tail = _mathScalarText(answer, 500).split('=').pop()
+      .replace(/\\text\s*\{([^}]*)\}/g, ' $1 ')
+      .replace(/\^\s*\{?\s*\d+\s*\}?|[\u00b2\u00b3]/g, ' ');
+    var numbers = tail.match(/\d+(?:[.,]\d+)*(?:\s*\/\s*\d+)?/g) || [];
+    if (numbers.length !== 1 || !/^\d+$/.test(numbers[0])) return null;
+    var volume = Number(numbers[0]);
+    return volume > 0 && volume <= 100 ? volume : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 function _mathRequestActivity(kind, resourceId, problemKey) {
   try {
     var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathHelpers;
@@ -550,6 +567,13 @@ function MathView(props) {
   var formatMathQuestion = typeof props.formatMathQuestion === 'function'
     ? props.formatMathQuestion
     : (problem => problem.question || problem.problem || problem.expression || '');
+  // Check My Work and hints get the question as displayed, directive included
+  // ("Simplify: 4/6"). The raw field drops it, so a copied "4/6" passed as correct.
+  var mathQuestionForGrading = problem => {
+    var shown = '';
+    try { shown = _mathScalarText(formatMathQuestion(problem)).trim(); } catch (_) {}
+    return shown || problem.question || problem.problem;
+  };
   var formatInlineText = typeof props.formatInlineText === 'function' ? props.formatInlineText : (text => _mathScalarText(text));
   var sanitizeHtml = typeof props.sanitizeHtml === 'function' ? props.sanitizeHtml : (() => '');
   var copyToClipboard = canCopyToClipboard ? props.copyToClipboard : noop;
@@ -1413,7 +1437,7 @@ function MathView(props) {
                                                             aria-busy={checkResult?.checking === true}
                                                             onClick={() => handleCheckMathWork(
                                                                 mathResourceId, problem.__viewKey,
-                                                                problem.question || problem.problem,
+                                                                mathQuestionForGrading(problem),
                                                                 problem.answer,
                                                                 problem.steps,
                                                                 studentWork
@@ -1448,7 +1472,7 @@ function MathView(props) {
                     <button
                         type="button"
                         aria-busy={hintInfo.loading}
-                        onClick={() => handleGetMathHint(mathResourceId, problem.__viewKey, problem.question || problem.problem, problem.answer, problem.steps)}
+                        onClick={() => handleGetMathHint(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps)}
                         disabled={!canHandleGetMathHint || hintInfo.loading}
                         className="flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                     >
@@ -1567,7 +1591,7 @@ function MathView(props) {
                                                                         <span className="text-sm">✅</span>
                                                                         <span className="text-sm font-bold text-green-700">Answer: {problem.answer}</span>
                                                                         {(mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && (
-                                                                            <button type="button" disabled={!canOpenCubeLab} onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = parseInt(String(problem.answer).replace(/[^\d]/g,'')); if (vol && vol > 0 && vol <= 100) { setCubeBuilderChallenge({type:'volume', answer: vol, shape:'any'}); setCubeBuilderFeedback(null); } }} className="ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
+                                                                            <button type="button" disabled={!canOpenCubeLab} onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = _mathCubeChallengeVolume(problem.answer); setCubeBuilderChallenge(vol ? {type:'volume', answer: vol, shape:'any'} : null); setCubeBuilderFeedback(null); }} className="ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
                                                                                 📦 Try with cubes
                                                                             </button>
                                                                         )}

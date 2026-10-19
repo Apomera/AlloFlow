@@ -72,7 +72,11 @@ describe('panel', () => {
   it('explains the deployment check inline after opening it', () => {
     const src = read('school_rewards_source.jsx');
     expect(src).toContain('data-help-key="schoolrewards_health_hint"');
-    expect(src).toContain('setHealthHint(true)');
-    expect(src).toContain('First-week checklist that ticks itself');
+    // 78799283f (2026-09-10): the hint appears only when the check tab was actually dispatched,
+    // and the checklist no longer claims to tick itself; verification is the person's own check.
+    expect(src).toContain("setHealthHint(openWindow('check'))");
+    expect(src).not.toContain('setHealthHint(true)');
+    expect(src).toContain('I personally checked the deployment and intended roles');
+    expect(src).not.toContain('ticks itself');
   });
 });

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ရှာဖွေမှုရလဒ်များ: ခေါင်းစဉ် {topics} ခုတွင် ကတ် {cards} ခု။",
+  "stem.flightsim.learn_library_counts": "ကတ် {cards} ခု · ခေါင်းစဉ် {topics} ခု",
+  "stem.flightsim.learn_search_clear": "ရှာဖွေမှုကို ရှင်းလင်းပါ",
+  "stem.flightsim.learn_search_empty": "“{query}” နှင့် ကိုက်ညီသော သင်ယူရေးကတ် မရှိပါ။ အခြားစကားလုံးဖြင့် ရှာပါ သို့မဟုတ် ရှာဖွေမှုကို ရှင်းလင်းပါ။",
+  "stem.flightsim.learn_search_none": "ကိုက်ညီသော သင်ယူရေးကတ် မရှိပါ",
+  "stem.flightsim.learn_search_cards": "သင်ယူရေးကတ် {count} ခု",
+  "stem.flightsim.quiz_review_progress": "မေးခွန်း {total} ခုအနက် {answered} ခု ဖြေဆိုပြီး · {missed} ခု မှားယွင်း",
+  "stem.flightsim.quiz_review_missed": "မှားယွင်းသော အဖြေများကို ပြန်လေ့လာပါ",
+  "stem.flightsim.quiz_next_unanswered": "နောက်ထပ် မဖြေရသေးသော မေးခွန်း",
+  "stem.flightsim.quiz_review_all_answered": "မေးခွန်းတိုင်းအတွက် ပထမအဖြေကို မှတ်တမ်းတင်ပြီးပါပြီ။ အမှတ်မပါသော လေ့ကျင့်မှုအတွက် မှားယွင်းသော မေးခွန်းများကို ပြန်လေ့လာပါ၊ သို့မဟုတ် အသစ်စတင်ပါ။",
+  "stem.flightsim.planner_drone_agl": "မြေပြင်အထက် {ft} ပေ",
+  "stem.flightsim.sprint_native_title": "ပထဝီဝင် အချိန်ကန့်သတ် စိန်ခေါ်မှု",
+  "stem.flightsim.sprint_timed_hint": "သင်ဖြေဆိုနေစဉ် လမ်းကြောင်းအတိုင်း ဆက်သွားနေပါသည်။ ဖတ်ရန် ခေတ္တရပ်ပါ။ အဖြေမရွေးမီ ပြန်လည်စတင်ပါ။",
+  "stem.flightsim.sprint_warp_reference": "ဤပထဝီဝင် လှုပ်ရှားမှုအတွက် ခရီးသွားနှုန်းကို အရှိန်မြှင့်ထားသည်။ အမြန်နှုန်းဖတ်ချက်များသည် သတ်မှတ်ထားသော ခရုဇ်အမြန်နှုန်းကို ပြသည်။ ဤလမ်းကြောင်းသည် လေယာဉ်စွမ်းဆောင်ရည်ကို မတိုင်းတာပါ။",
+  "stem.flightsim.sprint_save_menu": "စိန်ခေါ်မှုကို သိမ်းပြီး မီနူးသို့ ပြန်သွားပါ",
+  "stem.flightsim.sprint_next_stop": "နောက်မှတ်တိုင်: {place}",
+  "stem.flightsim.geoq_approaching_city": "သင် မည်သည့်မြို့သို့ ချဉ်းကပ်နေသနည်း။",
+  "stem.flightsim.sprint_time_remaining": "ကျန်ရှိချိန်: {seconds} စက္ကန့်"
+}

@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { readHostSource } from './helpers/host_source.js';
 
 const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const occurrences = (source, needle) => source.split(needle).length - 1;
 
-const app = read('AlloFlowANTI.txt');
+// The host with its moved handlers (host_handlers_source.jsx, 2026-09-13) put back in place.
+const app = readHostSource('AlloFlowANTI.txt');
+const adventureSettings = read('view_adventure_settings_source.jsx');
 const sidebar = read('view_sidebar_panels_source.jsx');
 const glossary = read('view_glossary_source.jsx');
 const wordSounds = read('word_sounds_setup_source.jsx');
@@ -28,7 +31,8 @@ describe('Universal image-style inheritance', () => {
     expect(glossary).toContain('aria-label="Glossary image style source"');
     expect(glossary).toContain("if (nextMode === 'inherit') setGlossaryImageStyle('');");
     expect(dispatcher).toContain("(glossaryImageStyle || '').trim() || (universalImageStyle || '').trim()");
-    expect(occurrences(phaseN, "String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim()")).toBe(2);
+    // Add-term stays in Phase N; quick-add moved to the host handlers (checked through `app` below).
+    expect(occurrences(phaseN, "String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim()")).toBe(1);
     expect(app).toContain("const _alloGlossaryImageDeps = () => ({");
     expect(app).toContain("glossaryImageStyle, universalImageStyle, newGlossaryTerm");
     expect(app).toContain("const effectiveGlossaryStyle = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();");
@@ -52,9 +56,16 @@ describe('Universal image-style inheritance', () => {
   });
 
   it('keeps Adventure presets while offering Universal style across every generated visual', () => {
-    expect(sidebar).toContain('<option value="universal">Use Universal style</option>');
-    expect(adventureView).toContain('<option value="universal">Use Universal style</option>');
-    expect(adventureHandlers).toContain("adventureArtStyle === 'universal'");
+    // Since 0bb48eb97 (2026-09-08) the sidebar and the Adventure view render one shared
+    // AdventureSetupFields, whose art-style field lists Universal first.
+    expect(sidebar).toContain('<AdventureSetupFields {...props} compact idPrefix="sidebar-adventure"/>');
+    expect(adventureView).toContain('<AdventureSetupFields {...props} hideSummary/>');
+    expect(adventureSettings).toContain("'setAdventureArtStyle', ['universal', 'auto', 'storybook', 'pixel', 'cinematic', 'anime', 'crayon', 'custom']");
+    expect(adventureSettings).toContain("{ universal: 'Use Universal style', auto: 'Auto',");
+    // b4d7ed714 (2026-09-13): the start handler no longer paints a styled establishing shot; cast
+    // confirmation owns the opening image, so every Adventure image is styled by the session handler.
+    expect(adventureHandlers).toContain('Cast confirmation owns the opening illustration');
+    expect(adventureHandlers).not.toContain('Art style: ${adventureArtStyle}');
     expect(adventureSession).toContain("styleDescription = String(universalImageStyle || '').trim()");
     expect(app).toContain("adventureArtStyle === 'universal'");
     expect(app).toContain('adventureArtStyle, adventureCustomArtStyle, universalImageStyle, useLowQualityVisuals');

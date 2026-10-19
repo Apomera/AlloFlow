@@ -40,6 +40,60 @@ describe('Butterfly meadow native geometry',()=>{
         expect(values,`${geometry.name||geometry.type} ${attribute}`).toBeDefined();
         expect(Array.from(values).every(Number.isFinite),`${geometry.name||geometry.type} ${attribute}`).toBe(true);
       }
+      // Custom surface coordinates must cover every vertex, including the
+      // separate close-up flower meshes that are promoted at runtime.
+      for(const [name,attribute] of Object.entries(geometry.attributes)){
+        expect(attribute.count,`${geometry.name||geometry.type} ${name} vertex coverage`).toBe(geometry.attributes.position.count);
+        expect(Array.from(attribute.array).every(Number.isFinite),`${geometry.name||geometry.type} ${name} finite surface coordinates`).toBe(true);
+      }
+    }
+  });
+
+  it('pins the feeding cap in ordinary and promoted flowers while allowing surrounding florets to vary',()=>{
+    const geometries=new Map();
+    world.scene.traverse(object=>{
+      if(object.geometry)geometries.set(object.geometry.name,object.geometry);
+    });
+    for(const milkweed of [true,false]){
+      const name=milkweed?'milkweed-flower-umbel':'bergamot-tubular-flower-head';
+      let ordinaryContactFrames;
+      for(const suffix of ['','-close-detail']){
+        const geometry=geometries.get(name+suffix);
+        expect(geometry,`${name+suffix} exists even before promotion`).toBeDefined();
+        const anchors=geometry.getAttribute('bfBloomAnchor'),axes=geometry.getAttribute('bfBloomAxis');
+        expect(anchors).toBeDefined();expect(axes).toBeDefined();
+        const florets=new Map();
+        for(let vertex=0;vertex<anchors.count;vertex++){
+          const pivot=[anchors.getX(vertex),anchors.getY(vertex),anchors.getZ(vertex)];
+          const direction=[axes.getX(vertex),axes.getY(vertex),axes.getZ(vertex)];
+          // Milkweed florets radiate from one shared pedicel origin. Bergamot
+          // tubes have separate basal positions; the central tube is closest
+          // to the stem. Identify these spatially, independently of their IDs.
+          if(milkweed){
+            expect(axes.getW(vertex)).toBe(1);
+          }else if(Math.hypot(pivot[0],pivot[2])<.001){
+            expect(anchors.getW(vertex),'neutral bracts remain fixed').toBe(0);
+            continue;
+          }
+          const frame=(milkweed?direction:pivot).join(',');
+          if(!florets.has(frame))florets.set(frame,{frame,rank:milkweed?-direction[1]:Math.hypot(pivot[0],pivot[2]),vertices:[]});
+          florets.get(frame).vertices.push(vertex);
+        }
+        const ordered=[...florets.values()].sort((a,b)=>a.rank-b.rank);
+        const cap=ordered.slice(0,milkweed?3:1),surroundings=ordered.slice(cap.length);
+        expect(cap).toHaveLength(milkweed?3:1);
+        expect(surroundings.length).toBeGreaterThan(3);
+        for(const floret of cap){
+          expect(floret.vertices.length).toBeGreaterThan(3);
+          for(const vertex of floret.vertices){
+            expect(anchors.getW(vertex),`${name+suffix} contact cap vertex ${vertex} bypasses deformation`).toBe(0);
+          }
+        }
+        expect(surroundings.every(floret=>floret.vertices.every(vertex=>anchors.getW(vertex)>.5)),`${name+suffix} neighboring florets retain variation`).toBe(true);
+        const contactFrames=cap.map(floret=>floret.frame);
+        if(!suffix)ordinaryContactFrames=contactFrames;
+        else expect(contactFrames,'promotion preserves the same protected contact cap').toEqual(ordinaryContactFrames);
+      }
     }
   });
 
@@ -52,6 +106,20 @@ describe('Butterfly meadow native geometry',()=>{
     expect(triangles).toBeGreaterThan(0);
     expect(triangles).toBeLessThan(400000);
     expect(world.scene.getObjectByName('shared-meadow-grass').isInstancedMesh).toBe(true);
+  });
+
+  it('supplies foliage colors so instanced hedgerows do not render black',()=>{
+    const hedgerow=world.scene.getObjectByName('meadow-hedgerow');
+    let checked=0;
+    hedgerow.traverseVisible(object=>{
+      if(!object.isMesh||!object.material.vertexColors)return;
+      const colors=object.geometry.getAttribute('color');
+      expect(colors).toBeDefined();
+      expect(colors.count).toBe(object.geometry.getAttribute('position').count);
+      expect(Array.from(colors.array).every(value=>Number.isFinite(value)&&value>0)).toBe(true);
+      checked++;
+    });
+    expect(checked).toBeGreaterThan(0);
   });
 
   it.each([
@@ -89,6 +157,32 @@ describe('Butterfly meadow native geometry',()=>{
     expect(shader.uniforms.bfBreeze.value).toBe(0);
     world.animate(NaN,false);
     expect(shader.uniforms.bfBreeze.value).toBe(0);
+  });
+
+  it('shares one wind clock across instanced foliage and holds inspection surfaces still',()=>{
+    const materials=new Set();
+    world.scene.traverse(object=>{if(object.material?.userData.meadowWind)materials.add(object.material);});
+    expect(new Set([...materials].map(material=>material.userData.meadowWind))).toEqual(new Set(['plant','canopy','wood']));
+    const shaders=[...materials].map(material=>{
+      const shader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};
+      material.onBeforeCompile(shader);
+      expect(shader.vertexShader).toContain('bfMeadowGust');
+      expect(shader.vertexShader).not.toContain('#include <project_vertex>');
+      return shader;
+    });
+    world.animate(4.5,false);
+    for(const shader of shaders){
+      expect(shader.uniforms.bfBreeze).toBe(shaders[0].uniforms.bfBreeze);
+      expect(shader.uniforms.bfBreeze.value).toBe(4.5);
+      expect(shader.uniforms.bfWindStrength.value).toBe(1);
+      expect(shader.uniforms.bfPlantWind.value).toBe(1);
+    }
+    world.animate(4.5,false,true);
+    expect(shaders[0].uniforms.bfBreeze.value).toBe(4.5);
+    expect(shaders[0].uniforms.bfPlantWind.value).toBe(0);
+    world.animate(23,true);
+    for(const shader of shaders){expect(shader.uniforms.bfBreeze.value).toBe(0);expect(shader.uniforms.bfWindStrength.value).toBe(0);}
+    world.animate(4.5,false);
   });
 
   it('retains paired articulated wings and the monarch six-leg anatomy',()=>{

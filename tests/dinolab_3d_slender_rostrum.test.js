@@ -116,7 +116,26 @@ describe('Cranial detail attachment and opt-in integration',()=>{
   it('covers every affected catalog species while retaining the complete profile and radius inputs',()=>{
     const affected=art.DINOS.filter(d=>art.cranialSurfaceProfileFor(d).id==='slender-theropod');
     expect(affected.map(d=>d.id).sort()).toEqual(['coelophysis','compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'].sort());
-    for(const dn of art.DINOS)expect(art.cranialSurfaceProfileFor(dn),dn.id).toEqual(baselineCranialProfile(dn));
+    // Later mature-tyrannosaur metadata and the two reviewed Alioramini envelopes
+    // have their own form tests. Retain the frozen source and pin every other
+    // species/property here, including all original slender-theropod inputs.
+    const reviewedMatureIds=new Set(['tyrannosaurus','tarbosaurus','gorgosaurus','daspletosaurus','nanuqsaurus','lythronax','teratophoneus','albertosaurus','thanatotheristes']);
+    for(const dn of art.DINOS){
+      const actual={...art.cranialSurfaceProfileFor(dn)},expected=baselineCranialProfile(dn);
+      if(reviewedMatureIds.has(dn.id)){
+        expect(dn.clade).toBe('Tyrannosauridae');expect(actual.matureTyrannosaur).toBe(true);
+        for(const key of ['note','matureTyrannosaur']){
+          if(Object.prototype.hasOwnProperty.call(expected,key))actual[key]=expected[key];else delete actual[key];
+        }
+      }
+      if(['alioramus','qianzhousaurus'].includes(dn.id)){
+        expect(actual.id).toBe('alioramin-long-low');
+        // Only the reviewed labels and eighteen shape inputs are restored for
+        // this historical comparison; dino_3d_alioramin_form pins the new vector.
+        for(const key of ('id shortLabel label note headLengthScale headHeightScale headDepthScale muzzleLengthScale muzzleBaseScale muzzleTipScale muzzleHeightScale muzzleDepthScale jawHeightScale jawDepthScale cheekScale browScale eyeScale eyeForwardScale eyeHeightScale nostrilPosition nostrilHeightScale nostrilScale').split(' '))actual[key]=expected[key];
+      }
+      expect(actual,dn.id).toEqual(expected);
+    }
     for(const dn of affected){const s=specimen(1,new T.Vector3(),dn.id),{before,after}=pair(s);expect(s.radii,dn.id).toEqual(baselineCranialRadii(.4,.26,.12,baselineCranialProfile(dn)));expect(after.attributes.position.count,dn.id).toBe(before.attributes.position.count);exactAttribute(after.index,before.index);exactAttribute(after.attributes.uv,before.attributes.uv);let changes=0;
       for(let i=0;i<after.attributes.position.count;i++){const a=vector(after.attributes.position,i),b=vector(before.attributes.position,i);expect(a.y,dn.id).toBe(b.y);expect(a.z,dn.id).toBe(b.z);expect(a.x,dn.id).toBeGreaterThanOrEqual(b.x);if(a.x>b.x)changes++;}
       expect(changes,dn.id).toBeGreaterThan(100);before.dispose();after.dispose();}

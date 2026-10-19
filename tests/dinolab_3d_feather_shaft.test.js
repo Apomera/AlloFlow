@@ -14,6 +14,7 @@ function extract(name) {
 }
 const helper = name => new Function(extract(name) + ';return ' + name)();
 const makeShaft = helper('dinoFeatherShaftGeometry'), makeVane = helper('dinoFeatherGeometry');
+const vaneProfile = helper('dinoFeatherVaneProfile');
 const legacyVane = new Function(legacyVaneCode + ';return dinoFeatherGeometry;')();
 const frame = helper('dinoFeatherFrame'), mark = helper('dinoSurfacePartIds');
 const point = (p, i) => new T.Vector3().fromBufferAttribute(p, i);
@@ -105,7 +106,7 @@ describe('Cambered tapered feather shafts', () => {
 function construct(legacy, {length=.35,width=.06,tract='tail',showBody=true,zero=false}={}) {
   const model=new T.Group(), featherVaneMat=new T.MeshStandardMaterial(), filamentMat=new T.MeshStandardMaterial();
   const idleMotion={phase:.31,feathers:[{sentinel:true}]};
-  const env={THREE:T,props:{showBody},model,featherVaneMat,filamentMat,idleMotion,dinoFeatherGeometry:legacy?legacyVane:makeVane,dinoFeatherShaftGeometry:makeShaft,dinoFeatherFrame:frame,dinoSurfacePartIds:mark,vec:(x,y,z)=>new T.Vector3(x,y,z)};
+  const env={THREE:T,dn:{id:'unreviewed'},props:{showBody},model,featherVaneMat,filamentMat,idleMotion,dinoFeatherVaneProfile:vaneProfile,dinoFeatherGeometry:legacy?legacyVane:makeVane,dinoFeatherShaftGeometry:makeShaft,dinoFeatherFrame:frame,dinoSurfacePartIds:mark,vec:(x,y,z)=>new T.Vector3(x,y,z)};
   const add=new Function(...Object.keys(env),(legacy?legacyConstructionCode:extract('addFeatherVane'))+';return addFeatherVane;')(...Object.values(env));
   const base=new T.Vector3(.8,-.3,1.1), delta=new T.Vector3(.7,.4,-.5).normalize().multiplyScalar(length), tip=zero?base.clone():base.clone().add(delta);
   const vane=add(base,tip,width,new T.Vector3(.2,1,.4),tract); model.updateMatrixWorld(true);

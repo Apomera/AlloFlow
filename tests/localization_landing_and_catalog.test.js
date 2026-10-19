@@ -155,7 +155,9 @@ describe('header Documents menu and Student tools are translatable', () => {
     expect(get('student_tools.title')).toBe('Student tools');
     expect(get('student_tools.subtitle')).toBe('Read, focus, and practice your way');
     // It was hardcoded in two places — the panel heading and the closed pill.
-    expect((fab.match(/t\('student_tools\.title'\)/g) || []).length).toBe(2);
+    // a023e75fa (2026-10-16): one role-aware title (teachers see "Reading tools") feeds both places.
+    expect(fab).toContain("const toolsTitle = isTeacherMode ? toolLabel('student_tools.teacher_title', 'Reading tools') : toolLabel('student_tools.title', 'Student tools');");
+    expect((fab.match(/\{toolsTitle\}/g) || []).length).toBe(2);
     expect(fab).not.toContain('tracking-tight text-slate-900">Student tools<');
   });
 });

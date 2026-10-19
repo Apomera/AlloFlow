@@ -10,6 +10,12 @@ const { createHash } = require('crypto');
 const releaseScriptPattern = /<script\b[^>]*\bid=["']alloflow-release["'][^>]*>[\s\S]*?<\/script>/i;
 
 function postbuild(options = {}) {
+    const desktopBuildInputFingerprint = Object.prototype.hasOwnProperty.call(options, 'desktopBuildInputFingerprint')
+        ? options.desktopBuildInputFingerprint : process.env.ALLOFLOW_DESKTOP_BUILD_INPUT_FINGERPRINT;
+    if (desktopBuildInputFingerprint !== undefined
+        && (typeof desktopBuildInputFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(desktopBuildInputFingerprint))) {
+        throw new Error('Desktop build input fingerprint must be a 64-character lowercase SHA-256 value');
+    }
     // Desktop packaging supplies an isolated BUILD_PATH so it cannot overwrite
     // the hosted artifact produced by deploy.sh.
     const buildDir = options.buildDir || (process.env.BUILD_PATH
@@ -39,6 +45,18 @@ function postbuild(options = {}) {
         if (!fs.existsSync(target)) fs.copyFileSync(path.join(templateDir, asset), target);
     }
 
+    // Pin the AI backend preload to its content (sha256-8), as the host pins its
+    // CDN copy: a release that changes the reviewed search policy must not be
+    // answered from a cached older module (tests/maine_sld_state_search_policy).
+    html = html.replace(/<script\b[^>]*\bid=["']alloflow-ai-backend-script["'][^>]*>/i, (tag) => {
+        const backendPath = path.join(buildDir, 'ai_backend_module.js');
+        if (!fs.existsSync(backendPath)) throw new Error('AI backend preload has no ai_backend_module.js in the build');
+        const version = createHash('sha256').update(fs.readFileSync(backendPath)).digest('hex').slice(0, 8);
+        const backendSrc = /\bsrc=(["'])\.\/ai_backend_module\.js(?:\?v=[a-f0-9]+)?\1/;
+        if (!backendSrc.test(tag)) throw new Error('AI backend preload has an unexpected src: ' + tag);
+        return tag.replace(backendSrc, 'src=$1./ai_backend_module.js?v=' + version + '$1');
+    });
+
     // Main JS contains the version-pinned dynamic module/plugin URLs. Hashing
     // its bytes therefore includes CDN module releases, not just the HTML UI.
     // Also cover un-hashed local boot scripts, styles, and inline font URLs.
@@ -58,6 +76,11 @@ function postbuild(options = {}) {
     }
     const hash = createHash('sha256');
     const addContent = (name, bytes) => hash.update(name + '\0' + bytes.length + '\0').update(bytes);
+    // Dynamic local modules need a new release cache even when the compiled
+    // shell is unchanged. The desktop builder already hashes these inputs.
+    if (desktopBuildInputFingerprint !== undefined) {
+        addContent('desktop-build-input.sha256', Buffer.from(desktopBuildInputFingerprint));
+    }
     addContent('index.html', Buffer.from(html));
     addContent('sw.js', Buffer.from(swTemplate));
     for (const asset of Array.from(releaseAssets).sort()) {
@@ -84,6 +107,7 @@ function postbuild(options = {}) {
     console.log('✓ Split shell HTML:', (Buffer.byteLength(html) / 1024).toFixed(1) + ' KB');
     console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
     console.log('✓ App release:', releaseId, '(built ' + releaseBuiltAt + ')');
+    if (desktopBuildInputFingerprint !== undefined) console.log('✓ Desktop build inputs:', desktopBuildInputFingerprint);
     console.log('✓ Post-build complete: split shell assets are precached for offline/repeat launch');
     return { releaseId, releaseBuiltAt };
 }

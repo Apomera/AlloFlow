@@ -133,7 +133,8 @@ describe('Lesson Image uploads respect the latest author choice',()=>{
 });
 describe('Word Sounds deferred practice launches stay with their lesson',()=>{
   function props(extra={}){return {
-    t:k=>k,generatedContent:{id:'ws-a',data:[{word:'cat'}],sessionConfig:{difficulty:'easy'}},
+    // A real Word Sounds resource: the preview's readiness check inspects only type 'word-sounds'.
+    t:k=>k,generatedContent:{id:'ws-a',type:'word-sounds',data:[{word:'cat'}],sessionConfig:{difficulty:'easy'}},
     wsActivitySequence:['blending'],setWordSoundsActivity:vi.fn(),setIsWordSoundsMode:vi.fn(),setWordSoundsAutoReview:vi.fn(),
     prepareWordSoundsSession:vi.fn(),wordSoundsAudioCoverage:{total:2,ready:0,complete:false},isTeacherMode:true,...extra
   };}
@@ -189,7 +190,8 @@ describe('Adapted Reading audio preparation lifecycle',()=>{
     const p={...readingProps(),isTeacherToolbarExpanded:true};
     window.__alloPrepareReadAloud=vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ok:true});
     mount('SimplifiedView',p);click(host.querySelector('[data-help-key=simplified_save_tts]'));await settle();
-    expect(host.textContent).toContain('Audio could not be saved');
+    // a9ae02cb5 (2026-09-30): a failed run now says preparation (not saving) failed and that completed clips are kept.
+    expect(host.textContent).toContain('Sentence audio could not be prepared. Completed clips are kept; retry missing audio.');
     click(host.querySelector('[data-help-key=simplified_save_tts]'));await settle();
     expect(host.querySelector('[data-tts-prep-status]').textContent).toBe('Audio is prepared. Checking whether it is saved on this device.');
     expect(host.textContent).not.toContain('saved for all sentences');expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);

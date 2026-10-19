@@ -14,6 +14,11 @@ function between(source, start, end) {
   if (from < 0 || to < 0) throw new Error(`Missing production boundary: ${start}`);
   return source.slice(from, to);
 }
+// 79e3e5eae (2026-10-10) added this module-scope helper that both serializers call.
+function provenanceHelper(source) {
+  const block = between(source, 'function sanitizeWordSoundsAudioProvenance(', '\n}\n');
+  return `${block}\n}\n`;
+}
 function wave(dataLength = 128) {
   const bytes = Buffer.alloc(44 + dataLength, 0);
   bytes.write('RIFF', 0); bytes.writeUInt32LE(bytes.length - 8, 4); bytes.write('WAVEfmt ', 8);
@@ -47,7 +52,7 @@ function services(liveSource = live) {
   new Function('window', firestore)(win);
   const module = { exports: {} };
   new Function('module', 'globalThis', read('word_sounds_readiness_contract.js'))(module, { window: win });
-  const serialize = new Function('window', `${between(liveSource, 'const _alloSerializeResourceForStudentPack =', 'const _alloResizeMailboxImage =')}\nreturn _alloSerializeResourceForStudentPack;`)(win);
+  const serialize = new Function('window', `${provenanceHelper(liveSource)}${between(liveSource,'const _alloSerializeResourceForStudentPack =', 'const _alloResizeMailboxImage =')}\nreturn _alloSerializeResourceForStudentPack;`)(win);
   return { win, pack: (item, overrides = {}) => serialize(item, { ...win, audioChannel: 'student-pack', ...overrides }) };
 }
 function assertContentAndBytes(received, original, base64 = wave()) {
@@ -165,7 +170,7 @@ function firebaseServices(win) {
   const endMarker = '  return hydrated;\n};';
   const block = extras.slice(extras.indexOf('const SESSION_RESOURCE_INLINE_LIMIT ='), extras.indexOf(endMarker, extras.indexOf('const hydrateSessionAssets =')) + endMarker.length);
   if (!block.startsWith('const SESSION_RESOURCE_INLINE_LIMIT') || !block.endsWith('};')) throw new Error('Missing exact Firebase asset-function boundary');
-  const api = new Function(...Object.keys(env), `${block}\nreturn { upload: uploadSessionAssets, hydrate: hydrateSessionAssets };`)(...Object.values(env));
+  const api = new Function(...Object.keys(env), `${provenanceHelper(extras)}${block}\nreturn { upload: uploadSessionAssets, hydrate: hydrateSessionAssets };`)(...Object.values(env));
   return { ...api, docs, reads, env };
 }
 

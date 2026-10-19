@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Der Missionsabschluss und die Landung nach der Rückkehr wurden aufgezeichnet. Wiederhole diese Mission mit einer bewussten Änderung an Steuerung oder Route und vergleiche anschließend die gespeicherten Beobachtungen.",
+  "stem.flightsim.coaching_mission_depleted": "Die Drohne hatte keinen Akkustrom mehr. Starte eine neue Mission, nutze kurze Routen und plane die Rückkehr, bevor der Akku fast leer ist.",
+  "stem.flightsim.coaching_mission_unknown": "Diese Mission hat unvollständige oder widersprüchliche Nachweise. Prüfe die Aufzeichnungen und beginne anschließend einen neuen Versuch.",
+  "stem.flightsim.coaching_mission_capture": "Einige Ziele wurden noch nicht erfasst. Nähere dich bei einer neuen Mission jeweils einem Ziel und halte die angezeigten Grenzen für Höhe und Geschwindigkeit über Grund ein, bis die Erfassung aufgezeichnet wird.",
+  "stem.flightsim.coaching_mission_recovery": "Die überlebende Person wurde nicht gerettet. Übe bei einer neuen Rettungsmission einen stabilen Schwebeflug innerhalb der angezeigten Grenzen für Höhe, Abdrift und Vertikalgeschwindigkeit, bevor du zur Basis zurückkehrst.",
+  "stem.flightsim.coaching_mission_return": "Die Aufnahme- oder Erfassungsziele wurden aufgezeichnet; die Landung nach der Rückkehr fehlt noch. Starte eine neue Mission und halte Zeit und Akkuladung für die Rückkehr zur Basis frei.",
+  "stem.flightsim.mission_reflection_prompt": "Welche Entscheidung zu einem Ziel, Schwebeflug oder Rückflug würdest du ändern? Erkläre deine Wahl anhand der Missionsbeobachtungen und plane eine Änderung für einen neuen Versuch. Deine Erklärung wird mit diesem Flug gespeichert.",
+  "stem.flightsim.journal_different_airport": "Diese Anflüge fanden an verschiedenen Flughäfen statt. Prüfe ihre Beobachtungen einzeln; Änderungen der Messwerte werden nicht berechnet.",
+  "stem.flightsim.journal_approach_airport": "Angeflogener Flughafen: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "MISSIONSNACHWEISE",
+  "stem.flightsim.challenge_brake_release": "Lasse X los und schalte die Radbremsen in Deck aus, bevor du die Leistung erhöhst."
+}

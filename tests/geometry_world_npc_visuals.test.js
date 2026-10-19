@@ -9,7 +9,8 @@ function slice(start, end) {
   return source.slice(a, b);
 }
 const helpers = slice('  function geometryGuideState(', '  // ── Non-visual wayfinding ──');
-const create = slice('engine.createNPC = function(data)', 'engine.loadLesson = function(lesson)');
+// 6a0c48749 installs the world-transition guard between createNPC and loadLesson; stop at it.
+const create = slice('engine.createNPC = function(data)', '// Protect live builds before any world replacement.');
 const animate = slice('// Animate NPCs — bob, rotate, face player when close', '// ── NPC proximity chime');
 const clearStart = source.lastIndexOf('engine.npcs.forEach(function(n)', source.indexOf('engine.createNPC = function(data)'));
 const clearEnd = source.indexOf('engine.npcs = [];', clearStart) + 'engine.npcs = [];'.length;

@@ -64,6 +64,22 @@ afterEach(() => {
   for (const scene of scenes.splice(0)) scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
 });
 
+// The closed-eye crease is a fitted ribbon (no TubeGeometry path): cut its actual
+// triangles at evenly spaced x stations and use each cross-section's centre.
+function creaseCentres(mesh,count) {
+  const p=mesh.geometry.attributes.position,index=mesh.geometry.index.array;mesh.geometry.computeBoundingBox();
+  const box=mesh.geometry.boundingBox,vertex=i=>new THREE.Vector3().fromBufferAttribute(p,i);
+  return Array.from({length:count},(_,station)=>{
+    const x=box.min.x+(box.max.x-box.min.x)*(station+.5)/count,cuts=[];
+    for(let i=0;i<index.length;i+=3)for(let edge=0;edge<3;edge++) {
+      const a=vertex(index[i+edge]),b=vertex(index[i+(edge+1)%3]);
+      if((a.x<x&&b.x>x)||(a.x>x&&b.x<x))cuts.push(a.lerp(b,(x-a.x)/(b.x-a.x)));
+    }
+    expect(cuts.length,mesh.name+' actual triangles cross station '+station).toBeGreaterThan(0);
+    const mid=axis=>(Math.min(...cuts.map(c=>c[axis]))+Math.max(...cuts.map(c=>c[axis])))/2;
+    return new THREE.Vector3(x,mid('y'),mid('z'));
+  });
+}
 describe('sculpted mannequin face', () => {
   it.each(['adult','child','infant'])('keeps the fitted eye seams close to actual skin through the head tilt for %s', age => {
     for (const phase of [0,8]) {
@@ -73,7 +89,7 @@ describe('sculpted mannequin face', () => {
       const up=new THREE.Vector3(0,1,0).transformDirection(pivot.matrixWorld);
       for (const name of ['fr-manikin-eye-left','fr-manikin-eye-right']) {
         const seam=scene.getObjectByName(name);
-        for (const point of seam.geometry.parameters.path.getPoints(20)) {
+        for (const point of creaseCentres(seam,20)) {
           const world=point.clone().applyMatrix4(seam.matrixWorld);
           const hit=new THREE.Raycaster(world.clone().addScaledVector(up,.1*scale),up.clone().negate()).intersectObject(head,false)[0];
           expect(hit,'eye seam lost the skin surface').toBeTruthy();

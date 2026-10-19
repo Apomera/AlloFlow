@@ -3603,7 +3603,8 @@ function _builderH5PCompatibility(item) {
           && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
         if (ready) adapted += 1;
       } else if (kind === 'numeric-response') {
-        ready = !!prompt && Number.isFinite(Number(question.correctValue));
+        ready = !!prompt && (typeof question.correctValue === 'number' || typeof question.correctValue === 'string')
+          && String(question.correctValue).trim() !== '' && Number.isFinite(Number(question.correctValue));
         if (ready) {
           adapted += 1;
           if (Number(question.tolerance) > 0) manualReview += 1;
@@ -8559,7 +8560,11 @@ function ExportPreviewView(props) {
         const clean = teacherOnly.length ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
         if (succeeded !== true) return;
-        if (teacherOnly.length) addToast && addToast((t && t('export_preview.ims_student_copy_only')) || 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.', 'info');
+        if (teacherOnly.length && addToast) {
+          // English fallback for a cached strings bank that predates the key.
+          const __t = (key, english) => (t && t(key)) || english;
+          addToast(__t('export_preview.ims_student_copy_only', 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.'), 'info');
+        }
       }
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'package', format: kind }); } catch (_) {}
     }
@@ -9057,7 +9062,10 @@ function ExportPreviewView(props) {
                                     if (!c || typeof c !== 'object') return;
                                     out.push('### ' + (ci + 1) + '. ' + esc(c.target || maT('memory_target', 'Memory target')), '');
                                     const cueBlock = maRules && typeof maRules.cueBlock === 'function' ? maRules.cueBlock(c) : null;
-                                    const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
+                                    const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
+                                    if (c.cueNeedsReview) out.push('**' + maT('cue_review_required', 'Cue review required') + ':** ' + (c.studentCueNeedsReview && !c.teacherCueNeedsReview
+                                      ? maT('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.')
+                                      : maT('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.')), '');
                                     if (cue) out.push('**' + maT('export_memory_cue_label', 'Memory cue:') + '** ' + esc(cue), '');
                                     // Exactly one rung is filled, so a card with no drafted
                                     // cue still reaches the notebook with something to study.
@@ -9075,7 +9083,15 @@ function ExportPreviewView(props) {
                                     const verified = !!(maRules && typeof maRules.isCardVerified === 'function' && maRules.isCardVerified(c));
                                     out.push('**' + (verified ? maT('facts_student_heading', 'Facts to remember') : maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + ':**');
                                     (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach(f => { if (f) out.push('- ' + esc(f)); });
-                                    if (c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
+                                    const currentLinks = maRules && typeof maRules.activeConnections === 'function' ? maRules.activeConnections(c) : [];
+                                    const customCue = !(maRules && typeof maRules.customCue === 'function') || maRules.customCue(c);
+                                    if (!c.cueNeedsReview && currentLinks.length) {
+                                      out.push('', '**' + maT('mapping_heading', 'How the cue connects') + ':**');
+                                      currentLinks.forEach(link => {
+                                        const fact = (c.essentialFacts || [])[link.factIndex];
+                                        if (fact) out.push('- **' + esc(link.cue) + '**: ' + esc(fact) + (link.explanation ? ' ' + esc(link.explanation) : ''));
+                                      });
+                                    } else if (!c.cueNeedsReview && !customCue && c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
                                     const hook = maRules && typeof maRules.hookFact === 'function' ? maRules.hookFact(c) : null;
                                     if (hook) {
                                       // The lane-wide esc is a pass-through, so escape the

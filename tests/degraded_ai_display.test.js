@@ -7,8 +7,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const pipeSrc =readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 // ── Mirror of the pipeline degraded flag + score selection ──
@@ -93,7 +94,8 @@ describe('anti-drift: pipeline ships the degraded flag + deterministic fallback'
 describe('anti-drift: the view renders it honestly', () => {
   it('reads the incomplete flag + neutralises the headline + suppresses +gain', () => {
     expect(viewSrc).toMatch(/const _aiIncomplete = !!pdfFixResult\._aiVerificationIncomplete/);
-    expect(viewSrc).toMatch(/_aiIncomplete \? 'text-slate-400'/); // big headline neutralised (slate, no green)
+    // big headline neutralised (slate, no green); slate-400 -> slate-600 for contrast in c38cfb5c8 (2026-09-15)
+    expect(viewSrc).toMatch(/_aiIncomplete \? 'text-slate-600' : \(blendedAfter \|\| 0\) < 50/);
     expect(viewSrc).toMatch(/\{gain > 0 && !_aiIncomplete &&/);
   });
   it('(2026-06-28) AI-incomplete: the big headline shows a DASH — the structural number is NOT the headline — and is demoted to a caption', () => {
@@ -112,13 +114,22 @@ describe('anti-drift: the view renders it honestly', () => {
     expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete[\s\S]{0,260}pdf_audit\.verification\.ai_incomplete_summary/);
   });
   it('(2026-06-22) the "ready" headline is qualified while still-working / fidelity-limited (not an unconditional "ready")', () => {
-    // 2026-08: derived through _remediationInFlight (busy || auto-continue).
-    expect(viewSrc).toMatch(/const _remediationInFlight = _remediationBusy \|\| pdfAutoContinueRunning;/);
+    // 2026-08: derived through _remediationInFlight (one-click || busy || auto-continue).
+    expect(viewSrc).toMatch(/const _remediationInFlight = oneClickRemediationBusy \|\| _remediationBusy \|\| pdfAutoContinueRunning;/);
     expect(viewSrc).toMatch(/const _stillWorking = _remediationInFlight;/);
-    expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_working/);
-    expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_verify/);
-    // the still-working / fidelity branches must be chosen BEFORE the plain 'ready' fallback
-    expect(viewSrc).toMatch(/_stillWorking[\s\S]{0,160}ready_heading_working[\s\S]{0,200}_fidelity[\s\S]{0,160}ready_heading_verify[\s\S]{0,200}ready_heading'\)/);
+    // b4d7ed714 (2026-09-13): outside a run the headline is the workspace status title; the panel
+    // heading appears only while still working, and says it is a draft.
+    expect(viewSrc).toContain("const _label = _stillWorking ? _pdfWorkspaceText(t, 'draft_working', 'Draft copy available; remediation is still running')\n                            : _workspaceState.title;");
+    expect(viewSrc).toContain("return _stillWorking ? <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4> : null;");
+    // still working, then fidelity, are both decided before the plain "ready" state
+    const ws = readFileSync(resolve(process.cwd(), 'remediation_workspace_component.jsx'), 'utf8');
+    const fn = (name) => sliceBetween(ws, 'function ' + name + '(', '\nfunction ', { file: 'remediation_workspace_component.jsx', label: name });
+    const workspaceState = new Function(['_pdfWorkspaceText', '_pdfWorkspaceHasPreservationConcern', '_pdfWorkspaceState', '_pdfWorkspaceAuditWaitMessage'].map(fn).join('\n') + '\nreturn _pdfWorkspaceState;')();
+    const evidence = { fullyVerifiedSuccess: true, allThreeComplete: true, totalEngineFindings: 0, reviewCount: 0, verification: { verificationState: 'complete', engineExecutionComplete: true } };
+    const result = { accessibleHtml: '<p>Done</p>' };
+    expect(workspaceState({ result, evidence, verdict: { level: 'ready' } }).tone).toBe('ready');
+    expect(workspaceState({ result, evidence, verdict: { level: 'ready' }, busy: true }).tone).toBe('working');
+    expect(workspaceState({ result: { ...result, fidelityLimited: true }, evidence, verdict: { level: 'review' } }).title).toBe('Needs review');
   });
   it('a section with no score renders neutral "not scored", not red 0; and the loop bails when AI-throttled + axe-clean', () => {
     expect(viewSrc).toMatch(/const _hasScore = typeof chunk\.score === 'number'/);

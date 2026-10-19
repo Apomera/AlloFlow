@@ -45,7 +45,9 @@ function compareProtectedGrass(live,original){
 function construct(helperText){
   let state=2741;const math=Object.create(Math),draws=[];math.random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;const value=state/4294967296;draws.push(value);return value;};
   const grass=region('        var grass = [];','        // Terrain-conforming caustics:'),kelp=region('        var kelpStrands = [];','        // ─── Hydrothermal vent');
-  const result=new Function('THREE','Math',helperText+';var scene=new THREE.Scene();'+grass+kelp+';return{scene,grass,kelp:kelpStrands};')(THREE,math);
+  // Since the pass57 tissue finish the grove regions ask the renderer for derivative support (WebGL2 here).
+  const renderer={capabilities:{isWebGL2:true},extensions:{has(){throw new Error('WebGL2 needs no extension query');}}};
+  const result=new Function('THREE','Math','renderer',helperText+';var scene=new THREE.Scene();'+grass+kelp+';return{scene,grass,kelp:kelpStrands};')(THREE,math,renderer);
   return {...result,draws,get state(){return state;},next:math.random};
 }
 function release(fixture){fixture.scene.traverse(object=>{object.geometry?.dispose();object.material?.dispose();});}

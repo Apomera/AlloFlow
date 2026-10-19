@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Waxyaabaha hawlgalka lagu arkay",
+  "stem.flightsim.mission_journal_targets": "Bartilmaameedyada la sawiray: {captured} oo ka mid ah {total}.",
+  "stem.flightsim.mission_journal_complete": "Dhammaan ujeeddooyinka hawlgalka iyo degitaanka soo noqoshada waa la diiwaangeliyey.",
+  "stem.flightsim.mission_journal_ended": "Hawlgalku wuu dhammaaday ka hor intaan la diiwaangelin dhammaan caddaymaha dhammaystirka.",
+  "stem.flightsim.mission_journal_recovery": "Samatabbixinta badbaadaha la diiwaangeliyey: {value}.",
+  "stem.flightsim.mission_journal_return": "Degitaanka ku soo noqoshada saldhigga la diiwaangeliyey: {value}.",
+  "stem.flightsim.mission_guidance_title": "Tilmaamaha hawlgalka",
+  "stem.flightsim.mission_route": "{target} · jihada {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Goobta laga duulay",
+  "stem.flightsim.mission_read_status": "Akhri xaaladda hawlgalka",
+  "stem.flightsim.mission_return_criterion": "Ku deg masaafo aan ka badnayn {distance} nm oo u jirta {target}, adigoo xawaaraha marka dhulka loo eego ka dhigaya wax ka yar {speed} kt, xawaaraha hoos u degistana wax ka yar {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Xogta bartilmaameedka hawlgalka lama heli karo. Dhammay duulimaadkan oo bilow hawlgal cusub.",
+  "stem.flightsim.mission_capture_criterion": "Joog meel u jirta ugu badnaan {distance} ft, ka sarreysa {min} kana hooseysa {max} ft dhulka, adigoo xawaaraha dhulka ka dhigaya wax ka yar {speed} kt muddo {hold} s ah."
+}

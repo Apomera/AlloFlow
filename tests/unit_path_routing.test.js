@@ -13,7 +13,8 @@ import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+// LF-normalized: .gitattributes checks out LF, but a CRLF working copy must not flip multi-line pins.
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 const utilsSource = read('utils_pure_source.jsx');
 const hostSource = read('host_handlers_source.jsx');
 const dispatcher = read('generate_dispatcher_source.jsx');
@@ -105,9 +106,17 @@ describe('progression routing pins', () => {
     it('the dispatcher feeds the pending node into the plan prompt, stamps the plan, and clears the marker', () => {
         expect(dispatcher).toContain('--- UNIT PATH CONTEXT ---');
         expect(dispatcher).toContain('prompt = buildLessonPlanPrompt(context + _unitPathBlock, assetManifest, effectiveLanguage, effCustomInstructions);');
-        expect(dispatcher).toContain('content.unitPath = {');
-        expect(dispatcher).toContain("nodeId: String(_pendingUnitPathNode.nodeId),");
-        expect(dispatcher).toContain('try { delete window.__alloPendingUnitPathNode; } catch (_) {}');
+        // a50636825 moved the read/normalize/clear into UtilsPure.consumePendingUnitPathNode
+        // (shared with the sidebar route; behavior pinned in unit_path_stamp_consumption).
+        expect(dispatcher).toContain('? window.AlloModules.UtilsPure.consumePendingUnitPathNode()');
+        expect(dispatcher).toContain('if (_pendingUnitPathNode) content.unitPath = _pendingUnitPathNode;');
+        const start = utilsSource.indexOf('const _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS');
+        const end = utilsSource.indexOf('const capturePlanningInputs = ');
+        const win = { __alloPendingUnitPathNode: { graphId: 'unit-path:abc', nodeId: 7, label: 'Node', since: 1000 } };
+        const sandbox = { window: win };
+        vm.runInNewContext(utilsSource.slice(start, end) + '\nthis.consume = consumePendingUnitPathNode;', sandbox);
+        expect(sandbox.consume(2000)).toMatchObject({ graphId: 'unit-path:abc', nodeId: '7', label: 'Node' });
+        expect('__alloPendingUnitPathNode' in win).toBe(false);
     });
 
     it('the plan shows its node and Reteach passes the synthetic flag the gate requires', () => {

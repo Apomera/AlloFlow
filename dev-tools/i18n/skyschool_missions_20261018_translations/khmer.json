@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ការសង្កេតក្នុងបេសកកម្ម",
+  "stem.flightsim.mission_journal_targets": "គោលដៅដែលបានថត៖ {captured} ក្នុងចំណោម {total}។",
+  "stem.flightsim.mission_journal_complete": "គោលបំណងបេសកកម្មទាំងអស់ និងការចុះចតពេលត្រឡប់មកវិញត្រូវបានកត់ត្រា។",
+  "stem.flightsim.mission_journal_ended": "បេសកកម្មបានបញ្ចប់មុនពេលភស្តុតាងនៃការបញ្ចប់ទាំងអស់ត្រូវបានកត់ត្រា។",
+  "stem.flightsim.mission_journal_recovery": "បានកត់ត្រាការសង្គ្រោះអ្នកនៅរស់៖ {value}។",
+  "stem.flightsim.mission_journal_return": "បានកត់ត្រាការចុះចតពេលត្រឡប់មកមូលដ្ឋាន៖ {value}។",
+  "stem.flightsim.mission_guidance_title": "ការណែនាំបេសកកម្ម",
+  "stem.flightsim.mission_route": "{target} · ទិស {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "ចំណុចហោះឡើង",
+  "stem.flightsim.mission_read_status": "អានស្ថានភាពបេសកកម្មឱ្យឮ",
+  "stem.flightsim.mission_return_criterion": "ចុះចតក្នុងចម្ងាយ {distance} nm ពី {target} ដោយមានល្បឿនធៀបនឹងដីក្រោម {speed} kt និងអត្រាចុះក្រោម {fpm} fpm។",
+  "stem.flightsim.mission_unavailable": "ទិន្នន័យគោលដៅបេសកកម្មមិនមានទេ។ បញ្ចប់ការហោះហើរនេះ ហើយចាប់ផ្តើមបេសកកម្មថ្មី។",
+  "stem.flightsim.mission_capture_criterion": "ស្ថិតនៅក្នុងចម្ងាយ {distance} ft នៅកម្ពស់ខ្ពស់ជាង {min} និងទាបជាង {max} ft ពីដី ដោយមានល្បឿនធៀបនឹងដីក្រោម {speed} kt រយៈពេល {hold} s។"
+}

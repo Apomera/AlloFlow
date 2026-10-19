@@ -471,13 +471,15 @@ describe('recovery stories', () => {
 });
 
 describe('migration deep science', () => {
-  it('gives the goose altitude the tracked record, as the other two mentions do', () => {
+  it('keeps both remaining goose-altitude mentions tied to the tracked record', () => {
     // GPS-tracked Bar-headed Geese peaked at 7,290 m (about 23,900 ft) over
     // the Himalayas; "geese to 25,000+ ft" overstated it.
     const mig = sliceBetween(SRC, 'var MIGRATION_DEEP = [', '\n  ];', { label: 'MIGRATION_DEEP' });
     expect(mig).not.toMatch(/geese to 25,000/);
     expect(mig).toMatch(/Bar-headed Geese have been tracked crossing the Himalayas at nearly 24,000 ft/);
-    expect(SRC).toMatch(/tracked as high as 23,900 ft \(7,290 m\)/);
+    // Physiology now teaches ventilation through a songbird tracer experiment.
+    // Keep guarding the altitude in the separate flight fact that still uses it.
+    expect(SRC).toMatch(/Bar-headed Geese have been tracked over the Himalayas at nearly 24,000 ft/);
   });
 });
 

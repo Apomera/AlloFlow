@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "以往的测验记录",
+  "stem.flightsim.quiz_history_scope": "开始新一轮测验时，最多保存四次已记录首次作答的以往测验。查看这些记录不会改变当前测验。",
+  "stem.flightsim.quiz_history_empty": "尚未保存任何以往的测验记录。",
+  "stem.flightsim.quiz_history_attempt": "保存于 {date} · 首次作答答对 {score}/{answered} 题",
+  "stem.flightsim.quiz_history_progress": "已记录 {answered}/{total} 题 · {unanswered} 题未作答",
+  "stem.flightsim.quiz_history_question": "第 {number} 题：{question}",
+  "stem.flightsim.quiz_history_correct_answer": "正确答案：{answer}",
+  "stem.flightsim.quiz_history_changed": "已保存的题目中有 {count} 题与当前测验不再匹配。分数仅根据匹配的题目记录计算。"
+}

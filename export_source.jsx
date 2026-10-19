@@ -775,11 +775,13 @@ const createExport = (deps) => {
             processing: _qtiScoreOutcomeXml(1) + conditions + '\n      </resprocessing>'
         });
     };
+    const _hasExportNumericKey = (value) => (typeof value === 'number' || typeof value === 'string')
+        && String(value).trim() !== '' && Number.isFinite(Number(value));
     const _qtiNumericItemXml = (q, index, partialCredit) => {
         const prompt = String(q.question == null ? '' : q.question).trim();
         const correctValue = Number(q.correctValue);
         const tolerance = Number(q.tolerance == null ? 0 : q.tolerance);
-        if (!prompt || !Number.isFinite(correctValue) || !Number.isFinite(tolerance) || tolerance < 0) return null;
+        if (!prompt || !_hasExportNumericKey(q.correctValue) || !Number.isFinite(tolerance) || tolerance < 0) return null;
 
         const valueId = 'NUM_' + index;
         const unitId = 'UNIT_' + index;
@@ -935,7 +937,7 @@ const createExport = (deps) => {
         });
         return out;
     };
-    const _qtiText = (t, key, fallback, count) => {
+    const tr = (t, key, fallback, count) => {
         let text = fallback;
         try { const translated = typeof t === 'function' ? t(key) : ''; if (translated && translated !== key) text = String(translated); } catch (_) {}
         return text.split('{count}').join(String(count));
@@ -1059,8 +1061,8 @@ const createExport = (deps) => {
             document.body.removeChild(link);
             window.setTimeout(() => URL.revokeObjectURL(url), 1000);
             addToast(t('export_status.qti_success'), "success");
-            if (media.files.length) addToast(_qtiText(t, 'export_status.qti_images_packaged', '{count} picture(s) are packaged in this QTI file. Check them after import, because some LMSs do not import quiz pictures.', media.files.length), "info");
-            if (media.omitted) addToast(_qtiText(t, 'export_status.qti_images_omitted', '{count} picture(s) could not be packaged (only pictures stored inside the quiz can travel), so those questions or choices appear without their picture.', media.omitted), "warning");
+            if (media.files.length) addToast(tr(t, 'export_status.qti_images_packaged', '{count} picture(s) are packaged in this QTI file. Check them after import, because some LMSs do not import quiz pictures.', media.files.length), "info");
+            if (media.omitted) addToast(tr(t, 'export_status.qti_images_omitted', '{count} picture(s) could not be packaged (only pictures stored inside the quiz can travel), so those questions or choices appear without their picture.', media.omitted), "warning");
             return true;
         } catch (err) {
             warnLog("QTI Package generation failed", err);
@@ -1295,7 +1297,7 @@ const createExport = (deps) => {
                         }
                     } else if (kind === 'numeric-response') {
                         const expected = Number(q.correctValue);
-                        if (prompt && Number.isFinite(expected)) {
+                        if (prompt && _hasExportNumericKey(q.correctValue)) {
                             const units = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(plain).filter(Boolean);
                             if (Number(q.tolerance) > 0) {
                                 included = addEssay(prompt + ' This exported item requires manual review because H5P exact-answer fields do not preserve numeric tolerance.', String(expected) + (plain(q.unit) ? ' ' + plain(q.unit) : '') + ' (±' + Number(q.tolerance) + ')');
@@ -2139,7 +2141,7 @@ const createExport = (deps) => {
                         const facts = listOf(c.essentialFacts || c.facts, 10);
                         const verified = !!(_memoryAidRules && typeof _memoryAidRules.isCardVerified === 'function' && _memoryAidRules.isCardVerified(c));
                         const cueBlock = _memoryAidRules && typeof _memoryAidRules.cueBlock === 'function' ? _memoryAidRules.cueBlock(c) : null;
-                        const cue = cueBlock ? clip(cueBlock.cue, 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
+                        const cue = c.cueNeedsReview ? '' : cueBlock ? clip(cueBlock.cue, 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
                         const target = clip(c.target, 300) || _nsT('memory_aid.memory_target', 'Memory target');
                         const factsLabel = verified ? _nsT('memory_aid.facts_student_heading', 'Facts to remember') : _nsT('memory_aid.facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.');
                         const runs = [{ text: target, options: { fontSize: 20, bold: true, color: darkText, breakLine: true, bullet: false } }];
@@ -2168,7 +2170,13 @@ const createExport = (deps) => {
                                 runs.push({ text: _nsT('memory_aid.hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.'), options: { fontSize: 10, color: "78716C", breakLine: true, bullet: false } });
                             }
                         }
-                        if (c.mapping) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                        const connections = _memoryAidRules && typeof _memoryAidRules.activeConnections === 'function' ? _memoryAidRules.activeConnections(c) : [];
+                        const customCue = !(_memoryAidRules && typeof _memoryAidRules.customCue === 'function') || _memoryAidRules.customCue(c);
+                        if (connections.length) connections.forEach(connection => {
+                            const fact = facts[connection.factIndex];
+                            if (fact) runs.push({ text: clip(connection.cue, 200) + ': ' + clip(fact, 600) + (connection.explanation ? ' ' + clip(connection.explanation, 600) : ''), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                        });
+                        else if (c.mapping && !c.cueNeedsReview && !customCue) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                         const cueNote = cue
                             || (cueBlock && cueBlock.steps.length ? cueBlock.steps.join(' ') : '')
                             || (cueBlock && cueBlock.visualDescription)
@@ -2218,6 +2226,10 @@ const createExport = (deps) => {
                     const role = clip(brief.role, 200);
                     const audience = clip(brief.audience, 200);
                     const facts = listOf(brief.lockedLessonFacts, 10);
+                    const factsReviewed = brief.factVerified === true && brief.factLocked !== false;
+                    const factHeading = factsReviewed
+                        ? _nsT('applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts')
+                        : _nsT('applied_challenge.brief.facts_pending', 'Lesson facts awaiting teacher review');
                     const openQuestions = listOf(brief.openQuestions, 6);
                     if (!context && !question && !facts.length) { skipped.push(itemTitle); return; }
                     const runs = [];
@@ -2227,9 +2239,9 @@ const createExport = (deps) => {
                     addRichSlide(itemTitle, runs, question + ' ' + context);
                     if (facts.length || openQuestions.length) {
                         const factRuns = [];
-                        if (facts.length) { factRuns.push(heading(_nsT('export.ppt_locked_facts', 'Lesson facts to keep accurate'))); facts.forEach((f) => factRuns.push(bullet(f))); }
+                        if (facts.length) { factRuns.push(heading(factHeading)); facts.forEach((f) => factRuns.push(bullet(f))); }
                         if (openQuestions.length) { factRuns.push(heading(_nsT('export.ppt_open_questions', 'Open questions'))); openQuestions.forEach((q) => factRuns.push(bullet(q))); }
-                        addRichSlide(itemTitle + ' (Cont.)', factRuns, facts.concat(openQuestions).join('; '));
+                        addRichSlide(itemTitle + ' (Cont.)', factRuns, (facts.length ? [factHeading].concat(facts) : []).concat(openQuestions).join('; '));
                     }
                 } else if (SKIPPED_TYPES.has(type)) {
                     // Live or media-bound resources have no slide form; name them.

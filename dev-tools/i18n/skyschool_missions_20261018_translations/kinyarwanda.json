@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Ibyagaragaye mu butumwa",
+  "stem.flightsim.mission_journal_targets": "Intego zafashwe: {captured} muri {total}.",
+  "stem.flightsim.mission_journal_complete": "Intego zose z’ubutumwa no kugaruka kugwa ku butaka byanditswe.",
+  "stem.flightsim.mission_journal_ended": "Ubutumwa bwarangiye ibimenyetso byose byo kuburangiza bitarandikwa.",
+  "stem.flightsim.mission_journal_recovery": "Gutabara uwarokotse byanditswe: {value}.",
+  "stem.flightsim.mission_journal_return": "Kugaruka kugwa ku butaka ku birindiro byanditswe: {value}.",
+  "stem.flightsim.mission_guidance_title": "Amabwiriza y’ubutumwa",
+  "stem.flightsim.mission_route": "{target} · icyerekezo {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Aho indege yahagurukiye",
+  "stem.flightsim.mission_read_status": "Soma uko ubutumwa buhagaze mu ijwi riranguruye",
+  "stem.flightsim.mission_return_criterion": "Gwa ku butaka mu ntera itarenze {distance} nm uvuye kuri {target}, ugenda ku muvuduko ugereranyije n’ubutaka uri munsi ya {speed} kt kandi umuvuduko wo kumanuka uri munsi ya {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Amakuru y’intego y’ubutumwa ntahari. Soza uru rugendo rw’indege maze utangire ubutumwa bushya.",
+  "stem.flightsim.mission_capture_criterion": "Guma mu ntera itarenze {distance} ft, hejuru ya {min} no munsi ya {max} ft uvuye ku butaka, ufite umuvuduko ugereranyije n’ubutaka uri munsi ya {speed} kt mu gihe cya {hold} s."
+}

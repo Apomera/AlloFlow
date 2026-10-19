@@ -138,6 +138,8 @@ describe('Gradient and exported-card contrast sweep', () => {
     ['Space Colony achievement', '#fecdd3', '#9f1239'],
     ['Space Colony challenge', '#fef3c7', '#92400e'],
     ['Space Station sunlight', '#fff7ed', '#9a3412'],
+    ['Orrery Submit (light)', '#ffffff', '#164e63'],
+    ['Orrery Submit (dark)', '#083344', '#a5f3fc'],
   ])('%s remains at or above 4.5:1', (_label, foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
@@ -148,7 +150,8 @@ describe('Gradient and exported-card contrast sweep', () => {
     ['stem_lab/stem_tool_alphafold.js', 'linear-gradient(135deg,#0f766e,#0369a1)'],
     ['stem_lab/stem_tool_swimlab.js', 'linear-gradient(135deg,#0369a1,#075985)'],
     ['stem_lab/stem_tool_nutritionlab.js', 'linear-gradient(135deg, #047857, #0f766e)'],
-    ['stem_lab/stem_tool_spacestation.js', 'linear-gradient(90deg,#7c2d12,#9a3412)'],
+    // Retired: Space Station's sunlight/eclipse bar gave way to the plotted power
+    // model on 10-12 (91652c2fe), so its 90deg orange gradient no longer exists.
     ['stem_lab/stem_tool_learning_lab.js', 'linear-gradient(145deg, #047857, #065f46)'],
   ])('%s pins its accessible gradient', (fileName, gradient) => {
     expect(source(fileName)).toContain(gradient);
@@ -165,11 +168,14 @@ describe('Gradient and exported-card contrast sweep', () => {
   });
 
   it('pins accessible action treatments in inline-style tools', () => {
-    expect(source('stem_lab/stem_tool_archstudio.js')).toContain('linear-gradient(135deg,#be185d,#9d174d)');
+    // Arch Studio's pink custom-color Paint button was retired on 09-09 (78fa7484d):
+    // choosing a custom color now applies it directly.
     expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("fontWeight: 900, color: '#052e16'");
     expect(source('stem_lab/stem_tool_flightsim.js')).toContain('linear-gradient(135deg, #047857, #065f46)');
     expect(source('stem_lab/stem_tool_microbiology.js')).toContain('linear-gradient(135deg, #047857 0%, #065f46 100%)');
-    expect(source('stem_lab/stem_tool_solarsystem.js')).toContain('linear-gradient(135deg, #15803d, #166534)');
+    // 10-05: the Orrery challenge Submit became .orr-practice-primary (white on #164e63,
+    // #083344 on #a5f3fc in dark); both pairs are checked in the 4.5:1 table above.
+    expect(source('stem_lab/stem_tool_solarsystem.js').includes('button.orr-practice-primary{background:" + (isDark ? "#a5f3fc" : "#164e63") + ";color:" + (isDark ? "#083344" : "#ffffff")'), 'Orrery Submit treatment').toBe(true);
     expect(source('stem_lab/stem_tool_geometryworld.js')).toContain('linear-gradient(135deg, #7c3aed, #4f46e5)');
     expect(source('stem_lab/stem_tool_roadready.js')).toContain('linear-gradient(135deg, #7c3aed, #6d28d9)');
     expect(source('stem_lab/stem_tool_astronomy.js')).toContain('linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)');
@@ -191,6 +197,7 @@ describe('Small STEM control contrast sweep', () => {
     ['red control', '#ffffff', '#b91c1c'],
     ['dark emerald badge', '#ffffff', '#047857'],
     ['indigo control', '#ffffff', '#4f46e5'],
+    ['teal primary control', '#07332c', '#99f6e4'],
   ])('%s remains at or above 4.5:1', (_label, foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
@@ -203,7 +210,8 @@ describe('Small STEM control contrast sweep', () => {
     ['stem_lab/stem_tool_roadready.js', "background: '#be123c', color: '#fff'"],
     ['stem_lab/stem_tool_nutritionlab.js', "fontSize: 10, color: '#075985'"],
     ['stem_lab/stem_tool_spacestation.js', "background: '#0ea5e9', color: '#082f49'"],
-    ['stem_lab/stem_tool_atctower.js', "background: '#15803d', color: '#fff'"],
+    // 10-10: ATC's practice button moved to the tower's .atc-primary class.
+    ['stem_lab/stem_tool_atctower.js', '.atc-tower button.atc-primary{background:#99f6e4;color:#07332c}'],
     ['stem_lab/stem_tool_flightsim.js', "background: '#1d4ed8', color: '#fff'"],
     ['stem_lab/stem_tool_aquaculture.js', "background: '#b91c1c', color: '#fff'"],
     ['stem_lab/stem_tool_cephalopodlab.js', "background: '#b91c1c', color: '#fff'"],

@@ -10,6 +10,8 @@ afterEach(()=>{cleanups.reverse().forEach(fn=>fn());cleanups=[];vi.restoreAllMoc
 function hands(s,zone='pot'){
  document.body.innerHTML='<p id="benchObservation"></p><div data-bench-group="prep"></div><div data-bench-group="pot"></div><div data-bench-group="pan"></div><div data-bench-group="finish"></div><section id="pourPanel"><div class="pour-heading"></div></section>';
  window.KitchenRecipes=R;window.KitchenHands=H;const listeners=[];for(const surface of [window,document]){const add=surface.addEventListener.bind(surface),remove=surface.removeEventListener.bind(surface);vi.spyOn(surface,'addEventListener').mockImplementation((name,fn,options)=>{listeners.push(()=>remove(name,fn,options));return add(name,fn,options);});}
+ // recipe_lab.html loads the jug model and jug studio before the hands UI, which mounts KitchenJugStudio (91652c2fe).
+ window.KitchenJugPour=J;delete require.cache[require.resolve('../stem_lab/kitchen_studio/recipe_lab_jug_studio.js')];require('../stem_lab/kitchen_studio/recipe_lab_jug_studio.js');
  delete require.cache[require.resolve('../stem_lab/kitchen_studio/recipe_lab_hands_ui.js')];require('../stem_lab/kitchen_studio/recipe_lab_hands_ui.js');let state=s;const host={pause:vi.fn(),ended:()=>false,getState:()=>state,apply:vi.fn((a,v,i)=>{state=R.act(state,a,v,i);ui.render(state,zone,false);})},ui=window.KitchenHandsUI.mount(host);ui.render(state,zone,false);cleanups.push(()=>{ui.cancel();listeners.forEach(remove=>remove());});return {ui,host,setState:s=>{state=s;ui.render(s,zone,false);},state:()=>state};
 }
 function pointer(node,type,x,y){const e=new MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});Object.defineProperties(e,{pointerId:{value:7},isPrimary:{value:true}});node.dispatchEvent(e);}

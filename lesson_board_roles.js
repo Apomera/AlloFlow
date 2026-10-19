@@ -11,4 +11,5 @@ export function roleAssignments(config, roster = {}, turn = 0) {
   const move = Number.isInteger(turn) && turn >= 0 ? turn : 0;
   return CLASS_ROLES.map((role, index) => ({ ...role, uid: members[(move + index) % members.length] }));
 }
-export function rolesConfig(enabled, roster = {}) { return { enabled: !!enabled, members: Object.keys(roster).sort() }; }
+// Members are only stored while roles are on; the live session has a size cap.
+export function rolesConfig(enabled, roster = {}) { return { enabled: !!enabled, members: enabled ? Object.keys(roster).sort() : [] }; }

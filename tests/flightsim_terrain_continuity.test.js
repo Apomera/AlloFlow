@@ -9,6 +9,8 @@ beforeAll(() => {
     document: { getElementById: () => ({}) },
     console: { log() {}, warn() {}, error() {} },
   };
+  // The geography loads first, as the STEM loader does (stemModuleDependencies).
+  runInNewContext(readFileSync('stem_lab/stem_data_skyschool_geo.js', 'utf8'), sandbox, { timeout: 5000 });
   runInNewContext(readFileSync('stem_lab/stem_tool_flightsim.js', 'utf8'), sandbox, { timeout: 5000 });
   api = sandbox.window.__RR_TEST_EXPORTS__.flightSim;
   expect(api.getFlightProceduralTerrainHeight).toBeTypeOf('function');

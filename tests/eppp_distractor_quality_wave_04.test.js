@@ -33,6 +33,13 @@ const historicallyIneligibleAnchorIds = [
   'eppp-b023-intervention-3',
 ];
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|regardless|automatically|guaranteed|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
+// Later question-quality waves deliberately re-authored these wave-04 items (same key);
+// each is listed in that wave's eppp_question_quality_audit_wave_NN.json.
+const supersedingReviewWaveById = new Map([
+  ['eppp-v2-professional-040', 'eppp-native-quality-wave-26'],
+  ['eppp-v2-professional-030', 'eppp-native-quality-wave-33'],
+  ['eppp-b022-assessment-1', 'eppp-native-quality-wave-36'],
+]);
 
 describe('EPPP distractor-quality repair wave 04', () => {
   it('source and deploy banks contain eight applied, source-backed rewrites', () => {
@@ -45,7 +52,7 @@ describe('EPPP distractor-quality repair wave 04', () => {
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(['application', 'analysis']).toContain(item.cognitiveProcess);
-      expect(item.wordingReviewWave).toBe('eppp-native-quality-wave-04');
+      expect(item.wordingReviewWave, id).toBe(supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-04');
       expect(item.choices).toHaveLength(4);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((feedback) => feedback.length >= 100)).toBe(true);

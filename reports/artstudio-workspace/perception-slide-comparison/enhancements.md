@@ -44,7 +44,7 @@ Source and desktop SHA256: `024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6
 - [Native browser results](browser/slide-browser-results.json)
 - [Source, catalog, and baseline validation](regression-validation.json)
 - [Complete current SVG at the reference endpoint](browser/current-0.svg)
-- [Complete current PNG at the reference endpoint](browser/current-0.png)
+- [Complete current PNG at the reference endpoint](../perception-drawing-overview/browser/overview-current-100.png)
 - [Native browser runner](../../../dev-tools/perception_lab_slide_comparison_qa.cjs)
 - [Regression suite](../../../tests/perception_lab_slide_comparison.test.js)
 

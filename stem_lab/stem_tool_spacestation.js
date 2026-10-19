@@ -2774,6 +2774,75 @@
     return geometry;
   }
 
+  // Equipment that gives the open truss its mass, in truss-local units (the
+  // backbone runs along x, 0.4 square). Schematic placements on the real
+  // segments: the two Solar Alpha Rotary Joints between S3/S4 and P3/P4, the
+  // Integrated Equipment Assembly (batteries and power electronics) inboard
+  // of each array pair, the four ExPRESS Logistics Carrier pallets on S3/P3,
+  // AMS-02 on S3's zenith face, and avionics boxes packed into S0/S1/P1.
+  // Merged into one vertex-coloured geometry: one draw call for ~60 parts.
+  function issTrussHardwareGeometry(THREE) {
+    var positions = [], normals = [], colors = [], parts = 0;
+    var tone = {
+      white: new THREE.Color(0xdfe4e8), grey: new THREE.Color(0xaab3bc), dark: new THREE.Color(0x5f6a76),
+      gold: new THREE.Color(0xc9a24a), metal: new THREE.Color(0xb8c3cd)
+    };
+    function add(geometry, x, y, z, color) {
+      geometry.translate(x, y, z);
+      var flat = geometry.index ? geometry.toNonIndexed() : geometry;
+      var p = flat.getAttribute('position').array, n = flat.getAttribute('normal').array;
+      for (var k = 0; k < p.length; k += 3) {
+        positions.push(p[k], p[k + 1], p[k + 2]); normals.push(n[k], n[k + 1], n[k + 2]);
+        colors.push(color.r, color.g, color.b);
+      }
+      if (flat !== geometry) flat.dispose();
+      geometry.dispose(); parts++;
+    }
+    function box(sx, sy, sz, x, y, z, color) { add(new THREE.BoxGeometry(sx, sy, sz), x, y, z, color); }
+    function drum(radius, length, x, color) {
+      var g = new THREE.CylinderGeometry(radius, radius, length, 24, 1);
+      g.rotateZ(Math.PI / 2); add(g, x, 0, 0, color);
+    }
+    [-1, 1].forEach(function (side) {
+      // SARJ: the drum the whole outboard truss turns on to follow the Sun.
+      drum(.215, .16, side * 3.08, tone.metal);
+      drum(.228, .035, side * 3.0, tone.dark);
+      drum(.228, .035, side * 3.16, tone.dark);
+      // One IEA inboard of each array pair, between the SARJ and the wings.
+      [3.36, 4.76].forEach(function (x) {
+        box(.36, .44, .44, side * x, 0, 0, tone.white);
+        box(.3, .05, .46, side * x, .17, 0, tone.grey);
+      });
+      // ELC pallets above and below S3/P3, each carrying spare parts.
+      [1, -1].forEach(function (face) {
+        var x = side * 2.72, y = face * .235;
+        box(.48, .04, .42, x, y, 0, tone.grey);
+        [[-.14, -.1, .16, .11, .14, tone.white], [.1, -.11, .2, .08, .12, tone.gold], [-.13, .1, .13, .14, .12, tone.white], [.11, .1, .16, .1, .14, tone.grey]].forEach(function (b) {
+          box(b[2], b[3], b[4], x + b[0], y + face * (.02 + b[3] / 2), b[1], b[5]);
+        });
+      });
+    });
+    // AMS-02, the cosmic-ray detector, on S3's zenith face inboard of ELC-2.
+    var ams = new THREE.CylinderGeometry(.13, .13, .17, 20, 1);
+    add(ams, 2.24, .325, 0, tone.white);
+    box(.32, .05, .26, 2.24, .435, 0, tone.gold);
+    box(.3, .04, .3, 2.24, .22, 0, tone.grey);
+    // S0/S1/P1: avionics and pump boxes inside the lattice, leaving gaps so
+    // the structure still reads as open. Destiny hides the centre bays.
+    [[-2.25, .34, .24, .22, -.02, .03], [-1.75, .3, .2, .26, .03, -.02], [-1.25, .38, .26, .2, 0, .04], [-.85, .26, .22, .24, -.03, 0],
+     [.85, .3, .24, .2, .02, -.03], [1.25, .36, .2, .26, -.02, .02], [1.75, .28, .26, .22, .03, 0], [2.25, .34, .22, .24, 0, -.03]].forEach(function (b, i) {
+      box(b[1], b[2], b[3], b[0], b[4], b[5], i % 3 === 1 ? tone.gold : i % 3 === 2 ? tone.grey : tone.white);
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.name = 'iss-truss-hardware-geometry';
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.userData.partCount = parts;
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
   // A separate, square atlas keeps the cylinder's circular ends from inheriting
   // stretched wall seams. This is schematic surface detail, not an operable hatch.
   var _issModuleEndcapCanvas = null;
@@ -3097,7 +3166,9 @@
       cvs.width = w; cvs.height = h;
       return cvs;
     }
-    var dayC = make(W, H), specC = make(W, H), cloudC = make(W, H), nightC = make(W, H);
+    // City lights are small points, so their map is at least 1024 wide;
+    // stamping them is cheap next to the noise loops the other maps run.
+    var dayC = make(W, H), specC = make(W, H), cloudC = make(W, H), nightC = make(Math.max(W, Math.min(1024, W * 2)), Math.max(H, Math.min(512, H * 2)));
     var dayCtx = dayC.getContext && dayC.getContext('2d');
     var specCtx = specC.getContext && specC.getContext('2d');
     var cloudCtx = cloudC.getContext && cloudC.getContext('2d');
@@ -3109,6 +3180,26 @@
       if (my < 0 || my > ISS_LAND_H - 1) return 0;
       var col = ((mx % ISS_LAND_W) + ISS_LAND_W) % ISS_LAND_W;
       return mask[my * ISS_LAND_W + col];
+    }
+    // Bilinear mask sample in cell units. Read cell by cell, the 0.5 deg
+    // mask drew every coast, beach and shelf as a staircase once the globe
+    // was magnified; the interpolated value traces smooth shores instead.
+    function landBi(fx, fy) {
+      var gx = Math.floor(fx), gy = Math.floor(fy), tx = fx - gx, ty = fy - gy;
+      return (landAt(gx, gy) * (1 - tx) + landAt(gx + 1, gy) * tx) * (1 - ty) + (landAt(gx, gy + 1) * (1 - tx) + landAt(gx + 1, gy + 1) * tx) * ty;
+    }
+    // Every shoreline sample below stays within 4 cells of the pixel's own
+    // cell, so open ocean with no land that close can skip them all exactly.
+    var nearLand = new Uint8Array(ISS_LAND_W * ISS_LAND_H), landRow = new Uint8Array(ISS_LAND_W * ISS_LAND_H);
+    for (var ry = 0; ry < ISS_LAND_H; ry++) {
+      for (var rx = 0; rx < ISS_LAND_W; rx++) {
+        for (var rk = -4; rk <= 4; rk++) if (landAt(rx + rk, ry)) { landRow[ry * ISS_LAND_W + rx] = 1; break; }
+      }
+    }
+    for (ry = 0; ry < ISS_LAND_H; ry++) {
+      for (rx = 0; rx < ISS_LAND_W; rx++) {
+        for (rk = Math.max(0, ry - 4); rk <= Math.min(ISS_LAND_H - 1, ry + 4); rk++) if (landRow[rk * ISS_LAND_W + rx]) { nearLand[ry * ISS_LAND_W + rx] = 1; break; }
+      }
     }
     var dayImg = dayCtx.createImageData(W, H), dayPix = dayImg.data;
     var specImg = specCtx.createImageData(W, H), specPix = specImg.data;
@@ -3127,7 +3218,10 @@
       for (var x = 0; x < W; x++) {
         var lon = -180 + 360 * (x + 0.5) / W;
         var mx = Math.floor((lon + 180) / 360 * ISS_LAND_W);
-        var isLand = landAt(mx, my) === 1;
+        var fx = (lon + 180) / 360 * ISS_LAND_W - 0.5, fy = (90 - lat) / 180 * ISS_LAND_H - 0.5;
+        var shoreline = nearLand[my * ISS_LAND_W + mx] === 1;
+        var landF = shoreline ? landBi(fx, fy) : 0;
+        var isLand = landF >= 0.5;
         var i4 = (y * W + x) * 4;
         var r, g, b, spec;
         // Grain fields sampled in degrees so they stay the same size whichever
@@ -3136,7 +3230,7 @@
         var broad = issFbm(lon / 26, lat / 26, 14, 3);
         if (isLand) {
           // Coast test: a cell touching water gets a lighter, sandier edge.
-          var coast = (landAt(mx - 1, my) && landAt(mx + 1, my) && landAt(mx, my - 1) && landAt(mx, my + 1)) ? 0 : 1;
+          var coast = Math.max(0, Math.min(1, (1 - (landBi(fx - 1, fy) + landBi(fx + 1, fy) + landBi(fx, fy - 1) + landBi(fx, fy + 1)) / 4) * 2.5));
           var green = [62, 88, 54], arid = [176, 152, 100], boreal = [86, 100, 78], ice = [232, 240, 246];
           // Aridity: the subtropical belt, blotched by the broad noise field so
           // it reads as terrain rather than as a painted stripe.
@@ -3152,14 +3246,14 @@
           r += (ice[0] - r) * iceW; g += (ice[1] - g) * iceW; b += (ice[2] - b) * iceW;
           var relief = 0.82 + 0.36 * grain;
           r *= relief; g *= relief; b *= relief;
-          if (coast) { r = r * 0.72 + 196 * 0.28; g = g * 0.72 + 180 * 0.28; b = b * 0.72 + 140 * 0.28; }
+          var sand = 0.28 * coast;
+          r = r * (1 - sand) + 196 * sand; g = g * (1 - sand) + 180 * sand; b = b * (1 - sand) + 140 * sand;
           spec = 14 + 26 * iceW;                                               // land is matte; ice is not
         } else {
           // Shelf water is lighter than deep ocean — the two-ring test is a
           // cheap stand-in for depth and it is what makes coastlines read.
-          var near = 0;
-          if (landAt(mx - 1, my) || landAt(mx + 1, my) || landAt(mx, my - 1) || landAt(mx, my + 1)) near = 1;
-          else if (landAt(mx - 3, my) || landAt(mx + 3, my) || landAt(mx, my - 3) || landAt(mx, my + 3)) near = 0.5;
+          var near = !shoreline ? 0 : Math.min(1, (landBi(fx - 1.5, fy) + landBi(fx + 1.5, fy) + landBi(fx, fy - 1.5) + landBi(fx, fy + 1.5)) * 0.7 +
+            (landBi(fx - 3, fy) + landBi(fx + 3, fy) + landBi(fx, fy - 3) + landBi(fx, fy + 3)) * 0.25);
           var deep = [4, 30, 96], shelf = [16, 92, 176];
           r = deep[0] + (shelf[0] - deep[0]) * near;
           g = deep[1] + (shelf[1] - deep[1]) * near;
@@ -3170,6 +3264,16 @@
           var seaIce = Math.max(0, Math.min(1, (absLat - (lat > 0 ? 72 : 62)) / 6));
           r += (226 - r) * seaIce; g += (238 - g) * seaIce; b += (246 - b) * seaIce;
           spec = 80 - 48 * seaIce;                                           // open water carries the sun-glint
+        }
+        if (landF > 0.2 && landF < 0.8) {
+          // Near the shoreline, fade toward the other side's edge colour:
+          // shelf water under the land's fringe, beach under the water's.
+          var shore = (landF - 0.2) / 0.6;
+          shore = shore * shore * (3 - 2 * shore);
+          var keep = isLand ? shore : 1 - shore;
+          var other = isLand ? [16, 92, 176, 80] : [190, 172, 128, 14];
+          r = other[0] + (r - other[0]) * keep; g = other[1] + (g - other[1]) * keep; b = other[2] + (b - other[2]) * keep;
+          spec = other[3] + (spec - other[3]) * keep;
         }
         // ALBEDO, not screen colour. The scene stacks a 1.65 sun on a hemisphere
         // light, an ambient and a rim light, so anything painted at full value
@@ -3182,10 +3286,14 @@
         dayPix[i4 + 3] = 255;
         specPix[i4] = specPix[i4 + 1] = specPix[i4 + 2] = spec; specPix[i4 + 3] = 255;
         // Clouds are stretched east-west because the winds that shape them are
-        // zonal: the x sample runs at a third of the y frequency.
+        // zonal: the x sample runs at a third of the y frequency. This map is
+        // a coverage field centred on 0.5, not finished alpha: the 3-D map's
+        // shader cuts crisp deck edges from it, which a 512-texel map cannot
+        // hold itself (a steep ramp baked in here shows as square blocks).
+        // The land-relief grain, already sampled, breaks the edges into cells.
         var cloudN = issFbm(lon / 15, lat / 5, 24, 5);
-        var cover = Math.max(0, Math.min(1, (cloudN + itcz + storm + dry - 0.66) * 2.3));
-        var cloudV = Math.round(255 * cover * cover * (3 - 2 * cover));
+        var cover = Math.max(0, Math.min(1, 0.5 + (cloudN + itcz + storm + dry - 0.6 + (grain - 0.5) * 0.36) * 1.6));
+        var cloudV = Math.round(255 * cover);
         cloudPix[i4] = cloudPix[i4 + 1] = cloudPix[i4 + 2] = cloudV; cloudPix[i4 + 3] = 255;
       }
     }
@@ -3193,38 +3301,58 @@
     specCtx.putImageData(specImg, 0, 0);
     cloudCtx.putImageData(cloudImg, 0, 0);
 
-    // Night lights: real coordinates, radius and brightness from metro size.
+    // Night lights: real coordinates, brightness from metro size. Each metro
+    // is a bright core with satellite towns scattered over the land around
+    // it, which is what a city looks like from orbit: a network of lit points,
+    // not one round glow. The old single disc spread a 20-million metro over
+    // about 700 km and read as a blurred blob near the camera.
     // Stamped straight into an ImageData rather than drawn with radial
     // gradients under 'lighter' compositing. The gradient version painted a
     // canvas that looked right to getImageData and toDataURL and still uploaded
     // as an all-black texture — one putImageData, like the other three maps,
     // removes the whole question.
-    var nightImg = nightCtx.createImageData(W, H), nightPix = nightImg.data;
+    var NW = nightC.width, NH = nightC.height, texel = NW / 1024;
+    var nightImg = nightCtx.createImageData(NW, NH), nightPix = nightImg.data;
     for (var np = 0; np < nightPix.length; np += 4) { nightPix[np + 3] = 255; }
-    for (var ci = 0; ci < ISS_CITY_LIGHTS.length; ci++) {
-      var city = ISS_CITY_LIGHTS[ci];
-      var cx = (city[1] + 180) / 360 * W;
-      var cy = (90 - city[0]) / 180 * H;
-      var pop = city[2];
-      var rad = Math.max(3, Math.min(34, (3.6 + Math.log(1 + pop) * 4.8) * (W / 1024)));
-      var peak = Math.max(0.45, Math.min(1, 0.4 + Math.log(1 + pop) * 0.24));
-      var x0 = Math.floor(cx - rad), x1 = Math.ceil(cx + rad);
-      var y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(H - 1, Math.ceil(cy + rad));
+    function lightHash(a, b) { var n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); }
+    // sx widens a stamp in x by 1/cos(lat) so it stays round on the sphere.
+    function stampLight(cx, cy, rad, peak, sx) {
+      var x0 = Math.floor(cx - rad * sx), x1 = Math.ceil(cx + rad * sx);
+      var y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(NH - 1, Math.ceil(cy + rad));
       for (var ly = y0; ly <= y1; ly++) {
         for (var lx = x0; lx <= x1; lx++) {
-          var dx = lx - cx, dy = ly - cy;
+          var dx = (lx + 0.5 - cx) / sx, dy = ly + 0.5 - cy;
           var dist = Math.sqrt(dx * dx + dy * dy) / rad;
           if (dist >= 1) continue;
-          // Bright core, fast falloff: a metro is a small blaze in a wide glow.
-          var fall = (1 - dist) * (1 - dist);
-          var v = peak * (fall * 0.55 + Math.pow(1 - dist, 7) * 0.85);
+          var v = peak * (1 - dist) * (1 - dist);
           // Wrap x so a city near ±180° is not clipped at the seam.
-          var wx = ((lx % W) + W) % W;
-          var ni = (ly * W + wx) * 4;
+          var wx = ((lx % NW) + NW) % NW;
+          var ni = (ly * NW + wx) * 4;
           nightPix[ni] = Math.min(255, nightPix[ni] + v * 255);
-          nightPix[ni + 1] = Math.min(255, nightPix[ni + 1] + v * 226);
-          nightPix[ni + 2] = Math.min(255, nightPix[ni + 2] + v * 152);
+          nightPix[ni + 1] = Math.min(255, nightPix[ni + 1] + v * 214);
+          nightPix[ni + 2] = Math.min(255, nightPix[ni + 2] + v * 132);
         }
+      }
+    }
+    for (var ci = 0; ci < ISS_CITY_LIGHTS.length; ci++) {
+      var city = ISS_CITY_LIGHTS[ci];
+      var cx = (city[1] + 180) / 360 * NW;
+      var cy = (90 - city[0]) / 180 * NH;
+      var size = Math.log(1 + city[2]);
+      var sx = 1 / Math.max(0.25, Math.cos(city[0] * Math.PI / 180));
+      // Core up to about 130 km across; never under a texel, so the lowest
+      // tier keeps its cities.
+      stampLight(cx, cy, Math.max(1.1, (0.6 + size * 0.35) * texel), Math.min(1, 0.6 + size * 0.15), sx);
+      var spread = (1.6 + size * 1.4) * texel;
+      stampLight(cx, cy, spread * 1.15, 0.06 + size * 0.02, sx);
+      var towns = 4 + Math.round(size * 7);
+      for (var tk = 0; tk < towns; tk++) {
+        var ang = lightHash(ci, tk) * Math.PI * 2;
+        var reach = Math.sqrt(lightHash(tk + 31, ci)) * spread;
+        var tx = cx + Math.cos(ang) * reach * sx, ty = cy + Math.sin(ang) * reach;
+        // Towns sit on land: skip any that would fall in the sea.
+        if (landAt(Math.floor(tx / NW * ISS_LAND_W), Math.floor(ty / NH * ISS_LAND_H)) !== 1) continue;
+        stampLight(tx, ty, Math.max(1, (0.4 + lightHash(ci + 7, tk) * 0.6) * texel), 0.3 + lightHash(tk, ci + 13) * 0.45, sx);
       }
     }
     nightCtx.putImageData(nightImg, 0, 0);
@@ -3232,6 +3360,154 @@
     var built = { day: dayC, spec: specC, cloud: cloudC, night: nightC };
     _issEarthCanvases[key] = built;
     return built;
+  }
+
+  // Planet layers keep Phong's lighting; this patch adds what Phong cannot
+  // know. 'surface': city lights follow the GROUND's night, not the
+  // station's, and sunlit air adds blue path light that thickens toward the
+  // limb, where a sight line crosses the most atmosphere. That scattered light,
+  // more than the water's own colour, is why the ocean reads blue from orbit.
+  // 'cloud': the coverage field becomes crisp decks with thin fringes and
+  // screen-scale detail, and ambient fill is cut so night cloud stays dark
+  // instead of reading as a grey day deck. Both warm along the terminator,
+  // where sunlight's slant path is longest. directionalLights[0] is the
+  // planet scene's one Sun. 'veil' maps the field back to a soft deck, for a
+  // scene whose first light is not the Sun. Unknown chunks leave it as is.
+  function issPatchPlanetLayer(material, kind) {
+    if (!material) return material;
+    var cloud = kind !== 'surface', lit = kind !== 'veil';
+    material.onBeforeCompile = function (shader) {
+      var fs = shader && shader.fragmentShader;
+      var chunks = ['#include <alphamap_pars_fragment>', '#include <alphamap_fragment>', '#include <emissivemap_fragment>', '#include <lights_fragment_end>', '#include <envmap_fragment>'];
+      if (typeof fs !== 'string' || chunks.some(function (chunk) { return fs.indexOf(chunk) < 0; })) return;
+      if (cloud) {
+        fs = fs.replace(chunks[0], [chunks[0],
+          // Periodic in x (720 cells round the globe) so there is no seam.
+          'float issHash(vec2 p) { p.x = mod(p.x, 720.0); return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float issNoise(vec2 p) { vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(issHash(i), issHash(i + vec2(1.0, 0.0)), u.x), mix(issHash(i + vec2(0.0, 1.0)), issHash(i + vec2(1.0, 1.0)), u.x), u.y); }'].join('\n'));
+        // 'veil' keeps the soft deck a distant planet was tuned for.
+        if (!lit) fs = fs.replace(chunks[1], ['#ifdef USE_ALPHAMAP',
+          'float issVeil = clamp((texture2D(alphaMap, vUv).g - 0.5) * 1.44 + 0.046, 0.0, 1.0);',
+          'diffuseColor.a *= issVeil * issVeil * (3.0 - 2.0 * issVeil);',
+          '#endif'].join('\n'));
+        else fs = fs.replace(chunks[1], ['#ifdef USE_ALPHAMAP',
+          'float issField = texture2D(alphaMap, vUv).g;',
+          'vec2 issCell = vUv * vec2(720.0, 360.0);',
+          'issField += (issNoise(issCell) * 0.62 + issNoise(issCell * 2.0) * 0.38 - 0.5) * 0.14;',
+          'diffuseColor.a *= max(smoothstep(0.5, 0.6, issField), smoothstep(0.38, 0.52, issField) * 0.36);',
+          'diffuseColor.rgb *= mix(0.78, 1.0, smoothstep(0.52, 0.8, issField));',
+          '#endif'].join('\n'));
+      }
+      if (!lit) { shader.fragmentShader = fs; return; }
+      fs = fs.replace(chunks[2], [chunks[2],
+        '#if NUM_DIR_LIGHTS > 0', 'float issSunNL = dot(normal, directionalLights[0].direction);', '#else', 'float issSunNL = 1.0;', '#endif',
+        'float issDusk = exp(-(issSunNL / 0.13) * (issSunNL / 0.13));',
+        cloud ? '' : 'totalEmissiveRadiance *= smoothstep(0.06, -0.14, issSunNL);'].join('\n'));
+      // Low sunlight has crossed the most air and lost its blue: redden the
+      // light that arrives, rather than adding orange light to dark ground.
+      fs = fs.replace(chunks[3], [chunks[3],
+        cloud ? 'reflectedLight.indirectDiffuse *= 0.3;' : '',
+        'reflectedLight.directDiffuse *= mix(vec3(1.0), vec3(1.0, 0.62, 0.36), issDusk);'].join('\n'));
+      fs = fs.replace(chunks[4], [chunks[4],
+        'float issFres = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);',
+        'issFres *= issFres;',
+        'float issDay = smoothstep(-0.18, 0.4, issSunNL);',
+        'vec3 issAir = mix(vec3(0.01, 0.022, 0.055), vec3(0.17, 0.34, 0.7), issFres) * issDay;',
+        'issAir += vec3(0.2, 0.07, 0.02) * issDusk * issFres * issFres;',
+        cloud ? 'outgoingLight = mix(outgoingLight, issAir, 0.35 * issFres);' : 'outgoingLight = outgoingLight * (1.0 - 0.45 * issFres * issDay) + issAir;'].join('\n'));
+      shader.fragmentShader = fs;
+    };
+    material.customProgramCacheKey = function () { return 'iss-planet-' + kind; };
+    return material;
+  }
+
+  // The Milky Way behind the map: a band of faint stars packed toward one
+  // great circle, plus a soft glow along it that brightens toward the galactic
+  // centre and splits along a dark dust lane. The band's direction in the
+  // station's sky is schematic. Galactic longitude l is measured from the
+  // centre, latitude b from the band's plane, both in radians.
+  function issMilkyWayCore(l) { return Math.exp(-l * l); }
+  function issMilkyWayGlow(l, b, laneNoise, mottleNoise) {
+    var w = issMilkyWayCore(l), width = 0.1 + 0.08 * w;
+    var glow = Math.exp(-(b / width) * (b / width)) * (0.3 + 0.7 * w);
+    var dust = 1 - 0.6 * Math.exp(-(b / 0.035) * (b / 0.035)) * w * (0.6 + 0.8 * laneNoise);
+    return Math.max(0, glow * dust * (0.55 + 0.9 * mottleNoise));
+  }
+  // Painted in galactic coordinates (u = longitude, v = latitude) for a
+  // sphere turned so its pole is the band's pole: smooth at any zoom, where
+  // per-vertex colour showed its triangles. Cached like the Earth maps.
+  var _issMilkyWayCanvas = null;
+  function issMilkyWayCanvas() {
+    if (_issMilkyWayCanvas) return _issMilkyWayCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var W = 1024, H = 512, canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H; canvas.setAttribute('aria-hidden', 'true');
+    var g = canvas.getContext && canvas.getContext('2d');
+    if (!g) return null;
+    var img = g.createImageData(W, H), px = img.data, tint = [0.056, 0.053, 0.064];
+    for (var a = 3; a < px.length; a += 4) px[a] = 255;
+    function srgb(linear) { var c = Math.max(0, Math.min(1, linear)); return Math.round(255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055)); }
+    for (var y = 0; y < H; y++) {
+      var b = (0.5 - (y + 0.5) / H) * Math.PI;
+      if (Math.abs(b) > 0.45) continue;   // beyond ~26 deg the glow is under one count
+      for (var x = 0; x < W; x++) {
+        var l = (x + 0.5) / W * 2 * Math.PI - Math.PI;
+        // Both fields wrap in longitude, so the anticentre has no seam. The
+        // mottling is equally fine in l and b (9 cells per radian): stretched
+        // along the band, it read as searchlight rays in perspective. Dust
+        // keeps a mild 2:1 stretch, as real dust filaments do.
+        var k = issMilkyWayGlow(l, b, issFbm(x / W * 96, b * 30, 96, 3), issFbm(x / W * 56, b * 9, 56, 3));
+        var i4 = (y * W + x) * 4;
+        px[i4] = srgb(tint[0] * k); px[i4 + 1] = srgb(tint[1] * k); px[i4 + 2] = srgb(tint[2] * k);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    _issMilkyWayCanvas = canvas;
+    return canvas;
+  }
+  // Its own seeded generator leaves the shared random sequence, and so the star field
+  // beside it, exactly as it was. glowMap is optional: no 2-D canvas, no glow.
+  function issMilkyWay(THREE, glowMap) {
+    var seed = 1234567;
+    function rand() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    var pole = new THREE.Vector3(0.42, 0.62, -0.66).normalize();
+    var core = new THREE.Vector3(-0.72, 0.35, -0.6);
+    core.sub(pole.clone().multiplyScalar(core.dot(pole))).normalize();
+    var side = new THREE.Vector3().crossVectors(pole, core);
+    var count = 1600, positions = new Float32Array(count * 3), colors = new Float32Array(count * 3);
+    for (var i = 0; i < count; i++) {
+      var lon = 0;
+      // Rejection sampling: every longitude keeps at least a 0.35 chance.
+      do { lon = (rand() * 2 - 1) * Math.PI; } while (rand() > 0.35 + 0.65 * issMilkyWayCore(lon));
+      var spread = 0.07 + 0.1 * issMilkyWayCore(lon);
+      var lat = Math.sqrt(-2 * Math.log(rand() + 1e-9)) * Math.cos(2 * Math.PI * rand()) * spread;
+      var c = Math.cos(lat), d = core.clone().multiplyScalar(c * Math.cos(lon)).addScaledVector(side, c * Math.sin(lon)).addScaledVector(pole, Math.sin(lat));
+      d.multiplyScalar(91);
+      positions[i * 3] = d.x; positions[i * 3 + 1] = d.y; positions[i * 3 + 2] = d.z;
+      var dim = 0.45 + rand() * 0.45, warm = rand() * 0.18;
+      colors[i * 3] = dim * (1 + warm * 0.4); colors[i * 3 + 1] = dim; colors[i * 3 + 2] = dim * (1 - warm * 0.5);
+    }
+    var starGeometry = new THREE.BufferGeometry();
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    var starMaterial = new THREE.PointsMaterial({ size: 0.17, vertexColors: true, transparent: true, opacity: 0.62, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending, fog: false });
+    var stars = new THREE.Points(starGeometry, starMaterial);
+    stars.name = 'iss-milky-way-stars';
+    var group = new THREE.Group();
+    group.name = 'iss-milky-way'; group.add(stars);
+    group.userData = { pole: pole.toArray(), core: core.toArray(), starCount: count, starMaterial: starMaterial, glowMaterial: null };
+    if (glowMap) {
+      var glowMaterial = new THREE.MeshBasicMaterial({ map: glowMap, side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+      var glow = new THREE.Mesh(new THREE.SphereGeometry(96, 64, 32), glowMaterial);
+      // Sphere u = 0.5 faces local +x and v = 1 is local +y: turn those onto
+      // the galactic centre and pole.
+      glow.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(core, pole, new THREE.Vector3().crossVectors(core, pole)));
+      glow.name = 'iss-milky-way-glow';
+      group.add(glow);
+      group.userData.glowMaterial = glowMaterial;
+    }
+    return group;
   }
 
   // A soft additive disc for the Sun and for the docking-port capture flash.
@@ -3510,7 +3786,7 @@
             earthMatOpts.emissiveMap = issTexture(earthSkin.night, true);
             earthMatOpts.emissiveIntensity = 1.8;
           }
-          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial(earthMatOpts));
+          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), issPatchPlanetLayer(new THREE.MeshPhongMaterial(earthMatOpts), 'surface'));
           // Only non-null when the city-light map exists, so the per-frame
           // night-lights ramp below can be a single truthiness check.
           var earthLightsMat = earthMatOpts.emissiveMap ? earth.material : null;
@@ -3518,23 +3794,26 @@
           // carries the planet's hue and scaling it would shift the colour.
           var earthExposureMat = earthSkin ? earth.material : null;
           earth.position.set(0, -34.5, 0); earth.receiveShadow = false;
-          // Tilt the globe so the default view reveals temperate coastlines
-          // rather than looking almost straight down at the pole.
-          earth.rotation.x = 0.68;
+          // Tilt the globe so the station flies over about 33 deg N and the
+          // overview looks south across subtropical coasts. The old +0.68 put
+          // 51 deg N underneath and turned the camera's side toward the pole,
+          // so the default view was sea ice, Greenland and storm-track cloud.
+          earth.rotation.x = -1;
           earth.rotation.y = 0;
           scene.add(earth);
-          var cloudMatOpts = { color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
+          var cloudMatOpts = { color: 0xf4f8ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
           if (earthSkin) {
             // A real cloud deck instead of a flat white haze: alpha comes from
             // the painted band map, so the deck thickens over the ITCZ and the
             // storm tracks and thins over the subtropical highs.
             cloudMatOpts.alphaMap = issTexture(earthSkin.cloud, false);
-            cloudMatOpts.opacity = 0.34;
+            // Opaque at the core: real decks are the brightest thing in view.
+            cloudMatOpts.opacity = 0.92;
           }
           // 30.06 rather than 30.18: at this scale 30 units is Earth's radius,
           // so the old shell floated 38 km up and cast a visible offset halo at
           // the limb. Weather lives around 10 km.
-          var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(earthSkin ? 30.06 : 30.18, 64, 40), new THREE.MeshPhongMaterial(cloudMatOpts));
+          var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(earthSkin ? 30.06 : 30.18, 64, 40), issPatchPlanetLayer(new THREE.MeshPhongMaterial(cloudMatOpts), 'cloud'));
           cloudShell.position.copy(earth.position);
           cloudShell.rotation.x = earth.rotation.x;
           cloudShell.rotation.y = earth.rotation.y;
@@ -3551,7 +3830,7 @@
           // the blue out of it, and what is left is the orange line every
           // orbital sunrise photograph is famous for.
           var limbShells = [];
-          function makeLimbShell(radius, dayColor, warmColor, opacity) {
+          function makeLimbShell(radius, dayColor, warmColor, opacity, nightColor) {
             var geo = new THREE.SphereGeometry(radius, 64, 40);
             var pos = geo.attributes.position;
             var colors = new Float32Array(pos.count * 3);
@@ -3565,7 +3844,7 @@
             mesh.position.copy(earth.position);
             // The shells carry no rotation, so a local vertex direction is
             // already a world direction and the sun test needs no transform.
-            var day = new THREE.Color(dayColor), warm = new THREE.Color(warmColor);
+            var day = new THREE.Color(dayColor), warm = new THREE.Color(warmColor), night = new THREE.Color(nightColor || 0x000000);
             var inv = 1 / radius;
             limbShells.push({
               mesh: mesh,
@@ -3577,9 +3856,9 @@
                   var lit = Math.max(0, Math.min(1, (d + 0.02) / 0.32));
                   var term = Math.exp(-(d / 0.09) * (d / 0.09));
                   var i3 = i * 3;
-                  colors[i3] = day.r * lit + warm.r * term * 0.75 + 0.02;
-                  colors[i3 + 1] = day.g * lit + warm.g * term * 0.75 + 0.03;
-                  colors[i3 + 2] = day.b * lit + warm.b * term * 0.75 + 0.05;
+                  colors[i3] = day.r * lit + warm.r * term * 0.75 + night.r * (1 - lit) + 0.02;
+                  colors[i3 + 1] = day.g * lit + warm.g * term * 0.75 + night.g * (1 - lit) + 0.03;
+                  colors[i3 + 2] = day.b * lit + warm.b * term * 0.75 + night.b * (1 - lit) + 0.05;
                 }
                 attr.needsUpdate = true;
               }
@@ -3588,7 +3867,10 @@
           }
           var atmo = makeLimbShell(30.32, 0x67c8ff, 0xff8b3d, 0.24);
           scene.add(atmo);
-          var airglow = makeLimbShell(30.12, 0x8fdcff, 0xffb056, 0.38);
+          // Night photographs from the station show a thin green band over the
+          // dark limb: oxygen atoms near 95 km glowing at 557.7 nm. The tight
+          // shell carries it on the night side only.
+          var airglow = makeLimbShell(30.12, 0x8fdcff, 0xffb056, 0.38, 0x0d2a10);
           scene.add(airglow);
           // Stars, in two magnitude tiers with per-star colour. A single
           // uniform white field reads as digital dust; real starlight varies in
@@ -3614,6 +3896,10 @@
           }
           addStarTier(620, 0.28, 0.78, 0.5);
           addStarTier(58, 0.62, 0.95, 0.8);
+          var milkyWaySkin = null;
+          try { milkyWaySkin = issMilkyWayCanvas(); } catch (e) { milkyWaySkin = null; }
+          var milkyWay = issMilkyWay(THREE, milkyWaySkin ? issTexture(milkyWaySkin, true) : null);
+          scene.add(milkyWay);
 
           // The Sun itself, as an additive billboard past the star sphere. It
           // anchors the light: when the day/night sweep carries it behind the
@@ -3687,6 +3973,13 @@
             mesh._issId = m.id;
             station.add(mesh);
             clickable.push(mesh);
+            if (m.id === 'truss') {
+              var trussHardware = new THREE.Mesh(issTrussHardwareGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: .35, transparent: true, emissive: 0x000000 }));
+              trussHardware.name = 'iss-truss-hardware'; trussHardware.position.copy(mesh.position);
+              trussHardware.castShadow = true; trussHardware.receiveShadow = true; trussHardware._issParentId = m.id;
+              // Solid equipment is easier to click than thin lattice members.
+              station.add(trussHardware); moduleDetails.push(trussHardware); moduleCapPickers.push(trussHardware);
+            }
             if (m.id !== 'truss' && m.id !== 'cupola') {
               var hardwareGeometry = issModuleHardwareGeometry(THREE, rad, len);
               var endcaps = new THREE.Mesh(hardwareGeometry.caps, new THREE.MeshStandardMaterial({ color: m.color, map: endcapMap, roughness: .56, metalness: .3, transparent: true, emissive: 0x000000 }));
@@ -5990,7 +6283,11 @@
             // use puts them where they belong. This is also true to life: you
             // cannot see a city's lights from orbit at local noon.
             if (earthLightsMat) earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn;
-            if (earthExposureMat) earthExposureMat.color.setScalar(1.5 + 0.3 * lampOn);
+            // Sunlit hardware and the bright day side wash the faint band out
+            // of any real exposure; it comes up with the night.
+            milkyWay.userData.starMaterial.opacity = 0.62 * (0.3 + 0.7 * lampOn);
+            if (milkyWay.userData.glowMaterial) milkyWay.userData.glowMaterial.opacity = 0.12 + 0.88 * lampOn;
+            if (earthExposureMat) earthExposureMat.color.setScalar(4 + 0.3 * lampOn);
             for (var vi = 0; vi < viewportMats.length; vi++) {
               viewportMats[vi].color.setRGB(0.42 + 0.32 * lampOn, 0.62 + 0.33 * lampOn, 0.72 + 0.28 * lampOn);
             }
@@ -7214,7 +7511,7 @@
           }
           var earthClouds = new THREE.Mesh(
             new THREE.SphereGeometry(6.25, 40, 26),
-            new THREE.MeshPhongMaterial(earthCloudMaterialOptions)
+            issPatchPlanetLayer(new THREE.MeshPhongMaterial(earthCloudMaterialOptions), 'veil')
           );
           earthClouds.position.copy(earth.position);
           earthClouds.rotation.y = earth.rotation.y + 0.08;
@@ -14248,7 +14545,7 @@
                 opsControl('iss-attitude-inertia','Station rotational inertia',config.inertia / 1e6,40,160,10,' ×10⁶ kg·m²','#7dd3fc','opsAttitudeInertia'),
                 h('div', { className: 'iss-attitude-storage' },
                   h('div', null, h('span', null, 'Gyro momentum envelope'), h('strong', { 'data-attitude-load': true }, current.percent.toFixed(1) + '%')),
-                  h('div', { className: 'iss-attitude-storage-track' }, h('span', { style: { width: current.percent + '%', background: current.percent >= 80 ? '#fda4af' : '#c4b5fd' } }), h('i', { title: '80% caution threshold' })),
+                  h('div', { className: 'iss-attitude-storage-track' }, h('span', { style: { width: current.percent + '%', background: current.percent >= 80 ? '#fda4af' : '#c4b5fd' } }), h('i', { title: __alloT('stem.spacestation.attitude_caution_threshold', '80% caution threshold') })),
                   h('svg', { viewBox: '0 0 320 68', role: 'img', 'aria-label': __alloT('stem.spacestation.attitude_gyro_label', 'Four schematic gyro momentum vectors. Each keeps a fixed magnitude while its direction changes.') },
                     [40,120,200,280].map(function (x,index) { return h('g', { key: x, transform: 'translate(' + x + ' 34)' },
                       h('circle', { r: 26, fill: '#161f35', stroke: '#736896' }),
@@ -15921,7 +16218,7 @@
               h('button', { type: 'button', 'data-iss-forecast-close': '', 'aria-label': __alloT('stem.spacestation.map_light_forecast_close', 'Close preview'), onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issToggleForecast) cv._issToggleForecast(false); } }, __alloT('stem.spacestation.map_light_forecast_close_short', 'Close'))),
             ['alpha', 'feather'].map(function (axis) {
               return h('button', { key: axis, type: 'button', className: 'iss-joint-handle', 'data-iss-joint-handle': axis, hidden: true,
-                'aria-label': axis === 'alpha' ? 'Rotation target' : 'Feather target', 'aria-describedby': 'iss-joint-handle-help',
+                'aria-label': axis === 'alpha' ? __alloT('stem.spacestation.map_light_joint_handle_rotation', 'Rotation target') : __alloT('stem.spacestation.map_light_joint_handle_feather', 'Feather target'), 'aria-describedby': 'iss-joint-handle-help',
                 onPointerDown: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issJointHandleDown) cv._issJointHandleDown(axis, event); },
                 onLostPointerCapture: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issJointHandleCancel) cv._issJointHandleCancel(); },
                 onKeyDown: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issJointHandleKey) cv._issJointHandleKey(axis, event); }

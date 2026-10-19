@@ -474,7 +474,7 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEAM Lab registry",
-    "total": 146,
+    "total": 148,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -567,6 +567,7 @@ const ATLAS_HUBS = [
           "Raptor Hunt: Predator Physics + Biology",
           "Animal Migration Lab",
           "Cephalopod Lab",
+          "Coral Reef Survey Lab",
           "Science of Pets Lab",
           "Decomposer"
         ]
@@ -659,6 +660,7 @@ const ATLAS_HUBS = [
       {
         "name": "🧠 Learning & Behavioral Science",
         "tools": [
+          "Perception Lab",
           "Behavior Shaping Lab",
           "School Behavior Toolkit",
           "Learning Lab: How Learning Works",

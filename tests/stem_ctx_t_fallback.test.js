@@ -65,8 +65,13 @@ describe('the shelf tools rely on this (guards the contract)', () => {
   for (const f of ['simshelf', 'moleculeshelf', 'circuitshelf', 'zoomgallery']) {
     it(`stem_tool_${f} calls t(key, englishFallback)`, () => {
       const tool = readFileSync(resolve(process.cwd(), `stem_lab/stem_tool_${f}.js`), 'utf8');
-      // at least one t('key', 'Fallback…') call with a real English default
-      expect(tool).toMatch(/t\('stem\.[a-zA-Z]+\.[a-zA-Z0-9_]+',\s*'[^']+'\)/);
+      // at least one t('key', 'Fallback…') call with a real English default. Zoom
+      // Gallery v2 (09-07) builds its keys from string tables, so its calls read
+      // t('stem.zoomGallery.' + key, WIN[key]) with the English default in WIN/INL.
+      const literal = /t\('stem\.[a-zA-Z]+\.[a-zA-Z0-9_]+',\s*'[^']+'\)/.test(tool);
+      const tabled = /t\('stem\.[a-zA-Z]+\.' \+ key, ([A-Z]+)\[key\]\)/.exec(tool);
+      const table = tabled && new RegExp('var ' + tabled[1] + ' = \\{\\s*[a-zA-Z0-9_]+:\\s*([\'"])[^\'"]+\\1').test(tool);
+      expect(literal || table, 'no t(key, englishFallback) call').toBe(true);
     });
   }
 });

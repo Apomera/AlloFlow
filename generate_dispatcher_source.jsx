@@ -4496,7 +4496,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
       const isMultiChunk = chunks.length > 1;
       if (isMultiChunk) {
-            addToast(t('meta.processing_sections', { count: chunks.length }) || `Text is long. Processing ${chunks.length} sections...`, "info");
+            addToast(t('meta.processing_sections', { count: chunks.length }), "info");
             setGenerationTaskProgress(0, chunks.length, t('status_steps.adapting_text'));
       }
       const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -5702,9 +5702,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     base.evidenceOptions = Array.isArray(q.evidenceOptions) ? q.evidenceOptions.filter(function (s) { return typeof s === 'string' && s; }) : [];
                     base.correctEvidence = q.correctEvidence || '';
                 } else if (itemType === 'numeric-response') {
-                    const parsedCorrectValue = Number(q.correctValue);
+                    const hasCorrectValue = (typeof q.correctValue === 'number' || typeof q.correctValue === 'string') && String(q.correctValue).trim() !== '';
+                    const parsedCorrectValue = hasCorrectValue ? Number(q.correctValue) : NaN;
                     const parsedTolerance = Number(q.tolerance);
-                    base.correctValue = Number.isFinite(parsedCorrectValue) ? parsedCorrectValue : 0;
+                    base.correctValue = Number.isFinite(parsedCorrectValue) ? parsedCorrectValue : null;
                     base.tolerance = Number.isFinite(parsedTolerance) ? Math.max(0, parsedTolerance) : 0;
                     base.unit = typeof q.unit === 'string' ? q.unit.trim() : '';
                     base.acceptableUnits = Array.isArray(q.acceptableUnits) ? q.acceptableUnits.filter(function (s) { return typeof s === 'string' && s.trim(); }).map(function (s) { return s.trim(); }) : [];
@@ -7710,8 +7711,7 @@ ${modeListForAuto}
              content = normalizeConceptSortContent(content);
              const orphanCount = content.items.filter(it => !content.categories.some(c => c.id === it.categoryId)).length;
              if (orphanCount) {
-                 const orphanMsg = t('concept_sort.orphans_generated', { count: orphanCount });
-                 addToast((orphanMsg && orphanMsg !== 'concept_sort.orphans_generated') ? orphanMsg : `${orphanCount} card(s) did not match a category. Assign them in the review panel before students play.`, 'warning');
+                 addToast(t('concept_sort.orphans_generated', { count: orphanCount }), 'warning');
              }
              const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
              const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);

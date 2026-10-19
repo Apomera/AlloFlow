@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "نتائج البحث: {cards} بطاقة في {topics} موضوعًا.",
+  "stem.flightsim.learn_library_counts": "{cards} بطاقة · {topics} موضوعًا",
+  "stem.flightsim.learn_search_clear": "مسح البحث",
+  "stem.flightsim.learn_search_empty": "لا توجد بطاقات تعليمية تطابق «{query}». جرّب عبارة أخرى أو امسح البحث.",
+  "stem.flightsim.learn_search_none": "لا توجد بطاقات تعليمية مطابقة",
+  "stem.flightsim.learn_search_cards": "{count} بطاقة تعليمية",
+  "stem.flightsim.quiz_review_progress": "أُجيب عن {answered} من {total} سؤالًا · {missed} إجابة خاطئة",
+  "stem.flightsim.quiz_review_missed": "مراجعة الإجابات الخاطئة",
+  "stem.flightsim.quiz_next_unanswered": "السؤال التالي دون إجابة",
+  "stem.flightsim.quiz_review_all_answered": "لكل سؤال إجابة أولى. راجع الأسئلة التي أخطأت فيها للتدريب دون احتساب درجات، أو ابدأ محاولة جديدة.",
+  "stem.flightsim.planner_drone_agl": "{ft} قدم فوق سطح الأرض",
+  "stem.flightsim.sprint_native_title": "تحدي الجغرافيا السريع",
+  "stem.flightsim.sprint_timed_hint": "يتواصل المسار أثناء إجابتك. أوقفه مؤقتًا للقراءة، ثم استأنفه قبل اختيار إجابة.",
+  "stem.flightsim.sprint_warp_reference": "تُسرَّع الرحلة في هذا النشاط الجغرافي. تعرض قراءات السرعة سرعة التحليق المعلنة؛ ولا يقيس هذا المسار أداء الطائرة.",
+  "stem.flightsim.sprint_save_menu": "حفظ التحدي والعودة إلى القائمة",
+  "stem.flightsim.sprint_next_stop": "المحطة التالية: {place}",
+  "stem.flightsim.geoq_approaching_city": "أي مدينة تقترب منها؟",
+  "stem.flightsim.sprint_time_remaining": "الوقت المتبقي: {seconds} ثانية"
+}

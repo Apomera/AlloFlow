@@ -141,6 +141,8 @@ function harness(runtime, patch = {}, options = {}) {
       announceToSR(message) { announcements.push(message); },
       focusLightningStudyTarget(destination) { focused.push(destination); },
       t: (_key, fallback) => fallback,
+      // The shipped renderer reads copy through the tool's __alloT(key, fallback) wrapper.
+      __alloT: (_key, fallback) => fallback,
     };
     context.getWcLightningStudyStep = runInNewContext('(' + named(source, 'getWcLightningStudyStep') + ')', context);
     for (const name of ['activeLightningStudy', 'lightningStudyRequested', 'lightningStudyActive',

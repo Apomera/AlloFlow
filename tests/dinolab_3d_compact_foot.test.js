@@ -109,7 +109,7 @@ function nativeFan({dn,front,side=1,scale=1,showBody=true,skeletal={},sculpt=tru
  const foot=(...args)=>{calls.foot.push(args.slice(1));return sculpt?compactFoot(...args):plantar(...args);};
  const digit=(...args)=>{calls.digit.push(args.slice(1));return sculpt?compactDigit(...args):ellipseGeometry(...args.slice(1));};
  const names=['THREE','props','skeletalProfile','dinoFootSurfaceProfileFor','dn','detailScale','len','ht','isSauropod','bodyDepth','vec','dinoPlantarGeometry','headMat','keratinMat','model','tagDistalSurface','addBodyPartAnchor','dinoIguanodontThumbEnabled','addEllipsoid','addKeratinCone','dinoBluntTerminalGeometry','dinoCompactFootGeometry','dinoCompactDigitGeometry','cladeName','addSoftTissueCylinder'];
- const factory=new Function(...names,source.slice(a,b)+'\nreturn addSoftTissueDigitFan;');
+ const factory=new Function(...names,functionSource('dinoDistalDigitLandmarks')+'\n'+source.slice(a,b)+'\nreturn addSoftTissueDigitFan;');
  const fan=factory(THREE,{showBody},profile,profileFor,dn,scale,8*scale,3*scale,dn.group==='sauropod',.8*scale,vec,plantar,headMat,keratinMat,model,tag,(id,anchor)=>anchors.push({id,anchor:anchor.toArray()}),thumbEnabled,addEllipsoid,addKeratinCone,blunt,foot,digit,dn.clade||'',addSoftTissueCylinder);
  fan(vec(0,.03*scale,.2*scale),front,side,1);model.updateMatrixWorld(true);
  return {model,headMat,keratinMat,anchors,calls,cleanup(){model.traverse(part=>part.geometry?.dispose());headMat.dispose();keratinMat.dispose();}};

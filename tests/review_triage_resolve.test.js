@@ -142,7 +142,8 @@ describe('automatic triage and the queue', () => {
   });
   it('the view shows the model\'s reasons and offers the on-demand run, and never marks anything reviewed itself', () => {
     expect(VIEW).toContain('_runReviewTriage');
-    expect(VIEW).toContain("'🤖 Ask AI to resolve'");
+    // f5b045fc9 (2026-09-20) dropped the emoji from the button text.
+    expect(VIEW).toContain(": 'Ask AI to resolve'}</button>");
     expect(VIEW).toContain('_triageLabel');
     expect(VIEW).toContain('_docPipeline.resolveReviewFindings');
     expect(VIEW).toContain('{ reviewTriage: summary }');

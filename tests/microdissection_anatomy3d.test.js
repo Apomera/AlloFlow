@@ -373,7 +373,9 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
     expect(source).toContain('imported.visible = importedVisible;');
     expect(source).toContain(".catch(function() { return THREE; })");
     expect(source).toContain('Preserve the model source attribution and share-alike terms.');
-    expect(source).toContain('allImagingAnnotations.concat([ruler]).slice(-12)');
+    // 09-30: the ruler now appends to the latest saved history inside the state updater
+    // (same twelve-annotation cap).
+    expect(source.includes('patch.annotations = history.concat([ruler]).slice(-12);'), 'bounded ruler history').toBe(true);
   });
 });
 

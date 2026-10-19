@@ -538,7 +538,7 @@ function createWordSoundsCore(options = {}) {
     "zoo": ["z", "oo"]
   };
   const normalize = (value) => String(value || "").normalize("NFC").trim().toLowerCase().replace(/^\/+|\/+$/g, "");
-  const aliases = { c: "k", ck: "k", q: "k", qu: "k", ph: "f", wh: "w", tch: "ch", dge: "j", ai: "ay", ea: "ee", ir: "er", ur: "er", au: "aw", oe: "oa", oi: "oy", "\u0261": "g", "\u0283": "sh", "\u0292": "zh", "\u03B8": "th", "\xF0": "dh", "\u014B": "ng", "d\u0292": "j", "\u02A4": "j", "t\u0283": "ch", "\u02A7": "ch", "\xE6": "a", "\u025B": "e", "\u026A": "i", "\u0252": "o", "\u0251": "o", "\u0251\u02D0": "o", "\u028C": "u", "\u0259": "schwa", "i\u02D0": "ee", "u\u02D0": "oo", "\u028A": "oo_short", "e\u026A": "ay", "a\u026A": "ie", "o\u028A": "oa", "\u0259\u028A": "oa", "a\u028A": "ow", "\u0254\u026A": "oy", "\u0279": "r", "\u025D": "er", "\u025A": "er" };
+  const aliases = { c: "k", ck: "k", q: "k", qu: "k", ph: "f", wh: "w", tch: "ch", dge: "j", ai: "ay", ea: "ee", ir: "er", ur: "er", au: "aw", oe: "oa", oi: "oy", "\u0101": "ay", "\u0113": "ee", "\u012B": "ie", "\u014D": "oa", "\u016B": "oo", "\u0261": "g", "\u0283": "sh", "\u0292": "zh", "\u03B8": "th", "\xF0": "dh", "\u014B": "ng", "d\u0292": "j", "\u02A4": "j", "t\u0283": "ch", "\u02A7": "ch", "\xE6": "a", "\u025B": "e", "\u026A": "i", "\u0252": "o", "\u0251": "o", "\u0251\u02D0": "o", "\u028C": "u", "\u0259": "schwa", "i\u02D0": "ee", "u\u02D0": "oo", "\u028A": "oo_short", "e\u026A": "ay", "a\u026A": "ie", "o\u028A": "oa", "\u0259\u028A": "oa", "a\u028A": "ow", "\u0254\u026A": "oy", "\u0279": "r", "\u025D": "er", "\u025A": "er" };
   const soundKey = (value) => {
     const v = normalize(value);
     return aliases[v] || v;
@@ -1990,6 +1990,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const setPackById = (id, updater) => setLib((prev) => Object.assign({}, prev, { packs: prev.packs.map((p) => p.id === id ? typeof updater === "function" ? updater(p) : Object.assign({}, p, updater) : p) }));
   const [recordingKey, setRecordingKey] = React.useState(null);
   const [status, setStatus] = React.useState("");
+  const [confirmStudentExport, setConfirmStudentExport] = React.useState(false);
   const [aiCheckOn, setAiCheckOn] = React.useState(false);
   const [cleanOn, setCleanOn] = React.useState(true);
   const [checks, setChecks] = React.useState({});
@@ -2394,13 +2395,13 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      const safe = String(pack.name || "voice").replace(/[^a-z0-9]+/gi, "_");
+      const safe = String(pack.name || "").normalize("NFC").replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "voice";
       a.href = url;
       a.download = "phoneme_pack_" + (isStudent ? "CONFIDENTIAL_" : "") + safe + ".json";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1e3);
       setStatus(isStudent ? T("word_sounds.voice_pack_msg_exported_student", '\u2B07\uFE0F Exported "{name}" (confidential student voice).', { name: pack.name || "My Voice Pack" }) : T("word_sounds.voice_pack_msg_exported", '\u2B07\uFE0F Exported "{name}".', { name: pack.name || "My Voice Pack" }));
     } catch (e) {
       setStatus(T("word_sounds.voice_pack_msg_export_fail", "Export failed."));
@@ -2483,7 +2484,10 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const recI = recordingKey === slot.id;
     const hasRefI = !!instrReferenceClip(slot.id);
     return /* @__PURE__ */ React.createElement("div", { key: slot.id, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${hasI ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm leading-tight" }, slot.label, " ", hasI && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), slot.hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, slot.hint) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrReference(slot.id), disabled: !hasRefI, "aria-label": T("word_sounds.voice_pack_hear_default_for", "Hear the default for {label}", { label: slot.label }), title: T("word_sounds.voice_pack_hear_default", "Hear the default"), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(slot.id, { instr: true, label: slot.label }), disabled: !consentOk, "aria-label": recI ? T("word_sounds.voice_pack_stop_recording", "Stop recording {label}", { label: slot.label }) : T("word_sounds.voice_pack_record", "Record {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? "bg-red-600 text-white animate-pulse motion-reduce:animate-none" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, recI ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_play_recording", "Play your recording of {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_clear", "Clear {label}", { label: slot.label }), className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
-  })))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": T("word_sounds.voice_pack_name_label", "Pack name"), className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: T("word_sounds.voice_pack_name_label", "Pack name") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))), showDeletePackConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[420] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: deletePackDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "voice-pack-delete-title", "aria-describedby": "voice-pack-delete-message", tabIndex: -1, onKeyDownCapture: handleDeletePackDialogKeyDown, className: "w-full max-w-sm rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "voice-pack-delete-title", className: "text-lg font-black text-slate-900" }, "Delete voice pack?"), /* @__PURE__ */ React.createElement("p", { id: "voice-pack-delete-message", className: "mt-2 text-sm text-slate-700" }, 'Delete "', pack.name || "Untitled", '"? Its recordings and progress log will be permanently removed.'), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: deletePackCancelRef, type: "button", onClick: () => setShowDeletePackConfirm(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep pack"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: performDeletePack, className: "rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700" }, "Delete pack")))));
+  })))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, confirmStudentExport && isStudent ? /* @__PURE__ */ React.createElement("div", { role: "alert", "data-voice-pack-student-export-confirm": "true", className: "flex items-center gap-2 px-5 py-3 border-t border-amber-200 bg-amber-50 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-[200px] text-sm font-semibold text-amber-900" }, T("word_sounds.voice_pack_student_export_warning", "This file holds a child's voice recordings and practice history. Save it only to a school-approved location.")), /* @__PURE__ */ React.createElement("button", { type: "button", autoFocus: true, onClick: () => {
+    setConfirmStudentExport(false);
+    exportPack();
+  }, className: "px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-colors" }, T("word_sounds.voice_pack_student_export_confirm", "Export file")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setConfirmStudentExport(false), className: "px-3 py-1.5 rounded-lg bg-white text-slate-700 border border-slate-300 font-bold text-sm hover:bg-slate-50 transition-colors" }, T("common.cancel", "Cancel"))) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": T("word_sounds.voice_pack_name_label", "Pack name"), className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: T("word_sounds.voice_pack_name_label", "Pack name") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: isStudent ? () => setConfirmStudentExport(true) : exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))), showDeletePackConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[420] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: deletePackDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "voice-pack-delete-title", "aria-describedby": "voice-pack-delete-message", tabIndex: -1, onKeyDownCapture: handleDeletePackDialogKeyDown, className: "w-full max-w-sm rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "voice-pack-delete-title", className: "text-lg font-black text-slate-900" }, "Delete voice pack?"), /* @__PURE__ */ React.createElement("p", { id: "voice-pack-delete-message", className: "mt-2 text-sm text-slate-700" }, 'Delete "', pack.name || "Untitled", '"? Its recordings and progress log will be permanently removed.'), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: deletePackCancelRef, type: "button", onClick: () => setShowDeletePackConfirm(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep pack"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: performDeletePack, className: "rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700" }, "Delete pack")))));
 };
 const PACK_COMMON_WORDS = ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"];
 const packRimeOfWord = (w, isEnglish) => {
@@ -3428,7 +3432,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
       link = document.createElement("a");
       link.href = url;
-      link.download = "syllables-" + library.identity(word, language).targetWord.replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").slice(0, 60) + ".json";
+      const match = library.identity(word, language);
+      const part = (value) => String(value || "").replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+      link.download = ["syllables", part(match.languageKey), part(match.targetWord)].filter(Boolean).join("-") + ".json";
       link.hidden = true;
       document.body.appendChild(link);
       link.click();
@@ -4151,8 +4157,8 @@ function parseWordSoundsAnalysis(result, selectedWord) {
   }
   return { ...data, word: selectedWord.trim() };
 }
-function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRange, callGemini, warnLog: warnLog2 }) {
-  const [result, setResult] = React.useState({ contextKey: null, terms: [] });
+function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRange, callGemini, warnLog: warnLog2, authoringSession }) {
+  const [result, setResult] = React.useState(() => authoringSession?.aiResult || { contextKey: null, terms: [] });
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const emptyTerms = React.useRef([]);
@@ -4195,7 +4201,9 @@ function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRa
       if (typeof response !== "string") throw new Error("No word list was returned.");
       const words = (english ? response.replace(/[^a-zA-Z,\s-]/g, "") : response.replace(/[^\p{L}\p{M}'’,\s-]/gu, "")).split(",").map((word) => word.trim()).filter(Boolean);
       if (!words.length) throw new Error("No words were returned.");
-      setResult({ contextKey: operation.contextKey, terms: words });
+      const nextResult = { contextKey: operation.contextKey, terms: words };
+      if (authoringSession) authoringSession.aiResult = nextResult;
+      setResult(nextResult);
     } catch (error) {
       if (current()) {
         warnLog2("AI Gen Failed", error);
@@ -4213,6 +4221,8 @@ function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRa
 const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], syllableReviewSession, onShowReview, onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
   const localReviewSession = React.useRef({});
   const reviewSession = syllableReviewSession || localReviewSession.current;
+  const setupDraft = reviewSession.setupDraft || (reviewSession.setupDraft = {});
+  const useSetupState = (field, initial) => useWordSoundsSetupReviewState(setupDraft, field, initial);
   const generationVoiceRef = React.useRef(selectedVoice);
   generationVoiceRef.current = selectedVoice;
   const tf = (key, fallback, params) => {
@@ -4231,7 +4241,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return v;
   };
   const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
-  const [imageVisibilityMode, setImageVisibilityMode] = React.useState("smart");
+  const [imageVisibilityMode, setImageVisibilityMode] = useSetupState("imageVisibilityMode", () => "smart");
   React.useEffect(() => {
     if (isProbeMode) setImageVisibilityMode("off");
   }, [isProbeMode]);
@@ -4250,21 +4260,22 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "word_scramble": "afterCompletion",
     "missing_letter": "afterCompletion"
   };
-  const [includeGlossary, setIncludeGlossary] = React.useState(true);
-  const [includeFamily, setIncludeFamily] = React.useState(false);
-  const [includeCustom, setIncludeCustom] = React.useState(false);
-  const [includeAI, setIncludeAI] = React.useState(false);
-  const [wordCount, setWordCount] = React.useState(10);
-  const [selectedFamily, setSelectedFamily] = React.useState("");
-  const [includeSightWords, setIncludeSightWords] = React.useState(false);
-  const [selectedSightWordList, setSelectedSightWordList] = React.useState("");
-  const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30);
-  const [orthoSessionGoal, setOrthoSessionGoal] = React.useState(0);
+  const [includeGlossary, setIncludeGlossary] = useSetupState("includeGlossary", () => true);
+  const [includeFamily, setIncludeFamily] = useSetupState("includeFamily", () => false);
+  const [includeCustom, setIncludeCustom] = useSetupState("includeCustom", () => false);
+  const [includeAI, setIncludeAI] = useSetupState("includeAI", () => false);
+  const [wordCount, setWordCount] = useSetupState("wordCount", () => 10);
+  const [selectedFamily, setSelectedFamily] = useSetupState("selectedFamily", () => "");
+  const [includeSightWords, setIncludeSightWords] = useSetupState("includeSightWords", () => false);
+  const [selectedSightWordList, setSelectedSightWordList] = useSetupState("selectedSightWordList", () => "");
+  const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useSetupState("wordSoundsSessionGoal", () => 30);
+  const [orthoSessionGoal, setOrthoSessionGoal] = useSetupState("orthoSessionGoal", () => 0);
   const includeOrthographic = orthoSessionGoal > 0;
-  const [customText, setCustomText] = React.useState("");
-  const [sessionType, setSessionType] = React.useState(isProbeMode ? "assessment" : "practice");
-  const [probeActivitySel, setProbeActivitySel] = React.useState(
-    probeActivity && probeActivity !== "orf" ? probeActivity : "segmentation"
+  const [customText, setCustomText] = useSetupState("customText", () => "");
+  const [sessionType, setSessionType] = useSetupState("sessionType", () => isProbeMode ? "assessment" : "practice");
+  const [probeActivitySel, setProbeActivitySel] = useSetupState(
+    "probeActivitySel",
+    () => probeActivity && probeActivity !== "orf" ? probeActivity : "segmentation"
   );
   const probeActivityLabel = tf(`word_sounds.act_${probeActivitySel}`, {
     segmentation: "Segmentation",
@@ -4275,20 +4286,20 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     syllable_counting: "Syllable Counting",
     syllable_blending: "Syllable Blending"
   }[probeActivitySel] || String(probeActivitySel).replace(/_/g, " "));
-  const [probeStudent, setProbeStudent] = React.useState("");
+  const [probeStudent, setProbeStudent] = useSetupState("probeStudent", () => "");
   const probeStudentTrimmed = String(probeStudent || "").trim();
-  const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
-  const [prepareScope, setPrepareScope] = React.useState("all");
+  const [includeLessonPlan, setIncludeLessonPlan] = useSetupState("includeLessonPlan", () => false);
+  const [prepareScope, setPrepareScope] = useSetupState("prepareScope", () => "all");
   React.useEffect(() => {
     if (!includeLessonPlan) setPrepareScope("all");
   }, [includeLessonPlan]);
-  const [taughtPatternsText, setTaughtPatternsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(", "));
-  const [knownWordsText, setKnownWordsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(", "));
+  const [taughtPatternsText, setTaughtPatternsText] = useSetupState("taughtPatternsText", () => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(", "));
+  const [knownWordsText, setKnownWordsText] = useSetupState("knownWordsText", () => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(", "));
   const instructionalProfile = React.useMemo(() => ({
     taughtPatterns: taughtPatternsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
     knownWords: knownWordsText.toLowerCase().split(/[\s,]+/).filter(Boolean)
   }), [taughtPatternsText, knownWordsText]);
-  const [lessonPlan, setLessonPlan] = React.useState({
+  const [lessonPlan, setLessonPlan] = useSetupState("lessonPlan", () => ({
     isolation: { enabled: false, count: 5 },
     blending: { enabled: false, count: 5 },
     segmentation: { enabled: false, count: 5 },
@@ -4309,8 +4320,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     read_sentence: { enabled: false, count: 5 },
     read_passage: { enabled: false, count: 5 },
     sentence_match: { enabled: false, count: 5 }
-  });
-  const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
+  }));
+  const [lessonPlanOrder, setLessonPlanOrder] = useSetupState("lessonPlanOrder", () => [
     "isolation",
     "blending",
     "segmentation",
@@ -4343,16 +4354,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     setLessonPlanOrder(next);
     setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
   };
-  const [imageTheme, setImageTheme] = React.useState("");
-  const [imageThemeMode, setImageThemeMode] = React.useState("inherit");
+  const [imageTheme, setImageTheme] = useSetupState("imageTheme", () => "");
+  const [imageThemeMode, setImageThemeMode] = useSetupState("imageThemeMode", () => "inherit");
   const effectiveImageTheme = imageThemeMode === "override" && imageTheme.trim() ? imageTheme.trim() : String(universalImageStyle || "").trim();
-  const [includeAacImages, setIncludeAacImages] = React.useState(false);
-  const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
-  const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
-  const [includeSyllableWords, setIncludeSyllableWords] = React.useState(false);
-  const [includeSyllableCountWords, setIncludeSyllableCountWords] = React.useState(false);
-  const [aiTopic, setAiTopic] = React.useState("");
-  const aiSuggestions = useWordSoundsAiTopic({ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage, gradeLevel, syllableRange, callGemini, warnLog });
+  const [includeAacImages, setIncludeAacImages] = useSetupState("includeAacImages", () => false);
+  const [aacDefaultOn, setAacDefaultOn] = useSetupState("aacDefaultOn", () => false);
+  const [syllableRange, setSyllableRange] = useSetupState("syllableRange", () => ({ min: 1, max: 4 }));
+  const [includeSyllableWords, setIncludeSyllableWords] = useSetupState("includeSyllableWords", () => false);
+  const [includeSyllableCountWords, setIncludeSyllableCountWords] = useSetupState("includeSyllableCountWords", () => false);
+  const [aiTopic, setAiTopic] = useSetupState("aiTopic", () => "");
+  const aiSuggestions = useWordSoundsAiTopic({ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage, gradeLevel, syllableRange, callGemini, warnLog, authoringSession: setupDraft });
   const { terms: aiTerms, busy: isAiGenerating, generate: handleAiGenerate } = aiSuggestions;
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [isMinimized, setIsMinimized] = React.useState(false);
@@ -5505,17 +5516,20 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           processed.map((it) => String(it.targetWord || it.word || it.term || "").trim().toLowerCase()).filter(Boolean)
         );
         processed.forEach((item) => {
-          const candidates = [
-            item.rhymeWord,
-            ...item.rhymes || [],
-            ...item.familyMembers || [],
-            ...item.rhymeDistractors || [],
-            ...item.sentenceDistractors || []
-          ].filter(Boolean);
-          const unverified = [...new Set(
-            candidates.map((w) => String(w).trim().toLowerCase()).filter((w) => isUnverifiedK2Word(w, sessionWords))
-          )];
+          const sources = {
+            rhyme: [item.rhymeWord, ...item.rhymes || [], ...item.rhymeDistractors || []],
+            family: item.familyMembers || [],
+            blending: item.blendingDistractors || [],
+            sentence: item.sentenceDistractors || []
+          };
+          const bySource = {};
+          Object.entries(sources).forEach(([source, words]) => {
+            const flagged = [...new Set(words.filter(Boolean).map((w) => String(w).trim().toLowerCase()).filter((w) => isUnverifiedK2Word(w, sessionWords)))];
+            if (flagged.length) bySource[source] = flagged;
+          });
+          const unverified = [...new Set(Object.values(bySource).flat())];
           if (unverified.length) item._unverifiedWords = unverified;
+          if (unverified.length) item._unverifiedBySource = bySource;
         });
       }
       compileActivityItems(processed);
@@ -5526,20 +5540,29 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       });
       const decodingAssets = {};
       const aacAssets = {};
-      processed.forEach((item) => {
+      preloadedWords.forEach((item) => {
         const key = normalizePackKey(item.targetWord || item.word || item.term);
         if (key && item.image) decodingAssets[key] = item.image;
-        if (item._decodingAssets) Object.assign(decodingAssets, item._decodingAssets);
+        Object.entries(item._decodingAssets || {}).forEach(([word, image]) => {
+          decodingAssets[normalizePackKey(word)] = image;
+        });
+        Object.entries(item._aacAssets || {}).forEach(([word, image]) => {
+          aacAssets[normalizePackKey(word)] = image;
+        });
+      });
+      processed.forEach((item) => {
+        const key = normalizePackKey(item.targetWord || item.word || item.term);
+        if (key && item.image && !decodingAssets[key]) decodingAssets[key] = item.image;
         delete item._decodingAssets;
-        if (item._aacAssets) Object.assign(aacAssets, item._aacAssets);
         delete item._aacAssets;
       });
+      const decodingWords = [...new Set(processed.flatMap((item) => [
+        item.targetWord || item.word || item.term,
+        ...item.activityItems?.decoding?.choices || [],
+        ...item.activityItems?.sentence_match?.sequence || [],
+        ...item.activityItems?.sentence_match?.extras || []
+      ]).map(normalizePackKey).filter(Boolean))];
       if (typeof callImagen === "function") {
-        const decodingWords = [...new Set(processed.flatMap((item) => [
-          ...item.activityItems?.decoding?.choices || [],
-          ...item.activityItems?.sentence_match?.sequence || [],
-          ...item.activityItems?.sentence_match?.extras || []
-        ]))];
         for (const word of decodingWords) {
           if (!isGenerationActive()) return;
           if (decodingAssets[word]) continue;
@@ -5554,7 +5577,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           }
         }
       }
-      if (includeAacImages && typeof callImagen === "function") {
+      {
         const AAC_PHONEME_KEYWORDS = {
           a: "apple",
           b: "ball",
@@ -5607,30 +5630,41 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             ...(boards.isolation?.options || []).map((sound) => AAC_PHONEME_KEYWORDS[String(sound || "").replace(/\//g, "").toLowerCase()])
           ];
         }).map((value) => normalizePackKey(value)).filter(Boolean))];
-        setPrewarmTotal((prev) => prev + aacWords.length);
-        for (const word of aacWords) {
-          if (!isGenerationActive()) return;
-          try {
-            if (aacAssets[word] || decodingAssets[word]) continue;
-            const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : "";
-            const image = await awaitGeneration(callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`, void 0, void 0, { signal }));
+        if (includeAacImages && typeof callImagen === "function") {
+          setPrewarmTotal((prev) => prev + aacWords.length);
+          for (const word of aacWords) {
             if (!isGenerationActive()) return;
-            if (image) aacAssets[word] = image;
-          } catch (e) {
-            if (!isGenerationActive()) return;
-            warnLog("AAC image preload failed for:", word, e?.message || e);
-          } finally {
-            if (isGenerationActive()) setPrewarmCount((prev) => prev + 1);
+            try {
+              if (aacAssets[word] || decodingAssets[word]) continue;
+              const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : "";
+              const image = await awaitGeneration(callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`, void 0, void 0, { signal }));
+              if (!isGenerationActive()) return;
+              if (image) aacAssets[word] = image;
+            } catch (e) {
+              if (!isGenerationActive()) return;
+              warnLog("AAC image preload failed for:", word, e?.message || e);
+            } finally {
+              if (isGenerationActive()) setPrewarmCount((prev) => prev + 1);
+            }
           }
         }
+        const aacKeys = new Set(aacWords), decodingKeys = /* @__PURE__ */ new Set([...decodingWords, ...aacWords]);
+        Object.keys(aacAssets).forEach((key) => {
+          if (!aacKeys.has(key)) delete aacAssets[key];
+        });
+        Object.keys(decodingAssets).forEach((key) => {
+          if (!decodingKeys.has(key)) delete decodingAssets[key];
+        });
       }
-      const packedTtsAssets = WS_CORE.packAudioAssets(processed);
+      const packedTtsAssets = WS_CORE.packAudioAssets(preloadedWords);
       const requiredTtsKeys = /* @__PURE__ */ new Set();
       processed.forEach((item) => {
         const word = item.targetWord || item.word || item.term;
         const approved = reviewedCountAudio[syllableCountReviewKey(word)];
         if (approved) packedTtsAssets[WS_CORE.packAudioKey(word)] = approved;
         delete item._ttsAssets;
+        delete item._ttsRequiredKeys;
+        delete item._aacDefaultOn;
       });
       let packRecordedWordBank = null;
       if (packIsEnglish && typeof window !== "undefined" && typeof window.loadWordAudioBank === "function") {
@@ -5683,6 +5717,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           ...boards.sound_sort?.distractors || [],
           ...boards.word_families?.options || [],
           ...boards.word_families?.distractors || [],
+          ...boards.decoding?.choices || [],
           ...boards.read_sentence?.options || [],
           ...boards.read_passage?.options || []
         ].forEach((value) => value && tasks.add(String(value)));
@@ -5786,6 +5821,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
         item._ttsFailed = !item.ttsReady && !teacherSpoken;
       }
+      Object.keys(packedTtsAssets).forEach((key) => {
+        if (!requiredTtsKeys.has(key)) delete packedTtsAssets[key];
+      });
       finalizeSyllableCountAudio(processed, packedTtsAssets, generationVoiceRef.current || "");
       if (processed[0]) {
         processed[0]._studentPackVersion = 2;

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "תצפיות המשימה",
+  "stem.flightsim.mission_journal_targets": "יעדים שתועדו: {captured} מתוך {total}.",
+  "stem.flightsim.mission_journal_complete": "כל יעדי המשימה ונחיתת החזרה תועדו.",
+  "stem.flightsim.mission_journal_ended": "המשימה הסתיימה לפני שכל הראיות להשלמה תועדו.",
+  "stem.flightsim.mission_journal_recovery": "תיעוד חילוץ הניצול: {value}.",
+  "stem.flightsim.mission_journal_return": "תיעוד נחיתת החזרה בבסיס: {value}.",
+  "stem.flightsim.mission_guidance_title": "הנחיות למשימה",
+  "stem.flightsim.mission_route": "{target} · תכווין {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "נקודת ההמראה",
+  "stem.flightsim.mission_read_status": "הקראת מצב המשימה",
+  "stem.flightsim.mission_return_criterion": "יש לנחות בטווח של {distance} nm מ־{target}, במהירות קרקעית הנמוכה מ־{speed} kt ובקצב הנמכה הנמוך מ־{fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "נתוני יעד המשימה אינם זמינים. יש לסיים את הטיסה ולהתחיל משימה חדשה.",
+  "stem.flightsim.mission_capture_criterion": "יש להישאר בטווח של {distance} ft, מעל {min} ומתחת ל־{max} ft מעל הקרקע, במהירות קרקעית נמוכה מ־{speed} kt למשך {hold} s."
+}

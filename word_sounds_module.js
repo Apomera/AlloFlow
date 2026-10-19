@@ -569,7 +569,9 @@ function createWordSoundsCore(options = {}) {
     "zoo": ["z","oo"]
   };
   const normalize = value => String(value || '').normalize('NFC').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
-  const aliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
+  // Generated English packs use macrons; the edge dictionary and audio bank
+  // use ay/ee/ie/oa/oo. Compare those spellings as the same sound everywhere.
+  const aliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
   const soundKey = value => { const v=normalize(value); return aliases[v] || v; };
   const edgeSound = (word, position, phonemes) => {
     const w=normalize(word), last=position==='last';
@@ -2118,26 +2120,28 @@ const WS_CORE = createWordSoundsCore();
         setSelected(previous => previous.filter(key => eligible.has(key)));
       }, [words, activities, voice, language]);
       React.useEffect(() => setSelected([]), [voice, language]);
+      // Fills {name} (or the fallback table's {{name}}) placeholders.
+      const trp = (key, fallback, params) => tr(key, fallback).replace(/\{\{?([a-zA-Z0-9_]+)\}?\}/g, (token, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : token);
       const h = React.createElement;
       const button = (label, action, disabled) => h('button', { type: 'button', onClick: action, disabled: busy || disabled, className: 'min-h-11 rounded-lg border border-violet-300 px-3 py-2 text-sm font-bold text-violet-800 disabled:opacity-50 focus:ring-2 focus:ring-violet-600' }, label);
       const attention = inventory.filter(row => !row.present || row.mismatch || row.unknown);
       return h('section', { className: 'rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3', 'aria-label': tr('word_sounds.prepared_audio_repair_label', 'Prepared lesson audio and repair'), 'aria-busy': busy },
-        h('h3', { className: 'font-bold text-slate-900' }, 'Prepared lesson audio and repair'),
-        h('p', { className: 'text-xs text-slate-600' }, 'This list covers saved speech clips and syllable recordings. Shared speech sounds, instructions, and feedback can use separate app recordings. Regeneration changes the selected speech clips; teacher syllable recordings stay as recorded.'),
-        h('p', { className: 'text-sm text-slate-700' }, 'Selected voice: ' + (voice || 'Automatic') + '. Selected language: ' + (language || 'Unspecified') + '. ' + inventory.filter(row => row.voiceMismatch).length + ' clips use another voice; ' + inventory.filter(row => row.languageMismatch).length + ' use another language. ' + inventory.filter(row => row.unknownVoice).length + ' have no saved voice information; ' + inventory.filter(row => row.unknownLanguage).length + ' have no saved language information.'),
-        h('p', { className: 'text-sm text-slate-700' }, 'Repair will update ' + plan.upgraded.length + ' older syllable boards and fill ' + plan.missing.length + ' missing speech clips. Your words, choices, pictures, and recordings stay in the lesson. Review and save the updated lesson before sharing it.'),
-        plan.issues.length ? h('div', { role: 'note', className: 'text-sm text-amber-900' }, h('p', null, 'Needs your review: ' + plan.issues.join('; ')), ...plan.issueIndexes.map(index => button('Review syllables: ' + (words[index].targetWord || words[index].word || words[index].term), () => onReviewSyllables(index), false))) : null,
+        h('h3', { className: 'font-bold text-slate-900' }, tr('word_sounds.prepared_audio_repair_label', 'Prepared lesson audio and repair')),
+        h('p', { className: 'text-xs text-slate-600' }, tr('word_sounds.pack_maint_intro', 'This list covers saved speech clips and syllable recordings. Shared speech sounds, instructions, and feedback can use separate app recordings. Regeneration changes the selected speech clips; teacher syllable recordings stay as recorded.')),
+        h('p', { className: 'text-sm text-slate-700' }, trp('word_sounds.pack_maint_voice_summary', 'Selected voice: {voice}. Selected language: {language}. {voiceCount} clips use another voice; {languageCount} use another language. {unknownVoice} have no saved voice information; {unknownLanguage} have no saved language information.', { voice: voice || tr('word_sounds.pack_maint_voice_auto', 'Automatic'), language: language || tr('word_sounds.pack_maint_language_unspecified', 'Unspecified'), voiceCount: inventory.filter(row => row.voiceMismatch).length, languageCount: inventory.filter(row => row.languageMismatch).length, unknownVoice: inventory.filter(row => row.unknownVoice).length, unknownLanguage: inventory.filter(row => row.unknownLanguage).length })),
+        h('p', { className: 'text-sm text-slate-700' }, trp('word_sounds.pack_maint_repair_summary', 'Repair will update {boards} older syllable boards and fill {clips} missing speech clips. Your words, choices, pictures, and recordings stay in the lesson. Review and save the updated lesson before sharing it.', { boards: plan.upgraded.length, clips: plan.missing.length })),
+        plan.issues.length ? h('div', { role: 'note', className: 'text-sm text-amber-900' }, h('p', null, trp('word_sounds.pack_maint_needs_review', 'Needs your review: {issues}', { issues: plan.issues.join('; ') })), ...plan.issueIndexes.map(index => button(trp('word_sounds.pack_maint_review_syllables', 'Review syllables: {word}', { word: words[index].targetWord || words[index].word || words[index].term }), () => onReviewSyllables(index), false))) : null,
         h('div', { className: 'flex flex-wrap gap-2' },
-          button('Repair prepared lesson', () => onAction('repair'), !plan.upgraded.length && !plan.missing.length),
-          button('Select clips with another voice or language', () => setSelected(inventory.filter(row => row.mismatch && row.regeneratable).map(row => row.key)), !inventory.some(row => row.mismatch && row.regeneratable)),
-          button('Regenerate selected (' + selected.length + ')', () => onAction('replace', selected), !selected.length),
-          busy ? h('button', { type: 'button', onClick: onCancel, className: 'min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold' }, 'Cancel audio update') : null),
+          button(tr('word_sounds.pack_repair_button', 'Repair prepared lesson'), () => onAction('repair'), !plan.upgraded.length && !plan.missing.length),
+          button(tr('word_sounds.pack_select_mismatched', 'Select clips with another voice or language'), () => setSelected(inventory.filter(row => row.mismatch && row.regeneratable).map(row => row.key)), !inventory.some(row => row.mismatch && row.regeneratable)),
+          button(trp('word_sounds.pack_regenerate_selected', 'Regenerate selected ({count})', { count: selected.length }), () => onAction('replace', selected), !selected.length),
+          busy ? h('button', { type: 'button', onClick: onCancel, className: 'min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold' }, tr('word_sounds.pack_cancel_update', 'Cancel audio update')) : null),
         notice ? h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-semibold text-slate-800' }, notice) : null,
-        h('details', null, h('summary', { className: 'min-h-11 cursor-pointer py-2 font-bold text-violet-800' }, 'Review clip voices, languages, and sources (' + inventory.length + ')'),
-          h('label', { className: 'block text-sm py-2' }, 'Show ', h('select', { value: filter, onChange: event => setFilter(event.target.value), className: 'rounded border border-slate-400 bg-white px-2 py-1' }, h('option', { value: 'attention' }, 'Missing, different, or unknown voice/language'), h('option', { value: 'all' }, 'All clips'))),
+        h('details', null, h('summary', { className: 'min-h-11 cursor-pointer py-2 font-bold text-violet-800' }, trp('word_sounds.pack_review_clips', 'Review clip voices, languages, and sources ({count})', { count: inventory.length })),
+          h('label', { className: 'block text-sm py-2' }, tr('word_sounds.pack_filter_show', 'Show') + ' ', h('select', { value: filter, onChange: event => setFilter(event.target.value), className: 'rounded border border-slate-400 bg-white px-2 py-1' }, h('option', { value: 'attention' }, tr('word_sounds.pack_filter_attention', 'Missing, different, or unknown voice/language')), h('option', { value: 'all' }, tr('word_sounds.pack_filter_all', 'All clips')))),
           h('div', { className: 'max-h-72 overflow-auto space-y-1' }, (filter === 'all' ? inventory : attention).map(row => h('div', { key: row.key, className: 'flex items-center gap-3 rounded bg-white p-2' },
-            h('label', { className: 'flex flex-1 items-center gap-2 text-sm' }, h('input', { type: 'checkbox', disabled: busy || !row.regeneratable, checked: selected.includes(row.key), onChange: event => setSelected(prev => event.target.checked ? [...prev, row.key] : prev.filter(key => key !== row.key)), 'aria-label': 'Select audio for ' + row.text }), h('span', null, h('span', { className: 'block font-semibold' }, row.text), h('span', { className: 'block text-xs text-slate-600' }, row.label))),
-            row.present ? button('Hear', () => onPlayAudio('data:' + row.asset.mime + ';base64,' + row.asset.base64), false) : null))))
+            h('label', { className: 'flex flex-1 items-center gap-2 text-sm' }, h('input', { type: 'checkbox', disabled: busy || !row.regeneratable, checked: selected.includes(row.key), onChange: event => setSelected(prev => event.target.checked ? [...prev, row.key] : prev.filter(key => key !== row.key)), 'aria-label': trp('word_sounds.pack_select_audio_aria', 'Select audio for {text}', { text: row.text }) }), h('span', null, h('span', { className: 'block font-semibold' }, row.text), h('span', { className: 'block text-xs text-slate-600' }, row.label))),
+            row.present ? button(tr('word_sounds.pack_hear', 'Hear'), () => onPlayAudio('data:' + row.asset.mime + ';base64,' + row.asset.base64), false) : null))))
       );
     };
 
@@ -2941,8 +2945,8 @@ const WS_CORE = createWordSoundsCore();
                     {
                       "aria-label":
                         opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
-                          ? "Correct answer"
-                          : "Set as correct",
+                          ? ts("word_sounds.correct_answer_aria") || "Correct answer"
+                          : ts("word_sounds.set_as_correct_aria") || "Set as correct",
                       onClick: (e) => {
                         e.stopPropagation();
                         onUpdateOption &&
@@ -2951,8 +2955,8 @@ const WS_CORE = createWordSoundsCore();
                       className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
                       title:
                         opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
-                          ? "✓ Correct answer"
-                          : "Click to set as correct answer",
+                          ? "✓ " + (ts("word_sounds.correct_answer_aria") || "Correct answer")
+                          : ts("word_sounds.set_as_correct_hint") || "Click to set as correct answer",
                     },
                     opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
                       ? /*#__PURE__*/ React.createElement(Check, {
@@ -2975,7 +2979,7 @@ const WS_CORE = createWordSoundsCore();
                     /*#__PURE__*/ React.createElement(
                     "button",
                     {
-                      "aria-label": t("common.volume"),
+                      "aria-label": t("common.listen_to_this_option"),
                       onClick: (e) => {
                         e.stopPropagation();
                         onPlayAudio(opt, true);
@@ -3032,7 +3036,7 @@ const WS_CORE = createWordSoundsCore();
                     "button",
                     {
                       type: "button",
-                      "aria-label": t("common.volume"),
+                      "aria-label": t("common.listen_to_this_option"),
                       onClick: (e) => {
                         e.stopPropagation();
                         onPlayAudio(opt, true);
@@ -3121,8 +3125,8 @@ const WS_CORE = createWordSoundsCore();
                     : "bg-amber-100 text-amber-700"),
               },
               data.type === "deletion"
-                ? "\u2702\uFE0F Phoneme Deletion"
-                : "\uD83D\uDD04 Phoneme Substitution",
+                ? "\u2702\uFE0F " + (ts("word_sounds.manip_type_deletion") || "Phoneme Deletion")
+                : "\uD83D\uDD04 " + (ts("word_sounds.manip_type_substitution") || "Phoneme Substitution"),
             ),
             /*#__PURE__*/ React.createElement(
               "p",
@@ -3159,8 +3163,8 @@ const WS_CORE = createWordSoundsCore();
                       {
                         "aria-label":
                           opt?.toLowerCase() === data.answer?.toLowerCase()
-                            ? "Correct answer"
-                            : "Set as correct",
+                            ? ts("word_sounds.correct_answer_aria") || "Correct answer"
+                            : ts("word_sounds.set_as_correct_aria") || "Set as correct",
                         onClick: (e) => {
                           e.stopPropagation();
                           onUpdateOption &&
@@ -3169,8 +3173,8 @@ const WS_CORE = createWordSoundsCore();
                         className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
                         title:
                           opt?.toLowerCase() === data.answer?.toLowerCase()
-                            ? "\u2713 Correct answer"
-                            : "Click to set as correct",
+                            ? "\u2713 " + (ts("word_sounds.correct_answer_aria") || "Correct answer")
+                            : ts("word_sounds.set_as_correct_hint") || "Click to set as correct answer",
                       },
                       opt?.toLowerCase() === data.answer?.toLowerCase()
                         ? /*#__PURE__*/ React.createElement(Check, { size: 20 })
@@ -3189,7 +3193,7 @@ const WS_CORE = createWordSoundsCore();
                     /*#__PURE__*/ React.createElement(
                       "button",
                       {
-                        "aria-label": t("common.volume"),
+                        "aria-label": t("common.listen_to_this_option"),
                         onClick: (e) => {
                           e.stopPropagation();
                           onPlayAudio(opt, true);
@@ -3241,7 +3245,7 @@ const WS_CORE = createWordSoundsCore();
                       "button",
                       {
                         type: "button",
-                        "aria-label": t("common.volume"),
+                        "aria-label": t("common.listen_to_this_option"),
                         onClick: (e) => {
                           e.stopPropagation();
                           onPlayAudio(opt, true);
@@ -3799,7 +3803,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       const text = library.exportSet(board, word, language);
       url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
       link = document.createElement('a'); link.href = url;
-      link.download = 'syllables-' + library.identity(word, language).targetWord.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 60) + '.json';
+      // Language in the name, and letters in any script kept: "мама" and
+      // "مرحبا" both used to download as "syllables--.json".
+      const match = library.identity(word, language);
+      const part = value => String(value || '').replace(/[^\p{L}\p{N}-]+/gu, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+      link.download = ['syllables', part(match.languageKey), part(match.targetWord)].filter(Boolean).join('-') + '.json';
       link.hidden = true; document.body.appendChild(link); link.click();
       setLibraryStatus('Download prepared from the recordings saved in this lesson. Import the file for the same word and recording language on another device.');
     } catch (error) { setLibraryStatus(error?.message || 'The recording set could not be downloaded. Save reviewed syllables first and try again.'); }
@@ -4543,7 +4551,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
-                    "aria-label": t("common.volume"),
+                    "aria-label": ts("word_sounds.play_word") || "Play word",
                     onClick: () => onPlayAudio(data.word),
                     className:
                       "p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-sm",
@@ -4566,7 +4574,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             /*#__PURE__*/ React.createElement(
               "button",
               {
-                "aria-label": t("common.volume"),
+                "aria-label": ts("word_sounds.hear_word_again") || "Hear Word Again",
                 onClick: () => { if (canInteract()) onPlayAudio(data.word); },
                 disabled: answerLocked,
                 className:
@@ -4759,8 +4767,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 disabled: answerLocked || !slot,
                 className: `w-20 h-20 rounded-2xl border-4 border-dashed flex items-center justify-center text-3xl font-bold transition-all ${slot ? "border-indigo-500 bg-white text-indigo-700 shadow-md scale-100" : "border-slate-300 bg-slate-50 text-slate-600 scale-95"}`,
                 "aria-label": slot
-                  ? `Slot ${i + 1}: ${slot.text}`
-                  : `Empty Slot ${i + 1}`,
+                  ? ts("word_sounds.mapping_slot_filled", { n: i + 1, sound: slot.text }) || `Slot ${i + 1}: ${slot.text}`
+                  : ts("word_sounds.mapping_slot_empty", { n: i + 1 }) || `Empty Slot ${i + 1}`,
               },
               slot ? slot.text : i + 1,
             ),
@@ -4816,7 +4824,6 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           /*#__PURE__*/ React.createElement(
             "button",
             {
-              "aria-label": t("common.volume"),
               disabled: answerLocked,
               onClick: () => {
                 if (!canInteract()) return;
@@ -5453,8 +5460,59 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     //
     // Teacher-only, for the same reason Review Words is: this page lists every
     // word with its sounds, its rhyme answers and its manipulation answers.
+    //
+    // Gemini Canvas ignores window.print() (sandboxed iframe), so Print writes
+    // the sheet into a window of its own; that window has no Tailwind, hence
+    // this plain stylesheet for the classes the sheet uses.
     // ────────────────────────────────────────────────────────────────────
-    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, copyState, ts, dialogRef, onDialogKeyDown }) => {
+    const WS_DI_PRINT_CSS = [
+      "body{margin:0;padding:24px;color:#0f172a;background:#fff;font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}",
+      ".print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;color:#334155}",
+      ".print-bar button{font:600 15px system-ui,sans-serif;padding:10px 18px;border:0;border-radius:8px;background:#4338ca;color:#fff;cursor:pointer}",
+      "#ws-di-print{max-width:760px;margin:0 auto}",
+      "h1{font-size:24px;font-weight:900;margin:0}",
+      "h2{font-size:18px;font-weight:900;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px}",
+      "p{margin:4px 0}ul{margin:8px 0 0;padding-left:20px;list-style:disc}ol{margin:12px 0 0;padding-left:0;list-style:none}li{margin:2px 0}",
+      "table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;padding:4px 12px 4px 0;border-bottom:2px solid #cbd5e1}",
+      "td{padding:4px 12px 4px 0;border-bottom:1px solid #e2e8f0;vertical-align:top}",
+      "section{margin-top:24px;padding-top:16px;border-top:2px solid #e2e8f0}",
+      ".ws-di-section{break-inside:avoid;page-break-inside:avoid}",
+      ".border-2{border:2px solid #cbd5e1;border-radius:8px;padding:16px;background:#f8fafc;margin-top:16px}",
+      ".border-l-4{border-left:4px solid #818cf8;padding-left:12px;margin-top:12px}",
+      ".font-black{font-weight:900}.font-bold{font-weight:700}.font-semibold{font-weight:600}.italic{font-style:italic}",
+      ".text-sm{font-size:14px}.text-xs{font-size:12px}",
+      ".uppercase{text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:700;color:#64748b}",
+      ".text-slate-600{color:#475569}.text-slate-500{color:#64748b}.text-slate-700{color:#334155}.text-indigo-700{color:#4338ca}",
+      "@media print{.print-bar{display:none}body{padding:0}}",
+    ].join("");
+    // Copies through the host's helper when it is there (the Clipboard API is
+    // blocked in Canvas; the host falls back to execCommand). A Canvas paste can
+    // load this module without that host, so the fallback is repeated here.
+    const copyWordSoundsText = async (text) => {
+      try {
+        if (typeof window !== "undefined" && typeof window.alloCopyText === "function") {
+          return !!(await window.alloCopyText(text));
+        }
+      } catch (_) { /* fall back below */ }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (_) { /* blocked: try execCommand */ }
+      try {
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.cssText = "position:fixed;left:-9999px;top:0";
+        document.body.appendChild(area);
+        area.select();
+        const ok = document.execCommand("copy");
+        area.remove();
+        return !!ok;
+      } catch (_) { return false; }
+    };
+    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, onPrint, copyState, ts, dialogRef, onDialogKeyDown }) => {
       const label = (key, fallback) => {
         try { return (ts && ts(key)) || fallback; } catch (_) { return fallback; }
       };
@@ -5466,7 +5524,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         "div",
         {
           ref: dialogRef,
-          className: "fixed inset-0 z-50 bg-slate-100 overflow-y-auto",
+          className: "ws-di-dialog fixed inset-0 z-50 bg-slate-100 overflow-y-auto",
           role: "dialog",
           "aria-modal": "true",
           "aria-labelledby": "word-sounds-di-script-title",
@@ -5487,6 +5545,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               max-width: none !important;
             }
             .ws-di-no-print { display: none !important; }
+            .ws-di-dialog { position: static !important; overflow: visible !important; }
             .ws-di-section { break-inside: avoid; page-break-inside: avoid; }
           }
         `),
@@ -5516,7 +5575,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               "button",
               {
                 type: "button",
-                onClick: () => { try { window.print(); } catch (_) { /* no print target */ } },
+                onClick: onPrint,
                 className: "min-h-11 px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
               },
               label("word_sounds.di_script_print", "Print or save as PDF"),
@@ -6445,6 +6504,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       };
       const submissionLockRef = React.useRef(false);
       const sessionWordResults = React.useRef([]);
+      const [sessionXPEarned, setSessionXPEarned] = React.useState(0);
+      const activeSessionItemRef = React.useRef(null);
+      const [itemPresentation, setItemPresentation] = React.useState(0);
       const feedbackAudioRef = React.useRef(null);
       const activityRegionRef = React.useRef(null);
       const activityFocusInitedRef = React.useRef(false);
@@ -6885,6 +6947,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [diScript, setDiScript] = React.useState(null);
       const [diScriptState, setDiScriptState] = React.useState("idle");
       const [diCopyState, setDiCopyState] = React.useState("idle");
+      // The parent summary text, shown only after every copy path failed.
+      const [parentSummaryFallback, setParentSummaryFallback] = React.useState(null);
       const closeDiScript = React.useCallback(() => {
         diScriptReturnFocusPendingRef.current = true;
         setDiScript(null);
@@ -6902,7 +6966,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const DI = window.AlloWordSoundsDI;
           if (!DI || typeof DI.buildLessonScript !== "function") {
             addToast?.(
-              "The lesson script generator could not be loaded. Check the connection and try again.",
+              ts("word_sounds.di_script_load_failed") || "The lesson script generator could not be loaded. Check the connection and try again.",
               "error",
             );
             setDiScriptState("idle");
@@ -6912,19 +6976,20 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           // language it cannot vouch for rather than machine-translating it.
           if (!DI.supportsLanguage(wordSoundsLanguage)) {
             addToast?.(
-              "The lesson script is available for English word sets only.",
+              ts("word_sounds.di_script_english_only") || "The lesson script is available for English word sets only.",
               "info",
             );
             setDiScriptState("idle");
             return;
           }
           if (!preloadedWords.length) {
-            addToast?.("There are no words to build a lesson script from yet.", "info");
+            addToast?.(ts("word_sounds.di_script_no_words") || "There are no words to build a lesson script from yet.", "info");
             setDiScriptState("idle");
             return;
           }
           const analysis = DI.analyzeWordSet(preloadedWords, {
             language: wordSoundsLanguage || "en",
+            voice: selectedVoice,
             grade: (runtimeSessionConfig && runtimeSessionConfig.probeGrade) || "",
           });
           setDiScript(DI.buildLessonScript(analysis, lessonPlanConfig));
@@ -6932,23 +6997,61 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           setDiScriptState("idle");
         } catch (e) {
           debugLog("[WS] DI script build failed:", e?.message || e);
-          addToast?.("The lesson script could not be built.", "error");
+          addToast?.(ts("word_sounds.di_script_build_failed") || "The lesson script could not be built.", "error");
           setDiScriptState("idle");
         }
-      }, [preloadedWords, lessonPlanConfig, wordSoundsLanguage, runtimeSessionConfig, addToast]);
-      const handleCopyDiScript = React.useCallback(() => {
+      // `ts` is declared further down this component, so the deps name `t`
+      // (ts changes only with t); a dep on ts itself would hit its TDZ.
+      }, [preloadedWords, lessonPlanConfig, wordSoundsLanguage, selectedVoice, runtimeSessionConfig, addToast, t]);
+      const handleCopyDiScript = React.useCallback(async () => {
+        let text = "";
         try {
           const DI = window.AlloWordSoundsDI;
-          const text = (DI && diScript) ? DI.scriptToText(diScript) : "";
-          if (!text) return;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(
-              () => setDiCopyState("copied"),
-              () => setDiCopyState("idle"),
-            );
-          }
-        } catch (_) { setDiCopyState("idle"); }
-      }, [diScript]);
+          text = (DI && diScript) ? DI.scriptToText(diScript) : "";
+        } catch (_) { text = ""; }
+        if (!text) return;
+        const copied = await copyWordSoundsText(text);
+        setDiCopyState(copied ? "copied" : "idle");
+        if (copied) {
+          try { window.alloAnnounce?.(ts("word_sounds.di_script_copied") || "Lesson script copied."); } catch (_) {}
+        } else {
+          addToast?.(ts("word_sounds.di_script_copy_failed") || "Copying is blocked here. Use Print or save as PDF instead.", "error");
+        }
+      }, [diScript, t, addToast]);
+      // Prints from a window of its own: Canvas ignores window.print() on the
+      // app. Without a window (pop-ups blocked) it tries the app itself, and a
+      // refused print fires no beforeprint, so the teacher is told.
+      const handlePrintDiScript = React.useCallback(() => {
+        const sheet = typeof document !== "undefined" ? document.getElementById("ws-di-print") : null;
+        if (!sheet) return;
+        const esc = (value) => String(value).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+        const title = (diScript && diScript.title) || ts("word_sounds.di_script_title") || "Lesson script";
+        const html = '<!DOCTYPE html><html lang="' + esc(document.documentElement.lang || "en") + '"><head><meta charset="utf-8"><title>' +
+          esc(title) + "</title><style>" + WS_DI_PRINT_CSS + '</style></head><body><div class="print-bar"><button type="button" onclick="window.print()">' +
+          esc(ts("word_sounds.di_script_print_button") || "Print") + "</button><span>" +
+          esc(ts("word_sounds.di_script_print_hint") || "If the print dialog does not open, press Ctrl+P (or Cmd+P on a Mac).") +
+          "</span></div>" + sheet.outerHTML + "</body></html>";
+        let win = null;
+        try { win = window.open("", "_blank"); } catch (_) { win = null; }
+        if (win) {
+          try {
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+            try { win.focus(); } catch (_) {}
+            try { win.print(); } catch (_) { /* its own Print button remains */ }
+            return;
+          } catch (_) { /* could not write the window: fall through */ }
+        }
+        let fired = false;
+        const onBefore = () => { fired = true; };
+        window.addEventListener("beforeprint", onBefore);
+        try { window.print(); } catch (_) {}
+        window.removeEventListener("beforeprint", onBefore);
+        if (!fired) {
+          addToast?.(ts("word_sounds.di_script_print_blocked") || "Printing is blocked here. Allow pop-ups for this page, then press Print again.", "error");
+        }
+      }, [diScript, t, addToast]);
       const hasStartedFromReview = React.useRef(false);
       // Direct-play detection: hosts that preset a concrete activity before
       // mount (live-session push hydration, student self-open from history,
@@ -7270,6 +7373,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         wordSoundsActivity,
         currentWordSoundsWord,
         wordSoundsPhonemes,
+        itemPresentation,
         generateSyllableData,
         syllableData,
       ]);
@@ -7310,6 +7414,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         wordSoundsActivity,
         currentWordSoundsWord,
         wordSoundsPhonemes,
+        itemPresentation,
         generateManipulationData,
       ]);
       React.useEffect(() => {
@@ -7333,7 +7438,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (region && typeof region.focus === "function") {
           try { region.focus({ preventScroll: false }); } catch (e) { try { region.focus(); } catch (e2) {} }
         }
-      }, [wordSoundsActivity]);
+      }, [wordSoundsActivity, isFixedForm ? itemPresentation : null]);
       React.useEffect(() => {
         console.log(
           `[WS-DBG] initialShowReviewPanel changed to: ${initialShowReviewPanel}`,
@@ -8304,6 +8409,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (last != null) return handleAudio(last);
         return null;
       }, [handleAudio, clearAudioNotice, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, playSyllables, pauseResponseAudio]);
+      // A gesture block says nothing about the clips: replay inside the click,
+      // then re-run the clip preflight so the status the host sees is measured again.
+      const retryBlockedPreparedAudio = React.useCallback(() => {
+        const replay = retryLastAudio();
+        setPreparedAudioRetryEpoch((value) => value + 1);
+        return replay;
+      }, [retryLastAudio]);
       // Speak an instruction sentence that embeds phoneme notation ("change
       // the /t/ sound to /m/"): whole-sentence TTS reads the tokens literally
       // ("slash tee slash"). Split the /X/ tokens out and play them from the
@@ -8590,8 +8702,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                           "aria-label":
                             opt?.toLowerCase() ===
                               data.correctSound?.toLowerCase()
-                              ? "Correct answer"
-                              : "Set as correct",
+                              ? ts("word_sounds.correct_answer_aria") || "Correct answer"
+                              : ts("word_sounds.set_as_correct_aria") || "Set as correct",
                           onClick: (e) => {
                             e.stopPropagation();
                             onUpdateOption &&
@@ -8601,8 +8713,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                           title:
                             opt?.toLowerCase() ===
                               data.correctSound?.toLowerCase()
-                              ? "✓ Correct answer"
-                              : "Click to set as correct",
+                              ? "✓ " + (ts("word_sounds.correct_answer_aria") || "Correct answer")
+                              : ts("word_sounds.set_as_correct_hint") || "Click to set as correct answer",
                         },
                         opt?.toLowerCase() ===
                           data.correctSound?.toLowerCase()
@@ -8631,8 +8743,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         "button",
                         {
                           "aria-label": showLetterHints
-                            ? `Choose /${String(opt).replace(/^\/+|\/+$/g, "")}/`
-                            : `Choose Sound ${idx + 1}`,
+                            ? ts("word_sounds.choose_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Choose /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : ts("word_sounds.choose_sound_n", { n: idx + 1 }) || `Choose Sound ${idx + 1}`,
                           onClick: () => { stopSequence(); onCheckAnswer(opt); },
                           className: `w-full h-32 rounded-2xl font-bold flex items-center justify-center shadow-sm transition-all active:scale-95 ${optionImages ? "flex-col gap-1 text-lg" : "text-4xl"} ${playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`,
                         },
@@ -8651,7 +8763,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                               /*#__PURE__*/ React.createElement(
                                 "span",
                                 { key: "lbl", className: "text-sm font-bold" },
-                                showLetterHints ? opt : `Sound ${idx + 1}`,
+                                showLetterHints ? opt : (ts("word_sounds.sound_n", { n: idx + 1 }) || `Sound ${idx + 1}`),
                               ),
                             ];
                           }
@@ -8668,8 +8780,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         "button",
                         {
                           "aria-label": showLetterHints
-                            ? `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
-                            : `Listen to Sound ${idx + 1}`,
+                            ? ts("word_sounds.listen_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : ts("word_sounds.listen_sound_n", { n: idx + 1 }) || `Listen to Sound ${idx + 1}`,
                           onClick: (e) => {
                             e.stopPropagation();
                             playSingle(opt);
@@ -8677,8 +8789,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                           className:
                             "absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-700 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
                           title: showLetterHints
-                            ? `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
-                            : `Listen to Sound ${idx + 1}`,
+                            ? ts("word_sounds.listen_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
+                            : ts("word_sounds.listen_sound_n", { n: idx + 1 }) || `Listen to Sound ${idx + 1}`,
                         },
                           /*#__PURE__*/ React.createElement(Volume2, {
                           size: 20,
@@ -9048,10 +9160,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       showLetterHints
                         ? data.family
                         : data.mode === "first"
-                          ? "Starts with /…/"
+                          ? ts("word_sounds.sort_starts_with_hidden") || "Starts with /…/"
                           : data.mode === "last"
-                            ? "Ends with /…/"
-                            : "Sound Family",
+                            ? ts("word_sounds.sort_ends_with_hidden") || "Ends with /…/"
+                            : ts("word_sounds.sort_sound_family") || "Sound Family",
                     ),
                   ),
                   /*#__PURE__*/ React.createElement(
@@ -9643,6 +9755,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       // interruption can be recognised instead of trusted.
       const probeHiddenMsRef = React.useRef(0);
       const probeHiddenSinceRef = React.useRef(null);
+      // When the probe results screen first showed: its numbers, its CSV and
+      // the payload sent on Finish all stop the clock there, instead of
+      // counting the minutes the screen stays open.
+      const probeEndTimeRef = React.useRef(null);
       React.useEffect(() => {
         if (!isProbeMode) return;
         if (typeof document === "undefined" || !document.addEventListener) return;
@@ -9722,7 +9838,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         const correct = Math.max(0, Number(score?.correct) || 0);
         const total = Math.max(0, Number(score?.total) || 0);
         const totalTime = probeStartTimeRef.current
-          ? Math.max(0, (Date.now() - probeStartTimeRef.current) / 1000)
+          ? Math.max(0, ((probeEndTimeRef.current || Date.now()) - probeStartTimeRef.current) / 1000)
           : 0;
         const elapsedMinutes = Math.max(totalTime / 60, 0.01);
         const hiddenMs = Math.round(probeHiddenMs());
@@ -9737,9 +9853,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           grade: effectiveProbeGrade,
           form: effectiveProbeForm,
           formId: effectiveProbeFormId,
-          itemIds: Array.isArray(runtimeSessionConfig.itemIds)
-            ? [...runtimeSessionConfig.itemIds]
-            : [],
+          itemIds: sessionWordResults.current.some((item) => item.itemId != null)
+            ? sessionWordResults.current.map((item) => item.itemId)
+            : Array.isArray(runtimeSessionConfig.itemIds)
+              ? [...runtimeSessionConfig.itemIds]
+              : [],
           learnerId: historyLearnerId != null ? String(historyLearnerId) : null,
           sessionId: activeHistorySessionIdRef.current,
           resourceId: historyResourceId != null ? String(historyResourceId) : null,
@@ -9758,8 +9876,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         return true;
       };
       const renderProbeResults = () => {
+        if (probeStartTimeRef.current && !probeEndTimeRef.current) probeEndTimeRef.current = Date.now();
         const totalTime = probeStartTimeRef.current
-          ? (Date.now() - probeStartTimeRef.current) / 1000
+          ? (probeEndTimeRef.current - probeStartTimeRef.current) / 1000
           : 0;
         const correct = wordSoundsScore.correct;
         const total = wordSoundsScore.total;
@@ -9797,9 +9916,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             "Items/Min",
             "Duration (s)",
             "CVC/Easy %", "CVC/Easy n", "Medium %", "Medium n", "Hard %", "Hard n",
+            "Form",
+            "Interrupted",
           ];
+          const endedAt = new Date(probeEndTimeRef.current || Date.now());
           const row = [
-            new Date().toLocaleDateString(),
+            endedAt.toLocaleDateString(),
             effectiveProbeGrade,
             wordSoundsActivity,
             total,
@@ -9808,23 +9930,37 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             itemsPerMin,
             Math.round(totalTime),
             _bandPct("easy"), _byBand.easy.t, _bandPct("medium"), _byBand.medium.t, _bandPct("hard"), _byBand.hard.t,
+            effectiveProbeForm || "",
+            probeHiddenMs() >= PROBE_INTERRUPTION_MS ? "yes" : "no",
           ];
-          const csv = headers.join(",") + "\n" + row.join(",");
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          // Quote cells that need it, and stop a spreadsheet from running a
+          // cell that starts like a formula.
+          const cell = (value) => {
+            let text = value == null ? "" : String(value);
+            if (/^[=+@-]/.test(text) && !/^-?[0-9.]+$/.test(text)) text = "'" + text;
+            return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+          };
+          const csv = [headers, row].map((r) => r.map(cell).join(",")).join("\r\n");
+          // A byte-order mark so Excel reads the file as UTF-8.
+          const blob = new Blob([String.fromCharCode(0xfeff) + csv], { type: "text/csv;charset=utf-8;" });
+          // Local date and time in the name: the UTC date read as tomorrow
+          // after 8 pm Eastern, and probes taken the same day shared a name.
+          const pad = (n) => String(n).padStart(2, "0");
+          const stamp = endedAt.getFullYear() + "-" + pad(endedAt.getMonth() + 1) + "-" + pad(endedAt.getDate()) +
+            "_" + pad(endedAt.getHours()) + pad(endedAt.getMinutes());
+          const part = (value) => String(value == null ? "" : value).replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+          const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download =
-            "Probe_" +
-            effectiveProbeGrade +
-            "_" +
-            wordSoundsActivity +
-            "_" +
-            new Date().toISOString().split("T")[0] +
-            ".csv";
+          link.href = url;
+          link.download = ["Probe", part(effectiveProbeGrade), part(wordSoundsActivity), part(effectiveProbeForm), stamp]
+            .filter(Boolean)
+            .join("_") + ".csv";
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
+          // Revoking in the same tick can cancel the download in some browsers.
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          try { window.alloAnnounce?.(ts("word_sounds.probe_csv_downloaded") || "Probe results downloaded."); } catch (_) {}
         };
         const finishProbe = () => {
           emitProbeComplete(wordSoundsScore);
@@ -10036,6 +10172,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           !probeStartTimeRef.current
         ) {
           probeStartTimeRef.current = Date.now();
+            probeEndTimeRef.current = null;
             probeHiddenMsRef.current = 0;
             probeHiddenSinceRef.current = null;
         }
@@ -10256,6 +10393,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             ? String(configuredSessionId)
             : makeRuntimeSessionId();
         sessionWordResults.current = [];
+        setSessionXPEarned(0);
+        activeSessionItemRef.current = null;
         countReviewDraftsRef.current.clear();
         recordingReviewDraftsRef.current.clear();
         setShowUnsavedSyllableStart(false);
@@ -10276,6 +10415,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         setCurrentWordIndex(0);
         setSequenceIndex(0);
         setProbeElapsed(0);
+        probeEndTimeRef.current = null;
+        setParentSummaryFallback(null);
         setShowProbeResults(false);
         setShowSessionComplete(false);
         setUserAnswer("");
@@ -10410,7 +10551,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           // only the fallback when no pack was prepared.
           const rawPool =
             preloadedWords && preloadedWords.length > 0
-              ? preloadedWords.map((pw) => ({
+              ? preloadedWords.map((pw, itemIndex) => ({
+                preparedItem: pw,
+                itemIndex,
+                itemId: String((Array.isArray(runtimeSessionConfig.itemIds) ? runtimeSessionConfig.itemIds[itemIndex] : null) ?? pw.itemId ?? pw.probeItemId ?? pw.id ?? `${activityId}:${itemIndex + 1}`),
                 word: pw.word || pw.targetWord || pw.displayWord,
                 displayWord: pw.displayWord || pw.word,
                 originalTerm: pw.targetWord,
@@ -10508,6 +10652,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const queue = selection
             .slice(0, isFixedForm ? probeItemGoal : SESSION_LENGTH)
             .map((entry) => ({
+              preparedItem: entry.preparedItem,
+              itemId: entry.itemId,
+              itemIndex: entry.itemIndex,
               singleWord: entry.displayWord || entry.word,
               fullTerm: entry.originalTerm,
               definition: entry.definition,
@@ -10531,6 +10678,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           isSequentialMode,
           isFixedForm,
           probeItemGoal,
+          runtimeSessionConfig.itemIds,
           wordFamilySkipMode,
         ],
       );
@@ -10855,6 +11003,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const lastPlayedWord = React.useRef(null);
       const wordDataCache = React.useRef(new Map());
       const pendingRequests = React.useRef(new Map());
+      const preparedBlendingOptionsFor = (data, targetWord) => {
+        const target = String(targetWord || "").trim().toLowerCase();
+        const board = String(data?.word || "").trim().toLowerCase() === target
+          ? data?.activityItems?.blending : null;
+        return Array.isArray(board?.options) && board.options.length > 1 &&
+          board.options.some((option) => String(option || "").trim().toLowerCase() === target)
+          ? [...board.options] : null;
+      };
       const applyWordDataToState = (data) => {
         if (
           data &&
@@ -10869,7 +11025,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         }
         if (!data) return;
         setWordSoundsPhonemes(data);
-        if (
+        const preparedOptions = wordSoundsActivity === "blending" ? preparedBlendingOptionsFor(data, data.word) : null;
+        if (preparedOptions) {
+          setBlendingOptions(preparedOptions);
+        } else if (
           wordSoundsActivity === "blending" &&
           data.blendingDistractors &&
           setBlendingOptions
@@ -11364,19 +11523,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             // entry is for THIS word — stale wordSoundsPhonemes mid-advance
             // would install the previous word's options (whose "correct"
             // answer isn't even on the board).
-            const preparedBlending =
-              String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
-                targetToCheck
-                ? wordSoundsPhonemes?.activityItems?.blending
-                : null;
-            if (
-              Array.isArray(preparedBlending?.options) &&
-              preparedBlending.options.length > 1 &&
-              preparedBlending.options.some(
-                (o) => String(o || "").trim().toLowerCase() === targetToCheck,
-              )
-            ) {
-              setBlendingOptions([...preparedBlending.options]);
+            const preparedOptions = preparedBlendingOptionsFor(wordSoundsPhonemes, targetToCheck);
+            if (preparedOptions) {
+              setBlendingOptions(preparedOptions);
               return;
             }
             let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
@@ -11474,6 +11623,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         wordSoundsActivity,
         wordSoundsPhonemes,
         currentWordSoundsWord,
+        itemPresentation,
         callGemini,
       ]);
       // Read & Match distractors: same difficulty band + orthographic
@@ -13815,6 +13965,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordSoundsPhonemes,
         wordSoundsActivity,
         currentWordSoundsWord,
+        itemPresentation,
         generateSoundChips,
         // startActivity resets orthographyOptions AFTER this effect may have
         // installed the prepared board in the same flush; watching the state
@@ -14107,7 +14258,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             });
           });
         }
-      }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord]);
+      }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord, itemPresentation]);
       React.useEffect(() => {
         if (wordSoundsActivity !== "isolation") return;
         if (!currentWordSoundsWord) return;
@@ -14292,6 +14443,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
       }, [
         currentWordSoundsWord,
+        itemPresentation,
         isLoadingPhonemes,
         playInstructions,
         wordSoundsActivity,
@@ -14305,9 +14457,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           forceWord = null,
           excludeWord = null,
           recursionDepth = 0,
+          continuingForm = false,
         ) => {
           if (studentPreparedAudioBlocked) {
-            waitingForPreparedAudioRef.current = { activityId, forceWord, excludeWord, recursionDepth };
+            waitingForPreparedAudioRef.current = { activityId, forceWord, excludeWord, recursionDepth, continuingForm };
             return;
           }
           waitingForPreparedAudioRef.current = null;
@@ -14370,6 +14523,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }, 50);
           // === End audio cleanup ===
           advanceEpochRef.current++;
+          // This transition owns a fresh response lock. Obsolete answer timers
+          // must never release it after the new item has already been scored.
+          submissionLockRef.current = false;
           resetSyllableCountDelivery();
           if (wordFamiliesEnded) {
             setShowSessionComplete(true);
@@ -14379,12 +14535,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setWordSoundsFeedback?.(null);
           setUserAnswer("");
           setAttempts(0);
-          if (isProbeMode) {
+          if (isProbeMode && !continuingForm) {
             // Start the probe clock at PRESENTATION, not at the first answer
             // (the old total===1 effect excluded item 1's response time from
             // the rate denominator — inflating items/min — and its timestamp
             // filter dropped item 1 from the by-band breakdown).
             probeStartTimeRef.current = Date.now();
+            probeEndTimeRef.current = null;
             probeHiddenMsRef.current = 0;
             probeHiddenSinceRef.current = null;
             setProbeElapsed(0);
@@ -14539,18 +14696,41 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setCurrentWordSoundsWord(targetWord);
             setCurrentWordImage(word.image);
             setShowWordText(false);
-            const preloadedWord = preloadedWords.find(
+            const preloadedWord = word.preparedItem || (word.activityItems ? word : null) || preloadedWords.find(
               (pw) =>
                 pw.word?.toLowerCase() === targetWord.toLowerCase() ||
                 pw.targetWord?.toLowerCase() === targetWord.toLowerCase() ||
                 pw.displayWord?.toLowerCase() === targetWord.toLowerCase(),
             );
-            const matchingIdx = preloadedWords.findIndex(
+            const matchingIdx = Number.isInteger(word.itemIndex) ? word.itemIndex : preloadedWords.findIndex(
               (pw) =>
                 pw.word?.toLowerCase() === targetWord.toLowerCase() ||
                 pw.targetWord?.toLowerCase() === targetWord.toLowerCase() ||
                 pw.displayWord?.toLowerCase() === targetWord.toLowerCase(),
             );
+            activeSessionItemRef.current = {
+              itemId: word.itemId ?? preloadedWord?.itemId ?? preloadedWord?.probeItemId ?? preloadedWord?.id ?? null,
+              itemIndex: matchingIdx >= 0 ? matchingIdx : null,
+            };
+            setItemPresentation((value) => value + 1);
+            if (isFixedForm) {
+              // Repeated targets are distinct authored tasks. Word-only caches
+              // must not carry the previous target's question into this item.
+              lastWordForIsolation.current = null;
+              isolationStateRef.current = null;
+              setIsolationState(null);
+              lastWordForManipulation.current = null;
+              manipulationStateRef.current = null;
+              manipulationOptionsRef.current = [];
+              setManipulationState(null);
+              setManipulationOptions([]);
+              lastWordForSyllable.current = null;
+              lastWordForBlending.current = null;
+              setUsedScrambleIndices([]);
+              setTracingPhase("upper");
+              soundSortPreloadRef.current = null;
+              wordFamilyRimeRef.current = null;
+            }
             if (matchingIdx >= 0) {
               setCurrentWordIndex(matchingIdx + 1);
               debugLog(
@@ -14564,10 +14744,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               debugLog("🚀 Using preloaded data for:", targetWord);
               setWordSoundsPhonemes(preloadedWord);
               setIsLoadingPhonemes(false);
-              if (
-                activityId === "blending" &&
-                preloadedWord.blendingDistractors
-              ) {
+              const preparedBlendOptions = activityId === "blending" ? preparedBlendingOptionsFor(preloadedWord, targetWord) : null;
+              if (preparedBlendOptions) {
+                setBlendingOptions(preparedBlendOptions);
+                lastWordForBlending.current = targetWord;
+              } else if (activityId === "blending" && preloadedWord.blendingDistractors) {
                 let distractors = preloadedWord.blendingDistractors.slice(
                   0,
                   5,
@@ -14617,12 +14798,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [
           getAdaptiveRandomWord,
+          generateSessionQueue,
+          getEffectiveDifficulty,
           fetchWordData,
           setWordSoundsActivity,
           setCurrentWordSoundsWord,
           setWordSoundsFeedback,
           wordPool,
-          preloadedWords.length,
+          preloadedWords,
+          isFixedForm,
           wsActivityAvailableForLang,
           activitySequence,
           ACTIVITIES,
@@ -14640,7 +14824,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         waitingForPreparedAudioRef.current = null;
         if (!isMountedRef.current) return undefined;
         debugLog("Prepared audio ready — retrying activity start:", pending.activityId);
-        startActivity(pending.activityId, pending.forceWord, pending.excludeWord, pending.recursionDepth);
+        startActivity(pending.activityId, pending.forceWord, pending.excludeWord, pending.recursionDepth, pending.continuingForm);
         return undefined;
       }, [studentPreparedAudioBlocked, startActivity]);
       React.useEffect(() => {
@@ -14777,8 +14961,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       React.useEffect(() => {
         if (
           wordSoundsActivity &&
-          (!sessionQueueRef.current[wordSoundsActivity] ||
-            sessionQueueRef.current[wordSoundsActivity].length === 0)
+          (!currentWordSoundsWord || !sessionQueueRef.current[wordSoundsActivity] ||
+            (!isFixedForm && sessionQueueRef.current[wordSoundsActivity].length === 0))
         ) {
           debugLog("🚀 Initializing Session Queue for", wordSoundsActivity);
           generateSessionQueue(
@@ -14803,11 +14987,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
       }, [
         wordSoundsActivity,
+        currentWordSoundsWord,
         wordPool,
         preloadedWords.length,
         generateSessionQueue,
         getEffectiveDifficulty,
         startActivity,
+        isFixedForm,
       ]);
       // Learner play: an unplayable Word Families item that still becomes
       // current (a host-set word, or a word without pack data) is skipped at
@@ -14856,7 +15042,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           currentActiveAudio.current = null;
         }
         setIsPlayingAudio(false);
-      }, [currentWordSoundsWord, wordSoundsActivity, wordSoundsActivity === 'syllable_counting' ? syllableCountPresentation : null]);
+      }, [currentWordSoundsWord, wordSoundsActivity, itemPresentation, wordSoundsActivity === 'syllable_counting' ? syllableCountPresentation : null]);
       React.useEffect(() => {
         if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
         if (showReviewPanel) return;
@@ -15175,9 +15361,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 await handleAudio(currentWordSoundsWord);
               }
             } else if (wordSoundsActivity === "syllable_blending") {
-              instructionText = ts(`word_sounds.syllable_blending_prompt`) || "Listen to the syllables and blend them together";
+              instructionText = ts("word_sounds.syllable_blending_prompt") || "Listen to the syllables and blend them together";
             } else if (wordSoundsActivity === "syllable_counting") {
-              instructionText = ts(`word_sounds.syllable_counting_prompt`) || "How many syllables do you hear? Clap for each one";
+              instructionText = ts("word_sounds.syllable_counting_prompt") || "How many syllables do you hear? Clap for each one";
             } else if (wordSoundsActivity === "manipulation") {
               // Manipulation plays its own Gemini-generated instruction in the block below; skip generic instruction
               instructionText = null;
@@ -15434,6 +15620,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       }, [
         wordSoundsActivity,
         currentWordSoundsWord,
+        itemPresentation,
         playInstructions,
         isMinimized,
         showReviewPanel,
@@ -15700,6 +15887,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ? wordSoundsScore.streak
                 : wordSoundsScore.streak + 1
               : 0;
+            // Calculate the reward once so the host, celebration, and recap agree.
+            let awardedXP = 0;
+            if (isCorrect && !isProbeMode) {
+              const baseXP = attempts > 0 ? 5 : 10;
+              const streakBonus = attempts > 0 ? 0 : Math.min(newStreak * 2, 20);
+              const effectiveDiff = getEffectiveDifficulty();
+              const difficultyBonus =
+                effectiveDiff === "hard" ? 10 : effectiveDiff === "medium" ? 5 : 0;
+              awardedXP = baseXP + streakBonus + difficultyBonus;
+            }
             if (isCorrect) {
               playSynthesizedSound("correct", newStreak);
               // Honor the host's reduce-motion toggle: suppress the visual burst
@@ -15714,7 +15911,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // Visual celebrations — scale with streak!
                 wsSpawnConfetti(newStreak >= 5 ? 20 : newStreak >= 3 ? 15 : 8);
                 if (newStreak >= 3) wsSpawnStars(newStreak >= 5 ? 7 : 4);
-                wsSpawnXPFloat(newStreak >= 5 ? '🔥 +' + (5 + newStreak) + ' XP!' : newStreak >= 3 ? '⭐ +' + (5 + newStreak) + ' XP!' : '+5 XP', 50, 35);
+                wsSpawnXPFloat(newStreak >= 5 ? '🔥 +' + awardedXP + ' XP!' : newStreak >= 3 ? '⭐ +' + awardedXP + ' XP!' : '+' + awardedXP + ' XP', 50, 35);
                 if (window._alloHaptic) window._alloHaptic(newStreak >= 5 ? 'achieve' : 'correct');
                 setTimeout(() => {
                   if (isMountedRef.current) setIsCelebrating(false);
@@ -15818,21 +16015,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 );
               }
             }
-            if (!isProbeMode) {
-              if (isCorrect) {
-                const baseXP = attempts > 0 ? 5 : 10;
-                const streakBonus =
-                  attempts > 0 ? 0 : Math.min(newStreak * 2, 20);
-                const effectiveDiff = getEffectiveDifficulty();
-                const difficultyBonus =
-                  effectiveDiff === "hard"
-                    ? 10
-                    : effectiveDiff === "medium"
-                      ? 5
-                      : 0;
-                const totalXP = baseXP + streakBonus + difficultyBonus;
-                onScoreUpdate?.(totalXP, `word_sounds_${wordSoundsActivity}`);
-              }
+            if (awardedXP > 0) {
+              setSessionXPEarned(previous => previous + awardedXP);
+              onScoreUpdate?.(awardedXP, `word_sounds_${wordSoundsActivity}`);
             }
             // Missed words are tracked via updateMasteryStats → revisitQueue (deferred review).
             // Legacy immediate re-queue was removed to prevent infinite-loop word cycling.
@@ -15874,6 +16059,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const _historyEntry = {
               timestamp: Date.now(),
               sessionId: activeHistorySessionIdRef.current,
+              ...(isFixedForm && activeSessionItemRef.current ? {
+                itemId: activeSessionItemRef.current.itemId,
+                itemIndex: activeSessionItemRef.current.itemIndex,
+              } : {}),
               ...(historyLearnerId != null ? { learnerId: String(historyLearnerId) } : {}),
               ...(historyResourceId != null ? { resourceId: String(historyResourceId) } : {}),
               ...(wordSoundsLanguage ? { language: String(wordSoundsLanguage) } : {}),
@@ -15928,6 +16117,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 correct: isCorrect,
                 attempts: attempts + 1,
                 activity: wordSoundsActivity,
+                ...(isFixedForm && activeSessionItemRef.current ? { ...activeSessionItemRef.current } : {}),
                 ...(opts?.taskEvidence || {}),
               });
             }
@@ -15946,7 +16136,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // Never let the lesson-plan auto-director switch activities
               // mid-probe: startActivity resets the probe clock without
               // resetting the score, permanently killing the payload arming.
-              !isProbeMode &&
+              !isFixedForm &&
               shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig, _postActivityMastery)
             ) {
               debugLog(
@@ -16014,7 +16204,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }
               }
             } else if (
-              !hasLessonPlan && isCorrect
+              !hasLessonPlan && isCorrect && !isFixedForm
             ) {
               const actStats = _postActivityMastery;
               const MIN_PRACTICE = 5;
@@ -16250,7 +16440,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // within this session even without a lesson plan, instead of only being
             // recorded for end-of-session review. NEVER in probe mode (that would
             // corrupt the timed CBM measure).
-            if (!isCorrect && currentWordSoundsWord && !isProbeMode) {
+            if (!isCorrect && currentWordSoundsWord && !isFixedForm) {
               const _rActId = wordSoundsActivity || "segmentation";
               const _rQueue = sessionQueueRef.current[_rActId] || [];
               const _rLc = (currentWordSoundsWord || "").toLowerCase();
@@ -16265,13 +16455,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             setTimeout(
               () => {
-                submissionLockRef.current = false;
                 // Bail if startActivity ran during the feedback window — this
                 // closure belongs to the OLD activity and would clobber the
                 // new one's word/state (and could double-fire onProbeComplete
                 // after the modal closed).
                 if (advanceEpochRef.current !== _advanceEpoch) return;
                 if (!isMountedRef.current) return;
+                submissionLockRef.current = false;
                 // HOISTED, QUEUE-INDEPENDENT completion check. The queue-refill
                 // effect re-runs after every answer (generateSessionQueue's
                 // identity changes with history) and repopulates an empty queue
@@ -16279,7 +16469,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // the queue-empty branch was unreachable in auto-difficulty
                 // mode — probes ran past their goal forever ("Word 11 of 10")
                 // and never banked an onProbeComplete payload.
-                const _goalMet = isProbeMode
+                const _goalMet = isFixedForm
                   ? postScore.total >= probeItemGoal
                   : postScore.correct >=
                     wordSoundsSessionGoal + (orthoSessionGoal || 0);
@@ -16289,6 +16479,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     emitProbeComplete(postScore, _historyEntry);
                   }
                   setShowSessionComplete(true);
+                  return;
+                }
+                if (isFixedForm) {
+                  const nextItem = getAdaptiveRandomWord(null, wordSoundsActivity || "segmentation");
+                  if (nextItem) {
+                    // Use the same preparation path as the first item, while
+                    // keeping the original probe clock and authored order.
+                    startActivity(wordSoundsActivity, nextItem, null, 0, true);
+                  } else {
+                    if (isProbeMode && probeStartTimeRef.current) emitProbeComplete(postScore, _historyEntry);
+                    setShowSessionComplete(true);
+                  }
                   return;
                 }
                 if (wordSoundsActivity === 'syllable_counting') resetSyllableCountDelivery();
@@ -16795,13 +16997,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   } else {
                     // Goal-met completion is handled by the hoisted check at
                     // the top of this timeout (queue-independent, postScore).
-                    if (isProbeMode) {
-                      debugLog("📊 Probe: Queue depleted. Ending probe.");
-                      if (probeStartTimeRef.current) {
-                        emitProbeComplete(postScore, _historyEntry);
-                      }
-                      setShowSessionComplete(true);
-                    } else {
+                    {
                       debugLog(
                         "⚠️ Queue empty but goal not met. Forcing refill...",
                       );
@@ -16905,6 +17101,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           attempts,
           isPlayingAudio,
           isProbeMode,
+          isFixedForm,
+          startActivity,
           showLetterHints,
           showWordText,
           imageVisibilityMode,
@@ -16993,7 +17191,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (!current()) return;
           cancelMicInput();
           if (error?.error === 'aborted') return;
-          showCaptureNotice(error?.error === 'no-speech' ? "I didn't hear an answer. Try again, or answer without the microphone." : "The microphone couldn't start or stopped unexpectedly. Try again, or answer without the microphone.");
+          showCaptureNotice(error?.error === 'no-speech'
+            ? ts("word_sounds.mic_no_answer_heard") || "I didn't hear an answer. Try again, or answer without the microphone."
+            : ts("word_sounds.mic_capture_failed") || "The microphone couldn't start or stopped unexpectedly. Try again, or answer without the microphone.");
           if (error?.error === 'no-speech') return;
           warnLog("Mic Error", error);
           addToast(error?.error === 'not-supported'
@@ -17003,7 +17203,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const handleEnd = () => {
           if (!current()) return;
           cancelMicInput();
-          showCaptureNotice("I didn't hear an answer. Try again, or answer without the microphone.");
+          showCaptureNotice(ts("word_sounds.mic_no_answer_heard") || "I didn't hear an answer. Try again, or answer without the microphone.");
         };
         try {
           if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
@@ -17107,15 +17307,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const notice = micReviewCurrent(micInputNotice) ? micInputNotice : null;
         if (!pending && !notice) return null;
         return React.createElement("section", {
-          ref: micReviewPanelRef, tabIndex: -1, "aria-label": pending ? "Check what I heard" : "Microphone help",
+          ref: micReviewPanelRef, tabIndex: -1, "aria-label": pending ? ts("word_sounds.mic_check_heard_aria") || "Check what I heard" : ts("word_sounds.mic_help_aria") || "Microphone help",
           className: "w-full max-w-xl mx-auto mb-4 p-4 rounded-xl border-2 border-violet-300 bg-violet-50 text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-violet-600",
         },
-          React.createElement("p", { role: "status", "aria-live": "polite", className: "font-semibold break-words" }, pending ? 'I heard: “' + pending.answer + '”' : notice.text),
-          pending && React.createElement("p", { className: "mt-2" }, "Is that what you said?"),
+          React.createElement("p", { role: "status", "aria-live": "polite", className: "font-semibold break-words" }, pending ? ts("word_sounds.mic_heard_answer", { answer: pending.answer }) || 'I heard: “' + pending.answer + '”' : notice.text),
+          pending && React.createElement("p", { className: "mt-2" }, ts("word_sounds.mic_confirm_question") || "Is that what you said?"),
           React.createElement("div", { className: "flex flex-wrap justify-center gap-3 mt-3" },
-            pending && React.createElement("button", { type: "button", onClick: () => confirmMicAnswer(pending), className: "px-4 py-3 rounded-lg bg-violet-700 text-white font-semibold" }, "Use this answer"),
-            React.createElement("button", { type: "button", onClick: handleMicInput, className: "px-4 py-3 rounded-lg bg-white border border-violet-400 font-semibold" }, "Try again"),
-            React.createElement("button", { type: "button", onClick: usePointerInput, className: "px-4 py-3 rounded-lg bg-white border border-slate-400 font-semibold" }, wordSoundsActivity === "word_scramble" ? "Type answer" : "Use buttons")));
+            pending && React.createElement("button", { type: "button", onClick: () => confirmMicAnswer(pending), className: "px-4 py-3 rounded-lg bg-violet-700 text-white font-semibold" }, ts("word_sounds.mic_use_answer") || "Use this answer"),
+            React.createElement("button", { type: "button", onClick: handleMicInput, className: "px-4 py-3 rounded-lg bg-white border border-violet-400 font-semibold" }, ts("word_sounds.mic_try_again") || "Try again"),
+            React.createElement("button", { type: "button", onClick: usePointerInput, className: "px-4 py-3 rounded-lg bg-white border border-slate-400 font-semibold" }, wordSoundsActivity === "word_scramble" ? ts("word_sounds.mic_type_answer") || "Type answer" : ts("word_sounds.mic_use_buttons") || "Use buttons")));
       };
       const renderVoiceInputOverlay = (prompt) => React.createElement("div", {
         className: "flex flex-col items-center gap-4 text-center p-4",
@@ -17657,7 +17857,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           React.createElement("button", {
             type: "button",
             "data-testid": "word-sounds-word-reveal",
-            "aria-label": showWordText ? "Hide word" : "Show word",
+            "aria-label": showWordText ? ts("word_sounds.hide_word") || "Hide word" : ts("word_sounds.show_word") || "Show word",
             "aria-pressed": showWordText,
             disabled: submissionLockRef.current,
             onClick: () => {
@@ -17672,7 +17872,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               setShowWordText(!showWordText);
             },
             className: "mt-3 min-h-[44px] px-4 py-2.5 rounded-full border border-slate-300 bg-white text-sm font-semibold text-slate-600 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 disabled:cursor-default",
-          }, showWordText ? "Hide word" : "Show word"),
+          }, showWordText ? ts("word_sounds.hide_word") || "Hide word" : ts("word_sounds.show_word") || "Show word"),
       );
       const playSegmentationSequence = async () => {
         const myRun = beginIsolationPlayback();
@@ -17976,7 +18176,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               { className: "flex flex-col gap-4" },
               /*#__PURE__*/ React.createElement(PhonologyView, {
-                key: currentWordSoundsWord,
+                key: `${currentWordSoundsWord}|${itemPresentation}`,
                 activity: wordSoundsActivity,
                 data: {
                   word: currentWordSoundsWord,
@@ -18151,13 +18351,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           tabIndex: 0,
                           "data-help-key": "wordsounds_pool_item",
                           "aria-label": showLetterHints
-                            ? `Phoneme ${chip.phoneme}`
-                            : "Mystery Sound",
+                            ? ts("word_sounds.phoneme_chip_aria", { sound: chip.phoneme }) || `Phoneme ${chip.phoneme}`
+                            : ts("word_sounds.mystery_sound") || "Mystery Sound",
                           title:
                             typeof PHONEME_GUIDE !== "undefined" &&
                               PHONEME_GUIDE[chip.phoneme]
-                              ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\nDrag to box or Click to listen`
-                              : "Drag to box or Click to listen",
+                              ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\n` + (ts("word_sounds.chip_drag_or_listen") || "Drag to box or Click to listen")
+                              : ts("word_sounds.chip_drag_or_listen") || "Drag to box or Click to listen",
                           className:
                             "w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing",
                           style: {
@@ -18233,7 +18433,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         }
                       },
                       disabled: submissionLockRef.current || !elkoninBoxes.length || elkoninBoxes.some((b) => b === null),
-                      className: `px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${elkoninBoxes.some((b) => b === null) ? "bg-slate-200 text-slate-600 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 hover:scale-105"}`,
+                      className: `px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${!elkoninBoxes.length || elkoninBoxes.some((b) => b === null) ? "bg-slate-200 text-slate-600 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 hover:scale-105"}`,
                     },
                     t("common.check"),
                   ),
@@ -18273,7 +18473,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         handleOptionUpdate(idx, e.target.value),
                       className:
                         "w-14 h-14 rounded-lg border-2 border-violet-200 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-violet-500 text-slate-700 shadow-sm",
-                      title: `Sound ${idx + 1}`,
+                      title: ts("word_sounds.sound_n", { n: idx + 1 }) || `Sound ${idx + 1}`,
                     }),
                     ),
                   ),
@@ -18386,7 +18586,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                     /*#__PURE__*/ React.createElement(
                               "button",
                               {
-                                "aria-label": t("common.volume"),
+                                // Named by what it shows (the word, or
+                                // "Option N" when letters are hidden); it
+                                // was announced as "Volume".
+                                "data-ws-blend-choice": "true",
                                 onClick: () => {
                                   const isCorrect =
                                     word?.toLowerCase() ===
@@ -18622,13 +18825,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
-                    "aria-label": t("common.volume"),
                     onClick: () => playSpellingWord(),
                     className:
                       "flex items-center gap-2 px-5 py-2.5 bg-amber-100 hover:bg-amber-200 rounded-full text-amber-800 font-bold transition-all hover:scale-105 shadow-md",
                   },
                   /*#__PURE__*/ React.createElement(Volume2, { size: 20 }),
-                  ts("word_sounds.spelling_bee_hear"),
+                  // The visible text is this button's only name.
+                  ts("word_sounds.spelling_bee_hear") || "Hear the word",
                 ),
                 /*#__PURE__*/ React.createElement(
                   "button",
@@ -18689,14 +18892,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                   "button",
                   {
-                    "aria-label": ts("word_sounds.spelling_bee_check") || "Check Answer",
+                    "aria-label": ts("word_sounds.spelling_bee_check") || "Check Spelling",
                     onClick: checkSpellingBee,
                     disabled: submissionLockRef.current || !String(userAnswer || "").trim(),
                     className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-700 hover:bg-amber-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
                   },
                   ts("word_sounds.spelling_bee_check") || "Check Spelling ✓",
                 ),
-              React.createElement("p", { className: "text-sm text-slate-700 text-center max-w-sm" }, "Listen, then type the letters to spell the word. Spoken words are not scored as spelling."),
+              React.createElement("p", { className: "text-sm text-slate-700 text-center max-w-sm" }, ts("word_sounds.spelling_bee_typing_note") || "Listen, then type the letters to spell the word. Spoken words are not scored as spelling."),
               !isProbeMode &&
               /*#__PURE__*/ React.createElement(
                   "div",
@@ -20210,7 +20413,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     // don't display XP that was never earned \u2014 show accuracy.
                     isProbeMode
                       ? `${accuracy}%`
-                      : `${(wordSoundsScore?.correct || 0) * 10} \u2728`,
+                      : `${sessionXPEarned} \u2728`,
                   ),
                   /*#__PURE__*/ React.createElement(
                     "div",
@@ -20303,10 +20506,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 {
                   onClick: () => {
                     const date = new Date().toLocaleDateString();
-                    const actLabel = wordSoundsActivity
-                      ? wordSoundsActivity.charAt(0).toUpperCase() +
-                        wordSoundsActivity.slice(1)
-                      : "Word Sounds";
+                    // The translated activity name, not the raw id
+                    // ("Syllable_counting") a parent cannot read.
+                    const actLabel =
+                      ALL_ACTIVITIES.find((a) => a.id === wordSoundsActivity)?.label ||
+                      (wordSoundsActivity
+                        ? wordSoundsActivity.charAt(0).toUpperCase() +
+                          wordSoundsActivity.slice(1)
+                        : "Word Sounds");
                     const wordLines = [
                       ...new Map(
                         sessionWordResults.current.map((r) => [r.word, r]),
@@ -20321,13 +20528,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       (ts("word_sounds.parent_summary_score", { correct: wordSoundsScore.correct, total: wordSoundsScore.total, pct: accuracy }) || `Score: ${wordSoundsScore.correct}/${wordSoundsScore.total} (${accuracy}%)`) +
                       (wordLines ? "\n\n" + (ts("word_sounds.parent_summary_words") || "Words practiced:") + "\n" + wordLines : "") +
                       (countLines ? "\n\n" + countLines : "");
-                    navigator.clipboard
-                      .writeText(summary)
+                    // Canvas blocks the Clipboard API; when every copy path
+                    // fails the summary is shown so it can be selected by hand.
+                    copyWordSoundsText(summary)
+                      .then((copied) => {
+                        setParentSummaryFallback(copied ? null : summary);
+                        if (!copied) throw new Error("copy blocked");
+                      })
                       .then(() =>
                         addToast?.("\uD83D\uDCCB " + (ts("word_sounds.parent_summary_copied") || "Summary copied! Paste it into a message for the teacher."), "success"),
                       )
                       .catch(() =>
-                        addToast?.(ts("word_sounds.parent_summary_copy_failed") || "Copy failed, try long-pressing the summary.", "error"),
+                        addToast?.(ts("word_sounds.parent_summary_copy_failed_select") || "Copying is blocked here. The summary is shown below: select it and copy it.", "error"),
                       );
                   },
                   className:
@@ -20335,6 +20547,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 },
                 "\uD83D\uDCCB " + (ts("word_sounds.parent_copy_button") || "Copy Summary for Teacher"),
               ),
+              isParentMode &&
+                parentSummaryFallback &&
+                /*#__PURE__*/ React.createElement("textarea", {
+                  readOnly: true,
+                  autoFocus: true,
+                  value: parentSummaryFallback,
+                  rows: 8,
+                  "aria-label": ts("word_sounds.parent_summary_text_label") || "Practice summary for the teacher",
+                  "data-ws-parent-summary-text": "true",
+                  onFocus: (e) => { try { e.target.select(); } catch (_) {} },
+                  className:
+                    "w-full p-3 rounded-xl border-2 border-amber-300 bg-white text-slate-800 text-sm font-mono",
+                }),
               !isProbeMode &&
               sessionWordResults.current.filter((r) => !r.correct).length > 0 &&
                 /*#__PURE__*/ React.createElement(
@@ -20403,7 +20628,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 },
                 "\uD83D\uDD04 ",
                 isParentMode
-                  ? "Practice Again"
+                  ? ts("word_sounds.practice_again") || "Practice Again"
                   : (ts("word_sounds.play_again") || "Play Again"),
               ),
               !isProbeMode &&
@@ -20441,7 +20666,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "w-full py-2 text-white/80 hover:text-white transition-colors",
                 },
-                isParentMode ? "\u2705 All Done for Today" : (ts("common.close") || "Close"),
+                isParentMode ? "\u2705 " + (ts("word_sounds.all_done_today") || "All Done for Today") : (ts("common.close") || "Close"),
               ),
             ),
           ),
@@ -20521,7 +20746,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   type: "button",
-                  onClick: preparedAudioPlayback.status === "blocked" ? retryLastAudio : requestPreparedAudioRetry,
+                  onClick: preparedAudioPlayback.status === "blocked" ? retryBlockedPreparedAudio : requestPreparedAudioRetry,
                   disabled: preparedAudioPlayback.status !== "blocked" && preparedAudioRetryRequested,
                   "data-dialog-initial-focus": "true",
                   className: "min-h-11 rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2",
@@ -20542,6 +20767,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ts: ts,
           copyState: diCopyState,
           onCopy: handleCopyDiScript,
+          onPrint: handlePrintDiScript,
           dialogRef: diScriptDialogRef,
           onDialogKeyDown: (event) => handleDialogKeyDown(event, closeDiScript),
           onClose: closeDiScript,
@@ -20615,14 +20841,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               },
               onUseSaved: () => startReviewedActivity(true),
             })) : null,
-            countingRequested && reviewDictionaryState === 'loading' ? React.createElement('p', { role: 'status' }, 'Checking syllable counts…') : null,
+            countingRequested && reviewDictionaryState === 'loading' ? React.createElement('p', { role: 'status' }, ts("word_sounds.count_dictionary_loading") || 'Checking syllable counts…') : null,
             countingRequested && reviewDictionaryState === 'unavailable' ? React.createElement('button', { type: 'button', className: 'min-h-11 rounded-lg border px-3 py-2',
-              onClick: async () => { setReviewDictionaryState('loading'); const ready = await WS_CORE.loadSyllablePronunciations().catch(() => false); if (isMountedRef.current) setReviewDictionaryState(ready ? 'ready' : 'unavailable'); } }, 'Retry pronunciation dictionary') : null,
+              onClick: async () => { setReviewDictionaryState('loading'); const ready = await WS_CORE.loadSyllablePronunciations().catch(() => false); if (isMountedRef.current) setReviewDictionaryState(ready ? 'ready' : 'unavailable'); } }, ts("word_sounds.count_dictionary_retry") || 'Retry pronunciation dictionary') : null,
             unresolvedCounts.length ? React.createElement('section', { role: 'alert', className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900' },
-              React.createElement('p', null, 'Check these syllable counts against the current audio before starting:'),
+              React.createElement('p', null, ts("word_sounds.count_unresolved_heading") || 'Check these syllable counts against the current audio before starting:'),
               ...unresolvedCounts.map(({ word, index }) => React.createElement('button', { type: 'button', key: index,
                 className: 'min-h-11 rounded-lg border border-amber-400 px-3 py-2 m-1',
-                onClick: () => setSyllableReviewRequest({ index, nonce: Date.now() }) }, 'Review count: ' + word))) : null,
+                onClick: () => setSyllableReviewRequest({ index, nonce: Date.now() }) }, ts("word_sounds.count_review_word", { word }) || 'Review count: ' + word))) : null,
             isTeacherMode && runtimeAiAllowed ? React.createElement(WordSoundsPackMaintenance, {
             translate: ts,
             words: preloadedWords, voice: selectedVoice, language: wordSoundsLanguage, activities: activitySequence,
@@ -20639,8 +20865,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const countResolution = WS_CORE.resolveSyllableCount(target, { language: wordSoundsLanguage, prepared: item.activityItems?.syllable_counting,
               recordedTask: item.activityItems?.syllable_blending, audioContext: audio.context });
             const translateCount = (key, fallback, params = {}) => {
-              let value = ts(key.replace(/^word_sounds\./, ''));
-              if (!value || value === key || value === key.replace(/^word_sounds\./, '')) value = fallback;
+              // ts() resolves the full namespaced key; a bare key never matches.
+              const fullKey = key.startsWith('word_sounds.') ? key : 'word_sounds.' + key;
+              let value = ts(fullKey, params);
+              if (!value || value === fullKey) value = fallback;
               return Object.entries(params).reduce((text, [name, replacement]) => String(text).replaceAll('{' + name + '}', replacement), value);
             };
             const exclusionKey = WS_CORE.packAudioLanguageKey(wordSoundsLanguage) + ':' + target;
@@ -20659,7 +20887,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               (setWsPreloadedWords || setPreloadedWords)(update);
               setWordSoundsPhonemes(previous => update([previous || {}])[0]);
             };
-            return React.createElement(WordSoundsSyllableReviewDetails, { key: runtimeIdentityKey + ':' + reviewDraftKey, id: 'ws-syllables-' + index, reviewRequest: syllableReviewRequest?.index === index ? syllableReviewRequest : null, title: 'Review syllables for “' + target + '”', className: 'rounded-xl border border-violet-200 p-3' }, () => React.createElement(React.Fragment, null,
+            return React.createElement(WordSoundsSyllableReviewDetails, { key: runtimeIdentityKey + ':' + reviewDraftKey, id: 'ws-syllables-' + index, reviewRequest: syllableReviewRequest?.index === index ? syllableReviewRequest : null, title: ts("word_sounds.count_review_title", { word: target }) || 'Review syllables for “' + target + '”', className: 'rounded-xl border border-violet-200 p-3' }, () => React.createElement(React.Fragment, null,
               React.createElement(WordSoundsSyllableCountReview, {
                 key: 'count:' + runtimeIdentityKey + ':' + reviewDraftKey,
                 word: target, language: wordSoundsLanguage, resolution: countResolution, audioContext: audio.context, audioProfile: audio.profile,
@@ -20714,7 +20942,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 },
               }),
               exclusion && hasExcludedReview(item) ? React.createElement('div', { id: 'ws-recording-exclusion-' + index, className: 'my-3 rounded-lg border border-amber-300 bg-amber-50 p-3' },
-                React.createElement('p', { role: 'status' }, 'The old syllable recording is excluded from this lesson. The original recording is kept for undo.'),
+                React.createElement('p', { role: 'status' }, ts("word_sounds.count_recording_excluded") || 'The old syllable recording is excluded from this lesson. The original recording is kept for undo.'),
                 React.createElement('button', { type: 'button', className: 'min-h-11 border rounded-lg px-3 py-2 mt-2', onClick: () => {
                   const update = previous => (Array.isArray(previous) ? previous : []).map(current => {
                     if (!hasExcludedReview(current)) return current;
@@ -20729,7 +20957,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   setExcludedCountRecordings(previous => { const next = { ...previous }; delete next[exclusionKey]; return next; });
                   countRecordingFocusRef.current = '#ws-syllables-' + index + ' [data-syllable-count-listen]';
                   commitRecordingChange(update);
-                } }, 'Undo recording exclusion')) : null,
+                } }, ts("word_sounds.count_recording_exclusion_undo") || 'Undo recording exclusion')) : null,
               React.createElement(WordSoundsSyllableRecordingEditor, {
               translate: ts,
               key: 'recording:' + runtimeIdentityKey + ':' + reviewDraftKey, id: 'ws-recordings-' + index, word: target, language: wordSoundsLanguage, board: item.activityItems?.syllable_blending,
@@ -20819,7 +21047,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                   "span",
                   null,
-                  isLoadingPhonemes ? "Generating Sounds..." : "Word Sounds",
+                  isLoadingPhonemes ? ts("word_sounds.generating_sounds") || "Generating Sounds..." : ts("word_sounds.modal_title") || "Word Sounds",
                 ),
             ),
             /*#__PURE__*/ React.createElement(
@@ -20925,7 +21153,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           role: "dialog",
           "aria-modal": "true",
           "aria-labelledby": "word-sounds-dialog-title",
-          onKeyDown: (event) => handleDialogKeyDown(event, onClose),
+          // Same path as the X button: the unsaved-syllable guard and the
+          // session reset run before the modal closes.
+          onKeyDown: (event) => handleDialogKeyDown(event, closeSessionDialog),
         },
         /*#__PURE__*/ React.createElement(
           "div",
@@ -21121,9 +21351,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement(
                     "span",
                     null,
-                    wordSoundsActivity
+                    ALL_ACTIVITIES.find((a) => a.id === wordSoundsActivity)?.label || wordSoundsActivity
                       ?.replace("_", " ")
-                      .replace(/^./, (c) => c.toUpperCase()) || "Activity",
+                      .replace(/^./, (c) => c.toUpperCase()) || ts("word_sounds.activity_fallback") || "Activity",
                   ),
                 ),
                   /*#__PURE__*/ React.createElement(
@@ -21309,7 +21539,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
-                    "aria-label": t("common.confirm"),
+                    // Named like its tooltip (was "Confirm").
+                    "aria-label": isEditing
+                      ? ts("common.done") || "Done"
+                      : ts("common.edit") || "Edit",
                     onClick: () => setIsEditing((prev) => !prev),
                     className: `p-1.5 rounded-full transition-colors flex items-center justify-center ${isEditing ? "bg-amber-100 text-amber-800 ring-2 ring-amber-300" : "bg-white/10 text-white hover:bg-white/20"}`,
                     title: isEditing
@@ -21420,8 +21653,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     onClick: () => setPlayInstructions((prev) => !prev),
                     className: `flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${playInstructions ? "bg-indigo-100 border-indigo-200 text-indigo-700" : "bg-white/10 border-white/30 text-white/70"}`,
                     title: playInstructions
-                      ? "Instructions are ON"
-                      : "Instructions are OFF",
+                      ? ts("word_sounds.instructions_on_title") || "Instructions are ON"
+                      : ts("word_sounds.instructions_off_title") || "Instructions are OFF",
                   },
                   /*#__PURE__*/ React.createElement(
                     "span",
@@ -21590,7 +21823,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   React.createElement("div", { className: "text-sm font-bold text-emerald-800" },
                     ts("word_sounds.garden_lesson_ready") || "Word Garden phonics lesson ready!"),
                   React.createElement("div", { className: "text-xs text-emerald-600" },
-                    gardenPhonicsWords.length + " words from the student\u2019s vocabulary: " + gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : ""))),
+                    ts("word_sounds.garden_vocab_words", { count: gardenPhonicsWords.length, words: gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : "") }) || (gardenPhonicsWords.length + " words from the student\u2019s vocabulary: " + gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : "")))),
                 React.createElement("button", {
                   onClick: function () {
                     // Apply garden words as the preloaded word list
@@ -21683,8 +21916,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   onClick: () => setAacMode((prev) => !prev),
                   className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-700 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
                   title: aacMode
-                    ? "AAC Symbol Overlay ON — click to turn off"
-                    : "Turn on AAC Symbol Overlay (generates images for answer choices)",
+                    ? ts("word_sounds.aac_overlay_on_title") || "AAC Symbol Overlay ON — click to turn off"
+                    : ts("word_sounds.aac_overlay_off_title") || "Turn on AAC Symbol Overlay (generates images for answer choices)",
                 },
                 /*#__PURE__*/ React.createElement("span", null, "\uD83D\uDDBC\uFE0F"),
                 /*#__PURE__*/ React.createElement("span", null, ts("word_sounds.aac_abbrev") || "AAC"),
@@ -21709,8 +21942,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "span",
                 null,
-                ts("word_sounds.word_n_of_m", { n: wordSoundsScore.total + 1, m: wordSoundsSessionGoal }) ||
-                  ("Word " + (wordSoundsScore.total + 1) + " of " + wordSoundsSessionGoal),
+                ts("word_sounds.word_n_of_m", { n: wordSoundsScore.total + 1, m: probeItemGoal }) ||
+                  ("Word " + (wordSoundsScore.total + 1) + " of " + probeItemGoal),
               ),
             ),
               /*#__PURE__*/ React.createElement(
@@ -21782,7 +22015,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             /*#__PURE__*/ React.createElement(
               "div",
               {
-                key: wordSoundsActivity,
+                key: isFixedForm ? `${wordSoundsActivity}|${itemPresentation}` : wordSoundsActivity,
                 ref: activityRegionRef,
                 tabIndex: -1,
                 className:

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Спостереження місії",
+  "stem.flightsim.mission_journal_targets": "Відзняті цілі: {captured} із {total}.",
+  "stem.flightsim.mission_journal_complete": "Зафіксовано всі цілі місії та посадку після повернення.",
+  "stem.flightsim.mission_journal_ended": "Місія завершилася до фіксації всіх доказів виконання.",
+  "stem.flightsim.mission_journal_recovery": "Підняття вцілілого зафіксовано: {value}.",
+  "stem.flightsim.mission_journal_return": "Посадку після повернення на базу зафіксовано: {value}.",
+  "stem.flightsim.mission_guidance_title": "Вказівки місії",
+  "stem.flightsim.mission_route": "{target} · пеленг {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Точка зльоту",
+  "stem.flightsim.mission_read_status": "Прочитати стан місії",
+  "stem.flightsim.mission_return_criterion": "Приземліться в межах {distance} nm від {target}, зі шляховою швидкістю нижче {speed} kt та швидкістю зниження нижче {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Дані цілі місії недоступні. Завершіть цей політ і почніть нову місію.",
+  "stem.flightsim.mission_capture_criterion": "Залишайтеся в радіусі {distance} ft, вище {min} і нижче {max} ft над землею, зі шляховою швидкістю нижче {speed} kt протягом {hold} s."
+}

@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const ANTI = read('AlloFlowANTI.txt');
@@ -29,7 +30,13 @@ describe('presence heartbeat — write path is gated and validated', () => {
     expect(MAILBOX).toMatch(/value === null \|\| \(typeof value === 'number' && isFinite\(value\) && value >= 0\)/);
   });
   it('participantCanPatchSession allows the field on the per-uid roster root', () => {
-    expect(MAILBOX).toMatch(/wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, lastSeen: 1/);
+    // Behavioral: run the real mailbox (the rosterFields allow-list grows, e.g. imageDelivery).
+    const context = {};
+    vm.runInNewContext(MAILBOX, context);
+    const data = { roster: { u: { uid: 'u' }, other: { uid: 'other' } } };
+    expect(context.participantCanPatchSession({ 'roster.u.lastSeen': 1752700000000 }, 'u', data)).toBe(true);
+    expect(context.participantCanPatchSession({ 'roster.other.lastSeen': 1752700000000 }, 'u', data)).toBe(false);
+    expect(context.participantCanPatchSession({ 'roster.u.lastSeenX': 1 }, 'u', data)).toBe(false);
   });
 });
 

@@ -49,8 +49,8 @@ function manipulationView(body = embeddedSource) {
 function preloadEffect(task, target = 'migrate', language = 'en') {
   const state = {}, lastWordForManipulation = {current: null};
   const body = between('      // Trigger generation whenever the word changes while in manipulation mode.', '      React.useEffect(() => {\n        console.log(');
-  new Function('React', 'WS_CORE', 'wordSoundsActivity', 'currentWordSoundsWord', 'wordSoundsPhonemes', 'wordSoundsLanguage', 'lastWordForManipulation', 'manipulationOptions', 'setManipulationState', 'manipulationStateRef', 'setManipulationOptions', 'manipulationOptionsRef', 'fisherYatesShuffle', 'padManipOpts', 'generateManipulationData', body)(
-    {useEffect: fn => fn()}, core, 'manipulation', target, {word: target, manipulationTask: task, activityItems: {manipulation: {task, options: ['vibrate', 'late']}}}, language, lastWordForManipulation, [], value => {state.task = value;}, {current: null}, value => {state.options = value;}, {current: []}, values => values, values => values, vi.fn());
+  new Function('React', 'WS_CORE', 'wordSoundsActivity', 'currentWordSoundsWord', 'wordSoundsPhonemes', 'wordSoundsLanguage', 'lastWordForManipulation', 'manipulationOptions', 'setManipulationState', 'manipulationStateRef', 'setManipulationOptions', 'manipulationOptionsRef', 'fisherYatesShuffle', 'padManipOpts', 'generateManipulationData', 'itemPresentation', body)(
+    {useEffect: fn => fn()}, core, 'manipulation', target, {word: target, manipulationTask: task, activityItems: {manipulation: {task, options: ['vibrate', 'late']}}}, language, lastWordForManipulation, [], value => {state.task = value;}, {current: null}, value => {state.options = value;}, {current: []}, values => values, values => values, vi.fn(), 0);
   return state;
 }
 
@@ -173,10 +173,15 @@ describe('Actual play and teacher-review render paths', () => {
   it('does not prewarm an unsupported instruction or answer from the real task collection block', () => {
     const item = compileWords([word('migrate', {manipulationTask: invalid, sentence: '', story: []})])[0];
     const setup = readFileSync('word_sounds_setup_source.jsx', 'utf8');
-    const body = between('                 const tasks = new Set([word]);', '                 if (boards.read_sentence?.sentence)', setup);
+    // 2adff44c5 made the target conditional: a teacher-spoken count word gets no clip.
+    const body = between('                 const tasks = new Set(', '                 if (boards.read_sentence?.sentence)', setup);
+    const collect = (boards, teacherSpoken, added) => new Function('word', 'boards', 'WS_CORE', 'addInstructionParts', 'teacherSpoken', body + '\nreturn [...tasks];')('migrate', boards, core, (_tasks, text) => added.push(text), teacherSpoken);
     const added = [];
-    const tasks = new Function('word', 'boards', 'WS_CORE', 'addInstructionParts', body + '\nreturn [...tasks];')('migrate', item.activityItems, core, (_tasks, text) => added.push(text));
-    expect(tasks).not.toContain('vibrate'); expect(added).toEqual([]);
+    const tasks = collect(item.activityItems, false, added);
+    expect(tasks).toContain('migrate'); expect(tasks).not.toContain('vibrate'); expect(added).toEqual([]);
+    // Teacher-spoken applies to count-only packs, which carry no other boards.
+    expect(collect({}, false, [])).toEqual(['migrate']);
+    expect(collect({}, true, [])).toEqual([]);
   });
   it('central grading also guards microphone/direct responses before recording or scoring', () => {
     const body = between('      const checkAnswer = React.useCallback(', '          if (submissionLockRef.current) return;');

@@ -132,3 +132,22 @@ node dev-tools/water_worlds_qa.cjs --serve
 ```
 
 This serves the isolated water-cycle preview at `http://127.0.0.1:8768/`. It does not publish changes to a remote site.
+
+
+## Between storms: dry-weather recovery
+
+Choose **What happens between storms?** for a guided investigation, or open **Between storms** beneath The next storm. After completing a storm, pin its result, select 6, 24, or 72 model hours, then select **Advance dry weather**.
+
+The existing 15-second solver advances with zero rain. Surface water continues moving and infiltrating, wet soil continues draining, delayed water feeds streams, and water returns to air. This is elapsed model time, not an animation-speed adjustment. The water ledger records surface, soil, delayed, and total storage before and after, plus stream outflow and loss to air. Its residual verifies:
+
+Before storage − stream outflow − loss to air = after storage.
+
+Advancing dry weather clears the current completed storm result and land-edit undo history, preserves the pinned baseline and field observations, and leaves ground cover in place. Pin a storm before advancing if you want to retain it. Each additional dry interval begins from the live remaining water; the latest interval is retained. An unfinished storm, including a paused storm, must be completed first. Recorded-time inspection must return to the final state before advancing.
+
+**Start another storm** uses the remaining water and records the applicable dry interval as its antecedent. Baseline replay restores the baseline's original starting conditions and antecedent, rather than attaching an unrelated dry interval. Resetting valley water clears the current interval. Saved notebooks recompute receipt readings from the bounded duration and captured starting world, rejecting evidence that does not match its endpoint. Both investigation downloads include the dry interval, even when no storm result remains.
+
+Compare before/after stores to account for one dry interval. Comparing the original storm with a later storm is a sequence: its starting water differs. It does not isolate the effect of interval length. The guided pathway requires matching recorded rainfall and cover before using that sequence as evidence about antecedent water.
+
+This expansion preserves the existing model equations: mild constant surface evaporative demand and cover-dependent soil loss, without seasonal temperature, changing weather, or atmospheric feedback. Soil depth remains water spread over equal-area cells, not water-table elevation. The qualitative role of earlier rainfall and soil moisture is described by the [USGS runoff overview](https://www.usgs.gov/water-science-school/science/runoff-surface-and-overland-water-runoff?qt-science_center_objects=0); the model's coefficients and recovery times are illustrative.
+
+Focused validation: node node_modules/vitest/vitest.mjs run tests/water_worlds_recovery.test.js tests/watercycle_storm_sweep.test.js --maxWorkers=1 --pool=threads. Browser workflow and scoped accessibility checks: node dev-tools/watercycle_simulation_expansion_qa.cjs. Screenshots and exported evidence are written beneath reports/watercycle-simulation-expansion.

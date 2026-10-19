@@ -107,6 +107,16 @@
   /* ============ Grade-Band Helper ============ */
   function getGradeBand(ctx) {
     var g = ctx.gradeLevel || 5;
+    // The live ctx sends a STRING ('5th Grade'); numeric compares on it are all
+    // false, which put every student in g912. Same rule as graphCalc.
+    if (typeof g !== 'number') {
+      var gl = String(g).toLowerCase();
+      if (/k|1st|2nd|pre/.test(gl)) return 'k2';
+      if (/3rd|4th|5th/.test(gl)) return 'g35';
+      if (/6th|7th|8th/.test(gl)) return 'g68';
+      if (/9th|10|11|12|high/.test(gl)) return 'g912';
+      return 'g35';
+    }
     if (g <= 2) return 'k2';
     if (g <= 5) return 'g35';
     if (g <= 8) return 'g68';
@@ -144,7 +154,9 @@
           var id = '';
           while (i < s.length && ((s[i] >= 'a' && s[i] <= 'z') || (s[i] >= 'A' && s[i] <= 'Z'))) { id += s[i]; i++; }
           var low = id.toLowerCase();
-          if (FUNCS[low]) toks.push({ t: 'func', v: low }); else toks.push({ t: 'var', v: low });
+          // Only sqrt/abs and one-letter variables are understood. Any other word
+          // (sin, pi, "apples") used to evaluate AS x, so sin(x) graded equal to x^2.
+          if (FUNCS[low]) toks.push({ t: 'func', v: low }); else if (low.length === 1) toks.push({ t: 'var', v: low }); else return null;
         } else if ('+-*/^()'.indexOf(c) >= 0) { toks.push({ t: 'op', v: c }); i++; }
         else return null;
       }
@@ -183,27 +195,34 @@
       if (pos !== toks.length) throw 0;
       return result;
     }
+    function _varNames(toks) { var seen = []; for (var k = 0; k < toks.length; k++) if (toks[k].t === 'var' && seen.indexOf(toks[k].v) < 0) seen.push(toks[k].v); return seen.sort(); }
     function evalAt(exprStr, xval) {
-      try { var toks = tokenize(normalize(exprStr)); if (!toks || !toks.length) return NaN; var v = evalTokens(toks, xval); return (typeof v === 'number' && isFinite(v)) ? v : NaN; } catch (e) { return NaN; }
+      // One unknown only: y = 2x + 1 with y read as x is a different equation.
+      try { var toks = tokenize(normalize(exprStr)); if (!toks || !toks.length || _varNames(toks).length > 1) return NaN; var v = evalTokens(toks, xval); return (typeof v === 'number' && isFinite(v)) ? v : NaN; } catch (e) { return NaN; }
     }
     function parseEquation(str) { var s = normalize(str); var parts = s.split('='); if (parts.length === 1) return { lhs: parts[0], rhs: '0' }; if (parts.length === 2) return { lhs: parts[0], rhs: parts[1] }; return null; }
     function _constValue(p) { var a = evalAt(p, 0), b = evalAt(p, 1.7); if (isNaN(a)) return NaN; if (Math.abs(a - b) < 1e-9) return a; return NaN; }
-    function extractRoots(answerStr) {
+    // Each listed value with the letter it was assigned to ('y' in "y = 3"), or null.
+    function _namedRoots(answerStr) {
       if (answerStr == null) return [];
       var parts = String(answerStr).split(/,|;|\bor\b|\band\b/i), roots = [];
       for (var i = 0; i < parts.length; i++) {
+        var named = /([a-zA-Z])\s*=\s*/.exec(parts[i]);
         var p = parts[i].replace(/[a-zA-Z]\s*=\s*/, '').replace(/[{}\[\]]/g, '').trim();
         if (!p) continue;
         var v = _constValue(p);
-        if (!isNaN(v)) roots.push(v);
+        if (!isNaN(v)) roots.push({ name: named ? named[1].toLowerCase() : null, value: v });
       }
       return roots;
     }
+    function extractRoots(answerStr) { return _namedRoots(answerStr).map(function (r) { return r.value; }); }
     function _sameMultiset(a, b) { if (a.length !== b.length) return false; var x = a.slice().sort(function (p, q) { return p - q; }), y = b.slice().sort(function (p, q) { return p - q; }); for (var i = 0; i < x.length; i++) if (Math.abs(x[i] - y[i]) > 1e-6 * Math.max(1, Math.abs(x[i]))) return false; return true; }
     function _fmt(n) { var r = Math.round(n * 1e6) / 1e6; return String(r); }
     function verifySolution(exprOrEq, answerStr) {
       var eq = parseEquation(exprOrEq), roots = extractRoots(answerStr);
       if (!eq || !roots.length) return { decidable: false, verified: null, roots: [], residuals: [], detail: 'Not auto-verifiable' };
+      var lT = tokenize(eq.lhs), rT = tokenize(eq.rhs);
+      if (lT && rT && _varNames(lT.concat(rT)).length > 1) return { decidable: false, verified: null, roots: roots, residuals: [], detail: 'Not auto-verifiable' };
       var residuals = [], allOk = true, details = [];
       for (var i = 0; i < roots.length; i++) {
         var L = evalAt(eq.lhs, roots[i]), R = evalAt(eq.rhs, roots[i]);
@@ -216,10 +235,25 @@
       return { decidable: true, verified: allOk, roots: roots, residuals: residuals, detail: details.join('; ') };
     }
     function gradeAnswer(studentStr, correctStr) {
-      var rS = extractRoots(studentStr), rC = extractRoots(correctStr);
+      var nS = _namedRoots(studentStr), nC = _namedRoots(correctStr);
+      var rS = nS.map(function (r) { return r.value; }), rC = nC.map(function (r) { return r.value; });
+      var names = []; nC.forEach(function (r) { if (r.name && names.indexOf(r.name) < 0) names.push(r.name); });
+      if (rS.length && rC.length && names.length > 1) {
+        // A system (x = 2, y = 3): compare per variable. Pooling the values let the
+        // swapped answer x = 3, y = 2 grade correct.
+        if (nS.concat(nC).some(function (r) { return !r.name; })) return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
+        names.sort();
+        var sNames = []; nS.forEach(function (r) { if (sNames.indexOf(r.name) < 0) sNames.push(r.name); });
+        var pick = function (list, name) { return list.filter(function (r) { return r.name === name; }).map(function (r) { return r.value; }); };
+        var okSys = sNames.sort().join() === names.join() && names.every(function (n) { return _sameMultiset(pick(nS, n), pick(nC, n)); });
+        return { decidable: true, correct: okSys, method: 'roots', detail: okSys ? 'Both give ' + names.map(function (n) { return n + ' = ' + pick(nC, n).map(_fmt).join(', '); }).join('; ') : 'Values differ for at least one variable' };
+      }
       if (rS.length && rC.length) { var ok = _sameMultiset(rS, rC); return { decidable: true, correct: ok, method: 'roots', detail: ok ? 'Both give x = ' + rC.map(_fmt).join(', ') : 'Roots differ' }; }
       var sN = normalize(studentStr), cN = normalize(correctStr);
       if (!sN || !cN) return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
+      // Different letters (y^2 against x^2) are not the same expression; leave it to the reviewer.
+      var sT = tokenize(sN), cT = tokenize(cN), sV = sT ? _varNames(sT) : [], cV = cT ? _varNames(cT) : [];
+      if (sV.length && cV.length && sV.join() !== cV.join()) return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
       var samples = [-3, -2, -1, 0.5, 2, 3, 5], valid = 0, allEq = true;
       for (var i = 0; i < samples.length; i++) {
         var a = evalAt(sN, samples[i]), b = evalAt(cN, samples[i]);
@@ -559,7 +593,9 @@ onSpeak: function(formats) {
         var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'solve';
         // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
         var expression = typeof d.expression === 'string' ? d.expression : '';
-        var mode = (d.mode === 'solve' || d.mode === 'factor') ? d.mode : 'solve';
+        // All four MODES ids: allow-listing only two made Simplify/Expand dead buttons
+        // and the all_modes quest unreachable.
+        var mode = (d.mode === 'solve' || d.mode === 'factor' || d.mode === 'simplify' || d.mode === 'expand') ? d.mode : 'solve';
         var result = d.result || null;
         var verify = d.verify || null;
         var isLoading = d.isLoading || false;
@@ -654,12 +690,15 @@ onSpeak: function(formats) {
         /* ============ HANDLERS ============ */
         var handleSolve = function() {
           if (!expression.trim() || isLoading) return;
+          // A result on screen means this exact expression and mode were already
+          // solved (edits and mode changes clear it): re-clicking must not re-count.
+          var repeat = !!result;
           var local = mode === 'solve' ? __alloCASPure.solveLinear(expression) : { ok: false };
           if (local.ok) {
-            var localHistory = history.slice(-9).concat([{ expr: expression, mode: mode, result: local.text, verify: local.verify, ts: Date.now() }]);
-            var localModes=Object.assign({},d._modesUsed||{},{solve:true}),localCount=(d._solveCount||0)+1;
+            var localHistory = repeat ? history : history.slice(-9).concat([{ expr: expression, mode: mode, result: local.text, verify: local.verify, ts: Date.now() }]);
+            var localModes=Object.assign({},d._modesUsed||{},{solve:true}),localCount=(d._solveCount||0)+(repeat?0:1);
             updMulti({ result: local.text, verify: local.verify, history: localHistory, isLoading: false, _solveCount:localCount, _modesUsed:localModes });
-            if(awardStemXP)awardStemXP('algebraCAS',5,'Exact local solve');
+            if(awardStemXP&&!repeat)awardStemXP('algebraCAS',5,'Exact local solve');
             checkBadges(Object.assign({},d,{_solveCount:localCount,_modesUsed:localModes,history:localHistory}));
             return;
           }
@@ -677,13 +716,13 @@ onSpeak: function(formats) {
             if (res) {
               var _aM = res.match(/ANSWER:\s*(.+)/i);
               var _chk = (_aM && _aM[1].trim()) ? __alloCASPure.verifySolution(expression, _aM[1].trim()) : { decidable: false };
-              var newH = history.slice(-9);
-              newH.push({ expr: expression, mode: mode, result: res, verify: _chk, ts: Date.now() });
-              var sc = (d._solveCount || 0) + 1;
-              var fc = (d._factorCount || 0) + (mode === 'factor' ? 1 : 0);
+              var newH = repeat ? history : history.slice(-9);
+              if (!repeat) newH.push({ expr: expression, mode: mode, result: res, verify: _chk, ts: Date.now() });
+              var sc = (d._solveCount || 0) + (repeat ? 0 : 1);
+              var fc = (d._factorCount || 0) + (mode === 'factor' && !repeat ? 1 : 0);
               var mu = Object.assign({}, d._modesUsed || {}); mu[mode] = true;
               updMulti({ isLoading: false, result: res, verify: _chk, history: newH, _solveCount: sc, _factorCount: fc, _modesUsed: mu });
-              if (awardStemXP) awardStemXP('algebraCAS', 5, 'CAS solve');
+              if (awardStemXP && !repeat) awardStemXP('algebraCAS', 5, 'CAS solve');
               checkBadges(Object.assign({}, d, { _solveCount: sc, _factorCount: fc, _modesUsed: mu, history: newH }));
             } else { upd('isLoading', false); }
           }).catch(function(e) {
@@ -884,7 +923,7 @@ onSpeak: function(formats) {
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' } },
               h('span', { style: { fontSize: '10px', fontWeight: '700', color: MUTED } }, 'TRY:'),
               (EXAMPLES[mode] || []).map(function(ex, i) {
-                return h('button', { 'aria-label': t('stem.algebraCAS.step_by_step_solution', 'Step-by-Step Solution'), key: i, onClick: function() { updMulti({ expression: ex, result: null, verify: null, stepCheck: null }); },
+                return h('button', { key: i, onClick: function() { updMulti({ expression: ex, result: null, verify: null, stepCheck: null }); },
                   style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: ACCENT, cursor: 'pointer' } }, ex);
               })
             ),

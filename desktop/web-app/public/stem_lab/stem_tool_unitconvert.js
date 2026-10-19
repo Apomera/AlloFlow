@@ -297,10 +297,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       explanation: buildVerifiedConversionExplanation(amount, safeFrom, safeTo, safeCategory, answer)
     };
   }
-  function diagnosePracticeAnswer(answer, expected, unit) {
+  function diagnosePracticeAnswer(answer, expected, unit, inputValue) {
     if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
-    var inverse = expected === 0 ? NaN : 1 / expected;
-    if (Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+    // A flipped ratio gives v / (expected / v) = v * v / expected; it only equals 1 / expected when v = 1.
+    var startValue = Number.isFinite(inputValue) ? inputValue : 1;
+    var isTemperature = unit === '°F' || unit === '°C' || unit === 'K';
+    var inverse = expected === 0 || isTemperature ? NaN : startValue * startValue / expected;
+    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
       return 'The conversion ratio may be reversed. Flip it so the starting unit cancels.';
     }
     var slip = null;
@@ -327,7 +330,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   function diagnoseNumericAnswer(answer, expected, unit, tolerance) {
     if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
     var inverse = expected === 0 ? NaN : 1 / expected;
-    if (Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
       return 'The ratio is reversed. Flip the conversion factor so the starting unit cancels. The answer is ' + expected + ' ' + unit + '.';
     }
     var slip = null;
@@ -648,7 +651,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return;
           }
           upd({ showTutor: true, tutorLoading: true, tutorResponse: '' });
-          var catLabel = cat.label.replace(/[^\w\s]/g, '').trim();
+          var catLabel = d.category;
           var prompt = 'You are a friendly math tutor helping a student learn unit conversions. ';
           prompt += 'They are converting ' + catLabel + ' units: ' + d.value + ' ' + d.fromUnit + ' to ' + d.toUnit + ' (= ' + fmtResult + '). ';
           if (d.quiz && d.quiz.answered && !d.quiz.correct) {
@@ -691,7 +694,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             fromUnit: d.fromUnit,
             toUnit: d.toUnit,
             unitList: Object.keys(cat.units),
-            categoryLabel: cat.label.replace(/[^A-Za-z0-9 ]/g, '').trim()
+            categoryLabel: d.category
           };
           upd({
             loadingWP: true,
@@ -754,7 +757,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         }
         function gradeWordProblemAttempt() {
           if (!wordProblem || d.wordProblemSolved) return;
-          var tolerance = Math.max(0.01, Math.abs(wordProblem.answer) * 0.005);
+          var tolerance = Math.max(Math.abs(wordProblem.answer) * 0.005, 1e-12);
           var evaluation = evaluateNumericAnswer(d.wordProblemAttempt, wordProblem.answer, tolerance);
           if (!evaluation.valid) {
             upd('wordProblemFeedback', t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.'));
@@ -768,7 +771,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (typeof announceToSR === 'function') announceToSR(success);
             return;
           }
-          var feedback = diagnosePracticeAnswer(evaluation.answer, wordProblem.answer, wordProblem.unit);
+          var feedback = diagnosePracticeAnswer(evaluation.answer, wordProblem.answer, wordProblem.unit, Number(wordProblem.inputValue));
           upd('wordProblemFeedback', feedback);
           if (typeof announceToSR === 'function') announceToSR(feedback);
         }
@@ -1257,7 +1260,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
                     var newSaveCount = historySaveCount + 1;
                     setLabToolData(function(prev) {
-                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat((prev.unitConvert.history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
+                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat(((prev.unitConvert || {}).history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
                     });
                     stemBeep && stemBeep(784, 0.15);
                     addToast('\u2705 Saved to history', 'success');
@@ -1538,11 +1541,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
                     h('div', { className: 'flex gap-2' },
                       h('button', { 'aria-label': t('stem.unitconvert.next_question', 'Next Question'),
-                        onClick: function() {
-                          var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-                          upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                          stemBeep && stemBeep(600, 0.06);
-                        },
+                        onClick: startQuizQuestion,
                         className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all active:scale-[0.97]'
                       }, t('stem.unitconvert.next_question_2', '\uD83D\uDD04 Next Question')),
                       !d.quiz.correct && h('button', { 'aria-label': t('stem.unitconvert.explain', 'Explain'),
@@ -1904,7 +1903,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       c2.font = 'bold 9px sans-serif';
                       c2.fillText(p.name, x + cellW / 2, y + 38);
                       c2.font = 'bold 10px monospace';
-                      c2.fillText('10' + (p.exp >= 0 ? '+' : '') + p.exp, x + cellW / 2, y + 54);
+                      c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 54);
                     });
                     // Selected info
                     var cur = prefixes[blink];

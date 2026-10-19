@@ -23,8 +23,10 @@ beforeAll(() => {
   // Run the pure production compiler in Node's own realm: jsdom's Uint8Array
   // differs from TextEncoder's realm, which otherwise violates esbuild's guard.
   const compiled = execFileSync(process.execPath, ['-e', "const fs=require('fs');const build=require('./_build_view_sidebar_panels_module.js').buildSidebarPanelsModule;process.stdout.write(build(fs.readFileSync(process.argv[1],'utf8')));", sourcePath], { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
-  vm.runInNewContext(compiled, { window, console });
-  vm.runInNewContext(fs.readFileSync('view_misc_panels_module.js', 'utf8'), { window, console });
+  // The modules run in the page realm in the app, so they also see `document` (the research
+  // settings dialog manages focus and scroll lock through it).
+  vm.runInNewContext(compiled, { window, console, document });
+  vm.runInNewContext(fs.readFileSync('view_misc_panels_module.js', 'utf8'), { window, console, document });
   Outer = window.AlloModules.SidebarPanels.SourceInputShellView;
   const Middle = window.AlloModules.SourceInputPanel;
   const Leaf = window.AlloModules.SourceGenPanel;
@@ -73,9 +75,10 @@ it('forwards current research settings and stage through the outer input section
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
   const render = next => flushSync(() => root.render(React.createElement(Outer, next)));
   render(props);
-  await until(() => host.textContent.includes('input.my_sources_included:1'));
-  expect(host.querySelector('#documentsOnly').checked).toBe(true);
-  expect(host.textContent).toContain('input.my_sources_included:1');
+  // 79e3e5eae (2026-10-10) moved the document list and exact-quote option into a Research
+  // settings dialog; the panel itself shows a one-line summary of the forwarded selection.
+  const summary = () => host.querySelector('[data-research-summary]')?.textContent || '';
+  await until(() => summary().includes('My sources · 1 Documents'));
   const button = () => host.querySelector('[data-help-key="source_generate_button"]');
   expect(button().textContent).toBe(props.generationStep);
   expect(button().querySelector('[role="status"]').getAttribute('aria-live')).toBe('polite');
@@ -84,18 +87,23 @@ it('forwards current research settings and stage through the outer input section
       expect(boundary[key], key).toBe(props[key]);
     }
   }
-  const updated = { ...props, selectedOwnSourceIds: ['b'], documentsOnly: false, generationStep: 'Checking web evidence' };
+  const updated = { ...props, selectedOwnSourceIds: ['a', 'b'], documentsOnly: false, generationStep: 'Checking web evidence' };
   render(updated);
-  expect(host.querySelector('#documentsOnly').checked).toBe(false);
+  await until(() => summary().includes('My sources · 2 Documents'));
   expect(button().textContent).toBe(updated.generationStep);
   expect(leafCalls.at(-1).selectedOwnSourceIds).toBe(updated.selectedOwnSourceIds);
-  // Exercise setter callbacks through both real intermediate components.
-  render({ ...updated, isGeneratingSource: false });
-  flushSync(() => host.querySelector('#documentsOnly').click());
-  expect(props.setDocumentsOnly).toHaveBeenLastCalledWith(true);
-  expect(props.setIncludeSourceCitations).toHaveBeenLastCalledWith(false);
-  const waterRow = [...host.querySelectorAll('li')].find(row => row.textContent.includes('Water notes'));
+  // Exercise setter callbacks through both real intermediate components (settings dialog).
+  render({ ...updated, selectedOwnSourceIds: ['b'], isGeneratingSource: false });
+  flushSync(() => host.querySelector('button[aria-label="Research settings"]').click());
+  const exactQuotes = document.querySelector('#documentsOnly');
+  expect(exactQuotes.checked, 'exact quotes seeded from the mounted documentsOnly').toBe(true);
+  flushSync(() => exactQuotes.click());
+  const waterRow = [...document.querySelectorAll('li')].find(row => row.textContent.includes('Water notes'));
   flushSync(() => waterRow.querySelector('button').click());
   expect(props.setSelectedOwnSourceIds).toHaveBeenLastCalledWith([]);
   expect(window.AlloOwnSources.setSourceActive).not.toHaveBeenCalled();
+  flushSync(() => [...document.querySelectorAll('button')].find(b => b.textContent === 'Apply settings').click());
+  expect(props.setDocumentsOnly).toHaveBeenLastCalledWith(false);
+  expect(props.setUseOwnSources).toHaveBeenLastCalledWith(true);
+  expect(props.setIncludeSourceCitations).toHaveBeenLastCalledWith(false);
 });

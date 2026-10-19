@@ -126,13 +126,13 @@ function ImageView(props) {
         altHash: choice.alt ? A.hashImage(imageUrl) : '', imageAttribution: choice.attribution || null, imageCreditBand: baked.bandHeight,
       }) : item) !== false;
       if (!applied) {
-        if (typeof addToast === 'function') addToast(t('visuals.picture_changed_meanwhile') || 'The picture changed while this one was being checked, so it was not replaced. Try again.', 'error');
+        if (typeof addToast === 'function') addToast(t('visuals.picture_changed_meanwhile'), 'error');
         return;
       }
       closeFind();
-      if (typeof addToast === 'function') addToast(t('visuals.picture_added') || 'Picture updated. Its credit is shown under it and saved in the image.', 'success');
+      if (typeof addToast === 'function') addToast(t('visuals.picture_added'), 'success');
     } catch (_) {
-      if (typeof addToast === 'function') addToast(t('visuals.picture_add_failed') || 'The picture could not be added. Try another one.', 'error');
+      if (typeof addToast === 'function') addToast(t('visuals.picture_add_failed'), 'error');
     } finally {
       setFindBusy(false);
     }

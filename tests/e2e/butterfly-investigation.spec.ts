@@ -91,7 +91,7 @@ test('a learner can cite records, keep an explanation after reopening, and copy 
   await notebook.screenshot({path: shots + '/notebook-desktop.png'});
 
   const saved = await page.evaluate(() => (window as any).__toolData.butterfly);
-  expect(saved.version).toBe(5);
+  expect(saved.version).toBe(6);
   expect(saved.notebook).toEqual({claim: 'needs-both', interpretation: 'supports', evidence: ['brood:milkweed', 'brood:bergamot'], reasoning: explanation, question: nextQuestion});
   await mount(page, saved);
   await expect(notebook.locator('#bf-notebook-reasoning')).toHaveValue(explanation);
@@ -143,7 +143,7 @@ test('mobile notebooks flag replaced-planting citations and retain writing acros
   await design.getByRole('button', {name: 'Apply habitat plan', exact: true}).click();
   await expect(notebook.locator('[data-bf-notebook-ready]')).toHaveAttribute('data-bf-notebook-ready', 'false');
   await expect(guide.locator('[data-bf-step="notebook"]')).toHaveAttribute('aria-current', 'step');
-  await expect(notebook.locator('.bf-notebook-review')).toContainText('1 cited record(s) no longer describe the current planting');
+  await expect(notebook.locator('.bf-notebook-review')).toContainText('1 cited record no longer describes the current planting');
   await notebook.screenshot({path: shots + '/notebook-mobile-replanted.png'});
   await notebook.getByRole('button', {name: 'Remove unavailable citations', exact: true}).click();
   await expect(notebook.locator('.bf-notebook-review')).toHaveCount(0);

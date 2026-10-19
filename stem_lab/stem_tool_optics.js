@@ -12391,7 +12391,7 @@
           && (parsed.improved_version == null || typeof parsed.improved_version === 'string');
         if (!valid) {
           upd({ aiLoadingTab: null, aiResponseTab: tab, aiResponse: { error: 'No grade recorded: the AI reply could not be read. Try again.' } });
-          if (addToast) addToast('The AI reply could not be read; nothing was graded.', 'info');
+          if (addToast) addToast(__alloT('stem.optics.toast_the_ai_reply_could_not_be_read', 'The AI reply could not be read; nothing was graded.'), 'info');
           return;
         }
         var gradedDrafts = Object.assign({}, d.aiGradedDrafts || {});
@@ -12982,7 +12982,7 @@
           onClick: function() {
             var ans = _opArray(d.quizAnswers);
             if (ans.filter(function(a) { return a != null; }).length < d.quizQuestions.length) {
-              if (addToast) addToast('Answer all ' + d.quizQuestions.length + ' questions before submitting.', 'info');
+              if (addToast) addToast(__alloT('stem.optics.toast_answer_all_questions', 'Answer all {count} questions before submitting.').replace('{count}', d.quizQuestions.length), 'info');
               return;
             }
             // Concept Mastery, keyed by question text (stable across reshuffles).

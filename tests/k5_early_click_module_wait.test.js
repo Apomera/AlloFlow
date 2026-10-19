@@ -132,6 +132,12 @@ async function openPage({ hold = [], fail = [] } = {}) {
       const __alloHostDeps = {};
       ${hostAwait}
       const _alloRunGenerate = async (...args) => window.AlloModules.GenDispatcher.handleGenerate(...args);
+      // Since f3c6402f3 the generate slice records its source scope and drops a stale interactive run;
+      // host state it reads is held fixed here, so the scope always matches.
+      const generationSourceChoiceContextRef = { current: null };
+      const history = [], inputText = '', activeUnitId = null, activeView = 'input', isTeacherMode = true, isProcessing = false;
+      const handleGenerateLessonPlan = () => {}, _alloAdventureHandlersDeps = () => ({});
+      const useEffect = () => {}, setPromptDialog = () => {};
       ${generate}
       const _alloPhaseOHandlersDeps = () => ({});
       ${wizard}
@@ -284,7 +290,13 @@ describe('async module stubs wait instead of throwing (source gate)', () => {
       if (!body.includes('const _m = window.AlloModules && window.AlloModules.' + s.mod + ';')) continue;
       const params = lines[s.decl].match(/async \((.*)\) => \{\s*$/)[1].split(',').map(p => p.trim().replace(/\s*=[\s\S]*$/, '')).filter(Boolean);
       const want = `if (!_m) return _alloAwaitModules([['${s.mod}Module', '${s.mod}']], 'this tool').then(() => ${s.name}(${params.join(', ')}));`;
-      if (lines[s.line - 1].trim() !== want) missing.push(s.name + ' @' + (s.line + 1));
+      // Equivalent shape (handleGenerateLessonPlan since f3c6402f3): await the stub's own module up
+      // front, before _m is read, so the throw is reached only if the module never loaded.
+      const firstAwait = body.match(/^\s*await _alloAwaitModules\(\[(.*)\], '[^']*'\);$/m);
+      const awaitsOwnModuleFirst = Boolean(firstAwait)
+        && firstAwait[1].includes(`['${s.mod}Module', '${s.mod}']`)
+        && body.indexOf(firstAwait[0]) < body.indexOf('const _m = window.AlloModules && window.AlloModules.' + s.mod + ';');
+      if (lines[s.line - 1].trim() !== want && !awaitsOwnModuleFirst) missing.push(s.name + ' @' + (s.line + 1));
     }
     expect(missing).toEqual([]);
   });

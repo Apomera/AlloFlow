@@ -24,7 +24,16 @@ test.describe('Raptor frozen 3D study', () => {
   });
   async function mount(page: any, species = 'redTail', mission = 'open') {
     await harness.mount(page, { raptorHunt: { activeSection: 'hunt', activeMission: mission, selectedSpecies: species,
-      flightSession: { speciesId: species, missionId: mission }, huntTutorialDismissed: true, graphicsQuality: 'low' } }, "document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
+      flightSession: { speciesId: species, missionId: mission }, huntTutorialDismissed: true, graphicsQuality: 'low' } }, undefined, { expectCanvas: false });
+    // This suite owns requestAnimationFrame; readiness must use a timer so a
+    // canvas mounted after the first probe can still be observed while frozen.
+    await page.waitForFunction(() => {
+      const canvas = document.querySelector('[data-raptor-canvas]') as any;
+      const bounds = canvas?.getBoundingClientRect();
+      const context = (window as any).__glCanvas();
+      return !!canvas?._rhSnapshot && bounds.width > 0 && bounds.height > 0
+        && getComputedStyle(canvas).visibility !== 'hidden' && !!context && !context.gl.isContextLost();
+    }, null, { polling: 50, timeout: 30000 });
     await page.locator('[data-raptor-canvas]').evaluate((c: any) => {
       c._rhCommand('environment', { windSpeed: 0, dayPhase: 0.44, cloudCover: 0.15 });
       for (let i = 0; i < 5; i++) (window as any).studyStep(25);

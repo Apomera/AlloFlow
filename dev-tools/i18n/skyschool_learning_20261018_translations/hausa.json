@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "An rubuta kammala aikin da saukar komawa gida. Ka sake gwada wannan aikin da sauyi guda da ka zaɓa a sarrafawa ko hanya, sannan ka kwatanta abubuwan lura da aka adana.",
+  "stem.flightsim.coaching_mission_depleted": "Batirin jirgin marar matuƙi ya ƙare. Fara sabon aiki, yi amfani da gajerun hanyoyi kuma ka tsara komawa kafin batirin ya yi ƙasa.",
+  "stem.flightsim.coaching_mission_unknown": "Wannan aikin yana da shaidun da ba su cika ba ko masu saɓani. Duba abin da aka rubuta, sannan ka fara sabon gwaji.",
+  "stem.flightsim.coaching_mission_capture": "Ba a ɗauki wasu maƙasudai ba tukuna. A sabon aiki, kusanci maƙasudi ɗaya a lokaci guda kuma ka riƙe tsawo da gudun dangane da ƙasa cikin iyakokin da aka nuna har sai an rubuta ɗaukar.",
+  "stem.flightsim.coaching_mission_recovery": "Ba a ceci wanda ya tsira ba. A sabon aikin ceto, gwada tsayawa a sararin sama cikin natsuwa a iyakokin tsawo, karkata daga wuri da gudun tsaye da aka nuna kafin ka koma sansani.",
+  "stem.flightsim.coaching_mission_return": "An rubuta manufofin ɗauko mutum ko ɗaukar maƙasudi; saukar komawa gida ta rage. Fara sabon aiki, sannan ka keɓe lokaci da ƙarfin batiri domin komawa sansani.",
+  "stem.flightsim.mission_reflection_prompt": "Wace shawara game da maƙasudi, tsayawa a sararin sama ko komawa za ka canza? Yi amfani da abubuwan lura na aikin don bayyana zaɓinka da tsara sauyi guda don sabon gwaji. Za a adana bayaninka tare da wannan jirgi.",
+  "stem.flightsim.journal_different_airport": "An yi waɗannan kusantowar sauka a filayen jirgi daban-daban. Duba abubuwan luransu dabam; ba a lissafa sauye-sauyen ma’auni ba.",
+  "stem.flightsim.journal_approach_airport": "Filin jirgin kusantowar sauka: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "SHAIDUN AIKIN",
+  "stem.flightsim.challenge_brake_release": "Saki X kuma ka kashe birkin ƙafafu a Deck kafin ka ƙara ƙarfi."
+}

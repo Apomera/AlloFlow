@@ -113,7 +113,8 @@ describe('STEM prediction semantics', () => {
     expect(text).toContain("disabled: moonOutcomeVisible, 'aria-disabled': moonOutcomeVisible ? 'true' : 'false'");
     expect(text).toContain('var dropHasRun = dropNonce > 0 && !!predictionChoice;');
     expect(text).toContain("if (!predictionChoice) return;");
-    expect(text).toContain("dropHasRun ? fallTime.toFixed(2) + \" s\"");
+    // The arrival time is still withheld until the committed drop has run (now labelled "Arrival").
+    expect(text.includes("dropHasRun ? 'Arrival · ' + fallTime.toFixed(2) + \" s\""), 'fall time hidden until the drop runs').toBe(true);
     expect(text).toContain('disabled: !predictionChoice');
     expect(text).toContain('dropHasRun && predictionChoice ? React.createElement');
   });
@@ -165,8 +166,9 @@ describe('STEM prediction semantics', () => {
     expect(skate).toContain('Enter an estimate of zero or greater before running.');
     expect(skate).toContain('errorPct');
     expect(skate).toContain('stats.withinTen');
-    expect(skate).toContain('Skate flight hang-time hypothesis');
-    expect(skate).toContain('Your hypothesis: what controls hang time most?');
+    // The hypothesis prompt widened (08-31) from hang time to ramp depth, load and rotation.
+    expect(skate.includes("__alloT('stem.skatelab.hypothesis_input', 'Skate physics investigation hypothesis')"), 'hypothesis field is named as a hypothesis').toBe(true);
+    expect(skate.includes('Your hypothesis: will ramp depth change air height, transition load, or both?'), 'halfpipe hypothesis prompt').toBe(true);
     expect(skate).not.toContain('callGemini');
 
     const cell = source('stem_tool_cell.js');
@@ -209,7 +211,8 @@ describe('STEM prediction semantics', () => {
     expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Evaporation baseline '));
     expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Runoff baseline '));
     expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Infiltration baseline '));
-    expect(water).toContain('Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score.');
+    // 09-29 (d8f4f74d5): each evidence claim is evaluated independently; still not a score.
+    expect(water.includes("__alloT('stem.watercycle.inquiry_claim_hint', 'Choose a claim and check the signed changes. Several effects can change together. This is evidence-reading practice, not a score.')"), 'ungraded claim hint').toBe(true);
     expect(water).toContain('wcPredictionMatched ? "is-agrees" : "is-differs"');
     expect(water).not.toContain('"aria-label": "Prediction check"');
     expect(water).not.toContain('"Predict first"');
@@ -265,7 +268,9 @@ describe('STEM prediction semantics', () => {
     expect(geometry).toContain("'Committed estimate ' + formatVolume(predictionResult.prediction) + ' \\u2192 Measured '");
     expect(geometry).toContain("policy: 'descriptive-ungraded'");
     expect(geometry).toContain("engine.performMeasurement('surface')");
-    expect(geometry).toContain("'aria-describedby': 'gw-volume-estimate-status'");
+    // The estimate input is described by its unit and by the live estimate status.
+    expect(geometry.includes("'aria-describedby': 'gw-volume-prediction-unit gw-volume-estimate-status'"), 'estimate input describedby').toBe(true);
+    expect(geometry.includes("el('div', { id: 'gw-volume-estimate-status', role: 'status'"), 'estimate status region exists').toBe(true);
     expect(geometry).toContain("'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid");
     expect(geometry).not.toContain('Predictions within 10%');
     expect(geometry).not.toContain('Avg prediction error');

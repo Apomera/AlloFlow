@@ -438,6 +438,11 @@ const _normalizeAnswerText = (value) => {
     .toLowerCase();
 };
 
+// Self-grade has no AI fallback, so "5x + 3" must match a key of "5x+3".
+// Spaces beside an operator never change the math; spaces between two
+// terms ("1 1/2") do, so only the former are removed.
+const _compactMathOperators = text => text.replace(/\s*([-+*\/^=<>()[\],\u00d7\u00f7\u00b7\u2264\u2265\u2260\u00b1])\s*/g, '$1');
+
 const _simpleAssignment = text => {
   const match = text.match(/^([a-z])\s*=\s*(.+)$/i);
   if (!match || match[2].includes('=')) return null;
@@ -450,6 +455,7 @@ const areMathAnswersEquivalent = (studentAnswer, correctAnswer) => {
   let correctText = _normalizeAnswerText(correctAnswer);
   if (!studentText || !correctText) return false;
   if (studentText === correctText) return true;
+  if (_compactMathOperators(studentText) === _compactMathOperators(correctText)) return true;
   const studentAssigned = _simpleAssignment(studentText);
   const correctAssigned = _simpleAssignment(correctText);
   if (!!studentAssigned !== !!correctAssigned) {
@@ -465,6 +471,59 @@ const areMathAnswersEquivalent = (studentAnswer, correctAnswer) => {
   return !!studentNumber && !!correctNumber
     && studentNumber.numerator === correctNumber.numerator
     && studentNumber.denominator === correctNumber.denominator;
+};
+
+// Equal value is not a correct answer when the written FORM is the task:
+// "4/6" does not simplify 4/6, and "0.75" does not convert 3/4 to a percent.
+const _MATH_CONVERSION_WORDING = /\bconvert|\b(?:as|to|into)\s+an?\s+(?:decimal|fraction|percent(?:age)?|mixed\s+number|improper\s+fraction)\b|\b(?:decimal|fraction|percent(?:age)?)\s+form\b/i;
+const _MATH_SIMPLIFY_WORDING = /\bsimplif|\blowest\s+terms\b|\bsimplest\s+form\b|\breduce\b/i;
+
+const _mathAnswerForm = text => {
+  if (/%$/.test(text)) return _parseConservativeNumericAnswer(text) ? { kind: 'percent' } : null;
+  const mixed = text.match(/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+  if (mixed) {
+    return { kind: 'fraction', mixed: true, reduced: _gcdBigInt(BigInt(mixed[1]), BigInt(mixed[2])) === 1n };
+  }
+  const parts = text.split('/');
+  if (parts.length === 2) {
+    const numerator = _parseDecimalRational(parts[0]);
+    const denominator = _parseDecimalRational(parts[1]);
+    if (!numerator || !denominator || denominator.numerator === 0n) return null;
+    const integerTerms = numerator.denominator === 1n && denominator.denominator === 1n;
+    const absDenominator = denominator.numerator < 0n ? -denominator.numerator : denominator.numerator;
+    return {
+      kind: 'fraction',
+      mixed: false,
+      reduced: integerTerms && absDenominator !== 1n && _gcdBigInt(numerator.numerator, denominator.numerator) === 1n
+    };
+  }
+  return parts.length === 1 && _parseDecimalRational(text) ? { kind: 'decimal' } : null;
+};
+
+// strictKinds: Check My Work can defer to the AI grader, so any change of
+// form on a simplify task skips the instant pass; self-grade has no fallback
+// and only rejects what is unambiguously not simplified.
+const _mathAnswerFormMismatch = (studentAnswer, correctAnswer, question, taskType, strictKinds) => {
+  const task = _safeMathText(taskType, 40).trim().toLowerCase();
+  const prompt = _safeMathText(question, 4000);
+  const conversion = task === 'convert' || _MATH_CONVERSION_WORDING.test(prompt);
+  const simplify = task === 'simplify' || _MATH_SIMPLIFY_WORDING.test(prompt);
+  if (!conversion && !simplify) return false;
+  const answerText = value => {
+    const text = _normalizeAnswerText(value);
+    return _simpleAssignment(text)?.rhs || text;
+  };
+  const studentText = answerText(studentAnswer);
+  const correctText = answerText(correctAnswer);
+  if (studentText === correctText) return false;
+  const student = _mathAnswerForm(studentText);
+  const correct = _mathAnswerForm(correctText);
+  if (!student || !correct) return false;
+  if (student.kind === 'fraction' && !student.reduced) return true;
+  if (!conversion && !strictKinds) return false;
+  if (student.kind !== correct.kind) return true;
+  if (student.kind !== 'fraction' || student.mixed === correct.mixed) return false;
+  return strictKinds || /\bmixed\s+number|\bimproper\s+fraction/i.test(prompt);
 };
 
 const gradeMathSelfAssessment = (problems, answers) => {
@@ -487,14 +546,16 @@ const gradeMathSelfAssessment = (problems, answers) => {
       const rawResponse = _ownMathValue(answerMap, problemId) ?? '';
       const response = _safeMathText(rawResponse, 2000);
       const expected = _readMathValue(problem, 'answer') ?? _readMathValue(problem, 'correct_answer') ?? '';
+      const question = _safeMathText(
+        _readMathValue(problem, 'question') ?? _readMathValue(problem, 'problem') ?? '',
+        2000
+      );
       return [{
         problemId,
-        question: _safeMathText(
-          _readMathValue(problem, 'question') ?? _readMathValue(problem, 'problem') ?? '',
-          2000
-        ),
+        question,
         response,
         correct: areMathAnswersEquivalent(rawResponse, expected)
+          && !_mathAnswerFormMismatch(rawResponse, expected, question, _readMathValue(problem, 'taskType'), false)
       }];
     });
   } catch (_) {
@@ -680,7 +741,8 @@ const _handleCheckMathWorkCore = async (resourceId, problemIdx, question, correc
       }
       const existing = mathCheckResults[resourceId]?.[problemIdx];
       const currentHintCount = _hintCount(mathHintData, resourceId, problemIdx);
-      if (areMathAnswersEquivalent(studentWork, correctAnswer)) {
+      if (areMathAnswersEquivalent(studentWork, correctAnswer)
+          && !_mathAnswerFormMismatch(studentWork, correctAnswer, question, '', true)) {
         const award = await _awardMathXpOnce({
             resourceId,
             problemIdx,
@@ -840,6 +902,35 @@ const handleCheckMathWork = async (resourceId, problemIdx, question, correctAnsw
   }
 };
 
+// Hints are requested in JSON mode, so replies arrive JSON-encoded ("..." or
+// {"hint": "..."}) and a refused or keyless request returns "{}". Decode them;
+// an empty result must fail instead of showing raw JSON and costing a hint.
+const _decodeMathHintText = reply => {
+  if (typeof reply !== 'string') return '';
+  let text = reply.replace(/```(?:json)?/gi, '').trim();
+  let decoded = false;
+  if (/^[{["]/.test(text)) {
+    try {
+      const parsed = JSON.parse(text);
+      decoded = true;
+      if (typeof parsed === 'string') {
+        text = parsed;
+      } else if (Array.isArray(parsed)) {
+        text = parsed.filter(value => typeof value === 'string').join(' ');
+      } else if (_isMathRecord(parsed)) {
+        const strings = Object.keys(parsed)
+          .map(key => [key, parsed[key]])
+          .filter(([, value]) => typeof value === 'string' && value.trim());
+        const preferred = strings.find(([key]) => /^(hint|text|message|content)$/i.test(key));
+        text = preferred ? preferred[1] : strings.length === 1 ? strings[0][1] : '';
+      } else {
+        text = '';
+      }
+    } catch (_) {}
+  }
+  return (decoded ? text : text.replace(/^["']|["']$/g, '')).trim().slice(0, 1000);
+};
+
 const _handleGetMathHintCore = async (resourceId, problemIdx, question, correctAnswer, steps, deps = {}) => {
   const { mathHintData = {}, studentResponses = {}, setMathHintData, addToast, callGemini, warnLog } = deps;
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleGetMathHint fired"); } catch(_) {}
@@ -863,10 +954,10 @@ Give HINT #${hintLevel} of 3 (progressive difficulty):
 - Hint 1: A gentle nudge about what strategy or concept to use. Do NOT reveal numbers or the answer.
 - Hint 2: More specific guidance — point to the key step or operation needed. Still don't give the answer.
 - Hint 3: Walk through the first step explicitly and set up the equation. Stop just before the final answer.
-Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it under 2 sentences. Be encouraging.`;
+Return ONLY JSON: {"hint": "<the hint as one plain-text paragraph, no markdown>"}. Keep it under 2 sentences. Be encouraging.`;
         const hintText = await callGemini(prompt, true);
         if (typeof hintText !== 'string') throw new Error('Hint response was not text');
-        const cleanHint = hintText.replace(/```/g, '').replace(/^["']|["']$/g, '').trim().slice(0, 1000);
+        const cleanHint = _decodeMathHintText(hintText);
         if (!cleanHint) throw new Error('Hint response was empty');
         const deliveredCount = Math.min(3, existing.count + 1);
         setMathHintData(prev => _withHintEntry(prev, resourceId, problemIdx, latest => {
@@ -1170,7 +1261,10 @@ const handleGenerateSimilar = async (deps) => {
             Return ONLY the raw text of the new problem. No intro/outro.
           `;
           const newProblem = await callGemini(prompt);
-          const cleanProblem = newProblem.trim();
+          const cleanProblem = typeof newProblem === 'string' ? newProblem.trim() : '';
+          // handleGenerateMath returns early on empty input without clearing the
+          // busy flag this handler set, which left the spinner on forever.
+          if (!cleanProblem) throw new Error('Similar problem response was empty');
           setMathInput(cleanProblem);
           await handleGenerateMath(cleanProblem);
       } catch (e) {

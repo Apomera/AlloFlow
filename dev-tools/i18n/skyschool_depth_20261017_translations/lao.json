@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ຮັກສາສະພາບການບິນປັດຈຸບັນ",
+  "stem.flightsim.flight_assistance_targets": "ທິດຫົວເຄື່ອງ {hdg}° · ຄວາມສູງ {alt} ft MSL · ຄວາມໄວ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ທິດຫົວເຄື່ອງ {hdg}° · ຄວາມສູງ {alt} ft MSL · ຄວາມໄວໄປຂ້າງໜ້າ {spd} kt",
+  "stem.flightsim.challenge_turn_left": "ລ້ຽວຊ້າຍ {degrees}° ໄປທາງ {airport}.",
+  "stem.flightsim.challenge_turn_right": "ລ້ຽວຂວາ {degrees}° ໄປທາງ {airport}.",
+  "stem.flightsim.challenge_course_aligned": "ກຳລັງບິນໄປທາງ {airport}. ຕິດຕາມເຄື່ອງໝາຍເສັ້ນທາງບິນ.",
+  "stem.flightsim.challenge_runway_reference": "ທາງແລ່ນຝຶກຊ້ອມ {runway}: ທິດຫົວເຄື່ອງ {heading}°. ຈັດແນວໃຫ້ກົງກັບທາງແລ່ນກ່ອນຫຼຸດລະດັບເພື່ອລົງຈອດ."
+}

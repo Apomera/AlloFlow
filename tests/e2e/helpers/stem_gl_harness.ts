@@ -324,7 +324,8 @@ const THREE_CENSUS = `
 `;
 
 function harnessHtml(o: HarnessOptions, appCss: string | null, substitutes: string[]): string {
-  const dependencies = ['beehive', 'butterfly'].includes(o.toolId) ? ['stem_lab/stem_sim_meadow.js'] : [];
+  const dependencies = ['beehive', 'butterfly'].includes(o.toolId) ? ['stem_lab/stem_sim_meadow.js']
+    : o.toolId === 'flightSim' ? ['stem_lab/stem_data_skyschool_geo.js'] : [];
   const extra = dependencies.concat(o.extraScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   const pre = (o.preScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   // Before the inline block below, so the harness's own sizing still wins.

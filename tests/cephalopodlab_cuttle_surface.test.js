@@ -19,7 +19,9 @@ const key='cl-cuttle-surface-v14',state=(extra={})=>({moving:false,jet:false,str
 const renderer={capabilities:{isWebGL2:true},extensions:{has(){throw Error('WebGL2 does not need a derivative extension query');}}};
 function rig(id='cuttlefish',prior=false){const a=(prior?priorBuild:build)(THREE,{id,bodyColor:0x8a7a52},noRandom);allocated.push(a);return a;}
 function meshes(a){const out=[];a.root.traverse(o=>{if(o.isMesh)out.push(o);});return out;}
-function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter(m=>m.customProgramCacheKey()===key))];}
+// Pass74 (f7b4d993f) gives skin and arm programs a lit relief variant; the thin fin skirt keeps v14.
+const reliefKey=key+'-relief-v1';
+function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter(m=>m.customProgramCacheKey()===(m.name==='cl-cuttle-fin-material'?key:reliefKey)))];}
 function compiled(m,context=renderer){const s={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader,uniforms:{}};m.onBeforeCompile(s,context);return s;}
 
 // Captured before pass-fifteen: exclude only the intentionally replaced shell subtree.
@@ -34,7 +36,9 @@ const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 function scalarFunctions(shader){
   // Execute the actual scalar GLSL arithmetic, not a hand-copied alternative implementation.
   const definitions=Array.from(shader.fragmentShader.matchAll(/float (clCut\w+)\(([^)]*)\)\{([^{}]*)\}/g));
-  if(definitions.length!==7)throw Error('Expected seven production cuttle surface scalar helpers');
+  // Derivative-capable relief programs add the two Pass74 relief helpers to the seven surface helpers.
+  const relief=['clCutReliefMask','clCutReliefSlopeLimit'],found=definitions.map(d=>d[1]),reliefCount=found.filter(n=>relief.includes(n)).length;
+  if(definitions.length-reliefCount!==7||(reliefCount!==0&&reliefCount!==2))throw Error('Expected seven production cuttle surface scalar helpers');
   const js=definitions.map(([,name,parameters,body])=>'function '+name+'('+parameters.replace(/float /g,'')+'){'+body.replace(/\bfloat /g,'let ')+'}').join('\n');
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),mix=(a,b,t)=>a*(1-t)+b*t,mod=(x,n)=>x-n*Math.floor(x/n);
   const smoothstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};

@@ -1,0 +1,217 @@
+[
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.0",
+    "from": {
+      "date": "1876",
+      "event": "Alexander Graham Bell patents the telephone. For the first time, a voice can travel down a wire to another town."
+    },
+    "to": {
+      "date": "1876",
+      "event": "Alexander Graham Bell patents the telephone. For the first time, a voice can travel down a wire to another town.",
+      "alt": "An early wooden telephone has a large round speaking opening, pale coils, a horseshoe-shaped magnet and two wires.",
+      "altSource": "vision",
+      "altHash": "img-ouv-c12e9828",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.1",
+    "from": {
+      "date": "1886",
+      "event": "Karl Benz patents a gasoline car with three wheels. Almost nobody has one yet."
+    },
+    "to": {
+      "date": "1886",
+      "event": "Karl Benz patents a gasoline car with three wheels. Almost nobody has one yet.",
+      "alt": "An open motor carriage has one front wheel, two large rear wheels, a bench seat and a steering tiller.",
+      "altSource": "vision",
+      "altHash": "img-128j-027669a2",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.2",
+    "from": {
+      "date": "1903",
+      "event": "Orville and Wilbur Wright fly a powered plane at Kitty Hawk. The first flight lasts about twelve seconds."
+    },
+    "to": {
+      "date": "1903",
+      "event": "Orville and Wilbur Wright fly a powered plane at Kitty Hawk. The first flight lasts about twelve seconds.",
+      "alt": "A biplane with a small elevator ahead of its wings flies low over sand. One person lies flat at the controls while another runs beside it.",
+      "altSource": "vision",
+      "altHash": "img-10xj-3e1de612",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.3",
+    "from": {
+      "date": "1927",
+      "event": "Philo Farnsworth sends the first electronic television picture. It is a single straight line."
+    },
+    "to": {
+      "date": "1927",
+      "event": "Philo Farnsworth sends the first electronic television picture. It is a single straight line.",
+      "alt": "A dark screen inside a plain wooden edge shows a single bright horizontal white line.",
+      "altSource": "vision",
+      "altHash": "img-9tr-f44c4c59",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.4",
+    "from": {
+      "date": "1969",
+      "event": "Neil Armstrong and Buzz Aldrin walk on the Moon while people all over the world watch on television."
+    },
+    "to": {
+      "date": "1969",
+      "event": "Neil Armstrong and Buzz Aldrin walk on the Moon while people all over the world watch on television.",
+      "alt": "A person in a white spacesuit stands on gray ground with bootprints behind. A small blue-and-white crescent Earth appears in the black sky.",
+      "altSource": "vision",
+      "altHash": "img-s23-72e3ecdf",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.5",
+    "from": {
+      "date": "1991",
+      "event": "Tim Berners-Lee puts the first website online and opens the World Wide Web to anyone outside his lab."
+    },
+    "to": {
+      "date": "1991",
+      "event": "Tim Berners-Lee puts the first website online and opens the World Wide Web to anyone outside his lab.",
+      "alt": "A boxy beige computer shows three colored shapes on its small screen. A cable runs down from the desk.",
+      "altSource": "vision",
+      "altHash": "img-xav-c3dfc4c0",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-timeline",
+    "path": "data.items.6",
+    "from": {
+      "date": "2007",
+      "event": "Touch-screen smartphones go on sale. A phone, a camera, a map and the web all fit in one pocket."
+    },
+    "to": {
+      "date": "2007",
+      "event": "Touch-screen smartphones go on sale. A phone, a camera, a map and the web all fit in one pocket.",
+      "alt": "One hand holds a flat rectangular phone whose screen shows a grid of nine colored squares.",
+      "altSource": "vision",
+      "altHash": "img-aov-a47c37ef",
+      "decorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "CHANGED: TALKING",
+      "bullets": [
+        "Letters on a train",
+        "A telephone on the wall",
+        "A phone in your pocket"
+      ],
+      "iconPrompt": "three objects in a row: a sealed envelope, a wall telephone, a small rectangular phone"
+    },
+    "to": {
+      "label": "CHANGED: TALKING",
+      "bullets": [
+        "Letters on a train",
+        "A telephone on the wall",
+        "A phone in your pocket"
+      ],
+      "iconPrompt": "three objects in a row: a sealed envelope, a wall telephone, a small rectangular phone",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "CHANGED: GOING PLACES",
+      "bullets": [
+        "Walking and horses",
+        "Trains, then cars",
+        "Planes"
+      ],
+      "iconPrompt": "a horse, a train engine and an aeroplane silhouette in a row"
+    },
+    "to": {
+      "label": "CHANGED: GOING PLACES",
+      "bullets": [
+        "Walking and horses",
+        "Trains, then cars",
+        "Planes"
+      ],
+      "iconPrompt": "a horse, a train engine and an aeroplane silhouette in a row",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "STAYED THE SAME",
+      "bullets": [
+        "Kids play",
+        "Families eat together",
+        "People tell stories"
+      ],
+      "iconPrompt": "two children playing with a ball, drawn simply"
+    },
+    "to": {
+      "label": "STAYED THE SAME",
+      "bullets": [
+        "Kids play",
+        "Families eat together",
+        "People tell stories"
+      ],
+      "iconPrompt": "two children playing with a ball, drawn simply",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "tw-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "HOW WE KNOW",
+      "bullets": [
+        "Old photos",
+        "Old tools in a museum",
+        "Ask someone who was there"
+      ],
+      "iconPrompt": "a stack of old photographs beside a magnifying glass"
+    },
+    "to": {
+      "label": "HOW WE KNOW",
+      "bullets": [
+        "Old photos",
+        "Old tools in a museum",
+        "Ask someone who was there"
+      ],
+      "iconPrompt": "a stack of old photographs beside a magnifying glass",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

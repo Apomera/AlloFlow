@@ -14,7 +14,8 @@ describe('Glossary layered dialog accessibility', () => {
   });
 
   it('focus-manages the full-screen flashcard dialog', () => {
-    expect(source).toContain('ref={flashcardDialogRef} role="dialog" aria-modal="true"');
+    // f5b045fc9 (2026-09-20) added an inline style between the ref and the role.
+    expect(/ref=\{flashcardDialogRef\} (?:style=\{\{[^}]*\}\} )?role="dialog" aria-modal="true"/.test(source), 'flashcard dialog role').toBe(true);
     expect(source).toContain('ref={flashcardCloseRef} type="button"');
     expect(source).toContain('containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards)');
     expect(source).toContain('flashcardCloseRef.current.focus()');

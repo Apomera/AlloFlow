@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Mgbalị ule ndị gara aga",
+  "stem.flightsim.quiz_history_scope": "Ịmalite mgbalị ọhụrụ na-echekwa ihe ruru mgbalị anọ gara aga nwere azịza mbụ e dekọrọ. Ịtụle ha anaghị agbanwe ule ị na-eme ugbu a.",
+  "stem.flightsim.quiz_history_empty": "E chekwabeghị mgbalị ule ọ bụla gara aga.",
+  "stem.flightsim.quiz_history_attempt": "E chekwara na {date} · Azịza mbụ {score}/{answered} ziri ezi",
+  "stem.flightsim.quiz_history_progress": "E dekọrọ ajụjụ {answered} n'ime {total} · {unanswered} enweghị azịza",
+  "stem.flightsim.quiz_history_question": "Ajụjụ {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Azịza ziri ezi: {answer}",
+  "stem.flightsim.quiz_history_changed": "Ajụjụ {count} e chekwara adabaghịzi na ule a. A na-eji naanị ndekọ ajụjụ ndị dabara adaba agbakọ akara."
+}

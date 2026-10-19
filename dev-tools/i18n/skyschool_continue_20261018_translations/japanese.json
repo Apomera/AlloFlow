@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "チャレンジの目標達成が観測されました。次はエネルギー管理の練習で、エンジンをアイドル状態にした降下と、エンジン出力を使った上昇を比較しましょう。",
+  "stem.flightsim.coaching_energy_complete": "エネルギー管理の目標達成が観測されました。次は空港への短い進入でエネルギーの制御を練習し、降下率と接地の様子を比較しましょう。",
+  "stem.flightsim.drone_battery_low": "バッテリー残量低下：残り {pct}%。離陸地点に戻り、早めに着陸してください。",
+  "stem.flightsim.drone_battery_depleted_title": "ドローンのバッテリーが切れました",
+  "stem.flightsim.drone_battery_depleted_body": "バッテリーが 0% になったため、飛行を一時停止しました。ミッションを終了して今回の試行を振り返り、満充電のバッテリーで新しいミッションを開始してください。",
+  "stem.flightsim.end_drone_mission": "ミッションを終了して振り返る",
+  "stem.flightsim.geoq_nearest_place": "現在の位置に最も近い場所はどこですか？",
+  "stem.flightsim.geoq_paused": "この質問のため、飛行を一時停止しました。クイズを閉じ、飛行の準備ができたら再開を選んでください。",
+  "stem.flightsim.geoq_close": "クイズを閉じる",
+  "stem.flightsim.geoq_unavailable": "周辺の場所についての地理の質問はありません。探索を続けて、もう一度試してください。",
+  "stem.flightsim.geoq_answer_feedback": "あなたの回答：{answer}。正解：{expected}。"
+}

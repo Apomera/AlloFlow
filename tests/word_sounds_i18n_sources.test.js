@@ -22,7 +22,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-let uiWs, alloWs, moduleKeys;
+let uiWs, alloWs, moduleKeys, helperKeys;
 
 const AUDIO_RECOVERY_KEYS = [
   'audio_ask_teacher_resend', 'audio_blocked_message', 'audio_check',
@@ -63,8 +63,15 @@ beforeAll(() => {
   uiWs = JSON.parse(readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8')).word_sounds || {};
   alloWs = parseAlloData(readFileSync(resolve(process.cwd(), 'allo_data_source.jsx'), 'utf8'));
   const mod = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
-  moduleKeys = [...new Set((mod.match(/ts\("(word_sounds\.[a-z0-9_]+)"/g) || [])
-    .map((s) => s.replace(/ts\("|"/g, '').replace('word_sounds.', '')))];
+  moduleKeys = [...new Set((mod.match(/ts\(["`](word_sounds\.[a-z0-9_]+)["`]/g) || [])
+    .map((s) => s.replace(/ts\(["`]|["`]/g, '').replace('word_sounds.', '')))];
+  // The review components translate through local helpers (tr(key, fallback)
+  // and wordSoundsCountResultText(translate, key, fallback)); 23 of their keys
+  // were once in neither table because the checks above never saw them.
+  helperKeys = [...new Set([
+    ...[...mod.matchAll(/\btrp?\(\s*(['"`])(?:word_sounds\.)?([a-z0-9_]+)\1\s*,/g)].map((m) => m[2]),
+    ...[...mod.matchAll(/wordSoundsCountResultText\(\s*\w+\s*,\s*(['"])([a-z0-9_]+)\1/g)].map((m) => m[2]),
+  ])];
 });
 
 const params = (v, re) => [...new Set([...String(v).matchAll(re)].map((m) => m[1]))].sort();
@@ -107,6 +114,12 @@ describe('translatability', () => {
   it('every key the module calls has an English fallback in allo_data', () => {
     const missing = moduleKeys.filter((k) => !(k in alloWs));
     expect(missing, `keys with no English safety net:\n  ${missing.join('\n  ')}`).toEqual([]);
+  });
+
+  it('every key the review helpers request exists in ui_strings', () => {
+    expect(helperKeys.length, 'helper scan found nothing; is the regex broken?').toBeGreaterThan(20);
+    const missing = helperKeys.filter((k) => !(k in uiWs));
+    expect(missing, `helper keys absent from ui_strings (always English):\n  ${missing.join('\n  ')}`).toEqual([]);
   });
 
   it('registers the complete learner and teacher audio-recovery flow in both English sources', () => {

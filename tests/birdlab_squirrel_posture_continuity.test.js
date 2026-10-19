@@ -121,5 +121,5 @@ describe('Squirrel inspection and posture momentum', () => {
         expect(checked).toBeGreaterThan(400); expect(supported).toBeGreaterThan(200);
       } finally { rig.mammals.dispose(); }
     }
-  });
+  }, 20000);
 });

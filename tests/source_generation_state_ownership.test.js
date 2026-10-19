@@ -137,19 +137,12 @@ describe('source generation state ownership', () => {
 
 describe('Guided source generation progress', () => {
   it('does not auto-advance the source step while generation or extraction is active', () => {
-    const effectStart = canonicalHost.indexOf('if (guidedMode && guidedStep === 0 && inputText');
-    const effectEnd = canonicalHost.indexOf('// Hands-on guided tutorial:', effectStart);
-    expect(effectStart).toBeGreaterThan(-1);
-    expect(effectEnd).toBeGreaterThan(effectStart);
-    const effect = canonicalHost.slice(effectStart, effectEnd);
-    const beforeAdvanceTimer = effect.slice(0, effect.indexOf('setTimeout'));
-
-    expect(beforeAdvanceTimer).toMatch(
-      /if\s*\(\s*(?:isGeneratingSource\s*\|\|\s*isExtracting|isExtracting\s*\|\|\s*isGeneratingSource)\s*\)\s*(?:\{\s*)?return/,
-    );
-    const dependencies = effect.slice(effect.lastIndexOf('}, ['));
-    expect(dependencies).toContain('isGeneratingSource');
-    expect(dependencies).toContain('isExtracting');
+    // f3c6402f3 (2026-10-16 onboarding integration) removed the timed step-0 auto-advance
+    // outright: source review always waits for Continue, so it can never skip a running
+    // generation or extraction.
+    expect(canonicalHost).toContain('// Source review always waits for Continue, including after a previous run.');
+    expect(canonicalHost).not.toContain('if (guidedMode && guidedStep === 0 && inputText');
+    expect(canonicalHost).not.toMatch(/setTimeout\(\(\) => setGuidedStep\(1\)/);
   });
 
   it('shows source generation in the output header and loading overlay', () => {

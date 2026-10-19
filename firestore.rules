@@ -218,6 +218,7 @@ service cloud.firestore {
               && action.targetId is string && action.targetId.matches('^[a-z][a-z0-9_-]{0,39}$')
               && !(action.targetId in ['constructor', 'prototype', '__proto__'])
               && action.value is string
+              && !(action.kind == 'answer' && old.get('privateAnswers', false) == true)
               && ((action.kind == 'vote' && step.get('phase', '') == 'choose' && action.value == '')
                 || (action.kind == 'answer' && step.get('phase', '') == 'answer'
                   && action.targetId == step.get('targetId', '') && action.value.matches('^[0-9,]{1,24}$')))
@@ -352,6 +353,37 @@ service cloud.firestore {
           && (!('democracy' in changedTop()) || democracyOnlySelfVote())
           && (!('escapeRoomState' in changedTop()) || (resource.data.get('escapeRoomState', {}).get('mode', '') == 'lesson-board' ? lessonBoardPlay() : escapeRoomTeamPlay()))
         );
+        // Lesson Board private answers (native Firestore). A learner writes only their own answer
+        // document; only that learner and the session host can read it. Accepted values live in a
+        // host-only document, so the shared session document carries receipts without answers.
+        match /boardAnswers/{uid} {
+          function session() { return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data; }
+          function privateBoardAnswer(data, action) {
+            let state = data.get('escapeRoomState', {});
+            let run = state.get('teamProgress', {}).get('All', {}).get('boardRuns', {}).get(state.get('attemptId', ''), {});
+            let step = run.get('steps', {}).get('t' + string(run.get('turn', 0)), {});
+            return state.get('mode', '') == 'lesson-board' && state.get('isActive', false) == true
+              && state.get('isPaused', false) == false && state.get('privateAnswers', false) == true
+              && data.get('roster', {}).keys().hasAny([uid]) && state.get('teams', {}).get(uid, '') == 'All'
+              && action.keys().hasAll(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.keys().hasOnly(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.attemptId == state.get('attemptId', '!')
+              && action.turn is int && action.turn == run.get('turn', -1) && action.turn >= 0 && action.turn < 48
+              && action.requestId is string && action.requestId.matches('^[A-Za-z0-9_-]{1,128}$')
+              && !(action.requestId in ['constructor', 'prototype', '__proto__'])
+              && (step.get('retryRound', 0) == 0 || action.requestId.matches('^r' + string(step.get('retryRound', 0)) + '_[A-Za-z0-9_-]*$'))
+              && action.kind == 'answer' && step.get('phase', '') == 'answer'
+              && action.targetId is string && action.targetId == step.get('targetId', '')
+              && action.value is string && action.value.matches('^[0-9,]{1,24}$');
+          }
+          allow get: if authed() && (request.auth.uid == uid || session().hostId == request.auth.uid);
+          allow list: if authed() && session().hostId == request.auth.uid;
+          allow create, update: if authed() && request.auth.uid == uid && privateBoardAnswer(session(), request.resource.data);
+          allow delete: if authed() && session().hostId == request.auth.uid;
+        }
+        match /boardHost/{attempt} {
+          allow read, write: if authed() && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
+        }
       }
 
       // ── WebRTC signaling handshakes (polling + pictionary) ─────────────

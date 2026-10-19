@@ -77,13 +77,32 @@ describe('initial loading indicators', () => {
   });
 
   it('ships the original rainbow eagerly without a preview-relative image request', () => {
+    // 74cbea9c9 (2026-09-13) re-encoded the inline boot logo from the 22 KB JPEG to an
+    // 8.6 KB WebP at the same 249x189, so compare the decoded frame size, not the bytes.
     const original = fs.readFileSync(path.join(root, 'rainbow-book.jpg'));
+    const jpegSize = (b) => {
+      for (let i = 2; i + 8 < b.length && b[i] === 0xff;) {
+        const m = b[i + 1];
+        if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+        i += 2 + b.readUInt16BE(i + 2);
+      }
+      return null;
+    };
+    const webpSize = (b) => (b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 '
+      ? [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff] : null);
+    const want = jpegSize(original);
+    expect(want).toEqual([249, 189]);
+    const payloads = new Set();
     for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx']) {
-      const logo = read(file).match(/<img src=\{"data:image\/jpeg;base64,([^"}]+)"\}[^>]+>/);
+      const logo = read(file).match(/<img src=\{"data:image\/(jpeg|webp);base64,([^"}]+)"\}[^>]+>/);
       expect(logo, file).not.toBeNull();
-      expect(Buffer.from(logo[1], 'base64').equals(original)).toBe(true);
+      const bytes = Buffer.from(logo[2], 'base64');
+      if (logo[1] === 'jpeg') expect(bytes.equals(original), file).toBe(true);
+      else expect(webpSize(bytes), file).toEqual(want);
+      payloads.add(logo[2]);
       expect(logo[0]).toContain('loading="eager"');
       expect(logo[0]).toContain('fetchpriority="high"');
     }
+    expect(payloads.size, 'host, src mirror and App.jsx ship the same logo').toBe(1);
   });
 });

@@ -8,9 +8,9 @@ Validation: **61 focused unit cases and five serial browser cases passed**, with
 
 Nine final views were reviewed using the real lights, fog and scenery. Plant views use the same seeded objects and cameras before/after. The GPU checks and stills do not establish FPS or temporal shimmer. Plant motion is decorative, and the procedural nautilus retains its illustrative head/hood/filaments.
 
-- [Nautilus three-quarter](nautilus-three-quarter.png), [shell side](nautilus-shell-side.png), [opening](nautilus-aperture.png), [opposite side](nautilus-opposite-side.png), [phone](nautilus-phone.png)
+- [Nautilus three-quarter](../pass-sixteen/initial-nautilus-three-quarter.png), [shell side](../pass-sixteen/initial-nautilus-shell-side.png), [opening](nautilus-aperture.png), [opposite side](nautilus-opposite-side.png), [phone](nautilus-phone.png)
 - Seagrass at [early](seagrass-flex-early.png) and [late](seagrass-flex-late.png) phases
-- Kelp at [early](kelp-flex-early.png) and [late](kelp-flex-late.png) phases
+- Kelp at [early](../pass-sixteen/initial-kelp-flex-early.png) and [late](kelp-flex-late.png) phases
 - [Model construction and cost](model-notes.md), [plant motion and cost](environment-notes.md), [validation summary](validation-summary.json)
 
 The commit excludes the 12 pre-existing translation-wrapper changes in each tracked runtime. Unrelated workspace work is preserved.

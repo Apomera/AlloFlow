@@ -9,6 +9,15 @@ const deployBankPath = path.join(root, 'desktop/web-app/public', 'test_prep', 'e
 const data = createRequire(import.meta.url)('../dev-tools/eppp_extreme_word_cleanup_wave_50_data.cjs');
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8'));
+const requireData = createRequire(import.meta.url);
+// Application-rewrite waves 52/53 later re-authored five of these items again (same keys); the
+// item must then match that wave's own revision (or duplicate-separation repair) instead.
+const laterRewriteFor = (item) => {
+  const match = /^eppp-application-rewrite-wave-(\d+)$/.exec(item.wordingReviewWave || '');
+  if (!match) return null;
+  const later = requireData(`../dev-tools/eppp_application_rewrite_wave_${match[1]}_data.cjs`);
+  return [...later.revisions, ...(later.duplicateRepairs || [])].find((entry) => entry.id === item.id) || null;
+};
 
 describe('EPPP extreme-word cleanup wave 50', () => {
   it('applies all twenty-seven answer-tell repairs with preserved answer positions', () => {
@@ -20,8 +29,15 @@ describe('EPPP extreme-word cleanup wave 50', () => {
       const item = byId.get(revision.id);
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(revision.answerIndex);
-      expect(item.choices).toEqual(revision.choices);
-      expect(item.choices[item.answerIndex]).toBe(revision.key);
+      const later = laterRewriteFor(item);
+      if (later) {
+        expect(later.answerIndex, revision.id).toBe(revision.answerIndex);
+        expect(item.prompt, revision.id).toBe(later.prompt);
+        expect(item.choices, revision.id).toEqual(later.choices);
+      } else {
+        expect(item.choices, revision.id).toEqual(revision.choices);
+        expect(item.choices[item.answerIndex]).toBe(revision.key);
+      }
       expect(item.extremeWordCleanupWave).toBe(data.reviewWave);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales[item.answerIndex]).toBe(item.rationale);

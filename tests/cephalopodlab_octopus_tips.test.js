@@ -14,11 +14,15 @@ function factory(s){const a=s.indexOf('function createCLHuntAnimal('),b=s.indexO
 // Keep the later accepted mantle and pigment in both sides of this arm-tip comparison.
 const oldMantle=require('./helpers/cephalopod_pass68_reference.cjs').applyPass68ModelSource(prior);
 const oldSurface=require('./helpers/cephalopod_pass70_reference.cjs').applyPass70ModelSource(oldMantle);
-const build=factory(source),oldBuild=factory(oldSurface);
+// Pass74 later narrows the five reef species' tips and adds resting curls behind reefMantle gates
+// (arm_tip_form, living_arm_motion). Turn only those gates off so this compares the Pass66 caps.
+const build=factory(require('./helpers/cephalopod_pass74_reference.cjs').withoutPass74ReefAnatomy(source)),oldBuild=factory(oldSurface);
 function rig(id='commonOcto',old=false){const a=(old?oldBuild:build)(T,{id,bodyColor:0xbc6048},noRandom);owned.push(a);return a;}
 const pose=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',reducedMotion:false,...extra});
 const point=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.position,i),normal=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.normal,i);
-function snapshot(a,omitArms=false){const rows=[];a.root.traverse(o=>{if(omitArms&&/^cl-arm-\d+$/.test(o.name))return;const r=[o.name,o.type,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.visible];if(o.geometry)r.push(Object.entries(o.geometry.attributes).map(([n,v])=>[n,Array.from(v.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.instanceMatrix?Array.from(o.instanceMatrix.array):null);rows.push(r);});return hash(JSON.stringify(rows));}
+// Pass73 re-parents benthic parts under one refuge frame; outside a crevice it must stay identity.
+const refugeFrame=o=>{if(o.name!=='cl-crevice-body')return false;assert.ok(o.matrix.equals(new T.Matrix4()),'Ordinary refuge frame is identity');return true;};
+function snapshot(a,omitArms=false){const rows=[];a.root.traverse(o=>{if(refugeFrame(o)||omitArms&&/^cl-arm-\d+$/.test(o.name))return;const r=[o.name,o.type,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.visible];if(o.geometry)r.push(Object.entries(o.geometry.attributes).map(([n,v])=>[n,Array.from(v.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.instanceMatrix?Array.from(o.instanceMatrix.array):null);rows.push(r);});return hash(JSON.stringify(rows));}
 function assertUnchanged(a,b){
   assert.equal(snapshot(a,true),snapshot(b,true),'All non-arm anatomy and sucker matrices remain exact');
   assert.deepEqual(a.root.position.toArray(),b.root.position.toArray());
@@ -29,7 +33,8 @@ function assertUnchanged(a,b){
     assert.deepEqual(Array.from(g.index.array.subarray(0,960)),Array.from(h.index.array));
     assert.deepEqual(arm.points.map(p=>p.toArray()),old.points.map(p=>p.toArray()));
     assert.equal(g.attributes.position.count,199);assert.equal(g.attributes.normal.count,199);assert.equal(g.index.count,1032);
-    assert.equal(arm.mesh.material.type,old.mesh.material.type);assert.equal(arm.mesh.material.customProgramCacheKey(),old.mesh.material.customProgramCacheKey());
+    assert.equal(arm.mesh.material.type,old.mesh.material.type);// Pass74 adds lit relief to the shared reef skin program (creature_relief) and re-keys it.
+    const oldKey=old.mesh.material.customProgramCacheKey();assert.equal(arm.mesh.material.customProgramCacheKey(),oldKey==='cl-octopus-surface-v70'?'cl-octopus-surface-v70-relief-v1':oldKey);
   }
 }
 function capGeometry(arm,scale){
@@ -82,7 +87,7 @@ describe('Rounded reef-octopus arm tips',()=>{
   it('retains buffers, materials and object counts through updates, pause and reduced motion',()=>{
     const a=rig(),b=rig('commonOcto',true),resources=[];
     a.root.traverse(o=>{if(o.geometry)resources.push({o,g:o.geometry,m:o.material,index:o.geometry.index,attributes:Object.entries(o.geometry.attributes).map(([name,v])=>({name,v,array:v.array})),instances:o.instanceMatrix});});
-    let beforeCount=0,afterCount=0;a.root.traverse(()=>afterCount++);b.root.traverse(()=>beforeCount++);assert.equal(afterCount,beforeCount);
+    let beforeCount=0,afterCount=0;a.root.traverse(o=>{if(!refugeFrame(o))afterCount++;});b.root.traverse(()=>beforeCount++);assert.equal(afterCount,beforeCount);
     for(let frame=0;frame<30;frame++)a.update(frame*.05,.05,pose({moving:true,jet:frame>15}));
     const frozen=snapshot(a);a.update(29*.05,0,pose({moving:true,jet:true}));assert.equal(snapshot(a),frozen);
     a.update(2,.05,pose({reducedMotion:true}));const still=snapshot(a);a.update(20,.05,pose({reducedMotion:true}));assert.equal(snapshot(a),still);

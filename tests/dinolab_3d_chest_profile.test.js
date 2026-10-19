@@ -170,14 +170,16 @@ describe('Dino Lab compact sauropod chest', () => {
   for (const id of ['diplodocus', 'amargasaurus', 'nigersaurus', 'brachiosaurus', 'tyrannosaurus']) {
     it('gates the actual torso caller and preserves mesh ownership for ' + id, () => {
       const built = buildBody(id), enabled = ['diplodocus', 'amargasaurus', 'nigersaurus'].includes(id);
-      const data = { points: built.torsoPoints, radii: built.torsoRadii }, expected = geometry(data, { compactChest: enabled });
+      // f7b4d993f gives powerful theropods their own dorsal-waist torso option (see dinolab_3d_dorsal_waist).
+      const waist = built.postcranialSurface.id === 'powerful-theropod';
+      const data = { points: built.torsoPoints, radii: built.torsoRadii }, expected = geometry(data, waist ? { dorsalWaist: true } : { compactChest: enabled });
       const ordinary = geometry(data);
       expected.translate(-data.points[0].x, -data.points[0].y, -data.points[0].z);
       ordinary.translate(-data.points[0].x, -data.points[0].y, -data.points[0].z);
       try {
         const mesh = built.bodyShell;
         expect(built.model.children).toEqual([mesh]); sameBuffers(mesh.geometry, expected);
-        if (enabled) expect(mesh.geometry.attributes.position.array).not.toEqual(ordinary.attributes.position.array);
+        if (enabled || waist) expect(mesh.geometry.attributes.position.array).not.toEqual(ordinary.attributes.position.array);
         else sameBuffers(mesh.geometry, ordinary);
         expect(mesh.position.toArray()).toEqual(data.points[0].toArray()); expect(mesh.quaternion.toArray()).toEqual([0, 0, 0, 1]);
         expect(mesh.scale.toArray()).toEqual([1, 1, 1]); expect(mesh.material).toBe(built.bodyMat);

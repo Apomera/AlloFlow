@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "搜索结果：{topics} 个主题中有 {cards} 张卡片。",
+  "stem.flightsim.learn_library_counts": "{cards} 张卡片 · {topics} 个主题",
+  "stem.flightsim.learn_search_clear": "清除搜索",
+  "stem.flightsim.learn_search_empty": "没有与“{query}”匹配的学习卡片。请尝试其他词语或清除搜索。",
+  "stem.flightsim.learn_search_none": "没有匹配的学习卡片",
+  "stem.flightsim.learn_search_cards": "{count} 张学习卡片",
+  "stem.flightsim.quiz_review_progress": "已回答 {total} 道题中的 {answered} 道 · 答错 {missed} 道",
+  "stem.flightsim.quiz_review_missed": "复习错题",
+  "stem.flightsim.quiz_next_unanswered": "下一道未答题",
+  "stem.flightsim.quiz_review_all_answered": "每道题都已记录首次回答。你可以进行不计分的错题练习，或开始新一轮答题。",
+  "stem.flightsim.planner_drone_agl": "离地 {ft} 英尺",
+  "stem.flightsim.sprint_native_title": "地理冲刺",
+  "stem.flightsim.sprint_timed_hint": "答题时航线仍会继续推进。请暂停后阅读，选择答案前先恢复运行。",
+  "stem.flightsim.sprint_warp_reference": "本地理活动加快了旅行进程。速度读数显示设定的巡航速度；这条航线不用于测量飞机性能。",
+  "stem.flightsim.sprint_save_menu": "保存冲刺进度并返回菜单",
+  "stem.flightsim.sprint_next_stop": "下一站：{place}",
+  "stem.flightsim.geoq_approaching_city": "你正在接近哪座城市？",
+  "stem.flightsim.sprint_time_remaining": "剩余时间：{seconds} 秒"
+}

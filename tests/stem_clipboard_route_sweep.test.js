@@ -26,9 +26,14 @@ const SAMPLE = { 'stem_tool_applab.js': "await navigator.clipboard.writeText('He
 const HELPER_FIRST = {
   'stem_tool_lifeskills.js': "if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {",
   'stem_tool_nuclearlab.js': 'var write = (window.StemLab && window.StemLab.writeClipboard)',
+  // 10-05: colony history CSV and the study record copy try the host helper first.
+  'stem_tool_beehive.js': 'write = window.StemLab && window.StemLab.writeClipboard',
 };
 const GUARD_REACH = 700;
 const HELPER_AT = HELPER_CALL.indexOf('navigator.clipboard.writeText(');
+// The same helper-first fallback written compactly, e.g. Anatomy and Art Studio's
+// `(window.StemLab && window.StemLab.writeClipboard || function(value){return navigator.clipboard.writeText(value);})(`.
+const HELPER_FALLBACK_BEFORE = /window\.StemLab\.writeClipboard\s*\|\|\s*function\s*\(\s*value\s*\)\s*\{\s*return\s*$/;
 
 function count(source, needle) { return source.split(needle).length - 1; }
 
@@ -42,6 +47,7 @@ function unguardedDirect(source, name) {
   for (const m of source.matchAll(RAW)) {
     const at = m.index + (m[1] ? m[1].length : 0);
     if (source.startsWith(HELPER_CALL, at - HELPER_AT)) continue;
+    if (HELPER_FALLBACK_BEFORE.test(source.slice(Math.max(0, at - 160), at))) continue;
     const cover = guards.filter((g) => g < at && at - g <= GUARD_REACH && !used.has(g)).pop();
     if (cover === undefined) direct += 1; else used.add(cover);
   }

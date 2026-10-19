@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Hasil pencarian: {cards} kartu dalam {topics} topik.",
+  "stem.flightsim.learn_library_counts": "{cards} kartu · {topics} topik",
+  "stem.flightsim.learn_search_clear": "Hapus pencarian",
+  "stem.flightsim.learn_search_empty": "Tidak ada kartu belajar yang cocok dengan “{query}”. Coba istilah lain atau hapus pencarian.",
+  "stem.flightsim.learn_search_none": "Tidak ada kartu belajar yang cocok",
+  "stem.flightsim.learn_search_cards": "{count} kartu belajar",
+  "stem.flightsim.quiz_review_progress": "{answered} dari {total} pertanyaan terjawab · {missed} salah",
+  "stem.flightsim.quiz_review_missed": "Tinjau jawaban salah",
+  "stem.flightsim.quiz_next_unanswered": "Pertanyaan belum terjawab berikutnya",
+  "stem.flightsim.quiz_review_all_answered": "Setiap pertanyaan sudah memiliki jawaban pertama. Tinjau pertanyaan yang dijawab salah untuk latihan tanpa nilai, atau mulai percobaan baru.",
+  "stem.flightsim.planner_drone_agl": "{ft} kaki di atas permukaan tanah",
+  "stem.flightsim.sprint_native_title": "Tantangan geografi cepat",
+  "stem.flightsim.sprint_timed_hint": "Perjalanan tetap berjalan saat Anda menjawab. Jeda untuk membaca; lanjutkan sebelum memilih jawaban.",
+  "stem.flightsim.sprint_warp_reference": "Perjalanan dipercepat untuk kegiatan geografi ini. Pembacaan kecepatan menunjukkan kecepatan jelajah yang ditetapkan; rute ini tidak mengukur kinerja pesawat.",
+  "stem.flightsim.sprint_save_menu": "Simpan tantangan dan kembali ke menu",
+  "stem.flightsim.sprint_next_stop": "Perhentian berikutnya: {place}",
+  "stem.flightsim.geoq_approaching_city": "Anda sedang mendekati kota apa?",
+  "stem.flightsim.sprint_time_remaining": "Waktu tersisa: {seconds} detik"
+}

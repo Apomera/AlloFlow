@@ -89,12 +89,13 @@ describe('launch sky', () => {
 
 // A 2D context that records the calls these tests read and accepts the rest.
 function recordingCtx() {
-  const frame = { text: [], arcs: [], rects: [], grads: [], rots: [], lines: [], fills: [] };
+  const frame = { text: [], arcs: [], rects: [], grads: [], rots: [], lines: [], fills: [], images: [] };
   const grad = () => { const g = { stops: [], addColorStop: (o, c) => g.stops.push(String(c)) }; frame.grads.push(g); return g; };
   const state = {};
   const known = {
     createLinearGradient: grad,
     createRadialGradient: grad,
+    drawImage: (img, x, y, w, h) => frame.images.push({ img, x, y, w, h, uploaded: img && img.uploaded }),
     fillText: (s, x, y) => frame.text.push({ s: String(s), x, y }),
     fillRect: (x, y, w, h) => frame.rects.push({ x, y, w, h, fill: state.fillStyle }),
     rotate: (a) => frame.rots.push(a),
@@ -127,7 +128,8 @@ describe('Moon Mission loops', () => {
   afterEach(() => { vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
   // Run a phase's real canvas loop for `n` frames painted `dt` ms apart.
-  function run(state, pick, n, dt = 1000 / 60, width) {
+  // `canvas` exposes ctx.canvas so offscreen raster layers can attach to it.
+  function run(state, pick, n, dt = 1000 / 60, width, { canvas = false } = {}) {
     queue = [];
     document.body.innerHTML = '';
     const store = newStore({ moonMission: Object.assign({ animPaused: false, lunarSamples: [] }, state) });
@@ -137,12 +139,13 @@ describe('Moon Mission loops', () => {
     const rec = recordingCtx();
     const el = document.createElement('canvas');
     if (width) Object.defineProperty(el, 'offsetWidth', { value: width });   // jsdom lays nothing out
+    if (canvas) rec.ctx.canvas = el;
     el.getContext = () => rec.ctx;
     document.body.appendChild(el);
     const frames = [];
     const snap = () => {
-      frames.push({ text: rec.frame.text.slice(), arcs: rec.frame.arcs.slice(), rects: rec.frame.rects.slice(), grads: rec.frame.grads.slice(), rots: rec.frame.rots.slice(), lines: rec.frame.lines.slice(), fills: rec.frame.fills.slice(), dataset: Object.assign({}, el.dataset), mm: Object.assign({}, store.toolData.moonMission) });
-      rec.frame.text.length = 0; rec.frame.arcs.length = 0; rec.frame.rects.length = 0; rec.frame.grads.length = 0; rec.frame.rots.length = 0; rec.frame.lines.length = 0; rec.frame.fills.length = 0;
+      frames.push({ text: rec.frame.text.slice(), arcs: rec.frame.arcs.slice(), rects: rec.frame.rects.slice(), grads: rec.frame.grads.slice(), rots: rec.frame.rots.slice(), lines: rec.frame.lines.slice(), fills: rec.frame.fills.slice(), images: rec.frame.images.slice(), dataset: Object.assign({}, el.dataset), mm: Object.assign({}, store.toolData.moonMission) });
+      rec.frame.text.length = 0; rec.frame.arcs.length = 0; rec.frame.rects.length = 0; rec.frame.grads.length = 0; rec.frame.rots.length = 0; rec.frame.lines.length = 0; rec.frame.fills.length = 0; rec.frame.images.length = 0;
     };
     ref(el);
     snap();
@@ -200,18 +203,37 @@ describe('Moon Mission loops', () => {
   });
 
   it('names the seas and every Apollo site only when the student asks', () => {
-    const on = run({ missionPhase: 4, moonLabels: true }, orbitCanvas, 3).frames.flatMap(f => f.text.map((t) => t.s));
-    ['Sea of Tranquility', 'Ocean of Storms', '12', '17'].forEach((s) => expect(on, s).toContain(s));
-    const off = run({ missionPhase: 4, moonLabels: false }, orbitCanvas, 3).frames.flatMap(f => f.text.map((t) => t.s));
-    expect(off).not.toContain('Sea of Tranquility');
-    expect(off).not.toContain('17');
+    // The atlas marks each sea with a letter and names it in the legend below, so
+    // close neighbours stay legible on a phone. A letter must sit on its own sea.
     const d = document.createElement('div');
     d.innerHTML = renderTool(ID, { moonMission: { missionPhase: 4, moonLabels: true } });
     expect(d.querySelector('[data-moonmission-moon-labels]').getAttribute('aria-pressed')).toBe('true');
     expect(d.querySelectorAll('[data-moonmission-moon-sites] li').length).toBe(6);
+    const legend = [...d.querySelectorAll('[data-lunar-atlas-seas] li')].map((li) => li.textContent);
+    const { frames } = run({ missionPhase: 4, moonLabels: true }, orbitCanvas, 3);
+    const painted = frames.find((f) => f.dataset.atlasRadius);
+    expect(painted, 'the atlas painted').toBeTruthy();
+    const [cx, cy, r] = ['atlasX', 'atlasY', 'atlasRadius'].map((k) => Number(painted.dataset[k]));
+    const on = frames.flatMap((f) => f.text);
+    const keys = [];
+    for (const [sea, mare] of [['Sea of Tranquility', 'Mare Tranquillitatis'], ['Ocean of Storms', 'Oceanus Procellarum']]) {
+      const entry = legend.find((s) => s.includes(sea));
+      expect(entry, sea + ' is named in the legend').toBeTruthy();
+      const key = entry.split(' ')[0];
+      keys.push(key);
+      const mark = on.find((t) => t.s === key);
+      expect(mark, sea + ': key ' + key + ' is on the map').toBeTruthy();
+      const outline = P.moonMaria(cx, cy, r).find((m) => m.name === mare).pts;
+      expect(inside([mark.x, mark.y - 4], outline), key + ' sits on ' + mare).toBe(true);   // drawn 4px below its point
+    }
+    ['12', '17'].forEach((s) => expect(on.map((t) => t.s), s).toContain(s));
+    const off = run({ missionPhase: 4, moonLabels: false }, orbitCanvas, 3).frames.flatMap(f => f.text.map((t) => t.s));
+    keys.forEach((key) => expect(off, 'no sea key ' + key).not.toContain(key));
+    expect(off).not.toContain('17');
     d.innerHTML = renderTool(ID, { moonMission: { missionPhase: 4 } });
     expect(d.querySelector('[data-moonmission-moon-labels]').getAttribute('aria-pressed')).toBe('false');
     expect(d.querySelector('[data-moonmission-moon-sites]')).toBeNull();
+    expect(d.querySelector('[data-lunar-atlas-seas]')).toBeNull();
   });
 
   it('lunar ascent reaches computed insertion without claiming a docking or Earthrise', () => {
@@ -382,13 +404,18 @@ describe('Moon Mission loops', () => {
     });
     expect(observations[0]).toEqual(observations[1]);
     expect(new Set(observations[0].map((frame) => frame.speed)).size).toBeGreaterThan(3);
-  });
+  }, 60_000);   // 1,100 real loop frames (~3.5 s alone); slow under load, not wrong
 
   it('a restored entry without an outcome uses the default angle to calculate peak g', () => {
     const { frames } = run({ missionPhase: 9 }, reentryCanvas, 4);
     const labels = frames.flatMap((frame) => frame.text.map((item) => item.s));
-    const peakG = P.entryPeakG(-6.5).toFixed(1);
-    expect(labels.some((label) => label.includes('ENTRY -6.5°') && label.includes('PEAK ' + peakG + ' g'))).toBe(true);
+    // With no saved run or plan the canvas flies the default guided entry.
+    const peakG = P.entryProfile(-6.5, { plan: P.entryPlan() }).summary.peakG;
+    const header = labels.find((label) => label.includes('ENTRY -6.5°'));
+    expect(header, 'the default entry angle').toBeTruthy();
+    const shown = /PEAK ([\d.]+) g/.exec(header);
+    expect(shown, 'peak g is shown').toBeTruthy();
+    expect(Math.abs(Number(shown[1]) - peakG), 'peak g of the flown trajectory').toBeLessThanOrEqual(0.05);
     expect(labels).toContain('HEAT FLUX');
     expect(labels.some((label) => /°C$/.test(label))).toBe(false);
     expect(Number(frames[0].dataset.entryTime)).toBe(0);
@@ -486,9 +513,17 @@ describe('Moon Mission loops', () => {
     // The sky was three fixed gradients switched on a raw counter: still mid-blue
     // at 160 km, with no horizon at all from 4 km to over 100 km.
     const count = Math.ceil((5 + P.launchProfile().summary.duration / 30) * 60) + 2;
-    const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count);
+    // jsdom has no 2D raster. Offscreen sky canvases record each image they receive,
+    // and drawImage keeps the image a canvas held when it was drawn.
+    const raster = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+      const canvas = this;
+      return { canvas, createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+        putImageData: (image) => { canvas.uploaded = { width: image.width, height: image.height, data: image.data.slice() }; } };
+    });
+    let frames;
+    try { ({ frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count, 1000 / 60, undefined, { canvas: true })); }
+    finally { raster.mockRestore(); }
     const hudKm = (f) => Number(f.dataset.launchAltitude) / 1000;
-    const rgb = (s) => s.match(/\d+/g).map(Number);
     // Find a tangent by bisecting the independent ray/sphere discriminant.
     // The default test canvas is 500 x 400, with eye level at 0.6 H.
     const tangentY = (km, x) => {
@@ -509,10 +544,24 @@ describe('Moon Mission loops', () => {
     let checked = 0;
     flying.forEach((f, i) => {
       if (i % 20) return;
-      const km = hudKm(f), want = P.skyAt(km);
-      const sky = f.grads.find((g) => g.stops.length === 2 && g.stops.every((c) => /^rgb\(/.test(c)));
+      // The sky is the spherical-atmosphere raster for the HUD height, drawn over the
+      // whole canvas. Compare what is composited (color x opacity, and opacity) for
+      // every pixel: exact above the reuse ceiling, within 3 levels of a fresh build
+      // where a held raster may be shown. One wrong unit (km for m) moves them all.
+      const km = hudKm(f);
+      const sky = f.images.find((im) => im.x === 0 && im.y === 0 && im.uploaded);
       expect(sky, km + ' km: a sky').toBeTruthy();
-      rgb(sky.stops[0]).forEach((c, k) => expect(Math.abs(c - rgb(want.top)[k]), km + ' km zenith').toBeLessThanOrEqual(3));
+      const want = P.launchAtmosphereGeometry(km * 1000, sky.w, sky.h, Number(f.dataset.launchDetail));
+      expect([sky.uploaded.width, sky.uploaded.height], km + ' km sky raster size').toEqual([want.columns, want.rows]);
+      const shown = sky.uploaded.data, composited = (p, k, c) => c === 3 ? p[k + 3] : p[k + c] * p[k + 3] / 255;
+      let worst = 0;
+      for (let k = 0; k < want.pixels.length; k += 4) for (let c = 0; c < 4; c++) worst = Math.max(worst, Math.abs(composited(shown, k, c) - composited(want.pixels, k, c)));
+      if (km * 1000 >= P.launchSkyReuseTop) expect(worst, km + ' km sky pixels').toBe(0);
+      else expect(worst, km + ' km sky within 3 levels').toBeLessThanOrEqual(3);
+      // Overhead air: opaque blue low down, nearly clear (space shows) by 50 km.
+      const zenithAlpha = sky.uploaded.data[(sky.uploaded.width >> 1) * 4 + 3] / 255;
+      if (km < 5) expect(zenithAlpha, km + ' km zenith').toBeGreaterThan(0.9);
+      if (km > 50) expect(zenithAlpha, km + ' km zenith').toBeLessThan(0.1);
       // The ground follows tangent rays at the center and padded right edge.
       // A huge decorative circle cannot supply the correct camera projection.
       expect(f.arcs.some((a) => a.r > 1000), km + ' km: no giant Earth circle').toBe(false);
@@ -553,14 +602,60 @@ describe('Moon Mission loops', () => {
       const { frames } = run(state, (p) => !!p['data-launch-canvas'], 1, 1000 / 60, width);
       const f = frames.find((x) => x.text.some((t) => /^MAX Q passed/.test(t.s)));
       expect(f, width + 'px: the banner is up').toBeTruthy();
-      const banner = f.rects.find((r) => r.fill === 'rgba(15,23,42,0.55)');
-      const boxes = f.rects.filter((r) => r.fill === 'rgba(0,0,0,0.5)');
-      expect(boxes.length).toBe(2);
+      // Panels are the dark translucent backings that hold the telemetry readouts:
+      // two corner boxes on a wide canvas, one strip along the bottom on a phone.
+      const holds = (r, t) => t.x >= r.x && t.x <= r.x + r.w && t.y >= r.y && t.y <= r.y + r.h;
+      const backing = (r) => { const m = /^rgba\(\d+,\d+,\d+,([\d.]+)\)$/.exec(String(r.fill)); return !!m && Number(m[1]) >= 0.5; };
+      const bannerText = f.text.find((t) => /^MAX Q passed/.test(t.s));
+      const banner = f.rects.find((r) => backing(r) && holds(r, bannerText));
+      expect(banner, width + 'px: the banner has a backing').toBeTruthy();
+      const readouts = f.text.filter((t) => /^(ALTITUDE|VELOCITY|STAGE|PITCH|G-FORCE|AIR PUSH)/.test(t.s));
+      expect(readouts.length, width + 'px: telemetry is drawn').toBeGreaterThanOrEqual(5);
+      const boxes = f.rects.filter((r) => r !== banner && backing(r) && readouts.some((t) => holds(r, t)));
+      readouts.forEach((t) => expect(boxes.some((b) => holds(b, t)), width + 'px: ' + t.s + ' sits on a panel').toBe(true));
       boxes.forEach((b) => {
         const apart = banner.y >= b.y + b.h || b.y >= banner.y + banner.h || banner.x >= b.x + b.w || b.x >= banner.x + banner.w;
         expect(apart, width + 'px: banner ' + JSON.stringify(banner) + ' vs box ' + JSON.stringify(b)).toBe(true);
       });
     }
+  }, 60_000);
+
+  it('launch: a climb painted at 30 fps drops to half-detail sky and ground at the first check; 60 fps keeps full detail', () => {
+    const raster = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+      const canvas = this;
+      return { canvas, createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+        putImageData: (image) => { canvas.uploaded = { width: image.width, height: image.height, data: image.data.slice() }; } };
+    });
+    try {
+      const launchCanvas = (p) => !!p['data-launch-canvas'];
+      // 60 fps first: a slow launch makes later launches in the session start at half detail.
+      const fast = run({ missionPhase: 1 }, launchCanvas, 5 * 60 + 60, 1000 / 60, undefined, { canvas: true }).frames;
+      expect(fast.filter((f) => Number(f.dataset.launchTime) > 0).length, '60 fps climbing frames').toBeGreaterThan(50);
+      expect(fast.every((f) => f.dataset.launchDetail === '1'), '60 fps stays at full detail').toBe(true);
+      const slow = run({ missionPhase: 1 }, launchCanvas, 5 * 30 + 45, 1000 / 30, undefined, { canvas: true }).frames;
+      const liftoff = slow.findIndex((f) => Number(f.dataset.launchTime) > 0);
+      const switched = slow.findIndex((f) => f.dataset.launchDetail === '0.5');
+      expect(liftoff, 'lifted off').toBeGreaterThan(0);
+      expect(switched - liftoff, 'switches after 30 climbing frames, not before').toBeGreaterThanOrEqual(29);
+      expect(slow.slice(switched).every((f) => f.dataset.launchDetail === '0.5'), 'stays at half detail').toBe(true);
+      const last = slow[slow.length - 1], sky = last.images.find((im) => im.x === 0 && im.y === 0 && im.uploaded);
+      const want = P.launchAtmosphereGeometry(Number(last.dataset.launchAltitude), sky.w, sky.h, 0.5);
+      expect([sky.uploaded.width, sky.uploaded.height], 'half-detail sky raster').toEqual([want.columns, want.rows]);
+    } finally { raster.mockRestore(); }
+  }, 120_000);
+
+  it('launch: the cloud layer takes on the horizon haze, farther clouds more than near ones', () => {
+    const time = 20, state = { missionPhase: 1, animPaused: true, launchRun: { version: 1, time, recorded: false } };
+    const frame = run(state, (p) => !!p['data-launch-canvas'], 2).frames[1];
+    const body = frame.grads.filter((g) => g.stops.length === 4 && g.stops.every((c) => /,0\.98\)$/.test(c)));
+    expect(body.length, 'clouds on screen').toBeGreaterThanOrEqual(3);
+    const limb = P.skyAt(Number(frame.dataset.launchAltitude) / 1000).limb.match(/\d+/g).map(Number);
+    const lit = body.map((g) => g.stops[0].match(/[\d.]+/g).map(Number));
+    expect(new Set(lit.map((c) => c.join())).size, 'clouds at different distances differ').toBeGreaterThan(1);
+    // Each lit side lies between the original white and the horizon haze, channel by channel.
+    lit.forEach((c) => [255, 253, 244].forEach((white, k) => {
+      expect(c[k]).toBeGreaterThanOrEqual(Math.min(white, limb[k])); expect(c[k]).toBeLessThanOrEqual(Math.max(white, limb[k]));
+    }));
   }, 60_000);
 
   it('Fly Another Mission clears what revealed the coast and launch cards', () => {
@@ -608,9 +703,11 @@ describe('Moon Mission loops', () => {
         returnRun: { version: 1, angle: -6.5, time: fraction * p.summary.duration, recorded: false } }, teiCanvas, 2);
       const frame = frames[1], view = P.returnView(Number(frame.dataset.returnAltitude));
       const text = frame.text.map(item => item.s).join(' ');
-      expect(text).toContain((view.lit * 100).toFixed(1) + '% illuminated');
+      // The percentage under the fixed Sun preset is Earth's lit phase from the craft.
+      const phase = /Fixed Sun preset\D*([\d.]+)%/.exec(text);
+      expect(phase, 'Earth phase under the fixed Sun preset').toBeTruthy();
+      expect(phase[1]).toBe((view.lit * 100).toFixed(1));
       expect(text).toContain((2 * view.angRadiusDeg).toFixed(2) + '°');
-      expect(text).toContain('Fixed Sun preset');
     }
   });
 

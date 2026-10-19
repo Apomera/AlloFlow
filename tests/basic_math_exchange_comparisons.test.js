@@ -68,8 +68,14 @@ describe('arithmetic exchange comparisons',()=>{
     expect(document.querySelector('[data-place="100"]').dataset.placeDelta).toBe('-1');
     expect(document.querySelector('[data-value-change]').textContent).toContain('both representations have value 102');
     await click('Next step');expect(document.querySelector('[data-place="1"]').dataset.placeDelta).toBe('10');
+    // Since f238731dd (2026-09-05) each place is regrouped and then settled before moving left, so
+    // the 38 is taken away as 8 ones and then 3 tens, each its own value-changing step.
     await click('Next step');expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
-    expect(document.querySelector('[data-value-change]').textContent).toContain('102 − 38 = 64');
+    expect(document.querySelector('[data-value-change]').textContent).toContain('102 − 8 = 94');
+    await click('Next step');expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
+    expect(document.querySelector('[data-value-change]').textContent).toContain('94 − 30 = 64');
+    await click('Next step');expect(document.querySelector('[data-value-change]').textContent).toContain('Value: 64.');
+    await click('Previous step');await click('Previous step');expect(document.querySelector('[data-value-change]').textContent).toContain('102 − 8 = 94');
     await click('Previous step');expect(document.querySelector('[data-value-change]').textContent).toContain('both representations have value 102');
   });
   it('shows carry changes in the correct places while conserving the sum',async()=>{

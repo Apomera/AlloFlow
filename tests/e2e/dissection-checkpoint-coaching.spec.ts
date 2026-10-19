@@ -82,9 +82,13 @@ for (const layout of [
   const choices = panel.locator('.diss-learning-check__option');
   const feedbackId = guided ? 'diss-guided-observation-feedback' : 'diss-learning-check-feedback';
   const responseKey = reflecting ? 'reflection' : 'prediction';
-  const wrongIndex = reflecting ? 0 : 1, correctIndex = reflecting ? 1 : 0;
   await expect(choices).toHaveCount(3);
   const names = await choices.locator('.diss-learning-check__answer').allInnerTexts();
+  const correctIndex = guided ? names.findIndex(name => name.includes('Lighter, thinner ventral surface')) : (reflecting ? 1 : 0);
+  expect(correctIndex).toBeGreaterThanOrEqual(0);
+  const wrongIndices = names.map((_, index) => index).filter(index => index !== correctIndex);
+  const wrongIndex = guided ? wrongIndices[0] : (reflecting ? 0 : 1);
+  const secondWrongIndex = guided ? wrongIndices[1] : 2;
   const before = await savedWork(page);
   await choices.nth(wrongIndex).click();
   if (baseline) {
@@ -103,14 +107,14 @@ for (const layout of [
   await page.keyboard.press('ArrowRight'); await expect(choices.nth(wrongIndex + 1)).toBeFocused(); expect(await state(page)).toEqual(first);
   await page.keyboard.press('ArrowLeft'); await expect(choices.nth(wrongIndex)).toBeFocused(); expect(await state(page)).toEqual(first);
   await captureAndAudit(page, panel, choices.nth(wrongIndex), layout.name, layout.available, !!layout.large);
-  await choices.nth(2).focus(); await page.keyboard.press('Enter');
+  await choices.nth(secondWrongIndex).focus(); await page.keyboard.press('Enter');
   const second = await state(page);
   const secondMessage = guided ? second.guidedObservationFeedback.message : second.procedureByLayer.skin.learningChecks.inspect[`${responseKey}Feedback`];
-  await assertCoaching(page, panel, choices.nth(2), feedbackId, names[2], secondMessage);
+  await assertCoaching(page, panel, choices.nth(secondWrongIndex), feedbackId, names[secondWrongIndex], secondMessage);
   await expect(choices.nth(wrongIndex)).not.toHaveAttribute('aria-describedby', feedbackId);
   await expect(choices.nth(wrongIndex).locator('..').locator('.diss-learning-check__feedback')).toHaveCount(0);
   expect(await savedWork(page)).toEqual(before);
-  await choices.nth(2).locator('..').screenshot({ path: `${out}/after-${layout.name}-moved-coaching.png`, style: captureStyle });
+  await choices.nth(secondWrongIndex).locator('..').screenshot({ path: `${out}/after-${layout.name}-moved-coaching.png`, style: captureStyle });
   await choices.nth(correctIndex).focus(); await page.keyboard.press('Enter');
   const after = await savedWork(page), finalState = await state(page);
   if (guided) {

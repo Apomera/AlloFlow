@@ -947,12 +947,12 @@ const createPersonas = deps => {
       try {
         await liveRef.current.ensureGenerationSourceResolver();
       } catch (_) {
-        liveRef.current.addToast('Reading choices could not load. Please try again.', 'info');
+        liveRef.current.addToast(liveRef.current.t('toasts.source_choices_load_failed'), 'info');
         return;
       }
       if (keys.some((key, index) => liveRef.current[key] !== initial[index])) return;
       if (!window.AlloModules?.GenDispatcher?.resolveGenerationSource) {
-        liveRef.current.addToast('Reading choices could not load. Please try again.', 'info');
+        liveRef.current.addToast(liveRef.current.t('toasts.source_choices_load_failed'), 'info');
         return;
       }
     }
@@ -1005,7 +1005,7 @@ const createPersonas = deps => {
           selectedReadingSourceId: value
         })
       }) === true) return;
-      addToast('Choose a reading in Based on before generating. More than one reading is available.', 'info');
+      addToast(t('toasts.source_choice_ambiguous'), 'info');
       return;
     }
     if (sourceResolution?.status === 'missing' && (selectedReadingSourceId || sourceConfig.inputArtifactId || sourceConfig.selectedReadingSourceId || Array.isArray(history) && history.some(item => item && ['analysis', 'simplified'].includes(item.type)))) {
@@ -3050,7 +3050,7 @@ const createPersonas = deps => {
         personaSummaryError: null,
         isGeneratingSummary: false
       }));
-      addToast(translateOrFallback(t, 'persona.summary.already_saved', {}, 'This interview summary is already saved.'), 'info');
+      addToast(t('persona.summary.already_saved'), 'info');
       return cachedSummary;
     }
     abortModelRequest(activeSummaryRequest);

@@ -72,7 +72,9 @@ describe('male Northern cardinal shared anatomy', () => {
       const shader = { uniforms: {}, vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader };
       bird.wings[0].children[0].material.onBeforeCompile(shader);
       expect(shader.uniforms.awCardinal.value).toBe(1); expect(shader.uniforms.awJay.value).toBe(0);
-      expect(shader.fragmentShader).toContain('awCovert * (1.0 - awCardinal)');
+      // Dove covert spots are keyed to their own flag, which is off for the cardinal.
+      expect(shader.uniforms.awDove.value).toBe(0);
+      expect(shader.fragmentShader).toContain('awDove * awCovert');
     } finally { bird.dispose(); }
   });
 

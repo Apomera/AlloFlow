@@ -524,11 +524,18 @@ describe('Canvas workspace recovery integration contracts', () => {
     // Shell deep links now suppress both landing surfaces, but do not change their
     // recovery-first ordering. Include that shared guard in the canonical anchor.
     const launchPadGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
-    const coachGate = anti.indexOf('{isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
+    // 2026-10-16 onboarding redesign (f3c6402f3): OnboardingCoach is no longer its own
+    // gate; it renders embedded as the LaunchPad's `companion`, inside the same gate.
+    const launchPadEnd = anti.indexOf('\n      })}', launchPadGate);
+    const launchPadBlock = anti.slice(launchPadGate, launchPadEnd);
+    const coachAt = launchPadBlock.indexOf('companion: window.AlloModules.OnboardingCoach ? React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {');
 
     expect(recoveryGate).toBeGreaterThan(-1);
     expect(launchPadGate).toBeGreaterThan(recoveryGate);
-    expect(coachGate).toBeGreaterThan(launchPadGate);
+    expect(launchPadEnd).toBeGreaterThan(launchPadGate);
+    expect(coachAt).toBeGreaterThan(-1);
+    expect(launchPadBlock.slice(coachAt)).toContain('embedded: true');
+    expect(anti.split('React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach').length - 1, 'no second, ungated coach mount').toBe(1);
     // Current gate chrome (the decorated z-[13000]/data-attribute variant was
     // replaced in the recovery rework): full-viewport scrim above the app.
     expect(recoveryGateHeader).toContain('fixed inset-0');

@@ -4,12 +4,12 @@
   "clientWidth": 388,
   "choices": [
     {
-      "height": 64,
+      "height": 75.59375,
       "scrollWidth": 364,
       "clientWidth": 364
     },
     {
-      "height": 73.1875,
+      "height": 64,
       "scrollWidth": 364,
       "clientWidth": 364
     },
@@ -66,18 +66,18 @@
       "clipped": false
     },
     {
-      "text": "Lighter, thinner ventral surface.",
-      "size": 15.2,
-      "clipped": false
-    },
-    {
       "text": "Transparent third eyelid protecting eye underwater.",
-      "size": 15.2,
+      "size": 16,
       "clipped": false
     },
     {
       "text": "External eardrum behind eye.",
-      "size": 15.2,
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Lighter, thinner ventral surface.",
+      "size": 16,
       "clipped": false
     },
     {

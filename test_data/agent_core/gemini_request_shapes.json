@@ -1,6 +1,6 @@
 {
   "text": {
-    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-fixture-primary:generateContent?key=fixture-key",
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-fixture-primary:generateContent",
     "body": {
       "contents": [{ "parts": [{ "text": "Return a grounded JSON fixture." }] }],
       "generationConfig": {
@@ -25,7 +25,7 @@
     }
   },
   "imageEditing": {
-    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-image-fixture:generateContent?key=fixture-key",
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-image-fixture:generateContent",
     "body": {
       "contents": [{
         "parts": [

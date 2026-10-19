@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Inventiones quaesitionis: {cards} tabellae in {topics} argumentis.",
+  "stem.flightsim.learn_library_counts": "{cards} tabellae · {topics} argumenta",
+  "stem.flightsim.learn_search_clear": "Quaestionem delere",
+  "stem.flightsim.learn_search_empty": "Nullae tabellae doctrinae cum «{query}» congruunt. Aliud vocabulum experire aut quaestionem dele.",
+  "stem.flightsim.learn_search_none": "Nullae tabellae doctrinae congruentes",
+  "stem.flightsim.learn_search_cards": "{count} tabellae doctrinae",
+  "stem.flightsim.quiz_review_progress": "Ad {answered} ex {total} quaestionibus responsum est · {missed} responsa falsa",
+  "stem.flightsim.quiz_review_missed": "Responsa falsa retractare",
+  "stem.flightsim.quiz_next_unanswered": "Proxima quaestio sine responso",
+  "stem.flightsim.quiz_review_all_answered": "Ad omnem quaestionem primum responsum datum est. Quaestiones perperam solutas ad exercitationem sine punctis retracta, aut novum conatum incipe.",
+  "stem.flightsim.planner_drone_agl": "{ft} pedes supra terram",
+  "stem.flightsim.sprint_native_title": "Certamen geographicum breve",
+  "stem.flightsim.sprint_timed_hint": "Iter procedit dum respondes. Intermitte ut legas; perge antequam responsum eligas.",
+  "stem.flightsim.sprint_warp_reference": "Iter ad hanc exercitationem geographicam acceleratur. Indicia velocitatis velocitatem itineris annuntiatam ostendunt; hoc iter facultates aeroplani non metitur.",
+  "stem.flightsim.sprint_save_menu": "Certamen servare et ad indicem redire",
+  "stem.flightsim.sprint_next_stop": "Proxima statio: {place}",
+  "stem.flightsim.geoq_approaching_city": "Ad quam urbem appropinquas?",
+  "stem.flightsim.sprint_time_remaining": "Tempus reliquum: {seconds} secunda"
+}

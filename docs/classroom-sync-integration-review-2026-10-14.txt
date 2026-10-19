@@ -1,0 +1,271 @@
+Google Classroom linked-sync integration review
+October 14, 2026 (America/New_York)
+
+Host-compatibility clarification: October 15, 2026 (America/New_York)
+The Canvas restriction below belongs to the candidate's same-origin protocol,
+not to a general inability of Gemini Canvas to open popups or exchange messages.
+Existing veraPDF integration demonstrates a cross-origin companion pattern.
+Canvas is a feasible guarded-adapter target, pending sandbox and live-flow tests;
+it should not be grouped with Electron's separate external-browser handoff issue.
+
+Decision
+The design is viable as an opt-in, read-only Classroom membership refresh.
+It is not ready for a wholesale merge or a live-school rollout. Selectively
+adapt the hardened candidate around current main's existing safe-update planner,
+after the transaction, storage, export and host-compatibility issues below are fixed.
+This is not assignment, grade, guardian or bidirectional Classroom synchronization.
+
+This pass changed review artifacts only. No production integration, live Google
+account, student record, OAuth configuration, commit, push or deployment was used.
+Tyler's worktrees and all unique reader work remain untouched.
+
+Versions and evidence
+Main HEAD at review start: 51e17d0111541beb590f151e3b57f8dc62c1dadb.
+Main has substantial uncommitted work; HEAD alone does not identify its source.
+Original Tyler reference: d7bb1b940d2c96c91517f50f204ba76cfaf73035.
+Relevant original commits: 2c0497fb93dd41b202347f2fde1a79acbdd25a2d,
+ad7d5769b08b2cc18a79d9b52cc24ff65887ef27,
+b1b6888401db4b007d289ca7b21ce57c2786bdbc, and d7bb1b940 above.
+
+The actual C:/tmp/tyler_integration_candidate contains additional local fixes.
+Eight source/test files were copied without modification into:
+  .codex-artifacts/classroom-sync-review-2026-10-14/candidate/
+Candidate references below refer to this frozen snapshot, not current main.
+No configuration or credentials were copied.
+
+SHA-256 identifiers:
+  candidate teacher_source.jsx
+  ACF5FAED421F3D2DEE118D7BD277570E7D9B67F3FF7BB3C7DDB9F9FE5CEF8075
+  candidate classroom_import_app.js
+  44CA678336F570A44AAF35EBB0A6F6AE489E8CC82A5D940C218CC0243AE10DDE
+  candidate classroom_import_service.js
+  7E6B6270C771D18C0F5865CF65B571A4795BAA8031E0982C4DC2E43E26F3EBAF
+  main teacher_source.jsx
+  2BF83A80E7BA37367EBFE2DD6B38752B702FCCDA3F4CB96C0FA2C7D2A887F211
+  main AlloFlowANTI.txt
+  9D0308ABE70AADE0A9576C8B34F2965503D899FBC46B34F59255C6AD82CAFAEA
+
+What is worth keeping
+- Main and the candidate use the same safe-update planner. Handler-level probes
+  confirmed it preserves local groups/history, retains absent learners, leaves
+  newcomers unassigned, rejects edits made after preview, and is idempotent.
+- Read-only acquisition already checks the selected teacher/account, course,
+  complete pagination, malformed/duplicate identities, response bounds and errors.
+- A fresh per-class key with domain-separated HMAC derivation gives stable opaque
+  class/learner IDs; returning linked learners retain their current codenames.
+- The helper keeps the private name preview separate from codename roster output.
+  Review in the helper plus final review in AlloFlow is the right flow.
+- Exact origin AND source-window validation should remain mandatory.
+- Wrong Classroom courses are refused by the derived class-ID check.
+
+Earlier recommendations, evaluated
+1. Opt-in pilot: still appropriate. Main's public configuration remains disabled
+   (enabled:false, reviewedDeployment:false, allowedOrigins:[]).
+2. First link only into a new/setup-only destination: NOT implemented safely yet.
+   Existing learners/history need a separate migration design, backup and explicit
+   identity mapping. Never match by real name/codename or silently regenerate IDs.
+3. Preserve groups/history and retain absent learners: implemented for repeat
+   safe updates, but not for first-link replacement. See finding 1.
+4. Keep both reviews: implemented, but their lifetime/ownership needs correction.
+5. Recover with the matching roster plus sync key: necessary; download initiation
+   is not proof that a backup was saved. A restore exercise must be an acceptance
+   test. Key loss must never silently become a new link to an established class.
+6. Separately approved deployment/pilot: still required. Mock tests cannot prove
+   school permissions, OAuth approval, popup policies or real roster consistency.
+
+Remaining findings
+
+[P1] 1. First-link ownership is captured too late and replacement discards setup.
+Candidate teacher_source.jsx:1793 opens the helper without pinning its destination.
+The baseRoster guard at1738/1753 captures the roster only when the payload arrives.
+A probe opened for class A, switched to B before delivery, then confirmed the
+preview: B was replaced. The newer guard correctly rejects changes AFTER staging,
+but does not cover the earlier interval. This requires confirmation; it is not
+an unprompted automatic overwrite.
+Candidate service:466 creates empty groups/default settings; teacher:1703 replaces
+the roster. Therefore first linking also loses groups/settings just configured
+through the new onboarding, even if there are no learners yet.
+Required: pin destination class and revision at helper launch; invalidate on
+change. Preserve an explicitly reviewed allowlist of setup-only fields, or refuse
+the operation. Existing learners, progress, seating, goals and submission-key state
+must not be treated as an empty destination merely because a learner count is zero.
+
+[P1] 2. Link success is announced before durable roster persistence.
+Candidate teacher:1764 saves the key first, which is an improvement. But commit at
+1703-1720 calls setRosterKey and reports success before main's storage effect runs
+(AlloFlowANTI.txt:17117). A denied-write probe retained the key and sent success,
+then reported that the roster was not saved. Recovery can leave a split link/roster.
+Required: a host-owned durable commit result, checked before acknowledgment/closing
+the helper. Couple the writes through a recoverable transaction design; a sequence
+of unchecked localStorage writes is not atomic. Failure must keep the reviewed
+draft and offer retry/recovery, never claim success.
+
+[P1] 3. Other-tab roster changes can be overwritten.
+Main loads its roster once at17049 and writes changed state at17117 without a
+stored revision comparison. The candidate refreshes keys across tabs, not rosters.
+An injected newer stored roster was overwritten by a stale tab's accepted update.
+This is an inherited main limitation exposed by sync, not a Tyler-only regression.
+Required: durable revision checking and a serialized transactional writer. A
+conflict must require a new preview, preserving the other tab's work. Merely doing
+a read/check/write in separate localStorage calls does not eliminate races.
+
+[P1] 4. General backup exports the supposedly separately held sync key.
+Current desktop/web-app/public/index.html:178 copies every localStorage entry into
+ordinary alloflow-saved-data JSON. A probe confirmed that the proposed key store
+is included. Keeping keys out of rosterKey alone is insufficient.
+Required: shared secret classification/exclusion for routine backup/export and
+diagnostics, plus an explicitly labelled private key/recovery export. Audit reset,
+restore, logs and future backup paths too. These identifiers are pseudonyms, not
+guaranteed anonymity. Browser-local storage and UI role gates are not protection
+against an untrusted person with access to the same browser profile or origin.
+
+[P1] 5. Old helper sessions are not revoked reliably.
+Candidate teacher:1447-1468 answers hello with key/context before checking isOpen;
+the old helper/pending key survives a class switch. Both were reproduced. The
+permission at1241 excludes Family/Independent but cannot distinguish Teacher from
+Student/Start; main mounts the panel persistently at44437 with no explicit teacher
+capability. Unlink at1838 does not invalidate an already staged update: a probe
+unlinked, confirmed the old preview, and still applied its additions.
+Required: one operation record binding unpredictable request ID, expected window,
+origin, explicit adult-teacher capability, destination revision, key revision and
+lifetime. Close, role/Start change, class change, unlink/key replacement, new helper
+and unmount must invalidate it and discard pending previews.
+
+[P1] 6. Mixed cached module versions can create a falsely linked class.
+Candidate classroom_import_app.js:191 falls back to random-ID conversion when the
+linked converter is missing, but249 still sends mode link/sync. The probe used
+current service1.0 with candidate UI and reproduced a link using the wrong identity
+scheme, which cannot be refreshed with the stored key.
+Required: explicit protocol/capability negotiation and a fail-closed linked mode.
+Standalone random-ID download stays a separately named initialization operation.
+
+[P2] 7. Helper asynchronous results and acknowledgments need operation IDs.
+Candidate app:285 replaces context without invalidating an in-flight conversion.
+A protocol probe switched keys during conversion and received a sendable result
+from the old key. Ordinary UI timing for that specific context race was not
+demonstrated; the helper nevertheless explicitly accepts these context messages.
+App:249/290 also has no acknowledgment correlation. A delayed old acknowledgment
+cleared and scheduled closure of a newly connected session. clearSession:85 leaves
+the handoff timer alive, which can overwrite the cleared status.
+Required: immutable per-read context, generation/request checks on every result
+and reply, and cancellation of handoff/auto-close timers on reset/reconnect.
+
+[P2] 8. Name reservations and recovery need completeness.
+Candidate teacher:1032 reserves only IDs matching the linked UUID form. Legacy or
+manual learners outside that form can have codenames reused by a newcomer; the
+planner refuses the collision, so this is a blocked valid update, not silent loss.
+Reserve all destination codenames separately from the linked-ID matching map.
+Deleted local learners can also return with the same HMAC ID but a new codename,
+and old codenames may be reused; preserve bounded retired bindings or require an
+explicit re-addition review to avoid misleading old worksheets.
+Undo after first link restores the previous roster but leaves the imported class's
+key behind (reproduced). Restore/unlink/undo need consistent recovery semantics
+and a way to manage orphaned keys without silently deleting unrelated class keys.
+
+Already fixed in the LOCAL candidate; retain these improvements
+- Closing a pending handoff no longer throws a temporal-dead-zone ReferenceError.
+- Family-first mount then Teacher no longer overwrites an existing key store.
+- New links hit an explicit capacity guard instead of silently evicting old keys.
+- Key-save failure is reported before replacing the roster.
+- Destination changes after staging are detected.
+- Linked-mode recovery text no longer recommends a hidden download control.
+Do not mistake the older committed defects for unfixed local-candidate defects.
+
+Host and deployment compatibility
+- Same-origin ordinary browser: appropriate first target after the fixes, with
+  explicit popup/COOP/CSP and reload/account-switch testing.
+- Gemini Canvas/CDN: the candidate's same-origin opener protocol cannot transfer a
+  link unchanged. This is an adapter limitation, NOT a blanket Canvas limitation.
+  Existing veraPDF source opens a CDN companion at view_pdf_audit_source.jsx:5541,
+  pins the returned window at5552 and sends PDF bytes to VERAPDF_ORIGIN at5557.
+  Its iframe/popup fallback comments at5650 explicitly cover Canvas restrictions.
+  Cross-origin postMessage is a supported browser mechanism; identical origins
+  are not required for messaging. The candidate instead reads opener.location.origin
+  at classroom_import_app.js:19 and rejects a different origin at277, while the
+  parent passes its own origin to the acceptance check at teacher_source.jsx:1450.
+  Those application-level assumptions need a reviewed cross-origin adapter.
+  Reuse the companion architecture, not veraPDF's complete trust policy: validator
+  replies at verapdf/verapdf_validator.html:458/468 currently use '*', and its
+  listener at449 does not establish a trusted caller. Pin the Classroom helper's
+  origin and exact window, use a fresh operation/session binding, enforce lifecycle
+  revocation, and define a deliberate paired return channel for sandboxed/opaque
+  Canvas origins. Neither a broad Google-host wildcard nor origin 'null' proves
+  caller identity. Keep tokens/raw names in the helper. Until verified, retain an
+  explicitly download-only initialization fallback, not a falsely successful sync.
+- Desktop Electron: main.cjs:1026-1055 opens this URL externally and denies the
+  popup. The system browser cannot use the assumed in-process window.opener handoff.
+  A future desktop continuation requires its own reviewed system-browser callback
+  or explicit private-file workflow, not Google auth inside an embedded webview.
+- Existing iframe guard in helper requires the HELPER to be top-level. It does
+  not require its opener to be top-level, so opening the helper from Canvas can
+  satisfy that guard. CDN availability alone does not establish a trusted return
+  channel. The actual Canvas sandbox/opener behavior and OAuth round trip still
+  need live verification; this clarification is based on repository inspection.
+
+Browser messaging reference checked for the October 15 clarification:
+https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
+
+Google sources checked for this review
+The current API supports the existing course/roster read-only approach without
+adding email/photo access for keyed matching. List pagination must retain the same
+request parameters and follow nextPageToken; it is not an atomic roster snapshot.
+https://developers.google.com/workspace/classroom/reference/rest/v1/userProfiles/get
+https://developers.google.com/workspace/classroom/reference/rest/v1/courses.students/list
+https://developers.google.com/workspace/classroom/guides/manage-users
+Google's policy requires appropriate OAuth clients/origins and forbids directing
+authorization into developer-controlled embedded user-agents. Production approval
+requirements and school-admin controls need separate verification for the actual
+deployment; this report is not a compliance certification.
+https://developers.google.com/identity/protocols/oauth2/policies
+https://developers.google.com/identity/oauth2/web/reference/js-reference
+
+Recommended local integration sequence
+1. Add a small Classroom adapter/protocol and explicit teacher capability to current
+   main. Retain the existing planner and newer reader/onboarding code. Do not copy
+   Tyler's entire teacher_source.jsx or import private-label functionality.
+2. Add the durable/revision-checked commit, key export boundaries, session lifecycle
+   and first-link/setup-only rules. Port the local candidate's verified fixes.
+3. Add regression coverage for all findings above, repeated sync, key restore,
+   partial save/crash recovery, two tabs, undo/unlink, module skew, and every role.
+   Browser-test the full Class & Materials -> helper -> reviewed update flow using
+   fabricated responses, desktop/mobile layouts and keyboard navigation.
+4. Keep public configuration disabled. After explicit approval, run a bounded
+   same-origin school pilot with backup/restore, real permissions and roster churn.
+5. Prototype the guarded cross-origin Canvas adapter using the existing companion
+   pattern, including opaque-origin sandbox cases and exact session revocation.
+   Design Electron's system-browser continuation and established-class migration
+   separately. Do not enable unsupported sync buttons that silently become
+   replacement imports.
+
+Verification completed
+- 128 current-main tests passed in six suites: classroom_import_service,
+  classroom_import_app, roster_safe_updates, roster_reading_preferences,
+  teacher_store_roster_export and roster_quick_group_profile_options.
+- Three review-only probes exercised real candidate code with fabricated data:
+  boundary-probe.cjs: React/jsdom with hardened JSX compiled in memory;
+  api-review-probes.cjs: actual helper and converters with fake Google transport;
+  roster-state-probe.cjs: extracted handlers/planner and actual host persistence
+  effect with mocked UI/normalization/storage. This last probe is not full e2e.
+- Results live beside the frozen snapshot under the review artifacts directory.
+  A probe exit0 means its observations completed, NOT that the proposed product
+  passed acceptance. These probes deliberately reproduce remaining failures.
+- API probe readiness was corrected before final results: it now awaits actual
+  HMAC completion and asserts a real handoff before testing reset/timers. Earlier
+  transient false-negative timer output was discarded. Final fixture errors:0;
+  network calls:0.
+- No real OAuth, browser popup transport, live membership, full CI or deployment
+  was tested. Successful integration remains conditional on the fixes and gates.
+
+Attribution
+Preserve Tyler <tyler@physher.com> credit and source commits for any later adapted
+commit/PR. Preserve the source commits' existing coauthor metadata as applicable;
+distinguish Tyler's design from subsequent integration hardening and new tests.
+No GitHub posting or new commit was performed during this review.
+
+Local integration follow-up: October 15, 2026
+The guarded browser integration and Canvas pairing adapter have now been adapted
+into current main, without enabling Google access or publishing the checkout.
+The findings and probe results above describe the earlier candidate review, not
+the current implementation. See classroom-guarded-integration-verification-2026-10-15.txt
+for current test evidence and remaining Canvas storage/live-pilot boundaries,
+and classroom-guarded-integration-provenance-2026-10-15.txt for Tyler's attribution.

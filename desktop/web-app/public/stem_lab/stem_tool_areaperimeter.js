@@ -354,7 +354,11 @@
       }
 
       function rangeControl(label, value, min, max, onChange, suffix) {
-        var id = 'ap-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        // Runs of ASCII punctuation/spaces become one hyphen (English ids unchanged); every
+        // non-ASCII character keeps its code point, so translated labels cannot collide.
+        var id = 'ap-' + label.toLowerCase().replace(/[^a-z0-9]+/g, function(run) {
+          return run.replace(/[ -~]/g, '').split('').map(function(ch) { return '_' + ch.charCodeAt(0).toString(36); }).join('') || '-';
+        });
         return h('label', { key: id, htmlFor: id, style: { display: 'block', color: COLORS.text, fontWeight: 700 } }, [
           h('span', { key: 'line', style: { display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '7px' } }, [
             h('span', { key: 'name' }, label),

@@ -141,7 +141,12 @@ describe('state search served backend release copies', () => {
   it('serves the same reviewed provider from every existing app preload', () => {
     const backend = fs.readFileSync('ai_backend_module.js');
     const version = createHash('sha256').update(backend).digest('hex').slice(0, 8);
-    for (const directory of ['app', 'desktop/web-app/public/app', 'desktop/app-build', 'desktop/web-app/build']) {
+    // desktop/app-build and desktop/web-app/build are untracked build output: present after a
+    // local build, absent on a CI checkout. The two tracked copies must always be checked.
+    const directories = ['app', 'desktop/web-app/public/app', 'desktop/app-build', 'desktop/web-app/build']
+      .filter((directory) => fs.existsSync(directory + '/index.html'));
+    expect(directories.slice(0, 2)).toEqual(['app', 'desktop/web-app/public/app']);
+    for (const directory of directories) {
       expect(fs.readFileSync(directory + '/ai_backend_module.js')).toEqual(backend);
       const index = fs.readFileSync(directory + '/index.html', 'utf8');
       const tags = index.match(/<script\b[^>]*\bid="alloflow-ai-backend-script"[^>]*>/g) || [];

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ദൗത്യ നിരീക്ഷണങ്ങൾ",
+  "stem.flightsim.mission_journal_targets": "പകർത്തിയ ലക്ഷ്യങ്ങൾ: {total}-ൽ {captured}.",
+  "stem.flightsim.mission_journal_complete": "എല്ലാ ദൗത്യ ലക്ഷ്യങ്ങളും തിരിച്ചെത്തിയുള്ള ലാൻഡിംഗും രേഖപ്പെടുത്തി.",
+  "stem.flightsim.mission_journal_ended": "പൂർത്തീകരണത്തിന്റെ എല്ലാ തെളിവുകളും രേഖപ്പെടുത്തുന്നതിന് മുമ്പ് ദൗത്യം അവസാനിച്ചു.",
+  "stem.flightsim.mission_journal_recovery": "അതിജീവിച്ചയാളുടെ രക്ഷാപ്രവർത്തനം രേഖപ്പെടുത്തിയത്: {value}.",
+  "stem.flightsim.mission_journal_return": "താവളത്തിലേക്കുള്ള മടക്ക ലാൻഡിംഗ് രേഖപ്പെടുത്തിയത്: {value}.",
+  "stem.flightsim.mission_guidance_title": "ദൗത്യ മാർഗനിർദേശം",
+  "stem.flightsim.mission_route": "{target} · ദിശ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "പുറപ്പെട്ട സ്ഥലം",
+  "stem.flightsim.mission_read_status": "ദൗത്യ നില വായിക്കുക",
+  "stem.flightsim.mission_return_criterion": "{target}-ൽ നിന്ന് {distance} nm പരിധിക്കുള്ളിൽ ഇറങ്ങുക; നിലത്തെ അപേക്ഷിച്ചുള്ള വേഗം {speed} kt-ൽ താഴെയും താഴേക്കിറങ്ങുന്ന നിരക്ക് {fpm} fpm-ൽ താഴെയും നിലനിർത്തുക.",
+  "stem.flightsim.mission_unavailable": "ദൗത്യ ലക്ഷ്യ വിവരങ്ങൾ ലഭ്യമല്ല. ഈ പറക്കൽ അവസാനിപ്പിച്ച് പുതിയ ദൗത്യം തുടങ്ങുക.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft പരിധിക്കുള്ളിൽ, ഭൂമിക്ക് മുകളിൽ {min} ft-ൽ കൂടുതലും {max} ft-ൽ കുറവുമായ ഉയരത്തിൽ, ഭൂമിയോടുള്ള വേഗം {speed} kt-ൽ താഴെയാക്കി {hold} s തുടരുക."
+}

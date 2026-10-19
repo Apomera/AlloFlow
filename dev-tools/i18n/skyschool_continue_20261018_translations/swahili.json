@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Malengo ya changamoto yameonekana. Kisha, katika zoezi la usimamizi wa nishati, linganisha kushuka kwa nguvu ndogo ya injini na kupanda kwa kutumia nguvu ya injini.",
+  "stem.flightsim.coaching_energy_complete": "Malengo ya usimamizi wa nishati yameonekana. Kisha, fanya mazoezi ya kudhibiti nishati unapokaribia uwanja wa ndege kwa njia fupi, halafu linganisha kasi ya kushuka na mguso wa kutua.",
+  "stem.flightsim.drone_battery_low": "Betri iko chini: imebaki {pct}%. Rudi mahali ulipopaa na utue hivi karibuni.",
+  "stem.flightsim.drone_battery_depleted_title": "Betri ya droni imeisha",
+  "stem.flightsim.drone_battery_depleted_body": "Safari imesitishwa betri ilipofikia 0%. Maliza misheni ili ukague jaribio hili, kisha uanze misheni mpya na betri iliyojaa.",
+  "stem.flightsim.end_drone_mission": "Maliza misheni na ukague",
+  "stem.flightsim.geoq_nearest_place": "Ni mahali gani palipo karibu zaidi na eneo lako la sasa?",
+  "stem.flightsim.geoq_paused": "Safari imesitishwa kwa swali hili. Funga maswali, kisha uchague Endelea ukiwa tayari kuruka.",
+  "stem.flightsim.geoq_close": "Funga maswali",
+  "stem.flightsim.geoq_unavailable": "Hakuna swali la jiografia linalopatikana karibu. Endelea kuchunguza na ujaribu tena.",
+  "stem.flightsim.geoq_answer_feedback": "Jibu lako: {answer}. Jibu sahihi: {expected}."
+}

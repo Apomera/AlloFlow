@@ -3711,6 +3711,10 @@
       } = props;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
+      // Builders and setup are teacher tools: students get the labs. Classroom stations
+      // are also left out of independent-learner and family use.
+      var _stemTeacherView = !!isTeacherMode;
+      var _stemClassAuthoring = _stemTeacherView && !props.isIndependentMode && !props.isParentMode;
 
       // -- Theme Detection (must precede theme-dependent effects) --
       var _stemTheme = (_themeProp === 'light' || _themeProp === 'dark' || _themeProp === 'contrast')
@@ -6351,7 +6355,7 @@
           className: "text-xs text-white/70"
         }, t('stem.solver.manipulatives') || "Interactive tools & labs"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
-        }, /*#__PURE__*/React.createElement("button", {
+        }, _stemTeacherView && /*#__PURE__*/React.createElement("button", {
           // Math Studio pointer, relocated from the retired tab row. Compact:
           // icon-only on phones (the label span is hidden by the 640px block).
           onClick: () => { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); },
@@ -6383,7 +6387,7 @@
         // without AI, and a deep-link visitor reading "AI DISABLED" would take
         // it as breakage. Click opens AI Backend Settings (incl. the Canvas
         // path) via the host callback.
-        !callGemini && /*#__PURE__*/React.createElement("button", {
+        _stemTeacherView && !callGemini && /*#__PURE__*/React.createElement("button", {
           onClick: function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": 'AI extras are off. No AI backend is set up. Click to see the ways to turn AI on.',
@@ -6724,7 +6728,7 @@
               // Label + icon lookup for friendly display; any activityId not in this map
               // gets an auto-generated label from its camelCase/snake_case id
               var _xpLabelMap = {
-                behaviorLab: ['Behavior Lab', '\uD83D\uDC2D'], aquarium: ['Aquarium', '\uD83D\uDC20'],
+                behaviorLab: ['Behavior Lab', '\uD83D\uDC2D'], aquarium: ['Aquarium', '\uD83D\uDC20'], coralReef: ['Coral Reef Survey Lab', '\uD83E\uDEB8'],
                 ocean: ['Ocean', '\uD83D\uDC0B'], 'wave-match': ['Waves', '\uD83C\uDF0A'],
                 'wave-quiz': ['Wave Quiz', '\uD83C\uDFB6'], galaxy_quiz: ['Galaxy Quiz', '\uD83C\uDF0C'],
                 galaxy_explore: ['Galaxy Explorer', '\u2B50'], universe_explore: ['Universe', '\uD83C\uDF20'],
@@ -7282,12 +7286,17 @@
                 color: 'cyan', ready: true
               },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: t('stem.tools_menu.birdlab_i_spy_ornithology') || 'BirdLab: I-Spy Ornithology', desc: t('stem.tools_menu.layered_habitat_i_spy_with_animated') || 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
-              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: t('stem.raptorhunt.raptor_hunt_predator_physics_biology') || 'Raptor Hunt: Predator Physics + Biology', desc: t('stem.tools_menu.three_js_stoop_simulator_deep_science') || 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
+              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: t('stem.raptorhunt.raptor_hunt_predator_physics_biology') || 'Raptor Hunt: Predator Physics + Biology', desc: t('stem.tools_menu.three_js_stoop_simulator_deep_science') || 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 20 species + many sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
               { id: 'migration', icon: '\uD83E\uDDED', label: t('stem.tools_menu.animal_migration_lab') || 'Animal Migration Lab', desc: t('stem.tools_menu.explore_3d_migration_routes_navigation_climate') || 'Explore 3D migration routes, navigation, climate triggers, conservation challenges, and an explicit monarch butterfly simulation.', color: 'teal', ready: true },
               {
                 id: 'cephalopodLab', icon: '🐙', label: t('stem.cephalopodlab.cephalopod_lab') || 'Cephalopod Lab',
                 desc: t('stem.tools_menu.marine_biology_behavioral_science_of_octopuses') || 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
                 color: 'indigo', ready: true
+              },
+              {
+                id: 'coralReef', icon: '\uD83E\uDEB8', label: t('stem.tools_menu.coral_reef_survey_lab') || 'Coral Reef Survey Lab',
+                desc: t('stem.tools_menu.coral_reef_survey_lab_desc') || 'Survey a reef along a 20 m tape with the point-intercept and belt transect methods reef monitors use, then model how heatwaves, grazing fish and runoff change it over 30 years. Optional 3D dive.',
+                color: 'cyan', ready: true
               },
               {
                 id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.science_of_pets_lab') || 'Science of Pets Lab',
@@ -7712,6 +7721,7 @@
               { id: 'spaceExplorer', label: t('stem.allobotsage.space_explorer') || 'Space Explorer', icon: '🛸', desc: t('stem.tools_menu.roguelike_missions_across_the_solar_system') || 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: t('stem.allobotsage.allobot_starbound_sage') || 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: t('stem.tools_menu.cozy_sci_fi_roguelite_allobot_s') || 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
+            if (!_stemTeacherView) _allStemTools = _allStemTools.filter(function (tool) { return tool.id !== 'forge'; });
 
             // Category palettes are the visual source of truth. Cycling a small
             // subject family keeps neighboring cards distinct while making each
@@ -7751,6 +7761,7 @@
               // Tools renamed 2026-08-03 keep their FORMER labels as aliases so an
               // existing lesson plan or a teacher's memory still finds them.
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
+              coralReef: 'coral reef survey lab coral reef bleaching bleached coral transect point intercept belt transect reef check reef health reef monitoring marine heatwave degree heating weeks parrotfish surgeonfish butterflyfish seaweed macroalgae ocean acidification coral restoration',
               dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
               paperTrail: 'papertrail paper trail forms form documents official documents job application w4 w-4 tax withholding lease rental apartment medical intake permit drivers permit iep meeting invitation signature ssn social security identity theft paperwork fill out transition life skills self advocacy',
               lawNavigator: 'law legal education law special education law idea part b section 504 cfr regulation regulations statute muser maine chapter 101 iep 504 plan rights procedural safeguards child find manifestation determination prior written notice iee due process federal state ecfr',
@@ -8117,8 +8128,8 @@
             var _atlasEntries = [
               { id: 'birdLab', icon: '🪶', label: t('stem.tools_menu.birdlab_life_list') || 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
-                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
-                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 15); } },
+                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 20,
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 20); } },
               { id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.petslab_decoder') || 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
@@ -8412,7 +8423,7 @@
           // ── Station Controls ──
           React.createElement("div", { className: "flex items-center gap-2 mb-4" },
             // Create Station button
-            React.createElement("button", { "aria-label": "Toggle station builder",
+            _stemClassAuthoring && React.createElement("button", { "aria-label": "Toggle station builder",
               onClick: function() { _setShowStationBuilder(!_showStationBuilder); },
               className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                 (_showStationBuilder ? "bg-indigo-600 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100")
@@ -8459,7 +8470,7 @@
 
 
           // ── Station Builder Panel ──
-          _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
+          (_stemClassAuthoring && _showStationBuilder) ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
             React.createElement("h3", { className: "text-sm font-black text-indigo-800 mb-3 flex items-center gap-2" }, "\uD83D\uDCCC Station Builder"),
 
             // Station name
@@ -9355,6 +9366,7 @@
             musicSynth: true,
             beehive: true,
             butterfly: true,
+            coralReef: true,
             echolocation: true,
             echoTrainer: true,
             oratory: true,

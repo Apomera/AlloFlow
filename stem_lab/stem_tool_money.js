@@ -60,14 +60,15 @@ window.StemLab = window.StemLab || {
     if (['tip', 'discount'].indexOf(mode) < 0 || ![original, percent, extra, scale].every(Number.isFinite) || original < 0 || original > 1000000 || percent < 0 || percent > 100 || extra < 0 || extra > 1000000 || (scale !== 1 && scale !== 100)) return { ok: false };
     if (mode === 'tip' && (!Number.isInteger(extra) || extra < 1 || extra > 100)) return { ok: false };
     var units = Math.round((original + Number.EPSILON) * scale);
-    var part = Math.round((original * percent / 100 + Number.EPSILON) * scale);
+    // Whole units first, so half-units round up exactly as roundCurrency does (6.42 x 25% = 1.605 -> 1.61).
+    var part = Math.round(units * percent / 100);
     if (mode === 'tip') {
       var total = units + part, low = Math.floor(total / extra), higherCount = total % extra;
       return { ok: true, mode: mode, original: units, percent: percent, part: part, total: total,
         roundedShare: Math.round(total / extra), low: low, high: low + 1, lowerCount: extra - higherCount, higherCount: higherCount, diners: extra };
     }
     // Match the existing sale-price rounding: round the retained percentage first.
-    var afterPercent = Math.round((original * (1 - percent / 100) + Number.EPSILON) * scale);
+    var afterPercent = Math.round(units * (100 - percent) / 100);
     var coupon = Math.min(afterPercent, Math.round((extra + Number.EPSILON) * scale));
     return { ok: true, mode: mode, original: units, percent: percent, part: units - afterPercent,
       afterPercent: afterPercent, coupon: coupon, unusedCoupon: Math.max(0, Math.round((extra + Number.EPSILON) * scale) - coupon), total: afterPercent - coupon };
@@ -105,7 +106,7 @@ window.StemLab = window.StemLab || {
       if (!item) { valid = false; return; }
       var weighted = item.weight != null, quantity = weighted ? item.weight : (item.qty == null ? 1 : item.qty);
       if (!Number.isFinite(item.price) || item.price < 0 || item.price > 1000000 || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100 || (!weighted && !Number.isInteger(quantity)) || Math.abs(item.price * scale - Math.round(item.price * scale)) > 1e-7) { valid = false; return; }
-      lines.push({ name: typeof item.name === 'string' ? item.name.slice(0, 100) : '', price: Math.round(item.price * scale), quantity: quantity, unit: weighted ? (item.pricePer || 'lb') : 'each', units: Math.round((item.price * quantity + Number.EPSILON) * scale) });
+      lines.push({ name: typeof item.name === 'string' ? item.name.slice(0, 100) : '', price: Math.round(item.price * scale), quantity: quantity, unit: weighted ? (item.pricePer || 'lb') : 'each', units: Math.round(Number((Math.round(item.price * scale) * quantity).toPrecision(12))) });
     });
     if (!valid) return { ok: false };
     var subtotal = lines.reduce(function(sum, line) { return sum + line.units; }, 0);
@@ -407,7 +408,8 @@ window.StemLab = window.StemLab || {
 
             const cur = CURRENCIES[currency] || CURRENCIES.USD;
             const isJPY = currency === 'JPY';
-            const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + v.toFixed(2));
+            // Round with roundCurrency first: toFixed(2) on a raw product printed 2.5 lb x $1.79 (4.475) as $4.47.
+            const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + roundCurrency(v, currency).toFixed(2));
             const USD_BILL_VISUALS = {
               1:   { portrait: __alloT('stem.money.george_washington', 'Washington'), tint: '#dfe9d8', accent: '#2f6b4f' },
               5:   { portrait: __alloT('stem.money.abraham_lincoln', 'Lincoln'), tint: '#e8e0ec', accent: '#665071' },
@@ -482,7 +484,9 @@ window.StemLab = window.StemLab || {
             const currencyFractionDigits = (code) => code === 'JPY' ? 0 : 2;
             const roundCurrency = (amount, code) => {
               var factor = Math.pow(10, currencyFractionDigits(code));
-              return Math.round((amount + Number.EPSILON) * factor) / factor;
+              // Round half-cents UP. Number.EPSILON is far below the float error of a value
+              // above 1, so $4.015 (stored 4.01499...) rounded to $4.01; 12 significant digits do not.
+              return Math.round(Number((amount * factor).toPrecision(12))) / factor;
             };
             const currencyUnits = (amount, code) => {
               var numeric = Number(amount);
@@ -1593,7 +1597,7 @@ window.StemLab = window.StemLab || {
                 var stepText = 'Step by step: ';
                 var running = 0;
                 crCustomer.items.forEach(function (it, ii) {
-                  var price = it.weight ? Math.round(it.price * it.weight * 100) / 100 : (it.price * it.qty);
+                  var price = it.weight ? roundCurrency(it.price * it.weight, currency) : (it.price * it.qty);
                   running += price;
                   stepText += (ii > 0 ? ' + ' : '') + fmt(price);
                 });
@@ -1938,19 +1942,21 @@ window.StemLab = window.StemLab || {
             // ── Structured word problem generator (offline) ──
             var STRUCT_PROBLEMS = [
               { template: 'You buy {q1} {item1} at {p1} each and {q2} {item2} at {p2} each. What is the total cost?', fields: ['total'], compute: function (v) { return [{ val: v.q1 * v.p1 + v.q2 * v.p2, label: __alloT('stem.money.total', 'Total') }]; }, gen: function () { var q1 = Math.floor(Math.random() * 5) + 1; var q2 = Math.floor(Math.random() * 4) + 1; var p1 = Math.round((Math.random() * 4 + 0.5) * 100) / 100; var p2 = Math.round((Math.random() * 3 + 0.25) * 100) / 100; return { q1: q1, q2: q2, p1: p1, p2: p2, item1: ['\uD83C\uDF4E apples', '\uD83C\uDF4C bananas', '\uD83E\uDD5A eggs'][Math.floor(Math.random() * 3)], item2: ['\uD83C\uDF5E loaves of bread', '\uD83E\uDD5B cartons of milk', '\uD83C\uDF6B candy bars'][Math.floor(Math.random() * 3)] }; } },
-              { template: 'A shirt costs {original}. It\'s on sale for {pct}% off. What do you pay?', fields: ['salePrice'], compute: function (v) { return [{ val: Math.round(v.original * (1 - v.pct / 100) * 100) / 100, label: __alloT('stem.money.sale_price', 'Sale Price') }]; }, gen: function () { return { original: Math.round((Math.random() * 40 + 10) * 100) / 100, pct: [10, 15, 20, 25, 30, 40, 50][Math.floor(Math.random() * 7)] }; } },
-              { template: 'You have {have}. You want to buy something that costs {want}. How much more do you need?', fields: ['need'], compute: function (v) { return [{ val: Math.round(Math.max(0, v.want - v.have) * 100) / 100, label: __alloT('stem.money.amount_needed', 'Amount Needed') }]; }, gen: function () { var want = Math.round((Math.random() * 20 + 5) * 100) / 100; return { have: Math.round((Math.random() * want * 0.8) * 100) / 100, want: want }; } },
-              { template: 'Dinner costs {bill}. You want to leave a {tipPct}% tip. What is the tip amount? What is the total with tip?', fields: ['tip', 'total'], compute: function (v) { var tip = Math.round(v.bill * v.tipPct / 100 * 100) / 100; return [{ val: tip, label: 'Tip' }, { val: Math.round((v.bill + tip) * 100) / 100, label: __alloT('stem.money.total_2', 'Total') }]; }, gen: function () { return { bill: Math.round((Math.random() * 60 + 10) * 100) / 100, tipPct: [10, 15, 18, 20, 25][Math.floor(Math.random() * 5)] }; } },
-              { template: 'You earn {hourly}/hour and work {hours} hours. After {taxPct}% tax, what is your take-home pay?', fields: ['gross', 'takeHome'], compute: function (v) { var gross = Math.round(v.hourly * v.hours * 100) / 100; return [{ val: gross, label: __alloT('stem.money.gross_pay', 'Gross Pay') }, { val: Math.round(gross * (1 - v.taxPct / 100) * 100) / 100, label: 'Take-Home' }]; }, gen: function () { return { hourly: [8, 10, 12, 15, 20][Math.floor(Math.random() * 5)], hours: Math.floor(Math.random() * 30) + 10, taxPct: [10, 15, 20, 22, 25][Math.floor(Math.random() * 5)] }; } },
-              { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: Math.round(v.bill / v.friends * 100) / 100, label: __alloT('stem.money.each_pays', 'Each Pays') }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
+              { template: 'A shirt costs {original}. It\'s on sale for {pct}% off. What do you pay?', fields: ['salePrice'], compute: function (v) { return [{ val: roundCurrency(v.original * (1 - v.pct / 100), currency), label: __alloT('stem.money.sale_price', 'Sale Price') }]; }, gen: function () { return { original: Math.round((Math.random() * 40 + 10) * 100) / 100, pct: [10, 15, 20, 25, 30, 40, 50][Math.floor(Math.random() * 7)] }; } },
+              { template: 'You have {have}. You want to buy something that costs {want}. How much more do you need?', fields: ['need'], compute: function (v) { return [{ val: roundCurrency(Math.max(0, v.want - v.have), currency), label: __alloT('stem.money.amount_needed', 'Amount Needed') }]; }, gen: function () { var want = Math.round((Math.random() * 20 + 5) * 100) / 100; return { have: Math.round((Math.random() * want * 0.8) * 100) / 100, want: want }; } },
+              { template: 'Dinner costs {bill}. You want to leave a {tipPct}% tip. What is the tip amount? What is the total with tip?', fields: ['tip', 'total'], compute: function (v) { var tip = roundCurrency(v.bill * v.tipPct / 100, currency); return [{ val: tip, label: 'Tip' }, { val: roundCurrency(v.bill + tip, currency), label: __alloT('stem.money.total_2', 'Total') }]; }, gen: function () { return { bill: Math.round((Math.random() * 60 + 10) * 100) / 100, tipPct: [10, 15, 18, 20, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: 'You earn {hourly}/hour and work {hours} hours. After {taxPct}% tax, what is your take-home pay?', fields: ['gross', 'takeHome'], compute: function (v) { var gross = Math.round(v.hourly * v.hours * 100) / 100; return [{ val: gross, label: __alloT('stem.money.gross_pay', 'Gross Pay') }, { val: roundCurrency(gross * (1 - v.taxPct / 100), currency), label: 'Take-Home' }]; }, gen: function () { return { hourly: [8, 10, 12, 15, 20][Math.floor(Math.random() * 5)], hours: Math.floor(Math.random() * 30) + 10, taxPct: [10, 15, 20, 22, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: roundCurrency(v.bill / v.friends, currency), label: __alloT('stem.money.each_pays', 'Each Pays') }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
             ];
             var genStructuredProblem = function () {
               beginMoneyRound('structured-word-problem');
               var prob = STRUCT_PROBLEMS[Math.floor(Math.random() * STRUCT_PROBLEMS.length)];
               var vals = prob.gen();
               var text = prob.template;
+              // Only money fields get a currency symbol: fmt() on every number printed "$5.00 bananas" and "$10.00% off".
+              var STRUCT_MONEY_FIELDS = ['p1', 'p2', 'original', 'have', 'want', 'bill', 'hourly'];
               Object.keys(vals).forEach(function (k) {
-                var display = typeof vals[k] === 'number' ? fmt(vals[k]) : vals[k];
+                var display = typeof vals[k] === 'number' ? (STRUCT_MONEY_FIELDS.indexOf(k) >= 0 ? fmt(vals[k]) : String(vals[k])) : vals[k];
                 text = text.replace('{' + k + '}', display);
               });
               var answers = prob.compute(vals).map(function (answer) {

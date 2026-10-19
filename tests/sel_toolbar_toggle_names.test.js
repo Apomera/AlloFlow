@@ -59,8 +59,11 @@ describe('SEL Hub · toolbar toggles are named for what they do', () => {
         seen++;
         const win = lines.slice(Math.max(0, i - 2), i + 1).join('\n');
         // Contract, not spelling: the name says "badges", carries the total
-        // (BADGES.length), and the button reports whether its panel is open.
-        if (!/'aria-label':[^\n]*badges/i.test(win) || !/BADGES\.length/.test(win) || !/'aria-expanded':\s*!!showBadgesPanel/.test(win)) missing.push(f + ':' + (i + 1));
+        // (BADGES.length, or shownBadges.length where retired badges are hidden from
+        // students who never earned them, e4b2d88b6), and the button reports whether its panel is open.
+        const total = /BADGES\.length/.test(win)
+          || (/shownBadges\.length/.test(win) && /var shownBadges = BADGES\.filter\(/.test(src));
+        if (!/'aria-label':[^\n]*badges/i.test(win) || !total || !/'aria-expanded':\s*!!showBadgesPanel/.test(win)) missing.push(f + ':' + (i + 1));
       }
     }
     expect(seen, 'no badge-panel toggles found — the probe is blind').toBeGreaterThan(0);

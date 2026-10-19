@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "কুইজের আগের প্রচেষ্টাগুলি",
+  "stem.flightsim.quiz_history_scope": "নতুন প্রচেষ্টা শুরু করলে প্রথম উত্তর নথিভুক্ত আছে এমন আগের সর্বোচ্চ চারটি প্রচেষ্টা সংরক্ষিত হয়। সেগুলি পর্যালোচনা করলে আপনার বর্তমান কুইজ অপরিবর্তিত থাকে।",
+  "stem.flightsim.quiz_history_empty": "এখনও কুইজের কোনো আগের প্রচেষ্টা সংরক্ষিত নেই।",
+  "stem.flightsim.quiz_history_attempt": "সংরক্ষিত {date} · প্রথম উত্তরের মধ্যে {score}/{answered}টি সঠিক",
+  "stem.flightsim.quiz_history_progress": "{total}টি প্রশ্নের মধ্যে {answered}টি নথিভুক্ত · {unanswered}টি উত্তরহীন",
+  "stem.flightsim.quiz_history_question": "প্রশ্ন {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "সঠিক উত্তর: {answer}",
+  "stem.flightsim.quiz_history_changed": "সংরক্ষিত {count}টি প্রশ্ন আর এই কুইজের সঙ্গে মেলে না। নম্বর গণনায় শুধু মিলে যাওয়া প্রশ্নের নথি ব্যবহার করা হয়।"
+}

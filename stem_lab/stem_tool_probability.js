@@ -1288,7 +1288,8 @@ var d = (labToolData.probability) || {};
 
           }
 
-          var df = Object.keys(expected).length - 1;
+          // An outcome the model makes impossible adds no degree of freedom.
+          var df = Object.keys(expected).filter(function (k) { return expected[k] > 0; }).length - 1;
 
           // Upper 5% critical value of the chi-squared distribution.
           //
@@ -1316,7 +1317,7 @@ var d = (labToolData.probability) || {};
           // the statistic is interpretable. Below that we withhold the verdict
           // instead of printing a confident Fair/Biased on noise.
           var minExpectedP = 1;
-          Object.keys(expected).forEach(function (k) { if (expected[k] < minExpectedP) minExpectedP = expected[k]; });
+          Object.keys(expected).forEach(function (k) { if (expected[k] > 0 && expected[k] < minExpectedP) minExpectedP = expected[k]; });
           var chiTrialsNeeded = minExpectedP > 0 ? Math.ceil(5 / minExpectedP) : 0;
           // Chi-squared assumes INDEPENDENT draws. Drawing without replacement
           // breaks that outright: a full pass through the bag returns exactly the
@@ -1326,7 +1327,7 @@ var d = (labToolData.probability) || {};
           // truth, since the with-replacement bag (genuinely random, χ²≈0.4)
           // looked WORSE than the one with no randomness left in it.
           var chiIndependent = !(d.mode === 'marbleBag' && d.mbWithoutReplacement);
-          var chiReady = chiIndependent && d.trials > 0 && Object.keys(expected).length > 1 && d.trials >= chiTrialsNeeded;
+          var chiReady = chiIndependent && d.trials > 0 && df >= 1 && d.trials >= chiTrialsNeeded;
           var chiPass = chiSq < chiCritical;
           // Neutral (neither green nor red) until the test is actually valid.
           var chiTone = !chiReady ? 'text-slate-500' : chiPass ? 'text-emerald-600' : 'text-red-600';
@@ -2376,6 +2377,7 @@ var d = (labToolData.probability) || {};
               function resetStats() {
                 sfxProbClick();
                 upd('montyStats', { switchWins: 0, switchN: 0, stayWins: 0, stayN: 0 });
+                upd('montyStrip', { stay: [], switch: [] });
               }
 
               var stayPct = ms.stayN > 0 ? Math.round(ms.stayWins / ms.stayN * 100) : 0;
@@ -3219,8 +3221,10 @@ var d = (labToolData.probability) || {};
                       }
                       if (hit) matched++;
                     }
-                    var prev = d.birthdayBatch || { runs: 0, matches: 0 };
-                    upd('birthdayBatch', { runs: prev.runs + 100, matches: prev.matches + matched });
+                    // A batch belongs to one room size: pooling n=10 and n=57 rooms
+                    // printed one rate against the n=57 theory line.
+                    var prev = (d.birthdayBatch && d.birthdayBatch.n === _bn) ? d.birthdayBatch : { runs: 0, matches: 0 };
+                    upd('birthdayBatch', { n: _bn, runs: prev.runs + 100, matches: prev.matches + matched });
                     if (matched > 0) sfxProbSuccess();
                   }
                   function resetBatch() {
@@ -3229,7 +3233,7 @@ var d = (labToolData.probability) || {};
                   }
                   // Grid sizing — for up to 70 people, 10 columns is comfortable
                   var cols = _bn <= 20 ? Math.min(_bn, 10) : 10;
-                  var batch = d.birthdayBatch || { runs: 0, matches: 0 };
+                  var batch = (d.birthdayBatch && d.birthdayBatch.n === _bn) ? d.birthdayBatch : { runs: 0, matches: 0 };
                   var batchPct = batch.runs > 0 ? Math.round(batch.matches / batch.runs * 100) : null;
 
                   return React.createElement('div', { className: 'mt-3 rounded-xl p-3', style: { background: isDark||isContrast?'rgba(251,191,36,0.04)':'#fffbeb', border: '1px solid ' + (isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a') } },
@@ -4058,7 +4062,9 @@ var d = (labToolData.probability) || {};
                     var nextRes = (_pp.results || []).concat([inside ? 'inside' : 'outside']);
                     var nextTot = (_pp._piTotal != null ? _pp._piTotal : (_pp._piPoints || []).length) + 1;
                     var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function(p) { return p.inside; }).length) + (inside ? 1 : 0);
-                    return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length }) });
+                    // Slow-dropped darts are trials too: totalTrials and experimentsUsed feed the quests.
+                    var piUsed = Object.assign({}, _pp.experimentsUsed || {}); piUsed[_pp.mode || 'pi'] = true;
+                    return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length, totalTrials: (_pp.totalTrials || 0) + 1, experimentsUsed: piUsed }) });
                   });
                   dropped++;
                   if (dropped >= 100) {
@@ -4163,7 +4169,7 @@ var d = (labToolData.probability) || {};
 
                     ),
 
-                    React.createElement("p", { className:"text-[0.6875rem] italic leading-relaxed text-center", style:{color:_muted} }, t('stem.probability.10k_points_needed_for_2_decimal_places', '~10k points needed for 2 decimal places of π')),
+                    React.createElement("p", { className:"text-[0.6875rem] italic leading-relaxed text-center", style:{color:_muted} }, t('stem.probability.pi_100k_points_for_2_decimal_places', '~100,000 points for 2 decimal places of π (each extra digit costs ~100× more)')),
 
                     // ── Slow Drop: animated dot deposition ──
                     // Drops 100 points one at a time over ~10 seconds so students
@@ -4192,7 +4198,9 @@ var d = (labToolData.probability) || {};
                             // Unbounded totals — see the piTotal note in render scope.
                             var nextTot = (_pp._piTotal != null ? _pp._piTotal : (_pp._piPoints || []).length) + 1;
                             var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function (p) { return p.inside; }).length) + (inside ? 1 : 0);
-                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length }) });
+                            // Slow-dropped darts are trials too: totalTrials and experimentsUsed feed the quests.
+                            var piUsed = Object.assign({}, _pp.experimentsUsed || {}); piUsed[_pp.mode || 'pi'] = true;
+                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length, totalTrials: (_pp.totalTrials || 0) + 1, experimentsUsed: piUsed }) });
                           });
                           dropped++;
                           if (dropped >= 100) {

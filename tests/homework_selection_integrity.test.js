@@ -174,17 +174,18 @@ describe('homework selection integrity through production callbacks and serializ
     expect(cloud.fallback).not.toHaveBeenCalled();
     const saved = cloud.writes[0];
     expect(cloud.hydrate).toHaveBeenCalledExactlyOnceWith('local-test', saved.resources);
-    expect(saved.resources.map(item => item.id)).toEqual([adapted.id, original.id]);
+    // The preserved original opens before its adapted companion (a9ae02cb5, K5 / Novak point 4).
+    expect(saved.resources.map(item => item.id)).toEqual([original.id, adapted.id]);
     const received = window.hydrateHistory(saved.resources);
-    expect(received[0].data).toBe(adapted.data);
-    expect(received[1].data).toBe(original.data);
-    expect(received[1].sourceSnapshot).toEqual(original.sourceSnapshot);
-    expect(contract.isSupportedOriginal(received[1])).toBe(true);
-    expect(received[1].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
+    expect(received[1].data).toBe(adapted.data);
+    expect(received[0].data).toBe(original.data);
+    expect(received[0].sourceSnapshot).toEqual(original.sourceSnapshot);
+    expect(contract.isSupportedOriginal(received[0])).toBe(true);
+    expect(received[0].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
     expect(cloud.previews[0].resourceTitles).toEqual(saved.resources.map(item => item.title));
     expect(saved.deliverySummary.readings[0]).toMatchObject({ originalStatus: 'included', supportsCount: 1 });
     expect(cloud.previews[0].deliverySummary).toEqual(saved.deliverySummary);
-    expect(saved.currentResourceId).toBe(adapted.id);
+    expect(saved.currentResourceId).toBe(original.id);
   });
 
   it.each(['failure', 'unresolved reference'])('falls back without publishing a cloud assignment after hydration %s', async mode => {
@@ -200,13 +201,13 @@ describe('homework selection integrity through production callbacks and serializ
     expect(cloud.previews).toEqual([]);
     expect(cloud.fallback).toHaveBeenCalledExactlyOnceWith([adapted.id]);
     const packet = cloud.fallbackPackets[0];
-    expect(packet.resources.map(item => item.id)).toEqual([adapted.id, original.id]);
-    expect(packet.currentResourceId).toBe(adapted.id);
+    expect(packet.resources.map(item => item.id)).toEqual([original.id, adapted.id]);
+    expect(packet.currentResourceId).toBe(original.id);
     const received = window.hydrateHistory(packet.resources);
-    expect(received[0].data).toBe(adapted.data);
-    expect(received[1].data).toBe(original.data);
-    expect(received[1].sourceSnapshot).toEqual(original.sourceSnapshot);
-    expect(received[1].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
+    expect(received[1].data).toBe(adapted.data);
+    expect(received[0].data).toBe(original.data);
+    expect(received[0].sourceSnapshot).toEqual(original.sourceSnapshot);
+    expect(received[0].readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, text: 'Teacher curated meaning' })]);
   });
 
   it('reroutes an oversized original/adaptation pair before writes and retains exact reading and curated support', async () => {
@@ -219,13 +220,13 @@ describe('homework selection integrity through production callbacks and serializ
     expect(cloud.upload).not.toHaveBeenCalled();
     expect(cloud.writes).toEqual([]);
     const packet = cloud.fallbackPackets[0];
-    expect(packet.resources.map(item => item.id)).toEqual([adapted.id, original.id]);
-    expect(packet.currentResourceId).toBe(adapted.id);
+    expect(packet.resources.map(item => item.id)).toEqual([original.id, adapted.id]);
+    expect(packet.currentResourceId).toBe(original.id);
     const received = window.hydrateHistory(packet.resources).find(item => item.id === original.id);
     expect(received.data).toBe(original.data);
     expect(received.sourceSnapshot).toEqual(original.sourceSnapshot);
     expect(received.readingSupports.annotations).toEqual([expect.objectContaining({ id: 'pinned', pinned: true, origin: 'educator', text: 'Teacher curated meaning' })]);
-    expect(packet.resources[0].data).toBe(adapted.data);
+    expect(packet.resources[1].data).toBe(adapted.data);
   });
 
   it('reroutes single-resource cloud compaction before an upload or placeholder is published', async () => {

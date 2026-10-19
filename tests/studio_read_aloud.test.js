@@ -22,6 +22,17 @@ function harness(initial, size=192) {
 function mount(component,props){host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);act(()=>root.render(React.createElement(component,props)));}
 const button=label=>[...host.querySelectorAll('button')].find(b=>b.textContent===label);
 describe('studio reference audio contracts',()=>{
+ it('keeps an earlier approved image description out of reference audio while the picture is held',()=>{
+   const r=memory();Object.assign(r.data.cards[0],{visualImage:'data:image/png;base64,QUJDRA==',visualAlt:'OLD_PICTURE_DESCRIPTION',visualAltSource:'author',visualReview:{status:'approved'},visualNeedsReview:true});
+   expect(api.enumerate(r).map(segment=>segment.text).join(' ')).not.toContain('OLD_PICTURE_DESCRIPTION');
+ });
+ it('withholds earlier cues and explanations from reference audio while their facts await cue review',()=>{
+   const r=memory(),card=r.data.cards[0];card.cueNeedsReview=true;
+   const segments=api.enumerate(r),spoken=segments.map(segment=>segment.text).join(' ');
+   expect(spoken).toContain('Objects attract');
+   expect(spoken).not.toContain(card.aiExample);expect(spoken).not.toContain(card.mapping);
+   expect(api.enumerate(r,{cardId:card.id,mode:'cue'})).toEqual([]);
+ });
  it.each([memory,applied])('prepares current teacher fields and hydrates saved clips',async factory=>{const r=factory(),h=harness(r);const segments=api.enumerate(r);expect(segments.length).toBeGreaterThan(3);expect(JSON.stringify(segments)).not.toContain('PRIVATE');await h.save();expect(h.persist).toHaveBeenCalled();expect(segments.every(s=>h.bridge.inspect(s,'reference').status==='ready')).toBe(true);const portable=api.portableAudio(r);expect(portable).not.toBeNull();const restored=storeApi.createStore();restored.hydrate(portable);expect(Object.keys(restored.serialize().entries)).toHaveLength(segments.length);});
  it('invalidates only an edited field and rejects obsolete or learner descriptors',async()=>{const r=memory(),h=harness(r);await h.save();const old=api.enumerate(r).find(s=>s.segmentId.endsWith('/target'));r.data.cards[0].target='New target';const segments=api.enumerate(r);expect(h.bridge.inspect(segments.find(s=>s.segmentId===old.segmentId)).status).toBe('stale');expect(h.bridge.inspect(segments.find(s=>s.segmentId.endsWith('/cue'))).status).toBe('ready');h.synthesize.mockClear();expect(await h.bridge.regenerate(old)).toBeNull();expect(await h.bridge.regenerate('PRIVATE DRAFT')).toBeNull();expect(h.synthesize).not.toHaveBeenCalled();expect(JSON.stringify(api.portableAudio(r))).not.toContain('Gravity');});
  it('keeps duplicate words independently addressable',async()=>{const r=memory();r.data.cards.push({...r.data.cards[0],id:'c2'});const h=harness(r);await h.save();const targets=api.enumerate(r).filter(s=>s.segmentId.endsWith('/target'));expect(targets.map(s=>s.segmentId)).toEqual(['card/c1/target','card/c2/target']);expect(targets.every(s=>h.bridge.inspect(s).status==='ready')).toBe(true);});

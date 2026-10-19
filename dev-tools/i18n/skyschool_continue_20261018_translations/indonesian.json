@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Pengamatan menunjukkan bahwa tujuan tantangan telah tercapai. Selanjutnya, bandingkan penurunan dengan mesin pada putaran langsam dan pendakian dengan tenaga mesin dalam latihan pengelolaan energi.",
+  "stem.flightsim.coaching_energy_complete": "Pengamatan menunjukkan bahwa tujuan pengelolaan energi telah tercapai. Selanjutnya, latih pengendalian energi saat melakukan pendekatan singkat ke bandara, lalu bandingkan laju turun dan sentuhan roda ke tanah.",
+  "stem.flightsim.drone_battery_low": "Baterai lemah: tersisa {pct}%. Kembali ke titik lepas landas dan segera mendarat.",
+  "stem.flightsim.drone_battery_depleted_title": "Baterai drone habis",
+  "stem.flightsim.drone_battery_depleted_body": "Penerbangan dijeda saat baterai mencapai 0%. Akhiri misi untuk meninjau percobaan ini, lalu mulai misi baru dengan baterai penuh.",
+  "stem.flightsim.end_drone_mission": "Akhiri misi dan tinjau",
+  "stem.flightsim.geoq_nearest_place": "Tempat mana yang paling dekat dengan posisi Anda saat ini?",
+  "stem.flightsim.geoq_paused": "Penerbangan dijeda untuk pertanyaan ini. Tutup kuis, lalu pilih Lanjutkan saat Anda siap terbang.",
+  "stem.flightsim.geoq_close": "Tutup kuis",
+  "stem.flightsim.geoq_unavailable": "Tidak ada pertanyaan geografi yang tersedia untuk lokasi sekitar. Lanjutkan penjelajahan dan coba lagi.",
+  "stem.flightsim.geoq_answer_feedback": "Jawaban Anda: {answer}. Jawaban yang benar: {expected}."
+}

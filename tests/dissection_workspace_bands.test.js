@@ -506,10 +506,14 @@ describe('dissection workspace bands', () => {
 
     // The panels themselves, so a new one cannot quietly skip the helper.
     for (const panel of ['tractionLabelX', 'forecastLabelX', 'wickLabelX', 'palpationLabelX',
-      'pinLabelX', 'replayLabelX', 'clearLabelX', 'probeLabelX']) {
+      'pinLabelX', 'clearLabelX', 'probeLabelX']) {
       expect(source, panel).toContain('fillPanelText(');
       expect(inside, panel).toContain(panel + ',');
     }
+    // 79e3e5eae replaced the in-transform replay panel (replayLabelX) with a screen-fixed
+    // caption drawn after the transform restore, so it cannot mirror.
+    expect(inside.includes('replayLabelX'), 'no replay panel inside the transform').toBe(false);
+    expect(source.indexOf('if (replayCaption && !specimenEvidenceCapture) {'), 'replay caption after the restore').toBeGreaterThan(close);
   }, 60_000);
 
   // 2026-09-05, measured by hooking every panel-sized fill and comparing boxes in screen space:
@@ -723,7 +727,7 @@ describe('dissection workspace bands', () => {
     expect(source).toContain('var corridorLabelClampX = function (value) {');
     expect(source).toContain('var corridorLabelClampY = function (value) {');
     // The badge box must use the same height the overlap test assumes.
-    expect(source).toContain('var corridorLabelHeight = 17;');
+    expect(source).toContain('var corridorLabelHeight = 24 * corridorTypeScale / specimenTextScaleY;');
     expect(source).toContain('ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight, 5)');
     expect(source).not.toContain('ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, 17, 5)');
   }, 60_000);

@@ -107,7 +107,8 @@ describe('host: result survives close and is re-openable in-session', () => {
     // The extraction split this flow three ways: the restore helper went to
     // host_handlers, the local-documents markup to the recovery-dialog view, and the
     // opener stayed in ANTI. Assert each where it now lives.
-    expect(hostHandlers).toContain('await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);');
+    // 6a0c48749 (2026-10-05) passes a staleness probe, and the restore stops if it went stale.
+    expect(/await _restoreBuilderDraftFromProject\(workspace\.builderDraft \|\| null, restoredHistory, \{ isCurrent: isCurrentRestore \}\);\r?\n\s*if \(!isCurrentRestore\(\)\) return false;/.test(hostHandlers), 'draft restore + staleness stop').toBe(true);
     expect(host).toContain('const openCanvasDocumentHubDraft = async (snapshot) => {');
     expect(host).toMatch(/const openCanvasDocumentHubDraft = async \(snapshot\) => \{[\s\S]{0,500}restoreCanvasWorkspaceSnapshot\(snapshot\)[\s\S]{0,300}openExportPreview\('print'\)/);
     expect(recoveryDialog).toContain('Document Hub draft</span>');

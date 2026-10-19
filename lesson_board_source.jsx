@@ -6,7 +6,8 @@ import {WaterworksExpeditionPicker} from './lesson_board_expeditions_ui.jsx';
 import { prepareSupport, hasSupport, readSupport, saveSupport, liveSupport } from './lesson_board_support.js';
 import { BoardSupportSetup } from './lesson_board_support_ui.jsx';
 import {useBoardScenery,useSceneryPreference,BoardSceneryPreference,BoardSceneryStatus} from './lesson_board_scenery_generation.jsx';
-import { writeBoardDocument, receivedBoardResponses } from './lesson_board_live.js';
+import { writeBoardDocument, receivedBoardResponses, boardRequests } from './lesson_board_live.js';
+import { privateTransport, answerPath, answersCollectionPath, hostPath, splitAnswers, withPrivateAnswers, withOwnAnswer, isPermissionError, clearPrivateAnswers } from './lesson_board_private.js';
 import { waitForBoardDelivery, useBoardOnline } from './lesson_board_delivery.js';
 import { BoardSessionGuide, BoardTeacherConnection } from './lesson_board_session_guide.jsx';
 import { assessmentCoverage, coverageSnapshot } from './lesson_board_coverage.js';
@@ -18,9 +19,13 @@ import { BoardTransfer, BoardDownload } from './lesson_board_library.jsx';
 import { BoardAuthoring } from './lesson_board_authoring.jsx';
 import { BoardSetupGuide, BoardMissionPicker, BoardTravelPicker, BoardBlueprint } from './lesson_board_setup.jsx';
 import { BoardView, Activity, Styles, tr } from './lesson_board_ui.jsx';
+import { errorText } from './lesson_board_errors.js';
 import { BoardTeacherPreview } from './lesson_board_preview.jsx';
 import { BoardRefine, BoardVersions, GenerationReport, DraftRecovery } from './lesson_board_refine.jsx';
-import { boardChanges } from './lesson_board_quality.js';
+import { boardChanges, balanceAnswerPositions } from './lesson_board_quality.js';
+import { learningReport, saveReport } from './lesson_board_results.js';
+import { recordResponses, recordReveal, readResponses } from './lesson_board_responses.js';
+const deviceStorage = () => { try { return window.localStorage; } catch (_) { return null; } };
 import { useRoomDialog } from './connected_escape_room_accessibility.jsx';
 const React = window.React;
 const { useState, useEffect, useRef } = React;
@@ -29,7 +34,11 @@ const connection = (appId, code) => { const fb = window.__alloFirebase || {}, db
 const scopeOf = (appId, code, state) => [appId, code, state?.attemptId].join(':');
 const runPatch = (state, patch) => Object.fromEntries(Object.entries(patch).map(([path, value]) => ['escapeRoomState.teamProgress.All.boardRuns.' + state.attemptId + '.' + path, value]));
 const applyDocument = (data, patch) => engine.merge(data, patch);
-const checkSize = data => { if (JSON.stringify(data).length > 76000) throw Error('This session is near its storage limit. End the board and start a fresh session before continuing.'); };
+const LIVE_LIMIT = 76000;
+const checkSize = data => { if (JSON.stringify(data).length > LIVE_LIMIT) throw Error('This session is near its storage limit. End the board (the class results are saved on this device first) and start a fresh session before continuing.'); };
+// Room a full class game needs after launch, measured on simulated games: action slots, compact
+// records and the open move's responses grow by about 700 characters per learner, plus 2,500.
+const liveReserve = learners => 2500 + 700 * learners;
 function useRuntime(scope) { const [, tick] = useState(0); useEffect(() => { const fn = () => tick(n => n + 1); runtime.listeners.add(fn); fn(); return () => runtime.listeners.delete(fn); }, []); return { busy: runtime.locks.has(scope), error: runtime.errors.get(scope) || '', check: runtime.checks.get(scope) || 0 }; }
 function Confirmation({ title, message, confirm, onConfirm, onCancel, busy, t }) {
   const cancel = useRef(null), trigger = useRef(document.activeElement), group = useRef(null);
@@ -56,7 +65,8 @@ export function LessonBoardSolo({ board, user, appId, onBack, preview = false, s
     let saved;
     try { saved = saveSolo(localStorage, board, appId, uid, { run: next.run, workspace: next.workspace, reportAttemptId: next.reportAttemptId, expectedRevision: options.revision !== undefined ? options.revision : current.current.revision }); }
     catch (_) { saved = { status: 'unavailable' }; }
-    if (saved.status === 'saved') { install({ ...next, ...saved, scope, dirty: false, issue: '' }); return true; }
+    // Keep the same run object when only the workspace changed, so memoized board views do not replay history on every click.
+    if (saved.status === 'saved') { const prior = current.current.run, run = prior && JSON.stringify(prior) === JSON.stringify(saved.run) ? prior : saved.run; install({ ...next, ...saved, run, scope, dirty: false, issue: '' }); return true; }
     const kept = options.keepOnFailure ? current.current : next;
     install({ ...kept, status: saved.status === 'conflict' ? 'conflict' : 'unavailable', dirty: true, issue: options.keepOnFailure ? tr(t, 'solo_restart_unsaved', 'The restart could not be saved. Your current progress has been kept.') : saved.status === 'invalid' ? tr(t, 'solo_invalid_save', 'This progress could not be saved. Your current game is still open.') : '' });
     return false;
@@ -74,13 +84,15 @@ export function LessonBoardSolo({ board, user, appId, onBack, preview = false, s
   const action = fn => {
     if (confirm || ['corrupt', 'conflict'].includes(current.current.status)) return;
     try { setError(''); const run = fn(current.current.run), workspace = soloWorkspace(board, run, current.current.workspace); persist({ ...current.current, run, workspace }); }
-    catch (failure) { setError(failure.message); }
+    catch (failure) { setError(errorText(t, failure)); }
   };
   const answer = value => action(run => {
     const requestId = engine.requestId ? engine.requestId(run, 'answer') : engine.identity('answer');
     const req = { attemptId: 'solo', turn: run.turn, requestId, kind: 'answer', targetId: engine.stepOf(run).targetId, value };
     const answered = engine.merge(run, engine.processAction(board, run, req, 'solo', { attemptId: 'solo', active: true }));
-    return engine.merge(answered, engine.resolve(board, answered, { solo: {} }, { dice: engine.rollDice(2) }));
+    const resolved = engine.merge(answered, engine.resolve(board, answered, { solo: {} }, { dice: engine.rollDice(2) }));
+    if (!preview) recordResponses(deviceStorage(), { appId, owner: uid, attemptId: current.current.reportAttemptId }, req.targetId, { solo: value });
+    return resolved;
   });
   const resumeSaved = () => {
     const saved = readCurrent();
@@ -117,7 +129,7 @@ export function LessonBoardSolo({ board, user, appId, onBack, preview = false, s
       </div>
     </div>}
     {confirm && <Confirmation t={t} title={confirm.kind === 'replace' ? tr(t, 'solo_replace_title', 'Replace the saved progress?') : tr(t, 'restart_title', 'Restart this board?')} message={confirm.kind === 'replace' ? tr(t, 'solo_replace_notice', 'Save this open game over the other saved progress on this device? Other tabs will need to resume this version.') : tr(t, 'restart_solo_notice', 'This resets your local progress and unfinished settings. The board stays available.')} confirm={confirm.kind === 'replace' ? tr(t, 'solo_replace_confirm', 'Replace saved progress') : tr(t, 'reset_progress', 'Reset my progress')} onCancel={() => setConfirm(null)} onConfirm={confirmAction}/>}
-    <BoardView support={boardSupport} key={scope + ':' + reset} board={board} run={state.run} busy={blocked || !!confirm} roster={{ solo: { name: user?.displayName || tr(t,'you','You') } }} reportContext={{ appId, owner: uid, preview, mode: 'solo', attemptId: state.reportAttemptId, coverage }} workspaceSnapshot={state.workspace} onWorkspaceChange={workspace => { if (scopeRef.current === scope && !confirm && !['corrupt', 'conflict'].includes(current.current.status)) persist({ ...current.current, workspace }); }} onMove={(id,funding,route) => action(run => engine.merge(run, engine.begin(board, run, id,funding,route)))} onAnswer={answer} onRetry={() => action(run => engine.merge(run, engine.retry(board, run)))} onFieldChoice={choice => action(run => engine.merge(run, engine.chooseFieldOpportunity(board,run,choice)))} onAdvance={() => action(run => engine.merge(run, engine.advance(board, run)))} t={t}/>
+    <BoardView support={boardSupport} key={scope + ':' + reset} board={board} run={state.run} busy={blocked || !!confirm} roster={{ solo: { name: user?.displayName || tr(t,'you','You') } }} reportContext={{ appId, owner: uid, preview, mode: 'solo', attemptId: state.reportAttemptId, coverage }} onReveal={id => { if (!preview) recordReveal(deviceStorage(), { appId, owner: uid, attemptId: state.reportAttemptId }, id, 'solo'); }} workspaceSnapshot={state.workspace} onWorkspaceChange={workspace => { if (scopeRef.current === scope && !confirm && !['corrupt', 'conflict'].includes(current.current.status)) persist({ ...current.current, workspace }); }} onMove={(id,funding,route) => action(run => engine.merge(run, engine.begin(board, run, id,funding,route)))} onAnswer={answer} onRetry={() => action(run => engine.merge(run, engine.retry(board, run)))} onFieldChoice={choice => action(run => engine.merge(run, engine.chooseFieldOpportunity(board,run,choice)))} onAdvance={() => action(run => engine.merge(run, engine.advance(board, run)))} t={t}/>
   </>;
 }
 
@@ -137,7 +149,7 @@ export function LessonBoardSetup({ inputText, generatedContent, language: reques
   const keepSupport=valid=>{if(!support)return; if(!hasSupport(support)&&supportState?.revision===null)return;const saved=saveSupport(localStorage,valid,appId,user?.uid||'local',support,supportState?.revision);receiveSupport(saved.support,saved.revision);};
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; request.current++; clearTimeout(generationBusy.current?.timer); generationBusy.current = null; }; }, []);
   useEffect(() => { clearTimeout(generationBusy.current?.timer); generationBusy.current = null; request.current++; setStage(''); setError(''); setNotice(''); setBoard(null); setLibrary([]); setPlaying(''); setChoice(null); setVersions([]); setReport(null); setFailure(null); manual.current = false; try { const saved = readLibrary(localStorage, source, language); setLibrary(saved); setBoard(importContext?.board || saved[0] || null); } catch (error) { if (importContext?.board) setBoard(importContext.board); reportError(error); } }, [scope]);
-  const reportError = error => { setError(error.message==='board-support-live-size'?tr(t,'support_live_size','This board has too much visual or vocabulary support for a shared session. Use shorter descriptions or fewer cues and terms before launching. Your board and pictures are kept.'):error.message); if (error.code === 'board-library-full') setTimeout(() => { const saved = dialog.current?.querySelector('[data-board-library]'); if (saved) { saved.open = true; saved.querySelector('[data-replace-saved]')?.focus(); } }, 0); };
+  const reportError = error => { setError(error.message==='board-support-live-size'?tr(t,'support_live_size','This board has too much visual or vocabulary support for a shared session. Use shorter descriptions or fewer cues and terms before launching. Your board and pictures are kept.'):errorText(t, error)); if (error.code === 'board-library-full') setTimeout(() => { const saved = dialog.current?.querySelector('[data-board-library]'); if (saved) { saved.open = true; saved.querySelector('[data-replace-saved]')?.focus(); } }, 0); };
   const cancelGeneration = () => { request.current++; clearTimeout(generationBusy.current?.timer); generationBusy.current = null; setStage(''); setNotice(tr(t,'generation_cancelled','Generation cancelled. Your current board is still available.')); };
   const editBoard = next => { if(support){let revision;try{revision=readSupport(localStorage,next,appId,user?.uid||'local').revision;}catch(error){reportError(error);}setSupportState({scope:scope+':'+JSON.stringify(next),value:prepareSupport(support,next),revision});}setBoard(next); };
   const chooseGoal = next => { try { if(board)editBoard(engine.prepareBoard({...board,goal:next},source)); setGoal(next);setError('');setNotice(''); } catch(error){reportError(error);} };
@@ -165,6 +177,8 @@ export function LessonBoardSetup({ inputText, generatedContent, language: reques
   };
   const generate = () => runAI('generate', async (provider, onStage, onProgress) => {
     const result = await engine.createBoard(provider, source, { language, theme, level, vocabulary, playStyle: board ? (board.playStyle || 'exploration') : playStyle, goal: board ? (board.goal || 'core') : goal, expeditionKit: board?.expeditionKit, travelLimit: board?.travelLimit, seed: engine.identity('variation'), chance: chancePref, onProgress }, onStage);
+    // Models favour one answer slot; a new board starts with its keys spread.
+    result.board = engine.prepareBoard(balanceAnswerPositions(result.board), source);
     return () => { commitBoard(result.board, tr(t, 'version_previous', 'The previous board'), true); if(sceneryPreference.value.enabled&&result.board.playStyle==='tabletop')scenery.queue(result.board,sceneryPreference.value.style); setReport({ kind: 'generate', fixes: result.fixes, attempts: result.attempts, removed: result.removed }); };
   });
   const refineWholeBoard = (instruction, label, base = board, fresh = false) => runAI(fresh ? 'generate' : 'refine', async (provider, onStage, onProgress) => {
@@ -201,7 +215,7 @@ export function LessonBoardSetup({ inputText, generatedContent, language: reques
     try { const mailboxVersion = window.__alloLessonBoardMailboxVersion?.(); if (mailboxVersion !== null && mailboxVersion !== undefined && mailboxVersion < 22) throw Error('Update your Class Mailbox script to version 22 or later in Live Sessions setup before launching a board.'); const valid = engine.prepareBoard(board, source), { fb, ref } = connection(appId, activeSessionCode), media=hasSupport(support)?await liveSupport(support,valid):null; await writeBoardDocument(fb, ref, latest => {
       if (!mounted.current || request.current !== id || scopeRef.current !== started) return;
       if (!latest) throw Error('The live session is no longer available.'); if (latest.escapeRoomState?.isActive || latest.quizState?.isActive) throw Error('End the current live activity before launching this board.');
-      const next = engine.createSession(valid, user?.uid, latest.roster || {}); next.boardRoles = rolesConfig(useClassRoles, latest.roster || {}); if(media)next.boardSupport=media.support; const linked = coverageSnapshot(coverage); if (linked) next.assessmentCoverage = linked; checkSize({ ...latest, escapeRoomState: next }); return { escapeRoomState: next }; }); if (mounted.current && request.current === id && scopeRef.current === started) { keepInLibrary(valid); onLaunched?.(); onClose?.(); }
+      const next = engine.createSession(valid, user?.uid, latest.roster || {}); next.boardRoles = rolesConfig(useClassRoles, latest.roster || {}); if(media)next.boardSupport=media.support; const linked = coverageSnapshot(coverage); if (linked) next.assessmentCoverage = linked; checkSize({ ...latest, escapeRoomState: next }); const learners = Object.keys(latest.roster || {}).length, short = JSON.stringify({ ...latest, escapeRoomState: next }).length + liveReserve(learners) - LIVE_LIMIT; if (short > 0) throw Error(tr(t, 'live_room_short', 'This board and its picture or vocabulary support leave too little room in the live session for a full game with {count} learners (about {chars} characters short). Turn off picture or vocabulary support, or use a board with fewer stops, then launch again.', { count: learners, chars: short })); return { escapeRoomState: next }; }); if (mounted.current && request.current === id && scopeRef.current === started) { keepInLibrary(valid); onLaunched?.(); onClose?.(); }
     } catch (error) { if (mounted.current && request.current === id) reportError(error); } finally { if (mounted.current && request.current === id) setStage(''); }
   };
   const coverage = React.useMemo(() => importContext ? null : assessmentCoverage(board,generatedContent), [board,generatedContent,importContext]);
@@ -224,38 +238,82 @@ export function LessonBoardSetup({ inputText, generatedContent, language: reques
     </>}
   </>}</section></div>;
 }
+// Teacher-side private data on native Firestore: learners' private answer documents and the
+// teacher-only document of accepted values. Both stay empty when the rules do not allow them.
+function usePrivateBoard(appId, code, state, enabled) {
+  const [data, setData] = useState({ actions: {}, host: null });
+  useEffect(() => {
+    setData({ actions: {}, host: null });
+    if (!enabled || !state?.attemptId) return undefined;
+    let fb, ref; try { ({ fb, ref } = connection(appId, code)); } catch (_) { return undefined; }
+    if (!privateTransport(ref) || typeof fb.onSnapshot !== 'function' || typeof fb.collection !== 'function') return undefined;
+    const db = fb.db || window.__alloShared?.db, stops = [];
+    try { stops.push(fb.onSnapshot(fb.collection(db, ...answersCollectionPath(appId, code)), snapshot => { const actions = {}; snapshot.forEach(item => { actions[item.id] = item.data(); }); setData(prev => ({ ...prev, actions })); }, () => {})); } catch (_) {}
+    try { stops.push(fb.onSnapshot(fb.doc(db, ...hostPath(appId, code, state.attemptId)), snapshot => setData(prev => ({ ...prev, host: snapshot.data() || null })), () => {})); } catch (_) {}
+    return () => stops.forEach(stop => { try { stop(); } catch (_) {} });
+  }, [appId, code, state?.attemptId, enabled]);
+  return data;
+}
 export function LessonBoardHost({ sessionData, activeSessionCode, appId }) {
   const state = sessionData?.escapeRoomState, scope = scopeOf(appId, activeSessionCode, state), [retry, setRetry] = useState(0), current = useRef({ state, sessionData, scope }); current.current = { state, sessionData, scope };
-  const { check } = useRuntime(scope);
+  const { check } = useRuntime(scope), privateOn = state?.privateAnswers === true, privateBoard = usePrivateBoard(appId, activeSessionCode, state, privateOn), privateActions = useRef({}), probed = useRef('');
+  privateActions.current = privateBoard.actions;
+  // Turn on private answers once the rules allow the teacher-only document and the private answers list.
+  useEffect(() => {
+    if (state?.mode !== 'lesson-board' || !state.isActive || state.privateAnswers === true || probed.current === scope) return;
+    let fb, ref; try { ({ fb, ref } = connection(appId, activeSessionCode)); } catch (_) { return; }
+    if (!privateTransport(ref) || typeof fb.setDoc !== 'function' || typeof fb.getDocs !== 'function' || typeof fb.collection !== 'function') return;
+    probed.current = scope; const db = fb.db || window.__alloShared?.db, attemptId = state.attemptId;
+    (async () => {
+      try {
+        await fb.setDoc(fb.doc(db, ...hostPath(appId, activeSessionCode, attemptId)), { attemptId, ready: true }, { merge: true });
+        await fb.getDocs(fb.collection(db, ...answersCollectionPath(appId, activeSessionCode)));
+        await writeBoardDocument(fb, ref, latest => { const fresh = latest?.escapeRoomState; return fresh?.mode === 'lesson-board' && fresh.isActive && fresh.attemptId === attemptId && fresh.privateAnswers !== true ? { 'escapeRoomState.privateAnswers': true } : null; });
+      } catch (_) { /* Rules without the private paths: learners keep using the shared slot. */ }
+    })();
+  }, [scope, state?.isActive, state?.privateAnswers]);
   useEffect(() => {
     if (state?.mode !== 'lesson-board' || !state.isActive || state.isPaused || runtime.locks.has(scope) || engine.validateBoard(state.board).length) return;
-    const plan = latest => {
+    // accepted: answers whose values are already in the teacher-only document (private answers only).
+    const collect = (latest, accepted) => {
       if (current.current.scope !== scope) return null;
       const fresh = latest?.escapeRoomState;
       if (fresh?.mode !== 'lesson-board' || !fresh.isActive || fresh.isPaused || fresh.attemptId !== state.attemptId) return null;
-      const run = engine.runOf(fresh), step = engine.stepOf(run), requests = Object.entries(fresh.teamProgress?.All?.boardActions || {}).filter(([uid, action]) => Object.prototype.hasOwnProperty.call(latest.roster || {}, uid) && fresh.teams?.[uid] === 'All' && engine.validAction(action, fresh.attemptId, run.turn, step.retryRound || 0) && step.seen?.[uid]?.requestId !== action.requestId).slice(0, 16);
+      const run = engine.runOf(fresh), keep = fresh.privateAnswers === true;
+      const requests = boardRequests(fresh, latest.roster || {}, privateActions.current).filter(([uid, action]) => !keep || !accepted || action.kind !== 'answer' || accepted.has(uid + ':' + action.requestId)).slice(0, 16);
       if (!requests.length) return null;
-      let next = run, patch = {};
-      for (const [uid, action] of requests) { const planned = engine.processAction(fresh.board, next, action, uid, { attemptId: fresh.attemptId, active: fresh.isActive, paused: fresh.isPaused }); next = engine.merge(next, planned); Object.assign(patch, planned); }
+      let next = run, patch = {}; const answered = new Set();
+      for (const [uid, action] of requests) { const planned = engine.processAction(fresh.board, next, action, uid, { attemptId: fresh.attemptId, active: fresh.isActive, paused: fresh.isPaused }); next = engine.merge(next, planned); Object.assign(patch, planned); if (Object.keys(planned).some(path => /\.answers\./.test(path))) answered.add(uid + ':' + action.requestId); }
       if (!Object.keys(patch).length) return null;
-      const update = runPatch(fresh, patch); checkSize(applyDocument(latest, update)); return update;
+      const split = keep ? splitAnswers(patch) : { shared: patch, values: {} }, update = runPatch(fresh, split.shared); checkSize(applyDocument(latest, update));
+      return { update, values: split.values, answered };
     };
-    try { if (!plan(sessionData)) return; } catch (error) { runtime.errors.set(scope,error.message); runtime.emit(); return; }
+    const plan = (latest, accepted) => collect(latest, accepted)?.update || null;
+    let first; try { first = collect(sessionData, null); if (!first) return; } catch (error) { runtime.errors.set(scope,error.message); runtime.emit(); return; }
     runtime.locks.add(scope); runtime.emit();
     (async () => {
       try {
         const { fb, ref } = connection(appId, activeSessionCode);
-        if (ref.__alloMbRef || !ref.__alloLanRef && typeof fb.runTransaction === 'function') await writeBoardDocument(fb, ref, plan);
-        else { const update = plan(current.current.sessionData); if (update) await fb.updateDoc(ref, update); }
+        let accepted = null;
+        // Store accepted values first; receipts for answers whose values are not stored wait for the next pass.
+        if (state.privateAnswers === true && privateTransport(ref)) {
+          if (Object.keys(first.values).length) await fb.setDoc(fb.doc(fb.db || window.__alloShared?.db, ...hostPath(appId, activeSessionCode, state.attemptId)), { answers: first.values }, { merge: true });
+          accepted = first.answered;
+        }
+        if (ref.__alloMbRef || !ref.__alloLanRef && typeof fb.runTransaction === 'function') await writeBoardDocument(fb, ref, latest => plan(latest, accepted));
+        else { const update = plan(current.current.sessionData, accepted); if (update) await fb.updateDoc(ref, update); }
         runtime.errors.delete(scope);
       } catch (error) { runtime.errors.set(scope, error.message || 'Actions are waiting for confirmation.'); }
       finally { runtime.locks.delete(scope); runtime.emit(); }
     })();
-  }, [state, sessionData?.roster, retry, check, scope]);
+  }, [state, sessionData?.roster, retry, check, scope, privateBoard.actions]);
   useEffect(() => { const timer = setInterval(() => setRetry(n => n + 1), 5000); return () => clearInterval(timer); }, [scope]);
   return null;
 }
 export function LessonBoardStudent({ sessionData, user, targetAppId, activeSessionCode, t }) {
+  // With private answers on, a learner's receipt carries no value; their own document shows what they sent.
+  const [ownAnswer, setOwnAnswer] = useState(null), privateOn = sessionData?.escapeRoomState?.privateAnswers === true;
+  useEffect(() => { setOwnAnswer(null); if (!privateOn || !user?.uid) return undefined; let fb, ref; try { ({ fb, ref } = connection(targetAppId, activeSessionCode)); } catch (_) { return undefined; } if (!privateTransport(ref) || typeof fb.onSnapshot !== 'function') return undefined; try { return fb.onSnapshot(fb.doc(fb.db || window.__alloShared?.db, ...answerPath(targetAppId, activeSessionCode, user.uid)), snapshot => setOwnAnswer(snapshot.data() || null), () => {}); } catch (_) { return undefined; } }, [targetAppId, activeSessionCode, privateOn, user?.uid]);
   const state = sessionData?.escapeRoomState, run = engine.runOf(state), scope = scopeOf(targetAppId, activeSessionCode, state) + ':' + user?.uid, storageKey = 'allo-board-pending:' + scope;
   const online = useBoardOnline(), [delivery, setDelivery] = useState('ready'), pendingRetry = useRef(null), studentRoot = useRef(null);
   const [pending, setPending] = useState(null), pendingRef = useRef(null), sendRef = useRef(null), scopeRef = useRef(scope), mounted = useRef(true), [sending, setSending] = useState(false), [slow, setSlow] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [joining, setJoining] = useState(false), joinRef = useRef(null), [pendingSaved, setPendingSaved] = useState(true); scopeRef.current = scope;
@@ -274,7 +332,9 @@ export function LessonBoardStudent({ sessionData, user, targetAppId, activeSessi
     const started = scope, ticket = {}; sendRef.current = ticket; setSending(true); setError('');
     try {
       const { fb, ref } = connection(targetAppId, activeSessionCode);
-      await waitForBoardDelivery(fb.updateDoc(ref, { ['escapeRoomState.teamProgress.All.boardActions.' + user.uid]: action }));
+      const shared = () => fb.updateDoc(ref, { ['escapeRoomState.teamProgress.All.boardActions.' + user.uid]: action });
+      if (action.kind === 'answer' && state.privateAnswers === true && privateTransport(ref) && typeof fb.setDoc === 'function') await waitForBoardDelivery(fb.setDoc(fb.doc(fb.db || window.__alloShared?.db, ...answerPath(targetAppId, activeSessionCode, user.uid)), action).catch(error => { if (isPermissionError(error)) return shared(); throw error; }));
+      else await waitForBoardDelivery(shared());
       if (mounted.current && scopeRef.current === started && pendingRef.current?.requestId === action.requestId && sendRef.current === ticket) setDelivery('sent');
     } catch (failure) {
       if (mounted.current && scopeRef.current === started && pendingRef.current?.requestId === action.requestId && sendRef.current === ticket) {
@@ -287,32 +347,46 @@ export function LessonBoardStudent({ sessionData, user, targetAppId, activeSessi
   if (state?.mode !== 'lesson-board' || !state.isActive) return null;
   if (!user?.uid) return <div className="lb lb-overlay"><Styles/><p role="status">{tr(t, 'waiting_identity', 'Waiting for your live session connection…')}</p></div>;
   if (engine.validateBoard(state.board).length) return <div className="lb lb-overlay"><Styles/><p role="alert">{tr(t, 'invalid', 'This board could not be opened. Ask the teacher to regenerate it.')}</p></div>;
-  return <div ref={studentRoot} className="lb lb-overlay" data-theme={state.board.theme} role="region" aria-label={tr(t, 'live_board', 'Cooperative lesson board')}><Styles/><div className="lb-shell"><BoardSessionGuide key={'guide:' + scope} state={state} roster={sessionData.roster} uid={user.uid} scope={scope} online={online} pending={pending} delivery={delivery} sending={sending} joining={joining} t={t} onContinue={() => { const target = studentRoot.current?.querySelector('.lb-current > h3'); target?.focus(); target?.scrollIntoView?.({block:'center'}); }}/>{state.teams?.[user?.uid] !== 'All' && <button type="button" disabled={joining} onClick={() => join(true)}>{tr(t, 'join_board', 'Join shared board')}</button>}{error && <p className="lb-notice" role="alert">{error}</p>}{pending && <div className="lb-notice" data-board-pending role="status"><p data-board-delivery={delivery}>{sending ? tr(t, 'sending', 'Sending your action…') : !online && delivery !== 'sent' && delivery !== 'timeout' ? tr(t, 'pending_offline', 'Your action is kept on this page. Retry when your session connection is available.') : delivery === 'timeout' ? tr(t, 'delivery_timeout', 'Delivery has not been confirmed. You can retry the same action; it will only count once.') : delivery === 'restored' ? tr(t, 'delivery_restored', 'An unconfirmed action was restored. Retry to check delivery, or wait for the teacher’s confirmation.') : delivery === 'sent' ? tr(t, 'delivery_sent', 'Action sent. Waiting for teacher confirmation. Keep this page open.') : tr(t, 'delivery_kept', 'Your action is kept on this page. Retry when connected.')}</p>{online && slow && delivery === 'sent' && <p>{tr(t, 'teacher_confirmation_help', 'Still waiting? Ask the teacher to keep the shared board open and connected.')}</p>}{!pendingSaved && <p>{tr(t, 'pending_not_saved', 'Browser storage is unavailable. Keep this page open until confirmation; a reload may lose this pending action.')}</p>}<button type="button" ref={pendingRetry} data-board-retry-delivery aria-disabled={sending || state.isPaused || state.teams?.[user?.uid] !== 'All'} onClick={() => { if (!sending) transmit(pending, true); }}>{tr(t, 'retry_action', 'Retry this action')}</button>{state.isPaused && <p>{tr(t, 'delivery_paused', 'The teacher paused this board. Your action is kept; retry after the board resumes.')}</p>}</div>}<BoardView support={state.boardSupport} key={scope} board={state.board} run={run} role="student" uid={user.uid} roster={sessionData.roster} pending={pending} onReviewPending={() => { pendingRetry.current?.focus(); pendingRetry.current?.scrollIntoView?.({ block: 'center' }); }} paused={state.isPaused} busy={state.teams?.[user?.uid] !== 'All'} classRoles={state.boardRoles} notice={notice} workspaceKey={'allo-board-draft:' + scope} t={t} onMove={id => action('vote', id)} onAnswer={value => action('answer', engine.stepOf(run).targetId, value)}/></div></div>;
+  return <div ref={studentRoot} className="lb lb-overlay" data-theme={state.board.theme} role="region" aria-label={tr(t, 'live_board', 'Cooperative lesson board')}><Styles/><div className="lb-shell"><BoardSessionGuide key={'guide:' + scope} state={state} roster={sessionData.roster} uid={user.uid} scope={scope} online={online} pending={pending} delivery={delivery} sending={sending} joining={joining} t={t} onContinue={() => { const target = studentRoot.current?.querySelector('.lb-current > h3'); target?.focus(); target?.scrollIntoView?.({block:'center'}); }}/>{state.teams?.[user?.uid] !== 'All' && <button type="button" disabled={joining} onClick={() => join(true)}>{tr(t, 'join_board', 'Join shared board')}</button>}{error && <p className="lb-notice" role="alert">{error}</p>}{pending && <div className="lb-notice" data-board-pending role="status"><p data-board-delivery={delivery}>{sending ? tr(t, 'sending', 'Sending your action…') : !online && delivery !== 'sent' && delivery !== 'timeout' ? tr(t, 'pending_offline', 'Your action is kept on this page. Retry when your session connection is available.') : delivery === 'timeout' ? tr(t, 'delivery_timeout', 'Delivery has not been confirmed. You can retry the same action; it will only count once.') : delivery === 'restored' ? tr(t, 'delivery_restored', 'An unconfirmed action was restored. Retry to check delivery, or wait for the teacher’s confirmation.') : delivery === 'sent' ? tr(t, 'delivery_sent', 'Action sent. Waiting for teacher confirmation. Keep this page open.') : tr(t, 'delivery_kept', 'Your action is kept on this page. Retry when connected.')}</p>{online && slow && delivery === 'sent' && <p>{tr(t, 'teacher_confirmation_help', 'Still waiting? Ask the teacher to keep the shared board open and connected.')}</p>}{!pendingSaved && <p>{tr(t, 'pending_not_saved', 'Browser storage is unavailable. Keep this page open until confirmation; a reload may lose this pending action.')}</p>}<button type="button" ref={pendingRetry} data-board-retry-delivery aria-disabled={sending || state.isPaused || state.teams?.[user?.uid] !== 'All'} onClick={() => { if (!sending) transmit(pending, true); }}>{tr(t, 'retry_action', 'Retry this action')}</button>{state.isPaused && <p>{tr(t, 'delivery_paused', 'The teacher paused this board. Your action is kept; retry after the board resumes.')}</p>}</div>}<BoardView support={state.boardSupport} key={scope} board={state.board} run={privateOn ? withOwnAnswer(run, user.uid, ownAnswer) : run} role="student" uid={user.uid} roster={sessionData.roster} pending={pending} onReviewPending={() => { pendingRetry.current?.focus(); pendingRetry.current?.scrollIntoView?.({ block: 'center' }); }} paused={state.isPaused} busy={state.teams?.[user?.uid] !== 'All'} classRoles={state.boardRoles} notice={notice} workspaceKey={'allo-board-draft:' + scope} t={t} onMove={id => action('vote', id)} onAnswer={value => action('answer', engine.stepOf(run).targetId, value)}/></div></div>;
 }
 export function LessonBoardTeacher({ sessionData, appId, activeSessionCode, user, t }) {
+  const privateBoard = usePrivateBoard(appId, activeSessionCode, sessionData?.escapeRoomState, sessionData?.escapeRoomState?.privateAnswers === true);
   const state = sessionData?.escapeRoomState, scope = scopeOf(appId, activeSessionCode, state), run = engine.runOf(state), { busy, error: hostError } = useRuntime(scope), [error, setError] = useState(''), [confirm, setConfirm] = useState(''), current = useRef({ state, run, sessionData, scope }), mounted = useRef(true); current.current = { state, run, sessionData, scope };
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   useEffect(() => { setError(''); setConfirm(''); }, [scope]);
+  // End and restart replace the shared results, so keep this attempt's class report on this device first.
+  const unsavedAllowed = useRef('');
+  const keepResults = kind => {
+    const owner = user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId, context = { appId, owner, mode: 'teacher', attemptId: state.attemptId, sessionCode: activeSessionCode, coverage: state.assessmentCoverage }, report = learningReport(state.board, run, sessionData.roster || {}, { ...context, responses: readResponses(deviceStorage(), context) });
+    if (!report.learners.some(item => item.answered)) return true;
+    try { saveReport(localStorage, appId, owner, report); return true; }
+    catch (failure) { const key = state.attemptId + ':' + kind; if (unsavedAllowed.current === key) return true; unsavedAllowed.current = key; setError(tr(t, 'report_autosave_failed', 'The class results could not be saved on this device: {reason} Download them from "Save or export learning results", or confirm again to continue without saving.', { reason: errorText(t, failure) })); return false; }
+  };
   const commit = async kind => {
+    if ((kind === 'end' || kind === 'restart') && !keepResults(kind)) { setConfirm(''); return; }
     if (runtime.locks.has(scope)) return; runtime.locks.add(scope); runtime.emit(); setError('');
     // Rolled once per command so a retried transaction cannot reroll.
     const dice = engine.rollDice(2);
+    let resolving = null;
+    // Private answers: grade with the values in the teacher-only document, read fresh for this command.
+    let hostValues = privateBoard.host; if (kind === 'resolve' && state.privateAnswers === true) { try { const { fb } = connection(appId, activeSessionCode); hostValues = (await fb.getDoc(fb.doc(fb.db || window.__alloShared?.db, ...hostPath(appId, activeSessionCode, state.attemptId)))).data() || privateBoard.host; } catch (_) {} }
     try { const { fb, ref } = connection(appId, activeSessionCode); await writeBoardDocument(fb,ref,latest => { const fresh = latest?.escapeRoomState;
       if(!mounted.current || current.current.scope!==scope)return;
       if (!fresh || fresh.mode !== 'lesson-board' || fresh.attemptId !== state.attemptId || !fresh.isActive) throw Error('This board has changed. Review the current session.');
-      const freshRun = engine.runOf(fresh); if (freshRun.turn !== run.turn || engine.stepOf(freshRun).phase !== engine.stepOf(run).phase || engine.stepOf(freshRun).targetId !== engine.stepOf(run).targetId || (engine.stepOf(freshRun).retryRound||0)!==(engine.stepOf(run).retryRound||0)) throw Error('The teacher already advanced this move.');
+      const freshRun = fresh.privateAnswers === true ? withPrivateAnswers(engine.runOf(fresh), hostValues) : engine.runOf(fresh); if (freshRun.turn !== run.turn || engine.stepOf(freshRun).phase !== engine.stepOf(run).phase || engine.stepOf(freshRun).targetId !== engine.stepOf(run).targetId || (engine.stepOf(freshRun).retryRound||0)!==(engine.stepOf(run).retryRound||0)) throw Error('The teacher already advanced this move.');
       let patch;
       if (kind === 'roles') patch = { 'escapeRoomState.boardRoles': rolesConfig(!state.boardRoles?.enabled, latest.roster || {}) };
       else if (kind === 'pause') patch = { 'escapeRoomState.isPaused': !state.isPaused };
-      else if (kind === 'end') patch = { 'escapeRoomState.isActive': false, 'escapeRoomState.isGameOver': true };
+      // Ending keeps only a small marker: the class results were saved first, and a Mailbox session needs the room for later activities.
+      else if (kind === 'end') patch = { escapeRoomState: { mode: 'lesson-board', isActive: false, isPaused: false, isGameOver: true, attemptId: fresh.attemptId, hostId: fresh.hostId } };
       else if (kind === 'restart') patch = { escapeRoomState: { ...engine.createSession(fresh.board, fresh.hostId, latest.roster), boardRoles: rolesConfig(fresh.boardRoles?.enabled,latest.roster), ...(fresh.assessmentCoverage ? {assessmentCoverage:fresh.assessmentCoverage} : {}), ...(fresh.boardSupport ? {boardSupport:fresh.boardSupport} : {}) } };
-      else { if (fresh.isPaused) throw Error('Resume the board before choosing a move.'); if (kind === 'resolve' && receivedBoardResponses(fresh, latest.roster).length) throw Error(tr(t, 'received_before_resolve', 'New responses have arrived. Confirm received responses before resolving this activity.')); const changes = kind === 'resolve' ? engine.resolve(fresh.board, freshRun, latest.roster, { dice }) : kind === 'retry' ? engine.retry(fresh.board,freshRun) : kind === 'next' ? engine.advance(fresh.board, freshRun) : kind.fieldChoice ? engine.chooseFieldOpportunity(fresh.board,freshRun,kind.fieldChoice) : engine.begin(fresh.board, freshRun, kind.move,kind.funding,kind.route); patch = runPatch(fresh, changes); if (kind === 'next' && fresh.boardRoles?.enabled) patch['escapeRoomState.boardRoles'] = rolesConfig(true,latest.roster || {}); }
-      checkSize(applyDocument(latest, patch)); return patch; }); if (mounted.current && current.current.scope===scope && current.current.state?.attemptId === state.attemptId) setConfirm('');
-    } catch (error) { if (mounted.current && current.current.scope===scope && current.current.state?.attemptId === state.attemptId) setError(error.message); } finally { runtime.locks.delete(scope); runtime.emit(); }
+      else { if (fresh.isPaused) throw Error('Resume the board before choosing a move.'); if (kind === 'resolve' && receivedBoardResponses(fresh, latest.roster, privateBoard.actions).length) throw Error(tr(t, 'received_before_resolve', 'New responses have arrived. Confirm received responses before resolving this activity.')); if (kind === 'resolve' && fresh.privateAnswers === true && Object.values(engine.stepOf(freshRun).answers || {}).some(answer => answer?.received && typeof answer.value !== 'string')) throw Error(tr(t, 'private_answers_loading', 'Some responses are still loading. Wait a moment, then resolve again.')); if (kind === 'resolve') resolving = { targetId: engine.stepOf(freshRun).targetId, answers: Object.fromEntries(Object.entries(engine.stepOf(freshRun).answers || {}).filter(([uid]) => Object.prototype.hasOwnProperty.call(latest.roster || {}, uid)).map(([uid, answer]) => [uid, answer?.value])) }; const changes = kind === 'resolve' ? engine.resolve(fresh.board, freshRun, latest.roster, { dice }) : kind === 'retry' ? engine.retry(fresh.board,freshRun) : kind === 'next' ? engine.compactAdvance(fresh.board, freshRun) : kind.fieldChoice ? engine.chooseFieldOpportunity(fresh.board,freshRun,kind.fieldChoice) : engine.begin(fresh.board, freshRun, kind.move,kind.funding,kind.route); patch = runPatch(fresh, changes); if (kind === 'next' && fresh.boardRoles?.enabled) patch['escapeRoomState.boardRoles'] = rolesConfig(true,latest.roster || {}); }
+      checkSize(applyDocument(latest, patch)); return patch; }); if (resolving) recordResponses(deviceStorage(), { appId, owner: user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId, attemptId: state.attemptId }, resolving.targetId, resolving.answers); if ((kind === 'end' || kind === 'restart') && state.privateAnswers === true && privateTransport(ref)) clearPrivateAnswers(fb, appId, activeSessionCode, state.attemptId); if (mounted.current && current.current.scope===scope && current.current.state?.attemptId === state.attemptId) setConfirm('');
+    } catch (error) { if (mounted.current && current.current.scope===scope && current.current.state?.attemptId === state.attemptId) setError(errorText(t, error)); } finally { runtime.locks.delete(scope); runtime.emit(); }
   };
   if (state?.mode !== 'lesson-board' || !state.isActive) return null;
   if (engine.validateBoard(state.board).length) return <p role="alert">{tr(t, 'invalid', 'This board could not be opened. Ask the teacher to regenerate it.')}</p>;
-  return <section className="lb lb-panel" data-theme={state.board.theme} aria-label={tr(t, 'teacher_controls', 'Lesson board teacher controls')}><Styles/><BoardTeacherConnection key={'connection:' + scope} busy={busy} t={t}/><LessonBoardHost sessionData={sessionData} appId={appId} activeSessionCode={activeSessionCode}/><div className="lb-row"><button type="button" disabled={busy || !!confirm} onClick={() => commit('pause')}>{state.isPaused ? tr(t, 'resume', 'Resume board') : tr(t, 'pause', 'Pause board')}</button><button type="button" disabled={busy || !!confirm} onClick={() => setConfirm('restart')}>{tr(t, 'restart', 'Restart shared board')}</button><button type="button" disabled={busy || !!confirm} onClick={() => setConfirm('end')}>{tr(t, 'end', 'End board')}</button></div><p className="lb-muted">{tr(t, 'host_required', 'Keep the teacher session open and connected during live play. The teacher chooses moves and resolves activities after learners respond.')}</p>{(error || hostError) && <p role="alert" className="lb-notice">{error || hostError}</p>}{confirm && <Confirmation busy={busy} t={t} title={confirm === 'restart' ? tr(t, 'restart_title', 'Restart this board?') : tr(t, 'end_title', 'End the shared board?')} message={confirm === 'restart' ? tr(t, 'restart_live_notice', 'Everyone starts again with no explored locations, constructed projects, or responses. The generated board stays the same.') : tr(t, 'end_notice', 'This closes the board for everyone. Review the learning before ending.')} confirm={confirm === 'restart' ? tr(t, 'restart_everyone', 'Restart for everyone') : tr(t, 'end_everyone', 'End for everyone')} onCancel={() => setConfirm('')} onConfirm={() => commit(confirm)}/>}<BoardView support={state.boardSupport} key={scope} board={state.board} run={run} role="teacher" roster={sessionData.roster || {}} workspaceKey={'allo-board-teacher-workspace:' + scope + ':' + (user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId || '')} pendingResponses={receivedBoardResponses(state, sessionData.roster)} onCheckResponses={() => { runtime.checks.set(scope, (runtime.checks.get(scope) || 0) + 1); runtime.emit(); }} classRoles={state.boardRoles} onToggleRoles={()=>commit('roles')} reportContext={{appId, owner:user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId, mode:'teacher', attemptId:state.attemptId, sessionCode:activeSessionCode, coverage:state.assessmentCoverage}} busy={busy || !!confirm} paused={state.isPaused} onMove={(id,funding,route) => commit({ move: id, funding, route })} onResolve={() => commit('resolve')} onRetry={()=>commit('retry')} onFieldChoice={fieldChoice=>commit({fieldChoice})} onAdvance={() => commit('next')} t={t}/></section>;
+  return <section className="lb lb-panel" data-theme={state.board.theme} aria-label={tr(t, 'teacher_controls', 'Lesson board teacher controls')}><Styles/><BoardTeacherConnection key={'connection:' + scope} busy={busy} t={t}/><LessonBoardHost sessionData={sessionData} appId={appId} activeSessionCode={activeSessionCode}/><div className="lb-row"><button type="button" disabled={busy || !!confirm} onClick={() => commit('pause')}>{state.isPaused ? tr(t, 'resume', 'Resume board') : tr(t, 'pause', 'Pause board')}</button><button type="button" disabled={busy || !!confirm} onClick={() => setConfirm('restart')}>{tr(t, 'restart', 'Restart shared board')}</button><button type="button" disabled={busy || !!confirm} onClick={() => setConfirm('end')}>{tr(t, 'end', 'End board')}</button></div><p className="lb-muted">{tr(t, 'host_required', 'Keep the teacher session open and connected during live play. The teacher chooses moves and resolves activities after learners respond.')}</p>{(error || hostError) && <p role="alert" className="lb-notice">{error || errorText(t, hostError)}</p>}{confirm && <Confirmation busy={busy} t={t} title={confirm === 'restart' ? tr(t, 'restart_title', 'Restart this board?') : tr(t, 'end_title', 'End the shared board?')} message={confirm === 'restart' ? tr(t, 'restart_live_notice_saves', 'Everyone starts again with no explored locations, constructed projects, or responses. The class results so far are saved on this device first. The generated board stays the same.') : tr(t, 'end_notice_saves', 'This closes the board for everyone. The class results are saved on this device first.')} confirm={confirm === 'restart' ? tr(t, 'restart_everyone', 'Restart for everyone') : tr(t, 'end_everyone', 'End for everyone')} onCancel={() => setConfirm('')} onConfirm={() => commit(confirm)}/>}<BoardView support={state.boardSupport} key={scope} board={state.board} run={state.privateAnswers === true ? withPrivateAnswers(run, privateBoard.host) : run} role="teacher" roster={sessionData.roster || {}} workspaceKey={'allo-board-teacher-workspace:' + scope + ':' + (user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId || '')} pendingResponses={receivedBoardResponses(state, sessionData.roster, privateBoard.actions)} onCheckResponses={() => { runtime.checks.set(scope, (runtime.checks.get(scope) || 0) + 1); runtime.emit(); }} classRoles={state.boardRoles} onToggleRoles={()=>commit('roles')} reportContext={{appId, owner:user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId, mode:'teacher', attemptId:state.attemptId, sessionCode:activeSessionCode, coverage:state.assessmentCoverage}} onReveal={id => recordReveal(deviceStorage(), { appId, owner: user?.uid || window.__alloFirebase?.auth?.currentUser?.uid || state.hostId, attemptId: state.attemptId }, id, '*')} busy={busy || !!confirm} paused={state.isPaused} onMove={(id,funding,route) => commit({ move: id, funding, route })} onResolve={() => commit('resolve')} onRetry={()=>commit('retry')} onFieldChoice={fieldChoice=>commit({fieldChoice})} onAdvance={() => commit('next')} t={t}/></section>;
 }
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.LessonBoardModule = true;

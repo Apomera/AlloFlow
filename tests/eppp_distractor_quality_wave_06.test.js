@@ -21,6 +21,11 @@ const ids = [
 const expectedKeys = [2, 0, 0, 0, 1, 3, 1, 3];
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|regardless|automatically|guaranteed|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
+// Question-quality wave 43 deliberately re-authored this wave-06 item (same key); see
+// eppp_question_quality_audit_wave_43.json.
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-social-cultural-002', 'eppp-native-quality-wave-43'],
+]);
 
 describe('EPPP distractor and feedback repair wave 06', () => {
   it('contains eight advanced, source-backed application or analysis rewrites', () => {
@@ -34,7 +39,7 @@ describe('EPPP distractor and feedback repair wave 06', () => {
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(item.difficulty).toBe('advanced');
       expect(['application', 'analysis']).toContain(item.cognitiveProcess);
-      expect(item.wordingReviewWave).toBe('eppp-native-quality-wave-06');
+      expect(item.wordingReviewWave, id).toBe(supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-06');
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices.map((choice) => choice.toLowerCase())).size).toBe(4);
       expect(item.choiceRationales).toHaveLength(4);

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ప్రస్తుత విమాన స్థితిని కొనసాగించండి",
+  "stem.flightsim.flight_assistance_targets": "దిశ {hdg}° · ఎత్తు {alt} ft MSL · వేగం {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "దిశ {hdg}° · ఎత్తు {alt} ft MSL · ముందుకు కదిలే వేగం {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} వైపు ఎడమకు {degrees}° తిరగండి.",
+  "stem.flightsim.challenge_turn_right": "{airport} వైపు కుడికి {degrees}° తిరగండి.",
+  "stem.flightsim.challenge_course_aligned": "{airport} వైపు వెళ్తున్నారు. మార్గ సూచికను అనుసరించండి.",
+  "stem.flightsim.challenge_runway_reference": "శిక్షణ రన్‌వే {runway}: దిశ {heading}°. దిగడానికి ఎత్తు తగ్గించే ముందు విమానాన్ని రన్‌వేతో నేరుగా అమర్చండి."
+}

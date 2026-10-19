@@ -37,7 +37,9 @@ describe('Weld Lab safety-scenario rotation (flag-graded)', () => {
 
   it('rotation matches the recipe; the correct flag and OSHA citation survive', () => {
     raw.forEach((sc, i) => {
-      const shift = (i * 7 + 3) % sc.choices.length;
+      // Each scenario names its display slot (the old (i*7+3) % n left two in A).
+      const n = sc.choices.length;
+      const shift = (n - (sc.slot % n)) % n;
       const rsc = rotated[i];
       expect(rsc.choices.map((c) => c.text)).toEqual(rotate(sc.choices.map((c) => c.text), shift));
       expect(rsc.choices.filter((c) => c.correct).length, sc.id).toBe(1);
@@ -45,7 +47,12 @@ describe('Weld Lab safety-scenario rotation (flag-graded)', () => {
       expect(rsc.osha).toBe(sc.osha);
     });
     const positions = rotated.map((sc) => sc.choices.findIndex((c) => c.correct));
-    expect(new Set(positions).size).toBeGreaterThanOrEqual(2);
+    const n = rotated[0].choices.length;
+    for (let s = 0; s < n; s++) {
+      const share = positions.filter((p) => p === s).length / positions.length;
+      expect(share, 'slot ' + s).toBeGreaterThan(0);
+      expect(share, 'slot ' + s).toBeLessThanOrEqual(0.35);
+    }
   });
 
   it('the arc-flash response holds: stop welding and brief the bystander', () => {

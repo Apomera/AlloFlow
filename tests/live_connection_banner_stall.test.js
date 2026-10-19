@@ -92,7 +92,8 @@ describe('_alloMbStallTracker', () => {
 describe('the student poll loop reports into it', () => {
   const loop = slice(anti, "const presence = { kind: 'student'", "// Real-time upgrade: the student offers");
   it('creates one tracker per loop and resets it on success', () => {
-    expect(anti).toMatch(/const stall = _alloMbStallTracker\(\);\s*const noteStall = \(next\) => \{ if \(next !== null\) setMbStudentStalled\(next\); \};\s*const announce = async \(\) => \{\s*lastAnnounce = Date\.now\(\);\s*const presence = \{ kind: 'student'/);
+    // announce() now also bails out once the loop is torn down (`if (cancelled) return;`).
+    expect(anti).toMatch(/const stall = _alloMbStallTracker\(\);\s*const noteStall = \(next\) => \{ if \(next !== null\) setMbStudentStalled\(next\); \};\s*const announce = async \(\) => \{\s*(?:if \(cancelled\) return;\s*)?lastAnnounce = Date\.now\(\);\s*const presence = \{ kind: 'student'/);
     expect(loop).toMatch(/errorCount = 0;\s*noteStall\(stall\.ok\(\)\);/);
   });
   it('counts failures with the data-channel state', () => {
