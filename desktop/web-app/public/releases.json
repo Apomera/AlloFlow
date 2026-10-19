@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261019T112839Z_v1_9",
+    "version": "1.9",
+    "canvas_url": "https://share.gemini.google/MjUL7MZ7eu4Z",
+    "released": "2026-10-19T11:28:39.272Z",
+    "notes": "Updated AlloFlow Gemini Canvas link for the October 19, 2026 release. This release rebuilds the Cell Simulator with a new Stem Cells mode, adds the Coral Reef explorer, and includes broader updates across STEM tools, Lesson Board and Word Sounds."
+  },
+  {
     "id": "rel_20261013T104446Z_v1_8",
     "version": "1.8",
     "canvas_url": "https://share.gemini.google/xHbhRje39fUQ",
