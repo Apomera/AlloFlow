@@ -1236,7 +1236,7 @@ window.StemLab = window.StemLab || {
   function iaSpecimenSprite(target, type, sel, contrast, size) {
     var host = target && target.canvas, scale = 1;
     if (!host || typeof document === 'undefined') return null;
-    if (!iaLayerFactory && !(typeof HTMLCanvasElement !== 'undefined' && host instanceof HTMLCanvasElement)) return null;
+    if (!iaLayerFactory && !(typeof window !== 'undefined' && window.HTMLCanvasElement && host instanceof window.HTMLCanvasElement)) return null;
     try { var m = typeof target.getTransform === 'function' ? target.getTransform() : null; if (m && m.a > 0) scale = Math.max(1, Math.min(3, m.a)); } catch (e) { scale = 1; }
     var key = [type, sel, contrast ? 1 : 0, size, scale].join('|'), store = host._cellInteriorInset;
     if (store && store.key === key) return store.canvas;
@@ -2951,7 +2951,7 @@ window.StemLab = window.StemLab || {
   function iaStaticLayer(c, env, sc, st) {
     var host = c && c.canvas;
     if (!host || typeof c.drawImage !== 'function' || typeof c.getTransform !== 'function') return null;
-    if (!iaLayerFactory && !(typeof HTMLCanvasElement !== 'undefined' && host instanceof HTMLCanvasElement)) return null;
+    if (!iaLayerFactory && !(typeof window !== 'undefined' && window.HTMLCanvasElement && host instanceof window.HTMLCanvasElement)) return null;
     var m; try { m = c.getTransform(); } catch (e) { return null; }
     if (!m || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6 || Math.abs(m.e) > 1e-6 || Math.abs(m.f) > 1e-6 || Math.abs(m.a - m.d) > 1e-6 || !(m.a >= 0.25 && m.a <= 3)) return null;
     var scale = m.a, pw = Math.max(1, Math.round(env.W * scale)), ph = Math.max(1, Math.round(env.H * scale)), key = iaStaticKey(env, st, scale);
