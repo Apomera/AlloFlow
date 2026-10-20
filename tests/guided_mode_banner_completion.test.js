@@ -310,7 +310,7 @@ describe('Guided banner - navigation, summary, and declared localization', () =>
     act(() => { b.button('Back').click(); });
     expect(setGuidedStep).toHaveBeenCalledTimes(1);
     expect(setGuidedStep.mock.calls[0][0](1)).toBe(0);
-    act(() => { b.button('Resume later').click(); });
+    act(() => { b.button('Save & exit').click(); });
     expect(handleExitGuidedMode).toHaveBeenCalledTimes(1);
     b.cleanup();
   });
@@ -355,7 +355,7 @@ describe('Guided banner - controlled journey UX', () => {
     expect(b.text()).toContain('Step navigation is paused');
     expect(b.button('Back').disabled).toBe(true);
     expect(b.button('Skip').disabled).toBe(true);
-    expect(b.button('Resume later').disabled).toBe(true);
+    expect(b.button('Save & exit').disabled).toBe(true);
     expect(b.host.querySelector('select').disabled).toBe(true);
     b.cleanup();
   });
@@ -892,7 +892,7 @@ describe('Guided banner - truthful autosave and safe exit', () => {
       handleExitGuidedMode, retryGuidedProgressSave, openGuidedProjectBackup,
     }));
     expect(b.text()).toContain('Progress is not saved');
-    act(() => { b.button('Resume later').click(); });
+    act(() => { b.button('Save & exit').click(); });
     expect(handleExitGuidedMode).not.toHaveBeenCalled();
     expect(b.text()).toContain('Progress could not be saved');
     expect(b.button('Retry save')).toBeTruthy();
@@ -905,7 +905,7 @@ describe('Guided banner - truthful autosave and safe exit', () => {
     expect(handleExitGuidedMode).not.toHaveBeenCalled();
     expect(b.text()).not.toContain('Exit without saving');
 
-    act(() => { b.button('Resume later').click(); });
+    act(() => { b.button('Save & exit').click(); });
     act(() => { b.button('Exit without saving').click(); });
     expect(handleExitGuidedMode).toHaveBeenCalledTimes(1);
     b.cleanup();

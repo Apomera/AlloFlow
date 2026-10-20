@@ -8388,7 +8388,9 @@ function ExportPreviewView(props) {
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error('The export did not produce a file.');
     const clean = getCleanBuilderDocument();
-    const safeTitle = String(clean?.title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'document';
+    // Letters in any script survive: an ASCII-only filter turned "Fotosíntesis"
+    // into "Fotos-ntesis" and a Cyrillic, Chinese or Arabic title into nothing.
+    const safeTitle = String(clean?.title || 'document').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'document';
     const extension = String(options.extension || 'bin').replace(/^\./, '');
     const fileName = options.fileName || `${safeTitle}${options.suffix || ''}.${extension}`;
     const url = URL.createObjectURL(blob);
@@ -8998,7 +9000,9 @@ function ExportPreviewView(props) {
                             const doc = exportPreviewRef.current?.contentDocument;
                             const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
                             const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
-                            const today = new Date().toISOString().split('T')[0];
+                            // The local date: toISOString() is UTC, so after 8 pm Eastern it read tomorrow.
+                            const now = new Date();
+                            const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                             const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
                             const esc = (v) => (v == null ? '' : String(v));
                             const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
@@ -10044,10 +10048,17 @@ const _downloadBRF = (brf) => {
                     <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Display modes</div>
 
                     {/* Glossary display: table / flash cards / language cards */}
-                    {hasGlossary && (
+                    {hasGlossary && (() => {
+                      const glText = (key, english) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value && value !== key ? value : english; };
+                      const glossaryLangs = [];
+                      (history || []).forEach(h => { if (h && h.type === 'glossary' && Array.isArray(h.data)) h.data.forEach(term => { const tr = term && term.translations; if (tr && typeof tr === 'object' && !Array.isArray(tr)) Object.keys(tr).forEach(lang => { if (String(tr[lang] || '').trim() && !glossaryLangs.includes(lang)) glossaryLangs.push(lang); }); }); });
+                      const bilingualLangs = Array.isArray(exportConfig.glossaryBilingualLanguages) ? exportConfig.glossaryBilingualLanguages : glossaryLangs;
+                      const glOption = 'flex min-h-11 items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 focus-within:ring-2 focus-within:ring-emerald-600';
+                      return (
                       <div className={`mb-2 ${exportConfig.includeGlossary ? '' : 'opacity-50'}`}>
-                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
-                        <div className="space-y-0.5">
+                        <div id="export-glossary-display-label" className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
+                        {/* Named group: the three radios had no group label for screen readers. */}
+                        <div className="space-y-0.5" role="radiogroup" aria-labelledby="export-glossary-display-label">
                           <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                             <input type="radio" name="glossaryDisplayMode" checked={(exportConfig.glossaryDisplayMode || 'table') === 'table'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'table' }))} disabled={!exportConfig.includeGlossary} />
                             Table (default)
@@ -10061,7 +10072,60 @@ const _downloadBRF = (brf) => {
                             🌐 Language cards (emphasizes translations)
                             {!hasGlossaryTranslations && <span className="text-[11px] text-slate-600">— add translations first</span>}
                           </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'bilingual'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'bilingual' }))} disabled={!exportConfig.includeGlossary || !hasGlossaryTranslations} />
+                            {glText('export.glossary_mode_bilingual', 'Bilingual table (a column per language)')}
+                          </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'word-wall'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'word-wall' }))} disabled={!exportConfig.includeGlossary} />
+                            {glText('export.glossary_mode_word_wall', 'Word wall cards (large print)')}
+                          </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'worksheet'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'worksheet' }))} disabled={!exportConfig.includeGlossary} />
+                            {glText('export.glossary_mode_worksheet', 'Student worksheet (no answers)')}
+                          </label>
                         </div>
+                        {exportConfig.glossaryDisplayMode === 'bilingual' && glossaryLangs.length > 0 && (
+                          <fieldset className="mt-2 pl-1 border-0 p-0 m-0" data-export-glossary-languages>
+                            <legend className="text-[10px] font-semibold text-slate-600 mb-1">{glText('export.glossary_bilingual_languages', 'Languages to include')}</legend>
+                            {glossaryLangs.map(lang => (
+                              <label key={lang} className={glOption}>
+                                <input type="checkbox" className="rounded" checked={bilingualLangs.includes(lang)} disabled={!exportConfig.includeGlossary} onChange={(e) => { const on = e.target.checked; setExportConfigAndRefresh(p => { const current = Array.isArray(p.glossaryBilingualLanguages) ? p.glossaryBilingualLanguages : glossaryLangs; return { ...p, glossaryBilingualLanguages: glossaryLangs.filter(l => (l === lang ? on : current.includes(l))) }; }); }} />
+                                <span dir="auto">{lang}</span>
+                              </label>
+                            ))}
+                          </fieldset>
+                        )}
+                        {exportConfig.glossaryDisplayMode === 'word-wall' && (
+                          <div className="mt-2 pl-1" data-export-glossary-word-wall>
+                            <label className={glOption}>
+                              <input type="checkbox" className="rounded" checked={exportConfig.glossaryWordWallDefinition === true} disabled={!exportConfig.includeGlossary} onChange={(e) => { const on = e.target.checked; setExportConfigAndRefresh(p => ({ ...p, glossaryWordWallDefinition: on })); }} />
+                              {glText('export.glossary_word_wall_definition', 'Add a short definition')}
+                            </label>
+                            <label className={glOption}>
+                              {glText('export.glossary_word_wall_per_page', 'Cards per printed page')}
+                              <select className="min-h-9 rounded border border-slate-300 bg-white px-1 text-xs focus-visible:ring-2 focus-visible:ring-emerald-600" value={String([2, 3, 4].includes(Number(exportConfig.glossaryWordWallPerPage)) ? Number(exportConfig.glossaryWordWallPerPage) : 2)} disabled={!exportConfig.includeGlossary} onChange={(e) => { const n = Number(e.target.value); setExportConfigAndRefresh(p => ({ ...p, glossaryWordWallPerPage: n })); }}>
+                                {[2, 3, 4].map(n => <option key={n} value={String(n)}>{n}</option>)}
+                              </select>
+                            </label>
+                          </div>
+                        )}
+                        {exportConfig.glossaryDisplayMode === 'worksheet' && (
+                          <div className="mt-2 pl-1" data-export-glossary-worksheet>
+                            <div id="export-glossary-worksheet-label" className="text-[10px] font-semibold text-slate-600 mb-1">{glText('export.glossary_worksheet_type', 'Worksheet type')}</div>
+                            <div role="radiogroup" aria-labelledby="export-glossary-worksheet-label">
+                              <label className={glOption}>
+                                <input type="radio" name="glossaryWorksheetVariant" checked={exportConfig.glossaryWorksheetVariant !== 'matching'} disabled={!exportConfig.includeGlossary} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryWorksheetVariant: 'lines' }))} />
+                                {glText('export.glossary_worksheet_lines', 'Write the definition')}
+                              </label>
+                              <label className={glOption}>
+                                <input type="radio" name="glossaryWorksheetVariant" checked={exportConfig.glossaryWorksheetVariant === 'matching'} disabled={!exportConfig.includeGlossary} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryWorksheetVariant: 'matching' }))} />
+                                {glText('export.glossary_worksheet_matching', 'Match words to definitions')}
+                              </label>
+                            </div>
+                            <p className="text-[10px] leading-snug text-slate-600 px-1">{glText('export.glossary_worksheet_key_note', 'The answer key goes only in the teacher copy, when Teacher Key is on.')}</p>
+                          </div>
+                        )}
                         {/* Image size — only relevant for table mode (cards have their own sizing). */}
                         {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
                           <div className="mt-2 pl-1">
@@ -10096,7 +10160,8 @@ const _downloadBRF = (brf) => {
                           </div>
                         )}
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Timeline display: list / cuttable strips */}
                     {hasTimeline && (

@@ -312,8 +312,8 @@ describe('Generate Source preserves the research phase', () => {
     const documentText = 'PRIVATE_DOCUMENT_SENTINEL: A teacher-provided passage used only as model context.';
     ownDocuments(1, documentText);
     const ai = publicSearchChain();
-    // Automatic lookups still cannot derive a query from private instructions.
-    const blocked = await ai.web.search('PRIVATE_INSTRUCTION_SENTINEL: photosynthesis with a private classroom note');
+    // An automatic lookup that carries a personal identifier is refused before any transport.
+    const blocked = await ai.web.search('PRIVATE_INSTRUCTION_SENTINEL: email avery@example.com about photosynthesis');
     expect(blocked.privacyBlocked).toBe(true);
     expect(ai.transport).not.toHaveBeenCalled();
     ai.search.mockClear();

@@ -2654,19 +2654,19 @@ const espeakPackPhonemes = async (word, language) => {
 function createWordSoundsReviewedLibrary(core, indexedDb) {
   const databaseName = "allo-word-sounds-reviewed-recordings-v1";
   const maxEntries = 128, maxBytes = 64 * 1024 * 1024;
-  const fail = (code, message2) => Object.assign(new Error(message2), { code });
+  const fail = (code, message2, messageKey) => Object.assign(new Error(message2), { code, messageKey });
   const cancelled = () => fail("cancelled", "Library operation cancelled.");
   const identity = (word, language) => {
-    if (typeof word !== "string" || typeof language !== "string") throw fail("invalid", "Choose a word and recording language before using the local library.");
+    if (typeof word !== "string" || typeof language !== "string") throw fail("invalid", "Choose a word and recording language before using the local library.", "word_sounds.syllable_library_choose_word");
     const targetWord = word.trim().toLowerCase().normalize("NFC");
     const languageKey = core.packAudioLanguageKey(language);
-    if (!targetWord || targetWord.length > 80 || !languageKey || languageKey.length > 120) throw fail("invalid", "Choose a word and recording language before using the local library.");
+    if (!targetWord || targetWord.length > 80 || !languageKey || languageKey.length > 120) throw fail("invalid", "Choose a word and recording language before using the local library.", "word_sounds.syllable_library_choose_word");
     return { key: JSON.stringify([targetWord, languageKey]), targetWord, languageKey };
   };
   const cleanTask = (task, word, language) => {
     const match = identity(word, language);
-    if (!core.reviewedSyllableReady(task) || task.targetWord !== match.targetWord) throw fail("invalid", "This recording needs a fresh review for the selected word and language.");
-    if (task.version !== 3 || core.packAudioLanguageKey(task.language) !== match.languageKey) throw fail("invalid", "This recording needs a fresh review for the selected word and recording language.");
+    if (!core.reviewedSyllableReady(task) || task.targetWord !== match.targetWord) throw fail("invalid", "This recording needs a fresh review for the selected word and language.", "word_sounds.syllable_library_review_word");
+    if (task.version !== 3 || core.packAudioLanguageKey(task.language) !== match.languageKey) throw fail("invalid", "This recording needs a fresh review for the selected word and recording language.", "word_sounds.syllable_library_review_word_recording_language");
     const clean = core.createReviewedSyllableTask({
       targetWord: task.targetWord,
       language: task.language,
@@ -2681,7 +2681,7 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
         source: "teacher_recording"
       }))
     });
-    if (!clean || clean.review.signature !== task.review.signature) throw fail("invalid", "This recording needs a fresh review before saving.");
+    if (!clean || clean.review.signature !== task.review.signature) throw fail("invalid", "This recording needs a fresh review before saving.", "word_sounds.syllable_library_review_before_saving");
     if (core.resolveSyllableTask(word, clean, language).supported) return clean;
     const adapted = core.createReviewedSyllableTask({
       targetWord: clean.targetWord,
@@ -2691,12 +2691,12 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
       assets: clean.audioUnits.map((unit) => unit.asset),
       reviewed: true
     });
-    if (!adapted || !core.resolveSyllableTask(word, adapted, language).supported) throw fail("invalid", "This recording needs a fresh review for the selected language.");
+    if (!adapted || !core.resolveSyllableTask(word, adapted, language).supported) throw fail("invalid", "This recording needs a fresh review for the selected language.", "word_sounds.syllable_library_review_language");
     return adapted;
   };
   const setFileLimit = 5 * 1024 * 1024;
   const checkSetText = (text) => {
-    if (typeof text !== "string" || !text.length || text.length > setFileLimit || new Blob([text]).size > setFileLimit) throw fail("invalid", "Choose a recording set smaller than 5 MB.");
+    if (typeof text !== "string" || !text.length || text.length > setFileLimit || new Blob([text]).size > setFileLimit) throw fail("invalid", "Choose a recording set smaller than 5 MB.", "word_sounds.syllable_library_set_too_large");
   };
   const exportSet = (task, word, language) => {
     const match = identity(word, language);
@@ -2716,22 +2716,22 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
     try {
       data = JSON.parse(text);
     } catch (_) {
-      throw fail("invalid", "This is not a valid recording set. Choose a Word Sounds recording set downloaded from a lesson.");
+      throw fail("invalid", "This is not a valid recording set. Choose a Word Sounds recording set downloaded from a lesson.", "word_sounds.syllable_library_set_invalid");
     }
-    if (!data || data.format !== "alloflow.word-sounds-recordings" || data.version !== 1) throw fail("invalid", "This recording set format is not supported. Choose a Word Sounds recording set downloaded from a lesson.");
+    if (!data || data.format !== "alloflow.word-sounds-recordings" || data.version !== 1) throw fail("invalid", "This recording set format is not supported. Choose a Word Sounds recording set downloaded from a lesson.", "word_sounds.syllable_library_set_format");
     const match = identity(word, language);
-    if (data.word !== match.targetWord) throw fail("invalid", "This recording set is for a different word. Open the matching word to import it.");
-    if (data.language !== match.languageKey) throw fail("invalid", "This recording set uses a different recording language. Select its matching language before importing.");
+    if (data.word !== match.targetWord) throw fail("invalid", "This recording set is for a different word. Open the matching word to import it.", "word_sounds.syllable_library_set_other_word");
+    if (data.language !== match.languageKey) throw fail("invalid", "This recording set uses a different recording language. Select its matching language before importing.", "word_sounds.syllable_library_set_other_language");
     if (data.task?.version !== 3) {
       const draft = core.recoverSyllableRecordingDraft(word, data.task);
       if (draft) return draft;
     }
     return cleanTask(data.task, word, language);
   };
-  const message = (error) => {
-    if (typeof error?.code === "string") return error.message;
-    if (error?.name === "QuotaExceededError") return "Device storage is full. The lesson still keeps its recordings; free space and try the local library again.";
-    return "The local recording library is unavailable. The lesson can still keep its recordings. Try again in this browser.";
+  const message = (error, tr = (key, fallback) => fallback) => {
+    if (typeof error?.code === "string") return error.messageKey ? tr(error.messageKey, error.message) : error.message;
+    if (error?.name === "QuotaExceededError") return tr("word_sounds.syllable_library_storage_full", "Device storage is full. The lesson still keeps its recordings; free space and try the local library again.");
+    return tr("word_sounds.syllable_library_unavailable", "The local recording library is unavailable. The lesson can still keep its recordings. Try again in this browser.");
   };
   const transact = (mode, signal, run) => new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -2739,7 +2739,7 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
       return;
     }
     if (!indexedDb?.open) {
-      reject(fail("unavailable", "This browser cannot open the local library. The lesson can still keep its recordings."));
+      reject(fail("unavailable", "This browser cannot open the local library. The lesson can still keep its recordings.", "word_sounds.syllable_library_no_browser"));
       return;
     }
     let request, database, transaction, settled = false, result;
@@ -2766,7 +2766,7 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
         transaction?.abort();
       } catch (_) {
       }
-      finish(fail("timeout", "The local library did not respond. Close other Word Sounds tabs and try again."));
+      finish(fail("timeout", "The local library did not respond. Close other Word Sounds tabs and try again.", "word_sounds.syllable_library_timeout"));
     }, 1e4);
     signal?.addEventListener("abort", abort, { once: true });
     try {
@@ -2787,7 +2787,7 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
       if (!db.objectStoreNames.contains("recordings")) db.createObjectStore("recordings", { keyPath: "key" });
       if (!db.objectStoreNames.contains("catalog")) db.createObjectStore("catalog", { keyPath: "key" });
     };
-    request.onblocked = () => finish(fail("blocked", "Another tab is holding the local library open. Close it and try again."));
+    request.onblocked = () => finish(fail("blocked", "Another tab is holding the local library open. Close it and try again.", "word_sounds.syllable_library_blocked"));
     request.onerror = () => finish(request.error);
     request.onsuccess = () => {
       database = request.result;
@@ -2801,13 +2801,13 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
           transaction?.abort();
         } catch (_) {
         }
-        finish(fail("version", "The local library changed in another tab. Check for the saved recording again."));
+        finish(fail("version", "The local library changed in another tab. Check for the saved recording again.", "word_sounds.syllable_library_version"));
         database.close();
       };
       try {
         transaction = database.transaction(["recordings", "catalog"], mode);
         transaction.oncomplete = () => finish(null, result);
-        transaction.onabort = () => finish(transaction.error || fail("aborted", "The local library did not finish saving. The previous recording was kept."));
+        transaction.onabort = () => finish(transaction.error || fail("aborted", "The local library did not finish saving. The previous recording was kept.", "word_sounds.syllable_library_aborted"));
         transaction.onerror = () => {
         };
         const rejectTransaction = (error) => {
@@ -2866,10 +2866,10 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
         if (++loaded !== 2) return;
         try {
           const actualToken = typeof existing?.token === "string" ? existing.token : null;
-          if (actualToken !== expectedToken) throw fail("conflict", "This word was changed in the local library in another tab. Find the saved recording again before replacing it.");
-          if (!Array.isArray(entries) || entries.some((entry) => !entry || typeof entry.key !== "string" || !Number.isSafeInteger(entry.bytes) || entry.bytes < 0)) throw fail("invalid", "The local library needs attention. Remove an affected saved recording and try again.");
+          if (actualToken !== expectedToken) throw fail("conflict", "This word was changed in the local library in another tab. Find the saved recording again before replacing it.", "word_sounds.syllable_library_conflict_replace");
+          if (!Array.isArray(entries) || entries.some((entry) => !entry || typeof entry.key !== "string" || !Number.isSafeInteger(entry.bytes) || entry.bytes < 0)) throw fail("invalid", "The local library needs attention. Remove an affected saved recording and try again.", "word_sounds.syllable_library_needs_attention");
           const others = entries.filter((entry) => entry.key !== match.key);
-          if (others.length >= maxEntries || others.reduce((sum, entry) => sum + entry.bytes, 0) + bytes > maxBytes) throw fail("full", "The local library is full. Remove a saved word before adding another. The lesson still keeps its recordings.");
+          if (others.length >= maxEntries || others.reduce((sum, entry) => sum + entry.bytes, 0) + bytes > maxBytes) throw fail("full", "The local library is full. Remove a saved word before adding another. The lesson still keeps its recordings.", "word_sounds.syllable_library_full");
           const token = String(Date.now()) + ":" + Math.random().toString(36).slice(2) + ":" + clean.review.signature;
           recordings.put({ version: 1, ...match, token, task: clean });
           catalog.put({ key: match.key, bytes });
@@ -2895,7 +2895,7 @@ function createWordSoundsReviewedLibrary(core, indexedDb) {
       request.onsuccess = () => {
         const token = typeof request.result?.token === "string" ? request.result.token : null;
         if (token !== expectedToken) {
-          reject(fail("conflict", "This word changed in another tab. Find the saved recording again before removing it."));
+          reject(fail("conflict", "This word changed in another tab. Find the saved recording again before removing it.", "word_sounds.syllable_library_conflict_remove"));
           return;
         }
         recordings.delete(match.key);
@@ -3077,20 +3077,20 @@ function WordSoundsSyllableDraftNotice({ words, onReview, onUseSaved, translate 
   );
 }
 function processWordSoundsSyllablePcm(channels, sampleRate, options = {}) {
-  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isFinite(sampleRate) || sampleRate < 8e3 || sampleRate > 192e3) throw new Error("Cleanup supports mono or stereo recordings with a standard sample rate.");
+  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isFinite(sampleRate) || sampleRate < 8e3 || sampleRate > 192e3) throw Object.assign(new Error("Cleanup supports mono or stereo recordings with a standard sample rate."), { messageKey: "word_sounds.syllable_rec_err_channels" });
   const length = channels[0]?.length;
-  if (!Number.isInteger(length) || length < sampleRate * 0.08 || length > sampleRate * 8 || channels.some((channel) => !channel || channel.length !== length)) throw new Error("Record one syllable per clip, between 0.08 and 8 seconds.");
+  if (!Number.isInteger(length) || length < sampleRate * 0.08 || length > sampleRate * 8 || channels.some((channel) => !channel || channel.length !== length)) throw Object.assign(new Error("Record one syllable per clip, between 0.08 and 8 seconds."), { messageKey: "word_sounds.syllable_rec_err_duration" });
   let first = length, last = -1, peak = 0;
   for (const channel of channels) for (let index = 0; index < length; index++) {
     const value = Math.abs(channel[index]);
-    if (!Number.isFinite(value)) throw new Error("This recording contains invalid audio samples.");
+    if (!Number.isFinite(value)) throw Object.assign(new Error("This recording contains invalid audio samples."), { messageKey: "word_sounds.syllable_rec_err_samples" });
     peak = Math.max(peak, value);
     if (value > 1e-4) {
       first = Math.min(first, index);
       last = Math.max(last, index);
     }
   }
-  if (last < first) throw new Error("This recording is silent. Record the syllable again.");
+  if (last < first) throw Object.assign(new Error("This recording is silent. Record the syllable again."), { messageKey: "word_sounds.syllable_rec_err_silent" });
   let start = 0, end = length;
   if (options.trimSilence) {
     const margin = Math.ceil(sampleRate * 0.2);
@@ -3110,11 +3110,11 @@ function processWordSoundsSyllablePcm(channels, sampleRate, options = {}) {
   return { channels: output, sampleRate, startFrame: start, endFrame: end, removedSeconds: (length - (end - start)) / sampleRate, gain, durationSeconds: (end - start) / sampleRate };
 }
 function encodeWordSoundsSyllableWav(channels, sampleRate) {
-  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isInteger(sampleRate) || sampleRate < 8e3 || sampleRate > 192e3) throw new Error("This recording format cannot be cleaned up.");
+  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isInteger(sampleRate) || sampleRate < 8e3 || sampleRate > 192e3) throw Object.assign(new Error("This recording format cannot be cleaned up."), { messageKey: "word_sounds.syllable_rec_err_format" });
   const frames = channels[0]?.length;
-  if (!Number.isInteger(frames) || frames < sampleRate * 0.08 || frames > sampleRate * 8 || channels.some((channel) => channel?.length !== frames)) throw new Error("This recording has an invalid duration.");
+  if (!Number.isInteger(frames) || frames < sampleRate * 0.08 || frames > sampleRate * 8 || channels.some((channel) => channel?.length !== frames)) throw Object.assign(new Error("This recording has an invalid duration."), { messageKey: "word_sounds.syllable_rec_err_invalid_duration" });
   const size = 44 + frames * channels.length * 2;
-  if (size > 384e3) throw new Error("The cleaned WAV would exceed 384 KB. Keep the original or record a shorter clip.");
+  if (size > 384e3) throw Object.assign(new Error("The cleaned WAV would exceed 384 KB. Keep the original or record a shorter clip."), { messageKey: "word_sounds.syllable_rec_err_wav_size" });
   const bytes = new ArrayBuffer(size), view = new DataView(bytes);
   const text = (offset2, value) => {
     for (let index = 0; index < value.length; index++) view.setUint8(offset2 + index, value.charCodeAt(index));
@@ -3134,7 +3134,7 @@ function encodeWordSoundsSyllableWav(channels, sampleRate) {
   view.setUint32(40, size - 44, true);
   let offset = 44;
   for (let frame = 0; frame < frames; frame++) for (const channel of channels) {
-    if (!Number.isFinite(channel[frame])) throw new Error("This recording contains invalid audio samples.");
+    if (!Number.isFinite(channel[frame])) throw Object.assign(new Error("This recording contains invalid audio samples."), { messageKey: "word_sounds.syllable_rec_err_samples" });
     const value = Math.max(-1, Math.min(1, channel[frame]));
     view.setInt16(offset, Math.round(value < 0 ? value * 32768 : value * 32767), true);
     offset += 2;
@@ -3142,13 +3142,13 @@ function encodeWordSoundsSyllableWav(channels, sampleRate) {
   return bytes;
 }
 async function decodeWordSoundsSyllableBytes(bytes, AudioContextClass) {
-  if (!AudioContextClass) throw new Error("This browser cannot check recordings. Try a current browser.");
+  if (!AudioContextClass) throw Object.assign(new Error("This browser cannot check recordings. Try a current browser."), { messageKey: "word_sounds.syllable_rec_err_browser" });
   const offline = AudioContextClass === window.OfflineAudioContext || AudioContextClass === window.webkitOfflineAudioContext;
   const context = offline ? new AudioContextClass(1, 1, 44100) : new AudioContextClass();
   try {
     return await context.decodeAudioData(bytes.slice(0));
   } catch (_) {
-    throw new Error("This recording could not be decoded. Export it as WAV or MP3 and try again.");
+    throw Object.assign(new Error("This recording could not be decoded. Export it as WAV or MP3 and try again."), { messageKey: "word_sounds.syllable_rec_err_decode" });
   } finally {
     try {
       await context.close?.();
@@ -3157,7 +3157,7 @@ async function decodeWordSoundsSyllableBytes(bytes, AudioContextClass) {
   }
 }
 async function cleanWordSoundsSyllableRecording(asset, options, AudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext || window.AudioContext || window.webkitAudioContext) {
-  if (!WS_CORE.syllableAssetSource(asset)) throw new Error("Choose a checked syllable recording first.");
+  if (!WS_CORE.syllableAssetSource(asset)) throw Object.assign(new Error("Choose a checked syllable recording first."), { messageKey: "word_sounds.syllable_rec_err_choose_checked" });
   const binary = atob(asset.base64), bytes = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
   const decoded = await decodeWordSoundsSyllableBytes(bytes.buffer, AudioContextClass);
@@ -3167,13 +3167,13 @@ async function cleanWordSoundsSyllableRecording(asset, options, AudioContextClas
   return { asset: cleaned, removedSeconds: pcm.removedSeconds, gain: pcm.gain };
 }
 async function readWordSoundsSyllableRecording(file, AudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext || window.AudioContext || window.webkitAudioContext) {
-  if (!file || file.size < 16 || file.size > 384e3) throw new Error("Choose an audio file smaller than 384 KB. Short MP3 or WebM recordings work well.");
-  if (!AudioContextClass) throw new Error("This browser cannot check recordings. Try a current browser.");
+  if (!file || file.size < 16 || file.size > 384e3) throw Object.assign(new Error("Choose an audio file smaller than 384 KB. Short MP3 or WebM recordings work well."), { messageKey: "word_sounds.syllable_rec_err_file_size" });
+  if (!AudioContextClass) throw Object.assign(new Error("This browser cannot check recordings. Try a current browser."), { messageKey: "word_sounds.syllable_rec_err_browser" });
   const mime = String(file.type || "").split(";")[0].toLowerCase();
-  if (!/^audio\/(?:wav|x-wav|wave|mpeg|mp3|ogg|webm|mp4|x-m4a|aac)$/.test(mime)) throw new Error("Choose a WAV, MP3, OGG, WebM, M4A, or AAC audio file.");
+  if (!/^audio\/(?:wav|x-wav|wave|mpeg|mp3|ogg|webm|mp4|x-m4a|aac)$/.test(mime)) throw Object.assign(new Error("Choose a WAV, MP3, OGG, WebM, M4A, or AAC audio file."), { messageKey: "word_sounds.syllable_rec_err_file_type" });
   const bytes = await file.arrayBuffer();
   const decoded = await decodeWordSoundsSyllableBytes(bytes, AudioContextClass);
-  if (!Number.isFinite(decoded.duration) || decoded.duration < 0.08 || decoded.duration > 8) throw new Error("Record one syllable per clip, between 0.08 and 8 seconds.");
+  if (!Number.isFinite(decoded.duration) || decoded.duration < 0.08 || decoded.duration > 8) throw Object.assign(new Error("Record one syllable per clip, between 0.08 and 8 seconds."), { messageKey: "word_sounds.syllable_rec_err_duration" });
   let audible = false;
   for (let channel = 0; channel < decoded.numberOfChannels && !audible; channel++) {
     const samples = decoded.getChannelData(channel);
@@ -3182,7 +3182,7 @@ async function readWordSoundsSyllableRecording(file, AudioContextClass = window.
       break;
     }
   }
-  if (!audible) throw new Error("This recording is silent. Record the syllable again.");
+  if (!audible) throw Object.assign(new Error("This recording is silent. Record the syllable again."), { messageKey: "word_sounds.syllable_rec_err_silent" });
   let binary = "";
   const view = new Uint8Array(bytes);
   for (let offset = 0; offset < view.length; offset += 32768) binary += String.fromCharCode(...view.subarray(offset, offset + 32768));
@@ -3190,13 +3190,19 @@ async function readWordSoundsSyllableRecording(file, AudioContextClass = window.
 }
 function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id, translate, draft, onDraftChange }) {
   const h = React.createElement;
-  const tr = (key, fallback) => {
-    try {
-      const value = typeof translate === "function" ? translate(key) : null;
-      return typeof value === "string" && value && value !== key ? value : fallback;
-    } catch (_) {
-      return fallback;
+  const tr = (key, fallback, params = {}) => {
+    let value;
+    for (const candidate of [key, key.replace(/^word_sounds\./, "")]) {
+      try {
+        const result = translate?.(candidate, fallback, params);
+        if (typeof result === "string" && result && result !== candidate) {
+          value = result;
+          break;
+        }
+      } catch (_) {
+      }
     }
+    return (value || fallback).replace(/\{\{?([a-zA-Z0-9_]+)\}?\}/g, (token, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : token);
   };
   const resolved = WS_CORE.resolveSyllableTask(word, board, language);
   const savedTask = resolved.supported && resolved.contentStatus === "teacher_recorded" ? resolved : null;
@@ -3253,6 +3259,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
   const audio = React.useRef(null);
   const recorder = React.useRef(null);
   const buttonClass = "px-3 py-2 rounded-lg border border-violet-300 text-violet-900 bg-white disabled:opacity-50";
+  const errorText = (error, key, fallback) => error?.messageKey ? tr(error.messageKey, error.message) : error?.message || (key ? tr(key, fallback) : "");
   const stop = () => {
     epoch.current++;
     if (live.current) setOperation(null);
@@ -3261,7 +3268,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       libraryAbort.current = null;
       if (live.current) {
         setLibraryBusy(false);
-        setLibraryStatus("Local library action cancelled. Find the saved recording again to check its current state.");
+        setLibraryStatus(tr("word_sounds.syllable_library_action_cancelled", "Local library action cancelled. Find the saved recording again to check its current state."));
       }
     }
     if (wordSoundsSyllableEditorPlayback?.owner === audio) wordSoundsSyllableEditorPlayback = null;
@@ -3290,7 +3297,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         setRecording(null);
         setHeard(false);
         setConfirmed(false);
-        setStatus("Preview stopped. Preview the full sequence again before saving.");
+        setStatus(tr("word_sounds.syllable_rec_preview_stopped_again", "Preview stopped. Preview the full sequence again before saving."));
       }
     } };
     if (onBeforePreview) onBeforePreview();
@@ -3332,7 +3339,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     setRecording(null);
     setHeard(false);
     setConfirmed(false);
-    setStatus(operation === "preview" ? "Preview stopped. Preview the full sequence again before saving." : wasRecording ? "Recording cancelled. Any previous checked clip is kept. You can record again or upload a file." : "Audio check or cleanup cancelled. Any previous checked clip is kept.");
+    setStatus(operation === "preview" ? tr("word_sounds.syllable_rec_preview_stopped_again", "Preview stopped. Preview the full sequence again before saving.") : wasRecording ? tr("word_sounds.syllable_rec_recording_cancelled", "Recording cancelled. Any previous checked clip is kept. You can record again or upload a file.") : tr("word_sounds.syllable_rec_check_cancelled", "Audio check or cleanup cancelled. Any previous checked clip is kept."));
   };
   const change = (next, publish = true) => {
     stop();
@@ -3347,7 +3354,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     for (let index = count; index < units.length; index++) omittedUnits.current[index] = units[index];
     for (let index = 0; index < count; index++) delete omittedUnits.current[index];
     change(next);
-    setStatus("Syllable count changed. Preview the full sequence again before saving.");
+    setStatus(tr("word_sounds.syllable_rec_count_changed", "Syllable count changed. Preview the full sequence again before saving."));
   };
   const moveUnit = (index, direction) => {
     const destination = index + direction;
@@ -3356,7 +3363,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     [next[index], next[destination]] = [next[destination], next[index]];
     movedLabel.current = destination;
     change(next);
-    setStatus("Syllable " + (index + 1) + " moved to position " + (destination + 1) + ". Preview the full sequence again before saving.");
+    setStatus(tr("word_sounds.syllable_rec_moved", "Syllable {from} moved to position {to}. Preview the full sequence again before saving.", { from: index + 1, to: destination + 1 }));
   };
   const commit = (task) => {
     try {
@@ -3368,7 +3375,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     omittedUnits.current = [];
     return true;
   };
-  const saveFailed = () => setStatus("The recordings could not be applied to this lesson. Your draft is kept. Try Save reviewed syllables again.");
+  const saveFailed = () => setStatus(tr("word_sounds.syllable_rec_apply_failed", "The recordings could not be applied to this lesson. Your draft is kept. Try Save reviewed syllables again."));
   const libraryOperation = async (operation2, success) => {
     libraryAbort.current?.abort();
     const controller = new AbortController(), context = libraryContext.current;
@@ -3383,7 +3390,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         success(result);
       }
     } catch (error) {
-      if (current() && error?.code !== "cancelled") setLibraryStatus(library.message(error));
+      if (current() && error?.code !== "cancelled") setLibraryStatus(library.message(error, tr));
     } finally {
       if (libraryAbort.current === controller) {
         libraryAbort.current = null;
@@ -3392,10 +3399,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     }
   };
   const findLibrary = () => {
-    setLibraryStatus("Looking for reviewed recordings on this device\u2026");
+    setLibraryStatus(tr("word_sounds.syllable_library_looking", "Looking for reviewed recordings on this device\u2026"));
     return libraryOperation((signal) => library.load(word, language, { signal }), (result) => {
       setLibraryResult(result);
-      setLibraryStatus(result.task ? "Reviewed recordings found for this word and recording language." : result.draft ? "Older recordings found. Load the clips, listen, and confirm them for this recording language." : result.corrupt ? "The saved recording is invalid or stale. Review the current clips before replacing it." : "No reviewed recordings saved for this word and recording language.");
+      setLibraryStatus(result.task ? tr("word_sounds.syllable_library_found", "Reviewed recordings found for this word and recording language.") : result.draft ? tr("word_sounds.syllable_library_found_older", "Older recordings found. Load the clips, listen, and confirm them for this recording language.") : result.corrupt ? tr("word_sounds.syllable_library_found_invalid", "The saved recording is invalid or stale. Review the current clips before replacing it.") : tr("word_sounds.syllable_library_none", "No reviewed recordings saved for this word and recording language."));
     });
   };
   const useLibrary = () => {
@@ -3403,26 +3410,26 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       if (libraryResult?.draft) {
         movedLabel.current = null;
         change(libraryResult.draft.audioUnits.map((unit) => ({ label: unit.text, asset: unit.asset })));
-        setLibraryStatus("Older clips loaded as a draft. Preview the full sequence and confirm this recording language before saving.");
+        setLibraryStatus(tr("word_sounds.syllable_library_older_loaded", "Older clips loaded as a draft. Preview the full sequence and confirm this recording language before saving."));
         return;
       }
       const task = library.cleanTask(libraryResult?.task, word, language);
       if (!commit(task)) {
-        setLibraryStatus("The saved recordings could not be applied to this lesson. Your current draft is kept; try again.");
+        setLibraryStatus(tr("word_sounds.syllable_library_apply_failed", "The saved recordings could not be applied to this lesson. Your current draft is kept; try again."));
         return;
       }
       movedLabel.current = null;
       change(task.audioUnits.map((unit) => ({ label: unit.text, asset: unit.asset })), false);
-      setLibraryStatus("Saved recordings applied to this lesson. Its answer choices are kept.");
+      setLibraryStatus(tr("word_sounds.syllable_library_applied", "Saved recordings applied to this lesson. Its answer choices are kept."));
     } catch (error) {
-      setLibraryStatus(library.message(error));
+      setLibraryStatus(library.message(error, tr));
     }
   };
   const removeLibrary = () => {
-    setLibraryStatus("Removing this word from the local library\u2026");
+    setLibraryStatus(tr("word_sounds.syllable_library_removing", "Removing this word from the local library\u2026"));
     return libraryOperation((signal) => library.remove(word, language, { signal, expectedToken: libraryResult?.token || null }), (result) => {
       setLibraryResult(result);
-      setLibraryStatus("Removed from the local library. Recordings already saved in lessons are kept.");
+      setLibraryStatus(tr("word_sounds.syllable_library_removed", "Removed from the local library. Recordings already saved in lessons are kept."));
     });
   };
   const downloadSet = () => {
@@ -3438,9 +3445,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       link.hidden = true;
       document.body.appendChild(link);
       link.click();
-      setLibraryStatus("Download prepared from the recordings saved in this lesson. Import the file for the same word and recording language on another device.");
+      setLibraryStatus(tr("word_sounds.syllable_library_download_ready", "Download prepared from the recordings saved in this lesson. Import the file for the same word and recording language on another device."));
     } catch (error) {
-      setLibraryStatus(error?.message || "The recording set could not be downloaded. Save reviewed syllables first and try again.");
+      setLibraryStatus(errorText(error, "word_sounds.syllable_library_download_failed", "The recording set could not be downloaded. Save reviewed syllables first and try again."));
     } finally {
       link?.remove();
       if (url) setTimeout(() => URL.revokeObjectURL(url), 1e3);
@@ -3455,15 +3462,15 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     setHeard(false);
     setConfirmed(false);
     setOperation("checking");
-    setStatus("Checking recording set\u2026");
+    setStatus(tr("word_sounds.syllable_library_checking_set", "Checking recording set\u2026"));
     try {
-      if (!Number.isFinite(file.size) || file.size < 1 || file.size > library.setFileLimit) throw new Error("Choose a recording set smaller than 5 MB.");
+      if (!Number.isFinite(file.size) || file.size < 1 || file.size > library.setFileLimit) throw new Error(tr("word_sounds.syllable_library_set_too_large", "Choose a recording set smaller than 5 MB."));
       const text = await file.text();
       if (!current()) return;
       const task = library.parseSet(text, word, language), next = [];
       for (let index = 0; index < task.audioUnits.length; index++) {
         if (!current()) return;
-        setStatus("Checking syllable " + (index + 1) + " of " + task.audioUnits.length + "\u2026");
+        setStatus(tr("word_sounds.syllable_library_checking_n", "Checking syllable {n} of {total}\u2026", { n: index + 1, total: task.audioUnits.length }));
         const unit = task.audioUnits[index], binary = atob(unit.asset.base64), bytes = new Uint8Array(binary.length);
         for (let offset = 0; offset < binary.length; offset++) bytes[offset] = binary.charCodeAt(offset);
         const asset = await readWordSoundsSyllableRecording(new Blob([bytes], { type: unit.asset.mime }));
@@ -3473,9 +3480,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       omittedUnits.current = [];
       movedLabel.current = null;
       setUnits(next);
-      setStatus("Recording set imported for review. Preview the full sequence, then confirm it before saving to this lesson.");
+      setStatus(tr("word_sounds.syllable_library_imported", "Recording set imported for review. Preview the full sequence, then confirm it before saving to this lesson."));
     } catch (error) {
-      if (current()) setStatus((error?.message || "This recording set could not be read.") + " Your previous recordings are kept.");
+      if (current()) setStatus(tr("word_sounds.syllable_library_import_failed", "{reason} Your previous recordings are kept.", { reason: errorText(error, "word_sounds.syllable_library_import_unreadable", "This recording set could not be read.") }));
     } finally {
       if (current()) {
         setBusy(false);
@@ -3491,9 +3498,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       setUnits((previous) => previous.map((unit, i) => i === index ? { ...unit, asset, originalAsset: null, cleanupSummary: null } : unit));
       setHeard(false);
       setConfirmed(false);
-      setStatus("Clip checked. Preview the full sequence before saving.");
+      setStatus(tr("word_sounds.syllable_rec_clip_checked", "Clip checked. Preview the full sequence before saving."));
     } catch (error) {
-      if (live.current && epoch.current === token && libraryContext.current === context) setStatus(error.message);
+      if (live.current && epoch.current === token && libraryContext.current === context) setStatus(errorText(error));
     } finally {
       if (live.current && epoch.current === token && libraryContext.current === context) {
         setBusy(false);
@@ -3509,7 +3516,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     setBusy(true);
     setHeard(false);
     setConfirmed(false);
-    setStatus("Checking recording\u2026");
+    setStatus(tr("word_sounds.syllable_rec_checking", "Checking recording\u2026"));
     setOperation("checking");
     install(index, file, token);
   };
@@ -3519,7 +3526,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     setBusy(true);
     setHeard(false);
     setConfirmed(false);
-    setStatus("Allow the microphone, then say one syllable.");
+    setStatus(tr("word_sounds.syllable_rec_allow_mic", "Allow the microphone, then say one syllable."));
     setOperation("microphone");
     const context = libraryContext.current;
     const current = () => live.current && epoch.current === token && libraryContext.current === context;
@@ -3545,7 +3552,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         setRecording(null);
         setHeard(false);
         setConfirmed(false);
-        setStatus("Microphone recording failed. Any previous checked clip is kept. Record again or upload a recording.");
+        setStatus(tr("word_sounds.syllable_rec_mic_failed", "Microphone recording failed. Any previous checked clip is kept. Record again or upload a recording."));
       };
       capture.onstop = () => {
         stream.getTracks().forEach((track) => track.stop());
@@ -3553,14 +3560,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         clearTimeout(recorder.current?.timer);
         recorder.current = null;
         setRecording(null);
-        setStatus("Checking recording\u2026");
+        setStatus(tr("word_sounds.syllable_rec_checking", "Checking recording\u2026"));
         setOperation("checking");
         install(index, new Blob(chunks, { type: capture.mimeType || chunks[0]?.type || "audio/webm" }), token);
       };
       capture.start();
       setRecording(index);
       setOperation("recording");
-      setStatus("Recording one syllable. Press Stop when finished.");
+      setStatus(tr("word_sounds.syllable_rec_recording_now", "Recording one syllable. Press Stop when finished."));
       recorder.current = { recorder: capture, stream, timer: setTimeout(() => {
         if (capture.state !== "inactive") capture.stop();
       }, 7800) };
@@ -3570,7 +3577,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         setBusy(false);
         setRecording(null);
         setOperation(null);
-        setStatus("Microphone unavailable. Upload a recording instead.");
+        setStatus(tr("word_sounds.syllable_rec_mic_unavailable", "Microphone unavailable. Upload a recording instead."));
       }
     }
   };
@@ -3580,7 +3587,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     setBusy(true);
     setHeard(false);
     setConfirmed(false);
-    setStatus("Cleaning up recording\u2026");
+    setStatus(tr("word_sounds.syllable_rec_cleaning", "Cleaning up recording\u2026"));
     setOperation("cleanup");
     const context = libraryContext.current;
     const current = () => live.current && epoch.current === token && libraryContext.current === context;
@@ -3588,11 +3595,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     try {
       const result = await cleanWordSoundsSyllableRecording(originalAsset, { trimSilence, levelVolume });
       if (!current()) return;
-      const cleanupSummary = result.removedSeconds.toFixed(2) + " s outer silence removed; volume \xD7" + result.gain.toFixed(2) + ".";
+      const cleanupSummary = tr("word_sounds.syllable_rec_cleanup_summary", "{seconds} s outer silence removed; volume \xD7{gain}.", { seconds: result.removedSeconds.toFixed(2), gain: result.gain.toFixed(2) });
       setUnits((previous) => previous.map((unit, i) => i === index ? { ...unit, asset: result.asset, originalAsset, cleanupSummary } : unit));
-      setStatus(cleanupSummary + " Compare with the original, then preview the full sequence before saving.");
+      setStatus(tr("word_sounds.syllable_rec_cleanup_done", "{summary} Compare with the original, then preview the full sequence before saving.", { summary: cleanupSummary }));
     } catch (error) {
-      if (current()) setStatus(error.message || "Cleanup failed. The original recording is still available.");
+      if (current()) setStatus(errorText(error, "word_sounds.syllable_rec_cleanup_failed", "Cleanup failed. The original recording is still available."));
     } finally {
       if (current()) {
         setBusy(false);
@@ -3604,7 +3611,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     ownPlayback();
     const token = epoch.current;
     setBusy(true);
-    setStatus("Playing recordings\u2026");
+    setStatus(tr("word_sounds.syllable_rec_playing", "Playing recordings\u2026"));
     setOperation("preview");
     const context = libraryContext.current;
     const current = () => live.current && epoch.current === token && libraryContext.current === context;
@@ -3612,13 +3619,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       for (const index of indices) {
         if (!current()) return;
         const source = WS_CORE.syllableAssetSource(original ? units[index].originalAsset : units[index].asset);
-        if (!source) throw new Error("Add a recording for every syllable first.");
+        if (!source) throw new Error(tr("word_sounds.syllable_rec_add_every_clip", "Add a recording for every syllable first."));
         await new Promise((resolve, reject) => {
           const clip = new Audio(source);
           audio.current = clip;
           const timer = setTimeout(() => {
             clip.pause();
-            reject(new Error("This recording did not finish playing. Try another file."));
+            reject(new Error(tr("word_sounds.syllable_rec_play_timeout", "This recording did not finish playing. Try another file.")));
           }, 12e3);
           const finish = (error) => {
             clearTimeout(timer);
@@ -3628,9 +3635,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             error ? reject(error) : resolve();
           };
           clip.onended = () => finish();
-          clip.onerror = () => finish(new Error("This recording could not play. Try another file."));
+          clip.onerror = () => finish(new Error(tr("word_sounds.syllable_rec_play_error", "This recording could not play. Try another file.")));
           clip.onpause = () => {
-            if (!clip.ended) finish(new Error("Preview stopped."));
+            if (!clip.ended) finish(new Error(tr("word_sounds.syllable_rec_preview_stopped", "Preview stopped.")));
           };
           Promise.resolve(clip.play()).catch((error) => finish(error));
         });
@@ -3638,12 +3645,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       }
       if (!current()) return;
       if (!original && indices.length === units.length) setHeard(true);
-      setStatus("Preview complete. Check that each clip is one spoken syllable and the sequence blends into \u201C" + word + "\u201D.");
+      setStatus(tr("word_sounds.syllable_rec_preview_complete", "Preview complete. Check that each clip is one spoken syllable and the sequence blends into \u201C{word}\u201D.", { word }));
     } catch (error) {
       if (current()) {
         setHeard(false);
         setConfirmed(false);
-        setStatus(error.message || "Preview failed.");
+        setStatus(errorText(error, "word_sounds.syllable_rec_preview_failed", "Preview failed."));
       }
     } finally {
       if (current()) {
@@ -3663,26 +3670,28 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     const saved = savedTask.audioUnits[index], asset = unit.asset;
     return unit.label.trim() === saved.text && asset?.mime?.toLowerCase() === saved.asset.mime.toLowerCase() && asset?.base64 === saved.asset.base64 && asset?.durationSeconds === saved.asset.durationSeconds && asset?.decoded === true && asset?.source === "teacher_recording";
   });
-  const draftState = matchesSaved ? "saved in lesson" : savedTask ? "unsaved changes" : "not saved";
-  const positions = (list) => (list.length === 1 ? "syllable " : "syllables ") + list.join(", ");
-  const nextStep = busy ? operation === "microphone" ? "Allow microphone access or cancel the request." : operation === "recording" ? "Finish the recording or cancel it." : operation === "preview" ? "Listen to the sequence, or stop the preview." : operation === "cleanup" ? "Wait for cleanup to finish, or cancel it." : "Wait for the audio check to finish, or cancel it." : libraryBusy ? "Wait for the local library action to finish." : !complete ? [missingLabels.length ? "Add labels for " + positions(missingLabels) + "." : "", missingClips.length ? "Add recordings for " + positions(missingClips) + "." : ""].filter(Boolean).join(" ") : !heard ? matchesSaved ? "The lesson already has this reviewed set. Preview and confirm to save it again or copy it to your local library." : "Preview the full sequence before saving." : !confirmed ? "Confirm that you listened and checked the spoken syllables before saving." : "Ready to save reviewed syllables.";
+  const draftState = matchesSaved ? tr("word_sounds.syllable_rec_summary_saved", "Syllable recordings for \u201C{word}\u201D \u2014 saved in lesson", { word }) : savedTask ? tr("word_sounds.syllable_rec_summary_unsaved", "Syllable recordings for \u201C{word}\u201D \u2014 unsaved changes", { word }) : tr("word_sounds.syllable_rec_summary_not_saved", "Syllable recordings for \u201C{word}\u201D \u2014 not saved", { word });
+  const nextStep = busy ? operation === "microphone" ? tr("word_sounds.syllable_rec_next_mic", "Allow microphone access or cancel the request.") : operation === "recording" ? tr("word_sounds.syllable_rec_next_recording", "Finish the recording or cancel it.") : operation === "preview" ? tr("word_sounds.syllable_rec_next_preview", "Listen to the sequence, or stop the preview.") : operation === "cleanup" ? tr("word_sounds.syllable_rec_next_cleanup", "Wait for cleanup to finish, or cancel it.") : tr("word_sounds.syllable_rec_next_check", "Wait for the audio check to finish, or cancel it.") : libraryBusy ? tr("word_sounds.syllable_rec_next_library", "Wait for the local library action to finish.") : !complete ? [
+    missingLabels.length === 1 ? tr("word_sounds.syllable_rec_next_label_one", "Add labels for syllable {list}.", { list: missingLabels[0] }) : missingLabels.length ? tr("word_sounds.syllable_rec_next_labels", "Add labels for syllables {list}.", { list: missingLabels.join(", ") }) : "",
+    missingClips.length === 1 ? tr("word_sounds.syllable_rec_next_clip_one", "Add recordings for syllable {list}.", { list: missingClips[0] }) : missingClips.length ? tr("word_sounds.syllable_rec_next_clips", "Add recordings for syllables {list}.", { list: missingClips.join(", ") }) : ""
+  ].filter(Boolean).join(" ") : !heard ? matchesSaved ? tr("word_sounds.syllable_rec_next_saved_set", "The lesson already has this reviewed set. Preview and confirm to save it again or copy it to your local library.") : tr("word_sounds.syllable_rec_next_preview_first", "Preview the full sequence before saving.") : !confirmed ? tr("word_sounds.syllable_rec_next_confirm", "Confirm that you listened and checked the spoken syllables before saving.") : tr("word_sounds.syllable_rec_next_ready", "Ready to save reviewed syllables.");
   const save = () => {
     const task = WS_CORE.createReviewedSyllableTask({ targetWord: word, language, syllables: units.map((unit) => unit.label), assets: units.map((unit) => unit.asset), revision: Math.max(Date.now(), (board?.revision || 0) + 1), reviewed: heard && confirmed });
     if (!task) {
-      setStatus("Add labels and recordings, preview the sequence, and confirm your review.");
+      setStatus(tr("word_sounds.syllable_rec_save_incomplete", "Add labels and recordings, preview the sequence, and confirm your review."));
       return;
     }
     if (!rememberRecording) {
-      if (commit(task)) setStatus("Reviewed syllable recordings saved with this lesson.");
+      if (commit(task)) setStatus(tr("word_sounds.syllable_rec_saved", "Reviewed syllable recordings saved with this lesson."));
       else saveFailed();
       return;
     }
     if (!libraryResult) {
-      if (commit(task)) setLibraryStatus("Lesson recordings saved. Find the saved recording first, then select Save reviewed syllables again to update the local library.");
+      if (commit(task)) setLibraryStatus(tr("word_sounds.syllable_library_saved_lesson_only", "Lesson recordings saved. Find the saved recording first, then select Save reviewed syllables again to update the local library."));
       else saveFailed();
       return;
     }
-    setLibraryStatus("Saving reviewed recordings to this device\u2026");
+    setLibraryStatus(tr("word_sounds.syllable_library_saving", "Saving reviewed recordings to this device\u2026"));
     const context = libraryContext.current;
     libraryOperation(async (signal) => {
       try {
@@ -3695,11 +3704,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       if (libraryContext.current !== context) return;
       if (result.stored) setLibraryResult(result.stored);
       if (!commit(task)) {
-        setLibraryStatus(result.stored ? "The recordings were saved in the local library, but could not be applied to this lesson." : library.message(result.error));
+        setLibraryStatus(result.stored ? tr("word_sounds.syllable_library_saved_not_applied", "The recordings were saved in the local library, but could not be applied to this lesson.") : library.message(result.error, tr));
         saveFailed();
         return;
       }
-      setLibraryStatus(result.stored ? "Reviewed recordings saved with this lesson and in the local library." : "Lesson recordings saved. " + library.message(result.error));
+      setLibraryStatus(result.stored ? tr("word_sounds.syllable_library_saved_both", "Reviewed recordings saved with this lesson and in the local library.") : tr("word_sounds.syllable_library_saved_lesson_reason", "Lesson recordings saved. {reason}", { reason: library.message(result.error, tr) }));
     });
   };
   return h(
@@ -3712,70 +3721,70 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       setHeard(false);
       setConfirmed(false);
     } },
-    h("summary", { className: "font-bold text-violet-900 cursor-pointer" }, "Syllable recordings for \u201C" + word + "\u201D \u2014 " + draftState),
-    recoveredDraft ? h("p", { role: "status", className: "text-sm my-2 text-amber-900" }, "Your saved clips are kept as a draft. Listen to the full sequence and confirm it for " + language + " before using these recordings.") : null,
-    h("p", { className: "text-sm my-2" }, "Add 2 to 8 spoken syllables in order. Record or upload each syllable as it sounds in this word, including its natural vowel and stress. Starter labels are written hints to review, not pronunciation instructions; they are never sent to a speech generator."),
-    template.stressPatterns.length ? h("p", { className: "text-sm my-2" }, "Dictionary stress guide (US English): " + template.stressPatterns.map((pattern) => [...pattern].map((stress) => stress === "1" ? "strong" : stress === "2" ? "secondary" : "unstressed").join(" / ")).join(" or ") + ". Check this against the pronunciation you are teaching.") : null,
-    h("p", { className: "text-sm my-2" }, "Also review the answer choices before using the lesson. Choose familiar distractors with a similar syllable count."),
+    h("summary", { className: "font-bold text-violet-900 cursor-pointer" }, draftState),
+    recoveredDraft ? h("p", { role: "status", className: "text-sm my-2 text-amber-900" }, tr("word_sounds.syllable_rec_draft_kept", "Your saved clips are kept as a draft. Listen to the full sequence and confirm it for {language} before using these recordings.", { language })) : null,
+    h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_rec_intro", "Add 2 to 8 spoken syllables in order. Record or upload each syllable as it sounds in this word, including its natural vowel and stress. Starter labels are written hints to review, not pronunciation instructions; they are never sent to a speech generator.")),
+    template.stressPatterns.length ? h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_rec_stress_guide", "Dictionary stress guide (US English): {patterns}. Check this against the pronunciation you are teaching.", { patterns: template.stressPatterns.map((pattern) => [...pattern].map((stress) => stress === "1" ? tr("word_sounds.syllable_rec_stress_strong", "strong") : stress === "2" ? tr("word_sounds.syllable_rec_stress_secondary", "secondary") : tr("word_sounds.syllable_rec_stress_unstressed", "unstressed")).join(" / ")).reduce((first, second) => tr("word_sounds.syllable_rec_stress_either", "{first} or {second}", { first, second })) })) : null,
+    h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_rec_review_choices", "Also review the answer choices before using the lesson. Choose familiar distractors with a similar syllable count.")),
     h(
       "details",
       { className: "my-3 rounded-lg border border-violet-200 bg-white p-3", onToggle: (event) => {
         if (event.currentTarget.open && libraryResult === null && !libraryBusy) findLibrary();
       } },
-      h("summary", { className: "font-semibold cursor-pointer" }, "Reuse reviewed recordings"),
-      h("p", { className: "text-sm my-2" }, "Your local library stays in this browser on this device. It stores only reviewed instructional syllables for the same word and recording language. It is not synced between devices; recordings used in a lesson travel with that lesson."),
-      h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: findLibrary }, "Find saved recording"),
-      libraryResult?.task || libraryResult?.draft ? h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: useLibrary }, libraryResult?.draft ? "Load older clips for review" : "Use saved recordings in this lesson") : null,
-      libraryResult?.task || libraryResult?.draft || libraryResult?.corrupt ? h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: removeLibrary }, "Remove this word from local library") : null,
+      h("summary", { className: "font-semibold cursor-pointer" }, tr("word_sounds.syllable_library_heading", "Reuse reviewed recordings")),
+      h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_library_intro", "Your local library stays in this browser on this device. It stores only reviewed instructional syllables for the same word and recording language. It is not synced between devices; recordings used in a lesson travel with that lesson.")),
+      h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: findLibrary }, tr("word_sounds.syllable_library_find", "Find saved recording")),
+      libraryResult?.task || libraryResult?.draft ? h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: useLibrary }, libraryResult?.draft ? tr("word_sounds.syllable_library_load_older", "Load older clips for review") : tr("word_sounds.syllable_library_use_saved", "Use saved recordings in this lesson")) : null,
+      libraryResult?.task || libraryResult?.draft || libraryResult?.corrupt ? h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy, onClick: removeLibrary }, tr("word_sounds.syllable_library_remove", "Remove this word from local library")) : null,
       h("label", { className: "block my-3" }, h("input", { type: "checkbox", checked: rememberRecording, disabled: busy || libraryBusy, onChange: (event) => {
         setRememberRecording(event.target.checked);
         if (event.target.checked && libraryResult === null) findLibrary();
-      } }), " Also save or replace this word in my local library when I save reviewed syllables."),
-      h("p", { className: "text-sm my-2" }, "Move one word between devices: download the recordings already saved in this lesson, or import a set for \u201C" + word + "\u201D (" + language + "). Imported clips need a fresh listen and review before saving."),
-      h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy || !savedTask, onClick: downloadSet }, "Download saved recording set"),
-      h("label", { className: "block my-2" }, "Import recording set", h("input", { type: "file", accept: ".json,application/json", disabled: busy || libraryBusy, className: "block text-xs max-w-full", onChange: (event) => {
+      } }), " ", tr("word_sounds.syllable_library_remember", "Also save or replace this word in my local library when I save reviewed syllables.")),
+      h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_library_move_help", "Move one word between devices: download the recordings already saved in this lesson, or import a set for \u201C{word}\u201D ({language}). Imported clips need a fresh listen and review before saving.", { word, language })),
+      h("button", { type: "button", className: buttonClass, disabled: busy || libraryBusy || !savedTask, onClick: downloadSet }, tr("word_sounds.syllable_library_download", "Download saved recording set")),
+      h("label", { className: "block my-2" }, tr("word_sounds.syllable_library_import", "Import recording set"), h("input", { type: "file", accept: ".json,application/json", disabled: busy || libraryBusy, className: "block text-xs max-w-full", onChange: (event) => {
         importSet(event.target.files?.[0]);
         event.target.value = "";
       } })),
       h("p", { role: "status", className: "text-sm mt-2", "aria-live": "polite" }, libraryStatus)
     ),
-    h("label", { className: "block my-2" }, "Number of syllables ", h("select", { value: units.length, disabled: busy || libraryBusy, onChange: (event) => changeCount(Number(event.target.value)), className: "border rounded p-1" }, [2, 3, 4, 5, 6, 7, 8].map((count) => h("option", { key: count, value: count }, count)))),
-    omittedUnits.current.some((unit) => unit && (unit.asset || unit.label.trim())) ? h("p", { className: "text-sm my-2" }, "Extra syllables are kept while you edit. Increase the count to restore them. Only the displayed syllables will be saved; saving or replacing this set clears the extras.") : null,
+    h("label", { className: "block my-2" }, tr("word_sounds.syllable_rec_count_label", "Number of syllables"), " ", h("select", { value: units.length, disabled: busy || libraryBusy, onChange: (event) => changeCount(Number(event.target.value)), className: "border rounded p-1" }, [2, 3, 4, 5, 6, 7, 8].map((count) => h("option", { key: count, value: count }, count)))),
+    omittedUnits.current.some((unit) => unit && (unit.asset || unit.label.trim())) ? h("p", { className: "text-sm my-2" }, tr("word_sounds.syllable_rec_extras_kept", "Extra syllables are kept while you edit. Increase the count to restore them. Only the displayed syllables will be saved; saving or replacing this set clears the extras.")) : null,
     h(
       "fieldset",
       { className: "my-3 flex flex-wrap gap-3 text-sm", disabled: busy },
-      h("legend", { className: "font-semibold" }, "Optional recording cleanup"),
-      h("label", null, h("input", { type: "checkbox", checked: trimSilence, onChange: (event) => setTrimSilence(event.target.checked) }), " Trim outer silence"),
-      h("label", null, h("input", { type: "checkbox", checked: levelVolume, onChange: (event) => setLevelVolume(event.target.checked) }), " Level volume"),
-      h("p", { className: "w-full" }, "Cleanup keeps a short margin around speech and limits volume boosts. It does not remove background noise. Listen for quiet consonants; you can undo cleanup before saving.")
+      h("legend", { className: "font-semibold" }, tr("word_sounds.syllable_rec_cleanup_legend", "Optional recording cleanup")),
+      h("label", null, h("input", { type: "checkbox", checked: trimSilence, onChange: (event) => setTrimSilence(event.target.checked) }), " ", tr("word_sounds.syllable_rec_trim", "Trim outer silence")),
+      h("label", null, h("input", { type: "checkbox", checked: levelVolume, onChange: (event) => setLevelVolume(event.target.checked) }), " ", tr("word_sounds.syllable_rec_level", "Level volume")),
+      h("p", { className: "w-full" }, tr("word_sounds.syllable_rec_cleanup_help", "Cleanup keeps a short margin around speech and limits volume boosts. It does not remove background noise. Listen for quiet consonants; you can undo cleanup before saving."))
     ),
     ...units.map((unit, index) => h(
       "div",
       { key: index, className: "flex flex-wrap items-center gap-2 py-2 border-t border-violet-200" },
-      h("label", null, "Syllable " + (index + 1) + " label ", h("input", { ref: (node) => {
+      h("label", null, tr("word_sounds.syllable_rec_label_n", "Syllable {n} label", { n: index + 1 }), " ", h("input", { ref: (node) => {
         syllableLabels.current[index] = node;
       }, value: unit.label, maxLength: 40, disabled: busy, placeholder: tr("word_sounds.written_hint_placeholder", "Written hint"), className: "border rounded p-2 w-32", onChange: (event) => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
-      h("label", { className: buttonClass }, "Upload syllable " + (index + 1), h("input", { type: "file", accept: "audio/*", disabled: busy, className: "block text-xs max-w-52", onChange: (event) => {
+      h("label", { className: buttonClass }, tr("word_sounds.syllable_rec_upload_n", "Upload syllable {n}", { n: index + 1 }), h("input", { type: "file", accept: "audio/*", disabled: busy, className: "block text-xs max-w-52", onChange: (event) => {
         upload(index, event.target.files?.[0]);
         event.target.value = "";
       } })),
-      typeof MediaRecorder !== "undefined" && navigator.mediaDevices?.getUserMedia ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => record(index) }, "Record syllable " + (index + 1)) : null,
-      h("button", { type: "button", className: buttonClass, disabled: busy || !unit.asset, onClick: () => preview([index]) }, "Hear syllable " + (index + 1)),
-      h("button", { type: "button", className: buttonClass, disabled: busy || !unit.asset || !trimSilence && !levelVolume, onClick: () => cleanup(index) }, "Clean up syllable " + (index + 1)),
-      unit.originalAsset ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => preview([index], true) }, "Hear original syllable " + (index + 1)) : null,
-      unit.originalAsset ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => change(units.map((value, i) => i === index ? { ...value, asset: value.originalAsset, originalAsset: null, cleanupSummary: null } : value)) }, "Undo cleanup syllable " + (index + 1)) : null,
-      h("button", { type: "button", className: buttonClass, "aria-label": "Move syllable " + (index + 1) + " earlier", disabled: busy || libraryBusy || index === 0, onClick: () => moveUnit(index, -1) }, "Move earlier"),
-      h("button", { type: "button", className: buttonClass, "aria-label": "Move syllable " + (index + 1) + " later", disabled: busy || libraryBusy || index === units.length - 1, onClick: () => moveUnit(index, 1) }, "Move later"),
-      unit.asset ? h("span", { className: "text-xs" }, unit.cleanupSummary || "Recording added") : null
+      typeof MediaRecorder !== "undefined" && navigator.mediaDevices?.getUserMedia ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => record(index) }, tr("word_sounds.syllable_rec_record_n", "Record syllable {n}", { n: index + 1 })) : null,
+      h("button", { type: "button", className: buttonClass, disabled: busy || !unit.asset, onClick: () => preview([index]) }, tr("word_sounds.syllable_rec_hear_n", "Hear syllable {n}", { n: index + 1 })),
+      h("button", { type: "button", className: buttonClass, disabled: busy || !unit.asset || !trimSilence && !levelVolume, onClick: () => cleanup(index) }, tr("word_sounds.syllable_rec_clean_n", "Clean up syllable {n}", { n: index + 1 })),
+      unit.originalAsset ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => preview([index], true) }, tr("word_sounds.syllable_rec_hear_original_n", "Hear original syllable {n}", { n: index + 1 })) : null,
+      unit.originalAsset ? h("button", { type: "button", className: buttonClass, disabled: busy, onClick: () => change(units.map((value, i) => i === index ? { ...value, asset: value.originalAsset, originalAsset: null, cleanupSummary: null } : value)) }, tr("word_sounds.syllable_rec_undo_cleanup_n", "Undo cleanup syllable {n}", { n: index + 1 })) : null,
+      h("button", { type: "button", className: buttonClass, "aria-label": tr("word_sounds.syllable_rec_move_earlier_n", "Move syllable {n} earlier", { n: index + 1 }), disabled: busy || libraryBusy || index === 0, onClick: () => moveUnit(index, -1) }, tr("word_sounds.syllable_rec_move_earlier", "Move earlier")),
+      h("button", { type: "button", className: buttonClass, "aria-label": tr("word_sounds.syllable_rec_move_later_n", "Move syllable {n} later", { n: index + 1 }), disabled: busy || libraryBusy || index === units.length - 1, onClick: () => moveUnit(index, 1) }, tr("word_sounds.syllable_rec_move_later", "Move later")),
+      unit.asset ? h("span", { className: "text-xs" }, unit.cleanupSummary || tr("word_sounds.syllable_rec_added", "Recording added")) : null
     )),
-    busy ? h("button", { type: "button", className: buttonClass, onClick: cancelOperation }, operation === "preview" ? "Stop preview" : operation === "microphone" ? "Cancel microphone request" : operation === "recording" ? "Cancel recording" : operation === "cleanup" ? "Cancel cleanup" : "Cancel audio check") : null,
+    busy ? h("button", { type: "button", className: buttonClass, onClick: cancelOperation }, operation === "preview" ? tr("word_sounds.syllable_rec_stop_preview", "Stop preview") : operation === "microphone" ? tr("word_sounds.syllable_rec_cancel_mic", "Cancel microphone request") : operation === "recording" ? tr("word_sounds.syllable_rec_cancel_recording", "Cancel recording") : operation === "cleanup" ? tr("word_sounds.syllable_rec_cancel_cleanup", "Cancel cleanup") : tr("word_sounds.syllable_rec_cancel_check", "Cancel audio check")) : null,
     recording !== null ? h("button", { type: "button", className: buttonClass, onClick: () => {
       if (recorder.current?.recorder.state === "recording") recorder.current.recorder.stop();
-    } }, "Stop recording") : null,
+    } }, tr("word_sounds.syllable_rec_stop_recording", "Stop recording")) : null,
     h("p", { id: readinessId, className: "text-sm my-2" }, nextStep),
-    h("button", { type: "button", className: buttonClass, "aria-describedby": readinessId, disabled: busy || !complete, onClick: () => preview(units.map((_, index) => index)) }, "Preview syllables in order"),
-    h("label", { className: "block my-3" }, h("input", { type: "checkbox", checked: confirmed, disabled: busy || !heard, onChange: (event) => setConfirmed(event.target.checked) }), " I listened to the sequence and checked that it uses the correct spoken syllables for this word."),
-    h("button", { type: "button", className: buttonClass, "aria-describedby": readinessId, disabled: busy || libraryBusy || !complete || !heard || !confirmed, onClick: save }, "Save reviewed syllables"),
+    h("button", { type: "button", className: buttonClass, "aria-describedby": readinessId, disabled: busy || !complete, onClick: () => preview(units.map((_, index) => index)) }, tr("word_sounds.syllable_rec_preview_all", "Preview syllables in order")),
+    h("label", { className: "block my-3" }, h("input", { type: "checkbox", checked: confirmed, disabled: busy || !heard, onChange: (event) => setConfirmed(event.target.checked) }), " ", tr("word_sounds.syllable_rec_confirm", "I listened to the sequence and checked that it uses the correct spoken syllables for this word.")),
+    h("button", { type: "button", className: buttonClass, "aria-describedby": readinessId, disabled: busy || libraryBusy || !complete || !heard || !confirmed, onClick: save }, tr("word_sounds.syllable_rec_save", "Save reviewed syllables")),
     h("p", { role: "status", className: "text-sm mt-2", "aria-live": "polite" }, status)
   );
 }
@@ -6398,7 +6407,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     }
   ), Object.entries(detachedSyllableRecordings).map(([key, saved]) => /* @__PURE__ */ React.createElement("p", { key, role: "status", className: "text-sm my-2" }, tf("word_sounds.count_recording_excluded", "The old syllable recording for {word} is excluded from this lesson. Its original saved clips are kept.", { word: saved.word }), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 border rounded-lg px-3 py-2 ml-2", onClick: () => undoCountRecordingExclusion(key) }, tf("word_sounds.count_recording_undo", "Undo for {word}", { word: saved.word })))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-sm mt-2" }, countLibraryNotice)), syllableBlendingSelected && /* @__PURE__ */ React.createElement("details", { ref: recordingReviewRegion, open: recordingReviewOpen, onToggle: (event) => {
     if (event.target === event.currentTarget) setRecordingReviewOpen(event.currentTarget.open);
-  }, className: "bg-white border border-violet-300 rounded-xl p-4 mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-violet-900" }, "Word-specific syllable recordings"), /* @__PURE__ */ React.createElement("p", { className: "text-sm my-2" }, tf("word_sounds.syllable_recording_help", "Extend blending to words with two to eight syllables using your reviewed recordings. Recordings travel with the saved lesson.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, recordingReviewOpen && previewList.filter((word, index) => selectedIndices.has(index)).map((word) => /* @__PURE__ */ React.createElement(
+  }, className: "bg-white border border-violet-300 rounded-xl p-4 mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-violet-900" }, tf("word_sounds.syllable_recordings_heading", "Word-specific syllable recordings")), /* @__PURE__ */ React.createElement("p", { className: "text-sm my-2" }, tf("word_sounds.syllable_recording_help", "Extend blending to words with two to eight syllables using your reviewed recordings. Recordings travel with the saved lesson.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, recordingReviewOpen && previewList.filter((word, index) => selectedIndices.has(index)).map((word) => /* @__PURE__ */ React.createElement(
     WordSoundsSyllableRecordingEditor,
     {
       translate: tf,

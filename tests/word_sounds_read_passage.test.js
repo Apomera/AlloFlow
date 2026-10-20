@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const SOURCE = read('word_sounds_setup_source.jsx');
@@ -152,9 +153,9 @@ describe('the player treats the story as print', () => {
   });
 
   it('every blank is a drop target and every chip a tappable button', () => {
-    const idx = MODULE.indexOf('case "read_passage": {');
-    expect(idx).toBeGreaterThan(0);
-    const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
+    // The activity renderer's own case: the Present-to-class view has one with the same text.
+    const renderer = sliceBetween(MODULE, 'const renderActivityContent = () => {', null, { file: 'word_sounds_module.js' });
+    const block = sliceBetween(renderer, 'case "read_passage": {', 'default:', { file: 'word_sounds_module.js' });
     expect(block).toMatch(/onClick: \(\) => rpCheck\(w\)/);
     expect(block).toMatch(/rpBlank\("rp-blank-" \+ i, !p\.before\)/);
     // A sentence-initial blank fills capitalized.

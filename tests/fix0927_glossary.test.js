@@ -152,7 +152,8 @@ describe('G1: health check in the view scores against the related analysis', () 
     const runGlossaryHealthCheck = vi.fn();
     const c = mount({ generatedContent: { ...glossA, data: [{ ...glossA.data[0], entryId: 'e' }] }, history: HISTORY, runGlossaryHealthCheck });
     await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.includes('glossary.more_tools')).click());
-    await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.trim() === 'common.check').click());
+    // Named "Run health check" since 2026-10-19 (it read "Check Answer").
+    await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.trim() === 'Run health check').click());
     expect(runGlossaryHealthCheck).toHaveBeenCalledTimes(1);
     expect(runGlossaryHealthCheck.mock.calls[0][1]).toBe('Text A');
   });

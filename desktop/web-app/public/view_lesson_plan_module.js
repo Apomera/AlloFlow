@@ -471,6 +471,21 @@ function LessonPlanView(props) {
   var handleToggleIsEditingLessonPlan = props.handleToggleIsEditingLessonPlan;
   var handleCopyToClipboard = props.handleCopyToClipboard;
   var handleExportPDF = props.handleExportPDF;
+  // One Edit toggle covers the plan and its teaching script; Done saves the script draft first
+  // and stays in edit mode when the script's checks fail (the panel shows what to fix).
+  var scriptEditBridge = React.useRef(null);
+  var toggleLessonPlanEditing = async () => {
+    if (isEditingLessonPlan && typeof scriptEditBridge.current === 'function') {
+      let finished = false;
+      try {
+        finished = await scriptEditBridge.current();
+      } catch (_) {
+        finished = false;
+      }
+      if (!finished) return;
+    }
+    handleToggleIsEditingLessonPlan();
+  };
   var handleLessonPlanChange = (field, value, index = null) => {
     // Merge text into the latest saved value so arriving metadata survives.
     props.handleLessonPlanChange(field, typeof value === 'string' ? previous => _lessonPlanEditedText(previous, value) : value, index);
@@ -536,7 +551,7 @@ function LessonPlanView(props) {
     className: "flex flex-wrap gap-2 no-print"
   }, !audienceView && /*#__PURE__*/React.createElement("button", {
     "aria-pressed": !!isEditingLessonPlan,
-    onClick: handleToggleIsEditingLessonPlan,
+    onClick: toggleLessonPlanEditing,
     className: `flex min-h-11 items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`,
     title: t('lesson_plan.edit_plan')
   }, isEditingLessonPlan ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -584,6 +599,8 @@ function LessonPlanView(props) {
     defaultSettings: props.defaultSettings,
     scriptRun: props.scriptRun,
     draftScope: props.teachingScriptDraftScope,
+    planEditing: !!isEditingLessonPlan,
+    planEditBridge: scriptEditBridge,
     createTeachingScriptAudio: props.createTeachingScriptAudio,
     audioProfile: props.teachingScriptAudioProfile,
     audioVoice: props.teachingScriptVoice,

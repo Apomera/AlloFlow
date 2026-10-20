@@ -481,6 +481,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
   // This factory is embedded verbatim in the offline file; keep it dependency-free.
   function mountPlayer(host, pack, options, initialSequence, core, hooks = {}) {
     const doc = host.ownerDocument, win = doc.defaultView;
+    const labels = (hooks && hooks.labels) || {};
+    const L = (key, fallback, params) => { let text = typeof labels[key] === 'string' && labels[key] ? labels[key] : fallback; Object.keys(params || {}).forEach(p => { text = text.split('{' + p + '}').join(String(params[p])); }); return text; };
     let sequence = initialSequence.slice(), index = 0, revealed = false, running = false, timer = null, dead = false;
     let audio = null, audioRun = 0, finishAudio = null;
     const review = new Set(), items = new Map(pack.items.map(item => [item.id, item]));
@@ -490,27 +492,27 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const header = make('div', null, 'awp-head');
     make('h1', pack.title, '', header);
     const headerActions = make('div', null, 'awp-row', header);
-    if (hooks.onBack) button('Back to setup', () => { destroy(); hooks.onBack(); }, headerActions);
-    const fullscreen = button('Full screen', async () => { try { if (doc.fullscreenElement) await doc.exitFullscreen(); else if (host.requestFullscreen) await host.requestFullscreen(); else status.textContent = 'Full screen is unavailable in this browser.'; } catch (_) { status.textContent = 'Full screen is unavailable in this browser.'; } }, headerActions);
+    if (hooks.onBack) button(L('back_to_setup', 'Back to setup'), () => { destroy(); hooks.onBack(); }, headerActions);
+    const fullscreen = button(L('full_screen', 'Full screen'), async () => { try { if (doc.fullscreenElement) await doc.exitFullscreen(); else if (host.requestFullscreen) await host.requestFullscreen(); else status.textContent = L('full_screen_unavailable', 'Full screen is unavailable in this browser.'); } catch (_) { status.textContent = L('full_screen_unavailable', 'Full screen is unavailable in this browser.'); } }, headerActions);
     const progress = make('p', '', 'awp-progress');
     const stage = make('div', null, 'awp-stage');
-    stage.setAttribute('aria-label', 'Practice card');
+    stage.setAttribute('aria-label', L('practice_card', 'Practice card'));
     const card = make('div', null, 'awp-card', stage);
     const announcement = make('p', '', 'awp-sr'); announcement.setAttribute('role', 'status'); announcement.setAttribute('aria-live', 'polite'); announcement.setAttribute('aria-atomic', 'true');
     const toolbar = make('div', null, 'awp-row');
-    const previous = button('Previous', () => move(-1), toolbar);
-    const next = button('Next', () => move(1), toolbar, 'awp-primary');
-    const reveal = button('Reveal answer', () => { revealed = true; renderCard(); schedule(); }, toolbar);
-    const wordButton = button('Hear word', () => playClips([current().wordAudio]), toolbar);
-    const soundsButton = button('Hear sounds', () => playClips(current().phonemes.map(sound => sound.audio)), toolbar);
-    const timerButton = button('Start timer', () => { running = !running; updateTimer(); schedule(); }, toolbar);
+    const previous = button(L('previous', 'Previous'), () => move(-1), toolbar);
+    const next = button(L('next', 'Next'), () => move(1), toolbar, 'awp-primary');
+    const reveal = button(L('reveal_answer', 'Reveal answer'), () => { revealed = true; renderCard(); schedule(); }, toolbar);
+    const wordButton = button(L('hear_word', 'Hear word'), () => playClips([current().wordAudio]), toolbar);
+    const soundsButton = button(L('hear_sounds', 'Hear sounds'), () => playClips(current().phonemes.map(sound => sound.audio)), toolbar);
+    const timerButton = button(L('start_timer', 'Start timer'), () => { running = !running; updateTimer(); schedule(); }, toolbar);
     timerButton.hidden = !options.autoAdvance;
-    const reviewButton = button('Add to review', () => { const id = current().id; if (review.has(id)) review.delete(id); else review.add(id); updateReview(); }, toolbar, 'awp-review');
+    const reviewButton = button(L('add_to_review', 'Add to review'), () => { const id = current().id; if (review.has(id)) review.delete(id); else review.add(id); updateReview(); }, toolbar, 'awp-review');
     const footer = make('div', null, 'awp-footer awp-gap');
     const roundButtons = make('div', null, 'awp-row', footer);
-    const newRound = button('New round', () => { sequence = core.createSequence(pack, options); index = 0; running = false; render(); }, roundButtons);
-    const reviewRound = button('Start review (0)', () => { sequence = core.createSequence({ items: pack.items.filter(item => review.has(item.id)) }, { ...options, repetitions: 1 }); index = 0; running = false; render(); }, roundButtons);
-    make('p', 'Arrow keys: move · Space: ' + (options.autoAdvance ? 'start or pause timer' : 'next card') + ' · R: reveal', 'awp-note', footer);
+    const newRound = button(L('new_round', 'New round'), () => { sequence = core.createSequence(pack, options); index = 0; running = false; render(); }, roundButtons);
+    const reviewRound = button(L('start_review', 'Start review ({count})', { count: 0 }), () => { sequence = core.createSequence({ items: pack.items.filter(item => review.has(item.id)) }, { ...options, repetitions: 1 }); index = 0; running = false; render(); }, roundButtons);
+    make('p', options.autoAdvance ? L('keys_help_timed', 'Arrow keys: move · Space: start or pause timer · R: reveal') : L('keys_help_manual', 'Arrow keys: move · Space: next card · R: reveal'), 'awp-note', footer);
     const status = make('p', '', 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     function current() { return items.get(sequence[index] && sequence[index].itemId); }
     function updateAudioControls() {
@@ -522,7 +524,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     function stopAudio() { audioRun++; if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); audio = null; } if (finishAudio) { finishAudio(); finishAudio = null; } }
     async function playClips(clips) {
       stopAudio();
-      if (!clips.length || clips.some(clip => !core.safeAudio(clip))) { status.textContent = 'The complete recording is not available for this word.'; return; }
+      if (!clips.length || clips.some(clip => !core.safeAudio(clip))) { status.textContent = L('recording_unavailable', 'The complete recording is not available for this word.'); return; }
       const run = audioRun;
       for (const clip of clips) {
         if (dead || run !== audioRun) return;
@@ -533,11 +535,11 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
           finishAudio = () => done(false); sound.onended = () => done(true); sound.onerror = () => done(false);
           try { const promise = sound.play(); if (promise && promise.catch) promise.catch(() => done(false)); } catch (_) { done(false); }
         });
-        if (!ok) { if (!dead && run === audioRun) status.textContent = 'This browser could not play the recording.'; return; }
+        if (!ok) { if (!dead && run === audioRun) status.textContent = L('recording_failed', 'This browser could not play the recording.'); return; }
       }
       if (run === audioRun) { audio = null; finishAudio = null; }
     }
-    function updateTimer() { timerButton.textContent = running ? 'Pause timer' : 'Start timer'; timerButton.setAttribute('aria-pressed', String(running)); }
+    function updateTimer() { timerButton.textContent = running ? L('pause_timer', 'Pause timer') : L('start_timer', 'Start timer'); timerButton.setAttribute('aria-pressed', String(running)); }
     function schedule() {
       if (timer) win.clearTimeout(timer); timer = null;
       if (!running || dead) return;
@@ -546,9 +548,9 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     }
     function updateReview() {
       const marked = current() && review.has(current().id);
-      reviewButton.textContent = marked ? 'Remove from review' : 'Add to review';
+      reviewButton.textContent = marked ? L('remove_from_review', 'Remove from review') : L('add_to_review', 'Add to review');
       reviewButton.setAttribute('aria-pressed', String(!!marked));
-      reviewRound.textContent = 'Start review (' + review.size + ')'; reviewRound.disabled = !review.size;
+      reviewRound.textContent = L('start_review', 'Start review ({count})', { count: review.size }); reviewRound.disabled = !review.size;
     }
     function renderCard() {
       const item = current(), frame = sequence[index]; card.replaceChildren();
@@ -558,46 +560,46 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         const activity = item.sentenceActivity;
         make('p', activity.prompt, 'awp-detail', card);
         const choices = make('div', null, 'awp-choices', card);
-        const feedback = make('p', revealed ? 'Answer: ' + activity.answer : '', 'awp-feedback', card); feedback.setAttribute('role', 'status');
+        const feedback = make('p', revealed ? L('answer', 'Answer: {answer}', { answer: activity.answer }) : '', 'awp-feedback', card); feedback.setAttribute('role', 'status');
         activity.choices.forEach(choice => button(choice, () => {
-          if (core.key(choice) === core.key(activity.answer)) { feedback.textContent = 'Yes. ' + activity.answer + ' completes the sentence.'; revealed = true; reveal.disabled = true; updateAudioControls(); schedule(); }
-          else feedback.textContent = 'Try another word. Read the whole sentence again.';
+          if (core.key(choice) === core.key(activity.answer)) { feedback.textContent = L('sentence_correct', 'Yes. {answer} completes the sentence.', { answer: activity.answer }); revealed = true; reveal.disabled = true; updateAudioControls(); schedule(); }
+          else feedback.textContent = L('sentence_try_again', 'Try another word. Read the whole sentence again.');
         }, choices));
       } else if (options.mode === 'spelling' && !revealed) {
-        make('p', item.wordAudio && options.includeAudio ? 'Listen, then spell the word.' : 'Ask your teacher to say the word, then spell it.', 'awp-detail', card);
+        make('p', item.wordAudio && options.includeAudio ? L('spell_listen', 'Listen, then spell the word.') : L('spell_teacher', 'Ask your teacher to say the word, then spell it.'), 'awp-detail', card);
       } else if (options.mode === 'blend' && !revealed && item.phonemes.length) {
         const sounds = make('div', null, 'awp-phonemes', card);
         item.phonemes.forEach(sound => make('span', sound.label, 'awp-phoneme', sounds));
-        make('p', 'Say the sounds, then blend the word.', 'awp-note awp-gap', card);
+        make('p', L('blend_help', 'Say the sounds, then blend the word.'), 'awp-note awp-gap', card);
       } else {
         showWord();
         if (options.mode === 'vocabulary' && revealed) {
           if (item.definition) make('p', item.definition, 'awp-detail awp-gap', card);
           if (item.example) make('p', item.example, 'awp-detail', card);
           item.translations.forEach(translation => make('p', (translation.language ? translation.language + ': ' : '') + translation.text, 'awp-detail', card));
-          if (!item.definition && !item.example && !item.translations.length) make('p', 'No meaning or example has been prepared for this word.', 'awp-note awp-gap', card);
+          if (!item.definition && !item.example && !item.translations.length) make('p', L('no_meaning', 'No meaning or example has been prepared for this word.'), 'awp-note awp-gap', card);
         }
       }
       reveal.hidden = options.mode === 'popup' || (options.mode === 'blend' && !item.phonemes.length);
-      reveal.textContent = options.mode === 'vocabulary' ? 'Show meaning' : options.mode === 'blend' ? 'Show word' : 'Reveal answer'; reveal.disabled = revealed;
+      reveal.textContent = options.mode === 'vocabulary' ? L('show_meaning', 'Show meaning') : options.mode === 'blend' ? L('show_word', 'Show word') : L('reveal_answer', 'Reveal answer'); reveal.disabled = revealed;
       // Announce exactly what is visible; concealed answers must stay concealed.
-      const visible = options.mode === 'spelling' && !revealed ? 'Listen, then spell the word.'
-        : options.mode === 'sentence' ? item.sentenceActivity.prompt + (revealed ? ' Answer: ' + item.sentenceActivity.answer : '')
-        : options.mode === 'blend' && !revealed && item.phonemes.length ? item.phonemes.map(sound => sound.label).join(', ') + '. Say the sounds, then blend the word.'
+      const visible = options.mode === 'spelling' && !revealed ? L('spell_listen', 'Listen, then spell the word.')
+        : options.mode === 'sentence' ? item.sentenceActivity.prompt + (revealed ? ' ' + L('answer', 'Answer: {answer}', { answer: item.sentenceActivity.answer }) : '')
+        : options.mode === 'blend' && !revealed && item.phonemes.length ? item.phonemes.map(sound => sound.label).join(', ') + '. ' + L('blend_help', 'Say the sounds, then blend the word.')
         : item.word + (options.mode === 'vocabulary' && revealed ? '. ' + [item.definition, item.example, ...item.translations.map(value => (value.language ? value.language + ': ' : '') + value.text)].filter(Boolean).join('. ') : '');
-      announcement.textContent = 'Card ' + (index + 1) + ' of ' + sequence.length + '. ' + visible;
+      announcement.textContent = L('card_announce', 'Card {n} of {total}. {visible}', { n: index + 1, total: sequence.length, visible: visible });
       updateAudioControls();
     }
     function render() {
       stopAudio(); revealed = false; status.textContent = '';
       const item = current();
-      if (!item) { stage.textContent = 'Add words to begin practice.'; [previous, next, reveal, wordButton, soundsButton, timerButton, reviewButton, newRound, reviewRound].forEach(button => button.disabled = true); return; }
-      progress.textContent = 'Card ' + (index + 1) + ' of ' + sequence.length;
+      if (!item) { stage.textContent = L('add_words', 'Add words to begin practice.'); [previous, next, reveal, wordButton, soundsButton, timerButton, reviewButton, newRound, reviewRound].forEach(button => button.disabled = true); return; }
+      progress.textContent = L('card_progress', 'Card {n} of {total}', { n: index + 1, total: sequence.length });
       previous.disabled = index === 0; next.disabled = index >= sequence.length - 1;
       renderCard(); updateReview(); updateTimer(); schedule();
     }
     function move(direction) {
-      if (index + direction >= sequence.length) { running = false; updateTimer(); schedule(); stopAudio(); status.textContent = 'Round complete. Start a new round or review the words you marked.'; return; }
+      if (index + direction >= sequence.length) { running = false; updateTimer(); schedule(); stopAudio(); status.textContent = L('round_complete', 'Round complete. Start a new round or review the words you marked.'); return; }
       if (index + direction < 0) return;
       index += direction; render();
     }
@@ -609,7 +611,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       else if (event.key.toLowerCase() === 'r' && !reveal.hidden) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
     }
     function visibility() { if (doc.hidden) { running = false; stopAudio(); updateTimer(); schedule(); } }
-    function fullscreenChange() { fullscreen.textContent = doc.fullscreenElement ? 'Exit full screen' : 'Full screen'; }
+    function fullscreenChange() { fullscreen.textContent = doc.fullscreenElement ? L('exit_full_screen', 'Exit full screen') : L('full_screen', 'Full screen'); }
     function destroy() { dead = true; if (timer) win.clearTimeout(timer); stopAudio(); host.removeEventListener('keydown', keydown); doc.removeEventListener('visibilitychange', visibility); doc.removeEventListener('fullscreenchange', fullscreenChange); win.removeEventListener('pagehide', destroy); if (doc.fullscreenElement === host && doc.exitFullscreen) doc.exitFullscreen().catch(() => {}); }
     host.tabIndex = -1; host.addEventListener('keydown', keydown); doc.addEventListener('visibilitychange', visibility); doc.addEventListener('fullscreenchange', fullscreenChange); win.addEventListener('pagehide', destroy);
     render(); host.focus();
@@ -620,15 +622,25 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     if (includeAudio) return pack;
     return { ...pack, items: pack.items.map(item => ({ ...item, wordAudio: '', phonemes: item.phonemes.map(sound => ({ ...sound, audio: '' })) })) };
   }
-  function buildHtml(input, value, suppliedSequence) {
+  function buildHtml(input, value, suppliedSequence, labels) {
     const core = root.AlloWordPracticeCore;
     const normalized = core.normalizeInput(input), options = core.normalizeOptions(value || normalized.options);
     const pack = withoutAudio({ ...normalized, options }, options.includeAudio);
     const sequence = suppliedSequence || core.createSequence(pack, options);
-    const language = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(pack.language) ? pack.language : 'en';
-    return '<!doctype html><html lang="' + core.escapeHtml(language) + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + '</style></head><body><main id="practice" aria-label="Word practice"></main><script>\n(function(){"use strict";const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core);})();\n</script></body></html>';
+    // A language NAME ("Spanish") used to fall back to lang="en"; the host's utilities map it, and give the direction.
+    const extras = root.AlloModules && root.AlloModules.ModuleScopeExtras;
+    let language = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(pack.language) ? pack.language : '';
+    try { if (!language && extras && typeof extras.getSpeechLangCode === 'function') language = String(extras.getSpeechLangCode(pack.language) || '').split('-')[0]; } catch (_) { language = ''; }
+    if (!/^[a-z]{2,3}$/i.test(language) && !/^[a-z]{2,3}-/i.test(language)) language = 'en';
+    let rtl = false;
+    try { rtl = !!(extras && typeof extras.isRtlLang === 'function' && extras.isRtlLang(pack.language)); } catch (_) { rtl = false; }
+    const playerLabels = labels && typeof labels === 'object' ? labels : {};
+    return '<!doctype html><html lang="' + core.escapeHtml(language) + '" dir="' + (rtl ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + '</style></head><body><main id="practice" aria-label="' + core.escapeHtml(playerLabels.practice_label || 'Word practice') + '"></main><script>\n(function(){"use strict";const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core,{labels:' + core.safeJson(playerLabels) + '});})();\n</script></body></html>';
   }
 
+  // The player's strings, translated once per dialog and handed to the player (and
+  // to the offline file). English stays inline in the player as the fallback.
+  const PLAYER_STRINGS = [["word_practice.back_to_setup","Back to setup"],["word_practice.full_screen","Full screen"],["word_practice.exit_full_screen","Exit full screen"],["word_practice.full_screen_unavailable","Full screen is unavailable in this browser."],["word_practice.practice_card","Practice card"],["word_practice.previous","Previous"],["word_practice.next","Next"],["word_practice.reveal_answer","Reveal answer"],["word_practice.hear_word","Hear word"],["word_practice.hear_sounds","Hear sounds"],["word_practice.start_timer","Start timer"],["word_practice.pause_timer","Pause timer"],["word_practice.add_to_review","Add to review"],["word_practice.remove_from_review","Remove from review"],["word_practice.new_round","New round"],["word_practice.start_review","Start review ({count})"],["word_practice.keys_help_timed","Arrow keys: move · Space: start or pause timer · R: reveal"],["word_practice.keys_help_manual","Arrow keys: move · Space: next card · R: reveal"],["word_practice.recording_unavailable","The complete recording is not available for this word."],["word_practice.recording_failed","This browser could not play the recording."],["word_practice.answer","Answer: {answer}"],["word_practice.sentence_correct","Yes. {answer} completes the sentence."],["word_practice.sentence_try_again","Try another word. Read the whole sentence again."],["word_practice.spell_listen","Listen, then spell the word."],["word_practice.spell_teacher","Ask your teacher to say the word, then spell it."],["word_practice.blend_help","Say the sounds, then blend the word."],["word_practice.no_meaning","No meaning or example has been prepared for this word."],["word_practice.show_meaning","Show meaning"],["word_practice.show_word","Show word"],["word_practice.card_announce","Card {n} of {total}. {visible}"],["word_practice.card_progress","Card {n} of {total}"],["word_practice.add_words","Add words to begin practice."],["word_practice.round_complete","Round complete. Start a new round or review the words you marked."],["word_practice.practice_label","Word practice"]];
   let active = null, nextDialogId = 0;
   function open(context = {}) {
     if (context.signal && context.signal.aborted) return { close() {} };
@@ -643,18 +655,27 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const inheritedBanks = () => languageKey(pack.language) === sourceLanguage
       ? { phonemeBank: context.phonemeBank, wordBank: context.wordBank }
       : { phonemeBank: {}, wordBank: {} };
-    const abort = new root.AbortController(), urls = new Set();
+    const abort = new root.AbortController();
+    // Host t() echoes a missing key; the English beside each key is the fallback.
+    const tx = (key, fallback, params) => {
+      let value = '';
+      try { value = typeof context.t === 'function' ? context.t(key) : ''; } catch (_) { value = ''; }
+      let text = typeof value === 'string' && value && value !== key ? value : fallback;
+      Object.keys(params || {}).forEach(p => { text = text.split('{' + p + '}').join(String(params[p])); });
+      return text;
+    };
+    const playerLabels = () => Object.fromEntries(PLAYER_STRINGS.map(([key, english]) => [key.replace('word_practice.', ''), tx(key, english)]));
     const overlay = doc.createElement('div'); overlay.className = 'awp awp-overlay';
     const style = doc.createElement('style'); style.textContent = CSS; overlay.appendChild(style);
-    const dialog = doc.createElement('section'); dialog.className = 'awp-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-label', 'Present & Export'); overlay.appendChild(dialog);
+    const dialog = doc.createElement('section'); dialog.className = 'awp-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
     const hiddenSiblings = Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
     hiddenSiblings.forEach(({ node }) => { node.inert = true; });
     const priorOverflow = doc.body.style.overflow; doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay);
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) node.textContent = text; if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
-    const header = make('div', null, dialog, 'awp-head'); make('h1', 'Present & Export', header);
-    const closeButton = make('button', 'Close', header); closeButton.type = 'button'; closeButton.onclick = close;
+    const header = make('div', null, dialog, 'awp-head'); make('h1', tx('word_practice.title', 'Present & Export'), header);
+    const closeButton = make('button', tx('word_practice.close', 'Close'), header); closeButton.type = 'button'; closeButton.onclick = close;
     const setup = make('div', null, dialog), playerHost = make('div', null, dialog); playerHost.hidden = true;
-    make('p', 'Turn a word list into a short class practice routine. Use prepared audio and activities when they are available.', setup, 'awp-note');
+    make('p', tx('word_practice.intro', 'Turn a word list into a short class practice routine. Use prepared audio and activities when they are available.'), setup, 'awp-note');
     const grid = make('div', null, setup, 'awp-grid');
     const left = make('div', null, grid, 'awp-fields');
     function field(parent, labelText, tag, type) {
@@ -663,25 +684,25 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       control.id = id; label.htmlFor = id; name.id = id + '-label'; control.setAttribute('aria-labelledby', name.id);
       if (type) control.type = type; return control;
     }
-    const titleInput = field(left, 'Practice title'); titleInput.maxLength = 160;
-    const wordsInput = field(left, 'Words (one per line)', 'textarea'); wordsInput.maxLength = 100000;
-    make('p', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.', left, 'awp-note');
+    const titleInput = field(left, tx('word_practice.practice_title', 'Practice title')); titleInput.maxLength = 160;
+    const wordsInput = field(left, tx('word_practice.words_label', 'Words (one per line)'), 'textarea'); wordsInput.maxLength = 100000;
+    make('p', tx('word_practice.words_note', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.'), left, 'awp-note');
     const right = make('div', null, grid, 'awp-fields');
-    const mode = field(right, 'Practice activity', 'select');
-    [['popup', 'Word Fluency Pop-Up'], ['blend', 'Sound & Blend'], ['vocabulary', 'Word Meaning'], ['spelling', 'Listen & Spell'], ['sentence', 'Finish the Sentence']].forEach(([value, label]) => { const option = make('option', label, mode); option.value = value; });
-    const repetitions = field(right, 'Repetitions per word', 'input', 'number'); repetitions.min = '1'; repetitions.max = '10';
-    const pacing = field(right, 'Pacing', 'select'); [['manual', 'Teacher advances'], ['timed', 'Timed cards']].forEach(([value, label]) => { const option = make('option', label, pacing); option.value = value; });
-    const interval = field(right, 'Seconds per card', 'input', 'number'); interval.min = '1'; interval.max = '30'; interval.step = '0.5';
+    const mode = field(right, tx('word_practice.activity', 'Practice activity'), 'select');
+    [['popup', tx('word_practice.mode_popup', 'Word Fluency Pop-Up')], ['blend', tx('word_practice.mode_blend', 'Sound & Blend')], ['vocabulary', tx('word_practice.mode_vocabulary', 'Word Meaning')], ['spelling', tx('word_practice.mode_spelling', 'Listen & Spell')], ['sentence', tx('word_practice.mode_sentence', 'Finish the Sentence')]].forEach(([value, label]) => { const option = make('option', label, mode); option.value = value; });
+    const repetitions = field(right, tx('word_practice.repetitions', 'Repetitions per word'), 'input', 'number'); repetitions.min = '1'; repetitions.max = '10';
+    const pacing = field(right, tx('word_practice.pacing', 'Pacing'), 'select'); [['manual', tx('word_practice.pacing_manual', 'Teacher advances')], ['timed', tx('word_practice.pacing_timed', 'Timed cards')]].forEach(([value, label]) => { const option = make('option', label, pacing); option.value = value; });
+    const interval = field(right, tx('word_practice.seconds_per_card', 'Seconds per card'), 'input', 'number'); interval.min = '1'; interval.max = '30'; interval.step = '0.5';
     function checkbox(text) {
       const label = make('label', null, right), input = make('input', null, label), name = make('span', text, label), id = fieldPrefix + (++nextFieldId);
       input.type = 'checkbox'; input.id = id; label.htmlFor = id; name.id = id + '-label'; input.setAttribute('aria-labelledby', name.id); return input;
     }
-    const shuffle = checkbox('Shuffle each repetition');
-    const position = checkbox('Vary word position');
-    const size = checkbox('Vary word size');
-    const includeAudio = checkbox('Include prepared audio');
+    const shuffle = checkbox(tx('word_practice.shuffle', 'Shuffle each repetition'));
+    const position = checkbox(tx('word_practice.vary_position', 'Vary word position'));
+    const size = checkbox(tx('word_practice.vary_size', 'Vary word size'));
+    const includeAudio = checkbox(tx('word_practice.include_audio', 'Include prepared audio'));
     const coverage = make('p', '', setup, 'awp-note awp-gap');
-    make('p', 'HTML keeps interactive practice and works offline. PowerPoint uses fixed slides and embeds available recordings. Sentence activities use only prepared boards; PowerPoint includes prompt and answer slides.', setup, 'awp-note');
+    make('p', tx('word_practice.formats_note', 'HTML keeps interactive practice and works offline. PowerPoint uses fixed slides and embeds available recordings. Sentence activities use only prepared boards; PowerPoint includes prompt and answer slides.'), setup, 'awp-note');
     const actions = make('div', null, setup, 'awp-actions');
     const status = make('p', '', setup, 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     const fileInput = make('input', null, setup); fileInput.type = 'file'; fileInput.accept = '.json,application/json'; fileInput.hidden = true;
@@ -693,7 +714,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       return pack;
     }
     function updateCoverage() {
-      try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = current.items.length + ' words · Word audio: ' + counts.words + '/' + counts.totalWords + ' · Complete sound sequences: ' + counts.completePhonemeWords + '/' + counts.totalWords + ' · Sentence activities: ' + sentences; }
+      try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = tx('word_practice.coverage', '{count} words · Word audio: {audio}/{total} · Complete sound sequences: {complete}/{total} · Sentence activities: {sentences}', { count: current.items.length, audio: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords, sentences: sentences }); }
       catch (error) { coverage.textContent = error.message; }
       interval.disabled = pacing.value !== 'timed';
     }
@@ -707,62 +728,63 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     async function action(callback) {
       if (busy || closed) return;
       status.textContent = ''; setBusy(true);
-      try { await callback(); } catch (error) { if (!closed && error.name !== 'AbortError') status.textContent = error.message || 'Unable to finish this action.'; }
+      try { await callback(); } catch (error) { if (!closed && error.name !== 'AbortError') status.textContent = error.message || tx('word_practice.action_failed', 'Unable to finish this action.'); }
       finally { if (!closed) { setBusy(false); updateCoverage(); } }
     }
     function actionButton(label, callback, primary) { const button = make('button', label, actions, primary ? 'awp-primary' : ''); button.type = 'button'; button.onclick = () => action(callback); return button; }
-    function ready() { const current = readPack(); if (!current.items.length) throw new Error('Add at least one word to begin.'); return current; }
+    function ready() { const current = readPack(); if (!current.items.length) throw new Error(tx('word_practice.need_words', 'Add at least one word to begin.')); return current; }
     function filename(extension) { return (pack.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').slice(0, 80).trim() || 'word-practice') + extension; }
     function download(contents, mime, extension) {
       if (closed) return;
-      const url = root.URL.createObjectURL(new root.Blob([contents], { type: mime })); urls.add(url);
+      const url = root.URL.createObjectURL(new root.Blob([contents], { type: mime }));
       const link = doc.createElement('a'); link.href = url; link.download = filename(extension); doc.body.appendChild(link); link.click(); link.remove();
-      root.setTimeout(() => { root.URL.revokeObjectURL(url); urls.delete(url); }, 30000);
+      // Not revoked on close: closing right after a click used to cancel the download.
+      root.setTimeout(() => { root.URL.revokeObjectURL(url); }, 30000);
     }
-    actionButton('Present', () => {
+    actionButton(tx('word_practice.present', 'Present'), () => {
       const current = ready(), opts = options(), sequence = core.createSequence(current, opts);
       setup.hidden = true; playerHost.hidden = false;
-      player = mountPlayer(playerHost, current, opts, sequence, core, { onBack() { player = null; playerHost.replaceChildren(); playerHost.hidden = true; setup.hidden = false; header.hidden = false; present.focus(); } });
+      player = mountPlayer(playerHost, current, opts, sequence, core, { onBack() { player = null; playerHost.replaceChildren(); playerHost.hidden = true; setup.hidden = false; header.hidden = false; present.focus(); }, labels: playerLabels() });
     }, true);
     const present = actions.lastChild;
-    actionButton('Download HTML', () => { const current = ready(); download(buildHtml(current, options()), 'text/html;charset=utf-8', '.html'); status.textContent = 'HTML downloaded. Open the file in a browser to practice offline.'; });
-    actionButton('Download PowerPoint', async () => {
+    actionButton(tx('word_practice.download_html', 'Download HTML'), () => { const current = ready(); download(buildHtml(current, options(), undefined, playerLabels()), 'text/html;charset=utf-8', '.html'); status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.'); });
+    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async () => {
       const current = ready(), opts = options();
-      const media = root.AlloWordPracticeMedia; if (!media || !media.buildPptx) throw new Error('The PowerPoint exporter is unavailable. Try reopening Present & Export.');
-      status.textContent = 'Building PowerPoint…';
+      const media = root.AlloWordPracticeMedia; if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
+      status.textContent = tx('word_practice.building_pptx', 'Building PowerPoint…');
       const pptx = await media.buildPptx(current, opts, core.createSequence(current, opts), { ...context, signal: abort.signal });
       if (closed) return;
       await pptx.writeFile({ fileName: filename('.pptx') });
-      if (!closed) status.textContent = 'PowerPoint downloaded.' + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
+      if (!closed) status.textContent = tx('word_practice.pptx_downloaded', 'PowerPoint downloaded.') + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
     });
-    actionButton('Prepare audio', async () => {
+    actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async () => {
       const current = ready(), media = root.AlloWordPracticeMedia;
-      if (!media || !media.prepareAudio) throw new Error('Audio preparation is unavailable. Try reopening Present & Export.');
-      status.textContent = 'Preparing missing recordings…';
+      if (!media || !media.prepareAudio) throw new Error(tx('word_practice.audio_unavailable', 'Audio preparation is unavailable. Try reopening Present & Export.'));
+      status.textContent = tx('word_practice.preparing_missing', 'Preparing missing recordings…');
       const prepared = await media.prepareAudio(current, { ...context, ...inheritedBanks(), signal: abort.signal }, progress => {
         if (closed) return;
         if (typeof progress === 'string') status.textContent = core.text(progress, 240);
-        else if (progress && Number.isFinite(progress.completed) && Number.isFinite(progress.total)) status.textContent = 'Preparing recordings: ' + progress.completed + ' of ' + progress.total + (progress.word ? ' — ' + core.text(progress.word, 120) : '') + '.';
-        else status.textContent = 'Preparing recordings…';
+        else if (progress && Number.isFinite(progress.completed) && Number.isFinite(progress.total)) status.textContent = progress.word ? tx('word_practice.preparing_progress_word', 'Preparing recordings: {completed} of {total} — {word}.', { completed: progress.completed, total: progress.total, word: core.text(progress.word, 120) }) : tx('word_practice.preparing_progress', 'Preparing recordings: {completed} of {total}.', { completed: progress.completed, total: progress.total });
+        else status.textContent = tx('word_practice.preparing', 'Preparing recordings…');
       });
       if (closed) return;
       const audioStatus = prepared.audioStatus || {}, errors = Array.isArray(audioStatus.errors) ? [...new Set(audioStatus.errors.map(value => core.text(value, 180)).filter(Boolean))] : [];
       pack = core.normalizeInput(prepared); fill();
       const counts = core.audioCoverage(pack);
-      status.textContent = 'Audio ready for ' + counts.words + ' of ' + counts.totalWords + ' words. Complete sound sequences: ' + counts.completePhonemeWords + '. '
-        + (core.text(audioStatus.message, 240) || (counts.words < counts.totalWords || counts.phonemes < counts.totalPhonemes ? 'Missing recordings remain silent.' : 'All prepared recordings are ready.'))
-        + (errors.length ? ' ' + errors.slice(0, 2).join(' ') + (errors.length > 2 ? ' ' + (errors.length - 2) + ' more recording issues.' : '') : '');
+      status.textContent = tx('word_practice.audio_ready', 'Audio ready for {words} of {total} words. Complete sound sequences: {complete}.', { words: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords }) + ' '
+        + (core.text(audioStatus.message, 240) || (counts.words < counts.totalWords || counts.phonemes < counts.totalPhonemes ? tx('word_practice.missing_silent', 'Missing recordings remain silent.') : tx('word_practice.all_ready', 'All prepared recordings are ready.')))
+        + (errors.length ? ' ' + errors.slice(0, 2).join(' ') + (errors.length > 2 ? ' ' + tx('word_practice.more_issues', '{count} more recording issues.', { count: errors.length - 2 }) : '') : '');
     });
-    actionButton('Save word set', () => { const current = ready(); download(core.serializePack(withoutAudio({ ...current, options: options() }, includeAudio.checked)), 'application/json', '.json'); status.textContent = 'Word set saved with its practice settings.'; });
-    const openSet = actionButton('Open word set', () => {});
+    actionButton(tx('word_practice.save_set', 'Save word set'), () => { const current = ready(); download(core.serializePack(withoutAudio({ ...current, options: options() }, includeAudio.checked)), 'application/json', '.json'); status.textContent = tx('word_practice.set_saved', 'Word set saved with its practice settings.'); });
+    const openSet = actionButton(tx('word_practice.open_set', 'Open word set'), () => {});
     openSet.onclick = () => { if (!busy) { fileInput.value = ''; fileInput.click(); } };
     fileInput.addEventListener('change', () => action(async () => {
       const file = fileInput.files && fileInput.files[0]; if (!file) return;
-      if (file.size > 32 * 1024 * 1024) throw new Error('This word set is too large. Use a file smaller than 32 MB.');
+      if (file.size > 32 * 1024 * 1024) throw new Error(tx('word_practice.set_too_large', 'This word set is too large. Use a file smaller than 32 MB.'));
       const imported = core.normalizeInput(JSON.parse(await file.text()));
       if (closed) return;
-      if (!imported.items.length) throw new Error('This file does not contain a word list.');
-      pack = imported; fill(); status.textContent = 'Word set opened.';
+      if (!imported.items.length) throw new Error(tx('word_practice.set_no_words', 'This file does not contain a word list.'));
+      pack = imported; fill(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
     setup.addEventListener('change', updateCoverage);
     function trap(event) {
@@ -778,7 +800,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     function close() {
       if (closed) return; closed = true; abort.abort(); if (player) player.destroy(); overlay.removeEventListener('keydown', trap);
       if (context.signal) context.signal.removeEventListener('abort', close);
-      urls.forEach(url => root.URL.revokeObjectURL(url)); urls.clear(); overlay.remove();
+      overlay.remove();
       hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; }); doc.body.style.overflow = priorOverflow;
       if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (active === controller) active = null;
     }

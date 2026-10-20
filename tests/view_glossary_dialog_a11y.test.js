@@ -34,12 +34,14 @@ describe('Glossary layered dialog accessibility', () => {
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
   });
 
-  it('announces interstitial progress and focus-manages completed screener results', () => {
-    expect(source).toContain(// The label is i18n'd through glossaryProgressLabel now.
-      'role="status" aria-live="polite" aria-atomic="true" aria-label={glossaryProgressLabel}');
-    expect(source).toContain('role="progressbar" aria-label={glossaryProgressLabel}');
-    expect(source).toContain('ref={screenerDialogRef} role="dialog" aria-modal="true"');
-    expect(source).toContain('aria-labelledby="glossary-screener-results-title"');
-    expect(source).toContain('containModalFocus(e, screenerDialogRef.current, closeScreenerResults)');
-    expect(source).toContain("querySelector('button:not([disabled])')");
+  it('no longer hosts the screening overlays it could not run', () => {
+    // 2026-10-19: the host never passed classifyScreeningRisk / advanceRoster /
+    // exportScreeningCSV here, so a finished battery crashed the next glossary
+    // opened. The overlays moved to the Assessment Center panel, which owns
+    // those helpers (tests/screening_overlays_assessment_center.test.js mounts
+    // them; tests/glossary_batch1_fixes.test.js mounts this view with a
+    // finished battery).
+    for (const gone of ['classifyScreeningRisk', 'advanceRoster', 'exportScreeningCSV', 'screenerDialogRef', "screenerSession.status === 'complete'"]) {
+      expect(source.includes(gone), gone).toBe(false);
+    }
   });});

@@ -44,6 +44,55 @@ const GlossaryPrintStyles = () => <style>{`
   }
 `}</style>;
 
+// Gemini Canvas ignores window.print() on the app (sandboxed iframe), so the
+// Matching, Crossword and Bingo sheets print from a window of their own: the
+// dialog as rendered plus the page's stylesheets, so the print rules above lay
+// it out exactly as before. Without a window it tries the app itself; a refused
+// print fires no beforeprint, so the user is told instead of left guessing.
+const printGlossarySheet = (node, labels = {}) => {
+  if (!node || typeof document === 'undefined') return false;
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const tell = message => {
+    if (!message) return;
+    if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
+    else if (typeof window.alloAnnounce === 'function') window.alloAnnounce(message, 'assertive');
+  };
+  let win = null;
+  try { win = window.open('', '_blank'); } catch (_) { win = null; }
+  if (win) {
+    try {
+      const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map(el => el.tagName === 'LINK' ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : el.outerHTML).join('');
+      const root = document.documentElement;
+      win.document.open();
+      win.document.write('<!DOCTYPE html><html lang="' + esc(root.lang || 'en') + '" dir="' + esc(root.dir || 'ltr') + '"><head><meta charset="utf-8"><title>' + esc(labels.title || '') + '</title>' + styles +
+        '<style>.allo-print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;font:14px system-ui,sans-serif;background:#fff;color:#111;position:relative;z-index:2147483647}.allo-print-bar button{font:600 15px system-ui,sans-serif;padding:10px 18px;border:0;border-radius:8px;background:#1e40af;color:#fff;cursor:pointer}@media print{.allo-print-bar{display:none!important}}</style>' +
+        '</head><body><div class="allo-print-bar"><button type="button" onclick="window.print()">' + esc(labels.print || 'Print') + '</button><span>' + esc(labels.hint || '') + '</span></div>' + node.outerHTML + '</body></html>');
+      win.document.close();
+      let printed = false;
+      const fire = () => { if (printed) return; printed = true; try { win.focus(); win.print(); } catch (_) { /* its own Print button remains */ } };
+      if (win.document.readyState === 'complete') setTimeout(fire, 300);
+      else { win.addEventListener('load', () => setTimeout(fire, 100)); setTimeout(fire, 3000); }
+      return true;
+    } catch (_) { /* could not write the window: fall through */ }
+  }
+  let fired = false;
+  const onBefore = () => { fired = true; };
+  window.addEventListener('beforeprint', onBefore);
+  try { window.print(); } catch (_) {}
+  window.removeEventListener('beforeprint', onBefore);
+  if (!fired) tell(labels.blocked);
+  return fired;
+};
+// Already-translated strings: the print-window hint is shared with the Word
+// Sounds lesson script, which says the same thing.
+const glossarySheetPrintLabels = (t, title) => ({
+  title,
+  print: t('common.print') || 'Print',
+  hint: t('word_sounds.di_script_print_hint') || 'If the print dialog does not open, press Ctrl+P (or Cmd+P on a Mac).',
+  blocked: t('toasts.pop_up_blocked_allow_pop') || 'Pop-up blocked — please allow pop-ups for this site to print',
+});
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Token hygiene and script support, shared by every letter-based activity.
 //
@@ -1288,7 +1337,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </div>
             </div>
             <div className="flex flex-wrap justify-end items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
-                <button type="button" onClick={() => window.print()} data-help-key="matching_print_btn" disabled={!items.length} className="min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 rounded-full focus:ring-2 focus:ring-indigo-500">
+                <button type="button" onClick={() => printGlossarySheet(matchingDialogRef.current, glossarySheetPrintLabels(t, t('matching.print_title') || t('games.matching_title') || 'Matching'))} data-help-key="matching_print_btn" disabled={!items.length} className="min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 rounded-full focus:ring-2 focus:ring-indigo-500">
                     <Printer size={14} aria-hidden="true" /> {t('common.print')}
                 </button>
                 <button
@@ -5228,7 +5277,7 @@ var buildCrosswordWords = function(data, crosswordLang) {
   return out;
 };
 
-const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, isTeacherMode = false }) => {
   const { t } = useContext(LanguageContext);
   const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
@@ -5569,18 +5618,22 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setAnnouncement(`Hint: revealed letter ${pick.char}`);
     if (playSound) playSound('click');
   };
-  // Reuses the printing mechanism the Matching worksheet and the Bingo cards
-  // already use: window.print() over the live modal, with `no-print` on the
-  // chrome and `print:` variants on the sheet. No second printer, no popup to
-  // be blocked. `showAnswerKey` reveals the solution page for that one print
-  // and is cleared afterwards, so the on-screen puzzle is never spoiled.
+  // Same mechanism as the Matching worksheet and Bingo cards: printGlossarySheet
+  // copies this modal, with `no-print` on the chrome and `print:` variants on
+  // the sheet, into its own window (Canvas ignores window.print() on the app).
+  // `showAnswerKey` adds the solution page for one print and is cleared after,
+  // so the on-screen puzzle is never spoiled. The key is added only for a
+  // teacher who asks for it: student copies used to carry it, and students had
+  // the same Print button.
   const [showAnswerKey, setShowAnswerKey] = useState(false);
-  const printCrossword = () => {
+  const printCrossword = (withAnswerKey) => {
+    const labels = glossarySheetPrintLabels(t, t('games.crossword_title') || 'Crossword');
+    if (withAnswerKey !== true || !isTeacherMode) { printGlossarySheet(crosswordDialogRef.current, labels); return; }
     setShowAnswerKey(true);
-    // Let React paint the answer-key page before the print dialog samples the
-    // document; requestAnimationFrame fires after commit.
+    // Let React paint the answer-key page before the sheet is copied;
+    // requestAnimationFrame fires after commit.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      try { window.print(); } finally { setShowAnswerKey(false); }
+      try { printGlossarySheet(crosswordDialogRef.current, labels); } finally { setShowAnswerKey(false); }
     }));
   };
   return (
@@ -5724,7 +5777,8 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     )}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     <button type="button" onClick={printCrossword} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded text-xs font-bold hover:bg-slate-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-1" aria-label={t('glossary.print_puzzle') || 'Print puzzle'}><Printer size={12} aria-hidden="true"/> {t('glossary.print_puzzle') || 'Print'}</button>
+                     <button type="button" onClick={() => printCrossword(false)} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded text-xs font-bold hover:bg-slate-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-1" aria-label={t('glossary.print_puzzle') || 'Print puzzle'}><Printer size={12} aria-hidden="true"/> {t('glossary.print_puzzle') || 'Print'}</button>
+                     {isTeacherMode && <button type="button" data-crossword-print-key="true" onClick={() => printCrossword(true)} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded text-xs font-bold hover:bg-slate-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-1" aria-label={(t('common.print') || 'Print') + ': ' + (t('glossary.print_answer_key') || 'Answer key')}><Printer size={12} aria-hidden="true"/> {t('glossary.print_answer_key') || 'Answer key'}</button>}
                      {!isWon && <><button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>
                      <button type="button" onClick={checkPuzzle} className="min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.crossword.check')}</button>
                      <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button></>}
@@ -5772,7 +5826,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
              {/* Teacher answer key, a separate printed page. Rendered only for
                  the duration of a print so the on-screen puzzle stays unspoiled. */}
              {showAnswerKey && (
-               <div className="hidden print:block break-before-page p-4">
+               <div className="hidden print:block break-before-page p-4" data-crossword-answer-key="true">
                  <h2 className="text-2xl font-bold text-slate-800 mb-4 text-center">{t('glossary.print_answer_key') || 'Answer key'}</h2>
                  <div className="columns-2 gap-8 text-sm">
                    {[['across', clues.across], ['down', clues.down]].map(([dirKey, list]) => (
@@ -6203,7 +6257,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 if (alloBotRef && alloBotRef.current) {
                                     alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
                                 }
-                                window.print();
+                                printGlossarySheet(bingoDialogRef.current, glossarySheetPrintLabels(t, t('bingo.print_cards') || 'Bingo'));
                             }}
                             className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_print_btn" aria-label={t('bingo.print_cards')}

@@ -1445,6 +1445,12 @@ function _htmlToDocxSpec(html) {
         if (_fid) { out.push({ footnoteId: _fid }); continue; }
       }
       if (tag === 'BR') { out.push({ br: true }); continue; }
+      // A picture inside a table cell, list item or heading used to vanish from Word/ODT/DAISY.
+      if (tag === 'IMG') {
+        const _src = n.getAttribute('src') || '', _alt = (n.getAttribute('alt') || '').trim(), _data = /^data:image\//.test(_src);
+        if (_alt || _data) { out.push({ img: { src: _data ? _src : null, alt: _alt, width: n.getAttribute('width'), height: n.getAttribute('height') } }); counts.images++; }
+        continue;
+      }
       // Fillable S0 fields → Word keeps visible blanks (real content
       // controls are the S1+ question; an underscore run prints right).
       if (tag === 'INPUT' && n.getAttribute('data-allo-field')) {
@@ -1502,7 +1508,7 @@ function _htmlToDocxSpec(html) {
       // inline content only — nested lists handled recursively below
       const liInline = { childNodes: Array.prototype.filter.call(li.childNodes, (c) => !(c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL'))) };
       const runs = inlineRuns(liInline, {});
-      if (_runsText(runs)) items.push({ runs, level });
+      if (_runsText(runs) || runs.some((r) => r.img)) items.push({ runs, level });
       for (let j = 0; j < li.children.length; j++) {
         if (li.children[j].tagName === 'UL' || li.children[j].tagName === 'OL') listItems(li.children[j], level + 1, items);
       }
@@ -1665,6 +1671,7 @@ function _odtRuns(runs, footnotes) {
       return '<text:note text:id="ftn' + _fid + '" text:note-class="footnote"><text:note-citation>' + _fid + '</text:note-citation><text:note-body><text:p text:style-name="Standard">' + _body + '</text:p></text:note-body></text:note>';
     }
     if (r.br) return '<text:line-break/>';
+    if (r.img) return r.img.alt ? _expXmlEsc('[Image: ' + r.img.alt + ']') : '';
     if (typeof r.text !== 'string') return '';
     let t = _expXmlEsc(r.text);
     if (r.sub) t = '<text:span text:style-name="T_Sub">' + t + '</text:span>';
@@ -1924,6 +1931,7 @@ function _expDtbookRuns(runs) {
     // silently vanished from the DAISY export.
     if (r.footnoteId != null) { const _fid = _expXmlEsc(String(r.footnoteId)); return '<noteref idref="dtbfn' + _fid + '">' + _fid + '</noteref>'; }
     if (r.br) return '<br/>';
+    if (r.img) return r.img.alt ? _expXmlEsc('[Image: ' + r.img.alt + ']') : '';
     if (typeof r.text !== 'string') return '';
     let t = _expXmlEsc(r.text);
     if (r.sub) t = '<sub>' + t + '</sub>';
@@ -2590,6 +2598,16 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
+    if (r.img) {
+      const info = _dataImageInfo(r.img.src);
+      if (info) {
+        try {
+          const size = _imageDisplayPx(info, r.img.width, r.img.height), scale = Math.min(1, 160 / Math.max(1, size.width));
+          return new d.ImageRun({ data: info.bytes, transformation: { width: Math.round(size.width * scale), height: Math.round(size.height * scale) }, altText: { title: r.img.alt || 'Image', description: r.img.alt || 'Image', name: (r.img.alt || 'image').slice(0, 60) } });
+        } catch (_) { /* alt text below */ }
+      }
+      return new d.TextRun({ text: r.img.alt ? '[Image: ' + r.img.alt + ']' : '', italics: true });
+    }
     // Real Word footnote reference (A6) — Word auto-numbers it and links to the
     // definition in document.footnotes. Degrades to a superscript digit only if
     // the lib lacks FootnoteReferenceRun (very old CDN cache).
@@ -2833,7 +2851,7 @@ function _docxSpecToSlides(spec) {
   const slides = [];
   let cur = null;
   const MAX_LINES = 13;
-  const runsText = (runs) => (runs || []).map((r) => (r.br ? ' ' : (r.text || ''))).join('').replace(/\s+/g, ' ').trim();
+  const runsText = (runs) => (runs || []).map((r) => (r.br ? ' ' : r.img ? (r.img.alt ? '[Image: ' + r.img.alt + ']' : '') : (r.text || ''))).join('').replace(/\s+/g, ' ').trim();
   const cleanTitle = (title) => String(title || '').replace(/ \(cont\.\)$/i, '').trim();
   const newSlide = (title, continuation) => {
     const base = cleanTitle(title || spec.title || 'Document').slice(0, 120) || 'Document';

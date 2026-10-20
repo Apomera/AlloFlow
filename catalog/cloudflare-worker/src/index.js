@@ -1976,63 +1976,41 @@ async function searchBudgetRefusal(request, env) {
 }
 
 // BEGIN PUBLIC SEARCH POLICY
-/* Automatic contextual search accepts only canonical public reference queries.
- * This is an allowlist, not a PII detector or a claim of FERPA compliance.
- * Never add arbitrary user text, model output, school names or identifiers here.
+/* One search-query rule for every transport: the browser, the Canvas Worker and the
+ * Firebase proxy. Any subject may be searched; there is no topic list. The rule only
+ * tidies the query and refuses one that looks like it carries a personal identifier
+ * (an email address, a phone number, a Social Security-style number or a student ID
+ * number), so a pasted student detail is not sent to Serper. Names are not detected.
  */
 function publicSearchQuery(value) {
-  if (typeof value !== 'string' || value.length > 200) return '';
-  const q = value.trim().replace(/\s+/g, ' ');
-  const udl = q.match(/^site:udlguidelines\.cast\.org UDL Guidelines (3\.0|2\.2)((?: (?:engagement|representation|action and expression|feedback|choice|identity|belonging|collaboration|reflection|language|perception|goals)){0,3})$/i);
-  if (udl) return 'site:udlguidelines.cast.org UDL Guidelines ' + udl[1] + udl[2].toLowerCase();
-  const standard = q.match(/^site:(thecorestandards\.org|nextgenscience\.org) (.+) official standard$/i);
-  if (standard) {
-    const codes = standard[2].toUpperCase().split(' ');
-    const ela = /^(?:CCSS\.ELA-LITERACY\.)?(?:RL|RI|RF|W|SL|L)\.(?:K|[1-9]|1[0-2]|9-10|11-12)\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const math = /^(?:CCSS\.MATH\.CONTENT\.)?(?:K|[1-9]|1[0-2])\.(?:CC|OA|NBT|NF|MD|G|RP|NS|EE|SP|F)\.[A-F]\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const ngss = /^(?:K|[1-8]|MS|HS)-(?:PS|LS|ESS|ETS)[1-4]-[1-9][0-9]?$/;
-    const isNgss = standard[1].toLowerCase() === 'nextgenscience.org';
-    if (codes.length <= 3 && codes.every(code => isNgss ? ngss.test(code) : ela.test(code) || math.test(code)))
-      return 'site:' + standard[1].toLowerCase() + ' ' + codes.join(' ') + ' official standard';
-  }
-  // Closed jurisdiction names plus one fixed public rule query. Never append
-  // document text, student details, notes, or model output to this query.
-  const sld = q.match(/^(.+) department of education specific learning disability eligibility requirements official state rule$/i);
-  if (sld) {
-    const state = publicSearchQuery.sldStates.find(name => name.toLowerCase() === sld[1].toLowerCase());
-    if (state) return state + ' department of education specific learning disability eligibility requirements official state rule';
-  }
-  // Exact matches only: never extract vocabulary from a private narrative.
-
-  return publicSearchQuery.topics.includes(q.toLowerCase()) ? q.toLowerCase() : '';
+  return publicSearchQuery.reason(value) ? '' : value.trim().replace(/\s+/g, ' ');
 }
-publicSearchQuery.sldStates = Object.freeze([
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
-  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
-  "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming", "District of Columbia"
-]);
-publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather fronts', 'main idea', 'photosynthesis', 'water cycle', 'plate tectonics', 'fractions',
-    'formative assessment', 'retrieval practice', 'spaced practice', 'explicit instruction',
-    'universal design for learning', 'differentiated instruction', 'reading comprehension',
-    'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
-    'common core reading standards grade 3',
-    'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
-// Explicit research uses only the user's separate topic field. This normalizer
-// bounds transport input; it must never be used to extract a query from context.
-publicSearchQuery.userTopic = function (value) {
-  if (typeof value !== 'string' || value.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) return '';
-  const query = value.trim().replace(/\s+/g, ' ');
-  return query;
+publicSearchQuery.MAX_LENGTH = 500;
+// '' when the query may be sent; otherwise why it may not.
+publicSearchQuery.reason = function (value) {
+  if (typeof value !== 'string' || !value.trim()) return 'empty';
+  if (value.length > publicSearchQuery.MAX_LENGTH) return 'too-long';
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value)) return 'control-characters';
+  const q = value.trim().replace(/\s+/g, ' ');
+  if (/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.test(q)) return 'email';
+  if (/\b\d{3}-\d{2}-\d{4}\b/.test(q) || /\b(?:student|pupil|learner)\s*(?:id|#|number|no\.?)\s*[:#]?\s*\d{3,}/i.test(q)) return 'id-number';
+  // Grouped like a phone number (555-123-4567, (555) 123 4567); bare long numbers are allowed.
+  if (/(?:^|\D)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(?!\d)/.test(q)) return 'phone';
+  return '';
 };
-publicSearchQuery.forIntent = function (value, intent) {
-  return intent === 'user-topic' ? publicSearchQuery.userTopic(value) : publicSearchQuery(value);
+// A sentence a teacher can act on, or '' when the query is fine.
+publicSearchQuery.explain = function (value) {
+  const reason = publicSearchQuery.reason(value);
+  if (!reason) return '';
+  if (reason === 'email') return 'This search looks like it contains an email address, so it was not sent. Remove it and try again.';
+  if (reason === 'phone') return 'This search looks like it contains a phone number, so it was not sent. Remove it and try again.';
+  if (reason === 'id-number') return 'This search looks like it contains an ID number, so it was not sent. Remove it and try again.';
+  if (reason === 'too-long') return 'This search is longer than 500 characters. Shorten it and try again.';
+  return 'Enter a search of 1 to 500 characters.';
 };
+// Every intent follows the same rule; these names stay so callers need no change.
+publicSearchQuery.userTopic = function (value) { return publicSearchQuery(value); };
+publicSearchQuery.forIntent = function (value) { return publicSearchQuery(value); };
 // END PUBLIC SEARCH POLICY
 async function handleSearch(request, env, url) {
   if (env.DISABLE_SEARCH_PROXY === 'true' || env.DISABLE_SEARCH_PROXY === true) {
@@ -2042,10 +2020,10 @@ async function handleSearch(request, env, url) {
     return jsonResponse({ ok: false, error: 'search-not-configured' }, 503);
   }
 
-  const intent = url.searchParams.get('intent');
-  const query = publicSearchQuery.forIntent(url.searchParams.get('q'), intent);
+  const rawQuery = url.searchParams.get('q');
+  const query = publicSearchQuery(rawQuery);
   if (!query) {
-    return jsonResponse({ ok: false, error: intent === 'user-topic' ? 'user-topic-required' : 'public-query-required' }, 400);
+    return jsonResponse({ ok: false, error: 'query-refused', reason: publicSearchQuery.reason(rawQuery) }, 400);
   }
 
   const requested = Number.parseInt(url.searchParams.get('num') || url.searchParams.get('limit'), 10);

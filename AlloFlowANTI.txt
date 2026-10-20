@@ -2657,6 +2657,7 @@ let handleExportIMS = async () => { console.warn('[handleExportIMS] Fallback'); 
 let handleExportSlides = () => { console.warn('[handleExportSlides] Fallback'); };
 let handleExportStorybook = async () => { console.warn('[handleExportStorybook] Fallback'); };
 let handleExportFlashcards = () => { console.warn('[handleExportFlashcards] Fallback'); };
+let handleExportGlossaryFile = () => { console.warn('[handleExportGlossaryFile] Fallback'); return false; };
 function _upgradeExport() {
     const factory = window.AlloModules && window.AlloModules.createExport;
     if (!factory) return;
@@ -2673,6 +2674,7 @@ function _upgradeExport() {
     handleExportSlides = api.handleExportSlides;
     handleExportStorybook = api.handleExportStorybook;
     handleExportFlashcards = api.handleExportFlashcards;
+    if (typeof api.handleExportGlossaryFile === 'function') handleExportGlossaryFile = api.handleExportGlossaryFile;
     console.log('[Export] Monolith shim upgraded from CDN module.');
 }
 if (typeof window !== 'undefined') window._upgradeExport = _upgradeExport;
@@ -3262,8 +3264,9 @@ const flashcardCorrectAnswer = (item, mode, lang) => {
   if (mode === 'language' && lang) {
     const trans = item.translations && item.translations[lang];
     if (!trans) return FLASHCARD_NO_ANSWER;
-    const splitIdx = trans.indexOf(':');
-    return (splitIdx >= 0 ? trans.substring(splitIdx + 1) : trans).trim() || FLASHCARD_NO_ANSWER;
+    const text = String(trans);
+    const splitIdx = text.search(/[:：]/);
+    return (splitIdx >= 0 ? text.substring(splitIdx + 1) : text).trim() || FLASHCARD_NO_ANSWER;
   }
   return item.def || FLASHCARD_NO_ANSWER;
 };
@@ -24619,6 +24622,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
+  const [glossarySort, setGlossarySort] = useState('lesson');
   const [showSourceGen, setShowSourceGen] = useState(false);
   const [sourceTopic, setSourceTopic] = useState('');
   const [sourceTone, setSourceTone] = useState('Informative');
@@ -28456,22 +28460,45 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
   const [quizItemTypeMix, setQuizItemTypeMix] = useState(null);
   const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
+  // Rows that matched when editing began stay shown, so fixing the searched word cannot hide its own row.
+  const glossarySearchKeepRef = useRef(null);
   const filteredGlossaryData = useMemo(() => {
-    if (generatedContent?.type !== 'glossary' || !generatedContent?.data) return [];
-    const searchLower = glossarySearchTerm.toLowerCase();
-    return generatedContent?.data
-      .map((item, originalIdx) => ({ ...item, _originalIdx: originalIdx }))
+    if (generatedContent?.type !== 'glossary' || !Array.isArray(generatedContent?.data)) return [];
+    const fold = (value) => String(value).normalize('NFD').replace(/([\p{sc=Latin}\p{sc=Greek}\p{sc=Cyrillic}\p{sc=Arabic}\p{sc=Hebrew}])\p{M}+/gu, '$1').toLocaleLowerCase();
+    const query = fold(glossarySearchTerm || '').trim();
+    const keyOf = (item) => (item.entryId != null && String(item.entryId).trim()) ? 'e:' + item.entryId : 'i:' + item._originalIdx;
+    const snap = glossarySearchKeepRef.current;
+    const same = isEditingGlossary && snap && snap.term === glossarySearchTerm && snap.filter === glossaryFilter;
+    const keep = same ? snap.keys : null;
+    const rows = generatedContent.data
+      .map((item, originalIdx) => ({ ...(item || {}), _originalIdx: originalIdx }))
       .filter(item => {
-        if (glossarySearchTerm) {
-          const termMatch = item.term.toLowerCase().includes(searchLower);
-          const defMatch = item.def.toLowerCase().includes(searchLower);
-          if (!termMatch && !defMatch) return false;
+        if (keep && keep.has(keyOf(item))) return true;
+        if (query) {
+          const translations = item.translations && typeof item.translations === 'object' ? Object.values(item.translations) : [];
+          if (![item.term, item.def, ...translations].some(value => typeof value === 'string' && fold(value).includes(query))) return false;
         }
         if (glossaryFilter === 'academic' && item.tier !== 'Academic') return false;
         if (glossaryFilter === 'domain' && item.tier !== 'Domain-Specific') return false;
         return true;
       });
-  }, [generatedContent, glossarySearchTerm, glossaryFilter]);
+    if (glossarySort === 'az' || glossarySort === 'za' || glossarySort === 'tier') {
+      const frozen = same && snap.sort === glossarySort && Array.isArray(snap.order) ? new Map(snap.order.map((key, index) => [key, index])) : null;
+      const at = (item) => frozen.has(keyOf(item)) ? frozen.get(keyOf(item)) : frozen.size;
+      const termOf = (item) => String(item.term == null ? '' : item.term).trim();
+      const rank = (item) => item.tier === 'Academic' ? 0 : item.tier === 'Domain-Specific' ? 1 : 2;
+      const compare = (a, b) => {
+        if (glossarySort === 'tier') return rank(a) - rank(b);
+        const ta = termOf(a), tb = termOf(b);
+        if (!ta || !tb) return (ta ? 0 : 1) - (tb ? 0 : 1);
+        const order = ta.localeCompare(tb, undefined, { sensitivity: 'base', numeric: true });
+        return glossarySort === 'za' ? -order : order;
+      };
+      rows.sort((a, b) => frozen ? at(a) - at(b) : compare(a, b));
+    }
+    glossarySearchKeepRef.current = isEditingGlossary ? { term: glossarySearchTerm, filter: glossaryFilter, sort: glossarySort, keys: new Set(rows.map(keyOf)), order: rows.map(keyOf) } : null;
+    return rows;
+  }, [generatedContent, glossarySearchTerm, glossaryFilter, glossarySort, isEditingGlossary]);
   const getReadableContent = useCallback(() => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.getReadableContent === 'function') {
@@ -40480,7 +40507,71 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       });
     throw new Error("[handleCardAudioSequence] AudioHelpers module not loaded - reload the page");
   };
-  const handleGlossaryChange = (...__a) => _alloHostHandlers().handleGlossaryChange(...__a);
+  const handleGlossaryChange = (index, field, value, lang = null) => {
+    const before = generatedContent?.type === 'glossary' && Array.isArray(generatedContent.data) ? generatedContent.data[index] : null;
+    const result = _alloHostHandlers().handleGlossaryChange(index, field, value, lang);
+    const fingerprint = window.AlloModules?.GlossaryView?.translationFingerprint;
+    if (!before || typeof fingerprint !== 'function' || (!lang && field !== 'term' && field !== 'def') || (result && typeof result.then === 'function')) return result;
+    const mark = fingerprint(before), sources = before.translationSource || {};
+    const langs = lang ? (String(value || '').trim() && sources[lang] !== mark ? [lang] : [])
+      : Object.keys(before.translations || {}).filter(key => String(before.translations[key] || '').trim() && !sources[key]);
+    if (!langs.length) return result;
+    const id = generatedContent.id;
+    const stamp = resource => {
+      const item = resource && resource.id === id && Array.isArray(resource.data) ? resource.data[index] : null;
+      if (!item) return resource;
+      const data = resource.data.slice();
+      data[index] = { ...item, translationSource: { ...(item.translationSource || {}), ...Object.fromEntries(langs.map(key => [key, mark])) } };
+      return { ...resource, data };
+    };
+    setGeneratedContent(stamp);
+    setHistory(prev => prev.map(stamp));
+    return result;
+  };
+  const handleRetryGlossaryTranslation = async (index, lang) => {
+    const item = generatedContent?.type === 'glossary' && Array.isArray(generatedContent.data) ? generatedContent.data[index] : null;
+    const fingerprint = window.AlloModules?.GlossaryView?.translationFingerprint;
+    if (!isTeacherMode || !item || !String(lang || '').trim() || typeof fingerprint !== 'function') return { ok: false, reason: 'unavailable' };
+    if (window.__alloStudentAiDisabled === true || callGemini?._alloQrBlocked === true) return { ok: false, reason: 'ai-disabled' };
+    if (typeof callGemini !== 'function' || aiCapability?.text === false) return { ok: false, reason: 'ai-unavailable' };
+    try {
+      if (!window.AlloModules?.GlossaryHelpers) await _alloAwaitModules([['GlossaryHelpersModule', 'GlossaryHelpers']], 'this tool');
+    } catch (_) { return { ok: false, reason: 'failed' }; }
+    const task = _alloBeginGlossaryTask(index, ['term', 'def'], 'translation:' + lang);
+    if (!task) return { ok: false, reason: 'unavailable' };
+    try {
+      const translated = await translateResourceItem({ type: 'glossary', title: 'Glossary', data: [{ term: item.term, def: item.def }] }, lang);
+      const row = Array.isArray(translated?.data) ? translated.data[0] : null;
+      const map = row && row.translations && typeof row.translations === 'object' ? row.translations : {};
+      const found = Object.keys(map).find(key => key.toLowerCase() === String(lang).toLowerCase());
+      const value = found && typeof map[found] === 'string' ? map[found].trim() : '';
+      if (!value) return { ok: false, reason: 'failed' };
+      const saved = task.commit(entry => ({ translations: { ...(entry.translations || {}), [lang]: value }, translationSource: { ...(entry.translationSource || {}), [lang]: fingerprint(entry) } }));
+      return saved ? { ok: true } : { ok: false, reason: 'changed' };
+    } catch (error) {
+      warnLog('Glossary translation retry failed:', error);
+      return { ok: false, reason: error?.code === 'allo-qr-ai-disabled' ? 'ai-disabled' : 'failed' };
+    } finally {
+      task.finish();
+    }
+  };
+  const handleMoveGlossaryItem = (index, delta) => {
+    const origin = generatedContent;
+    const entry = isTeacherMode && origin?.type === 'glossary' && Array.isArray(origin.data) ? origin.data[index] : null;
+    if (!entry || !Number.isInteger(delta) || index + delta < 0 || index + delta >= origin.data.length) return false;
+    const id = entry.entryId || entry.glossaryEntryId || entry.id;
+    const move = resource => {
+      const at = resource && resource.id === origin.id && Array.isArray(resource.data)
+        ? resource.data.findIndex(item => item === entry || (id != null && item && (item.entryId || item.glossaryEntryId || item.id) === id)) : -1;
+      if (at < 0 || at + delta < 0 || at + delta >= resource.data.length) return resource;
+      const data = resource.data.slice();
+      data.splice(at + delta, 0, data.splice(at, 1)[0]);
+      return { ...resource, data };
+    };
+    setGeneratedContent(move);
+    setHistory(prev => prev.map(move));
+    return true;
+  };
   const handleGlossarySelectionChange = (...__a) => _alloHostHandlers().handleGlossarySelectionChange(...__a);
   const handleGlossarySelectAll = (...__a) => _alloHostHandlers().handleGlossarySelectAll(...__a);
   // Narrow dependency bundle for glossary image creation. Keeping this local
@@ -43309,6 +43400,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     includeEtymology, filteredGlossaryData,
                     isEditingGlossary, isAddingTerm, newGlossaryTerm,
                     glossarySearchTerm, glossaryFilter, glossaryImageSize, glossaryRefinementInputs,
+                    glossarySort, setGlossarySort,
                     flashcardIndex, flashcardMode, flashcardLang, standardDeckLang,
                     isFlashcardQuizMode, isFlashcardFlipped, showFlashcardImages, setQuizSelectedOption,
                     flashcardScore, flashcardOptions, flashcardFeedback, quizSelectedOption,
@@ -43333,6 +43425,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     beginGlossaryImageTask: index => { const task = _alloBeginGlossaryTask(index, ['term', 'image'], 'image'); if (task) task.busy(setIsGeneratingTermImage, false); return task; },
                     handleRefineGlossaryImage, handleGlossaryChange, handleSpeak, handleDownloadAudio,
                     handleCardAudioSequence, handleExportFlashcards, handleQuizOptionClick,
+                    handleExportGlossaryFile,
                     // The view paints the green "this was the right one" highlight; it must
                     // use the same answer the grader used, not re-derive it from item.def.
                     flashcardCorrectAnswer,
@@ -43346,6 +43439,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleCloseWordScramble, closeStudentBingo, handleToggleShowWordSearchAnswers, handlePrintGame,
                     handleSetGameModeToNull, handleToggleShowHealthCheckPanel,
                     handleGlossarySelectAll, handleGlossarySelectionChange, handleDeleteGlossaryItem,
+                    handleRetryGlossaryTranslation, handleMoveGlossaryItem,
                     fetchReplacementSuggestion, toggleLetterSelection,
                     handleGameScoreUpdate, handleGameCompletion, handleScoreUpdate, handleAiSafetyFlag,
                     handleGenerateBingo, generateWordSearch,

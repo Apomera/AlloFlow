@@ -3,6 +3,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
+import { sliceBetween } from './helpers/anchored_slice.js';
 const source = fs.readFileSync(path.resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
 const helperStart = source.indexOf('    function buildSyllableOptions(');
 const helperEnd = source.indexOf('    const SyllableBlendingView =', helperStart);
@@ -133,9 +134,9 @@ test('AAC base64 images use valid data URLs', () => {
   assert.equal(all(output).find(node => node.type === 'img').props.src, 'data:image/png;base64,abc123');
 });
 test('blending render does not include the target-revealing generic prompt', () => {
-  const start = source.indexOf('          case "syllable_blending": {');
-  const end = source.indexOf('          case "syllable_counting": {', start);
-  const rendering = source.slice(start, end);
+  // The activity renderer's own cases: the Present-to-class view has ones with the same text.
+  const renderer = sliceBetween(source, 'const renderActivityContent = () => {', null, { file: 'word_sounds_module.js' });
+  const rendering = sliceBetween(renderer, '          case "syllable_blending": {', '          case "syllable_counting": {', { file: 'word_sounds_module.js' });
   assert(!rendering.includes('renderPrompt()'));
   assert(rendering.includes('onPlaySyllables:'));
   assert(rendering.includes('isPlayingAudio || isSyllableSequenceBusy'));

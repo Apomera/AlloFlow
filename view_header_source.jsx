@@ -752,6 +752,19 @@ function HeaderBar(props) {
       : activeView === 'input'
         ? (t('tools.source') || 'Source Material')
         : (compactViewFallback || (t('common.ready') || 'Ready'));
+  // One-click way back after "Save & exit"; the Start & setup dialog stays the full menu.
+  const guidedResumeChip = (canUseTeacherGuidedMode && !guidedMode && _guidedHasProgress) ? (
+    <button type="button"
+      onClick={startGuidedModeFromHeader}
+      data-help-key="header_guided_resume_chip"
+      className="inline-flex shrink-0 items-center justify-center gap-1.5 min-h-[2.5rem] rounded-xl border border-emerald-300/50 bg-emerald-500/20 px-3 text-xs font-black text-white hover:bg-emerald-500/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 transition-colors"
+      title={t('toolbar.guided_mode_resume_desc') || 'Continue your lesson from your saved step.'}
+    >
+      <MapIcon size={16} aria-hidden="true" />
+      <span>{t('toolbar.guided_resume_short') || 'Resume guided'}</span>
+      <span className="hidden sm:inline font-semibold text-emerald-100">{(t('toolbar.guided_resume_step') || 'Step {n}').replace('{n}', String((typeof guidedStep === 'number' ? guidedStep : 0) + 1))}</span>
+    </button>
+  ) : null;
   const openJoinFromCompactHeader = () => {
     // The named, focus-trapped Join dialog lives in the full command surface.
     // Mark the handoff before expanding. The post-commit effect above focuses
@@ -1043,6 +1056,7 @@ function HeaderBar(props) {
                     <span className="hidden sm:inline max-w-[10rem] truncate">{t('toolbar.start_setup') || 'Start & setup'}</span>
                   </button>
                 )}
+                {guidedResumeChip}
                 <button
                   type="button"
                   onClick={toggleHeaderCollapsed}
@@ -1730,6 +1744,7 @@ function HeaderBar(props) {
                             >
                               <Sparkles size={20} />
                             </button>
+                            {guidedResumeChip}
                             </>
                         )}
                         <button type="button"

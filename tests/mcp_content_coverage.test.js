@@ -51,3 +51,13 @@ it('retains numeric punctuation so decimal, sign, percentage and fraction change
  expect(P.assessSourceCoverage({sourceText:'120.00',outputHtml:'<p>12000</p>'})).toMatchObject({status:'review_required',missingTokens:1});
  const result=P.assessSourceCoverage({sourceText:'The value is -1.5, with 15% and 1/2.',outputHtml:'<p>The value is 15, with 15 and 1 2.</p>'});expect(result.reviewRequired).toBe(true);expect(result.missingTokens).toBeGreaterThanOrEqual(4);
 });
+it('an OCR transcript\'s markdown table syntax is layout, not missing text; real cell words still count (1954 scan, 2026-10-20)',()=>{
+ const md='Schedule B\n\n| Name of payor | Amount |\n| --- | --- |\n| Acme Mills | 120 |\n| Smith Bank | 45 |';
+ const html='<h2>Schedule B</h2><table><tr><th>Name of payor</th><th>Amount</th></tr><tr><td>Acme Mills</td><td>120</td></tr><tr><td>Smith Bank</td><td>45</td></tr></table>';
+ expect(P.assessSourceCoverage({sourceText:md,outputHtml:html,method:'vision-ocr'})).toMatchObject({status:'matched',missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:md,outputHtml:html.replace('Smith Bank','Smith'),method:'vision-ocr'})).toMatchObject({status:'review_required',missingTokens:1});
+ // born-digital text keeps every symbol it printed
+ expect(P.assessSourceCoverage({sourceText:'Home | About',outputHtml:'<p>Home About</p>',method:'pdfjs'})).toMatchObject({missingTokens:1});
+ // a fill-in blank glued to a number ("195__" for the printed ", 195") is the same number
+ expect(P.assessSourceCoverage({sourceText:'ending 195',outputHtml:'<p>ending 195__</p>',method:'vision-ocr'})).toMatchObject({missingTokens:0});
+});

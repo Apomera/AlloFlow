@@ -2107,8 +2107,11 @@ const _ensureVisualGenerationApi = async () => {
           finish();
       });
   };
-const handlePrintGame = () => {
+// The answer key prints only when asked for: copies for a class must not carry it.
+// An onClick event arrives as the first argument, so only `true` counts.
+const handlePrintGame = (withAnswerKey) => {
       if (!__d.gameData || !Array.isArray(__d.gameData.grid) || !__d.gameData.grid.length) return;
+      const includeKey = withAnswerKey === true;
       const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
       const solutions = new Set(__d.gameData.solutions || []);
       const columns = Math.max(1, ...__d.gameData.grid.map(row => row.length));
@@ -2121,7 +2124,7 @@ const handlePrintGame = () => {
       // and depends on app-only Tailwind styles that a new window does not have.
       win.document.write('<!doctype html><html lang="' + esc(document.documentElement.lang || 'en') + '" dir="' + direction + '"><head><meta charset="utf-8"><title>' + esc(__d.t('glossary.print_puzzle_title')) + '</title><style>' +
           '@page{margin:12mm}*{box-sizing:border-box}body{font:12pt/1.4 Arial,sans-serif;margin:0;color:#000;background:#fff}h1,h2,h3{text-align:center}h1,h2{font-size:20pt;margin:0 0 12pt}h3{font-size:12pt;font-weight:normal}.student-version,.teacher-version{max-width:180mm;margin:0 auto}.teacher-version{break-before:page}.puzzle-grid{border-collapse:collapse;table-layout:fixed;width:100%;max-width:160mm;margin:12pt auto;break-inside:avoid}.puzzle-grid td{border:1px solid #777;text-align:center;padding:0;width:' + (100 / columns) + '%}.puzzle-grid td span{display:flex;align-items:center;justify-content:center;aspect-ratio:1;font:700 ' + Math.min(16, 360 / columns) + 'pt monospace}.solution span{outline:2px solid #000;outline-offset:-3px;border-radius:50%}.word-list{display:flex;flex-wrap:wrap;justify-content:center;gap:8pt 18pt;padding:0;list-style:none}.word-list li{overflow-wrap:anywhere;max-width:100%}.name-line{display:flex;justify-content:space-between;font-size:11pt;margin-bottom:14pt}' +
-          '</style></head><body><section class="student-version"><h1>' + esc(__d.t('glossary.word_search_title')) + '</h1><div class="name-line"><span>' + esc(__d.t('matching.print_name')) + ': ____________________</span><span>' + esc(__d.t('matching.print_date')) + ': ______________</span></div>' + grid(false) + '<h3>' + esc(__d.t('glossary.word_search_find')) + '</h3>' + words + '</section><section class="teacher-version"><h2>' + esc(__d.t('glossary.print_answer_key')) + '</h2><h3>' + esc(__d.t('glossary.print_teacher_copy')) + '</h3>' + grid(true) + words + '</section></body></html>');
+          '</style></head><body><section class="student-version"><h1>' + esc(__d.t('glossary.word_search_title')) + '</h1><div class="name-line"><span>' + esc(__d.t('matching.print_name')) + ': ____________________</span><span>' + esc(__d.t('matching.print_date')) + ': ______________</span></div>' + grid(false) + '<h3>' + esc(__d.t('glossary.word_search_find')) + '</h3>' + words + '</section>' + (includeKey ? '<section class="teacher-version"><h2>' + esc(__d.t('glossary.print_answer_key')) + '</h2><h3>' + esc(__d.t('glossary.print_teacher_copy')) + '</h3>' + grid(true) + words + '</section>' : '') + '</body></html>');
       win.document.close();
       setTimeout(() => win.print(), 500);
   };

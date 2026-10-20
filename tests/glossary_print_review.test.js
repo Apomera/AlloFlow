@@ -1,6 +1,7 @@
 import { beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { React } from './helpers/games_live_harness.js';
 import { loadAlloModule } from './setup.js';
+import { readFileSync } from 'node:fs';
 
 beforeAll(() => { window.React = React; loadAlloModule('host_handlers_module.js'); loadAlloModule('doc_pipeline_module.js'); loadAlloModule('export_module.js'); });
 afterEach(() => vi.restoreAllMocks());
@@ -9,11 +10,13 @@ function pack(options={}) {
   const pipeline=window.AlloModules.createDocPipeline({callGemini:async()=>'{}',callGeminiVision:async()=>'{}',callImagen:async()=>null,addToast:()=>{},t:key=>key,isRtlLang:()=>false,updateExportPreview:()=>{},getDefaultTitle:()=> 'Vocabulary',state:{}});
   return pipeline.generateFullPackHTML([glossary],'Print QA',true,{}, {includeGlossary:true,includeTeacherKey:false,annotations:[],...options});
 }
-function printWordSearch(gameData) {
+// withAnswerKey: what the teacher's "Answer key" button passes. The plain Print
+// button passes its click event, which must not count as asking for the key.
+function printWordSearch(gameData, withAnswerKey=true) {
   let html=''; const print=vi.fn();
   vi.spyOn(window,'open').mockReturnValue({document:{write:value=>{html+=value},close:vi.fn()},print});
   vi.spyOn(globalThis,'setTimeout').mockImplementation(fn=>{fn();return 1;});
-  window.AlloModules.createHostHandlers({gameData,t:key=>key,addToast:vi.fn()}).handlePrintGame();
+  window.AlloModules.createHostHandlers({gameData,t:key=>key,addToast:vi.fn()}).handlePrintGame(withAnswerKey);
   return {doc:new DOMParser().parseFromString(html,'text/html'),print};
 }
 describe('glossary print output', () => {
@@ -36,6 +39,13 @@ describe('glossary print output', () => {
     expect(doc.querySelectorAll('.teacher-version .solution')).toHaveLength(1);
     expect(print).toHaveBeenCalledOnce();
   });
+  it('prints only the student copy from the plain Print button (a click event is not a request for the key)',()=>{
+    const {doc,print}=printWordSearch(glossary.gameData,{type:'click',target:{}});
+    expect(doc.querySelectorAll('.student-version td')).toHaveLength(4);
+    expect(doc.querySelector('.teacher-version')).toBeNull();
+    expect(doc.querySelector('.solution')).toBeNull();
+    expect(print).toHaveBeenCalledOnce();
+  });
   it('preserves RTL direction on both puzzle grids and escapes term markup',()=>{
     const {doc}=printWordSearch({...glossary.gameData,isRtl:true,words:['<img src=x onerror=alert(1)>'],grid:[['<','&']]});
     expect([...doc.querySelectorAll('table')].map(t=>t.dir)).toEqual(['rtl','rtl']);
@@ -50,7 +60,10 @@ describe('glossary print output', () => {
   });
   it('empty flashcard data reports a helpful message without downloading',()=>{
     const addToast=vi.fn(),createUrl=vi.spyOn(URL,'createObjectURL');
-    window.AlloModules.createExport({liveRef:{current:{generatedContent:{type:'glossary'},t:key=>key,addToast}},escapeXml:s=>s}).handleExportFlashcards();
+    // The message is translatable now; resolve keys like the host does (a key echo would hide the fallback).
+    const strings=JSON.parse(readFileSync('ui_strings.js','utf8'));
+    const t=key=>{const value=key.split('.').reduce((o,k)=>o&&o[k],strings);return typeof value==='string'?value:key;};
+    window.AlloModules.createExport({liveRef:{current:{generatedContent:{type:'glossary'},t,addToast}},escapeXml:s=>s}).handleExportFlashcards();
     expect(createUrl).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith('Add glossary terms before exporting flashcards.','info');
   });

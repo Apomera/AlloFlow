@@ -10,7 +10,8 @@ describe('Glossary Health Check controls', () => {
     expect(source).toContain('type="button"\n    onClick={handleToggleShowHealthCheckPanel}');
     // Visible "Re-analyze" is the name (WCAG 2.5.3); a generic aria-label must not replace it.
     expect(source).not.toContain("aria-label={t('common.re_run_analysis')}");
-    expect(source).toContain('<RefreshCw size={14} aria-hidden="true" /> Re-analyze</button>');
+    expect(source.includes(`<RefreshCw size={14} aria-hidden="true" /> {glossaryText('glossary_health.reanalyze', 'Re-analyze')}</button>`), 'visible Re-analyze label').toBe(true);
+    expect(JSON.parse(readFileSync('ui_strings.js', 'utf8')).glossary_health.reanalyze).toBe('Re-analyze');
     expect(source).toContain('type="button"\n      aria-label={t(\'common.dismiss_analysis\')}');
   });
 

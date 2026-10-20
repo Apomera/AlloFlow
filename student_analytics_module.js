@@ -1031,6 +1031,21 @@ try {
     };
   }
   function _acRestoreImportedStudents(raw) {
+    // Quantity Discrimination records saved before the runner fix of 18 Oct
+    // 2026 are invalid: the runner drew both choice buttons blank (it read a/b;
+    // bank items are left/right), so every choice was undefined and scored
+    // wrong. The record keeps only counts, so the evidence is that bug's
+    // signature: 0 correct, no formVersion (every record saved since carries
+    // one) and, if item responses were kept, no recorded choice. Flagged in
+    // the record, never deleted.
+    function flagPreFixRecord(h) {
+      if (!h || typeof h !== 'object' || h.invalid) return h;
+      if ((h.type || h.activity) !== 'quantity_discrimination') return h;
+      if (h.formVersion !== undefined && h.formVersion !== null) return h;
+      if (Number(h.correct) !== 0) return h;
+      if (Array.isArray(h.problems) && h.problems.some(function(p) { return p && p.studentAnswer !== undefined && p.studentAnswer !== null; })) return h;
+      return Object.assign({}, h, { invalid: true, invalidReason: 'qd-blank-choices-before-2026-10-18' });
+    }
     try {
       var parsed = JSON.parse(raw || '[]');
       if (!Array.isArray(parsed)) return [];
@@ -1040,11 +1055,93 @@ try {
         return Object.assign({}, s, {
           stats: (s.stats && typeof s.stats === 'object') ? s.stats : {},
           safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags : [],
-          screeningHistory: Array.isArray(s.screeningHistory) ? s.screeningHistory : [],
+          screeningHistory: Array.isArray(s.screeningHistory) ? s.screeningHistory.map(flagPreFixRecord) : [],
           restored: true
         });
       });
     } catch (e) { return []; }
+  }
+  // Word Sounds class results. Mastery is the student report's rule: at least
+  // five independent attempts at 80% or better independent accuracy.
+  function _acWsSoundMastered(entry) {
+    var attempts = Number(entry && entry.independentAttempts) || 0;
+    var accuracy = Number(entry && entry.independentAccuracy);
+    return attempts >= 5 && Number.isFinite(accuracy) && accuracy >= 80;
+  }
+  function _acLocalDate(value) {
+    var d = value instanceof Date ? value : new Date(value);
+    if (isNaN(d.getTime())) return '';
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // The labels Word Sounds keys phonemeMastery by (WS_CORE.phonemeLabels).
+  function _acWsSoundLabels(phonemes) {
+    var out = [];
+    (Array.isArray(phonemes) ? phonemes : []).forEach(function(value) {
+      var label = typeof value === 'string' ? value : value && typeof value === 'object'
+        ? [value.grapheme, value.phoneme, value.ipa].find(function(v) { return typeof v === 'string' && v.trim(); }) : '';
+      label = typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+      if (label && out.indexOf(label) < 0) out.push(label);
+    });
+    return out;
+  }
+  // One row per student x sound from phonemeMastery, a per-sound summary, and
+  // how many students had no per-sound data. Last practiced comes from the
+  // saved history rows, so it is blank once those rows have been trimmed.
+  function _acWordSoundsResults(students) {
+    var rows = [];
+    var included = 0;
+    var leftOut = 0;
+    var byLabel = function(a, b) { return a.localeCompare(b); };
+    (Array.isArray(students) ? students : []).forEach(function(s) {
+      var ws = s && s.data && s.data.wordSoundsState;
+      var mastery = ws && ws.phonemeMastery && typeof ws.phonemeMastery === 'object' ? ws.phonemeMastery : {};
+      var last = {};
+      (ws && Array.isArray(ws.history) ? ws.history : []).forEach(function(h) {
+        var when = h ? new Date(h.timestamp || h.date).getTime() : NaN;
+        if (!Number.isFinite(when)) return;
+        _acWsSoundLabels(h.phonemes).forEach(function(sound) { if (!(last[sound] >= when)) last[sound] = when; });
+      });
+      var mine = [];
+      Object.keys(mastery).sort(byLabel).forEach(function(sound) {
+        var v = mastery[sound];
+        var attempts = v && typeof v === 'object' ? Number(v.total) || 0 : 0;
+        if (attempts <= 0) return;
+        var correct = Math.max(0, Math.min(attempts, Number(v.correct) || 0));
+        mine.push({ student: String(s.name || s.nickname || ''), sound: sound, attempts: attempts, correct: correct,
+          accuracy: Math.round(correct / attempts * 100), mastered: _acWsSoundMastered(v),
+          lastPracticed: last[sound] ? _acLocalDate(last[sound]) : '' });
+      });
+      if (mine.length) { included++; rows = rows.concat(mine); } else leftOut++;
+    });
+    var groups = {};
+    rows.forEach(function(r) {
+      var g = groups[r.sound] || (groups[r.sound] = { students: 0, accuracy: 0, mastered: 0 });
+      g.students++;
+      g.accuracy += r.accuracy;
+      if (r.mastered) g.mastered++;
+    });
+    var summary = Object.keys(groups).sort(byLabel).map(function(sound) {
+      var g = groups[sound];
+      return { sound: sound, students: g.students, meanAccuracy: Math.round(g.accuracy / g.students), mastered: g.mastered };
+    });
+    return { rows: rows, summary: summary, included: included, leftOut: leftOut };
+  }
+  // RFC 4180 quoting; text a spreadsheet would run as a formula stays text.
+  function _acCsvCell(value) {
+    var text = value == null ? '' : String(value);
+    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  function _acDownloadCsv(rows, filename) {
+    var csv = String.fromCharCode(0xFEFF) + rows.map(function(r) { return r.map(_acCsvCell).join(','); }).join('\r\n') + '\r\n';
+    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1500);
   }
   function _acRestoreIdentityLinks(raw) {
     try {
@@ -1147,7 +1244,9 @@ try {
   var _AI = window.AlloIcons || {};
   var _icon = function(name) { return window[name] || _AI[name] || lucide[name] || function() { return null; }; };
   var AlertCircle = _icon('AlertCircle');
+  var Award = _icon('Award');
   var BarChart2 = _icon('BarChart2');
+  var CheckCircle = _icon('CheckCircle');
   var BarChart3 = _icon('BarChart3');
   var ChevronLeft = _icon('ChevronLeft');
   var ClipboardList = _icon('ClipboardList');
@@ -1651,6 +1750,9 @@ try {
     const [mnProbeTimer, setMnProbeTimer] = React.useState(0);
     const mnProbeTimerRef = React.useRef(null);
     const mnProbeInputRef = React.useRef(null);
+    // The administered grade, form and form version, captured at Start, so the
+    // saved record names the form given even if the pickers change after.
+    const mnProbeFormRef = React.useRef(null);
     React.useEffect(() => {
       if (mnProbeActive && mnProbeTimer === 0 && mnProbeTimerRef.current === null && mnProbeProblems.length > 0 && !mnProbeResults) {
         const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
@@ -1670,6 +1772,12 @@ try {
     const [qdProbeResults, setQdProbeResults] = React.useState(null);
     const [qdProbeTimer, setQdProbeTimer] = React.useState(0);
     const qdProbeTimerRef = React.useRef(null);
+    const qdProbeFormRef = React.useRef(null);
+    const probeFormVersionLabel = (info) => {
+      const v = t('probes.form_with_version');
+      const tpl = v && v !== 'probes.form_with_version' ? v : 'Form {form} v{version}';
+      return tpl.split('{form}').join(String(info.form)).split('{version}').join(String(info.formVersion));
+    };
     React.useEffect(() => {
       if (qdProbeActive && qdProbeTimer === 0 && qdProbeTimerRef.current === null && qdProbeProblems.length > 0 && !qdProbeResults) {
         const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
@@ -2680,28 +2788,26 @@ try {
       };
     };
     const exportScreeningCSV = () => {
-      const rows = [['Student', 'Grade', 'Form', 'Date', 'Subtest', 'Correct', 'Total', 'Accuracy%', 'Items/min', 'Risk Level']];
+      // t() hands back the key when a string is missing.
+      const label = (key, fallback) => { const v = t(key); return v && v !== key ? v : fallback; };
+      const invalidNote = label('probes.invalid_pre_fix_note', 'invalid: recorded before the fix on 18 Oct 2026');
+      const rows = [['Student', 'Grade', 'Form', 'Date', 'Subtest', 'Correct', 'Total', 'Accuracy%', 'Items/min', 'Risk Level', 'Note']];
+      let invalidRows = 0;
       importedStudents.forEach(s => {
         (s.screeningHistory || []).forEach(h => {
-          const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
           // Word Sounds probe results carry `date`, not `timestamp`.
           const when = h.timestamp || h.date;
-          rows.push([s.nickname || s.name, h.grade || '', h.form || '', when ? new Date(when).toLocaleDateString() : '', h.activity || '', h.correct || 0, h.total || 0, h.accuracy || 0, h.itemsPerMin || 0, risk]);
+          // Missing Number and Quantity Discrimination records name the measure in `type`.
+          const row = [s.nickname || s.name, h.grade || '', (h.form || '') + (h.form && h.formVersion ? ' v' + h.formVersion : ''), when ? new Date(when).toLocaleDateString() : '', h.activity || h.type || '', h.correct || 0, h.total || 0];
+          // A record flagged invalid stays listed, without accuracy or a risk level.
+          if (h.invalid) { invalidRows++; rows.push(row.concat(['', '', '', invalidNote])); return; }
+          const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
+          rows.push(row.concat([h.accuracy || 0, h.itemsPerMin || 0, risk, '']));
         });
       });
-      const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
-      const blob = new Blob([csv], {
-        type: 'text/csv'
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      if (invalidRows) rows.push([label('probes.invalid_pre_fix_report_line', 'Rows marked invalid are Quantity Discrimination results recorded before the fix on 18 Oct 2026: the probe showed blank answer buttons, so every choice scored as wrong. They are listed but left out of accuracy and risk levels.')]);
       const today = new Date();
-      a.download = 'screening_results_' + today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0') + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      _acDownloadCsv(rows, 'screening_results_' + today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0') + '.csv');
       addToast(t('toasts.screening_csv_exported'), 'success');
     };
     const generateRTICSV = async () => {
@@ -2712,20 +2818,44 @@ try {
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
         const tot = s.data?.timeOnTask?.totalSessionMinutes || 0;
-        return [s.name, new Date().toLocaleDateString(), 'Review group ' + rti.tier, s.stats.quizAvg + '%', s.stats.wsAccuracy + '%', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), '"' + rti.recommendations.join('; ').replace(/"/g, "'") + '"'].join(',');
+        return [s.name, new Date().toLocaleDateString(), 'Review group ' + rti.tier, s.stats.quizAvg + '%', s.stats.wsAccuracy + '%', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), rti.recommendations.join('; ')];
       });
-      const csv = [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csv], {
-        type: 'text/csv;charset=utf-8;'
-      });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `RTI_Report_CONFIDENTIAL_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      // Names are quoted (a comma used to shift every column) and the date is local, not UTC.
+      const today = new Date();
+      _acDownloadCsv([headers, ...rows], 'RTI_Report_CONFIDENTIAL_' + today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0') + '.csv');
     };
+    const wsExportLabel = (key, fallback, params) => {
+      let text = '';
+      try { text = t(key, params); } catch (e) { text = ''; }
+      if (typeof text !== 'string' || !text || text === key) text = fallback;
+      return text.replace(/\{(\w+)\}/g, (token, name) => params && Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : token);
+    };
+    // Word Sounds results by sound: 'results' is the long file (student x
+    // sound), 'summary' the per-sound class file. Headers stay English, like
+    // the screening CSV, so spreadsheet imports can key on them.
+    const exportWordSoundsCSV = part => {
+      const result = _acWordSoundsResults(importedStudents);
+      if (!result.rows.length) {
+        addToast(wsExportLabel('class_analytics.ws_export_none', 'No imported student has Word Sounds results by sound yet.'), 'warning');
+        return;
+      }
+      const stamp = _acLocalDate(new Date());
+      if (part === 'summary') {
+        _acDownloadCsv([['Sound', 'Students practicing', 'Mean accuracy %', 'Students mastered']].concat(result.summary.map(g => [g.sound, g.students, g.meanAccuracy, g.mastered])), 'word_sounds_summary_' + stamp + '.csv');
+      } else {
+        _acDownloadCsv([['Student', 'Sound', 'Attempts', 'Correct', 'Accuracy %', 'Mastered', 'Last practiced']].concat(result.rows.map(r => [r.student, r.sound, r.attempts, r.correct, r.accuracy, r.mastered ? 'Yes' : 'No', r.lastPracticed])), 'word_sounds_results_' + stamp + '.csv');
+      }
+      const done = wsExportLabel('class_analytics.ws_export_done', 'Word Sounds results exported. Students included: {count}.', { count: result.included });
+      addToast(result.leftOut ? done + ' ' + wsExportLabel('class_analytics.ws_export_left_out', 'Students left out because they have no Word Sounds results: {count}.', { count: result.leftOut }) : done, 'success');
+    };
+    const renderWordSoundsExportButtons = () => React.createElement(React.Fragment, null,
+      [['results', 'class_analytics.ws_export_button', 'Export Word Sounds results (CSV)'], ['summary', 'class_analytics.ws_summary_button', 'Word Sounds summary by sound (CSV)']].map(([part, key, english]) => React.createElement("button", {
+        key: part,
+        type: "button",
+        onClick: () => exportWordSoundsCSV(part),
+        "data-ws-results-export": part,
+        className: "min-h-11 bg-teal-700 hover:bg-teal-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
+      }, React.createElement(Download, { size: 16 }), wsExportLabel(key, english))));
     const exportFluencyCSV = () => {
       const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
       if (fluencyRecords.length === 0) {
@@ -6250,13 +6380,7 @@ try {
       const level = sessionData?.globalLevel || 1;
       const badges = sessionData?.wordSoundsBadges || {};
       const badgeCount = Object.keys(badges).length;
-      const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => {
-        const independentAttempts = Number(v?.independentAttempts) || 0;
-        const independentAccuracy = Number(v?.independentAccuracy);
-        return independentAttempts >= 5 &&
-          Number.isFinite(independentAccuracy) &&
-          independentAccuracy >= 80;
-      });
+      const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => _acWsSoundMastered(v));
       const allSnapshots = sessionData?.progressSnapshots || [];
       const dateRange = sessionData?.dateRange || {};
       const snapshots = allSnapshots.filter(s => {
@@ -6311,9 +6435,11 @@ try {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'my_learning_journey_' + new Date().toISOString().split('T')[0] + '.html';
+      // Local date (UTC read as tomorrow in the evening); the link outlives the click.
+      const today = new Date();
+      a.download = 'my_learning_journey_' + today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0') + '.html';
       a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
       if (addToast) addToast(t('toasts.1f4ca_progress_report_has_been'), 'success');
     };
     // WCAG 2.1.2 / 4.1.2: focus save+restore, a Tab focus-trap, and Escape-to-close
@@ -6347,8 +6473,89 @@ try {
       if (node) node.addEventListener('keydown', onKey);
       return function() { if (node) node.removeEventListener('keydown', onKey); alloRestoreFocus(); };
     }, [isOpen]);
-    if (!isOpen) return null;
-    return React.createElement(React.Fragment, null, ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+    // Screening battery overlays, moved here from the glossary view (2026-10-19).
+    // That view never received classifyScreeningRisk / advanceRoster /
+    // exportScreeningCSV, so a finished battery crashed the next glossary opened,
+    // and the results showed nowhere else. They render here, where the battery
+    // runs, over whatever view is open, whether or not this panel is open.
+    var screenerDialogRef = React.useRef(null);
+    var closeScreenerResults = function() { setScreenerSession(null); setRosterQueue([]); };
+    React.useEffect(function() {
+      if (!screenerSession || screenerSession.status !== 'complete') return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function() {
+        var first = screenerDialogRef.current && screenerDialogRef.current.querySelector('button:not([disabled])');
+        if (first) first.focus();
+      }, 0);
+      return function() {
+        clearTimeout(timer);
+        if (previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [screenerSession && screenerSession.status]);
+    var onScreenerKeyDown = function(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeScreenerResults(); return; }
+      if (e.key !== 'Tab' || !screenerDialogRef.current) return;
+      var f = screenerDialogRef.current.querySelectorAll('button:not([disabled])');
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    var screenerLabel = function(key, fallback) { var v = t(key); return v && v !== key ? v : fallback; };
+    var renderScreenerOverlays = function() {
+      if (!screenerSession || (screenerSession.status !== 'interstitial' && screenerSession.status !== 'complete')) return null;
+      var h = React.createElement;
+      var progressLabel = t('common.progress') || '';
+      var doneLabel = t('common.done') || '';
+      var nextLabel = t('flashcards.next') || t('common.next_flashcard') || '';
+      var skipLabel = t('common.skip') || '';
+      var subtests = screenerSession.subtests || [];
+      var cap = function(s) { return typeof s === 'string' ? s.replace(/^./, function(c) { return c.toUpperCase(); }) : ''; };
+      var shell = "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none theme-" + (theme || 'light');
+      var overlay;
+      if (screenerSession.status === 'interstitial') {
+        overlay = h("div", { role: "presentation", className: shell, "data-screener-overlay": "interstitial" },
+          h("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": progressLabel, className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100" },
+            h("div", { className: "w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200" }, h(CheckCircle, { size: 32 })),
+            h("h3", { className: "text-xl font-black text-slate-800 mb-2" }, cap(subtests[screenerSession.currentIndex - 1]), " ", doneLabel, "!"),
+            h("p", { className: "text-slate-600 mb-4" }, nextLabel, ":"),
+            h("p", { className: "text-2xl font-black text-emerald-600 mb-6" }, cap(subtests[screenerSession.currentIndex])),
+            h("div", { className: "w-full bg-slate-100 rounded-full h-2 mb-4", role: "progressbar", "aria-label": progressLabel, "aria-valuemin": 0, "aria-valuemax": subtests.length, "aria-valuenow": screenerSession.currentIndex },
+              h("div", { className: "bg-emerald-500 h-2 rounded-full transition-all duration-500 motion-reduce:transition-none", style: { width: (subtests.length ? Math.round(screenerSession.currentIndex / subtests.length * 100) : 0) + "%" } })),
+            h("p", { className: "text-xs text-slate-600" }, screenerSession.currentIndex, " of ", subtests.length, " ", doneLabel)));
+      } else {
+        var results = Array.isArray(screenerSession.results) ? screenerSession.results : [];
+        var risk = classifyScreeningRisk(results);
+        overlay = h("div", { role: "presentation", className: shell, "data-screener-overlay": "complete" },
+          h("div", { ref: screenerDialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "screener-results-title", tabIndex: -1, onKeyDown: onScreenerKeyDown, className: "bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border-4 border-violet-100 max-h-[calc(100vh-2rem)] overflow-y-auto" },
+            h("div", { className: "text-center mb-6" },
+              h("div", { className: "w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-violet-200" }, h(Award, { size: 32 })),
+              h("h3", { id: "screener-results-title", className: "text-2xl font-black text-slate-800" }, t('common.screening_complete')),
+              h("p", { className: "text-slate-600 text-sm mt-1" }, screenerSession.student, " — ", screenerLabel('common.grade', 'Grade'), " ", screenerSession.grade, " — ", screenerLabel('common.form_label', 'Form'), " ", screenerSession.form)),
+            h("div", { className: "space-y-3 mb-6" }, results.map(function(r, idx) {
+              return h("div", { key: idx, className: "flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-400" },
+                h("span", { className: "font-bold text-slate-700 capitalize" }, r.activity),
+                h("div", { className: "flex items-center gap-3" },
+                  h("span", { className: "text-sm text-slate-600" }, r.correct, "/", r.total),
+                  h("span", { className: "text-sm font-bold px-2 py-0.5 rounded-full " + (r.accuracy >= 80 ? 'bg-emerald-100 text-emerald-700' : r.accuracy >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, r.accuracy, "%"),
+                  r.itemsPerMin > 0 ? h("span", { className: "text-xs text-slate-600" }, screenerLabel('common.items_per_minute', '{count} items/min').split('{count}').join(String(r.itemsPerMin))) : null));
+            })),
+            h("div", { className: "text-center p-4 rounded-xl border-2 mb-6", style: { background: risk.bg, borderColor: risk.border } },
+              h("p", { className: "text-3xl mb-1" }, risk.emoji),
+              h("p", { className: "text-sm font-bold", style: { color: risk.color } }, risk.label),
+              h("p", { className: "text-4xl font-black " + (risk.tier === 1 ? 'text-emerald-600' : risk.tier === 2 ? 'text-amber-600' : 'text-red-600') }, risk.avgAccuracy, "%"),
+              h("p", { className: "text-xs text-slate-600 mt-1" }, t('glossary_health.composite_accuracy')),
+              risk.reasons && risk.reasons.length > 0 ? h("div", { className: "mt-3 space-y-1" }, risk.reasons.map(function(r, ri) { return h("p", { key: ri, className: "text-xs", style: { color: risk.color } }, r); })) : null),
+            h("div", { className: "flex gap-3" },
+              rosterQueue.length > 0 ? h("button", { type: "button", onClick: advanceRoster, className: "flex-1 min-h-11 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg transition-colors" }, "▶ ", nextLabel, " (", rosterQueue[0], ")") : null,
+              h("button", { type: "button", onClick: closeScreenerResults, className: (rosterQueue.length > 0 ? 'flex-1' : 'w-full') + " min-h-11 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors" }, rosterQueue.length > 0 ? skipLabel + ' / ' + doneLabel : doneLabel)),
+            h("button", { type: "button", onClick: exportScreeningCSV, className: "w-full min-h-11 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2" }, "📊 ", screenerLabel('common.export_screening_csv', 'Export Screening CSV'))));
+      }
+      return ReactDOM.createPortal(overlay, document.body);
+    };
+    var screenerOverlays = renderScreenerOverlays();
+    if (!isOpen) return screenerOverlays;
+    return React.createElement(React.Fragment, null, screenerOverlays, ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
       // theme-${theme} on the portal root (a document.body sibling of the app's
       // theme root) makes the scoped `.theme-dark .allo-docsuite` remap rules reach
       // the card below; the card carries the `allo-docsuite` scope class.
@@ -6619,7 +6826,7 @@ try {
       className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 16
-    }), t('class_analytics.export_csv'))
+    }), t('class_analytics.export_csv')), !isParentMode && renderWordSoundsExportButtons()
     // ── Live Sync removed 2026-08-23 (Aaron's call: drop, not build). It
     // subscribed to a .../sessions/{code}/studentProgress subcollection that
     // nothing in the codebase has ever written, so it connected and stayed
@@ -8091,6 +8298,7 @@ try {
           return;
         }
         const data = bank[grade][form];
+        mnProbeFormRef.current = { grade, form, formVersion: data.version || 1 };
         setMnProbeProblems(data.problems.map(p => ({
           ...p,
           studentAnswer: null,
@@ -8258,7 +8466,10 @@ try {
       className: "mt-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
-    }, "\uD83D\uDCCA Missing Number Probe Results"), /*#__PURE__*/React.createElement("div", {
+    }, "\uD83D\uDCCA Missing Number Probe Results"), mnProbeFormRef.current && React.createElement("p", {
+      className: "text-xs text-slate-600 mb-2",
+      "data-probe-form": "missing_number"
+    }, probeFormVersionLabel(mnProbeFormRef.current)), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-3 gap-3 text-center mb-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
@@ -8287,8 +8498,9 @@ try {
           correct: mnProbeResults.correct,
           total: mnProbeResults.total,
           accuracy: mnProbeResults.total > 0 ? Math.round(mnProbeResults.correct / mnProbeResults.total * 100) : 0,
-          grade: mnGrade,
-          form: mnForm
+          grade: mnProbeFormRef.current ? mnProbeFormRef.current.grade : mnGrade,
+          form: mnProbeFormRef.current ? mnProbeFormRef.current.form : mnForm,
+          formVersion: mnProbeFormRef.current ? mnProbeFormRef.current.formVersion : 1
         });
         addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
       },
@@ -8338,6 +8550,7 @@ try {
           return;
         }
         const data = bank[grade][form];
+        qdProbeFormRef.current = { grade, form, formVersion: data.version || 1 };
         setQdProbeProblems(data.problems.map(p => ({
           ...p,
           studentAnswer: null,
@@ -8461,7 +8674,10 @@ try {
       className: "mt-4 bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl border border-cyan-200 p-4"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-bold text-slate-700 mb-2"
-    }, "\u2696\uFE0F Quantity Discrimination Results"), /*#__PURE__*/React.createElement("div", {
+    }, "\u2696\uFE0F Quantity Discrimination Results"), qdProbeFormRef.current && React.createElement("p", {
+      className: "text-xs text-slate-600 mb-2",
+      "data-probe-form": "quantity_discrimination"
+    }, probeFormVersionLabel(qdProbeFormRef.current)), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-3 gap-3 text-center mb-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
@@ -8490,8 +8706,9 @@ try {
           correct: qdProbeResults.correct,
           total: qdProbeResults.total,
           accuracy: qdProbeResults.total > 0 ? Math.round(qdProbeResults.correct / qdProbeResults.total * 100) : 0,
-          grade: qdGrade,
-          form: qdForm
+          grade: qdProbeFormRef.current ? qdProbeFormRef.current.grade : qdGrade,
+          form: qdProbeFormRef.current ? qdProbeFormRef.current.form : qdForm,
+          formVersion: qdProbeFormRef.current ? qdProbeFormRef.current.formVersion : 1
         });
         addToast(`QD results saved for ${mathProbeStudent}`, 'success');
       },
@@ -8753,7 +8970,530 @@ try {
         title: f.detail,
         className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
       }, f.icon, " ", f.label)));
-    })()))))))), selectedStudent && /*#__PURE__*/React.createElement("div", {
+    })()))))))),
+    // ── Student Data Tab ──
+    // W3: the tab itself is filtered out in family mode; this second test means a
+    // stale or restored assessmentCenterTab cannot render roster import anyway.
+    !isIndependentMode && !isParentMode && effectiveTab === 'students' && React.createElement("div", {
+      className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
+    },
+      // Import toolbar
+      React.createElement("div", { className: "flex flex-wrap gap-3 mb-4" },
+        React.createElement("label", { className: "cursor-pointer" },
+          React.createElement("input", {
+            "aria-label": t('common.upload_json_file'),
+            type: "file", accept: ".json", multiple: true,
+            onChange: handleFileImport, className: "hidden"
+          }),
+          React.createElement("div", {
+            className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Upload, { size: 16 }), t('class_analytics.import_button'))
+        ),
+        importedStudents.length > 0 && React.createElement(React.Fragment, null,
+          React.createElement("button", {
+            onClick: handleExportCSV,
+            className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), t('class_analytics.export_csv')),
+          React.createElement("button", {
+            onClick: exportScreeningCSV,
+            className: "bg-teal-700 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), "Screening CSV"),
+          renderWordSoundsExportButtons(),
+          React.createElement("button", {
+            onClick: generateRTICSV,
+            className: "bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Download, { size: 16 }), "RTI Report"),
+          React.createElement("button", {
+            onClick: () => { setImportedStudents([]); },
+            className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          }, React.createElement(Trash2, { size: 16 }), t('class_analytics.clear_data'))
+        ),
+        typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && React.createElement("button", {
+          type: "button",
+          onClick: openAlloSheetHandoff,
+          "aria-haspopup": "dialog",
+          "aria-label": "Review Student Analytics data before opening it in AlloSheet",
+          className: "min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+        }, "📊 Open in AlloSheet")
+      ),
+      // Summary + student search
+      importedStudents.length > 0 && React.createElement("div", { className: "mb-3" },
+        React.createElement("input", {
+          type: "text", placeholder: t('class_analytics.search_placeholder') || 'Search students...',
+          "aria-label": "Search students", value: searchQuery,
+          onChange: e => setSearchQuery(e.target.value),
+          className: "w-full px-4 py-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all text-sm"
+        })
+      ),
+      // Summary cards
+      classSummary && React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" },
+        React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-indigo-600" }, classSummary.totalStudents),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_students'))
+        ),
+        React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-emerald-600" }, classSummary.avgQuizScore + '%'),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.avg_quiz_score'))
+        ),
+        React.createElement("div", { className: (classSummary.studentsWithFlags > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200') + ' border rounded-xl p-3 text-center' },
+          React.createElement("div", { className: 'text-2xl font-bold ' + (classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-600') }, classSummary.studentsWithFlags),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.students_with_flags'))
+        ),
+        React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" },
+          React.createElement("div", { className: "text-2xl font-bold text-purple-600" }, importedStudents.reduce(function(acc, s) { return acc + s.stats.totalActivities; }, 0)),
+          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_activities'))
+        )
+      ),
+      // RTI tier distribution summary
+      classSummary && classSummary.rtiDistribution && React.createElement("div", {
+        className: "mb-4 p-4 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl"
+      },
+        React.createElement("h3", { className: "font-bold text-slate-700 flex items-center gap-2 mb-3" }, '\uD83C\uDFAF Practice-data review groups'),
+        React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+          [{ tier: 1, label: 'Review group 1', emoji: '\uD83D\uDFE2', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
+           { tier: 2, label: 'Review group 2', emoji: '\uD83D\uDFE1', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
+           { tier: 3, label: 'Review group 3', emoji: '\uD83D\uDD34', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
+          ].map(function(t) {
+            var students = classSummary.rtiDistribution[t.tier] || [];
+            return React.createElement("div", {
+              key: t.tier, className: "rounded-xl p-3 text-center border-2",
+              style: { background: t.bg, borderColor: t.border }
+            },
+              React.createElement("div", { style: { fontSize: '20px' } }, t.emoji),
+              React.createElement("div", { style: { fontSize: '24px', fontWeight: 800, color: t.color } }, students.length),
+              React.createElement("div", { style: { fontSize: '11px', fontWeight: 700, color: t.color } }, t.label),
+              React.createElement("div", { className: "flex flex-wrap gap-1 mt-1 justify-center" },
+                students.slice(0, 5).map(function(name, i) {
+                  return React.createElement("span", { key: i, className: "text-[11px] px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
+                }),
+                students.length > 5 && React.createElement("span", { className: "text-[11px] text-slate-600" }, '+' + (students.length - 5) + ' more')
+              )
+            );
+          })
+        )
+      ),
+      // Charts
+      importedStudents.length > 0 && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" },
+        React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: quizChartRef, role: "img", "aria-label": "Quiz averages by student. Detailed values are available in the student table." })
+        ),
+        classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: flagsChartRef, role: "img", "aria-label": "Safety flag counts by category. Detailed values are available in student records." })
+        )
+      ),
+      // Student table
+      sortedAndFiltered.length > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
+        React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
+          '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
+        ),
+        React.createElement("div", { className: "overflow-x-auto" },
+          React.createElement("table", { className: "w-full text-sm" },
+            React.createElement("thead", null,
+              React.createElement("tr", { className: "bg-slate-50 text-xs font-bold text-slate-600 border-b border-slate-200" },
+                [
+                  { key: 'name', label: t('class_analytics.student') || 'Student', align: 'left' },
+                  { key: 'rtiTier', label: 'RTI' },
+                  { key: 'quizAvg', label: t('class_analytics.quiz_avg') || 'Quiz' },
+                  { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') || 'WCPM' },
+                  { key: 'totalActivities', label: t('class_analytics.total_activities') || 'Activities' }
+                ].map(col => React.createElement("th", {
+                  scope: "col",
+                  key: col.key,
+                  "aria-sort": sortColumn === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none',
+                  className: col.align === 'left' ? 'text-left' : 'text-center'
+                }, React.createElement("button", {
+                  type: "button",
+                  onClick: () => handleSort(col.key),
+                  className: "w-full min-h-11 p-2 inline-flex items-center gap-1 " + (col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center') + " hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors",
+                  "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
+                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : ''))),
+                // Props via Object.assign, NOT an inline literal, on purpose:
+                // student_analytics_sort_controls_a11y pins th-with-button pairs by
+                // regex, and an inline-literal th here lazy-bridges into the row
+                // buttons and reads as a third click-to-sort header. This column
+                // header is static text; keeping the pin strict matters more.
+                React.createElement("th", Object.assign({ scope: "col", className: "text-center" }),
+                  React.createElement("span", { className: "inline-flex min-h-11 items-center justify-center p-2" }, t('class_analytics.roster_link') || 'Roster link'))
+              )
+            ),
+            React.createElement("tbody", null,
+              sortedAndFiltered.map(student => {
+                const rti = classifyRTITier(student.stats);
+                return React.createElement("tr", {
+                  key: student.id,
+                  className: "border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                },
+                  React.createElement("td", { className: "p-2" }, React.createElement("button", {
+                    type: "button",
+                    onClick: () => { setSelectedStudent(student); setAssessmentCenterTab('assessments'); },
+                    className: "min-h-11 w-full inline-flex items-center text-left font-medium text-indigo-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 rounded",
+                    "aria-label": 'View detail profile for ' + student.name
+                  }, student.name)),
+                  React.createElement("td", { className: "p-2 text-center", title: rti.label, "aria-label": rti.label }, rti.emoji + ' ' + (typeof rti.tier === 'number' ? rti.tier : '')),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.quizAvg > 0 ? Math.round(student.stats.quizAvg) + '%' : '—'),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.fluencyWCPM > 0 ? student.stats.fluencyWCPM : '—'),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.totalActivities || 0),
+                  React.createElement("td", { className: "p-2 text-center" },
+                    student.isLive ? React.createElement("span", { className: "text-xs text-slate-400" }, '\u2014')
+                    : (rosterKey && rosterKey.students && Object.keys(rosterKey.students).length > 0)
+                      ? React.createElement("div", null,
+                          React.createElement("select", {
+                            "aria-label": 'Roster link for ' + student.name,
+                            value: (rosterKey.students[student.name] !== undefined) ? student.name : '',
+                            onChange: e => handleLinkImportedStudent(student, e.target.value),
+                            className: "text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-700 max-w-[160px]"
+                          },
+                            React.createElement("option", { value: "" }, t('class_analytics.not_linked') || 'Not linked'),
+                            Object.keys(rosterKey.students).map(c => React.createElement("option", { key: c, value: c }, c))
+                          ),
+                          student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
+                        )
+                      : React.createElement("span", { className: "text-xs text-slate-600" }, '\u2014')
+                  )
+                );
+              })
+            )
+          )
+        )
+      ),
+      // Empty state
+      importedStudents.length === 0 && React.createElement("div", {
+        className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-400"
+      },
+        React.createElement("div", { className: "text-4xl mb-3" }, '\uD83D\uDCCB'),
+        React.createElement("h3", { className: "text-lg font-bold text-slate-700 mb-2" }, 'Import Student Data'),
+        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, 'Upload exported student JSON files to view analytics, RTI classification, and progress data.'),
+        React.createElement("label", { className: "cursor-pointer inline-block" },
+          React.createElement("input", { type: "file", accept: ".json", multiple: true, onChange: handleFileImport, className: "hidden", "aria-label": "Upload student JSON files" }),
+          React.createElement("div", { className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-colors" },
+            React.createElement(Upload, { size: 18 }), 'Import Student Files'
+          )
+        )
+      ),
+      React.createElement("div", {
+        className: "mt-4 bg-white rounded-xl border border-rose-300 p-4"
+      },
+        React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, '\uD83D\uDDD1 Remove a student\'s records'),
+        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Permanently deletes the student's records, imported row, saved Assessment Center link, and matching pending link undo from this device. Roster membership is kept; exported files are not affected."),
+        React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
+          React.createElement("select", {
+            "aria-label": "Student whose records to remove",
+            value: recordsRemovalTarget,
+            onChange: e => setRecordsRemovalTarget(e.target.value),
+            className: "text-sm border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 min-w-[200px]"
+          },
+            React.createElement("option", { value: "" }, '-- Select student --'),
+            listRecordIdentities().map(n => React.createElement("option", { key: n, value: n }, n))
+          ),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleRemoveStudentRecords,
+            disabled: !recordsRemovalTarget,
+            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          }, 'Remove records\u2026')
+        ),
+        React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
+          React.createElement("p", { className: "text-xs text-slate-600 w-full" }, 'School-year boundary: download the full archive first, then clear every student record, saved identity link, and pending link undo on this device in one step. Roster membership is kept.'),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleDownloadYearArchive,
+            className: "px-3 py-2 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+          }, '\uD83D\uDCE6 Download year archive (JSON)'),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleClearAllStudentRecords,
+            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+          }, '\u26A0 Clear ALL student records\u2026')
+        ),
+        lastLinkUndo && React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
+          React.createElement("p", { className: "text-xs text-slate-600 flex-1 min-w-[200px]" }, (t('class_analytics.undo_link_hint') || 'Last roster link: ') + lastLinkUndo.fromName + ' \u2192 ' + lastLinkUndo.toName + ' (available in this tab for up to 30 minutes)'),
+          React.createElement("button", {
+            type: "button",
+            onClick: handleUndoLastLink,
+            className: "px-3 py-2 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+          }, '\u21A9 Undo last link')
+        )
+      )
+    ),
+    // W3: same reasoning as the students tab. An embedded research study suite
+    // (IRB consent, Likert instruments) must not open in family mode.
+    !isIndependentMode && !isParentMode && effectiveTab === 'research' && /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-lg font-bold text-slate-800"
+    }, "\uD83D\uDCCA Research & Insights"), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600"
+    }, "Longitudinal analytics, growth tracking, and practice-to-outcome correlations")), importedStudents.length > 0 && /*#__PURE__*/React.createElement("select", {
+      value: researchStudent || '',
+      onChange: e => setResearchStudent(e.target.value || null),
+      className: "px-3 py-1.5 text-sm border border-slate-400 rounded-lg",
+      "aria-label": "Select student"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: ""
+    }, "All students (class view)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
+      key: s.name || s,
+      value: s.name || s
+    }, s.name || s)))), typeof renderResearchToolbar === 'function' && /*#__PURE__*/React.createElement("div", {
+      className: "bg-white rounded-xl border border-slate-400 p-3"
+    }, renderResearchToolbar()), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowCBMModal(true),
+      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
+    }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowSurveyModal(true),
+      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-600 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
+    }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setShowResearchSetup(true),
+      className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
+    }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? React.createElement("div", { className: "space-y-4" },
+      React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 rounded-xl p-6 border border-indigo-200" },
+        React.createElement("div", { className: "flex items-start gap-4" },
+          React.createElement("div", { className: "text-4xl shrink-0" }, "\uD83D\uDD2C"),
+          React.createElement("div", null,
+            React.createElement("h4", { className: "text-lg font-bold text-slate-800 mb-1" }, "Embedded Research Suite"),
+            React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, "AlloFlow includes complete research infrastructure for pilot studies, RTI progress monitoring, and program evaluation \u2014 all with zero PII and local-only data storage.")
+          )
+        )
+      ),
+      React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCA"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Research Mode")),
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCDD"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Built-In Surveys")),
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and practice-data review suggestions.")
+        ),
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
+          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
+          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
+        )
+      ),
+      React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
+        React.createElement("h5", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDE80 Getting Started"),
+        React.createElement("div", { className: "space-y-2" },
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "1"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Start Research Mode"), " above to begin tracking sessions automatically.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "2"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Run probes"), " from the Administer tab to collect baseline data.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "3"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Import student files"), " from the Student Data tab to unlock growth tracking.")),
+          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "4"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Administer surveys"), " at pre/mid/post timepoints to collect stakeholder perspectives."))
+        )
+      ),
+      React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+        React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
+      )
+    ) : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, researchStudent ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mb-4"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setResearchStudent(null),
+      className: "text-sm text-indigo-600 hover:text-indigo-800 font-bold"
+    }, "\u2190 Back to class"), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-slate-600"
+    }, "|"), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm font-bold text-slate-700"
+    }, researchStudent),
+    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
+    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
+    renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
+    }, /*#__PURE__*/React.createElement("h5", {
+      className: "text-xs font-bold text-slate-600 uppercase mb-3"
+    }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
+    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
+    typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+    }, importedStudents.map(s => {
+      const name = s.name || s;
+      const anomalyFlags = typeof computeAnomalyFlags === 'function' && s.stats ? computeAnomalyFlags(s) : [];
+      return /*#__PURE__*/React.createElement("button", {
+        key: name,
+        onClick: () => setResearchStudent(name),
+        className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "font-bold text-sm text-slate-700 group-hover:text-indigo-700"
+      }, name), anomalyFlags.length > 0 && /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-wrap gap-1 mt-1"
+      }, anomalyFlags.map((f, i) => /*#__PURE__*/React.createElement("span", {
+        key: i,
+        title: f.detail,
+        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
+      }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-600 mt-1"
+      }, "View insights \u2192"));
+    }))), typeof renderResearchDashboard === 'function' && /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "text-sm font-bold text-slate-600 mb-3"
+    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMModal && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(), showCustomQuestions && typeof renderCustomQuestionsEditor === 'function' && renderCustomQuestionsEditor(),
+    // ── Probe Focus Overlays (full-screen with countdown + keyboard shortcuts) ──
+    React.createElement(ProbeOverlay, {
+      isActive: nwfProbeActive && !nwfProbeResults,
+      probeType: '\uD83D\uDD24 NWF Probe',
+      timer: nwfProbeTimer,
+      timerTotal: 60,
+      currentIndex: nwfProbeIndex,
+      totalItems: nwfProbeWords.length,
+      correctCount: nwfProbeWords.filter(function(w) { return w.scored && w.correct; }).length,
+      incorrectCount: nwfProbeWords.filter(function(w) { return w.scored && !w.correct; }).length,
+      instruction: 'Say: \u201CLook at this word. Tell me the sounds.\u201D \u2014 Score each sound',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (nwfProbeIndex >= nwfProbeWords.length) return;
+        var updated = nwfProbeWords.slice();
+        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: true });
+        setNwfProbeWords(updated);
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (nwfProbeIndex >= nwfProbeWords.length) return;
+        var updated = nwfProbeWords.slice();
+        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: false });
+        setNwfProbeWords(updated);
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onSkip: function() {
+        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
+        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
+      },
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End NWF probe early?', { title: 'End NWF probe', confirmText: 'End probe' })) {
+          clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null;
+          var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0);
+          setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false);
+        }
+      }
+    },
+      // Content: current word displayed large
+      nwfProbeIndex < nwfProbeWords.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-emerald-50 rounded-3xl p-12 border border-emerald-100 shadow-inner'
+        }, React.createElement('div', {
+          className: 'text-8xl font-bold text-slate-800 tracking-[0.2em] font-mono select-none'
+        }, nwfProbeWords[nwfProbeIndex].word))
+      )
+    ),
+    React.createElement(ProbeOverlay, {
+      isActive: lnfProbeActive && !lnfProbeResults,
+      probeType: '\uD83C\uDD70\uFE0F LNF Probe',
+      timer: lnfProbeTimer,
+      timerTotal: 60,
+      currentIndex: lnfProbeIndex,
+      totalItems: lnfProbeLetters.length,
+      correctCount: lnfProbeLetters.filter(function(l) { return l.scored && l.correct; }).length,
+      incorrectCount: lnfProbeLetters.filter(function(l) { return l.scored && !l.correct; }).length,
+      instruction: 'Say: \u201CPoint to each letter and tell me its name.\u201D Start timing on first response',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (lnfProbeIndex >= lnfProbeLetters.length) return;
+        var updated = lnfProbeLetters.slice();
+        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: true });
+        setLnfProbeLetters(updated);
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (lnfProbeIndex >= lnfProbeLetters.length) return;
+        var updated = lnfProbeLetters.slice();
+        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: false });
+        setLnfProbeLetters(updated);
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onSkip: function() {
+        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
+        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
+      },
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End LNF probe early?', { title: 'End LNF probe', confirmText: 'End probe' })) {
+          clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null;
+          var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length;
+          setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false);
+        }
+      }
+    },
+      // Content: current letter displayed large + letter grid
+      lnfProbeIndex < lnfProbeLetters.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-12 border border-blue-100 shadow-inner mb-6'
+        }, React.createElement('div', {
+          className: 'text-[10rem] font-bold text-slate-800 font-mono select-none leading-none'
+        }, lnfProbeLetters[lnfProbeIndex].letter)),
+        React.createElement('div', { className: 'grid grid-cols-13 gap-1 max-w-lg mx-auto' },
+          lnfProbeLetters.map(function(item, idx) {
+            return React.createElement('div', {
+              key: idx,
+              className: 'flex items-center justify-center w-8 h-8 rounded text-sm font-bold transition-all ' +
+                (idx === lnfProbeIndex ? 'bg-blue-700 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
+                 idx < lnfProbeIndex && item.scored ? (item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through') :
+                 idx < lnfProbeIndex ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 text-slate-600')
+            }, item.letter);
+          })
+        )
+      )
+    ),
+    React.createElement(ProbeOverlay, {
+      isActive: ranProbeActive && !ranProbeResults,
+      probeType: '\u26A1 RAN Probe',
+      timer: undefined, // RAN uses a stopwatch, not countdown
+      currentIndex: ranProbeIndex,
+      totalItems: ranProbeItems.length,
+      correctCount: ranProbeItems.filter(function(i) { return i.scored && i.correct; }).length,
+      incorrectCount: ranProbeItems.filter(function(i) { return i.scored && !i.correct; }).length,
+      instruction: 'Say: \u201CName each one as fast as you can.\u201D \u2014 Stopwatch: ' + ranProbeElapsed + 's',
+      onCountdownDone: startProbeTimer,
+      onCorrect: function() {
+        if (ranProbeIndex >= ranProbeItems.length) return;
+        var updated = ranProbeItems.slice();
+        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: true });
+        setRanProbeItems(updated);
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onIncorrect: function() {
+        if (ranProbeIndex >= ranProbeItems.length) return;
+        var updated = ranProbeItems.slice();
+        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: false });
+        setRanProbeItems(updated);
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onSkip: function() {
+        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
+        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
+      },
+      onEndEarly: async function() {
+        if (await askStudentAnalyticsConfirmation('End RAN probe early?', { title: 'End RAN probe', confirmText: 'End probe' })) {
+          clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null;
+          var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length;
+          setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false);
+        }
+      }
+    },
+      // Content: current item displayed large
+      ranProbeIndex < ranProbeItems.length && React.createElement('div', { className: 'text-center' },
+        React.createElement('div', {
+          className: 'bg-gradient-to-br from-slate-50 to-amber-50 rounded-3xl p-12 border border-amber-100 shadow-inner mb-4'
+        }, React.createElement('div', {
+          className: 'text-8xl font-bold text-slate-800 select-none'
+        }, ranProbeItems[ranProbeIndex].item)),
+        React.createElement('div', { className: 'text-3xl font-black text-amber-600 tabular-nums' }, '\u23F1 ' + ranProbeElapsed + 's')
+      )
+    )
+    ))), selectedStudent && /*#__PURE__*/React.createElement("div", {
       className: "absolute inset-0 bg-white flex flex-col"
     }, /*#__PURE__*/React.createElement("div", {
       className: "p-4 border-b border-slate-200 flex items-center justify-between shrink-0"
@@ -8780,8 +9520,8 @@ try {
     }), " Print Parent Report"), /*#__PURE__*/React.createElement("button", {
       onClick: () => generateStudentFriendlyReport({
         history: selectedStudent.history || [],
-        wordSoundsHistory: selectedStudent.wordSoundsHistory || [],
-        phonemeMastery: selectedStudent.phonemeMastery || {},
+        wordSoundsHistory: selectedStudent.wordSoundsHistory || selectedStudent.data?.wordSoundsState?.history || [],
+        phonemeMastery: selectedStudent.phonemeMastery || selectedStudent.data?.wordSoundsState?.phonemeMastery || {},
         wordSoundsBadges: selectedStudent.wordSoundsBadges || {},
         gameCompletions: selectedStudent.gameCompletions || [],
         globalPoints: selectedStudent.stats?.adventureXP || 0,
@@ -9964,529 +10704,7 @@ try {
       className: "font-medium text-xs text-slate-600 mb-1"
     }, msg.role === 'user' || msg.sender === 'student' ? 'Student' : 'Character'), msg.content || msg.text)))) : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-8 text-slate-600"
-    }, t('class_analytics.no_transcript'),
-    // ── Student Data Tab ──
-    // W3: the tab itself is filtered out in family mode; this second test means a
-    // stale or restored assessmentCenterTab cannot render roster import anyway.
-    !isIndependentMode && !isParentMode && effectiveTab === 'students' && React.createElement("div", {
-      className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
-    },
-      // Import toolbar
-      React.createElement("div", { className: "flex flex-wrap gap-3 mb-4" },
-        React.createElement("label", { className: "cursor-pointer" },
-          React.createElement("input", {
-            "aria-label": t('common.upload_json_file'),
-            type: "file", accept: ".json", multiple: true,
-            onChange: handleFileImport, className: "hidden"
-          }),
-          React.createElement("div", {
-            className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          }, React.createElement(Upload, { size: 16 }), t('class_analytics.import_button'))
-        ),
-        importedStudents.length > 0 && React.createElement(React.Fragment, null,
-          React.createElement("button", {
-            onClick: handleExportCSV,
-            className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          }, React.createElement(Download, { size: 16 }), t('class_analytics.export_csv')),
-          React.createElement("button", {
-            onClick: exportScreeningCSV,
-            className: "bg-teal-700 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          }, React.createElement(Download, { size: 16 }), "Screening CSV"),
-          React.createElement("button", {
-            onClick: generateRTICSV,
-            className: "bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          }, React.createElement(Download, { size: 16 }), "RTI Report"),
-          React.createElement("button", {
-            onClick: () => { setImportedStudents([]); },
-            className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          }, React.createElement(Trash2, { size: 16 }), t('class_analytics.clear_data'))
-        ),
-        typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && React.createElement("button", {
-          type: "button",
-          onClick: openAlloSheetHandoff,
-          "aria-haspopup": "dialog",
-          "aria-label": "Review Student Analytics data before opening it in AlloSheet",
-          className: "min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
-        }, "📊 Open in AlloSheet")
-      ),
-      // Summary + student search
-      importedStudents.length > 0 && React.createElement("div", { className: "mb-3" },
-        React.createElement("input", {
-          type: "text", placeholder: t('class_analytics.search_placeholder') || 'Search students...',
-          "aria-label": "Search students", value: searchQuery,
-          onChange: e => setSearchQuery(e.target.value),
-          className: "w-full px-4 py-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all text-sm"
-        })
-      ),
-      // Summary cards
-      classSummary && React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" },
-        React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center" },
-          React.createElement("div", { className: "text-2xl font-bold text-indigo-600" }, classSummary.totalStudents),
-          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_students'))
-        ),
-        React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center" },
-          React.createElement("div", { className: "text-2xl font-bold text-emerald-600" }, classSummary.avgQuizScore + '%'),
-          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.avg_quiz_score'))
-        ),
-        React.createElement("div", { className: (classSummary.studentsWithFlags > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200') + ' border rounded-xl p-3 text-center' },
-          React.createElement("div", { className: 'text-2xl font-bold ' + (classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-600') }, classSummary.studentsWithFlags),
-          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.students_with_flags'))
-        ),
-        React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" },
-          React.createElement("div", { className: "text-2xl font-bold text-purple-600" }, importedStudents.reduce(function(acc, s) { return acc + s.stats.totalActivities; }, 0)),
-          React.createElement("div", { className: "text-xs text-slate-600" }, t('class_analytics.total_activities'))
-        )
-      ),
-      // RTI tier distribution summary
-      classSummary && classSummary.rtiDistribution && React.createElement("div", {
-        className: "mb-4 p-4 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl"
-      },
-        React.createElement("h3", { className: "font-bold text-slate-700 flex items-center gap-2 mb-3" }, '\uD83C\uDFAF Practice-data review groups'),
-        React.createElement("div", { className: "grid grid-cols-3 gap-3" },
-          [{ tier: 1, label: 'Review group 1', emoji: '\uD83D\uDFE2', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
-           { tier: 2, label: 'Review group 2', emoji: '\uD83D\uDFE1', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
-           { tier: 3, label: 'Review group 3', emoji: '\uD83D\uDD34', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
-          ].map(function(t) {
-            var students = classSummary.rtiDistribution[t.tier] || [];
-            return React.createElement("div", {
-              key: t.tier, className: "rounded-xl p-3 text-center border-2",
-              style: { background: t.bg, borderColor: t.border }
-            },
-              React.createElement("div", { style: { fontSize: '20px' } }, t.emoji),
-              React.createElement("div", { style: { fontSize: '24px', fontWeight: 800, color: t.color } }, students.length),
-              React.createElement("div", { style: { fontSize: '11px', fontWeight: 700, color: t.color } }, t.label),
-              React.createElement("div", { className: "flex flex-wrap gap-1 mt-1 justify-center" },
-                students.slice(0, 5).map(function(name, i) {
-                  return React.createElement("span", { key: i, className: "text-[11px] px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
-                }),
-                students.length > 5 && React.createElement("span", { className: "text-[11px] text-slate-600" }, '+' + (students.length - 5) + ' more')
-              )
-            );
-          })
-        )
-      ),
-      // Charts
-      importedStudents.length > 0 && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" },
-        React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: quizChartRef, role: "img", "aria-label": "Quiz averages by student. Detailed values are available in the student table." })
-        ),
-        classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: flagsChartRef, role: "img", "aria-label": "Safety flag counts by category. Detailed values are available in student records." })
-        )
-      ),
-      // Student table
-      sortedAndFiltered.length > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
-        React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
-          '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
-        ),
-        React.createElement("div", { className: "overflow-x-auto" },
-          React.createElement("table", { className: "w-full text-sm" },
-            React.createElement("thead", null,
-              React.createElement("tr", { className: "bg-slate-50 text-xs font-bold text-slate-600 border-b border-slate-200" },
-                [
-                  { key: 'name', label: t('class_analytics.student') || 'Student', align: 'left' },
-                  { key: 'rtiTier', label: 'RTI' },
-                  { key: 'quizAvg', label: t('class_analytics.quiz_avg') || 'Quiz' },
-                  { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') || 'WCPM' },
-                  { key: 'totalActivities', label: t('class_analytics.total_activities') || 'Activities' }
-                ].map(col => React.createElement("th", {
-                  scope: "col",
-                  key: col.key,
-                  "aria-sort": sortColumn === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none',
-                  className: col.align === 'left' ? 'text-left' : 'text-center'
-                }, React.createElement("button", {
-                  type: "button",
-                  onClick: () => handleSort(col.key),
-                  className: "w-full min-h-11 p-2 inline-flex items-center gap-1 " + (col.align === 'left' ? 'justify-start text-left' : 'justify-center text-center') + " hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 select-none transition-colors",
-                  "aria-label": col.label + (sortColumn === col.key ? (sortDirection === 'asc' ? ', sorted ascending; activate to sort descending' : ', sorted descending; activate to sort ascending') : ', activate to sort ascending')
-                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '\u25B2' : '\u25BC') : ''))),
-                // Props via Object.assign, NOT an inline literal, on purpose:
-                // student_analytics_sort_controls_a11y pins th-with-button pairs by
-                // regex, and an inline-literal th here lazy-bridges into the row
-                // buttons and reads as a third click-to-sort header. This column
-                // header is static text; keeping the pin strict matters more.
-                React.createElement("th", Object.assign({ scope: "col", className: "text-center" }),
-                  React.createElement("span", { className: "inline-flex min-h-11 items-center justify-center p-2" }, t('class_analytics.roster_link') || 'Roster link'))
-              )
-            ),
-            React.createElement("tbody", null,
-              sortedAndFiltered.map(student => {
-                const rti = classifyRTITier(student.stats);
-                return React.createElement("tr", {
-                  key: student.id,
-                  className: "border-b border-slate-100 hover:bg-slate-50 transition-colors"
-                },
-                  React.createElement("td", { className: "p-2" }, React.createElement("button", {
-                    type: "button",
-                    onClick: () => { setSelectedStudent(student); setAssessmentCenterTab('assessments'); },
-                    className: "min-h-11 w-full inline-flex items-center text-left font-medium text-indigo-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 rounded",
-                    "aria-label": 'View detail profile for ' + student.name
-                  }, student.name)),
-                  React.createElement("td", { className: "p-2 text-center", title: rti.label, "aria-label": rti.label }, rti.emoji + ' ' + (typeof rti.tier === 'number' ? rti.tier : '')),
-                  React.createElement("td", { className: "p-2 text-center" }, student.stats.quizAvg > 0 ? Math.round(student.stats.quizAvg) + '%' : '—'),
-                  React.createElement("td", { className: "p-2 text-center" }, student.stats.fluencyWCPM > 0 ? student.stats.fluencyWCPM : '—'),
-                  React.createElement("td", { className: "p-2 text-center" }, student.stats.totalActivities || 0),
-                  React.createElement("td", { className: "p-2 text-center" },
-                    student.isLive ? React.createElement("span", { className: "text-xs text-slate-400" }, '\u2014')
-                    : (rosterKey && rosterKey.students && Object.keys(rosterKey.students).length > 0)
-                      ? React.createElement("div", null,
-                          React.createElement("select", {
-                            "aria-label": 'Roster link for ' + student.name,
-                            value: (rosterKey.students[student.name] !== undefined) ? student.name : '',
-                            onChange: e => handleLinkImportedStudent(student, e.target.value),
-                            className: "text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-700 max-w-[160px]"
-                          },
-                            React.createElement("option", { value: "" }, t('class_analytics.not_linked') || 'Not linked'),
-                            Object.keys(rosterKey.students).map(c => React.createElement("option", { key: c, value: c }, c))
-                          ),
-                          student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
-                        )
-                      : React.createElement("span", { className: "text-xs text-slate-600" }, '\u2014')
-                  )
-                );
-              })
-            )
-          )
-        )
-      ),
-      // Empty state
-      importedStudents.length === 0 && React.createElement("div", {
-        className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-400"
-      },
-        React.createElement("div", { className: "text-4xl mb-3" }, '\uD83D\uDCCB'),
-        React.createElement("h3", { className: "text-lg font-bold text-slate-700 mb-2" }, 'Import Student Data'),
-        React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, 'Upload exported student JSON files to view analytics, RTI classification, and progress data.'),
-        React.createElement("label", { className: "cursor-pointer inline-block" },
-          React.createElement("input", { type: "file", accept: ".json", multiple: true, onChange: handleFileImport, className: "hidden", "aria-label": "Upload student JSON files" }),
-          React.createElement("div", { className: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-colors" },
-            React.createElement(Upload, { size: 18 }), 'Import Student Files'
-          )
-        )
-      ),
-      React.createElement("div", {
-        className: "mt-4 bg-white rounded-xl border border-rose-300 p-4"
-      },
-        React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, '\uD83D\uDDD1 Remove a student\'s records'),
-        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Permanently deletes the student's records, imported row, saved Assessment Center link, and matching pending link undo from this device. Roster membership is kept; exported files are not affected."),
-        React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
-          React.createElement("select", {
-            "aria-label": "Student whose records to remove",
-            value: recordsRemovalTarget,
-            onChange: e => setRecordsRemovalTarget(e.target.value),
-            className: "text-sm border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 min-w-[200px]"
-          },
-            React.createElement("option", { value: "" }, '-- Select student --'),
-            listRecordIdentities().map(n => React.createElement("option", { key: n, value: n }, n))
-          ),
-          React.createElement("button", {
-            type: "button",
-            onClick: handleRemoveStudentRecords,
-            disabled: !recordsRemovalTarget,
-            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          }, 'Remove records\u2026')
-        ),
-        React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
-          React.createElement("p", { className: "text-xs text-slate-600 w-full" }, 'School-year boundary: download the full archive first, then clear every student record, saved identity link, and pending link undo on this device in one step. Roster membership is kept.'),
-          React.createElement("button", {
-            type: "button",
-            onClick: handleDownloadYearArchive,
-            className: "px-3 py-2 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
-          }, '\uD83D\uDCE6 Download year archive (JSON)'),
-          React.createElement("button", {
-            type: "button",
-            onClick: handleClearAllStudentRecords,
-            className: "px-3 py-2 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
-          }, '\u26A0 Clear ALL student records\u2026')
-        ),
-        lastLinkUndo && React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
-          React.createElement("p", { className: "text-xs text-slate-600 flex-1 min-w-[200px]" }, (t('class_analytics.undo_link_hint') || 'Last roster link: ') + lastLinkUndo.fromName + ' \u2192 ' + lastLinkUndo.toName + ' (available in this tab for up to 30 minutes)'),
-          React.createElement("button", {
-            type: "button",
-            onClick: handleUndoLastLink,
-            className: "px-3 py-2 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
-          }, '\u21A9 Undo last link')
-        )
-      )
-    ),
-    // W3: same reasoning as the students tab. An embedded research study suite
-    // (IRB consent, Likert instruments) must not open in family mode.
-    !isIndependentMode && !isParentMode && effectiveTab === 'research' && /*#__PURE__*/React.createElement("div", {
-      className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "space-y-6"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center justify-between"
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-      className: "text-lg font-bold text-slate-800"
-    }, "\uD83D\uDCCA Research & Insights"), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-600"
-    }, "Longitudinal analytics, growth tracking, and practice-to-outcome correlations")), importedStudents.length > 0 && /*#__PURE__*/React.createElement("select", {
-      value: researchStudent || '',
-      onChange: e => setResearchStudent(e.target.value || null),
-      className: "px-3 py-1.5 text-sm border border-slate-400 rounded-lg",
-      "aria-label": "Select student"
-    }, /*#__PURE__*/React.createElement("option", {
-      value: ""
-    }, "All students (class view)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
-      key: s.name || s,
-      value: s.name || s
-    }, s.name || s)))), typeof renderResearchToolbar === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "bg-white rounded-xl border border-slate-400 p-3"
-    }, renderResearchToolbar()), /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-wrap gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => setShowCBMModal(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
-    }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setShowSurveyModal(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-600 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
-    }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
-      onClick: () => setShowResearchSetup(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
-    }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? React.createElement("div", { className: "space-y-4" },
-      React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 rounded-xl p-6 border border-indigo-200" },
-        React.createElement("div", { className: "flex items-start gap-4" },
-          React.createElement("div", { className: "text-4xl shrink-0" }, "\uD83D\uDD2C"),
-          React.createElement("div", null,
-            React.createElement("h4", { className: "text-lg font-bold text-slate-800 mb-1" }, "Embedded Research Suite"),
-            React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, "AlloFlow includes complete research infrastructure for pilot studies, RTI progress monitoring, and program evaluation \u2014 all with zero PII and local-only data storage.")
-          )
-        )
-      ),
-      React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
-          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCA"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Research Mode")),
-          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
-        ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
-          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCDD"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Built-In Surveys")),
-          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
-        ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
-          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
-          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and practice-data review suggestions.")
-        ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
-          React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
-          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
-        )
-      ),
-      React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
-        React.createElement("h5", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDE80 Getting Started"),
-        React.createElement("div", { className: "space-y-2" },
-          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "1"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Start Research Mode"), " above to begin tracking sessions automatically.")),
-          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "2"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Run probes"), " from the Administer tab to collect baseline data.")),
-          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "3"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Import student files"), " from the Student Data tab to unlock growth tracking.")),
-          React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "4"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Administer surveys"), " at pre/mid/post timepoints to collect stakeholder perspectives."))
-        )
-      ),
-      React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
-        React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
-      )
-    ) : /*#__PURE__*/React.createElement("div", {
-      className: "space-y-4"
-    }, researchStudent ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 mb-4"
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => setResearchStudent(null),
-      className: "text-sm text-indigo-600 hover:text-indigo-800 font-bold"
-    }, "\u2190 Back to class"), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm text-slate-600"
-    }, "|"), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm font-bold text-slate-700"
-    }, researchStudent),
-    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
-    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
-    renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
-    }, /*#__PURE__*/React.createElement("h5", {
-      className: "text-xs font-bold text-slate-600 uppercase mb-3"
-    }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
-    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
-    typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
-      className: "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-    }, importedStudents.map(s => {
-      const name = s.name || s;
-      const anomalyFlags = typeof computeAnomalyFlags === 'function' && s.stats ? computeAnomalyFlags(s) : [];
-      return /*#__PURE__*/React.createElement("button", {
-        key: name,
-        onClick: () => setResearchStudent(name),
-        className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group"
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "font-bold text-sm text-slate-700 group-hover:text-indigo-700"
-      }, name), anomalyFlags.length > 0 && /*#__PURE__*/React.createElement("div", {
-        className: "flex flex-wrap gap-1 mt-1"
-      }, anomalyFlags.map((f, i) => /*#__PURE__*/React.createElement("span", {
-        key: i,
-        title: f.detail,
-        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
-      }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
-        className: "text-xs text-slate-600 mt-1"
-      }, "View insights \u2192"));
-    }))), typeof renderResearchDashboard === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400"
-    }, /*#__PURE__*/React.createElement("h4", {
-      className: "text-sm font-bold text-slate-600 mb-3"
-    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMModal && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(), showCustomQuestions && typeof renderCustomQuestionsEditor === 'function' && renderCustomQuestionsEditor(),
-    // ── Probe Focus Overlays (full-screen with countdown + keyboard shortcuts) ──
-    React.createElement(ProbeOverlay, {
-      isActive: nwfProbeActive && !nwfProbeResults,
-      probeType: '\uD83D\uDD24 NWF Probe',
-      timer: nwfProbeTimer,
-      timerTotal: 60,
-      currentIndex: nwfProbeIndex,
-      totalItems: nwfProbeWords.length,
-      correctCount: nwfProbeWords.filter(function(w) { return w.scored && w.correct; }).length,
-      incorrectCount: nwfProbeWords.filter(function(w) { return w.scored && !w.correct; }).length,
-      instruction: 'Say: \u201CLook at this word. Tell me the sounds.\u201D \u2014 Score each sound',
-      onCountdownDone: startProbeTimer,
-      onCorrect: function() {
-        if (nwfProbeIndex >= nwfProbeWords.length) return;
-        var updated = nwfProbeWords.slice();
-        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: true });
-        setNwfProbeWords(updated);
-        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
-        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
-      },
-      onIncorrect: function() {
-        if (nwfProbeIndex >= nwfProbeWords.length) return;
-        var updated = nwfProbeWords.slice();
-        updated[nwfProbeIndex] = Object.assign({}, updated[nwfProbeIndex], { scored: true, correct: false });
-        setNwfProbeWords(updated);
-        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
-        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = updated.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:updated.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
-      },
-      onSkip: function() {
-        if (nwfProbeIndex + 1 < nwfProbeWords.length) { setNwfProbeIndex(nwfProbeIndex + 1); }
-        else { clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null; var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0); setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false); }
-      },
-      onEndEarly: async function() {
-        if (await askStudentAnalyticsConfirmation('End NWF probe early?', { title: 'End NWF probe', confirmText: 'End probe' })) {
-          clearInterval(nwfProbeTimerRef.current); nwfProbeTimerRef.current = null;
-          var sc = nwfProbeWords.filter(function(w){return w.scored;}); var co = sc.filter(function(w){return w.correct;}).length; var cls = sc.reduce(function(s,w){return s+(w.correct?w.word.length:0);},0);
-          setNwfProbeResults({correctWords:co,totalScored:sc.length,cls:cls,totalWords:nwfProbeWords.length,type:'nwf',grade:nwfProbeGrade}); setNwfProbeActive(false);
-        }
-      }
-    },
-      // Content: current word displayed large
-      nwfProbeIndex < nwfProbeWords.length && React.createElement('div', { className: 'text-center' },
-        React.createElement('div', {
-          className: 'bg-gradient-to-br from-slate-50 to-emerald-50 rounded-3xl p-12 border border-emerald-100 shadow-inner'
-        }, React.createElement('div', {
-          className: 'text-8xl font-bold text-slate-800 tracking-[0.2em] font-mono select-none'
-        }, nwfProbeWords[nwfProbeIndex].word))
-      )
-    ),
-    React.createElement(ProbeOverlay, {
-      isActive: lnfProbeActive && !lnfProbeResults,
-      probeType: '\uD83C\uDD70\uFE0F LNF Probe',
-      timer: lnfProbeTimer,
-      timerTotal: 60,
-      currentIndex: lnfProbeIndex,
-      totalItems: lnfProbeLetters.length,
-      correctCount: lnfProbeLetters.filter(function(l) { return l.scored && l.correct; }).length,
-      incorrectCount: lnfProbeLetters.filter(function(l) { return l.scored && !l.correct; }).length,
-      instruction: 'Say: \u201CPoint to each letter and tell me its name.\u201D Start timing on first response',
-      onCountdownDone: startProbeTimer,
-      onCorrect: function() {
-        if (lnfProbeIndex >= lnfProbeLetters.length) return;
-        var updated = lnfProbeLetters.slice();
-        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: true });
-        setLnfProbeLetters(updated);
-        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
-        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
-      },
-      onIncorrect: function() {
-        if (lnfProbeIndex >= lnfProbeLetters.length) return;
-        var updated = lnfProbeLetters.slice();
-        updated[lnfProbeIndex] = Object.assign({}, updated[lnfProbeIndex], { scored: true, correct: false });
-        setLnfProbeLetters(updated);
-        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
-        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = updated.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:updated.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
-      },
-      onSkip: function() {
-        if (lnfProbeIndex + 1 < lnfProbeLetters.length) { setLnfProbeIndex(lnfProbeIndex + 1); }
-        else { clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null; var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length; setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false); }
-      },
-      onEndEarly: async function() {
-        if (await askStudentAnalyticsConfirmation('End LNF probe early?', { title: 'End LNF probe', confirmText: 'End probe' })) {
-          clearInterval(lnfProbeTimerRef.current); lnfProbeTimerRef.current = null;
-          var sc = lnfProbeLetters.filter(function(l){return l.scored;}); var co = sc.filter(function(l){return l.correct;}).length;
-          setLnfProbeResults({correct:co,totalScored:sc.length,totalLetters:lnfProbeLetters.length,lpm:co,type:'lnf'}); setLnfProbeActive(false);
-        }
-      }
-    },
-      // Content: current letter displayed large + letter grid
-      lnfProbeIndex < lnfProbeLetters.length && React.createElement('div', { className: 'text-center' },
-        React.createElement('div', {
-          className: 'bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-12 border border-blue-100 shadow-inner mb-6'
-        }, React.createElement('div', {
-          className: 'text-[10rem] font-bold text-slate-800 font-mono select-none leading-none'
-        }, lnfProbeLetters[lnfProbeIndex].letter)),
-        React.createElement('div', { className: 'grid grid-cols-13 gap-1 max-w-lg mx-auto' },
-          lnfProbeLetters.map(function(item, idx) {
-            return React.createElement('div', {
-              key: idx,
-              className: 'flex items-center justify-center w-8 h-8 rounded text-sm font-bold transition-all ' +
-                (idx === lnfProbeIndex ? 'bg-blue-700 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
-                 idx < lnfProbeIndex && item.scored ? (item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through') :
-                 idx < lnfProbeIndex ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 text-slate-600')
-            }, item.letter);
-          })
-        )
-      )
-    ),
-    React.createElement(ProbeOverlay, {
-      isActive: ranProbeActive && !ranProbeResults,
-      probeType: '\u26A1 RAN Probe',
-      timer: undefined, // RAN uses a stopwatch, not countdown
-      currentIndex: ranProbeIndex,
-      totalItems: ranProbeItems.length,
-      correctCount: ranProbeItems.filter(function(i) { return i.scored && i.correct; }).length,
-      incorrectCount: ranProbeItems.filter(function(i) { return i.scored && !i.correct; }).length,
-      instruction: 'Say: \u201CName each one as fast as you can.\u201D \u2014 Stopwatch: ' + ranProbeElapsed + 's',
-      onCountdownDone: startProbeTimer,
-      onCorrect: function() {
-        if (ranProbeIndex >= ranProbeItems.length) return;
-        var updated = ranProbeItems.slice();
-        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: true });
-        setRanProbeItems(updated);
-        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
-        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
-      },
-      onIncorrect: function() {
-        if (ranProbeIndex >= ranProbeItems.length) return;
-        var updated = ranProbeItems.slice();
-        updated[ranProbeIndex] = Object.assign({}, updated[ranProbeIndex], { scored: true, correct: false });
-        setRanProbeItems(updated);
-        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
-        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = updated.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:updated.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
-      },
-      onSkip: function() {
-        if (ranProbeIndex + 1 < ranProbeItems.length) { setRanProbeIndex(ranProbeIndex + 1); }
-        else { clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null; var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length; setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false); }
-      },
-      onEndEarly: async function() {
-        if (await askStudentAnalyticsConfirmation('End RAN probe early?', { title: 'End RAN probe', confirmText: 'End probe' })) {
-          clearInterval(ranProbeTimerRef.current); ranProbeTimerRef.current = null;
-          var elapsed = Math.round((Date.now()-ranProbeStartRef.current)/1000); var sc = ranProbeItems.filter(function(i){return i.scored;}); var co = sc.filter(function(i){return i.correct;}).length;
-          setRanProbeResults({correct:co,totalScored:sc.length,totalItems:ranProbeItems.length,elapsed:elapsed,type:'ran',grade:ranProbeGrade,ranType:ranProbeType}); setRanProbeActive(false);
-        }
-      }
-    },
-      // Content: current item displayed large
-      ranProbeIndex < ranProbeItems.length && React.createElement('div', { className: 'text-center' },
-        React.createElement('div', {
-          className: 'bg-gradient-to-br from-slate-50 to-amber-50 rounded-3xl p-12 border border-amber-100 shadow-inner mb-4'
-        }, React.createElement('div', {
-          className: 'text-8xl font-bold text-slate-800 select-none'
-        }, ranProbeItems[ranProbeIndex].item)),
-        React.createElement('div', { className: 'text-3xl font-black text-amber-600 tabular-nums' }, '\u23F1 ' + ranProbeElapsed + 's')
-      )
-    )
-    )))))))), document.body), showAlloSheetHandoff && renderAlloSheetHandoffReview());
+    }, t('class_analytics.no_transcript')))))), document.body), showAlloSheetHandoff && renderAlloSheetHandoffReview());
   });
 
   // Register module

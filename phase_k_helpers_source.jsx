@@ -3927,6 +3927,21 @@ const performDeepVerification = async (fullText, deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] performDeepVerification fired"); } catch(_) {}
       const chunks = chunkText(fullText, 6000);
+      // Search with the lesson's topic. Without one, ask for a short subject label (a few words)
+      // so the document text itself is never used as the search query.
+      let verifyTopic = String(sourceTopic || '').trim().slice(0, 200);
+      if (!verifyTopic) {
+        try {
+          const labelPrompt = `Name the subject of this text in 2 to 6 words, the way you would type it into a search engine. Reply with those words only. Do not include anyone's name, contact details or ID numbers unless the text is about a well-known public figure.\n\nText:\n"${String(fullText || '').slice(0, 2000)}"`;
+          const label = await callGemini(labelPrompt, false, false);
+          const labelText = label && typeof label === 'object' ? label.text : label;
+          verifyTopic = String(labelText || '').split('\n')[0].replace(/^[\s"'*#-]+|[\s"'.*]+$/g, '').slice(0, 120);
+        } catch (labelErr) {
+          warnLog('Verification topic label failed', labelErr);
+        }
+      }
+      // In Canvas the search runs on this query, so without a topic there is nothing safe to search.
+      if (!verifyTopic && (_isCanvasEnv || isCanvas)) return { text: '', sources: [] };
       let combinedVerificationText = "";
       const globalSources = [];
       const sourceUrlToIndexMap = new Map();
@@ -3949,7 +3964,7 @@ const performDeepVerification = async (fullText, deps) => {
               Return a concise summary of findings for this segment.
           `;
           try {
-              const result = await callGemini(verificationPrompt, false, true, null, sourceTopic || null);
+              const result = await callGemini(verificationPrompt, false, true, null, verifyTopic || null);
               if (result) {
                   let chunkRawText = "";
                   let metadata = null;

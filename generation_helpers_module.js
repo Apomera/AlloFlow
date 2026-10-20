@@ -1341,7 +1341,24 @@ const _normalizeGeneratedMathSteps = (steps, traversalBudget = null) => {
   }, []);
 };
 const _GENERATED_MATH_EXPRESSION_LIMIT = 500;
-const _evaluateGeneratedNumericExpression = (expression) => {
+// In K-12 problems % is percent, never JavaScript's remainder ("15% + 5" was
+// 15 % +5 = 0). N% becomes (N/100) only where that reading is unambiguous: N%
+// is a factor of * or /, or the whole expression. "80 + 15%" (80.15 or 92?) and
+// "17 % 5" return null, so they are left unverified instead of guessed.
+const _resolveGeneratedMathPercents = (source) => {
+  if (!source.includes('%')) return source;
+  let ambiguous = false;
+  const resolved = source.replace(/(\d+(?:\.\d*)?|\.\d+)\s*%/g, (match, number, offset) => {
+    const before = source.slice(0, offset).replace(/\s+$/, '').slice(-1);
+    const after = source.slice(offset + match.length).replace(/^\s+/, '').charAt(0);
+    const factor = before === '*' || before === '/' || after === '*' || after === '/';
+    if (!factor && (before || after)) ambiguous = true;
+    return '(' + number + '/100)';
+  });
+  return ambiguous || resolved.includes('%') ? null : resolved;
+};
+// Unrounded value, so a rounded answer key can be told apart from an exact one.
+const _evaluateGeneratedNumericExpressionExact = (expression) => {
   try {
     if (typeof expression !== 'string') return null;
     if (expression.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
@@ -1353,14 +1370,79 @@ const _evaluateGeneratedNumericExpression = (expression) => {
     for (const token of numericTokens) {
       if (!token.includes('.') && !Number.isSafeInteger(Number(token))) return null;
     }
-    const result = Function('"use strict"; return (' + source.replace(/\^/g, '**') + ')')();
+    const percentResolved = _resolveGeneratedMathPercents(source);
+    if (percentResolved === null) return null;
+    const result = Function('"use strict"; return (' + percentResolved.replace(/\^/g, '**') + ')')();
     if (typeof result !== 'number' || !Number.isFinite(result)) return null;
-    const rounded = Math.round(result * 10000) / 10000;
-    if (!Number.isFinite(rounded)) return null;
-    return Number.isInteger(rounded) && !Number.isSafeInteger(rounded) ? null : rounded;
+    return Number.isInteger(result) && !Number.isSafeInteger(result) ? null : result;
   } catch (_) {
     return null;
   }
+};
+const _roundGeneratedMathComputed = (exact) => {
+  if (exact === null) return null;
+  const rounded = Math.round(exact * 10000) / 10000;
+  if (!Number.isFinite(rounded)) return null;
+  return Number.isInteger(rounded) && !Number.isSafeInteger(rounded) ? null : rounded;
+};
+const _evaluateGeneratedNumericExpression = (expression) =>
+  _roundGeneratedMathComputed(_evaluateGeneratedNumericExpressionExact(expression));
+// Decimal places a question's rounding instruction asks for ("nearest
+// hundredth" = 2, "nearest ten" = -1, "3 decimal places" = 3), or null when it
+// states none or more than one. "one", "ten", "dollar" and the like count only
+// beside "round" or "to the nearest", so "the nearest one to the school" is not
+// an instruction.
+const _GENERATED_MATH_ROUNDING_PLACES = {
+  'ten-thousandth': 4, thousandth: 3, hundredth: 2, tenth: 1, cent: 2, penny: 2,
+  'whole number': 0, whole: 0, integer: 0,
+  one: 0, ones: 0, unit: 0, dollar: 0, ten: -1, tens: -1, hundred: -2, hundreds: -2, thousand: -3, thousands: -3
+};
+const _GENERATED_MATH_LOOSE_ROUNDING_WORDS = new Set(['one', 'ones', 'unit', 'dollar', 'ten', 'tens', 'hundred', 'hundreds', 'thousand', 'thousands']);
+const _GENERATED_MATH_PLACE_COUNT_WORDS = { one: 1, two: 2, three: 3, four: 4 };
+const _generatedMathRoundingPlaces = (question) => {
+  const text = typeof question === 'string' ? question.toLowerCase().slice(0, 2000) : '';
+  if (!text) return null;
+  const places = new Set();
+  const explicit = /\bround/.test(text) || /\bto the nearest\b/.test(text);
+  const nearest = /\bnearest\s+(ten[- ]thousandths?|thousandths?|hundredths?|tenths?|cents?|penny|pennies|whole numbers?|whole|integers?|ones?|units?|dollars?|tens?|hundreds?|thousands?)\b/g;
+  for (const match of text.matchAll(nearest)) {
+    let word = match[1].replace(/-/g, ' ').replace(/^ten thousandths?$/, 'ten-thousandth');
+    if (word === 'pennies') word = 'penny';
+    else if (!(word in _GENERATED_MATH_ROUNDING_PLACES)) word = word.replace(/s$/, '');
+    if (!(word in _GENERATED_MATH_ROUNDING_PLACES)) continue;
+    if (_GENERATED_MATH_LOOSE_ROUNDING_WORDS.has(word) && !explicit) continue;
+    places.add(_GENERATED_MATH_ROUNDING_PLACES[word]);
+  }
+  for (const match of text.matchAll(/\b(\d|one|two|three|four)\s+decimal\s+places?\b|\b(\d)\s*d\.\s*p\.?(?![a-z])/g)) {
+    const raw = match[1] || match[2];
+    places.add(raw in _GENERATED_MATH_PLACE_COUNT_WORDS ? _GENERATED_MATH_PLACE_COUNT_WORDS[raw] : Number(raw));
+  }
+  return places.size === 1 ? Array.from(places)[0] : null;
+};
+const _GENERATED_MATH_EXACT_TOLERANCE = 1e-9;
+const _generatedMathSameNumber = (left, right) =>
+  Math.abs(left - right) <= _GENERATED_MATH_EXACT_TOLERANCE * Math.max(1, Math.abs(left), Math.abs(right));
+const _roundGeneratedMathToPlaces = (value, places) => {
+  const magnitude = Math.abs(value);
+  // Half up, away from zero, as taught; the nudge keeps 1.005 (stored as
+  // 1.00499...) rounding the way it is written.
+  const rounded = places >= 0
+    ? Math.round(magnitude * Math.pow(10, places) * (1 + 1e-12)) / Math.pow(10, places)
+    : Math.round(magnitude / Math.pow(10, -places) * (1 + 1e-12)) * Math.pow(10, -places);
+  return value < 0 ? -rounded : rounded;
+};
+// 'verified': the key equals the exact value, or the value rounded as the
+// question instructs. 'conflict': the key is wrong (flag for review). 'close':
+// neither, e.g. 0.33 for 1/3 with no rounding stated; not verified, not flagged.
+const _generatedMathAnswerAgreement = (exact, answer, roundingPlaces) => {
+  const difference = Math.abs(exact - answer);
+  if (roundingPlaces === null) {
+    if (_generatedMathSameNumber(exact, answer)) return 'verified';
+    return difference >= 0.01 ? 'conflict' : 'close';
+  }
+  if (_generatedMathSameNumber(_roundGeneratedMathToPlaces(exact, roundingPlaces), answer)) return 'verified';
+  const halfUnit = Math.pow(10, -roundingPlaces) / 2;
+  return difference >= 0.01 && difference > halfUnit && !_generatedMathSameNumber(difference, halfUnit) ? 'conflict' : 'close';
 };
 const _parseGeneratedPlainNumber = (answer) => {
   if (typeof answer === 'string' && answer.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
@@ -1385,14 +1467,17 @@ const verifyGeneratedMathProblems = (problems) => {
     if (!current || Object.keys(current).length === 0) continue;
     const verification = { verified: false, mismatch: false, computed: null, autoCorrected: false };
     const next = { ...current };
-    const computed = _evaluateGeneratedNumericExpression(current.expression);
+    const exactComputed = _evaluateGeneratedNumericExpressionExact(current.expression);
+    const computed = _roundGeneratedMathComputed(exactComputed);
     if (next.answer == null && current.correct_answer != null) next.answer = current.correct_answer;
     const answerNumber = _parseGeneratedPlainNumber(next.answer);
+    const roundingPlaces = _generatedMathRoundingPlaces(current.question || current.problem || current.prompt);
     if (computed !== null) {
       verification.computed = computed;
       if (answerNumber !== null) {
-        verification.verified = Math.abs(computed - answerNumber) < 0.01;
-        verification.mismatch = !verification.verified;
+        const agreement = _generatedMathAnswerAgreement(exactComputed, answerNumber, roundingPlaces);
+        verification.verified = agreement === 'verified';
+        verification.mismatch = agreement === 'conflict';
         if (verification.mismatch) {
           next._originalAnswer = current.answer;
           verification.reviewRequired = true;
@@ -1400,7 +1485,8 @@ const verifyGeneratedMathProblems = (problems) => {
         }
       }
     }
-    const questionComputed = _evaluateGeneratedNumericExpression(String(current.question || '').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-'));
+    const questionExact = _evaluateGeneratedNumericExpressionExact(String(current.question || '').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-'));
+    const questionComputed = _roundGeneratedMathComputed(questionExact);
     if (questionComputed !== null && computed !== null && Math.abs(questionComputed - computed) >= 0.01) {
       verification.verified = false;
       verification.mismatch = true;
@@ -1409,10 +1495,11 @@ const verifyGeneratedMathProblems = (problems) => {
       verification.questionComputed = questionComputed;
     }
     if (questionComputed !== null && answerNumber !== null) {
-      if (Math.abs(questionComputed - answerNumber) >= 0.01) {
+      const questionAgreement = _generatedMathAnswerAgreement(questionExact, answerNumber, roundingPlaces);
+      if (questionAgreement === 'conflict') {
         verification.verified = false; verification.mismatch = true;
         verification.reviewRequired = true; verification.reason = 'question_answer_conflict';
-      } else if (computed === null) { verification.verified = true; verification.computed = questionComputed; }
+      } else if (computed === null && questionAgreement === 'verified') { verification.verified = true; verification.computed = questionComputed; }
     }
     if (next.answer != null && typeof next.answer !== 'string' && typeof next.answer !== 'number') {
       verification.reviewRequired = true; verification.reason = 'invalid_answer';

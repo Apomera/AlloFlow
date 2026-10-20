@@ -36,7 +36,7 @@ describe('ordinary Allobot context minimization',()=>{
  });
  it('uses reviewed public topics without sending context to external search',async()=>{
   localStorage.setItem('alloflow_ai_config','{"serperApiKey":"synthetic"}');
-  for(const topic of window.WebSearchProvider.publicSearchQuery.topics){expect(window.WebSearchProvider.publicSearchQuery(topic)).toBe(topic);const plan=chat.evidence.plan('Search for '+topic);expect(plan.query,topic).toBeTruthy();}
+  for(const topic of ['cell structure','The American Revolution','Gettysburg Address','photosynthesis']){expect(window.WebSearchProvider.publicSearchQuery(topic)).toBe(topic);const plan=chat.evidence.plan('Search for '+topic);expect(plan.query,topic).toBeTruthy();}
   const search=vi.spyOn(window.WebSearchProvider,'search').mockResolvedValue({results:[]});const h=harness();window.AlloFlowChatPrivacy.set({excerpt:'Private reviewed student excerpt'});
   await chat.generateStandardChatResponse('Search for cell structure',h.deps);
   expect(search).toHaveBeenCalledWith('cell structure',6,'cell structure');expect(JSON.stringify(search.mock.calls)).not.toContain('Private');

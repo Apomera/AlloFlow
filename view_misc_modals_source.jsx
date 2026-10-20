@@ -26,8 +26,7 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
   const status = found ? tx('chat_guide.evidence_found', 'Public sources found; review the evidence')
     : evidence.status === 'disabled' ? tx('chat_guide.evidence_disabled', 'Web lookup is off in AI backend settings.')
     : evidence.status === 'managed-disabled' ? tx('chat_guide.evidence_managed_off', 'Not searched: external research is disabled by this managed deployment.')
-    : evidence.status === 'public-topic-required' ? tx('chat_guide.evidence_public_topic', 'Not searched: external search accepts approved public topics and standard codes only. Try UDL, a standard code, photosynthesis or retrieval practice.')
-    : evidence.status === 'private-query' ? tx('chat_guide.evidence_private', 'Not searched: this question may contain personal information. Use a public topic or claim without personal details.')
+    : evidence.status === 'private-query' ? tx('chat_guide.evidence_private', 'Not searched: this looks like it contains an email address, phone number or ID number. Remove it and ask again.')
     : evidence.status === 'needs-public-query' ? tx('chat_guide.evidence_query_needed', 'Not searched: provide an official standard code or a standalone public claim.')
     : tx('chat_guide.evidence_unavailable', 'Web evidence unavailable. This answer is not web-verified.');
   return <section className="mt-3 border-t border-current/20 pt-2 min-w-0" aria-label={tx('chat_guide.evidence_label', 'Sources and evidence')}>

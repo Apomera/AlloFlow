@@ -62,7 +62,12 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain('function handleToggleFlashcardQuizMode()');
     expect(source.match(/onClick={handleToggleFlashcardQuizMode}/g)).toHaveLength(2);
     expect(source).toContain('setFlashcardScore(0)');
-    expect(source).toContain('setFlashcardIndex(0)');
+    // 2026-10-19: switching modes keeps the current card and the ratings; it
+    // no longer restarts the round (which wiped ratings and moved focus to Close).
+    const toggle = (source.match(/function handleToggleFlashcardQuizMode\(\) \{[\s\S]*?\n    \}/) || [''])[0];
+    expect(toggle.length, 'toggle function found').toBeGreaterThan(100);
+    expect(toggle.includes('restartFlashcardRound('), 'the toggle restarts the round').toBe(false);
+    expect(toggle.includes('setIsFlashcardQuizMode(!isFlashcardQuizMode)')).toBe(true);
     expect(source).toContain('setIsFlashcardFlipped(false)');
     expect(source).toContain('setFlashcardOptions([])');
     expect(source).toContain('setFlashcardFeedback(null)');

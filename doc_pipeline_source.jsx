@@ -2789,6 +2789,171 @@ var _alloOcrAccuracy = function (text) {
   var _result = { score: score, band: band, confidence: confidence, basis: basis, mathContext: mathContext, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, junkRatioForBlend: Math.round(junkForBlend * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, mashRatio: Math.round(mashRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
   return _result;
 };
+// _alloAlignVisionOntoOcrWords (2026-10-20, 1954 Form 1040 scan): put the Vision reading of a page onto
+// Tesseract's word BOXES where the two engines align. The positioned searchable layer is drawn from
+// Tesseract's boxes whichever engine's text wins, so letter-shaped garble ("staternent", "Commi buioms",
+// "19547...") shipped as the scan's hidden text and as the coverage reference. Words both engines read
+// are anchors (LCS on letters/digits); inside a SHORT gap bounded by anchors on both sides, the Vision
+// words replace the Tesseract words (same count: word for word; otherwise one combined box, one line
+// only). Guards: a digits-only Tesseract word is never traded for words (unless an OCR look-alike:
+// "1"/"I", "(0)"/"(c)"); readings must resemble each other unless Tesseract itself scored the run < 30;
+// dot leaders read as letters ("ooeeeemenee") are dropped only where Vision read nothing between the
+// anchors. Returns null when the alignment is not trustworthy (under half the words agree).
+// stats.corroborated: Vision's text may serve as the page text: most words agree, Vision is not much
+// shorter, and almost every word Tesseract read CONFIDENTLY is in Vision's reading (nothing omitted).
+// stats.residualLowConf: share of the corrected layer still made of unresolved low-confidence words.
+var _alloAlignVisionOntoOcrWords = function (words, ocrText, visionText) {
+  if (!Array.isArray(words) || !words.length || typeof ocrText !== 'string' || typeof visionText !== 'string' || !visionText.trim()) return null;
+  var key = function (s) { return String(s || '').toLowerCase().replace(/[‘’ʼ]/g, "'").replace(/[^a-z0-9]/g, ''); };
+  var LOOK = { '0': 'o', c: 'o', '1': 'l', i: 'l', '2': 'z', '5': 's', '6': 'b', '8': 'b' };
+  var look = function (k) { return k.replace(/[0c12i568]/g, function (ch) { return LOOK[ch]; }); };
+  var lev = function (a, b) {
+    if (a === b) return 0; if (!a.length) return b.length; if (!b.length) return a.length;
+    var prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      for (j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  };
+  var sim = function (a, b) { var m = Math.max(a.length, b.length); return m ? 1 - lev(a, b) / m : 1; };
+  // Two words are the same word misread when both have 4+ letters/digits and their look-alike forms are close.
+  var fuzzy = function (a, b) { return a.length >= 4 && b.length >= 4 && Math.abs(a.length - b.length) <= 1 && sim(look(a), look(b)) >= 0.75; };
+  // LCS over two key lists with an equality test; returns matched index pairs in order.
+  var lcs = function (A, B, eq) {
+    var n = A.length, m = B.length, Wd = m + 1, d = new Uint16Array((n + 1) * Wd), i, j, pairs = [];
+    for (i = n - 1; i >= 0; i--) for (j = m - 1; j >= 0; j--) d[i * Wd + j] = eq(A[i], B[j]) ? d[(i + 1) * Wd + j + 1] + 1 : Math.max(d[(i + 1) * Wd + j], d[i * Wd + j + 1]);
+    for (i = 0, j = 0; i < n && j < m;) {
+      if (eq(A[i], B[j]) && d[i * Wd + j] === d[(i + 1) * Wd + j + 1] + 1) { pairs.push([i, j]); i++; j++; } else if (d[(i + 1) * Wd + j] >= d[i * Wd + j + 1]) i++; else j++;
+    }
+    return pairs;
+  };
+  var vTok = visionText.split(/\s+/).map(function (t) { return t.replace(/\*\*|__/g, '').replace(/^[*#|_>`]+|[*|_`]+$/g, ''); }).filter(function (t) { return key(t); });
+  var tIdx = [], i, j, k;
+  for (i = 0; i < words.length; i++) if (words[i] && typeof words[i].t === 'string' && key(words[i].t)) tIdx.push(i);
+  var N = tIdx.length, M = vTok.length;
+  if (!N || !M || (N + 1) * (M + 1) > 4e6) return null;
+  var tk = tIdx.map(function (x) { return key(words[x].t); }), vk = vTok.map(key);
+  var anchors = lcs(tk, vk, function (a, b) { return a === b; });
+  var share = anchors.length / Math.min(N, M);
+  var stats = { anchors: anchors.length, anchorShare: Math.round(share * 1000) / 1000, replaced: 0, merged: 0, removed: 0, skipped: 0, corroborated: false, residualLowConf: null, omission: null, samples: [] };
+  if (share < 0.5) { var _untrusted = { words: null, text: null, stats: stats }; return _untrusted; }
+  var out = words.map(function (w) { return Object.assign({}, w); });
+  var plan = [], paired = {};
+  var yMid = function (w) { return (w.y0 + w.y1) / 2; };
+  var sameLine = function (idx) { var h = Math.max.apply(null, idx.map(function (x) { return out[x].y1 - out[x].y0; })); return idx.every(function (x) { return Math.abs(yMid(out[x]) - yMid(out[idx[0]])) <= h * 0.6; }); };
+  var isNoise = function (t) { var s = String(t).toLowerCase().replace(/[^a-z.]/g, ''); return s.length >= 6 && /^[aceimnorsuvw.]+$/.test(s) && /(.)\1\1/.test(s); };
+  var note = function (from, to) { if (stats.samples.length < 12) stats.samples.push({ from: from, to: to }); };
+  // One unresolved run between two (exact or fuzzy) agreed words: tg = Tesseract word indices, vg = Vision tokens.
+  var resolveRun = function (tg, vg) {
+    if (!tg.length) return;
+    var noise = tg.filter(function (x) { return isNoise(words[x].t); });
+    if (!vg.length || (noise.length && noise.length < tg.length)) {
+      noise.forEach(function (x) { plan.push({ from: x, to: x, text: '' }); });
+      if (!vg.length) return;
+      tg = tg.filter(function (x) { return !isNoise(words[x].t); });
+    }
+    if (tg.length > 6 || vg.length > 6) { stats.skipped++; return; }
+    var tStr = tg.map(function (x) { return key(words[x].t); }).join(''), vStr = vg.map(key).join('');
+    var vLook = {}; vg.forEach(function (t) { vLook[look(key(t))] = 1; });
+    var lostNumber = tg.some(function (x) { var kk = key(words[x].t); return /^\d+$/.test(kk) && !vLook[look(kk)]; });
+    if (lostNumber && !/\d/.test(vStr)) { stats.skipped++; return; }
+    var conf = tg.reduce(function (s, x) { return s + (typeof words[x].c === 'number' ? words[x].c : 100); }, 0) / tg.length;
+    var sm = sim(look(tStr), look(vStr));
+    if (!(sm >= 0.4 || conf < 30 || (conf < 60 && sm >= 0.2))) { stats.skipped++; return; }
+    if (tg.length !== vg.length && !sameLine(tg)) {
+      var best = null;
+      for (var s0 = 0; s0 < tg.length; s0++) for (var e0 = s0; e0 < tg.length; e0++) {
+        var sub = tg.slice(s0, e0 + 1);
+        if (!sameLine(sub)) continue;
+        var sc = sim(look(sub.map(function (x) { return key(words[x].t); }).join('')), look(vStr));
+        if (!best || sc > best.sc) best = { sub: sub, sc: sc };
+      }
+      if (!best || best.sc < 0.5) { stats.skipped++; return; }
+      tg = best.sub;
+    }
+    note(tg.map(function (x) { return words[x].t; }).join(' '), vg.join(' '));
+    if (tg.length === vg.length) { for (var q = 0; q < tg.length; q++) if (out[tg[q]].t !== vg[q]) plan.push({ from: tg[q], to: tg[q], text: vg[q] }); }
+    else plan.push({ from: tg[0], to: tg[tg.length - 1], text: vg.join(' ') });
+  };
+  // Every gap between exact anchors: pair misread words inside it first (fuzzy LCS), then resolve
+  // the runs left between those pairs. gapOf records each Tesseract word's Vision range (omission check).
+  var gapOf = {};
+  for (var a = 0; a + 1 < anchors.length; a++) {
+    var tg = tIdx.slice(anchors[a][0] + 1, anchors[a + 1][0]), v0 = anchors[a][1] + 1, v1 = anchors[a + 1][1];
+    tg.forEach(function (x) { gapOf[x] = [v0, v1]; });
+    if (!tg.length) continue;
+    var vg = vTok.slice(v0, v1);
+    var fz = (vg.length && tg.length <= 40 && vg.length <= 40) ? lcs(tg.map(function (x) { return key(words[x].t); }), vg.map(key), fuzzy) : [];
+    var ti = 0, vi = 0;
+    for (var f = 0; f <= fz.length; f++) {
+      var tEnd = f < fz.length ? fz[f][0] : tg.length, vEnd = f < fz.length ? fz[f][1] : vg.length;
+      resolveRun(tg.slice(ti, tEnd), vg.slice(vi, vEnd));
+      if (f < fz.length) {
+        var tw = tg[fz[f][0]], vw = vg[fz[f][1]];
+        paired[tw] = 1;
+        var tKey = key(words[tw].t);
+        // a fuzzy pair never turns a number into a different number unless Vision also reads digits there
+        if (out[tw].t !== vw && !(/^\d+$/.test(tKey) && !/\d/.test(vw))) { plan.push({ from: tw, to: tw, text: vw }); note(words[tw].t, vw); }
+        ti = fz[f][0] + 1; vi = fz[f][1] + 1;
+      }
+    }
+  }
+  if (anchors.length) {
+    tIdx.slice(0, anchors[0][0]).forEach(function (x) { gapOf[x] = [0, anchors[0][1]]; });
+    tIdx.slice(anchors[anchors.length - 1][0] + 1).forEach(function (x) { gapOf[x] = [anchors[anchors.length - 1][1] + 1, M]; });
+  }
+  // Rewrite the page text with the boxes: every word is located in order in Tesseract's own text.
+  var spans = [], cursor = 0;
+  for (i = 0; i < words.length; i++) {
+    var wt = words[i] && typeof words[i].t === 'string' ? words[i].t : '';
+    var at = wt ? ocrText.indexOf(wt, cursor) : cursor;
+    if (at < 0) { var _unplaced = { words: null, text: null, stats: stats }; return _unplaced; }
+    spans.push([at, at + wt.length]); cursor = at + wt.length;
+  }
+  var text = '', pos = 0, lastTo = -1, drop = {}, touched = {};
+  plan.sort(function (x, y) { return x.from - y.from; });
+  for (var p = 0; p < plan.length; p++) {
+    var pl = plan[p];
+    if (pl.from <= lastTo) continue;
+    lastTo = pl.to;
+    text += ocrText.slice(pos, spans[pl.from][0]) + pl.text; pos = spans[pl.to][1];
+    for (k = pl.from; k <= pl.to; k++) touched[k] = 1;
+    if (!pl.text) { drop[pl.from] = 1; stats.removed++; continue; }
+    var box = out.slice(pl.from, pl.to + 1);
+    out[pl.from] = Object.assign({}, out[pl.from], { t: pl.text, x0: Math.min.apply(null, box.map(function (w) { return w.x0; })), y0: Math.min.apply(null, box.map(function (w) { return w.y0; })), x1: Math.max.apply(null, box.map(function (w) { return w.x1; })), y1: Math.max.apply(null, box.map(function (w) { return w.y1; })), src: 'vision' });
+    for (k = pl.from + 1; k <= pl.to; k++) drop[k] = 1;
+    if (pl.to > pl.from) stats.merged++; else stats.replaced++;
+  }
+  text += ocrText.slice(pos);
+  // Omission check: a word Tesseract read CONFIDENTLY (>= 85, 4+ letters/digits) must be in Vision's
+  // reading AT THAT PLACE (agreed, paired, or a close/joined token in the same gap), or Vision must hold
+  // a spare copy elsewhere (a reordered table). Common words no longer pass just by occurring on the page.
+  var anchoredW = {}, used = {}, vCount = {};
+  anchors.forEach(function (an) { anchoredW[tIdx[an[0]]] = 1; used[vk[an[1]]] = (used[vk[an[1]]] || 0) + 1; });
+  vk.forEach(function (x) { vCount[x] = (vCount[x] || 0) + 1; });
+  var vJoined = vk.join('');
+  var confident = 0, missing = 0, resid = 0;
+  for (k = 0; k < tIdx.length; k++) {
+    var wi = tIdx[k], w0 = words[wi], kk = tk[k], c0 = typeof w0.c === 'number' ? w0.c : 100;
+    if (!anchoredW[wi] && !paired[wi] && !touched[wi] && c0 < 60) resid++;
+    if (c0 < 85 || kk.length < 4 || anchoredW[wi] || paired[wi]) { if (c0 >= 85 && kk.length >= 4) confident++; continue; }
+    confident++;
+    // (a long run-together compound such as "amountexcludable" may sit anywhere in the joined reading)
+    var g = gapOf[wi] || [0, 0], gv = vk.slice(g[0], g[1]), near = gv.join('').indexOf(kk) !== -1 || (kk.length >= 8 && vJoined.indexOf(kk) !== -1);
+    for (j = 0; j < gv.length && !near; j++) if (fuzzy(kk, gv[j]) || (kk.length >= 4 && gv[j] === kk)) near = true;
+    if (near) continue;
+    if ((vCount[kk] || 0) > (used[kk] || 0)) { used[kk] = (used[kk] || 0) + 1; continue; }
+    missing++;
+  }
+  stats.omission = confident ? Math.round(missing / confident * 1000) / 1000 : null;
+  stats.residualLowConf = Math.round(resid / N * 1000) / 1000;
+  stats.corroborated = share >= 0.6 && confident >= 20 && missing / confident <= 0.03 && visionText.length >= ocrText.length * 0.7;
+  var _aligned = { words: out.filter(function (_, x) { return !drop[x]; }), text: text, stats: stats };
+  return _aligned;
+};
 // _alloOcrQualityUaVerdict (2026-08-11, audit finding #2): should an OCR-quality
 // estimate BLOCK the PDF/UA-1 declaration? PDF/UA-1 requires text to carry a
 // meaningful Unicode representation of the content; a searchable layer that is
@@ -3134,7 +3299,11 @@ function _emitAccessibleTableHtml(grid, opts) {
       // Explicit AI-declared scope wins; only the FALLBACK is geometry-aware — a header
       // in grid row 0 labels its column (scope="col"), a header in any later row is a
       // left-column row-header (scope="row"). Fixes wrong-axis SR reads. (tbl-scope-col0)
-      const sc = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) ? c.scope : (rowIdx === 0 ? 'col' : 'row');
+      const sc0 = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) ? c.scope : (rowIdx === 0 ? 'col' : 'row');
+      // A merged group header is emitted as scope="col"/"row" with its colspan/rowspan (2026-10-19):
+      // scope="colgroup" failed IBM Equal Access table_headers_related with or without <colgroup>
+      // elements (1954 Form 1040 Schedule I), and the fix gate refused every repair as a table change.
+      const sc = sc0 === 'colgroup' ? 'col' : sc0 === 'rowgroup' ? 'row' : sc0;
       attrs += ' scope="' + sc + '"';
     }
     const cs = Math.max(1, parseInt(c.colspan, 10) || 1); if (cs > 1) attrs += ' colspan="' + cs + '"';
@@ -14057,6 +14226,7 @@ var createDocPipeline = function(deps) {
       fn: function(html, p) {
         if (typeof DOMParser === 'undefined') return html;
         var scope = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(p.scope) >= 0) ? p.scope : 'col'; // validate (no attr-breakout)
+        scope = scope === 'colgroup' ? 'col' : scope === 'rowgroup' ? 'row' : scope; // group scopes fail IBM table_headers_related
         try {
           var doc = new DOMParser().parseFromString(String(html), 'text/html');
           var ths = [], all = doc.querySelectorAll('th'); // scope-less <th>, mirroring the old (?![^>]*scope)
@@ -14150,7 +14320,7 @@ var createDocPipeline = function(deps) {
     },
     // Merge all cells in a row into ONE spanning cell (e.g. a title/section-header row that got split
     // into separate cells). CONCATENATES the cell texts — nothing lost (the content gate validates by
-    // CONTAINMENT, op='merge'). A full-width header row becomes <th colspan scope="colgroup">.
+    // CONTAINMENT, op='merge'). A full-width header row becomes <th colspan scope="col">.
     fix_table_merge_row: {
       category: 'TABLE', wcag: '1.3.1', params: '{index, rowIndex}',
       fn: function(html, p) {
@@ -14172,7 +14342,7 @@ var createDocPipeline = function(deps) {
           }
           var merged = doc.createElement(anyTh ? 'th' : 'td');
           if (span > 1) merged.setAttribute('colspan', String(span));
-          if (anyTh) merged.setAttribute('scope', 'colgroup');
+          if (anyTh) merged.setAttribute('scope', 'col'); // a colspan'd scope="col" header covers its columns (colgroup fails IBM table_headers_related)
           merged.textContent = texts.join(' ');
           while (row.firstChild) row.removeChild(row.firstChild);
           row.appendChild(merged);
@@ -18091,6 +18261,7 @@ var createDocPipeline = function(deps) {
     const lowConfidence = []; // B5 (2026-06-20): pages whose WINNING OCR is low-confidence — surfaced as a banner
     const _dupeCollapses = []; // #G (2026-07-05): line-wrap word echoes collapsed from a winning page, per page
     const _columnReorders = []; // H-5 scanned half (2026-07-13): pages whose ground truth was rebuilt column-aware
+    const _visionAlignments = []; // 2026-10-20: pages whose Tesseract boxes took the Vision reading (disclosed)
     for (const _pn of _nums) {
       const _pair = _byNum.get(_pn);
       const tPage = _pair.t || null, vPage = _pair.v || null;
@@ -18141,7 +18312,24 @@ var createDocPipeline = function(deps) {
           if (_lowAccuracy && !(_extremeGarbage || _clearlyWorse || _lowConfTess)) warnLog('[OCR Reconcile] page ' + _pn + ': flipped to ' + _winner + ' on OCR-accuracy estimate (letter-shaped garble the junk/confidence nets missed)');
         }
       }
-      const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
+      // Vision onto Tesseract's boxes (2026-10-20, _alloAlignVisionOntoOcrWords): the corrected boxes are the
+      // page's searchable layer whichever text wins. A Tesseract win whose Vision reading is CORROBORATED
+      // (Tesseract confirms it and it omits nothing Tesseract read confidently) takes the Vision text: on the
+      // 1954 scan the longer Tesseract pages were letter-shaped garble no net above sees. Otherwise a Tesseract
+      // win keeps its own text with the aligned corrections. Fail-soft; typeof keeps sliced harnesses working.
+      let _aligned = null, _visionCorroborated = false;
+      if (tLen > 0 && vLen > 0 && tPage && Array.isArray(tPage.words) && tPage.words.length && typeof _alloAlignVisionOntoOcrWords === 'function') {
+        try { _aligned = _alloAlignVisionOntoOcrWords(tPage.words, tText, vText); } catch (_) { _aligned = null; }
+        if (_aligned && !_aligned.words) _aligned = null;
+      }
+      if (_aligned && _winner === 'tesseract' && _aligned.stats.corroborated) {
+        _winner = 'vision'; _visionCorroborated = true;
+        warnLog('[OCR Reconcile] page ' + _pn + ': Vision reading corroborated by Tesseract (' + Math.round(_aligned.stats.anchorShare * 100) + '% of words agree, nothing omitted) — used as the page text');
+      }
+      if (_aligned && (_visionCorroborated || _aligned.stats.replaced || _aligned.stats.merged || _aligned.stats.removed)) {
+        _visionAlignments.push({ pageNum: _pn, replaced: _aligned.stats.replaced, merged: _aligned.stats.merged, removed: _aligned.stats.removed, textSource: _winner, corroborated: _visionCorroborated, samples: _aligned.stats.samples.slice(0, 6) });
+      }
+      const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: _aligned ? _aligned.text : tText } : { source: 'vision', text: vText };
       // #G (2026-07-05): the 7/5 book run shipped "should be reserved reserved for" — the winning engine
       // had echoed a word at a printed line wrap, and the ground truth carried it into the sentence
       // restorer verbatim. Collapse an adjacent duplicate token in the WINNING text only when the OTHER
@@ -18166,7 +18354,7 @@ var createDocPipeline = function(deps) {
       // byte-for-byte. Disclosed via columnReorders — never silent.
       if (_winner === 'tesseract' && tPage && Array.isArray(tPage.words) && tPage.words.length) {
         try {
-          const _cr = _alloColumnReorderOcrText(tPage.words, chosen.text);
+          const _cr = _alloColumnReorderOcrText(_aligned ? _aligned.words : tPage.words, chosen.text);
           if (_cr) {
             chosen.text = _cr.text;
             _columnReorders.push({ pageNum: _pn, columns: _cr.columns });
@@ -18179,7 +18367,7 @@ var createDocPipeline = function(deps) {
       // searchable layer — independent of which engine's TEXT won the length contest.
       const _tp = tPage || {};
       merged.push({ pageNum: _pn, text: chosen.text, source: chosen.source,
-        words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
+        words: _aligned ? _aligned.words : (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
         pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
         pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null),
         viewportTransform: (Array.isArray(_tp.viewportTransform) ? _tp.viewportTransform : null) });
@@ -18188,7 +18376,11 @@ var createDocPipeline = function(deps) {
       // would otherwise ship unflagged. Vision has no per-word confidence, so we can only assess
       // Tesseract-won pages; mean Tesseract confidence <60 (clean prose is ~85-95) → flag for review.
       const _winConf = _winner === 'tesseract' ? _meanConf(tPage) : null;
-      if (chosen.text && _winConf != null && _winConf < 60) {
+      if (_visionCorroborated && _aligned.stats.residualLowConf > 0.15) {
+        // The page TEXT is the corroborated Vision reading, but this much unresolved low-confidence
+        // Tesseract text remains in the searchable layer drawn from the boxes: the hidden text needs review.
+        lowConfidence.push({ pageNum: _pn, confidence: Math.round((1 - _aligned.stats.residualLowConf) * 100) });
+      } else if (chosen.text && _winConf != null && _winConf < 60) {
         lowConfidence.push({ pageNum: _pn, confidence: Math.round(_winConf) });
       } else if (chosen.text && _ocrJunk(chosen.text) >= 0.6) {
         // Engine-AGNOSTIC net: Vision-won / all-Vision pages have no per-word confidence, so a page
@@ -18232,7 +18424,7 @@ var createDocPipeline = function(deps) {
     // Every accepted record represents one physical page. Never replace this union
     // with a single engine blob: that can erase a page the other engine recovered.
     const _fullText = _edge.texts.filter(Boolean).join('\n\n');
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses, columnReorders: _columnReorders };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses, columnReorders: _columnReorders, visionAlignments: _visionAlignments };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction.
@@ -19044,6 +19236,7 @@ var createDocPipeline = function(deps) {
     window.__alloDetectedFolios = record.detectedFolios || [];
     window.__alloOcrDupeCollapses = record.ocrDupeCollapses || [];
     window.__alloOcrColumnReorders = record.ocrColumnReorders || [];
+    window.__alloOcrVisionAlignments = record.ocrVisionAlignments || [];
     window.__alloStrippedEdgeLines = record.strippedEdgeLines || [];
     window.__lastVisionStripTrail = record.visionStripTrail || [];
   };
@@ -24639,6 +24832,9 @@ HTML section ${chunkNum}/${chunks.length}:
         return s !== undefined ? s : m;
       });
     }
+    // <meta charset> must sit in the first 1024 bytes (the HTML encoding prescan); the <style> blocks
+    // injected right after <head> pushed it to byte ~1,880 in every delivered file (2026-10-20). Same line ends sanitizeStyleForWCAG.
+    fixed = fixed.replace(/(<head\b[^>]*>)([\s\S]*?)(<meta\b[^>]*\bcharset\s*=[^>]*>)/i, (m, head, mid, meta) => (!mid.trim() || /<\/head>/i.test(mid)) ? m : head + '\n' + meta + mid.replace(/\s+$/, ''));
     warnLog(`[Contrast Fix] Fixed ${fixCount} color-contrast issues deterministically`);
     return { html: fixed, fixCount };
   };
@@ -24823,6 +25019,8 @@ HTML section ${chunkNum}/${chunks.length}:
       html = html.replace('<head>', '<head>\n' + reducedMotionCSS);
       totalFixes++;
     }
+    // Keep <meta charset> first in <head>: inside the 1024-byte encoding prescan (see fixContrastViolations).
+    html = html.replace(/(<head\b[^>]*>)([\s\S]*?)(<meta\b[^>]*\bcharset\s*=[^>]*>)/i, (m, head, mid, meta) => (!mid.trim() || /<\/head>/i.test(mid)) ? m : head + '\n' + meta + mid.replace(/\s+$/, ''));
 
     if (totalFixes > 0) {
       warnLog(`[WCAG Sanitizer] Applied ${totalFixes} fixes (level: ${level}, minFont: ${minFontSize}px)`);
@@ -29606,6 +29804,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__alloSourceLinkCount = 0; // M12: source hyperlink annotations, fresh each run (a prior document's count must never become this one's baseline)
       window.__alloImagePairingUncertain = null; // H14: image/caption pairing doubt, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
+      // Reconcile-time disclosure stashes, fresh each run (reconciliation or the banked-evidence restore refills them)
+      window.__alloOcrDupeCollapses = []; window.__alloOcrColumnReorders = []; window.__alloOcrVisionAlignments = []; window.__alloStrippedEdgeLines = [];
       // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
       // the CURRENT document's fingerprint. createTaggedPdf's legacy window-fallbacks
       // validate against this key and refuse another document's OCR state.
@@ -29953,7 +30153,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             for (let ii = 0; ii < outBytes.length; ii += CH) bin += String.fromCharCode.apply(null, outBytes.subarray(ii, ii + CH));
             return btoa(bin);
           };
-          const _EXTRACT_RULES = `RULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n- PAGE BREAKS: insert a line containing exactly [[PAGE BREAK]] between the content of consecutive pages (not before the first page or after the last).\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`;
+          const _EXTRACT_RULES = `RULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers (a table with no printed header row gets EMPTY header cells; never invent header labels)\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n- PAGE BREAKS: insert a line containing exactly [[PAGE BREAK]] between the content of consecutive pages (not before the first page or after the last).\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`;
           let _slicedChunks = 0;
           const chunkPromises = [];
           for (let i = 0; i < numChunks; i++) {
@@ -30164,6 +30364,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // however safe, is never silent. Overwritten every reconcile, so it can't go stale within a run.
         try { window.__alloOcrDupeCollapses = (rec && rec.dupeCollapses) || []; } catch (_) {}
         try { window.__alloOcrColumnReorders = (rec && rec.columnReorders) || []; } catch (_) {}
+        try { window.__alloOcrVisionAlignments = (rec && rec.visionAlignments) || []; } catch (_) {}
         // H4 (2026-07-09): the edge strip deletes whole LINES (running heads) — disclose their text in
         // the fidelity panel, not just their digits. Overwritten every reconcile, read _heavyScanned-gated.
         try { window.__alloStrippedEdgeLines = (rec && rec.strippedEdgeLines) || []; } catch (_) {}
@@ -30240,7 +30441,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // Very short PDF (1-2 pages): single extraction pass is safe
         updateProgress(1, `Extracting text (${effectivePageCount} page${effectivePageCount > 1 ? 's' : ''})...`);
         extractedText = await callGeminiVision(
-          `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+          `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers (a table with no printed header row gets EMPTY header cells; never invent header labels)\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
           _base64, _mimeType
         );
       } else {
@@ -30253,7 +30454,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
           chunkPromises.push(
             callGeminiVision(
-              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+              `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers (a table with no printed header row gets EMPTY header cells; never invent header labels)\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
               _base64, _mimeType
             ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
           );
@@ -30416,6 +30617,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             detectedFolios: window.__alloDetectedFolios || [],
             ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
             ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            ocrVisionAlignments: window.__alloOcrVisionAlignments || [],
             strippedEdgeLines: window.__alloStrippedEdgeLines || [],
             visionStripTrail: window.__lastVisionStripTrail || [],
           },
@@ -30455,6 +30657,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             detectedFolios: window.__alloDetectedFolios || [],
             ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
             ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            ocrVisionAlignments: window.__alloOcrVisionAlignments || [],
             strippedEdgeLines: window.__alloStrippedEdgeLines || [],
             visionStripTrail: window.__lastVisionStripTrail || [],
           });
@@ -30725,7 +30928,7 @@ BLOCK TYPES:
 - {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
 - {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
 - {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
-- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row. Cell strings must be PLAIN TEXT — never HTML tags. When a single cell contains a bulleted list, write each item prefixed with "• " (e.g. "• first point • second point"); do not emit <ul>/<li> markup inside a cell string.
+- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row. Cell strings must be PLAIN TEXT — never HTML tags. When a single cell contains a bulleted list, write each item prefixed with "• " (e.g. "• first point • second point"); do not emit <ul>/<li> markup inside a cell string. Add "rowHeaders":true ONLY when the first cell of every body row is a label naming that row (a line number, item name or year), not data.
 - {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
 - {"type":"hr"} — for section breaks between major content areas
@@ -30886,7 +31089,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- {"type":"h1","text":"...","id":"slug"} / h2 / h3\n` +
               `- {"type":"p","text":"... with <strong>bold</strong> <em>italic</em> <a href='url'>links</a>"}\n` +
               `- {"type":"ul","items":["...","..."]} / ol\n` +
-              `- {"type":"table","caption":"...","headers":["..."],"rows":[["...","..."]]}\n` +
+              `- {"type":"table","caption":"...","headers":["..."],"rows":[["...","..."]]} (add "rowHeaders":true only when each row's first cell labels that row)\n` +
               `- {"type":"image","description":"...","alt":"brief"}\n` +
               `- {"type":"blockquote","text":"..."}\n` +
               `- {"type":"hr"}\n\n` +
@@ -32107,8 +32310,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // legit morphological fixes such as word→words still apply since they match few times.)
             if (_grHits.length > 30) { warnLog('[Grammar] skipping over-broad correction "' + w + '" (' + _grHits.length + ' matches)'); continue; }
             let _grApplied = 0;
-            accessibleHtml = accessibleHtml.replace(_grReSafe, function(m) {
+            // 2026-10-19: corrections come from the OCR text but land in HTML that was built from the
+            // page images and is often already right. A correction that only ADDS words around `wrong`
+            // ("other casualty," -> "other casualty, or theft") must not apply where the HTML already
+            // reads `right`: the 1954 scan shipped "or theft or theft". Compare text, ignoring tags.
+            const _grAt = r.indexOf(w);
+            const _grHead = _grAt >= 0 ? r.slice(0, _grAt) : null, _grTail = _grAt >= 0 ? r.slice(_grAt + w.length) : null;
+            const _grPlain = (s) => s.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ');
+            const _grAlreadyRight = (offset, src, len) => {
+              if (_grHead === null) return false;
+              const before = _grPlain(src.slice(Math.max(0, offset - 300), offset)), after = _grPlain(src.slice(offset + len, offset + len + 300));
+              const head = _grHead.replace(/\s+/g, ' '), tail = _grTail.replace(/\s+/g, ' ');
+              return (!head || before.endsWith(head)) && (!tail || after.startsWith(tail));
+            };
+            accessibleHtml = accessibleHtml.replace(_grReSafe, function(m, offset, src) {
               if (m.charCodeAt(0) === 60) return m; // '<' → a full HTML tag: never rewrite inside markup
+              if (_grAlreadyRight(offset, src, m.length)) return m; // the text around it already says `right`
               _grApplied++;
               return r;                             // function replacer → `r` is inserted literally (no $ substitution)
             });
@@ -33125,8 +33342,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // straight apostrophes (kept) but the remediated HTML carries CURLY ones (stripped), so a
           // present word like "isn’t"/"Louise’s" normalized to "isnt"/"louises" and was judged MISSING
           // → re-spliced adjacent to its existing copy ("isn't isn't", "Louise's Louise's").
-          const _arNorm = (tk) => String(tk || '').toLowerCase().replace(/[‘’ʼ′‵]/g, "'").replace(/[‐-―−]/g, '-').replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
-          const _arSetOf = (s) => { const o = new Set(); for (const p of String(s || '').split(/\s+/)) { const n = _arNorm(p); if (n.length >= 2) o.add(n); } return o; };
+          // 2026-10-19 (1954 scan): figure/en/em dashes and the horizontal bar SEPARATE words ("$5,000—Use"
+          // was one token "5000-use", never found once </strong> split it in the HTML, so it landed in a
+          // false Content-recovery appendix); hyphens and the minus sign still join. A token needs a
+          // letter or digit: "---" (a markdown divider / dashed rule) was "seen by both engines" and got
+          // spliced into a table header.
+          const _arWords = (s) => String(s || '').split(/[\s‒–—―]+/).filter(Boolean);
+          const _arNorm = (tk) => String(tk || '').toLowerCase().replace(/[‘’ʼ′‵]/g, "'").replace(/[‐‑−]/g, '-').replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
+          const _arSetOf = (s) => { const o = new Set(); for (const p of _arWords(s)) { const n = _arNorm(p); if (n.length >= 2) o.add(n); } return o; };
           const _arSetT = _arSetOf(_arTess);
           const _arSetV = _arSetOf(_arVis);
           const _arSrc = (extractedText || '').replace(_ALLO_MARKER_RE, '');
@@ -33138,9 +33361,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // the first are not re-inserted, by design, to avoid wrong-location splices).
           const _arSeen = new Set();
           const _arMissing = [];
-          for (const raw of (_arSrc.match(/\S+/g) || [])) {
+          for (const raw of _arWords(_arSrc)) {
             const n = _arNorm(raw);
-            if (n.length < 3 || _arSeen.has(n)) continue;
+            if (n.length < 3 || _arSeen.has(n) || !/[a-z0-9]/.test(n)) continue;
             if (_arFinalSet.has(n)) continue;
             if (!(_arSetT.has(n) && _arSetV.has(n))) continue;
             _arSeen.add(n);
@@ -33402,12 +33625,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_placementWarn) _structuralFidelityNotes.push({ kind: 'placement', msg: _placementWarn }); // H6: rides the panel + fidelityLimited
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
       if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
+      // The OCR disclosures below read stashes that reconciliation writes (reset at the start of every run).
+      // 2026-10-20: _heavyScanned alone comes from the incoming audit, so a scan whose audit did not say
+      // "scanned" (the MCP lane) silently dropped all four notes; this run's own OCR method counts too.
+      const _ocrDisclosuresOn = _heavyScanned || (typeof window !== 'undefined' && /ocr|tesseract/i.test(String(window.__lastGroundTruthMethod || '')));
       if (_readingOrderWarn) _structuralFidelityNotes.push({ kind: 'sourceReadingOrder', msg: _readingOrderWarn }); // L5: a DISTINCT kind from the view's 'reading-order' note, which compares a re-fix against the PREVIOUS version. This one compares the output against the SOURCE DOCUMENT, so a re-fix lane must not clobber it; only a re-extraction can change it, which is why it lives with the durable kinds.
       // #G (2026-07-05): disclose reconcile-time echo collapses in the same persistent panel. Gated on
       // _heavyScanned so a stale stash from a previous scanned run can't annotate a born-digital doc
       // (the stash is only written when reconciliation actually runs).
       try {
-        const _ddc = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloOcrDupeCollapses)) ? window.__alloOcrDupeCollapses : [];
+        const _ddc = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloOcrDupeCollapses)) ? window.__alloOcrDupeCollapses : [];
         if (_ddc.length) {
           const _ddWords = [];
           _ddc.forEach((e) => { ((e && e.words) || []).forEach((w) => { if (_ddWords.length < 8) _ddWords.push(w); }); });
@@ -33418,17 +33645,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // H-5 scanned half (2026-07-13): disclose column-aware reading-order rebuilds. Same
       // _heavyScanned staleness gate as the echo-collapse note above.
       try {
-        const _cro = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloOcrColumnReorders)) ? window.__alloOcrColumnReorders : [];
+        const _cro = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloOcrColumnReorders)) ? window.__alloOcrColumnReorders : [];
         if (_cro.length) {
           const _croPages = _cro.slice(0, 6).map((e) => e.pageNum).join(', ');
           _structuralFidelityNotes.push({ kind: 'ocrColumnOrder', msg: 'The reading order on page' + (_cro.length === 1 ? '' : 's') + ' ' + _croPages + (_cro.length > 6 ? ', …' : '') + ' was rebuilt column-aware from the scan\'s word positions (the OCR engine had interleaved the columns line-by-line). No words were added or removed. Skim ' + (_cro.length === 1 ? 'that page' : 'those pages') + ' to confirm the text flows in the intended order.' });
+        }
+      } catch (_) {}
+      // 2026-10-20: disclose where the scan's word boxes took the second OCR reading. Same staleness gate.
+      try {
+        const _va = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloOcrVisionAlignments)) ? window.__alloOcrVisionAlignments : [];
+        const _vaN = _va.reduce((a, e) => a + ((e && e.replaced) || 0) + ((e && e.merged) || 0), 0);
+        if (_va.length && _vaN) {
+          const _vaEx = [];
+          _va.forEach((e) => { ((e && e.samples) || []).forEach((s) => { if (_vaEx.length < 4 && s && s.from && s.to) _vaEx.push('"' + String(s.from).slice(0, 30) + '" → "' + String(s.to).slice(0, 30) + '"'); }); });
+          _structuralFidelityNotes.push({ kind: 'ocrVisionAlignment', msg: 'On page' + (_va.length === 1 ? '' : 's') + ' ' + _va.slice(0, 6).map((e) => e.pageNum).join(', ') + (_va.length > 6 ? ', …' : '') + ', ' + _vaN + ' word run(s) of the scan\'s searchable text were taken from the second OCR reading where the two readings agreed on the words around them (' + _vaEx.join(', ') + '). Spot-check those words against the original.' });
         }
       } catch (_) {}
       // H4 (2026-07-09): disclose the page-edge lines the running-head strip DELETED from the OCR
       // ground truth — the text itself was previously undisclosed (only its digits rode out via
       // detectedFolios). Same _heavyScanned staleness gate as the echo-collapse note above.
       try {
-        const _sel = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];
+        const _sel = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];
         if (_sel.length) {
           const _selSample = _sel.slice(0, 4).map((l) => '"' + (String(l).length > 40 ? String(l).slice(0, 40) + '…' : l) + '"').join(', ');
           _structuralFidelityNotes.push({ kind: 'pageEdge', msg: _sel.length + ' repeated page-edge line' + (_sel.length === 1 ? '' : 's') + ' (running heads / footers, e.g. ' + _selSample + (_sel.length > 4 ? ', …' : '') + ') ' + (_sel.length === 1 ? 'was' : 'were') + ' removed from the recovered text so ' + (_sel.length === 1 ? 'it doesn\'t' : 'they don\'t') + ' interrupt sentences mid-page. If one of these is a real heading, restore it from the Diff view.' });
@@ -42527,6 +42764,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               ${sourceExcerptsHTML}
           `;
       } else if (item.type === 'glossary') {
+          // Labels through t() (a key it echoes falls back to the English), and each
+          // translation marked with its own direction (and language, when known).
+          const _gl = (key, fallback) => { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
+          const _glossLangAttrs = (languageName) => {
+              const m = window.AlloModules && window.AlloModules.ModuleScopeExtras;
+              let code = '';
+              try { if (m && typeof m.getSpeechLangCode === 'function') code = String(m.getSpeechLangCode(languageName) || '').split('-')[0]; } catch (_) { code = ''; }
+              const known = /^[A-Za-z]{2,3}$/.test(code) && !(code.toLowerCase() === 'en' && !/^english/i.test(String(languageName)));
+              let rtl = false;
+              try { rtl = !!isRtlLang(languageName); } catch (_) { rtl = false; }
+              return (known ? ' lang="' + code + '"' : '') + ' dir="' + (rtl ? 'rtl' : known ? 'ltr' : 'auto') + '"';
+          };
+          // One malformed glossary (no data, data saved as a JSON string, or an
+          // empty entry) used to throw here and fail the whole lesson's export.
+          item = { ...item, data: (() => {
+              let list = item.data;
+              if (typeof list === 'string') { try { list = JSON.parse(list); } catch (_) { list = []; } }
+              return Array.isArray(list) ? list.filter(entry => entry && typeof entry === 'object').map(entry => (
+                  entry.translations && (typeof entry.translations !== 'object' || Array.isArray(entry.translations)) ? { ...entry, translations: {} } : entry)) : [];
+          })() };
           const wordSearchHtml = (isTeacher && cfg.includeTeacherKey !== false && cfg.assessmentMode !== true && item.gameData && item.gameData.grid) ? (() => {
               let html = '';
               if (item.gameData) {
@@ -42544,12 +42801,40 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return html;
           })() : '';
+          // Student worksheet (display mode 'worksheet'): write each definition on lines, or
+          // match numbered words to lettered definitions. The shuffle is seeded from the
+          // glossary, so the student sheet and the teacher key (a separate render) agree.
+          const _glp = (key, fallback, params) => Object.keys(params || {}).reduce((text, name) => String(text).split('{' + name + '}').join(String(params[name] == null ? '' : params[name])), _gl(key, fallback));
+          const _glossWorksheetVariant = cfg.glossaryWorksheetVariant === 'matching' ? 'matching' : 'lines';
+          const _glossWorksheetPlan = () => {
+              const words = item.data.filter(gItem => String(gItem.term == null ? '' : gItem.term).trim());
+              if (_glossWorksheetVariant !== 'matching') return { words, order: [] };
+              const pairs = words.filter(gItem => String(gItem.def || gItem.definition || '').trim());
+              let h = 0x811c9dc5;
+              for (const ch of String(cfg.glossaryWorksheetSeed != null ? cfg.glossaryWorksheetSeed : (item.id || '') + '|' + pairs.map(gItem => gItem.term).join('|'))) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+              const random = () => { h = (h + 0x6D2B79F5) | 0; let x = Math.imul(h ^ (h >>> 15), 1 | h); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+              const order = pairs.map((_, i) => i);
+              for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+              if (order.length > 1 && order.every((value, i) => value === i)) order.push(order.shift());
+              return { words: pairs, order };
+          };
+          const _glossLetter = (index) => { let n = index + 1, s = ''; while (n > 0) { s = String.fromCharCode(65 + (n - 1) % 26) + s; n = Math.floor((n - 1) / 26); } return s; };
+          if (isTeacher && cfg.glossaryDisplayMode === 'worksheet' && cfg.includeTeacherKey && cfg.assessmentMode !== true) {
+              const plan = _glossWorksheetPlan();
+              const keyRows = plan.words.map((gItem, i) => `<li><strong>${_escTxt(gItem.term)}</strong>: ${_escTxt(_glossWorksheetVariant === 'matching' ? _glossLetter(plan.order.indexOf(i)) : (gItem.def || gItem.definition || ''))}</li>`).join('');
+              return `<div class="section alloflow-glossary-worksheet-key" id="${item.id}-key" data-glossary-worksheet-key="${_glossWorksheetVariant}"><h3>${_escTxt(_glp('glossary.worksheet_key_title', 'Answer key: {title}', { title }))}</h3><ol>${keyRows}</ol>${wordSearchHtml}</div>`;
+          }
           if (isTeacher && !isIndependentMode) {
               return wordSearchHtml ? `<div class="section" id="${item.id}-key">${wordSearchHtml}</div>` : '';
           }
           // Keep author descriptions and stale-image protection consistent with the live glossary.
+          // A picture with no usable description (none written, or one written for an
+          // earlier picture) is still informative: it is named by its term instead of
+          // being hidden from screen readers. Only a picture marked decorative is silent.
           function glossaryExportImageAlt(item) {
-  if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
+  if (!item || item.imageDecorative === true) return '';
+  const termAlt = typeof item.term === 'string' ? item.term.trim() : '';
+  if (typeof item.imageAlt !== 'string' || !item.imageAlt.trim()) return termAlt;
   if (item.imageAltHash) {
     const image = typeof item.image === 'string' ? item.image : '';
     let h = 0x811c9dc5;
@@ -42558,7 +42843,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     const step = Math.max(1, Math.floor(image.length / 4096));
     for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
     const hash = 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
-    if (hash !== item.imageAltHash) return '';
+    if (hash !== item.imageAltHash) return termAlt;
   }
   return item.imageAlt.trim();
 }
@@ -42595,13 +42880,123 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           //   'language-cards' — same as flash-cards but emphasizes translations
           //     (renders translations on the flip side instead of definitions)
           const glossaryMode = cfg.glossaryDisplayMode || 'table';
+          const _glossTranslationText = (gItem, lang) => {
+              const value = gItem.translations ? gItem.translations[lang] : '';
+              return value && typeof value === 'object' ? String(value.text != null ? value.text : value.translation != null ? value.translation : [value.term, value.def || value.definition].filter(Boolean).join(': ')) : String(value == null ? '' : value);
+          };
+          const _glossTermHtml = gItem => `${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}`;
+          const _glossPicture = (gItem, style) => gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="${style}"/>` : '';
+          if (glossaryMode === 'bilingual') {
+              // Term, definition, then one column per chosen language (all by default).
+              const allLanguages = [];
+              item.data.forEach(gItem => Object.keys(gItem.translations || {}).forEach(lang => { if (!allLanguages.includes(lang) && _glossTranslationText(gItem, lang).trim()) allLanguages.push(lang); }));
+              const languages = Array.isArray(cfg.glossaryBilingualLanguages) ? allLanguages.filter(lang => cfg.glossaryBilingualLanguages.includes(lang)) : allLanguages;
+              const head = `<th scope="col">${_escTxt(_gl('output.col_term', 'Term'))}</th><th scope="col">${_escTxt(_gl('output.col_def', 'Definition'))}</th>${languages.map(lang => `<th scope="col">${_escTxt(lang)}</th>`).join('')}`;
+              const rows = item.data.map(gItem => `<tr><th scope="row">${_glossTermHtml(gItem)}</th><td>${_escTxt(gItem.def || gItem.definition || '')}</td>${languages.map(lang => `<td${_glossLangAttrs(lang)}>${_escTxt(_glossTranslationText(gItem, lang))}</td>`).join('')}</tr>`).join('');
+              return `
+                  <style>
+                    .alloflow-glossary-bilingual table { width:100%; border-collapse:collapse; }
+                    .alloflow-glossary-bilingual th, .alloflow-glossary-bilingual td { border:1px solid #cbd5e1; padding:0.5em 0.7em; vertical-align:top; text-align:start; overflow-wrap:anywhere; color:#1e293b; }
+                    .alloflow-glossary-bilingual thead th { background:#ecfdf5; color:#065f46; }
+                    .alloflow-glossary-bilingual tbody th { color:#065f46; font-weight:700; }
+                    .alloflow-glossary-bilingual-scroll:focus-visible { outline:3px solid #065f46; outline-offset:2px; }
+                    @media print {
+                      .alloflow-glossary-bilingual { padding:0 !important; border:0 !important; break-inside:auto !important; }
+                      .alloflow-glossary-bilingual-scroll { overflow:visible !important; }
+                      .alloflow-glossary-bilingual table { font-size:10.5pt; }
+                      .alloflow-glossary-bilingual thead { display:table-header-group; }
+                      .alloflow-glossary-bilingual tr { break-inside:avoid; page-break-inside:avoid; }
+                    }
+                  </style>
+                  <div class="section alloflow-glossary-bilingual" id="${item.id}" data-glossary-bilingual="${languages.length}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      <div class="alloflow-glossary-bilingual-scroll" role="region" tabindex="0" aria-label="${_escTxt(_gl('glossary.export_bilingual_aria', 'Bilingual glossary table'))}" style="overflow-x:auto;">
+                          <table data-gloss-bilingual><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
+                      </div>
+                      ${wordSearchHtml}
+                  </div>
+              `;
+          }
+          if (glossaryMode === 'word-wall') {
+              // Large printable cards, grouped per printed page so a card never splits.
+              const perPage = [2, 3, 4].includes(Number(cfg.glossaryWordWallPerPage)) ? Number(cfg.glossaryWordWallPerPage) : 2;
+              const shortDefinition = value => {
+                  const clean = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+                  const first = (clean.match(/^.*?[.!?。！？](?=\s|$)/) || [clean])[0];
+                  return first.length > 160 ? first.slice(0, 157).replace(/\s+\S*$/, '') + '…' : first;
+              };
+              const cards = item.data.filter(gItem => String(gItem.term == null ? '' : gItem.term).trim()).map(gItem => {
+                  const definition = cfg.glossaryWordWallDefinition === true ? shortDefinition(gItem.def || gItem.definition) : '';
+                  return `<div class="alloflow-word-wall-card">${_glossPicture(gItem, '')}<p class="alloflow-word-wall-term">${_glossTermHtml(gItem)}</p>${definition ? `<p class="alloflow-word-wall-def">${_escTxt(definition)}</p>` : ''}${_glossCredit(gItem) ? `<p class="alloflow-word-wall-credit">${_escTxt(_glossCredit(gItem))}</p>` : ''}</div>`;
+              });
+              const pages = [];
+              for (let i = 0; i < cards.length; i += perPage) pages.push(`<div class="alloflow-word-wall-page">${cards.slice(i, i + perPage).join('')}</div>`);
+              return `
+                  <style>
+                    .alloflow-word-wall-page { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr)); gap:16px; margin:0 0 16px; }
+                    .alloflow-word-wall-card { box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4em; min-height:14em; padding:1.25em; border:3px solid #059669; border-radius:16px; background:#fff; text-align:center; break-inside:avoid; page-break-inside:avoid; overflow:hidden; }
+                    .alloflow-word-wall-card img { max-width:100%; max-height:9em; object-fit:contain; }
+                    .alloflow-word-wall-term { margin:0; font-size:clamp(2.25rem,7vw,4.5rem); font-weight:800; line-height:1.1; color:#064e3b; overflow-wrap:anywhere; hyphens:auto; }
+                    .alloflow-word-wall-def { margin:0; font-size:1.15em; line-height:1.35; color:#1e293b; }
+                    .alloflow-word-wall-credit { margin:0; font-size:0.7em; color:#475569; overflow-wrap:anywhere; }
+                    @media print {
+                      .alloflow-word-wall-section { padding:0 !important; border:0 !important; break-inside:auto !important; }
+                      .alloflow-word-wall-page { grid-template-columns:1fr; gap:0.25in; margin:0; break-after:page; page-break-after:always; }
+                      .alloflow-word-wall-page:last-child { break-after:auto; page-break-after:auto; }
+                      .alloflow-word-wall[data-per-page="4"] .alloflow-word-wall-page { grid-template-columns:1fr 1fr; }
+                      .alloflow-word-wall-card { height:3.9in; min-height:0; border-color:#000; }
+                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-card { height:2.7in; }
+                      .alloflow-word-wall-term { font-size:64pt; color:#000; }
+                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-term { font-size:48pt; }
+                      .alloflow-word-wall[data-per-page="4"] .alloflow-word-wall-term { font-size:40pt; }
+                      .alloflow-word-wall-card img { max-height:1.8in; }
+                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-card img { max-height:1in; }
+                      .alloflow-word-wall-def { font-size:14pt; color:#000; }
+                    }
+                  </style>
+                  <div class="section alloflow-word-wall-section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      <div class="alloflow-word-wall" data-per-page="${perPage}">${pages.join('')}</div>
+                      ${_glossCreditsHtml}
+                      ${wordSearchHtml}
+                  </div>
+              `;
+          }
+          if (glossaryMode === 'worksheet') {
+              // No definitions, translations or key here: the key is teacher-only (above).
+              const plan = _glossWorksheetPlan();
+              const sid = String(item.id || 'glossary').replace(/[^A-Za-z0-9_-]+/g, '-');
+              const picture = gItem => _glossPicture(gItem, 'width:48px;height:48px;object-fit:contain;vertical-align:middle;margin-inline-end:8px;');
+              const field = 'min-height:44px;font:inherit;border:1px solid #64748b;border-radius:6px;';
+              const body = _glossWorksheetVariant === 'matching'
+                  ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16em),1fr));gap:12px 28px;">
+                      <ol data-glossary-worksheet-words style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_words', 'Words'))}">${plan.words.map((gItem, i) => `<li style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;">${isWorksheet
+                          ? `<span>${i + 1}.</span>${fillableBlank(48)}${picture(gItem)}<strong>${_glossTermHtml(gItem)}</strong>`
+                          : `${picture(gItem)}<label for="gw-${sid}-${i}"><span>${i + 1}.</span> <strong>${_glossTermHtml(gItem)}</strong></label><input id="gw-${sid}-${i}" type="text" maxlength="3" size="3" autocomplete="off" data-allo-response-key="glossary-worksheet:${sid}:match:${i}" style="${field}width:4em;text-align:center;">`}</li>`).join('')}</ol>
+                      <ol data-glossary-worksheet-definitions style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_definitions', 'Definitions'))}">${plan.order.map((wordIndex, k) => `<li style="margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;"><strong>${_glossLetter(k)}.</strong> ${_escTxt(plan.words[wordIndex].def || plan.words[wordIndex].definition || '')}</li>`).join('')}</ol>
+                    </div>`
+                  : `<ol data-glossary-worksheet-words style="padding-inline-start:1.6em;margin:0;">${plan.words.map((gItem, i) => `<li style="margin:0 0 14px;break-inside:avoid;page-break-inside:avoid;">${picture(gItem)}${isWorksheet
+                      ? `<strong>${_glossTermHtml(gItem)}</strong>${ruledLines(2)}`
+                      : `<label for="gw-${sid}-${i}"><strong>${_glossTermHtml(gItem)}</strong></label><textarea id="gw-${sid}-${i}" rows="3" data-allo-response-key="glossary-worksheet:${sid}:def:${i}" style="${field}display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:6px;"></textarea>`}</li>`).join('')}</ol>`;
+              return `
+                  <style>@media print { .alloflow-glossary-worksheet { padding:0 !important; border:0 !important; break-inside:auto !important; } }</style>
+                  <div class="section alloflow-glossary-worksheet" id="${item.id}" data-glossary-worksheet="${_glossWorksheetVariant}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      <p style="margin:0 0 12px;font-weight:600;">${_escTxt(_glossWorksheetVariant === 'matching'
+                          ? _gl('glossary.worksheet_matching_directions', 'Write the letter of the matching definition next to each word.')
+                          : _gl('glossary.worksheet_lines_directions', 'Write what each word means in your own words.'))}</p>
+                      ${body}
+                      ${_glossCreditsHtml}
+                  </div>
+              `;
+          }
           if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
               const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
               const cardsHtml = `
-                  <div role="list" class="alloflow-glossary-card-list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr));gap:14px;margin-top:8px;">
+                  <div role="list" class="alloflow-glossary-card-list" aria-label="${_escTxt(_gl('glossary.export_cards_aria', 'Glossary flash cards'))}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr));gap:14px;margin-top:8px;">
                       ${item.data.map((gItem, idx) => {
                           const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
-                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
+                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${_escTxt(k)}:</strong> <span${_glossLangAttrs(k)}>${_escTxt(v)}</span></div>`).join('')
                               : '';
                           const imageHtml = gItem.image
                               ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
@@ -42609,8 +43004,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
-                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#64748b;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def || gItem.definition || ''}</div>`
-                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${gItem.def || gItem.definition || ''}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#64748b;">${_escTxt(_gl('glossary.export_no_translations', '(no translations)'))}</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${_escTxt(gItem.def || gItem.definition || '')}</div>`
+                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${_escTxt(gItem.def || gItem.definition || '')}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
                           return `
                               <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
                                   <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -42618,7 +43013,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                                       ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
-                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / click to flip ▼'))}</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
                                       ${backContent}
                                   </div>
@@ -42630,15 +43025,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // Teacher tip for paper use; on digital, JS hides the back side until clicked.
               const instructionsHtml = isWorksheet
                   ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:0.9em; color:#713f12; break-inside:avoid;">
-                       <strong>How to use:</strong> Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the ${showTranslations ? 'translation' : 'definition'} on the other.${hasAnyImages ? ' Cards with images give visual learners an extra cue.' : ''}
+                       <strong>${_escTxt(_gl('glossary.export_howto_label', 'How to use:'))}</strong> ${_escTxt(showTranslations ? _gl('glossary.export_howto_paper_translation', "Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the translation on the other.") : _gl('glossary.export_howto_paper_definition', "Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the definition on the other."))}${hasAnyImages ? ' ' + _escTxt(_gl('glossary.export_images_cue', 'Cards with images give visual learners an extra cue.')) : ''}
                      </div>`
                   : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
-                       💡 Click any card to flip and reveal the ${showTranslations ? 'translation' : 'definition'}. Use the controls below to flip all at once.
+                       💡 ${_escTxt(showTranslations ? _gl('glossary.export_flip_help_translation', 'Click any card to flip and reveal the translation. Use the controls below to flip all at once.') : _gl('glossary.export_flip_help_definition', 'Click any card to flip and reveal the definition. Use the controls below to flip all at once.'))}
                      </div>
                      <div style="display:flex; gap:8px; margin-bottom:12px;">
-                       <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Show all</button>
-                       <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Hide all</button>
-                       <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 Shuffle</button>
+                       <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">${_escTxt(_gl('glossary.export_show_all', 'Show all'))}</button>
+                       <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
+                       <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 ${_escTxt(_gl('glossary.export_shuffle', 'Shuffle'))}</button>
                      </div>`;
               return `
                   <style>
@@ -42666,7 +43061,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // mode disables it (paper printout should show everything flat).
           const _glossarySelfTest = (cfg.glossarySelfTest === true && !isWorksheet);
           const _hideCell = (content) => _glossarySelfTest
-              ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>Reveal</summary><div style="margin-top:6px;">${content}</div></details>`
+              ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>${_escTxt(_gl('glossary.export_reveal', 'Reveal'))}</summary><div style="margin-top:6px;">${content}</div></details>`
               : content;
           // Glossary image size: configurable via cfg.glossaryImageSize.
           // Small/medium/large/xl map to 40 / 64 / 96 / 140 px square caps.
@@ -42754,9 +43149,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </style>
                   ${_glossarySelfTest ? `
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                        <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Reveal all</button>
-                        <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
-                        <span style="font-size:11px;color:#64748b;font-style:italic;">Self-test: try to recall each definition, then reveal to check.</span>
+                        <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ ${_escTxt(_gl('glossary.export_reveal_all', 'Reveal all'))}</button>
+                        <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ ${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
+                        <span style="font-size:11px;color:#64748b;font-style:italic;">${_escTxt(_gl('glossary.export_selftest_help', 'Self-test: try to recall each definition, then reveal to check.'))}</span>
                     </div>
                   ` : ''}
                   ${(() => {
@@ -42783,8 +43178,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                           </td>
-                          <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(gItem.def)}</td>
-                          ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
+                          <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(_escTxt(gItem.def || gItem.definition || ''))}</td>
+                          ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${_escTxt(k)}:</strong> <span${_glossLangAttrs(k)}>${_escTxt(v)}</span>`).join('<br><br>'))}</td>` : ''}
                       </tr>
                       `).join('')}
                   </tbody>

@@ -680,6 +680,19 @@ function HeaderBar(props) {
   const headerAnalyticsLabel = screeningLiveActive ? (t("header.screening_live") || "Screening") + " \xB7 " + Math.max(0, (screenerSession.subtests || []).length - (screenerSession.currentIndex || 0)) + " " + (t("header.screening_left") || "left") : parentProgressLabel;
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
+  const guidedResumeChip = canUseTeacherGuidedMode && !guidedMode && _guidedHasProgress ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: startGuidedModeFromHeader,
+      "data-help-key": "header_guided_resume_chip",
+      className: "inline-flex shrink-0 items-center justify-center gap-1.5 min-h-[2.5rem] rounded-xl border border-emerald-300/50 bg-emerald-500/20 px-3 text-xs font-black text-white hover:bg-emerald-500/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 transition-colors",
+      title: t("toolbar.guided_mode_resume_desc") || "Continue your lesson from your saved step."
+    },
+    /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", null, t("toolbar.guided_resume_short") || "Resume guided"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline font-semibold text-emerald-100" }, (t("toolbar.guided_resume_step") || "Step {n}").replace("{n}", String((typeof guidedStep === "number" ? guidedStep : 0) + 1)))
+  ) : null;
   const openJoinFromCompactHeader = () => {
     _joinOpenAfterExpandRef.current = true;
     setHeaderCollapsed(false);
@@ -862,7 +875,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 16, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
-  ), /* @__PURE__ */ React.createElement(
+  ), guidedResumeChip, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1387,7 +1400,7 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.start_setup_aria") || "Open Start and setup options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 20 })
-  )), /* @__PURE__ */ React.createElement(
+  ), guidedResumeChip), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

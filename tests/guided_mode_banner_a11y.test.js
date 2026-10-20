@@ -157,11 +157,11 @@ describe('Guided Mode banner follow-up safeguards', () => {
     expect(component).toContain('100dvh');
     expect(component).toContain('safe-area-inset-bottom');
   });
-  it('provides a named completion summary and a progress-preserving Resume later action', () => {
+  it('provides a named completion summary and a progress-preserving Save & exit action', () => {
     expect(component).toContain('role="list" aria-label={t(\'guided.summary_label\')');
     expect(component).toContain('completedCount');
     expect(component).toContain('skippedCount');
-    expect(component).toContain("t('guided.resume_later') || 'Resume later'");
+    expect(component).toContain("t('guided.save_and_exit') || 'Save & exit'");
   });
 });
 describe('Guided Mode resilience and responsive safeguards', () => {

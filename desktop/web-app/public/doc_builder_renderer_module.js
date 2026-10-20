@@ -242,9 +242,14 @@ const renderJsonToHtml = (blocks) => {
               // list inside a cell, so literal "<ul><li>" (or "• " lines) in a cell string is rebuilt as a
               // real nested list instead of shipping escaped tags as visible text.
               const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));
+              // rowHeaders (2026-10-19, 1954 Form 1040 scan): when the first cell of each body row labels
+              // that row (line number, item, year), it is a row header. An empty first cell stays a <td>.
+              const _rowHdr = block.rowHeaders === true;
               const rows = rowsArr.map(row => {
                 if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(row)+`</td></tr>`;
-                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
+                return `<tr>`+row.map((cell, ci) => (_rowHdr && ci === 0 && row.length > 1 && String(cell == null ? '' : cell).trim())
+                  ? `<th scope="row" style="border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+_cellEsc(cell)+`</th>`
+                  : `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
               }).join('');
               return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }

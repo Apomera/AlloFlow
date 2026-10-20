@@ -30,9 +30,11 @@
  *     supportsLanguage(lang) -> bool
  *     analyzeWordSet(words, opts) -> analysis
  *     buildLessonScript(analysis, plan, opts) -> script
- *     scriptToText(script) -> string
+ *     scriptToText(script, opts) -> string
  *     ACTIVITY_SKILLS
  *   }
+ *   opts.translate (the host's ts) localizes the title, subtitle, caveats and
+ *   copy-text headings only; the scripted teacher speech stays English.
  */
 (function () {
   'use strict';
@@ -2356,6 +2358,8 @@ const WS_CORE = createWordSoundsCore();
    */
   function buildLessonScript(analysis, plan, opts) {
     opts = opts || {};
+    // opts.translate(key, params) is the host's ts(): '' on a miss.
+    var say = typeof opts.translate === 'function' ? opts.translate : null;
     var mastery = Math.max(1, Number(plan && plan.masteryThreshold) || 3);
     var activities = (plan && Array.isArray(plan.activities) && plan.activities.length)
       ? plan.activities.filter(function (a) { return a && a.id; })
@@ -2543,10 +2547,11 @@ const WS_CORE = createWordSoundsCore();
         grade: analysis.grade,
         language: analysis.language
       },
-      title: 'Direct Instruction lesson script',
+      title: (say && say('word_sounds.di_script_full_title')) || 'Direct Instruction lesson script',
       subtitle: (analysis.grade ? analysis.grade + '  ·  ' : '')
-        + analysis.wordCount + ' words  ·  '
-        + (planned ? activities.length + ' activities' : 'Quick Practice'),
+        + (planned
+          ? (say && say('word_sounds.di_subtitle_planned', { words: analysis.wordCount, activities: activities.length })) || (analysis.wordCount + ' words  ·  ' + activities.length + ' activities')
+          : (say && say('word_sounds.di_subtitle_quick', { words: analysis.wordCount })) || (analysis.wordCount + ' words  ·  Quick Practice')),
       objective: objective,
       focusText: focusText,
       primaryStrand: STRAND_LABEL[primaryStrand],
@@ -2573,15 +2578,15 @@ const WS_CORE = createWordSoundsCore();
       // Everything the teacher should know about how trustworthy this is.
       caveats: [].concat(
         analysis.estimatedWords.length
-          ? ['Sounds for ' + analysis.estimatedWords.join(', ') + ' were estimated from spelling, not looked up. Check them before you read them aloud.']
+          ? [(say && say('word_sounds.di_caveat_estimated', { words: analysis.estimatedWords.join(', ') })) || ('Sounds for ' + analysis.estimatedWords.join(', ') + ' were estimated from spelling, not looked up. Check them before you read them aloud.')]
           : [],
         analysis.unalignedWords.length
-          ? ['Letters could not be matched to sounds for ' + analysis.unalignedWords.join(', ') + '. The sound-mapping steps for those words need your own alignment.']
+          ? [(say && say('word_sounds.di_caveat_unaligned', { words: analysis.unalignedWords.join(', ') })) || ('Letters could not be matched to sounds for ' + analysis.unalignedWords.join(', ') + '. The sound-mapping steps for those words need your own alignment.')]
           : [],
         analysis.focusGpcs.length
           ? []
-          : ['No single pattern repeats across this word set, so the objective below is written broadly. A tighter word list produces a tighter lesson.'],
-        ['This script is generated from the word list. It is a starting point for your planning, not a curriculum, and it has not been reviewed by anyone but you.']
+          : [(say && say('word_sounds.di_caveat_no_pattern')) || 'No single pattern repeats across this word set, so the objective below is written broadly. A tighter word list produces a tighter lesson.'],
+        [(say && say('word_sounds.di_caveat_generated')) || 'This script is generated from the word list. It is a starting point for your planning, not a curriculum, and it has not been reviewed by anyone but you.']
       )
     };
   }
@@ -2589,18 +2594,19 @@ const WS_CORE = createWordSoundsCore();
   // ──────────────────────────────────────────────────────────────────────
   // Plain-text rendering, for copy-to-clipboard and for tests.
   // ──────────────────────────────────────────────────────────────────────
-  function scriptToText(script) {
+  function scriptToText(script, opts) {
     if (!script) return '';
+    var say = opts && typeof opts.translate === 'function' ? opts.translate : null;
     var out = [];
     out.push(script.title);
     out.push(script.subtitle);
     out.push('');
-    out.push('OBJECTIVE');
+    out.push(((say && say('word_sounds.di_heading_objective')) || 'Objective').toUpperCase());
     out.push(script.objective);
     out.push('');
-    out.push('About ' + script.estimatedMinutes + ' minutes. Mastery: ' + script.mastery + ' consecutive correct.');
+    out.push((say && say('word_sounds.di_timing', { minutes: script.estimatedMinutes, mastery: script.mastery })) || ('About ' + script.estimatedMinutes + ' minutes. Mastery: ' + script.mastery + ' consecutive correct.'));
     out.push('');
-    out.push('MATERIALS');
+    out.push(((say && say('word_sounds.di_heading_materials')) || 'Materials').toUpperCase());
     script.materials.forEach(function (m) { out.push('  - ' + m); });
     out.push('');
     script.sections.forEach(function (s) {
@@ -2625,15 +2631,33 @@ const WS_CORE = createWordSoundsCore();
       out.push('');
     });
     out.push('----------------------------------------');
-    out.push('WORD LIST');
+    out.push(((say && say('word_sounds.di_heading_word_list')) || 'Word list').toUpperCase());
     script.wordList.forEach(function (w) {
       out.push('  ' + w.word + '   ' + w.sounds + '   ' + w.count + ' sounds   ' + w.shape + '   ' + w.syllableType
         + (w.estimated ? '   [estimated]' : ''));
     });
     out.push('');
-    out.push('BEFORE YOU TEACH THIS');
+    out.push(((say && say('word_sounds.di_heading_caveats')) || 'Before you teach this').toUpperCase());
     script.caveats.forEach(function (c) { out.push('  - ' + c); });
     return out.join('\n');
+  }
+
+  /**
+   * presenterLines(id, item, opts) -> { model, prompt } | null
+   *
+   * One word's "My turn" and "Your turn" lines for the projected class
+   * presenter, from the same rules as the printed script. Null when the
+   * language is not English or the word cannot carry the line.
+   */
+  function presenterLines(id, item, opts) {
+    opts = opts || {};
+    if (!item || !supportsLanguage(opts.language)) return null;
+    var pool = Array.isArray(opts.words) && opts.words.length ? opts.words : [item];
+    var w = analyzeWord(item, opts.language, pool, opts.voice, WS_CORE.packAudioAssets(pool));
+    if (!w.word || !w.phonemeCount || !preparedTaskReady(id, w)) return null;
+    var need = SCRIPT_WORD_REQUIREMENT[id];
+    if (!w.activityItems && need && !need(w)) return null;
+    return activitySay(id, w);
   }
 
   var api = {
@@ -2642,6 +2666,7 @@ const WS_CORE = createWordSoundsCore();
     analyzeWordSet: analyzeWordSet,
     buildLessonScript: buildLessonScript,
     scriptToText: scriptToText,
+    presenterLines: presenterLines,
     ACTIVITY_SKILLS: ACTIVITY_SKILLS,
     // Exposed for tests and for a future on-screen prompt renderer.
     _analyzeWord: analyzeWord,

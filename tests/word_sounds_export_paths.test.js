@@ -202,9 +202,11 @@ describe('the probe payload sent on Finish', () => {
 
 describe('the Assessment Center screening CSV', () => {
   const exportSlice = sliceBetween(analyticsSource, 'const exportScreeningCSV = () => {', 'const generateRTICSV', { label: 'screening CSV' });
+  // The export writes through the module's shared CSV helpers (quoting and the download).
+  const csvHelpers = sliceBetween(analyticsSource, 'function _acCsvCell(value) {', 'function _acRestoreIdentityLinks(raw) {', { label: 'CSV helpers' });
   const run = (importedStudents) => {
     const addToast = vi.fn();
-    new Function('importedStudents', 'addToast', 't', `${exportSlice}\nexportScreeningCSV();`)(importedStudents, addToast, (key) => key);
+    new Function('importedStudents', 'addToast', 't', `${csvHelpers}\n${exportSlice}\nexportScreeningCSV();`)(importedStudents, addToast, (key) => key);
     return addToast;
   };
 
@@ -223,7 +225,8 @@ describe('the Assessment Center screening CSV', () => {
     expect(lines[2].split('","')[3], 'a timestamped record keeps its date').toBe(probeDate.toLocaleDateString());
     expect(io.downloads.at(-1).download).toBe(`screening_results_${localStamp(shownAt)}.csv`);
     expect(io.revoked).toEqual([]);
-    vi.advanceTimersByTime(1000);
+    // _acDownloadCsv frees the file's URL 1.5 s after the download starts.
+    vi.advanceTimersByTime(1500);
     expect(io.revoked).toEqual(['blob:test-1']);
   });
 });
@@ -236,7 +239,8 @@ describe('recording set and voice pack file names', () => {
     const names = [];
     for (const [word, languageKey] of [['мама', 'ru'], ['مرحبا', 'ar'], ['niño', 'es'], ['cat', 'en']]) {
       const library = { exportSet: () => '{}', identity: () => ({ targetWord: word, languageKey }) };
-      new Function('library', 'board', 'word', 'language', 'setLibraryStatus', `${slice}\ndownloadSet();`)(library, [], word, languageKey, () => {});
+      // errorText/tr: the editor's translated-status helpers, defined outside this slice.
+      new Function('library', 'board', 'word', 'language', 'setLibraryStatus', 'errorText', 'tr', `${slice}\ndownloadSet();`)(library, [], word, languageKey, () => {}, (e) => String((e && e.message) || ''), (k, en) => en);
       names.push(io.downloads.at(-1).download);
     }
     expect(names).toEqual(['syllables-ru-мама.json', 'syllables-ar-مرحبا.json', 'syllables-es-niño.json', 'syllables-en-cat.json']);

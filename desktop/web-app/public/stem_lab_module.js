@@ -3463,10 +3463,140 @@
     window.AlloModules = window.AlloModules || {};
     // STEM_AUTOSAVE_START
     // Keep the illusion gallery's progress and observations across visits.
-    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
+    var _STEM_SAVED_KEYS = ['wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
     // Kitchen Lab keeps progress and preferences only: never a live cook, its
     // timers or dialogs. The tool type-checks what comes back (klCleanState).
     var _KITCHEN_LAB_SAVED = ['recipeHistory', 'recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements', 'competitionBests', 'tournamentBestTotal', 'tournamentLastTotal', 'tournamentsCompleted', 'klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns', 'klUnits', 'klAltitudeFt', 'klIndependent', 'klRealKitchen', 'klPanMaterial', 'sandboxFood', 'klHandwashCompleted', 'maillardHunt'];
+    // Math tools save PROGRESS only: badges, counters, bests and the seen-maps
+    // that stop double credit. Never answers, inputs, plotted points, built
+    // models or feedback, so the next student on a shared device sees none.
+    // Calculus used to save its whole bucket (typed answers, reflections).
+    // Keyed by toolData bucket; checked on save AND restore. 'count' = finite
+    // number >= 0; 'flag' = true; 'flags' = map kept as true (a RegExp limits
+    // keys where some keys carry typed text); 'counts' = map of counts;
+    // 'tallies' = map of {attempts, correct}; 'ids' = unique ids; {..} = a
+    // nested record of counts (a bad count reads as 0).
+    var _MP_SCORE = { correct: 'count', total: 'count' };
+    var _MATH_PROGRESS_SAVED = {
+      _fractions: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', tabsVisited: 'flags', tabScores: 'counts', equivSolved: 'count', simplifySolved: 'count', convertCount: 'count', convertSeen: 'flags', wallPairsFound: 'count', wallPairsSeen: 'flags', opsSolved: 'count', aiAsked: 'count', stripEquivFound: 'count', stripPairsSeen: 'flags', signChecks: 'flags', signCorrectCount: 'count', signAttemptCount: 'count', signBestStreak: 'count', plateGame: { totalServed: 'count', bestCombo: 'count' } },
+      _numberline: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', roundingSolved: 'count', fractionSolved: 'count', negativeSolved: 'count', placeSolved: 'count', aiAsked: 'count', independentCorrect: 'count', supportedCorrect: 'count' },
+      _manipulatives: { earnedBadges: 'flags', score: _MP_SCORE, modesVisited: 'flags', regroupCount: 'count', blocksSolved: 'count', abacusSolved: 'count', slideSolved: 'count', quizSolved: 'count', counterSolved: 'count', nbSolved: 'count', hubSolved: 'count', speedBest: 'count' },
+      _moneyMath: { moneyAwardSeen: 'flags', moneyAnswerShown: 'flags', moneyRoundIds: 'counts', crBest: 'count' },
+      _areamodel: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', basicSolved: 'count', distSolved: 'count', multiSolved: 'count', wordSolved: 'count', aiAsked: 'count', usedCommutative: 'flag' },
+      _multExt: { badges: 'flags', totalCorrect: 'count', hiddenCorrect: 'count', trickySolved: 'count', squaresAnswered: 'flags', rowsAnswered: 'flags', patternsExplored: 'flags', visualExplored: 'flags', factScores: 'tallies' },
+      algebraCAS: { _badgesEarned: 'ids', _solveCount: 'count', _factorCount: 'count', _scaleSolves: 'count', _maxStreak: 'count', _aiQuestions: 'count', practiceScore: 'count', _modesUsed: 'flags', _builderUsed: 'flag', _triedAdvanced: 'flag' },
+      funcGrapher: { familiesTried: 'flags', fgScore: 'count', fgMythsDone: 'count', overlaysUsed: 'flags' },
+      graphCalc: { badges: 'ids', _graphsDrawn: 'count', _multiGraphCount: 'count', _challengesCompleted: 'count', _challengesDone: 'ids', aiQuestions: 'count', _analyzed: 'flag', _foundZero: 'flag', _foundIntersection: 'flag', _usedTrig: 'flag', _usedTable: 'flag', _usedSliders: 'flag', _usedDeriv: 'flag' },
+      _coordGrid: { badges: 'flags', bestStreak: 'count', plotsSolved: 'count', slopesSolved: 'count', distanceSolved: 'count', linesMade: 'count', chessSolved: 'count', worldSolved: 'count', bsBest: 'count', aiAsked: 'count', revealedItems: 'flags' },
+      inequality: { badges: 'flags', modesUsed: 'flags', tiersUsed: 'flags', tiersSolved: 'flags', quizCorrectTotal: 'count', solverCount: 'count', testCount: 'count' },
+      logicLab: { score: 'count', bestStreak: 'count', solvedProofs: ['flags', /^L\d+$/], xpCredited: ['flags', /^(?:(?:fallacy|quickfire|detective):\d+|learn|preset:.{1,80})$/] },
+      _ratioLab: { modesVisited: 'flags', solvedChallenges: 'flags', challengeAttempts: 'count' },
+      _volume: { badges: 'flags', score: _MP_SCORE, totalPlaced: 'count', wpSolved: 'count', wpExplored: 'flags', wpSolvedKeys: 'flags', dispSolved: 'count', layerUsed: 'flag', revealedItems: 'flags' },
+      protractor: { earnedBadges: 'flags', bestStreak: 'count', estimateCount: 'count', polygonsExplored: 'flags', typesSeen: 'counts' },
+      statsLab: { testsRun: 'count', compareMeansRun: 'flag', correlationRun: 'flag', regressionRun: 'flag', significantResult: 'flag', largeEffectFound: 'flag', powerRun: 'flag', apaCopied: 'count', aiGradeOpens: 'count', quizCompletedCount: 'count', quizCorrect: 'count', quizMastery: 'flags' },
+      probability: { totalTrials: 'count', experimentsUsed: 'flags', _awardedTrialMilestones: 'ids', _completedChallenges: 'ids', _bestStreak: 'count' },
+      unitConvert: { badges: 'flags', score: 'count', bestStreak: 'count', catsUsed: 'flags', tempUnitsUsed: 'flags', quizTotal: 'count', historySaveCount: 'count' },
+      _timeSchedule: { score: _MP_SCORE, bestStreak: 'count', clockAdjustments: 'count', modesUsed: 'flags', solvedChallenges: 'flags', scheduleSolvedKeys: 'flags', challengeAttempts: 'counts', challengeTypesUsed: 'flags', elapsedModelSignatures: ['flags', /^\d+\|\d+\|-?1$/] },
+      dataPlot: { earnedBadges: 'flags', dpScore: 'count', chartsViewed: 'flags', quizTypesUsed: 'flags' },
+      _areaPerimeter: { score: { correct: 'count', attempts: 'count' }, bestStreak: 'count', revealedBest: 'count', modeVisits: 'flags', solvedChallenges: 'flags', targetsExplored: 'flags', compositeMethods: 'flags' },
+      calculus: { calcScore: 'count', methodsUsed: 'flags', nExplored: 'flag', missionXP: 'flags' }
+    };
+    // These seed their defaults only while their bucket is missing (a
+    // progress-only bucket left Function Grapher plotting NaN), so a missing
+    // bucket's progress waits in _stemProgressPending until the tool makes it.
+    var _MATH_PROGRESS_DEFER = ['statsLab', 'funcGrapher'];
+    function _mpPlain(v) { return !!v && typeof v === 'object' && Object.prototype.toString.call(v) === '[object Object]'; }
+    function _mpCount(v) { return typeof v === 'number' && isFinite(v) && v >= 0 && v <= 1e9; }
+    function _mpMap(v, re, each) {
+      if (!_mpPlain(v)) return undefined;
+      var out = {}, n = 0;
+      Object.keys(v).forEach(function (k) {
+        if (n >= 2000 || !k || k.length > 300 || k === '__proto__' || k === 'constructor' || k === 'prototype' || (re && !re.test(k))) return;
+        var c = each(v[k]);
+        if (c !== undefined) { out[k] = c; n++; }
+      });
+      return out;
+    }
+    function _mpClean(type, v) {
+      var re = null;
+      if (Array.isArray(type)) { re = type[1]; type = type[0]; }
+      if (type === 'count') return _mpCount(v) ? v : undefined;
+      if (type === 'flag') return v === true ? true : undefined;
+      // Some badges hold Date.now(): keep only that it was earned.
+      if (type === 'flags') return _mpMap(v, re, function (x) { return x === true || (typeof x === 'number' && isFinite(x) && x > 0) ? true : undefined; });
+      if (type === 'counts') return _mpMap(v, re, function (x) { return _mpCount(x) ? x : undefined; });
+      if (type === 'tallies') return _mpMap(v, re, function (x) {
+        return _mpPlain(x) && _mpCount(x.attempts) && _mpCount(x.correct) && x.correct <= x.attempts ? { attempts: x.attempts, correct: x.correct } : undefined;
+      });
+      if (type === 'ids') {
+        if (!Array.isArray(v)) return undefined;
+        var seen = {}, list = [];
+        v.forEach(function (x) {
+          var ok = typeof x === 'string' ? x.length > 0 && x.length <= 120 : _mpCount(x);
+          if (ok && list.length < 500 && !seen[typeof x + x]) { seen[typeof x + x] = true; list.push(x); }
+        });
+        return list;
+      }
+      if (_mpPlain(type)) {
+        if (!_mpPlain(v)) return undefined;
+        var rec = {};
+        Object.keys(type).forEach(function (f) { var c = _mpClean(type[f], v[f]); rec[f] = c === undefined ? 0 : c; });
+        return rec;
+      }
+      return undefined;
+    }
+    function _mpRecord(v, spec) {
+      if (!_mpPlain(v)) return null;
+      var out = {}, any = false;
+      Object.keys(spec).forEach(function (f) {
+        if (!Object.prototype.hasOwnProperty.call(v, f)) return;
+        var c = _mpClean(spec[f], v[f]);
+        if (c !== undefined) { out[f] = c; any = true; }
+      });
+      return any ? out : null;
+    }
+    function _mpMerge(bucket, clean, spec) {
+      var out = Object.assign({}, bucket);
+      Object.keys(clean).forEach(function (f) {
+        out[f] = _mpPlain(spec[f]) && _mpPlain(bucket[f]) ? Object.assign({}, bucket[f], clean[f]) : clean[f];
+      });
+      return out;
+    }
+    // Saved progress joins a fresh bucket field by field: the tool keeps its
+    // own defaults for everything else.
+    function _stemRestoreMathProgress(next, saved) {
+      var pend = _mpPlain(next._stemProgressPending) ? Object.assign({}, next._stemProgressPending) : {};
+      Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
+        var spec = _MATH_PROGRESS_SAVED[k];
+        var clean = _mpPlain(saved) ? _mpRecord(saved[k], spec) : null;
+        if (!clean) return;
+        if (_mpPlain(next[k])) next[k] = _mpMerge(next[k], clean, spec);
+        else if (_MATH_PROGRESS_DEFER.indexOf(k) !== -1) pend[k] = clean;
+        else next[k] = clean;
+      });
+      if (Object.keys(pend).length) next._stemProgressPending = pend; else delete next._stemProgressPending;
+      return next;
+    }
+    function _stemHydrateLabToolData(prev, parsed) {
+      var _parsedForHydration = Object.assign({}, parsed);
+      Object.keys(_MATH_PROGRESS_SAVED).concat('_stemProgressPending').forEach(function (k) { delete _parsedForHydration[k]; });
+      return _stemRestoreMathProgress(Object.assign({}, prev, _parsedForHydration, { _persisted: true }), parsed);
+    }
+    function _stemApplyPendingProgress(prev) {
+      var pend = prev && prev._stemProgressPending;
+      if (!_mpPlain(pend)) return prev;
+      var next = null, left = {}, kept = 0;
+      Object.keys(pend).forEach(function (k) {
+        var spec = Object.prototype.hasOwnProperty.call(_MATH_PROGRESS_SAVED, k) ? _MATH_PROGRESS_SAVED[k] : null;
+        if (spec && !_mpPlain(prev[k])) { left[k] = pend[k]; kept++; return; }
+        next = next || Object.assign({}, prev);
+        var clean = spec && _mpRecord(pend[k], spec);
+        if (clean) next[k] = _mpMerge(prev[k], clean, spec);
+      });
+      if (!next) return prev;
+      if (kept) next._stemProgressPending = left; else delete next._stemProgressPending;
+      return next;
+    }
     function _stemPersistencePayload(labToolData) {
           var _toSave = {};
           // @tool waterCycle
@@ -3496,11 +3626,20 @@
             });
             _toSave.kitchenLab = _klSave;
           }
+          // Progress still waiting for its bucket counts as that tool's state.
+          var _pend = _mpPlain(labToolData._stemProgressPending) ? labToolData._stemProgressPending : {};
+          Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
+            var spec = _MATH_PROGRESS_SAVED[k], src = labToolData[k];
+            var waiting = _mpRecord(_pend[k], spec);
+            if (waiting) src = _mpMerge(_mpPlain(src) ? src : {}, waiting, spec);
+            var clean = _mpRecord(src, spec);
+            if (clean) _toSave[k] = clean;
+          });
           return _toSave;
     }
     function _createStemAutosave() {
       var key = 'alloflow_stemlab_v2';
-      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab']);
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
       var previousRefs = null, pending = null, timer = null, disposed = false;
       var lastSaved = null;
       try { lastSaved = localStorage.getItem(key); } catch (_) {}
@@ -5284,7 +5423,7 @@
                 var _hydratedBeehive = _deserializeBeehiveFromPersistence(_parsed.beehive);
                 _parsedForHydration = Object.assign({}, _parsed, { beehive: _hydratedBeehive });
               }
-              setLabToolData(function (prev) { return Object.assign({}, prev, _parsedForHydration, { _persisted: true }); });
+              setLabToolData(function (prev) { return _stemHydrateLabToolData(prev, _parsedForHydration); });
             } else {
               setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
             }
@@ -5304,6 +5443,10 @@
       }, []);
       React.useEffect(function () {
         if (_stemAutosaveRef.current) _stemAutosaveRef.current.queue(labToolData);
+      }, [labToolData]);
+      // Deferred math progress joins its bucket once the tool has created it.
+      React.useEffect(function () {
+        if (labToolData._stemProgressPending) setLabToolData(_stemApplyPendingProgress);
       }, [labToolData]);
 
       // ── Tutorial Overlay Helper ──

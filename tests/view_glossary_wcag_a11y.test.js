@@ -18,7 +18,9 @@ describe('Glossary WCAG 2.2 interaction safeguards', () => {
   });
 
   it('restores focus only when the previous control remains connected', () => {
-    expect(source.match(/previouslyFocused\?\.isConnected/g)).toHaveLength(3);
+    // Two since 2026-10-19: the third guarded the screening results dialog,
+    // which moved to the Assessment Center panel (student_analytics_module.js).
+    expect(source.match(/previouslyFocused\?\.isConnected/g)).toHaveLength(2);
   });
 
   it('provides reduced-motion handling for every animation utility', () => {

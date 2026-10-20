@@ -28,14 +28,16 @@ const wrap = (b) => `<!DOCTYPE html><html lang="en"><body><main>${b}</main></bod
 const parse = (h) => new DOMParser().parseFromString(h, 'text/html');
 
 describe('fix_table_merge_row — combine a row into one spanning cell (content concatenated)', () => {
-  it('merges a 3-cell header row into one <th colspan=3 scope=colgroup> with all text', () => {
+  // scope="col" (not colgroup) since 2026-10-19: a colspan'd col header covers its columns, and
+  // scope="colgroup" failed IBM Equal Access table_headers_related with or without <colgroup>.
+  it('merges a 3-cell header row into one <th colspan=3 scope=col> with all text', () => {
     const before = wrap('<table><tr><th>Quarterly</th><th>Sales</th><th>Report</th></tr><tr><td>x</td><td>y</td><td>z</td></tr></table>');
     const after = fix_table_merge_row(before, { index: 0, rowIndex: 0 });
     const d = parse(after);
     const top = d.querySelectorAll('tr')[0].querySelectorAll('th, td');
     expect(top.length).toBe(1);
     expect(top[0].getAttribute('colspan')).toBe('3');
-    expect(top[0].getAttribute('scope')).toBe('colgroup');
+    expect(top[0].getAttribute('scope')).toBe('col');
     expect(top[0].textContent).toBe('Quarterly Sales Report'); // nothing lost
   });
   it('the merge PASSES the gate under the declared merge/containment delta', () => {

@@ -17,6 +17,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
+// Files under test; LANE_DIR points the gate at a working copy.
+const DIR = process.env.LANE_DIR || process.cwd();
 let acorn, src, ast;
 
 // Deliberate exceptions, each with a reason. Keep this list SHORT and justified.
@@ -40,54 +42,119 @@ function looksLikeProse(s) {
   return /[A-Z]/.test(s) || / /.test(s);
 }
 
-function isFallbackOfTranslator(parent) {
-  if (!parent || parent.type !== 'LogicalExpression' || parent.operator !== '||') return false;
-  const callish = (n) => n && n.type === 'CallExpression' && n.callee &&
-    ((n.callee.type === 'Identifier' && (n.callee.name === 'ts' || n.callee.name === 't')) ||
-     n.callee.type === 'MemberExpression');
-  if (callish(parent.left)) return true;
-  if (parent.left && parent.left.type === 'LogicalExpression') {
-    return callish(parent.left.left) || callish(parent.left.right);
-  }
-  return false;
-}
+const TEXT_PROPS = ['aria-label', 'title', 'alt', 'placeholder', 'aria-description'];
 
-function collect() {
-  const out = [];
-  (function walk(node, parent) {
+function walk(node, visit) {
+  if (!node || typeof node.type !== 'string') return;
+  visit(node);
+  for (const k of Object.keys(node)) {
+    if (k === 'loc' || k === 'range') continue;
+    const v = node[k];
+    if (Array.isArray(v)) v.forEach((c) => c && typeof c.type === 'string' && walk(c, visit));
+    else if (v && typeof v.type === 'string') walk(v, visit);
+  }
+}
+const isFunction = (n) => /^(FunctionDeclaration|FunctionExpression|ArrowFunctionExpression)$/.test(n.type);
+const within = (node, scope) => node.start >= scope.start && node.end <= scope.end;
+
+// Every place an element is built: React.createElement(...), a call through a
+// local alias of it (`const h = React.createElement; h(...)`), and a call to a
+// small helper that passes one of its parameters straight to such a call as a
+// child or a text prop (`const button = (label, ...) => h('button', {...}, label)`).
+// Aliases and helpers count only inside the function that declares them.
+const siteCache = new WeakMap();
+function elementSites(tree) {
+  if (siteCache.has(tree)) return siteCache.get(tree);
+  const scopeOf = new Map();
+  (function mark(node, scope) {
     if (!node || typeof node.type !== 'string') return;
-    if (node.type === 'CallExpression' && node.callee &&
-        node.callee.type === 'MemberExpression' &&
-        node.callee.property && node.callee.property.name === 'createElement') {
-      const args = node.arguments || [];
-      for (let i = 2; i < args.length; i++) {
-        const a = args[i];
-        if (a && a.type === 'Literal' && typeof a.value === 'string' &&
-            looksLikeProse(a.value) && !isFallbackOfTranslator(node) &&
-            !ALLOWED.has(a.value.trim())) {
-          out.push({ line: a.loc.start.line, text: a.value, kind: 'child' });
-        }
-      }
-      const props = args[1];
-      if (props && props.type === 'ObjectExpression') {
-        for (const p of props.properties) {
-          if (!p.key) continue;
-          const name = p.key.name || p.key.value;
-          if (!['aria-label', 'title', 'alt', 'placeholder', 'aria-description'].includes(name)) continue;
-          if (p.value && p.value.type === 'Literal' && typeof p.value.value === 'string' &&
-              looksLikeProse(p.value.value) && !ALLOWED.has(p.value.value.trim())) {
-            out.push({ line: p.value.loc.start.line, text: p.value.value, kind: name });
-          }
-        }
-      }
-    }
+    const inner = isFunction(node) ? node : scope;
     for (const k of Object.keys(node)) {
       if (k === 'loc' || k === 'range') continue;
       const v = node[k];
-      if (Array.isArray(v)) v.forEach((c) => c && typeof c.type === 'string' && walk(c, node));
-      else if (v && typeof v.type === 'string') walk(v, node);
+      if (Array.isArray(v)) v.forEach((c) => { if (c && typeof c.type === 'string') { scopeOf.set(c, inner); mark(c, inner); } });
+      else if (v && typeof v.type === 'string') { scopeOf.set(v, inner); mark(v, inner); }
     }
-  })(ast, null);
+  })(tree, tree);
+
+  const aliases = [];
+  walk(tree, (n) => {
+    if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && n.init?.type === 'MemberExpression' &&
+        !n.init.computed && n.init.property?.name === 'createElement') aliases.push({ name: n.id.name, scope: scopeOf.get(n) });
+  });
+  const isCreate = (n) => n?.type === 'CallExpression' && (
+    (n.callee.type === 'MemberExpression' && !n.callee.computed && n.callee.property?.name === 'createElement') ||
+    (n.callee.type === 'Identifier' && aliases.some((a) => a.name === n.callee.name && within(n, a.scope))));
+
+  const helpers = [];
+  walk(tree, (n) => {
+    let name, fn;
+    if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && n.init && isFunction(n.init)) { name = n.id.name; fn = n.init; }
+    else if (n.type === 'FunctionDeclaration' && n.id) { name = n.id.name; fn = n; }
+    if (!fn) return;
+    const params = new Map(fn.params.map((p, index) => [p.type === 'Identifier' ? p.name : null, index]));
+    params.delete(null);
+    if (!params.size) return;
+    const slots = [];
+    walk(fn.body, (c) => {
+      if (!isCreate(c)) return;
+      const args = c.arguments;
+      for (let i = 2; i < args.length; i++) if (args[i].type === 'Identifier' && params.has(args[i].name)) slots.push({ index: params.get(args[i].name), prop: null });
+      if (args[1]?.type === 'ObjectExpression') {
+        for (const q of args[1].properties) {
+          const key = q.key && (q.key.name || q.key.value);
+          if (TEXT_PROPS.includes(key) && q.value?.type === 'Identifier' && params.has(q.value.name)) slots.push({ index: params.get(q.value.name), prop: key });
+        }
+      }
+    });
+    if (slots.length) helpers.push({ name, slots, scope: scopeOf.get(n) });
+  });
+
+  const sites = [];
+  walk(tree, (n) => {
+    if (isCreate(n)) {
+      const args = n.arguments || [];
+      const props = [];
+      if (args[1]?.type === 'ObjectExpression') {
+        for (const p of args[1].properties) {
+          const name = p.key && (p.key.name || p.key.value);
+          if (TEXT_PROPS.includes(name)) props.push({ name, node: p.value });
+        }
+      }
+      sites.push({ tag: args[0], children: args.slice(2), props });
+    } else if (n.type === 'CallExpression' && n.callee.type === 'Identifier') {
+      for (const helper of helpers) {
+        if (helper.name !== n.callee.name || !within(n, helper.scope)) continue;
+        const children = [], props = [];
+        for (const slot of helper.slots) {
+          const arg = n.arguments[slot.index];
+          if (!arg) continue;
+          if (slot.prop) props.push({ name: slot.prop, node: arg }); else children.push(arg);
+        }
+        sites.push({ tag: null, children, props });
+      }
+    }
+  });
+  siteCache.set(tree, sites);
+  return sites;
+}
+
+function collect(tree = ast) {
+  const out = [];
+  for (const site of elementSites(tree)) {
+    for (const a of site.children) {
+      if (a && a.type === 'Literal' && typeof a.value === 'string' &&
+          looksLikeProse(a.value) && !ALLOWED.has(a.value.trim())) {
+        out.push({ line: a.loc.start.line, text: a.value, kind: 'child' });
+      }
+    }
+    for (const p of site.props) {
+      if (p.node && p.node.type === 'Literal' && typeof p.node.value === 'string' &&
+          looksLikeProse(p.node.value) && !ALLOWED.has(p.node.value.trim())) {
+        out.push({ line: p.node.loc.start.line, text: p.node.value, kind: p.name });
+      }
+    }
+  }
   return out;
 }
 
@@ -123,41 +190,50 @@ function exposedLiterals(node, out, nested) {
     default:
   }
 }
-function collectNested() {
+function collectNested(tree = ast) {
   const out = [];
-  (function walk(node) {
-    if (!node || typeof node.type !== 'string') return;
-    if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression' &&
-        node.callee.property?.name === 'createElement' &&
-        !(node.arguments[0]?.type === 'Literal' && node.arguments[0].value === 'style')) {
-      const args = node.arguments || [];
-      const found = [];
-      for (let i = 2; i < args.length; i++) exposedLiterals(args[i], found, false);
-      if (args[1]?.type === 'ObjectExpression') {
-        for (const p of args[1].properties) {
-          const name = p.key && (p.key.name || p.key.value);
-          if (['aria-label', 'title', 'alt', 'placeholder', 'aria-description'].includes(name)) exposedLiterals(p.value, found, false);
-        }
-      }
-      found.filter((f) => looksLikeProse(String(f.text).trim()) && !ALLOWED.has(String(f.text).trim())).forEach((f) => out.push(f));
-    }
-    for (const k of Object.keys(node)) {
-      if (k === 'loc' || k === 'range') continue;
-      const v = node[k];
-      if (Array.isArray(v)) v.forEach((c) => c && typeof c.type === 'string' && walk(c));
-      else if (v && typeof v.type === 'string') walk(v);
-    }
-  })(ast);
+  for (const site of elementSites(tree)) {
+    if (site.tag?.type === 'Literal' && site.tag.value === 'style') continue;
+    const found = [];
+    site.children.forEach((c) => exposedLiterals(c, found, false));
+    site.props.forEach((p) => exposedLiterals(p.node, found, false));
+    found.filter((f) => looksLikeProse(String(f.text).trim()) && !ALLOWED.has(String(f.text).trim())).forEach((f) => out.push(f));
+  }
   return out;
 }
 
+// Calibration: the scan must see English planted through each shape it claims
+// to cover, and must not flag the sanctioned fallback or a non-element `h`.
+const PLANTED = `
+function Panel({ busy }) {
+  const h = React.createElement;
+  const button = (label, onClick) => h('button', { type: 'button', onClick }, label);
+  const icon = (name) => h('span', { 'aria-label': name });
+  return h('div', { 'aria-label': 'Planted label' },
+    h('p', null, 'Planted child'),
+    h('p', null, busy ? 'Planted branch' : ts('word_sounds.ok') || 'Sanctioned fallback'),
+    h('p', null, 'Planted ' + busy),
+    button('Planted helper', () => {}),
+    icon('Planted helper prop'));
+}
+function Other() { const h = (text) => text; return h('Not an element'); }
+`;
+
 beforeAll(() => {
   acorn = require(resolve(process.cwd(), 'node_modules/acorn'));
-  src = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
+  src = readFileSync(resolve(DIR, 'word_sounds_module.js'), 'utf8');
   ast = acorn.parse(src, { ecmaVersion: 2022, ranges: true, locations: true });
 });
 
 describe('Word Sounds localization gate', () => {
+  it('sees English planted through an h() alias and a button()-style helper', () => {
+    const planted = acorn.parse(PLANTED, { ecmaVersion: 2022, ranges: true, locations: true });
+    const direct = collect(planted).map((f) => f.text).sort();
+    const nested = collectNested(planted).map((f) => f.text).sort();
+    expect(direct).toEqual(['Planted child', 'Planted helper', 'Planted helper prop', 'Planted label']);
+    expect(nested).toEqual(['Planted ', 'Planted branch']);
+  });
+
   it('has no hardcoded user-visible English', () => {
     const found = collect();
     const report = found.map((f) => `  line ${f.line} [${f.kind}] ${JSON.stringify(f.text).slice(0, 80)}`).join('\n');
@@ -171,12 +247,21 @@ describe('Word Sounds localization gate', () => {
   });
 
   it('every ts() key the module uses is registered in allo_data', () => {
-    const alloData = readFileSync(resolve(process.cwd(), 'allo_data_source.jsx'), 'utf8');
+    const alloData = readFileSync(resolve(DIR, 'allo_data_source.jsx'), 'utf8');
     const used = [...new Set((src.match(/ts\("(word_sounds\.[a-z0-9_]+)"/g) || [])
       .map((m) => m.replace(/ts\("|"/g, '')))];
     expect(used.length, 'expected the module to use many keys').toBeGreaterThan(50);
     const missing = used.filter((k) => !alloData.includes(`'${k}':`));
     expect(missing, `keys used but never registered (they will fall back to English forever):\n  ${missing.join('\n  ')}`).toEqual([]);
+  });
+
+  it('every word_sounds key passed to a component translator helper is registered in allo_data', () => {
+    const alloData = readFileSync(resolve(DIR, 'allo_data_source.jsx'), 'utf8');
+    // A literal followed by `+` is a composed key prefix ("word_sounds.activity_" + id), not a key.
+    const used = [...new Set([...src.matchAll(/\b(?:tr|trp|label|translate|reviewText)\(\s*['"](word_sounds\.[a-z0-9_]+)['"](?!\s*\+)/g)].map((m) => m[1]))];
+    expect(used.length, 'expected the editor and panels to use many keys').toBeGreaterThan(50);
+    const missing = used.filter((k) => !alloData.includes(`'${k}':`) && !alloData.includes(`"${k}":`));
+    expect(missing, `keys used but never registered:\n  ${missing.join('\n  ')}`).toEqual([]);
   });
 
   it('concatenation fragments use {{params}}, not glued English word order', () => {
@@ -185,7 +270,7 @@ describe('Word Sounds localization gate', () => {
     for (const key of ['word_sounds.word_n_of_m', 'word_sounds.correct_of_total',
       'word_sounds.sound_n', 'word_sounds.option_n', 'word_sounds.level_n',
       'word_sounds.items_done_of']) {
-      expect(src, `${key} should be used for a phrase that was previously concatenated`).toContain(key);
+      expect(src.includes(key), `${key} should be used for a phrase that was previously concatenated`).toBe(true);
     }
   });
 });

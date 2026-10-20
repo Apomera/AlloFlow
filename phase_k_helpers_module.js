@@ -3681,6 +3681,21 @@ const performDeepVerification = async (fullText, deps) => {
   } catch (_) {
   }
   const chunks = chunkText(fullText, 6e3);
+  let verifyTopic = String(sourceTopic || "").trim().slice(0, 200);
+  if (!verifyTopic) {
+    try {
+      const labelPrompt = `Name the subject of this text in 2 to 6 words, the way you would type it into a search engine. Reply with those words only. Do not include anyone's name, contact details or ID numbers unless the text is about a well-known public figure.
+
+Text:
+"${String(fullText || "").slice(0, 2e3)}"`;
+      const label = await callGemini(labelPrompt, false, false);
+      const labelText = label && typeof label === "object" ? label.text : label;
+      verifyTopic = String(labelText || "").split("\n")[0].replace(/^[\s"'*#-]+|[\s"'.*]+$/g, "").slice(0, 120);
+    } catch (labelErr) {
+      warnLog("Verification topic label failed", labelErr);
+    }
+  }
+  if (!verifyTopic && (_isCanvasEnv || isCanvas)) return { text: "", sources: [] };
   let combinedVerificationText = "";
   const globalSources = [];
   const sourceUrlToIndexMap = /* @__PURE__ */ new Map();
@@ -3703,7 +3718,7 @@ const performDeepVerification = async (fullText, deps) => {
               Return a concise summary of findings for this segment.
           `;
     try {
-      const result = await callGemini(verificationPrompt, false, true, null, sourceTopic || null);
+      const result = await callGemini(verificationPrompt, false, true, null, verifyTopic || null);
       if (result) {
         let chunkRawText = "";
         let metadata = null;
