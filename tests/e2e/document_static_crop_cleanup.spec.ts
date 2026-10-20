@@ -2,14 +2,17 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync('doc_pipeline_source.jsx', 'utf8');
-const helperStart = source.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
-const helperEnd = source.indexOf('function _alloSanitizeRemediationHtml', helperStart);
-const helperCode = source.slice(helperStart, helperEnd);
-const stripStart = source.indexOf('function _stripExecutableScripts(html) {');
-const stripCode = source.slice(stripStart, source.indexOf('\n}', stripStart) + 2);
-const sanitizerStart = source.indexOf('function _alloDecodeImportedCss');
-const sanitizerEnd = source.indexOf('function _alloSanitizeRemediationProject', sanitizerStart);
-const sanitizerCode = 'var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;\n' + source.slice(sanitizerStart, sanitizerEnd);
+// A moved anchor must fail loudly, not slice from -1 (the anchored-slice rule).
+const sliceBetween = (start: string, end: string, includeEnd = false) => {
+  const a = source.indexOf(start);
+  if (a < 0) throw new Error('start anchor not found in doc_pipeline_source.jsx: ' + start);
+  const b = source.indexOf(end, a + start.length);
+  if (b < 0) throw new Error('end anchor not found in doc_pipeline_source.jsx: ' + JSON.stringify(end));
+  return source.slice(a, includeEnd ? b + end.length : b);
+};
+const helperCode = sliceBetween('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {', 'function _alloSanitizeRemediationHtml');
+const stripCode = sliceBetween('function _stripExecutableScripts(html, opts) {', '\n}', true);
+const sanitizerCode = 'var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;\n' + sliceBetween('function _alloDecodeImportedCss', 'function _alloSanitizeRemediationProject');
 const legacy = readFileSync('tests/fixtures/mcp_crop_legacy.html', 'utf8');
 const cropButton = legacy.match(/<button\b[^>]*onclick="window\.__pdfCropImage[\s\S]*?<\/button>/)[0];
 const generatedTemplate = source.match(/\$\{hasCropData \? (`<button[^\n]+`) : ''\}/)[1];

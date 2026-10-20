@@ -49,6 +49,20 @@ const MODULE_FILES = [
   'doc_pipeline_module.js',
   'view_pdf_validator_module.js',
 ];
+// The app's isRtlLang (module_scope_extras_module.js), copied because that 127 KB module is not
+// part of this bundle; tests/mcp_rtl_language.test.js keeps the two in step. The pipeline's
+// deterministic dir="rtl" step and its RTL text handling ask this host function; a stub that
+// always said false left Arabic/Hebrew/Persian/Urdu output laid out left to right (2026-10-19).
+function isRtlLanguage(languageNameOrCode) {
+  if (!languageNameOrCode) return false;
+  const s = String(languageNameOrCode).trim().toLowerCase();
+  if (!s) return false;
+  const code = s.split(/[-_]/)[0];
+  const rtlCodes = new Set(['ar', 'arc', 'he', 'iw', 'fa', 'prs', 'ur', 'ps', 'ku', 'ckb', 'sd', 'ug', 'yi', 'dv', 'syr', 'nqo']);
+  if (rtlCodes.has(s) || rtlCodes.has(code)) return true;
+  const rtlNames = new Set(['arabic', 'hebrew', 'persian', 'farsi', 'dari', 'urdu', 'kurdish', 'sorani', 'pashto', 'pushto', 'yiddish', 'sindhi', 'uyghur', 'uighur', 'divehi', 'dhivehi', 'maldivian', 'aramaic', 'syriac']);
+  return s.split(/[^a-z]+/).some((tok) => tok && rtlNames.has(tok));
+}
 // Where the pipeline modules + verapdf/ actually live. A repo checkout serves them from the
 // repo root; a packaged MCPB bundle ships them in an assets/ dir next to server/. Resolution:
 // ALLOFLOW_MCP_ASSETS_DIR override → repo root when the modules are there → ../assets.
@@ -1446,7 +1460,7 @@ function createDriver(options) {
         callImagen: async () => null,
         addToast: (m) => { try { w.__mcpProgress('toast: ' + m); } catch (_) {} },
         t: (k) => k,
-        isRtlLang: () => false,
+        isRtlLang: (0, eval)('(' + cfg.rtlFn + ')'),
         updateExportPreview: () => {},
         getDefaultTitle: () => cfg.fileName || 'Document',
         state: {},
@@ -1456,6 +1470,7 @@ function createDriver(options) {
     }, {
       ocrLanguage: runOpts.ocrLanguage || '',
       fileName: runOpts.fileName || '',
+      rtlFn: isRtlLanguage.toString(),
       documentEpoch: ++documentEpochSeq,
       hostTransportProfile: runOpts.hostTransportProfile
         || (modelBridge ? {
@@ -1891,6 +1906,9 @@ function createDriver(options) {
             // contract; the pipeline normalizes a full-document range back to null itself.
             ...(Array.isArray(pageRange) && pageRange.length === 2 ? { pageRange } : {}),
             targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses, auditorCount,
+            // 2026-10-19: the delivered HTML is a static document; it drops the image Replace controls
+            // before verification, so the verified file is the delivered file.
+            staticDelivery: true,
             onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
           };
           if (checkpointEnabled && !resumeExtractionApplied) {
@@ -2086,13 +2104,18 @@ function createDriver(options) {
             if (activeContentDetected) throw new Error('active_content_requires_review');
             if(contentCoverage.reviewRequired)throw Error('content_coverage_requires_review');
             taggedPdfExportMode = 'original_layout';
-            let artifactVerdict = null;
+            let artifactVerdict = null, releaseGate = null;
             try {
               verdict = pipeline.distributionVerdict(cur, { targetScore });
               artifactVerdict = verdict;
-            } catch (_) { verdict = null; artifactVerdict = null; }
-            if (!artifactVerdict || artifactVerdict.level === 'review') {
-              throw new Error(artifactVerdict ? 'distribution_review_required' : 'distribution_verdict_unavailable');
+              // 2026-10-19: checker items that only ask a person to look at the HTML (Equal Access
+              // potential/manual, axe incomplete) no longer withhold the PDF; content-trust review,
+              // any known failure and an older module without the gate still do.
+              if (typeof pipeline.taggedPdfReleaseGate === 'function') releaseGate = pipeline.taggedPdfReleaseGate(cur, { targetScore });
+            } catch (_) { verdict = null; artifactVerdict = null; releaseGate = null; }
+            if (!artifactVerdict) throw new Error('distribution_verdict_unavailable');
+            if (artifactVerdict.level === 'review' && !(releaseGate && releaseGate.ok === true)) {
+              throw new Error('distribution_review_required');
             }
             progress('tag', 'building tagged PDF');
             if (!(window.PDFLib && window.PDFLib.PDFDocument)) {
@@ -2105,8 +2128,15 @@ function createDriver(options) {
             const bin = atob(b64);
             const bytes = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            // 2026-10-19: the tagged PDF carries the document's own title, not its file name (WCAG
+            // 2.4.2; the pipeline also lets the title stand in when the page prints no heading): the
+            // delivered HTML's <title> unless it is the generic scaffold, else the source PDF's own
+            // title, else the file name.
+            let _htmlTitle = '', _srcTitle = '';
+            try { _htmlTitle = String(new DOMParser().parseFromString(String((cur && cur.accessibleHtml) || ''), 'text/html').title || '').replace(/\s+/g, ' ').trim(); } catch (_) {}
+            try { _srcTitle = String((await window.PDFLib.PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true })).getTitle() || '').replace(/\s+/g, ' ').trim(); } catch (_) {}
             const tagOptions = {
-              title: fileName.replace(/\.pdf$/i, ''),
+              title: (_htmlTitle && !/^Accessible Document\b/i.test(_htmlTitle)) ? _htmlTitle : (_srcTitle || fileName.replace(/\.pdf$/i, '')),
               lang: (cur && cur.documentLanguage) || (audit && audit.documentLanguage) || 'en',
               subject: 'Prepared with AlloFlow accessibility tools; not a certification of conformance',
             };
@@ -2121,7 +2151,13 @@ function createDriver(options) {
               for (let i = 0; i < outBytes.length; i += CH) ob += String.fromCharCode.apply(null, Array.from(outBytes.subarray(i, i + CH)));
               taggedPdfB64 = btoa(ob);
               verdict = artifactVerdict;
-            } else taggedPdfError = outBytes && outBytes.length ? 'tagged_pdf_delivery_unverified' : 'createTaggedPdf returned no bytes';
+            } else {
+              // keep WHY (which byte check failed) so a report can say it, not just "unverified"
+              const _why = delivery && delivery.reason ? String(delivery.reason).replace(/\s+/g, ' ').slice(0, 400) : '';
+              taggedPdfError = outBytes && outBytes.length
+                ? 'tagged_pdf_delivery_unverified' + (taggedPdfDelivery.code ? ' (' + taggedPdfDelivery.code + (_why ? ': ' + _why : '') + ')' : '')
+                : 'createTaggedPdf returned no bytes';
+            }
           } catch (e) { taggedPdfError = (e && e.message) || String(e); }
         }
         if (!verdict) { try { verdict = pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { verdict = null; } }
@@ -2955,14 +2991,14 @@ function createDriver(options) {
       await installVendorRuntime(page, { loadAxe: true });
       for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
       await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
-      await page.evaluate(() => {
+      await page.evaluate((rtlFn) => {
         const boom = (w) => async () => { throw new Error('this operation is model-free; ' + w + ' must not be called'); };
         window.__mcpPipeline = window.AlloModules.createDocPipeline({
           callGemini: boom('callGemini'), callGeminiVision: boom('callGeminiVision'),
-          callImagen: async () => null, addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+          callImagen: async () => null, addToast: () => {}, t: (k) => k, isRtlLang: (0, eval)('(' + rtlFn + ')'),
           updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
         });
-      });
+      }, isRtlLanguage.toString());
       rlog('model-free page ready');
       return await fn(page);
     } finally { try { await context.close(); } catch (_) {} }
@@ -3328,6 +3364,7 @@ async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
 module.exports = {
   bundledTesseractLanguages,
   createDriver,
+  isRtlLanguage,
   compactTerminalCheckpointSnapshot,
   terminalCheckpointRemediationCapsule,
   TERMINAL_CHECKPOINT_CAPSULE_SCHEMA,

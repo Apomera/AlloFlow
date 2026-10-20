@@ -7,15 +7,15 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // ── extract the self-contained, pure helper ──
-const _s = dp.indexOf('function _stripExecutableScripts(html) {');
-const _e = dp.indexOf('\n}', _s) + 2;
-const _controlStart = dp.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
-const _controlEnd = dp.indexOf('function _alloSanitizeRemediationHtml', _controlStart);
-const _stripExecutableScripts = new Function(dp.slice(_controlStart, _controlEnd) + dp.slice(_s, _e) + '\nreturn _stripExecutableScripts;')();
+const FILE = { file: 'doc_pipeline_source.jsx' };
+const _stripCode = sliceBetween(dp, 'function _stripExecutableScripts(html, opts) {', '\n}', { ...FILE, includeEnd: true });
+const _controlCode = sliceBetween(dp, 'function _stripGeneratedImageEditorControls(html, stripFileHandlers) {', 'function _alloSanitizeRemediationHtml', FILE);
+const _stripExecutableScripts = new Function(_controlCode + _stripCode + '\nreturn _stripExecutableScripts;')();
 
 describe('_stripExecutableScripts: removes active scripts, keeps data scripts + document content', () => {
   it('removes the embedded "Apply Crop" image-editor widget script', () => {
@@ -85,14 +85,16 @@ describe('_stripExecutableScripts: removes active scripts, keeps data scripts + 
 
 describe('anti-drift: the script-strip is wired into the cleanup + the audit baseline', () => {
   it('_stripExecutableScripts is defined and documents keeping JSON-LD / data scripts', () => {
-    expect(dp).toContain('function _stripExecutableScripts(html)');
-    expect(dp).toContain('application/ld+json'); // named in the keep-list rationale comment
-    expect(dp).toContain('ld\\+json|json'); // ...and in the keep-list regex (escaped-slash form in source)
+    // includes(), not toContain: a failing toContain diffs the whole multi-MB source
+    expect(dp.includes('function _stripExecutableScripts(html, opts)'), 'helper defined').toBe(true);
+    expect(dp.includes('application/ld+json'), 'keep-list rationale names JSON-LD').toBe(true);
+    expect(dp.includes('ld\\+json|json'), 'keep-list regex keeps JSON-LD / JSON').toBe(true);
   });
   it('runs on accessibleHtml in the Step 4b deterministic cleanup (covers the AI re-audit + export)', () => {
-    expect(dp).toContain('const _deScripted = _stripExecutableScripts(accessibleHtml)');
+    // 2026-10-19: a static delivery (the MCP lane) also drops the image Replace controls there
+    expect(dp.includes('const _deScripted = _stripExecutableScripts(accessibleHtml, { stripImageReplace: !!(batchOverrides && batchOverrides.staticDelivery === true) })'), 'Step 4b call').toBe(true);
   });
   it('runs in _stripChromeForAudit (the export-equivalent deterministic audit baseline)', () => {
-    expect(dp).toContain('html = _stripExecutableScripts(html);');
+    expect(dp.includes('html = _stripExecutableScripts(html);'), '_stripChromeForAudit call').toBe(true);
   });
 });

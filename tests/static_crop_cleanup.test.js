@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const source = readFileSync('doc_pipeline_source.jsx', 'utf8');
-const helperStart = source.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
-const helperEnd = source.indexOf('function _alloSanitizeRemediationHtml', helperStart);
-const helperCode = source.slice(helperStart, helperEnd);
-const stripStart = source.indexOf('function _stripExecutableScripts(html) {');
-const stripCode = source.slice(stripStart, source.indexOf('\n}', stripStart) + 2);
+const FILE = { file: 'doc_pipeline_source.jsx' };
+const helperCode = sliceBetween(source, 'function _stripGeneratedImageEditorControls(html, stripFileHandlers) {', 'function _alloSanitizeRemediationHtml', FILE);
+const stripCode = sliceBetween(source, 'function _stripExecutableScripts(html, opts) {', '\n}', { ...FILE, includeEnd: true });
 const cleanup = new Function(helperCode + '\nreturn _stripGeneratedImageEditorControls;')();
 const strip = new Function(helperCode + stripCode + '\nreturn _stripExecutableScripts;')();
-const sanitizerStart = source.indexOf('function _alloDecodeImportedCss');
-const sanitizerEnd = source.indexOf('function _alloSanitizeRemediationProject', sanitizerStart);
-const sanitizerCode = 'var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;\n' + source.slice(sanitizerStart, sanitizerEnd);
+const sanitizerCode = 'var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;\n' + sliceBetween(source, 'function _alloDecodeImportedCss', 'function _alloSanitizeRemediationProject', FILE);
 const sanitize = new Function(sanitizerCode + '\nreturn _alloSanitizeRemediationHtml;')();
 const legacy = readFileSync('tests/fixtures/mcp_crop_legacy.html', 'utf8');
 const parse = html => new DOMParser().parseFromString(html, 'text/html');
@@ -40,6 +37,18 @@ describe('static image control cleanup preserves document source', () => {
   it('preserves raw MCP Replace label and handler byte for byte', () => {
     expect(strip(legacy)).toContain(replaceLabel);
     expect(strip(legacy)).toContain('r.readAsDataURL(f)');
+  });
+  it('a delivered file (stripImageReplace) also drops the generated Replace control, nothing else', () => {
+    // 2026-10-19: the MCP lane delivers a static document, so fixAndVerifyPdf passes staticDelivery.
+    const delivered = strip(current, { stripImageReplace: true });
+    expect(parse(delivered).querySelector('[data-alloflow-crop-control],[data-alloflow-image-replace],input[type="file"]')).toBeNull();
+    expect(delivered).toBe(current.replace(generatedButton, '').replace(current.match(/<label\b[\s\S]*?<\/label>/)[0], ''));
+    expect(strip(current)).toContain('data-alloflow-image-replace="pdf-img-1"');
+  });
+  it('fixAndVerifyPdf strips Replace only when the caller asks for a static delivery', () => {
+    // includes(), not toContain: a failing toContain diffs the whole multi-MB source
+    expect(source.includes('_stripExecutableScripts(accessibleHtml, { stripImageReplace: !!(batchOverrides && batchOverrides.staticDelivery === true) })'), 'fixAndVerifyPdf passes staticDelivery to the script strip').toBe(true);
+    expect(/\n\s+staticDelivery: true,\n/.test(readFileSync('desktop/mcp/remediation_headless_driver.cjs', 'utf8')), 'the MCP driver asks for a static delivery').toBe(true);
   });
   it('removes only the exact legacy controls at the handler-stripping boundary', () => {
     expect(cleanup(legacy, true)).toBe(legacy.replace(cropButton, '').replace(replaceLabel, ''));

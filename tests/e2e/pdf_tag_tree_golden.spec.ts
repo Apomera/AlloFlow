@@ -64,6 +64,11 @@ test.describe('createTaggedPdf — tag-tree golden master', () => {
         const font = await inDoc.embedFont(StandardFonts.Helvetica);
         pg.drawText('Chapter One', { x: 50, y: 740, size: 22, font });
         pg.drawText('This is a paragraph of body text used to exercise the tagger.', { x: 50, y: 700, size: 12, font });
+        // The table is printed too: the tagged PDF carries only what the page prints (Option B,
+        // 2026-10-18), so an unprinted table would leave it and these invariants would test nothing.
+        pg.drawText('A Subsection', { x: 50, y: 670, size: 16, font });
+        let ty = 645;
+        for (const [a, b] of [['Name', 'Score'], ['Alice', '90'], ['Bob', '82']]) { pg.drawText(a, { x: 50, y: ty, size: 12, font }); pg.drawText(b, { x: 200, y: ty, size: 12, font }); ty -= 16; }
         const inputBytes = await inDoc.save();
 
         // 2) Instantiate the pipeline with stub deps (Phase-1 injected-state seam).

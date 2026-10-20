@@ -11,6 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const PIPELINE = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const RENDERER = readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
@@ -20,27 +21,22 @@ const ACE = resolve(process.cwd(), 'node_modules/accessibility-checker-engine/ac
 // Pipeline placeholder: the template literal returned for a figure whose image could not be
 // extracted (hasSrc false), evaluated with the identifiers the template reads.
 function pipelinePlaceholder() {
-  const startMarker = 'return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"';
-  const endMarker = '</figure>` + _carriedOut;';
-  const i = PIPELINE.indexOf(startMarker);
-  const j = PIPELINE.indexOf(endMarker, i);
-  if (i < 0 || j < 0) throw new Error('pipeline placeholder template not found');
-  const template = PIPELINE.slice(i + 'return '.length, j + '</figure>`'.length);
+  const template = sliceBetween(PIPELINE, 'return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"', '</figure>` + _carriedOut;',
+    { file: 'doc_pipeline_source.jsx', label: 'pipeline placeholder template' }).slice('return '.length) + '</figure>`';
   const params = ['imgId', 'imgIdx', 'hasCropData', 'cropJson', 'hasSrc', '_dragOver2', '_dragLeave2', '_dropHandler2', 'srcToken', 'desc', 'imgInfo', '_uploadHandler2', '_pickHandler2', 'isRegenerated', 'purpose'];
   const render = new Function(...params, 'return ' + template + ';');
   return render('pdf-img-1', 1, false, '', false, 'void 0', 'void 0', 'void 0', '', 'Figure 2. Line chart of preprimary enrollment rates, 2010 through 2021.', { page: 20 }, 'void 0', 'void 0', false, 'Shows the pandemic dip in enrollment.');
 }
 
 // Renderer placeholder: the concatenated template for an image block without a source.
-function rendererPlaceholder() {
-  const startMarker = 'return `<figure id="${_imgId}-figure" data-img-placeholder="true"';
-  const i = RENDERER.indexOf(startMarker);
-  const j = RENDERER.indexOf('+ `</figure>`;', i);
-  if (i < 0 || j < 0) throw new Error('renderer placeholder template not found');
-  const expr = RENDERER.slice(i + 'return '.length, j + '+ `</figure>`'.length);
+// shortAlt: the block's own alt, carried as data-allo-alt for the pipeline (2026-10-19).
+function rendererPlaceholder(shortAlt = '') {
+  const expr = sliceBetween(RENDERER, 'return `<figure id="${_imgId}-figure" data-img-placeholder="true"', '+ `</figure>`;',
+    { file: 'doc_builder_renderer_source.jsx', label: 'renderer placeholder template' }).slice('return '.length) + '+ `</figure>`';
   const escapeTextField = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const render = new Function('_imgId', '_dragOver', '_dragLeave', '_dropHandler', '_uploadHandler', '_pickHandler', 'escapeTextField', '_imgDesc', '_captionText', 'return ' + expr + ';');
-  return render('db-img-1', 'void 0', 'void 0', 'void 0', 'void 0', 'void 0', escapeTextField, 'A Venn diagram of interview structures.', 'Figure 1. Interview structures.');
+  const _attr = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const render = new Function('_imgId', '_dragOver', '_dragLeave', '_dropHandler', '_uploadHandler', '_pickHandler', 'escapeTextField', '_imgDesc', '_captionText', '_shortAlt', '_attr', 'return ' + expr + ';');
+  return render('db-img-1', 'void 0', 'void 0', 'void 0', 'void 0', 'void 0', escapeTextField, 'A Venn diagram of interview structures.', 'Figure 1. Interview structures.', shortAlt, _attr);
 }
 
 const page = (body) => '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Placeholder toolbar check</title></head><body><main id="main-content"><h1>Placeholder toolbar check</h1>' + body + '</main></body></html>';
@@ -94,6 +90,13 @@ describe('placeholder toolbar passes axe and IBM Equal Access at the source', ()
     expect(result.axe.map((v) => v.id), JSON.stringify(result.axe)).not.toContain('aria-hidden-focus');
     expect(result.axe.map((v) => v.id), JSON.stringify(result.axe)).not.toContain('label-content-name-mismatch');
   }, 90000);
+
+  it('doc-builder renderer placeholder carries the block\'s short alt for the pipeline, escaped', () => {
+    expect(rendererPlaceholder()).not.toContain('data-allo-alt');
+    const html = rendererPlaceholder('Logo "PPS" & <ship>');
+    expect(html).toContain('data-allo-alt="Logo &quot;PPS&quot; &amp; &lt;ship&gt;"');
+    expect(new DOMParser().parseFromString(html, 'text/html').querySelector('figure').getAttribute('data-allo-alt')).toBe('Logo "PPS" & <ship>');
+  });
 
   it('doc-builder renderer placeholder: the same three rules pass', async () => {
     const result = await audit(page(rendererPlaceholder()));

@@ -6155,7 +6155,9 @@ function fixLandmarkFoundations(html) {
 // caught, 2026-06-24). DATA scripts are not executable, so JSON-LD (application/ld+json) and application/json
 // are KEPT — they carry structured metadata a reader/search engine may use. <noscript> is never matched (it
 // is not a <script>). Pure + side-effect-free so it's unit-testable.
-function _stripExecutableScripts(html) {
+// opts.stripImageReplace (2026-10-19, Aaron): a DELIVERED file (the MCP lane) also loses the image
+// Replace/Upload controls; the app's editable preview keeps them.
+function _stripExecutableScripts(html, opts) {
   if (!html || typeof html !== 'string') return html;
   html = html.replace(/<script\b([^>]*)>[\s\S]*?<\/script\s*>/gi, function (full, attrs) {
     var m = (attrs || '').match(/\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i);
@@ -6165,7 +6167,7 @@ function _stripExecutableScripts(html) {
     if (/^(?:application\/(?:ld\+json|json)|text\/(?:template|html|plain))$/.test(type)) return full;
     return '';
   });
-  return _stripGeneratedImageEditorControls(html, false); // inline Replace still works in raw MCP HTML
+  return _stripGeneratedImageEditorControls(html, !!(opts && opts.stripImageReplace)); // inline Replace works in a raw file unless the caller delivers it
 }
 // Applied to a TRANSIENT copy before the deterministic scoring audits: remove the editor chrome and
 // staticize ALL placeholders so axe/EA score the EXPORT-EQUIVALENT document. The chrome-free baseline
@@ -6438,6 +6440,100 @@ function _alloDistributionVerdict(r, opts) {
             : ('Ready to hand out — with ' + cautions.length + ' caution' + (cautions.length === 1 ? '' : 's')))
         : 'Ready to hand out',
   };
+}
+
+// 2026-10-19 (Aaron): may the tagged PDF be built while the HTML verdict is "review"? Only when the
+// sole review reason is checker items that ask a person to look (Equal Access potential/manual
+// findings, axe "incomplete"): every engine ran, none reports a failure, the AI audit has no open
+// issue, and no content-trust check (coverage, order, numbers, tables, placeholders, refusal text,
+// expert review) fired. Those items concern the HTML file; the PDF still has to pass its own validator
+// and delivery verdict before it carries the PDF/UA label. Anything else, a missing field included,
+// keeps the PDF withheld.
+var _ALLO_CHECKER_REVIEW_REASON = /^(?:equal-access-(?:potential|manual|review-findings)|axe-incomplete):\d+$/;
+function _alloTaggedPdfReleaseGate(r, opts) {
+  var verdict = _alloDistributionVerdict(r, opts);
+  if (!verdict) return { ok: false, code: 'distribution_verdict_unavailable' };
+  if (verdict.inProgress) return { ok: false, code: 'distribution_in_progress' };
+  if (verdict.level !== 'review') return { ok: true, code: 'distribution_' + verdict.level };
+  var other = verdict.review.filter(function (t) { return String(t).indexOf('WCAG verification is review-required; ') !== 0; });
+  var reasons = Array.isArray(r.verificationReasons) ? r.verificationReasons : null;
+  var aiIssues = r.verificationAudit && Array.isArray(r.verificationAudit.issues) ? r.verificationAudit.issues.filter(Boolean) : null;
+  var clean = r.verificationState === 'review-required' && other.length === 0
+    && !!reasons && reasons.length > 0 && reasons.every(function (x) { return _ALLO_CHECKER_REVIEW_REASON.test(String(x)); })
+    && !!aiIssues && aiIssues.length === 0
+    && !!r.axeAudit && r.axeAudit.totalViolations === 0
+    && !!r.secondEngineAudit && r.secondEngineAudit.failViolations === 0;
+  return clean ? { ok: true, code: 'checker_review_items_only', reasons: reasons.slice() } : { ok: false, code: 'distribution_review_required' };
+}
+
+// ── Partial acceptance of a refused fix candidate (2026-10-19) ── The content gate judges a fix
+// chunk whole, so ONE refused edit (an empty corner <th> made a <td>) threw away every other edit
+// in the chunk (the page title, seven row headers: IRS Form 1040 keyless run). Split both versions
+// before each block-level opening tag, diff the segment lists, and re-apply the changed runs one at
+// a time on top of the input, keeping a run only if the WHOLE result still passes `accept` (the same
+// gate). Every kept state passed the gate, so nothing it guards against gets through; a run valid
+// only together with another run is dropped. Returns null when nothing can be kept or the diff would
+// be too large.
+var _ALLO_SALVAGE_SPLIT = /(?=<(?:!doctype|html|head|title|body|main|header|footer|nav|section|article|aside|div|p|h[1-6]|ul|ol|li|dl|dt|dd|table|caption|thead|tbody|tfoot|tr|th|td|figure|figcaption|blockquote|pre|hr)\b)/i;
+function _alloSalvageFixCandidate(candidate, input, accept, opts) {
+  if (typeof candidate !== 'string' || typeof input !== 'string' || typeof accept !== 'function' || candidate === input) return null;
+  var a = input.split(_ALLO_SALVAGE_SPLIT), b = candidate.split(_ALLO_SALVAGE_SPLIT);
+  var n = a.length, m = b.length, w = m + 1;
+  if ((n + 1) * w > ((opts && opts.maxCells) || 4000000)) return null;
+  var L = new Uint32Array((n + 1) * w); // L[i][j] = LCS length of a[i..] and b[j..]
+  for (var i = n - 1; i >= 0; i--) for (var j = m - 1; j >= 0; j--) {
+    L[i * w + j] = a[i] === b[j] ? L[(i + 1) * w + j + 1] + 1 : Math.max(L[(i + 1) * w + j], L[i * w + j + 1]);
+  }
+  var hunks = [], x = 0, y = 0, cur = null; // hunk: input segments [start, end) replaced by segs
+  while (x < n || y < m) {
+    if (x < n && y < m && a[x] === b[y]) { if (cur) { hunks.push(cur); cur = null; } x++; y++; continue; }
+    if (!cur) cur = { start: x, end: x, segs: [] };
+    if (y < m && (x >= n || L[x * w + y + 1] >= L[(x + 1) * w + y])) { cur.segs.push(b[y]); y++; } else { x++; cur.end = x; }
+  }
+  if (cur) hunks.push(cur);
+  if (!hunks.length || hunks.length > ((opts && opts.maxHunks) || 80)) return null;
+  var build = function (keep) {
+    var out = '', k = 0, p = 0;
+    while (p <= n) {
+      if (k < keep.length && keep[k].start === p) { out += keep[k].segs.join(''); p = keep[k].end; k++; continue; }
+      if (p < n) out += a[p];
+      p++;
+    }
+    return out;
+  };
+  var kept = [];
+  for (var h = 0; h < hunks.length; h++) {
+    var trial = kept.concat([hunks[h]]), d = null;
+    try { d = accept(build(trial)); } catch (_) { d = null; }
+    if (d && d.accepted) kept = trial;
+  }
+  return kept.length ? { html: build(kept), kept: kept.length, total: hunks.length } : null;
+}
+
+// What the next fix pass is told about edits the content gate refused (2026-10-19): without it the
+// next prompt repeated the same violations over the same HTML and the model re-sent the refused edit.
+var _ALLO_REJECTION_WHY = {
+  'table-semantics-changed': 'changed table structure (which cells are headers, their scope, or how rows and columns relate)',
+  'source-reading-order-changed': 'changed the order of the text, or dropped or repeated words',
+  'size-shrink': 'removed visible text', 'text-shrink': 'removed visible text',
+  'image-association-changed': 'moved an image or changed the text around it',
+  'image-reference-changed': 'changed an image reference token',
+  'invalid-json-wrapper': 'wrapped the HTML in JSON'
+};
+function _alloRejectionFeedback(rejections) {
+  if (!Array.isArray(rejections) || !rejections.length) return '';
+  var seen = {}, parts = [];
+  rejections.forEach(function (r) {
+    if (!r || !r.reason || parts.length >= 6) return;
+    var why = _ALLO_REJECTION_WHY[r.reason] || ('failed the content-safety check (' + String(r.reason).replace(/[^\w-]/g, '').slice(0, 60) + ')');
+    var where = r.sourceLocation ? ' at ' + String(r.sourceLocation).replace(/[^\w:/ .-]/g, '').slice(0, 60) : '';
+    if (seen[why + where]) return;
+    seen[why + where] = 1;
+    parts.push('an edit that ' + why + where);
+  });
+  return parts.length
+    ? 'NOTE: in the previous fix attempt the content-safety check REFUSED ' + parts.join('; ') + ', and kept the original there (edits that passed were kept). Do not repeat a refused change; make only the fixes the violations above still require.'
+    : '';
 }
 
 // Sanitize an AI-parsed doc-style object before its color/font values are
@@ -12691,6 +12787,13 @@ var createDocPipeline = function(deps) {
       if (!decision.accepted) _recordCandidateRejection(decision, chunkId, phase);
       return decision;
     };
+    // A refused candidate keeps the edits that pass the same gate on their own (_alloSalvageFixCandidate).
+    const _salvage = (candidate, input, chunkId, fragment = true) => {
+      let s = null;
+      try { s = _alloSalvageFixCandidate(candidate, input, (h) => acceptFixedHtmlDetailed(h, input, { fragment, mode: 'faithful', strictContent: true })); } catch (_) { s = null; }
+      if (s) warnLog('[aiFixChunked:' + label + '] chunk ' + chunkId + ': kept ' + s.kept + ' of ' + s.total + ' edit(s) from the refused candidate (each kept state passes the content gate)');
+      return s;
+    };
     // Response cleanup trims formatting at each fragment edge. Keep the source
     // separators when joining fragments so adjacent words, footnotes, and internal
     // link target text retain their original boundaries (also for half retries).
@@ -12753,9 +12856,15 @@ var createDocPipeline = function(deps) {
         }
         if (_isJsonWrapped(fixed)) fixed = _tryUnwrapJsonHtml(fixed);
         const _singleFragment = !/<(?:!doctype\b|html\b|main\b|body\b)/i.test(_singleHtml);
-        if (_checkCandidate(fixed, _singleHtml, 1, 'single', _singleFragment).accepted) {
+        const _singleDecision = _checkCandidate(fixed, _singleHtml, 1, 'single', _singleFragment);
+        if (_singleDecision.accepted) {
           _reportPassCoverage(fixed === _singleHtml ? 1 : 0);
           return _restoreImages(fixed);
+        }
+        const _singleSalvaged = /^image-reference-/.test(_singleDecision.reason || '') ? null : _salvage(fixed, _singleHtml, 1, _singleFragment);
+        if (_singleSalvaged) {
+          _reportPassCoverage(0);
+          return _restoreImages(_singleSalvaged.html);
         }
         _reportPassCoverage(1);
         warnLog(`[aiFixChunked:${label}] single-chunk rejected — keeping original`);
@@ -12881,6 +12990,8 @@ var createDocPipeline = function(deps) {
           const _halfJoined = halfResults.join('');
           return _checkCandidate(_halfJoined, part, ci + 1, 'half-assembly').accepted ? _halfJoined : part;
         } else {
+          const _salvaged = _salvage(out, part, ci + 1);
+          if (_salvaged) return _restoreChunkBoundaryWhitespace(_salvaged.html, part);
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
           return part;
         }
@@ -27747,6 +27858,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         let stallCount = 0;
         let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
         let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
+        let _lastRejectionFeedback = ''; // 2026-10-19: and which edits the content gate refused (_alloRejectionFeedback)
         _emitReviewFindings(0); // seed the queue from the run-entry audits
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // H7 (deep dive 2026-07-09): in BATCH mode the outer _withTimeout is a bare Promise.race —
@@ -27830,9 +27942,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               snippet: (i && i.locator && i.locator.kind === 'exact' && i.locator.snippet) ? i.locator.snippet : null,
             })));
           let violationInstructions = _fixEntries.map((e) => e.text).join('\n');
-          const _routingArg = _fixEntries.length > 0 ? { entries: _fixEntries, feedback: _lastPassFeedback } : null;
-          if (!_routingArg && _lastPassFeedback) violationInstructions = violationInstructions + '\n\n' + _lastPassFeedback;
+          const _feedbackNow = [_lastPassFeedback, _lastRejectionFeedback].filter(Boolean).join('\n\n');
+          const _routingArg = _fixEntries.length > 0 ? { entries: _fixEntries, feedback: _feedbackNow } : null;
+          if (!_routingArg && _feedbackNow) violationInstructions = violationInstructions + '\n\n' + _feedbackNow;
           _lastPassFeedback = '';
+          _lastRejectionFeedback = '';
 
           let _fixThrottleDeferred = false;
           let _fixPassEvidence = null;
@@ -27855,6 +27969,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 for (const entry of entries.slice(0, Math.max(0, 100 - _candidateRejections.length))) {
                   _candidateRejections.push({ pass: fixPass + 1, chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason, ...(entry.sourceLocation ? { sourceLocation: entry.sourceLocation } : {}) });
                 }
+                _lastRejectionFeedback = _alloRejectionFeedback(entries);
               },
             });
             // The AI call is the long window of the pass (minutes), so it is where a human edit is
@@ -27928,7 +28043,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (accessibleHtml === snapshotHtml) {
             autoFixPasses++;
             stallCount++;
-            _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
+            // (when the content gate refused the edits, _lastRejectionFeedback already says so)
+            if (!_lastRejectionFeedback) _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: no changes produced — skipping re-audit of identical HTML (stall ${stallCount}/2)`);
             if (stallCount >= 2) {
               warnLog(`[Auto-fix] Plateau: no changes for ${stallCount} consecutive passes, stopping`);
@@ -28326,8 +28442,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       } else if (_mimeType !== 'application/pdf') {
         _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
       } else try {
+        // 2026-10-19: descriptions become visible captions, so a non-English document gets them in its
+        // own language (the audit's detected code, accepted only in BCP-47 shape).
+        const _imgDocLang = typeof imgCtx.docLang === 'string' && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(imgCtx.docLang.trim()) ? imgCtx.docLang.trim() : '';
+        const _imgLangLine = _imgDocLang && !/^en(-|$)/i.test(_imgDocLang) ? 'LANGUAGE: write "description" and "educationalPurpose" in the document language (' + _imgDocLang + '); keep the JSON keys and the "type" value in English.\n\n' : '';
         const imgResult = await _awaitImageWork(_alloWithPayloadPhase('image-inventory', () => callGeminiVision(
-          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position) and its bounding box: "bbox" is [left, top, right, bottom] as fractions of the page width and height measured from the top-left corner (for example [0.08, 0.34, 0.92, 0.62]); omit bbox if you are not sure\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "bbox": [0.08, 0.34, 0.92, 0.62], "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
+          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position) and its bounding box: "bbox" is [left, top, right, bottom] as fractions of the page width and height measured from the top-left corner (for example [0.08, 0.34, 0.92, 0.62]); omit bbox if you are not sure\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\n${_imgLangLine}Return ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "bbox": [0.08, 0.34, 0.92, 0.62], "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
           _base64, _mimeType, { signal: _imageSignal }
         )));
         if (imgResult) {
@@ -30351,7 +30471,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // handed the range's first figure a page-1 image AND a page-1 description, overwriting the
       // correct in-context caption with the wrong one — straight into the alt text a screen-reader
       // user hears.
-      const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, sourceImage: _sourceImage, silentMode: _silentMode, updateProgress, signal: _runAbortSignal, shouldAbort: _runGenStale, pageRange: _pageRange });
+      const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, sourceImage: _sourceImage, silentMode: _silentMode, updateProgress, signal: _runAbortSignal, shouldAbort: _runGenStale, pageRange: _pageRange, docLang: (_auditResult && typeof _auditResult.documentLanguage === 'string') ? _auditResult.documentLanguage : '' });
       _throwIfRunCancelled();
       let extractedImages = _imgOut.extractedImages; // consumed by the placeholder splice, image report, and return payload
 
@@ -31394,6 +31514,12 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             // figure's own figcaption is the in-context truth; a mispaired description is a wrong
             // answer stated confidently, which is worse for a screen-reader user than a thin one.
             const desc = (imgInfo && _imagePairingTrusted) ? imgInfo.description : altText;
+            // 2026-10-19 (Aaron): the alt is the structure answer's own short alt for THIS spot (in the
+            // document's language, written for the purpose); the longer description stays the caption.
+            // Only a missing or placeholder alt falls back to the description, as before.
+            const _blockAltM = match.match(/^<figure\b[^>]*\sdata-allo-alt="([^"]*)"/i);
+            const _blockAlt = _blockAltM ? _blockAltM[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim() : '';
+            const imgAlt = (_blockAlt && !/^(?:images?|pictures?|photos?|figures?|graphics?)$|needs description/i.test(_blockAlt)) ? _blockAlt : desc;
             const purpose = imgInfo ? (imgInfo.educationalPurpose || '') : '';
             const hasSrc = imgInfo && imgInfo.generatedSrc;
             const isRegenerated = imgInfo && imgInfo.isRegenerated;
@@ -31406,7 +31532,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             if (hasSrc) {
               srcToken = '__ALLOFLOW_DATAURL_FINAL_' + imgIdx + '__';
               _deferredImageMap[srcToken] = imgInfo.generatedSrc;
-              _deferredImageMeta[srcToken] = { alt: desc || '', purpose: purpose || '' };
+              _deferredImageMeta[srcToken] = { alt: imgAlt || '', purpose: purpose || '' };
             } else {
               // Extraction + Imagen both failed. Image falls to the upload UI inside the figure,
               // but that's easy to miss — record it so the fidelity panel can surface the failure.
@@ -31419,7 +31545,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               });
             }
             // Drag-drop + pick-extracted handlers (shared logic with renderJsonToHtml placeholder).
-            const _altSafe = desc.replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
+            const _altSafe = imgAlt.replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
             const _insertFn2 = `function(c, dataUrl, altText){`
               + `var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();`
               + `var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}`
@@ -31443,7 +31569,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 ${hasSrc ? '' : `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`}
 <div id="${imgId}-container" style="${hasSrc ? '' : 'background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;'}text-align:center;min-height:${hasSrc ? '0' : '120px'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem"${hasSrc ? '' : ` ondragover="${_dragOver2}" ondragleave="${_dragLeave2}" ondrop="${_dropHandler2}"`}>
 ${hasSrc
-  ? `<img src="${srcToken}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
+  ? `<img src="${srcToken}" alt="${imgAlt.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
   : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 <span style="font-size:13px;color:#334155;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
 
@@ -31452,14 +31578,14 @@ ${hasSrc
 <label data-alloflow-image-replace="${imgId}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:${hasSrc ? '#475569' : '#1d4ed8'};color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${hasSrc ? '#334155' : '#1e3a8a'}">
 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${hasSrc ? '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' : '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'}</svg>
 <span style="color:#ffffff !important">${hasSrc ? (isRegenerated ? 'Replace (AI generated)' : 'Replace') : 'Upload image'}</span>
-<input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler2}">
+<input type="file" accept="image/*" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap" onchange="${_uploadHandler2}">
 </label>
 ${!hasSrc ? `<button type="button" onclick="${_pickHandler2}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick extracted image from this document"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>` : ''}
 ${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disabled=true;var s0=b.querySelector('span');if(s0)s0.textContent='⏳ Generating…';try{if(window.parent&&window.parent.__alloflowGenerateImage){window.parent.__alloflowGenerateImage('${imgId}');}else{if(s0)s0.textContent='AI unavailable';}}catch(_){if(s0)s0.textContent='AI unavailable';}})(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0f766e;color:#ffffff !important;border:1px solid #115e59;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Generate (AI) illustration from the description"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg><span style="color:#ffffff !important">Generate (AI)</span></button>` : ''}
 ${hasCropData ? `<button data-alloflow-crop-control="${imgId}" onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Adjust crop for this image"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Adjust Crop</button>` : ''}
 </div>
 </div>
-<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</em>' : ''}</figcaption>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>${purpose ? '<br><em style="font-size:0.85em;color:#475569"><span lang="en">Purpose:</span> ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</em>' : ''}</figcaption>
 </figure>` + _carriedOut;
           }
         });
@@ -31636,6 +31762,7 @@ hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
 .sr-only:focus { position: static; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: #2563eb; color: white; border-radius: 0.25rem; z-index: 1000; }
 .extraction-note { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
 figure[data-img-idx] { break-inside: avoid; }
+[data-alloflow-image-replace]:has(input:focus-visible) { outline: 2px solid #ffffff; outline-offset: 2px; box-shadow: 0 0 0 4px #000000; }
 @media print { body { padding: 0.5in; } .sr-only { display: none; } label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; } }
 </style>
 <script>
@@ -32256,7 +32383,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       //    preview + the axe audit already strip them). JSON-LD / data scripts are kept. This is what makes
       //    an uploaded doc's embedded widget (e.g. an "Apply Crop" image editor) stop surfacing in the audit. ──
       try {
-        const _deScripted = _stripExecutableScripts(accessibleHtml);
+        const _deScripted = _stripExecutableScripts(accessibleHtml, { stripImageReplace: !!(batchOverrides && batchOverrides.staticDelivery === true) });
         if (_deScripted !== accessibleHtml) { accessibleHtml = _deScripted; warnLog('[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)'); }
       } catch (_) {}
 
@@ -36093,7 +36220,7 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of('');
             _effRole = 'NonStruct';
           } else {
-            d.Alt = PDFString.of(item.alt || '(image)');
+            d.Alt = PDFHexString.fromText(item.alt || '(image)'); // hex: PDFString keeps only Latin-1 (an Arabic alt came out "49'1 E/'13", 2026-10-19)
           }
         }
         // Link: emit /Alt with the destination URL so screen readers
@@ -36104,9 +36231,9 @@ tr { page-break-inside: avoid; }
         if (item.role === 'Link') {
           if (item.href) {
             const isExternal = /^https?:\/\//i.test(item.href);
-            d.Alt = PDFString.of(isExternal ? ('Link to ' + item.href) : ('Link: ' + item.href));
+            d.Alt = PDFHexString.fromText(isExternal ? ('Link to ' + item.href) : ('Link: ' + item.href));
           } else if (item.text) {
-            d.Alt = PDFString.of('Link: ' + item.text);
+            d.Alt = PDFHexString.fromText('Link: ' + item.text);
           } else {
             // No href and no text — never ship a Link StructElem with no /Alt
             // (a screen reader would announce an empty, unactionable link).
@@ -37294,6 +37421,7 @@ tr { page-break-inside: avoid; }
     let _perLeafLinked = 0;
     let _offPagePruned = 0; // Option B: unlinked leaves whose text is not on the page, dropped from this PDF's tree
     let _noPrintedHeadings = false; // every heading was AI-written and off the page: none left, title stands in
+    let _offPageCellsBlanked = 0, _offPageHeaderRowsDropped = 0, _offPageTablesDropped = 0; // Option B for tables (Stage 4b)
     if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
       try {
         // Tolerant fold: the accessibleHtml side passes through the AI rewrite,
@@ -37563,6 +37691,106 @@ tr { page-break-inside: avoid; }
           }
           if (_uniqueLinked) { try { warnLog('[Stage4b-Unique] linked ' + _uniqueLinked + ' short leaf/leaves to their only exact match in the unclaimed page text'); } catch (_) {} }
         } catch (uqErr) { try { warnLog('[Stage4b-Unique] non-fatal: ' + (uqErr && uqErr.message)); } catch (_) {} }
+        // ── Row-anchored cell matching (2026-10-18, IRS 1040) ── An unlinked TH/TD may take unclaimed
+        // blocks lying between its matched neighbours in OTHER rows of the table (<= 40 blocks apart):
+        // a line label printed split ("1" + "a") or twice (left and right), a sub-line letter alone
+        // ("c" for "3c", only when it is the ONE such letter in the gap), a description drawn with its
+        // line letter ("b Taxable interest") or a short dot leader (". .").
+        try {
+          let _raLinked = 0, _raLetter = 0;
+          const _strip = (k) => k.replace(/\.+$/, '');
+          const _trOf = (lf) => { try { return String(context.lookup(lf.ref).get(PDFName.of('P'))); } catch (_) { return ''; } };
+          // the Table a cell belongs to (TR -> [THead/TBody/TFoot ->] Table), cached
+          const _tblCache = new Map();
+          const _tableOf = (lf) => {
+            if (_tblCache.has(lf)) return _tblCache.get(lf);
+            let t = '';
+            try {
+              const tr = context.lookup(context.lookup(lf.ref).get(PDFName.of('P')));
+              let secRef = tr && tr.get ? tr.get(PDFName.of('P')) : null;
+              const sec = secRef ? context.lookup(secRef) : null;
+              if (sec && /^\/(THead|TBody|TFoot)$/.test(String(sec.get(PDFName.of('S'))))) secRef = sec.get(PDFName.of('P'));
+              t = String(secRef || '');
+            } catch (_) { t = ''; }
+            _tblCache.set(lf, t);
+            return t;
+          };
+          const _rowLabel = (lf) => {
+            try {
+              const d = context.lookup(lf.ref); const tr = context.lookup(d.get(PDFName.of('P')));
+              const K = tr && tr.get ? context.lookup(tr.get(PDFName.of('K'))) || tr.get(PDFName.of('K')) : null;
+              const arr = K && typeof K.size === 'function' ? Array.from({ length: K.size() }, (_, i) => K.get(i)) : [];
+              for (const r of arr) { const c = context.lookup(r); if (!c || String(c.get(PDFName.of('S'))) !== '/TH') continue; const at = c.get(PDFName.of('ActualText')); const t = at && at.decodeText ? at.decodeText().trim() : ''; if (/^\d{1,2}[a-z]?$/i.test(t)) return t.toLowerCase(); }
+            } catch (_) {}
+            return '';
+          };
+          const _link = (lf, idxs) => {
+            const run = idxs.map((k) => blockStream[k]);
+            const leafDict = context.lookup(lf.ref);
+            leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+            leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+            for (const b of run) { if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} } consumed.add(String(b.bRef)); }
+            lf._linkedRun = { start: Math.min.apply(null, idxs), end: Math.max.apply(null, idxs) };
+            _perLeafLinked++; _raLinked++;
+          };
+          for (let round = 0; round < 3; round++) {
+            let prevEnd = -1;
+            for (let li = 0; li < leafSeq.length; li++) {
+              const lf = leafSeq[li];
+              if (lf._linkedRun) { prevEnd = Math.max(prevEnd, lf._linkedRun.end); continue; }
+              if (lf.role !== 'TH' && lf.role !== 'TD') continue;
+              const tKey = _key(_norm(lf.text)); if (!tKey) continue;
+              let nextStart = blockStream.length;
+              // Gap bounds from matched cells in OTHER rows of the SAME table first (a paragraph the AI
+              // placed out of order before a table must not bound a row's gap); any matched leaf only
+              // when the table has none on that side.
+              { const myTr = _trOf(lf), myTbl = _tableOf(lf);
+                const bound = (sameTable) => {
+                  let ns = blockStream.length, pe = -1;
+                  for (let lj = li + 1; lj < leafSeq.length; lj++) { const o = leafSeq[lj]; if (o._linkedRun && _trOf(o) !== myTr && (!sameTable || _tableOf(o) === myTbl)) { ns = o._linkedRun.start; break; } }
+                  let seen = 0;
+                  for (let lj = li - 1; lj >= 0 && seen < 8; lj--) { const o = leafSeq[lj]; if (!o._linkedRun || _trOf(o) === myTr || (sameTable && _tableOf(o) !== myTbl)) continue; seen++; if (o._linkedRun.end < ns && o._linkedRun.end > pe) pe = o._linkedRun.end; }
+                  return { ns, pe };
+                };
+                const inTbl = bound(true), any = bound(false);
+                nextStart = inTbl.ns < blockStream.length ? inTbl.ns : any.ns;
+                prevEnd = inTbl.pe >= 0 ? inTbl.pe : any.pe;
+                if (prevEnd >= nextStart) prevEnd = any.pe; }
+              if (nextStart - prevEnd > 40 || nextStart <= prevEnd + 1) continue;
+              const free = (k) => k > prevEnd && k < nextStart && !consumed.has(String(blockStream[k].bRef));
+              const label = _rowLabel(lf); const letter = (/[a-z]$/.exec(label) || [''])[0];
+              const isLbl = lf.role === 'TH' && /^\d{1,2}[a-z]?$/.test(tKey);
+              if (isLbl) {
+                const picks = [];
+                for (let k = prevEnd + 1; k < nextStart; k++) {
+                  if (!free(k)) continue;
+                  if (blockStream[k].key === tKey) picks.push([k]);
+                  else if (free(k + 1) && blockStream[k].key + blockStream[k + 1].key === tKey) { picks.push([k, k + 1]); k++; }
+                }
+                if (picks.length >= 1 && picks.length <= 2) { _link(lf, [].concat.apply([], picks)); continue; }
+                const tl = (/[a-z]$/.exec(tKey) || [''])[0];
+                if (!picks.length && tl) {
+                  const ls = []; for (let k = prevEnd + 1; k < nextStart; k++) if (free(k) && blockStream[k].key === tl) ls.push(k);
+                  if (ls.length === 1) { _link(lf, ls); _raLetter++; }
+                }
+                continue;
+              }
+              const hits = [];
+              for (let s = prevEnd + 1; s < nextStart && hits.length < 2; s++) {
+                if (!free(s)) continue;
+                let kr = '';
+                for (let e = s; e < nextStart && e - s < 3 && free(e); e++) {
+                  kr += blockStream[e].key;
+                  const ks = _strip(kr);
+                  if (ks === tKey || (letter && ks === letter + tKey)) { hits.push({ s, e }); break; }
+                  if (kr.length > tKey.length + 3) break;
+                }
+              }
+              if (hits.length === 1) { const ix = []; for (let k = hits[0].s; k <= hits[0].e; k++) ix.push(k); _link(lf, ix); }
+            }
+          }
+          if (_raLinked) { try { warnLog('[Stage4b-RowAnchor] linked ' + _raLinked + ' cell(s) inside the gap between matched neighbours (' + _raLetter + ' by sub-line letter only)'); } catch (_) {} }
+        } catch (raErr) { try { warnLog('[Stage4b-RowAnchor] non-fatal: ' + (raErr && raErr.message)); } catch (_) {} }
         // ── Option B: off-page leaves (2026-10-17) ── A leaf still unlinked whose words are NOT on
         // the page (a title or note the AI wrote) is dropped from this PDF's tag tree; it stays in the
         // HTML export. Not on the page = its folded text is not in the page text, fewer than half its
@@ -37607,7 +37835,39 @@ tr { page-break-inside: avoid; }
             }
             return best;
           };
+          // Is this exact text printed in UNCLAIMED page text (one block, or a run of up to 3)?
+          const _freeKeyList = free.map((k) => blockStream[k].key);
+          const _onFreeExact = (tKey) => {
+            if (!tKey) return false;
+            for (let i = 0; i < _freeKeyList.length; i++) {
+              let r = '';
+              for (let j = i; j < _freeKeyList.length && j - i < 3; j++) { r += _freeKeyList[j]; if (r === tKey) return true; if (r.length >= tKey.length) break; }
+            }
+            return false;
+          };
           const linkedKeys = new Set(leafSeq.filter((lf) => lf._linkedRun).map((lf) => _key(_norm(lf.text))));
+          // A heading that NEARLY repeats a linked heading (the AI's "Form 1040: U.S. Individual Income
+          // Tax Return, 2025" under the printed title) is a repeat too: word agreement >= 0.8.
+          const linkedHeadingWords = leafSeq.filter((lf) => lf._linkedRun && /^H[1-6]$/.test(lf.role)).map((lf) => _w(lf.text));
+          const _wordDice = (a, b) => {
+            if (!a.length || !b.length) return 0;
+            const m = new Map(); a.forEach((x) => m.set(x, (m.get(x) || 0) + 1));
+            let hit = 0; b.forEach((x) => { const n = m.get(x) || 0; if (n > 0) { hit++; m.set(x, n - 1); } });
+            return (2 * hit) / (a.length + b.length);
+          };
+          // A HEADING is printed only as a line of its own: its text is a whole block (or starts one, or
+          // spans up to 3 consecutive blocks), or agrees with one block's words (>= 0.8). Its words
+          // turning up inside a paragraph make a title the AI composed from body text (the OSEP letter's
+          // "IEP Translation: ... Statement of Interest in T.R. v. ..." kept as an orphan H1, 2026-10-19).
+          const _allKeys = blockStream.map((b) => b.key);
+          const _printedAsLine = (tKey, lw) => {
+            for (let i = 0; i < _allKeys.length; i++) {
+              if (tKey && _allKeys[i].startsWith(tKey)) return true;
+              if (tKey) { let r = ''; for (let j = i; j < _allKeys.length && j - i < 3; j++) { r += _allKeys[j]; if (r === tKey) return true; if (r.length >= tKey.length) break; } }
+              if (_wordDice(lw, bw[i]) >= 0.8) return true;
+            }
+            return false;
+          };
           const samples = [];
           const candidates = [];
           for (const lf of leafSeq) {
@@ -37615,13 +37875,22 @@ tr { page-break-inside: avoid; }
             const lw = _w(lf.text);
             if (!lw.length) continue;
             const tKey = _key(_norm(lf.text));
-            const repeat = !!tKey && linkedKeys.has(tKey);
+            const heading = /^H[1-6]$/.test(lf.role);
+            const repeat = (!!tKey && linkedKeys.has(tKey))
+              || (heading && linkedHeadingWords.some((hw) => _wordDice(lw, hw) >= 0.8));
+            if (!repeat && heading) {
+              if (_printedAsLine(tKey, lw)) continue;
+              candidates.push({ lf, repeat });
+              continue;
+            }
             if (!repeat) {
               if (tKey && pageKeyAll.includes(tKey)) continue;
               // a short leaf (up to 3 words, e.g. a 2-word title) must appear WHOLE, in order
               if (lw.length === 1 ? uni.has(lw[0]) : longestRun(lw) >= (lw.length <= 3 ? lw.length : Math.ceil(lw.length / 2))) continue;
             }
-            if (bestFreeDice(lw) >= 0.5) continue; // matches page text nobody claimed: keep it for review
+            // matches page text nobody claimed: keep it for review. A repeat of a linked heading is kept
+            // only for an unclaimed EXACT printed copy (loose header fragments do not count).
+            if (repeat ? _onFreeExact(tKey) : bestFreeDice(lw) >= 0.5) continue;
             candidates.push({ lf, repeat });
           }
           // Every heading off the page means the printed page has none (a one-page letter whose title
@@ -37646,6 +37915,139 @@ tr { page-break-inside: avoid; }
             } else if (pk && String(pk) === String(lf.ref)) { parent.delete(PDFName.of('K')); removed = true; }
             if (removed) { lf._offPage = true; _offPagePruned++; if (samples.length < 4) samples.push(lf.role + (repeat ? ' (repeat)' : '') + ' "' + String(lf.text).slice(0, 50) + '"'); }
           }
+          // A dropped heading must not leave its sub-headings skipping a level (veraPDF 7.4.2-1 on IRS
+          // 1040: H1 then H3). Re-level the remaining headings in reading order: never more than one
+          // below the previous, and the first is H1. Only when a heading was dropped; the HTML is untouched.
+          if (candidates.some((c) => c.lf._offPage && isHeading(c.lf.role))) {
+            let prevLevel = 0, releveled = 0;
+            for (const lf of _unifiableLeafRefs) {
+              if (lf._offPage || !isHeading(lf.role)) continue;
+              const level = Number(lf.role.slice(1));
+              const want = Math.min(level, prevLevel + 1);
+              if (want !== level) {
+                try { context.lookup(lf.ref).set(PDFName.of('S'), PDFName.of('H' + want)); lf.role = 'H' + want; releveled++; } catch (_) {}
+              }
+              prevLevel = want;
+            }
+            if (releveled) { try { warnLog('[Stage4b-OffPage] re-levelled ' + releveled + ' heading(s) so none skips a level after the drop'); } catch (_) {} }
+          }
+          // ── Option B for TABLES (2026-10-18, Aaron) ── A cell cannot simply leave the tree (the grid
+          // would shift), so: (1) a header row NONE of whose headers is printed (the AI's "Line |
+          // Description | Amount") leaves the table whole, and no cell keeps pointing at its headers;
+          // (2) any other cell the AI wrote that is not in the unclaimed page text stays in the grid as
+          // an EMPTY cell (no /ActualText). Both stay in the HTML export.
+          let _hdrRowsDropped = 0, _hdrCellsDropped = 0;
+          const removeFrom = (parent, childRef) => {
+            const k = parent && parent.get ? parent.get(PDFName.of('K')) : null;
+            let arr = null; try { arr = context.lookup(k) || k; } catch (_) { arr = k; }
+            if (arr && typeof arr.size === 'function') { for (let i = arr.size() - 1; i >= 0; i--) if (String(arr.get(i)) === String(childRef)) { arr.remove(i); return true; } }
+            return false;
+          };
+          try {
+            const rows = new Map();
+            for (const lf of _unifiableLeafRefs) {
+              if (lf.role !== 'TH' && lf.role !== 'TD') continue;
+              let p = ''; try { p = String(context.lookup(lf.ref).get(PDFName.of('P'))); } catch (_) {}
+              if (!rows.has(p)) rows.set(p, []);
+              rows.get(p).push(lf);
+            }
+            const droppedIds = new Set();
+            for (const cells of rows.values()) {
+              if (!cells.length || !cells.every((x) => x.role === 'TH') || cells.some((x) => x._linkedRun)) continue;
+              // printed = its exact text stands as unclaimed page text (a header word such as "Amount"
+              // also occurs inside sentences, so a substring test would keep every invented header)
+              if (cells.some((x) => { const k = _key(_norm(x.text)); return !k || _onFreeExact(k); })) continue;
+              const trRef = context.lookup(cells[0].ref).get(PDFName.of('P'));
+              const tr = trRef ? context.lookup(trRef) : null;
+              const secRef = tr && tr.get ? tr.get(PDFName.of('P')) : null;
+              const sec = secRef ? context.lookup(secRef) : null;
+              if (!removeFrom(sec, trRef)) continue;
+              // a THead/TBody/TFoot left with no rows goes too
+              try {
+                const sk = context.lookup(sec.get(PDFName.of('K'))) || sec.get(PDFName.of('K'));
+                if (/^\/(THead|TBody|TFoot)$/.test(String(sec.get(PDFName.of('S')))) && sk && typeof sk.size === 'function' && sk.size() === 0) removeFrom(context.lookup(sec.get(PDFName.of('P'))), secRef);
+              } catch (_) {}
+              for (const x of cells) {
+                x._dropped = true; _hdrCellsDropped++;
+                try { const id = context.lookup(x.ref).get(PDFName.of('ID')); if (id) droppedIds.add(id.decodeText ? id.decodeText() : String(id)); } catch (_) {}
+              }
+              _hdrRowsDropped++;
+            }
+            if (droppedIds.size) {
+              for (const lf of _unifiableLeafRefs) {
+                if (lf.role !== 'TD' && lf.role !== 'TH') continue;
+                try {
+                  const A = context.lookup(lf.ref).get(PDFName.of('A')); const Ad = A ? (context.lookup(A) || A) : null;
+                  const H = Ad && Ad.get ? (context.lookup(Ad.get(PDFName.of('Headers'))) || Ad.get(PDFName.of('Headers'))) : null;
+                  if (!H || typeof H.size !== 'function') continue;
+                  const keep = [];
+                  for (let i = 0; i < H.size(); i++) { const h = H.get(i); if (!droppedIds.has(h && h.decodeText ? h.decodeText() : String(h))) keep.push(h); }
+                  if (keep.length === H.size()) continue;
+                  if (keep.length) Ad.set(PDFName.of('Headers'), context.obj(keep)); else Ad.delete(PDFName.of('Headers'));
+                } catch (_) {}
+              }
+              for (let i = idTreeEntries.length - 1; i >= 0; i--) if (droppedIds.has(idTreeEntries[i].id)) idTreeEntries.splice(i, 1);
+            }
+          } catch (hdrErr) { try { warnLog('[Stage4b-OffPageCells] header rows non-fatal: ' + (hdrErr && hdrErr.message)); } catch (_) {} }
+          let _cellsBlanked = 0; const _blankS = [];
+          const _blank = (lf) => { try { context.lookup(lf.ref).delete(PDFName.of('ActualText')); } catch (_) {} lf._blanked = true; if (_blankS.length < 6) _blankS.push(lf.role + ' "' + String(lf.text).slice(0, 30) + '"'); };
+          { const fk = free.filter((k) => !consumed.has(String(blockStream[k].bRef))).map((k) => blockStream[k].key);
+          for (const lf of leafSeq) {
+            if (lf._linkedRun || lf._dropped || (lf.role !== 'TH' && lf.role !== 'TD')) continue;
+            const lw = _w(lf.text); if (!lw.length) continue;
+            const tKey = _key(_norm(lf.text)); if (!tKey) continue;
+            let onFree = false;
+            for (let i = 0; i < fk.length && !onFree; i++) { let r = ''; for (let j = i; j < fk.length && j - i < 3; j++) { r += fk[j]; if (r === tKey || (tKey.length >= 4 && r.includes(tKey))) { onFree = true; break; } } }
+            if (onFree || bestFreeDice(lw) >= 0.5) continue;
+            _blank(lf); _cellsBlanked++;
+          } }
+          // (3) A table NONE of whose cells is printed (an AI-built table, e.g. data read off a chart)
+          // leaves the tagged PDF whole: a grid of empty cells only confuses a screen reader. A table
+          // with any linked cell, or any field placeholder ("________": a form table), stays.
+          try {
+            const tables = new Map();
+            for (const lf of _unifiableLeafRefs) {
+              if (lf.role !== 'TH' && lf.role !== 'TD') continue;
+              let tRef = null;
+              try {
+                const tr = context.lookup(context.lookup(lf.ref).get(PDFName.of('P')));
+                tRef = tr && tr.get ? tr.get(PDFName.of('P')) : null;
+                const sec = tRef ? context.lookup(tRef) : null;
+                if (sec && /^\/(THead|TBody|TFoot)$/.test(String(sec.get(PDFName.of('S'))))) tRef = sec.get(PDFName.of('P'));
+              } catch (_) { tRef = null; }
+              if (!tRef) continue;
+              const k = String(tRef);
+              if (!tables.has(k)) tables.set(k, { ref: tRef, cells: [] });
+              tables.get(k).cells.push(lf);
+            }
+            for (const { ref, cells } of tables.values()) {
+              if (!cells.length || cells.some((x) => x._linkedRun)) continue;
+              if (!cells.every((x) => x._blanked || x._dropped || !String(x.text || '').trim())) continue;
+              // a cell still holding content (a form field nested in it, marked text) keeps the table
+              if (cells.some((x) => { if (x._dropped) return false; try { const kk = context.lookup(x.ref).get(PDFName.of('K')); const a = kk ? (context.lookup(kk) || kk) : null; return !!a && (typeof a.size !== 'function' || a.size() > 0); } catch (_) { return true; } })) continue;
+              let tbl = null; try { tbl = context.lookup(ref); } catch (_) { tbl = null; }
+              // so does a child that is not a row group (a Caption the page prints)
+              let otherKid = false;
+              try {
+                const tk = tbl && tbl.get ? tbl.get(PDFName.of('K')) : null; const ta = tk ? (context.lookup(tk) || tk) : null;
+                const kids = ta && typeof ta.size === 'function' ? Array.from({ length: ta.size() }, (_, i) => ta.get(i)) : (ta ? [ta] : []);
+                for (const c of kids) { const e = context.lookup(c); const s = e && e.get ? String(e.get(PDFName.of('S'))) : ''; if (!/^\/(TR|THead|TBody|TFoot)$/.test(s)) { otherKid = true; break; } }
+              } catch (_) { otherKid = true; }
+              if (otherKid) continue;
+              const pRef = tbl && tbl.get ? tbl.get(PDFName.of('P')) : null;
+              if (!pRef || !removeFrom(context.lookup(pRef), ref)) continue;
+              const gone = new Set();
+              for (const x of cells) {
+                x._dropped = true;
+                try { const id = context.lookup(x.ref).get(PDFName.of('ID')); if (id) gone.add(id.decodeText ? id.decodeText() : String(id)); } catch (_) {}
+              }
+              for (let i = idTreeEntries.length - 1; i >= 0; i--) if (gone.has(idTreeEntries[i].id)) idTreeEntries.splice(i, 1);
+              _offPageTablesDropped++;
+            }
+          } catch (tblErr) { try { warnLog('[Stage4b-OffPageCells] whole-table drop non-fatal: ' + (tblErr && tblErr.message)); } catch (_) {} }
+          _offPageCellsBlanked = _cellsBlanked; _offPageHeaderRowsDropped = _hdrRowsDropped;
+          if (_offPageTablesDropped) { try { warnLog('[Stage4b-OffPageCells] ' + _offPageTablesDropped + ' table(s) with no printed cell left the tagged PDF (kept in the HTML export)'); } catch (_) {} }
+          if (_cellsBlanked || _hdrRowsDropped) { try { warnLog('[Stage4b-OffPageCells] ' + _hdrRowsDropped + ' unprinted header row(s) (' + _hdrCellsDropped + ' cells) left the tables; ' + _cellsBlanked + ' cell(s) not on the page kept as EMPTY cells, e.g. ' + _blankS.join('; ')); } catch (_) {} }
           if (_offPagePruned) { try { warnLog('[Stage4b-OffPage] ' + _offPagePruned + ' leaf/leaves not on the page left out of the tagged PDF (kept in the HTML export), e.g. ' + samples.join('; ')); } catch (_) {} }
         } catch (offErr) { try { warnLog('[Stage4b-OffPage] non-fatal: ' + (offErr && offErr.message)); } catch (_) {} }
         // ── Figure linkage (Stage 4c match): order-based, gated on EXACT
@@ -37705,6 +38107,7 @@ tr { page-break-inside: avoid; }
     // that key on the annotation's dict so readers can walk from widget
     // to tag tree. No-op when the PDF has no form (the common case).
     const fieldElemRefs = [];
+    const __formRecs = [];
     let nextStructParentKey = pages.length;
     // Digital-signature presence — shared by Stage 3 (forms) and Stage 3b (link
     // annots). 2026-06-07 rationale: adding /StructParent to annotation dicts
@@ -37725,6 +38128,7 @@ tr { page-break-inside: avoid; }
     // signature and disclose it in the exported report.
     let _pdfHasSignature = false;
     let _acroFormForSave = null; // the pdf-lib form, so field appearances can be drawn with an embedded font at save
+    let _fieldsNestedInCells = 0; // TD > Form > OBJR pairs (Stage 3)
     try {
       const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
       if (_acroSig && _acroSig.get) {
@@ -37864,12 +38268,64 @@ tr { page-break-inside: avoid; }
             const fieldElemDict = context.obj(_fieldDictObj);
             const fieldElemRef = context.register(fieldElemDict);
             fieldElemRefs.push(fieldElemRef);
+            __formRecs.push({ ref: fieldElemRef, label: String(fieldLabelText || ''), ft: (() => { try { return String(field.acroField.dict.get(PDFName.of('FT')) || ''); } catch (_) { return ''; } })(), x: (() => { try { const r = context.lookup(info.annotDict.get(PDFName.of('Rect'))) || info.annotDict.get(PDFName.of('Rect')); return Math.min(r.get(0).asNumber(), r.get(2).asNumber()); } catch (_) { return 0; } })(), used: false });
             try { info.annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch(_) {}
             parentTreeNums.push(PDFNumber.of(key));
             parentTreeNums.push(fieldElemRef);
           }
         }
       }
+      // ── Fields inside their table cells (2026-10-18, IRS 1040) ── The AI writes a blank form cell
+      // ("________") where the page draws a widget; that leaf has no page text to link to. Nest the
+      // widget's Form element in the cell (TD > Form > OBJR) and drop the placeholder /ActualText, so
+      // a screen reader meets the field IN its row (not after the whole document). Pairing is by the
+      // row's printed line label ("1a") or the XFA "Row: ... Column: ..." name; text similarity paired
+      // 1 of 54 wrongly and is not used. A cell with no single unused match stays as it was.
+      try {
+        const fc = String.fromCharCode;
+        const _phRe = new RegExp('[' + fc(0x2610, 0x25a1) + '_\\s.:;,()\\/-]', 'g');
+        const _ph = (s) => !!String(s || '').trim() && !String(s || '').replace(_phRe, '');
+        const _idMap = new Map(idTreeEntries.map((e) => [e.id, e.ref]));
+        const _at = (ref) => { try { const d = context.lookup(ref); const a = d && d.get(PDFName.of('ActualText')); return a ? (a.decodeText ? a.decodeText() : String(a)).trim() : ''; } catch (_) { return ''; } };
+        // A field name's line label: "1a. Total amount..." -> "1a"; "25. Federal income tax withheld from:
+        // a. Form(s) W-2" -> "25a" (a sub-line letter before the next period belongs to the number).
+        const _firstLbl = (tu) => {
+          const s = String(tu).replace(/^Page \d+\.\s*/i, '');
+          const m = /(?:^|\s)(\d{1,2})([a-z])?\.\s/i.exec(s);
+          if (!m) return null;
+          let lbl = (m[1] + (m[2] || '')).toLowerCase();
+          if (!m[2]) { const sub = /^(?:[^.\d]*?\s)?([a-z])\.\s/i.exec(s.slice(m.index + m[0].length)); if (sub) lbl += sub[1].toLowerCase(); }
+          return lbl;
+        };
+        const cand = [];
+        for (const lf of _unifiableLeafRefs) {
+          if (lf.role !== 'TD' || !_ph(lf.text)) continue;
+          const d = context.lookup(lf.ref); if (!d || d.get(PDFName.of('K')) != null) continue;
+          const A = d.get(PDFName.of('A')); const Ad = A ? (context.lookup(A) || A) : null; const H = Ad && Ad.get ? Ad.get(PDFName.of('Headers')) : null;
+          const hs = []; if (H && typeof H.size === 'function') for (let i = 0; i < H.size(); i++) { const h = H.get(i); const id = h && h.decodeText ? h.decodeText() : String(h); const r = _idMap.get(id); if (r) hs.push(_at(r)); }
+          cand.push({ lf, d, hs });
+        }
+        const pairs = [];
+        {
+          for (const c of cand) {
+            const line = c.hs.find((h) => /^\d{1,2}[a-z]?$/i.test(h));
+            const dep = c.hs.find((h) => /^Dependent \d$/i.test(h)); const rowH = c.hs.find((h) => /^\(\d\)/.test(h));
+            let m = null;
+            if (line) { m = __formRecs.filter((f) => !f.used && _firstLbl(f.label) === line.toLowerCase()); if (m.length > 1) { const mx = Math.max(...m.map((x) => x.x)); m = m.filter((x) => x.x === mx); } }
+            else if (dep && rowH) { const rk = rowH.replace(/\bSSN\b/, 'S S N'); m = __formRecs.filter((f) => !f.used && f.label.indexOf('Row: ' + rk) !== -1 && f.label.indexOf('Column: ' + dep) !== -1); }
+            if (!m || m.length !== 1) continue;
+            m[0].used = true; pairs.push({ c, f: m[0] });
+          }
+        }
+        for (const { c, f } of pairs) {
+          c.d.set(PDFName.of('K'), context.obj([f.ref]));
+          try { c.d.delete(PDFName.of('ActualText')); } catch (_) {}
+          try { context.lookup(f.ref).set(PDFName.of('P'), c.lf.ref); } catch (_) {}
+          const ix = fieldElemRefs.indexOf(f.ref); if (ix !== -1) fieldElemRefs.splice(ix, 1);
+        }
+        _fieldsNestedInCells = pairs.length;
+        if (cand.length) { try { warnLog('[Stage3-FieldsInCells] nested ' + pairs.length + '/' + cand.length + ' blank field cell(s) as TD > Form > OBJR (by printed line label / XFA row+column)'); } catch (_) {} }
+      } catch (nestErr) { try { warnLog('[Stage3-FieldsInCells] non-fatal: ' + (nestErr && nestErr.message)); } catch (_) {} }
     } catch(formErr) { try { warnLog('[createTaggedPdf] AcroForm tagging failed: ' + (formErr && formErr.message)); } catch(_) {} }
     // ── Stage 3b: Link annotation tagging ──
     // PDF/UA-1 §7.18 requires every annotation to be reachable from the
@@ -38377,7 +38833,7 @@ tr { page-break-inside: avoid; }
             const node = siblings[i];
             const destPageRef = (node.pageIdx >= 0 && node.pageIdx < pages.length) ? pages[node.pageIdx].ref : firstPageRef;
             const dictBody = {
-              Title: PDFString.of(node.title),
+              Title: PDFHexString.fromText(node.title), // hex: a non-Latin heading must survive in the bookmark
               Parent: node.parentRef,
               Dest: context.obj([destPageRef, PDFName.of('XYZ'), null, null, null]),
             };
@@ -38624,7 +39080,10 @@ tr { page-break-inside: avoid; }
         // leaf" would block the UA declaration over decoration-grade text.
         // Lbls with REAL text (definition lists, custom markers) still count.
         if (lf.role === 'Lbl' && /^([•◦▪‣·*–-]|\d{1,3}[.)])$/.test(String(lf.text || '').trim())) continue;
-        if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt — not shipped
+        if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt
+        // An EMPTY cell (no content, no /ActualText: a grid placeholder, e.g. an off-page AI cell under
+        // Option B) is not an orphan; the validator applies the same exemption (2026-10-18).
+        if (lf.role === 'TH' || lf.role === 'TD') { try { const _d0 = context.lookup(lf.ref); if (_d0 && _d0.get(PDFName.of('K')) == null && _d0.get(PDFName.of('ActualText')) == null) continue; } catch (_) {} }
         _reachableLeafCountAtStamp++;
         try {
           const d = context.lookup(lf.ref);
@@ -38683,6 +39142,10 @@ tr { page-break-inside: avoid; }
         _summary.imageTextMovedToAlt = _imageTextMovedToAlt;
         _summary.provenanceFooterDropped = _provenanceFooterDropped;
         _summary.noPrintedHeadings = _noPrintedHeadings;
+        _summary.offPageCellsBlanked = _offPageCellsBlanked;
+        _summary.offPageHeaderRowsDropped = _offPageHeaderRowsDropped;
+        _summary.offPageTablesDropped = _offPageTablesDropped;
+        _summary.fieldsNestedInCells = _fieldsNestedInCells;
         // CORRECTNESS OVERWRITE: the summary literal sets pdfUaDeclared from
         // "any /Metadata stream exists" — true even when the evidence-based
         // gate WITHHELD the pdfuaid:part claim. The baseline download toast
@@ -51263,6 +51726,7 @@ function projectStudentGuideData(data, mode) {
     finalizeRemediationRound: _wrap(_finalizeRemediationRound),
     // R1: the one-line "Can I hand this out?" answer — pure fn over the result's honesty signals.
     distributionVerdict: _alloDistributionVerdict,
+    taggedPdfReleaseGate: _alloTaggedPdfReleaseGate,
     remediationOutcome: _alloRemediationOutcome,
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
@@ -51363,6 +51827,8 @@ window.AlloModules.createDocPipeline.fixStructuralFoundations = _alloFixStructur
 window.AlloModules.createDocPipeline.tableCellDrift = _alloTableCellDrift; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
+window.AlloModules.createDocPipeline.salvageFixCandidate = _alloSalvageFixCandidate; // static: exposed for tests (partial fix acceptance)
+window.AlloModules.createDocPipeline.rejectionFeedback = _alloRejectionFeedback; // static: exposed for tests (refused-edit feedback)
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
 window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; // static: S7 (2026-07-02) — the view's missing-word/restoration UI folds tokens with the SAME function the pipeline's residual count uses
 window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested

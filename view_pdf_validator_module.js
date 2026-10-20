@@ -44,17 +44,21 @@
 
     function walk(objIn, depth, parentRole) {
       var obj = resolve(objIn);
-      if (depth > 60 || obj == null) return;
+      if (depth > 60 || obj == null) return false;
       if (obj instanceof PDFArray) {
-        for (var i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1, parentRole);
-        return;
+        var _any = false;
+        for (var i = 0; i < obj.size(); i++) { if (walk(obj.get(i), depth + 1, parentRole)) _any = true; }
+        return _any;
       }
-      if (!(obj instanceof PDFDict)) return;
+      if (obj instanceof PDFNumber) return true;
+      if (!(obj instanceof PDFDict)) return false;
       var S = obj.get(nm('S'));
       if (!S) {
+        var _t0 = String(obj.get(nm('Type')) || '');
+        if (_t0 === '/MCR' || _t0 === '/OBJR') return true;
         var k0 = obj.get(nm('K'));
-        if (k0 != null) walk(k0, depth + 1, parentRole);
-        return;
+        if (k0 != null) return walk(k0, depth + 1, parentRole);
+        return false;
       }
       var role = String(S).replace(/^\//, '');
       var K = obj.get(nm('K'));
@@ -99,6 +103,7 @@
         else { aItems.push(ar); }
         for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
       }
+      var _myIdx = elems.length;
       elems.push({
         role: role,
         parentRole: parentRole || '',
@@ -113,7 +118,8 @@
         hasLang: !!obj.get(nm('Lang')),
         hasID: !!obj.get(nm('ID')),
       });
-      if (K != null) walk(K, depth + 1, role);
+      if (K != null) { var _sub = walk(K, depth + 1, role); if (_sub) elems[_myIdx].hasDescContent = true; }
+      return hasContent || !!elems[_myIdx].hasDescContent;
     }
 
     var rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
@@ -266,7 +272,8 @@
     var leaves = elems.filter(function (e) { return LEAF_ROLES.indexOf(e.role) >= 0; });
     var containers = elems.filter(function (e) { return CONTAINER_ROLES.indexOf(e.role) >= 0; });
     var markerLblCount = leaves.filter(isMarkerLbl).length;
-    var orphanedLeaves = leaves.filter(function (e) { return !e.hasContent && !isMarkerLbl(e); });
+    var isEmptyCell = function (e) { return (e.role === 'TH' || e.role === 'TD') && !e.hasK && (!e.hasActualText || e.actualText === ''); };
+    var orphanedLeaves = leaves.filter(function (e) { return !e.hasContent && !e.hasDescContent && !isMarkerLbl(e) && !isEmptyCell(e); });
     // Containment (the veraPDF ISO 14289-1 7.2 structure class): cells inside
     // TR; TR inside Table/THead/TBody/TFoot; LI inside L; Lbl/LBody inside LI.
     var containment = { checked: 0, bad: [] };
@@ -303,7 +310,8 @@
     else if (noPrintedHeadings && docTitle) pass('At least one heading present', true, 'not applicable: the printed page has no headings; the document title is set in its properties');
     else pass('At least one heading present', false);
     pass('Every TH has /Scope', thElems.length === 0 || thElems.every(function (e) { return e.hasScope; }), thElems.length + ' TH cells');
-    pass('Every TH/TD has /ActualText', cellElems.length === 0 || cellElems.every(function (e) { return e.hasActualText; }), cellElems.length + ' cells');
+    var _cellNoText = cellElems.filter(function (e) { return !e.hasActualText && !e.hasContent && !e.hasDescContent && !isEmptyCell(e); });
+    pass('Every TH/TD has /ActualText', _cellNoText.length === 0, _cellNoText.length + '/' + cellElems.length + ' cells with neither linked content nor /ActualText');
     pass('Every Figure has /Alt', figures.length === 0 || figures.every(function (e) { return e.hasAlt; }), figures.length + ' figures');
     pass('Document is NOT encrypted (AT requires read access)', !isEncrypted);
     pass('Document title set in metadata (/Info /Title)', !!docTitle, docTitle ? String(docTitle).slice(0, 80) : '');

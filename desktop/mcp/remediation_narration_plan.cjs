@@ -143,7 +143,9 @@ function kokoroVoiceIds(assetsRoot) {
 // retention check, not a semantic equivalence or accessibility certificate.
 function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange}) {
   const words=new Intl.Segmenter(undefined,{granularity:'word'});
-  const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment:part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
+  // A combining mark never starts a word: some PDF text layers store an Arabic tanween as its own
+  // glyph after a space ("مذهلا ً"), which must still match the word it belongs to (2026-10-19).
+  const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').replace(/(\p{L}\p{M}*)\s+(?=\p{M})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment:part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
   const doc=new DOMParser().parseFromString(outputHtml||'','text/html');
   // Synthetic labels may match only positively identified source list markers,
   // never ordinary numeric prose. Keep these credits outside the text token pool.

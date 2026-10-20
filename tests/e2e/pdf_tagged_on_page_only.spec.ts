@@ -50,11 +50,13 @@ async function tag(page, lines: string[], html: string, png: string | null, titl
     const look = (v: any) => (v instanceof PDFRef ? c.lookup(v) : v);
     const dec = (v: any) => (v && typeof v.decodeText === 'function' ? v.decodeText() : null);
     const leaves: any[] = [];
+    let tableCount = 0;
     const walk = (v: any) => {
       const n = look(v);
       if (n instanceof PDFArray) { n.asArray().forEach(walk); return; }
       if (!(n instanceof PDFDict)) return;
       const S = String(n.get(PDFName.of('S')) || '');
+      if (S === '/Table') tableCount++;
       const K = n.get(PDFName.of('K'));
       const kids = K == null ? [] : (look(K) instanceof PDFArray ? look(K).asArray() : [K]);
       const linked = kids.some((k: any) => { const d = look(k); return d instanceof PDFNumber || (d instanceof PDFDict && String(d.get(PDFName.of('Type'))) === '/MCR'); });
@@ -64,7 +66,8 @@ async function tag(page, lines: string[], html: string, png: string | null, titl
     };
     walk(look(doc.catalog.get(PDFName.of('StructTreeRoot'))).get(PDFName.of('K')));
     const s = tagged.summary || {};
-    return { leaves, marker, headingCheck, summary: { offPageLeavesDropped: s.offPageLeavesDropped, imageTextMovedToAlt: s.imageTextMovedToAlt, provenanceFooterDropped: s.provenanceFooterDropped }, roundTripOk: tagged.roundTrip && tagged.roundTrip.ok };
+    const fails = ((v && v.checks) || []).filter((x: any) => x.status === 'fail').map((x: any) => x.rule + ': ' + x.detail);
+    return { leaves, marker, headingCheck, fails, tableCount, tables: { offPageTablesDropped: s.offPageTablesDropped, offPageHeaderRowsDropped: s.offPageHeaderRowsDropped }, summary: { offPageLeavesDropped: s.offPageLeavesDropped, imageTextMovedToAlt: s.imageTextMovedToAlt, provenanceFooterDropped: s.provenanceFooterDropped }, roundTripOk: tagged.roundTrip && tagged.roundTrip.ok };
   }, { lines, html, png, title });
 }
 
@@ -107,6 +110,72 @@ test('a heavily reworded paragraph whose words are on the page stays for review,
   const p = r.leaves.find((l: any) => l.S === '/P');
   expect(p && p.text).toBe('In spring, families will hear the results when the district reviews its budget.');
   expect(r.summary.offPageLeavesDropped).toBe(0);
+});
+
+test('a dropped heading does not leave its sub-heading skipping a level (veraPDF 7.4.2)', async ({ page }) => {
+  await boot(page);
+  const r = await tag(page, ['Annual Report', 'Details', 'Attendance rose in every grade this year.'],
+    '<!DOCTYPE html><html lang="en"><head><title>Doc</title></head><body><main><h1>Annual Report</h1><h2>Highlights prepared by the editor</h2><h3>Details</h3><p>Attendance rose in every grade this year.</p></main></body></html>', null);
+  expect(r.leaves.filter((l: any) => /^\/H[1-6]$/.test(l.S)).map((l: any) => l.S + ' ' + l.text)).toEqual(['/H1 Annual Report', '/H2 Details']);
+});
+
+const TABLES_LINES = ['Library Visits', 'Visits rose in the fall.', 'Grade', 'Readers', 'Third', 'Forty', 'Visits by Day'];
+const TABLES_HTML = (formTable: boolean) => '<!DOCTYPE html><html lang="en"><head><title>Doc</title></head><body><main><h1>Library Visits</h1><p>Visits rose in the fall.</p>'
+  + '<table><tr><th scope="col">Grade</th><th scope="col">Readers</th></tr><tr><td>Third</td><td>Forty</td></tr></table>'
+  // read off a chart by the AI, caption and all: nothing of it is on the page
+  + '<table><caption>Library visits per month, read from the chart</caption><tr><th scope="col">Month</th><th scope="col">Visits</th></tr><tr><td>October</td><td>412</td></tr><tr><td>November</td><td>388</td></tr></table>'
+  // the same, but the page prints its caption: the caption keeps its tag, so the table stays
+  + '<table><caption>Visits by Day</caption><tr><th scope="col">Day</th><th scope="col">Visitors</th></tr><tr><td>Monday</td><td>57</td></tr></table>'
+  // a form table: its blank stays (a field may nest there), so the table does
+  + (formTable ? '<table><tr><td>Signature of parent</td><td>________</td></tr></table>' : '')
+  + '</main></body></html>';
+
+test('a table the AI built (none of it printed) leaves the tagged PDF; a printed table stays whole', async ({ page }) => {
+  await boot(page);
+  const r = await tag(page, TABLES_LINES, TABLES_HTML(false), null);
+  expect(r.roundTripOk).toBe(true);
+  expect(r.tableCount).toBe(2);
+  expect(r.tables).toEqual({ offPageTablesDropped: 1, offPageHeaderRowsDropped: 2 });
+  const texts = r.leaves.filter((l: any) => l.text != null).map((l: any) => l.text);
+  for (const gone of ['Library visits per month, read from the chart', 'Month', 'October', '412', 'November', '388']) expect(texts, gone).not.toContain(gone);
+  const cells = r.leaves.filter((l: any) => l.S === '/TH' || l.S === '/TD');
+  expect(cells.map((l: any) => l.text + (l.linked ? '' : ' (unlinked)'))).toEqual(['Grade', 'Readers', 'Third', 'Forty']);
+  expect(r.leaves.find((l: any) => l.S === '/Caption' && l.text === 'Visits by Day')).toMatchObject({ linked: true });
+  expect(r.fails).toEqual([]);
+});
+
+test('a form table whose blank is not printed stays, and its blank goes to review (not erased)', async ({ page }) => {
+  await boot(page);
+  const r = await tag(page, TABLES_LINES, TABLES_HTML(true), null);
+  expect(r.tableCount).toBe(3);
+  expect(r.tables.offPageTablesDropped).toBe(1);
+  expect(r.leaves.some((l: any) => l.S === '/TD' && l.text === '________' && !l.linked)).toBe(true);
+  expect(r.fails).toEqual([expect.stringMatching(/^No orphaned semantic leaves: 1\/\d+ orphaned$/)]);
+});
+
+test('a non-Latin image alt survives intact: written as a hex string, not a Latin-1 PDFString (2026-10-19)', async ({ page }) => {
+  await boot(page);
+  // PDFString.of kept only each character's low byte: "ب" (U+0628) became "(" and "ة" (U+0629) ")",
+  // so the Arabic signature alt broke its own object, the Figure vanished at save and the round trip failed.
+  const alt = 'توقيع المشرف العام بخط اليد، مدرسة';
+  const r = await tag(page, ['Dear families,', 'School starts on Monday at eight in the morning.'],
+    '<!DOCTYPE html><html lang="en"><head><title>Doc</title></head><body><main><h1>Dear families,</h1><p>School starts on Monday at eight in the morning.</p>'
+    + '<p><img alt="' + alt + '" src="data:image/png;base64,iVBORw0KGgo="></p></main></body></html>', PNG_B64);
+  expect(r.roundTripOk).toBe(true);
+  expect(r.leaves.filter((l: any) => l.S === '/Figure').map((l: any) => l.alt)).toEqual([alt]);
+});
+
+test('a title the AI composed from body words is not a printed heading: it leaves the PDF (2026-10-19)', async ({ page }) => {
+  await boot(page);
+  // OSEP letter shape: no printed title; the AI's h1 reuses a phrase from the body paragraph
+  const lines = ['Dear Colleagues:', 'We write about the Statement of Interest in T.R. v. The School District', 'of Philadelphia and plans for translated documents.'];
+  const r = await tag(page, lines,
+    '<!DOCTYPE html><html lang="en"><head><title>Doc</title></head><body><main><h1>IEP Translation: OSEP Letter on the Statement of Interest in T.R. v. The School District of Philadelphia</h1>'
+    + '<p>Dear Colleagues:</p><p>We write about the Statement of Interest in T.R. v. The School District of Philadelphia and plans for translated documents.</p></main></body></html>', null, 'IEP Translation letter');
+  expect(r.leaves.filter((l: any) => /^\/H[1-6]$/.test(l.S)).map((l: any) => l.text)).toEqual([]);
+  expect(r.marker).toBe(true);
+  expect(r.leaves.filter((l: any) => l.text != null && !l.linked).map((l: any) => l.text)).toEqual([]);
+  expect(r.fails).toEqual([]);
 });
 
 const LETTER_LINES = ['Dear families,', 'School starts on Monday at eight in the morning.'];

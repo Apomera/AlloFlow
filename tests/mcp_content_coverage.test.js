@@ -27,6 +27,14 @@ it('source retention checks catch equal-length substitutions and repeated-word o
  expect(result).toMatchObject({status:'review_required',reviewRequired:true,missingTokens:2});expect(result.missingPassages[0].missingTokens).toBe(2);expect(JSON.stringify(result)).not.toMatch(/Alpha|dollars|gamma/);
  expect(P.assessSourceCoverage({sourceText:'Accessi-\nbility and 120 dollars.',outputHtml:'<p>Accessibility and <strong>120</strong> dollars.</p>'})).toMatchObject({status:'matched',missingTokens:0});
 });
+it('matches an Arabic word whose tanween the text layer stored as a separate glyph after a space (2026-10-19)',()=>{
+ // PPS Arabic family letter: "مذهلا ً" and "علنيا ً" in the PDF, "مذهلاً" and "علنياً" in the HTML. The miss withheld its tagged PDF.
+ const base='نحن نشكركم على الدعم ';
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا وأعلن علنيا ً',outputHtml:'<p>'+base+'كان مذهلاً جدا وأعلن علنياً</p>'})).toMatchObject({status:'matched',missingTokens:0});
+ // a real change is still caught: a missing word, and a different word that happens to share letters
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا',outputHtml:'<p>'+base+'كان جدا</p>'})).toMatchObject({status:'review_required',missingTokens:1});
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا',outputHtml:'<p>'+base+'كان مذهل جدا</p>'})).toMatchObject({status:'review_required',missingTokens:1});
+});
 it('distinguishes missing source evidence, extraction problems and page-range scope from matching text',()=>{
  expect(P.assessSourceCoverage({sourceText:'Visible information',outputHtml:'<p style="display:none">Visible information</p>'})).toMatchObject({status:'review_required',missingTokens:2});
  expect(P.assessSourceCoverage({outputHtml:'<p>Unverified content.</p>'})).toMatchObject({status:'unavailable',reviewRequired:true,tokenRecall:null});
