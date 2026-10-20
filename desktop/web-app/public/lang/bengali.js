@@ -1307,6 +1307,7 @@
     "badge_new": "নতুন",
     "badge_educator": "🔒 শিক্ষক",
     "badge_educator_open": "🛠️ শিক্ষক",
+    "switch_hint": "পৃষ্ঠার উপরের Start & setup থেকে আপনি যেকোনো সময় মোড পরিবর্তন করতে পারেন",
     "learning_tools_title": "শেখা সরঞ্জাম",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ও আরও: অন্বেষণ করুন, তৈরি করুন, অনুসন্ধান করুন, বেড়ে উঠুন",
     "mic_title": "Microphone setup",
@@ -1412,6 +1413,7 @@
     "progress_not_saved_hint": "ডিভাইসের স্টোরেজ উপলভ্য নয়। আবার সেভ করার চেষ্টা করুন, পাঠটি প্রজেক্ট ব্যাকআপ হিসেবে রাখুন, অথবা নির্দেশিত মোড খোলা রাখুন।",
     "progress_not_saved_short": "সেভ হয়নি",
     "progress_not_saved_title": "অগ্রগতি সেভ করা যায়নি",
+    "progress_saved": "নির্দেশিত অগ্রগতি সেভ হয়েছে। যেকোনো সময় ফিরে আসতে উপরের Resume guided ব্যবহার করুন।",
     "progress_saved_at": "{time}-এ এই ডিভাইসে সেভ হয়েছে",
     "progress_saved_short": "সেভ হয়েছে",
     "progress_saving": "অগ্রগতি সেভ করা হচ্ছে…",
@@ -84395,7 +84397,8 @@
     "translations_auto_plain": "স্বয়ংক্রিয়",
     "translations_none": "কোনোটিই নয়",
     "translations_on_hint": "{output} ভাষার রিসোর্সের সঙ্গে {target} ভাষার একটি সংস্করণও থাকবে।",
-    "translations_off_hint": "রিসোর্স শুধু {output} ভাষায় থাকবে, দ্বিতীয় কোনো ভাষা থাকবে না।"
+    "translations_off_hint": "রিসোর্স শুধু {output} ভাষায় থাকবে, দ্বিতীয় কোনো ভাষা থাকবে না।",
+    "scope_note": "এগুলো AlloFlow আপনার জন্য কী লিখবে তা নির্ধারণ করে।"
   },
   "storage": {
     "preset_automatic": "স্বয়ংক্রিয়",

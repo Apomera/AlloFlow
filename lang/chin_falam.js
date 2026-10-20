@@ -82395,7 +82395,8 @@
     "translations_auto_plain": "Amah te in",
     "translations_none": "A um lo",
     "translations_on_hint": "{output} in a ummi hna cu {target} in zong an um ve lai.",
-    "translations_off_hint": "A hna cu {output} lawng in an um lai, holh dang a um lo."
+    "translations_off_hint": "A hna cu {output} lawng in an um lai, holh dang a um lo.",
+    "scope_note": "Hi pawl nih AlloFlow nih na ca'n a ziakmi kha an hruai."
   },
   "storage": {
     "preset_automatic": "Amah te in",

@@ -82397,7 +82397,8 @@
     "translations_auto_plain": "Make iaan",
     "translations_none": "Ejjeḷọk",
     "translations_on_hint": "Men ko ilo {output} renaaj bar wor juon version ilo {target}.",
-    "translations_off_hint": "Men ko renaaj ilo {output} wōt, im ejjeḷọk kajin kein karuo."
+    "translations_off_hint": "Men ko renaaj ilo {output} wōt, im ejjeḷọk kajin kein karuo.",
+    "scope_note": "Men kein rej tōl ta eo AlloFlow ej je ñan eok."
   },
   "storage": {
     "preset_automatic": "Make iaan",

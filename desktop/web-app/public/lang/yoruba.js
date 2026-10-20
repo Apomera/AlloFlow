@@ -1308,6 +1308,7 @@
     "badge_new": "titun",
     "badge_educator": "🔒 Olùkọ́",
     "badge_educator_open": "🛠️ Olùkọ́",
+    "switch_hint": "O le yí ipò padà nígbàkigbà láti Start & setup ní òkè ojú-ìwé",
     "learning_tools_title": "Learning irinṣẹ",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub àti bẹ́ẹ̀ bẹ́ẹ̀ lọ: ṣàwárí, dá, ṣèwádìí, kí o sì dàgbà",
     "mic_title": "Ètò Gbohùngbohùn",
@@ -1410,6 +1411,7 @@
     "progress_not_saved_hint": "Ìpamọ́ ẹ̀rọ kò sí. Gbìyànjú láti fi pamọ́ lẹ́ẹ̀kan síi, fi ẹ̀kọ́ náà pamọ́ gẹ́gẹ́ bí àfikún iṣẹ́, tàbí jẹ́ kí Ìpo Ìtọ́sọ́nà ṣí.",
     "progress_not_saved_short": "A kò fi pamọ́",
     "progress_not_saved_title": "A kò lè fi ìlọsíwájú pamọ́",
+    "progress_saved": "A ti fi ìlọsíwájú ìtọ́sọ́nà pamọ́. Lo Resume guided ní òkè láti padà wá nígbàkigbà.",
     "progress_saved_at": "A fi pamọ́ sí ẹ̀rọ yìí ní {time}",
     "progress_saved_short": "A ti fi pamọ́",
     "progress_saving": "A ń fi ìlọsíwájú pamọ́…",
@@ -84380,7 +84382,8 @@
     "translations_auto_plain": "Fúnra rẹ̀",
     "translations_none": "Kò sí",
     "translations_on_hint": "Àwọn ohun èlò ní {output} yóò tún ní ẹ̀dà ní {target}.",
-    "translations_off_hint": "Àwọn ohun èlò yóò wà ní {output} nìkan, láìsí èdè kejì."
+    "translations_off_hint": "Àwọn ohun èlò yóò wà ní {output} nìkan, láìsí èdè kejì.",
+    "scope_note": "Ìwọ̀nyí ń darí ohun tí AlloFlow ń kọ fún ọ."
   },
   "storage": {
     "preset_automatic": "Fúnra rẹ̀",

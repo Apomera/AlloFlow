@@ -1308,6 +1308,7 @@
     "badge_new": "mpya",
     "badge_educator": "🔒 Mwalimu",
     "badge_educator_open": "🛠️ Mwalimu",
+    "switch_hint": "Unaweza kubadilisha hali wakati wowote kupitia Start & setup juu ya ukurasa",
     "learning_tools_title": "Kujifunza zana",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub na zaidi: chunguza, unda, chunguza kwa kina, na ukue",
     "mic_title": "Mipangilio ya Maikrofoni",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "Hifadhi ya kifaa haipatikani. Jaribu kuhifadhi tena, hifadhi somo kama nakala ya mradi, au acha Hali ya Kuongozwa ikiwa wazi.",
     "progress_not_saved_short": "Haijahifadhiwa",
     "progress_not_saved_title": "Maendeleo hayakuweza kuhifadhiwa",
+    "progress_saved": "Maendeleo yaliyoongozwa yamehifadhiwa. Tumia Resume guided iliyo juu kurudi wakati wowote.",
     "progress_saved_at": "Imehifadhiwa kwenye kifaa hiki saa {time}",
     "progress_saved_short": "Imehifadhiwa",
     "progress_saving": "Inahifadhi maendeleo…",
@@ -84397,7 +84399,8 @@
     "translations_auto_plain": "Kiotomatiki",
     "translations_none": "Hakuna",
     "translations_on_hint": "Rasilimali za {output} zitakuwa pia na toleo la {target}.",
-    "translations_off_hint": "Rasilimali zitakuwa kwa {output} pekee, bila lugha ya pili."
+    "translations_off_hint": "Rasilimali zitakuwa kwa {output} pekee, bila lugha ya pili.",
+    "scope_note": "Mipangilio hii huongoza kile ambacho AlloFlow inakuandikia."
   },
   "storage": {
     "preset_automatic": "Kiotomatiki",

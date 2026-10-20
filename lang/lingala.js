@@ -82954,7 +82954,8 @@
     "translations_auto_plain": "Yango moko",
     "translations_none": "Eloko te",
     "translations_on_hint": "Biloko ya {output} ekozala mpe na lolenge ya {target}.",
-    "translations_off_hint": "Biloko ekozala kaka na {output}, monoko ya mibale te."
+    "translations_off_hint": "Biloko ekozala kaka na {output}, monoko ya mibale te.",
+    "scope_note": "Maponi oyo etambwisaka makomi oyo AlloFlow esalelaka yo."
   },
   "storage": {
     "preset_automatic": "Yango moko",

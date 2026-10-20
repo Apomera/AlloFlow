@@ -2084,6 +2084,7 @@
     "badge_new": "نیا",
     "badge_educator": "🔒 استاد",
     "badge_educator_open": "🛠️ استاد",
+    "switch_hint": "آپ صفحے کے اوپر Start & setup سے کسی بھی وقت موڈ تبدیل کر سکتے ہیں",
     "learning_tools_title": "آنہیںت سیکھنا",
     "learning_tools_desc": "STEAM Lab، StoryForge، SEL Hub، Research Hub اور مزید: دریافت کریں، بنائیں، تحقیق کریں اور بڑھیں",
     "mic_title": "سیٹنگ میکراورفاورن",
@@ -3337,6 +3338,7 @@
     "progress_not_saved_hint": "ڈیوائس کا اسٹوریج دستیاب نہیں۔ دوبارہ محفوظ کرنے کی کوشش کریں، سبق کو پروجیکٹ بیک اپ کے طور پر رکھیں، یا رہنمائی والا موڈ کھلا چھوڑیں۔",
     "progress_not_saved_short": "محفوظ نہیں",
     "progress_not_saved_title": "پیش رفت محفوظ نہیں ہو سکی",
+    "progress_saved": "رہنمائی والی پیش رفت محفوظ ہو گئی۔ کسی بھی وقت واپس آنے کے لیے اوپر Resume guided استعمال کریں۔",
     "progress_saved_at": "{time} پر اس ڈیوائس میں محفوظ کیا گیا",
     "progress_saved_short": "محفوظ",
     "progress_saving": "پیش رفت محفوظ کی جا رہی ہے…",
@@ -84287,7 +84289,8 @@
     "translations_auto_plain": "خودکار",
     "translations_none": "کوئی نہیں",
     "translations_on_hint": "{output} میں بننے والے وسائل کے ساتھ {target} نسخہ بھی ملے گا۔",
-    "translations_off_hint": "وسائل صرف {output} میں ہوں گے، دوسری زبان کے بغیر۔"
+    "translations_off_hint": "وسائل صرف {output} میں ہوں گے، دوسری زبان کے بغیر۔",
+    "scope_note": "یہ ترتیبات طے کرتی ہیں کہ AlloFlow آپ کے لیے کیا لکھے۔"
   },
   "storage": {
     "preset_automatic": "خودکار",

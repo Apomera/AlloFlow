@@ -1308,6 +1308,7 @@
     "badge_new": "အသစ်",
     "badge_educator": "🔒 ဆရာ/ဆရာမ",
     "badge_educator_open": "🛠️ ဆရာ/ဆရာမ",
+    "switch_hint": "စာမျက်နှာ၏ အပေါ်ရှိ Start & setup မှ မုဒ်များကို အချိန်မရွေး ပြောင်းနိုင်ပါသည်",
     "learning_tools_title": "သင်ယူခြင်း ကိရိယာများ",
     "learning_tools_desc": "STEAM Lab၊ StoryForge၊ SEL Hub၊ Research Hub နှင့် အခြားများ: လေ့လာပါ၊ ဖန်တီးပါ၊ စူးစမ်းပါ၊ ကြီးထွားပါ",
     "mic_title": "မိုက်ခရိုဖုန်းသတ်မှတ်ခြင်း",
@@ -1410,6 +1411,7 @@
     "progress_not_saved_hint": "စက်၏သိုလှောင်မှု မရနိုင်ပါ။ သိမ်းဆည်းမှုကို ထပ်စမ်းပါ၊ သင်ခန်းစာကို ပရောဂျက်အရန်အဖြစ် ထားပါ သို့မဟုတ် လမ်းညွှန်မုဒ်ကို ဖွင့်ထားပါ။",
     "progress_not_saved_short": "မသိမ်းရသေး",
     "progress_not_saved_title": "တိုးတက်မှုကို မသိမ်းနိုင်ပါ",
+    "progress_saved": "လမ်းညွှန်တိုးတက်မှု သိမ်းဆည်းပြီးပါပြီ။ အချိန်မရွေး ပြန်လာရန် အပေါ်ရှိ Resume guided ကို အသုံးပြုပါ။",
     "progress_saved_at": "{time} တွင် ဤစက်၌ သိမ်းဆည်းထားသည်",
     "progress_saved_short": "သိမ်းဆည်းပြီး",
     "progress_saving": "တိုးတက်မှု သိမ်းဆည်းနေသည်…",
@@ -84377,7 +84379,8 @@
     "translations_auto_plain": "အလိုအလျောက်",
     "translations_none": "မရှိ",
     "translations_on_hint": "{output} ဖြင့် ရင်းမြစ်များတွင် {target} ဗားရှင်းလည်း ပါဝင်ပါမည်။",
-    "translations_off_hint": "ရင်းမြစ်များသည် {output} ဖြင့်သာ ဖြစ်ပြီး ဒုတိယဘာသာစကား မပါဝင်ပါ။"
+    "translations_off_hint": "ရင်းမြစ်များသည် {output} ဖြင့်သာ ဖြစ်ပြီး ဒုတိယဘာသာစကား မပါဝင်ပါ။",
+    "scope_note": "ဤဆက်တင်များသည် AlloFlow က သင့်အတွက် ရေးပေးမည့်အရာကို လမ်းညွှန်သည်။"
   },
   "storage": {
     "preset_automatic": "အလိုအလျောက်",

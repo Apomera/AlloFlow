@@ -1308,6 +1308,7 @@
     "badge_new": "አዲስ",
     "badge_educator": "🔒 አስተማሪ",
     "badge_educator_open": "🛠️ አስተማሪ",
+    "switch_hint": "ሁነታዎችን በማንኛውም ጊዜ ከገጹ ላይኛው ክፍል ካለው Start & setup መቀየር ይችላሉ",
     "learning_tools_title": "መማር መሳሪያዎች",
     "learning_tools_desc": "STEAM Lab፣ StoryForge፣ SEL Hub፣ Research Hub እና ሌሎችም፡ ያስሱ፣ ይፍጠሩ፣ ይመርምሩ፣ ያድጉ",
     "mic_title": "የማይክሮፎን ቅንብር",
@@ -1415,6 +1416,7 @@
     "progress_not_saved_hint": "የመሣሪያው ማከማቻ አይገኝም። ማስቀመጡን እንደገና ይሞክሩ፣ ትምህርቱን እንደ የፕሮጀክት ምትኬ ያስቀምጡ፣ ወይም የተመራ ሁነታን ክፍት ያድርጉ።",
     "progress_not_saved_short": "አልተቀመጠም",
     "progress_not_saved_title": "ሂደቱ ሊቀመጥ አልቻለም",
+    "progress_saved": "የተመራ ሂደት ተቀምጧል። በማንኛውም ጊዜ ለመመለስ ከላይ ያለውን Resume guided ይጠቀሙ።",
     "progress_saved_at": "በዚህ መሣሪያ ላይ በ {time} ተቀምጧል",
     "progress_saved_short": "ተቀምጧል",
     "progress_saving": "ሂደቱን በማስቀመጥ ላይ…",
@@ -84376,7 +84378,8 @@
     "translations_auto_plain": "በራስ-ሰር",
     "translations_none": "ምንም",
     "translations_on_hint": "በ{output} ያሉ ግብዓቶች የ{target} ቅጂም ይኖራቸዋል።",
-    "translations_off_hint": "ግብዓቶች በ{output} ብቻ ይሆናሉ፤ ሁለተኛ ቋንቋ አይኖርም።"
+    "translations_off_hint": "ግብዓቶች በ{output} ብቻ ይሆናሉ፤ ሁለተኛ ቋንቋ አይኖርም።",
+    "scope_note": "እነዚህ AlloFlow ለእርስዎ የሚጽፈውን ይመራሉ።"
   },
   "storage": {
     "preset_automatic": "በራስ-ሰር",

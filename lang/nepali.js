@@ -1308,6 +1308,7 @@
     "badge_new": "नयाँ",
     "badge_educator": "🔒 शिक्षक",
     "badge_educator_open": "🛠️ शिक्षक",
+    "switch_hint": "तपाईं पृष्ठको माथिको Start & setup बाट जुनसुकै बेला मोड बदल्न सक्नुहुन्छ",
     "learning_tools_title": "सिकाइ उपकरणहरू",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub र थप: खोज्नुहोस्, बनाउनुहोस्, अनुसन्धान गर्नुहोस् र बढ्नुहोस्",
     "mic_title": "माइक्रोफोन सेटअप",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "उपकरणको भण्डारण उपलब्ध छैन। फेरि सुरक्षित गर्ने प्रयास गर्नुहोस्, पाठलाई परियोजना ब्याकअपका रूपमा राख्नुहोस् वा निर्देशित मोड खुला राख्नुहोस्।",
     "progress_not_saved_short": "सुरक्षित छैन",
     "progress_not_saved_title": "प्रगति सुरक्षित गर्न सकिएन",
+    "progress_saved": "निर्देशित प्रगति सुरक्षित भयो। जुनसुकै बेला फर्कन माथिको Resume guided प्रयोग गर्नुहोस्।",
     "progress_saved_at": "{time} मा यो उपकरणमा सुरक्षित गरियो",
     "progress_saved_short": "सुरक्षित गरियो",
     "progress_saving": "प्रगति सुरक्षित हुँदैछ…",
@@ -84376,7 +84378,8 @@
     "translations_auto_plain": "स्वतः",
     "translations_none": "कुनै पनि होइन",
     "translations_on_hint": "{output} का सामग्रीसँगै {target} संस्करण पनि आउनेछ।",
-    "translations_off_hint": "सामग्री {output} मा मात्र हुनेछ, दोस्रो भाषा हुनेछैन।"
+    "translations_off_hint": "सामग्री {output} मा मात्र हुनेछ, दोस्रो भाषा हुनेछैन।",
+    "scope_note": "AlloFlow ले तपाईंका लागि के लेख्छ भन्ने कुरालाई यिनले दिशा दिन्छन्।"
   },
   "storage": {
     "preset_automatic": "स्वतः",

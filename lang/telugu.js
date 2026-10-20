@@ -1308,6 +1308,7 @@
     "badge_new": "కొత్త",
     "badge_educator": "🔒 ఉపాధ్యాయుడు",
     "badge_educator_open": "🛠️ ఉపాధ్యాయుడు",
+    "switch_hint": "పేజీ పైభాగంలో ఉన్న Start & setup నుండి మీరు ఎప్పుడైనా మోడ్‌లను మార్చవచ్చు",
     "learning_tools_title": "Learning సాధనాలు",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ఇంకా మరిన్ని: అన్వేషించండి, సృష్టించండి, పరిశోధించండి, ఎదగండి",
     "mic_title": "మైక్రోఫోన్ సెటప్",
@@ -1411,6 +1412,7 @@
     "progress_not_saved_hint": "పరికర నిల్వ అందుబాటులో లేదు. మళ్లీ సేవ్ చేయడానికి ప్రయత్నించండి, పాఠాన్ని ప్రాజెక్ట్ బ్యాకప్‌గా ఉంచండి లేదా మార్గదర్శక మోడ్‌ను తెరిచి ఉంచండి.",
     "progress_not_saved_short": "సేవ్ కాలేదు",
     "progress_not_saved_title": "పురోగతిని సేవ్ చేయలేకపోయాం",
+    "progress_saved": "మార్గదర్శక పురోగతి సేవ్ చేయబడింది. ఎప్పుడైనా తిరిగి రావడానికి పైన ఉన్న Resume guided ను ఉపయోగించండి.",
     "progress_saved_at": "{time}కి ఈ పరికరంలో సేవ్ చేయబడింది",
     "progress_saved_short": "సేవ్ చేయబడింది",
     "progress_saving": "పురోగతిని సేవ్ చేస్తున్నాం…",
@@ -84381,7 +84383,8 @@
     "translations_auto_plain": "స్వయంచాలకం",
     "translations_none": "ఏదీ లేదు",
     "translations_on_hint": "{output} భాషలోని వనరులతో పాటు {target} రూపం కూడా వస్తుంది.",
-    "translations_off_hint": "వనరులు {output} భాషలో మాత్రమే ఉంటాయి, రెండో భాష ఉండదు."
+    "translations_off_hint": "వనరులు {output} భాషలో మాత్రమే ఉంటాయి, రెండో భాష ఉండదు.",
+    "scope_note": "AlloFlow మీ కోసం రాసే వాటిని ఇవి నిర్దేశిస్తాయి."
   },
   "storage": {
     "preset_automatic": "స్వయంచాలకం",

@@ -82292,7 +82292,8 @@
     "translations_auto_plain": "အသးအိၣ်ဝဲဒၣ်",
     "translations_none": "တအိၣ်ဘၣ်",
     "translations_on_hint": "တၢ်ဂ့ၢ်လၢ {output} အပူၤ ကအိၣ်ဒီး {target} တဘ့ၣ်စ့ၢ်ကီး.",
-    "translations_off_hint": "တၢ်ဂ့ၢ်တဖၣ်ကအိၣ်လၢ {output} ဧိၤ, ကျိၥ်ခံခါတအိၣ်ဘၣ်."
+    "translations_off_hint": "တၢ်ဂ့ၢ်တဖၣ်ကအိၣ်လၢ {output} ဧိၤ, ကျိၥ်ခံခါတအိၣ်ဘၣ်.",
+    "scope_note": "တၢ်ရဲၣ်တၢ်ကျဲၤတဖၣ်အံၤ နဲၣ်ကျဲ တၢ်လၢ AlloFlow ကွဲးလၢနဂီၢ်."
   },
   "storage": {
     "preset_automatic": "အသးအိၣ်ဝဲဒၣ်",

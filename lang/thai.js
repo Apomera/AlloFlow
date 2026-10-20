@@ -3170,6 +3170,7 @@
     "progress_not_saved_hint": "พื้นที่จัดเก็บของอุปกรณ์ไม่พร้อมใช้งาน ลองบันทึกอีกครั้ง เก็บบทเรียนเป็นข้อมูลสำรองของโครงการ หรือเปิดโหมดแนะนำไว้",
     "progress_not_saved_short": "ไม่ได้บันทึก",
     "progress_not_saved_title": "ไม่สามารถบันทึกความคืบหน้าได้",
+    "progress_saved": "บันทึกความคืบหน้าของโหมดแนะนำแล้ว ใช้ Resume guided ที่ด้านบนเพื่อกลับมาได้ทุกเมื่อ",
     "progress_saved_at": "บันทึกในอุปกรณ์นี้เมื่อ {time}",
     "progress_saved_short": "บันทึกแล้ว",
     "progress_saving": "กำลังบันทึกความคืบหน้า…",
@@ -12205,6 +12206,7 @@
     "badge_new": "ใหม่",
     "badge_educator": "🔒 ครู",
     "badge_educator_open": "🛠️ ครู",
+    "switch_hint": "สลับโหมดได้ตลอดเวลาจาก Start & setup ที่ด้านบนของหน้า",
     "learning_tools_title": "เครื่องมือการเรียน",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub และอื่นๆ: สำรวจ สร้าง สืบค้น และเติบโต",
     "mic_title": "การตั้งค่าไมโครโฟน",
@@ -85045,7 +85047,8 @@
     "translations_auto_plain": "อัตโนมัติ",
     "translations_none": "ไม่มี",
     "translations_on_hint": "สื่อภาษา {output} จะมีฉบับภาษา {target} มาด้วย",
-    "translations_off_hint": "สื่อจะเป็นภาษา {output} เท่านั้น ไม่มีภาษาที่สอง"
+    "translations_off_hint": "สื่อจะเป็นภาษา {output} เท่านั้น ไม่มีภาษาที่สอง",
+    "scope_note": "การตั้งค่าเหล่านี้กำหนดทิศทางของสิ่งที่ AlloFlow เขียนให้คุณ"
   },
   "storage": {
     "preset_automatic": "อัตโนมัติ",

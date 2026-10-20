@@ -1308,6 +1308,7 @@
     "badge_new": "ọhụrụ",
     "badge_educator": "🔒 Onye Nkụzi",
     "badge_educator_open": "🛠️ Onye Nkụzi",
+    "switch_hint": "Ị nwere ike ịgbanwe ọnọdụ oge ọ bụla site na Start & setup n'elu ibe ahụ",
     "learning_tools_title": "Learning ngwa",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub na ndị ọzọ: nyochaa, kee, mee nnyocha, ma too",
     "mic_title": "Nhazi Maịkrọfọn",
@@ -1412,6 +1413,7 @@
     "progress_not_saved_hint": "Nchekwa ngwaọrụ adịghị. Gbalịa ichekwa ọzọ, debe nkuzi ahụ ka nkwado ọrụ, ma ọ bụ hapụ Ọnọdụ Nduzi ka ọ meghee.",
     "progress_not_saved_short": "Echekwaghị",
     "progress_not_saved_title": "Enweghị ike ichekwa ọganihu",
+    "progress_saved": "Echekwala ọganihu nduzi. Jiri Resume guided dị n'elu laghachi oge ọ bụla.",
     "progress_saved_at": "Echekwara na ngwaọrụ a n’oge {time}",
     "progress_saved_short": "Echekwara",
     "progress_saving": "Na-echekwa ọganihu…",
@@ -84380,7 +84382,8 @@
     "translations_auto_plain": "Akpaaka",
     "translations_none": "Ọ dịghị",
     "translations_on_hint": "Ihe onwunwe dị na {output} ga-enwekwa ụdị {target}.",
-    "translations_off_hint": "Ihe onwunwe ga-adị naanị na {output}, na-enweghị asụsụ nke abụọ."
+    "translations_off_hint": "Ihe onwunwe ga-adị naanị na {output}, na-enweghị asụsụ nke abụọ.",
+    "scope_note": "Ntọala ndị a na-eduzi ihe AlloFlow na-edere gị."
   },
   "storage": {
     "preset_automatic": "Akpaaka",

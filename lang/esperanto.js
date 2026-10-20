@@ -2504,6 +2504,7 @@
     "badge_new": "Nova",
     "badge_educator": "🔒 Edukisto",
     "badge_educator_open": "🛠️ Edukisto",
+    "switch_hint": "Vi povas ŝanĝi reĝimojn iam ajn per Start & setup supre de la paĝo",
     "learning_tools_title": "Lernaj Iloj",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub kaj pli: esploru, kreu, esploru kaj kresku",
     "mic_title": "Mikrofona Agordo",
@@ -2609,6 +2610,7 @@
     "progress_not_saved_hint": "La aparato-stokado ne disponeblas. Provu konservi denove, konservu la lecionon kiel projektan sekurkopion aŭ lasu la gvidatan reĝimon malfermita.",
     "progress_not_saved_short": "Ne konservita",
     "progress_not_saved_title": "Ne eblis konservi la progreson",
+    "progress_saved": "La gvidata progreso estas konservita. Uzu Resume guided supre por reveni iam ajn.",
     "progress_saved_at": "Konservita ĉe ĉi tiu aparato je {time}",
     "progress_saved_short": "Konservita",
     "progress_saving": "Konservante progreson…",
@@ -85405,7 +85407,8 @@
     "translations_auto_plain": "Aŭtomate",
     "translations_none": "Neniu",
     "translations_on_hint": "Rimedoj en {output} ankaŭ havos version en {target}.",
-    "translations_off_hint": "Rimedoj estos nur en {output}, sen dua lingvo."
+    "translations_off_hint": "Rimedoj estos nur en {output}, sen dua lingvo.",
+    "scope_note": "Ĉi tiuj agordoj gvidas tion, kion AlloFlow verkas por vi."
   },
   "storage": {
     "preset_automatic": "Aŭtomate",

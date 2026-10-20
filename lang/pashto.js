@@ -3349,6 +3349,7 @@
     "badge_new": "نوی",
     "badge_educator": "🔒 ښوونکی",
     "badge_educator_open": "🛠️ ښوونکی",
+    "switch_hint": "تاسو کولی شئ هر وخت د پاڼې په سر کې له Start & setup څخه حالت بدل کړئ",
     "learning_tools_title": "وسایل زده کول",
     "learning_tools_desc": "STEAM Lab، StoryForge، SEL Hub، Research Hub او نور: وپلټئ، جوړ کړئ، وڅېړئ او وده وکړئ",
     "mic_title": "تنظیم میکراوفاون",
@@ -4603,6 +4604,7 @@
     "progress_not_saved_hint": "د وسیلې زېرمه د کار وړ نه ده. بیا د خوندي کولو هڅه وکړئ، درس د پروژې د شاتړ په توګه وساتئ، یا لارښود حالت پرانیستی پرېږدئ.",
     "progress_not_saved_short": "خوندي نه شو",
     "progress_not_saved_title": "پرمختګ خوندي کېدای نه شو",
+    "progress_saved": "لارښود پرمختګ خوندي شو. هر وخت د بیرته راتلو لپاره په سر کې Resume guided وکاروئ.",
     "progress_saved_at": "په دې وسیله کې په {time} خوندي شو",
     "progress_saved_short": "خوندي شو",
     "progress_saving": "پرمختګ خوندي کېږي…",
@@ -85553,7 +85555,8 @@
     "translations_auto_plain": "اتوماتیک",
     "translations_none": "هیڅ یو نه",
     "translations_on_hint": "په {output} کې سرچینې به د {target} بڼه هم ولري.",
-    "translations_off_hint": "سرچینې به یوازې په {output} کې وي، پرته له دویمې ژبې."
+    "translations_off_hint": "سرچینې به یوازې په {output} کې وي، پرته له دویمې ژبې.",
+    "scope_note": "دا تنظیمات د هغه څه لارښوونه کوي چې AlloFlow یې ستاسو لپاره لیکي."
   },
   "storage": {
     "preset_automatic": "اتوماتیک",

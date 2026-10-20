@@ -1306,6 +1306,7 @@
     "badge_new": "bago",
     "badge_educator": "🔒 Guro",
     "badge_educator_open": "🛠️ Guro",
+    "switch_hint": "Maaari kang magpalit ng mode anumang oras mula sa Start & setup sa itaas ng page",
     "learning_tools_title": "Pag-aaral mga kasangkapan",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub at higit pa: tuklasin, lumikha, magsiyasat, at lumago",
     "mic_title": "Pag-setup ng Mikropono",
@@ -1411,6 +1412,7 @@
     "progress_not_saved_hint": "Hindi available ang storage ng device. Subukang i-save muli, panatilihin ang lesson bilang project backup, o panatilihing bukas ang Guided Mode.",
     "progress_not_saved_short": "Hindi nase-save",
     "progress_not_saved_title": "Hindi nase-save ang pag-usad",
+    "progress_saved": "Nase-save ang guided progress. Gamitin ang Resume guided sa itaas para bumalik anumang oras.",
     "progress_saved_at": "Nase-save sa device na ito noong {time}",
     "progress_saved_short": "Nase-save",
     "progress_saving": "Sine-save ang pag-usad…",
@@ -84373,7 +84375,8 @@
     "translations_auto_plain": "Awtomatiko",
     "translations_none": "Wala",
     "translations_on_hint": "Ang mga resource sa {output} ay magkakaroon din ng bersyon sa {target}.",
-    "translations_off_hint": "Ang mga resource ay nasa {output} lamang, walang pangalawang wika."
+    "translations_off_hint": "Ang mga resource ay nasa {output} lamang, walang pangalawang wika.",
+    "scope_note": "Ginagabayan ng mga ito ang isinusulat ng AlloFlow para sa iyo."
   },
   "storage": {
     "preset_automatic": "Awtomatiko",

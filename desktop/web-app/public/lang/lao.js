@@ -3168,6 +3168,7 @@
     "progress_not_saved_hint": "ບ່ອນເກັບຂອງອຸປະກອນບໍ່ພ້ອມໃຊ້. ລອງບັນທຶກອີກຄັ້ງ, ເກັບບົດຮຽນເປັນສຳຮອງໂຄງການ, ຫຼື ເປີດໂໝດຄຳແນະນຳໄວ້.",
     "progress_not_saved_short": "ບໍ່ໄດ້ບັນທຶກ",
     "progress_not_saved_title": "ບໍ່ສາມາດບັນທຶກຄວາມຄືບໜ້າ",
+    "progress_saved": "ບັນທຶກຄວາມຄືບໜ້າແລ້ວ. ໃຊ້ Resume guided ຢູ່ດ້ານເທິງເພື່ອກັບມາໄດ້ທຸກເວລາ.",
     "progress_saved_at": "ບັນທຶກໃນອຸປະກອນນີ້ເວລາ {time}",
     "progress_saved_short": "ບັນທຶກແລ້ວ",
     "progress_saving": "ກຳລັງບັນທຶກຄວາມຄືບໜ້າ…",
@@ -7280,6 +7281,7 @@
     "badge_new": "ໃໝ່",
     "badge_educator": "🔒 ຄູ",
     "badge_educator_open": "🛠️ ຄູ",
+    "switch_hint": "ທ່ານສາມາດປ່ຽນໂໝດໄດ້ທຸກເວລາຈາກ Start & setup ຢູ່ເທິງສຸດຂອງໜ້າ",
     "learning_tools_title": "Learning Tools",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ແລະ ອື່ນໆ: ສຳຫຼວດ, ສ້າງ, ຄົ້ນຄວ້າ ແລະ ເຕີບໂຕ",
     "mic_title": "Microphone Setup",
@@ -84183,7 +84185,8 @@
     "translations_auto_plain": "ອັດຕະໂນມັດ",
     "translations_none": "ບໍ່ມີ",
     "translations_on_hint": "ແຫຼ່ງຂໍ້ມູນເປັນ {output} ຈະມີສະບັບ {target} ນຳອີກ.",
-    "translations_off_hint": "ແຫຼ່ງຂໍ້ມູນຈະເປັນ {output} ຢ່າງດຽວ, ບໍ່ມີພາສາທີສອງ."
+    "translations_off_hint": "ແຫຼ່ງຂໍ້ມູນຈະເປັນ {output} ຢ່າງດຽວ, ບໍ່ມີພາສາທີສອງ.",
+    "scope_note": "ການຕັ້ງຄ່າເຫຼົ່ານີ້ກຳນົດທິດທາງຂອງສິ່ງທີ່ AlloFlow ຂຽນໃຫ້ທ່ານ."
   },
   "storage": {
     "preset_automatic": "ອັດຕະໂນມັດ",

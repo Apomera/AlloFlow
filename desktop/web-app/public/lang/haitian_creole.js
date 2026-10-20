@@ -3270,6 +3270,7 @@
     "badge_new": "Nouvo",
     "badge_educator": "🔒 Edikatè",
     "badge_educator_open": "🛠️ Edikatè",
+    "switch_hint": "Ou ka chanje mòd nenpòt kilè nan Start & setup anlè paj la",
     "learning_tools_title": "Zouti Aprantisaj",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ak plis: eksplore, kreye, mennen ankèt, epi grandi",
     "mic_title": "Konfigirasyon Mikwo",
@@ -4519,6 +4520,7 @@
     "progress_not_saved_hint": "Depo aparèy la pa disponib. Eseye sove ankò, kenbe leson an kòm yon sovgad pwojè, oswa kite Mòd Gid la louvri.",
     "progress_not_saved_short": "Pa sove",
     "progress_not_saved_title": "Pwogrè a pa t kapab sove",
+    "progress_saved": "Pwogrè gide a sove. Sèvi ak Resume guided anlè a pou retounen nenpòt lè.",
     "progress_saved_at": "Sove sou aparèy sa a a {time}",
     "progress_saved_short": "Sove",
     "progress_saving": "Ap sove pwogrè a…",
@@ -87498,7 +87500,8 @@
     "translations_auto_plain": "Otomatik",
     "translations_none": "Okenn",
     "translations_on_hint": "Resous nan {output} ap gen yon vèsyon nan {target} tou.",
-    "translations_off_hint": "Resous yo ap nan {output} sèlman, san dezyèm lang."
+    "translations_off_hint": "Resous yo ap nan {output} sèlman, san dezyèm lang.",
+    "scope_note": "Paramèt sa yo gide sa AlloFlow ekri pou ou."
   },
   "storage": {
     "preset_automatic": "Otomatik",

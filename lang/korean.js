@@ -1308,6 +1308,7 @@
     "badge_new": "신규",
     "badge_educator": "🔒 교육자",
     "badge_educator_open": "🛠️ 교육자",
+    "switch_hint": "페이지 상단의 Start & setup에서 언제든지 모드를 전환할 수 있습니다",
     "learning_tools_title": "학습 도구",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub 등: 탐색하고, 만들고, 조사하고, 성장하세요",
     "mic_title": "마이크 설정",
@@ -1417,6 +1418,7 @@
     "progress_not_saved_hint": "기기 저장소를 사용할 수 없습니다. 저장을 다시 시도하거나 수업을 프로젝트 백업으로 보관하거나 가이드 모드를 열어 두세요.",
     "progress_not_saved_short": "저장되지 않음",
     "progress_not_saved_title": "진행률을 저장할 수 없습니다",
+    "progress_saved": "가이드 진행률이 저장되었습니다. 언제든지 상단의 Resume guided로 돌아올 수 있습니다.",
     "progress_saved_at": "{time}에 이 기기에 저장됨",
     "progress_saved_short": "저장됨",
     "progress_saving": "진행률 저장 중…",
@@ -84187,7 +84189,8 @@
     "translations_auto_plain": "자동",
     "translations_none": "없음",
     "translations_on_hint": "{output} 자료에 {target} 버전도 함께 만들어집니다.",
-    "translations_off_hint": "자료는 {output}로만 만들어지고 두 번째 언어는 없습니다."
+    "translations_off_hint": "자료는 {output}로만 만들어지고 두 번째 언어는 없습니다.",
+    "scope_note": "이 설정은 AlloFlow가 작성하는 내용의 방향을 정합니다."
   },
   "storage": {
     "preset_automatic": "자동",

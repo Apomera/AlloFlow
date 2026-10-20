@@ -1307,6 +1307,7 @@
     "badge_new": "नवीन",
     "badge_educator": "🔒 शिक्षक",
     "badge_educator_open": "🛠️ शिक्षक",
+    "switch_hint": "पृष्ठाच्या वरच्या Start & setup मधून तुम्ही कधीही मोड बदलू शकता",
     "learning_tools_title": "शिक्षण साधने",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub आणि अधिक: शोधा, तयार करा, तपासा आणि वाढा",
     "mic_title": "मायक्रोफोन सेटअप",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "डिव्हाइसचे स्टोरेज उपलब्ध नाही. पुन्हा जतन करण्याचा प्रयत्न करा, धडा प्रकल्प बॅकअप म्हणून ठेवा किंवा मार्गदर्शित मोड उघडा ठेवा.",
     "progress_not_saved_short": "जतन केलेले नाही",
     "progress_not_saved_title": "प्रगती जतन करता आली नाही",
+    "progress_saved": "मार्गदर्शित प्रगती जतन झाली. कधीही परत येण्यासाठी वरचे Resume guided वापरा.",
     "progress_saved_at": "{time} वाजता या डिव्हाइसवर जतन केले",
     "progress_saved_short": "जतन केले",
     "progress_saving": "प्रगती जतन होत आहे…",
@@ -84207,7 +84209,8 @@
     "translations_auto_plain": "आपोआप",
     "translations_none": "काहीही नाही",
     "translations_on_hint": "{output} मधील साधनांसोबत {target} आवृत्तीही मिळेल.",
-    "translations_off_hint": "साधने फक्त {output} मध्ये असतील, दुसरी भाषा नसेल."
+    "translations_off_hint": "साधने फक्त {output} मध्ये असतील, दुसरी भाषा नसेल.",
+    "scope_note": "AlloFlow तुमच्यासाठी काय लिहील याला हे दिशा देतात."
   },
   "storage": {
     "preset_automatic": "आपोआप",

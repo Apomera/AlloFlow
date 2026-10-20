@@ -1308,6 +1308,7 @@
     "badge_new": "gisha",
     "badge_educator": "🔒 Umwigisha",
     "badge_educator_open": "🛠️ Umwigisha",
+    "switch_hint": "Urashobora guhindura uburyo igihe cose ukoresheje Start & setup iri hejuru ku rupapuro",
     "learning_tools_title": "Learning ibikoresho",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub n’ibindi: rondera, kora, suzuma, ukure",
     "mic_title": "Itunganywa rya Mikoro",
@@ -1409,6 +1410,7 @@
     "progress_not_saved_hint": "Ububiko bw’igikoresho ntibuboneka. Subira ugerageze kubika, ubike isomo nk’ububiko bw’umugambi, canke usige uburyo buyobowe buguruye.",
     "progress_not_saved_short": "Ntiryabitswe",
     "progress_not_saved_title": "Iterambere ntiryashoboye kubikwa",
+    "progress_saved": "Iterambere riyobowe ryarabitswe. Koresha Resume guided iri hejuru kugira ngo ugaruke igihe cose.",
     "progress_saved_at": "Vyabitswe kuri iki gikoresho isaha ya {time}",
     "progress_saved_short": "Vyabitswe",
     "progress_saving": "Kubika iterambere…",
@@ -84369,7 +84371,8 @@
     "translations_auto_plain": "Bikorwa vyonyene",
     "translations_none": "Nta na kimwe",
     "translations_on_hint": "Ibikoresho vyo mu {output} bizoherekezwa na verisiyo ya {target}.",
-    "translations_off_hint": "Ibikoresho bizoba mu {output} gusa, nta rurimi rwa kabiri."
+    "translations_off_hint": "Ibikoresho bizoba mu {output} gusa, nta rurimi rwa kabiri.",
+    "scope_note": "Aya mahitamwo arongora ivyo AlloFlow ikwandikira."
   },
   "storage": {
     "preset_automatic": "Bikorwa vyonyene",

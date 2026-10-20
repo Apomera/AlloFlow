@@ -1308,6 +1308,7 @@
     "badge_new": "புதிய",
     "badge_educator": "🔒 கல்வியாளர்",
     "badge_educator_open": "🛠️ கல்வியாளர்",
+    "switch_hint": "பக்கத்தின் மேலே உள்ள Start & setup இலிருந்து எப்போது வேண்டுமானாலும் பயன்முறையை மாற்றலாம்",
     "learning_tools_title": "Learning கருவிகள்",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub மற்றும் பல: ஆராயுங்கள், உருவாக்குங்கள், விசாரியுங்கள், வளருங்கள்",
     "mic_title": "மைக்ரோஃபோன் அமைப்பு",
@@ -1415,6 +1416,7 @@
     "progress_not_saved_hint": "சாதனச் சேமிப்பு கிடைக்கவில்லை. மீண்டும் சேமிக்க முயற்சிக்கவும், பாடத்தைத் திட்ட காப்புப்பிரதியாக வைத்திருக்கவும் அல்லது வழிகாட்டி பயன்முறையைத் திறந்து வைக்கவும்.",
     "progress_not_saved_short": "சேமிக்கப்படவில்லை",
     "progress_not_saved_title": "முன்னேற்றத்தைச் சேமிக்க முடியவில்லை",
+    "progress_saved": "வழிகாட்டப்பட்ட முன்னேற்றம் சேமிக்கப்பட்டது. எப்போது வேண்டுமானாலும் திரும்ப வர மேலே உள்ள Resume guided ஐப் பயன்படுத்துங்கள்.",
     "progress_saved_at": "{time} மணிக்கு இந்தச் சாதனத்தில் சேமிக்கப்பட்டது",
     "progress_saved_short": "சேமிக்கப்பட்டது",
     "progress_saving": "முன்னேற்றம் சேமிக்கப்படுகிறது…",
@@ -84382,7 +84384,8 @@
     "translations_auto_plain": "தானாக",
     "translations_none": "எதுவும் இல்லை",
     "translations_on_hint": "{output} மொழியில் உள்ள வளங்களுடன் {target} பதிப்பும் கிடைக்கும்.",
-    "translations_off_hint": "வளங்கள் {output} மொழியில் மட்டுமே இருக்கும், இரண்டாவது மொழி இருக்காது."
+    "translations_off_hint": "வளங்கள் {output} மொழியில் மட்டுமே இருக்கும், இரண்டாவது மொழி இருக்காது.",
+    "scope_note": "AlloFlow உங்களுக்காக எழுதுவதை இவை வழிநடத்துகின்றன."
   },
   "storage": {
     "preset_automatic": "தானாக",

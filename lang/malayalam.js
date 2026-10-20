@@ -1307,6 +1307,7 @@
     "badge_new": "പുതിയത്",
     "badge_educator": "🔒 എഡ്യൂക്കേറ്റർ",
     "badge_educator_open": "🛠️ എഡ്യൂക്കേറ്റർ",
+    "switch_hint": "പേജിന്റെ മുകളിലുള്ള Start & setup ൽ നിന്ന് നിങ്ങൾക്ക് എപ്പോൾ വേണമെങ്കിലും മോഡുകൾ മാറ്റാം",
     "learning_tools_title": "ലേണിംഗ് ടൂളുകൾ",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub എന്നിവയും കൂടുതലും: പര്യവേക്ഷണം ചെയ്യൂ, സൃഷ്ടിക്കൂ, അന്വേഷിക്കൂ, വളരൂ",
     "mic_title": "മൈക്രോഫോൺ സജ്ജീകരണം",
@@ -1415,6 +1416,7 @@
     "progress_not_saved_hint": "ഉപകരണ സംഭരണം ലഭ്യമല്ല. വീണ്ടും സംരക്ഷിക്കാൻ ശ്രമിക്കുക, പാഠം പ്രോജക്റ്റ് ബാക്കപ്പായി സൂക്ഷിക്കുക, അല്ലെങ്കിൽ മാർഗനിർദ്ദേശ മോഡ് തുറന്നുവെക്കുക.",
     "progress_not_saved_short": "സംരക്ഷിച്ചിട്ടില്ല",
     "progress_not_saved_title": "പുരോഗതി സംരക്ഷിക്കാനായില്ല",
+    "progress_saved": "മാർഗനിർദ്ദേശ പുരോഗതി സംരക്ഷിച്ചു. എപ്പോൾ വേണമെങ്കിലും തിരികെ വരാൻ മുകളിലുള്ള Resume guided ഉപയോഗിക്കുക.",
     "progress_saved_at": "{time}-ന് ഈ ഉപകരണത്തിൽ സംരക്ഷിച്ചു",
     "progress_saved_short": "സംരക്ഷിച്ചു",
     "progress_saving": "പുരോഗതി സംരക്ഷിക്കുന്നു…",
@@ -84209,7 +84211,8 @@
     "translations_auto_plain": "സ്വയമേവ",
     "translations_none": "ഒന്നുമില്ല",
     "translations_on_hint": "{output} ഭാഷയിലുള്ള വിഭവങ്ങൾക്കൊപ്പം {target} പതിപ്പും ലഭിക്കും.",
-    "translations_off_hint": "വിഭവങ്ങൾ {output} ഭാഷയിൽ മാത്രമായിരിക്കും, രണ്ടാമതൊരു ഭാഷ ഉണ്ടാകില്ല."
+    "translations_off_hint": "വിഭവങ്ങൾ {output} ഭാഷയിൽ മാത്രമായിരിക്കും, രണ്ടാമതൊരു ഭാഷ ഉണ്ടാകില്ല.",
+    "scope_note": "AlloFlow നിങ്ങൾക്കായി എന്ത് എഴുതണമെന്ന് ഇവ നിർണ്ണയിക്കുന്നു."
   },
   "storage": {
     "preset_automatic": "സ്വയമേവ",

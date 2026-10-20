@@ -2566,6 +2566,7 @@
     "badge_new": "новий",
     "badge_educator": "🔒 Педагог",
     "badge_educator_open": "🛠️ Педагог",
+    "switch_hint": "Ви можете будь-коли змінити режим через Start & setup угорі сторінки",
     "learning_tools_title": "Навчання інструмент",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub та інше: досліджуйте, створюйте, вивчайте і зростайте",
     "mic_title": "Налаштування мікрофона",
@@ -2672,6 +2673,7 @@
     "progress_not_saved_hint": "Сховище пристрою недоступне. Повторіть збереження, збережіть урок як резервну копію проєкту або залиште керований режим відкритим.",
     "progress_not_saved_short": "Не збережено",
     "progress_not_saved_title": "Не вдалося зберегти прогрес",
+    "progress_saved": "Керований прогрес збережено. Щоб повернутися будь-коли, скористайтеся Resume guided угорі.",
     "progress_saved_at": "Збережено на цьому пристрої о {time}",
     "progress_saved_short": "Збережено",
     "progress_saving": "Збереження прогресу…",
@@ -88259,7 +88261,8 @@
     "translations_auto_plain": "Автоматично",
     "translations_none": "Немає",
     "translations_on_hint": "Матеріали мовою {output} матимуть також версію мовою {target}.",
-    "translations_off_hint": "Матеріали будуть лише мовою {output}, без другої мови."
+    "translations_off_hint": "Матеріали будуть лише мовою {output}, без другої мови.",
+    "scope_note": "Ці налаштування визначають, що AlloFlow пише для вас."
   },
   "storage": {
     "preset_automatic": "Автоматично",

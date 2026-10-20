@@ -1311,6 +1311,7 @@
     "badge_new": "Mới",
     "badge_educator": "🔒 Giáo viên",
     "badge_educator_open": "🛠️ Giáo viên",
+    "switch_hint": "Bạn có thể chuyển chế độ bất cứ lúc nào từ Start & setup ở đầu trang",
     "learning_tools_title": "Công cụ Học tập",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub và hơn nữa: khám phá, sáng tạo, tìm hiểu và trưởng thành",
     "mic_title": "Thiết lập micro",
@@ -1420,6 +1421,7 @@
     "progress_not_saved_hint": "Bộ nhớ thiết bị không khả dụng. Hãy thử lưu lại, giữ bài học làm bản sao lưu dự án hoặc để Chế độ Hướng dẫn mở.",
     "progress_not_saved_short": "Chưa lưu",
     "progress_not_saved_title": "Không thể lưu tiến độ",
+    "progress_saved": "Đã lưu tiến độ hướng dẫn. Dùng Resume guided ở phía trên để quay lại bất cứ lúc nào.",
     "progress_saved_at": "Đã lưu trên thiết bị này lúc {time}",
     "progress_saved_short": "Đã lưu",
     "progress_saving": "Đang lưu tiến độ…",
@@ -84094,7 +84096,8 @@
     "translations_auto_plain": "Tự động",
     "translations_none": "Không có",
     "translations_on_hint": "Tài nguyên bằng {output} sẽ có thêm một bản bằng {target}.",
-    "translations_off_hint": "Tài nguyên sẽ chỉ bằng {output}, không có ngôn ngữ thứ hai."
+    "translations_off_hint": "Tài nguyên sẽ chỉ bằng {output}, không có ngôn ngữ thứ hai.",
+    "scope_note": "Các thiết lập này định hướng nội dung AlloFlow viết cho bạn."
   },
   "storage": {
     "preset_automatic": "Tự động",

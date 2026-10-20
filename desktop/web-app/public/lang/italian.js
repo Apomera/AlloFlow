@@ -2501,6 +2501,7 @@
     "badge_new": "nuovo",
     "badge_educator": "🔒 Educatore",
     "badge_educator_open": "🛠️ Educatore",
+    "switch_hint": "Puoi cambiare modalità in qualsiasi momento da Start & setup in cima alla pagina",
     "learning_tools_title": "Apprendimento strumento",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub e altro: esplora, crea, indaga e cresci",
     "mic_title": "Microphone Configurazione",
@@ -2608,6 +2609,7 @@
     "progress_not_saved_hint": "Lo spazio di archiviazione del dispositivo non è disponibile. Riprova a salvare, conserva la lezione come backup del progetto oppure lascia aperta la modalità guidata.",
     "progress_not_saved_short": "Non salvato",
     "progress_not_saved_title": "Impossibile salvare l’avanzamento",
+    "progress_saved": "Avanzamento guidato salvato. Usa Resume guided in alto per tornare in qualsiasi momento.",
     "progress_saved_at": "Salvato su questo dispositivo alle {time}",
     "progress_saved_short": "Salvato",
     "progress_saving": "Salvataggio dell’avanzamento…",
@@ -85418,7 +85420,8 @@
     "translations_auto_plain": "Automatico",
     "translations_none": "Nessuna",
     "translations_on_hint": "Le risorse in {output} avranno anche una versione in {target}.",
-    "translations_off_hint": "Le risorse saranno solo in {output}, senza una seconda lingua."
+    "translations_off_hint": "Le risorse saranno solo in {output}, senza una seconda lingua.",
+    "scope_note": "Queste impostazioni orientano ciò che AlloFlow scrive per te."
   },
   "storage": {
     "preset_automatic": "Automatico",

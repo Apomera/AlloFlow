@@ -3357,6 +3357,7 @@
     "badge_new": "جدید",
     "badge_educator": "🔒 آموزش‌دهنده",
     "badge_educator_open": "🛠️ آموزش‌دهنده",
+    "switch_hint": "می‌توانید هر زمان از Start & setup در بالای صفحه حالت را تغییر دهید",
     "learning_tools_title": "ابزارها یادگیری",
     "learning_tools_desc": "STEAM Lab، StoryForge، SEL Hub، Research Hub و بیشتر: کاوش کنید، بسازید، پژوهش کنید و رشد کنید",
     "mic_title": "تنظیم میکروفون",
@@ -4611,6 +4612,7 @@
     "progress_not_saved_hint": "ذخیره‌سازی دستگاه در دسترس نیست. دوباره ذخیره کنید، درس را به‌عنوان پشتیبان پروژه نگه دارید یا حالت هدایت‌شده را باز بگذارید.",
     "progress_not_saved_short": "ذخیره نشده",
     "progress_not_saved_title": "پیشرفت ذخیره نشد",
+    "progress_saved": "پیشرفت هدایت‌شده ذخیره شد. برای بازگشت در هر زمان، از Resume guided در بالا استفاده کنید.",
     "progress_saved_at": "در این دستگاه در {time} ذخیره شد",
     "progress_saved_short": "ذخیره شد",
     "progress_saving": "در حال ذخیرهٔ پیشرفت…",
@@ -85588,7 +85590,8 @@
     "translations_auto_plain": "خودکار",
     "translations_none": "هیچ‌کدام",
     "translations_on_hint": "منابع به زبان {output} یک نسخه {target} هم خواهند داشت.",
-    "translations_off_hint": "منابع فقط به زبان {output} خواهند بود، بدون زبان دوم."
+    "translations_off_hint": "منابع فقط به زبان {output} خواهند بود، بدون زبان دوم.",
+    "scope_note": "این تنظیمات به آنچه AlloFlow برای شما می‌نویسد جهت می‌دهند."
   },
   "storage": {
     "preset_automatic": "خودکار",

@@ -1308,6 +1308,7 @@
     "badge_new": "ថ្មី",
     "badge_educator": "🔒 គ្រូបង្រៀន",
     "badge_educator_open": "🛠️ គ្រូបង្រៀន",
+    "switch_hint": "អ្នកអាចប្តូររបៀបបានគ្រប់ពេលពី Start & setup នៅផ្នែកខាងលើនៃទំព័រ",
     "learning_tools_title": "ការរៀន ឧបករណ៍",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub និងច្រើនទៀត: ស្វែងយល់ បង្កើត ស៊ើបអង្កេត និងរីកចម្រើន",
     "mic_title": "ការដំឡើងមីក្រូហ្វូន",
@@ -1416,6 +1417,7 @@
     "progress_not_saved_hint": "ការផ្ទុកក្នុងឧបករណ៍មិនអាចប្រើបាន។ ព្យាយាមរក្សាទុកម្តងទៀត រក្សាមេរៀនជាការបម្រុងទុកគម្រោង ឬទុករបៀបណែនាំឱ្យបើក។",
     "progress_not_saved_short": "មិនបានរក្សាទុក",
     "progress_not_saved_title": "មិនអាចរក្សាទុកវឌ្ឍនភាពបាន",
+    "progress_saved": "វឌ្ឍនភាពដែលបានណែនាំត្រូវបានរក្សាទុក។ ប្រើ Resume guided នៅខាងលើ ដើម្បីត្រឡប់មកវិញគ្រប់ពេល។",
     "progress_saved_at": "បានរក្សាទុកនៅលើឧបករណ៍នេះនៅ {time}",
     "progress_saved_short": "បានរក្សាទុក",
     "progress_saving": "កំពុងរក្សាទុកវឌ្ឍនភាព…",
@@ -84385,7 +84387,8 @@
     "translations_auto_plain": "ស្វ័យប្រវត្តិ",
     "translations_none": "គ្មាន",
     "translations_on_hint": "ធនធានជាភាសា {output} នឹងមានកំណែជា {target} ផងដែរ។",
-    "translations_off_hint": "ធនធាននឹងមានតែជាភាសា {output} ប៉ុណ្ណោះ ដោយគ្មានភាសាទីពីរ។"
+    "translations_off_hint": "ធនធាននឹងមានតែជាភាសា {output} ប៉ុណ្ណោះ ដោយគ្មានភាសាទីពីរ។",
+    "scope_note": "ការកំណត់ទាំងនេះដឹកនាំអ្វីដែល AlloFlow សរសេរសម្រាប់អ្នក។"
   },
   "storage": {
     "preset_automatic": "ស្វ័យប្រវត្តិ",

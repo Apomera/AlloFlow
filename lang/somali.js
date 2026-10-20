@@ -3304,6 +3304,7 @@
     "progress_not_saved_hint": "Kaydinta qalabku lama heli karo. Mar kale isku day kaydinta, casharka u hay kayd mashruuc, ama Habka Hagidda fur.",
     "progress_not_saved_short": "Lama kaydin",
     "progress_not_saved_title": "Horumarka lama kaydin karin",
+    "progress_saved": "Horumarka hagidda waa la kaydiyey. Isticmaal Resume guided ee xagga sare si aad u soo noqoto wakhti kasta.",
     "progress_saved_at": "Qalabkan waxaa lagu kaydiyey {time}",
     "progress_saved_short": "La kaydiyey",
     "progress_saving": "Horumarka waa la kaydinayaa…",
@@ -3705,6 +3706,7 @@
     "badge_new": "Cusub",
     "badge_educator": "🔒 Macallin",
     "badge_educator_open": "🛠️ Macallin",
+    "switch_hint": "Waxaad beddeli kartaa habab wakhti kasta adigoo isticmaalaya Start & setup oo ku yaal xagga sare ee bogga",
     "learning_tools_title": "Aaladaha Waxbarashada",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub iyo kuwo kale: sahamin, abuur, baar, oo kor u kac",
     "mic_title": "Habaynta Makarafoonka",
@@ -84297,7 +84299,8 @@
     "translations_auto_plain": "Toos ah",
     "translations_none": "Midna",
     "translations_on_hint": "Ilaha {output} waxay sidoo kale yeelan doonaan nooc {target} ah.",
-    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn."
+    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn.",
+    "scope_note": "Kuwani waxay hagaan waxa AlloFlow kuu qoro."
   },
   "storage": {
     "preset_automatic": "Toos ah",

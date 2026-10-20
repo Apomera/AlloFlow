@@ -1307,6 +1307,7 @@
     "badge_new": "ಹೊಸದು",
     "badge_educator": "🔒 ಶಿಕ್ಷಕ",
     "badge_educator_open": "🛠️ ಶಿಕ್ಷಕ",
+    "switch_hint": "ಪುಟದ ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ Start & setup ನಿಂದ ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ಮೋಡ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಬಹುದು",
     "learning_tools_title": "ಕಲಿಕಾ ಸಾಧನಗಳು",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ಮತ್ತು ಇನ್ನಷ್ಟು: ಅನ್ವೇಷಿಸಿ, ರಚಿಸಿ, ಪರಿಶೀಲಿಸಿ, ಬೆಳೆಯಿರಿ",
     "mic_title": "ಮೈಕ್ರೋಫೋನ್ ಸೆಟಪ್",
@@ -1412,6 +1413,7 @@
     "progress_not_saved_hint": "ಸಾಧನದ ಸಂಗ್ರಹಣೆ ಲಭ್ಯವಿಲ್ಲ. ಉಳಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಪಾಠವನ್ನು ಪ್ರಾಜೆಕ್ಟ್ ಬ್ಯಾಕಪ್ ಆಗಿ ಉಳಿಸಿ ಅಥವಾ ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ಅನ್ನು ತೆರೆಯೇ ಇಡಿ.",
     "progress_not_saved_short": "ಉಳಿಸಲಾಗಿಲ್ಲ",
     "progress_not_saved_title": "ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲಾಗಲಿಲ್ಲ",
+    "progress_saved": "ಮಾರ್ಗದರ್ಶಿತ ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಯಾವಾಗ ಬೇಕಾದರೂ ಹಿಂತಿರುಗಲು ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ Resume guided ಬಳಸಿ.",
     "progress_saved_at": "{time}ಕ್ಕೆ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ",
     "progress_saved_short": "ಉಳಿಸಲಾಗಿದೆ",
     "progress_saving": "ಪ್ರಗತಿಯನ್ನು ಉಳಿಸಲಾಗುತ್ತಿದೆ…",
@@ -84205,7 +84207,8 @@
     "translations_auto_plain": "ಸ್ವಯಂಚಾಲಿತ",
     "translations_none": "ಯಾವುದೂ ಇಲ್ಲ",
     "translations_on_hint": "{output} ನಲ್ಲಿರುವ ಸಂಪನ್ಮೂಲಗಳ ಜೊತೆಗೆ {target} ಆವೃತ್ತಿಯೂ ಸಿಗುತ್ತದೆ.",
-    "translations_off_hint": "ಸಂಪನ್ಮೂಲಗಳು {output} ನಲ್ಲಿ ಮಾತ್ರ ಇರುತ್ತವೆ, ಎರಡನೇ ಭಾಷೆ ಇರುವುದಿಲ್ಲ."
+    "translations_off_hint": "ಸಂಪನ್ಮೂಲಗಳು {output} ನಲ್ಲಿ ಮಾತ್ರ ಇರುತ್ತವೆ, ಎರಡನೇ ಭಾಷೆ ಇರುವುದಿಲ್ಲ.",
+    "scope_note": "ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳು AlloFlow ನಿಮಗಾಗಿ ಏನು ಬರೆಯುತ್ತದೆ ಎಂಬುದನ್ನು ನಿರ್ದೇಶಿಸುತ್ತವೆ."
   },
   "storage": {
     "preset_automatic": "ಸ್ವಯಂಚಾಲಿತ",

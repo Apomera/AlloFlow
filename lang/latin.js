@@ -1248,6 +1248,7 @@
     "badge_new": "novus",
     "badge_educator": "🔒 Magister",
     "badge_educator_open": "🛠️ Magister",
+    "switch_hint": "Modum quovis tempore mutare potes per Start & setup in summa pagina",
     "learning_tools_title": "Learning īnstrūmenta",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub et plura: explora, crea, investiga, et cresce",
     "mic_title": "Constitutio Microphoni",
@@ -1350,6 +1351,7 @@
     "progress_not_saved_hint": "Repositio machinae praesto non est. Iterum servare tenta, lectionem ut exemplar incepti conserva, aut modum ductum apertum relinque.",
     "progress_not_saved_short": "Non servatus",
     "progress_not_saved_title": "Progressus servari non potuit",
+    "progress_saved": "Progressus ductus servatus est. Utere Resume guided in summo ut quovis tempore redeas.",
     "progress_saved_at": "In hac machina hora {time} servatus",
     "progress_saved_short": "Servatus",
     "progress_saving": "Progressum servans…",
@@ -84123,7 +84125,8 @@
     "translations_auto_plain": "Automatice",
     "translations_none": "Nulla",
     "translations_on_hint": "Subsidia lingua {output} etiam exemplar lingua {target} habebunt.",
-    "translations_off_hint": "Subsidia sola lingua {output} erunt, sine altera lingua."
+    "translations_off_hint": "Subsidia sola lingua {output} erunt, sine altera lingua.",
+    "scope_note": "Haec dirigunt quae AlloFlow tibi scribit."
   },
   "storage": {
     "preset_automatic": "Automatice",

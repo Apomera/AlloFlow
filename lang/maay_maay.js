@@ -83682,7 +83682,8 @@
     "translations_auto_plain": "Toos ah",
     "translations_none": "Midna",
     "translations_on_hint": "Ilaha {output} waxay sidoo kale yeelan doonaan nooc {target} ah.",
-    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn."
+    "translations_off_hint": "Ilaha waxay noqon doonaan {output} oo keliya, iyadoo aan luqad labaad lahayn.",
+    "scope_note": "Kuwani waxay hagaan waxa AlloFlow kuu qoro."
   },
   "storage": {
     "preset_automatic": "Toos ah",

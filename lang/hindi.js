@@ -1308,6 +1308,7 @@
     "badge_new": "नया",
     "badge_educator": "🔒 शिक्षक",
     "badge_educator_open": "🛠️ शिक्षक",
+    "switch_hint": "आप पेज के ऊपर Start & setup से कभी भी मोड बदल सकते हैं",
     "learning_tools_title": "सीखना उपकरण",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub और अधिक: खोजें, बनाएँ, जाँचें और बढ़ें",
     "mic_title": "माइक्रोफ़ोन सेटअप",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "डिवाइस का स्टोरेज उपलब्ध नहीं है। सेव करने का फिर प्रयास करें, पाठ को प्रोजेक्ट बैकअप के रूप में रखें या निर्देशित मोड खुला रखें।",
     "progress_not_saved_short": "सहेजा नहीं गया",
     "progress_not_saved_title": "प्रगति सहेजी नहीं जा सकी",
+    "progress_saved": "निर्देशित प्रगति सहेजी गई। कभी भी वापस आने के लिए ऊपर Resume guided का उपयोग करें।",
     "progress_saved_at": "{time} पर इस डिवाइस में सहेजा गया",
     "progress_saved_short": "सहेजा गया",
     "progress_saving": "प्रगति सहेजी जा रही है…",
@@ -84188,7 +84190,8 @@
     "translations_auto_plain": "स्वचालित",
     "translations_none": "कोई नहीं",
     "translations_on_hint": "{output} में बने संसाधनों के साथ {target} रूप भी मिलेगा।",
-    "translations_off_hint": "संसाधन केवल {output} में होंगे, दूसरी भाषा के बिना।"
+    "translations_off_hint": "संसाधन केवल {output} में होंगे, दूसरी भाषा के बिना।",
+    "scope_note": "ये सेटिंग्स तय करती हैं कि AlloFlow आपके लिए क्या लिखता है।"
   },
   "storage": {
     "preset_automatic": "स्वचालित",

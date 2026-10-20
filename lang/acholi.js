@@ -82397,7 +82397,8 @@
     "translations_auto_plain": "Pire kene",
     "translations_none": "Pe tye",
     "translations_on_hint": "Jami ma i {output} bibedo bene ki kit i {target}.",
-    "translations_off_hint": "Jami bibedo i {output} keken, ma pe ki leb mukene."
+    "translations_off_hint": "Jami bibedo i {output} keken, ma pe ki leb mukene.",
+    "scope_note": "Magi telo gin ma AlloFlow coyo piri."
   },
   "storage": {
     "preset_automatic": "Pire kene",

@@ -1308,6 +1308,7 @@
     "badge_new": "ਨਵਾਂ",
     "badge_educator": "🔒 ਅਧਿਆਪਕ",
     "badge_educator_open": "🛠️ ਅਧਿਆਪਕ",
+    "switch_hint": "ਤੁਸੀਂ ਪੰਨੇ ਦੇ ਉੱਪਰ Start & setup ਤੋਂ ਕਿਸੇ ਵੀ ਸਮੇਂ ਮੋਡ ਬਦਲ ਸਕਦੇ ਹੋ",
     "learning_tools_title": "ਸਿੱਖਣਾ ਔਜ਼ਾਰ",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ਅਤੇ ਹੋਰ: ਖੋਜੋ, ਬਣਾਓ, ਜਾਂਚੋ ਅਤੇ ਵਧੋ",
     "mic_title": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਸੈੱਟਅੱਪ",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "ਡਿਵਾਈਸ ਦਾ ਸਟੋਰੇਜ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਮੁੜ ਸੇਵ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ, ਪਾਠ ਨੂੰ ਪ੍ਰੋਜੈਕਟ ਬੈਕਅੱਪ ਵਜੋਂ ਰੱਖੋ ਜਾਂ ਮਾਰਗਦਰਸ਼ਿਤ ਮੋਡ ਖੁੱਲ੍ਹਾ ਰੱਖੋ।",
     "progress_not_saved_short": "ਸੁਰੱਖਿਅਤ ਨਹੀਂ",
     "progress_not_saved_title": "ਤਰੱਕੀ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ",
+    "progress_saved": "ਮਾਰਗਦਰਸ਼ਿਤ ਤਰੱਕੀ ਸੁਰੱਖਿਅਤ ਹੋ ਗਈ। ਕਿਸੇ ਵੀ ਸਮੇਂ ਵਾਪਸ ਆਉਣ ਲਈ ਉੱਪਰ Resume guided ਵਰਤੋ।",
     "progress_saved_at": "{time} ਤੇ ਇਸ ਡਿਵਾਈਸ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਕੀਤਾ",
     "progress_saved_short": "ਸੁਰੱਖਿਅਤ",
     "progress_saving": "ਤਰੱਕੀ ਸੁਰੱਖਿਅਤ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…",
@@ -84377,7 +84379,8 @@
     "translations_auto_plain": "ਆਪਣੇ ਆਪ",
     "translations_none": "ਕੋਈ ਨਹੀਂ",
     "translations_on_hint": "{output} ਵਿੱਚ ਬਣੇ ਸਰੋਤਾਂ ਨਾਲ {target} ਰੂਪ ਵੀ ਮਿਲੇਗਾ।",
-    "translations_off_hint": "ਸਰੋਤ ਸਿਰਫ਼ {output} ਵਿੱਚ ਹੋਣਗੇ, ਦੂਜੀ ਭਾਸ਼ਾ ਤੋਂ ਬਿਨਾਂ।"
+    "translations_off_hint": "ਸਰੋਤ ਸਿਰਫ਼ {output} ਵਿੱਚ ਹੋਣਗੇ, ਦੂਜੀ ਭਾਸ਼ਾ ਤੋਂ ਬਿਨਾਂ।",
+    "scope_note": "ਇਹ ਸੈਟਿੰਗਾਂ AlloFlow ਵੱਲੋਂ ਤੁਹਾਡੇ ਲਈ ਲਿਖੀ ਜਾਣ ਵਾਲੀ ਸਮੱਗਰੀ ਨੂੰ ਦਿਸ਼ਾ ਦਿੰਦੀਆਂ ਹਨ।"
   },
   "storage": {
     "preset_automatic": "ਆਪਣੇ ਆਪ",

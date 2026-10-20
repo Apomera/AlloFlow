@@ -1307,6 +1307,7 @@
     "badge_new": "નવું",
     "badge_educator": "🔒 શિક્ષક",
     "badge_educator_open": "🛠️ શિક્ષક",
+    "switch_hint": "તમે પૃષ્ઠની ટોચ પરના Start & setup માંથી કોઈપણ સમયે મોડ સ્વિચ કરી શકો છો",
     "learning_tools_title": "શીખવાના સાધનો",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub અને વધુ: શોધો, બનાવો, તપાસો અને વિકસો",
     "mic_title": "માઇક્રોફોન સેટઅપ",
@@ -1413,6 +1414,7 @@
     "progress_not_saved_hint": "ઉપકરણનું સ્ટોરેજ ઉપલબ્ધ નથી. ફરી સાચવવાનો પ્રયાસ કરો, પાઠને પ્રોજેક્ટ બેકઅપ તરીકે રાખો અથવા માર્ગદર્શિત મોડ ખુલ્લું રાખો.",
     "progress_not_saved_short": "સાચવેલ નથી",
     "progress_not_saved_title": "પ્રગતિ સાચવી શકાઈ નથી",
+    "progress_saved": "માર્ગદર્શિત પ્રગતિ સાચવાઈ. ગમે ત્યારે પાછા આવવા માટે ટોચ પરના Resume guided નો ઉપયોગ કરો.",
     "progress_saved_at": "{time} વાગ્યે આ ઉપકરણમાં સાચવ્યું",
     "progress_saved_short": "સાચવ્યું",
     "progress_saving": "પ્રગતિ સાચવી રહ્યા છીએ…",
@@ -84208,7 +84210,8 @@
     "translations_auto_plain": "આપોઆપ",
     "translations_none": "કોઈ નહીં",
     "translations_on_hint": "{output} માં બનતાં સાધનો સાથે {target} આવૃત્તિ પણ મળશે.",
-    "translations_off_hint": "સાધનો ફક્ત {output} માં જ હશે, બીજી ભાષા વગર."
+    "translations_off_hint": "સાધનો ફક્ત {output} માં જ હશે, બીજી ભાષા વગર.",
+    "scope_note": "આ સેટિંગ્સ AlloFlow તમારા માટે જે લખે છે તેને દિશા આપે છે."
   },
   "storage": {
     "preset_automatic": "આપોઆપ",

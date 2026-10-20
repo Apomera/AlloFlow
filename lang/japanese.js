@@ -3311,6 +3311,7 @@
     "badge_new": "新着",
     "badge_educator": "🔒 教育者",
     "badge_educator_open": "🛠️ 教育者",
+    "switch_hint": "ページ上部の Start & setup からいつでもモードを切り替えできます",
     "learning_tools_title": "学習ツール",
     "learning_tools_desc": "STEAM Lab、StoryForge、SEL Hub、Research Hub など: 探索し、作り、調べ、成長する",
     "mic_title": "マイクセットアップ",
@@ -4370,6 +4371,7 @@
     "progress_not_saved_hint": "デバイスのストレージを利用できません。保存を再試行するか、レッスンをプロジェクトのバックアップとして保存するか、ガイドモードを開いたままにしてください。",
     "progress_not_saved_short": "未保存",
     "progress_not_saved_title": "進捗を保存できませんでした",
+    "progress_saved": "ガイドの進捗を保存しました。上部の Resume guided からいつでも戻れます。",
     "progress_saved_at": "{time} にこのデバイスへ保存",
     "progress_saved_short": "保存済み",
     "progress_saving": "進捗を保存中…",
@@ -85519,7 +85521,8 @@
     "translations_auto_plain": "自動",
     "translations_none": "なし",
     "translations_on_hint": "{output} の教材には {target} 版も付きます。",
-    "translations_off_hint": "教材は {output} のみで、第二言語は付きません。"
+    "translations_off_hint": "教材は {output} のみで、第二言語は付きません。",
+    "scope_note": "これらの設定は、AlloFlow が作成する内容の方向性を決めます。"
   },
   "storage": {
     "preset_automatic": "自動",

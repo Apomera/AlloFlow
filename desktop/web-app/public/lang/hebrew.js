@@ -2094,6 +2094,7 @@
     "badge_new": "חדש",
     "badge_educator": "🔒 מחנך",
     "badge_educator_open": "🛠️ מחנך",
+    "switch_hint": "ניתן להחליף מצבים בכל עת דרך Start & setup בראש הדף",
     "learning_tools_title": "כלי למידה",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ועוד: לחקור, ליצור, לבדוק ולצמוח",
     "mic_title": "הגדרת מיקרופון",
@@ -3347,6 +3348,7 @@
     "progress_not_saved_hint": "האחסון במכשיר אינו זמין. נסו לשמור שוב, שמרו את השיעור כגיבוי של הפרויקט, או השאירו את המצב המודרך פתוח.",
     "progress_not_saved_short": "לא נשמר",
     "progress_not_saved_title": "לא ניתן לשמור את ההתקדמות",
+    "progress_saved": "ההתקדמות המודרכת נשמרה. אפשר לחזור בכל עת בעזרת Resume guided בראש הדף.",
     "progress_saved_at": "נשמר במכשיר הזה בשעה {time}",
     "progress_saved_short": "נשמר",
     "progress_saving": "שומר את ההתקדמות…",
@@ -84412,7 +84414,8 @@
     "translations_auto_plain": "אוטומטי",
     "translations_none": "ללא",
     "translations_on_hint": "חומרים ב{output} יכללו גם גרסה ב{target}.",
-    "translations_off_hint": "החומרים יהיו ב{output} בלבד, ללא שפה שנייה."
+    "translations_off_hint": "החומרים יהיו ב{output} בלבד, ללא שפה שנייה.",
+    "scope_note": "הגדרות אלה מכוונות את מה ש-AlloFlow כותב עבורך."
   },
   "storage": {
     "preset_automatic": "אוטומטי",

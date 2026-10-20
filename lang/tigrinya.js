@@ -1308,6 +1308,7 @@
     "badge_new": "ሓድሽ",
     "badge_educator": "🔒 መምህር",
     "badge_educator_open": "🛠️ መምህር",
+    "switch_hint": "ኣብ ዝኾነ ግዜ ካብ ኣብ ላዕሊ ገጽ ዘሎ Start & setup ኣገባብ ክትቅይር ትኽእል ኢኻ",
     "learning_tools_title": "ምምሃር መሳርሒታት",
     "learning_tools_desc": "STEAM Lab፣ StoryForge፣ SEL Hub፣ Research Hub ን ካልእን: ኣናዲ፣ ፍጠር፣ መርምር፣ ዕበ",
     "mic_title": "ምድላው ማይክሮፎን",
@@ -1409,6 +1410,7 @@
     "progress_not_saved_hint": "መቐመጢ ናይ መሳርሒ ኣይርከብን። እንደገና ንምዕቃብ ፈትን፣ ትምህርቲ ከም መተካእታ ፕሮጀክት ዕቀብ፣ ወይ ዝተመርሐ ሞድ ክፉት ግበሮ።",
     "progress_not_saved_short": "ኣይተዓቀበን",
     "progress_not_saved_title": "ዕቤት ክዕቀብ ኣይከኣለን",
+    "progress_saved": "ዝተመርሐ ዕቤት ተዓቂቡ። ኣብ ዝኾነ ግዜ ንምምላስ ኣብ ላዕሊ ዘሎ Resume guided ተጠቐም።",
     "progress_saved_at": "ኣብዚ መሳርሒ ኣብ {time} ተዓቂቡ",
     "progress_saved_short": "ተዓቂቡ",
     "progress_saving": "ዕቤት ይዕቀብ ኣሎ…",
@@ -84376,7 +84378,8 @@
     "translations_auto_plain": "ብቐጥታ",
     "translations_none": "የለን",
     "translations_on_hint": "ብ{output} ዘለዉ ጸጋታት ናይ {target} ቅዳሕ እውን ክህልዎም እዩ።",
-    "translations_off_hint": "ጸጋታት ብ{output} ጥራይ ክኾኑ እዮም፣ ካልኣይ ቋንቋ የብሎምን።"
+    "translations_off_hint": "ጸጋታት ብ{output} ጥራይ ክኾኑ እዮም፣ ካልኣይ ቋንቋ የብሎምን።",
+    "scope_note": "እዚኣቶም AlloFlow ንዓኹም ዝጽሕፎ ይመርሑ።"
   },
   "storage": {
     "preset_automatic": "ብቐጥታ",

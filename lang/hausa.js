@@ -1308,6 +1308,7 @@
     "badge_new": "sabon",
     "badge_educator": "🔒 Malami",
     "badge_educator_open": "🛠️ Malami",
+    "switch_hint": "Kuna iya sauya yanayi a kowane lokaci daga Start & setup a saman shafin",
     "learning_tools_title": "Learning kayan aiki",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub da ƙari: bincika, ƙirƙira, gudanar da bincike, ka kuma girma",
     "mic_title": "Saitin Makirufo",
@@ -1410,6 +1411,7 @@
     "progress_not_saved_hint": "Ba a samun ajiyar na’urar. Sake gwada adanawa, ajiye darasin a matsayin madadin aiki, ko bar Yanayin Jagora a buɗe.",
     "progress_not_saved_short": "Ba a adana ba",
     "progress_not_saved_title": "An kasa adana ci gaban",
+    "progress_saved": "An adana ci gaban jagora. Yi amfani da Resume guided a sama don dawowa a kowane lokaci.",
     "progress_saved_at": "An adana a wannan na’ura da ƙarfe {time}",
     "progress_saved_short": "An adana",
     "progress_saving": "Ana adana ci gaba…",
@@ -84380,7 +84382,8 @@
     "translations_auto_plain": "Ta atomatik",
     "translations_none": "Babu",
     "translations_on_hint": "Kayan da ke {output} za su kuma zo da sigar {target}.",
-    "translations_off_hint": "Kayan za su kasance a {output} kawai, ba tare da harshe na biyu ba."
+    "translations_off_hint": "Kayan za su kasance a {output} kawai, ba tare da harshe na biyu ba.",
+    "scope_note": "Waɗannan saitunan suna jagorantar abin da AlloFlow ke rubuta muku."
   },
   "storage": {
     "preset_automatic": "Ta atomatik",

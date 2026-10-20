@@ -1306,6 +1306,7 @@
     "badge_new": "Yeni",
     "badge_educator": "🔒 Eğitimci",
     "badge_educator_open": "🛠️ Eğitimci",
+    "switch_hint": "Modları istediğiniz zaman sayfanın üst kısmındaki Start & setup bölümünden değiştirebilirsiniz",
     "learning_tools_title": "Öğrenme Araçları",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub ve daha fazlası: keşfet, üret, araştır ve geliş",
     "mic_title": "Mikrofon Kurulumu",
@@ -1412,6 +1413,7 @@
     "progress_not_saved_hint": "Cihaz depolaması kullanılamıyor. Yeniden kaydetmeyi deneyin, dersi proje yedeği olarak saklayın veya Yönlendirmeli Modu açık bırakın.",
     "progress_not_saved_short": "Kaydedilmedi",
     "progress_not_saved_title": "İlerleme kaydedilemedi",
+    "progress_saved": "Yönlendirmeli ilerleme kaydedildi. İstediğiniz zaman geri dönmek için üstteki Resume guided düğmesini kullanın.",
     "progress_saved_at": "{time} tarihinde bu cihaza kaydedildi",
     "progress_saved_short": "Kaydedildi",
     "progress_saving": "İlerleme kaydediliyor…",
@@ -84226,7 +84228,8 @@
     "translations_auto_plain": "Otomatik",
     "translations_none": "Yok",
     "translations_on_hint": "{output} dilindeki kaynaklara {target} dilinde bir sürüm de eklenir.",
-    "translations_off_hint": "Kaynaklar yalnızca {output} dilinde olur, ikinci dil eklenmez."
+    "translations_off_hint": "Kaynaklar yalnızca {output} dilinde olur, ikinci dil eklenmez.",
+    "scope_note": "Bunlar, AlloFlow'un sizin için yazdıklarını yönlendirir."
   },
   "storage": {
     "preset_automatic": "Otomatik",

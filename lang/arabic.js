@@ -2074,6 +2074,7 @@
     "badge_new": "جديد",
     "badge_educator": "🔒 معلم",
     "badge_educator_open": "🛠️ معلم",
+    "switch_hint": "يمكنك تبديل الأوضاع في أي وقت من Start & setup في أعلى الصفحة",
     "learning_tools_title": "أدوات التعلم",
     "learning_tools_desc": "STEAM Lab و StoryForge و SEL Hub و Research Hub وغيرها: استكشف وأنشئ وابحث وانمُ",
     "mic_title": "إعداد الميكروفون",
@@ -3331,6 +3332,7 @@
     "progress_not_saved_hint": "التخزين على الجهاز غير متاح. أعد محاولة الحفظ، أو احتفظ بالدرس كنسخة احتياطية للمشروع، أو اترك الوضع الموجّه مفتوحاً.",
     "progress_not_saved_short": "غير محفوظ",
     "progress_not_saved_title": "تعذر حفظ التقدم",
+    "progress_saved": "تم حفظ التقدم الموجّه. استخدم Resume guided في الأعلى للعودة في أي وقت.",
     "progress_saved_at": "تم الحفظ على هذا الجهاز في {time}",
     "progress_saved_short": "تم الحفظ",
     "progress_saving": "جارٍ حفظ التقدم…",
@@ -89660,7 +89662,8 @@
     "translations_auto_plain": "تلقائي",
     "translations_none": "بلا",
     "translations_on_hint": "الموارد بلغة {output} ستتضمن أيضا نسخة بلغة {target}.",
-    "translations_off_hint": "ستكون الموارد بلغة {output} فقط، دون نسخة بلغة ثانية."
+    "translations_off_hint": "ستكون الموارد بلغة {output} فقط، دون نسخة بلغة ثانية.",
+    "scope_note": "توجّه هذه الإعدادات ما يكتبه AlloFlow لك."
   },
   "storage": {
     "preset_automatic": "تلقائي",

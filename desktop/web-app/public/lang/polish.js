@@ -2498,6 +2498,7 @@
     "badge_new": "Nowy",
     "badge_educator": "🔒 Nauczyciel",
     "badge_educator_open": "🛠️ Nauczyciel",
+    "switch_hint": "Tryb można zmienić w dowolnej chwili w Start & setup u góry strony",
     "learning_tools_title": "Edukacyjne narzędzia",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub i więcej: odkrywaj, twórz, badaj i rozwijaj się",
     "mic_title": "Ustawienie mikrofonu",
@@ -2605,6 +2606,7 @@
     "progress_not_saved_hint": "Pamięć urządzenia jest niedostępna. Spróbuj zapisać ponownie, zachowaj lekcję jako kopię projektu lub pozostaw tryb prowadzony otwarty.",
     "progress_not_saved_short": "Nie zapisano",
     "progress_not_saved_title": "Nie można zapisać postępu",
+    "progress_saved": "Postęp przewodnika zapisano. Aby wrócić w dowolnym momencie, użyj Resume guided u góry.",
     "progress_saved_at": "Zapisano na tym urządzeniu o {time}",
     "progress_saved_short": "Zapisano",
     "progress_saving": "Zapisywanie postępu…",
@@ -85602,7 +85604,8 @@
     "translations_auto_plain": "Automatycznie",
     "translations_none": "Brak",
     "translations_on_hint": "Materiały w języku {output} będą też miały wersję w języku {target}.",
-    "translations_off_hint": "Materiały będą tylko w języku {output}, bez drugiego języka."
+    "translations_off_hint": "Materiały będą tylko w języku {output}, bez drugiego języka.",
+    "scope_note": "Te ustawienia kierują tym, co AlloFlow dla Ciebie pisze."
   },
   "storage": {
     "preset_automatic": "Automatycznie",

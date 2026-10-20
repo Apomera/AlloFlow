@@ -2494,6 +2494,7 @@
     "badge_new": "Nieuw",
     "badge_educator": "🔒 Docent",
     "badge_educator_open": "🛠️ Docent",
+    "switch_hint": "Je kunt op elk moment van modus wisselen via Start & setup bovenaan de pagina",
     "learning_tools_title": "Leertools",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub en meer: verkennen, maken, onderzoeken en groeien",
     "mic_title": "Microfooninstelling",
@@ -2604,6 +2605,7 @@
     "progress_not_saved_hint": "De opslagruimte van het apparaat is niet beschikbaar. Probeer opnieuw op te slaan, bewaar de les als projectback-up of laat de begeleide modus open.",
     "progress_not_saved_short": "Niet opgeslagen",
     "progress_not_saved_title": "Voortgang kon niet worden opgeslagen",
+    "progress_saved": "Voortgang van de begeleiding opgeslagen. Gebruik Resume guided bovenaan om op elk moment terug te komen.",
     "progress_saved_at": "Op dit apparaat opgeslagen om {time}",
     "progress_saved_short": "Opgeslagen",
     "progress_saving": "Voortgang opslaan…",
@@ -85411,7 +85413,8 @@
     "translations_auto_plain": "Automatisch",
     "translations_none": "Geen",
     "translations_on_hint": "Materiaal in het {output} krijgt ook een versie in het {target}.",
-    "translations_off_hint": "Materiaal is alleen in het {output}, zonder tweede taal."
+    "translations_off_hint": "Materiaal is alleen in het {output}, zonder tweede taal.",
+    "scope_note": "Deze instellingen sturen wat AlloFlow voor u schrijft."
   },
   "storage": {
     "preset_automatic": "Automatisch",

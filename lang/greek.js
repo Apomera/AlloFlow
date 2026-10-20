@@ -1308,6 +1308,7 @@
     "badge_new": "νέος",
     "badge_educator": "🔒 Εκπαιδευτικός",
     "badge_educator_open": "🛠️ Εκπαιδευτικός",
+    "switch_hint": "Μπορείτε να αλλάξετε λειτουργία οποιαδήποτε στιγμή από το Start & setup στο πάνω μέρος της σελίδας",
     "learning_tools_title": "Μάθηση εργαλεία",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub και άλλα: εξερευνήστε, δημιουργήστε, ερευνήστε και εξελιχθείτε",
     "mic_title": "Ρύθμιση Μικροφώνου",
@@ -1414,6 +1415,7 @@
     "progress_not_saved_hint": "Ο χώρος αποθήκευσης της συσκευής δεν είναι διαθέσιμος. Δοκιμάστε ξανά την αποθήκευση, κρατήστε το μάθημα ως αντίγραφο του έργου ή αφήστε την καθοδηγούμενη λειτουργία ανοιχτή.",
     "progress_not_saved_short": "Δεν αποθηκεύτηκε",
     "progress_not_saved_title": "Δεν ήταν δυνατή η αποθήκευση της προόδου",
+    "progress_saved": "Η καθοδηγούμενη πρόοδος αποθηκεύτηκε. Χρησιμοποιήστε το Resume guided στο πάνω μέρος για να επιστρέψετε οποιαδήποτε στιγμή.",
     "progress_saved_at": "Αποθηκεύτηκε σε αυτή τη συσκευή στις {time}",
     "progress_saved_short": "Αποθηκεύτηκε",
     "progress_saving": "Αποθήκευση προόδου…",
@@ -84404,7 +84406,8 @@
     "translations_auto_plain": "Αυτόματα",
     "translations_none": "Καμία",
     "translations_on_hint": "Το υλικό στα {output} θα περιλαμβάνει και μια έκδοση στα {target}.",
-    "translations_off_hint": "Το υλικό θα είναι μόνο στα {output}, χωρίς δεύτερη γλώσσα."
+    "translations_off_hint": "Το υλικό θα είναι μόνο στα {output}, χωρίς δεύτερη γλώσσα.",
+    "scope_note": "Αυτές οι ρυθμίσεις κατευθύνουν όσα γράφει το AlloFlow για εσάς."
   },
   "storage": {
     "preset_automatic": "Αυτόματα",

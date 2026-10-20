@@ -1306,6 +1306,7 @@
     "badge_new": "tshiab",
     "badge_educator": "🔒 Xib Fwb",
     "badge_educator_open": "🛠️ Xib Fwb",
+    "switch_hint": "Koj hloov tau hom txhua lub sijhawm ntawm Start & setup nyob rau saum toj ntawm nplooj ntawv",
     "learning_tools_title": "Learning cov cuab yeej",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub thiab ntau dua: tshawb, tsim, taug qab, thiab loj hlob",
     "mic_title": "Teeb Tsa Lub Mooj Hais Lus",
@@ -1410,6 +1411,7 @@
     "progress_not_saved_hint": "Lub cuab yeej khaws cia siv tsis tau. Sim khaws dua, khaws zaj lus qhia ua qhov project backup, los yog cia Hom Coj Qhia qhib.",
     "progress_not_saved_short": "Tsis tau khaws",
     "progress_not_saved_title": "Khaws tsis tau kev vam meej",
+    "progress_saved": "Khaws tau kev vam meej coj qhia lawm. Siv Resume guided nyob saum toj kom rov qab los txhua lub sijhawm.",
     "progress_saved_at": "Khaws rau lub cuab yeej no thaum {time}",
     "progress_saved_short": "Khaws lawm",
     "progress_saving": "กำลัง khaws kev vam meej…",
@@ -84367,7 +84369,8 @@
     "translations_auto_plain": "Cia li ua",
     "translations_none": "Tsis muaj",
     "translations_on_hint": "Cov khoom hauv {output} kuj yuav muaj ib daim ua {target}.",
-    "translations_off_hint": "Cov khoom yuav yog {output} xwb, tsis muaj hom lus thib ob."
+    "translations_off_hint": "Cov khoom yuav yog {output} xwb, tsis muaj hom lus thib ob.",
+    "scope_note": "Cov kev teeb tsa no coj qhov uas AlloFlow sau rau koj."
   },
   "storage": {
     "preset_automatic": "Cia li ua",

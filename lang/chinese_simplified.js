@@ -3340,6 +3340,7 @@
     "badge_new": "新",
     "badge_educator": "🔒 教师专用",
     "badge_educator_open": "🛠️ 教师专用",
+    "switch_hint": "你可以随时通过页面顶部的 Start & setup 切换模式",
     "learning_tools_title": "学习工具",
     "learning_tools_desc": "STEAM Lab、StoryForge、SEL Hub、Research Hub 等：探索、创造、研究、成长",
     "mic_title": "麦克风设置",
@@ -4597,6 +4598,7 @@
     "progress_not_saved_hint": "设备存储不可用。请重试保存、将课程保留为项目备份，或保持引导模式打开。",
     "progress_not_saved_short": "未保存",
     "progress_not_saved_title": "无法保存进度",
+    "progress_saved": "引导进度已保存。随时可以使用顶部的 Resume guided 返回。",
     "progress_saved_at": "已于 {time} 保存到此设备",
     "progress_saved_short": "已保存",
     "progress_saving": "正在保存进度…",
@@ -85555,7 +85557,8 @@
     "translations_auto_plain": "自动",
     "translations_none": "无",
     "translations_on_hint": "{output} 的资源还会附带一份 {target} 版本。",
-    "translations_off_hint": "资源只会是 {output}，不附带第二种语言。"
+    "translations_off_hint": "资源只会是 {output}，不附带第二种语言。",
+    "scope_note": "这些设置会引导 AlloFlow 为您撰写的内容。"
   },
   "storage": {
     "preset_automatic": "自动",

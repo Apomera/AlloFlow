@@ -1307,6 +1307,7 @@
     "badge_new": "baru",
     "badge_educator": "🔒 Pendidik",
     "badge_educator_open": "🛠️ Pendidik",
+    "switch_hint": "Anda dapat mengganti mode kapan saja melalui Start & setup di bagian atas halaman",
     "learning_tools_title": "Pembelajaran alat",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub, dan lainnya: jelajahi, ciptakan, selidiki, dan berkembang",
     "mic_title": "Pengaturan Mikrofon",
@@ -1412,6 +1413,7 @@
     "progress_not_saved_hint": "Penyimpanan perangkat tidak tersedia. Coba simpan lagi, simpan pelajaran sebagai cadangan proyek, atau biarkan Mode Terpandu tetap terbuka.",
     "progress_not_saved_short": "Belum disimpan",
     "progress_not_saved_title": "Kemajuan tidak dapat disimpan",
+    "progress_saved": "Kemajuan terpandu disimpan. Gunakan Resume guided di bagian atas untuk kembali kapan saja.",
     "progress_saved_at": "Disimpan di perangkat ini pada {time}",
     "progress_saved_short": "Tersimpan",
     "progress_saving": "Menyimpan kemajuan…",
@@ -84403,7 +84405,8 @@
     "translations_auto_plain": "Otomatis",
     "translations_none": "Tidak ada",
     "translations_on_hint": "Materi dalam {output} juga akan disertai versi {target}.",
-    "translations_off_hint": "Materi hanya dalam {output}, tanpa bahasa kedua."
+    "translations_off_hint": "Materi hanya dalam {output}, tanpa bahasa kedua.",
+    "scope_note": "Pengaturan ini mengarahkan apa yang ditulis AlloFlow untuk Anda."
   },
   "storage": {
     "preset_automatic": "Otomatis",

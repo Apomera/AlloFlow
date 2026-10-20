@@ -1248,6 +1248,7 @@
     "badge_new": "nou",
     "badge_educator": "🔒 Cadru didactic",
     "badge_educator_open": "🛠️ Cadru didactic",
+    "switch_hint": "Poți schimba modul oricând din Start & setup, din partea de sus a paginii",
     "learning_tools_title": "Învățare instrumente",
     "learning_tools_desc": "STEAM Lab, StoryForge, SEL Hub, Research Hub și altele: explorează, creează, investighează și crește",
     "mic_title": "Configurare microfon",
@@ -1352,6 +1353,7 @@
     "progress_not_saved_hint": "Stocarea dispozitivului nu este disponibilă. Încearcă să salvezi din nou, păstrează lecția ca backup al proiectului sau lasă modul ghidat deschis.",
     "progress_not_saved_short": "Nesalvat",
     "progress_not_saved_title": "Progresul nu a putut fi salvat",
+    "progress_saved": "Progresul ghidat a fost salvat. Folosește Resume guided din partea de sus pentru a reveni oricând.",
     "progress_saved_at": "Salvat pe acest dispozitiv la {time}",
     "progress_saved_short": "Salvat",
     "progress_saving": "Se salvează progresul…",
@@ -84371,7 +84373,8 @@
     "translations_auto_plain": "Automat",
     "translations_none": "Niciuna",
     "translations_on_hint": "Resursele în {output} vor include și o versiune în {target}.",
-    "translations_off_hint": "Resursele vor fi doar în {output}, fără o a doua limbă."
+    "translations_off_hint": "Resursele vor fi doar în {output}, fără o a doua limbă.",
+    "scope_note": "Acestea orientează ceea ce scrie AlloFlow pentru tine."
   },
   "storage": {
     "preset_automatic": "Automat",
