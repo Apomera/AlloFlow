@@ -1531,8 +1531,10 @@ window.StemLab = window.StemLab || {
       var ANGLES_GLOSSARY = [
         { term: 'Vertex', def: 'The common endpoint of two rays that form an angle.' },
         { term: 'Ray', def: 'Half of a line \u2014 starts at a point, extends infinitely in one direction.' },
-        { term: 'Vertex angle', def: 'In an isosceles triangle, the angle opposite the equal sides.' },
-        { term: 'Base angle', def: 'In an isosceles triangle, one of the two equal angles opposite the equal sides.' },
+        // The vertex angle is formed BY the equal sides; it used to read "opposite
+        // the equal sides", the same place given for the base angles below.
+        { term: 'Vertex angle', def: 'In an isosceles triangle, the angle formed by the two equal sides. It is opposite the base.' },
+        { term: 'Base angle', def: 'In an isosceles triangle, one of the two equal angles at the ends of the base. Each is opposite one of the equal sides.' },
         { term: 'Bisector', def: 'A ray that divides an angle into two equal angles.' },
         { term: 'Perpendicular', def: 'Two lines that meet at a right angle (90\u00B0).' },
         { term: 'Parallel', def: 'Two lines that never meet (same slope). Always equidistant.' },

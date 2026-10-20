@@ -203,17 +203,30 @@ describe('slider challenge', () => {
     expect(headerVolume(c)).toBe('?');
   });
 
-  it('rejects 24.7 for 24, accepts 24, and counts it once', async () => {
+  it('rejects 24.7 for 24, and the answer it then shows earns no credit (10-20: lock after reveal)', async () => {
     const c = await mountVolume(challengeState());
     await typeInto(answerInput(c), '24.7');
     await click(checkBtn(c));
     expect(latest.feedback && latest.feedback.correct).toBe(false);
+    // Retyping the shown answer: the box may be disabled; if it is not, Check must still pay nothing.
+    const retry = answerInput(c);
+    if (retry && !retry.disabled && checkBtn(c)) {
+      await typeInto(retry, '24');
+      await click(checkBtn(c));
+    }
+    expect(latest.score.correct).toBe(0);
+    expect(latest.streak || 0).toBe(0);
+    expect(xpFor('cube volume').length).toBe(0);
+  });
+
+  it('accepts 24 and counts it once however often Check is pressed', async () => {
+    const c = await mountVolume(challengeState());
     await typeInto(answerInput(c), '24');
     await click(checkBtn(c));
     await click(checkBtn(c));
     await click(checkBtn(c));
     expect(latest.feedback && latest.feedback.correct).toBe(true);
-    expect(latest.score).toEqual({ correct: 1, total: 2 });
+    expect(latest.score).toEqual({ correct: 1, total: 1 });
     expect(latest.streak).toBe(1);
     expect(xpFor('cube volume').length).toBe(1);
   });

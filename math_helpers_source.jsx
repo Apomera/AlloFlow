@@ -1243,6 +1243,16 @@ const handleMathEdit = async (editInstruction, deps) => {
       }
 };
 
+// callGemini returns a placeholder instead of throwing when the model refuses
+// ("Content unavailable due to safety filters.", or "{}" in JSON mode). A
+// refusal or apology is not a math problem and must not become one.
+const _isMathRefusalReply = (text) => {
+  const clean = String(text || '').trim();
+  if (!clean || /^[[{]\s*[\]}]$/.test(clean)) return true;
+  if (/unavailable due to (?:content )?safety filters/i.test(clean)) return true;
+  return /^(?:(?:i['\u2019]?m|i am) (?:sorry|unable|not able)\b|sorry\b|i (?:cannot|can['\u2019]?t|won['\u2019]?t|will not)\b|as an ai\b)/i.test(clean);
+};
+
 const handleGenerateSimilar = async (deps) => {
   const { generatedContent, setIsProcessing, setMathInput, addToast, t, callGemini, warnLog, handleGenerateMath } = deps;
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleGenerateSimilar fired"); } catch(_) {}
@@ -1257,11 +1267,14 @@ const handleGenerateSimilar = async (deps) => {
             Original Problem: "${firstProblem}",
             Return ONLY the raw text of the new problem. No intro/outro.
           `;
-          const newProblem = await callGemini(prompt);
+          // _callMathAi bounds the request (and aborts it) so a hung call cannot
+          // leave the app busy.
+          const newProblem = await _callMathAi(callGemini, prompt, false, deps);
           const cleanProblem = typeof newProblem === 'string' ? newProblem.trim() : '';
           // handleGenerateMath returns early on empty input without clearing the
           // busy flag this handler set, which left the spinner on forever.
           if (!cleanProblem) throw new Error('Similar problem response was empty');
+          if (_isMathRefusalReply(cleanProblem)) throw new Error('Similar problem response was a refusal');
           setMathInput(cleanProblem);
           await handleGenerateMath(cleanProblem);
       } catch (e) {

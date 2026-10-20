@@ -802,6 +802,22 @@ function MathView(props) {
   var mathEditButtonId = problemKey => 'math-edit-toggle-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var answeredSelfGradeCount = mathProblems.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
   var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length && !mathProblems.some(problem => problem._verification?.reviewRequired);
+  // A problem awaiting teacher review has no answer box in self-grade mode, so
+  // the help counts the problems the student can answer and names the rest.
+  var selfGradeReviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
+  var selfGradeAnswerable = mathProblems.filter(problem => !problem._verification?.reviewRequired);
+  var answeredAnswerableCount = selfGradeAnswerable.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
+  var selfGradeReviewHelp = (() => {
+    if (!selfGradeReviewCount) return '';
+    var key = selfGradeAnswerable.length ? 'math.self_grade_review_pending' : 'math.self_grade_review_pending_all';
+    var fallback = (selfGradeAnswerable.length ? `Answered ${answeredAnswerableCount} of ${selfGradeAnswerable.length}. ` : '') + `Problems waiting for teacher review: ${selfGradeReviewCount}. Submit Assessment stays off until teacher review is done.`;
+    var translated = t(key, {
+      answered: answeredAnswerableCount,
+      answerable: selfGradeAnswerable.length,
+      count: selfGradeReviewCount
+    });
+    return typeof translated === 'string' && translated.trim() && translated !== key ? translated : fallback;
+  })();
   var selfGradeHelpId = 'math-self-grade-help-' + _mathStableHash(mathResourceId);
   var activeCheckIndex = mathProblems.findIndex(problem => getMathCheckResult(problem.__viewKey)?.checking === true);
   var activeHintIndex = mathProblems.findIndex(problem => getMathHintState(problem.__viewKey).loading === true);
@@ -1204,7 +1220,7 @@ function MathView(props) {
   })(), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
     id: selfGradeHelpId,
     className: "mt-2 text-sm font-medium text-emerald-800"
-  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
+  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : selfGradeReviewHelp || `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"

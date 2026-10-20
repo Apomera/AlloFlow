@@ -55,6 +55,56 @@
     window.StemLab.registerTool = function(id, cfg) { window.StemLab.tools[id] = cfg; };
   }
 
+// STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
+(function () {
+  var MINUS = String.fromCharCode(0x2212);
+  // A typed answer as a number: "-3", "2.5", "1,000", "3/4", "1 1/2" and the typographic minus.
+  // Anything else (units, words, "1/0") is NaN, so a caller can tell "not a number" from "wrong".
+  function toNumber(value) {
+    if (typeof value === 'number') return isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
+    var s = value.split(MINUS).join('-').replace(/\s+/g, ' ').trim();
+    if (!s) return NaN;
+    if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    var m = s.match(/^([+-]?)(\d+) (\d+)\/(\d+)$/);
+    if (m) {
+      var den = +m[4];
+      if (!den) return NaN;
+      var mixed = +m[2] + (+m[3]) / den;
+      return m[1] === '-' ? -mixed : mixed;
+    }
+    m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)) ?\/ ?([+-]?(?:\d+\.?\d*|\.\d+))$/);
+    if (m) {
+      var d = parseFloat(m[2]);
+      return d ? parseFloat(m[1]) / d : NaN;
+    }
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+  }
+  // Equal within an absolute tolerance, a relative one, or float noise, whichever is largest.
+  function sameNumber(a, b, opts) {
+    var x = toNumber(a), y = toNumber(b);
+    if (!isFinite(x) || !isFinite(y)) return false;
+    var o = opts || {};
+    var tol = Math.max(+o.tolerance || 0, (+o.relative || 0) * Math.abs(y), 1e-9 * Math.max(1, Math.abs(y)));
+    return Math.abs(x - y) <= tol;
+  }
+  // Credit an item once: returns whether `key` is new and the next seen-map to store.
+  // The map is never mutated, so it can live in tool state.
+  function creditOnce(seen, key) {
+    var map = seen && typeof seen === 'object' && !Array.isArray(seen) ? seen : {};
+    var k = String(key);
+    if (Object.prototype.hasOwnProperty.call(map, k)) return { isNew: false, seen: map };
+    var next = {};
+    for (var p in map) if (Object.prototype.hasOwnProperty.call(map, p)) next[p] = map[p];
+    next[k] = true;
+    return { isNew: true, seen: next };
+  }
+  var api = { version: 1, toNumber: toNumber, sameNumber: sameNumber, creditOnce: creditOnce };
+  var current = window.StemLab.grading;
+  if (!current || !(current.version >= api.version)) window.StemLab.grading = api;
+})();
+// STEM_GRADING_CORE_END
+
   /* ============ Sound Engine (Web Audio API) ============ */
   var _audioCtx = null;
   function getAudioCtx() {
@@ -202,21 +252,43 @@
     }
     function parseEquation(str) { var s = normalize(str); var parts = s.split('='); if (parts.length === 1) return { lhs: parts[0], rhs: '0' }; if (parts.length === 2) return { lhs: parts[0], rhs: parts[1] }; return null; }
     function _constValue(p) { var a = evalAt(p, 0), b = evalAt(p, 1.7); if (isNaN(a)) return NaN; if (Math.abs(a - b) < 1e-9) return a; return NaN; }
+    // "1,000" is one number: splitting on every comma read it as the roots 1 and 0.
+    var THOUSANDS = /(^|[^\d.,])(\d{1,3}(?:,\d{3})+)(?!\d|,\d)/g;
+    function _unthousand(s) { return s == null ? s : String(s).replace(THOUSANDS, function (m, pre, num) { return pre + num.replace(/,/g, ''); }); }
     // Each listed value with the letter it was assigned to ('y' in "y = 3"), or null.
-    function _namedRoots(answerStr) {
+    function _namedRoots(answerStr, plainCommas) {
       if (answerStr == null) return [];
-      var parts = String(answerStr).split(/,|;|\bor\b|\band\b/i), roots = [];
+      var parts = (plainCommas ? String(answerStr) : _unthousand(answerStr)).split(/,|;|\bor\b|\band\b/i), roots = [];
+      var G = window.StemLab && window.StemLab.grading;
       for (var i = 0; i < parts.length; i++) {
         var named = /([a-zA-Z])\s*=\s*/.exec(parts[i]);
         var p = parts[i].replace(/[a-zA-Z]\s*=\s*/, '').replace(/[{}\[\]]/g, '').trim();
         if (!p) continue;
-        var v = _constValue(p);
-        if (!isNaN(v)) roots.push({ name: named ? named[1].toLowerCase() : null, value: v });
+        // A plain number goes through the shared reader ("3 1/2" was read as 31/2).
+        var v = G ? G.toNumber(p) : NaN;
+        if (!isFinite(v)) v = _constValue(p);
+        if (!isNaN(v)) roots.push({ name: named ? named[1].toLowerCase() : null, value: v, text: p });
       }
       return roots;
     }
     function extractRoots(answerStr) { return _namedRoots(answerStr).map(function (r) { return r.value; }); }
-    function _sameMultiset(a, b) { if (a.length !== b.length) return false; var x = a.slice().sort(function (p, q) { return p - q; }), y = b.slice().sort(function (p, q) { return p - q; }); for (var i = 0; i < x.length; i++) if (Math.abs(x[i] - y[i]) > 1e-6 * Math.max(1, Math.abs(x[i]))) return false; return true; }
+    // Solutions are a SET: a double root listed twice ("x = 3, x = 3") is the same answer.
+    function _distinct(a) { var x = a.slice().sort(function (p, q) { return p - q; }), out = []; for (var i = 0; i < x.length; i++) if (!out.length || Math.abs(x[i] - out[out.length - 1]) > 1e-6 * Math.max(1, Math.abs(x[i]))) out.push(x[i]); return out; }
+    function _sameValues(a, b) { var x = _distinct(a), y = _distinct(b); if (x.length !== y.length) return false; for (var i = 0; i < x.length; i++) if (Math.abs(x[i] - y[i]) > 1e-6 * Math.max(1, Math.abs(x[i]))) return false; return true; }
+    // Typed decimals that are the exact answer ROUNDED to the places typed (0.333 for 1/3).
+    function _roundedMatch(nS, rC) {
+      var s = nS.slice().sort(function (p, q) { return p.value - q.value; }).filter(function (r, i, arr) { return !i || Math.abs(r.value - arr[i - 1].value) > 1e-6 * Math.max(1, Math.abs(r.value)); });
+      var c = _distinct(rC), rounded = false;
+      if (s.length !== c.length) return false;
+      for (var i = 0; i < s.length; i++) {
+        var gap = Math.abs(s[i].value - c[i]);
+        if (gap <= 1e-6 * Math.max(1, Math.abs(c[i]))) continue;
+        var dm = /^\D?\d*\.(\d+)$/.exec(s[i].text.replace(/\s+/g, ''));
+        if (!dm || gap > 0.5 * Math.pow(10, -dm[1].length) + 1e-12) return false;
+        rounded = true;
+      }
+      return rounded;
+    }
     function _fmt(n) { var r = Math.round(n * 1e6) / 1e6; return String(r); }
     function verifySolution(exprOrEq, answerStr) {
       var eq = parseEquation(exprOrEq), roots = extractRoots(answerStr);
@@ -234,8 +306,8 @@
       }
       return { decidable: true, verified: allOk, roots: roots, residuals: residuals, detail: details.join('; ') };
     }
-    function gradeAnswer(studentStr, correctStr) {
-      var nS = _namedRoots(studentStr), nC = _namedRoots(correctStr);
+    function _gradeAnswer(studentStr, correctStr, plainCommas) {
+      var nS = _namedRoots(studentStr, plainCommas), nC = _namedRoots(correctStr);
       var rS = nS.map(function (r) { return r.value; }), rC = nC.map(function (r) { return r.value; });
       var names = []; nC.forEach(function (r) { if (r.name && names.indexOf(r.name) < 0) names.push(r.name); });
       if (rS.length && rC.length && names.length > 1) {
@@ -245,10 +317,14 @@
         names.sort();
         var sNames = []; nS.forEach(function (r) { if (sNames.indexOf(r.name) < 0) sNames.push(r.name); });
         var pick = function (list, name) { return list.filter(function (r) { return r.name === name; }).map(function (r) { return r.value; }); };
-        var okSys = sNames.sort().join() === names.join() && names.every(function (n) { return _sameMultiset(pick(nS, n), pick(nC, n)); });
+        var okSys = sNames.sort().join() === names.join() && names.every(function (n) { return _sameValues(pick(nS, n), pick(nC, n)); });
         return { decidable: true, correct: okSys, method: 'roots', detail: okSys ? 'Both give ' + names.map(function (n) { return n + ' = ' + pick(nC, n).map(_fmt).join(', '); }).join('; ') : 'Values differ for at least one variable' };
       }
-      if (rS.length && rC.length) { var ok = _sameMultiset(rS, rC); return { decidable: true, correct: ok, method: 'roots', detail: ok ? 'Both give x = ' + rC.map(_fmt).join(', ') : 'Roots differ' }; }
+      if (rS.length && rC.length) {
+        var ok = _sameValues(rS, rC);
+        if (!ok && _roundedMatch(nS, rC)) return { decidable: true, correct: false, rounded: true, method: 'roots', detail: 'A rounded value of the exact answer' };
+        return { decidable: true, correct: ok, method: 'roots', detail: ok ? 'Both give x = ' + _distinct(rC).map(_fmt).join(', ') : 'Roots differ' };
+      }
       var sN = normalize(studentStr), cN = normalize(correctStr);
       if (!sN || !cN) return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
       // Different letters (y^2 against x^2) are not the same expression; leave it to the reviewer.
@@ -263,6 +339,12 @@
       }
       if (valid >= 3) return { decidable: true, correct: allEq, method: 'sample', detail: allEq ? 'Equivalent at ' + valid + ' test points' : 'Not equivalent' };
       return { decidable: false, correct: false, method: 'na', detail: 'Could not auto-check' };
+    }
+    function gradeAnswer(studentStr, correctStr) {
+      var r = _gradeAnswer(studentStr, correctStr, false);
+      // "10,100" may be the roots 10 and 100 typed without a space: accept that reading too.
+      if (!r.correct && /\d,\d{3}/.test(String(studentStr))) { var plain = _gradeAnswer(studentStr, correctStr, true); if (plain.correct) return plain; }
+      return r;
     }
     // Keep balance steps exact: decimal inputs become rational coefficients, so
     // dividing by 3 and multiplying back never changes the equation through rounding.
@@ -436,7 +518,7 @@
     function gradeLinear(equation, answer) {
       var solved = solveLinear(equation);
       if (!solved.ok) return { decidable: false };
-      var candidate = normalize(answer).replace(/^x=/i, '');
+      var candidate = normalize(_unthousand(answer)).replace(/^x=/i, '');
       if (solved.kind !== 'unique') return { decidable: true, correct: candidate.toLowerCase() === normalize(solved.answer).toLowerCase(), detail: 'Compare whether the equation is an identity or a contradiction.' };
       var value = linearSide(candidate);
       if (!value || value.a.n) return { decidable: false, detail: 'Enter one number or fraction, optionally starting with x =.' };
@@ -766,6 +848,13 @@ onSpeak: function(formats) {
             checkBadges(Object.assign({},d,{_maxStreak:Math.max(d._maxStreak||0,streak)}));
             return;
           }
+          // A rounded decimal (0.333 for 1/3) is not exactly right: ask for the exact value
+          // instead of a flat "wrong". If the problem asks for rounding, the reviewer decides.
+          var _det = __alloCASPure.gradeAnswer(practiceAnswer.trim(), practiceQ.answer);
+          if (_det.rounded) {
+            if (!/\bround|\bnearest\b|decimal place|\bapproximat|\u2248/i.test(practiceQ.problem + ' ' + practiceQ.answer)) { upd('practiceNotice', t('stem.algebraCAS.rounded_write_exact', 'Close! That looks like a rounded decimal. Write the exact value, for example as a fraction.')); return; }
+            _det = { decidable: false, correct: false };
+          }
           if (!callGemini) { upd('practiceNotice', 'This generated problem needs the AI provider. Start local linear practice to continue.'); return; }
           upd('isLoading', true);
           var prompt = 'Student solving:\nPROBLEM: ' + practiceQ.problem + '\nCORRECT: ' + practiceQ.answer +
@@ -774,14 +863,13 @@ onSpeak: function(formats) {
           callGemini(prompt).then(function(res) {
             upd('isLoading', false);
             if (res) {
-              var _det = __alloCASPure.gradeAnswer(practiceAnswer.trim(), practiceQ.answer);
               var isRight = _det.decidable ? _det.correct : /CORRECT:\s*yes/i.test(res);
               var newStreak = isRight ? practiceStreak + 1 : 0;
               var maxSt = Math.max(d._maxStreak || 0, newStreak);
               if (isRight) { SOUNDS.correct(); if (awardStemXP) awardStemXP('algebraCAS', 10, 'Practice correct'); }
               else { SOUNDS.wrong(); }
               if (isRight && stemCelebrate && newStreak % 3 === 0) stemCelebrate();
-              updMulti({ practiceFeedback: { correct: isRight, text: res, gradeSource: _det.decidable ? 'verified' : 'ai', gradeDetail: _det.decidable ? _det.detail : '' }, practiceScore: practiceScore + (isRight ? 1 : 0), practiceStreak: newStreak, _maxStreak: maxSt, showSolution: !isRight });
+              updMulti({ practiceNotice: '', practiceFeedback: { correct: isRight, text: res, gradeSource: _det.decidable ? 'verified' : 'ai', gradeDetail: _det.decidable ? _det.detail : '' }, practiceScore: practiceScore + (isRight ? 1 : 0), practiceStreak: newStreak, _maxStreak: maxSt, showSolution: !isRight });
               checkBadges(Object.assign({}, d, { _maxStreak: maxSt }));
             }
           }).catch(function() { upd('isLoading', false); });

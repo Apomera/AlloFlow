@@ -303,6 +303,22 @@ window.StemLab = window.StemLab || {
 
   var PROBABILITY_AUTO_TRIAL_LIMIT = 10000;
 
+  // Balance Master: every face's count within `tol` of ITS OWN expected
+  // count. The old check allowed 10 percentage points around a d6's 16.7%, a
+  // 60% window a fair die met 87% of the time at the 60-roll minimum.
+  function probabilityAllWithin(tally, probs, n, tol) {
+    if (!(n > 0)) return false;
+    var keys = Object.keys(probs || {});
+    var any = false;
+    for (var i = 0; i < keys.length; i++) {
+      var want = probs[keys[i]] * n;
+      if (!(want > 0)) continue;
+      any = true;
+      if (Math.abs(((tally || {})[keys[i]] || 0) - want) > tol * want + 1e-9) return false;
+    }
+    return any;
+  }
+
   window.__ProbabilityCore = Object.assign({}, window.__ProbabilityCore || {}, {
     marbleOutcomes: probabilityMarbleOutcomes,
     buildMarblePool: probabilityBuildMarblePool,
@@ -315,22 +331,39 @@ window.StemLab = window.StemLab || {
     resetPatch: probabilityResetPatch,
     newTrialMilestones: probabilityNewTrialMilestones,
     trialMilestones: PROBABILITY_TRIAL_MILESTONES.slice(),
-    autoTrialLimit: PROBABILITY_AUTO_TRIAL_LIMIT
+    autoTrialLimit: PROBABILITY_AUTO_TRIAL_LIMIT,
+    allWithin: probabilityAllWithin
   });
 
   // Module-level: persists across React renders without causing re-render
   var _autoRun = { interval: null };
-  var _galtonAnim = { interval: null };
+  // queue = balls not yet released, falling = balls in the air. Both were
+  // counted in totalTrials when dropped, so both are owed to the bins.
+  var _galtonAnim = { interval: null, queue: [], falling: [], tick: 0, seq: 0, land: null };
   var _piAnim = { interval: null };
   var PROBABILITY_CHALLENGE_TOTAL = 6;
 
+  // Stopping the Galton animation lands every owed ball at once. A mode switch
+  // or leaving the tool used to drop the balls still in the air, though each
+  // had been counted. Only the board's own Reset (discard) throws them away.
+  function galtonStopAnimation(discard) {
+    if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
+    _galtonAnim.interval = null;
+    var owed = _galtonAnim.queue.concat(_galtonAnim.falling).map(function(b) { return b.bin; });
+    var land = _galtonAnim.land;
+    _galtonAnim.queue = [];
+    _galtonAnim.falling = [];
+    _galtonAnim.tick = 0;
+    _galtonAnim.land = null;
+    if (land && !discard) land(owed, true);
+  }
+
   function stopProbabilityTimers() {
     if (_autoRun.interval) clearInterval(_autoRun.interval);
-    if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
     if (_piAnim.interval) clearInterval(_piAnim.interval);
     _autoRun.interval = null;
-    _galtonAnim.interval = null;
     _piAnim.interval = null;
+    galtonStopAnimation(false);
   }
 
   // ══ 3D Monte Carlo volume estimator ═════════════════════════════════════
@@ -1272,15 +1305,21 @@ var d = (labToolData.probability) || {};
 
           // Chi-squared
 
+          // On the sample we can count. Expected counts came from d.trials and
+          // observed ones from d.results, so a saved run carrying trials but no
+          // results scored each missing roll as a zero: a die nobody rolled read
+          // "Biased" with chi-squared = trials.
+          var statN = (d.results || []).length;
+
           var chiSq = 0;
 
-          if (d.trials > 0) {
+          if (statN > 0) {
 
             Object.keys(expected).forEach(function (k) {
 
               var obs = counts[k] || 0;
 
-              var exp = expected[k] * d.trials;
+              var exp = expected[k] * statN;
 
               if (exp > 0) chiSq += Math.pow(obs - exp, 2) / exp;
 
@@ -1327,7 +1366,10 @@ var d = (labToolData.probability) || {};
           // truth, since the with-replacement bag (genuinely random, χ²≈0.4)
           // looked WORSE than the one with no randomness left in it.
           var chiIndependent = !(d.mode === 'marbleBag' && d.mbWithoutReplacement);
-          var chiReady = chiIndependent && d.trials > 0 && df >= 1 && d.trials >= chiTrialsNeeded;
+          // One possible outcome (df = 0) leaves nothing to compare. It used to
+          // read "needs 5 trials" forever; it now says the test does not apply.
+          var chiApplicable = df >= 1;
+          var chiReady = chiIndependent && chiApplicable && statN > 0 && statN >= chiTrialsNeeded;
           var chiPass = chiSq < chiCritical;
           // Neutral (neither green nor red) until the test is actually valid.
           var chiTone = !chiReady ? 'text-slate-500' : chiPass ? 'text-emerald-600' : 'text-red-600';
@@ -2600,64 +2642,79 @@ var d = (labToolData.probability) || {};
               // Pacing: small drops animate, large drops are instant so the
               // student can see the bell curve emerge without 1000-ball waits.
               var ANIMATE_THRESHOLD = 10;
+              // Every bin write is a functional update on the LATEST bins. The
+              // animation used to keep its own copy and write it back each tick,
+              // so an instant drop made while balls were falling was erased.
+              function galtonLand(landed, done) {
+                setLabToolData(function(prev) {
+                  var cur = prev.probability || {};
+                  var nb = Array.isArray(cur.galtonBins) ? cur.galtonBins.slice() : [];
+                  for (var bi = nb.length; bi < GB_BINS; bi++) nb.push(0);
+                  for (var li = 0; li < landed.length; li++) nb[landed[li]]++;
+                  var patch = { galtonBins: nb };
+                  if (done) patch.galtonFalling = [];
+                  return Object.assign({}, prev, { probability: Object.assign({}, cur, patch) });
+                });
+              }
               function dropN(n) {
                 sfxProbClick();
                 upd('totalTrials', (d.totalTrials || 0) + n);
                 upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { galton: true }));
                 if (n > ANIMATE_THRESHOLD) {
                   // Instant mode for large drops — bell curve emerges without delay
-                  var next = bins.slice();
-                  for (var i = 0; i < n; i++) next[simulateBall()]++;
-                  upd('galtonBins', next);
+                  var instant = [];
+                  for (var i = 0; i < n; i++) instant.push(simulateBall());
+                  galtonLand(instant, false);
                   sfxProbSuccess();
                   return;
                 }
                 // Animated mode — show the random walk through the peg grid.
                 // Each ball has a precomputed path; balls spawn staggered every
-                // other tick so multiple balls cascade visibly.
-                if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
-                var queue = [];
+                // other tick so multiple balls cascade visibly. New balls JOIN
+                // the ones in flight: a second drop used to cancel them.
+                var A = _galtonAnim;
                 for (var i = 0; i < n; i++) {
                   var defs = [];
                   for (var r = 0; r < GB_ROWS; r++) defs.push(Math.random() < 0.5 ? 0 : 1);
                   var p = precomputePath(defs);
-                  queue.push({ id: Date.now() + '-' + i, pts: p.pts, bin: p.bin, step: 0 });
+                  A.seq++;
+                  A.queue.push({ id: 'gb-' + A.seq, pts: p.pts, bin: p.bin, step: 0 });
                 }
-                var falling = []; var spawnIdx = 0; var tickCount = 0;
-                var workingBins = bins.slice();
-                _galtonAnim.interval = setInterval(function() {
-                  tickCount++;
+                A.land = galtonLand;
+                if (A.interval) return;
+                A.tick = 0;
+                A.interval = setInterval(function() {
+                  A.tick++;
                   // Spawn next ball every 2 ticks (so balls visibly cascade)
-                  if (spawnIdx < queue.length && (tickCount % 2 === 0 || tickCount === 1)) {
-                    falling.push(queue[spawnIdx++]);
-                  }
-                  // Advance every active ball one step
-                  var still = [];
-                  for (var bi = 0; bi < falling.length; bi++) {
-                    var b = falling[bi];
+                  if (A.queue.length && (A.tick % 2 === 0 || A.tick === 1)) A.falling.push(A.queue.shift());
+                  // Advance every active ball one step; landed balls go to their bins
+                  var still = [], hits = [];
+                  for (var bi = 0; bi < A.falling.length; bi++) {
+                    var b = A.falling[bi];
                     b.step++;
-                    if (b.step >= b.pts.length - 1) {
-                      // Landed — commit to bin
-                      workingBins[b.bin]++;
-                    } else {
-                      still.push(b);
-                    }
+                    if (b.step >= b.pts.length - 1) hits.push(b.bin);
+                    else still.push(b);
                   }
-                  falling = still;
-                  // Commit state once per tick
-                  upd('galtonBins', workingBins.slice());
-                  upd('galtonFalling', falling.map(function(b) { return { id: b.id, x: b.pts[b.step].x, y: b.pts[b.step].y }; }));
-                  if (spawnIdx >= queue.length && falling.length === 0) {
-                    clearInterval(_galtonAnim.interval);
-                    _galtonAnim.interval = null;
+                  A.falling = still;
+                  var done = !A.queue.length && !still.length;
+                  if (hits.length) galtonLand(hits, done);
+                  if (done) {
+                    clearInterval(A.interval);
+                    A.interval = null;
+                    A.land = null;
+                    A.tick = 0;
                     upd('galtonFalling', []);
                     sfxProbSuccess();
+                  } else {
+                    upd('galtonFalling', still.map(function(b) { return { id: b.id, x: b.pts[b.step].x, y: b.pts[b.step].y }; }));
                   }
                 }, 100);
               }
               function resetBoard() {
                 sfxProbClick();
-                if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
+                // Reset is the one place balls are thrown away: it empties the
+                // board, including any still in the air.
+                galtonStopAnimation(true);
                 var blank = []; for (var bi = 0; bi < GB_BINS; bi++) blank.push(0);
                 upd('galtonBins', blank);
                 upd('galtonFalling', []);
@@ -3834,7 +3891,7 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700" }, t('stem.probability.total_trials', "Total Trials")),
 
-                  React.createElement("p", { className: "text-lg font-black text-violet-800" }, d.trials)
+                  React.createElement("p", { className: "text-lg font-black text-violet-800" }, statN)
 
                 ),
 
@@ -3848,7 +3905,7 @@ var d = (labToolData.probability) || {};
 
                     Object.keys(expected).forEach(function (k) {
 
-                      var observed = (counts[k] || 0) / d.trials;
+                      var observed = (counts[k] || 0) / Math.max(statN, 1);
 
                       var dev = Math.abs(observed - expected[k]);
 
@@ -3856,7 +3913,7 @@ var d = (labToolData.probability) || {};
 
                     });
 
-                    return (maxDev * 100).toFixed(1) + '%';
+                    return statN > 0 ? (maxDev * 100).toFixed(1) + '%' : '\u2014';
 
                   })())
 
@@ -3868,7 +3925,7 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("p", { className: "text-lg font-black " + chiTone }, chiSq.toFixed(2)),
 
-                  React.createElement("p", { className: "text-[0.625rem] font-mono text-slate-500" }, 'df=' + df + ' \u00B7 crit ' + chiCritical.toFixed(2))
+                  React.createElement("p", { className: "text-[0.625rem] font-mono text-slate-500" }, 'df=' + df + ' \u00B7 crit ' + (chiApplicable ? chiCritical.toFixed(2) : '\u2014'))
 
                 ),
 
@@ -3877,13 +3934,16 @@ var d = (labToolData.probability) || {};
                   React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700" }, t('stem.probability.fairness_0_05', "Fairness (\u03B1=0.05)")),
 
                   React.createElement("p", { className: "text-lg font-black " + chiTone },
-                    !chiIndependent ? '\uD83D\uDEAB ' + t('stem.probability.chi_na', 'N/A here')
+                    (!chiIndependent || !chiApplicable) ? '\uD83D\uDEAB ' + t('stem.probability.chi_na', 'N/A here')
                       : !chiReady ? '\u23F3 ' + t('stem.probability.not_yet', 'Not yet')
                       : chiPass ? '\u2705 Fair' : '\u274C Biased'),
 
                   !chiIndependent
                     ? React.createElement("p", { className: "text-[0.625rem] text-slate-500 leading-snug" },
                         t('stem.probability.chi_not_independent', 'this test needs independent draws \u2014 switch replacement back on'))
+                    : !chiApplicable
+                    ? React.createElement("p", { className: "text-[0.625rem] text-slate-500 leading-snug" },
+                        t('stem.probability.chi_one_outcome', 'only one outcome can happen, so there is nothing to compare'))
                     : !chiReady && React.createElement("p", { className: "text-[0.625rem] text-slate-500 leading-snug" },
                         t('stem.probability.chi_needs_trials', 'needs ') + chiTrialsNeeded.toLocaleString() + t('stem.probability.chi_needs_trials_suffix', ' trials (5 expected per outcome)'))
 
@@ -3898,9 +3958,11 @@ var d = (labToolData.probability) || {};
                 // target now comes from the model on screen.
                 !chiIndependent ? '\uD83D\uDCA1 Drawing WITHOUT replacement, every full pass through the bag hands back exactly the bag\u2019s contents \u2014 so \u03C7\u00B2 lands on 0 no matter how many draws you make. That is not the bag proving itself fair, it is arithmetic: \u03C7\u00B2 assumes each draw is independent, and here each draw changes what is left. Turn replacement back on to test fairness; keep it off to study how the odds shift mid-bag.'
 
-                  : !chiReady ? '\uD83D\uDCA1 At ' + d.trials + ' trials the \u03C7\u00B2 test can\u2019t run yet \u2014 it needs about 5 expected hits in EVERY outcome, which is ' + chiTrialsNeeded.toLocaleString() + ' trials for this setup (rarest outcome: ' + (minExpectedP * 100).toFixed(minExpectedP < 0.01 ? 2 : 1) + '%). Keep rolling and watch the convergence chart meanwhile.'
+                  : !chiApplicable ? '\uD83D\uDCA1 ' + t('stem.probability.chi_one_outcome_hint', 'Only one outcome can happen in this model, so every trial lands on it. A fairness test compares the outcomes with each other, and with one outcome there is nothing to compare, however many trials you run. Give a second outcome a chance above 0 to test fairness.')
 
-                  : '\uD83D\uDCA1 Great sample size! At ' + d.trials + ' trials, the Law of Large Numbers is clearly visible. \u03C7\u00B2(' + df + ')=' + chiSq.toFixed(2) + ' vs critical ' + chiCritical.toFixed(2) + ' \u2192 ' + (chiPass ? 'fail to reject H\u2080 (fair)' : 'reject H\u2080 (potentially biased)')
+                  : !chiReady ? '\uD83D\uDCA1 At ' + statN + ' trials the \u03C7\u00B2 test can\u2019t run yet \u2014 it needs about 5 expected hits in EVERY outcome, which is ' + chiTrialsNeeded.toLocaleString() + ' trials for this setup (rarest outcome: ' + (minExpectedP * 100).toFixed(minExpectedP < 0.01 ? 2 : 1) + '%). Keep rolling and watch the convergence chart meanwhile.'
+
+                  : '\uD83D\uDCA1 Great sample size! At ' + statN + ' trials, the Law of Large Numbers is clearly visible. \u03C7\u00B2(' + df + ')=' + chiSq.toFixed(2) + ' vs critical ' + chiCritical.toFixed(2) + ' \u2192 ' + (chiPass ? 'fail to reject H\u2080 (fair)' : 'reject H\u2080 (potentially biased)')
 
               )
 
@@ -4295,7 +4357,7 @@ var d = (labToolData.probability) || {};
 
                 var mx = 0;
 
-                Object.keys(expected).forEach(function(k) { var dv = Math.abs(((counts[k]||0)/Math.max(d.trials,1))-(expected[k]||0)); if(dv>mx)mx=dv; });
+                Object.keys(expected).forEach(function(k) { var dv = Math.abs(((counts[k]||0)/Math.max(statN,1))-(expected[k]||0)); if(dv>mx)mx=dv; });
 
                 return mx;
 
@@ -4310,13 +4372,19 @@ var d = (labToolData.probability) || {};
 
                 { id:'streak5', icon:'🔥', name:t('stem.probability.streak_surge', 'Streak Surge'), desc:t('stem.probability.get_5_results_in_a_row_any_mode', 'Get 5+ results in a row (any mode)'), xp:25, check:function(){return (d._bestStreak||0)>=5;} },
 
-                { id:'diceBalance', icon:'⚖️', name:t('stem.probability.balance_master', 'Balance Master'), desc:t('stem.probability.60_dice_rolls_all_within_10_of_expecte', '60+ dice rolls, all within 10% of expected'), xp:50, check:function(){return d.mode==='dice'&&d.trials>=60&&_maxDevC<=0.10;} },
+                // "Within 10% of expected" is relative: each face's count within
+                // 10% of its own expected count. ~1% of fair 60-roll samples pass,
+                // ~99% by 5,000 rolls, so it rewards rolling until faces even out.
+                { id:'diceBalance', icon:'⚖️', name:t('stem.probability.balance_master', 'Balance Master'), desc:t('stem.probability.balance_master_every_face_within_10pct', '60+ dice rolls, every face within 10% of its expected count'), xp:50, check:function(){return d.mode==='dice'&&statN>=60&&probabilityAllWithin(counts, expected, statN, 0.10);} },
 
-                { id:'law1000', icon:'📈', name:t('stem.probability.law_witness', 'Law Witness'), desc:t('stem.probability.1000_coin_trials_with_max_deviation_3', '1000 coin trials with max deviation < 3%'), xp:100, check:function(){return d.mode==='coin'&&d.trials>=1000&&_maxDevC<0.03;} },
+                { id:'law1000', icon:'📈', name:t('stem.probability.law_witness', 'Law Witness'), desc:t('stem.probability.1000_coin_trials_with_max_deviation_3', '1000 coin trials with max deviation < 3%'), xp:100, check:function(){return d.mode==='coin'&&statN>=1000&&_maxDevC<0.03;} },
 
                 { id:'piHunter', icon:'🥧', name:t('stem.probability.pi_hunter', 'Pi Hunter'), desc:t('stem.probability.1000_monte_carlo_pi_trials_error_0_05', '1000+ Monte Carlo Pi trials, error < 0.05'), xp:75, check:function(){return d.mode==='pi'&&piTotal>=1000&&_piErrC<0.05;} },
 
-                { id:'birthday23', icon:'🎂', name:t('stem.probability.birthday_breaker', 'Birthday Breaker'), desc:t('stem.probability.set_n_23_in_birthday_mode_to_see_the_p', 'Set n=23 in Birthday mode to see the paradox'), xp:30, check:function(){return d.mode==='birthday'&&(d.birthdayN||23)===23;} },
+                // n = 23 is also the room the mode opens on, so the old
+                // `(d.birthdayN || 23) === 23` paid on arrival. Only the student's
+                // own slider or preset writes birthdayN.
+                { id:'birthday23', icon:'🎂', name:t('stem.probability.birthday_breaker', 'Birthday Breaker'), desc:t('stem.probability.set_n_23_in_birthday_mode_to_see_the_p', 'Set n=23 in Birthday mode to see the paradox'), xp:30, check:function(){return d.mode==='birthday'&&d.birthdayN===23;} },
 
                 // Earnable by more work, unlike the old Pi Hunter: the volume
                 // estimate keeps converging, so more darts really do help. The
@@ -4411,16 +4479,18 @@ var d = (labToolData.probability) || {};
                       summary = 'Two-event compound probability tree for ' + tm + ' experiments. Joint probabilities shown for all outcome pairs.';
                     } else {
                       var topOutcome = Object.keys(counts).sort(function(a,b){ return (counts[b]||0)-(counts[a]||0); })[0];
-                      var topPct = topOutcome && d.trials > 0 ? ((counts[topOutcome]||0)/d.trials*100).toFixed(1) : '0';
-                      summary = 'Mode: ' + d.mode + '. Total trials: ' + d.trials + '. ' +
+                      var topPct = topOutcome && statN > 0 ? ((counts[topOutcome]||0)/statN*100).toFixed(1) : '0';
+                      summary = 'Mode: ' + d.mode + '. Total trials: ' + statN + '. ' +
                         'Most frequent outcome: ' + (topOutcome||'none') + ' (' + topPct + '%). ' +
                         'Chi-square: ' + chiSq.toFixed(2) + ' on ' + df + ' degrees of freedom (critical value ' + chiCritical.toFixed(2) + '). ' +
                         (!chiIndependent
                           ? 'Fairness test: DOES NOT APPLY — draws are without replacement, so they are not independent and chi-squared is meaningless here. Do NOT call the bag fair or biased; explain that a full pass through the bag always returns its exact contents. '
+                          : !chiApplicable
+                          ? 'Fairness test: DOES NOT APPLY — only one outcome is possible in this model, so there is nothing to compare. Do NOT call it fair or biased. '
                           : chiReady
                           ? 'Fairness test: ' + (chiPass ? 'PASS (fair)' : 'FAIL (biased)') + '. '
                           : 'Fairness test: NOT VALID YET — this setup needs ' + chiTrialsNeeded + ' trials for 5 expected hits per outcome, so do NOT tell the student the die is fair or biased; say the sample is still too small. ') +
-                        'Max deviation from expected: ' + (function(){ var mx=0; Object.keys(expected).forEach(function(k){ var d2=Math.abs((counts[k]||0)/Math.max(d.trials,1)-expected[k]); if(d2>mx)mx=d2; }); return (mx*100).toFixed(1); })() + '%.';
+                        'Max deviation from expected: ' + (function(){ var mx=0; Object.keys(expected).forEach(function(k){ var d2=Math.abs((counts[k]||0)/Math.max(statN,1)-expected[k]); if(d2>mx)mx=d2; }); return (mx*100).toFixed(1); })() + '%.';
                     }
                     callGemini(
                       'You are explaining probability to a ' + (gradeLevel||'5th Grade') + ' student. In 3 sentences max, explain what these results show and what concept they illustrate:\n\n' + summary + '\n\nBe concrete, friendly, and use the actual numbers.',
@@ -4434,9 +4504,9 @@ var d = (labToolData.probability) || {};
                 d.trials > 0 && callTTS && React.createElement("button", { "aria-label": t('stem.probability.narrate_results', "Narrate Results"),
                   onClick: function() {
                     var topOutcome = Object.keys(counts).sort(function(a,b){ return (counts[b]||0)-(counts[a]||0); })[0];
-                    var narration = 'Probability Lab results. Mode: ' + d.mode + '. ' + d.trials + ' trials run. ' +
-                      'Most frequent: ' + (topOutcome||'unknown') + ' at ' + (topOutcome&&d.trials>0?((counts[topOutcome]||0)/d.trials*100).toFixed(0):'0') + ' percent. ' +
-                      'Chi-square test: ' + (!chiIndependent ? 'does not apply, because draws without replacement are not independent' : chiReady ? (chiPass?'fair':'potentially biased') : 'not enough trials yet, it needs ' + chiTrialsNeeded + ' for this setup') + '.';
+                    var narration = 'Probability Lab results. Mode: ' + d.mode + '. ' + statN + ' trials run. ' +
+                      'Most frequent: ' + (topOutcome||'unknown') + ' at ' + (topOutcome&&statN>0?((counts[topOutcome]||0)/statN*100).toFixed(0):'0') + ' percent. ' +
+                      'Chi-square test: ' + (!chiIndependent ? 'does not apply, because draws without replacement are not independent' : !chiApplicable ? 'does not apply, because only one outcome is possible' : chiReady ? (chiPass?'fair':'potentially biased') : 'not enough trials yet, it needs ' + chiTrialsNeeded + ' for this setup') + '.';
                     callTTS(narration, null);
                   },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",

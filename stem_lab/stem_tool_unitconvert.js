@@ -1738,7 +1738,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             else if (diff < 13) mag = 'large';
             else mag = 'massive';
             var mm = {
-              tiny:    { label: t('stem.unitconvert.tiny_scale_change', '🐜 Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.2_orders_of_magnitude_close_cousins_cm', '<2 orders of magnitude — close cousins (cm→m).') },
+              // Each example must land in its own band: cm→m is 2 OOM (small).
+              tiny:    { label: t('stem.unitconvert.tiny_scale_change', '🐜 Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.tiny_band_close_cousins_mm_cm', '<2 orders of magnitude — close cousins (mm→cm).') },
               small:   { label: t('stem.unitconvert.small_scale_change', '🟢 Small scale change'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.unitconvert.2_4_oom_same_domain_g_kg', '2-4 OOM — same domain (g→kg).') },
               medium:  { label: t('stem.unitconvert.medium_scale_change', '🟡 Medium scale change'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.unitconvert.5_8_oom_biology_to_geology_scales', '5-8 OOM — biology to geology scales.') },
               large:   { label: t('stem.unitconvert.large_scale_change', '🔴 Large scale change'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.unitconvert.9_12_oom_micro_to_macro_span', '9-12 OOM — micro to macro span.') },

@@ -417,6 +417,12 @@ window.StemLab = window.StemLab || {
         var timer = labToolData._multAdvanceTimer;
         return function() { if (timer) clearTimeout(timer); };
       }, [labToolData._multAdvanceTimer]);
+      // "50 correct in one session" means this visit: one token per opening of the tool.
+      // A saved sessionCorrect from an earlier visit (or an old save with no token) starts at 0.
+      var mtVisitRef = React.useRef(null);
+      if (!mtVisitRef.current) mtVisitRef.current = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      var mtVisit = mtVisitRef.current;
+      var sessionCorrectNow = _ext.sessionVisit === mtVisit ? (_ext.sessionCorrect || 0) : 0;
       var setInputDisabled = function(val) {
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multInputDisabled: val }); });
       };
@@ -572,7 +578,7 @@ window.StemLab = window.StemLab || {
         // Badge checks
         if (ok) {
           var newTotal = (_ext.totalCorrect || 0) + 1;
-          var newSession = (_ext.sessionCorrect || 0) + 1;
+          var newSession = sessionCorrectNow + 1;
           var newHidden = multTableHidden ? (_ext.hiddenCorrect || 0) + 1 : (_ext.hiddenCorrect || 0);
           var newSquares = Object.assign({}, _ext.squaresAnswered || {});
           if (multTableChallenge.a === multTableChallenge.b) newSquares[multTableChallenge.a] = true;
@@ -581,7 +587,7 @@ window.StemLab = window.StemLab || {
           newRows[multTableChallenge.b] = true;
           var newTricky = (_ext.trickySolved || 0) + (isTrickyFact(multTableChallenge.a, multTableChallenge.b) ? 1 : 0);
 
-          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows, trickySolved: newTricky, factScores: newFactScores });
+          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, sessionVisit: mtVisit, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows, trickySolved: newTricky, factScores: newFactScores });
 
           // Check adaptive reaching hard
           var reachedHard = exploreDifficulty === 'adaptive' && getAdaptiveRange(newHistory) === DIFFICULTY.hard;

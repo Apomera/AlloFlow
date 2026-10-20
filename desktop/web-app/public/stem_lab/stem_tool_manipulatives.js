@@ -136,6 +136,75 @@ window.StemLab = window.StemLab || {
     { id: 'all_12_modes',   icon: '\ud83c\udf1f', name: 'Polyglot',         desc: 'Try all 12 manipulative modes' }
   ];
 
+  // Geoboard polygon checks, shared by the challenge checker and the Polygon Builder badge.
+  // A closed cycle: every peg on exactly 2 segments, and one walk visits them all.
+  var segsFormClosedCycle = function(segs) {
+    if (segs.length < 3) return false;
+    // Build adjacency: peg-key → [other peg-keys]
+    var key = function(x, y) { return x + ',' + y; };
+    var adj = {};
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      var a = key(s.x1, s.y1), b = key(s.x2, s.y2);
+      if (a === b) return false; // zero-length
+      (adj[a] = adj[a] || []).push(b);
+      (adj[b] = adj[b] || []).push(a);
+    }
+    var pegs = Object.keys(adj);
+    // Every peg used in exactly 2 segments (entry + exit of the cycle)
+    for (var p = 0; p < pegs.length; p++) {
+      if (adj[pegs[p]].length !== 2) return false;
+    }
+    // Cycle must visit all pegs — walk from any starting peg
+    if (pegs.length !== segs.length) return false;
+    var visited = {};
+    var cur = pegs[0];
+    var prev = null;
+    for (var step = 0; step < segs.length; step++) {
+      visited[cur] = true;
+      var nbrs = adj[cur];
+      var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
+      prev = cur;
+      cur = nxt;
+    }
+    return cur === pegs[0] && Object.keys(visited).length === segs.length;
+  };
+  // Shoelace area of the closed cycle, so three collinear pegs do
+  // not pass as a "triangle" — a zero-area cycle is a line, not a
+  // polygon. Walk the cycle exactly as segsFormClosedCycle does.
+  var cycleArea = function(segs) {
+    if (!segsFormClosedCycle(segs)) return 0;
+    var key = function(x, y) { return x + ',' + y; };
+    var adj = {};
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      (adj[key(s.x1, s.y1)] = adj[key(s.x1, s.y1)] || []).push(key(s.x2, s.y2));
+      (adj[key(s.x2, s.y2)] = adj[key(s.x2, s.y2)] || []).push(key(s.x1, s.y1));
+    }
+    var start = Object.keys(adj)[0];
+    var cur = start, prev = null, area = 0;
+    for (var step = 0; step < segs.length; step++) {
+      var nbrs = adj[cur];
+      var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
+      var a = cur.split(',').map(Number), b = nxt.split(',').map(Number);
+      area += a[0] * b[1] - b[0] * a[1];
+      prev = cur;
+      cur = nxt;
+    }
+    return Math.abs(area) / 2;
+  };
+  // Polygon Builder ("Build a polygon with 5+ segments"): a closed band that encloses
+  // area. Counting segments passed any 5 strokes. Saved state is read in every mode,
+  // so anything that is not a segment fails instead of throwing.
+  function geoboardBuildsPolygon(segs) {
+    if (!Array.isArray(segs) || segs.length < 5) return false;
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      if (!s || typeof s !== 'object' || [s.x1, s.y1, s.x2, s.y2].some(function(v) { return typeof v !== 'number' || !isFinite(v); })) return false;
+    }
+    return segsFormClosedCycle(segs) && cycleArea(segs) > 1e-9;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // ── Place Value Quiz Questions ──
   // ══════════════════════════════════════════════════════════════
@@ -330,6 +399,8 @@ window.StemLab = window.StemLab || {
     { place: 'ones',      w: 1,  h: 1,  d: 1  }
   ];
 
+  // More than the UI can build (20 per place, trades keep the value: 22,220 cubes); guards a corrupt save.
+  var B10_MAX_CUBES = 30000;
   var B10GL = (function () {
     var DEG = Math.PI / 180;
     var T = null;
@@ -353,11 +424,14 @@ window.StemLab = window.StemLab || {
       var out = [];
       var cursorX = 0, maxD = 0, maxH = 0;
       B10_SPEC.forEach(function (spec) {
-        var n = Math.max(0, Math.min(9, counts[spec.place] | 0));
+        // Every block the label and the flat view count: a cap of 9 drew 9 of "14 ones" mid-regroup.
+        // Up to 9 keep the 3-wide rows; more spread into a near-square grid.
+        var n = Math.max(0, counts[spec.place] | 0);
         if (!n) return;
-        var cols = Math.min(3, n), rows = Math.ceil(n / cols);
+        var cols = n <= 9 ? Math.min(3, n) : Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
         var stepX = spec.w + 1, stepZ = spec.d + 1;
         for (var i = 0; i < n; i++) {
+          if (out.length + spec.w * spec.h * spec.d > B10_MAX_CUBES) break;
           var ox = cursorX + (i % cols) * stepX;
           var oz = Math.floor(i / cols) * stepZ;
           for (var bx = 0; bx < spec.w; bx++) {
@@ -794,7 +868,8 @@ window.StemLab = window.StemLab || {
         chk('quiz_10', (s.quizSolved || quizSolved) >= 10);
         chk('streak_5', (s.streak || streak) >= 5);
         chk('streak_10', (s.streak || streak) >= 10);
-        chk('all_modes', Object.keys(s.modesVisited || modesVisited).length >= 4);
+        // "Try all 4 modes" = the original four; Help, Glossary and the other reference screens are not modes.
+        chk('all_modes', ['blocks', 'abacus', 'slideRule', 'quiz'].every(function(m) { return (s.modesVisited || modesVisited)[m]; }));
         chk('thousand', totalValue >= 1000 || (s.totalValue || 0) >= 1000);
         chk('ai_tutor', !!s.aiUsed);
         chk('addition', !!s.additionDone);
@@ -807,7 +882,7 @@ window.StemLab = window.StemLab || {
         chk('hc_skipcount',   !!hundredsSkipCount);
         chk('hc_primes',      !!s.hcPrimesShown);
         chk('pb_hex_cover',   !!s.pbHexCovered);
-        chk('gb_polygon',     geoboardSegments.length >= 5);
+        chk('gb_polygon',     geoboardBuildsPolygon(s.geoboardSegments || geoboardSegments));
         chk('cr_train',       cRods.reduce(function(a, r) { return a + r.length; }, 0) >= 10 && cRods.length >= 2);
         chk('nb_practice5',   (s.nbSolved || 0) >= 5);
         chk('cra_complete',   !!s.craCompleted);
@@ -834,6 +909,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var switchMode = function(mode) {
         var visited = Object.assign({}, modesVisited);
+        visited[manipMode] = true; // the mode being left was tried too (everyone starts in Blocks)
         visited[mode] = true;
         // Track previous non-meta mode so the Library can snapshot the right thing.
         var metaModes = { library: 1, teacher: 1, standards: 1, cra: 1 };
@@ -2731,11 +2807,10 @@ window.StemLab = window.StemLab || {
         function gbPegActivate(x, y) {
           if (!geoboardSelected) { upd({ geoboardSelected: { x: x, y: y } }); sfxClick(); return; }
           if (geoboardSelected.x === x && geoboardSelected.y === y) { upd({ geoboardSelected: null }); return; }
-          upd({
-            geoboardSegments: geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]),
-            geoboardSelected: null
-          });
+          var nextSegs = geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]);
+          upd({ geoboardSegments: nextSegs, geoboardSelected: null });
           sfxClick();
+          checkBadges({ geoboardSegments: nextSegs }); // Polygon Builder: when the band closes
         }
         function gbKey(ev, x, y) {
           var k = ev.key, nx = x, ny = y;
@@ -2787,6 +2862,7 @@ window.StemLab = window.StemLab || {
                     var newSegs = geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]);
                     upd({ geoboardSegments: newSegs, geoboardSelected: null });
                     sfxClick();
+                    checkBadges({ geoboardSegments: newSegs });
                   }
                 }
               }; }(px, py)
@@ -2871,37 +2947,6 @@ window.StemLab = window.StemLab || {
             // A "rectangle with perimeter X" must (a) be closed, (b) have 4 axis-aligned sides
             // with right angles, AND (c) sum to X. A "polygon with N segs" must be a closed
             // cycle of N segments where each peg appears in exactly 2 segments.
-            var segsFormClosedCycle = function(segs) {
-              if (segs.length < 3) return false;
-              // Build adjacency: peg-key → [other peg-keys]
-              var key = function(x, y) { return x + ',' + y; };
-              var adj = {};
-              for (var i = 0; i < segs.length; i++) {
-                var s = segs[i];
-                var a = key(s.x1, s.y1), b = key(s.x2, s.y2);
-                if (a === b) return false; // zero-length
-                (adj[a] = adj[a] || []).push(b);
-                (adj[b] = adj[b] || []).push(a);
-              }
-              var pegs = Object.keys(adj);
-              // Every peg used in exactly 2 segments (entry + exit of the cycle)
-              for (var p = 0; p < pegs.length; p++) {
-                if (adj[pegs[p]].length !== 2) return false;
-              }
-              // Cycle must visit all pegs — walk from any starting peg
-              if (pegs.length !== segs.length) return false;
-              var visited = {};
-              var cur = pegs[0];
-              var prev = null;
-              for (var step = 0; step < segs.length; step++) {
-                visited[cur] = true;
-                var nbrs = adj[cur];
-                var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
-                prev = cur;
-                cur = nxt;
-              }
-              return cur === pegs[0] && Object.keys(visited).length === segs.length;
-            };
             var segsFormAxisRect = function(segs) {
               if (segs.length !== 4) return false;
               if (!segsFormClosedCycle(segs)) return false;
@@ -2930,10 +2975,9 @@ window.StemLab = window.StemLab || {
               var xv = Object.keys(xs).map(Number), yv = Object.keys(ys).map(Number);
               return Math.abs(xv[1] - xv[0]) === Math.abs(yv[1] - yv[0]);
             };
-            // Shoelace area of the closed cycle, so three collinear pegs do
-            // not pass as a "triangle" — a zero-area cycle is a line, not a
-            // polygon. Walk the cycle exactly as segsFormClosedCycle does.
-            var cycleArea = function(segs) {
+            // Corners = pegs where the band turns. A peg in the middle of a straight side (or where
+            // the band doubles back) is not one, so N segments are not always N sides.
+            var cycleCorners = function(segs) {
               if (!segsFormClosedCycle(segs)) return 0;
               var key = function(x, y) { return x + ',' + y; };
               var adj = {};
@@ -2942,17 +2986,20 @@ window.StemLab = window.StemLab || {
                 (adj[key(s.x1, s.y1)] = adj[key(s.x1, s.y1)] || []).push(key(s.x2, s.y2));
                 (adj[key(s.x2, s.y2)] = adj[key(s.x2, s.y2)] || []).push(key(s.x1, s.y1));
               }
-              var start = Object.keys(adj)[0];
-              var cur = start, prev = null, area = 0;
+              var order = [], cur = Object.keys(adj)[0], prev = null;
               for (var step = 0; step < segs.length; step++) {
+                order.push(cur.split(',').map(Number));
                 var nbrs = adj[cur];
                 var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
-                var a = cur.split(',').map(Number), b = nxt.split(',').map(Number);
-                area += a[0] * b[1] - b[0] * a[1];
                 prev = cur;
                 cur = nxt;
               }
-              return Math.abs(area) / 2;
+              var corners = 0;
+              for (var j = 0; j < order.length; j++) {
+                var p = order[(j + order.length - 1) % order.length], q = order[j], t = order[(j + 1) % order.length];
+                if ((q[0] - p[0]) * (t[1] - q[1]) - (q[1] - p[1]) * (t[0] - q[0]) !== 0) corners++;
+              }
+              return corners;
             };
             var checkGb = function() {
               if (!gbChallenge) return;
@@ -2986,10 +3033,13 @@ window.StemLab = window.StemLab || {
                 var hasN = geoboardSegments.length === gbChallenge.segs;
                 var isClosed = hasN && segsFormClosedCycle(geoboardSegments);
                 var hasArea = isClosed && cycleArea(geoboardSegments) > 1e-9;
-                ok = hasN && isClosed && hasArea;
+                var corners = hasArea ? cycleCorners(geoboardSegments) : 0;
+                var hasCorners = hasArea && corners === gbChallenge.segs;
+                ok = hasN && isClosed && hasArea && hasCorners;
                 if (!hasN) msg = '❌ You have ' + geoboardSegments.length + ' segments, need exactly ' + gbChallenge.segs;
                 else if (!isClosed) msg = '❌ ' + geoboardSegments.length + ' segments but they do not form a closed shape.';
                 else if (!hasArea) msg = '❌ Those segments all lie on one line — a real polygon encloses some area.';
+                else if (!hasCorners) msg = '❌ ' + __alloT('stem.manipulatives.gb_straight_peg_not_corner', 'A peg in the middle of a straight side is not a corner.') + ' ' + __alloT('stem.manipulatives.gb_corners_counted', 'Corners:') + ' ' + corners + ' / ' + gbChallenge.segs;
                 else msg = '✅ Closed ' + geoboardSegments.length + '-sided shape.';
               }
               var newStreak = ok ? streak + 1 : 0;
@@ -4020,6 +4070,7 @@ window.StemLab = window.StemLab || {
           }
         };
 
+        // Three lessons re-keyed with corrected math: ui_strings shipped the wrong English under the old keys.
         var lessonPlans = [
           { grade: 'K', title: __alloT('stem.manipulatives.build_to_10', 'Build to 10'), manips: ['tenFrame', 'numberBonds'],
             desc: __alloT('stem.manipulatives.use_a_ten_frame_to_fill_in_dots_up_to_', 'Use a ten frame to fill in dots up to 10. Then switch to Number Bonds and decompose 10 into pairs (1+9, 2+8, 3+7...).'),
@@ -4106,7 +4157,7 @@ window.StemLab = window.StemLab || {
             desc: __alloT('stem.manipulatives.walk_through_cra_for_4_3_4_groups_of_3', 'Walk through CRA for 4 × 3: 4 groups of 3 white rods, then a 4-by-3 array of dots, then the equation 4 × 3 = 12.'),
             standards: ['3.OA.A.1', '3.OA.C.7'] },
           { grade: '1', title: __alloT('stem.manipulatives.counting_on_with_the_abacus', 'Counting on with the abacus'), manips: ['abacus'],
-            desc: __alloT('stem.manipulatives.show_6_on_the_ones_rod_add_2_by_slidin', 'Show 6 on the ones rod. Add 2 by sliding two more earth beads. Now show 9 + 4: add 5 by sliding the heaven bead down, then take back 1.'),
+            desc: __alloT('stem.manipulatives.lesson_abacus_count_on_make_ten', 'Show 6 on the ones rod. Add 2 by sliding two more earth beads (8). Now try 9 + 4. The ones rod cannot hold 13, so use 4 = 10 − 6: push up one earth bead on the tens rod (+10), then take 6 off the ones rod (lift the heaven bead and drop one earth bead). The abacus reads 13.'),
             standards: ['1.OA.C.5', '1.OA.C.6'] },
           { grade: '3-4', title: __alloT('stem.manipulatives.money_with_disks', 'Money with disks'), manips: ['pvDisks'],
             desc: __alloT('stem.manipulatives.re_label_disks_ones_pennies_tens_dimes', 'Re-label disks: ones = pennies, tens = dimes, hundreds = dollars. Build $2.47 with 2 dollar-disks, 4 dime-disks, 7 penny-disks. Add $1.85.'),
@@ -4118,13 +4169,13 @@ window.StemLab = window.StemLab || {
             desc: __alloT('stem.manipulatives.build_1_2_1_3_with_rods_using_a_6_rod_', 'Build 1/2 + 1/3 with rods, using a 6-rod (dark green) as the whole. Half of 6 is 3 (light green). A third is 2 (red). Combined: 5. Read as 5/6.'),
             standards: ['5.NF.A.1'] },
           { grade: '6', title: __alloT('stem.manipulatives.subtracting_negatives', 'Subtracting negatives'), manips: ['counters'],
-            desc: __alloT('stem.manipulatives.show_3_yellow_pose_3_2_you_don_t_have_', 'Show 3 yellow. Pose: 3 − (−2). You don\'t have any reds to take away! So FIRST add a zero pair (1 yellow + 1 red doesn\'t change net). Now you can remove 2 reds. Final: 5.'),
+            desc: __alloT('stem.manipulatives.lesson_subtract_negative_two_zero_pairs', 'Show 3 yellow. Pose: 3 − (−2). There are no reds to take away! So FIRST add two zero pairs (2 yellow + 2 red, which does not change the net value). Now remove the 2 reds. What is left is 5 yellow, so 3 − (−2) = 5.'),
             standards: ['7.NS.A.1.C'] },
           { grade: 'K-1', title: __alloT('stem.manipulatives.shape_sorting', 'Shape sorting'), manips: ['patternBlocks'],
             desc: __alloT('stem.manipulatives.sort_blocks_into_bins_by_number_of_sid', 'Sort blocks into bins by number of sides: triangles (3), squares (4), trapezoids (4), hexagons (6). Count each pile.'),
             standards: ['K.G.A.2', '1.G.A.1'] },
           { grade: '4-5', title: __alloT('stem.manipulatives.place_value_to_one_million', 'Place value to one million'), manips: ['blocks', 'pvDisks'],
-            desc: __alloT('stem.manipulatives.a_thousand_cube_is_1_000_ten_of_those_', 'A thousand-cube is 1,000. Ten of those would be 10,000. A hundred of those is 1,000,000. Build 1,000,000 in your imagination: 10 stacks of 10 cubes of 10 cubes. Now you understand "ten million."'),
+            desc: __alloT('stem.manipulatives.lesson_place_value_one_million', 'A thousand-cube is 1,000. Ten of those make 10,000. A hundred of those make 100,000. A thousand of them make 1,000,000: picture a giant cube 10 thousand-cubes long, 10 wide and 10 tall. Now you understand "one million."'),
             standards: ['4.NBT.A.1'] },
           { grade: '5', title: __alloT('stem.manipulatives.coordinate_grid_intro', 'Coordinate grid intro'), manips: ['geoboard'],
             desc: __alloT('stem.manipulatives.label_the_geoboard_pegs_with_x_y_coord', 'Label the geoboard pegs with (x, y) coordinates. Plot the point (2, 3). Connect (1,1), (4,1), (4,3), (1,3) to make a rectangle. Compute its perimeter and area.'),

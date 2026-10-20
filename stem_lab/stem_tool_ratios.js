@@ -311,6 +311,57 @@
     return isFinite(numeric) ? numeric : null;
   }
 
+  // The unit a numeric challenge asks for: the $ or % the answer box shows,
+  // otherwise a plain number (possibly labelled, e.g. "cups").
+  function expectedChallengeUnit(challenge) {
+    if (!challenge) return 'number';
+    if (challenge.prefix === '$') return 'dollars';
+    if (challenge.suffix === '%') return 'percent';
+    return 'number';
+  }
+
+  // ctx.gradeLevel arrives as "Kindergarten", "5th Grade", "College"...;
+  // a number or a host band ('k2'|'g35'|'g68'|'g912') also works. Null if unknown.
+  function gradeNumberFromLevel(gradeLevel, gradeBand) {
+    if (typeof gradeLevel === 'number' && isFinite(gradeLevel)) return gradeLevel;
+    var g = String(gradeLevel == null ? '' : gradeLevel).trim().toLowerCase();
+    if (g) {
+      if (/^(k|pre-?k|tk)\b|kinder|preschool/.test(g)) return 0;
+      var m = g.match(/(\d{1,2})\s*(st|nd|rd|th)\b/) || g.match(/grade\s*(\d{1,2})\b/) || g.match(/^(\d{1,2})\b/);
+      if (m) return Number(m[1]);
+      if (/college|university|graduate|adult/.test(g)) return 13;
+      if (/high school/.test(g)) return 9;
+      if (/middle school/.test(g)) return 6;
+    }
+    var band = String(gradeBand == null ? '' : gradeBand).toLowerCase();
+    if (band === 'k2') return 0;
+    if (band === 'g35') return 3;
+    if (band === 'g68') return 6;
+    if (band === 'g912') return 9;
+    return null;
+  }
+
+  // Grade 6 up: a $ or % that does not match the question is not accepted.
+  // Below grade 6, and when the grade is unknown, the sign is ignored.
+  function strictUnitsForGrade(gradeLevel, gradeBand) {
+    var grade = gradeNumberFromLevel(gradeLevel, gradeBand);
+    return grade != null && grade >= 6;
+  }
+
+  // A $ or % sign that is not the unit the question asks for: null when the
+  // sign fits (or there is none), else what was expected, what was typed, and
+  // the answer box's label for a plain number (e.g. "cups").
+  function challengeUnitProblem(challenge, rawAnswer) {
+    if (!challenge || challenge.answers) return null;
+    var match = normalizeAnswer(rawAnswer).match(/^(\$)?([+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+))(%?)$/);
+    if (!match || (match[1] && match[3])) return null;
+    var typed = match[1] ? 'dollars' : (match[3] ? 'percent' : null);
+    var expected = expectedChallengeUnit(challenge);
+    if (!typed || typed === expected) return null;
+    var label = expected === 'number' && typeof challenge.suffix === 'string' ? challenge.suffix.trim() : '';
+    return { expected: expected, typed: typed, unit: label };
+  }
+
   // Wrong answers returned the same static hint forever, no matter what the
   // student actually did. The most important misconception in this whole
   // topic is additive reasoning -- on 3:5 -> ?:20 a student adds the same 15
@@ -349,13 +400,15 @@
     }
     return null;
   }
-  function challengeIsCorrect(challenge, rawAnswer) {
+  // options.strictUnits (grade 6 up): only the question's own unit sign counts.
+  function challengeIsCorrect(challenge, rawAnswer, options) {
     var normalized = normalizeAnswer(rawAnswer);
     if (!normalized) return false;
     if (challenge.answers) {
       return challenge.answers.some(function(answer) { return normalized === normalizeAnswer(answer); });
     }
-    var numeric = parseNumericChallengeAnswer(normalized);
+    var unit = options && options.strictUnits ? expectedChallengeUnit(challenge) : null;
+    var numeric = parseNumericChallengeAnswer(normalized, unit ? { allowCurrency: unit === 'dollars', allowPercent: unit === 'percent' } : null);
     return numeric !== null && nearlyEqual(numeric, challenge.answer);
   }
 
@@ -486,6 +539,10 @@
     percentTapeSummary: percentTapeSummary,
     parseNumericChallengeAnswer: parseNumericChallengeAnswer,
     challengeIsCorrect: challengeIsCorrect,
+    expectedChallengeUnit: expectedChallengeUnit,
+    gradeNumberFromLevel: gradeNumberFromLevel,
+    strictUnitsForGrade: strictUnitsForGrade,
+    challengeUnitProblem: challengeUnitProblem,
     diagnoseRatioAnswer: diagnoseRatioAnswer,
     canonicalChallengeAnswer: canonicalChallengeAnswer,
     challenges: CHALLENGES
@@ -532,6 +589,7 @@
       var labToolData = ctx.toolData || {};
       var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
       var d = labToolData._ratioLab || {};
+      var strictUnits = strictUnitsForGrade(ctx.gradeLevel, ctx.gradeBand);
       var mode = CHALLENGES[d.mode] ? d.mode : 'ratioTable';
       var isDark = !!ctx.isDark;
       var isContrast = !!ctx.isContrast;
@@ -1246,6 +1304,15 @@
         announce(nextStage ? t('stem.ratios.hint_revealed', "Hint revealed.") : t('stem.ratios.hints_hidden', "Hints hidden."));
       }
 
+      function unitProblemText(problem) {
+        var got = problem.typed;
+        var text = problem.expected === 'dollars' ? t('stem.ratios.unit_want_dollars_got_percent', "Check the unit: this question asks for dollars, not a percent.")
+          : problem.expected === 'percent' ? t('stem.ratios.unit_want_percent_got_dollars', "Check the unit: this question asks for a percent, not dollars.")
+          : problem.unit ? (got === 'dollars' ? t('stem.ratios.unit_want_named_got_dollars', "Check the unit: this question asks for {unit}, not dollars.") : t('stem.ratios.unit_want_named_got_percent', "Check the unit: this question asks for {unit}, not a percent."))
+          : (got === 'dollars' ? t('stem.ratios.unit_want_number_got_dollars', "Check the unit: this question asks for a plain number, not dollars.") : t('stem.ratios.unit_want_number_got_percent', "Check the unit: this question asks for a plain number, not a percent."));
+        return String(text).replace('{unit}', function() { return problem.unit; });
+      }
+
       function checkChallenge() {
         if (challengeSolved || challengeCheckPending) return;
         if (!normalizeAnswer(scopedChallengeAnswer)) {
@@ -1254,7 +1321,7 @@
           announce(t('stem.ratios.enter_an_answer_before_checking', "Enter an answer before checking."));
           return;
         }
-        var correct = challengeIsCorrect(challenge, scopedChallengeAnswer);
+        var correct = challengeIsCorrect(challenge, scopedChallengeAnswer, { strictUnits: strictUnits });
         if (correct) {
           challengeCheckPending = true;
           var firstSolve = !((d.solvedChallenges || {})[challenge.id]);
@@ -1275,8 +1342,13 @@
         } else {
           // Name the specific error when it can be proved; otherwise keep the
           // challenge's own hint rather than guessing at what went wrong.
+          // Grade 6 up, a wrong $ or % names the expected unit; when the number
+          // itself is right, that is the whole message.
+          var unitProblem = strictUnits ? challengeUnitProblem(challenge, scopedChallengeAnswer) : null;
+          var unitHelp = unitProblem ? unitProblemText(unitProblem) : '';
+          var numberRight = !!unitProblem && challengeIsCorrect(challenge, scopedChallengeAnswer);
           var diagnosis = diagnoseRatioAnswer(challenge, scopedChallengeAnswer);
-          var wrongAnswerHelp = diagnosis ? diagnosis.message : challenge.hint;
+          var wrongAnswerHelp = numberRight ? unitHelp : (unitHelp ? unitHelp + ' ' : '') + (diagnosis ? diagnosis.message : challenge.hint);
           update(function(current) {
             var missed = Object.assign({}, current.missedChallenges || {});
             missed[challenge.id] = true;

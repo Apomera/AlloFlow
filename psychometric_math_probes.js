@@ -1,452 +1,5414 @@
 // psychometric_math_probes.js
-// Standardized Math Fluency Probe Banks — Fixed Forms A/B/C per Grade
-// 25 problems per form, 2-minute time limit, scored as DCPM (Digits Correct Per Minute)
-// Aligned to Common Core Math Standards
-// Generated: 2026-02-23
-
-window.MATH_PROBE_BANKS = {
-    // ===== GRADE K: Addition & Subtraction within 5 (K.OA.5) =====
-    'K': {
-        'A': {
-            operation: 'mixed', difficulty: 'within5', timeLimit: 120,
-            problems: [
-                { a: 2, b: 1, op: 'add', symbol: '+', answer: 3 }, { a: 3, b: 2, op: 'add', symbol: '+', answer: 5 }, { a: 1, b: 1, op: 'add', symbol: '+', answer: 2 },
-                { a: 4, b: 1, op: 'add', symbol: '+', answer: 5 }, { a: 2, b: 2, op: 'add', symbol: '+', answer: 4 }, { a: 3, b: 1, op: 'sub', symbol: '−', answer: 2 },
-                { a: 5, b: 2, op: 'sub', symbol: '−', answer: 3 }, { a: 4, b: 3, op: 'sub', symbol: '−', answer: 1 }, { a: 2, b: 0, op: 'add', symbol: '+', answer: 2 },
-                { a: 5, b: 1, op: 'sub', symbol: '−', answer: 4 }, { a: 1, b: 3, op: 'add', symbol: '+', answer: 4 }, { a: 5, b: 3, op: 'sub', symbol: '−', answer: 2 },
-                { a: 3, b: 0, op: 'add', symbol: '+', answer: 3 }, { a: 4, b: 2, op: 'sub', symbol: '−', answer: 2 }, { a: 0, b: 5, op: 'add', symbol: '+', answer: 5 },
-                { a: 5, b: 4, op: 'sub', symbol: '−', answer: 1 }, { a: 1, b: 4, op: 'add', symbol: '+', answer: 5 }, { a: 3, b: 2, op: 'sub', symbol: '−', answer: 1 },
-                { a: 2, b: 3, op: 'add', symbol: '+', answer: 5 }, { a: 4, b: 4, op: 'sub', symbol: '−', answer: 0 }, { a: 5, b: 0, op: 'sub', symbol: '−', answer: 5 },
-                { a: 0, b: 4, op: 'add', symbol: '+', answer: 4 }, { a: 1, b: 2, op: 'add', symbol: '+', answer: 3 }, { a: 4, b: 1, op: 'sub', symbol: '−', answer: 3 },
-                { a: 3, b: 1, op: 'add', symbol: '+', answer: 4 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'within5', timeLimit: 120,
-            problems: [
-                { a: 1, b: 2, op: 'add', symbol: '+', answer: 3 }, { a: 5, b: 3, op: 'sub', symbol: '−', answer: 2 }, { a: 2, b: 2, op: 'add', symbol: '+', answer: 4 },
-                { a: 4, b: 2, op: 'sub', symbol: '−', answer: 2 }, { a: 3, b: 1, op: 'add', symbol: '+', answer: 4 }, { a: 5, b: 1, op: 'sub', symbol: '−', answer: 4 },
-                { a: 0, b: 3, op: 'add', symbol: '+', answer: 3 }, { a: 4, b: 3, op: 'sub', symbol: '−', answer: 1 }, { a: 1, b: 4, op: 'add', symbol: '+', answer: 5 },
-                { a: 3, b: 3, op: 'sub', symbol: '−', answer: 0 }, { a: 2, b: 1, op: 'add', symbol: '+', answer: 3 }, { a: 5, b: 4, op: 'sub', symbol: '−', answer: 1 },
-                { a: 4, b: 1, op: 'add', symbol: '+', answer: 5 }, { a: 5, b: 2, op: 'sub', symbol: '−', answer: 3 }, { a: 0, b: 2, op: 'add', symbol: '+', answer: 2 },
-                { a: 3, b: 2, op: 'sub', symbol: '−', answer: 1 }, { a: 2, b: 3, op: 'add', symbol: '+', answer: 5 }, { a: 4, b: 4, op: 'sub', symbol: '−', answer: 0 },
-                { a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }, { a: 5, b: 5, op: 'sub', symbol: '−', answer: 0 }, { a: 3, b: 0, op: 'add', symbol: '+', answer: 3 },
-                { a: 4, b: 1, op: 'sub', symbol: '−', answer: 3 }, { a: 0, b: 5, op: 'add', symbol: '+', answer: 5 }, { a: 2, b: 0, op: 'sub', symbol: '−', answer: 2 },
-                { a: 1, b: 3, op: 'add', symbol: '+', answer: 4 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'within5', timeLimit: 120,
-            problems: [
-                { a: 3, b: 2, op: 'add', symbol: '+', answer: 5 }, { a: 4, b: 1, op: 'sub', symbol: '−', answer: 3 }, { a: 1, b: 3, op: 'add', symbol: '+', answer: 4 },
-                { a: 5, b: 2, op: 'sub', symbol: '−', answer: 3 }, { a: 2, b: 1, op: 'add', symbol: '+', answer: 3 }, { a: 3, b: 1, op: 'sub', symbol: '−', answer: 2 },
-                { a: 4, b: 0, op: 'add', symbol: '+', answer: 4 }, { a: 5, b: 3, op: 'sub', symbol: '−', answer: 2 }, { a: 0, b: 4, op: 'add', symbol: '+', answer: 4 },
-                { a: 4, b: 2, op: 'sub', symbol: '−', answer: 2 }, { a: 2, b: 3, op: 'add', symbol: '+', answer: 5 }, { a: 5, b: 4, op: 'sub', symbol: '−', answer: 1 },
-                { a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }, { a: 3, b: 0, op: 'sub', symbol: '−', answer: 3 }, { a: 0, b: 2, op: 'add', symbol: '+', answer: 2 },
-                { a: 5, b: 5, op: 'sub', symbol: '−', answer: 0 }, { a: 4, b: 1, op: 'add', symbol: '+', answer: 5 }, { a: 2, b: 2, op: 'sub', symbol: '−', answer: 0 },
-                { a: 1, b: 4, op: 'add', symbol: '+', answer: 5 }, { a: 5, b: 1, op: 'sub', symbol: '−', answer: 4 }, { a: 3, b: 1, op: 'add', symbol: '+', answer: 4 },
-                { a: 4, b: 3, op: 'sub', symbol: '−', answer: 1 }, { a: 2, b: 0, op: 'add', symbol: '+', answer: 2 }, { a: 5, b: 0, op: 'sub', symbol: '−', answer: 5 },
-                { a: 0, b: 3, op: 'add', symbol: '+', answer: 3 }
-            ]
-        }
+// Duplicate of psychometric_math_probes.json, the file the app actually loads
+// (AlloFlowANTI.txt fetches the JSON). Both are written by
+// dev-tools/generate_fixed_math_probe_forms.cjs; do not edit either by hand.
+// tests/math_review3_probe_forms_equivalence.test.js fails if they drift.
+// Version 2 fixed forms A/B/C (2026-10-20): parallel slot blueprints per grade,
+// standards claims in each form's `standards` field.
+(function (data) {
+  window.MATH_PROBE_BANKS = data.MATH_PROBE_BANKS;
+  window.MISSING_NUMBER_PROBES = data.MISSING_NUMBER_PROBES;
+  window.QUANTITY_DISCRIMINATION_PROBES = data.QUANTITY_DISCRIMINATION_PROBES;
+})({
+  "MATH_PROBE_BANKS": {
+    "1": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within20",
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.6"
+        ],
+        "problems": [
+          {
+            "a": 16,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 18,
+            "b": 9,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 9
+          },
+          {
+            "a": 4,
+            "b": 8,
+            "op": "add",
+            "symbol": "+",
+            "answer": 12
+          },
+          {
+            "a": 13,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 9
+          },
+          {
+            "a": 9,
+            "b": 7,
+            "op": "add",
+            "symbol": "+",
+            "answer": 16
+          },
+          {
+            "a": 18,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 17
+          },
+          {
+            "a": 13,
+            "b": 5,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 15,
+            "b": 7,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 9,
+            "b": 6,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 14,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 9
+          },
+          {
+            "a": 14,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 11,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5
+          },
+          {
+            "a": 3,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 12
+          },
+          {
+            "a": 15,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 14
+          },
+          {
+            "a": 4,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 13
+          },
+          {
+            "a": 14,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 11
+          },
+          {
+            "a": 8,
+            "b": 8,
+            "op": "add",
+            "symbol": "+",
+            "answer": 16
+          },
+          {
+            "a": 13,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 10
+          },
+          {
+            "a": 5,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          },
+          {
+            "a": 11,
+            "b": 7,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 8,
+            "b": 7,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 13,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 11,
+            "b": 7,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 11,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 11,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 12
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within20",
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.6"
+        ],
+        "problems": [
+          {
+            "a": 14,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 16
+          },
+          {
+            "a": 13,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7
+          },
+          {
+            "a": 7,
+            "b": 6,
+            "op": "add",
+            "symbol": "+",
+            "answer": 13
+          },
+          {
+            "a": 12,
+            "b": 7,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5
+          },
+          {
+            "a": 2,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 11
+          },
+          {
+            "a": 15,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 13,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          },
+          {
+            "a": 12,
+            "b": 9,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 7,
+            "b": 7,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          },
+          {
+            "a": 11,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 6
+          },
+          {
+            "a": 12,
+            "b": 6,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 16,
+            "b": 8,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 6,
+            "b": 6,
+            "op": "add",
+            "symbol": "+",
+            "answer": 12
+          },
+          {
+            "a": 18,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 15
+          },
+          {
+            "a": 3,
+            "b": 8,
+            "op": "add",
+            "symbol": "+",
+            "answer": 11
+          },
+          {
+            "a": 19,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 17
+          },
+          {
+            "a": 7,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 11
+          },
+          {
+            "a": 18,
+            "b": 8,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 10
+          },
+          {
+            "a": 5,
+            "b": 7,
+            "op": "add",
+            "symbol": "+",
+            "answer": 12
+          },
+          {
+            "a": 15,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 9
+          },
+          {
+            "a": 6,
+            "b": 8,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          },
+          {
+            "a": 14,
+            "b": 9,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5
+          },
+          {
+            "a": 13,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 12,
+            "b": 8,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 12,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 13
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within20",
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.6"
+        ],
+        "problems": [
+          {
+            "a": 13,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 17
+          },
+          {
+            "a": 12,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7
+          },
+          {
+            "a": 7,
+            "b": 8,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 16,
+            "b": 9,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7
+          },
+          {
+            "a": 6,
+            "b": 5,
+            "op": "add",
+            "symbol": "+",
+            "answer": 11
+          },
+          {
+            "a": 19,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 17,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 12,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 6
+          },
+          {
+            "a": 8,
+            "b": 6,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          },
+          {
+            "a": 12,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 17,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 19
+          },
+          {
+            "a": 14,
+            "b": 6,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8
+          },
+          {
+            "a": 8,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 17
+          },
+          {
+            "a": 16,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 15
+          },
+          {
+            "a": 9,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 18
+          },
+          {
+            "a": 16,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 11
+          },
+          {
+            "a": 8,
+            "b": 5,
+            "op": "add",
+            "symbol": "+",
+            "answer": 13
+          },
+          {
+            "a": 14,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 9,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 11
+          },
+          {
+            "a": 13,
+            "b": 7,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 6
+          },
+          {
+            "a": 6,
+            "b": 9,
+            "op": "add",
+            "symbol": "+",
+            "answer": 15
+          },
+          {
+            "a": 11,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7
+          },
+          {
+            "a": 18,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 19
+          },
+          {
+            "a": 13,
+            "b": 8,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5
+          },
+          {
+            "a": 11,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 14
+          }
+        ]
+      }
     },
-
-    // ===== GRADE 1: Addition & Subtraction within 20 (1.OA.6) =====
-    '1': {
-        'A': {
-            operation: 'mixed', difficulty: 'within20', timeLimit: 120,
-            problems: [
-                { a: 7, b: 5, op: 'add', symbol: '+', answer: 12 }, { a: 14, b: 6, op: 'sub', symbol: '−', answer: 8 }, { a: 9, b: 3, op: 'add', symbol: '+', answer: 12 },
-                { a: 16, b: 7, op: 'sub', symbol: '−', answer: 9 }, { a: 8, b: 6, op: 'add', symbol: '+', answer: 14 }, { a: 11, b: 4, op: 'sub', symbol: '−', answer: 7 },
-                { a: 6, b: 9, op: 'add', symbol: '+', answer: 15 }, { a: 13, b: 5, op: 'sub', symbol: '−', answer: 8 }, { a: 5, b: 7, op: 'add', symbol: '+', answer: 12 },
-                { a: 18, b: 9, op: 'sub', symbol: '−', answer: 9 }, { a: 4, b: 8, op: 'add', symbol: '+', answer: 12 }, { a: 15, b: 8, op: 'sub', symbol: '−', answer: 7 },
-                { a: 9, b: 6, op: 'add', symbol: '+', answer: 15 }, { a: 12, b: 3, op: 'sub', symbol: '−', answer: 9 }, { a: 7, b: 4, op: 'add', symbol: '+', answer: 11 },
-                { a: 17, b: 8, op: 'sub', symbol: '−', answer: 9 }, { a: 3, b: 9, op: 'add', symbol: '+', answer: 12 }, { a: 20, b: 7, op: 'sub', symbol: '−', answer: 13 },
-                { a: 8, b: 5, op: 'add', symbol: '+', answer: 13 }, { a: 10, b: 6, op: 'sub', symbol: '−', answer: 4 }, { a: 6, b: 7, op: 'add', symbol: '+', answer: 13 },
-                { a: 19, b: 9, op: 'sub', symbol: '−', answer: 10 }, { a: 5, b: 8, op: 'add', symbol: '+', answer: 13 }, { a: 11, b: 5, op: 'sub', symbol: '−', answer: 6 },
-                { a: 9, b: 9, op: 'add', symbol: '+', answer: 18 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'within20', timeLimit: 120,
-            problems: [
-                { a: 8, b: 4, op: 'add', symbol: '+', answer: 12 }, { a: 15, b: 7, op: 'sub', symbol: '−', answer: 8 }, { a: 6, b: 6, op: 'add', symbol: '+', answer: 12 },
-                { a: 13, b: 8, op: 'sub', symbol: '−', answer: 5 }, { a: 9, b: 7, op: 'add', symbol: '+', answer: 16 }, { a: 17, b: 9, op: 'sub', symbol: '−', answer: 8 },
-                { a: 5, b: 5, op: 'add', symbol: '+', answer: 10 }, { a: 12, b: 4, op: 'sub', symbol: '−', answer: 8 }, { a: 7, b: 8, op: 'add', symbol: '+', answer: 15 },
-                { a: 16, b: 8, op: 'sub', symbol: '−', answer: 8 }, { a: 4, b: 9, op: 'add', symbol: '+', answer: 13 }, { a: 14, b: 5, op: 'sub', symbol: '−', answer: 9 },
-                { a: 8, b: 7, op: 'add', symbol: '+', answer: 15 }, { a: 11, b: 3, op: 'sub', symbol: '−', answer: 8 }, { a: 6, b: 5, op: 'add', symbol: '+', answer: 11 },
-                { a: 18, b: 9, op: 'sub', symbol: '−', answer: 9 }, { a: 3, b: 8, op: 'add', symbol: '+', answer: 11 }, { a: 20, b: 6, op: 'sub', symbol: '−', answer: 14 },
-                { a: 9, b: 4, op: 'add', symbol: '+', answer: 13 }, { a: 10, b: 7, op: 'sub', symbol: '−', answer: 3 }, { a: 7, b: 6, op: 'add', symbol: '+', answer: 13 },
-                { a: 19, b: 8, op: 'sub', symbol: '−', answer: 11 }, { a: 5, b: 9, op: 'add', symbol: '+', answer: 14 }, { a: 13, b: 6, op: 'sub', symbol: '−', answer: 7 },
-                { a: 8, b: 8, op: 'add', symbol: '+', answer: 16 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'within20', timeLimit: 120,
-            problems: [
-                { a: 9, b: 5, op: 'add', symbol: '+', answer: 14 }, { a: 16, b: 9, op: 'sub', symbol: '−', answer: 7 }, { a: 7, b: 7, op: 'add', symbol: '+', answer: 14 },
-                { a: 14, b: 8, op: 'sub', symbol: '−', answer: 6 }, { a: 8, b: 9, op: 'add', symbol: '+', answer: 17 }, { a: 15, b: 6, op: 'sub', symbol: '−', answer: 9 },
-                { a: 4, b: 7, op: 'add', symbol: '+', answer: 11 }, { a: 11, b: 5, op: 'sub', symbol: '−', answer: 6 }, { a: 6, b: 8, op: 'add', symbol: '+', answer: 14 },
-                { a: 18, b: 7, op: 'sub', symbol: '−', answer: 11 }, { a: 5, b: 6, op: 'add', symbol: '+', answer: 11 }, { a: 13, b: 4, op: 'sub', symbol: '−', answer: 9 },
-                { a: 9, b: 8, op: 'add', symbol: '+', answer: 17 }, { a: 12, b: 5, op: 'sub', symbol: '−', answer: 7 }, { a: 7, b: 3, op: 'add', symbol: '+', answer: 10 },
-                { a: 17, b: 8, op: 'sub', symbol: '−', answer: 9 }, { a: 3, b: 7, op: 'add', symbol: '+', answer: 10 }, { a: 20, b: 9, op: 'sub', symbol: '−', answer: 11 },
-                { a: 6, b: 4, op: 'add', symbol: '+', answer: 10 }, { a: 10, b: 3, op: 'sub', symbol: '−', answer: 7 }, { a: 8, b: 6, op: 'add', symbol: '+', answer: 14 },
-                { a: 19, b: 7, op: 'sub', symbol: '−', answer: 12 }, { a: 4, b: 9, op: 'add', symbol: '+', answer: 13 }, { a: 12, b: 8, op: 'sub', symbol: '−', answer: 4 },
-                { a: 9, b: 6, op: 'add', symbol: '+', answer: 15 }
-            ]
-        }
+    "2": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within100",
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "a": 13,
+            "b": 68,
+            "op": "add",
+            "symbol": "+",
+            "answer": 81
+          },
+          {
+            "a": 31,
+            "b": 18,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 11,
+            "b": 46,
+            "op": "add",
+            "symbol": "+",
+            "answer": 57
+          },
+          {
+            "a": 96,
+            "b": 14,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 82
+          },
+          {
+            "a": 12,
+            "b": 75,
+            "op": "add",
+            "symbol": "+",
+            "answer": 87
+          },
+          {
+            "a": 74,
+            "b": 59,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 15
+          },
+          {
+            "a": 26,
+            "b": 49,
+            "op": "add",
+            "symbol": "+",
+            "answer": 75
+          },
+          {
+            "a": 73,
+            "b": 21,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 52
+          },
+          {
+            "a": 42,
+            "b": 53,
+            "op": "add",
+            "symbol": "+",
+            "answer": 95
+          },
+          {
+            "a": 28,
+            "b": 17,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 11
+          },
+          {
+            "a": 52,
+            "b": 11,
+            "op": "add",
+            "symbol": "+",
+            "answer": 63
+          },
+          {
+            "a": 61,
+            "b": 12,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 49
+          },
+          {
+            "a": 42,
+            "b": 38,
+            "op": "add",
+            "symbol": "+",
+            "answer": 80
+          },
+          {
+            "a": 83,
+            "b": 36,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 47
+          },
+          {
+            "a": 45,
+            "b": 26,
+            "op": "add",
+            "symbol": "+",
+            "answer": 71
+          },
+          {
+            "a": 98,
+            "b": 11,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 87
+          },
+          {
+            "a": 29,
+            "b": 44,
+            "op": "add",
+            "symbol": "+",
+            "answer": 73
+          },
+          {
+            "a": 78,
+            "b": 19,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 59
+          },
+          {
+            "a": 43,
+            "b": 43,
+            "op": "add",
+            "symbol": "+",
+            "answer": 86
+          },
+          {
+            "a": 36,
+            "b": 25,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 11
+          },
+          {
+            "a": 35,
+            "b": 48,
+            "op": "add",
+            "symbol": "+",
+            "answer": 83
+          },
+          {
+            "a": 26,
+            "b": 13,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 36,
+            "b": 37,
+            "op": "add",
+            "symbol": "+",
+            "answer": 73
+          },
+          {
+            "a": 83,
+            "b": 49,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 34
+          },
+          {
+            "a": 58,
+            "b": 41,
+            "op": "add",
+            "symbol": "+",
+            "answer": 99
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within100",
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "a": 42,
+            "b": 18,
+            "op": "add",
+            "symbol": "+",
+            "answer": 60
+          },
+          {
+            "a": 80,
+            "b": 19,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 61
+          },
+          {
+            "a": 21,
+            "b": 38,
+            "op": "add",
+            "symbol": "+",
+            "answer": 59
+          },
+          {
+            "a": 97,
+            "b": 84,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 13
+          },
+          {
+            "a": 64,
+            "b": 13,
+            "op": "add",
+            "symbol": "+",
+            "answer": 77
+          },
+          {
+            "a": 62,
+            "b": 16,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 46
+          },
+          {
+            "a": 26,
+            "b": 69,
+            "op": "add",
+            "symbol": "+",
+            "answer": 95
+          },
+          {
+            "a": 82,
+            "b": 11,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 71
+          },
+          {
+            "a": 12,
+            "b": 65,
+            "op": "add",
+            "symbol": "+",
+            "answer": 77
+          },
+          {
+            "a": 75,
+            "b": 34,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 41
+          },
+          {
+            "a": 31,
+            "b": 62,
+            "op": "add",
+            "symbol": "+",
+            "answer": 93
+          },
+          {
+            "a": 72,
+            "b": 56,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 16
+          },
+          {
+            "a": 49,
+            "b": 33,
+            "op": "add",
+            "symbol": "+",
+            "answer": 82
+          },
+          {
+            "a": 84,
+            "b": 56,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 28
+          },
+          {
+            "a": 19,
+            "b": 31,
+            "op": "add",
+            "symbol": "+",
+            "answer": 50
+          },
+          {
+            "a": 97,
+            "b": 73,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 24
+          },
+          {
+            "a": 16,
+            "b": 77,
+            "op": "add",
+            "symbol": "+",
+            "answer": 93
+          },
+          {
+            "a": 80,
+            "b": 52,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 28
+          },
+          {
+            "a": 55,
+            "b": 41,
+            "op": "add",
+            "symbol": "+",
+            "answer": 96
+          },
+          {
+            "a": 68,
+            "b": 52,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 16
+          },
+          {
+            "a": 39,
+            "b": 34,
+            "op": "add",
+            "symbol": "+",
+            "answer": 73
+          },
+          {
+            "a": 28,
+            "b": 13,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 15
+          },
+          {
+            "a": 19,
+            "b": 32,
+            "op": "add",
+            "symbol": "+",
+            "answer": 51
+          },
+          {
+            "a": 96,
+            "b": 59,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 37
+          },
+          {
+            "a": 23,
+            "b": 65,
+            "op": "add",
+            "symbol": "+",
+            "answer": 88
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within100",
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "a": 37,
+            "b": 59,
+            "op": "add",
+            "symbol": "+",
+            "answer": 96
+          },
+          {
+            "a": 44,
+            "b": 17,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 27
+          },
+          {
+            "a": 58,
+            "b": 21,
+            "op": "add",
+            "symbol": "+",
+            "answer": 79
+          },
+          {
+            "a": 75,
+            "b": 44,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 31
+          },
+          {
+            "a": 23,
+            "b": 44,
+            "op": "add",
+            "symbol": "+",
+            "answer": 67
+          },
+          {
+            "a": 87,
+            "b": 58,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 29
+          },
+          {
+            "a": 45,
+            "b": 36,
+            "op": "add",
+            "symbol": "+",
+            "answer": 81
+          },
+          {
+            "a": 88,
+            "b": 77,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 11
+          },
+          {
+            "a": 41,
+            "b": 13,
+            "op": "add",
+            "symbol": "+",
+            "answer": 54
+          },
+          {
+            "a": 53,
+            "b": 12,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 41
+          },
+          {
+            "a": 75,
+            "b": 22,
+            "op": "add",
+            "symbol": "+",
+            "answer": 97
+          },
+          {
+            "a": 53,
+            "b": 18,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 35
+          },
+          {
+            "a": 18,
+            "b": 66,
+            "op": "add",
+            "symbol": "+",
+            "answer": 84
+          },
+          {
+            "a": 91,
+            "b": 57,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 34
+          },
+          {
+            "a": 28,
+            "b": 14,
+            "op": "add",
+            "symbol": "+",
+            "answer": 42
+          },
+          {
+            "a": 97,
+            "b": 21,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 76
+          },
+          {
+            "a": 34,
+            "b": 56,
+            "op": "add",
+            "symbol": "+",
+            "answer": 90
+          },
+          {
+            "a": 60,
+            "b": 14,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 46
+          },
+          {
+            "a": 35,
+            "b": 31,
+            "op": "add",
+            "symbol": "+",
+            "answer": 66
+          },
+          {
+            "a": 69,
+            "b": 41,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 28
+          },
+          {
+            "a": 52,
+            "b": 38,
+            "op": "add",
+            "symbol": "+",
+            "answer": 90
+          },
+          {
+            "a": 79,
+            "b": 44,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 35
+          },
+          {
+            "a": 16,
+            "b": 55,
+            "op": "add",
+            "symbol": "+",
+            "answer": 71
+          },
+          {
+            "a": 92,
+            "b": 54,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 38
+          },
+          {
+            "a": 31,
+            "b": 16,
+            "op": "add",
+            "symbol": "+",
+            "answer": 47
+          }
+        ]
+      }
     },
-
-    // ===== GRADE 2: Addition & Subtraction within 100, Intro × (2.OA.2, 2.NBT.5) =====
-    '2': {
-        'A': {
-            operation: 'mixed', difficulty: 'within100', timeLimit: 120,
-            problems: [
-                { a: 23, b: 14, op: 'add', symbol: '+', answer: 37 }, { a: 45, b: 18, op: 'sub', symbol: '−', answer: 27 }, { a: 36, b: 27, op: 'add', symbol: '+', answer: 63 },
-                { a: 52, b: 19, op: 'sub', symbol: '−', answer: 33 }, { a: 18, b: 25, op: 'add', symbol: '+', answer: 43 }, { a: 71, b: 34, op: 'sub', symbol: '−', answer: 37 },
-                { a: 2, b: 5, op: 'mul', symbol: '×', answer: 10 }, { a: 44, b: 29, op: 'sub', symbol: '−', answer: 15 }, { a: 37, b: 16, op: 'add', symbol: '+', answer: 53 },
-                { a: 63, b: 28, op: 'sub', symbol: '−', answer: 35 }, { a: 5, b: 3, op: 'mul', symbol: '×', answer: 15 }, { a: 29, b: 34, op: 'add', symbol: '+', answer: 63 },
-                { a: 81, b: 45, op: 'sub', symbol: '−', answer: 36 }, { a: 3, b: 4, op: 'mul', symbol: '×', answer: 12 }, { a: 15, b: 38, op: 'add', symbol: '+', answer: 53 },
-                { a: 56, b: 27, op: 'sub', symbol: '−', answer: 29 }, { a: 42, b: 31, op: 'add', symbol: '+', answer: 73 }, { a: 4, b: 2, op: 'mul', symbol: '×', answer: 8 },
-                { a: 67, b: 39, op: 'sub', symbol: '−', answer: 28 }, { a: 28, b: 45, op: 'add', symbol: '+', answer: 73 }, { a: 5, b: 5, op: 'mul', symbol: '×', answer: 25 },
-                { a: 90, b: 47, op: 'sub', symbol: '−', answer: 43 }, { a: 33, b: 19, op: 'add', symbol: '+', answer: 52 }, { a: 3, b: 3, op: 'mul', symbol: '×', answer: 9 },
-                { a: 74, b: 36, op: 'sub', symbol: '−', answer: 38 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'within100', timeLimit: 120,
-            problems: [
-                { a: 34, b: 19, op: 'add', symbol: '+', answer: 53 }, { a: 61, b: 24, op: 'sub', symbol: '−', answer: 37 }, { a: 27, b: 38, op: 'add', symbol: '+', answer: 65 },
-                { a: 83, b: 47, op: 'sub', symbol: '−', answer: 36 }, { a: 45, b: 28, op: 'add', symbol: '+', answer: 73 }, { a: 3, b: 6, op: 'mul', symbol: '×', answer: 18 },
-                { a: 72, b: 35, op: 'sub', symbol: '−', answer: 37 }, { a: 16, b: 47, op: 'add', symbol: '+', answer: 63 }, { a: 4, b: 5, op: 'mul', symbol: '×', answer: 20 },
-                { a: 55, b: 29, op: 'sub', symbol: '−', answer: 26 }, { a: 38, b: 25, op: 'add', symbol: '+', answer: 63 }, { a: 5, b: 4, op: 'mul', symbol: '×', answer: 20 },
-                { a: 91, b: 48, op: 'sub', symbol: '−', answer: 43 }, { a: 22, b: 31, op: 'add', symbol: '+', answer: 53 }, { a: 2, b: 7, op: 'mul', symbol: '×', answer: 14 },
-                { a: 64, b: 27, op: 'sub', symbol: '−', answer: 37 }, { a: 49, b: 24, op: 'add', symbol: '+', answer: 73 }, { a: 3, b: 5, op: 'mul', symbol: '×', answer: 15 },
-                { a: 76, b: 38, op: 'sub', symbol: '−', answer: 38 }, { a: 13, b: 49, op: 'add', symbol: '+', answer: 62 }, { a: 4, b: 4, op: 'mul', symbol: '×', answer: 16 },
-                { a: 50, b: 23, op: 'sub', symbol: '−', answer: 27 }, { a: 41, b: 32, op: 'add', symbol: '+', answer: 73 }, { a: 2, b: 9, op: 'mul', symbol: '×', answer: 18 },
-                { a: 85, b: 38, op: 'sub', symbol: '−', answer: 47 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'within100', timeLimit: 120,
-            problems: [
-                { a: 19, b: 34, op: 'add', symbol: '+', answer: 53 }, { a: 72, b: 37, op: 'sub', symbol: '−', answer: 35 }, { a: 46, b: 27, op: 'add', symbol: '+', answer: 73 },
-                { a: 53, b: 18, op: 'sub', symbol: '−', answer: 35 }, { a: 2, b: 8, op: 'mul', symbol: '×', answer: 16 }, { a: 38, b: 25, op: 'add', symbol: '+', answer: 63 },
-                { a: 81, b: 46, op: 'sub', symbol: '−', answer: 35 }, { a: 5, b: 2, op: 'mul', symbol: '×', answer: 10 }, { a: 24, b: 39, op: 'add', symbol: '+', answer: 63 },
-                { a: 67, b: 29, op: 'sub', symbol: '−', answer: 38 }, { a: 4, b: 3, op: 'mul', symbol: '×', answer: 12 }, { a: 55, b: 18, op: 'add', symbol: '+', answer: 73 },
-                { a: 43, b: 16, op: 'sub', symbol: '−', answer: 27 }, { a: 3, b: 7, op: 'mul', symbol: '×', answer: 21 }, { a: 31, b: 42, op: 'add', symbol: '+', answer: 73 },
-                { a: 90, b: 53, op: 'sub', symbol: '−', answer: 37 }, { a: 2, b: 6, op: 'mul', symbol: '×', answer: 12 }, { a: 17, b: 36, op: 'add', symbol: '+', answer: 53 },
-                { a: 64, b: 37, op: 'sub', symbol: '−', answer: 27 }, { a: 5, b: 3, op: 'mul', symbol: '×', answer: 15 }, { a: 48, b: 25, op: 'add', symbol: '+', answer: 73 },
-                { a: 76, b: 39, op: 'sub', symbol: '−', answer: 37 }, { a: 3, b: 8, op: 'mul', symbol: '×', answer: 24 }, { a: 29, b: 24, op: 'add', symbol: '+', answer: 53 },
-                { a: 82, b: 45, op: 'sub', symbol: '−', answer: 37 }
-            ]
-        }
+    "3": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "facts",
+        "timeLimit": 120,
+        "standards": [
+          "3.OA.7"
+        ],
+        "problems": [
+          {
+            "a": 9,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 63
+          },
+          {
+            "a": 27,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 3
+          },
+          {
+            "a": 9,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 54
+          },
+          {
+            "a": 10,
+            "b": 2,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 6,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 18
+          },
+          {
+            "a": 21,
+            "b": 7,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 3
+          },
+          {
+            "a": 2,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 10
+          },
+          {
+            "a": 54,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 3,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 12
+          },
+          {
+            "a": 40,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 9,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 27
+          },
+          {
+            "a": 18,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 6,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 48
+          },
+          {
+            "a": 72,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 3,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 15
+          },
+          {
+            "a": 56,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 6,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 36
+          },
+          {
+            "a": 15,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 3,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 24
+          },
+          {
+            "a": 32,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 4
+          },
+          {
+            "a": 2,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 12
+          },
+          {
+            "a": 45,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 9,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 18
+          },
+          {
+            "a": 10,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 2
+          },
+          {
+            "a": 9,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 45
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "facts",
+        "timeLimit": 120,
+        "standards": [
+          "3.OA.7"
+        ],
+        "problems": [
+          {
+            "a": 7,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 42
+          },
+          {
+            "a": 30,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 8,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 64
+          },
+          {
+            "a": 12,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 3
+          },
+          {
+            "a": 5,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 40
+          },
+          {
+            "a": 36,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 4
+          },
+          {
+            "a": 7,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 28
+          },
+          {
+            "a": 24,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 4
+          },
+          {
+            "a": 6,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 30
+          },
+          {
+            "a": 14,
+            "b": 2,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 5,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 25
+          },
+          {
+            "a": 28,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 9,
+            "b": 9,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 81
+          },
+          {
+            "a": 56,
+            "b": 7,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 3,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 21
+          },
+          {
+            "a": 63,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 7,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 56
+          },
+          {
+            "a": 16,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 4
+          },
+          {
+            "a": 5,
+            "b": 9,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 45
+          },
+          {
+            "a": 18,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 2
+          },
+          {
+            "a": 5,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 20
+          },
+          {
+            "a": 12,
+            "b": 2,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 7,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 14
+          },
+          {
+            "a": 15,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 3
+          },
+          {
+            "a": 4,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 32
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "facts",
+        "timeLimit": 120,
+        "standards": [
+          "3.OA.7"
+        ],
+        "problems": [
+          {
+            "a": 7,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 49
+          },
+          {
+            "a": 48,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 8,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 56
+          },
+          {
+            "a": 25,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 4,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 24
+          },
+          {
+            "a": 42,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 2,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 14
+          },
+          {
+            "a": 49,
+            "b": 7,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 2,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 16
+          },
+          {
+            "a": 24,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 4,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 16
+          },
+          {
+            "a": 21,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 7
+          },
+          {
+            "a": 9,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 72
+          },
+          {
+            "a": 16,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 2
+          },
+          {
+            "a": 8,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 32
+          },
+          {
+            "a": 54,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 8,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 48
+          },
+          {
+            "a": 32,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 4,
+            "b": 9,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 36
+          },
+          {
+            "a": 72,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 5,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 35
+          },
+          {
+            "a": 20,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 6,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 12
+          },
+          {
+            "a": 24,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 5,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 10
+          }
+        ]
+      }
     },
-
-    // ===== GRADE 3: Multiplication & Division Facts (3.OA.7) =====
-    '3': {
-        'A': {
-            operation: 'mixed', difficulty: 'facts', timeLimit: 120,
-            problems: [
-                { a: 6, b: 7, op: 'mul', symbol: '×', answer: 42 }, { a: 8, b: 4, op: 'mul', symbol: '×', answer: 32 }, { a: 56, b: 8, op: 'div', symbol: '÷', answer: 7 },
-                { a: 9, b: 3, op: 'mul', symbol: '×', answer: 27 }, { a: 36, b: 6, op: 'div', symbol: '÷', answer: 6 }, { a: 7, b: 8, op: 'mul', symbol: '×', answer: 56 },
-                { a: 45, b: 9, op: 'div', symbol: '÷', answer: 5 }, { a: 4, b: 9, op: 'mul', symbol: '×', answer: 36 }, { a: 72, b: 8, op: 'div', symbol: '÷', answer: 9 },
-                { a: 6, b: 5, op: 'mul', symbol: '×', answer: 30 }, { a: 48, b: 6, op: 'div', symbol: '÷', answer: 8 }, { a: 9, b: 7, op: 'mul', symbol: '×', answer: 63 },
-                { a: 35, b: 7, op: 'div', symbol: '÷', answer: 5 }, { a: 8, b: 6, op: 'mul', symbol: '×', answer: 48 }, { a: 54, b: 9, op: 'div', symbol: '÷', answer: 6 },
-                { a: 7, b: 4, op: 'mul', symbol: '×', answer: 28 }, { a: 40, b: 8, op: 'div', symbol: '÷', answer: 5 }, { a: 3, b: 8, op: 'mul', symbol: '×', answer: 24 },
-                { a: 63, b: 7, op: 'div', symbol: '÷', answer: 9 }, { a: 9, b: 9, op: 'mul', symbol: '×', answer: 81 }, { a: 24, b: 4, op: 'div', symbol: '÷', answer: 6 },
-                { a: 5, b: 7, op: 'mul', symbol: '×', answer: 35 }, { a: 81, b: 9, op: 'div', symbol: '÷', answer: 9 }, { a: 6, b: 8, op: 'mul', symbol: '×', answer: 48 },
-                { a: 32, b: 4, op: 'div', symbol: '÷', answer: 8 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'facts', timeLimit: 120,
-            problems: [
-                { a: 7, b: 6, op: 'mul', symbol: '×', answer: 42 }, { a: 49, b: 7, op: 'div', symbol: '÷', answer: 7 }, { a: 8, b: 9, op: 'mul', symbol: '×', answer: 72 },
-                { a: 27, b: 3, op: 'div', symbol: '÷', answer: 9 }, { a: 5, b: 8, op: 'mul', symbol: '×', answer: 40 }, { a: 64, b: 8, op: 'div', symbol: '÷', answer: 8 },
-                { a: 9, b: 6, op: 'mul', symbol: '×', answer: 54 }, { a: 42, b: 6, op: 'div', symbol: '÷', answer: 7 }, { a: 4, b: 7, op: 'mul', symbol: '×', answer: 28 },
-                { a: 36, b: 4, op: 'div', symbol: '÷', answer: 9 }, { a: 8, b: 8, op: 'mul', symbol: '×', answer: 64 }, { a: 30, b: 5, op: 'div', symbol: '÷', answer: 6 },
-                { a: 6, b: 9, op: 'mul', symbol: '×', answer: 54 }, { a: 72, b: 9, op: 'div', symbol: '÷', answer: 8 }, { a: 7, b: 3, op: 'mul', symbol: '×', answer: 21 },
-                { a: 56, b: 7, op: 'div', symbol: '÷', answer: 8 }, { a: 9, b: 4, op: 'mul', symbol: '×', answer: 36 }, { a: 48, b: 8, op: 'div', symbol: '÷', answer: 6 },
-                { a: 5, b: 6, op: 'mul', symbol: '×', answer: 30 }, { a: 63, b: 9, op: 'div', symbol: '÷', answer: 7 }, { a: 8, b: 3, op: 'mul', symbol: '×', answer: 24 },
-                { a: 45, b: 5, op: 'div', symbol: '÷', answer: 9 }, { a: 7, b: 9, op: 'mul', symbol: '×', answer: 63 }, { a: 40, b: 5, op: 'div', symbol: '÷', answer: 8 },
-                { a: 6, b: 4, op: 'mul', symbol: '×', answer: 24 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'facts', timeLimit: 120,
-            problems: [
-                { a: 9, b: 8, op: 'mul', symbol: '×', answer: 72 }, { a: 42, b: 7, op: 'div', symbol: '÷', answer: 6 }, { a: 6, b: 6, op: 'mul', symbol: '×', answer: 36 },
-                { a: 54, b: 6, op: 'div', symbol: '÷', answer: 9 }, { a: 7, b: 5, op: 'mul', symbol: '×', answer: 35 }, { a: 72, b: 8, op: 'div', symbol: '÷', answer: 9 },
-                { a: 8, b: 7, op: 'mul', symbol: '×', answer: 56 }, { a: 35, b: 5, op: 'div', symbol: '÷', answer: 7 }, { a: 4, b: 6, op: 'mul', symbol: '×', answer: 24 },
-                { a: 81, b: 9, op: 'div', symbol: '÷', answer: 9 }, { a: 9, b: 5, op: 'mul', symbol: '×', answer: 45 }, { a: 28, b: 4, op: 'div', symbol: '÷', answer: 7 },
-                { a: 3, b: 9, op: 'mul', symbol: '×', answer: 27 }, { a: 48, b: 6, op: 'div', symbol: '÷', answer: 8 }, { a: 7, b: 7, op: 'mul', symbol: '×', answer: 49 },
-                { a: 64, b: 8, op: 'div', symbol: '÷', answer: 8 }, { a: 8, b: 5, op: 'mul', symbol: '×', answer: 40 }, { a: 36, b: 9, op: 'div', symbol: '÷', answer: 4 },
-                { a: 6, b: 3, op: 'mul', symbol: '×', answer: 18 }, { a: 56, b: 7, op: 'div', symbol: '÷', answer: 8 }, { a: 9, b: 4, op: 'mul', symbol: '×', answer: 36 },
-                { a: 30, b: 6, op: 'div', symbol: '÷', answer: 5 }, { a: 5, b: 9, op: 'mul', symbol: '×', answer: 45 }, { a: 63, b: 7, op: 'div', symbol: '÷', answer: 9 },
-                { a: 8, b: 3, op: 'mul', symbol: '×', answer: 24 }
-            ]
-        }
+    "4": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "multidigit",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "4.NBT.5",
+          "4.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 42,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 126
+          },
+          {
+            "a": 177,
+            "b": 694,
+            "op": "add",
+            "symbol": "+",
+            "answer": 871
+          },
+          {
+            "a": 95,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 19
+          },
+          {
+            "a": 72,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 432
+          },
+          {
+            "a": 364,
+            "b": 189,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 175
+          },
+          {
+            "a": 76,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 19
+          },
+          {
+            "a": 595,
+            "b": 196,
+            "op": "add",
+            "symbol": "+",
+            "answer": 791
+          },
+          {
+            "a": 142,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 426
+          },
+          {
+            "a": 75,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 15
+          },
+          {
+            "a": 468,
+            "b": 507,
+            "op": "add",
+            "symbol": "+",
+            "answer": 975
+          },
+          {
+            "a": 264,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 792
+          },
+          {
+            "a": 208,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 26
+          },
+          {
+            "a": 924,
+            "b": 788,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 136
+          },
+          {
+            "a": 81,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 486
+          },
+          {
+            "a": 678,
+            "b": 297,
+            "op": "add",
+            "symbol": "+",
+            "answer": 975
+          },
+          {
+            "a": 361,
+            "b": 125,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 236
+          },
+          {
+            "a": 430,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 86
+          },
+          {
+            "a": 628,
+            "b": 245,
+            "op": "add",
+            "symbol": "+",
+            "answer": 873
+          },
+          {
+            "a": 773,
+            "b": 527,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 246
+          },
+          {
+            "a": 266,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 532
+          },
+          {
+            "a": 104,
+            "b": 139,
+            "op": "add",
+            "symbol": "+",
+            "answer": 243
+          },
+          {
+            "a": 908,
+            "b": 663,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 245
+          },
+          {
+            "a": 648,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 72
+          },
+          {
+            "a": 143,
+            "b": 666,
+            "op": "add",
+            "symbol": "+",
+            "answer": 809
+          },
+          {
+            "a": 674,
+            "b": 276,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 398
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "multidigit",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "4.NBT.5",
+          "4.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 35,
+            "b": 7,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 245
+          },
+          {
+            "a": 178,
+            "b": 699,
+            "op": "add",
+            "symbol": "+",
+            "answer": 877
+          },
+          {
+            "a": 72,
+            "b": 4,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 18
+          },
+          {
+            "a": 82,
+            "b": 3,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 246
+          },
+          {
+            "a": 610,
+            "b": 254,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 356
+          },
+          {
+            "a": 96,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 32
+          },
+          {
+            "a": 273,
+            "b": 227,
+            "op": "add",
+            "symbol": "+",
+            "answer": 500
+          },
+          {
+            "a": 241,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 482
+          },
+          {
+            "a": 45,
+            "b": 3,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 15
+          },
+          {
+            "a": 826,
+            "b": 104,
+            "op": "add",
+            "symbol": "+",
+            "answer": 930
+          },
+          {
+            "a": 225,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 450
+          },
+          {
+            "a": 248,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 31
+          },
+          {
+            "a": 910,
+            "b": 568,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 342
+          },
+          {
+            "a": 84,
+            "b": 8,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 672
+          },
+          {
+            "a": 166,
+            "b": 678,
+            "op": "add",
+            "symbol": "+",
+            "answer": 844
+          },
+          {
+            "a": 819,
+            "b": 122,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 697
+          },
+          {
+            "a": 396,
+            "b": 9,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 44
+          },
+          {
+            "a": 109,
+            "b": 703,
+            "op": "add",
+            "symbol": "+",
+            "answer": 812
+          },
+          {
+            "a": 690,
+            "b": 205,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 485
+          },
+          {
+            "a": 112,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 224
+          },
+          {
+            "a": 277,
+            "b": 604,
+            "op": "add",
+            "symbol": "+",
+            "answer": 881
+          },
+          {
+            "a": 779,
+            "b": 193,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 586
+          },
+          {
+            "a": 576,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 96
+          },
+          {
+            "a": 281,
+            "b": 495,
+            "op": "add",
+            "symbol": "+",
+            "answer": 776
+          },
+          {
+            "a": 858,
+            "b": 599,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 259
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "multidigit",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "4.NBT.5",
+          "4.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 96,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 384
+          },
+          {
+            "a": 198,
+            "b": 284,
+            "op": "add",
+            "symbol": "+",
+            "answer": 482
+          },
+          {
+            "a": 90,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 15
+          },
+          {
+            "a": 31,
+            "b": 6,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 186
+          },
+          {
+            "a": 800,
+            "b": 101,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 699
+          },
+          {
+            "a": 90,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 18
+          },
+          {
+            "a": 399,
+            "b": 104,
+            "op": "add",
+            "symbol": "+",
+            "answer": 503
+          },
+          {
+            "a": 175,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 700
+          },
+          {
+            "a": 85,
+            "b": 5,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 17
+          },
+          {
+            "a": 242,
+            "b": 448,
+            "op": "add",
+            "symbol": "+",
+            "answer": 690
+          },
+          {
+            "a": 264,
+            "b": 2,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 528
+          },
+          {
+            "a": 320,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 40
+          },
+          {
+            "a": 605,
+            "b": 357,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 248
+          },
+          {
+            "a": 28,
+            "b": 4,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 112
+          },
+          {
+            "a": 389,
+            "b": 239,
+            "op": "add",
+            "symbol": "+",
+            "answer": 628
+          },
+          {
+            "a": 528,
+            "b": 196,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 332
+          },
+          {
+            "a": 240,
+            "b": 6,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 40
+          },
+          {
+            "a": 336,
+            "b": 315,
+            "op": "add",
+            "symbol": "+",
+            "answer": 651
+          },
+          {
+            "a": 887,
+            "b": 238,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 649
+          },
+          {
+            "a": 107,
+            "b": 5,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 535
+          },
+          {
+            "a": 225,
+            "b": 317,
+            "op": "add",
+            "symbol": "+",
+            "answer": 542
+          },
+          {
+            "a": 683,
+            "b": 464,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 219
+          },
+          {
+            "a": 416,
+            "b": 8,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 52
+          },
+          {
+            "a": 252,
+            "b": 364,
+            "op": "add",
+            "symbol": "+",
+            "answer": 616
+          },
+          {
+            "a": 622,
+            "b": 184,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 438
+          }
+        ]
+      }
     },
-
-    // ===== GRADE 4: Multi-digit Operations, Mixed (4.NBT.4, 4.NBT.5) =====
-    '4': {
-        'A': {
-            operation: 'mixed', difficulty: 'multidigit', timeLimit: 120,
-            problems: [
-                { a: 45, b: 37, op: 'add', symbol: '+', answer: 82 }, { a: 12, b: 8, op: 'mul', symbol: '×', answer: 96 }, { a: 93, b: 48, op: 'sub', symbol: '−', answer: 45 },
-                { a: 72, b: 6, op: 'div', symbol: '÷', answer: 12 }, { a: 67, b: 55, op: 'add', symbol: '+', answer: 122 }, { a: 11, b: 7, op: 'mul', symbol: '×', answer: 77 },
-                { a: 134, b: 67, op: 'sub', symbol: '−', answer: 67 }, { a: 84, b: 7, op: 'div', symbol: '÷', answer: 12 }, { a: 56, b: 78, op: 'add', symbol: '+', answer: 134 },
-                { a: 9, b: 11, op: 'mul', symbol: '×', answer: 99 }, { a: 152, b: 85, op: 'sub', symbol: '−', answer: 67 }, { a: 96, b: 8, op: 'div', symbol: '÷', answer: 12 },
-                { a: 89, b: 43, op: 'add', symbol: '+', answer: 132 }, { a: 12, b: 6, op: 'mul', symbol: '×', answer: 72 }, { a: 175, b: 89, op: 'sub', symbol: '−', answer: 86 },
-                { a: 108, b: 9, op: 'div', symbol: '÷', answer: 12 }, { a: 74, b: 59, op: 'add', symbol: '+', answer: 133 }, { a: 8, b: 12, op: 'mul', symbol: '×', answer: 96 },
-                { a: 143, b: 77, op: 'sub', symbol: '−', answer: 66 }, { a: 60, b: 5, op: 'div', symbol: '÷', answer: 12 }, { a: 38, b: 94, op: 'add', symbol: '+', answer: 132 },
-                { a: 11, b: 9, op: 'mul', symbol: '×', answer: 99 }, { a: 161, b: 88, op: 'sub', symbol: '−', answer: 73 }, { a: 144, b: 12, op: 'div', symbol: '÷', answer: 12 },
-                { a: 77, b: 56, op: 'add', symbol: '+', answer: 133 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'multidigit', timeLimit: 120,
-            problems: [
-                { a: 53, b: 68, op: 'add', symbol: '+', answer: 121 }, { a: 11, b: 6, op: 'mul', symbol: '×', answer: 66 }, { a: 142, b: 75, op: 'sub', symbol: '−', answer: 67 },
-                { a: 96, b: 8, op: 'div', symbol: '÷', answer: 12 }, { a: 79, b: 44, op: 'add', symbol: '+', answer: 123 }, { a: 12, b: 7, op: 'mul', symbol: '×', answer: 84 },
-                { a: 158, b: 89, op: 'sub', symbol: '−', answer: 69 }, { a: 108, b: 12, op: 'div', symbol: '÷', answer: 9 }, { a: 47, b: 86, op: 'add', symbol: '+', answer: 133 },
-                { a: 9, b: 8, op: 'mul', symbol: '×', answer: 72 }, { a: 131, b: 64, op: 'sub', symbol: '−', answer: 67 }, { a: 72, b: 6, op: 'div', symbol: '÷', answer: 12 },
-                { a: 88, b: 45, op: 'add', symbol: '+', answer: 133 }, { a: 11, b: 11, op: 'mul', symbol: '×', answer: 121 }, { a: 174, b: 87, op: 'sub', symbol: '−', answer: 87 },
-                { a: 84, b: 7, op: 'div', symbol: '÷', answer: 12 }, { a: 66, b: 57, op: 'add', symbol: '+', answer: 123 }, { a: 12, b: 9, op: 'mul', symbol: '×', answer: 108 },
-                { a: 156, b: 79, op: 'sub', symbol: '−', answer: 77 }, { a: 132, b: 11, op: 'div', symbol: '÷', answer: 12 }, { a: 39, b: 84, op: 'add', symbol: '+', answer: 123 },
-                { a: 8, b: 11, op: 'mul', symbol: '×', answer: 88 }, { a: 145, b: 78, op: 'sub', symbol: '−', answer: 67 }, { a: 60, b: 4, op: 'div', symbol: '÷', answer: 15 },
-                { a: 75, b: 47, op: 'add', symbol: '+', answer: 122 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'multidigit', timeLimit: 120,
-            problems: [
-                { a: 64, b: 58, op: 'add', symbol: '+', answer: 122 }, { a: 9, b: 12, op: 'mul', symbol: '×', answer: 108 }, { a: 153, b: 86, op: 'sub', symbol: '−', answer: 67 },
-                { a: 84, b: 6, op: 'div', symbol: '÷', answer: 14 }, { a: 78, b: 55, op: 'add', symbol: '+', answer: 133 }, { a: 11, b: 8, op: 'mul', symbol: '×', answer: 88 },
-                { a: 167, b: 89, op: 'sub', symbol: '−', answer: 78 }, { a: 132, b: 12, op: 'div', symbol: '÷', answer: 11 }, { a: 49, b: 73, op: 'add', symbol: '+', answer: 122 },
-                { a: 12, b: 11, op: 'mul', symbol: '×', answer: 132 }, { a: 148, b: 71, op: 'sub', symbol: '−', answer: 77 }, { a: 96, b: 6, op: 'div', symbol: '÷', answer: 16 },
-                { a: 87, b: 46, op: 'add', symbol: '+', answer: 133 }, { a: 7, b: 12, op: 'mul', symbol: '×', answer: 84 }, { a: 139, b: 72, op: 'sub', symbol: '−', answer: 67 },
-                { a: 120, b: 8, op: 'div', symbol: '÷', answer: 15 }, { a: 58, b: 64, op: 'add', symbol: '+', answer: 122 }, { a: 12, b: 12, op: 'mul', symbol: '×', answer: 144 },
-                { a: 181, b: 94, op: 'sub', symbol: '−', answer: 87 }, { a: 144, b: 9, op: 'div', symbol: '÷', answer: 16 }, { a: 73, b: 59, op: 'add', symbol: '+', answer: 132 },
-                { a: 11, b: 12, op: 'mul', symbol: '×', answer: 132 }, { a: 162, b: 85, op: 'sub', symbol: '−', answer: 77 }, { a: 108, b: 6, op: 'div', symbol: '÷', answer: 18 },
-                { a: 46, b: 87, op: 'add', symbol: '+', answer: 133 }
-            ]
-        }
+    "5": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "advanced",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "5.NBT.5",
+          "5.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 2595,
+            "b": 709,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3304
+          },
+          {
+            "a": 2194,
+            "b": 579,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1615
+          },
+          {
+            "a": 328,
+            "b": 41,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 8
+          },
+          {
+            "a": 25,
+            "b": 79,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 1975
+          },
+          {
+            "a": 2278,
+            "b": 627,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2905
+          },
+          {
+            "a": 2832,
+            "b": 48,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 59
+          },
+          {
+            "a": 48,
+            "b": 52,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 2496
+          },
+          {
+            "a": 1799,
+            "b": 218,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2017
+          },
+          {
+            "a": 5766,
+            "b": 62,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 93
+          },
+          {
+            "a": 7852,
+            "b": 364,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7488
+          },
+          {
+            "a": 52,
+            "b": 93,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 4836
+          },
+          {
+            "a": 198,
+            "b": 22,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 4229,
+            "b": 876,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5105
+          },
+          {
+            "a": 8233,
+            "b": 277,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7956
+          },
+          {
+            "a": 675,
+            "b": 75,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 3123,
+            "b": 799,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3922
+          },
+          {
+            "a": 45,
+            "b": 13,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 585
+          },
+          {
+            "a": 6042,
+            "b": 404,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5638
+          },
+          {
+            "a": 4899,
+            "b": 71,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 69
+          },
+          {
+            "a": 5067,
+            "b": 136,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5203
+          },
+          {
+            "a": 39,
+            "b": 24,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 936
+          },
+          {
+            "a": 2035,
+            "b": 947,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1088
+          },
+          {
+            "a": 2192,
+            "b": 329,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2521
+          },
+          {
+            "a": 43,
+            "b": 15,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 645
+          },
+          {
+            "a": 8444,
+            "b": 987,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7457
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "advanced",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "5.NBT.5",
+          "5.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 8758,
+            "b": 848,
+            "op": "add",
+            "symbol": "+",
+            "answer": 9606
+          },
+          {
+            "a": 7202,
+            "b": 761,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 6441
+          },
+          {
+            "a": 792,
+            "b": 88,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 9
+          },
+          {
+            "a": 39,
+            "b": 81,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 3159
+          },
+          {
+            "a": 1697,
+            "b": 286,
+            "op": "add",
+            "symbol": "+",
+            "answer": 1983
+          },
+          {
+            "a": 4410,
+            "b": 45,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 98
+          },
+          {
+            "a": 86,
+            "b": 19,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 1634
+          },
+          {
+            "a": 4698,
+            "b": 803,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5501
+          },
+          {
+            "a": 1936,
+            "b": 88,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 22
+          },
+          {
+            "a": 4961,
+            "b": 476,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4485
+          },
+          {
+            "a": 85,
+            "b": 19,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 1615
+          },
+          {
+            "a": 470,
+            "b": 94,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 4272,
+            "b": 888,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5160
+          },
+          {
+            "a": 4771,
+            "b": 786,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3985
+          },
+          {
+            "a": 216,
+            "b": 36,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 7592,
+            "b": 485,
+            "op": "add",
+            "symbol": "+",
+            "answer": 8077
+          },
+          {
+            "a": 15,
+            "b": 32,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 480
+          },
+          {
+            "a": 8545,
+            "b": 446,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 8099
+          },
+          {
+            "a": 3933,
+            "b": 69,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 57
+          },
+          {
+            "a": 5564,
+            "b": 528,
+            "op": "add",
+            "symbol": "+",
+            "answer": 6092
+          },
+          {
+            "a": 18,
+            "b": 28,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 504
+          },
+          {
+            "a": 5005,
+            "b": 699,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4306
+          },
+          {
+            "a": 2875,
+            "b": 282,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3157
+          },
+          {
+            "a": 17,
+            "b": 31,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 527
+          },
+          {
+            "a": 5432,
+            "b": 654,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4778
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "advanced",
+        "timeLimit": 120,
+        "standards": [
+          "4.NBT.4",
+          "5.NBT.5",
+          "5.NBT.6"
+        ],
+        "problems": [
+          {
+            "a": 1188,
+            "b": 864,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2052
+          },
+          {
+            "a": 3069,
+            "b": 972,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2097
+          },
+          {
+            "a": 440,
+            "b": 88,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 5
+          },
+          {
+            "a": 77,
+            "b": 42,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 3234
+          },
+          {
+            "a": 1027,
+            "b": 483,
+            "op": "add",
+            "symbol": "+",
+            "answer": 1510
+          },
+          {
+            "a": 4757,
+            "b": 67,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 71
+          },
+          {
+            "a": 94,
+            "b": 98,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 9212
+          },
+          {
+            "a": 7395,
+            "b": 667,
+            "op": "add",
+            "symbol": "+",
+            "answer": 8062
+          },
+          {
+            "a": 2952,
+            "b": 36,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 82
+          },
+          {
+            "a": 2402,
+            "b": 238,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2164
+          },
+          {
+            "a": 32,
+            "b": 47,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 1504
+          },
+          {
+            "a": 222,
+            "b": 37,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 6
+          },
+          {
+            "a": 4787,
+            "b": 827,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5614
+          },
+          {
+            "a": 5030,
+            "b": 573,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4457
+          },
+          {
+            "a": 213,
+            "b": 71,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 3
+          },
+          {
+            "a": 7842,
+            "b": 171,
+            "op": "add",
+            "symbol": "+",
+            "answer": 8013
+          },
+          {
+            "a": 46,
+            "b": 13,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 598
+          },
+          {
+            "a": 4925,
+            "b": 559,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4366
+          },
+          {
+            "a": 2684,
+            "b": 61,
+            "op": "div",
+            "symbol": "÷",
+            "answer": 44
+          },
+          {
+            "a": 6717,
+            "b": 717,
+            "op": "add",
+            "symbol": "+",
+            "answer": 7434
+          },
+          {
+            "a": 22,
+            "b": 18,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 396
+          },
+          {
+            "a": 5206,
+            "b": 557,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4649
+          },
+          {
+            "a": 5096,
+            "b": 597,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5693
+          },
+          {
+            "a": 21,
+            "b": 28,
+            "op": "mul",
+            "symbol": "×",
+            "answer": 588
+          },
+          {
+            "a": 8302,
+            "b": 844,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 7458
+          }
+        ]
+      }
     },
-
-    // ===== GRADE 5: All Operations, Mixed (5.NBT.5, 5.NBT.6, 5.NBT.7) =====
-    '5': {
-        'A': {
-            operation: 'mixed', difficulty: 'advanced', timeLimit: 120,
-            problems: [
-                { a: 125, b: 87, op: 'add', symbol: '+', answer: 212 }, { a: 14, b: 13, op: 'mul', symbol: '×', answer: 182 }, { a: 243, b: 158, op: 'sub', symbol: '−', answer: 85 },
-                { a: 156, b: 12, op: 'div', symbol: '÷', answer: 13 }, { a: 89, b: 76, op: 'add', symbol: '+', answer: 165 }, { a: 15, b: 11, op: 'mul', symbol: '×', answer: 165 },
-                { a: 312, b: 147, op: 'sub', symbol: '−', answer: 165 }, { a: 192, b: 16, op: 'div', symbol: '÷', answer: 12 }, { a: 78, b: 97, op: 'add', symbol: '+', answer: 175 },
-                { a: 13, b: 12, op: 'mul', symbol: '×', answer: 156 }, { a: 256, b: 169, op: 'sub', symbol: '−', answer: 87 }, { a: 180, b: 15, op: 'div', symbol: '÷', answer: 12 },
-                { a: 134, b: 78, op: 'add', symbol: '+', answer: 212 }, { a: 16, b: 9, op: 'mul', symbol: '×', answer: 144 }, { a: 198, b: 113, op: 'sub', symbol: '−', answer: 85 },
-                { a: 168, b: 14, op: 'div', symbol: '÷', answer: 12 }, { a: 93, b: 72, op: 'add', symbol: '+', answer: 165 }, { a: 12, b: 15, op: 'mul', symbol: '×', answer: 180 },
-                { a: 275, b: 188, op: 'sub', symbol: '−', answer: 87 }, { a: 144, b: 12, op: 'div', symbol: '÷', answer: 12 }, { a: 146, b: 67, op: 'add', symbol: '+', answer: 213 },
-                { a: 17, b: 8, op: 'mul', symbol: '×', answer: 136 }, { a: 321, b: 156, op: 'sub', symbol: '−', answer: 165 }, { a: 195, b: 13, op: 'div', symbol: '÷', answer: 15 },
-                { a: 88, b: 77, op: 'add', symbol: '+', answer: 165 }
-            ]
-        },
-        'B': {
-            operation: 'mixed', difficulty: 'advanced', timeLimit: 120,
-            problems: [
-                { a: 97, b: 68, op: 'add', symbol: '+', answer: 165 }, { a: 13, b: 14, op: 'mul', symbol: '×', answer: 182 }, { a: 298, b: 133, op: 'sub', symbol: '−', answer: 165 },
-                { a: 180, b: 12, op: 'div', symbol: '÷', answer: 15 }, { a: 138, b: 74, op: 'add', symbol: '+', answer: 212 }, { a: 16, b: 11, op: 'mul', symbol: '×', answer: 176 },
-                { a: 254, b: 167, op: 'sub', symbol: '−', answer: 87 }, { a: 168, b: 12, op: 'div', symbol: '÷', answer: 14 }, { a: 76, b: 89, op: 'add', symbol: '+', answer: 165 },
-                { a: 15, b: 12, op: 'mul', symbol: '×', answer: 180 }, { a: 312, b: 147, op: 'sub', symbol: '−', answer: 165 }, { a: 192, b: 16, op: 'div', symbol: '÷', answer: 12 },
-                { a: 124, b: 88, op: 'add', symbol: '+', answer: 212 }, { a: 14, b: 9, op: 'mul', symbol: '×', answer: 126 }, { a: 243, b: 78, op: 'sub', symbol: '−', answer: 165 },
-                { a: 156, b: 13, op: 'div', symbol: '÷', answer: 12 }, { a: 87, b: 78, op: 'add', symbol: '+', answer: 165 }, { a: 12, b: 14, op: 'mul', symbol: '×', answer: 168 },
-                { a: 278, b: 113, op: 'sub', symbol: '−', answer: 165 }, { a: 144, b: 9, op: 'div', symbol: '÷', answer: 16 }, { a: 95, b: 117, op: 'add', symbol: '+', answer: 212 },
-                { a: 18, b: 11, op: 'mul', symbol: '×', answer: 198 }, { a: 341, b: 176, op: 'sub', symbol: '−', answer: 165 }, { a: 204, b: 12, op: 'div', symbol: '÷', answer: 17 },
-                { a: 79, b: 86, op: 'add', symbol: '+', answer: 165 }
-            ]
-        },
-        'C': {
-            operation: 'mixed', difficulty: 'advanced', timeLimit: 120,
-            problems: [
-                { a: 113, b: 99, op: 'add', symbol: '+', answer: 212 }, { a: 15, b: 13, op: 'mul', symbol: '×', answer: 195 }, { a: 278, b: 113, op: 'sub', symbol: '−', answer: 165 },
-                { a: 168, b: 14, op: 'div', symbol: '÷', answer: 12 }, { a: 86, b: 79, op: 'add', symbol: '+', answer: 165 }, { a: 12, b: 16, op: 'mul', symbol: '×', answer: 192 },
-                { a: 321, b: 156, op: 'sub', symbol: '−', answer: 165 }, { a: 156, b: 12, op: 'div', symbol: '÷', answer: 13 }, { a: 94, b: 71, op: 'add', symbol: '+', answer: 165 },
-                { a: 14, b: 12, op: 'mul', symbol: '×', answer: 168 }, { a: 243, b: 78, op: 'sub', symbol: '−', answer: 165 }, { a: 180, b: 15, op: 'div', symbol: '÷', answer: 12 },
-                { a: 127, b: 85, op: 'add', symbol: '+', answer: 212 }, { a: 11, b: 15, op: 'mul', symbol: '×', answer: 165 }, { a: 298, b: 133, op: 'sub', symbol: '−', answer: 165 },
-                { a: 192, b: 12, op: 'div', symbol: '÷', answer: 16 }, { a: 78, b: 87, op: 'add', symbol: '+', answer: 165 }, { a: 13, b: 11, op: 'mul', symbol: '×', answer: 143 },
-                { a: 256, b: 169, op: 'sub', symbol: '−', answer: 87 }, { a: 132, b: 11, op: 'div', symbol: '÷', answer: 12 }, { a: 134, b: 78, op: 'add', symbol: '+', answer: 212 },
-                { a: 17, b: 12, op: 'mul', symbol: '×', answer: 204 }, { a: 312, b: 147, op: 'sub', symbol: '−', answer: 165 }, { a: 216, b: 18, op: 'div', symbol: '÷', answer: 12 },
-                { a: 69, b: 96, op: 'add', symbol: '+', answer: 165 }
-            ]
-        }
+    "K": {
+      "A": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within5",
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "a": 2,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 4,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 4,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 3,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 1,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 5,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2
+          },
+          {
+            "a": 4,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 3,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 5,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 2,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 2,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 4,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 3,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 4,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 0,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 1
+          },
+          {
+            "a": 5,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 5
+          },
+          {
+            "a": 1,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 1
+          },
+          {
+            "a": 5,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 2,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 5,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 1,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 4,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 4,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within5",
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "a": 3,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 4,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 1,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2
+          },
+          {
+            "a": 2,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 3,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 3,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 5,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 5,
+            "b": 5,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 0,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 5,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 4,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 3,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 2,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 5,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 1,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 1,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 4,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 4,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 0,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 4,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 1,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 2,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 2,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 5,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 1,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 1
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "operation": "mixed",
+        "difficulty": "within5",
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "a": 2,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 4,
+            "b": 3,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 3,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 1,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 3,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 0,
+            "b": 5,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 2,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 0
+          },
+          {
+            "a": 0,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 3
+          },
+          {
+            "a": 5,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 1,
+            "b": 4,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 3,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 1,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2
+          },
+          {
+            "a": 5,
+            "b": 4,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 2,
+            "b": 3,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 1,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 2,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2
+          },
+          {
+            "a": 4,
+            "b": 0,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 4
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 2
+          },
+          {
+            "a": 4,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 2
+          },
+          {
+            "a": 3,
+            "b": 1,
+            "op": "add",
+            "symbol": "+",
+            "answer": 4
+          },
+          {
+            "a": 5,
+            "b": 2,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 3
+          },
+          {
+            "a": 3,
+            "b": 2,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          },
+          {
+            "a": 2,
+            "b": 1,
+            "op": "sub",
+            "symbol": "−",
+            "answer": 1
+          },
+          {
+            "a": 5,
+            "b": 0,
+            "op": "add",
+            "symbol": "+",
+            "answer": 5
+          }
+        ]
+      }
     }
-};
-
-// ====================================================================
-// MISSING NUMBER PROBES (K-2) � 1.OA.8, 2.OA.1
-// Student finds the missing number: "3 + __ = 7" or "__ - 4 = 5"
-// 25 items per form, 2-minute time limit
-// display: the equation string, missingPos: 'a'|'b'|'result', answer: the missing value
-// ====================================================================
-window.MISSING_NUMBER_PROBES = {
-  'K': {
-    'A': { timeLimit: 120, problems: [
-      {display:'2 + __ = 5',missingPos:'b',answer:3},{display:'__ + 3 = 4',missingPos:'a',answer:1},{display:'5 - __ = 2',missingPos:'b',answer:3},
-      {display:'1 + __ = 3',missingPos:'b',answer:2},{display:'__ + 1 = 5',missingPos:'a',answer:4},{display:'4 - __ = 1',missingPos:'b',answer:3},
-      {display:'3 + __ = 5',missingPos:'b',answer:2},{display:'__ + 2 = 4',missingPos:'a',answer:2},{display:'5 - __ = 3',missingPos:'b',answer:2},
-      {display:'__ + 1 = 2',missingPos:'a',answer:1},{display:'2 + __ = 4',missingPos:'b',answer:2},{display:'3 - __ = 1',missingPos:'b',answer:2},
-      {display:'1 + __ = 4',missingPos:'b',answer:3},{display:'__ + 4 = 5',missingPos:'a',answer:1},{display:'5 - __ = 4',missingPos:'b',answer:1},
-      {display:'__ + 0 = 3',missingPos:'a',answer:3},{display:'4 + __ = 5',missingPos:'b',answer:1},{display:'2 - __ = 0',missingPos:'b',answer:2},
-      {display:'0 + __ = 5',missingPos:'b',answer:5},{display:'__ + 2 = 5',missingPos:'a',answer:3},{display:'4 - __ = 2',missingPos:'b',answer:2},
-      {display:'__ + 3 = 5',missingPos:'a',answer:2},{display:'3 + __ = 4',missingPos:'b',answer:1},{display:'5 - __ = 1',missingPos:'b',answer:4},
-      {display:'1 + __ = 5',missingPos:'b',answer:4}
-    ]},
-    'B': { timeLimit: 120, problems: [
-      {display:'__ + 2 = 3',missingPos:'a',answer:1},{display:'4 + __ = 5',missingPos:'b',answer:1},{display:'5 - __ = 3',missingPos:'b',answer:2},
-      {display:'3 + __ = 5',missingPos:'b',answer:2},{display:'__ + 1 = 4',missingPos:'a',answer:3},{display:'4 - __ = 3',missingPos:'b',answer:1},
-      {display:'__ + 3 = 3',missingPos:'a',answer:0},{display:'2 + __ = 5',missingPos:'b',answer:3},{display:'3 - __ = 0',missingPos:'b',answer:3},
-      {display:'1 + __ = 2',missingPos:'b',answer:1},{display:'__ + 0 = 4',missingPos:'a',answer:4},{display:'5 - __ = 5',missingPos:'b',answer:0},
-      {display:'__ + 4 = 4',missingPos:'a',answer:0},{display:'0 + __ = 3',missingPos:'b',answer:3},{display:'4 - __ = 0',missingPos:'b',answer:4},
-      {display:'2 + __ = 3',missingPos:'b',answer:1},{display:'__ + 1 = 3',missingPos:'a',answer:2},{display:'5 - __ = 2',missingPos:'b',answer:3},
-      {display:'__ + 2 = 2',missingPos:'a',answer:0},{display:'3 + __ = 4',missingPos:'b',answer:1},{display:'2 - __ = 1',missingPos:'b',answer:1},
-      {display:'4 + __ = 4',missingPos:'b',answer:0},{display:'__ + 5 = 5',missingPos:'a',answer:0},{display:'1 - __ = 0',missingPos:'b',answer:1},
-      {display:'__ + 2 = 5',missingPos:'a',answer:3}
-    ]},
-    'C': { timeLimit: 120, problems: [
-      {display:'3 + __ = 4',missingPos:'b',answer:1},{display:'__ + 1 = 5',missingPos:'a',answer:4},{display:'4 - __ = 2',missingPos:'b',answer:2},
-      {display:'__ + 3 = 5',missingPos:'a',answer:2},{display:'2 + __ = 4',missingPos:'b',answer:2},{display:'5 - __ = 4',missingPos:'b',answer:1},
-      {display:'1 + __ = 3',missingPos:'b',answer:2},{display:'__ + 0 = 5',missingPos:'a',answer:5},{display:'3 - __ = 2',missingPos:'b',answer:1},
-      {display:'__ + 4 = 5',missingPos:'a',answer:1},{display:'4 + __ = 5',missingPos:'b',answer:1},{display:'5 - __ = 0',missingPos:'b',answer:5},
-      {display:'0 + __ = 4',missingPos:'b',answer:4},{display:'__ + 1 = 1',missingPos:'a',answer:0},{display:'2 - __ = 2',missingPos:'b',answer:0},
-      {display:'__ + 2 = 3',missingPos:'a',answer:1},{display:'3 + __ = 3',missingPos:'b',answer:0},{display:'4 - __ = 1',missingPos:'b',answer:3},
-      {display:'2 + __ = 5',missingPos:'b',answer:3},{display:'__ + 3 = 4',missingPos:'a',answer:1},{display:'5 - __ = 1',missingPos:'b',answer:4},
-      {display:'1 + __ = 4',missingPos:'b',answer:3},{display:'__ + 0 = 2',missingPos:'a',answer:2},{display:'3 - __ = 3',missingPos:'b',answer:0},
-      {display:'__ + 2 = 4',missingPos:'a',answer:2}
-    ]}
   },
-  '1': {
-    'A': { timeLimit: 120, problems: [
-      {display:'7 + __ = 12',missingPos:'b',answer:5},{display:'__ + 6 = 14',missingPos:'a',answer:8},{display:'15 - __ = 7',missingPos:'b',answer:8},
-      {display:'__ + 9 = 16',missingPos:'a',answer:7},{display:'8 + __ = 13',missingPos:'b',answer:5},{display:'18 - __ = 9',missingPos:'b',answer:9},
-      {display:'__ + 5 = 11',missingPos:'a',answer:6},{display:'6 + __ = 15',missingPos:'b',answer:9},{display:'14 - __ = 6',missingPos:'b',answer:8},
-      {display:'9 + __ = 17',missingPos:'b',answer:8},{display:'__ + 7 = 13',missingPos:'a',answer:6},{display:'12 - __ = 5',missingPos:'b',answer:7},
-      {display:'__ + 8 = 16',missingPos:'a',answer:8},{display:'5 + __ = 14',missingPos:'b',answer:9},{display:'20 - __ = 11',missingPos:'b',answer:9},
-      {display:'4 + __ = 12',missingPos:'b',answer:8},{display:'__ + 3 = 11',missingPos:'a',answer:8},{display:'16 - __ = 8',missingPos:'b',answer:8},
-      {display:'__ + 9 = 18',missingPos:'a',answer:9},{display:'7 + __ = 15',missingPos:'b',answer:8},{display:'13 - __ = 4',missingPos:'b',answer:9},
-      {display:'8 + __ = 17',missingPos:'b',answer:9},{display:'__ + 4 = 12',missingPos:'a',answer:8},{display:'11 - __ = 3',missingPos:'b',answer:8},
-      {display:'6 + __ = 13',missingPos:'b',answer:7}
-    ]},
-    'B': { timeLimit: 120, problems: [
-      {display:'__ + 8 = 15',missingPos:'a',answer:7},{display:'9 + __ = 16',missingPos:'b',answer:7},{display:'17 - __ = 8',missingPos:'b',answer:9},
-      {display:'6 + __ = 14',missingPos:'b',answer:8},{display:'__ + 5 = 12',missingPos:'a',answer:7},{display:'13 - __ = 6',missingPos:'b',answer:7},
-      {display:'7 + __ = 16',missingPos:'b',answer:9},{display:'__ + 4 = 11',missingPos:'a',answer:7},{display:'19 - __ = 12',missingPos:'b',answer:7},
-      {display:'__ + 7 = 15',missingPos:'a',answer:8},{display:'8 + __ = 14',missingPos:'b',answer:6},{display:'15 - __ = 9',missingPos:'b',answer:6},
-      {display:'5 + __ = 13',missingPos:'b',answer:8},{display:'__ + 6 = 12',missingPos:'a',answer:6},{display:'18 - __ = 11',missingPos:'b',answer:7},
-      {display:'__ + 9 = 15',missingPos:'a',answer:6},{display:'4 + __ = 13',missingPos:'b',answer:9},{display:'12 - __ = 4',missingPos:'b',answer:8},
-      {display:'9 + __ = 18',missingPos:'b',answer:9},{display:'__ + 3 = 12',missingPos:'a',answer:9},{display:'16 - __ = 7',missingPos:'b',answer:9},
-      {display:'__ + 8 = 17',missingPos:'a',answer:9},{display:'7 + __ = 11',missingPos:'b',answer:4},{display:'14 - __ = 5',missingPos:'b',answer:9},
-      {display:'3 + __ = 11',missingPos:'b',answer:8}
-    ]},
-    'C': { timeLimit: 120, problems: [
-      {display:'8 + __ = 16',missingPos:'b',answer:8},{display:'__ + 7 = 14',missingPos:'a',answer:7},{display:'16 - __ = 9',missingPos:'b',answer:7},
-      {display:'__ + 5 = 13',missingPos:'a',answer:8},{display:'9 + __ = 15',missingPos:'b',answer:6},{display:'20 - __ = 13',missingPos:'b',answer:7},
-      {display:'6 + __ = 12',missingPos:'b',answer:6},{display:'__ + 8 = 14',missingPos:'a',answer:6},{display:'17 - __ = 9',missingPos:'b',answer:8},
-      {display:'7 + __ = 13',missingPos:'b',answer:6},{display:'__ + 9 = 17',missingPos:'a',answer:8},{display:'14 - __ = 8',missingPos:'b',answer:6},
-      {display:'__ + 6 = 15',missingPos:'a',answer:9},{display:'5 + __ = 11',missingPos:'b',answer:6},{display:'13 - __ = 7',missingPos:'b',answer:6},
-      {display:'4 + __ = 12',missingPos:'b',answer:8},{display:'__ + 3 = 10',missingPos:'a',answer:7},{display:'18 - __ = 9',missingPos:'b',answer:9},
-      {display:'__ + 4 = 13',missingPos:'a',answer:9},{display:'8 + __ = 15',missingPos:'b',answer:7},{display:'11 - __ = 5',missingPos:'b',answer:6},
-      {display:'6 + __ = 14',missingPos:'b',answer:8},{display:'__ + 7 = 16',missingPos:'a',answer:9},{display:'15 - __ = 6',missingPos:'b',answer:9},
-      {display:'9 + __ = 14',missingPos:'b',answer:5}
-    ]}
+  "MISSING_NUMBER_PROBES": {
+    "1": {
+      "A": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.8"
+        ],
+        "problems": [
+          {
+            "display": "__ + 8 = 14",
+            "missingPos": "a",
+            "answer": 6
+          },
+          {
+            "display": "14 + __ = 18",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "12 - __ = 4",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "__ - 8 = 5",
+            "missingPos": "a",
+            "answer": 13
+          },
+          {
+            "display": "__ + 9 = 14",
+            "missingPos": "a",
+            "answer": 5
+          },
+          {
+            "display": "11 + __ = 16",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ - 8 = 3",
+            "missingPos": "a",
+            "answer": 11
+          },
+          {
+            "display": "4 + __ = 12",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "17 + __ = 18",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "14 - __ = 7",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "7 + __ = 12",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ - 8 = 4",
+            "missingPos": "a",
+            "answer": 12
+          },
+          {
+            "display": "16 - __ = 8",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "__ + 9 = 18",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "18 - __ = 9",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "__ + 3 = 12",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "9 + __ = 11",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "__ - 8 = 9",
+            "missingPos": "a",
+            "answer": 17
+          },
+          {
+            "display": "__ + 4 = 11",
+            "missingPos": "a",
+            "answer": 7
+          },
+          {
+            "display": "6 + __ = 12",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "12 - __ = 6",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "__ + 6 = 13",
+            "missingPos": "a",
+            "answer": 7
+          },
+          {
+            "display": "8 + __ = 12",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "12 - __ = 9",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "7 + __ = 11",
+            "missingPos": "b",
+            "answer": 4
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.8"
+        ],
+        "problems": [
+          {
+            "display": "__ + 9 = 12",
+            "missingPos": "a",
+            "answer": 3
+          },
+          {
+            "display": "13 + __ = 16",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "13 - __ = 5",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "__ - 4 = 7",
+            "missingPos": "a",
+            "answer": 11
+          },
+          {
+            "display": "__ + 6 = 14",
+            "missingPos": "a",
+            "answer": 8
+          },
+          {
+            "display": "12 + __ = 13",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "__ - 4 = 9",
+            "missingPos": "a",
+            "answer": 13
+          },
+          {
+            "display": "6 + __ = 13",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "14 + __ = 15",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "14 - __ = 6",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "8 + __ = 17",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "__ - 7 = 6",
+            "missingPos": "a",
+            "answer": 13
+          },
+          {
+            "display": "12 - __ = 5",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "__ + 2 = 11",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "15 - __ = 9",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "__ + 9 = 13",
+            "missingPos": "a",
+            "answer": 4
+          },
+          {
+            "display": "3 + __ = 12",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "__ - 8 = 7",
+            "missingPos": "a",
+            "answer": 15
+          },
+          {
+            "display": "__ + 8 = 11",
+            "missingPos": "a",
+            "answer": 3
+          },
+          {
+            "display": "6 + __ = 11",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "11 - __ = 9",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "__ + 5 = 12",
+            "missingPos": "a",
+            "answer": 7
+          },
+          {
+            "display": "5 + __ = 11",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "11 - __ = 5",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "9 + __ = 13",
+            "missingPos": "b",
+            "answer": 4
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "1.OA.8"
+        ],
+        "problems": [
+          {
+            "display": "__ + 4 = 13",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "11 + __ = 18",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "11 - __ = 7",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ - 7 = 7",
+            "missingPos": "a",
+            "answer": 14
+          },
+          {
+            "display": "__ + 8 = 17",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "14 + __ = 19",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ - 5 = 9",
+            "missingPos": "a",
+            "answer": 14
+          },
+          {
+            "display": "8 + __ = 11",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "16 + __ = 18",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "14 - __ = 5",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "6 + __ = 14",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "__ - 4 = 8",
+            "missingPos": "a",
+            "answer": 12
+          },
+          {
+            "display": "11 - __ = 8",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "__ + 9 = 15",
+            "missingPos": "a",
+            "answer": 6
+          },
+          {
+            "display": "12 - __ = 8",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 4 = 12",
+            "missingPos": "a",
+            "answer": 8
+          },
+          {
+            "display": "9 + __ = 14",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ - 6 = 8",
+            "missingPos": "a",
+            "answer": 14
+          },
+          {
+            "display": "__ + 8 = 15",
+            "missingPos": "a",
+            "answer": 7
+          },
+          {
+            "display": "8 + __ = 13",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "13 - __ = 9",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 5 = 13",
+            "missingPos": "a",
+            "answer": 8
+          },
+          {
+            "display": "8 + __ = 14",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "13 - __ = 6",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "7 + __ = 13",
+            "missingPos": "b",
+            "answer": 6
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "display": "16 + __ = 85",
+            "missingPos": "b",
+            "answer": 69
+          },
+          {
+            "display": "37 - __ = 12",
+            "missingPos": "b",
+            "answer": 25
+          },
+          {
+            "display": "18 + __ = 41",
+            "missingPos": "b",
+            "answer": 23
+          },
+          {
+            "display": "__ - 44 = 44",
+            "missingPos": "a",
+            "answer": 88
+          },
+          {
+            "display": "13 + __ = 45",
+            "missingPos": "b",
+            "answer": 32
+          },
+          {
+            "display": "48 - __ = 33",
+            "missingPos": "b",
+            "answer": 15
+          },
+          {
+            "display": "59 + __ = 76",
+            "missingPos": "b",
+            "answer": 17
+          },
+          {
+            "display": "__ - 31 = 62",
+            "missingPos": "a",
+            "answer": 93
+          },
+          {
+            "display": "44 + __ = 80",
+            "missingPos": "b",
+            "answer": 36
+          },
+          {
+            "display": "__ - 23 = 62",
+            "missingPos": "a",
+            "answer": 85
+          },
+          {
+            "display": "__ + 38 = 62",
+            "missingPos": "a",
+            "answer": 24
+          },
+          {
+            "display": "45 - __ = 23",
+            "missingPos": "b",
+            "answer": 22
+          },
+          {
+            "display": "__ + 22 = 56",
+            "missingPos": "a",
+            "answer": 34
+          },
+          {
+            "display": "72 - __ = 14",
+            "missingPos": "b",
+            "answer": 58
+          },
+          {
+            "display": "62 + __ = 98",
+            "missingPos": "b",
+            "answer": 36
+          },
+          {
+            "display": "__ - 33 = 17",
+            "missingPos": "a",
+            "answer": 50
+          },
+          {
+            "display": "__ + 31 = 82",
+            "missingPos": "a",
+            "answer": 51
+          },
+          {
+            "display": "62 - __ = 16",
+            "missingPos": "b",
+            "answer": 46
+          },
+          {
+            "display": "__ + 33 = 92",
+            "missingPos": "a",
+            "answer": 59
+          },
+          {
+            "display": "__ - 59 = 13",
+            "missingPos": "a",
+            "answer": 72
+          },
+          {
+            "display": "41 + __ = 82",
+            "missingPos": "b",
+            "answer": 41
+          },
+          {
+            "display": "73 - __ = 45",
+            "missingPos": "b",
+            "answer": 28
+          },
+          {
+            "display": "__ + 19 = 75",
+            "missingPos": "a",
+            "answer": 56
+          },
+          {
+            "display": "__ - 58 = 17",
+            "missingPos": "a",
+            "answer": 75
+          },
+          {
+            "display": "__ + 53 = 75",
+            "missingPos": "a",
+            "answer": 22
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "display": "46 + __ = 62",
+            "missingPos": "b",
+            "answer": 16
+          },
+          {
+            "display": "39 - __ = 28",
+            "missingPos": "b",
+            "answer": 11
+          },
+          {
+            "display": "19 + __ = 84",
+            "missingPos": "b",
+            "answer": 65
+          },
+          {
+            "display": "__ - 23 = 56",
+            "missingPos": "a",
+            "answer": 79
+          },
+          {
+            "display": "77 + __ = 98",
+            "missingPos": "b",
+            "answer": 21
+          },
+          {
+            "display": "89 - __ = 15",
+            "missingPos": "b",
+            "answer": 74
+          },
+          {
+            "display": "17 + __ = 61",
+            "missingPos": "b",
+            "answer": 44
+          },
+          {
+            "display": "__ - 23 = 33",
+            "missingPos": "a",
+            "answer": 56
+          },
+          {
+            "display": "21 + __ = 90",
+            "missingPos": "b",
+            "answer": 69
+          },
+          {
+            "display": "__ - 17 = 31",
+            "missingPos": "a",
+            "answer": 48
+          },
+          {
+            "display": "__ + 38 = 76",
+            "missingPos": "a",
+            "answer": 38
+          },
+          {
+            "display": "98 - __ = 75",
+            "missingPos": "b",
+            "answer": 23
+          },
+          {
+            "display": "__ + 12 = 48",
+            "missingPos": "a",
+            "answer": 36
+          },
+          {
+            "display": "91 - __ = 48",
+            "missingPos": "b",
+            "answer": 43
+          },
+          {
+            "display": "34 + __ = 89",
+            "missingPos": "b",
+            "answer": 55
+          },
+          {
+            "display": "__ - 28 = 63",
+            "missingPos": "a",
+            "answer": 91
+          },
+          {
+            "display": "__ + 41 = 76",
+            "missingPos": "a",
+            "answer": 35
+          },
+          {
+            "display": "96 - __ = 19",
+            "missingPos": "b",
+            "answer": 77
+          },
+          {
+            "display": "__ + 19 = 83",
+            "missingPos": "a",
+            "answer": 64
+          },
+          {
+            "display": "__ - 65 = 17",
+            "missingPos": "a",
+            "answer": 82
+          },
+          {
+            "display": "64 + __ = 78",
+            "missingPos": "b",
+            "answer": 14
+          },
+          {
+            "display": "87 - __ = 19",
+            "missingPos": "b",
+            "answer": 68
+          },
+          {
+            "display": "__ + 32 = 91",
+            "missingPos": "a",
+            "answer": 59
+          },
+          {
+            "display": "__ - 39 = 34",
+            "missingPos": "a",
+            "answer": 73
+          },
+          {
+            "display": "__ + 75 = 88",
+            "missingPos": "a",
+            "answer": 13
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "2.NBT.5"
+        ],
+        "problems": [
+          {
+            "display": "25 + __ = 74",
+            "missingPos": "b",
+            "answer": 49
+          },
+          {
+            "display": "63 - __ = 21",
+            "missingPos": "b",
+            "answer": 42
+          },
+          {
+            "display": "35 + __ = 63",
+            "missingPos": "b",
+            "answer": 28
+          },
+          {
+            "display": "__ - 33 = 23",
+            "missingPos": "a",
+            "answer": 56
+          },
+          {
+            "display": "33 + __ = 46",
+            "missingPos": "b",
+            "answer": 13
+          },
+          {
+            "display": "77 - __ = 65",
+            "missingPos": "b",
+            "answer": 12
+          },
+          {
+            "display": "39 + __ = 88",
+            "missingPos": "b",
+            "answer": 49
+          },
+          {
+            "display": "__ - 53 = 41",
+            "missingPos": "a",
+            "answer": 94
+          },
+          {
+            "display": "29 + __ = 84",
+            "missingPos": "b",
+            "answer": 55
+          },
+          {
+            "display": "__ - 44 = 42",
+            "missingPos": "a",
+            "answer": 86
+          },
+          {
+            "display": "__ + 25 = 74",
+            "missingPos": "a",
+            "answer": 49
+          },
+          {
+            "display": "88 - __ = 71",
+            "missingPos": "b",
+            "answer": 17
+          },
+          {
+            "display": "__ + 61 = 84",
+            "missingPos": "a",
+            "answer": 23
+          },
+          {
+            "display": "75 - __ = 38",
+            "missingPos": "b",
+            "answer": 37
+          },
+          {
+            "display": "62 + __ = 99",
+            "missingPos": "b",
+            "answer": 37
+          },
+          {
+            "display": "__ - 59 = 11",
+            "missingPos": "a",
+            "answer": 70
+          },
+          {
+            "display": "__ + 63 = 94",
+            "missingPos": "a",
+            "answer": 31
+          },
+          {
+            "display": "94 - __ = 55",
+            "missingPos": "b",
+            "answer": 39
+          },
+          {
+            "display": "__ + 28 = 86",
+            "missingPos": "a",
+            "answer": 58
+          },
+          {
+            "display": "__ - 17 = 75",
+            "missingPos": "a",
+            "answer": 92
+          },
+          {
+            "display": "34 + __ = 48",
+            "missingPos": "b",
+            "answer": 14
+          },
+          {
+            "display": "97 - __ = 19",
+            "missingPos": "b",
+            "answer": 78
+          },
+          {
+            "display": "__ + 48 = 72",
+            "missingPos": "a",
+            "answer": 24
+          },
+          {
+            "display": "__ - 16 = 14",
+            "missingPos": "a",
+            "answer": 30
+          },
+          {
+            "display": "__ + 44 = 76",
+            "missingPos": "a",
+            "answer": 32
+          }
+        ]
+      }
+    },
+    "K": {
+      "A": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.4",
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "display": "3 - __ = 3",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "__ + 1 = 3",
+            "missingPos": "a",
+            "answer": 2
+          },
+          {
+            "display": "1 - __ = 1",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "1 + __ = 10",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "1 + __ = 4",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "10 - __ = 1",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "__ + 5 = 10",
+            "missingPos": "a",
+            "answer": 5
+          },
+          {
+            "display": "2 + __ = 10",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "2 - __ = 1",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "4 + __ = 10",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "10 - __ = 3",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "1 + __ = 2",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "__ + 4 = 5",
+            "missingPos": "a",
+            "answer": 1
+          },
+          {
+            "display": "10 - __ = 2",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "__ + 3 = 5",
+            "missingPos": "a",
+            "answer": 2
+          },
+          {
+            "display": "0 + __ = 3",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "3 - __ = 1",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "1 + __ = 5",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 0 = 5",
+            "missingPos": "a",
+            "answer": 5
+          },
+          {
+            "display": "5 - __ = 1",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "1 + __ = 1",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "__ + 3 = 10",
+            "missingPos": "a",
+            "answer": 7
+          },
+          {
+            "display": "5 - __ = 2",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "__ + 0 = 4",
+            "missingPos": "a",
+            "answer": 4
+          },
+          {
+            "display": "__ + 4 = 10",
+            "missingPos": "a",
+            "answer": 6
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.4",
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "display": "2 - __ = 2",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "__ + 1 = 4",
+            "missingPos": "a",
+            "answer": 3
+          },
+          {
+            "display": "4 - __ = 0",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "5 + __ = 10",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "2 + __ = 5",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "10 - __ = 4",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "__ + 1 = 10",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "6 + __ = 10",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "5 - __ = 4",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "3 + __ = 10",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "10 - __ = 2",
+            "missingPos": "b",
+            "answer": 8
+          },
+          {
+            "display": "1 + __ = 5",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 2 = 4",
+            "missingPos": "a",
+            "answer": 2
+          },
+          {
+            "display": "10 - __ = 3",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "__ + 3 = 4",
+            "missingPos": "a",
+            "answer": 1
+          },
+          {
+            "display": "3 + __ = 3",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "5 - __ = 3",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "3 + __ = 5",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "__ + 5 = 5",
+            "missingPos": "a",
+            "answer": 0
+          },
+          {
+            "display": "4 - __ = 3",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "0 + __ = 5",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ + 4 = 10",
+            "missingPos": "a",
+            "answer": 6
+          },
+          {
+            "display": "4 - __ = 1",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "__ + 0 = 5",
+            "missingPos": "a",
+            "answer": 5
+          },
+          {
+            "display": "__ + 2 = 10",
+            "missingPos": "a",
+            "answer": 8
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "timeLimit": 120,
+        "standards": [
+          "K.OA.4",
+          "K.OA.5"
+        ],
+        "problems": [
+          {
+            "display": "5 - __ = 5",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "__ + 1 = 2",
+            "missingPos": "a",
+            "answer": 1
+          },
+          {
+            "display": "5 - __ = 0",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "3 + __ = 10",
+            "missingPos": "b",
+            "answer": 7
+          },
+          {
+            "display": "4 + __ = 5",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "10 - __ = 5",
+            "missingPos": "b",
+            "answer": 5
+          },
+          {
+            "display": "__ + 2 = 10",
+            "missingPos": "a",
+            "answer": 8
+          },
+          {
+            "display": "4 + __ = 10",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "3 - __ = 2",
+            "missingPos": "b",
+            "answer": 1
+          },
+          {
+            "display": "1 + __ = 10",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "10 - __ = 4",
+            "missingPos": "b",
+            "answer": 6
+          },
+          {
+            "display": "1 + __ = 3",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "__ + 1 = 5",
+            "missingPos": "a",
+            "answer": 4
+          },
+          {
+            "display": "10 - __ = 1",
+            "missingPos": "b",
+            "answer": 9
+          },
+          {
+            "display": "__ + 2 = 5",
+            "missingPos": "a",
+            "answer": 3
+          },
+          {
+            "display": "2 + __ = 2",
+            "missingPos": "b",
+            "answer": 0
+          },
+          {
+            "display": "4 - __ = 2",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "2 + __ = 4",
+            "missingPos": "b",
+            "answer": 2
+          },
+          {
+            "display": "__ + 4 = 4",
+            "missingPos": "a",
+            "answer": 0
+          },
+          {
+            "display": "4 - __ = 1",
+            "missingPos": "b",
+            "answer": 3
+          },
+          {
+            "display": "0 + __ = 4",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 1 = 10",
+            "missingPos": "a",
+            "answer": 9
+          },
+          {
+            "display": "5 - __ = 1",
+            "missingPos": "b",
+            "answer": 4
+          },
+          {
+            "display": "__ + 0 = 3",
+            "missingPos": "a",
+            "answer": 3
+          },
+          {
+            "display": "__ + 3 = 10",
+            "missingPos": "a",
+            "answer": 7
+          }
+        ]
+      }
+    }
   },
-  '2': {
-    'A': { timeLimit: 120, problems: [
-      {display:'23 + __ = 41',missingPos:'b',answer:18},{display:'__ + 17 = 35',missingPos:'a',answer:18},{display:'54 - __ = 27',missingPos:'b',answer:27},
-      {display:'__ + 29 = 56',missingPos:'a',answer:27},{display:'38 + __ = 65',missingPos:'b',answer:27},{display:'72 - __ = 45',missingPos:'b',answer:27},
-      {display:'__ + 34 = 61',missingPos:'a',answer:27},{display:'45 + __ = 72',missingPos:'b',answer:27},{display:'83 - __ = 56',missingPos:'b',answer:27},
-      {display:'17 + __ = 44',missingPos:'b',answer:27},{display:'__ + 28 = 55',missingPos:'a',answer:27},{display:'61 - __ = 34',missingPos:'b',answer:27},
-      {display:'__ + 19 = 46',missingPos:'a',answer:27},{display:'36 + __ = 63',missingPos:'b',answer:27},{display:'90 - __ = 63',missingPos:'b',answer:27},
-      {display:'24 + __ = 51',missingPos:'b',answer:27},{display:'__ + 38 = 65',missingPos:'a',answer:27},{display:'47 - __ = 20',missingPos:'b',answer:27},
-      {display:'__ + 16 = 43',missingPos:'a',answer:27},{display:'52 + __ = 79',missingPos:'b',answer:27},{display:'68 - __ = 41',missingPos:'b',answer:27},
-      {display:'31 + __ = 58',missingPos:'b',answer:27},{display:'__ + 25 = 52',missingPos:'a',answer:27},{display:'75 - __ = 48',missingPos:'b',answer:27},
-      {display:'__ + 33 = 60',missingPos:'a',answer:27}
-    ]},
-    'B': { timeLimit: 120, problems: [
-      {display:'__ + 24 = 51',missingPos:'a',answer:27},{display:'35 + __ = 62',missingPos:'b',answer:27},{display:'63 - __ = 36',missingPos:'b',answer:27},
-      {display:'19 + __ = 46',missingPos:'b',answer:27},{display:'__ + 31 = 58',missingPos:'a',answer:27},{display:'81 - __ = 54',missingPos:'b',answer:27},
-      {display:'42 + __ = 69',missingPos:'b',answer:27},{display:'__ + 15 = 42',missingPos:'a',answer:27},{display:'55 - __ = 28',missingPos:'b',answer:27},
-      {display:'__ + 37 = 64',missingPos:'a',answer:27},{display:'28 + __ = 55',missingPos:'b',answer:27},{display:'74 - __ = 47',missingPos:'b',answer:27},
-      {display:'46 + __ = 73',missingPos:'b',answer:27},{display:'__ + 22 = 49',missingPos:'a',answer:27},{display:'67 - __ = 40',missingPos:'b',answer:27},
-      {display:'__ + 36 = 63',missingPos:'a',answer:27},{display:'14 + __ = 41',missingPos:'b',answer:27},{display:'53 - __ = 26',missingPos:'b',answer:27},
-      {display:'39 + __ = 66',missingPos:'b',answer:27},{display:'__ + 18 = 45',missingPos:'a',answer:27},{display:'86 - __ = 59',missingPos:'b',answer:27},
-      {display:'27 + __ = 54',missingPos:'b',answer:27},{display:'__ + 43 = 70',missingPos:'a',answer:27},{display:'62 - __ = 35',missingPos:'b',answer:27},
-      {display:'__ + 26 = 53',missingPos:'a',answer:27}
-    ]},
-    'C': { timeLimit: 120, problems: [
-      {display:'41 + __ = 68',missingPos:'b',answer:27},{display:'__ + 33 = 60',missingPos:'a',answer:27},{display:'72 - __ = 45',missingPos:'b',answer:27},
-      {display:'__ + 14 = 41',missingPos:'a',answer:27},{display:'26 + __ = 53',missingPos:'b',answer:27},{display:'59 - __ = 32',missingPos:'b',answer:27},
-      {display:'35 + __ = 62',missingPos:'b',answer:27},{display:'__ + 27 = 54',missingPos:'a',answer:27},{display:'83 - __ = 56',missingPos:'b',answer:27},
-      {display:'__ + 39 = 66',missingPos:'a',answer:27},{display:'18 + __ = 45',missingPos:'b',answer:27},{display:'64 - __ = 37',missingPos:'b',answer:27},
-      {display:'47 + __ = 74',missingPos:'b',answer:27},{display:'__ + 21 = 48',missingPos:'a',answer:27},{display:'91 - __ = 64',missingPos:'b',answer:27},
-      {display:'__ + 44 = 71',missingPos:'a',answer:27},{display:'32 + __ = 59',missingPos:'b',answer:27},{display:'56 - __ = 29',missingPos:'b',answer:27},
-      {display:'22 + __ = 49',missingPos:'b',answer:27},{display:'__ + 16 = 43',missingPos:'a',answer:27},{display:'78 - __ = 51',missingPos:'b',answer:27},
-      {display:'__ + 38 = 65',missingPos:'a',answer:27},{display:'29 + __ = 56',missingPos:'b',answer:27},{display:'85 - __ = 58',missingPos:'b',answer:27},
-      {display:'43 + __ = 70',missingPos:'b',answer:27}
-    ]}
+  "QUANTITY_DISCRIMINATION_PROBES": {
+    "1": {
+      "A": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "1.NBT.3"
+        ],
+        "problems": [
+          {
+            "left": 59,
+            "right": 95,
+            "answer": 95
+          },
+          {
+            "left": 97,
+            "right": 46,
+            "answer": 97
+          },
+          {
+            "left": 49,
+            "right": 94,
+            "answer": 94
+          },
+          {
+            "left": 66,
+            "right": 22,
+            "answer": 66
+          },
+          {
+            "left": 14,
+            "right": 19,
+            "answer": 19
+          },
+          {
+            "left": 40,
+            "right": 74,
+            "answer": 74
+          },
+          {
+            "left": 21,
+            "right": 26,
+            "answer": 26
+          },
+          {
+            "left": 85,
+            "right": 58,
+            "answer": 85
+          },
+          {
+            "left": 81,
+            "right": 83,
+            "answer": 83
+          },
+          {
+            "left": 15,
+            "right": 51,
+            "answer": 51
+          },
+          {
+            "left": 24,
+            "right": 68,
+            "answer": 68
+          },
+          {
+            "left": 21,
+            "right": 23,
+            "answer": 23
+          },
+          {
+            "left": 28,
+            "right": 82,
+            "answer": 82
+          },
+          {
+            "left": 42,
+            "right": 29,
+            "answer": 42
+          },
+          {
+            "left": 67,
+            "right": 76,
+            "answer": 76
+          },
+          {
+            "left": 63,
+            "right": 39,
+            "answer": 63
+          },
+          {
+            "left": 79,
+            "right": 97,
+            "answer": 97
+          },
+          {
+            "left": 38,
+            "right": 30,
+            "answer": 38
+          },
+          {
+            "left": 80,
+            "right": 44,
+            "answer": 80
+          },
+          {
+            "left": 12,
+            "right": 11,
+            "answer": 12
+          },
+          {
+            "left": 68,
+            "right": 25,
+            "answer": 68
+          },
+          {
+            "left": 43,
+            "right": 40,
+            "answer": 43
+          },
+          {
+            "left": 91,
+            "right": 64,
+            "answer": 91
+          },
+          {
+            "left": 82,
+            "right": 81,
+            "answer": 82
+          },
+          {
+            "left": 14,
+            "right": 58,
+            "answer": 58
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "1.NBT.3"
+        ],
+        "problems": [
+          {
+            "left": 19,
+            "right": 91,
+            "answer": 91
+          },
+          {
+            "left": 75,
+            "right": 42,
+            "answer": 75
+          },
+          {
+            "left": 62,
+            "right": 26,
+            "answer": 62
+          },
+          {
+            "left": 94,
+            "right": 64,
+            "answer": 94
+          },
+          {
+            "left": 83,
+            "right": 88,
+            "answer": 88
+          },
+          {
+            "left": 78,
+            "right": 96,
+            "answer": 96
+          },
+          {
+            "left": 97,
+            "right": 90,
+            "answer": 97
+          },
+          {
+            "left": 61,
+            "right": 16,
+            "answer": 61
+          },
+          {
+            "left": 94,
+            "right": 98,
+            "answer": 98
+          },
+          {
+            "left": 86,
+            "right": 68,
+            "answer": 86
+          },
+          {
+            "left": 54,
+            "right": 17,
+            "answer": 54
+          },
+          {
+            "left": 14,
+            "right": 10,
+            "answer": 14
+          },
+          {
+            "left": 56,
+            "right": 65,
+            "answer": 65
+          },
+          {
+            "left": 19,
+            "right": 88,
+            "answer": 88
+          },
+          {
+            "left": 21,
+            "right": 12,
+            "answer": 21
+          },
+          {
+            "left": 47,
+            "right": 23,
+            "answer": 47
+          },
+          {
+            "left": 24,
+            "right": 42,
+            "answer": 42
+          },
+          {
+            "left": 29,
+            "right": 22,
+            "answer": 29
+          },
+          {
+            "left": 66,
+            "right": 97,
+            "answer": 97
+          },
+          {
+            "left": 85,
+            "right": 89,
+            "answer": 89
+          },
+          {
+            "left": 29,
+            "right": 50,
+            "answer": 50
+          },
+          {
+            "left": 84,
+            "right": 87,
+            "answer": 87
+          },
+          {
+            "left": 57,
+            "right": 95,
+            "answer": 95
+          },
+          {
+            "left": 44,
+            "right": 46,
+            "answer": 46
+          },
+          {
+            "left": 79,
+            "right": 32,
+            "answer": 79
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "1.NBT.3"
+        ],
+        "problems": [
+          {
+            "left": 87,
+            "right": 78,
+            "answer": 87
+          },
+          {
+            "left": 30,
+            "right": 90,
+            "answer": 90
+          },
+          {
+            "left": 92,
+            "right": 29,
+            "answer": 92
+          },
+          {
+            "left": 99,
+            "right": 38,
+            "answer": 99
+          },
+          {
+            "left": 91,
+            "right": 95,
+            "answer": 95
+          },
+          {
+            "left": 58,
+            "right": 27,
+            "answer": 58
+          },
+          {
+            "left": 72,
+            "right": 73,
+            "answer": 73
+          },
+          {
+            "left": 18,
+            "right": 81,
+            "answer": 81
+          },
+          {
+            "left": 52,
+            "right": 51,
+            "answer": 52
+          },
+          {
+            "left": 83,
+            "right": 38,
+            "answer": 83
+          },
+          {
+            "left": 24,
+            "right": 99,
+            "answer": 99
+          },
+          {
+            "left": 66,
+            "right": 63,
+            "answer": 66
+          },
+          {
+            "left": 32,
+            "right": 23,
+            "answer": 32
+          },
+          {
+            "left": 13,
+            "right": 52,
+            "answer": 52
+          },
+          {
+            "left": 39,
+            "right": 93,
+            "answer": 93
+          },
+          {
+            "left": 96,
+            "right": 47,
+            "answer": 96
+          },
+          {
+            "left": 84,
+            "right": 48,
+            "answer": 84
+          },
+          {
+            "left": 30,
+            "right": 34,
+            "answer": 34
+          },
+          {
+            "left": 27,
+            "right": 74,
+            "answer": 74
+          },
+          {
+            "left": 89,
+            "right": 88,
+            "answer": 89
+          },
+          {
+            "left": 54,
+            "right": 28,
+            "answer": 54
+          },
+          {
+            "left": 30,
+            "right": 35,
+            "answer": 35
+          },
+          {
+            "left": 12,
+            "right": 50,
+            "answer": 50
+          },
+          {
+            "left": 33,
+            "right": 38,
+            "answer": 38
+          },
+          {
+            "left": 31,
+            "right": 86,
+            "answer": 86
+          }
+        ]
+      }
+    },
+    "K": {
+      "A": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "K.CC.7"
+        ],
+        "problems": [
+          {
+            "left": 5,
+            "right": 2,
+            "answer": 5
+          },
+          {
+            "left": 8,
+            "right": 2,
+            "answer": 8
+          },
+          {
+            "left": 3,
+            "right": 5,
+            "answer": 5
+          },
+          {
+            "left": 2,
+            "right": 9,
+            "answer": 9
+          },
+          {
+            "left": 10,
+            "right": 9,
+            "answer": 10
+          },
+          {
+            "left": 1,
+            "right": 9,
+            "answer": 9
+          },
+          {
+            "left": 9,
+            "right": 5,
+            "answer": 9
+          },
+          {
+            "left": 3,
+            "right": 2,
+            "answer": 3
+          },
+          {
+            "left": 8,
+            "right": 1,
+            "answer": 8
+          },
+          {
+            "left": 4,
+            "right": 9,
+            "answer": 9
+          },
+          {
+            "left": 10,
+            "right": 1,
+            "answer": 10
+          },
+          {
+            "left": 8,
+            "right": 5,
+            "answer": 8
+          },
+          {
+            "left": 4,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 1,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 8,
+            "right": 4,
+            "answer": 8
+          },
+          {
+            "left": 4,
+            "right": 5,
+            "answer": 5
+          },
+          {
+            "left": 10,
+            "right": 5,
+            "answer": 10
+          },
+          {
+            "left": 8,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 6,
+            "right": 2,
+            "answer": 6
+          },
+          {
+            "left": 3,
+            "right": 4,
+            "answer": 4
+          },
+          {
+            "left": 7,
+            "right": 4,
+            "answer": 7
+          },
+          {
+            "left": 6,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 3,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 5,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 3,
+            "right": 6,
+            "answer": 6
+          }
+        ]
+      },
+      "B": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "K.CC.7"
+        ],
+        "problems": [
+          {
+            "left": 1,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 1,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 5,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 10,
+            "right": 4,
+            "answer": 10
+          },
+          {
+            "left": 4,
+            "right": 3,
+            "answer": 4
+          },
+          {
+            "left": 3,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 6,
+            "right": 9,
+            "answer": 9
+          },
+          {
+            "left": 1,
+            "right": 2,
+            "answer": 2
+          },
+          {
+            "left": 8,
+            "right": 2,
+            "answer": 8
+          },
+          {
+            "left": 3,
+            "right": 8,
+            "answer": 8
+          },
+          {
+            "left": 9,
+            "right": 3,
+            "answer": 9
+          },
+          {
+            "left": 4,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 9,
+            "right": 8,
+            "answer": 9
+          },
+          {
+            "left": 9,
+            "right": 2,
+            "answer": 9
+          },
+          {
+            "left": 7,
+            "right": 3,
+            "answer": 7
+          },
+          {
+            "left": 7,
+            "right": 8,
+            "answer": 8
+          },
+          {
+            "left": 2,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 5,
+            "right": 4,
+            "answer": 5
+          },
+          {
+            "left": 7,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 7,
+            "right": 5,
+            "answer": 7
+          },
+          {
+            "left": 5,
+            "right": 1,
+            "answer": 5
+          },
+          {
+            "left": 3,
+            "right": 1,
+            "answer": 3
+          },
+          {
+            "left": 8,
+            "right": 5,
+            "answer": 8
+          },
+          {
+            "left": 2,
+            "right": 3,
+            "answer": 3
+          },
+          {
+            "left": 1,
+            "right": 4,
+            "answer": 4
+          }
+        ]
+      },
+      "C": {
+        "version": 2,
+        "timeLimit": 60,
+        "standards": [
+          "K.CC.7"
+        ],
+        "problems": [
+          {
+            "left": 1,
+            "right": 4,
+            "answer": 4
+          },
+          {
+            "left": 7,
+            "right": 1,
+            "answer": 7
+          },
+          {
+            "left": 8,
+            "right": 6,
+            "answer": 8
+          },
+          {
+            "left": 10,
+            "right": 2,
+            "answer": 10
+          },
+          {
+            "left": 1,
+            "right": 3,
+            "answer": 3
+          },
+          {
+            "left": 9,
+            "right": 3,
+            "answer": 9
+          },
+          {
+            "left": 6,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 6,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 9,
+            "right": 1,
+            "answer": 9
+          },
+          {
+            "left": 3,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 3,
+            "right": 10,
+            "answer": 10
+          },
+          {
+            "left": 10,
+            "right": 7,
+            "answer": 10
+          },
+          {
+            "left": 2,
+            "right": 4,
+            "answer": 4
+          },
+          {
+            "left": 8,
+            "right": 1,
+            "answer": 8
+          },
+          {
+            "left": 1,
+            "right": 5,
+            "answer": 5
+          },
+          {
+            "left": 5,
+            "right": 7,
+            "answer": 7
+          },
+          {
+            "left": 2,
+            "right": 6,
+            "answer": 6
+          },
+          {
+            "left": 7,
+            "right": 9,
+            "answer": 9
+          },
+          {
+            "left": 6,
+            "right": 1,
+            "answer": 6
+          },
+          {
+            "left": 6,
+            "right": 4,
+            "answer": 6
+          },
+          {
+            "left": 5,
+            "right": 2,
+            "answer": 5
+          },
+          {
+            "left": 2,
+            "right": 1,
+            "answer": 2
+          },
+          {
+            "left": 8,
+            "right": 4,
+            "answer": 8
+          },
+          {
+            "left": 3,
+            "right": 5,
+            "answer": 5
+          },
+          {
+            "left": 2,
+            "right": 7,
+            "answer": 7
+          }
+        ]
+      }
+    }
   }
-};
-
-// ====================================================================
-// QUANTITY DISCRIMINATION PROBES (K-1) � K.CC.6, K.CC.7
-// Student identifies the larger number from a pair
-// 25 items per form, 1-minute time limit (faster pace)
-// left/right: the two numbers, answer: the larger one
-// ====================================================================
-window.QUANTITY_DISCRIMINATION_PROBES = {
-  'K': {
-    'A': { timeLimit: 60, problems: [
-      {left:3,right:7,answer:7},{left:9,right:2,answer:9},{left:5,right:8,answer:8},{left:1,right:6,answer:6},{left:4,right:4,answer:4},
-      {left:8,right:3,answer:8},{left:2,right:9,answer:9},{left:7,right:1,answer:7},{left:6,right:5,answer:6},{left:0,right:8,answer:8},
-      {left:9,right:4,answer:9},{left:3,right:6,answer:6},{left:7,right:2,answer:7},{left:5,right:9,answer:9},{left:1,right:3,answer:3},
-      {left:8,right:6,answer:8},{left:4,right:7,answer:7},{left:6,right:0,answer:6},{left:2,right:5,answer:5},{left:9,right:1,answer:9},
-      {left:3,right:8,answer:8},{left:7,right:4,answer:7},{left:5,right:2,answer:5},{left:6,right:9,answer:9},{left:0,right:4,answer:4}
-    ]},
-    'B': { timeLimit: 60, problems: [
-      {left:5,right:2,answer:5},{left:8,right:6,answer:8},{left:1,right:7,answer:7},{left:9,right:3,answer:9},{left:4,right:8,answer:8},
-      {left:6,right:1,answer:6},{left:3,right:9,answer:9},{left:7,right:5,answer:7},{left:2,right:4,answer:4},{left:8,right:0,answer:8},
-      {left:4,right:6,answer:6},{left:9,right:7,answer:9},{left:1,right:5,answer:5},{left:6,right:3,answer:6},{left:7,right:8,answer:8},
-      {left:0,right:9,answer:9},{left:5,right:1,answer:5},{left:3,right:7,answer:7},{left:8,right:4,answer:8},{left:2,right:6,answer:6},
-      {left:9,right:5,answer:9},{left:4,right:1,answer:4},{left:6,right:8,answer:8},{left:7,right:3,answer:7},{left:5,right:9,answer:9}
-    ]},
-    'C': { timeLimit: 60, problems: [
-      {left:7,right:3,answer:7},{left:2,right:8,answer:8},{left:6,right:4,answer:6},{left:9,right:1,answer:9},{left:5,right:7,answer:7},
-      {left:3,right:6,answer:6},{left:8,right:2,answer:8},{left:1,right:9,answer:9},{left:4,right:5,answer:5},{left:0,right:7,answer:7},
-      {left:6,right:9,answer:9},{left:8,right:1,answer:8},{left:3,right:5,answer:5},{left:7,right:4,answer:7},{left:2,right:3,answer:3},
-      {left:9,right:6,answer:9},{left:5,right:8,answer:8},{left:1,right:4,answer:4},{left:8,right:7,answer:8},{left:4,right:0,answer:4},
-      {left:6,right:2,answer:6},{left:3,right:9,answer:9},{left:7,right:5,answer:7},{left:9,right:8,answer:9},{left:1,right:6,answer:6}
-    ]}
-  },
-  '1': {
-    'A': { timeLimit: 60, problems: [
-      {left:23,right:47,answer:47},{left:68,right:31,answer:68},{left:15,right:51,answer:51},{left:82,right:28,answer:82},{left:44,right:39,answer:44},
-      {left:57,right:75,answer:75},{left:19,right:91,answer:91},{left:63,right:36,answer:63},{left:42,right:58,answer:58},{left:87,right:14,answer:87},
-      {left:33,right:67,answer:67},{left:71,right:29,answer:71},{left:16,right:84,answer:84},{left:55,right:45,answer:55},{left:38,right:73,answer:73},
-      {left:92,right:18,answer:92},{left:26,right:62,answer:62},{left:79,right:34,answer:79},{left:41,right:59,answer:59},{left:13,right:87,answer:87},
-      {left:65,right:56,answer:65},{left:48,right:72,answer:72},{left:81,right:19,answer:81},{left:37,right:63,answer:63},{left:54,right:46,answer:54}
-    ]},
-    'B': { timeLimit: 60, problems: [
-      {left:52,right:25,answer:52},{left:38,right:83,answer:83},{left:71,right:17,answer:71},{left:14,right:64,answer:64},{left:46,right:54,answer:54},
-      {left:89,right:21,answer:89},{left:33,right:77,answer:77},{left:65,right:42,answer:65},{left:28,right:82,answer:82},{left:57,right:35,answer:57},
-      {left:16,right:91,answer:91},{left:73,right:37,answer:73},{left:44,right:56,answer:56},{left:85,right:18,answer:85},{left:29,right:71,answer:71},
-      {left:62,right:48,answer:62},{left:41,right:69,answer:69},{left:93,right:34,answer:93},{left:27,right:72,answer:72},{left:58,right:45,answer:58},
-      {left:15,right:85,answer:85},{left:76,right:43,answer:76},{left:39,right:61,answer:61},{left:84,right:26,answer:84},{left:53,right:47,answer:53}
-    ]},
-    'C': { timeLimit: 60, problems: [
-      {left:41,right:59,answer:59},{left:72,right:28,answer:72},{left:35,right:63,answer:63},{left:86,right:14,answer:86},{left:53,right:47,answer:53},
-      {left:27,right:81,answer:81},{left:68,right:32,answer:68},{left:19,right:74,answer:74},{left:45,right:55,answer:55},{left:91,right:39,answer:91},
-      {left:16,right:67,answer:67},{left:58,right:42,answer:58},{left:33,right:87,answer:87},{left:74,right:26,answer:74},{left:48,right:52,answer:52},
-      {left:82,right:18,answer:82},{left:29,right:71,answer:71},{left:63,right:37,answer:63},{left:44,right:56,answer:56},{left:15,right:95,answer:95},
-      {left:76,right:24,answer:76},{left:38,right:62,answer:62},{left:57,right:43,answer:57},{left:21,right:89,answer:89},{left:65,right:35,answer:65}
-    ]}
-  }
-};
+});

@@ -424,21 +424,26 @@ window.StemLab = window.StemLab || {
       num += a * b; dx += a * a; dy += b * b;
     }
     if (dx === 0 || dy === 0) return { error: 'Correlation is undefined when either variable has no variability.' };
-    var r = num / Math.sqrt(dx * dy);
+    // Rounding can put a perfect fit just past ±1, which made t NaN.
+    var r = Math.max(-1, Math.min(1, num / Math.sqrt(dx * dy)));
     var df = n - 2;
     var t = r * Math.sqrt(df / (1 - r * r));
     var p = _pTwoTailedT(t, df);
-    // Fisher z-transform CI
-    var z = 0.5 * Math.log((1 + r) / (1 - r));
-    var seZ = 1 / Math.sqrt(n - 3);
-    var zLo = z - 1.96 * seZ, zHi = z + 1.96 * seZ;
-    var rLo = (Math.exp(2 * zLo) - 1) / (Math.exp(2 * zLo) + 1);
-    var rHi = (Math.exp(2 * zHi) - 1) / (Math.exp(2 * zHi) + 1);
+    // Fisher z-transform CI: SE = 1/√(n − 3) needs n ≥ 4, and z = ±∞ at |r| = 1.
+    var ci95 = null, ciNote = null;
+    if (n <= 3) ciNote = __alloSLT('stem.statslab.ci_fisher_needs_n4', 'not defined for n = 3 (the Fisher z interval needs n ≥ 4)');
+    else if (Math.abs(r) === 1) ciNote = __alloSLT('stem.statslab.ci_fisher_perfect_r', 'not defined when |r| = 1 (a perfect sample correlation)');
+    else {
+      var z = 0.5 * Math.log((1 + r) / (1 - r));
+      var seZ = 1 / Math.sqrt(n - 3);
+      var zLo = z - 1.96 * seZ, zHi = z + 1.96 * seZ;
+      ci95 = [Math.tanh(zLo), Math.tanh(zHi)];
+    }
     return {
       test: 'Pearson correlation',
       n: n, r: r, df: df, t: t, p: p,
       rSquared: r * r,
-      ci95: [rLo, rHi],
+      ci95: ci95, ciNote: ciNote,
       formula: 'r = Σ(xᵢ - x̄)(yᵢ - ȳ) / √[Σ(xᵢ - x̄)² · Σ(yᵢ - ȳ)²]',
       formulaPlugged: 'r = ' + num.toFixed(2) + ' / √(' + dx.toFixed(2) + ' · ' + dy.toFixed(2) + ')',
     };
@@ -536,7 +541,9 @@ window.StemLab = window.StemLab || {
     if (!(sumE > 0) || !(sumO > 0) || Math.abs(sumE - sumO) <= 1e-9 * sumO) return exp;
     return exp.map(function(e) { return e * sumO / sumE; });
   }
-  function chiSquareGoodnessOfFit(observed, expected) {
+  // estimatedParams: parameters estimated from these same counts (1 for the
+  // allele frequency in Hardy-Weinberg); each one costs a degree of freedom.
+  function chiSquareGoodnessOfFit(observed, expected, estimatedParams) {
     if (!observed || !expected || observed.length !== expected.length || observed.length < 2) {
       return { error: 'Observed and expected must have ≥2 matching categories.' };
     }
@@ -546,11 +553,13 @@ window.StemLab = window.StemLab || {
       if (expected[i] === 0) return { error: 'Expected count cannot be 0.' };
       x2 += Math.pow(observed[i] - expected[i], 2) / expected[i];
     }
-    var df = observed.length - 1;
+    var est = Math.max(0, Math.floor(Number(estimatedParams) || 0));
+    var df = observed.length - 1 - est;
+    if (df < 1) return { error: __alloSLT('stem.statslab.gof_err_df_min', 'df = categories − 1 − estimated parameters must be at least 1. Add categories or estimate fewer parameters.') };
     var p = _pChiSq(x2, df);
     return {
       test: 'Chi-square goodness-of-fit',
-      chiSquared: x2, df: df, p: p,
+      chiSquared: x2, df: df, p: p, estimatedParams: est,
       observed: observed, expected: expected,
       categories: observed.length,
       formula: 'χ² = Σ (Oᵢ - Eᵢ)² / Eᵢ',
@@ -758,7 +767,7 @@ window.StemLab = window.StemLab || {
     }
     if (/Pearson/.test(t)) {
       return 'r(' + result.df + ') = ' + result.r.toFixed(2) + ', ' + pStr +
-        ', 95% CI [' + result.ci95[0].toFixed(2) + ', ' + result.ci95[1].toFixed(2) + '].';
+        (result.ci95 ? ', 95% CI [' + result.ci95[0].toFixed(2) + ', ' + result.ci95[1].toFixed(2) + ']' : '') + '.';
     }
     if (/Spearman/.test(t)) {
       return 'ρ(' + result.df + ') = ' + result.r.toFixed(2) + ', ' + pStr + '.';
@@ -1119,44 +1128,40 @@ window.StemLab = window.StemLab || {
   // Solves for any one of: effect size, alpha, power, n
   // ──────────────────────────────────────────────────────────────────
   function powerTTest_independent(opts) {
-    // Solve for n given d, alpha, power (or vice-versa)
-    // Two-tailed independent t-test, equal n per group
-    if (!window.jStat) return { error: 'jStat library required for power analysis.' };
-    var d = opts.d, alpha = opts.alpha == null ? 0.05 : opts.alpha;
-    var power = opts.power == null ? 0.8 : opts.power;
-    var n = opts.n;
-    if (opts.solve === 'n' || (n == null && d != null)) {
-      // Iterate: find smallest n where power ≥ target
-      var test_n = 4;
-      while (test_n < 5000) {
-        var df = 2 * (test_n - 1);
-        var ncp = d * Math.sqrt(test_n / 2);  // non-centrality
-        var tcrit = window.jStat.studentt.inv(1 - alpha / 2, df);
-        // Power ≈ 1 - P(|T| < tcrit | ncp)
-        // Use non-central t approximation via z
-        var sePower = 1;
-        var z = (ncp - tcrit) / sePower;
-        var pwr = window.jStat.normal.cdf(z, 0, 1);
-        if (pwr >= power) return { n: test_n, d: d, alpha: alpha, power: pwr, total_n: 2 * test_n };
-        test_n++;
+    // Two-sided independent t-test, n per group. Exact (no jStat): power =
+    // P(|T'| > t_crit), T' ~ noncentral t(2n − 2, δ = d·√(n/2)), as G*Power
+    // computes it. The old normal approximation gave 5 per group at d = 2 (G*Power: 6).
+    opts = opts || {};
+    var d = Number(opts.d), alpha = opts.alpha == null ? 0.05 : Number(opts.alpha);
+    var power = opts.power == null ? 0.8 : Number(opts.power);
+    var n = opts.n == null ? null : Math.floor(Number(opts.n));
+    var solve = opts.solve || (n == null ? 'n' : 'power');
+    var powerAt = function(m, dd) { return _powerNoncentralT(alpha, 2 * m - 2, dd * Math.sqrt(m / 2)); };
+    var bad;
+    if (solve === 'n') {
+      bad = _powerInputError(d, alpha, power);
+      if (bad) return { error: bad };
+      var nReq = _smallestN(function(m) { return powerAt(m, d); }, power, 2, 100000);
+      if (nReq == null) return { error: __alloSLT('stem.statslab.power_err_t_n_max', 'Required n exceeds 100,000 per group — the effect may be too small to detect at this power.') };
+      return { n: nReq, total_n: 2 * nReq, d: d, alpha: alpha, power: powerAt(nReq, d), targetPower: power };
+    }
+    if (!(n >= 2)) return { error: __alloSLT('stem.statslab.power_err_t_n_min', 'Enter at least 2 subjects per group.') };
+    if (solve === 'power') {
+      if (!(d > 0) || !isFinite(d)) return { error: __alloSLT('stem.statslab.power_err_effect_positive', 'Enter an effect size greater than 0.') };
+      if (!(alpha > 0 && alpha < 1)) return { error: __alloSLT('stem.statslab.power_err_alpha_range', 'Enter an α between 0 and 1.') };
+      return { power: powerAt(n, d), n: n, d: d, alpha: alpha };
+    }
+    if (solve === 'd') {
+      // Smallest d whose exact power at this n reaches the target (power rises with d).
+      bad = _powerInputError(1, alpha, power); // effect size is the unknown here
+      if (bad) return { error: bad };
+      var lo = 0, hi = 1;
+      while (powerAt(n, hi) < power && hi < 1e6) hi *= 2;
+      for (var it = 0; it < 100 && hi - lo > 1e-10 * hi; it++) {
+        var mid = (lo + hi) / 2;
+        if (powerAt(n, mid) < power) lo = mid; else hi = mid;
       }
-      return { error: 'Required n exceeds 5000 — effect may be too small to detect at this power.' };
-    }
-    if (opts.solve === 'power' && n != null && d != null) {
-      var df2 = 2 * (n - 1);
-      var ncp2 = d * Math.sqrt(n / 2);
-      var tcrit2 = window.jStat.studentt.inv(1 - alpha / 2, df2);
-      var z2 = (ncp2 - tcrit2);
-      var pwr2 = window.jStat.normal.cdf(z2, 0, 1);
-      return { power: pwr2, n: n, d: d, alpha: alpha };
-    }
-    if (opts.solve === 'd' && n != null) {
-      // Find minimum detectable d given n, alpha, power
-      var df3 = 2 * (n - 1);
-      var tcrit3 = window.jStat.studentt.inv(1 - alpha / 2, df3);
-      var zPower = window.jStat.normal.inv(power, 0, 1);
-      var d_min = (tcrit3 + zPower) / Math.sqrt(n / 2);
-      return { d: d_min, n: n, alpha: alpha, power: power };
+      return { d: hi, n: n, alpha: alpha, power: powerAt(n, hi), targetPower: power };
     }
     return { error: 'Specify what to solve for: solve=n, solve=power, or solve=d.' };
   }
@@ -1175,52 +1180,194 @@ window.StemLab = window.StemLab || {
     }
     return { error: 'Currently solves for n only.' };
   }
-  function powerChiSquare(opts) {
-    if (!window.jStat) return { error: 'jStat library required.' };
-    var w = opts.w;  // Cohen's w (effect size)
-    var df = opts.df;
-    var alpha = opts.alpha == null ? 0.05 : opts.alpha;
-    var power = opts.power == null ? 0.8 : opts.power;
-    if (opts.solve === 'n' || opts.n == null) {
-      var crit = window.jStat.chisquare.inv(1 - alpha, df);
-      // Use non-central chi-square approximation
-      // Iterate
-      var test_n = df + 2;
-      while (test_n < 10000) {
-        var lambda = w * w * test_n;
-        // Approximate non-central chi-square CDF via shifted central
-        // Power = 1 - F_{χ²(df, λ)}(crit). Approximate via mean shift.
-        var mean_nc = df + lambda;
-        var var_nc = 2 * df + 4 * lambda;
-        var z = (crit - mean_nc) / Math.sqrt(var_nc);
-        var pwr = 1 - window.jStat.normal.cdf(z, 0, 1);
-        if (pwr >= power) return { n: test_n, w: w, df: df, alpha: alpha, power: pwr };
-        test_n++;
+  // Exact power for chi-square and ANOVA (no jStat needed): the noncentral
+  // chi-square and noncentral F as Poisson-weighted sums of central terms,
+  // which is the model G*Power uses.
+  function _lnGamma(x) {
+    var c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+      -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (x < 0.5) return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * x))) - _lnGamma(1 - x);
+    x -= 1;
+    var a = c[0], t = x + 7.5;
+    for (var i = 1; i < 9; i++) a += c[i] / (x + i);
+    return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+  }
+  // Regularized incomplete beta I_x(a, b) (continued fraction, modified Lentz).
+  function _ibeta(x, a, b) {
+    if (!(x > 0)) return 0;
+    if (x >= 1) return 1;
+    if (x > (a + 1) / (a + b + 2)) return 1 - _ibeta(1 - x, b, a);
+    var tiny = 1e-300, c = 1, d = 1 - (a + b) * x / (a + 1);
+    if (Math.abs(d) < tiny) d = tiny;
+    d = 1 / d;
+    var hh = d;
+    for (var m = 1; m <= 5000; m++) {
+      var m2 = 2 * m, num = m * (b - m) * x / ((a + m2 - 1) * (a + m2));
+      d = 1 + num * d; if (Math.abs(d) < tiny) d = tiny;
+      c = 1 + num / c; if (Math.abs(c) < tiny) c = tiny;
+      d = 1 / d; hh *= d * c;
+      num = -(a + m) * (a + b + m) * x / ((a + m2) * (a + m2 + 1));
+      d = 1 + num * d; if (Math.abs(d) < tiny) d = tiny;
+      c = 1 + num / c; if (Math.abs(c) < tiny) c = tiny;
+      d = 1 / d;
+      var del = d * c;
+      hh *= del;
+      if (Math.abs(del - 1) < 1e-15) break;
+    }
+    return Math.exp(_lnGamma(a + b) - _lnGamma(a) - _lnGamma(b) + a * Math.log(x) + b * Math.log(1 - x)) * hh / a;
+  }
+  // Regularized lower incomplete gamma P(a, x).
+  function _gammaP(a, x) {
+    if (!(x > 0)) return 0;
+    var lnPre = -x + a * Math.log(x) - _lnGamma(a), i;
+    if (x < a + 1) {
+      var ap = a, sumS = 1 / a, del = sumS;
+      for (i = 0; i < 5000; i++) { ap += 1; del *= x / ap; sumS += del; if (Math.abs(del) < Math.abs(sumS) * 1e-15) break; }
+      return sumS * Math.exp(lnPre);
+    }
+    var tiny = 1e-300, bb = x + 1 - a, c = 1 / tiny, d = 1 / bb, hh = d;
+    for (i = 1; i <= 5000; i++) {
+      var an = -i * (i - a);
+      bb += 2;
+      d = an * d + bb; if (Math.abs(d) < tiny) d = tiny;
+      c = bb + an / c; if (Math.abs(c) < tiny) c = tiny;
+      d = 1 / d;
+      var dl = d * c;
+      hh *= dl;
+      if (Math.abs(dl - 1) < 1e-15) break;
+    }
+    return 1 - Math.exp(lnPre) * hh;
+  }
+  // Smallest x with cdf(x) >= p, by bisection on [0, hi].
+  function _quantileUp(cdf, p) {
+    var lo = 0, hi = 1;
+    while (cdf(hi) < p && hi < 1e12) hi *= 2;
+    for (var i = 0; i < 200 && hi - lo > 1e-12 * hi; i++) {
+      var mid = (lo + hi) / 2;
+      if (cdf(mid) < p) lo = mid; else hi = mid;
+    }
+    return hi;
+  }
+  // Σ_j Poisson(j; λ/2) · term(j), cut off 12 SD past the Poisson mean.
+  function _poissonMix(lambda, term) {
+    var half = lambda / 2;
+    if (!(half > 0)) return term(0);
+    var jMax = Math.ceil(half + 12 * Math.sqrt(half) + 30), s = 0;
+    for (var j = 0; j <= jMax; j++) s += Math.exp(-half + j * Math.log(half) - _lnGamma(j + 1)) * term(j);
+    return s;
+  }
+  // P(F' > Fcrit) for F' ~ noncentral F(df1, df2, lambda), Fcrit at level alpha.
+  function _powerNoncentralF(alpha, df1, df2, lambda) {
+    var crit = _quantileUp(function(x) { return _ibeta(df1 * x / (df1 * x + df2), df1 / 2, df2 / 2); }, 1 - alpha);
+    var y = df2 / (df1 * crit + df2);
+    return _poissonMix(lambda, function(j) { return _ibeta(y, df2 / 2, df1 / 2 + j); });
+  }
+  // P(X' > crit) for X' ~ noncentral chi-square(df, lambda), crit at level alpha.
+  function _powerNoncentralChi(alpha, df, lambda) {
+    var crit = _quantileUp(function(x) { return _gammaP(df / 2, x / 2); }, 1 - alpha);
+    return _poissonMix(lambda, function(j) { return 1 - _gammaP(df / 2 + j, crit / 2); });
+  }
+  // Standard normal CDF, Φ(z) = ½(1 ± P(½, z²/2)).
+  function _stdNormalCdf(z) {
+    if (isNaN(z)) return NaN;
+    if (!isFinite(z)) return z > 0 ? 1 : 0;
+    var half = 0.5 * _gammaP(0.5, z * z / 2);
+    return z >= 0 ? 0.5 + half : 0.5 - half;
+  }
+  // P(T' ≤ t), T' ~ noncentral t(df, δ): Lenth's AS 243 series, as in R's pnt().
+  function _nctCdf(t, df, delta) {
+    if (!(df > 0) || isNaN(t) || !isFinite(delta)) return NaN;
+    if (!isFinite(t)) return t > 0 ? 1 : 0;
+    var negdel = t < 0, tt = negdel ? -t : t, del = negdel ? -delta : delta, tnc = 0;
+    if (df > 4e5 || del * del > 1415) {
+      // The series underflows here; R's normal approximation.
+      var s4 = 1 / (4 * df);
+      var approx = _stdNormalCdf((tt * (1 - s4) - del) / Math.sqrt(1 + tt * tt * 2 * s4));
+      return negdel ? 1 - approx : approx;
+    }
+    var x = tt * tt / (tt * tt + df);
+    if (x > 0) {
+      var lambda = del * del, p = 0.5 * Math.exp(-0.5 * lambda), q = Math.sqrt(2 / Math.PI) * p * del;
+      var s = 0.5 - p;
+      if (s < 1e-7) s = -0.5 * (Math.exp(-0.5 * lambda) - 1);
+      var a = 0.5, b = 0.5 * df, rxb = Math.pow(1 - x, b);
+      var albeta = 0.5 * Math.log(Math.PI) + _lnGamma(b) - _lnGamma(0.5 + b);
+      var xodd = _ibeta(x, a, b), godd = 2 * rxb * Math.exp(a * Math.log(x) - albeta);
+      var bx = b * x, xeven = bx < 2.220446049250313e-16 ? bx : 1 - rxb, geven = bx * rxb;
+      tnc = p * xodd + q * xeven;
+      for (var it = 1; it <= 1000; it++) {
+        a += 1;
+        xodd -= godd; xeven -= geven;
+        godd *= x * (a + b - 1) / a;
+        geven *= x * (a + b - 0.5) / (a + 0.5);
+        p *= lambda / (2 * it);
+        q *= lambda / (2 * it + 1);
+        tnc += p * xodd + q * xeven;
+        s -= p;
+        if (s < -1e-10 || (s <= 0 && it > 1) || Math.abs(2 * s * (xodd - godd)) < 1e-12) break;
       }
-      return { error: 'Required n exceeds 10000.' };
+    }
+    tnc = Math.min(1, tnc + _stdNormalCdf(-del));
+    return Math.max(0, Math.min(1, negdel ? 1 - tnc : tnc));
+  }
+  // Two-sided power of a t-test: P(|T'| > t_crit), T' ~ noncentral t(df, ncp).
+  function _powerNoncentralT(alpha, df, ncp) {
+    var crit = _quantileUp(function(x) { return 1 - 0.5 * _ibeta(df / (df + x * x), df / 2, 0.5); }, 1 - alpha / 2);
+    return Math.max(0, Math.min(1, 1 - _nctCdf(crit, df, ncp) + _nctCdf(-crit, df, ncp)));
+  }
+  // Smallest integer n in [nMin, nMax] with powerAt(n) >= target (power rises with n).
+  function _smallestN(powerAt, target, nMin, nMax) {
+    var lo = nMin, hi = nMin;
+    if (powerAt(nMin) >= target) return nMin;
+    for (;;) {
+      lo = hi;
+      hi = Math.min(nMax, hi * 2);
+      if (powerAt(hi) >= target) break;
+      if (hi >= nMax) return null;
+    }
+    while (hi - lo > 1) {
+      var mid = Math.floor((lo + hi) / 2);
+      if (powerAt(mid) >= target) hi = mid; else lo = mid;
+    }
+    return hi;
+  }
+  function _powerInputError(es, alpha, power) {
+    if (!(es > 0) || !isFinite(es)) return __alloSLT('stem.statslab.power_err_effect_positive', 'Enter an effect size greater than 0.');
+    if (!(alpha > 0 && alpha < 1)) return __alloSLT('stem.statslab.power_err_alpha_range', 'Enter an α between 0 and 1.');
+    if (!(power > alpha && power < 1)) return __alloSLT('stem.statslab.power_err_power_range', 'Enter a desired power between α and 1.');
+    return null;
+  }
+  function powerChiSquare(opts) {
+    // Cohen's w; exact: power = P(X' > crit), X' ~ noncentral chi-square(df, λ = w²N).
+    var w = Number(opts.w), df = Math.floor(Number(opts.df));
+    var alpha = opts.alpha == null ? 0.05 : Number(opts.alpha);
+    var power = opts.power == null ? 0.8 : Number(opts.power);
+    if (opts.solve === 'n' || opts.n == null) {
+      var bad = _powerInputError(w, alpha, power);
+      if (bad) return { error: bad };
+      if (!(df >= 1)) return { error: __alloSLT('stem.statslab.power_err_df_min', 'df must be at least 1.') };
+      var powerAt = function(n) { return _powerNoncentralChi(alpha, df, w * w * n); };
+      var n = _smallestN(powerAt, power, 2, 1000000);
+      if (n == null) return { error: __alloSLT('stem.statslab.power_err_chi_n_max', 'Required N exceeds 1,000,000 — the effect may be too small to detect at this power.') };
+      return { n: n, w: w, df: df, alpha: alpha, power: powerAt(n), targetPower: power };
     }
     return { error: 'Currently solves for n.' };
   }
   function powerANOVA(opts) {
-    if (!window.jStat) return { error: 'jStat library required.' };
-    // Cohen's f effect size; k = number of groups
-    var f = opts.f, k = opts.k, alpha = opts.alpha == null ? 0.05 : opts.alpha;
-    var power = opts.power == null ? 0.8 : opts.power;
+    // Cohen's f, k equal groups; exact: power = P(F' > F_crit), F' ~ noncentral
+    // F(k − 1, N − k, λ = f²N), N = k·n (G*Power's fixed-effects omnibus model).
+    var f = Number(opts.f), k = Math.floor(Number(opts.k));
+    var alpha = opts.alpha == null ? 0.05 : Number(opts.alpha);
+    var power = opts.power == null ? 0.8 : Number(opts.power);
     var n_per_group = opts.n;
-    if (opts.solve === 'n' || (n_per_group == null && f != null)) {
-      var test_n = 3;
-      while (test_n < 1000) {
-        var df1 = k - 1, df2 = k * (test_n - 1);
-        var ncp = f * f * k * test_n;  // non-centrality parameter
-        var Fcrit = window.jStat.centralF.inv(1 - alpha, df1, df2);
-        // Approximate power: shift central F by ncp
-        var meanF = (df2 / (df2 - 2)) * (1 + ncp / df1);
-        var z = (Fcrit - meanF) / 1;
-        var pwr = 1 - window.jStat.normal.cdf(z, 0, 1);
-        if (pwr >= power) return { n: test_n, total_n: k * test_n, f: f, k: k, alpha: alpha, power: pwr };
-        test_n++;
-      }
-      return { error: 'Required n exceeds 1000.' };
+    if (opts.solve === 'n' || (n_per_group == null && opts.f != null)) {
+      var bad = _powerInputError(f, alpha, power);
+      if (bad) return { error: bad };
+      if (!(k >= 2)) return { error: __alloSLT('stem.statslab.power_err_k_min', 'Enter at least 2 groups (k ≥ 2).') };
+      var powerAt = function(n) { return _powerNoncentralF(alpha, k - 1, k * n - k, f * f * k * n); };
+      var n = _smallestN(powerAt, power, 2, 100000);
+      if (n == null) return { error: __alloSLT('stem.statslab.power_err_anova_n_max', 'Required n exceeds 100,000 per group — the effect may be too small to detect at this power.') };
+      return { n: n, total_n: k * n, f: f, k: k, alpha: alpha, power: powerAt(n), targetPower: power };
     }
     return { error: 'Currently solves for n.' };
   }
@@ -1338,11 +1485,14 @@ window.StemLab = window.StemLab || {
       research_question: 'Do observed allele frequencies match Hardy-Weinberg expectations?',
       recommendedTest: 'chiSquareGoodnessOfFit',
       data: {
-        observed: [212, 416, 172],   // AA, Aa, aa
-        expected: [205.6, 432.0, 162.4],
+        observed: [212, 416, 172],   // AA, Aa, aa; N = 800
+        // p̂(A) = (2·212 + 416) / 1600 = .525, q̂ = .475 → p̂²N, 2p̂q̂N, q̂²N
+        expected: [220.5, 399.0, 180.5],
+        // p̂ is estimated from these counts, so df = 3 − 1 − 1 = 1
+        estimatedParams: 1,
         labels: ['AA homozygous', 'Aa heterozygous', 'aa homozygous']
       },
-      hint: 'Categorical outcome (genotype) compared against theoretical proportions → chi-square goodness-of-fit. p > .05 means population is in equilibrium.'
+      hint: 'Categorical outcome (genotype) compared against Hardy-Weinberg proportions (p², 2pq, q²) → chi-square goodness-of-fit. The allele frequency p is estimated from the same counts, so df = 3 − 1 − 1 = 1. p > .05 means no evidence against equilibrium (not proof of it).'
     },
     {
       id: 'handedness_major',
@@ -1455,7 +1605,13 @@ window.StemLab = window.StemLab || {
     ttestPaired: ttest_paired,
     pearson: pearson,
     linearRegression: linearRegression,
-    wilcoxonSignedRank: wilcoxonSignedRank
+    wilcoxonSignedRank: wilcoxonSignedRank,
+    powerANOVA: powerANOVA,
+    powerChiSquare: powerChiSquare,
+    powerTTest: powerTTest_independent,
+    powerNoncentralT: _powerNoncentralT,
+    nctCdf: _nctCdf,
+    bootstrapCI: bootstrapCI
   });
 
   window.StemLab.registerTool('statsLab', {
@@ -1711,7 +1867,7 @@ window.StemLab = window.StemLab || {
             } else if (testType === 'multipleRegression') {
               result = multipleRegression(d.multiRegData.x, d.multiRegData.y);
             } else if (testType === 'chiSquareGoodnessOfFit') {
-              result = chiSquareGoodnessOfFit(d.chiGofData.observed, d.chiGofData.expected);
+              result = chiSquareGoodnessOfFit(d.chiGofData.observed, d.chiGofData.expected, d.chiGofData.estimatedParams);
             } else if (testType === 'chiSquareIndependence') {
               result = chiSquareIndependence(d.chiIndepData.table);
             } else if (testType === 'mannWhitneyU') {
@@ -1800,7 +1956,8 @@ window.StemLab = window.StemLab || {
           bumps.chiGofData = {
             observed: s.data.observed.slice(),
             expected: s.data.expected.slice(),
-            labels: (s.data.labels || []).slice()
+            labels: (s.data.labels || []).slice(),
+            estimatedParams: s.data.estimatedParams || 0
           };
         }
         if (s.data.contingency) {
@@ -2898,7 +3055,7 @@ window.StemLab = window.StemLab || {
                 var obs = d.chiGofData.observed.slice(); obs.splice(i, 1);
                 var exp = d.chiGofData.expected.slice(); exp.splice(i, 1);
                 var lab = (d.chiGofData.labels || []).slice(); lab.splice(i, 1);
-                upd('chiGofData', { observed: obs, expected: exp, labels: lab });
+                upd('chiGofData', Object.assign({}, d.chiGofData, { observed: obs, expected: exp, labels: lab }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Remove row ' + (i + 1),
               disabled: d.chiGofData.observed.length <= 2,
@@ -2911,11 +3068,24 @@ window.StemLab = window.StemLab || {
             var obs = d.chiGofData.observed.slice(); obs.push(0);
             var exp = d.chiGofData.expected.slice(); exp.push(0);
             var lab = (d.chiGofData.labels || []).slice(); lab.push('Cat ' + (obs.length));
-            upd('chiGofData', { observed: obs, expected: exp, labels: lab });
+            upd('chiGofData', Object.assign({}, d.chiGofData, { observed: obs, expected: exp, labels: lab }));
           },
           'data-sl-focusable': 'true',
           style: { marginTop: 4, padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
-        }, '+ Add category')
+        }, '+ Add category'),
+        h('div', { style: { marginTop: 10, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+          h('label', { htmlFor: 'sl-gof-estimated' }, __alloSLT('stem.statslab.gof_estimated_params_label', 'Parameters estimated from these counts (df = categories − 1 − this):')),
+          h('input', {
+            id: 'sl-gof-estimated', type: 'number', min: 0, step: 1,
+            value: d.chiGofData.estimatedParams || 0,
+            onChange: function(e) {
+              upd('chiGofData', Object.assign({}, d.chiGofData, { estimatedParams: Math.max(0, parseInt(e.target.value, 10) || 0) }));
+            },
+            'data-sl-focusable': 'true',
+            style: { width: 64, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+          }),
+          h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloSLT('stem.statslab.gof_estimated_params_hint', 'Use 1 for Hardy-Weinberg, where the allele frequency comes from the same sample; 0 when the expected proportions are fixed in advance.'))
+        )
       ),
       // Chi-square: contingency table (independence)
       h('div', {
@@ -3620,6 +3790,7 @@ window.StemLab = window.StemLab || {
     add("Cramér's V", r.cramersV);
     add('φ (Phi)', r.phi);
     if (r.ci95) add('95% CI', '[' + r.ci95[0].toFixed(3) + ', ' + r.ci95[1].toFixed(3) + ']');
+    else if (r.ciNote) add('95% CI', r.ciNote);
     if (r.ciDiff) add('95% CI on diff', '[' + r.ciDiff[0].toFixed(3) + ', ' + r.ciDiff[1].toFixed(3) + ']');
     // Effect size badge
     var esBadge = null;
@@ -3990,6 +4161,13 @@ window.StemLab = window.StemLab || {
                   h('span', { style: { fontStyle: 'italic', color: 'var(--allo-stem-text, #cbd5e1)' } },
                     '(observed = ', d.bootResult.observed.toFixed(3), ')'
                   )
+                ),
+                d.bootResult.dropped > 0 && h('div', { 'data-sl-boot-dropped': String(d.bootResult.dropped), style: { marginTop: 6, fontSize: 11, color: 'var(--sl-warning)', lineHeight: 1.5 } },
+                  __alloSLT('stem.statslab.boot_dropped_note', '{dropped} of {requested} resamples were dropped because {stat} is undefined in them (for example, every resampled x value was the same). The interval uses the other {kept}.')
+                    .replace('{dropped}', function() { return String(d.bootResult.dropped); })
+                    .replace('{requested}', function() { return String(d.bootResult.requested); })
+                    .replace('{stat}', function() { return d.bootResult.statName; })
+                    .replace('{kept}', function() { return String(d.bootResult.nReps); })
                 ),
                 h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic' } },
                   'Read this as: "If we re-ran this study many times, 95% of the resulting estimates would fall in this range." If 0 is OUTSIDE this CI for a difference (or 0 outside r/slope), your effect is significant at α = .05.'
@@ -4366,7 +4544,8 @@ window.StemLab = window.StemLab || {
         '',
         'Test stat:  t = r · √[(n-2) / (1 - r²)] = ' + (r.t != null ? r.t.toFixed(3) : '?'),
         'df = n - 2 = ' + r.df,
-        '95% CI uses Fisher z-transform: [' + r.ci95[0].toFixed(3) + ', ' + r.ci95[1].toFixed(3) + ']'
+        r.ci95 ? '95% CI uses Fisher z-transform: [' + r.ci95[0].toFixed(3) + ', ' + r.ci95[1].toFixed(3) + ']'
+          : '95% CI (Fisher z-transform): ' + (r.ciNote || '?')
       ].join('\n');
     }
     if (/Spearman/.test(t)) {
@@ -4402,7 +4581,9 @@ window.StemLab = window.StemLab || {
       }
       lines.push('');
       lines.push('χ² total = ' + r.chiSquared.toFixed(3));
-      lines.push('df = (categories - 1) = ' + r.df);
+      lines.push(r.estimatedParams
+        ? 'df = categories - 1 - estimated parameters = ' + r.categories + ' - 1 - ' + r.estimatedParams + ' = ' + r.df
+        : 'df = (categories - 1) = ' + r.df);
       return lines.join('\n');
     }
     if (/independence/.test(t)) {
@@ -4467,8 +4648,14 @@ window.StemLab = window.StemLab || {
   }
   function _normalInv(p) {
     if (window.jStat) return window.jStat.normal.inv(p, 0, 1);
-    // Beasley-Springer fallback
+    // Acklam rational fallback (central region + upper tail, |rel. error| < 1.2e-9)
     if (p < 0.5) return -_normalInv(1 - p);
+    if (p >= 1) return Infinity;
+    if (p > 0.97575) {
+      var qt = Math.sqrt(-2 * Math.log(1 - p));
+      return -(((((-7.784894002430293e-03 * qt - 3.223964580411365e-01) * qt - 2.400758277161838e+00) * qt - 2.549732539343734e+00) * qt + 4.374664141464968e+00) * qt + 2.938163982698783e+00)
+        / ((((7.784695709041462e-03 * qt + 3.224671290700398e-01) * qt + 2.445134137142996e+00) * qt + 3.754408661907416e+00) * qt + 1);
+    }
     var a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239];
     var b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
     var q = p - 0.5;
@@ -4502,7 +4689,9 @@ window.StemLab = window.StemLab || {
   function _renderTypeErrorViz(d_eff, alpha, n, h) {
     // Two-sample t-test, equal n: under H₀ → test stat ~ N(0, 1),
     // under H₁ → N(d × √(n/2), 1). For display we show standardized stats.
-    var ncp = d_eff * Math.sqrt(n / 2);  // non-centrality (where H₁ peaks)
+    // Two-sided like the calculator: reject when |z| > z(1 − α/2).
+    var model = _statsInquiryPowerModel(d_eff, alpha, n);
+    var ncp = model.ncp;  // non-centrality (where H₁ peaks)
     var W = 540, H = 220;
     var pad = { l: 36, r: 12, t: 28, b: 36 };
     var xMin = Math.min(-3.5, ncp - 3.5);
@@ -4511,9 +4700,9 @@ window.StemLab = window.StemLab || {
     // Compute peak of either distribution
     var peakPdf = _normalPdf(0, 0, 1);  // ≈ 0.399
     var sy = _scaleLinear(0, peakPdf * 1.2, H - pad.b, pad.t);
-    var crit = _normalInv(1 - alpha);  // critical z for one-sided α
-    var beta = _normalCdf(crit, ncp, 1);  // P(Z < crit | H₁)
-    var power = 1 - beta;
+    var crit = model.criticalZ;  // two-sided critical z
+    var power = model.power;  // P(|Z| > crit | H₁)
+    var beta = 1 - power;
     // Build polygon points for each shaded region
     var stepN = 80;
     var pathFill = function(fromX, toX, mu, sd) {
@@ -4539,23 +4728,26 @@ window.StemLab = window.StemLab || {
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
-      'aria-label': 'Type I and Type II error visualization. Cohen\'s d = ' + d_eff + ', n = ' + n + ', alpha = ' + alpha + '. Power = ' + power.toFixed(3),
+      'aria-label': 'Type I and Type II error visualization, two-sided test. Cohen\'s d = ' + d_eff + ', n = ' + n + ', alpha = ' + alpha + '. Power = ' + power.toFixed(3),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
       // Axis
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
-      // β (Type II) region: under H₁ to the LEFT of crit (failed to reject)
-      h('path', { d: pathFill(xMin, Math.min(crit, ncp + 4), ncp, 1), fill: 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
-      // Power region: under H₁ to the RIGHT of crit (correctly rejected)
-      h('path', { d: pathFill(crit, ncp + 4, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
-      // α (Type I) region: under H₀ to the RIGHT of crit (false alarm)
-      h('path', { d: pathFill(crit, 4, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      // β (Type II) region: under H₁ between −crit and +crit (failed to reject)
+      h('path', { d: pathFill(-crit, crit, ncp, 1), fill: 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
+      // Power region: under H₁ beyond either critical value (correctly rejected)
+      h('path', { d: pathFill(crit, xMax, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(xMin, -crit, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      // α (Type I) regions: under H₀ beyond either critical value, α/2 each (false alarm)
+      h('path', { d: pathFill(crit, xMax, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(xMin, -crit, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
       // Curve outlines (drawn AFTER fills so they sit on top)
       h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 1.5 }),
       h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5 }),
-      // Critical value vertical line
+      // Critical value vertical lines (two-sided)
+      h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3' }),
       h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-      h('text', { x: sx(crit), y: pad.t - 12, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ' + crit.toFixed(2)),
+      h('text', { x: sx(crit), y: pad.t - 12, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ±' + crit.toFixed(2)),
       // Distribution labels
       h('text', { x: sx(0), y: sy(_normalPdf(0, 0, 1)) - 4, fill: 'var(--sl-chart-label)', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₀'),
       h('text', { x: sx(ncp), y: sy(_normalPdf(ncp, ncp, 1)) - 4, fill: 'var(--sl-chart-warning)', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₁'),
@@ -4594,41 +4786,50 @@ window.StemLab = window.StemLab || {
       anova_oneWay: "Cohen's f (small=.10, medium=.25, large=.40)",
       chiSquare: "Cohen's w (small=.10, medium=.30, large=.50)"
     })[p.test] || "Effect size";
+    // The t-test, ANOVA and chi-square sizes are computed here (exact, offline).
+    // Only the correlation calculator still needs jStat, so only it waits for the CDN.
     function runPower() {
+      if (p.test !== 'pearson') { computePower(); return; }
       _ensureJStat().then(function(ok) {
-        if (!ok) { if (addToast) addToast('Stats library failed to load.', 'error'); return; }
-        var result = null;
-        try {
-          if (p.test === 'ttest_independent') {
-            result = powerTTest_independent({
-              d: parseFloat(p.effectSize),
-              alpha: parseFloat(p.alpha),
-              power: parseFloat(p.power),
-              n: p.solveFor === 'n' ? null : parseInt(p.n, 10),
-              solve: p.solveFor
-            });
-          } else if (p.test === 'pearson') {
-            result = powerCorrelation({
-              r: parseFloat(p.effectSize), alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
-            });
-          } else if (p.test === 'chiSquare') {
-            var df = parseInt(p.df || 1, 10);
-            result = powerChiSquare({
-              w: parseFloat(p.effectSize), df: df,
-              alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
-            });
-          } else if (p.test === 'anova_oneWay') {
-            result = powerANOVA({
-              f: parseFloat(p.effectSize), k: parseInt(p.k || 3, 10),
-              alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
-            });
-          }
-        } catch (err) {
-          result = { error: 'Power computation error: ' + err.message };
-        }
-        if (!result) result = { error: 'No result.' };
-        upd({ powerInputs: Object.assign({}, p, { _lastResult: result }), powerRun: true });
+        if (ok) { computePower(); return; }
+        var msg = __alloSLT('stem.statslab.power_err_needs_jstat', 'The correlation calculator needs the jStat statistics library, which could not be loaded. Check the internet connection and try again. The t-test, ANOVA and chi-square calculators work offline.');
+        if (addToast) addToast(msg, 'error');
+        upd({ powerInputs: Object.assign({}, p, { _lastResult: { error: msg } }) });
       });
+    }
+    function computePower() {
+      var result = null;
+      try {
+        if (p.test === 'ttest_independent') {
+          var tSolve = p.solveFor || 'n';
+          result = powerTTest_independent({
+            d: parseFloat(p.effectSize),
+            alpha: parseFloat(p.alpha),
+            power: parseFloat(p.power),
+            n: tSolve === 'n' ? null : parseInt(p.n, 10),
+            solve: tSolve
+          });
+        } else if (p.test === 'pearson') {
+          result = powerCorrelation({
+            r: parseFloat(p.effectSize), alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
+          });
+        } else if (p.test === 'chiSquare') {
+          var df = parseInt(p.df || 1, 10);
+          result = powerChiSquare({
+            w: parseFloat(p.effectSize), df: df,
+            alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
+          });
+        } else if (p.test === 'anova_oneWay') {
+          result = powerANOVA({
+            f: parseFloat(p.effectSize), k: parseInt(p.k || 3, 10),
+            alpha: parseFloat(p.alpha), power: parseFloat(p.power), solve: 'n'
+          });
+        }
+      } catch (err) {
+        result = { error: 'Power computation error: ' + err.message };
+      }
+      if (!result) result = { error: 'No result.' };
+      upd({ powerInputs: Object.assign({}, p, { _lastResult: result }), powerRun: true });
     }
     var lastR = p._lastResult;
     return h('div', null,
@@ -4761,8 +4962,8 @@ window.StemLab = window.StemLab || {
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Two overlapping bell curves: the gray one is the test stat distribution under ',
           h('b', null, 'H₀'), ' (no effect), the yellow one under ',
-          h('b', null, 'H₁'), ' (effect = your Cohen\'s d). The dashed line is the critical value (you reject H₀ to its right). ',
-          h('b', { style: { color: 'var(--sl-danger)' } }, 'Red'), ' = α (Type I error: false alarm). ',
+          h('b', null, 'H₁'), ' (effect = your Cohen\'s d). The dashed lines are the two-sided critical values, as in the calculator above (you reject H₀ beyond either one). ',
+          h('b', { style: { color: 'var(--sl-danger)' } }, 'Red'), ' = α (Type I error: false alarm, α/2 in each tail). ',
           h('b', { style: { color: 'var(--sl-info)' } }, 'Blue'), ' = β (Type II error: missed real effect). ',
           h('b', { style: { color: 'var(--sl-positive)' } }, 'Green'), ' = power (correctly detect a real effect). Move the sliders to feel how they trade off.'
         ),
@@ -4808,10 +5009,11 @@ window.StemLab = window.StemLab || {
         // Live readout below the chart
         (function() {
           var vd = vizD, va = p.vizAlpha || 0.05, vn = p.vizN || 30;
-          var ncp = vd * Math.sqrt(vn / 2);
-          var crit = _normalInv(1 - va);
-          var beta = _normalCdf(crit, ncp, 1);
-          var power = 1 - beta;
+          // Same two-sided model as the chart above.
+          var vizModel = _statsInquiryPowerModel(vd, va, vn);
+          var ncp = vizModel.ncp;
+          var power = vizModel.power;
+          var beta = 1 - power;
           return h('div', {
             style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 }
           },
@@ -5665,7 +5867,7 @@ window.StemLab = window.StemLab || {
     'U': { name: 'Mann-Whitney U', def: 'A non-parametric test statistic. Counts how often values from one group outrank values from the other. Used when data are ordinal or non-normal.' },
     'W': { name: 'Wilcoxon W', def: 'Sum of ranks of positive differences in the Wilcoxon signed-rank test. Non-parametric alternative to a paired t-test.' },
     'H': { name: 'Kruskal-Wallis H', def: 'Non-parametric ANOVA test statistic based on ranks. Approximated by chi-square distribution for inference.' },
-    'z': { name: 'z-score', def: 'A standardized score: how many SDs a value is from the mean. z = 0 is the mean, z = ±2 is roughly the 5th/95th percentile in a normal distribution.' },
+    'z': { name: 'z-score', def: 'A standardized score: how many SDs a value is from the mean. z = 0 is the mean. In a normal distribution, z = ±1.645 marks the 5th/95th percentiles, z = ±1.96 bounds the middle 95%, and z = ±2 is about the 2.3rd/97.7th percentile.' },
     'slope': { name: 'Slope (b)', def: 'In ŷ = a + b·x, the slope b is the predicted change in y for each one-unit increase in x. Positive = upward trend, negative = downward.' },
     'intercept': { name: 'Intercept (a)', def: 'In ŷ = a + b·x, the intercept a is the predicted y when x = 0. Be cautious interpreting it if x = 0 is outside your data range.' },
     'effectSize': { name: 'Effect size', def: 'A statistic that captures HOW BIG an effect is, independent of sample size. p-values tell you whether an effect is real; effect sizes tell you whether it matters. Always report both.' },
@@ -5690,7 +5892,7 @@ window.StemLab = window.StemLab || {
     pushIf(_isNum(r.omegaSquared), 'ω²');
     pushIf(_isNum(r.phi), 'φ');
     pushIf(_isNum(r.cramersV), 'V');
-    pushIf(!!r.ci95, 'ci95');
+    pushIf(!!(r.ci95 || r.ciNote), 'ci95');
     pushIf(_isNum(r.mean) || _isNum(r.mean1) || _isNum(r.mean2), 'M');
     pushIf(_isNum(r.sd) || _isNum(r.sd1) || _isNum(r.sd2), 'SD');
     pushIf(_isNum(r.se) || _isNum(r.seSlope), 'SE');
@@ -5748,8 +5950,10 @@ window.StemLab = window.StemLab || {
       statFn = function() {
         var rs = _resampleWithReplacement(pairs);
         var x = rs.map(function(p) { return p[0]; }), y = rs.map(function(p) { return p[1]; });
+        // r is undefined when a resample repeats one x (or one y): drop it, never score it 0.
+        if (_allSame(x) || _allSame(y)) return NaN;
         var pres = pearson(x, y);
-        return _isNum(pres.r) ? pres.r : 0;
+        return _isNum(pres.r) ? pres.r : NaN;
       };
       observed = pearson(ra.slice(0, nR), rb.slice(0, nR)).r;
       statName = 'Pearson r';
@@ -5762,10 +5966,9 @@ window.StemLab = window.StemLab || {
       statFn = function() {
         var rs = _resampleWithReplacement(lpairs);
         var x = rs.map(function(p) { return p[0]; }), y = rs.map(function(p) { return p[1]; });
-        var lres = linearRegression(x, y);
-        return _isNum(lres.slope) ? lres.slope : 0;
+        return _olsSlope(x, y);
       };
-      observed = linearRegression(lra.slice(0, nL), lrb.slice(0, nL)).slope;
+      observed = _olsSlope(lra.slice(0, nL), lrb.slice(0, nL));
       statName = 'Slope (b)';
     } else if (testType === 'anova_oneWay' || testType === 'kruskalWallis') {
       var groups = d.multiColData.groups.map(function(g) { return _clean(g.values); });
@@ -5773,19 +5976,24 @@ window.StemLab = window.StemLab || {
       // Bootstrap on the F-stat
       statFn = function() {
         var resampled = groups.map(_resampleWithReplacement);
+        // F is undefined when every resampled group has no spread (MS_within = 0).
+        if (resampled.every(_allSame)) return NaN;
         var rres = anova_oneWay(resampled);
-        return _isNum(rres.F) ? rres.F : 0;
+        return _isNum(rres.F) ? rres.F : NaN;
       };
       observed = anova_oneWay(groups).F;
       statName = 'F';
     } else {
       return { error: 'Bootstrap CI not yet wired for this test type.' };
     }
+    if (!_isNum(observed)) return { error: __alloSLT('stem.statslab.boot_err_observed_undefined', 'The statistic is undefined for these data (for example, a variable with no spread), so there is nothing to bootstrap.') };
+    // A resample whose statistic is undefined is dropped (and counted), not scored.
     for (var k = 0; k < nReps; k++) {
       var s = statFn();
       if (_isNum(s)) samples.push(s);
     }
-    if (!samples.length) return { error: 'Bootstrap simulation failed.' };
+    var dropped = nReps - samples.length;
+    if (!samples.length) return { error: __alloSLT('stem.statslab.boot_err_all_dropped', 'Every resample left the statistic undefined (for example, no spread in a variable), so no interval can be formed.') };
     samples.sort(function(a, b) { return a - b; });
     var alpha = 1 - level;
     var loIdx = Math.max(0, Math.floor(samples.length * (alpha / 2)));
@@ -5797,8 +6005,22 @@ window.StemLab = window.StemLab || {
       ci: [samples[loIdx], samples[hiIdx]],
       samples: samples,
       nReps: samples.length,
+      requested: nReps,
+      dropped: dropped,
       median: samples[Math.floor(samples.length / 2)]
     };
+  }
+  function _allSame(arr) {
+    for (var i = 1; i < arr.length; i++) if (arr[i] !== arr[0]) return false;
+    return true;
+  }
+  // Least-squares slope, NaN only when every x is the same. A flat y is a real
+  // slope of 0 (linearRegression() refuses that case for its other statistics).
+  function _olsSlope(x, y) {
+    if (_allSame(x)) return NaN;
+    var mx = mean(x), my = mean(y), sxy = 0, sxx = 0;
+    for (var i = 0; i < x.length; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); }
+    return sxx > 0 ? sxy / sxx : NaN;
   }
 
   // Render bootstrap CI: histogram of resampled stats + observed marker + CI shaded band

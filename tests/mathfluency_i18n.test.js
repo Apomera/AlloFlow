@@ -608,7 +608,7 @@ describe('Math Fluency learner and form safeguards', () => {
     await click(document.querySelector('button[type="submit"]'));
     await act(async () => { await new Promise(r => setTimeout(r, 80)); });
     expect(completed).toHaveLength(1);
-    expect(completed[0].data).toMatchObject({ learnerId: 'test-learner', formExhausted: true, validForComparison: false, totalCorrect: 1, scoringVersion: 2 });
+    expect(completed[0].data).toMatchObject({ learnerId: 'test-learner', formExhausted: true, validForComparison: false, totalCorrect: 1, scoringVersion: 3 });
     expect(completed[0].data.itemResults[0]).toMatchObject({ studentAnswer: 2, correct: true });
     expect(completed[0].data.formHash).toMatch(/^form-v1-/);
   });

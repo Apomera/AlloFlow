@@ -15,6 +15,56 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
+// STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
+(function () {
+  var MINUS = String.fromCharCode(0x2212);
+  // A typed answer as a number: "-3", "2.5", "1,000", "3/4", "1 1/2" and the typographic minus.
+  // Anything else (units, words, "1/0") is NaN, so a caller can tell "not a number" from "wrong".
+  function toNumber(value) {
+    if (typeof value === 'number') return isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
+    var s = value.split(MINUS).join('-').replace(/\s+/g, ' ').trim();
+    if (!s) return NaN;
+    if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    var m = s.match(/^([+-]?)(\d+) (\d+)\/(\d+)$/);
+    if (m) {
+      var den = +m[4];
+      if (!den) return NaN;
+      var mixed = +m[2] + (+m[3]) / den;
+      return m[1] === '-' ? -mixed : mixed;
+    }
+    m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)) ?\/ ?([+-]?(?:\d+\.?\d*|\.\d+))$/);
+    if (m) {
+      var d = parseFloat(m[2]);
+      return d ? parseFloat(m[1]) / d : NaN;
+    }
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+  }
+  // Equal within an absolute tolerance, a relative one, or float noise, whichever is largest.
+  function sameNumber(a, b, opts) {
+    var x = toNumber(a), y = toNumber(b);
+    if (!isFinite(x) || !isFinite(y)) return false;
+    var o = opts || {};
+    var tol = Math.max(+o.tolerance || 0, (+o.relative || 0) * Math.abs(y), 1e-9 * Math.max(1, Math.abs(y)));
+    return Math.abs(x - y) <= tol;
+  }
+  // Credit an item once: returns whether `key` is new and the next seen-map to store.
+  // The map is never mutated, so it can live in tool state.
+  function creditOnce(seen, key) {
+    var map = seen && typeof seen === 'object' && !Array.isArray(seen) ? seen : {};
+    var k = String(key);
+    if (Object.prototype.hasOwnProperty.call(map, k)) return { isNew: false, seen: map };
+    var next = {};
+    for (var p in map) if (Object.prototype.hasOwnProperty.call(map, p)) next[p] = map[p];
+    next[k] = true;
+    return { isNew: true, seen: next };
+  }
+  var api = { version: 1, toNumber: toNumber, sameNumber: sameNumber, creditOnce: creditOnce };
+  var current = window.StemLab.grading;
+  if (!current || !(current.version >= api.version)) window.StemLab.grading = api;
+})();
+// STEM_GRADING_CORE_END
+
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -130,6 +180,21 @@ window.StemLab = window.StemLab || {
         if (typeof updater === 'function') updCG({ gridFeedback: updater(_cg.gridFeedback || null) });
         else updCG({ gridFeedback: updater });
       };
+      // Once a checker has shown an item's answer, the item is locked: no more credit.
+      // Keyed by the item in tool state, not in the feedback (a grid click clears that).
+      var revealedItems = _cg.revealedItems;
+      var gridItemKey = function(ch) {
+        if (!ch || !ch.p1 || !ch.p2 || (ch.type !== 'slope' && ch.type !== 'distance')) return null;
+        return ch.type + ':' + ch.p1.x + ',' + ch.p1.y + '>' + ch.p2.x + ',' + ch.p2.y;
+      };
+      var isItemLocked = function(key) {
+        return !!key && !!revealedItems && typeof revealedItems === 'object' && Object.prototype.hasOwnProperty.call(revealedItems, key);
+      };
+      var lockItem = function(key) {
+        if (key) updCG({ revealedItems: window.StemLab.grading.creditOnce(revealedItems, key).seen });
+      };
+      var gridItemLocked = isItemLocked(gridItemKey(gridChallenge));
+      var lockedMsg = t('stem.coordgrid.answer_shown_try_next', 'Answer shown. Try the next one.');
 
 
 
@@ -377,7 +442,7 @@ window.StemLab = window.StemLab || {
 
       // ── Click handler ──
       var processGridCoordinate = function(x, y) {
-        if (gridChallenge && gridFeedback && gridFeedback.correct) return;
+        if (gridChallenge && ((gridFeedback && gridFeedback.correct) || gridItemLocked)) return;
         x = Math.round(Number(x));
         y = Math.round(Number(y));
         if (!Number.isFinite(x) || !Number.isFinite(y)) return;
@@ -450,10 +515,16 @@ window.StemLab = window.StemLab || {
       // ── Check answer ──
       var gridSubmissionPending = false;
       var checkGrid = function() {
-        if (!gridChallenge || gridSubmissionPending || (gridFeedback && gridFeedback.correct)) return;
+        if (!gridChallenge || gridSubmissionPending || (gridFeedback && gridFeedback.correct) || gridItemLocked) return;
         gridSubmissionPending = true;
         if (gridChallenge.type === 'plot') {
-          var ok = gridPoints.some(function(p) { return p.x === gridChallenge.target.x && p.y === gridChallenge.target.y; });
+          // Grade the one point the student plotted: passing when ANY point matched let a
+          // grid full of points win. No point, or several, is not an answer yet.
+          if (gridPoints.length !== 1) {
+            setGridFeedback({ correct: false, msg: gridPoints.length ? t('stem.coordgrid.plot_leave_one_point', 'Leave just one point on the grid, your answer, then check. Plotting a point again removes it.') : t('stem.coordgrid.plot_your_point_first', 'Plot your point first, then check.') });
+            return;
+          }
+          var ok = gridPoints[0].x === gridChallenge.target.x && gridPoints[0].y === gridChallenge.target.y;
           var newStreak = ok ? streak + 1 : 0;
           var newPlots = plotsSolved + (ok ? 1 : 0);
           if (ok) { sfxCorrect(); if (newStreak >= 3) sfxStreak(); } else { sfxWrong(); }
@@ -489,12 +560,14 @@ window.StemLab = window.StemLab || {
           // Read the slope as a number or a fraction, so -2/4 and the typographic minus count
           // like -1/2 (decimals already did), and "Undefined" matches in any case.
           var slopeText = slopeAns.replace(/\u2212/g, '-').replace(/\s+/g, '').toLowerCase();
-          var slopeParts = /^([+-]?\d+(?:\.\d+)?)\/([+-]?\d+(?:\.\d+)?)$/.exec(slopeText);
-          var slopeNumber = slopeParts ? (Number(slopeParts[2]) === 0 ? NaN : Number(slopeParts[1]) / Number(slopeParts[2])) : Number(slopeText);
+          // Shared reader (also "1 1/2", which stripping the space first read as 11/2).
+          var grading = window.StemLab.grading;
+          var slopeNumber = grading.toNumber(slopeAns);
+          if (!isFinite(slopeNumber)) slopeNumber = grading.toNumber(slopeText);
           var riseOk = riseAns === cs.rise;
           var runOk = runAns === cs.run;
           var slopeOk = cs.run === 0 ? slopeText === 'undefined' :
-            (slopeText === cs.display || (Number.isFinite(slopeNumber) && Math.abs(slopeNumber - cs.value) < 0.01));
+            (slopeText === cs.display || grading.sameNumber(slopeNumber, cs.value, { tolerance: 0.005 }));
           var hinted = gridFeedback && gridFeedback.hinted;
           var allCorrect = riseOk && runOk && slopeOk;
           var newStreak2 = allCorrect ? streak + 1 : 0;
@@ -511,6 +584,8 @@ window.StemLab = window.StemLab || {
             msg = '\u274C ' + parts.join(', ');
           }
           setGridFeedback(function(prev) { return Object.assign({}, prev, { correct: allCorrect, msg: msg }); });
+          // The message above printed the answer: this item is now locked.
+          if (!allCorrect) { lockItem(gridItemKey(gridChallenge)); announceToSR('Incorrect. ' + lockedMsg); }
           setExploreScore(function(prev) { return { correct: prev.correct + (allCorrect ? 1 : 0), total: prev.total + 1 }; });
           updCG({ streak: newStreak2, bestStreak: Math.max(bestStreak, newStreak2), slopesSolved: newSlopes });
           if (allCorrect) awardXP('coordinate', 5, 'slope calc');
@@ -533,7 +608,9 @@ window.StemLab = window.StemLab || {
           var newStreak3 = dOk ? streak + 1 : 0;
           var newDist = distanceSolved + (dOk ? 1 : 0);
           if (dOk) { sfxCorrect(); if (newStreak3 >= 3) sfxStreak(); } else { sfxWrong(); }
-          announceToSR(dOk ? 'Correct!' : 'Incorrect');
+          announceToSR(dOk ? 'Correct!' : 'Incorrect. ' + lockedMsg);
+          // A wrong check prints the distance: this item is now locked.
+          if (!dOk) lockItem(gridItemKey(gridChallenge));
           setGridFeedback(function(prev) {
             return Object.assign({}, prev, {
               correct: dOk,
@@ -2187,23 +2264,24 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[0.6875rem] font-bold text-red-600 uppercase' }, t('stem.coordgrid.rise_y', 'Rise (\u0394y)')),
-              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.rise_delta_y_vertical_change', 'Rise (delta y) — vertical change'), value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-700' : '') })
+              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.rise_delta_y_vertical_change', 'Rise (delta y) — vertical change'), value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: gridItemLocked || !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[0.6875rem] font-bold text-blue-600 uppercase' }, t('stem.coordgrid.run_x', 'Run (\u0394x)')),
-              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.run_delta_x_horizontal_change', 'Run (delta x) — horizontal change'), value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-700' : '') })
+              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.run_delta_x_horizontal_change', 'Run (delta x) — horizontal change'), value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: gridItemLocked || !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[0.6875rem] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.slope_m', 'Slope (m)')),
-              h('input', { type: 'text', placeholder: t('stem.coordgrid.e_g_2_3', 'e.g. 2/3'), 'aria-label': t('stem.coordgrid.slope_as_a_fraction_example_2_3', 'Slope as a fraction (example: 2/3)'), value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value, correct: false, msg: null }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, disabled: !!(gridFeedback && gridFeedback.correct), className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
+              h('input', { type: 'text', placeholder: t('stem.coordgrid.e_g_2_3', 'e.g. 2/3'), 'aria-label': t('stem.coordgrid.slope_as_a_fraction_example_2_3', 'Slope as a fraction (example: 2/3)'), value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value, correct: false, msg: null }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, disabled: gridItemLocked || !!(gridFeedback && gridFeedback.correct), className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[0.6875rem] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
+            !gridItemLocked && !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[0.6875rem] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[0.6875rem] text-amber-500 italic' }, t('stem.coordgrid.hint_used', '\uD83D\uDCA1 Hint used')),
-            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-50' }, t('stem.coordgrid.check_3', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, disabled: gridItemLocked || !!(gridFeedback && gridFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-50' }, t('stem.coordgrid.check_3', '\u2714 Check'))
           ),
-          gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
+          gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg),
+          gridItemLocked && h('p', { 'data-coordgrid-locked': 'true', className: 'text-sm font-bold mt-1 text-amber-900' }, lockedMsg)
         ),
 
         // Distance challenge UI
@@ -2216,16 +2294,17 @@ window.StemLab = window.StemLab || {
               value: (gridFeedback && gridFeedback.distanceAnswer) || '',
               onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { distanceAnswer: e.target.value, correct: false, msg: null }); }); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); },
-              disabled: !!(gridFeedback && gridFeedback.correct),
+              disabled: gridItemLocked || !!(gridFeedback && gridFeedback.correct),
               className: 'flex-1 px-3 py-2 border border-green-600 rounded-lg text-sm font-mono'
             }),
-            h('button', { 'aria-label': t('stem.coordgrid.check_4', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50' }, t('stem.coordgrid.check_5', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_4', 'Check'), onClick: checkGrid, disabled: gridItemLocked || !!(gridFeedback && gridFeedback.correct), className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50' }, t('stem.coordgrid.check_5', '\u2714 Check'))
           ),
           // Show midpoint info
           h('div', { className: 'mt-2 text-xs text-purple-600' },
             '\uD83D\uDCCD Midpoint: (' + ((gridChallenge.p1.x + gridChallenge.p2.x) / 2) + ', ' + ((gridChallenge.p1.y + gridChallenge.p2.y) / 2) + ')'
           ),
-          gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
+          gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg),
+          gridItemLocked && h('p', { 'data-coordgrid-locked': 'true', className: 'text-sm font-bold mt-1 text-green-900' }, lockedMsg)
         ),
 
         // Plot challenge UI
