@@ -5125,7 +5125,8 @@
   function momentId(m) { return m.kind + ':' + (m.uids && m.uids[0] ? m.uids[0] : m.speciesId || ''); }
   // What the card and the announcement say about one moment.
   function momentWords(env, m, log, TX) {
-    var __alloT = env.t, __alloFill = env.fill, ids = m.speciesIds || [], main = m.speciesId || ids[0];
+    // env.t is the tool's own fallback wrapper (see CoralReefLab), not the host ctx.t.
+    var __alloFill = env.fill, __alloT = env.t, ids = m.speciesIds || [], main = m.speciesId || ids[0];
     function known(id) { return !!(id && log[id] && TX[id]); }
     function noun(id, generic, named) { return known(id) ? __alloFill(named, { name: guideShortName(TX[id].name) }) : generic; }
     var named = __alloT('stem.coralreef.rm_noun_named', 'a {name}'), body, detail = null;
