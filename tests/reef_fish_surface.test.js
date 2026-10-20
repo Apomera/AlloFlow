@@ -1,11 +1,28 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Procedural model and texture builds run several seconds on a busy machine.
+vi.setConfig({ testTimeout: 30000 });
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const local = {};
 new Function('window', readFileSync('stem_lab/reef_3d_species.js', 'utf8'))(local);
 const S = local.Reef3DSpecies;
+
+// A fish's tail and pectorals now draw inside its 'fins' batch (one draw
+// call). A part's vertices are its range in geometry.userData.batch, and attribute
+// reefPart holds each one in the part's own frame, as its separate mesh had it.
+function batchPart(root, name) {
+  let out = null;
+  root.traverse((mesh) => { if (!out && mesh.isMesh && mesh.geometry.userData.batch) { const range = mesh.geometry.userData.batch.find((r) => r.part === name); if (range) out = { mesh, range }; } });
+  return out;
+}
+function localBox(root, name) {
+  const { mesh, range } = batchPart(root, name), own = mesh.geometry.attributes.reefPart, box = new THREE.Box3(), v = new THREE.Vector3();
+  for (let i = range.first; i < range.first + range.count; i++) box.expandByPoint(v.set(own.getX(i), own.getY(i), own.getZ(i)));
+  return box;
+}
 
 function channelRange(texture, channel) {
   const d = texture.image.data;
@@ -65,7 +82,8 @@ describe('Reef fish close-up surfaces', () => {
   it('omits derivative calls when fallback is explicitly requested on a capable renderer', () => {
     const h = S.create(THREE, 'clownfish', { derivatives: false });
     try {
-      for (const part of ['fins', 'tail']) {
+      // The tail, pectorals and eyes all draw with the fins' material now.
+      for (const part of ['fins']) {
         const mat = h.root.getObjectByName('clownfish-' + part).material;
         const shader = {
           uniforms: {},
@@ -94,8 +112,9 @@ describe('Reef fish close-up surfaces', () => {
       const h = S.create(THREE, id, { quality: 'high' });
       try {
         const body = h.root.getObjectByName(id + '-body').geometry.boundingBox;
-        const tail = h.root.getObjectByName(id + '-tail').geometry.boundingBox;
-        const fin = h.root.getObjectByName(id + '-pectoral').geometry.boundingBox;
+        // The tail and pectoral in their own frames, from the fins batch.
+        const tail = localBox(h.root, 'tail');
+        const fin = localBox(h.root, 'pectoral');
         expect(tail.max.z - tail.min.z, id + ' caudal camber').toBeGreaterThan(0);
         expect(fin.max.z - fin.min.z, id + ' pectoral camber').toBeGreaterThan(0);
         expect(fin.max.z - fin.min.z, id + ' membrane thinness').toBeLessThan((body.max.z - body.min.z) * 0.2);

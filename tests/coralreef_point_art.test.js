@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { resetStemLab, renderTool, React, ReactDOMServer } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 // Lane A: the survey's reef pictures (PointArt), the method diagrams and the
 // tape strip. PointArt is internal, so the tool is loaded with one extra line
@@ -135,7 +136,7 @@ describe('PointArt draws what pointFeatures() says, for every category, form and
   });
 
   it('uses no Math.random in the lane A drawing code', () => {
-    const slice = (a, b) => { const i = SRC.indexOf(a), j = SRC.indexOf(b, i + 1); expect(i >= 0 && j > i, a).toBe(true); return SRC.slice(i, j); };
+    const slice = (a, b) => sliceBetween(SRC, a, b, { label: 'stem_tool_coralreef.js' });
     const owned = slice('// ── Illustrations ──', '// Fish for the belt map, drawn side-on') + slice('// Practice points: the bleached', '// ── 3D dive loader') + slice('var STRIP_SWATCH', 'function BeltMap(');
     expect(owned.includes('Math.random')).toBe(false);
   });

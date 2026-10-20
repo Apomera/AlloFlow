@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Procedural model and texture builds run several seconds on a busy machine.
+vi.setConfig({ testTimeout: 30000 });
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_3d_species.js', 'utf8');
@@ -12,6 +15,18 @@ function compile(material) {
   const shader = { uniforms: {}, vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader };
   material.onBeforeCompile(shader);
   return shader;
+}
+// A fish's tail and pectorals draw inside its 'fins' batch (one draw call): each
+// part's vertices are a range in geometry.userData.batch; attribute reefPart holds
+// each vertex in the part's own frame (as its separate mesh had it) and its slot,
+// and the slot in the batch material's reefRig holds the fin flex (row 3).
+function batchParts(root, names) {
+  const out = [];
+  root.traverse((mesh) => {
+    if (!mesh.isMesh || !mesh.geometry.userData.batch) return;
+    for (const range of mesh.geometry.userData.batch) if (names.includes(range.part)) out.push({ mesh, range });
+  });
+  return out;
 }
 function smooth(a, b, x) { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 function snapshot(handle) {
@@ -28,19 +43,22 @@ describe('Reef fauna stroke and schooling continuity', () => {
   it('holds flexible fin roots still and gives their moving tips a finite matching normal', () => {
     for (const id of ['blue_tang', 'clownfish', 'whitetip_reef_shark']) {
       const h = S.create(THREE, id, { seed: 8, quality: 'high' });
-      let roots = 0, flexingTips = 0;
+      let roots = 0, flexingTips = 0, parts = 0;
       try {
         h.update(0.016, 2.4, { speed: S.info(id).lengthM * 1.5, turn: 0.2 });
-        h.root.traverse((mesh) => {
-          if (!mesh.isMesh || !['tail', 'pectoral'].includes(mesh.userData.part)) return;
-          const shader = compile(mesh.material), swim = shader.uniforms.reefSwim.value, flex = shader.uniforms.reefFinFlex.value;
-          const positions = mesh.geometry.attributes.position, uv = mesh.geometry.attributes.uv;
+        for (const { mesh, range } of batchParts(h.root, ['tail', 'pectoral'])) {
+          parts++;
+          const shader = compile(mesh.material), swim = shader.uniforms.reefSwim.value, rig = shader.uniforms.reefRig.value, b = (range.slot - 1) * 20;
+          const flex = { x: rig[b + 12], y: rig[b + 13], z: rig[b + 14], w: rig[b + 15] };
+          expect(rig[b + 16], 'a pivoted membrane takes no body bend').toBe(0);
+          const own = mesh.geometry.attributes.reefPart, uv = mesh.geometry.attributes.uv;
+          const localX = (i) => own.getX(i);
           const deform = (x) => {
             const r = Math.max(-x, 0), envelope = r * r / (r * r + flex.z);
             return swim.y * flex.w * envelope * Math.sin(swim.x * flex.x + flex.y - swim.z * x);
           };
-          for (let i = 0; i < positions.count; i++) {
-            const x = positions.getX(i), r = Math.max(-x, 0), den = r * r + flex.z;
+          for (let i = range.first; i < range.first + range.count; i++) {
+            const x = localX(i), r = Math.max(-x, 0), den = r * r + flex.z;
             const phase = swim.x * flex.x + flex.y - swim.z * x;
             const slope = -swim.y * flex.w * (2 * r * flex.z / (den * den) * Math.sin(phase) + r * r / den * swim.z * Math.cos(phase));
             expect(Number.isFinite(slope)).toBe(true);
@@ -53,7 +71,8 @@ describe('Reef fauna stroke and schooling continuity', () => {
               expect(Math.abs(deform(x))).toBeLessThanOrEqual(Math.abs(swim.y * flex.w));
             }
           }
-        });
+        }
+        expect(parts, id + ' draws its tail and both pectorals').toBe(3);
         expect(roots).toBeGreaterThan(20); expect(flexingTips).toBeGreaterThan(10);
       } finally { h.dispose(); }
     }

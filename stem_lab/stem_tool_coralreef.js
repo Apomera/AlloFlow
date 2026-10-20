@@ -1931,6 +1931,29 @@
     return reef3dPromise;
   }
 
+  // Loading card over the 3D canvas while a staged mount builds the reef. The
+  // sheen moves on the compositor, so it keeps moving between build steps.
+  var LANE_CSS_E = '[data-coralreef-root] .cr-load{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(340px,calc(100% - 32px));padding:14px 18px 16px;border-radius:14px;text-align:center;box-shadow:0 8px 28px #00000033}' +
+    '[data-coralreef-root] .cr-load p{margin:0;font-weight:600}' +
+    '[data-coralreef-root] .cr-load-track{height:12px;margin-top:10px;border-radius:6px;overflow:hidden}' +
+    '[data-coralreef-root] .cr-load-fill{position:relative;display:block;height:100%;min-width:12px;border-radius:6px;overflow:hidden;transition:width .25s ease-out}' +
+    '[data-coralreef-root] .cr-load-fill:after{content:"";position:absolute;top:0;bottom:0;left:0;width:100%;background:linear-gradient(90deg,#ffffff00,#ffffff8c,#ffffff00);transform:translateX(-100%);animation:cr-load-sheen 1.3s ease-in-out infinite}' +
+    '[data-coralreef-root] .cr-load-still .cr-load-fill{transition:none}[data-coralreef-root] .cr-load-still .cr-load-fill:after{animation:none;display:none}' +
+    '@keyframes cr-load-sheen{to{transform:translateX(100%)}}' +
+    '@media (prefers-reduced-motion:reduce){[data-coralreef-root] .cr-load-fill{transition:none}[data-coralreef-root] .cr-load-fill:after{animation:none;display:none}}';
+  function DiveLoading(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
+    var value = Math.max(0, Math.min(100, Math.round(props.value || 0)));
+    var amount = __alloFill(__alloT('stem.coralreef.load_percent', '{n}% loaded'), { n: value });
+    return h('div', { className: 'cr-load' + (env.ctx.reduceMotion ? ' cr-load-still' : ''), style: { background: P.card, color: P.text, border: '1px solid ' + P.border } },
+      h('style', null, LANE_CSS_E),
+      h('p', { role: 'status' }, props.label),
+      h('div', { className: 'cr-load-track', role: 'progressbar', 'aria-label': props.label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': value, 'aria-valuetext': amount,
+        style: { background: P.cardAlt, border: '1px solid ' + P.ctlBorder } },
+        h('span', { className: 'cr-load-fill', style: { width: value + '%', background: P.accent } })),
+      h('p', { 'aria-hidden': 'true', style: { margin: '6px 0 0', fontWeight: 400, color: P.muted, fontSize: 14 } }, amount));
+  }
+
   function Dive3D(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
     var canvasRef = React.useRef(null), ctlRef = React.useRef(null);
@@ -1941,27 +1964,37 @@
     var syncedRef = React.useRef(false);
     var st = React.useState('loading'), status = st[0], setStatus = st[1];
     var at = React.useState(0), attempt = at[0], setAttempt = at[1];
+    var pr = React.useState(0), progress = pr[0], setProgress = pr[1];
     var layout = props.layout;
     React.useEffect(function () {
       var cancelled = false;
       syncedRef.current = false;
-      setStatus('loading');
+      setStatus('loading'); setProgress(0);
       ensureReef3D().then(function (THREE) {
         if (cancelled || !canvasRef.current) return;
         try {
+          // A staged mount builds over many short tasks; the view is ready when its first frame is drawn.
           ctlRef.current = window.Reef3D.mount(canvasRef.current, {
-            THREE: THREE, layout: layout, seed: layout.seed, reducedMotion: !!env.ctx.reduceMotion,
+            THREE: THREE, layout: layout, seed: layout.seed, reducedMotion: !!env.ctx.reduceMotion, staged: true,
+            onProgress: function (f) { if (!cancelled) setProgress(Math.round(f * 100)); },
             onState: function (snap) {
-              if (!snap || typeof snap.pointIndex !== 'number') return;
+              if (!snap || cancelled) return;
+              if (snap.ready) setStatus('ready');
+              if (typeof snap.pointIndex !== 'number') return;
               if (!syncedRef.current) { if (snap.pointIndex === indexRef.current) syncedRef.current = true; return; }
               if (snap.pointIndex !== indexRef.current && onPointRef.current) onPointRef.current(snap.pointIndex);
             },
-            onError: function () { if (!cancelled) setStatus('error'); }
+            onError: function () {
+              if (cancelled) return;
+              setStatus('error');
+              var c = ctlRef.current; ctlRef.current = null;
+              if (c) { try { c.dispose(); } catch (e) {} }
+            }
           });
           ctlRef.current.goToPoint(indexRef.current || 0);
           var now = ctlRef.current.getState ? ctlRef.current.getState() : null;
           if (now && now.pointIndex === indexRef.current) syncedRef.current = true;
-          setStatus('ready');
+          if (!now || now.ready !== false) setStatus('ready');
         } catch (e) { setStatus('error'); }
       }).catch(function () { if (!cancelled) setStatus('error'); });
       return function () {
@@ -1977,7 +2010,7 @@
       h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
         'aria-label': __alloT('stem.coralreef.dive_canvas_label', '3D dive along the survey tape. Left and right arrow keys move between survey points; Page Up and Page Down jump 2 meters; Home and End go to the ends; Space pauses the fish.'),
         style: { width: '100%', height: 360, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
-      status === 'loading' ? h('p', { role: 'status', style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.dive_loading', 'Loading the 3D reef...')) : null,
+      status === 'loading' ? h(DiveLoading, { env: env, value: progress, label: __alloT('stem.coralreef.dive_loading', 'Loading the 3D reef...') }) : null,
       status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
         h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.dive_error', 'The 3D view could not start on this device. The close-up pictures below show the same reef, so you can keep surveying.')),
         h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { setAttempt(attempt + 1); } }, __alloT('stem.coralreef.dive_retry', 'Try the 3D view again'))) : null,
@@ -2254,9 +2287,25 @@
   // of the map repeats nearby points sideways, so what you see across the
   // belt matches what the tape recorded. Seeded, so a transect always looks
   // the same.
-  var MAP_CORAL_TONES = [['#b14d7c', '#6e2448', '#ecb1cf'], ['#c27a35', '#76400f', '#f3cc98'], ['#6a8a35', '#344d12', '#c3db92'], ['#7656a6', '#3d2869', '#cbb8ee'], ['#a8653c', '#5c3014', '#e6b88f']];
-  var MAP_BLEACHED = ['#f6f9fa', '#93a9b6', '#ffffff'], MAP_DEAD = ['#c6bfae', '#6f5c30', '#a59a82'];
-  var MAP_GROUND = { sand: '#e0cfa2', rubble: '#b3ab9c', hard: '#a39987' };
+  // The bottom is a seabed seen through a few metres of water: every colour
+  // is pulled halfway toward the water's own colour, so each kind of bottom
+  // keeps its look, its order of light and dark and its place, at less than
+  // half the contrast and colour of the fish drawn above it, which are what
+  // the eye should find first.
+  var BELT_HAZE = '#a9bcb6', BELT_HAZE_T = 0.5;
+  // Mixes two #rrggbb colours: t = 0 gives a, t = 1 gives b.
+  function mixHex(a, b, t) {
+    var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16), out = '#';
+    for (var sh = 16; sh >= 0; sh -= 8) { var ca = (pa >> sh) & 255, v = Math.round(ca + (((pb >> sh) & 255) - ca) * t); out += (v < 16 ? '0' : '') + v.toString(16); }
+    return out;
+  }
+  function beltTone(c) { return mixHex(c, BELT_HAZE, BELT_HAZE_T); }
+  function beltTones(list) { return list.map(beltTone); }
+  var MAP_CORAL_TONES = [['#b14d7c', '#6e2448', '#ecb1cf'], ['#c27a35', '#76400f', '#f3cc98'], ['#6a8a35', '#344d12', '#c3db92'], ['#7656a6', '#3d2869', '#cbb8ee'], ['#a8653c', '#5c3014', '#e6b88f']].map(beltTones);
+  var MAP_BLEACHED = beltTones(['#f6f9fa', '#93a9b6', '#ffffff']), MAP_DEAD = beltTones(['#c6bfae', '#6f5c30', '#a59a82']);
+  var MAP_GROUND = { sand: beltTone('#e0cfa2'), rubble: beltTone('#b3ab9c'), hard: beltTone('#a39987') };
+  var MAP_INK = { ripple: beltTone('#bba26f'), crust: beltTone('#d18499'), stick: beltTone('#f1ebdc'), stickShade: beltTone('#5f5a50'),
+    weedA: beltTone('#6d7d22'), weedAInk: beltTone('#363f0d'), weedB: beltTone('#8a6a28'), weedBInk: beltTone('#45330f') };
   function mapCoral(bucket, form, cx, cy, r, rot) {
     var k, a, d;
     if (form === 'branching') {
@@ -2387,23 +2436,23 @@
     }
     var kids = [
       h('rect', { key: 'sand', x: 0, y: 0, width: BELT_MAP.W, height: BELT_MAP.floor, fill: MAP_GROUND.sand }),
-      h('path', { key: 'ripples', d: ripples, fill: 'none', stroke: '#bba26f', strokeWidth: 0.9 }),
+      h('path', { key: 'ripples', d: ripples, fill: 'none', stroke: MAP_INK.ripple, strokeWidth: 0.9 }),
       ground.rubble ? h('path', { key: 'g-rubble', d: ground.rubble, fill: MAP_GROUND.rubble }) : null,
       ground.hard ? h('path', { key: 'g-hard', d: ground.hard, fill: MAP_GROUND.hard }) : null,
-      crust ? h('path', { key: 'crust', d: crust, fill: '#d18499' }) : null,
-      sticks ? h('path', { key: 'sticks-s', d: sticks, transform: 'translate(0.7 0.9)', stroke: '#5f5a50', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }) : null,
-      sticks ? h('path', { key: 'sticks', d: sticks, stroke: '#f1ebdc', strokeWidth: 1.7, strokeLinecap: 'round', fill: 'none' }) : null,
-      weedA ? h('path', { key: 'weedA', d: weedA, fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.6 }) : null,
-      weedB ? h('path', { key: 'weedB', d: weedB, fill: '#8a6a28', stroke: '#45330f', strokeWidth: 0.6 }) : null
+      crust ? h('path', { key: 'crust', d: crust, fill: MAP_INK.crust }) : null,
+      sticks ? h('path', { key: 'sticks-s', d: sticks, transform: 'translate(0.6 0.8)', stroke: MAP_INK.stickShade, strokeWidth: 1.9, strokeLinecap: 'round', fill: 'none' }) : null,
+      sticks ? h('path', { key: 'sticks', d: sticks, stroke: MAP_INK.stick, strokeWidth: 1.7, strokeLinecap: 'round', fill: 'none' }) : null,
+      weedA ? h('path', { key: 'weedA', d: weedA, fill: MAP_INK.weedA, stroke: MAP_INK.weedAInk, strokeWidth: 0.5 }) : null,
+      weedB ? h('path', { key: 'weedB', d: weedB, fill: MAP_INK.weedB, stroke: MAP_INK.weedBInk, strokeWidth: 0.5 }) : null
     ];
     order.forEach(function (key) {
       var bk = buckets[key], col = bk.colors;
       if (bk.branches) kids.push(h('path', { key: key + 'br', d: bk.branches, fill: 'none', stroke: col[0], strokeWidth: round1(bk.width * 1.15), strokeLinecap: 'round' }));
-      if (bk.body) kids.push(h('path', { key: key + 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.8 }));
-      if (bk.lines) kids.push(h('path', { key: key + 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.9, strokeLinecap: 'round' }));
+      if (bk.body) kids.push(h('path', { key: key + 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.6 }));
+      if (bk.lines) kids.push(h('path', { key: key + 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.75, strokeLinecap: 'round' }));
       if (bk.tips) kids.push(h('path', { key: key + 't', d: bk.tips, fill: 'none', stroke: bk.dead ? col[1] : col[2], strokeWidth: round1(bk.width * (bk.dead ? 0.9 : 1.25)), strokeLinecap: 'round' }));
     });
-    return kids;
+    return [h('g', { key: 'bottom', 'data-belt-bottom': 'true' }, kids)];
   }
 
   // On a narrow screen the map is shown as two halves, 0 to 10 m above 10 to
@@ -2472,21 +2521,21 @@
   function bottomTile(h, cat) {
     var bk = { body: '', lines: '', branches: '', tips: '', width: 1.6 }, kids = [], ground = groundOf(cat);
     kids.push(h('rect', { key: 'g', x: 0, y: 0, width: 36, height: 24, fill: MAP_GROUND[ground] }));
-    if (cat === 'sand') kids.push(h('path', { key: 'r', d: 'M0 7q4.5 -2.2 9 0t9 0t9 0t9 0M0 15q4.5 -2.2 9 0t9 0t9 0t9 0', fill: 'none', stroke: '#bba26f', strokeWidth: 0.9 }));
+    if (cat === 'sand') kids.push(h('path', { key: 'r', d: 'M0 7q4.5 -2.2 9 0t9 0t9 0t9 0M0 15q4.5 -2.2 9 0t9 0t9 0t9 0', fill: 'none', stroke: MAP_INK.ripple, strokeWidth: 0.9 }));
     if (cat === 'rubble') {
       var st = 'M5 7L11 9M14 15L20 12M24 6L29 10M8 18L13 20M25 17L31 15';
-      kids.push(h('path', { key: 's1', d: st, transform: 'translate(0.7 0.9)', stroke: '#5f5a50', strokeWidth: 2, strokeLinecap: 'round' }));
-      kids.push(h('path', { key: 's2', d: st, stroke: '#f1ebdc', strokeWidth: 1.7, strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 's1', d: st, transform: 'translate(0.6 0.8)', stroke: MAP_INK.stickShade, strokeWidth: 1.9, strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 's2', d: st, stroke: MAP_INK.stick, strokeWidth: 1.7, strokeLinecap: 'round' }));
     }
-    if (cat === 'rock') kids.push(h('path', { key: 'c', d: dotsPath([[10, 9], [24, 15], [17, 5]], 2), fill: '#d18499' }));
-    if (cat === 'macroalgae') kids.push(h('path', { key: 'w', d: mapSeaweed(18, 12, 9, 0.3), fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.6 }));
+    if (cat === 'rock') kids.push(h('path', { key: 'c', d: dotsPath([[10, 9], [24, 15], [17, 5]], 2), fill: MAP_INK.crust }));
+    if (cat === 'macroalgae') kids.push(h('path', { key: 'w', d: mapSeaweed(18, 12, 9, 0.3), fill: MAP_INK.weedA, stroke: MAP_INK.weedAInk, strokeWidth: 0.5 }));
     if (CORAL_CATEGORIES[cat]) {
       var col = cat === 'bleached_coral' ? MAP_BLEACHED : cat === 'recently_dead_coral' ? MAP_DEAD : MAP_CORAL_TONES[0];
       mapCoral(bk, 'massive', 9.5, 12, 6.5, 0);
       mapCoral(bk, 'branching', 26, 12, 7.5, 0.4);
       kids.push(h('path', { key: 'br', d: bk.branches, fill: 'none', stroke: col[0], strokeWidth: round1(bk.width * 1.15), strokeLinecap: 'round' }));
-      kids.push(h('path', { key: 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.8 }));
-      kids.push(h('path', { key: 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.9 }));
+      kids.push(h('path', { key: 'b', d: bk.body, fill: col[0], stroke: col[1], strokeWidth: 0.6 }));
+      kids.push(h('path', { key: 'l', d: bk.lines, fill: 'none', stroke: col[1], strokeWidth: 0.75 }));
       kids.push(h('path', { key: 't', d: bk.tips, fill: 'none', stroke: cat === 'recently_dead_coral' ? col[1] : col[2], strokeWidth: round1(bk.width * 1.2), strokeLinecap: 'round' }));
     }
     kids.push(h('rect', { key: 'w2', x: 0, y: 0, width: 36, height: 24, fill: '#8fd0de', opacity: 0.3 }));
@@ -2979,77 +3028,409 @@
     for (k = 0; k < YEAR_SPOTS; k++) if (!spots[k]) spots[k] = 'rock';
     return { spots: spots, counts: counts, hardSpots: front };
   }
-  var YEAR_FISH_SPOTS = (function () {
-    var rand = mulberry32(4242), out = [];
-    for (var tries = 0; out.length < 30 && tries < 2000; tries++) {
-      var x = 20 + rand() * 320, y = 14 + rand() * 62, ok = true;
-      for (var i = 0; i < out.length; i++) if (Math.abs(out[i][0] - x) < 22 && Math.abs(out[i][1] - y) < 11) { ok = false; break; }
-      if (ok) out.push([round1(x), round1(y)]);
+  // Spot colonies are drawn in the look of the survey close-ups, sized for
+  // the whole reef: tissue colour with paler tips and polyps on live coral,
+  // stark white with its polyps when bleached, a grey skeleton with empty
+  // cups and a brown turf film when the heat killed it that year. A colony's
+  // shape comes from its spot alone, so from one year to the next only its
+  // state changes. Living tones follow the coral look guide: browns, olives
+  // and greens, fluorescent tips on branching and table corals, pink-brown
+  // Pocillopora, yellow-brown, green and cream boulders.
+  var YEAR_LOOKS = {
+    branching: [
+      { base: '#8a5a35', dark: '#4a2f1b', light: '#b48556', tip: '#d9bdf0', polyp: '#ead3a6' },
+      { base: '#9a6a2c', dark: '#573912', light: '#c49552', tip: '#bfe6f4', polyp: '#f0dcb0' },
+      { base: '#9c5d55', dark: '#552a26', light: '#c58a80', tip: '#f6c8d8', polyp: '#f6d9dc' },
+      { base: '#5f7c36', dark: '#2f4519', light: '#87a653', tip: '#d2eaa2', polyp: '#dcebb4' },
+      { base: '#7a4b8e', dark: '#3f244d', light: '#a27ab4', tip: '#e6cdf2', polyp: '#e8d4ee' }
+    ],
+    massive: [
+      { base: '#a07c3a', dark: '#5a4216', light: '#cfac66', tip: '#ecd9a0', polyp: '#f3e4b8' },
+      { base: '#677a3a', dark: '#323f19', light: '#95a75c', tip: '#cbd890', polyp: '#dde6b4' },
+      { base: '#7a5838', dark: '#3e2818', light: '#a7825a', tip: '#cdbd8e', polyp: '#e6d3ad' },
+      { base: '#ad9c70', dark: '#625536', light: '#d6c9a0', tip: '#efe6c8', polyp: '#f6f0dc' }
+    ],
+    plate: [
+      { base: '#86683a', dark: '#473318', light: '#b4945e', tip: '#d8c2f2', polyp: '#ecdcb6' },
+      { base: '#677843', dark: '#333e1d', light: '#91a364', tip: '#bce3f4', polyp: '#dfe8bf' },
+      { base: '#8f5e46', dark: '#4c2b1d', light: '#bd886c', tip: '#f2cadc', polyp: '#f0d8cc' }
+    ],
+    encrusting: [
+      { base: '#7a4b8e', dark: '#3f244d', light: '#a27ab4', tip: '#dcc2e8', polyp: '#e8d4ee' },
+      { base: '#8a5a35', dark: '#4a2f1b', light: '#b48556', tip: '#dcc097', polyp: '#ead3a6' },
+      { base: '#5f7c36', dark: '#2f4519', light: '#87a653', tip: '#c9dd94', polyp: '#dcebb4' }
+    ]
+  };
+  var YEAR_BLEACHED = { base: '#f2f7f8', back: '#dfe9ed', dark: '#b3c6cf', light: '#ffffff', polyp: '#93aab8', valley: '#a8bcc8' };
+  var YEAR_DEAD = { base: '#bbb7ac', back: '#a7a398', dark: '#77736a', light: '#d8d5cd', pit: '#4b4842', turf: '#7d5c2d', hair: '#4f381b' };
+  function yearLook(cat, form, i) {
+    if (cat === 'bleached_coral') return Object.assign({ tip: BLEACHED_TIPS[i % BLEACHED_TIPS.length] }, YEAR_BLEACHED);
+    if (cat === 'recently_dead_coral') return Object.assign({ tip: YEAR_DEAD.light, polyp: YEAR_DEAD.pit, back: YEAR_DEAD.back }, YEAR_DEAD);
+    var list = YEAR_LOOKS[form] || YEAR_LOOKS.massive, t = list[(i * 7 + 3) % list.length];
+    return Object.assign({ back: t.base }, t);
+  }
+  // Geometry is worked out once per spot and form and kept: the pictures
+  // redraw on every year and every site card, and the shapes never change.
+  var YEAR_GEO = {};
+  function yearGeo(key, make) { if (!YEAR_GEO[key]) YEAR_GEO[key] = make(); return YEAR_GEO[key]; }
+  function yrDot(x, y) { return 'M' + f1(x) + ' ' + f1(y) + 'h0'; }
+  // A tapered piece of branch with a rounded far end.
+  // A piece that carries on from another starts a little inside it, so the
+  // joint has no notch and needs no round cap.
+  function yrCap(s, joint) {
+    var dx = s.x2 - s.x, dy = s.y2 - s.y, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L, a = s.w0 / 2, b = s.w1 / 2;
+    var x0 = s.x - (joint ? dx / L * a * 0.8 : 0), y0 = s.y - (joint ? dy / L * a * 0.8 : 0);
+    return polyD([[x0 + nx * a, y0 + ny * a], [s.x2 + nx * b, s.y2 + ny * b], [s.x2 - nx * b, s.y2 - ny * b], [x0 - nx * a, y0 - ny * a]]) + (s.end === false ? '' : circD(s.x2, s.y2, b));
+  }
+  // Staghorn thicket: upright branches that fork twice and taper to paler
+  // tips; every other stem stands behind, in shade.
+  function yrBranchGeo(rand, x0, base, k) {
+    var segs = [];
+    function grow(x, y, ang, len, w, depth, layer) {
+      var r = ang * Math.PI / 180, s = { x: x, y: y, x2: x + Math.cos(r) * len, y2: y + Math.sin(r) * len, w0: w, w1: w * 0.8, layer: layer, depth: depth, end: depth >= 2 };
+      segs.push(s);
+      if (depth >= 2) return;
+      var n = rand() < 0.4 ? 3 : 2;
+      for (var j = 0; j < n; j++) {
+        var a = ang + (j - (n - 1) / 2) * (30 + rand() * 12) + (rand() - 0.5) * 8;
+        grow(s.x2, s.y2, clamp(a + (-90 - a) * 0.3, -160, -20), len * (0.78 + rand() * 0.1), s.w1, depth + 1, layer);
+      }
     }
+    var n = 5 + (rand() < 0.4 ? 1 : 0), i;
+    for (i = 0; i < n; i++) { var off = i - (n - 1) / 2; grow(x0 + off * 2.5 * k, base + 0.6 * k, -90 + off * (12 + rand() * 6) + (rand() - 0.5) * 6, (10 + rand() * 3) * k, 3.2 * k, 0, i % 2 ? 0 : 1); }
+    var g = { body: ['', ''], shade: '', hi: '', tips: ['', ''], polyps: '', cups: '', turf: '', hair: '', top: base };
+    for (i = 0; i < segs.length; i++) {
+      var s = segs[i], dx = s.x2 - s.x, dy = s.y2 - s.y, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L, a0 = s.w0 / 2, b0 = s.w1 / 2;
+      g.body[s.layer] += yrCap(s, s.depth > 0);
+      g.top = Math.min(g.top, s.y2 - b0);
+      if (s.layer) {
+        var sg = (nx * ART_LIGHT[0] + ny * ART_LIGHT[1]) > 0 ? -1 : 1;
+        g.shade += polyD([[s.x + sg * nx * a0 * 0.2, s.y + sg * ny * a0 * 0.2], [s.x2 + sg * nx * b0 * 0.2, s.y2 + sg * ny * b0 * 0.2], [s.x2 + sg * nx * b0, s.y2 + sg * ny * b0], [s.x + sg * nx * a0, s.y + sg * ny * a0]]);
+        g.hi += 'M' + f1(s.x - sg * nx * a0 * 0.45) + ' ' + f1(s.y - sg * ny * a0 * 0.45) + 'L' + f1(s.x2 - sg * nx * b0 * 0.45) + ' ' + f1(s.y2 - sg * ny * b0 * 0.45);
+      }
+      if (s.depth === 2) { g.tips[s.layer] += 'M' + f1(s.x + dx * 0.5) + ' ' + f1(s.y + dy * 0.5) + 'L' + f1(s.x2) + ' ' + f1(s.y2); g.tipW = s.w1 * 1.08; }
+      var cnt = Math.max(1, Math.round(L / (2.9 * k)));
+      for (var c = 0; c < cnt; c++) {
+        var t = (c + 0.5) / cnt, side = ((c + i) % 2 ? 1 : -1) * 0.24 * (s.w0 + (s.w1 - s.w0) * t), px = s.x + dx * t + nx * side, py = s.y + dy * t + ny * side;
+        if (s.layer) g.polyps += yrDot(px, py);
+        if (s.layer && (c + i) % 2 === 0) g.cups += yrDot(px, py);
+      }
+      // Turf film creeps up the older, lower parts of the branches.
+      if (s.depth < 2 && i % 3 !== 2) {
+        g.turf += 'M' + f1(s.x + dx * 0.1) + ' ' + f1(s.y + dy * 0.1) + 'L' + f1(s.x + dx * (0.55 + rand() * 0.3)) + ' ' + f1(s.y + dy * (0.55 + rand() * 0.3));
+        for (var hh = 0; hh < 4; hh++) { var ht = 0.15 + hh * 0.18, hs = (hh % 2 ? 1 : -1) * a0 * 0.95; g.hair += 'M' + f1(s.x + dx * ht + nx * hs) + ' ' + f1(s.y + dy * ht + ny * hs) + 'l' + f1(nx * hs * 0.5 - 0.2 * k) + ' ' + f1(ny * hs * 0.5 - 0.5 * k); }
+      }
+    }
+    return g;
+  }
+  // A boulder with winding, brain-like valleys (the close-ups' maze, at a
+  // coarser spacing) and polyps along the valleys.
+  // Three maze patterns, worked out once and shared: at this size one
+  // boulder's maze cannot be told from another's, and the maze is the
+  // costliest part of the picture to build.
+  var YEAR_MAZES = [];
+  function yrMaze(n) {
+    if (YEAR_MAZES[n]) return YEAR_MAZES[n];
+    var rand = mulberry32(9001 + n * 7717), waves = [], K = 12 + n * 0.8;
+    for (var w = 0; w < 8; w++) { var th = rand() * 6.283, zc = rand() * 2 - 1, rr = Math.sqrt(1 - zc * zc); waves.push([rr * Math.cos(th) * K, zc * K, rr * Math.sin(th) * K, rand() * 6.283]); }
+    YEAR_MAZES[n] = zeroLines(function (u, v) {
+      var lam = (u - 0.5) * 3, phi = v * 1.5, px = Math.cos(phi) * Math.sin(lam), py = Math.sin(phi), pz = Math.cos(phi) * Math.cos(lam), sum = 0;
+      for (var q = 0; q < waves.length; q++) sum += Math.cos(waves[q][0] * px + waves[q][1] * py + waves[q][2] * pz + waves[q][3]);
+      return sum;
+    }, 34, 16);
+    return YEAR_MAZES[n];
+  }
+  function yrDomeGeo(rand, x0, base, k) {
+    var a = (14.5 + rand() * 2.5) * k, H = (17 + rand() * 4) * k, c = a * 0.16;
+    var outline = domeOutline(rand, x0, base, a, H, c, 0.035), surf = domeSurface(x0, base, a, H, c), i, j;
+    var lines = yrMaze(Math.floor(rand() * 3));
+    var g = { body: smoothD(outline, true), valleys: '', polyps: '', cups: '', turf: '', hair: '', top: base - H };
+    for (i = 0; i < lines.length; i++) {
+      var pts = lines[i].filter(function (q, n, all) { return n % 2 === 0 || n === all.length - 1; }).map(function (q) { return surf(q.w * 1.5, (q.u - 0.5) * 3); });
+      g.valleys += lineD(pts);
+      for (j = 1; j < pts.length; j += 3) { g.polyps += yrDot(pts[j][0], pts[j][1]); if (j % 2) g.cups += yrDot(pts[j][0], pts[j][1]); }
+    }
+    for (i = 0; i < 3; i++) {
+      var tp = surf(0.25 + rand() * 0.8, -1.1 + rand() * 2.2);
+      g.turf += smoothD(blobPts(tp[0], tp[1], (3 + rand() * 2) * k, (1.8 + rand()) * k, rand, 8, 0.3), true);
+      g.hair += turfFuzz(rand, tp[0], tp[1], 3.4 * k, 2 * k, 8, 0.7 * k);
+    }
+    return g;
+  }
+  // A table coral: a wide flat top seen from a little above, a thick rim, a
+  // short stem.
+  function yrTableGeo(rand, x0, base, k) {
+    var rx = (19 + rand() * 3) * k, ry = (4.4 + rand()) * k, ty = base - (10 + rand() * 2.5) * k, thick = 1.8 * k, ph = rand() * 6.28, tilt = (rand() - 0.5) * 0.06, i;
+    var rim = [];
+    for (i = 0; i < 28; i++) { var t = i / 28 * Math.PI * 2, q = 1 + 0.04 * Math.sin(7 * t + ph) + 0.025 * Math.sin(3 * t + ph * 2); rim.push([x0 + Math.cos(t) * rx * q, ty + Math.sin(t) * ry * q + Math.cos(t) * rx * tilt]); }
+    var front = rim.filter(function (p, n) { return n <= 14; });
+    var g = { top: smoothD(rim, true), band: polyD(front.concat(front.slice().reverse().map(function (p) { return [p[0], p[1] + thick]; }))),
+      stem: smoothD([[x0 - 3 * k, ty + 1], [x0 - 3.2 * k, ty + (base - ty) * 0.6], [x0 - 5.5 * k, base], [x0 + 5.5 * k, base], [x0 + 3.2 * k, ty + (base - ty) * 0.6], [x0 + 3 * k, ty + 1]], true),
+      under: circD(x0, ty + thick + 0.6 * k, rx * 0.86, ry * 0.55), rays: '', polyps: '', cups: '', turf: '', hair: '', tTop: ty - ry };
+    for (i = 0; i < 18; i++) { var e = rim[Math.round(i / 18 * 28) % 28]; g.rays += 'M' + f1(x0 + (e[0] - x0) * 0.12) + ' ' + f1(ty + (e[1] - ty) * 0.12) + 'L' + f1(x0 + (e[0] - x0) * 0.92) + ' ' + f1(ty + (e[1] - ty) * 0.92); }
+    [0.3, 0.55, 0.8].forEach(function (rr, ri) {
+      var m = 6 + ri * 5;
+      for (var j = 0; j < m; j++) { var an = (j + ri * 0.5) / m * Math.PI * 2, px = x0 + Math.cos(an) * rx * rr, py = ty + Math.sin(an) * ry * rr + Math.cos(an) * rx * rr * tilt; g.polyps += yrDot(px, py); if (j % 2) g.cups += yrDot(px, py); }
+    });
+    for (i = 0; i < 2; i++) { var ta = rand() * 6.28, tr = 0.3 + rand() * 0.45, tx = x0 + Math.cos(ta) * rx * tr, tyy = ty + Math.sin(ta) * ry * tr; g.turf += smoothD(blobPts(tx, tyy, (4 + rand() * 2) * k, 1.4 * k, rand, 8, 0.3), true); g.hair += turfFuzz(rand, tx, tyy, 4 * k, 1.3 * k, 8, 0.6 * k); }
+    g.topY = ty - ry;
+    return g;
+  }
+  // An encrusting colony: a thin, lumpy living sheet over a low reef rock,
+  // with bare rock showing around its lower edge.
+  function yrCrustGeo(rand, x0, base, k) {
+    var a = (16 + rand() * 2) * k, H = (8.5 + rand() * 2) * k, c = a * 0.2, surf = domeSurface(x0, base, a, H, c), i, lam;
+    var p1 = rand() * 6.28, p2 = rand() * 6.28, lo = function (l) { return 0.22 + 0.1 * Math.sin(3 * l + p1) + 0.05 * Math.sin(7 * l + p2) + 0.32 * Math.pow(l / 1.57, 2); };
+    var edge = [], back = [];
+    for (lam = -1.5; lam <= 1.5001; lam += 0.15) edge.push(surf(lo(lam), lam));
+    var tR = lo(1.5), tL = lo(-1.5);
+    for (i = 0; i <= 8; i++) { var t = tR + (Math.PI - tL - tR) * i / 8; back.push([x0 + Math.cos(t) * (a + 0.5), base - Math.sin(t) * (H + 0.8)]); }
+    var g = { rock: smoothD(domeOutline(rand, x0, base, a, H, c, 0.05), true), sheet: smoothD(edge.concat(back), true), lip: smoothD(edge, false), lumps: '', polyps: '', cups: '', turf: '', hair: '', top: base - H };
+    for (i = 0; i < 5; i++) { var lm = -1.1 + rand() * 2.2, q = surf(lo(lm) + 0.2 + rand() * (1.2 - lo(lm)), lm); g.lumps += circD(q[0] + 0.4 * k, q[1] + 1 * k, (2.6 + rand() * 1.6) * k, (1.2 + rand() * 0.6) * k); }
+    for (lam = -1.3; lam <= 1.3; lam += 0.26) for (var ph = lo(lam) + 0.12; ph < 1.4; ph += 0.3) { var pp = surf(ph, lam + (rand() - 0.5) * 0.1); g.polyps += yrDot(pp[0], pp[1]); if (rand() < 0.5) g.cups += yrDot(pp[0], pp[1]); }
+    for (i = 0; i < 2; i++) { var tl = -0.9 + rand() * 1.8, tp = surf(lo(tl) + 0.3 + rand() * 0.4, tl); g.turf += smoothD(blobPts(tp[0], tp[1], (4 + rand() * 2) * k, 1.8 * k, rand, 8, 0.3), true); g.hair += turfFuzz(rand, tp[0], tp[1], 4 * k, 1.8 * k, 8, 0.6 * k); }
+    return g;
+  }
+  // Fleshy seaweed: stalks with leafy blades and small air bladders, the
+  // close-ups' Sargassum at reef scale.
+  function yrWeedGeo(rand, x0, base, k, tall) {
+    var g = { stalks: '', leaves: ['', ''], bladders: '' }, n = 5 + (rand() < 0.5 ? 1 : 0), sway = (rand() < 0.5 ? -1 : 1) * (1.5 + rand() * 2) * k;
+    for (var s = 0; s < n; s++) {
+      var spread = (s - (n - 1) / 2) * 2.4 * k, ht = (tall || 1) * (17 + rand() * 6) * k - Math.abs(spread) * 0.5;
+      var xa = x0 + spread * 0.3, xc = x0 + spread * 0.9 - sway * 0.4, yc = base - ht * 0.55, xe = x0 + spread * 1.5 + sway, ye = base - ht;
+      g.stalks += 'M' + f1(xa) + ' ' + f1(base) + 'Q' + f1(xc) + ' ' + f1(yc) + ' ' + f1(xe) + ' ' + f1(ye);
+      var side = s % 2 ? 1 : -1;
+      for (var t = 0.14 + rand() * 0.05; t < 1; t += 0.12 + rand() * 0.03) {
+        side = -side;
+        var p = qPt(xa, base, xc, yc, xe, ye, t), p2 = qPt(xa, base, xc, yc, xe, ye, Math.min(1, t + 0.03)), ang = Math.atan2(p2[1] - p[1], p2[0] - p[0]) + side * (0.7 + rand() * 0.3);
+        var L = (4.2 - t * 1.6 + rand()) * k, wd = (1.1 + rand() * 0.4) * k, dxl = Math.cos(ang), dyl = Math.sin(ang), tx = p[0] + dxl * L, ty = p[1] + dyl * L + 0.6 * k;
+        g.leaves[(s + Math.round(t * 10)) % 2] += 'M' + f1(p[0]) + ' ' + f1(p[1]) + 'Q' + f1(p[0] + dxl * L * 0.5 - dyl * wd) + ' ' + f1(p[1] + dyl * L * 0.5 + dxl * wd) + ' ' + f1(tx) + ' ' + f1(ty) + 'Q' + f1(p[0] + dxl * L * 0.5 + dyl * wd) + ' ' + f1(p[1] + dyl * L * 0.5 - dxl * wd) + ' ' + f1(p[0]) + ' ' + f1(p[1]) + 'Z';
+        if (rand() < 0.3) g.bladders += circD(p[0] - dyl * side * 0.9 * k, p[1] + dxl * side * 0.9 * k, 0.65 * k);
+      }
+    }
+    return g;
+  }
+  // Bare reef rock: grey, with pink crusts of coralline algae, a short
+  // olive turf and a few holes.
+  function yrRockGeo(rand, x0, base, k) {
+    var a = (15 + rand() * 3) * k, H = (9 + rand() * 3) * k, c = a * 0.2, surf = domeSurface(x0, base, a, H, c), i;
+    var g = { body: smoothD(domeOutline(rand, x0, base, a, H, c, 0.1), true), cca: '', turf: '', holes: '', top: base - H };
+    for (i = 0; i < 3; i++) { var q = surf(0.25 + rand() * 0.9, -1.1 + rand() * 2.2); g.cca += smoothD(blobPts(q[0], q[1], (1.8 + rand() * 1.4) * k, (0.8 + rand() * 0.5) * k, rand, 8, 0.25), true); }
+    for (i = 0; i < 3; i++) { var p = surf(0.2 + rand() * 1.1, -1.2 + rand() * 2.4); g.turf += turfFuzz(rand, p[0], p[1], 5 * k, 2 * k, 10, 0.8 * k); }
+    for (i = 0; i < 3; i++) { var hp = surf(0.15 + rand() * 0.7, -1.2 + rand() * 2.4); g.holes += circD(hp[0], hp[1], (0.6 + rand() * 0.5) * k, (0.35 + rand() * 0.25) * k); }
+    return g;
+  }
+  // Loose broken branches heaped on the sand.
+  function yrRubbleGeo(rand, x0, base, k) {
+    var g = { a: '', b: '', under: '', top: '' }, n = 14 + Math.floor(rand() * 4);
+    for (var i = 0; i < n; i++) {
+      var u = (rand() + rand()) / 2 - 0.5, x = x0 + u * 30 * k, y = base + (rand() - 0.6) * 3 * k - (1 - Math.abs(u) * 2) * 2.6 * k;
+      var L = (4.5 + rand() * 4.5) * k, w = (1.4 + rand() * 0.9) * k, an = (rand() - 0.5) * (rand() < 0.2 ? 2.4 : 1), cx = Math.cos(an) * L / 2, cy = Math.sin(an) * L / 2;
+      var s = { x: x - cx, y: y - cy, x2: x + cx, y2: y + cy, w0: w, w1: w * 0.8 };
+      if (i % 2) g.a += yrCap(s); else g.b += yrCap(s);
+      g.under += polyD([[s.x, s.y + w * 0.1], [s.x2, s.y2 + w * 0.1], [s.x2, s.y2 + w * 0.45], [s.x, s.y + w * 0.5]]);
+      g.top += 'M' + f1(s.x) + ' ' + f1(s.y - w * 0.2) + 'L' + f1(s.x2) + ' ' + f1(s.y2 - w * 0.18);
+    }
+    return g;
+  }
+  // A Reef Star seen from the side: a sand-coated steel frame with legs on
+  // the rubble and a raised top where the coral fragments are tied.
+  function yrFrameD(x, base, k) {
+    var hy = base - 6.5 * k, l = x - 7.5 * k, r = x + 7.5 * k;
+    return 'M' + f1(x - 15 * k) + ' ' + f1(base + 0.8) + 'L' + f1(l) + ' ' + f1(hy) + 'H' + f1(r) + 'L' + f1(x + 15 * k) + ' ' + f1(base + 0.8) +
+      'M' + f1(l) + ' ' + f1(hy) + 'L' + f1(x - 2 * k) + ' ' + f1(base + 0.8) + 'M' + f1(r) + ' ' + f1(hy) + 'L' + f1(x + 2 * k) + ' ' + f1(base + 0.8) + 'M' + f1(x) + ' ' + f1(hy) + 'V' + f1(base + 0.8);
+  }
+
+  // Draws one colony from its geometry in the colours of its state.
+  function yrColony(h, key, form, g, look, cat, k, lit) {
+    var live = cat !== 'recently_dead_coral', bleached = cat === 'bleached_coral', kids = [], pw = round1((bleached ? 0.62 : 0.72) * k), dead = !live;
+    var polyps = live ? h('path', { key: 'p', 'data-part': 'polyps', d: g.polyps, stroke: look.polyp, strokeWidth: pw, strokeLinecap: 'round', opacity: bleached ? 0.95 : 0.85 })
+      : h('path', { key: 'p', 'data-part': 'cups', d: g.cups, stroke: YEAR_DEAD.pit, strokeWidth: round1(0.62 * k), strokeLinecap: 'round', opacity: 0.85 });
+    var turf = dead && g.turf ? [h('path', { key: 'tf', 'data-part': 'turf', d: g.turf, fill: form === 'branching' ? 'none' : YEAR_DEAD.turf, stroke: form === 'branching' ? YEAR_DEAD.turf : 'none', strokeWidth: form === 'branching' ? round1(2 * k) : null, strokeLinecap: 'round', opacity: 0.75 }),
+      h('path', { key: 'th', d: g.hair, stroke: YEAR_DEAD.hair, strokeWidth: round1(0.38 * k), strokeLinecap: 'round', fill: 'none', opacity: 0.9 })] : [];
+    if (form === 'branching') {
+      kids.push(h('path', { key: 'b0', d: g.body[0], fill: dead ? look.back : bleached ? look.back : mixHex(look.base, look.dark, 0.4) }));
+      if (live) kids.push(h('path', { key: 't0', d: g.tips[0], stroke: mixHex(look.tip, look.dark, bleached ? 0.05 : 0.25), strokeWidth: round1(g.tipW), strokeLinecap: 'round', fill: 'none' }));
+      kids.push(h('path', { key: 'b1', 'data-part': 'tissue', d: g.body[1], fill: look.base }));
+      kids.push(h('path', { key: 'sh', d: g.shade, fill: look.dark, opacity: bleached ? 0.45 : 0.5 }));
+      kids.push(h('path', { key: 'hi', d: g.hi, stroke: look.light, strokeWidth: round1(0.6 * k), strokeLinecap: 'round', fill: 'none', opacity: dead ? 0.5 : 0.6 }));
+      if (live) kids.push(h('path', { key: 't1', d: g.tips[1], stroke: look.tip, strokeWidth: round1(g.tipW), strokeLinecap: 'round', fill: 'none' }));
+      kids.push(polyps);
+      kids = kids.concat(turf);
+    } else if (form === 'plate') {
+      kids.push(h('path', { key: 'st', d: g.stem, fill: look.dark }));
+      kids.push(h('path', { key: 'bd', d: g.band, fill: mixHex(look.base, look.dark, 0.45) }));
+      kids.push(h('path', { key: 'tp', 'data-part': 'tissue', d: g.top, fill: look.base }));
+      kids.push(h('path', { key: 'tl', d: g.top, fill: 'url(#' + lit + 'top)' }));
+      kids.push(h('path', { key: 'ry', d: g.rays, stroke: look.dark, strokeWidth: round1(0.32 * k), fill: 'none', opacity: dead ? 0.6 : 0.4 }));
+      if (live) kids.push(h('path', { key: 'mg', d: g.top, stroke: look.tip, strokeWidth: round1(0.9 * k), fill: 'none', opacity: 0.9 }));
+      kids.push(polyps);
+      kids = kids.concat(turf);
+    } else if (form === 'encrusting') {
+      kids.push(h('path', { key: 'rk', d: g.rock, fill: '#74766f' }));
+      kids.push(h('path', { key: 'rl', d: g.rock, fill: 'url(#' + lit + 'lit)' }));
+      kids.push(h('path', { key: 'sh', 'data-part': 'tissue', d: g.sheet, fill: look.base }));
+      kids.push(h('path', { key: 'lu', d: g.lumps, fill: look.dark, opacity: bleached ? 0.3 : 0.4 }));
+      kids.push(h('path', { key: 'lp', d: g.lip, stroke: live ? look.tip : look.light, strokeWidth: round1(0.8 * k), fill: 'none', strokeLinecap: 'round' }));
+      kids.push(polyps);
+      kids = kids.concat(turf);
+    } else {
+      kids.push(h('path', { key: 'bd', 'data-part': 'tissue', d: g.body, fill: look.base }));
+      kids.push(h('path', { key: 'bl', d: g.body, fill: 'url(#' + lit + 'lit)' }));
+      kids.push(h('path', { key: 'rg', d: g.valleys, stroke: live ? look.tip : look.light, strokeWidth: round1(0.42 * k), fill: 'none', opacity: 0.55, transform: 'translate(0 ' + round1(-0.45 * k) + ')' }));
+      kids.push(h('path', { key: 'vl', d: g.valleys, stroke: bleached ? look.valley : look.dark, strokeWidth: round1((dead ? 0.7 : 0.6) * k), fill: 'none', strokeLinejoin: 'round', opacity: dead ? 0.85 : 0.65 }));
+      kids.push(polyps);
+      kids = kids.concat(turf);
+    }
+    return h('g', { key: key, 'data-colony': cat, 'data-form': form }, kids);
+  }
+  // Where each family swims: a small snapper school in open water,
+  // surgeonfish above the reef, parrotfish and butterflyfish low over the
+  // coral, groupers close to the reef. The places are seeded and fixed, so
+  // only the number drawn changes from year to year.
+  var YEAR_FISH_PLACES = (function () {
+    var zones = { grouper: [50, 74], butterflyfish: [34, 70], parrotfish: [30, 64], surgeonfish: [12, 50], snapper: [6, 30] };
+    var most = { grouper: 3, butterflyfish: 12, parrotfish: 7, surgeonfish: 9, snapper: 4 }, placed = [], out = {};
+    ['grouper', 'butterflyfish', 'parrotfish', 'surgeonfish', 'snapper'].forEach(function (fam, fi) {
+      var rand = mulberry32(4242 + fi * 977), z = zones[fam], list = [];
+      for (var tries = 0; list.length < most[fam] && tries < 4000; tries++) {
+        var x = fam === 'snapper' ? 196 + rand() * 140 : 16 + rand() * 328, y = z[0] + rand() * (z[1] - z[0]), ok = true;
+        for (var i = 0; i < placed.length; i++) if (Math.abs(placed[i][0] - x) < 19 && Math.abs(placed[i][1] - y) < 9) { ok = false; break; }
+        if (!ok) continue;
+        placed.push([x, y]);
+        list.push([round1(x), round1(y), fam === 'snapper' ? true : (list.length + fi) % 2 === 1]);
+      }
+      out[fam] = list;
+    });
     return out;
   })();
+  var YEAR_COMPANION = { branching: 'massive', massive: 'branching', plate: 'massive', encrusting: 'branching' };
+  var YEAR_DRAW_RANK = { branching: 0, plate: 1, macroalgae: 0, massive: 2, encrusting: 3, rock: 3, rubble: 4, sand: 4 };
   function yearReefArt(h, uid, row, startRow, settings) {
-    var site = siteFromModelYear(row, settings, 0), sp = yearSpots(site.cover), kids = [];
+    var site = siteFromModelYear(row, settings, 0), sp = yearSpots(site.cover), kids = [], i;
     // Spots on ground that Reef Stars added since year 0 carry a frame.
     var hard0 = settings.rubbleStabilization ? Math.round(clamp(startRow.hardBottom != null ? startRow.hardBottom : P('hardBottom'), 0, 1) * YEAR_SPOTS) : YEAR_SPOTS;
     var framed = {};
     for (var o = hard0; o < sp.hardSpots; o++) framed[YEAR_SPOT_ORDER[o]] = true;
+    var lit = uid + '-';
     kids.push(h('defs', { key: 'defs' },
-      h('linearGradient', { id: uid + '-sea', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#5fb5c9' }), h('stop', { offset: 1, stopColor: '#17627c' })),
-      h('linearGradient', { id: uid + '-heat', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#f59e0b', stopOpacity: 0.55 }), h('stop', { offset: 1, stopColor: '#f59e0b', stopOpacity: 0 }))));
+      h('linearGradient', { id: uid + '-sea', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#6cc0d0'), artStop(h, 0.5, '#2a86a0'), artStop(h, 1, '#165d74')),
+      h('linearGradient', { id: uid + '-heat', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#f59e0b', stopOpacity: 0.55 }), h('stop', { offset: 1, stopColor: '#f59e0b', stopOpacity: 0 })),
+      h('linearGradient', { id: uid + '-ray', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#effdff', 0.22), artStop(h, 1, '#effdff', 0)),
+      h('linearGradient', { id: uid + '-haze', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#2a7f98', 0), artStop(h, 0.35, '#2a7f98', 0.14), artStop(h, 1, '#2a7f98', 0.2)),
+      h('radialGradient', { id: lit + 'lit', cx: 0.34, cy: 0.2, r: 0.95 }, artStop(h, 0, '#ffffff', 0.34), artStop(h, 0.45, '#ffffff', 0), artStop(h, 1, '#071f28', 0.45)),
+      h('linearGradient', { id: lit + 'top', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#ffffff', 0.3), artStop(h, 1, '#071f28', 0.12)),
+      h('radialGradient', { id: uid + '-vig', cx: 0.5, cy: 0.42, r: 0.8 }, artStop(h, 0.62, '#03141c', 0), artStop(h, 1, '#03141c', 0.38)),
+      h('filter', { id: uid + '-blur', x: '-10%', y: '-40%', width: '120%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 1.6 })),
+      h('linearGradient', { id: uid + '-fb', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#7f8274'), artStop(h, 0.5, '#958f7c')),
+      h('linearGradient', { id: uid + '-ff', x1: 0, y1: 0, x2: 0, y2: 1 }, artStop(h, 0, '#9a937e'), artStop(h, 1, '#b5aa8f')),
+      // Dappled light on the near floor, as in the close-ups.
+      h('pattern', { id: uid + '-ca', width: 96, height: 58, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-8) scale(0.62 0.34)' },
+        h('path', { d: 'M0 12C9 4 18 10 26 6S41 1 50 9 66 15 73 8 88 4 96 12M0 40C7 31 16 36 22 30S31 18 26 6M22 30C30 37 39 33 46 38S57 49 66 44 79 31 73 8M66 44C74 52 85 50 96 40M50 9C47 18 51 26 46 38M46 38C44 47 38 52 30 58M88 4C85 16 92 27 96 40M0 40C5 49 3 53 6 58M79 31C86 33 90 37 96 40', fill: 'none', stroke: '#f2feff', strokeWidth: 2.2, strokeLinecap: 'round' }))));
     kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: 360, height: YEAR_VB_H, fill: 'url(#' + uid + '-sea)' }));
-    kids.push(h('path', { key: 'rays', d: 'M60 0H86L46 112H18ZM170 0H186L176 112H150ZM262 0H292L318 112H286Z', fill: '#e4fbff', opacity: 0.08 }));
+    kids.push(h('path', { key: 'rays', d: 'M52 0H84L50 104H10ZM160 0H180L178 104H142ZM248 0H284L322 104H282ZM318 0H332L360 70V100Z', fill: 'url(#' + uid + '-ray)' }));
     if (row.dhw >= 4) kids.push(h('rect', { key: 'heat', x: 0, y: 0, width: 360, height: 100, fill: 'url(#' + uid + '-heat)', opacity: clamp(row.dhw / 12, 0.35, 1), 'data-heat': 'true' }));
-    var GROUND = { sand: '#e0cd9e', rubble: '#b3ab9c' };
-    // Two strips of reef floor; each spot adds its own patch and object.
-    kids.push(h('path', { key: 'floor-b', d: 'M0 108Q60 101 120 106T240 104T360 106V' + YEAR_VB_H + 'H0Z', fill: '#a39886' }));
-    function spot(i) {
-      var backRow = i >= 12, j = backRow ? i - 12 : i, k = backRow ? 0.74 : 1;
-      var x = backRow ? 24 + j * 28.4 : 14 + j * 30 + (j % 2 ? 2 : -2), base = backRow ? 109 : 129, s = 0.56 * k;
-      var cat = sp.spots[i], g = groundOf(cat), out = [];
-      if (g !== 'hard') out.push(h('ellipse', { key: 'g', cx: round1(x), cy: round1(base + 2 * k), rx: round1(16 * k), ry: round1(5 * k), fill: GROUND[g] }));
-      if (cat === 'sand') out.push(h('path', { key: 's', d: 'M' + round1(x - 10 * k) + ' ' + round1(base + 2 * k) + 'q' + round1(2.5 * k) + ' ' + round1(-1.6 * k) + ' ' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0t' + round1(5 * k) + ' 0', fill: 'none', stroke: '#b59c66', strokeWidth: 0.9 }));
-      if (cat === 'rubble') {
-        var st = '';
-        for (var r = 0; r < 5; r++) { var rx = x + (r - 2) * 5.5 * k, ry = base - (r % 2 ? 3 : 0.5) * k, ra = (i * 37 + r * 53) % 180 * Math.PI / 180, rl = 3.4 * k; st += 'M' + round1(rx - Math.cos(ra) * rl) + ' ' + round1(ry - Math.sin(ra) * rl * 0.5) + 'L' + round1(rx + Math.cos(ra) * rl) + ' ' + round1(ry + Math.sin(ra) * rl * 0.5); }
-        out.push(h('path', { key: 'r0', d: st, transform: 'translate(0.6 0.8)', stroke: '#5f5a50', strokeWidth: round1(2.4 * k), strokeLinecap: 'round' }));
-        out.push(h('path', { key: 'r1', d: st, stroke: '#efe8d6', strokeWidth: round1(2 * k), strokeLinecap: 'round' }));
+    // Reef further off, soft and blue through the water.
+    kids.push(h('path', { key: 'far', d: 'M0 82C14 70 30 74 40 66C52 58 64 70 78 68C92 62 100 72 116 70C128 60 146 66 156 70C170 64 182 58 196 68C212 70 220 62 236 66C250 72 262 60 278 64C292 68 304 62 318 68C330 72 346 64 360 70V96H0Z', fill: '#3a8aa1', opacity: 0.6, filter: 'url(#' + uid + '-blur)' }));
+    kids.push(h('path', { key: 'floor-b', d: 'M0 94Q40 87 90 91T180 90T270 89T360 92V' + YEAR_VB_H + 'H0Z', fill: 'url(#' + uid + '-fb)' }));
+    function place(i) {
+      var backRow = i >= 12, j = backRow ? i - 12 : i, k = backRow ? 1.15 : 1.6, nudge = ((i * 5) % 3 - 1);
+      return { x: backRow ? 24 + j * 28.4 : 14 + j * 30 + (j % 2 ? 2 : -2), base: (backRow ? 97 : 142) + nudge * (backRow ? 1.2 : 1.4), k: k, backRow: backRow };
+    }
+    function rowArt(from, to) {
+      var ground = { hard: '', sand: '', rubble: '', ripple: '', shadow: '' }, spots = [], s;
+      for (s = from; s < to; s++) {
+        var p = place(s), cat = sp.spots[s], gr = groundOf(cat), k = p.k, rand = mulberry32((s + 1) * 2654435761 >>> 0);
+        if (gr === 'hard' && !framed[s]) ground.hard += smoothD(blobPts(p.x, p.base + 1.2 * k, 16 * k, 3.6 * k, rand, 9, 0.18), true);
+        else if (gr === 'sand') { ground.sand += smoothD(blobPts(p.x, p.base + 1.4 * k, 17 * k, 3.4 * k, rand, 9, 0.12), true); for (var rp = 0; rp < 3; rp++) ground.ripple += 'M' + f1(p.x - (12 - rp * 2) * k) + ' ' + f1(p.base + (rp - 0.6) * 1.6 * k) + 'q' + f1(2.5 * k) + ' ' + f1(-1 * k) + ' ' + f1(5 * k) + ' 0t' + f1(5 * k) + ' 0t' + f1(5 * k) + ' 0t' + f1(5 * k) + ' 0'; }
+        else ground.rubble += smoothD(blobPts(p.x, p.base + 1.4 * k, 17 * k, 3.4 * k, rand, 9, 0.14), true);
+        if (CORAL_CATEGORIES[cat] || cat === 'rock' || cat === 'macroalgae') ground.shadow += circD(p.x + 1.5 * k, p.base + 1.2 * k, 14 * k, 2.6 * k);
+        var form = CORAL_CATEGORIES[cat] ? (framed[s] ? 'branching' : YEAR_FORMS[s % YEAR_FORMS.length]) : cat;
+        spots.push({ i: s, p: p, cat: cat, form: form, rank: YEAR_DRAW_RANK[form] != null ? YEAR_DRAW_RANK[form] : 3 });
       }
-      if (framed[i]) out.push(h('path', { key: 'f', 'data-frame': 'true', d: 'M' + round1(x - 15 * k) + ' ' + round1(base + 1) + 'L' + round1(x - 7 * k) + ' ' + round1(base - 8 * k) + 'H' + round1(x + 7 * k) + 'L' + round1(x + 15 * k) + ' ' + round1(base + 1) + 'M' + round1(x - 7 * k) + ' ' + round1(base - 8 * k) + 'L' + round1(x) + ' ' + round1(base + 1) + 'L' + round1(x + 7 * k) + ' ' + round1(base - 8 * k), fill: 'none', stroke: '#2f343b', strokeWidth: round1(1.4 * k) }));
-      if (cat === 'rock') {
-        out.push(h('path', { key: 'k', d: 'M' + round1(x - 13 * k) + ' ' + round1(base + 1) + 'Q' + round1(x - 11 * k) + ' ' + round1(base - 7 * k) + ' ' + round1(x - 2 * k) + ' ' + round1(base - 7.5 * k) + 'Q' + round1(x + 9 * k) + ' ' + round1(base - 8 * k) + ' ' + round1(x + 13 * k) + ' ' + round1(base + 1) + 'Z', fill: '#8a8379', stroke: '#57524a', strokeWidth: 0.8 }));
-        out.push(h('path', { key: 'c', d: dotsPath([[x - 5 * k, base - 4 * k], [x + 4 * k, base - 3 * k]], round1(1.8 * k)), fill: '#d18499' }));
-      }
-      if (cat === 'macroalgae') {
-        var wd = '';
-        for (var b2 = 0; b2 < 5; b2++) {
-          var bx = x + (b2 - 2) * 3.4 * k, tip = base - (15 + (b2 % 2) * 6) * k, lean = (b2 - 2) * 2.2 * k;
-          wd += 'M' + round1(bx - 1.6 * k) + ' ' + round1(base) + 'Q' + round1(bx - 4 * k + lean) + ' ' + round1((base + tip) / 2) + ' ' + round1(bx + lean) + ' ' + round1(tip) + 'Q' + round1(bx + 3.4 * k + lean) + ' ' + round1((base + tip) / 2) + ' ' + round1(bx + 1.6 * k) + ' ' + round1(base) + 'Z';
-        }
-        out.push(h('path', { key: 'w', d: wd, fill: '#6d7d22', stroke: '#363f0d', strokeWidth: 0.7 }));
+      var out = [
+        ground.hard ? h('path', { key: 'gh', d: ground.hard, fill: '#6c6a5d' }) : null,
+        ground.rubble ? h('path', { key: 'gr', d: ground.rubble, fill: '#a9a291' }) : null,
+        ground.sand ? h('path', { key: 'gs', d: ground.sand, fill: '#dccb9e' }) : null,
+        ground.ripple ? h('path', { key: 'rp', d: ground.ripple, stroke: '#b39a66', strokeWidth: 0.7, fill: 'none' }) : null,
+        ground.shadow ? h('path', { key: 'cs', d: ground.shadow, fill: '#1d2a2c', opacity: 0.28 }) : null];
+      spots.sort(function (a, b) { return a.rank - b.rank || a.i - b.i; });
+      return out.concat(spots.map(spotArt));
+    }
+    function spotArt(q) {
+      var i = q.i, p = q.p, cat = q.cat, form = q.form, k = p.k, x = p.x, base = p.base, out = [], gk = i + ':' + form;
+      if (framed[i]) {
+        var rb = yearGeo('fr' + i, function () { return yrRubbleGeo(mulberry32(i * 31 + 7), x, base + 0.6 * k, k * 0.9); });
+        out.push(h('path', { key: 'rb', d: rb.a + rb.b, fill: '#a8a396' }));
+        out.push(h('path', { key: 'f', 'data-frame': 'true', d: yrFrameD(x, base, k), fill: 'none', stroke: '#2f343b', strokeWidth: round1(1.5 * k), strokeLinecap: 'round', strokeLinejoin: 'round' }));
+        out.push(h('path', { key: 'fs', d: yrFrameD(x, base, k), fill: 'none', stroke: '#8f8672', strokeWidth: round1(0.45 * k), strokeDasharray: round1(0.8 * k) + ' ' + round1(1.4 * k), transform: 'translate(0 ' + round1(-0.35 * k) + ')' }));
       }
       if (CORAL_CATEGORIES[cat]) {
-        var form = framed[i] ? 'branching' : YEAR_FORMS[i % YEAR_FORMS.length], tone = MAP_CORAL_TONES[(i * 7) % MAP_CORAL_TONES.length];
-        var fillC = cat === 'bleached_coral' ? '#f7f9f6' : cat === 'recently_dead_coral' ? '#c9c3b4' : tone[0], strokeC = cat === 'bleached_coral' ? '#8e9ba4' : cat === 'recently_dead_coral' ? '#7d7462' : tone[1];
-        var fs = s * (form === 'plate' || form === 'encrusting' ? 0.78 : form === 'massive' ? 0.86 : 1.05);
-        out.push(h('g', { key: 'c', transform: 'translate(' + round1(x - 80 * fs) + ' ' + round1(base + 1 - 98 * fs) + ') scale(' + round1(fs * 1000) / 1000 + ')' }, coralBody(h, form, fillC, strokeC, 'b')));
+        var cb = framed[i] ? base - 6.5 * k : base, ck = framed[i] ? k * 0.92 : k;
+        var g = yearGeo(gk + ':' + (framed[i] ? 'f' : ''), function () {
+          var r = mulberry32(((i + 11) * 40503 ^ (CORAL_FORMS.indexOf(form) + 1) * 7919) >>> 0);
+          return form === 'branching' ? yrBranchGeo(r, x, cb, ck) : form === 'plate' ? yrTableGeo(r, x, cb, ck) : form === 'encrusting' ? yrCrustGeo(r, x, cb, ck) : yrDomeGeo(r, x, cb, ck);
+        });
+        out.push(yrColony(h, 'c', form, g, yearLook(cat, form, i), cat, ck, lit));
+        // A smaller colony of another form beside it fills the spot, as
+        // colonies crowd each other on a living reef. Frames carry only their
+        // planted fragments.
+        if (!framed[i]) {
+          var cf = YEAR_COMPANION[form], side = i % 2 ? 1 : -1, ck2 = k * (cf === 'branching' ? 0.5 : 0.56);
+          var g2 = yearGeo(i + ':c:' + cf, function () {
+            var r = mulberry32(((i + 5) * 69069 ^ (CORAL_FORMS.indexOf(cf) + 1) * 131) >>> 0), cx = x + side * (form === 'plate' ? 8 : 12) * k, cb2 = base + 1.2 * k;
+            return cf === 'branching' ? yrBranchGeo(r, cx, cb2, ck2) : cf === 'encrusting' ? yrCrustGeo(r, cx, cb2, ck2) : yrDomeGeo(r, cx, cb2, ck2);
+          });
+          out.push(yrColony(h, 'c2', cf, g2, yearLook(cat, cf, i + 2), cat, ck2, lit));
+        }
+      } else if (cat === 'macroalgae') {
+        var wg = yearGeo(gk, function () { var r = mulberry32(i * 977 + 5); var a = yrWeedGeo(r, x - 4 * k, base + 0.5, k, 1), b = yrWeedGeo(r, x + 7 * k, base + 0.8, k, 0.75); return { stalks: a.stalks + b.stalks, leaves: [a.leaves[0] + b.leaves[0], a.leaves[1] + b.leaves[1]], bladders: a.bladders + b.bladders }; });
+        out.push(h('g', { key: 'w', 'data-part': 'seaweed' },
+          h('path', { key: 's', d: wg.stalks, stroke: '#54471a', strokeWidth: round1(0.6 * k), fill: 'none', strokeLinecap: 'round' }),
+          h('path', { key: 'a', d: wg.leaves[0], fill: '#8a7430', stroke: '#43380f', strokeWidth: round1(0.22 * k) }),
+          h('path', { key: 'b', d: wg.leaves[1], fill: '#a08a3a', stroke: '#43380f', strokeWidth: round1(0.22 * k) }),
+          wg.bladders ? h('path', { key: 'v', d: wg.bladders, fill: '#c2ac5a', stroke: '#43380f', strokeWidth: round1(0.2 * k) }) : null));
+      } else if (cat === 'rock') {
+        var rg = yearGeo(gk, function () { return yrRockGeo(mulberry32(i * 613 + 3), x, base + 0.6 * k, k); });
+        out.push(h('g', { key: 'k', 'data-part': 'rock' },
+          h('path', { key: 'b', d: rg.body, fill: '#83816f' }),
+          h('path', { key: 'l', d: rg.body, fill: 'url(#' + lit + 'lit)' }),
+          h('path', { key: 't', d: rg.turf, stroke: '#5f6533', strokeWidth: round1(0.42 * k), strokeLinecap: 'round', fill: 'none', opacity: 0.9 }),
+          h('path', { key: 'c', d: rg.cca, fill: '#c57592', stroke: '#e9b9cb', strokeWidth: round1(0.3 * k) }),
+          h('path', { key: 'o', d: rg.holes, fill: '#262a2b', opacity: 0.8 })));
+      } else if (cat === 'rubble') {
+        var ug = yearGeo(gk, function () { return yrRubbleGeo(mulberry32(i * 389 + 1), x, base, k); });
+        out.push(h('g', { key: 'r', 'data-part': 'rubble' },
+          h('path', { key: 'a', d: ug.a, fill: '#d6d1c5', stroke: '#6f6a5f', strokeWidth: round1(0.25 * k) }),
+          h('path', { key: 'b', d: ug.b, fill: '#bfbaad', stroke: '#6f6a5f', strokeWidth: round1(0.25 * k) }),
+          h('path', { key: 'u', d: ug.under, fill: '#4f4b43', opacity: 0.5 }),
+          h('path', { key: 't', d: ug.top, stroke: '#f6f3ec', strokeWidth: round1(0.45 * k), strokeLinecap: 'round', fill: 'none', opacity: 0.8 })));
+      } else {
+        out.push(h('path', { key: 's', 'data-part': 'sand', d: 'M' + f1(x - 9 * k) + ' ' + f1(base + 0.8 * k) + 'h1.2M' + f1(x + 4 * k) + ' ' + f1(base - 0.6 * k) + 'h1M' + f1(x + 10 * k) + ' ' + f1(base + 1.6 * k) + 'h.8', stroke: '#f6eed6', strokeWidth: round1(0.9 * k), strokeLinecap: 'round' }));
       }
       return h('g', { key: 'spot' + i, 'data-spot': i, 'data-spot-cat': cat }, out);
     }
-    for (var bi = 12; bi < 24; bi++) kids.push(spot(bi));
-    kids.push(h('rect', { key: 'haze', x: 0, y: 0, width: 360, height: 120, fill: '#2a7f98', opacity: 0.2 }));
-    kids.push(h('path', { key: 'floor-f', d: 'M0 126Q90 119 180 125T360 123V' + YEAR_VB_H + 'H0Z', fill: '#ab9f8b' }));
-    for (var fi = 0; fi < 12; fi++) kids.push(spot(fi));
+    kids.push(h('g', { key: 'back' }, rowArt(12, 24)));
+    kids.push(h('rect', { key: 'haze', x: 0, y: 36, width: 360, height: 82, fill: 'url(#' + uid + '-haze)' }));
+    var floorF = 'M0 121Q60 115 120 119T240 118T360 119V' + YEAR_VB_H + 'H0Z';
+    kids.push(h('path', { key: 'floor-f', d: floorF, fill: 'url(#' + uid + '-ff)' }));
+    kids.push(h('path', { key: 'caustic', d: floorF, fill: 'url(#' + uid + '-ca)', opacity: 0.16 }));
+    kids.push(h('g', { key: 'front' }, rowArt(0, 12)));
+    var snow = '', sr = mulberry32(77);
+    for (i = 0; i < 18; i++) snow += circD(sr() * 360, sr() * 110, 0.35 + sr() * 0.5);
+    kids.push(h('path', { key: 'snow', d: snow, fill: '#eefcff', opacity: 0.45 }));
     // Fish follow the teaching rules in siteFromModelYear: grazers and
     // predators track protection, butterflyfish track live coral.
-    var fishOrder = ['butterflyfish', 'parrotfish', 'surgeonfish', 'grouper', 'snapper'], fk = 0, fishKids = [];
-    fishOrder.forEach(function (fam) {
-      for (var n = 0; n < (site.fish[fam] || 0) && fk < YEAR_FISH_SPOTS.length; n++, fk++) {
-        var fp = YEAR_FISH_SPOTS[fk];
-        fishKids.push(h('g', { key: 'yf' + fk, 'data-fish': fam, transform: 'translate(' + fp[0] + ' ' + fp[1] + ') scale(0.62)' }, fishShape(h, fam, 0, 0, 'f', fk % 3 === 1)));
+    var fishKids = [], fk = 0;
+    ['snapper', 'surgeonfish', 'parrotfish', 'butterflyfish', 'grouper'].forEach(function (fam) {
+      var places = YEAR_FISH_PLACES[fam];
+      for (var n = 0; n < (site.fish[fam] || 0) && n < places.length; n++, fk++) {
+        var fp = places[n], sc = fam === 'snapper' ? 0.52 : fam === 'grouper' ? 0.66 : 0.58;
+        fishKids.push(h('g', { key: 'yf' + fk, 'data-fish': fam, transform: 'translate(' + fp[0] + ' ' + fp[1] + ') scale(' + sc + ')' }, fishShape(h, fam, 0, 0, 'f', fp[2])));
       }
     });
     kids.push(h('g', { key: 'fish' }, fishKids));
+    kids.push(h('rect', { key: 'vig', x: 0, y: 0, width: 360, height: YEAR_VB_H, fill: 'url(#' + uid + '-vig)' }));
     return { kids: kids, counts: sp.counts, framed: Object.keys(framed).length, site: site };
   }
   function YearFigure(props) {
@@ -3373,10 +3754,32 @@
       { id: 'aims', text: 'Australian Institute of Marine Science. Long-Term Monitoring Program annual summary reports of coral reef condition, 2022 to 2025.' },
       { id: 'veron', text: 'Veron, J. E. N., et al. (2009). Delineating the Coral Triangle. Galaxea, 11, 91-100.' },
       { id: 'barker', text: 'Barker, N. H. L., & Roberts, C. M. (2004). Scuba diver behaviour and the management of diving impacts on coral reefs. Biological Conservation, 120, 481-489.' },
+      { id: 'noaa1991-vision', text: 'NOAA Office of Undersea Research (1991). NOAA Diving Manual: Diving for Science and Technology, 3rd edition, section 2.8.1.1 Refraction, p. 2-13. (Through a flat mask, things under water look about 33 percent larger, and their image sits at three quarters of the real distance.)', url: 'https://archive.org/details/noaadivingmanual00unit', urlLabel: 'archive.org' },
+      { id: 'stankowich2005', text: 'Stankowich, T., & Blumstein, D. T. (2005). Fear in animals: a meta-analysis and review of risk assessment. Proceedings of the Royal Society B, 272, 2627-2634. (Animals flee sooner from a faster, more direct approach.)', url: 'https://doi.org/10.1098/rspb.2005.3251', urlLabel: 'doi.org' },
+      { id: 'januchowski2011', text: 'Januchowski-Hartley, F. A., Graham, N. A. J., Feary, D. A., Morove, T., & Cinner, J. E. (2011). Fear of fishers: human predation explains behavioral changes in coral reef fishes. PLoS ONE, 6(8), e22761. (Where fishing was heavier, fish families that spearfishers target fled a diver from farther away.)', url: 'https://doi.org/10.1371/journal.pone.0022761', urlLabel: 'doi.org' },
+      { id: 'titus2015', text: 'Titus, B. M., Daly, M., & Exton, D. A. (2015). Do reef fish habituate to diver presence? Evidence from two reef sites with contrasting historical levels of SCUBA intensity in the Bay Islands, Honduras. PLoS ONE, 10(3), e0119645. (Fish on a much-dived reef grew used to divers only partly: cleaning still dropped by more than half while divers watched.)', url: 'https://doi.org/10.1371/journal.pone.0119645', urlLabel: 'doi.org' },
       { id: 'cotw-pocillopora', text: 'Veron, J. E. N., Stafford-Smith, M. G., Turak, E., and DeVantier, L. M. Corals of the World. Pocillopora verrucosa species factsheet (accessed October 2026).', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/pocillopora-verrucosa/', urlLabel: 'coralsoftheworld.org' },
       { id: 'cotw-montipora', text: 'Veron, J. E. N., Stafford-Smith, M. G., Turak, E., and DeVantier, L. M. Corals of the World. Montipora foliosa species factsheet (accessed October 2026).', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/montipora-foliosa/', urlLabel: 'coralsoftheworld.org' },
       { id: 'iucn2024-corals', text: 'IUCN (2024). Red List version 2024-2, Table 7: changes in Red List category. Montipora foliosa and Pocillopora verrucosa are listed as Endangered.', url: 'https://nc.iucnredlist.org/redlist/content/attachment_files/2024-2_RL_Table_7.pdf', urlLabel: 'iucnredlist.org' },
-      { id: 'iucn2025', text: 'IUCN (2025). Red List update, October 2025 (green turtle reassessed as Least Concern).' }
+      { id: 'iucn2025', text: 'IUCN (2025). Red List update, October 2025 (green turtle reassessed as Least Concern).' },
+      { id: 'hobbs2013', text: 'Hobbs, J.-P. A., et al. (2013). Taxonomic, spatial and temporal patterns of bleaching in anemones inhabited by anemonefishes. PLoS ONE, 8(8), e70966.', url: 'https://doi.org/10.1371/journal.pone.0070966', urlLabel: 'doi.org' },
+      { id: 'beldade2017', text: 'Beldade, R., Blandin, A., O\'Donnell, R., & Mills, S. C. (2017). Cascading effects of thermally-induced anemone bleaching on associated anemonefish hormonal stress response and reproduction. Nature Communications, 8, 716.', url: 'https://doi.org/10.1038/s41467-017-00565-w', urlLabel: 'doi.org' },
+      { id: 'brahmi2021', text: 'Brahmi, C., et al. (2021). Effects of elevated temperature and pCO2 on the respiration, biomineralization and photophysiology of the giant clam Tridacna maxima. Conservation Physiology, 9(1), coab041.', url: 'https://doi.org/10.1093/conphys/coab041', urlLabel: 'doi.org' },
+      { id: 'fabricius1995', text: 'Fabricius, K. E., Benayahu, Y., & Genin, A. (1995). Herbivory in asymbiotic soft corals. Science, 268, 90-92. (Dendronephthya has no algae partners.)' },
+      { id: 'fishaus-labroides', text: 'Bray, D. J., & Gomon, M. F. Labroides dimidiatus. Fishes of Australia (cleaning stations at prominent coral outcrops; the cleaner swims along its host).', url: 'https://fishesofaustralia.net.au/home/species/250', urlLabel: 'fishesofaustralia.net.au' },
+      { id: 'bansemer2002', text: 'Bansemer, C., Grutter, A. S., & Poulin, R. (2002). Geographic variation in the behaviour of the cleaner fish Labroides dimidiatus. Ethology, 108. (Clients adopt an immobile, stereotyped pose.)' },
+      { id: 'lof-cleaning', text: 'Khaled bin Sultan Living Oceans Foundation. Cleaning Stations on Coral Reefs (clients hang motionless and wait their turn).', url: 'https://www.livingoceansfoundation.org/?p=40033', urlLabel: 'livingoceansfoundation.org' },
+      { id: 'armstrong2021', text: 'Armstrong, A. O., et al. (2021). Mutualism promotes site selection in a large marine planktivore. Ecology and Evolution. (Reef mantas circle and hold position over cleaning stations.)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8131819/', urlLabel: 'pmc.ncbi.nlm.nih.gov' },
+      { id: 'swot2024', text: 'Milton, S. (2024). How long can sea turtles hold their breath? SWOT Report, 19. (Foraging dives of 20 to 40 minutes; hours when resting.)', url: 'https://seaturtlestatus.org/articles/2024/2/14/faq-how-long-can-sea-turtles-hold-their-breath', urlLabel: 'seaturtlestatus.org' },
+      { id: 'donate2026', text: 'Donate-Ordonez, R., et al. (2026). Diving behavior of juvenile green turtles in shallow habitats in the Bahamas. Marine Ecology Progress Series, 780, 1-13. (Dives averaged about 1.5 minutes.)' },
+      { id: 'nps-cots', text: 'US National Park Service. Crown of Thorns Starfish (feeding leaves only the white coral skeleton; visible feeding scars).', url: 'https://www.nps.gov/articles/pacn-crown-of-thorns.htm', urlLabel: 'nps.gov' },
+      { id: 'trnski2020', text: 'Trnski, T., Sabetian, A., & Lilkendey, J. (2020). Scaring Nemo: contrasting effects of observer presence on two anemonefish species. Journal of Fish Biology. (Anemonefish often hid deep in the tentacles when people came close.)' },
+      { id: 'hayashi2019', text: 'Hayashi, K., Tachihara, K., & Reimer, J. D. (2019). Marine Ecology Progress Series, 616, 219-224. (Anemonefish responded to observers at 1 m or closer, not at 2 m.)', url: 'https://int-res.com/abstracts/meps/v616/p219-224', urlLabel: 'int-res.com' },
+      { id: 'gordon2018', text: 'Gordon, T. A. C., Harding, H. R., Wong, K. E., et al. (2018). Habitat degradation negatively affects auditory settlement behavior of coral reef fishes. PNAS, 115(20), 5193-5198. (Degraded reefs were about 15 dB quieter, with fewer snapping shrimp.)', url: 'https://doi.org/10.1073/pnas.1719291115', urlLabel: 'doi.org' },
+      { id: 'gordon2019', text: 'Gordon, T. A. C., Radford, A. N., Davidson, I. K., et al. (2019). Acoustic enrichment can enhance fish community development on degraded coral reef habitat. Nature Communications, 10, 5414. (Playing healthy reef sound doubled young fish arrivals; it helps only alongside habitat restoration.)', url: 'https://doi.org/10.1038/s41467-019-13186-2', urlLabel: 'doi.org' },
+      { id: 'simpson2005', text: 'Simpson, S. D., Meekan, M., Montgomery, J., McCauley, R., & Jeffs, A. (2005). Homeward sound. Science, 308, 221. (Young reef fish use reef sounds to find a home.)', url: 'https://doi.org/10.1126/science.1107406', urlLabel: 'doi.org' },
+      { id: 'lamont2022', text: 'Lamont, T. A. C., Williams, B., Chapuis, L., et al. (2022). The sound of recovery: coral reef restoration success is detectable in the soundscape. Journal of Applied Ecology, 59(3), 742-756. (Reefs restored with Reef Stars in Indonesia had a sound variety similar to healthy reefs after 1 to 3 years.)', url: 'https://doi.org/10.1111/1365-2664.14089', urlLabel: 'doi.org' },
+      { id: 'vanoppen2005', text: 'van Oppen, M. J. H., Mieog, J. C., Sanchez, C. A., & Fabricius, K. E. (2005). Diversity of algal endosymbionts (zooxanthellae) in octocorals: the roles of geography and host relationships. Molecular Ecology. (Annella mollis has none; via the Coral Trait Database.)', url: 'https://www.coraltraits.org/observations/206026', urlLabel: 'coraltraits.org' }
     ];
   }
 
@@ -4618,10 +5021,14 @@
   // ── Dive and explore ─────────────────────────────────────────────────────
   function exploreSiteText(__alloT) {
     return {
-      healthy: { name: __alloT('stem.coralreef.dive_healthy', 'A healthy reef'), about: __alloT('stem.coralreef.dive_healthy_about', 'A thriving coral garden in the Coral Triangle, the region with the most kinds of reef coral on Earth.') },
-      restoration: { name: __alloT('stem.coralreef.dive_restoration', 'A restoration site'), about: __alloT('stem.coralreef.dive_restoration_about', 'Blast fishing once left rubble here. People fixed it in place with Reef Stars and tied on coral fragments. Move the slider to see the site as the years pass.') },
-      heatwave: { name: __alloT('stem.coralreef.dive_heatwave', 'A reef in a heatwave'), about: __alloT('stem.coralreef.dive_heatwave_about', 'Many corals are bleached white. They are still alive and can recover if the water cools.') },
-      damaged: { name: __alloT('stem.coralreef.dive_damaged', 'A damaged reef'), about: __alloT('stem.coralreef.dive_damaged_about', 'Little live coral is left and seaweed is spreading. Look for the animals that remain, and think about what could help it recover.') },
+      healthy: { name: __alloT('stem.coralreef.dive_healthy', 'A healthy reef'), about: __alloT('stem.coralreef.dive_healthy_about', 'A thriving coral garden in the Coral Triangle, the region with the most kinds of reef coral on Earth.'),
+        tag: __alloT('stem.coralreef.ex_site_tag_healthy', 'Crowded with live coral') },
+      restoration: { name: __alloT('stem.coralreef.dive_restoration', 'A restoration site'), about: __alloT('stem.coralreef.dive_restoration_about', 'Blast fishing once left rubble here. People fixed it in place with Reef Stars and tied on coral fragments. Move the slider to see the site as the years pass.'),
+        tag: __alloT('stem.coralreef.ex_site_tag_restoration', 'Young corals on Reef Stars') },
+      heatwave: { name: __alloT('stem.coralreef.dive_heatwave', 'A reef in a heatwave'), about: __alloT('stem.coralreef.dive_heatwave_about', 'Many corals are bleached white. They are still alive and can recover if the water cools. Anemones and giant clams have algae partners too, so some have turned white. The tree soft corals and giant sea fans here have none, so they keep their color.'),
+        tag: __alloT('stem.coralreef.ex_site_tag_heatwave', 'Many corals bleached white') },
+      damaged: { name: __alloT('stem.coralreef.dive_damaged', 'A damaged reef'), about: __alloT('stem.coralreef.dive_damaged_about', 'Little live coral is left and seaweed is spreading. Look for the animals that remain, and think about what could help it recover.'),
+        tag: __alloT('stem.coralreef.ex_site_tag_damaged', 'Little coral, more seaweed') },
       model: { name: __alloT('stem.coralreef.dive_model', 'Your modeled reef'), about: __alloT('stem.coralreef.dive_model_about', 'The reef from one year of your Reef Future run.') }
     };
   }
@@ -4641,11 +5048,553 @@
         }
       };
     }
-    var b = function (key, input, text) { return h('button', Object.assign({ key: key, type: 'button', style: btnStyle(P, false, { minWidth: 44, touchAction: 'none' }) }, hold(input)), text); };
+    // Each button shows its direction as a small arrow beside the word.
+    var ICON = { f: 'M12 19V5M6 11l6-6 6 6', k: 'M12 5v14M6 13l6 6 6-6', l: 'M9 15L4 10l5-5M4 10h10a6 6 0 0 1 0 12h-2', r: 'M15 15l5-5-5-5M20 10H10a6 6 0 0 0 0 12h2',
+      u: 'M12 21V9M7 13l5-5 5 5M5 4h14', d: 'M12 3v12M7 11l5 5 5-5M5 20h14' };
+    var b = function (key, input, text) {
+      return h('button', Object.assign({ key: key, type: 'button', style: btnStyle(P, false, { minWidth: 44, touchAction: 'none', display: 'inline-flex', alignItems: 'center', gap: 7 }) }, hold(input)),
+        h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } }, h('path', { d: ICON[key] })), text);
+    };
     return h('div', { role: 'group', 'aria-label': labels.group, style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
       b('f', { forward: 1, turn: 0, rise: 0 }, labels.forward), b('k', { forward: -1, turn: 0, rise: 0 }, labels.back),
       b('l', { forward: 0, turn: -1, rise: 0 }, labels.left), b('r', { forward: 0, turn: 1, rise: 0 }, labels.right),
       b('u', { forward: 0, turn: 0, rise: 1 }, labels.up), b('d', { forward: 0, turn: 0, rise: -1 }, labels.down));
+  }
+
+  // ── Reef moments: the reef life the dive shows, made easy to notice ──
+  // The dive reports snap.moments: [{ kind, speciesId (the main animal's), uids and
+  // speciesIds (main animal first), distanceM, bearingDeg, riseM, inView, phase,
+  // group, scenery }] for interactions happening within about 10 m. The words name
+  // a species only once the student has identified it; every sentence restates the
+  // watch notes and species text (watchNote, speciesText).
+  var MOMENT_KINDS = ['cleaning', 'manta_cleaning', 'grazing', 'turtle_breath', 'cots_scar', 'anemonefish_hide', 'cloud_shelter'];
+  var MOMENT_GAP_MS = 20000, MOMENT_SEEN_MS = 2000, MOMENT_TURN_MS = 6000;
+  // One shape per kind, so the kinds never differ by colour alone.
+  var MOMENT_ICONS = {
+    cleaning: 'M3 12q5-6 11 0q-6 6-11 0zM14 12l3-3v6zM19 3v4M17 5h4',
+    manta_cleaning: 'M2 10q5-5 10 0q5-5 10 0q-5 3-10 6q-5-3-10-6zM12 16v6',
+    grazing: 'M9 3q4 4 2 9l-2 5-2-5q-2-5 2-9zM15 19a2 2 0 1 0 4 0 2 2 0 1 0-4 0M3 22h18',
+    turtle_breath: 'M3 3h18M12 21V8M7 13l5-5 5 5',
+    cots_scar: 'M12 2l2.4 6.6L21 9l-5.2 4.3L17.6 21 12 17.3 6.4 21l1.8-7.7L3 9l6.6-.4z',
+    anemonefish_hide: 'M5 21v-6M9 21v-8M15 21v-8M19 21v-6M12 3v9M9 9l3 3 3-3',
+    cloud_shelter: 'M5 6h.01M9 4h.01M13 6h.01M17 4h.01M7 9h.01M16 9h.01M12 12v9M9 18l3 3 3-3'
+  };
+  var LANE_CSS_I1 = [
+    '[data-coralreef-root] .crm-anchor{position:relative;height:0;z-index:3}',
+    '[data-coralreef-root] .crm-card{position:absolute;left:10px;bottom:10px;width:min(370px,calc(100% - 20px));display:grid;gap:4px;padding:10px 12px 11px;border-radius:14px;border:1.5px solid var(--reef-accent);background:var(--reef-card);color:var(--reef-text);box-shadow:0 8px 24px #00000040;line-height:1.4}',
+    '[data-coralreef-root] .crm-top{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;font-size:12.5px}',
+    '[data-coralreef-root] .crm-eyebrow{font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:var(--reef-accent)}',
+    '[data-coralreef-root] .crm-where{display:inline-flex;align-items:center;gap:5px;font-weight:650}',
+    '[data-coralreef-root] .crm-title{margin:0;font-weight:700;font-size:15px}',
+    '[data-coralreef-root] .crm-body,[data-coralreef-root] .crm-detail{margin:0;font-size:13.5px}',
+    '[data-coralreef-root] .crm-detail{color:var(--reef-muted)}',
+    '[data-coralreef-root] .crm-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}',
+    '[data-coralreef-root] .crm-hide-x{display:none}',
+    '[data-coralreef-root] .crm-anim{animation:crm-in .35s ease-out both}',
+    '@keyframes crm-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}',
+    '[data-coralreef-root] .crm-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:8px}',
+    '[data-coralreef-root] .crm-tile{display:flex;gap:10px;align-items:center;padding:9px 11px;border-radius:12px;border:1px solid var(--reef-border);background:var(--reef-alt);min-width:0}',
+    '[data-coralreef-root] .crm-tile[data-seen=false]{border-style:dashed;background:transparent}',
+    '[data-coralreef-root] .crm-tile-title{display:block;font-weight:650;font-size:14px;line-height:1.3;overflow-wrap:anywhere}',
+    '[data-coralreef-root] .crm-tile-state{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--reef-muted)}',
+    '[data-coralreef-root] .crm-dive{margin:0 0 14px}',
+    '[data-coralreef-root] .crm-dive h4{margin:0 0 8px;font-size:15px}',
+    '[data-coralreef-root] .crm-chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}',
+    '[data-coralreef-root] .crm-chips li{display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 8px;border-radius:999px;border:1px solid var(--reef-border);background:var(--reef-alt);font-size:13.5px;font-weight:600}',
+    // On a phone the card is as low as it can be: the buttons share the direction row
+    // (Hide shrinks to its cross), and the watch note waits for the reveal.
+    '@media (max-width:640px){[data-coralreef-root] .crm-card{left:6px;right:6px;bottom:6px;width:auto;padding:7px 9px 8px;gap:2px 6px;grid-template-columns:minmax(0,1fr) auto}' +
+      '[data-coralreef-root] .crm-top{grid-column:1;grid-row:1}[data-coralreef-root] .crm-eyebrow{display:none}[data-coralreef-root] .crm-acts{grid-column:2;grid-row:1;margin:0;gap:4px;flex-wrap:nowrap;align-self:start}' +
+      '[data-coralreef-root] .crm-title,[data-coralreef-root] .crm-body{grid-column:1/-1}[data-coralreef-root] .crm-detail{display:none}[data-coralreef-root] .crm-title{font-size:14px}[data-coralreef-root] .crm-body{font-size:13px}' +
+      '[data-coralreef-root] .crm-acts button{min-height:32px!important;padding:3px 9px!important;font-size:13px!important}[data-coralreef-root] .crm-hide-text{display:none}[data-coralreef-root] .crm-hide-x{display:inline}' +
+      '[data-coralreef-root] .crm-tiles{grid-template-columns:repeat(auto-fill,minmax(138px,1fr))}}',
+    '@media (prefers-reduced-motion:reduce){[data-coralreef-root] .crm-anim{animation:none}}'
+  ].join('');
+  // Kind names for the card and the collection: never a species name.
+  function momentTitles(__alloT) {
+    return {
+      cleaning: __alloT('stem.coralreef.rm_title_cleaning', 'A cleaning station is busy'),
+      manta_cleaning: __alloT('stem.coralreef.rm_title_manta', 'A big visitor at a cleaning station'),
+      grazing: __alloT('stem.coralreef.rm_title_grazing', 'Grazing on the rock'),
+      turtle_breath: __alloT('stem.coralreef.rm_title_turtle', 'A turtle comes up to breathe'),
+      cots_scar: __alloT('stem.coralreef.rm_title_cots', 'A starfish beside a feeding scar'),
+      anemonefish_hide: __alloT('stem.coralreef.rm_title_clown', 'Taking cover in the tentacles'),
+      cloud_shelter: __alloT('stem.coralreef.rm_title_cloud', 'A fish cloud takes shelter')
+    };
+  }
+  function momentId(m) { return m.kind + ':' + (m.uids && m.uids[0] ? m.uids[0] : m.speciesId || ''); }
+  // What the card and the announcement say about one moment.
+  function momentWords(env, m, log, TX) {
+    var __alloT = env.t, __alloFill = env.fill, ids = m.speciesIds || [], main = m.speciesId || ids[0];
+    function known(id) { return !!(id && log[id] && TX[id]); }
+    function noun(id, generic, named) { return known(id) ? __alloFill(named, { name: guideShortName(TX[id].name) }) : generic; }
+    var named = __alloT('stem.coralreef.rm_noun_named', 'a {name}'), body, detail = null;
+    if (m.kind === 'cleaning') {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_cleaning', 'Right now, {client} is holding still with its fins spread while {cleaner} picks at its skin.'),
+        { client: noun(main, __alloT('stem.coralreef.rm_noun_fish', 'a fish'), named), cleaner: noun(ids[1], __alloT('stem.coralreef.rm_noun_cleaner', 'a cleaner'), named) });
+      detail = watchNote('cleaner_wrasse', __alloT);
+    } else if (m.kind === 'manta_cleaning') {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_manta', 'Right now, {manta} is circling slowly over the station while a cleaner picks at it.'), { manta: noun(main, __alloT('stem.coralreef.rm_noun_ray', 'a large ray'), named) });
+      detail = known(main) ? watchNote(main, __alloT) : null;
+    } else if (m.kind === 'grazing' && m.group) {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_grazing_group', 'Right now, {group} is feeding together. Look for the little puffs where they bite.'),
+        { group: noun(main, __alloT('stem.coralreef.rm_noun_group', 'a group of big fish'), __alloT('stem.coralreef.rm_noun_group_named', 'a group of {name}')) });
+      detail = known(main) ? watchNote(main, __alloT) : null;
+    } else if (m.kind === 'grazing') {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_grazing', 'Right now, {fish} is biting the rock. Look for the little puff each bite leaves.'), { fish: noun(main, __alloT('stem.coralreef.rm_noun_fish', 'a fish'), named) });
+      detail = known(main) ? watchNote(main, __alloT) : null;
+    } else if (m.kind === 'turtle_breath') {
+      var turtle = noun(main, __alloT('stem.coralreef.rm_noun_turtle', 'a turtle'), named);
+      body = __alloFill(m.phase === 'breathing' ? __alloT('stem.coralreef.rm_body_turtle_top', 'Right now, {turtle} is taking a few breaths at the surface.')
+        : m.phase === 'down' ? __alloT('stem.coralreef.rm_body_turtle_down', 'Right now, {turtle} is gliding back down after its breaths.')
+          : __alloT('stem.coralreef.rm_body_turtle_up', 'Right now, {turtle} is swimming up to the surface to breathe air.'), { turtle: turtle });
+      detail = watchNote(main, __alloT);
+    } else if (m.kind === 'cots_scar') {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_cots', 'Look at {star} and the bright white patch beside it: coral it has already eaten.'), { star: noun(main, __alloT('stem.coralreef.rm_noun_star', 'a starfish'), named) });
+    } else if (m.kind === 'anemonefish_hide') {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_clown', 'You came close, so {fish} ducked down into the stinging tentacles, where predators cannot follow.'), { fish: noun(main, __alloT('stem.coralreef.rm_noun_fish', 'a fish'), named) });
+    } else {
+      body = __alloFill(__alloT('stem.coralreef.rm_body_cloud', 'You came close, so {cloud} is dropping down into the coral for shelter.'),
+        { cloud: noun(main, __alloT('stem.coralreef.rm_noun_cloud', 'a cloud of small fish'), __alloT('stem.coralreef.rm_noun_cloud_named', 'a cloud of small fish ({name})')) });
+    }
+    var where = __alloFill(__alloT('stem.coralreef.rm_where', '{m} m {where}'), { m: Math.max(1, Math.round(+m.distanceM || 0)), where: cueWords(__alloT, m) || '' });
+    return { title: momentTitles(__alloT)[m.kind], body: body, detail: detail, where: where };
+  }
+  // Which moment the card shows, when it is announced, and what counts as seen.
+  // A moment is seen once its card has stayed up for two seconds, or the student
+  // looks at it or swims to it; seen kinds go into the collection (momentLog) and
+  // into this dive's list (diveMoments, matched to the dive log by time).
+  function useReefMoments(env, o) {
+    var React = env.React, __alloT = env.t, __alloFill = env.fill;
+    var live = React.useRef(o); live.current = o;
+    var liveEnv = React.useRef(env); liveEnv.current = env;
+    var shown = React.useRef(null), said = React.useRef({}), dive = React.useRef({ start: 0, kinds: [] }), hidden = React.useRef({}), held = React.useRef(false), pend = React.useRef({});
+    var hs = React.useState(0), bump = hs[1];
+    function writeDive(extra) {
+      var d = liveEnv.current.d, cur = dive.current;
+      var list = (Array.isArray(d.diveMoments) ? d.diveMoments : []).filter(function (e) { return e && e.start !== cur.start; }).slice(-2);
+      liveEnv.current.set(Object.assign({ diveMoments: list.concat([{ start: cur.start, kinds: cur.kinds.slice() }]) }, extra || null));
+    }
+    function markSeen(kind) {
+      // Two sightings before the tool data comes back must not drop the first (pend).
+      var cur = live.current, saved = liveEnv.current.d.momentLog || {}, all = Object.assign({}, saved);
+      Object.keys(pend.current).forEach(function (k) { if (saved[k]) delete pend.current[k]; else all[k] = pend.current[k]; });
+      var add = !all[kind];
+      if (dive.current.kinds.indexOf(kind) >= 0 && !add) return;
+      if (dive.current.kinds.indexOf(kind) < 0) dive.current.kinds.push(kind);
+      if (add) all[kind] = pend.current[kind] = { firstSeen: Date.now(), site: cur.siteId };
+      writeDive(add ? { momentLog: all } : null);
+    }
+    React.useEffect(function () {
+      if (o.key === 'off') return undefined;
+      // The announcement gaps carry over from dive to dive.
+      dive.current = { start: Date.now(), kinds: [] }; hidden.current = {}; shown.current = null;
+      writeDive();
+      return undefined;
+    }, [o.key, o.attempt]);
+    var list = o.key !== 'off' && o.status === 'ready' && o.snap && Array.isArray(o.snap.moments) ? o.snap.moments.filter(function (m) {
+      return m && MOMENT_KINDS.indexOf(m.kind) >= 0 && hasCue(m) && !hidden.current[momentId(m)];
+    }) : [];
+    // Stay on the moment shown; after a few seconds give way to a kind not seen on this dive
+    // yet, unless the keyboard is on the card's buttons.
+    var prev = shown.current, keep = prev ? list.filter(function (m) { return momentId(m) === prev.id; })[0] : null;
+    var fresh = list.filter(function (m) { return dive.current.kinds.indexOf(m.kind) < 0 && !(prev && m.kind === prev.kind); })[0];
+    var pick = keep && fresh && !held.current && Date.now() - prev.since >= MOMENT_TURN_MS ? fresh : keep || fresh || list[0] || null;
+    var id = pick ? momentId(pick) : null;
+    var words = pick ? momentWords(env, pick, o.log || {}, o.TX) : null;
+    React.useEffect(function () {
+      if (!id) { shown.current = null; return undefined; }
+      if (!shown.current || shown.current.id !== id) shown.current = { id: id, kind: pick.kind, since: Date.now() };
+      var kind = pick.kind, t = Date.now(), last = said.current[kind];
+      // Politely, once per kind every 20 s, and never while the student is answering an identification.
+      if (!live.current.midId && !(last && t - last < MOMENT_GAP_MS)) {
+        said.current[kind] = t;
+        env.say(__alloFill(__alloT('stem.coralreef.sr_moment', 'Reef moment, {where}: {title}. {body}'), words));
+      }
+      var timer = setTimeout(function () { markSeen(kind); }, MOMENT_SEEN_MS);
+      return function () { clearTimeout(timer); };
+    }, [id]);
+    return {
+      moment: pick, words: words,
+      look: function () { if (!pick) return; markSeen(pick.kind); var c = live.current.ctl(); if (c && pick.uids && pick.uids[0]) c.focus(pick.uids[0]); },
+      swim: function () { if (!pick) return; markSeen(pick.kind); var c = live.current.ctl(); if (c && pick.uids && pick.uids[0]) c.swimTo(pick.uids[0]); },
+      hide: function () { if (!pick) return; hidden.current[id] = true; shown.current = null; held.current = false; bump(function (n) { return n + 1; }); },
+      hold: function (on) { held.current = !!on; }
+    };
+  }
+  // The card over the bottom corner of the view (a zero-height anchor, so nothing
+  // below it moves). Its buttons follow the canvas in the tab order.
+  function ReefMomentCard(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, r = props.r, m = r.moment, w = r.words;
+    var uid = 'crm-' + React.useId().replace(/:/g, ''), box = React.useRef(null), live = React.useRef(props); live.current = props;
+    function toView() { var c = live.current.canvas && live.current.canvas.current; if (c && c.focus) { try { c.focus({ preventScroll: true }); } catch (e) { c.focus(); } } }
+    // A card that goes while the keyboard is on it hands focus back to the view (a stable
+    // ref callback, so React calls it only when the card comes and goes).
+    var keep = React.useCallback(function (el) {
+      if (el) { box.current = el; return; }
+      var had = box.current && typeof document !== 'undefined' && box.current.contains(document.activeElement);
+      box.current = null; live.current.r.hold(false);
+      if (had) setTimeout(toView, 0);
+    }, []);
+    if (!m) return null;
+    var reduce = !!(env.ctx && env.ctx.reduceMotion), small = { minHeight: 36, padding: '5px 11px', fontSize: 14 }, canAct = !!(m.uids && m.uids[0]);
+    function hide() { r.hide(); toView(); }
+    return h('div', { className: 'crm-anchor', ref: keep },
+      h('style', null, LANE_CSS_I1),
+      h('div', { className: 'crm-card' + (reduce ? '' : ' crm-anim'), role: 'group', 'aria-labelledby': uid + '-t', 'data-reef-moment': m.kind, style: { borderColor: P.accent },
+        onFocus: function () { r.hold(true); }, onBlur: function (e) { if (!e.currentTarget.contains(e.relatedTarget)) r.hold(false); } },
+        h('div', { className: 'crm-top' },
+          lineIcon(h, MOMENT_ICONS[m.kind], 18, { style: { flexShrink: 0, color: P.accent } }),
+          h('span', { className: 'crm-eyebrow', style: { color: P.accent } }, __alloT('stem.coralreef.rm_eyebrow', 'Reef moment')),
+          h('span', { className: 'crm-where', 'data-cue': 'true' }, cueArrow(h, m, 15), w.where)),
+        h('p', { id: uid + '-t', className: 'crm-title' }, w.title),
+        h('p', { className: 'crm-body' }, w.body),
+        w.detail ? h('p', { className: 'crm-detail', 'data-watch-note': m.speciesId }, h('strong', null, __alloT('stem.coralreef.ex_watch_label', 'Watch for this: ')), w.detail) : null,
+        h('div', { className: 'crm-acts' },
+          canAct && !m.scenery ? h('button', { type: 'button', 'data-moment-swim': 'true', 'aria-label': __alloFill(__alloT('stem.coralreef.rm_swim_label', 'Swim to the reef moment: {title}'), w), style: btnStyle(P, false, small), onClick: r.swim }, __alloT('stem.coralreef.ex_swim', 'Swim to')) : null,
+          canAct ? h('button', { type: 'button', 'data-moment-look': 'true', 'aria-label': __alloFill(__alloT('stem.coralreef.rm_look_label', 'Look at the reef moment: {title}'), w), style: btnStyle(P, false, small), onClick: r.look }, __alloT('stem.coralreef.ex_look', 'Look')) : null,
+          h('button', { type: 'button', 'data-moment-hide': 'true', 'aria-label': __alloT('stem.coralreef.rm_hide_label', 'Hide this reef moment'), style: btnStyle(P, false, small), onClick: hide },
+            h('span', { className: 'crm-hide-text' }, __alloT('stem.coralreef.rm_hide', 'Hide')), lineIcon(h, ICON_X, 14, { className: 'crm-hide-x' })))));
+  }
+  // Reef moments seen: every kind has a place, seen or not yet (the titles never name a species).
+  function MomentLogCard(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, seen = env.d.momentLog || {}, T = momentTitles(__alloT);
+    var uid = 'crm-log-' + React.useId().replace(/:/g, ''), n = MOMENT_KINDS.filter(function (k) { return !!seen[k]; }).length;
+    return h('section', { className: 'crm-log', 'data-moment-log': 'true', style: cardStyle(P), 'aria-labelledby': uid },
+      h('style', null, LANE_CSS_I1),
+      h('div', { className: 'crf-log-head' },
+        h('h3', { id: uid, style: h3Style(P) }, __alloT('stem.coralreef.rm_log_title', 'Reef moments seen')),
+        h('span', { style: { color: P.muted, fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.rm_log_count', '{n} of {total} seen'), { n: n, total: MOMENT_KINDS.length }))),
+      h('p', { style: mutedStyle(P, { margin: '0 0 12px' }) }, __alloT('stem.coralreef.rm_log_intro', 'Some reef life happens only now and then. When it happens near you on a dive, a card tells you where to look, and it is added here.')),
+      h('ul', { className: 'crm-tiles', 'aria-label': __alloT('stem.coralreef.rm_log_list', 'Reef moments') }, MOMENT_KINDS.map(function (k) {
+        var on = !!seen[k];
+        return h('li', { key: k, className: 'crm-tile', 'data-moment': k, 'data-seen': on ? 'true' : 'false', style: on ? null : { borderColor: P.ctlBorder } },
+          lineIcon(h, MOMENT_ICONS[k], 22, { style: { flexShrink: 0, color: on ? P.accent : P.muted } }),
+          h('span', { style: { minWidth: 0 } },
+            h('span', { className: 'crm-tile-title' }, T[k]),
+            h('span', { className: 'crm-tile-state', style: { color: on ? P.good : P.muted } }, on ? lineIcon(h, ICON_CHECK, 13) : null,
+              on ? __alloT('stem.coralreef.rm_seen', 'Seen') : __alloT('stem.coralreef.rm_not_yet', 'Not seen yet'))));
+      })));
+  }
+  // The moments of the dive a log shows: the diveMoments entry that started last before it ended.
+  function momentsOfDive(entries, r) {
+    if (!r || !Array.isArray(entries)) return null;
+    var best = null;
+    entries.forEach(function (e) { if (e && Array.isArray(e.kinds) && e.start < r.at && (!best || e.start > best.start)) best = e; });
+    return best ? best.kinds.filter(function (k) { return MOMENT_KINDS.indexOf(k) >= 0; }) : null;
+  }
+  function MomentDiveList(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, list = momentsOfDive(env.d.diveMoments, props.rec);
+    if (!list) return null;
+    var T = momentTitles(__alloT);
+    return h('div', { className: 'crm-dive', 'data-dive-moments': String(list.length) },
+      h('style', null, LANE_CSS_I1),
+      h('h4', { style: { color: P.text } }, __alloT('stem.coralreef.rm_dive_title', 'Reef moments on this dive')),
+      list.length ? h('ul', { className: 'crm-chips' }, list.map(function (k) {
+        return h('li', { key: k, 'data-dive-moment': k }, lineIcon(h, MOMENT_ICONS[k], 15, { style: { flexShrink: 0, color: P.accent } }), T[k]);
+      })) : h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.rm_dive_none', 'None this time. Swim slowly near the coral heads and watch the animals there.')));
+  }
+
+  // ── Reef sounds ──────────────────────────────────────────────────────────
+  // An opt-in soundscape for the dive, made with Web Audio (no recordings): the
+  // crackle of snapping shrimp, fish calls, parrotfish bites from the dive's own
+  // grazing schedule, the diver's breathing in step with the bubbles, and a muffled
+  // surge. Healthy reefs are louder and more varied; degraded reefs have fewer shrimp
+  // snaps and fewer kinds of fish calls (Gordon et al. 2018 PNAS; Lamont et al. 2022
+  // J Appl Ecol). Call shapes and pitches follow Tricas and Boyle 2014 (MEPS 511).
+  var REEF_SOUND_VOLUME = 60;
+  var REEF_SOUND_ICON_ON = 'M4 9.5h3.5L12 6v12l-4.5-3.5H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11';
+  var REEF_SOUND_ICON_OFF = 'M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 9.5l5 5M21 9.5l-5 5';
+  // A degraded reef keeps only the first kinds; a healthy one has them all.
+  var REEF_SOUND_CALLS = ['grunt', 'knock', 'pop', 'whoop', 'growl'];
+  function reefSoundSupported() { return typeof (window.AudioContext || window.webkitAudioContext) === 'function'; }
+  // The host's shared context: WebKit refuses more than a few per page. Never closed here.
+  function reefSoundContext() {
+    if (!reefSoundSupported()) return null;
+    try { return (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()) || null; } catch (e) { return null; }
+  }
+  // Starting a dive is a press, so a browser that wants a gesture lets the remembered sound play.
+  function reefSoundPrime(d) {
+    if (!d || d.reefSound !== true) return;
+    var ac = reefSoundContext();
+    if (ac && ac.state !== 'running' && typeof ac.resume === 'function') { try { var p = ac.resume(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+  }
+  // How busy the site sounds: shrimp snaps and their loudness follow live coral, fish calls
+  // follow the fish, and the variety of calls the reef's health.
+  function reefSoundMix(site) {
+    var cover = clamp((site && site.health ? +site.health.coralCover || 0 : 0.3) / 0.55, 0, 1.15), fish = 0;
+    populationFor(site).forEach(function (p) { var m = speciesMeta(p.id); if (m && m.group === 'fish') fish += p.count; });
+    var fishK = clamp(fish / 44, 0, 1.2);
+    return {
+      snapsPerS: Math.round(30 + 330 * Math.pow(cover, 1.4)), snapLevel: round1(0.25 + 0.75 * Math.min(1, cover)),
+      callsPerS: Math.round((0.12 + 1.1 * fishK * (0.4 + 0.6 * Math.min(1, cover))) * 100) / 100,
+      kinds: cover > 0.75 ? 5 : cover > 0.5 ? 4 : cover > 0.3 ? 3 : 2,
+      shrimp: cover > 0.75 ? 'lots' : cover > 0.45 ? 'some' : 'few', fish: fishK > 0.75 ? 'often' : fishK > 0.45 ? 'some' : 'few'
+    };
+  }
+  // Buffers are made once per context and reused by every dive (a few dozen at most:
+  // modeled reefs each bring their own snap rate).
+  var reefSoundStore = { ac: null, items: {}, n: 0 };
+  function reefSoundBuffer(ac, key, make) {
+    if (reefSoundStore.ac !== ac || (reefSoundStore.n > 48 && !reefSoundStore.items[key])) reefSoundStore = { ac: ac, items: {}, n: 0 };
+    if (!reefSoundStore.items[key]) { reefSoundStore.items[key] = make(); reefSoundStore.n++; }
+    return reefSoundStore.items[key];
+  }
+  function reefSoundNoise(ac) {
+    return reefSoundBuffer(ac, 'noise', function () {
+      var sr = ac.sampleRate, n = Math.round(sr * 6), buf = ac.createBuffer(1, n, sr), data = buf.getChannelData(0), rand = mulberry32(911);
+      for (var i = 0; i < n; i++) data[i] = rand() * 2 - 1;
+      return buf;
+    });
+  }
+  // One second of snaps: very short broadband clicks of mixed loudness, like shrimp near and far.
+  function reefSoundSnaps(ac, rate, seed) {
+    var sr = ac.sampleRate, n = Math.round(sr), buf = ac.createBuffer(1, n, sr), data = buf.getChannelData(0), rand = mulberry32(seed >>> 0), count = Math.round(rate);
+    for (var i = 0; i < count; i++) {
+      var at = Math.floor(rand() * (n - 48)), u = rand(), amp = (0.1 + 0.2 * u * u) * (rand() < 0.5 ? -1 : 1), tau = sr * (0.00008 + 0.0002 * rand());
+      for (var j = 0, len = Math.min(48, Math.ceil(tau * 5)); j < len; j++) data[at + j] += amp * Math.exp(-j / tau) * (j % 2 ? -0.7 : 1);
+    }
+    return { buffer: buf, snaps: count };
+  }
+  // A bite: a few quick scrapes of teeth on rock inside about 0.15 s.
+  function reefSoundCrunch(ac, k) {
+    return reefSoundBuffer(ac, 'crunch' + k, function () {
+      var sr = ac.sampleRate, n = Math.round(sr * 0.18), buf = ac.createBuffer(1, n, sr), data = buf.getChannelData(0), rand = mulberry32(4401 + k), grains = 4 + k;
+      for (var g = 0; g < grains; g++) {
+        var at = Math.floor((0.004 + 0.13 * g / grains + 0.012 * rand()) * sr), tau = sr * (0.004 + 0.007 * rand()), amp = 0.5 + 0.5 * rand();
+        for (var j = 0; at + j < n && j < tau * 6; j++) data[at + j] += amp * Math.exp(-j / tau) * (rand() * 2 - 1);
+      }
+      return buf;
+    });
+  }
+  // The sound engine for one dive site. Every node it makes is kept in `live` and
+  // let go when its sound ends; dispose stops and disconnects everything at once.
+  // Snaps and fish calls are scheduled a little ahead on the audio clock in batches
+  // (a timer every 250 ms), never per animation frame.
+  function reefSoundEngine(ac, o) {
+    var mix = o.mix, rand = mulberry32((o.seed || 1) >>> 0), live = [], alive = true, playing = false, pump = 0, ending = 0, snapPool = [];
+    var nextSnap = -1, nextCall = -1, stats = { snaps: 0, batches: 0, calls: 0, bites: 0, breaths: 0 }, volume = o.volume;
+    function keep(node) { live.push(node); return node; }
+    function amp(v) { var g = keep(ac.createGain()); g.gain.value = v; return g; }
+    function filter(type, f, q) { var b = keep(ac.createBiquadFilter()); b.type = type; b.frequency.value = f; if (q != null) b.Q.value = q; return b; }
+    function pan(v) { if (typeof ac.createStereoPanner !== 'function') return null; var p = keep(ac.createStereoPanner()); p.pan.value = clamp(v || 0, -1, 1); return p; }
+    function chain(list) { list = list.filter(Boolean); for (var i = 0; i < list.length - 1; i++) list[i].connect(list[i + 1]); return list; }
+    function drop(nodes) {
+      nodes.forEach(function (n) { if (!n) return; try { n.disconnect(); } catch (e) {} var i = live.indexOf(n); if (i >= 0) live.splice(i, 1); });
+    }
+    // A one-shot sound: its nodes go when its source ends.
+    function shot(src, nodes, at, until) {
+      src.onended = function () { drop([src].concat(nodes)); };
+      src.start(at); src.stop(until);
+    }
+    function level(v) { var x = clamp(v, 0, 100) / 100; return 0.5 * x * x; }
+    // The mix: everything into a bus, then the volume, then a limiter so no peak is harsh.
+    var bus = amp(1), out = amp(0), limiter = typeof ac.createDynamicsCompressor === 'function' ? keep(ac.createDynamicsCompressor()) : null;
+    if (limiter) { limiter.threshold.value = -10; limiter.knee.value = 3; limiter.ratio.value = 20; limiter.attack.value = 0.001; limiter.release.value = 0.1; }
+    chain([bus, out, limiter, ac.destination]);
+    var shrimpIn = amp(7.5 * mix.snapLevel);
+    chain([shrimpIn, filter('highpass', 2000, 0.7), filter('lowpass', 8000, 0.5), bus]);
+    var wash = null, lfo = null;
+
+    function snapBatch(at) {
+      if (!snapPool.length) for (var k = 0; k < 6; k++) snapPool.push(reefSoundBuffer(ac, 'snaps' + mix.snapsPerS + ':' + k, (function (kk) { return function () { return reefSoundSnaps(ac, mix.snapsPerS, 7001 + kk * 131 + mix.snapsPerS); }; })(k)));
+      var item = snapPool[Math.floor(rand() * snapPool.length)], src = keep(ac.createBufferSource());
+      src.buffer = item.buffer; src.connect(shrimpIn); shot(src, [], at, at + 1.02);
+      stats.snaps += item.snaps; stats.batches++;
+    }
+    // Fish calls after Tricas and Boyle 2014: grunts (single low pulses, about 190 Hz),
+    // knocks (short pulses, 400 to 900 Hz), pops, rising whoops and growls (pulse series that slow down).
+    function fishCall(at) {
+      var kind = REEF_SOUND_CALLS[Math.floor(rand() * mix.kinds)], osc = keep(ac.createOscillator()), g = amp(0), lp = filter('lowpass', 1400, 0.7), p = pan(rand() * 1.6 - 0.8);
+      var near = 0.3 + 0.5 * rand() * rand(), f = osc.frequency, end;
+      function pulse(t, a, tau) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(a, t + Math.min(0.008, tau)); g.gain.setTargetAtTime(0, t + Math.min(0.008, tau), tau); }
+      if (kind === 'grunt') { osc.type = 'triangle'; f.setValueAtTime(150 + 80 * rand(), at); for (var i = 0, n = 1 + Math.floor(rand() * 3); i < n; i++) pulse(at + i * 0.11, near, 0.025); end = at + n * 0.11 + 0.15; }
+      else if (kind === 'knock') { osc.type = 'sine'; f.setValueAtTime(400 + 500 * rand(), at); for (var j = 0, m = 2 + Math.floor(rand() * 3), tk = at; j < m; j++) { pulse(tk, near * 1.1, 0.006); tk += 0.07 + 0.06 * rand(); } end = tk + 0.1; }
+      else if (kind === 'pop') { osc.type = 'sine'; var f0 = 380 + 220 * rand(); f.setValueAtTime(f0, at); f.exponentialRampToValueAtTime(f0 * 0.6, at + 0.03); pulse(at, near, 0.01); end = at + 0.12; }
+      else if (kind === 'whoop') {
+        osc.type = 'sine'; var w0 = 160 + 60 * rand(); f.setValueAtTime(w0, at); f.exponentialRampToValueAtTime(w0 * (2.2 + 0.6 * rand()), at + 0.38);
+        g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(near * 0.3, at + 0.07); g.gain.setTargetAtTime(0, at + 0.32, 0.05); end = at + 0.6;
+      } else { osc.type = 'triangle'; f.setValueAtTime(190 + 40 * rand(), at); for (var q = 0, tg = at; q < 9; q++) { pulse(tg, near * 0.7, 0.007); tg += 0.025 + q * 0.005; } end = tg + 0.1; }
+      chain([osc, g, lp, p, bus]); shot(osc, [g, lp, p], at, end);
+      stats.calls++;
+    }
+    function tick() {
+      pump = 0;
+      if (!alive || !playing) return;
+      step(0.8, false);
+      pump = setTimeout(tick, 250);
+    }
+    // Schedules snaps and calls up to `ahead` seconds past now (only on a running clock unless forced).
+    function step(ahead, force) {
+      if (!alive || (!force && ac.state !== 'running')) return;
+      var now = ac.currentTime, until = now + ahead;
+      if (nextSnap < now) nextSnap = now + 0.03;
+      while (nextSnap < until) { snapBatch(nextSnap); nextSnap += 1; }
+      if (nextCall < now) nextCall = now + 0.15 + rand() / mix.callsPerS;
+      while (nextCall < until) { fishCall(nextCall); nextCall += Math.max(0.18, -Math.log(1 - rand() * 0.999) / mix.callsPerS); }
+    }
+    // A parrotfish bite from the dive: nearer is louder, a bumphead deeper.
+    function bite(ev, at) {
+      var big = ev.speciesId === 'bumphead_parrotfish', dist = Math.max(0.6, +ev.distanceM || 3), src = keep(ac.createBufferSource());
+      src.buffer = reefSoundCrunch(ac, Math.floor(rand() * 3)); src.playbackRate.value = big ? 0.72 + 0.1 * rand() : 0.9 + 0.25 * rand();
+      var bp = filter('bandpass', big ? 1100 + 500 * rand() : 1500 + 1700 * rand(), 1.1), g = amp((big ? 3.4 : 2.7) / (1 + dist / 3)), p = pan(ev.pan);
+      chain([src, bp, g, p, bus]); shot(src, [bp, g, p], at, at + 0.3);
+      stats.bites++;
+    }
+    // The regulator: a soft hiss on the way in; on the way out a low bubbly rumble with a blub for each clump of bubbles.
+    function breath(ev, at) {
+      var dur = Math.max(0.6, +ev.duration || 1.2), noise = keep(ac.createBufferSource()), g = amp(0), f, peak;
+      noise.buffer = reefSoundNoise(ac);
+      if (ev.type === 'inhale') {
+        f = filter('bandpass', 2600, 0.9); peak = 0.095;
+        g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + 0.3); g.gain.setValueAtTime(peak, at + dur - 0.35); g.gain.linearRampToValueAtTime(0, at + dur);
+      } else {
+        f = filter('lowpass', 380, 0.8); peak = 0.31;
+        g.gain.setValueAtTime(0, at);
+        for (var t = 0; t < dur; t += 0.05) g.gain.linearRampToValueAtTime(peak * (0.45 + 0.55 * rand()) * Math.min(1, t / 0.1, (dur - t) / 0.25), at + t + 0.05);
+        (ev.clumps || [0]).forEach(function (c) {
+          var b = at + c, osc = keep(ac.createOscillator()), bg = amp(0), f0 = 170 + 210 * rand();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(f0, b); osc.frequency.exponentialRampToValueAtTime(f0 * 1.6, b + 0.07);
+          bg.gain.setValueAtTime(0, b); bg.gain.linearRampToValueAtTime(0.088, b + 0.004); bg.gain.setTargetAtTime(0, b + 0.004, 0.025);
+          chain([osc, bg, bus]); shot(osc, [bg], b, b + 0.16);
+        });
+      }
+      chain([noise, f, g, bus]);
+      noise.onended = function () { drop([noise, f, g]); };
+      noise.start(at, rand() * 4); noise.stop(at + dur + 0.05);
+      stats.breaths++;
+    }
+    function event(ev) {
+      if (!alive || !playing || !ev || (ac.state !== 'running' && ev.when == null)) return;
+      var at = ev.when != null ? ev.when : ac.currentTime + 0.012;
+      if (ev.type === 'bite') bite(ev, at);
+      else if (ev.type === 'inhale' || ev.type === 'exhale') breath(ev, at);
+    }
+    function start() {
+      if (!alive || playing) return;
+      playing = true;
+      var now = ac.currentTime;
+      out.gain.setValueAtTime(0, now); out.gain.linearRampToValueAtTime(level(volume), now + 0.6);
+      // The surge: a muffled wash of filtered noise that swells and fades every ten seconds or so.
+      wash = keep(ac.createBufferSource()); wash.buffer = reefSoundNoise(ac); wash.loop = true;
+      var washGain = amp(0.2); lfo = keep(ac.createOscillator()); lfo.frequency.value = 0.09;
+      var depth = amp(0.11); lfo.connect(depth); depth.connect(washGain.gain);
+      chain([wash, filter('lowpass', 300, 0.5), washGain, bus]);
+      wash.start(now); lfo.start(now);
+      tick();
+    }
+    function setVolume(v) { volume = v; if (alive && playing) out.gain.setTargetAtTime(level(v), ac.currentTime, 0.05); }
+    function dispose() {
+      if (!alive) return;
+      alive = false; playing = false;
+      clearTimeout(pump); clearTimeout(ending); pump = ending = 0;
+      live.slice().forEach(function (n) { if (typeof n.stop === 'function') { try { n.stop(); } catch (e) {} } try { n.disconnect(); } catch (e) {} });
+      live.length = 0;
+    }
+    // Pausing, hiding the page or switching off: fade out, then let everything go.
+    function release(done) {
+      if (!alive) { if (done) done(); return; }
+      playing = false; clearTimeout(pump); pump = 0;
+      try { out.gain.cancelScheduledValues(ac.currentTime); out.gain.setTargetAtTime(0, ac.currentTime, 0.08); } catch (e) {}
+      ending = setTimeout(function () { dispose(); if (done) done(); }, 400);
+    }
+    return { start: start, step: step, event: event, setVolume: setVolume, release: release, dispose: dispose, stats: stats, live: live, mix: mix, isPlaying: function () { return alive && playing; } };
+  }
+  if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefSound = { mix: reefSoundMix, engine: reefSoundEngine, snaps: reefSoundSnaps, context: reefSoundContext, supported: reefSoundSupported };
+
+  var LANE_CSS_I3 = [
+    '[data-coralreef-root] .crs-sound{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:2px;padding-top:10px;border-top:1px solid var(--reef-border)}',
+    '[data-coralreef-root] .crs-vol{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--reef-text)}',
+    '[data-coralreef-root] .crs-vol input{width:min(170px,42vw);min-height:24px;margin:0}',
+    '[data-coralreef-root] .crs-why{margin:0;flex:1 1 220px;font-size:13.5px;line-height:1.45;color:var(--reef-muted)}',
+    '[data-coralreef-root] .crs-note{flex:1 1 100%;margin:0;font-size:14px;line-height:1.5;color:var(--reef-text)}',
+    '[data-coralreef-root] .crs-note .crs-site{display:block;margin-top:4px}',
+    '[data-coralreef-root] .crs-note small{display:block;margin-top:4px;font-size:13px;color:var(--reef-muted)}'
+  ].join('');
+  // The Reef sounds toggle, its volume and what is playing, in the dive controls.
+  // Off unless the student turns it on; it plays only while the dive runs and the page is in view.
+  function ReefSoundPanel(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
+    var on = d.reefSound === true, volume = clamp(Math.round(typeof d.reefSoundVolume === 'number' && isFinite(d.reefSoundVolume) ? d.reefSoundVolume : REEF_SOUND_VOLUME), 0, 100);
+    var can = reefSoundSupported();
+    var hv = React.useState(function () { return !!(typeof document !== 'undefined' && document.hidden); }), pageHidden = hv[0], setPageHidden = hv[1];
+    var cs = React.useState('ok'), ctxState = cs[0], setCtxState = cs[1];
+    var paused = !!(props.snap && props.snap.paused), usable = can && ctxState !== 'none';
+    var play = on && usable && !paused && !pageHidden;
+    var mix = React.useMemo(function () { return reefSoundMix(props.site); }, [props.siteKey]);
+    var engines = React.useRef([]), current = React.useRef(null), vol = React.useRef(volume);
+    vol.current = volume;
+    var uid = 'crs-' + React.useId().replace(/:/g, '');
+    React.useEffect(function () {
+      function vis() { setPageHidden(!!document.hidden); }
+      document.addEventListener('visibilitychange', vis);
+      return function () {
+        document.removeEventListener('visibilitychange', vis);
+        // Leaving the dive or the section: every node stops and disconnects now.
+        engines.current.forEach(function (e) { e.dispose(); }); engines.current = [];
+        if (props.hook) props.hook.current = null;
+      };
+    }, []);
+    React.useEffect(function () {
+      if (!play) return undefined;
+      var ac = reefSoundContext();
+      if (!ac) { setCtxState('none'); return undefined; }
+      var engine = reefSoundEngine(ac, { mix: mix, seed: props.site && props.site.seed, volume: vol.current });
+      engines.current.push(engine); current.current = engine;
+      if (props.hook) props.hook.current = engine.event;
+      function check() { setCtxState(ac.state === 'running' ? 'ok' : 'waiting'); }
+      if (typeof ac.addEventListener === 'function') ac.addEventListener('statechange', check);
+      if (ac.state !== 'running' && typeof ac.resume === 'function') { try { Promise.resolve(ac.resume()).then(check, check); } catch (e) { check(); } } else check();
+      engine.start();
+      return function () {
+        if (typeof ac.removeEventListener === 'function') ac.removeEventListener('statechange', check);
+        if (props.hook && props.hook.current === engine.event) props.hook.current = null;
+        if (current.current === engine) current.current = null;
+        engine.release(function () { engines.current = engines.current.filter(function (e) { return e !== engine; }); });
+      };
+    }, [play, props.siteKey]);
+    React.useEffect(function () { if (current.current) current.current.setVolume(volume); }, [volume]);
+    function toggle() {
+      if (!usable) return;
+      var next = !on;
+      if (next) {
+        // This press is the gesture a browser needs before it lets a page make sound.
+        var ac = reefSoundContext();
+        if (!ac) { setCtxState('none'); return; }
+        if (ac.state !== 'running' && typeof ac.resume === 'function') { try { var r = ac.resume(); if (r && r.catch) r.catch(function () {}); } catch (e) {} }
+      }
+      env.set({ reefSound: next });
+      env.say(next ? __alloT('stem.coralreef.sr_sound_on', 'Reef sounds on.') : __alloT('stem.coralreef.sr_sound_off', 'Reef sounds off.'));
+    }
+    function wake() {
+      var ac = reefSoundContext(); if (!ac || typeof ac.resume !== 'function') return;
+      try { Promise.resolve(ac.resume()).then(function () { setCtxState(ac.state === 'running' ? 'ok' : 'waiting'); }, function () {}); } catch (e) {}
+    }
+    var why = !can ? __alloT('stem.coralreef.ex_sound_none', 'Sound is not available in this browser.')
+      : ctxState === 'none' ? __alloT('stem.coralreef.ex_sound_failed', 'Sound could not start on this device.') : null;
+    var siteLine = props.siteId === 'healthy' ? __alloT('stem.coralreef.ex_sound_healthy', 'On this healthy reef, shrimp crackle all the time, fish grunt, knock and whoop, and parrotfish crunch on the rock.')
+      : props.siteId === 'damaged' ? __alloT('stem.coralreef.ex_sound_damaged', 'On this damaged reef you hear fewer shrimp snaps and fewer kinds of fish calls. When scientists played healthy reef sounds on damaged patches, twice as many young fish moved in. Sound alone cannot fix a reef, but with reef repair it may speed recovery.')
+      : props.siteId === 'restoration' ? __alloT('stem.coralreef.ex_sound_restoration', 'Reefs in Indonesia restored with Reef Stars for 1 to 3 years had about as many kinds of animal sounds as healthy reefs.') : null;
+    var shrimpWord = { lots: __alloT('stem.coralreef.ex_sound_lots', 'lots'), some: __alloT('stem.coralreef.ex_sound_some', 'some'), few: __alloT('stem.coralreef.ex_sound_few', 'a few') };
+    var fishWord = { often: __alloT('stem.coralreef.ex_sound_often', 'often'), some: __alloT('stem.coralreef.ex_sound_sometimes', 'now and then'), few: __alloT('stem.coralreef.ex_sound_rarely', 'rarely') };
+    return h('div', { className: 'crs-sound', 'data-reef-sound': on ? (play && ctxState === 'ok' ? 'playing' : 'waiting') : 'off' },
+      h('style', null, LANE_CSS_I3),
+      h('button', { type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-disabled': usable ? undefined : 'true', 'aria-describedby': why ? uid + '-why' : undefined, 'data-sound-toggle': 'true',
+        style: btnStyle(P, on && usable, { display: 'inline-flex', alignItems: 'center', gap: 7, opacity: usable ? 1 : 0.75, cursor: usable ? 'pointer' : 'not-allowed' }), onClick: toggle },
+        lineIcon(h, on && usable ? REEF_SOUND_ICON_ON : REEF_SOUND_ICON_OFF, 16), __alloT('stem.coralreef.ex_sound', 'Reef sounds')),
+      why ? h('p', { id: uid + '-why', className: 'crs-why' }, why) : null,
+      on && usable ? h('label', { className: 'crs-vol' }, __alloT('stem.coralreef.ex_sound_volume', 'Volume'),
+        h('input', { type: 'range', min: 0, max: 100, step: 5, value: volume, 'data-sound-volume': 'true', 'aria-valuetext': __alloFill(__alloT('stem.coralreef.ex_sound_volume_value', '{n} percent'), { n: volume }),
+          onChange: function (e) { env.set({ reefSoundVolume: Number(e.target.value) }); } })) : null,
+      on && usable && ctxState === 'waiting' && !paused && !pageHidden ? h('p', { className: 'crs-why' }, __alloT('stem.coralreef.ex_sound_waiting', 'Your browser is holding the sound back.'), ' ',
+        h('button', { type: 'button', style: btnStyle(P, false, { minHeight: 36, padding: '5px 11px', fontSize: 14 }), onClick: wake }, __alloT('stem.coralreef.ex_sound_play', 'Play the sound'))) : null,
+      on && usable && paused ? h('p', { className: 'crs-why' }, __alloT('stem.coralreef.ex_sound_paused', 'The sounds wait while the reef is paused.')) : null,
+      on && usable ? h('p', { className: 'crs-note', 'data-sound-note': 'true' },
+        h('strong', null, __alloT('stem.coralreef.ex_sound_listen', 'Listen:')), ' ',
+        __alloT('stem.coralreef.ex_sound_why', 'A healthy reef crackles with snapping shrimp and fish calls. Damaged reefs are often quieter, and young fish use reef sounds to find a home.'),
+        siteLine ? h('span', { className: 'crs-site' }, siteLine) : null,
+        h('small', null, __alloFill(__alloT('stem.coralreef.ex_sound_now', 'Playing: snapping shrimp ({shrimp}), fish calls ({fish}), parrotfish bites, your breathing and the surge.'), { shrimp: shrimpWord[mix.shrimp], fish: fishWord[mix.fish] }), ' ',
+          __alloT('stem.coralreef.ex_sound_made', 'Your computer makes these sounds to imitate a reef; they are not recordings.'))) : null);
   }
 
   function ExploreSection(props) {
@@ -4658,29 +5607,41 @@
     var found = Object.keys(log).filter(function (k) { var meta = speciesMeta(k); return meta && meta.group !== 'structure'; }).length;
     var total = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
     var canvasRef = React.useRef(null), ctlRef = React.useRef(null);
+    var soundHook = React.useRef(null); // Reef sounds hear the dive's bites and breaths here
     var st = React.useState('idle'), status = st[0], setStatus = st[1];
     var sn = React.useState(null), snap = sn[0], setSnap = sn[1];
     var at = React.useState(0), attempt = at[0], setAttempt = at[1];
     var ans = React.useState(null), answer = ans[0], setAnswer = ans[1];
+    var pr = React.useState(0), progress = pr[0], setProgress = pr[1];
     var view = d.diveView === 'first' ? 'first' : 'third';
     var siteKey = siteId + ':' + (siteId === 'restoration' ? years : '') + ':' + (baseSite && baseSite.modelYear != null ? baseSite.modelYear : '');
     var started = status !== 'idle';
+    var dive = useDiveLog(env, { ctlRef: ctlRef, status: status, snap: snap, siteId: siteId, key: started ? siteKey : 'off', attempt: attempt });
     React.useEffect(function () {
       if (!started) return undefined;
       var cancelled = false;
-      setStatus('loading'); setSnap(null); setAnswer(null);
+      setStatus('loading'); setSnap(null); setAnswer(null); setProgress(0);
       ensureExplore().then(function (THREE) {
         if (cancelled || !canvasRef.current) return;
         var site = baseSite;
         try {
+          // A staged mount builds the reef over many short tasks; the dive is ready when its first frame is drawn.
           ctlRef.current = window.Reef3DExplore.mount(canvasRef.current, {
-            THREE: THREE, reducedMotion: !!env.ctx.reduceMotion, view: view,
+            THREE: THREE, reducedMotion: !!env.ctx.reduceMotion, view: view, staged: true,
             site: { seed: site.seed, depthM: site.depthM, health: site.health, population: populationFor(site),
               restoration: site.restoration ? { kind: site.restoration.kind, units: site.restoration.units, yearsSince: siteId === 'restoration' ? years : 6 } : null },
-            onState: function (s) { if (!cancelled) setSnap(s); },
-            onError: function () { if (!cancelled) setStatus('error'); }
+            onProgress: function (f) { if (!cancelled) setProgress(Math.round(f * 100)); },
+            onEvent: function (e) { if (soundHook.current) soundHook.current(e); },
+            onState: function (s) { if (cancelled) return; setSnap(s); if (s && s.ready) setStatus('ready'); },
+            onError: function () {
+              if (cancelled) return;
+              setStatus('error');
+              var c = ctlRef.current; ctlRef.current = null;
+              if (c) { try { c.dispose(); } catch (e) {} }
+            }
           });
-          setStatus('ready');
+          var now = ctlRef.current && ctlRef.current.getState ? ctlRef.current.getState() : null;
+          if (!now || now.ready !== false) setStatus('ready');
         } catch (e) { setStatus('error'); }
       }).catch(function () { if (!cancelled) setStatus('error'); });
       return function () {
@@ -4693,7 +5654,9 @@
     var focusKey = focused ? focused.uid : null;
     React.useEffect(function () {
       setAnswer(null);
-      if (focused) env.say(__alloFill(__alloT('stem.coralreef.ex_focus_announce', 'Looking at organism {n}, {m} meters away.'), { n: (snap.nearby || []).findIndex(function (n) { return n.uid === focused.uid; }) + 1 || 1, m: Math.round(focused.distanceM) }));
+      var where = cueWords(__alloT, focused);
+      if (focused) env.say(__alloFill(where ? __alloT('stem.coralreef.ex_focus_announce_dir', 'Looking at organism {n}, {m} meters away, {where}.') : __alloT('stem.coralreef.ex_focus_announce', 'Looking at organism {n}, {m} meters away.'),
+        { n: (snap.nearby || []).findIndex(function (n) { return n.uid === focused.uid; }) + 1 || 1, m: Math.round(focused.distanceM), where: where }));
     }, [focusKey]);
     function ctl() { return ctlRef.current; }
     function pickSite(id) { env.set({ diveSiteId: id }); env.say(__alloFill(__alloT('stem.coralreef.sr_dive_site', 'Dive site: {name}.'), { name: ST[id].name })); }
@@ -4703,30 +5666,70 @@
       if (choice === truth) {
         var next = Object.assign({}, log);
         if (!next[truth]) next[truth] = { firstSeen: Date.now(), site: siteId };
-        env.set({ speciesLog: next });
+        env.set({ speciesLog: next }); dive.noteId(truth);
         setAnswer({ uid: focused.uid, ok: true });
         env.say(__alloFill(__alloT('stem.coralreef.sr_id_right', 'Yes, a {name}. Added to your species log.'), { name: name }));
       } else {
-        setAnswer({ uid: focused.uid, ok: false, tried: choice });
+        // Every wrong guess on this organism stays marked, so two misses never reopen the first.
+        var before = answer && answer.uid === focused.uid && answer.all ? answer.all : [];
+        setAnswer({ uid: focused.uid, ok: false, tried: choice, all: before.concat([choice]) });
         env.say(__alloT('stem.coralreef.sr_id_wrong', 'Not quite. Check the field marks and try again.'));
       }
     }
+    // The choices give way to the reveal, so focus moves to the species name instead of falling to the page.
+    var revealId = 'crf-reveal-' + React.useId().replace(/:/g, '');
+    var justRight = !!(focused && answer && answer.uid === focused.uid && answer.ok);
+    React.useEffect(function () {
+      if (!justRight) return;
+      var el = document.getElementById(revealId);
+      if (el && el.focus) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
+    }, [justRight, focusKey]);
+    var todo = snap && snap.nearby ? snap.nearby.filter(function (n) { return !log[n.speciesId]; }).length : 0;
+    var moments = useReefMoments(env, { snap: snap, status: status, key: started ? siteKey : 'off', attempt: attempt, siteId: siteId, log: log, TX: TX, ctl: ctl, midId: !!(focused && !log[focused.speciesId]) });
     var moveLabels = { group: __alloT('stem.coralreef.ex_move_group', 'Swim controls'), forward: __alloT('stem.coralreef.ex_forward', 'Swim forward'), back: __alloT('stem.coralreef.ex_back', 'Back up'),
       left: __alloT('stem.coralreef.ex_left', 'Turn left'), right: __alloT('stem.coralreef.ex_right', 'Turn right'), up: __alloT('stem.coralreef.ex_up', 'Rise'), down: __alloT('stem.coralreef.ex_down', 'Sink') };
+    // Dive light: a saved choice that the dive applies once it is ready. The dive
+    // reports the real state (its L key also switches it), which the choice follows.
+    var lightPref = !!d.diveLight, lightOn = !!(snap && snap.light), canLight = !!(snap && typeof snap.light === 'boolean');
+    var lt = React.useState(false), lightTip = lt[0], setLightTip = lt[1], lastLight = React.useRef(null), lightBtn = React.useRef(null);
+    React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.setLight === 'function') c.setLight(lightPref); }, [status, lightPref]);
+    React.useEffect(function () {
+      if (status !== 'ready' || !canLight) { lastLight.current = null; return; }
+      var before = lastLight.current; lastLight.current = lightOn;
+      if (before === null || before === lightOn) return;
+      if (lightOn !== lightPref) env.set({ diveLight: lightOn });
+      // The first time, the tip about where the red goes comes along.
+      var first = lightOn && !d.diveLightTipSeen;
+      if (first) env.set({ diveLightTipSeen: true });
+      setLightTip(first);
+      env.say(first ? __alloFill(__alloT('stem.coralreef.sr_light_on_tip', 'Dive light on. {tip}'), { tip: redTip(__alloT) })
+        : lightOn ? __alloT('stem.coralreef.sr_light_on', 'Dive light on.') : __alloT('stem.coralreef.sr_light_off', 'Dive light off.'));
+    }, [lightOn, canLight, status]);
+    function toggleLight() { var next = !lightPref; env.set({ diveLight: next }); if (ctl() && typeof ctl().setLight === 'function') ctl().setLight(next); }
     var siteIds = EXPLORE_SITES.map(function (s) { return s.id; }).concat(d.diveModelSite ? ['model'] : []);
-    var knownName = focused && log[focused.speciesId] && TX[focused.speciesId] ? TX[focused.speciesId].name : null;
-    var marks = focused && TX[focused.speciesId] ? TX[focused.speciesId].marks : [];
-    return h('div', null,
+    // The site grid and the species log change only with the tool's data, not with the dive's
+    // progress and position updates, so those frequent renders reuse them.
+    var siteGrid = React.useMemo(function () {
+      return h('div', { className: 'cr-site-grid', role: 'group', 'aria-label': __alloT('stem.coralreef.ex_sites', 'Dive sites') },
+        siteIds.map(function (id) {
+          var on = id === siteId, site = id === 'model' ? d.diveModelSite : EXPLORE_SITES.filter(function (s) { return s.id === id; })[0];
+          var tag = id === 'model' ? __alloFill(__alloT('stem.coralreef.mo_year_live_plain', 'Live coral: {v}% of the bottom.'), { v: Math.round(clamp(site.health.coralCover || 0, 0, 1) * 100) }) : ST[id].tag;
+          return h('button', { key: id, type: 'button', className: 'crf-site', 'data-site': id, 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on, on ? { boxShadow: '0 0 0 2px ' + P.accent } : null), onClick: function () { if (!on) pickSite(id); } },
+            h(SitePreview, { env: env, site: site }),
+            h('span', { className: 'crf-site-row' },
+              h('span', { className: 'cr-site-marker' }, reefIcon(h, id === 'healthy' ? 'fish' : id === 'restoration' ? 'hub' : id === 'heatwave' ? 'science' : 'model', 18)),
+              h('span', { style: { minWidth: 0 } },
+                h('span', null, ST[id].name, id === 'model' && d.diveModelSite ? ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: d.diveModelSite.modelYear }) + ')' : ''),
+                h('span', { className: 'crf-site-tag' }, tag))));
+        }));
+    }, [env]);
+    var logCard = React.useMemo(function () { return h(SpeciesLogCard, { env: env, log: log, TX: TX, diving: started }); }, [env, started]);
+    return h('div', { className: 'crf-explore' },
+      h('style', null, LANE_CSS_F3), h('style', null, LANE_CSS_H3),
       h('section', { style: cardStyle(P) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.ex_title', 'Dive a coral reef')),
         h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_intro', 'You are a scuba diver on an Indo-Pacific reef in the Coral Triangle. Swim around, look closely, and identify the animals and corals you meet. Each one you identify goes into your species log.')),
-        h('div', { className: 'cr-site-grid', role: 'group', 'aria-label': __alloT('stem.coralreef.ex_sites', 'Dive sites') },
-          siteIds.map(function (id) {
-            var on = id === siteId;
-            return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false', style: btnStyle(P, on), onClick: function () { if (!on) pickSite(id); } },
-              h('span', { className: 'cr-site-marker' }, reefIcon(h, id === 'healthy' ? 'fish' : id === 'restoration' ? 'hub' : id === 'heatwave' ? 'science' : 'model', 18)),
-              h('span', null, ST[id].name, id === 'model' && d.diveModelSite ? ' (' + __alloFill(__alloT('stem.coralreef.s_model_year', 'year {n}'), { n: d.diveModelSite.modelYear }) + ')' : ''));
-          })),
+        siteGrid,
         h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, ST[siteId].about),
         siteId === 'restoration' ? h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.ex_years', 'Years since the Reef Stars were put in'), min: 0, max: 8, value: years,
           valueText: __alloFill(__alloT('stem.coralreef.ex_years_value', '{n} years'), { n: years }), onChange: function (v) { env.set({ diveYears: v }); } }) : null,
@@ -4740,107 +5743,720 @@
             h('p', { className: 'cr-eyebrow', style: { color: '#c5e8d7' } }, __alloT('stem.coralreef.ex_location', 'Indo-Pacific / Coral Triangle')),
             h('h3', null, __alloT('stem.coralreef.ex_invitation', 'Take a breath. Dive into discovery.')),
             h('p', { className: 'cr-hero-description' }, __alloT('stem.coralreef.ex_start_note', 'The dive loads a 3D reef. On older computers it may take a few seconds.')),
-            h('div', { className: 'cr-hero-actions' }, h('button', { type: 'button', className: 'cr-primary', onClick: function () { setStatus('loading'); } }, __alloT('stem.coralreef.ex_start', 'Start the dive'), reefIcon(h, 'arrow'))))) : null,
-        started ? h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
-          'aria-label': __alloT('stem.coralreef.ex_canvas_label', '3D reef dive. W and S or the up and down arrows swim forward and back; A and D or left and right turn; R and F rise and sink; N moves to the next nearby organism; Enter swims to it; Space pauses. The list below the view names what is nearby.'),
-          style: { width: '100%', height: 440, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }) : null,
-        status === 'loading' ? h('p', { role: 'status', style: mutedStyle(P, { margin: '6px 0 0' }) }, __alloT('stem.coralreef.ex_loading', 'Loading the reef...')) : null,
+            h('div', { className: 'cr-hero-actions' }, h('button', { type: 'button', className: 'cr-primary', onClick: function () { reefSoundPrime(d); setStatus('loading'); } }, __alloT('stem.coralreef.ex_start', 'Start the dive'), reefIcon(h, 'arrow'))))) : null,
+        // The HUD hangs from a zero-height anchor over the canvas top, so the canvas block stays as it is.
+        status === 'ready' ? h(DiveHud, { env: env, snap: snap, todo: todo }) : null,
+        started ? h('div', { style: { position: 'relative' } },
+          h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application',
+            'aria-label': __alloT('stem.coralreef.ex_canvas_label_light', '3D reef dive. W and S or the up and down arrows swim forward and back; A and D or left and right turn; R and F rise and sink; N moves to the next nearby organism; Enter swims to it; L switches the dive light on or off; Space pauses. The list below the view names what is nearby and which way it is.'),
+            style: { width: '100%', height: 440, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
+          status === 'loading' ? h(DiveLoading, { env: env, value: progress, label: __alloT('stem.coralreef.ex_loading', 'Loading the reef...') }) : null) : null,
+        status === 'ready' ? h(ReefMomentCard, { env: env, r: moments, canvas: canvasRef }) : null,
         status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
           h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_error', 'The 3D dive could not start on this device. You can still learn every species in the species guide.')),
           h('button', { type: 'button', style: btnStyle(P, false, { marginRight: 8 }), onClick: function () { setAttempt(attempt + 1); } }, __alloT('stem.coralreef.dive_retry', 'Try the 3D view again')),
           h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.go('guide'); } }, __alloT('stem.coralreef.ex_open_guide', 'Open the species guide'))) : null,
         status === 'ready' ? h('div', { className: 'cr-dive-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 12 } },
+          h('style', null, LANE_CSS_G1),
           h(MovePad, { h: h, P: P, ctl: ctl, labels: moveLabels }),
           h('button', { type: 'button', 'aria-pressed': view === 'first' ? 'true' : 'false', style: btnStyle(P, view === 'first'), onClick: function () { env.set({ diveView: view === 'first' ? 'third' : 'first' }); } },
             __alloT('stem.coralreef.ex_mask_view', 'Mask view')),
+          canLight ? h('button', { ref: lightBtn, type: 'button', 'aria-pressed': lightPref ? 'true' : 'false', 'data-dive-light': 'true', style: btnStyle(P, lightPref, { display: 'inline-flex', alignItems: 'center', gap: 7 }), onClick: toggleLight },
+            lineIcon(h, ICON_TORCH, 16), __alloT('stem.coralreef.ex_light', 'Dive light')) : null,
           h('button', { type: 'button', 'aria-pressed': snap && snap.paused ? 'true' : 'false', style: btnStyle(P, !!(snap && snap.paused)), onClick: function () { if (ctl()) ctl().setPaused(!(snap && snap.paused)); } },
             __alloT('stem.coralreef.ex_pause', 'Pause the reef')),
-          snap && snap.diver ? h('span', { style: { color: P.muted } }, __alloFill(__alloT('stem.coralreef.ex_depth', 'Depth: {m} m'), { m: Math.round(snap.diver.depthM) })) : null) : null),
-      status === 'ready' ? h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-focus-title' },
+          h('button', { type: 'button', 'data-end-dive': 'true', style: btnStyle(P, false), onClick: function () { dive.end(); setStatus('idle'); } }, __alloT('stem.coralreef.ex_end_dive', 'End the dive')),
+          snap && snap.diver ? h('span', { style: { color: P.muted, display: 'inline-flex', flexWrap: 'wrap', gap: '0 12px' } },
+            h('span', null, __alloFill(__alloT('stem.coralreef.ex_depth', 'Depth: {m} m'), { m: Math.round(snap.diver.depthM) })), h('span', null, facingName(__alloT, snap.diver.headingDeg))) : null,
+          h(BuoyancyMeter, { env: env, snap: snap }),
+          h(ReefSoundPanel, { env: env, snap: snap, site: baseSite, siteId: siteId, siteKey: siteKey, hook: soundHook }),
+          dive.tip ? h(TouchTip, { env: env, kind: dive.tip, onClose: dive.hideTip }) : null,
+          lightTip && lightOn ? h('div', { className: 'crg-tip', 'data-light-tip': 'true' },
+            lineIcon(h, ICON_TORCH, 18, { style: { flexShrink: 0, marginTop: 2, color: P.accent } }),
+            h('p', null, h('strong', null, __alloT('stem.coralreef.ex_light_tip_title', 'Your dive light is on. Swim close, or try Mask view.')), ' ', redTip(__alloT)),
+            h('button', { type: 'button', style: btnStyle(P, false, { minHeight: 36, padding: '5px 11px', fontSize: 14 }), onClick: function () { setLightTip(false); if (lightBtn.current) lightBtn.current.focus(); } }, __alloT('stem.coralreef.ex_light_tip_close', 'Hide this tip'))) : null) : null),
+      dive.rec ? h(DiveLogCard, { env: env, rec: dive.rec, TX: TX, diving: started, focus: dive.focus, onAgain: started ? null : function () { dive.clear(); setStatus('loading'); }, onClose: dive.clear })
+        : !started && !dive.dismissed && d.lastDive && d.lastDive.site ? h(DiveLogCard, { env: env, rec: d.lastDive, TX: TX, past: true }) : null,
+      status === 'ready' ? h('section', { className: 'crf-look', style: cardStyle(P), 'aria-labelledby': 'cr-focus-title' },
         h('h3', { id: 'cr-focus-title', style: h3Style(P) }, __alloT('stem.coralreef.ex_focus_title', 'Look closer')),
-        !focused ? h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_no_focus', 'Click an organism in the view, press N, or choose Look in the list below.')) : null,
-        focused ? h('div', null,
-          knownName ? h('p', { style: { margin: '0 0 6px', fontWeight: 700 } }, __alloFill(__alloT('stem.coralreef.ex_known', 'This is a {name}. It is already in your log.'), { name: knownName }))
-            : h('p', { style: { margin: '0 0 6px', fontWeight: 700 } }, __alloFill(__alloT('stem.coralreef.ex_unknown', 'Something about {m} m away. What is it?'), { m: Math.round(focused.distanceM) })),
-          marks.length ? h('p', { style: { margin: '0 0 8px' } }, h('strong', null, __alloT('stem.coralreef.p_you_see', 'What you can see: ')), marks.join('; '), '.') : null,
-          !knownName ? h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.ex_choices', 'Identify it'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-            idChoices(focused.speciesId, focused.uid).map(function (id) {
-              var wrong = answer && answer.uid === focused.uid && answer.tried === id;
-              return h('button', { key: id, type: 'button', disabled: wrong, style: btnStyle(P, false, wrong ? { opacity: 0.6 } : null), onClick: function () { identify(id); } }, TX[id] ? TX[id].name : id);
-            })) : null,
-          answer && answer.uid === focused.uid && !answer.ok ? h('p', { role: 'status', style: { margin: '8px 0 0', color: P.bad, fontWeight: 600 } },
-            __alloT('stem.coralreef.ex_wrong', 'Not quite. Compare the field marks with the species guide and try again.')) : null,
-          answer && answer.uid === focused.uid && answer.ok && TX[focused.speciesId] ? h(SpeciesFacts, { env: env, id: focused.speciesId, compact: true }) : null,
-          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
-            h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { if (ctl()) ctl().swimTo(focused.uid); } }, __alloT('stem.coralreef.ex_swim_to', 'Swim closer')),
-            h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { if (ctl()) ctl().focusNext(); } }, __alloT('stem.coralreef.ex_next', 'Next organism')))) : null,
-        h('h4', { style: { margin: '12px 0 6px', color: P.text } }, __alloT('stem.coralreef.ex_nearby', 'Nearby')),
-        snap && snap.nearby && snap.nearby.length ? h('ul', { className: 'cr-nearby' }, snap.nearby.map(function (n, index) {
-          var name = log[n.speciesId] && TX[n.speciesId] ? TX[n.speciesId].name : __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet');
-          var isFocus = focused && focused.uid === n.uid;
-          return h('li', { key: n.uid, style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 } },
-            h('span', { style: { minWidth: 220, fontWeight: isFocus ? 700 : 400 } }, name, ', ', __alloFill(n.inView ? __alloT('stem.coralreef.ex_dist_ahead', '{m} m, in view') : __alloT('stem.coralreef.ex_dist_behind', '{m} m, out of view'), { m: Math.round(n.distanceM) })),
-            h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.coralreef.ex_look_label', 'Look: organism {n}, {name}, {m} m'), { n: index + 1, name: name, m: Math.round(n.distanceM) }), style: btnStyle(P, isFocus, { minHeight: 36, padding: '5px 10px' }), onClick: function () { if (ctl()) ctl().focus(n.uid); } }, __alloT('stem.coralreef.ex_look', 'Look')),
-            h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.coralreef.ex_swim_label', 'Swim to: organism {n}, {name}, {m} m'), { n: index + 1, name: name, m: Math.round(n.distanceM) }), style: btnStyle(P, false, { minHeight: 36, padding: '5px 10px' }), onClick: function () { if (ctl()) ctl().swimTo(n.uid); } }, __alloT('stem.coralreef.ex_swim', 'Swim to')));
-        })) : h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.ex_nothing_near', 'Nothing close by. Swim on to find more.'))) : null,
+        !focused ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', margin: '0 0 8px' } },
+          h('p', { style: { margin: 0, flex: '1 1 260px' } }, __alloT('stem.coralreef.ex_no_focus', 'Click an organism in the view, press N, or choose Look in the list below.')),
+          snap && snap.nearby && snap.nearby.length ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { if (ctl()) ctl().focusNext(); } }, __alloT('stem.coralreef.ex_look_nearest', 'Look at the nearest one')) : null) : null,
+        focused ? h(IdentifyCard, { env: env, focused: focused, snap: snap, log: log, TX: TX, answer: answer, revealId: revealId, onChoose: identify,
+          onSwim: function () { if (ctl()) ctl().swimTo(focused.uid); }, onNext: function () { if (ctl()) ctl().focusNext(); } }) : null,
+        h('h4', { style: { margin: '18px 0 6px', color: P.text } }, __alloT('stem.coralreef.ex_nearby', 'Nearby')),
+        h(NearbyList, { env: env, snap: snap, log: log, TX: TX, focusedUid: focusKey, ctl: ctl })) : null,
+      logCard,
+      h(MomentLogCard, { env: env }),
       h('section', { style: cardStyle(P) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.ex_tips_title', 'Diving the right way')),
         h('ul', { style: { margin: 0, paddingLeft: 22 } }, diveTips(__alloT).map(function (t, i) { return h('li', { key: i }, t); }))));
   }
 
+  // ── Diving gently: reef contacts, calm hovering and the dive log ──
+  // The dive reports snap.buoyancy: reefContacts (living coral or other attached
+  // life brushed), sandContacts (bare bottom touched or stirred), calmS (steady,
+  // slow hovering near the reef), diveS, maxDepthM, state ('calm' | 'close' |
+  // 'touch' | 'swim') and lastReef ('coral' | 'life'). An engine without it shows none of this.
+  var LANE_CSS_H3 = [
+    '[data-coralreef-root] .crh-meter{display:inline-flex;align-items:center;gap:9px;max-width:100%;padding:6px 12px 6px 9px;border-radius:12px;border:1px solid var(--reef-border);background:var(--reef-alt);color:var(--reef-text);line-height:1.3}',
+    '[data-coralreef-root] .crh-meter strong{display:block;font-size:14px}',
+    '[data-coralreef-root] .crh-meter small{display:block;font-size:12.5px;color:var(--reef-muted)}',
+    '[data-coralreef-root] .crh-log h3{display:inline-block}',
+    '[data-coralreef-root] .crh-log h3:focus{outline:2px solid var(--reef-accent);outline-offset:3px;border-radius:4px}',
+    '[data-coralreef-root] .crh-stats{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px}',
+    '[data-coralreef-root] .crh-stats li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--reef-border);background:var(--reef-alt)}',
+    '[data-coralreef-root] .crh-stats span{font-size:13px;color:var(--reef-muted)}',
+    '[data-coralreef-root] .crh-stats strong{font-size:19px;line-height:1.25}',
+    '[data-coralreef-root] .crh-note{display:flex;gap:12px;align-items:flex-start;margin:0 0 14px;padding:12px 14px;border-radius:14px;border:1.5px solid;background:var(--reef-alt);line-height:1.45}',
+    '[data-coralreef-root] .crh-note p{margin:0}',
+    '[data-coralreef-root] .crh-log .crf-tiles{margin-bottom:14px}'
+  ].join('');
+  // The dive's own tip, as the cue after a first brush repeats it.
+  function touchTip(__alloT) { return __alloT('stem.coralreef.tip_touch', 'Hover, don\'t touch. Coral is a thin layer of living animals over a stony skeleton, and a fin kick can break it.'); }
+  function diveTime(__alloT, __alloFill, seconds) {
+    var s = Math.max(0, Math.round(+seconds || 0)), m = Math.floor(s / 60);
+    return m ? __alloFill(__alloT('stem.coralreef.ex_time_min', '{m} min {s} s'), { m: m, s: s % 60 }) : __alloFill(__alloT('stem.coralreef.ex_time_sec', '{s} s'), { s: s });
+  }
+  var ICON_HOVER = 'M4 10h16M8 6l-4 4 4 4M16 6l4 4-4 4M4 19c2.7-2 5.3-2 8 0s5.3 2 8 0';
+  var ICON_RISE = 'M12 20V6M6 12l6-6 6 6';
+  var ICON_BRUSH = 'M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1';
+  var ICON_SWIM = 'M3 12c2.5-3 5-3 7.5 0s5 3 7.5 0 3-1.5 3-1.5';
+  var ICON_BADGE = 'M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM9 9.2l2 2 4-4M8.5 13.8L7 22l5-3 5 3-1.5-8.2';
+  // One dive, from start to end: what was identified, the first-brush cue, and
+  // the log when it ends. Called before the dive's mount effect, so leaving the
+  // site or the section reads the dive before that effect disposes it.
+  function useDiveLog(env, o) {
+    var React = env.React, __alloT = env.t, __alloFill = env.fill;
+    var live = React.useRef(o); live.current = o;
+    var ids = React.useRef([]), done = React.useRef(false), told = React.useRef(false), prev = React.useRef('off');
+    // log: { rec, focus } for the dive that just ended; hidden: the student closed it.
+    var ls = React.useState(null), log = ls[0], setLog = ls[1];
+    var hs = React.useState(false), hidden = hs[0], setHidden = hs[1];
+    var ts = React.useState(null), tip = ts[0], setTip = ts[1];
+    function finish(ended, site) {
+      var cur = live.current;
+      if (done.current || !cur || cur.status !== 'ready') return null;
+      done.current = true;
+      var s = null;
+      try { var c = cur.ctlRef.current; s = c && c.getState ? c.getState() : null; } catch (e) { s = null; }
+      var b = (s && s.buoyancy) || (cur.snap && cur.snap.buoyancy);
+      if (!b) return null;
+      var out = { site: site || cur.siteId, at: Date.now(), timeS: Math.round(+b.diveS || 0), maxDepthM: Math.round((+b.maxDepthM || 0) * 10) / 10,
+        species: ids.current.slice(), reefContacts: +b.reefContacts || 0, sandContacts: +b.sandContacts || 0, calmS: Math.round(+b.calmS || 0) };
+      // A quick look at a site on the way to another is not a dive to log.
+      if (!ended && out.timeS < 10 && !out.species.length) return null;
+      setLog({ rec: out, focus: !!ended }); setHidden(false); env.set({ lastDive: out });
+      return out;
+    }
+    React.useEffect(function () {
+      var from = prev.current; prev.current = o.key;
+      if (o.key === 'off') return undefined;
+      ids.current = []; done.current = false; told.current = false; setTip(null);
+      // Starting again from the end-of-dive card closes it; a new site keeps the last site's log in view.
+      if (from === 'off') setLog(null);
+      // By the time a new site's render runs this, live.current already names the new site.
+      var site = o.siteId;
+      return function () { finish(false, site); };
+    }, [o.key, o.attempt]);
+    var b = o.snap && o.snap.buoyancy, touched = !!(b && b.reefContacts > 0 && o.status === 'ready');
+    React.useEffect(function () {
+      if (!touched || told.current) return;
+      told.current = true;
+      var life = b.lastReef === 'life';
+      setTip(life ? 'life' : 'coral');
+      env.say(__alloFill(life ? __alloT('stem.coralreef.sr_touch_life', 'You brushed a reef animal. Rise a little and hover. {tip}') : __alloT('stem.coralreef.sr_touch_coral', 'You brushed a coral. Rise a little and hover. {tip}'), { tip: touchTip(__alloT) }));
+    }, [touched]);
+    return {
+      rec: log ? log.rec : null, focus: !!(log && log.focus), dismissed: hidden, tip: tip,
+      noteId: function (id) { if (ids.current.indexOf(id) < 0) ids.current.push(id); },
+      end: function () { return finish(true); },
+      hideTip: function () { setTip(null); },
+      clear: function () { setLog(null); setHidden(true); }
+    };
+  }
+  // The live reading beside the dive controls. Words and icon shapes carry the
+  // state; it is not a live region (the first brush is announced once instead).
+  function BuoyancyMeter(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, b = props.snap && props.snap.buoyancy;
+    if (!b) return null;
+    var st = b.state === 'calm' || b.state === 'close' || b.state === 'touch' ? b.state : 'swim';
+    var look = {
+      calm: [ICON_HOVER, P.good, __alloT('stem.coralreef.ex_buoy_calm', 'Hovering calmly')],
+      close: [ICON_RISE, P.warn, __alloT('stem.coralreef.ex_buoy_close', 'Close to the reef. Rise a little.')],
+      touch: [ICON_BRUSH, P.warn, __alloT('stem.coralreef.ex_buoy_touch', 'You brushed the reef')],
+      swim: [ICON_SWIM, P.muted, __alloT('stem.coralreef.ex_buoy_swim', 'Swimming')]
+    }[st];
+    return h('div', { className: 'crh-meter', 'data-buoyancy': st, style: st === 'close' || st === 'touch' ? { borderColor: P.ctlBorder, borderStyle: 'dashed' } : null },
+      lineIcon(h, look[0], 20, { style: { flexShrink: 0, color: look[1] } }),
+      h('span', { style: { minWidth: 0 } }, h('strong', null, look[2]),
+        h('small', null, __alloFill(__alloT('stem.coralreef.ex_buoy_detail', 'Reef touches: {n}. Calm hovering: {t}.'), { n: b.reefContacts || 0, t: diveTime(__alloT, __alloFill, b.calmS) }))));
+  }
+  // The first brush of a dive: a gentle cue made from the dive tip.
+  function TouchTip(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t;
+    return h('div', { className: 'crg-tip', 'data-touch-tip': props.kind },
+      lineIcon(h, ICON_RISE, 18, { style: { flexShrink: 0, marginTop: 2, color: P.accent } }),
+      h('p', null, h('strong', null, props.kind === 'life' ? __alloT('stem.coralreef.ex_touch_life', 'You brushed a reef animal. Rise a little and hover.') : __alloT('stem.coralreef.ex_touch_coral', 'You brushed a coral. Rise a little and hover.')), ' ', touchTip(__alloT)),
+      h('button', { type: 'button', style: btnStyle(P, false, { minHeight: 36, padding: '5px 11px', fontSize: 14 }), onClick: props.onClose }, __alloT('stem.coralreef.ex_light_tip_close', 'Hide this tip')));
+  }
+  // The end of a dive: time, depth, what was identified (with the log's
+  // pictures), reef touches and calm time, then a badge or a kind nudge.
+  function DiveLogCard(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, r = props.rec, TX = props.TX;
+    var uid = 'crh-log-' + React.useId().replace(/:/g, ''), head = React.useRef(null);
+    React.useEffect(function () { if (props.focus && head.current) { try { head.current.focus({ preventScroll: false }); } catch (e) { head.current.focus(); } } }, [r]);
+    var ST = exploreSiteText(__alloT), place = ST[r.site] ? ST[r.site].name : '';
+    var n = +r.reefContacts || 0, list = (Array.isArray(r.species) ? r.species : []).filter(function (id) { return !!speciesMeta(id); });
+    var stats = [
+      [__alloT('stem.coralreef.ex_log_time', 'Time underwater'), diveTime(__alloT, __alloFill, r.timeS)],
+      [__alloT('stem.coralreef.ex_log_depth', 'Deepest point'), __alloFill(__alloT('stem.coralreef.ex_log_depth_value', '{m} m'), { m: Math.round(+r.maxDepthM || 0) })],
+      [__alloT('stem.coralreef.ex_log_species', 'Species identified'), String(list.length)],
+      [__alloT('stem.coralreef.ex_log_touches', 'Reef touches'), String(n)],
+      [__alloT('stem.coralreef.ex_log_calm', 'Calm hovering'), diveTime(__alloT, __alloFill, r.calmS)]
+    ];
+    // The badge needs a real dive: half a minute or more underwater without a touch.
+    var note = n === 0 && !((+r.timeS || 0) >= 30)
+      ? h('div', { className: 'crh-note', 'data-short': 'true', style: { borderColor: P.ctlBorder } },
+        lineIcon(h, ICON_HOVER, 26, { style: { flexShrink: 0, color: P.accent } }),
+        h('p', null, __alloT('stem.coralreef.ex_log_short', 'No reef touches. Stay down a little longer next time and practice hovering close to the reef.')))
+      : n === 0
+      ? h('div', { className: 'crh-note', 'data-badge': 'perfect-buoyancy', style: { borderColor: P.good } },
+        lineIcon(h, ICON_BADGE, 30, { style: { flexShrink: 0, color: P.good } }),
+        h('p', null, h('strong', null, __alloT('stem.coralreef.ex_log_badge', 'Perfect buoyancy')), ' ', __alloT('stem.coralreef.ex_log_badge_text', 'You never touched the reef. Hovering like this keeps living coral safe.')))
+      : h('div', { className: 'crh-note', 'data-nudge': 'true', style: { borderColor: P.ctlBorder } },
+        lineIcon(h, ICON_HOVER, 26, { style: { flexShrink: 0, color: P.accent } }),
+        h('p', null, __alloFill(n === 1 ? __alloT('stem.coralreef.ex_log_nudge_one', 'You brushed the reef once. Next dive, hover a little higher and look behind you before you turn or back up. Your fins reach a long way.')
+          : __alloT('stem.coralreef.ex_log_nudge_many', 'You brushed the reef {n} times. Next dive, hover a little higher and look behind you before you turn or back up. Your fins reach a long way.'), { n: n })));
+    return h('section', { className: 'crh-log', 'data-dive-log': props.past ? 'past' : 'this', style: cardStyle(P), 'aria-labelledby': uid },
+      h('h3', { id: uid, ref: head, tabIndex: -1, style: h3Style(P) }, props.past ? __alloT('stem.coralreef.ex_log_last', 'Your last dive') : __alloT('stem.coralreef.ex_log_title_dive', 'Dive log')),
+      place ? h('p', { style: mutedStyle(P, { margin: '-6px 0 12px' }) }, place) : null,
+      h('ul', { className: 'crh-stats' }, stats.map(function (s, i) { return h('li', { key: i }, h('span', null, s[0]), h('strong', null, s[1])); })),
+      note,
+      +r.sandContacts > 0 ? h('p', { style: { margin: '0 0 14px' } }, __alloT('stem.coralreef.ex_log_sand', 'Your fins stirred up the sand too. Small, slow kicks keep the water clear.')) : null,
+      list.length ? h('ul', { className: 'crf-tiles', 'aria-label': __alloT('stem.coralreef.ex_log_species_list', 'Species identified on this dive') }, list.map(function (id) {
+        var name = TX[id] ? guideShortName(TX[id].name) : id;
+        return h('li', { key: id, className: 'crf-tile', 'data-dive-species': id },
+          h('span', { className: 'crf-tile-art', 'aria-hidden': 'true' }, h(SpeciesPortrait, { env: env, id: id, iconSize: 30, noDraw: props.diving })),
+          h('span', { className: 'crf-tile-name' }, name));
+      })) : h('p', { style: mutedStyle(P, { margin: '0 0 14px' }) }, __alloT('stem.coralreef.ex_log_none', 'No new species this time. The reef will still be here next dive.')),
+      h(MomentDiveList, { env: env, rec: r }),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+        props.onAgain ? h('button', { type: 'button', style: btnStyle(P, true), onClick: props.onAgain }, __alloT('stem.coralreef.ex_dive_again', 'Dive again')) : null,
+        props.onClose ? h('button', { type: 'button', style: btnStyle(P, false), onClick: props.onClose }, __alloT('stem.coralreef.ex_log_hide_card', 'Hide the dive log')) : null));
+  }
+
+  // ── Dive interface: site pictures, HUD, identification card, nearby list, species log ──
+  // Motion runs only under .crf-anim, which the reveal sets when reduced motion is off.
+  var LANE_CSS_F3 = [
+    '[data-coralreef-root] .cr-site-grid button.crf-site{flex-direction:column;align-items:stretch;gap:0;padding:0!important;overflow:hidden}',
+    '[data-coralreef-root] .crf-site-art{display:block;width:100%;height:auto;aspect-ratio:360/104;background:#17627c;border-bottom:1px solid var(--reef-border)}',
+    '[data-coralreef-root] .crf-site-row{display:flex;gap:10px;align-items:center;padding:10px 12px 12px;min-width:0}',
+    '[data-coralreef-root] .crf-site-tag{display:block;font-size:12.5px;font-weight:500;line-height:1.35;margin-top:2px}',
+    '[data-coralreef-root] .crf-hud-anchor{position:relative;height:0;z-index:2}',
+    '[data-coralreef-root] .crf-hud{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}',
+    '[data-coralreef-root] .crf-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;background:#062f3cd9;color:#ecfbf6;border:1px solid #c5e8d766;font-size:12.5px;font-weight:650;line-height:1.3;white-space:nowrap}',
+    '[data-coralreef-root] .crf-pill b{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1.5px dashed currentColor;font:700 10px/1 Georgia,serif}',
+    '[data-coralreef-root][data-theme=contrast] .crf-pill{background:#000;color:#fff;border-color:#fbbf24}',
+    '[data-coralreef-root] .crf-id{display:grid;gap:14px}',
+    '[data-coralreef-root] .crf-idhead{display:flex;gap:14px;align-items:center;min-width:0}',
+    '[data-coralreef-root] .crf-q{flex:none;display:grid;place-items:center;border-radius:50%;font:700 24px/1 Georgia,serif}',
+    '[data-coralreef-root] .crf-idhead .crf-q{width:56px;height:56px}',
+    '[data-coralreef-root] .crf-idpic,[data-coralreef-root] .crf-portrait,[data-coralreef-root] .crf-tile-art{position:relative;display:grid;place-items:center;overflow:hidden;aspect-ratio:3/2;background:#0f4655;color:#cfeee4}',
+    '[data-coralreef-root] .crf-idpic{flex:none;width:104px;border-radius:10px}',
+    '[data-coralreef-root] .crf-idpic img,[data-coralreef-root] .crf-mark img,[data-coralreef-root] .crf-tile-art img,[data-coralreef-root] .crf-portrait img{width:100%;height:100%;object-fit:cover;display:block}',
+    '[data-coralreef-root] .crf-idline{margin:0;font-weight:700;font-size:16.5px;line-height:1.4}',
+    '[data-coralreef-root] .crf-chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:6px 0 0;padding:0}',
+    '[data-coralreef-root] .crf-chips li{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid var(--reef-border);background:var(--reef-alt)}',
+    '[data-coralreef-root] .crf-idbody{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}',
+    '[data-coralreef-root] .crf-idbody.crf-one{grid-template-columns:minmax(0,1fr)}',
+    '[data-coralreef-root] .crf-stack{display:grid;gap:12px}',
+    '[data-coralreef-root] .crf-panel{background:var(--reef-alt);border:1px solid var(--reef-border);border-radius:14px;padding:14px 16px}',
+    '[data-coralreef-root] .crf-panel h4,[data-coralreef-root] .crf-choose h4{margin:0 0 8px;font-size:15px;line-height:1.35}',
+    '[data-coralreef-root] .crf-check{list-style:none;margin:0;padding:0;display:grid;gap:7px}',
+    '[data-coralreef-root] .crf-check li{display:flex;gap:9px;align-items:flex-start;line-height:1.45}',
+    '[data-coralreef-root] .crf-check svg{margin-top:3px}',
+    '[data-coralreef-root] .crf-choices{display:grid;gap:8px;counter-reset:crf}',
+    '[data-coralreef-root] .crf-choice-wrap{position:relative}',
+    '[data-coralreef-root] .crf-choice:before{counter-increment:crf;content:counter(crf);flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid currentColor;font-size:13px;font-weight:700}',
+    '[data-coralreef-root] .crf-cname{display:block;min-width:0}',
+    '[data-coralreef-root] .crf-cname:after{content:attr(data-sci);display:block;font-size:13px;font-weight:400;font-style:italic;color:var(--reef-muted)}',
+    '[data-coralreef-root] .crf-choice[aria-disabled=true]{padding-right:128px!important}',
+    '[data-coralreef-root] .crf-no{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:inline-flex;gap:4px;align-items:center;font-size:13px;font-weight:700;pointer-events:none}',
+    '[data-coralreef-root] .crf-actions{display:flex;flex-wrap:wrap;gap:6px}',
+    '[data-coralreef-root] .crf-reveal{display:grid;grid-template-columns:minmax(0,270px) minmax(0,1fr);gap:18px;align-items:start;padding:14px;border-radius:16px;border:2px solid;background:var(--reef-alt)}',
+    '[data-coralreef-root] .crf-portrait{margin:0;border-radius:12px}',
+    '[data-coralreef-root] .crf-good{display:inline-flex;align-items:center;gap:6px;margin:0;padding:3px 12px 3px 8px;border-radius:999px;border:1.5px solid;font-weight:700}',
+    '[data-coralreef-root] .crf-bubbles i{position:absolute;bottom:8px;border-radius:50%;border:1.5px solid #ffffffd9;background:#ffffff26;opacity:0;animation:crf-rise 1.9s ease-out forwards}',
+    '[data-coralreef-root] .crf-anim .crf-portrait{animation:crf-pop .5s ease-out both}',
+    '@keyframes crf-pop{from{transform:scale(.92);opacity:.35}to{transform:none;opacity:1}}',
+    '@keyframes crf-rise{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:1}100%{transform:translateY(-120px) scale(1.1);opacity:0}}',
+    '[data-coralreef-root] .crf-near{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:6px}',
+    '[data-coralreef-root] .crf-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--reef-border);border-radius:12px;background:var(--reef-alt);min-width:0}',
+    '[data-coralreef-root] .crf-row[aria-current=true]{border-color:var(--reef-accent);box-shadow:inset 0 0 0 1px var(--reef-accent)}',
+    '[data-coralreef-root] .crf-mark{flex:none;width:48px;height:32px;border-radius:8px;overflow:hidden;display:grid;place-items:center;font:700 17px/1 Georgia,serif}',
+    '[data-coralreef-root] .crf-what{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}',
+    '[data-coralreef-root] .crf-name{font-weight:600;overflow-wrap:anywhere}',
+    '[data-coralreef-root] .crf-dist{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--reef-muted);white-space:nowrap}',
+    '[data-coralreef-root] .crf-bar{flex:none;width:40px;height:5px;border-radius:3px;overflow:hidden;background:var(--reef-border)}',
+    '[data-coralreef-root] .crf-bar i{display:block;height:100%;border-radius:3px;background:var(--reef-accent)}',
+    '[data-coralreef-root] .crf-acts{flex:none;display:flex;gap:4px}',
+    '[data-coralreef-root] .crf-log-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}',
+    '[data-coralreef-root] .crf-log-head h3{margin:0!important}',
+    '[data-coralreef-root] .crf-counts{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}',
+    '[data-coralreef-root] .crf-counts li{display:inline-flex;gap:6px;align-items:baseline;padding:5px 12px;border-radius:999px;border:1px solid var(--reef-border);background:var(--reef-alt);font-size:13.5px}',
+    '[data-coralreef-root] .crf-counts li.crf-built{border-style:dashed}',
+    '[data-coralreef-root] .crf-log-group{margin-top:18px}',
+    '[data-coralreef-root] .crf-log-group h4{margin:0 0 8px;font-size:15px;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}',
+    '[data-coralreef-root] .crf-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px 8px}',
+    '[data-coralreef-root] .crf-tile{display:flex;flex-direction:column;gap:5px;min-width:0}',
+    '[data-coralreef-root] .crf-tile-art{border-radius:10px}',
+    '[data-coralreef-root] .crf-tile-missing .crf-tile-art{border:1.5px dashed;background:var(--reef-alt)}',
+    '[data-coralreef-root] .crf-tile-art b{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid;font:700 13px/1 Georgia,serif}',
+    '[data-coralreef-root] .crf-tile-name{font-size:12.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}',
+    '[data-coralreef-root] .crf-tile-missing .crf-tile-name{height:7px;width:58%;border-radius:4px;margin-top:4px}',
+    '@media (max-width:760px){[data-coralreef-root] .crf-idbody{grid-template-columns:minmax(0,1fr)}}',
+    // On a phone the two buttons move under the name, so long names stay on one or two lines.
+    '@media (max-width:640px){[data-coralreef-root] .crf-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:6px 10px}[data-coralreef-root] .crf-acts{grid-column:2}[data-coralreef-root] .crf-choice[aria-disabled=true]{padding-right:14px!important}[data-coralreef-root] .crf-no{position:static;transform:none;margin:4px 0 0 56px}[data-coralreef-root] .crf-reveal{grid-template-columns:minmax(0,1fr)}[data-coralreef-root] .crf-tiles{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}[data-coralreef-root] .crf-site-tag{font-size:11.5px}[data-coralreef-root] .crf-site-art{aspect-ratio:11/5}[data-coralreef-root] .crf-site-row{padding:8px 9px 10px;gap:8px}}',
+    '@media (prefers-reduced-motion:reduce){[data-coralreef-root] .crf-anim .crf-portrait{animation:none}[data-coralreef-root] .crf-bubbles{display:none}}'
+  ].join('');
+
+  // Site picker art: each dive site drawn with the Reef Future year picture,
+  // fed the site's own live coral, bleaching and seaweed. A restoration site
+  // shows its Reef Star frames; a bleaching reef shows the heat haze.
+  function siteArtInputs(site) {
+    var hl = site.health || {}, hard = P('hardBottom');
+    var row = { year: 0, coral: clamp(hl.coralCover || 0, 0, 1), bleached: clamp(hl.bleaching || 0, 0, 1), algae: clamp(hl.algae || 0, 0, 1), killed: 0,
+      dhw: (hl.bleaching || 0) >= 0.3 ? 8 : 0, hardBottom: hard };
+    var settings = { rubbleStabilization: !!site.restoration, herbivores: site.id === 'healthy' ? 'high' : site.id === 'damaged' ? 'low' : 'medium' };
+    // Frames sit on the ground they stabilized, which starts among the first live spots.
+    return { row: row, start: site.restoration ? { hardBottom: 0.17 } : row, settings: settings };
+  }
+  function SitePreview(props) {
+    var env = props.env, React = env.React, h = env.h, site = props.site;
+    var uid = 'crf-site-' + React.useId().replace(/:/g, '');
+    var hl = site && site.health ? site.health : {};
+    var key = site ? [site.id, hl.coralCover, hl.bleaching, hl.algae, !!site.restoration].join(':') : '';
+    var kids = React.useMemo(function () {
+      if (!site) return null;
+      var a = siteArtInputs(site);
+      return yearReefArt(h, uid, a.row, a.start, a.settings).kids;
+    }, [key, uid]);
+    if (!kids) return null;
+    // Framed on the reef floor, where the coral, bleaching and seaweed are.
+    return h('svg', { className: 'crf-site-art', viewBox: '0 ' + (YEAR_VB_H - 104) + ' 360 104', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': 'true', focusable: 'false' }, kids);
+  }
+
+  // Compass words for the diver's heading (0 = the reef's north, clockwise).
+  function facingName(__alloT, deg) {
+    var names = [__alloT('stem.coralreef.ex_face_n', 'Facing north'), __alloT('stem.coralreef.ex_face_ne', 'Facing northeast'), __alloT('stem.coralreef.ex_face_e', 'Facing east'),
+      __alloT('stem.coralreef.ex_face_se', 'Facing southeast'), __alloT('stem.coralreef.ex_face_s', 'Facing south'), __alloT('stem.coralreef.ex_face_sw', 'Facing southwest'),
+      __alloT('stem.coralreef.ex_face_w', 'Facing west'), __alloT('stem.coralreef.ex_face_nw', 'Facing northwest')];
+    return names[((Math.round((+deg || 0) / 45) % 8) + 8) % 8];
+  }
+  function lineIcon(h, d, size, extra) {
+    return h('svg', Object.assign({ width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } }, extra || {}), h('path', { d: d }));
+  }
+  var ICON_EYE = 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z';
+  var ICON_EYE_OFF = 'M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6';
+  var ICON_CHECK = 'M4 12.5l5 5L20 6.5';
+  var ICON_X = 'M6 6l12 12M18 6L6 18';
+  var ICON_RULER = 'M3 12h18M3 8v8M21 8v8M8 10v4M13 10v4';
+  // ── Direction cues and the dive light ──
+  // The dive reports each organism's bearing from the diver's heading (degrees,
+  // positive = to the right) and its rise above the diver's eyes (m). Ahead means
+  // within 45 degrees of the heading; above or below means 1.5 m or more.
+  var CUE_RISE_M = 1.5;
+  var ICON_TORCH = 'M3 10h7l3-3h2v10h-2l-3-3H3zM18 8.5l3-1.5M18 12h3.5M18 15.5l3 1.5';
+  // The dive tip the light lets students test (shown the first time it is switched on).
+  function redTip(__alloT) { return __alloT('stem.coralreef.tip_red', 'Where did the red go? Water soaks up red light first, so red fish look brown by about 10 m. A dive light brings the true colours back.'); }
+  function hasCue(n) { return !!(n && typeof n.bearingDeg === 'number' && isFinite(n.bearingDeg)); }
+  function cueWords(__alloT, n) {
+    if (!hasCue(n)) return null;
+    var a = Math.abs(n.bearingDeg), rise = +n.riseM || 0;
+    var where = (a < 45 ? 'a' : a >= 135 ? 'b' : n.bearingDeg > 0 ? 'r' : 'l') + (rise >= CUE_RISE_M ? 'u' : rise <= -CUE_RISE_M ? 'd' : '');
+    switch (where) {
+      case 'a': return __alloT('stem.coralreef.ex_dir_a', 'ahead');
+      case 'au': return __alloT('stem.coralreef.ex_dir_au', 'ahead and above you');
+      case 'ad': return __alloT('stem.coralreef.ex_dir_ad', 'ahead and below you');
+      case 'r': return __alloT('stem.coralreef.ex_dir_r', 'to your right');
+      case 'ru': return __alloT('stem.coralreef.ex_dir_ru', 'to your right and above you');
+      case 'rd': return __alloT('stem.coralreef.ex_dir_rd', 'to your right and below you');
+      case 'l': return __alloT('stem.coralreef.ex_dir_l', 'to your left');
+      case 'lu': return __alloT('stem.coralreef.ex_dir_lu', 'to your left and above you');
+      case 'ld': return __alloT('stem.coralreef.ex_dir_ld', 'to your left and below you');
+      case 'b': return __alloT('stem.coralreef.ex_dir_b', 'behind you');
+      case 'bu': return __alloT('stem.coralreef.ex_dir_bu', 'behind and above you');
+      default: return __alloT('stem.coralreef.ex_dir_bd', 'behind and below you');
+    }
+  }
+  // A top-down arrow in a ring: up is the way the diver faces. The words carry the meaning.
+  function cueArrow(h, n, size) {
+    var deg = Math.round(n.bearingDeg);
+    return h('svg', { className: 'crg-arrow', width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false', 'data-bearing': String(deg), style: { flexShrink: 0 } },
+      h('circle', { cx: 12, cy: 12, r: 10.5, strokeWidth: 1.3, opacity: 0.6 }),
+      h('path', { d: 'M12 17.5V6.5M7.8 10.7L12 6.5l4.2 4.2', transform: 'rotate(' + deg + ' 12 12)' }));
+  }
+  var LANE_CSS_G1 = [
+    '[data-coralreef-root] .crg-where{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;line-height:1.3;color:var(--reef-text);margin-top:2px}',
+    '[data-coralreef-root] .crg-cap{display:inline-block}',
+    '[data-coralreef-root] .crg-cap::first-letter{text-transform:uppercase}',
+    '[data-coralreef-root] .crg-tip{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-start;flex:1 1 100%;margin:2px 0 0;padding:10px 12px;border-radius:12px;border:1px solid var(--reef-border);background:var(--reef-alt);color:var(--reef-text);line-height:1.45}',
+    '[data-coralreef-root] .crg-tip p{margin:0;flex:1 1 220px;min-width:0}',
+    '[data-coralreef-root] .crg-short{display:none}',
+    '@media (max-width:520px){[data-coralreef-root] .crg-long{display:none}[data-coralreef-root] .crg-short{display:inline}}'
+  ].join('');
+  // The HUD repeats what the controls bar and the Nearby list already say,
+  // so it is hidden from screen readers and lets clicks reach the canvas.
+  function DiveHud(props) {
+    var env = props.env, h = env.h, __alloT = env.t, __alloFill = env.fill, s = props.snap;
+    if (!s || !s.diver) return null;
+    var deg = +s.diver.headingDeg || 0, todo = props.todo || 0;
+    // The arrow points to the nearest organism not identified yet (direction and distance only).
+    var log = (env.d && env.d.speciesLog) || {}, next = todo > 0 ? (s.nearby || []).filter(function (n) { return !log[n.speciesId]; })[0] : null;
+    return h('div', { className: 'crf-hud-anchor' },
+      h('div', { className: 'crf-hud', 'aria-hidden': 'true', 'data-dive-hud': 'true' },
+        h('span', { className: 'crf-pill' }, lineIcon(h, 'M12 3v15M7 13l5 5 5-5M5 21h14', 15), __alloFill(__alloT('stem.coralreef.ex_depth', 'Depth: {m} m'), { m: Math.round(s.diver.depthM) })),
+        h('span', { className: 'crf-pill' },
+          h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, transform: 'rotate(' + (-deg) + 'deg)' } },
+            h('circle', { cx: 12, cy: 12, r: 10, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 }),
+            h('path', { d: 'M12 4l3 8h-6z', fill: '#f87171' }), h('path', { d: 'M12 20l-3-8h6z', fill: 'currentColor' })),
+          facingName(__alloT, deg)),
+        s.nearby && s.nearby.length ? h('span', { className: 'crf-pill' }, h('b', null, '?'), todo > 0 ? __alloFill(__alloT('stem.coralreef.hud_todo', '{n} nearby to identify'), { n: todo }) : __alloT('stem.coralreef.hud_done', 'All nearby identified')) : null,
+        // On a phone the pointer keeps only its arrow and distance, so the HUD stays two rows.
+        hasCue(next) ? h('span', { className: 'crf-pill', 'data-hud-next': 'true' }, cueArrow(h, next, 16),
+          h('span', { className: 'crg-long' }, __alloFill(__alloT('stem.coralreef.hud_next', 'Nearest: {m} m {where}'), { m: Math.round(next.distanceM), where: cueWords(__alloT, next) })),
+          h('span', { className: 'crg-short' }, __alloFill(__alloT('stem.coralreef.ex_away_chip', '{m} m away'), { m: Math.round(next.distanceM) }))) : null));
+  }
+
+  // A species picture: a portrait drawn this session, else the shipped picture,
+  // else (when that is missing) one drawn now; a group icon when neither works.
+  function groupIconKind(g) { return g === 'coral' || g === 'structure' ? 'hub' : g === 'reptile' ? 'turtle' : g === 'fish' ? 'fish' : 'shell'; }
+  function SpeciesPortrait(props) {
+    var env = props.env, React = env.React, h = env.h, id = props.id;
+    var bk = React.useState(false), broken = bk[0], setBroken = bk[1];
+    var tk = React.useState(0), setTick = tk[1];
+    // noDraw: while the dive runs, a missing picture waits (as an icon) rather than start a second 3D renderer.
+    React.useEffect(function () {
+      if (!broken || THUMBS[id] || props.noDraw) return undefined;
+      var alive = true;
+      renderThumbs([id], function (done) { if (alive && done === id) setTick(function (n) { return n + 1; }); })
+        .then(function () { if (alive) setTick(function (n) { return n + 1; }); });
+      return function () { alive = false; };
+    }, [broken, id, !!props.noDraw]);
+    var pic = THUMBS[id], drawn = pic && pic !== 'none';
+    var src = drawn ? pic : broken ? null : companionUrl('assets/coralreef/species/' + id + '.webp');
+    if (src) {
+      return h('img', { src: src, alt: props.alt || '', width: 360, height: 240, loading: props.eager ? undefined : 'lazy', decoding: 'async',
+        onError: drawn ? undefined : function () { setBroken(true); } });
+    }
+    var meta = speciesMeta(id) || {};
+    return props.alt ? h('span', { role: 'img', 'aria-label': props.alt, style: { display: 'grid', placeItems: 'center' } }, reefIcon(h, groupIconKind(meta.group), props.iconSize || 26))
+      : reefIcon(h, groupIconKind(meta.group), props.iconSize || 26);
+  }
+
+  // Look closer: what is focused, its field marks as a checklist, and the three
+  // choices as large cards. A wrong guess sets that species' marks beside the
+  // organism's own; a right one reveals the species (SpeciesFacts compact).
+  function IdentifyCard(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
+    var f = props.focused, TX = props.TX, log = props.log, answer = props.answer;
+    var text = TX[f.speciesId], meta = speciesMeta(f.speciesId) || {};
+    var mine = answer && answer.uid === f.uid ? answer : null;
+    var right = !!(mine && mine.ok && text), known = !right && !!(log[f.speciesId] && text);
+    var tried = mine && !mine.ok ? (mine.all || [mine.tried]) : [];
+    var guess = mine && !mine.ok && TX[mine.tried] ? TX[mine.tried] : null;
+    var near = ((props.snap && props.snap.nearby) || []).filter(function (n) { return n.uid === f.uid; })[0];
+    var m = Math.round(f.distanceM), marks = text && text.marks ? text.marks : [];
+    var chips = [];
+    if (known) chips.push(h('li', { key: 'd' }, lineIcon(h, ICON_RULER, 14), __alloFill(__alloT('stem.coralreef.ex_away_chip', '{m} m away'), { m: m })));
+    if (near) chips.push(h('li', { key: 'v' }, lineIcon(h, near.inView ? ICON_EYE : ICON_EYE_OFF, 14), near.inView ? __alloT('stem.coralreef.ex_in_view_chip', 'In view') : __alloT('stem.coralreef.ex_out_view_chip', 'Out of view')));
+    if (hasCue(f)) chips.push(h('li', { key: 'w', 'data-cue': 'true' }, cueArrow(h, f, 14), h('span', { className: 'crg-cap' }, cueWords(__alloT, f))));
+    var head = right ? null : h('div', { className: 'crf-idhead' },
+      known ? h('span', { className: 'crf-idpic', 'aria-hidden': 'true' }, h(SpeciesPortrait, { env: env, id: f.speciesId, noDraw: true }))
+        : h('span', { className: 'crf-q', 'aria-hidden': 'true', style: { background: P.cardAlt, color: P.text, border: '2px dashed ' + P.ctlBorder } }, '?'),
+      h('div', { style: { minWidth: 0 } },
+        h('p', { className: 'crf-idline' }, known ? __alloFill(__alloT('stem.coralreef.ex_known', 'This is a {name}. It is already in your log.'), { name: text.name })
+          : m < 1 ? __alloT('stem.coralreef.ex_unknown_close', 'Something right beside you. What is it?')
+            : __alloFill(__alloT('stem.coralreef.ex_unknown', 'Something about {m} m away. What is it?'), { m: m })),
+        known && meta.scientific ? h('p', { style: { margin: 0, fontStyle: 'italic', color: P.muted } }, meta.scientific) : null,
+        chips.length ? h('ul', { className: 'crf-chips' }, chips) : null));
+    function checklist(list, icon) {
+      return h('ul', { className: 'crf-check' }, list.map(function (k, i) { return h('li', { key: i }, lineIcon(h, icon, 16, { style: { flexShrink: 0, color: P.accent } }), h('span', null, k)); }));
+    }
+    var seen = marks.length ? h('div', { className: 'crf-panel' },
+      h('h4', null, __alloT('stem.coralreef.ex_marks_title', 'What you can see')), checklist(marks, ICON_EYE)) : null;
+    var compare = guess && guess.marks && guess.marks.length ? h('div', { className: 'crf-panel', 'data-compare': 'true', style: { background: P.card, borderStyle: 'dashed', borderColor: P.ctlBorder } },
+      h('h4', null, __alloFill(__alloT('stem.coralreef.ex_compare_title', 'Field marks of your guess, {name}'), { name: guess.name })), checklist(guess.marks, ICON_X)) : null;
+    var choose = !known && !right ? h('div', { className: 'crf-choose' },
+      h('h4', null, __alloT('stem.coralreef.ex_pick_title', 'Which one is it?')),
+      h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.ex_choices', 'Identify it'), className: 'crf-choices' },
+        idChoices(f.speciesId, f.uid).map(function (id) {
+          // A missed choice keeps its focus (aria-disabled, not disabled), so keyboard users stay in place.
+          var no = tried.indexOf(id) >= 0, sm = speciesMeta(id), noteId = props.revealId + '-no-' + id;
+          return h('div', { key: id, className: 'crf-choice-wrap' },
+            h('button', { type: 'button', className: 'crf-choice', 'aria-disabled': no ? 'true' : undefined, 'aria-describedby': no ? noteId : undefined,
+              style: btnStyle(P, false, { width: '100%', minHeight: 60, display: 'flex', alignItems: 'center', gap: 12, textAlign: 'start', fontSize: 16, padding: '10px 14px',
+                background: no ? P.card : P.cardAlt, borderStyle: no ? 'dashed' : 'solid', borderColor: no ? P.bad : P.ctlBorder, cursor: no ? 'default' : 'pointer' }),
+              onClick: function () { if (!no) props.onChoose(id); } },
+              h('span', { className: 'crf-cname', 'data-sci': sm && sm.scientific ? sm.scientific : undefined }, TX[id] ? TX[id].name : id)),
+            no ? h('span', { id: noteId, className: 'crf-no', style: { color: P.bad } }, lineIcon(h, ICON_X, 14), __alloT('stem.coralreef.ex_not_this', 'Not this one')) : null);
+        })),
+      mine && !mine.ok ? h('p', { role: 'status', style: { margin: '10px 0 0', color: P.bad, fontWeight: 600 } },
+        __alloT('stem.coralreef.ex_wrong', 'Not quite. Compare the field marks with the species guide and try again.')) : null) : null;
+    return h('div', { className: 'crf-id', 'data-id-state': right ? 'right' : known ? 'known' : 'new' },
+      right ? h(SpeciesFacts, { env: env, id: f.speciesId, TX: TX, compact: true, health: f.health, headingId: props.revealId }) : head,
+      seen || compare || choose ? h('div', { className: 'crf-idbody' + (choose ? '' : ' crf-one') }, seen || compare ? h('div', { className: 'crf-stack' }, seen, compare) : null, choose) : null,
+      h('div', { className: 'crf-actions' },
+        h('button', { type: 'button', style: btnStyle(P, false), onClick: props.onSwim }, __alloT('stem.coralreef.ex_swim_to', 'Swim closer')),
+        h('button', { type: 'button', style: btnStyle(P, false), onClick: props.onNext }, __alloT('stem.coralreef.ex_next', 'Next organism'))));
+  }
+
+  // Nearby: one compact row per organism. An unidentified one shows only a "?"
+  // (never its group or species); an identified one shows its picture and name.
+  var NEAR_BAR_M = 8; // the dive lists organisms within about 8 m
+  function NearbyList(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, TX = props.TX, log = props.log, ctl = props.ctl;
+    var list = props.snap && props.snap.nearby ? props.snap.nearby : [];
+    if (!list.length) return h('p', { style: mutedStyle(P, { margin: 0 }) }, __alloT('stem.coralreef.ex_nothing_near', 'Nothing close by. Swim on to find more.'));
+    var unknownName = __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet');
+    var todo = list.filter(function (n) { return !(log[n.speciesId] && TX[n.speciesId]); }).length;
+    return h('div', null,
+      h('p', { style: mutedStyle(P, { margin: '0 0 8px', fontSize: 14 }) }, __alloFill(__alloT('stem.coralreef.ex_near_summary', '{n} nearby, {k} still to identify.'), { n: list.length, k: todo })),
+      h('ul', { className: 'crf-near' }, list.map(function (n, index) {
+        var known = !!(log[n.speciesId] && TX[n.speciesId]), name = known ? TX[n.speciesId].name : unknownName;
+        var isFocus = props.focusedUid === n.uid, m = Math.round(n.distanceM), where = cueWords(__alloT, n), v = { n: index + 1, name: name, m: m, where: where };
+        var close = Math.round(clamp(1 - (n.distanceM || 0) / NEAR_BAR_M, 0.08, 1) * 100);
+        // Button names carry the direction words too, when the dive reports them.
+        var lookLabel = where ? (n.inView ? __alloT('stem.coralreef.ex_look_label_dir_in', 'Look: organism {n}, {name}, {m} m, in view, {where}') : __alloT('stem.coralreef.ex_look_label_dir_out', 'Look: organism {n}, {name}, {m} m, out of view, {where}'))
+          : n.inView ? __alloT('stem.coralreef.ex_look_label_in', 'Look: organism {n}, {name}, {m} m, in view') : __alloT('stem.coralreef.ex_look_label_out', 'Look: organism {n}, {name}, {m} m, out of view');
+        var swimLabel = where ? (n.inView ? __alloT('stem.coralreef.ex_swim_label_dir_in', 'Swim to: organism {n}, {name}, {m} m, in view, {where}') : __alloT('stem.coralreef.ex_swim_label_dir_out', 'Swim to: organism {n}, {name}, {m} m, out of view, {where}'))
+          : n.inView ? __alloT('stem.coralreef.ex_swim_label_in', 'Swim to: organism {n}, {name}, {m} m, in view') : __alloT('stem.coralreef.ex_swim_label_out', 'Swim to: organism {n}, {name}, {m} m, out of view');
+        return h('li', { key: n.uid, className: 'crf-row', 'aria-current': isFocus ? 'true' : undefined, 'data-known': known ? 'true' : 'false' },
+          h('span', { className: 'crf-mark', 'aria-hidden': 'true', style: known ? { background: '#0f4655', color: '#cfeee4' } : { background: P.card, color: P.text, border: '1.5px dashed ' + P.ctlBorder } },
+            known ? h(SpeciesPortrait, { env: env, id: n.speciesId, iconSize: 18, noDraw: true }) : '?'),
+          h('span', { className: 'crf-what' },
+            h('span', { className: 'crf-name' }, name),
+            h('span', { className: 'crf-dist' },
+              h('span', { className: 'crf-bar', 'aria-hidden': 'true' }, h('i', { style: { width: close + '%' } })),
+              lineIcon(h, n.inView ? ICON_EYE : ICON_EYE_OFF, 13),
+              __alloFill(n.inView ? __alloT('stem.coralreef.ex_dist_ahead', '{m} m, in view') : __alloT('stem.coralreef.ex_dist_behind', '{m} m, out of view'), { m: m })),
+            where ? h('span', { className: 'crg-where', 'data-cue': 'true' }, cueArrow(h, n, 15), where) : null),
+          h('span', { className: 'crf-acts' },
+            h('button', { type: 'button', 'aria-label': __alloFill(lookLabel, v),
+              style: btnStyle(P, isFocus, { minHeight: 36, padding: '5px 11px', fontSize: 14 }), onClick: function () { if (ctl()) ctl().focus(n.uid); } }, __alloT('stem.coralreef.ex_look', 'Look')),
+            h('button', { type: 'button', 'aria-label': __alloFill(swimLabel, v),
+              style: btnStyle(P, false, { minHeight: 36, padding: '5px 11px', fontSize: 14 }), onClick: function () { if (ctl()) ctl().swimTo(n.uid); } }, __alloT('stem.coralreef.ex_swim', 'Swim to'))));
+      })));
+  }
+
+  // The species log as a collection: every species has a place; a found one
+  // shows its picture and name, one not found yet is a blank "?" card. People
+  // build restoration structures, so they are counted apart from living species.
+  function SpeciesLogCard(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, TX = props.TX, log = props.log;
+    var GN = groupNames(__alloT);
+    // Open on wide screens; folded on a phone, where the grid is long.
+    var op = React.useState(function () { try { return !(window.matchMedia && window.matchMedia('(max-width: 640px)').matches); } catch (e) { return true; } });
+    var open = op[0], setOpen = op[1];
+    var uid = 'crf-log-' + React.useId().replace(/:/g, '');
+    var groups = SPECIES_GROUPS.map(function (g) {
+      var all = SPECIES_META.filter(function (m) { return m.group === g; });
+      return { id: g, all: all, found: all.filter(function (m) { return !!log[m.id]; }).length };
+    });
+    function countText(g) { return __alloFill(__alloT('stem.coralreef.g_group_found', '{found} of {n} found'), { found: g.found, n: g.all.length }); }
+    return h('section', { className: 'crf-log', 'data-species-log': 'true', style: cardStyle(P), 'aria-labelledby': uid + '-t' },
+      h('div', { className: 'crf-log-head' },
+        h('h3', { id: uid + '-t', style: h3Style(P) }, __alloT('stem.coralreef.ex_log_title', 'Your species log')),
+        h('button', { type: 'button', 'aria-expanded': open ? 'true' : 'false', 'aria-controls': uid + '-g', style: btnStyle(P, false), onClick: function () { setOpen(!open); } },
+          open ? __alloT('stem.coralreef.ex_log_hide', 'Hide the log') : __alloT('stem.coralreef.ex_log_show', 'Show the log'))),
+      h('ul', { className: 'crf-counts', 'aria-label': __alloT('stem.coralreef.ex_log_counts', 'Found so far, by group') }, groups.map(function (g) {
+        return h('li', { key: g.id, className: g.id === 'structure' ? 'crf-built' : undefined, 'data-count': g.id, style: g.id === 'structure' ? { borderColor: P.ctlBorder } : undefined },
+          h('span', { style: { fontWeight: 650 } }, GN[g.id]), h('span', { style: { color: P.muted } }, countText(g)));
+      })),
+      h('div', { id: uid + '-g', hidden: !open },
+        groups.map(function (g) {
+          return h('div', { key: g.id, className: 'crf-log-group', 'data-group': g.id },
+            h('h4', null, h('span', null, GN[g.id]), h('span', { style: { color: P.muted, fontWeight: 400, fontSize: 13.5 } }, countText(g))),
+            h('ul', { className: 'crf-tiles' }, g.all.map(function (m) {
+              var tx = TX[m.id] || {};
+              if (log[m.id]) {
+                return h('li', { key: m.id, className: 'crf-tile', 'data-found': m.id },
+                  h('span', { className: 'crf-tile-art', 'aria-hidden': 'true' }, h(SpeciesPortrait, { env: env, id: m.id, iconSize: 30, noDraw: props.diving })),
+                  h('span', { className: 'crf-tile-name' }, guideShortName(tx.name || m.id)));
+              }
+              // Not found yet: a place in the album with no name, hidden from screen readers (the count says it).
+              return h('li', { key: m.id, className: 'crf-tile crf-tile-missing', 'aria-hidden': 'true' },
+                h('span', { className: 'crf-tile-art', style: { color: P.muted, borderColor: P.border } }, h('span', { style: { opacity: 0.3, display: 'grid' } }, reefIcon(h, groupIconKind(g.id), 36)), h('b', { style: { color: P.text, borderColor: P.ctlBorder, background: P.card } }, '?')),
+                h('span', { className: 'crf-tile-name', style: { background: P.border, opacity: env.theme === 'contrast' ? 0.45 : 1 } }));
+            })));
+        }),
+        h('p', { style: mutedStyle(P, { margin: '14px 0 0', fontSize: 13.5 }) }, __alloT('stem.coralreef.ex_log_structures', 'Restoration structures are built by people, so they are counted apart from the living species.'))));
+  }
+
   // ── Species guide ────────────────────────────────────────────────────────
   var THUMBS = {};
-  var thumbJob = null;
+  var thumbJob = null, thumbQueue = [], thumbWatchers = [];
+  // The portrait set: open water lit from above with a gentle vignette, and a
+  // soft contact shadow for species that sit on the bottom. Drawn once per job
+  // on 2D canvases; without a 2D canvas the flat water colour stays.
+  function thumbLook(THREE) {
+    var out = { backdrop: null, shadow: null, dispose: function () {} };
+    try {
+      var c = document.createElement('canvas'); c.width = 360; c.height = 240;
+      var g = c.getContext && c.getContext('2d');
+      if (!g || typeof g.createImageData !== 'function') return out;
+      // Drawn pixel by pixel from whole-number row colours minus a column shade:
+      // canvas gradients are dithered, and that noise made each PNG several times larger.
+      var img = g.createImageData(360, 240), px = img.data, SHAFTS = [[70, 40, 10, 66], [176, 18, 126, 52], [268, 30, 236, 74]], shade = [];
+      for (var x = 0; x < 360; x++) { var e = Math.max(0, 1 - x / 100, 1 - (359 - x) / 100); shade.push(Math.round(18 * e * e)); }
+      for (var y = 0; y < 240; y++) {
+        var v = y / 239, lo = v < 0.5 ? v * 2 : (v - 0.5) * 2, row = v < 0.5 ? [58 + (27 - 58) * lo, 139 + (97 - 139) * lo, 156 + (114 - 156) * lo] : [27 + (13 - 27) * lo, 97 + (61 - 97) * lo, 114 + (76 - 114) * lo];
+        // Light from the surface, then a hint of sandy floor at the bottom.
+        var sky = 0.3 * Math.max(0, 1 - y / 130), fl = y > 170 ? 0.16 * (y - 170) / 69 : 0, lit = [206, 244, 236], sand = [120, 150, 130], c3 = [0, 0, 0], ray = [0, 0, 0];
+        for (var ch = 0; ch < 3; ch++) {
+          var cv = row[ch] + (lit[ch] - row[ch]) * sky; cv += (sand[ch] - cv) * fl;
+          c3[ch] = Math.round(cv); ray[ch] = Math.round(([222, 250, 244][ch] - cv) * 0.05);
+        }
+        for (x = 0; x < 360; x++) {
+          var inRay = false;
+          // Three faint light shafts slanting down from the surface.
+          for (var k = 0; k < 3; k++) { var sh = SHAFTS[k], x0 = sh[0] + (sh[2] - sh[0]) * v; if (x >= x0 && x < x0 + sh[1] + (sh[3] - sh[1]) * v) inRay = true; }
+          var o = (y * 360 + x) * 4;
+          for (ch = 0; ch < 3; ch++) px[o + ch] = clamp(c3[ch] + (inRay ? ray[ch] : 0) - shade[x], 0, 255);
+          px[o + 3] = 255;
+        }
+      }
+      g.putImageData(img, 0, 0);
+      var bg = new THREE.CanvasTexture(c);
+      if (THREE.sRGBEncoding) bg.encoding = THREE.sRGBEncoding;
+      out.backdrop = bg;
+      var sc = document.createElement('canvas'); sc.width = 64; sc.height = 64;
+      var sg = sc.getContext('2d'), blur = sg.createRadialGradient(32, 32, 0, 32, 32, 32);
+      blur.addColorStop(0, 'rgba(255,255,255,1)'); blur.addColorStop(0.55, 'rgba(255,255,255,0.75)'); blur.addColorStop(0.8, 'rgba(255,255,255,0.25)'); blur.addColorStop(1, 'rgba(255,255,255,0)');
+      sg.fillStyle = blur; sg.fillRect(0, 0, 64, 64);
+      var st = new THREE.CanvasTexture(sc), geo = new THREE.PlaneGeometry(1, 1);
+      var mat = new THREE.MeshBasicMaterial({ map: st, color: 0x021319, transparent: true, opacity: 0.8, depthWrite: false });
+      out.shadow = { geo: geo, mat: mat };
+      out.dispose = function () { bg.dispose(); st.dispose(); geo.dispose(); mat.dispose(); };
+    } catch (e) { out.backdrop = null; out.shadow = null; }
+    return out;
+  }
   // Renders one small picture per species from the 3D models, once, off screen.
+  // Ids asked for while a job runs join its queue; a later request starts a new job.
   function renderThumbs(ids, onEach) {
+    ids.forEach(function (id) { if (!THUMBS[id] && thumbQueue.indexOf(id) < 0) thumbQueue.push(id); });
+    if (typeof onEach === 'function') thumbWatchers.push(onEach);
     if (thumbJob) return thumbJob;
+    if (!thumbQueue.length) { thumbWatchers = []; return Promise.resolve(); }
     thumbJob = ensureSpecies().then(function (THREE) {
       var canvas = document.createElement('canvas'); canvas.width = 360; canvas.height = 240;
       var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true, alpha: false });
       renderer.setPixelRatio(1); renderer.setSize(360, 240, false);
       var derivatives = !!((renderer.capabilities && renderer.capabilities.isWebGL2) || (renderer.extensions && renderer.extensions.has && renderer.extensions.has('OES_standard_derivatives')));
       if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
-      var scene = new THREE.Scene(); scene.background = new THREE.Color(0x103e4b);
+      var look = thumbLook(THREE);
+      var scene = new THREE.Scene(); scene.background = look.backdrop || new THREE.Color(0x103e4b);
       scene.add(new THREE.HemisphereLight(0xdff6ff, 0x3a5f6a, 1.1));
       var sun = new THREE.DirectionalLight(0xffffff, 1.0); sun.position.set(2, 4, 3); scene.add(sun);
       var camera = new THREE.PerspectiveCamera(35, 1.5, 0.01, 100);
-      var queue = ids.filter(function (id) { return !THUMBS[id]; });
       return new Promise(function (resolve) {
+        function finish() {
+          try { look.dispose(); renderer.dispose(); if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (e) {}
+          thumbJob = null; thumbWatchers = []; resolve();
+        }
         function next() {
-          var id = queue.shift();
-          if (!id) { try { renderer.dispose(); if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (e) {} resolve(); return; }
-          try {
-            var info = window.Reef3DSpecies.info(id) || {}, model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
-            var r = Math.max(0.05, model.radius || 0.3), sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
-            scene.add(model.root);
-            // A species may name its own view (info.portrait, in model radii): a manta reads from above.
-            var pv = info.portrait && info.portrait.dir && info.portrait.dir.length === 3 ? info.portrait : null;
-            if (pv) camera.position.set(pv.dir[0] * r, pv.dir[1] * r, pv.dir[2] * r);
-            else camera.position.set(sessile ? r * 1.6 : 0, sessile ? r * 1.4 : r * 0.3, r * 3.2);
-            camera.lookAt(0, pv ? (pv.lookY || 0) * r : sessile ? r * 0.4 : 0, 0);
-            renderer.render(scene, camera);
-            THUMBS[id] = canvas.toDataURL('image/png');
-            scene.remove(model.root); model.dispose();
-            onEach(id);
-          } catch (e) { THUMBS[id] = 'none'; }
+          var id = thumbQueue.shift();
+          if (!id) { finish(); return; }
+          if (!THUMBS[id]) {
+            try {
+              var info = (window.Reef3DSpecies.info && window.Reef3DSpecies.info(id)) || {}, model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
+              var r = Math.max(0.05, model.radius || 0.3), sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
+              scene.add(model.root);
+              // Bottom dwellers get a soft shadow on the sand under their footprint.
+              var shadow = null;
+              if (look.shadow && (sessile || info.habit === 'bottom' || (info.habit === 'crevice' && info.group === 'invertebrate'))) {
+                var box = new THREE.Box3().setFromObject(model.root);
+                if (!box.isEmpty()) {
+                  shadow = new THREE.Mesh(look.shadow.geo, look.shadow.mat);
+                  shadow.rotation.x = -Math.PI / 2;
+                  shadow.position.set((box.min.x + box.max.x) / 2, box.min.y + 0.004 * r, (box.min.z + box.max.z) / 2);
+                  shadow.scale.set((box.max.x - box.min.x) * 1.45 + r * 0.35, (box.max.z - box.min.z) * 1.45 + r * 0.35, 1);
+                  scene.add(shadow);
+                }
+              }
+              // A species may name its own view (info.portrait, in model radii): a manta reads from above.
+              var pv = info.portrait && info.portrait.dir && info.portrait.dir.length === 3 ? info.portrait : null;
+              if (pv) camera.position.set(pv.dir[0] * r, pv.dir[1] * r, pv.dir[2] * r);
+              else camera.position.set(sessile ? r * 1.6 : 0, sessile ? r * 1.4 : r * 0.3, r * 3.2);
+              camera.lookAt(0, pv ? (pv.lookY || 0) * r : sessile ? r * 0.4 : 0, 0);
+              renderer.render(scene, camera);
+              THUMBS[id] = canvas.toDataURL('image/png');
+              if (shadow) scene.remove(shadow);
+              scene.remove(model.root); model.dispose();
+            } catch (e) { THUMBS[id] = 'none'; }
+            thumbWatchers.slice().forEach(function (fn) { try { fn(id); } catch (e) {} });
+          }
           setTimeout(next, 0);
         }
         next();
       });
     }).catch(function () {
-      // Settle every placeholder, including a guide reopened during this job.
-      ids.forEach(function (id) { if (!THUMBS[id]) THUMBS[id] = 'none'; });
-      thumbJob = null;
+      // Settle every placeholder, including ids added by a guide reopened during this job.
+      ids.concat(thumbQueue).forEach(function (id) { if (!THUMBS[id]) THUMBS[id] = 'none'; });
+      thumbQueue = []; thumbWatchers = []; thumbJob = null;
     });
     return thumbJob;
   }
 
+  // What a bleached or recently dead organism in the dive is telling the student (sources: hobbs2013,
+  // beldade2017, brahmi2021 in sourceList; the coral lines restate the bleaching card and the field guide).
+  function healthNote(id, meta, health, __alloT) {
+    if (health === 'bleached' && id === 'magnificent_anemone') return __alloT('stem.coralreef.ex_health_anemone_bleached', 'This anemone has bleached: the heat drove out the algae in its tentacles. Its clownfish stay, and it can get its color back within a few months if the water cools.');
+    if (health === 'bleached' && id === 'giant_clam') return __alloT('stem.coralreef.ex_health_clam_bleached', 'This giant clam has bleached: it has lost the algae that color its mantle.');
+    if (health === 'bleached' && meta && meta.group === 'coral') return __alloT('stem.coralreef.ex_health_coral_bleached', 'This coral has bleached. It is still alive, and its algae can return if the water cools in time.');
+    if (health === 'dead' && meta && meta.group === 'coral') return __alloT('stem.coralreef.ex_health_coral_dead', 'This coral died recently: its skeleton is still white, and a fuzzy film of turf algae is starting to cover it.');
+    return null;
+  }
+  // What the dive lets a student watch this animal do (sources: fishaus-labroides, bansemer2002,
+  // lof-cleaning, armstrong2021, perry2015 via the parrotfish fact, swot2024, donate2026, nps-cots,
+  // trnski2020 and hayashi2019 in sourceList).
+  function watchNote(id, __alloT) {
+    if (id === 'cleaner_wrasse') return __alloT('stem.coralreef.ex_watch_cleaner', 'Watch the cleaning station: fish come by, hold still with their fins spread, and the cleaner picks parasites off their skin, gills and even mouths.');
+    if (id === 'parrotfish' || id === 'bumphead_parrotfish') return __alloT('stem.coralreef.ex_watch_parrotfish', 'Look for the little puffs where it bites the rock: parrotfish grind dead coral and rock into sand.');
+    if (id === 'green_turtle' || id === 'hawksbill_turtle') return __alloT('stem.coralreef.ex_watch_turtle', 'Sea turtles breathe air, so now and then one swims up to the surface for a few breaths and glides back down. A busy turtle in shallow water may come up every minute or two; a resting one can stay down for hours.');
+    if (id === 'crown_of_thorns') return __alloT('stem.coralreef.ex_watch_cots', 'See the bright white patch beside it? That is coral it has already eaten: only the white skeleton is left.');
+    if (id === 'clownfish') return __alloT('stem.coralreef.ex_watch_clownfish', 'Swim close and watch: anemonefish often duck down into the stinging tentacles, where predators cannot follow.');
+    if (id === 'reef_manta') return __alloT('stem.coralreef.ex_watch_manta', 'Mantas visit cleaning stations too, circling slowly over the reef while cleaner wrasse pick at them.');
+    return null;
+  }
   function SpeciesFacts(props) {
     var env = props.env, h = env.h, P = env.P, __alloT = env.t;
     var TX = props.TX || speciesText(__alloT), meta = speciesMeta(props.id), text = TX[props.id], IU = iucnNames(__alloT);
     if (!meta || !text) return null;
-    return h('div', { style: { marginTop: props.compact ? 8 : 0 } },
-      props.compact ? h('p', { style: { margin: '0 0 4px', fontWeight: 700, color: P.good } }, __alloT('stem.coralreef.ex_correct', 'Correct!'), ' ', text.name, meta.scientific ? h('span', { style: { fontStyle: 'italic', fontWeight: 400, color: P.muted } }, ' (' + meta.scientific + ')') : null) : null,
+    if (props.compact) {
+      // After a right answer: the portrait, a small burst of bubbles (only with motion on), and the facts.
+      var reduce = !!(env.ctx && env.ctx.reduceMotion);
+      return h('div', { className: 'crf-reveal' + (reduce ? '' : ' crf-anim'), 'data-reveal': props.id, style: { borderColor: P.good } },
+        h('figure', { className: 'crf-portrait' },
+          h(SpeciesPortrait, { env: env, id: props.id, eager: true, iconSize: 64, alt: env.fill(__alloT('stem.coralreef.g_pic_alt', '3D model of a {name}'), { name: text.name }) }),
+          reduce ? null : h('span', { className: 'crf-bubbles', 'aria-hidden': 'true' }, [0, 1, 2, 3, 4, 5, 6].map(function (i) {
+            var s = 6 + (i * 5) % 9;
+            return h('i', { key: i, style: { left: (9 + i * 12.5) + '%', width: s, height: s, animationDelay: (i * 0.13 + (i % 2) * 0.2).toFixed(2) + 's' } });
+          }))),
+        h('div', { style: { minWidth: 0 } },
+          h('p', { className: 'crf-good', style: { color: P.good, borderColor: P.good } }, h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M4 12.5l5 5L20 6.5' })),
+            __alloT('stem.coralreef.ex_correct', 'Correct!')),
+          h('h4', { id: props.headingId, tabIndex: -1, style: { margin: '8px 0 0', fontSize: 22, lineHeight: 1.25, letterSpacing: '-0.02em', color: P.text } }, text.name),
+          meta.scientific ? h('p', { style: { margin: '2px 0 8px', fontStyle: 'italic', color: P.muted } }, meta.scientific) : null,
+          h('p', { style: { margin: '8px 0 6px' } }, text.role),
+          h('p', { style: { margin: '0 0 6px' } }, h('strong', null, __alloT('stem.coralreef.g_fact', 'Did you know? ')), text.fact),
+          healthNote(props.id, meta, props.health, __alloT) ? h('p', { 'data-health-note': props.health, style: { margin: '0 0 6px' } }, healthNote(props.id, meta, props.health, __alloT)) : null,
+          watchNote(props.id, __alloT) ? h('p', { 'data-watch-note': props.id, style: { margin: '0 0 6px' } }, h('strong', null, __alloT('stem.coralreef.ex_watch_label', 'Watch for this: ')), watchNote(props.id, __alloT)) : null,
+          meta.iucn && IU[meta.iucn] ? h('p', { style: mutedStyle(P, { margin: '0 0 6px' }) }, __alloT('stem.coralreef.g_status', 'IUCN Red List: '), IU[meta.iucn], meta.iucnYear ? ' (' + meta.iucnYear + ')' : '') : null,
+          h('p', { style: { margin: 0, fontWeight: 600, color: P.good } }, __alloT('stem.coralreef.ex_added_log', 'Added to your species log.'))));
+    }
+    return h('div', { style: { marginTop: 0 } },
       // brief: the guide's compact cards keep the field marks and drop the longer text.
       props.brief ? null : h('p', { style: { margin: '0 0 4px' } }, text.role),
       props.brief ? null : h('p', { style: { margin: '0 0 4px' } }, h('strong', null, __alloT('stem.coralreef.g_fact', 'Did you know? ')), text.fact),
@@ -5034,8 +6650,10 @@
       __alloT('stem.coralreef.tip_touch', 'Hover, don\'t touch. Coral is a thin layer of living animals over a stony skeleton, and a fin kick can break it.'),
       __alloT('stem.coralreef.tip_camera', 'Divers carrying cameras touched the reef about four times as often as divers without them, so take extra care when taking photos.'),
       __alloT('stem.coralreef.tip_feed', 'Never chase, touch or feed animals. It stresses them, can spread disease, and changes how they behave.'),
+      __alloT('stem.coralreef.tip_calm', 'Swim slowly and hang still to see more fish. Fish swim away sooner from a diver who rushes straight at them, and on reefs where people spearfish, the kinds of fish they hunt are warier still.'),
       __alloT('stem.coralreef.tip_buddy', 'Real divers always dive with a buddy and stay within reach for the whole dive.'),
       __alloT('stem.coralreef.tip_red', 'Where did the red go? Water soaks up red light first, so red fish look brown by about 10 m. A dive light brings the true colours back.'),
+      __alloT('stem.coralreef.tip_mask', 'Through your mask, fish look about a third bigger than they really are, and things close to you look nearer than they are. Light bends as it passes from the water through the glass into the air inside your mask.'),
       __alloT('stem.coralreef.tip_triangle', 'You are in the Coral Triangle, home to about three quarters of the world\'s reef-building coral species.')
     ];
   }

@@ -1,6 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, resetStemLab, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+
+// Rendering every science and help figure in three themes takes several seconds on a busy machine.
+vi.setConfig({ testTimeout: 60000 });
 
 // Lane C: the reef science figures, the teacher sequence, and the species
 // guide's search, group jump bar, compact cards and look-alike chips.

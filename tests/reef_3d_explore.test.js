@@ -13,8 +13,8 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'focus', 'focusNext', 'focusPrevious', 'getState', 'resize', 'setInput', 'setPaused', 'setView', 'swimTo'];
-const STATE_KEYS = ['diver', 'drawCalls', 'focused', 'frames', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view'];
+const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'focus', 'focusNext', 'focusPrevious', 'getState', 'resize', 'setInput', 'setLight', 'setPaused', 'setView', 'swimTo'];
+const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'moments', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
   { id: 'staghorn_coral', count: 4 }, { id: 'giant_moray', count: 1 }, { id: 'green_turtle', count: 2 }, { id: 'reef_manta', count: 1 },
@@ -216,13 +216,13 @@ describe('Reef3DExplore contract', () => {
     expect(t.canvas.tabIndex).toBe(0);
     const s = t.controller.getState();
     expect(Object.keys(s).sort()).toEqual(STATE_KEYS);
-    expect(s).toMatchObject({ ready: true, paused: false, view: 'third', quality: 'low', reducedMotion: false, focused: null, drawCalls: 7, triangles: 1234 });
+    expect(s).toMatchObject({ ready: true, paused: false, view: 'third', quality: 'low', reducedMotion: false, light: false, focused: null, drawCalls: 7, triangles: 1234 });
     expect(Object.keys(s.diver).sort()).toEqual(['depthM', 'headingDeg', 'x', 'y', 'z']);
     expect(s.diver.depthM).toBeCloseTo(-s.diver.y, 1);
     expect(s.diver.depthM).toBeGreaterThan(3);
     expect(Array.isArray(s.nearby)).toBe(true);
     expect(s.nearby.length).toBeLessThanOrEqual(12);
-    s.nearby.forEach((n) => { expect(Object.keys(n).sort()).toEqual(['distanceM', 'inView', 'speciesId', 'uid']); expect(n.distanceM).toBeLessThanOrEqual(8); });
+    s.nearby.forEach((n) => { expect(Object.keys(n).sort()).toEqual(['bearingDeg', 'distanceM', 'health', 'inView', 'riseM', 'speciesId', 'uid']); expect(n.distanceM).toBeLessThanOrEqual(8); });
     for (let i = 1; i < s.nearby.length; i++) expect(s.nearby[i].distanceM).toBeGreaterThanOrEqual(s.nearby[i - 1].distanceM);
     expect(t.states.length).toBeGreaterThan(0);
     const high = runtime({ quality: 'high' });

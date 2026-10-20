@@ -11,7 +11,9 @@
   'use strict';
   var TAU = Math.PI * 2;
   var FAMILIES = ['parrotfish', 'surgeonfish', 'butterflyfish', 'grouper', 'snapper'];
-  var DIVER = { yaw: -Math.PI / 2 + 0.38, pitch: 0.86, dist: 2.0 };
+  // The diver hangs about 1.3 m above the reef, looking along the tape and down at the point,
+  // with the reef running on into blue water beyond it.
+  var DIVER = { yaw: -Math.PI / 2 + 0.42, pitch: 0.6, dist: 2.1 };
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function damp(rate, dt) { return 1 - Math.exp(-rate * dt); }
   function num(v, fallback) { if (v === null || v === undefined || v === '') return fallback; v = Number(v); return isFinite(v) ? v : fallback; }
@@ -221,6 +223,125 @@
     });
   }
 
+  // ---- Parallel shader warm-up (as in Reef3DExplore) -------------------------------
+  // r128 links each new program and at once reads back its uniforms, which waits
+  // for the driver, so a cold first render links every program in turn with the
+  // page frozen (about 5 s for the survey reef on a laptop GPU). With
+  // KHR_parallel_shader_compile that read is held back instead: renderer.compile
+  // creates the programs, the driver links them on its own threads, and poll()
+  // says when all are done; the first real render then finds them linked. Without
+  // the extension submit() compiles one object at a time, so no single task is long.
+  // Link failures are read back afterwards (three's own check is the blocking read).
+  var HOLD = { reefShaderHold: true };
+  // Staged loading: a task's time budget (ms) and a step's "call me again" answers.
+  var LOAD_SLICE = 24, MORE = 1, WAIT = 2;
+  function shaderWarmup(renderer, scene, camera, clock) {
+    var gl = renderer && typeof renderer.getContext === 'function' ? renderer.getContext() : null;
+    var list = renderer && renderer.info && renderer.info.programs;
+    if (!gl || typeof renderer.compile !== 'function' || !Array.isArray(list)) return null;
+    var khr = null;
+    try { khr = gl.getExtension('KHR_parallel_shader_compile'); } catch (ignore) {}
+    var created = [], seen = new Set(), queue = [], holding = false, polled = 0, prepared = 0, has = Object.prototype.hasOwnProperty;
+    function capture(program) {
+      created.push(program);
+      if (!khr || typeof program.getUniforms !== 'function') return;
+      var read = program.getUniforms;
+      // Thrown from inside compile() after the program is stored on its
+      // material, so the first real render finishes that material's setup.
+      program.getUniforms = function () { if (holding) throw HOLD; program.getUniforms = read; return read.call(program); };
+    }
+    function compile(objects) {
+      var debug = renderer.debug, check = debug ? debug.checkShaderErrors : undefined, ownTraverse = has.call(scene, 'traverse'), traverse = scene.traverse;
+      list.push = function (program) { capture(program); return Array.prototype.push.apply(this, arguments); };
+      if (debug) debug.checkShaderErrors = false;
+      scene.traverse = function (visit) {
+        objects.forEach(function (o) {
+          // One visit per material, so a held program does not skip the rest of a material array.
+          var parts = Array.isArray(o.material) ? o.material.map(function (m) { return Object.create(o, { material: { value: m } }); }) : [o];
+          parts.forEach(function (part) { try { visit(part); } catch (error) { if (error !== HOLD) throw error; } });
+        });
+      };
+      holding = !!khr;
+      try { renderer.compile(scene, camera); } finally {
+        holding = false; delete list.push;
+        if (ownTraverse) scene.traverse = traverse; else delete scene.traverse;
+        if (debug) debug.checkShaderErrors = check;
+      }
+    }
+    function shaderLog(shader) {
+      if (!shader || gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return '';
+      return String(gl.getShaderInfoLog(shader) || '').replace(/\u0000/g, '').trim();
+    }
+    return {
+      parallel: !!khr,
+      // Queue every drawable object added since the last call.
+      collect: function () {
+        scene.traverse(function (o) { if (o.material && !seen.has(o)) { seen.add(o); queue.push(o); } });
+      },
+      // Creates programs for queued objects for up to budget ms; true once the queue is empty.
+      submit: function (budget) {
+        var t0 = clock();
+        while (queue.length) {
+          compile(queue.splice(0, khr ? 4 : 1));
+          if (clock() - t0 >= budget) break;
+        }
+        return !queue.length;
+      },
+      // True when every program created so far has finished linking.
+      poll: function (budget) {
+        if (!khr) return true;
+        var t0 = clock();
+        while (polled < created.length) {
+          var p = created[polled];
+          if (p.program && !gl.getProgramParameter(p.program, khr.COMPLETION_STATUS_KHR)) return false;
+          polled++;
+          if (clock() - t0 >= budget) break;
+        }
+        return polled >= created.length;
+      },
+      progress: function () { return created.length ? polled / created.length : 1; },
+      // Reads each linked program's uniform and attribute tables (hundreds of small
+      // driver round trips) before the first frame, a few programs per call.
+      prepare: function (budget) {
+        var t0 = clock();
+        while (prepared < created.length) {
+          var p = created[prepared++];
+          if (p.program) { p.getUniforms(); if (typeof p.getAttributes === 'function') p.getAttributes(); }
+          if (clock() - t0 >= budget) break;
+        }
+        return prepared >= created.length;
+      },
+      // Programs that did not link, with the driver's messages (the compiler's first).
+      failures: function () {
+        if (typeof gl.isContextLost === 'function' && gl.isContextLost()) return [];
+        return created.filter(function (p) { return p.program && !gl.getProgramParameter(p.program, gl.LINK_STATUS); }).map(function (p) {
+          var log = [shaderLog(p.fragmentShader), shaderLog(p.vertexShader), String(gl.getProgramInfoLog(p.program) || '').replace(/\u0000/g, '').trim()].filter(Boolean).join('\n');
+          return { name: p.name || 'shader', log: log };
+        });
+      }
+    };
+  }
+  // A staged load draws nothing for a few seconds: show the water colour (the
+  // canvas's CSS background) rather than an empty black canvas meanwhile.
+  function clearToWater(T, renderer) {
+    if (typeof renderer.setClearColor !== 'function' || typeof renderer.clear !== 'function' || typeof renderer.getClearColor !== 'function') return;
+    var keep = renderer.getClearColor(new T.Color()), alpha = renderer.getClearAlpha();
+    renderer.setClearColor(0x0b3a4d, 1); renderer.clear(); renderer.setClearColor(keep, alpha);
+  }
+  // Every 2D texture on the scene's materials (and their custom uniforms), to upload before the first frame.
+  function sceneTextures(scene, extra) {
+    var found = new Set();
+    function add(t) { if (t && t.isTexture && !t.isCubeTexture && !t.isDataTexture3D && !t.isDataTexture2DArray && !t.isVideoTexture && !t.isRenderTargetTexture) found.add(t); }
+    scene.traverse(function (o) {
+      (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (m) {
+        Object.keys(m).forEach(function (k) { add(m[k]); });
+        if (m.uniforms) Object.keys(m.uniforms).forEach(function (k) { add(m.uniforms[k] && m.uniforms[k].value); });
+      });
+    });
+    (extra || []).forEach(add);
+    return Array.from(found);
+  }
+
   function mount(canvas, options) {
     options = options || {};
     var THREE = options.THREE;
@@ -243,6 +364,8 @@
     var user = { diver: { yaw: DIVER.yaw, pitch: DIVER.pitch, dist: DIVER.dist }, overview: { yaw: 0, pitch: 0.62, scale: 1 } };
     var frustum = new THREE.Frustum(), projScreen = new THREE.Matrix4(), sphere = new THREE.Sphere();
     var highlight = null, ringThin = null, ringThick = null, plumb = null, bob = null;
+    // Staged loading (options.staged): the build runs as a queue of short steps; see "Loading" below.
+    var staged = options.staged === true, loaded = false, loadQueue = [], loadAt = 0, loadInsert = 0, loadTimer = 0, loadRaf = 0, loadShown = -1, warm = null, uploads = null;
     function own(resource) { owned.push(resource); return resource; }
     function listen(target, type, fn, opts) {
       if (!target || typeof target.addEventListener !== 'function') return;
@@ -258,7 +381,7 @@
 
     function dispose() {
       if (disposed) return; disposed = true;
-      stopLoop(); clearTimer(notifyTimer); notifyTimer = 0;
+      stopLoop(); cancelLoad(); clearTimer(notifyTimer); notifyTimer = 0;
       listeners.forEach(function (off) { off(); }); listeners.length = 0;
       if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
       pointers.clear();
@@ -281,50 +404,84 @@
       if (canvas._reef3d === controller) delete canvas._reef3d;
     }
 
-    var pal = waterPalette(layout.depthM), sunDir = new THREE.Vector3(0.28, 1, 0.22).normalize();
+    // The sun, the water and its light follow Reef3DExplore, so the survey and the dive share one ocean.
+    var pal = waterPalette(layout.depthM), sunDir = new THREE.Vector3(0.42, 1, 0.3).normalize();
     function waterPalette(depth) {
-      var k = clamp((depth - 5) / 7, 0, 1), C = THREE.Color;
+      // The water at the diver's eye, about 1.4 m above the reef; run-off water near a
+      // river (more seaweed on the reef) is a little murkier.
+      var k = clamp((depth - 1.4 - 3) / 15, 0, 1), C = THREE.Color, murk = 1 + 0.35 * layout.background.algae;
+      // The light reaching the reef has come down the whole water column to the floor.
+      var kl = clamp((depth - 3) / 15, 0, 1);
       // Fog, background and backdrop are output-space colours: r128 fogs after encoding.
       // Light loses red with depth; deeper water is bluer and hazier.
       return {
-        fog: new C(0x1e7489).lerp(new C(0x123e61), k), top: new C(0x8ccfd0).lerp(new C(0x4789ae), k), density: 0.033 + 0.0026 * Math.max(0, depth - 5),
-        sun: new C().setRGB(1.0, 0.96, 0.83).lerp(new C().setRGB(0.64, 0.85, 0.94), k), sunIntensity: 1.5 - 0.3 * k,
-        sky: new C().setRGB(0.48, 0.76, 0.86).lerp(new C().setRGB(0.27, 0.53, 0.76), k), ground: new C().setRGB(0.3, 0.28, 0.21).lerp(new C().setRGB(0.12, 0.17, 0.2), k), hemi: 0.54 - 0.12 * k
+        fog: new C(0x096278).lerp(new C(0x062c4b), k), top: new C(0x79c7d1).lerp(new C(0x3a88a6), k), density: (0.027 + 0.0011 * (depth - 1.4)) * murk,
+        extinction: new THREE.Vector3(0.065, 0.042, 0.03).multiplyScalar(murk),
+        sun: new C().setRGB(1.0, 0.96, 0.84).lerp(new C().setRGB(0.57, 0.82, 0.97), kl), sunIntensity: 1.27 - 0.28 * kl,
+        sky: new C().setRGB(0.39, 0.69, 0.81).lerp(new C().setRGB(0.17, 0.43, 0.65), kl), ground: new C().setRGB(0.2, 0.26, 0.22).lerp(new C().setRGB(0.07, 0.14, 0.18), kl), hemi: 0.42 - 0.08 * kl
       };
     }
     try {
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: high, alpha: false, powerPreference: high ? 'high-performance' : 'low-power' });
       renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, high ? 1.75 : 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+      // A touch under the dive's exposure: the survey camera is close to pale sand.
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.84;
       if (renderer.shadowMap) { renderer.shadowMap.enabled = high; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
       var caps = renderer.capabilities || {}, ext = renderer.extensions;
       var derivatives = !!(caps.isWebGL2 || (ext && typeof ext.has === 'function' && ext.has('OES_standard_derivatives')));
-      habitat = Habitat.create(THREE, { layout: options.layout, seed: options.seed, quality: quality, reducedMotion: reducedMotion, derivatives: derivatives });
-      scene.add(habitat.root);
-      fogBase = pal.density;
-      scene.fog = new THREE.FogExp2(pal.fog.clone(), fogBase); scene.background = pal.fog.clone();
-      // Water column dome (adapted from createCLHuntWaterBackdrop); follows the camera.
-      var backdrop = new THREE.Mesh(own(new THREE.SphereGeometry(1, 24, 16)), own(new THREE.ShaderMaterial({
-        side: THREE.BackSide, depthWrite: false, fog: false,
-        uniforms: { topColor: { value: pal.top }, bottomColor: { value: pal.fog.clone() }, sunDir: { value: sunDir } },
-        vertexShader: 'varying vec3 vReefDir;void main(){vReefDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-        fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);float up=smoothstep(-0.12,0.82,d.y);' +
-          'float sunward=pow(max(0.0,dot(d,sunDir)),5.0);float sunHalo=pow(max(0.0,dot(d,sunDir)),42.0);vec3 column=mix(bottomColor,topColor,up);' +
-          'column+=max(topColor-bottomColor,vec3(0.0))*(0.2*sunward+0.16*sunHalo)*up;gl_FragColor=vec4(min(column,vec3(1.0)),1.0);}'
-      })));
-      backdrop.name = 'reef-water-backdrop'; backdrop.renderOrder = -10; backdrop.frustumCulled = false;
-      backdrop.onBeforeRender = function (r, s, cam) { this.position.setFromMatrixPosition(cam.matrixWorld); this.scale.setScalar(cam.far * 0.9); this.updateMatrixWorld(); };
-      scene.add(backdrop);
-      var hemi = new THREE.HemisphereLight(pal.sky, pal.ground, pal.hemi); scene.add(hemi);
-      var sun = new THREE.DirectionalLight(pal.sun, pal.sunIntensity), center = new THREE.Vector3(L / 2, 0, 0);
-      sun.position.copy(center).addScaledVector(sunDir, 30); sun.target.position.copy(center); scene.add(sun); scene.add(sun.target);
-      if (high) {
-        var span = Math.max(L / 2 + 4, 9); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-        sun.shadow.camera.left = -span; sun.shadow.camera.right = span; sun.shadow.camera.top = span; sun.shadow.camera.bottom = -span;
-        sun.shadow.camera.near = 1; sun.shadow.camera.far = 70; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;
-      }
-      buildFish(derivatives); buildHighlight(); if (options.showBelt !== false) buildBelt();
+      if (staged) clearToWater(THREE, renderer);
+      loadStep(6, function () {
+        habitat = Habitat.create(THREE, { layout: options.layout, seed: options.seed, quality: quality, reducedMotion: reducedMotion, derivatives: derivatives });
+        scene.add(habitat.root);
+      });
+      loadStep(2, function () {
+        fogBase = pal.density;
+        scene.fog = new THREE.FogExp2(pal.fog.clone(), fogBase); scene.background = pal.fog.clone();
+        // The habitat's materials mix the water column in linear light (as in Reef3DExplore).
+        var water = habitat.water || null;
+        if (typeof habitat.setWater === 'function') habitat.setWater({ scatter: pal.fog.clone().convertSRGBToLinear(), extinction: pal.extinction, top: pal.top, deep: pal.fog });
+        // Water column dome with Snell's window and a soft sun (adapted from
+        // createCLHuntWaterBackdrop and Reef3DExplore); follows the camera.
+        var backdrop = new THREE.Mesh(own(new THREE.SphereGeometry(1, 24, 16)), own(new THREE.ShaderMaterial({
+          side: THREE.BackSide, depthWrite: false, fog: false,
+          uniforms: { topColor: { value: pal.top }, bottomColor: { value: pal.fog.clone() }, sunDir: { value: sunDir }, reefCausticTime: water ? water.time : { value: 4 } },
+          vertexShader: 'varying vec3 vReefDir;void main(){vReefDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+          fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
+            'float sunward=max(0.0,dot(d,sunDir));float up=smoothstep(-0.10,0.98,d.y);' +
+            'vec3 column=bottomColor*mix(0.63,1.0,smoothstep(-0.85,-0.06,d.y));column=mix(column,topColor,up*0.70);' +
+            'float swell=sin(d.x*15.0+d.z*8.0-reefCausticTime*0.16+sin(d.z*7.0)*0.55);' +
+            'float ripple=sin(d.z*24.0-d.x*11.0+reefCausticTime*0.21+sin(d.x*9.0+d.z*5.0)*0.60);' +
+            'float window=smoothstep(0.43,0.89,d.y+swell*0.030+ripple*0.018);' +
+            'float lace=sin(d.x*48.0-d.z*31.0+sin(d.z*17.0+d.x*8.0)*1.1+reefCausticTime*0.24);' +
+            'float waterfold=sin(d.z*37.0+d.x*19.0+sin(d.x*13.0-d.z*9.0)*0.8-reefCausticTime*0.19);' +
+            'float silver=pow(max(0.0,swell*ripple*0.6+lace*waterfold*0.4),4.0);' +
+            'column=mix(column,topColor,window*0.35);column*=1.0+(swell*ripple*0.042+lace*waterfold*0.027)*window;column+=topColor*silver*window*0.065;' +
+            'vec3 scatter=max(topColor-bottomColor,vec3(0.0))*(0.13*pow(sunward,4.0)+0.22*pow(sunward,25.0))*smoothstep(0.05,0.72,d.y);' +
+            'vec3 sunlight=vec3(1.0,0.97,0.85)*(pow(sunward,92.0)*0.045+pow(sunward,1350.0)*0.24)*window;' +
+            'gl_FragColor=vec4(min(column+scatter+sunlight,vec3(1.0)),1.0);}'
+        })));
+        backdrop.name = 'reef-water-backdrop'; backdrop.renderOrder = -10; backdrop.frustumCulled = false;
+        backdrop.onBeforeRender = function (r, s, cam) {
+          this.position.setFromMatrixPosition(cam.matrixWorld); this.scale.setScalar(cam.far * 0.9); this.updateMatrixWorld();
+          if (!water) return;
+          // Drawn first each frame: give the water column this frame's eye, and thin it
+          // for the overview as the fog is thinned, so the far end of the belt keeps its colour.
+          water.eye.value.setFromMatrixPosition(cam.matrixWorld);
+          water.extinction.value.copy(pal.extinction).multiplyScalar(Math.min(1, 0.51 / Math.max(0.001, pal.extinction.y * view.dist)));
+        };
+        scene.add(backdrop);
+        var hemi = new THREE.HemisphereLight(pal.sky, pal.ground, pal.hemi); scene.add(hemi);
+        var sun = new THREE.DirectionalLight(pal.sun, pal.sunIntensity), center = new THREE.Vector3(L / 2, 0, 0);
+        sun.position.copy(center).addScaledVector(sunDir, 30); sun.target.position.copy(center); scene.add(sun); scene.add(sun.target);
+        if (high) {
+          var span = Math.max(L / 2 + 4, 9); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+          sun.shadow.camera.left = -span; sun.shadow.camera.right = span; sun.shadow.camera.top = span; sun.shadow.camera.bottom = -span;
+          sun.shadow.camera.near = 1; sun.shadow.camera.far = 70; sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;
+        }
+        buildFish(derivatives); buildHighlight(); if (options.showBelt !== false) buildBelt();
+      });
+      if (staged) { warm = shaderWarmup(renderer, scene, camera, now); queueFirstFrame(); } else runQueue();
     } catch (error) {
       dispose();
       throw new Error('This device could not start the 3D reef. ' + (error && error.message ? error.message : 'Please use the 2D survey.'));
@@ -333,7 +490,12 @@
     function buildFish(derivatives) {
       var group = new THREE.Group(); group.name = 'reef-fish'; scene.add(group);
       fishDefs.forEach(function (f) {
-        var model = fishModels[f.family] || (fishModels[f.family] = (function () { var m = buildFishModel(THREE, f.family, derivatives); own(m.body); own(m.tail); own(m.material); return m; })());
+        var model = fishModels[f.family] || (fishModels[f.family] = (function () {
+          var m = buildFishModel(THREE, f.family, derivatives); own(m.body); own(m.tail); own(m.material);
+          // The same water as the reef: red fades with depth and distance, sun flecks play on the back.
+          if (typeof habitat.immerse === 'function') habitat.immerse(m.material);
+          return m;
+        })());
         var def = FISH[f.family], h = hashString(f.id), h2 = hashString(f.id + '#'), size = def.length * (0.85 + 0.3 * h);
         var material = own(model.material.clone()), motion = { value: new THREE.Vector4(h * TAU, 0, 0.28 - model.pedZ, 0) };
         material.onBeforeCompile = model.material.onBeforeCompile; material.customProgramCacheKey = model.material.customProgramCacheKey; material.userData.reefFishMotion = motion;
@@ -413,14 +575,27 @@
     }
     function buildHighlight() {
       highlight = new THREE.Group(); highlight.name = 'reef-highlight';
-      var ringMat = own(new THREE.MeshBasicMaterial({ color: 0xff9a3c, transparent: true, opacity: 0.9, depthWrite: false, fog: false, side: THREE.DoubleSide }));
-      ringThin = new THREE.Mesh(own(new THREE.RingGeometry(0.9, 1, 48)), ringMat); ringThick = new THREE.Mesh(own(new THREE.RingGeometry(0.62, 1, 48)), ringMat);
-      [ringThin, ringThick].forEach(function (ring) { ring.rotation.x = -Math.PI / 2; ring.renderOrder = 6; highlight.add(ring); });
+      // Bright orange over a dark edge, so the marks read on pale sand, white coral and dark rock alike.
+      // Not tone-mapped: the marks keep their full orange in the dim water.
+      var ringMat = own(new THREE.MeshBasicMaterial({ color: 0xff9a3c, transparent: true, opacity: 0.95, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }));
+      var edgeMat = own(new THREE.MeshBasicMaterial({ color: 0x140a03, transparent: true, opacity: 0.5, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }));
+      ringThin = new THREE.Mesh(own(new THREE.RingGeometry(0.72, 1, 56)), ringMat); ringThick = new THREE.Mesh(own(new THREE.RingGeometry(0.55, 1, 56)), ringMat);
+      var edgeThin = own(new THREE.RingGeometry(0.6, 1.14, 56)), edgeThick = own(new THREE.RingGeometry(0.45, 1.12, 56));
+      [[ringThin, edgeThin], [ringThick, edgeThick]].forEach(function (pair) {
+        var ring = pair[0], edge = new THREE.Mesh(pair[1], edgeMat);
+        ring.rotation.x = -Math.PI / 2; ring.renderOrder = 7; edge.position.z = -0.002; edge.renderOrder = 6; ring.add(edge); highlight.add(ring);
+      });
       var lineGeo = own(new THREE.BufferGeometry()); lineGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 1, 0], 3));
-      var orange = own(new THREE.LineBasicMaterial({ color: 0xff8a2a, transparent: true, opacity: 0.95, depthWrite: false, fog: false }));
-      plumb = new THREE.Line(lineGeo, orange); plumb.renderOrder = 6; plumb.frustumCulled = false;
-      bob = new THREE.Mesh(own(new THREE.ConeGeometry(0.012, 0.035, 10)), own(new THREE.MeshBasicMaterial({ color: 0xff8a2a, fog: false })));
-      bob.rotation.x = Math.PI; bob.renderOrder = 6;
+      var orange = own(new THREE.LineBasicMaterial({ color: 0xff8a2a, transparent: true, opacity: 0.95, depthWrite: false, fog: false, toneMapped: false }));
+      plumb = new THREE.Line(lineGeo, orange); plumb.renderOrder = 7; plumb.frustumCulled = false;
+      // A cord a few pixels wide (lines draw one pixel) in a thin dark sleeve; both scale with the line.
+      var cordGeo = own(new THREE.CylinderGeometry(0.0052, 0.0052, 1, 8)), sleeveGeo = own(new THREE.CylinderGeometry(0.0066, 0.0066, 1, 8));
+      cordGeo.translate(0, 0.5, 0); sleeveGeo.translate(0, 0.5, 0);
+      var cord = new THREE.Mesh(cordGeo, own(new THREE.MeshBasicMaterial({ color: 0xff8a2a, fog: false, toneMapped: false })));
+      var sleeve = new THREE.Mesh(sleeveGeo, edgeMat);
+      cord.renderOrder = 7; sleeve.renderOrder = 6; cord.frustumCulled = sleeve.frustumCulled = false; plumb.add(sleeve); plumb.add(cord);
+      bob = new THREE.Mesh(own(new THREE.ConeGeometry(0.014, 0.04, 12)), cord.material);
+      bob.rotation.x = Math.PI; bob.renderOrder = 7;
       highlight.add(plumb); highlight.add(bob); scene.add(highlight);
     }
     function placeHighlight() {
@@ -430,13 +605,15 @@
       highlight.visible = true;
       var d = points[i].distanceM, floorY = habitat.floorHeight(d, 0), tapeY = habitat.tapeHeight(d);
       if (!boxes[i]) {
-        var box = new THREE.Box3().setFromObject(habitat.surveyObjects[i]);
-        boxes[i] = { top: box.isEmpty() ? floorY : box.max.y };
+        // The first surface straight below the tape; a box top could be a branch beside the point.
+        var top = typeof habitat.contactHeight === 'function' ? habitat.contactHeight(i) : null;
+        if (top === null || !isFinite(top)) { var box = new THREE.Box3().setFromObject(habitat.surveyObjects[i]); top = box.isEmpty() ? floorY : box.max.y; }
+        boxes[i] = { top: top };
       }
       // As in a real survey, the plumb line hangs from the tape and touches what
       // lies under the point. The ring stays small (points are 0.5 m apart) so a
       // neighbouring colony never sits inside it.
-      var contact = Math.min(tapeY, Math.max(floorY, boxes[i].top)), r = 0.14;
+      var contact = Math.min(tapeY, Math.max(floorY, boxes[i].top)), r = 0.13;
       ringThin.position.set(d, contact + 0.012, 0); ringThin.scale.set(r, r, 1);
       ringThick.position.copy(ringThin.position); ringThick.scale.set(r * 1.35, r * 1.35, 1);
       ringThin.visible = cameraMode === 'diver'; ringThick.visible = cameraMode !== 'diver';
@@ -446,7 +623,7 @@
     }
     function buildBelt() {
       // Dashed guide lines at the belt edges help judge which fish are inside it.
-      var mat = own(new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.3, gapSize: 0.25, transparent: true, opacity: 0.32, depthWrite: false }));
+      var mat = own(new THREE.LineDashedMaterial({ color: 0xe6fbf6, dashSize: 0.3, gapSize: 0.25, transparent: true, opacity: 0.4, depthWrite: false }));
       [-belt, belt].forEach(function (z) {
         var pts = [];
         for (var x = 0; x <= L + 1e-6; x += 0.25) pts.push(x, habitat.floorHeight(x, z) + 0.03, z);
@@ -503,7 +680,7 @@
       return {
         pointIndex: p ? pointIndex : -1, distanceM: p ? p.distanceM : null, category: p ? p.category : null, coralForm: p ? p.coralForm : null,
         cameraMode: cameraMode, paused: paused, quality: quality, fishVisible: disposed ? [] : visibleFish(),
-        highlightIndex: highlightIndex, pointCount: points.length, reducedMotion: reducedMotion, ready: !disposed && !contextLost,
+        highlightIndex: highlightIndex, pointCount: points.length, reducedMotion: reducedMotion, ready: !disposed && !contextLost && loaded,
         frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
       };
     }
@@ -531,7 +708,7 @@
     // ---- Loop ---------------------------------------------------------------------
     function hidden() { return !!(doc && doc.hidden); }
     function requestFrame() {
-      if (disposed || contextLost || raf || hidden()) return;
+      if (disposed || contextLost || raf || hidden() || !loaded) return;
       if (typeof global.requestAnimationFrame === 'function') { rafIsTimer = false; raf = global.requestAnimationFrame(tick); }
       else { rafIsTimer = true; raf = setTimer(function () { tick(now()); }, 16); }
     }
@@ -559,21 +736,99 @@
       } catch (error) { stopLoop(); paused = true; reportError(error); }
     }
 
+    // ---- Loading (as in Reef3DExplore) --------------------------------------------------
+    // A staged mount (options.staged) returns at once and runs the build queue a
+    // few steps per task; programs link in parallel (shaderWarmup) and textures
+    // upload before the first frame. getState().ready and onProgress(1) wait for
+    // that frame. A plain mount runs the same queue and draws before it returns.
+    function loadStep(weight, run, part) { loadQueue.splice(loadInsert++, 0, { w: weight, run: run, part: part }); }
+    function queueFirstFrame() {
+      loadStep(2, function () { if (!warm) return; warm.collect(); return warm.submit(LOAD_SLICE) ? undefined : MORE; });
+      loadStep(12, function () { return !warm || warm.poll(8) ? undefined : WAIT; }, function () { return warm ? warm.progress() : 1; });
+      loadStep(1, function () { var failed = warm ? warm.failures() : []; if (failed.length) shaderFailed(failed); });
+      loadStep(2, function () { return !warm || warm.prepare(LOAD_SLICE) ? undefined : MORE; });
+      loadStep(1, function () {
+        if (typeof renderer.initTexture !== 'function') return;
+        if (!uploads) uploads = sceneTextures(scene, owned);
+        for (var t0 = now(); uploads.length && now() - t0 < LOAD_SLICE;) renderer.initTexture(uploads.shift());
+        return uploads.length ? MORE : undefined;
+      });
+    }
+    function runStep() {
+      var step = loadQueue[loadAt], result = step.run();
+      if (result !== MORE && result !== WAIT) loadAt++;
+      return result;
+    }
+    function runQueue() { while (loadAt < loadQueue.length) runStep(); }
+    function loadFraction() {
+      var total = 0, done = 0, step = loadQueue[loadAt];
+      loadQueue.forEach(function (s, i) { total += s.w; if (i < loadAt) done += s.w; });
+      if (step && step.part) done += step.w * clamp(step.part(), 0, 1);
+      return total > 0 ? done / total : 0;
+    }
+    function showProgress(f) {
+      if (!(f > loadShown)) return;
+      loadShown = f;
+      if (typeof options.onProgress === 'function') { try { options.onProgress(f); } catch (error) { reportError(error); } }
+    }
+    function pump() {
+      loadTimer = 0; loadRaf = 0;
+      if (disposed || contextLost) return;
+      var start = now(), result;
+      try {
+        while (loadAt < loadQueue.length) {
+          result = runStep();
+          if (disposed || result === WAIT || now() - start >= LOAD_SLICE) break;
+        }
+        if (!disposed && loadAt >= loadQueue.length) { firstFrame(); return; }
+      } catch (error) { loadFailed(error); return; }
+      if (disposed || contextLost) return;
+      showProgress(Math.min(0.99, loadFraction()));
+      if (disposed) return;
+      if (result === WAIT && typeof global.requestAnimationFrame === 'function') loadRaf = global.requestAnimationFrame(pump);
+      else loadTimer = setTimer(pump, result === WAIT ? 16 : 0);
+    }
+    function cancelLoad() {
+      clearTimer(loadTimer); loadTimer = 0;
+      if (loadRaf && typeof global.cancelAnimationFrame === 'function') global.cancelAnimationFrame(loadRaf);
+      loadRaf = 0; loadQueue.length = 0; loadAt = 0; uploads = null;
+    }
+    function loadFailed(error) {
+      dispose();
+      reportError(new Error('This device could not start the 3D reef. ' + (error && error.message ? error.message : 'Please use the 2D survey.')));
+    }
+    function shaderFailed(list) {
+      // three's own check is off while programs link in parallel; report what it would have.
+      var detail = list.map(function (f) { return f.name + ': ' + f.log; }).join('\n');
+      if (global.console && global.console.error) global.console.error('Reef3D: ' + list.length + ' shader program(s) did not link.\n' + detail);
+      reportError(new Error('The 3D reef view could not build ' + list.length + ' of its shaders. ' + (list[0].log.split('\n')[0] || list[0].name)));
+    }
+    function firstFrame() {
+      placeHighlight(); updateFish(0); habitat.update(0, 0); resize(); setGoal(); applyCamera(0, true);
+      renderer.render(scene, camera); frames++;
+      loaded = true; showProgress(1);
+      notify(true); requestFrame();
+    }
+
     // ---- Controller -------------------------------------------------------------------
     function goToPoint(i) {
       if (disposed || !points.length) return;
       pointIndex = clamp(Math.round(num(i, 0)), 0, points.length - 1); highlightIndex = pointIndex;
+      if (!loaded) { notify(true); return; } // the first frame applies it
       placeHighlight(); setGoal(); if (reducedMotion) applyCamera(0, true);
       notify(true); refresh();
     }
     function highlightPoint(i) {
       if (disposed) return;
       highlightIndex = i === null || i === undefined || num(i, -1) < 0 || !points.length ? -1 : clamp(Math.round(num(i, 0)), 0, points.length - 1);
-      placeHighlight(); notify(true); refresh();
+      if (loaded) placeHighlight();
+      notify(true); refresh();
     }
     function setCameraMode(mode) {
       if (disposed || (mode !== 'diver' && mode !== 'overview')) return;
-      cameraMode = mode; setGoal(); placeHighlight(); if (reducedMotion) applyCamera(0, true);
+      cameraMode = mode;
+      if (!loaded) { notify(true); return; }
+      setGoal(); placeHighlight(); if (reducedMotion) applyCamera(0, true);
       notify(true); refresh();
     }
     function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; notify(true); refresh(); }
@@ -583,7 +838,8 @@
       var w = Math.max(1, Math.round(rect.width || 0)), h = Math.max(1, Math.round(rect.height || 0));
       if (w === canvasW && h === canvasH) return;
       canvasW = w; canvasH = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      if (cameraMode === 'overview') { setGoal(); applyCamera(0, true); }
+      if (staged && !loaded) clearToWater(THREE, renderer); // a resize blanks the canvas
+      if (cameraMode === 'overview' && loaded) { setGoal(); applyCamera(0, true); }
       refresh();
     }
     var controller = { goToPoint: goToPoint, highlightPoint: highlightPoint, setCameraMode: setCameraMode, setPaused: setPaused, getState: snapshot, resize: resize, dispose: dispose };
@@ -598,11 +854,13 @@
     function look(dx, dy) {
       if (cameraMode === 'diver') { user.diver.yaw -= dx * 0.006; user.diver.pitch = clamp(user.diver.pitch + dy * 0.005, 0.12, 1.45); }
       else { user.overview.yaw -= dx * 0.005; user.overview.pitch = clamp(user.overview.pitch + dy * 0.004, 0.2, 1.4); }
+      if (!loaded) return;
       setGoal(); view.yaw = goal.yaw; view.pitch = goal.pitch; refresh();
     }
     function zoom(amount) {
       if (cameraMode === 'diver') user.diver.dist = clamp(user.diver.dist * Math.exp(amount), 0.7, 4.5);
       else user.overview.scale = clamp(user.overview.scale * Math.exp(amount), 0.45, 1.6);
+      if (!loaded) return;
       setGoal(); if (reducedMotion) applyCamera(0, true); refresh();
     }
     listen(canvas, 'keydown', function (event) {
@@ -637,7 +895,7 @@
     listen(canvas, 'blur', function () { pointers.clear(); pinch = 0; });
     listen(canvas, 'webglcontextlost', function (event) {
       if (event && event.preventDefault) event.preventDefault();
-      contextLost = true; stopLoop(); pointers.clear();
+      contextLost = true; stopLoop(); cancelLoad(); pointers.clear();
       reportError(new Error('The 3D reef view lost its graphics context. Reopen the 3D view or use the 2D survey.'));
       notify(true);
     });
@@ -648,9 +906,7 @@
     canvas._reef3d = controller;
     if (canvas.tabIndex < 0) canvas.tabIndex = 0;
     if (canvas.style) canvas.style.touchAction = 'none';
-    placeHighlight(); updateFish(0); habitat.update(0, 0); resize(); setGoal(); applyCamera(0, true);
-    renderer.render(scene, camera); frames++;
-    notify(true); requestFrame();
+    if (staged) loadTimer = setTimer(pump, 0); else firstFrame();
     return controller;
   }
 

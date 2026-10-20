@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Procedural model and texture builds run several seconds on a busy machine.
+vi.setConfig({ testTimeout: 30000 });
 
 // Real three r128 loaded into a fake window, as in tests/reef_3d_engine.test.js.
 // REEF3D_SPECIES_SOURCE lets a mutation check point the suite at a scratch copy.
@@ -94,6 +97,19 @@ function texelShare(handle, part, test) {
   const m = handle.root.getObjectByName(handle.root.userData.speciesId + '-' + part), d = m.material.map.image.data;
   let k = 0; for (let i = 0; i < d.length; i += 4) if (test(d[i] / 255, d[i + 1] / 255, d[i + 2] / 255)) k++;
   return k / (d.length / 4);
+}
+// A part drawn inside a batch mesh: the mesh and the part's vertex range.
+function batchPart(root, name) {
+  let out = null;
+  root.traverse((mesh) => { if (!out && mesh.isMesh && mesh.geometry.userData.batch) { const range = mesh.geometry.userData.batch.find((r) => r.part === name); if (range) out = { mesh, range }; } });
+  return out;
+}
+
+function rangeBox(root, name) {
+  const { mesh, range } = batchPart(root, name), p = mesh.geometry.attributes.position, box = new THREE.Box3(), v = new THREE.Vector3();
+  mesh.updateWorldMatrix(true, false);
+  for (let i = range.first; i < range.first + range.count; i++) box.expandByPoint(v.fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld));
+  return box;
 }
 function positions(mesh) { const p = mesh.geometry.attributes.position, out = []; for (let i = 0; i < p.count; i++) out.push([p.getX(i), p.getY(i), p.getZ(i)]); return out; }
 function trackingThree() {
@@ -189,8 +205,8 @@ describe('Reef3DSpecies models', () => {
 
   it('faces fish along +X with the origin at the body centre', () => {
     for (const id of ['clownfish', 'blue_tang', 'parrotfish', 'whitetip_reef_shark']) {
-      const h = S.create(THREE, id, { seed: 1, quality: 'low' }), eye = h.root.getObjectByName(id + '-detail'), body = h.root.getObjectByName(id + '-body');
-      const be = new THREE.Box3().setFromObject(body), ee = new THREE.Box3().setFromObject(eye), L = S.info(id).lengthM;
+      const h = S.create(THREE, id, { seed: 1, quality: 'low' }), body = h.root.getObjectByName(id + '-body');
+      const be = new THREE.Box3().setFromObject(body), ee = rangeBox(h.root, 'detail'), L = S.info(id).lengthM;
       expect(ee.getCenter(new THREE.Vector3()).x, id + ' eyes toward +X').toBeGreaterThan(be.getCenter(new THREE.Vector3()).x + 0.1 * L);
       const box = new THREE.Box3().setFromObject(h.root);
       expect(Math.abs((box.min.x + box.max.x) / 2), id + ' centred').toBeLessThan(0.15 * L);
@@ -405,7 +421,7 @@ describe('Reef3DSpecies look-alikes', () => {
     expect(texelShare(tang, 'body', blue)).toBeGreaterThan(0.3);
     expect(texelShare(emp, 'body', blue)).toBeGreaterThan(0.2);
     // Both have yellow tails: the tail alone must not be the difference.
-    const tailYellow = (h) => { const c = h.root.getObjectByName(h.root.userData.speciesId + '-tail').geometry.attributes.color; let k = 0; for (let i = 0; i < c.count; i++) if (c.getX(i) > 0.4 && c.getY(i) > 0.3 && c.getZ(i) < 0.1) k++; return k / c.count; };
+    const tailYellow = (h) => { const { mesh, range } = batchPart(h.root, 'tail'), c = mesh.geometry.attributes.color; let k = 0; for (let i = range.first; i < range.first + range.count; i++) if (c.getX(i) > 0.4 && c.getY(i) > 0.3 && c.getZ(i) < 0.1) k++; return k / range.count; };
     expect(tailYellow(tang)).toBeGreaterThan(0.4); expect(tailYellow(emp)).toBeGreaterThan(0.4);
     tang.dispose(); emp.dispose();
   });

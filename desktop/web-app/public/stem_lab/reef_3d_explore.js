@@ -20,7 +20,7 @@
   var STRUCTURES = ['reef_star', 'reef_ball', 'coral_tree_nursery'];
   var GROUPS = ['fish', 'reptile', 'invertebrate', 'coral', 'structure'];
   var HABITS = ['school', 'solitary', 'pair', 'sessile', 'bottom', 'crevice', 'hover'];
-  var DECOR_H = { finger: 0.45, antler: 0.5, corym: 0.42, massive: 0.42, plate: 0.47, encrust: 0.08, soft: 0.45, fan: 0.85, sponge: 0.42, algae: 0.22, rubble: 0.06, rock: 0.3 };
+  var DECOR_H = { finger: 0.45, antler: 0.5, corym: 0.42, table: 0.42, massive: 0.42, brain: 0.4, plate: 0.47, encrust: 0.1, soft: 0.45, fan: 0.85, sponge: 0.42, algae: 0.34, deadstand: 0.36, rubble: 0.06, rock: 0.3 };
   var warnings = [];
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -126,8 +126,18 @@
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
-    bluespotted_stingray: 'ray', clownfish: 'clown', cleaner_wrasse: 'cleaner', cleaner_shrimp: 'cleaner', humphead_wrasse: 'roam', day_octopus: 'den'
+    bluespotted_stingray: 'ray', clownfish: 'clown', cleaner_wrasse: 'cleaner', cleaner_shrimp: 'cleaner', humphead_wrasse: 'roam', day_octopus: 'den',
+    // Living reef interactions: grazers bite the rock, clients visit the cleaning
+    // stations, and a crown-of-thorns starfish sits on the coral it is eating.
+    parrotfish: 'graze', bumphead_parrotfish: 'graze', peacock_grouper: 'client', crown_of_thorns: 'cots'
   };
+  // A client's poses at a cleaning station: [pitch, roll] (head up, head down, tilted).
+  var POSES = [[0.55, 0], [-0.48, 0], [0.12, 0.5]];
+  // Where a cleaner works on a client: [x forward, y up, out from the flank], in body lengths.
+  var INSPECT = [[0.28, 0.03, 1], [0.06, 0.08, 1], [-0.2, 0.05, 0.9], [0.1, -0.16, 0.5], [0.46, 0.0, 0.2], [0.3, 0.0, 1], [0.0, 0.2, 0.3], [-0.08, -0.1, 0.9]];
+  // Corals a crown-of-thorns starfish is placed on, most preferred first (plate Acropora).
+  var COTS_HOST = { table_coral: 0, foliose_coral: 0.5, boulder_coral: 0.8, brain_coral: 0.9 };
+  var PUFF_LIFE = 5, PUFF_RIM = 8;
   var ZONE = {
     magnificent_anemone: 'anemone', giant_clam: 'flat', sea_fan: 'slope', barrel_sponge: 'slope', christmas_tree_worm: 'bommie', soft_coral: 'bommie',
     blue_sea_star: 'flat', sea_cucumber: 'sand', bluespotted_stingray: 'channel', long_spined_urchin: 'reef', crown_of_thorns: 'garden', nudibranch: 'reef',
@@ -185,27 +195,34 @@
     function channelX(z) { return chX + 3.2 * Math.sin(z * 0.075 + chPh) + 1.2 * Math.sin(z * 0.19 + chPh * 2); }
     function channelMask(x, z) {
       var edge = 0.38 * Math.sin(z * 0.48 + chPh) + 0.28 * (noise2(x * 0.55 + o1, z * 0.55) - 0.5);
-      return (1 - smooth(1.6 + edge, 3.4 + edge, Math.abs(x - channelX(z)))) * smooth(-24, -17, z);
+      return (1 - smooth(1.2 + edge, 2.8 + edge, Math.abs(x - channelX(z)))) * smooth(-24, -17, z);
     }
-    function deepMask(z) { return smooth(15, 21, z); }
+    function deepMask(z) { return smooth(16.5, 22.5, z); }
     function rubbleMask(x, z) { return 1 - smooth(patchRadius, patchRadius + 2.2, Math.hypot(x - rubX, (z - rubZ) * 1.1)); }
-    function sandMask(x, z) {
-      var pocket = smooth(0.6, 0.84, noise2(x * 0.18 + o2, z * 0.18 + o3));
-      return Math.max(channelMask(x, z), deepMask(z), pocket * 0.82);
+    function slopeZone(z) { return smooth(-20, -12, z) * (1 - smooth(10, 18, z)); }
+    // Broad, uneven spur crests rise above sheltered grooves. Warping the
+    // crest lines and their widths avoids evenly spaced corrugations.
+    function ridgeField(x, z) { return noise2(x * 0.12 + o3, z * 0.12 + o1); }
+    function ridgeWave(x, z, rf) { return Math.sin(x * 0.57 + 1.15 * Math.sin(z * 0.09 + ph1) + 0.7 * (rf - 0.5)); }
+    // Sand collects in the floors of the deeper grooves, in broken streaks: a
+    // patch reef keeps its sand in channels between the coral, not on the spurs.
+    function sandFrom(x, z, rw, slope) {
+      var pocket = smooth(0.7, 0.9, noise2(x * 0.18 + o2, z * 0.18 + o3));
+      var groove = (1 - smooth(-0.94, -0.62, rw)) * slope * smooth(0.34, 0.58, noise2(x * 0.21 + o2, z * 0.21 + o1));
+      return Math.max(channelMask(x, z), deepMask(z), pocket * 0.75, groove * 0.92);
     }
+    function sandMask(x, z) { return sandFrom(x, z, ridgeWave(x, z, ridgeField(x, z)), slopeZone(z)); }
+    // 1 on spur crests and reef flats, 0 in groove floors: where coral heads rise.
+    function spurMask(x, z) { var s = slopeZone(z); return s * smooth(-0.35, 0.65, ridgeWave(x, z, ridgeField(x, z))) + (1 - s) * 0.62; }
     function floorY(x, z) {
-      var ch = channelMask(x, z), flat = Math.max(ch * 0.9, deepMask(z) * 0.9, sandMask(x, z) * 0.55, rubbleMask(x, z) * 0.9);
-      var slope = smooth(-20, -12, z) * (1 - smooth(10, 18, z));
-      // Broad, uneven spur crests rise above sheltered grooves. Warping the
-      // crest lines and their widths avoids evenly spaced corrugations.
-      var ridgeField = noise2(x * 0.12 + o3, z * 0.12 + o1);
-      var ridgeWave = Math.sin(x * 0.57 + 1.15 * Math.sin(z * 0.09 + ph1) + 0.7 * (ridgeField - 0.5));
-      var spur = (1.75 * smooth(-0.5, 0.78, ridgeWave) - 0.55) * (0.65 + 0.55 * ridgeField) * slope;
+      var slope = slopeZone(z), rf = ridgeField(x, z), rw = ridgeWave(x, z, rf);
+      var ch = channelMask(x, z), flat = Math.max(ch * 0.9, deepMask(z) * 0.9, sandFrom(x, z, rw, slope) * 0.55, rubbleMask(x, z) * 0.9);
+      var spur = (1.75 * smooth(-0.5, 0.78, rw) - 0.55) * (0.65 + 0.55 * rf) * slope;
       var und = 1.15 * (noise2(x * 0.09 + o1, z * 0.09 + o2) - 0.5) + 0.44 * (noise2(x * 0.31 + o3, z * 0.31 - o1) - 0.5) + 0.14 * (noise2(x * 1.3, z * 1.3 + o2) - 0.5);
       // Eroded limestone shelves give the reef a readable middle scale between
       // tiny pavement texture and isolated bommies. Sand softens every margin.
       var shelf = 0.92 * smooth(0.32, 0.72, noise2(x * 0.13 + o1, z * 0.16 + o3)) * slope;
-      shelf += 0.45 * (smooth(-19, -14, z) - smooth(-8, -3, z)) * (0.65 + 0.35 * ridgeField);
+      shelf += 0.45 * (smooth(-19, -14, z) - smooth(-8, -3, z)) * (0.65 + 0.35 * rf);
       und += 0.18 * smooth(0.42, 0.66, noise2(x * 0.61 + o1, z * 0.61 + o3));
       var depth = profile(z), relief = (spur + shelf + und) * (1 - flat);
       // Compress shallow crests smoothly, retaining swimming room without a
@@ -220,7 +237,7 @@
       var sx = channelX(3) + tries[k];
       if (Math.abs(sx) <= 15 && Math.hypot(sx - rubX, (3 - rubZ) * 1.1) > patchRadius + 4) { spawn.x = sx; break; }
     }
-    return { floorY: floorY, channelX: channelX, channelMask: channelMask, deepMask: deepMask, rubbleMask: rubbleMask, sandMask: sandMask, rubble: { x: rubX, z: rubZ, r: patchRadius }, spawn: spawn };
+    return { floorY: floorY, channelX: channelX, channelMask: channelMask, deepMask: deepMask, rubbleMask: rubbleMask, sandMask: sandMask, spurMask: spurMask, rubble: { x: rubX, z: rubZ, r: patchRadius }, spawn: spawn };
   }
   function makeBommie(x, z, R, H, f, g, h, terrain) {
     var b = { x: x, z: z, r: R, h: H, yaw: f * TAU, ph: g * 40, k: 2.15 + 0.7 * h, m: 0.52 + 0.16 * g, c: 0, s: 0 };
@@ -257,30 +274,120 @@
     return b;
   }
   function placeBommies(seed, terrain) {
-    var r = stream(seed, 102), list = [];
-    for (var gx = -26; gx <= 26.01; gx += 8.6) for (var gz = -26; gz <= 26.01; gz += 8.6) {
+    var r = stream(seed, 102), list = [], k, q;
+    // A large coral head just up the slope from the start, so the dive opens
+    // on the reef rather than across the sand toward deep water.
+    var sp = terrain.spawn, away = sp.x < terrain.channelX(sp.z - 5.9) ? -1 : 1, spots = [[1.2, 5.1], [3.2, 4.4], [-1.2, 5.1], [4.4, 2.6]];
+    for (k = 0; k < spots.length; k++) {
+      var shx = sp.x + away * spots[k][0], shz = sp.z - spots[k][1];
+      if (terrain.sandMask(shx, shz) < 0.45 && terrain.rubbleMask(shx, shz) < 0.01) { list.push(makeBommie(shx, shz, 3.1, 3.4, 0.37, 0.62, 0.55, terrain)); break; }
+    }
+    // A patch reef: coral heads crowd the spur crests and the reef flat and may
+    // coalesce at their shoulders; grooves, the channel and the deep sand keep
+    // only scattered heads. Every cell draws the same eight values, kept or not.
+    for (var gx = -26; gx <= 26.01; gx += 5.8) for (var gz = -26; gz <= 26.01; gz += 5.8) {
       var a = r(), b = r(), c = r(), d = r(), e = r(), f = r(), g = r(), h = r();
-      var x = gx + (a - 0.5) * 5.2, z = gz + (b - 0.5) * 5.2;
-      var p = 0.62 * (1 - terrain.sandMask(x, z)) * (1 - terrain.rubbleMask(x, z)) + 0.14 * terrain.deepMask(z) * (1 - terrain.channelMask(x, z));
-      if (c > p || Math.abs(x) > 27 || Math.abs(z) > 27 || Math.hypot(x - terrain.spawn.x, z - terrain.spawn.z) < 6.5) continue;
-      if (terrain.rubbleMask(x, z) > 0.01 || Math.hypot(x - terrain.rubble.x, z - terrain.rubble.z) < terrain.rubble.r + 3.6) continue;
-      var R = 1.5 + 2.1 * d, H = R * (0.6 + 0.55 * e) * (z > 14 ? 0.8 : 1);
-      list.push(makeBommie(x, z, R, H, f, g, h, terrain));
+      var x = gx + (a - 0.5) * 4.4, z = gz + (b - 0.5) * 4.4, reef = (1 - terrain.sandMask(x, z)) * (1 - terrain.rubbleMask(x, z));
+      var p = 0.86 * reef * (0.42 + 0.58 * terrain.spurMask(x, z)) + 0.16 * terrain.deepMask(z) * (1 - terrain.channelMask(x, z));
+      // Down the slope from the start, keep a wider clearing: the opening view
+      // faces up the reef, not over a tall head toward deep water.
+      var fromStart = Math.hypot(x - sp.x, z - sp.z);
+      if (c > p || Math.abs(x) > 27 || Math.abs(z) > 27 || fromStart < 5.6 || z > sp.z + 1 && fromStart < 10) continue;
+      if (terrain.rubbleMask(x, z) > 0.01 || Math.hypot(x - terrain.rubble.x, z - terrain.rubble.z) < terrain.rubble.r + 3.4) continue;
+      var R = 1.35 + 1.85 * d, H = R * (0.6 + 0.5 * e) * (z > 14 ? 0.8 : 1), apart = true;
+      for (q = 0; q < list.length && apart; q++) if (Math.hypot(list[q].x - x, list[q].z - z) < (list[q].r + R) * 0.72) apart = false;
+      if (apart) list.push(makeBommie(x, z, R, H, f, g, h, terrain));
     }
     // Every reef keeps a cleaning station and a crevice.
     var spare = [[7, 9], [-9, -9], [12, -12]];
-    for (var k = 0; list.filter(function (b) { return b.r >= 1.4; }).length < 3 && k < spare.length; k++) list.push(makeBommie(spare[k][0], spare[k][1], 2.4, 1.8, 0.3 * k, 0.5, 0.4, terrain));
-    // Knolls: small coral heads that give the reef its broken, three-dimensional floor.
+    for (k = 0; list.filter(function (b) { return b.r >= 1.4; }).length < 3 && k < spare.length; k++) list.push(makeBommie(spare[k][0], spare[k][1], 2.4, 1.8, 0.3 * k, 0.5, 0.4, terrain));
+    // Knolls: small coral heads nestled between the large ones, which give the
+    // reef its broken, three-dimensional floor.
     var rk = stream(seed, 104), g1 = rk() * 40, g2 = rk() * 40;
-    for (gx = -27; gx <= 27.01; gx += 3.7) for (gz = -27; gz <= 27.01; gz += 3.7) {
+    for (gx = -27; gx <= 27.01; gx += 2.8) for (gz = -27; gz <= 27.01; gz += 2.8) {
       var ka = rk(), kb = rk(), kc = rk(), kd = rk(), ke = rk(), kf = rk(), kg = rk(), kh = rk();
-      var kx = gx + (ka - 0.5) * 3, kz = gz + (kb - 0.5) * 3, KR = 0.6 + 0.9 * kd, clear = true;
-      var kp = 0.55 * (1 - terrain.sandMask(kx, kz)) * (1 - terrain.rubbleMask(kx, kz)) * (0.35 + 0.9 * noise2(kx * 0.12 + g1, kz * 0.12 + g2));
-      if (kc > kp || Math.abs(kx) > 27.5 || Math.abs(kz) > 27.5 || Math.hypot(kx - terrain.spawn.x, kz - terrain.spawn.z) < 4 || Math.hypot(kx - terrain.rubble.x, kz - terrain.rubble.z) < terrain.rubble.r + 2) continue;
-      for (var q = 0; q < list.length && clear; q++) if (Math.hypot(list[q].x - kx, list[q].z - kz) < list[q].r * 1.3 + KR * 1.3 + 0.3) clear = false;
-      if (clear) list.push(makeBommie(kx, kz, KR, KR * (0.45 + 0.5 * ke), kf, kg, kh, terrain));
+      var kx = gx + (ka - 0.5) * 2.4, kz = gz + (kb - 0.5) * 2.4, KR = 0.55 + 0.85 * kd, clear = true;
+      var kp = 0.7 * (1 - terrain.sandMask(kx, kz)) * (1 - terrain.rubbleMask(kx, kz)) * (0.4 + 0.6 * terrain.spurMask(kx, kz)) * (0.45 + 0.8 * noise2(kx * 0.12 + g1, kz * 0.12 + g2));
+      if (kc > kp || Math.abs(kx) > 27.5 || Math.abs(kz) > 27.5 || Math.hypot(kx - terrain.spawn.x, kz - terrain.spawn.z) < 3.2 || Math.hypot(kx - terrain.rubble.x, kz - terrain.rubble.z) < terrain.rubble.r + 2) continue;
+      for (q = 0; q < list.length && clear; q++) if (Math.hypot(list[q].x - kx, list[q].z - kz) < list[q].r * 1.02 + KR * 1.05 + 0.15) clear = false;
+      if (clear) list.push(makeBommie(kx, kz, KR, KR * (0.5 + 0.5 * ke), kf, kg, kh, terrain));
     }
     return list;
+  }
+
+  // ---- Benthic cover: what grows on each patch of hard reef ------------------
+  // The bottom is a mosaic of colony-sized patches, each holding one state.
+  // Quantiles of seeded fields fix every state's share of the hard bottom to the
+  // site's numbers (what a point-intercept survey of this reef would record),
+  // while a broad noise term keeps related patches together. Hashes, not the
+  // placement streams, decide every patch, so no quality tier can move one.
+  var SAND = 0, LIVE = 1, BLEACHED = 2, FRESH = 3, MACRO = 4, RUBBLE = 5, ROCK = 6, LIFE = 7;
+  var PATCH = 1.05, PATCH_LO = -31.5, PATCH_N = 61;
+  function benthicField(seed, terrain, bommies, health, restored) {
+    var n = PATCH_N, total = n * n, cx = new Float32Array(total), cz = new Float32Array(total), state = new Uint8Array(total);
+    var roll = new Float32Array(total * 4), onReef = new Uint8Array(total), salt = (seed % 100003 + 100003) % 100003;
+    var cover = health.coralCover, bleach = health.bleaching, algae = health.algae;
+    function h(k, s) { return hash2(k * 7 + s, salt + s * 7919); }
+    var nf = stream(seed, 211), f1 = nf() * 50, f2 = nf() * 50, f3 = nf() * 50, f4 = nf() * 50, f5 = nf() * 50;
+    function headAt(x, z) {
+      for (var q = 0; q < bommies.length; q++) { var b = bommies[q]; if (Math.abs(b.x - x) < b.r * 1.25 && Math.abs(b.z - z) < b.r * 1.25 && b.heightAt(x, z) > NONE) return b; }
+      return null;
+    }
+    var hard = [], k, i, j;
+    for (j = 0; j < n; j++) for (i = 0; i < n; i++) {
+      k = j * n + i;
+      var x = PATCH_LO + (i + 0.18 + 0.64 * h(k, 1)) * PATCH, z = PATCH_LO + (j + 0.18 + 0.64 * h(k, 2)) * PATCH;
+      cx[k] = x; cz[k] = z;
+      roll[k * 4] = h(k, 3); roll[k * 4 + 1] = h(k, 4); roll[k * 4 + 2] = h(k, 5); roll[k * 4 + 3] = h(k, 6);
+      var head = headAt(x, z), sand = terrain.sandMask(x, z), rub = terrain.rubbleMask(x, z);
+      if (head) { state[k] = ROCK; onReef[k] = 2; }
+      // A restoration patch is all rubble; a natural one is being recolonised and
+      // joins the reef mosaic, where it holds most of the reef's rubble.
+      else if (rub > 0.5 && restored) { state[k] = RUBBLE; continue; }
+      else if (sand > 0.5) {
+        // On a broken reef, storm rubble fills the groove floors; the main
+        // channel and the deep sand stay sand.
+        state[k] = terrain.channelMask(x, z) < 0.3 && terrain.deepMask(z) < 0.3 && h(k, 7) < 0.7 * clamp((0.5 - cover) / 0.4, 0, 1) ? RUBBLE : SAND;
+        continue;
+      }
+      else { state[k] = ROCK; onReef[k] = 1; }
+      if (Math.abs(x) <= 28 && Math.abs(z) <= 28) hard.push(k);
+    }
+    // Shares of the hard bottom. Points on sand count as sand in a survey, so
+    // the live share of rock runs a little above the reef-wide cover.
+    var coral = clamp(cover / 0.85, 0, 0.9), macro = clamp(algae / 0.85, 0, 1 - coral), rest = Math.max(0, 1 - coral - macro);
+    var damage = clamp((0.5 - cover) / 0.4, 0, 1);
+    var shares = { fresh: rest * (0.06 + 0.25 * bleach + 0.12 * damage), rubble: rest * (0.1 + 0.42 * damage) };
+    shares.life = rest * 0.3 * (1 - 0.7 * damage);
+    function take(list, count, score, as) {
+      var ranked = list.map(function (k) { return [score(k), k]; }).sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+      var chosen = {};
+      for (var m = 0; m < ranked.length; m++) { if (m < count) { state[ranked[m][1]] = as; chosen[ranked[m][1]] = true; } }
+      return list.filter(function (k) { return !chosen[k]; });
+    }
+    var N = hard.length;
+    function field(k, off, scale) { return noise2(cx[k] * scale + off, cz[k] * scale - off * 0.7); }
+    // Coral heads are the most coral-rich places; groove floors the least.
+    var left = take(hard, Math.round(coral * N), function (k) { return 0.56 * h(k, 11) + 0.44 * field(k, f1, 0.15) - (onReef[k] === 2 ? 0.1 : 0) + 0.08 * (1 - terrain.spurMask(cx[k], cz[k])); }, LIVE);
+    var corals = hard.filter(function (k) { return state[k] === LIVE; });
+    // Heat stress bleaches shallow water first, in patches.
+    take(corals, Math.round(bleach * corals.length), function (k) { return 0.55 * h(k, 12) + 0.3 * field(k, f2, 0.2) + 0.15 * clamp((-terrain.floorY(cx[k], cz[k]) - 4) / 12, 0, 1); }, BLEACHED);
+    left = take(left, Math.round(macro * N), function (k) { return 0.5 * h(k, 13) + 0.5 * field(k, f3, 0.19); }, MACRO);
+    left = take(left, Math.round(shares.rubble * N), function (k) { return 0.45 * h(k, 14) + 0.55 * field(k, f4, 0.17) + (onReef[k] === 2 ? 0.6 : 0) - 0.45 * terrain.rubbleMask(cx[k], cz[k]); }, RUBBLE);
+    left = take(left, Math.round(shares.fresh * N), function (k) { return 0.6 * h(k, 15) + 0.4 * field(k, f5, 0.2); }, FRESH);
+    take(left, Math.round(shares.life * N), function (k) { return h(k, 16) - (onReef[k] === 2 ? 0.15 : 0); }, LIFE);
+    // Nearest patch centre: the cells are a jittered grid, so the 3 x 3 block around a point holds it.
+    function at(x, z) {
+      var fi = Math.floor((x - PATCH_LO) / PATCH), fj = Math.floor((z - PATCH_LO) / PATCH), best = -1, bd = Infinity;
+      for (var dj = -1; dj <= 1; dj++) for (var di = -1; di <= 1; di++) {
+        var ii = fi + di, jj = fj + dj; if (ii < 0 || jj < 0 || ii >= n || jj >= n) continue;
+        var kk = jj * n + ii, dx = cx[kk] - x, dz = cz[kk] - z, dd = dx * dx + dz * dz;
+        if (dd < bd) { bd = dd; best = kk; }
+      }
+      return best;
+    }
+    function count() { var c = {}; hard.forEach(function (k) { c[state[k]] = (c[state[k]] || 0) + 1; }); c.hard = N; return c; }
+    return { n: n, size: PATCH, cx: cx, cz: cz, state: state, roll: roll, onReef: onReef, at: at, count: count, damage: damage };
   }
 
   // ---- Geometry builder (Reef3DHabitat) ---------------------------------------
@@ -391,16 +498,20 @@
     }
     return b.build(T, true);
   }
-  function coralTone(H) {
+  // Growing tips are pale: an Acropora axial corallite holds few algae and
+  // shows the coral's own lilac-blue pigment. Vertex tones multiply the colony
+  // colour, so one geometry serves every pigment; a dead skeleton has no accent.
+  function coralTone(H, accent) {
+    var ar = accent ? accent[0] : 1.24, ag = accent ? accent[1] : 1.2, ab = accent ? accent[2] : 1.62;
     return function (t, cap, x, y, z, rgb) {
-      var height = clamp(y / H, 0, 1), tip = smooth(0.76, 1, t), tissue = noise3(x / H * 9 + 3.1, y / H * 9, z / H * 9 - 2.7);
-      var g = 0.64 + 0.19 * smooth(0.03, 0.82, height) + 0.16 * tip + 0.045 * (tissue - 0.5) + (cap ? 0.022 : 0);
-      rgb[0] = g * (1.02 - 0.035 * tip); rgb[1] = g; rgb[2] = g * (0.96 + 0.075 * tip);
+      var height = clamp(y / H, 0, 1), tip = smooth(0.68, 1, t) * (cap ? 1 : 0.85), tissue = noise3(x / H * 9 + 3.1, y / H * 9, z / H * 9 - 2.7);
+      var g = 0.56 + 0.26 * smooth(0.03, 0.82, height) + 0.06 * (tissue - 0.5);
+      rgb[0] = g * lerp(1, ar, tip); rgb[1] = g * lerp(1, ag, tip); rgb[2] = g * lerp(1, ab, tip);
     };
   }
   function V(T, x, y, z) { return new T.Vector3(x, y, z); }
-  function buildBranching(T, R, H, variant, sides, detail, lite) {
-    var b = new Builder(), style = variant % 3, phase = variant * 1.71 + 0.4, tone = coralTone(H), steps = detail ? 4 : 2;
+  function buildBranching(T, R, H, variant, sides, detail, lite, broken) {
+    var b = new Builder(), style = variant % 3, phase = variant * 1.71 + 0.4, tone = coralTone(H, broken ? [1, 1, 1] : null), steps = detail ? 4 : 2;
     // Spend long-shaft subdivisions on more live growing tips. Short, plump
     // branchlets give the crown its density; two cap rings soften the ends.
     b.caps = lite ? 1 : 2;
@@ -421,18 +532,19 @@
       }
       if (!lite) b.absorb(T, new T.SphereGeometry(1, sides + 3, 4, 0, TAU, 0, Math.PI / 2), new T.Matrix4().makeScale(R * 0.62, H * 0.12, R * 0.62), function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.6; });
     } else if (style === 1) {
-      var antlers = detail ? 6 : lite ? 4 : 5;
+      // A long-dead stand keeps a few eroded stumps of its antlers.
+      var antlers = broken ? (detail ? 5 : 4) : detail ? 6 : lite ? 4 : 5;
       for (k = 0; k < antlers; k++) {
         a = phase + k * 2.399963 + 0.3 * Math.sin(k * 2.1 + variant); dx = Math.cos(a); dz = Math.sin(a);
-        var reach = R * (0.76 + 0.21 * ((k * 0.43 + 0.11) % 1)), endY = H * (0.69 + 0.29 * ((k * 0.61 + 0.3) % 1));
+        var reach = R * (0.76 + 0.21 * ((k * 0.43 + 0.11) % 1)) * (broken ? 0.82 : 1), endY = H * (0.69 + 0.29 * ((k * 0.61 + 0.3) % 1)) * (broken ? 0.4 + 0.5 * ((k * 0.37 + 0.2) % 1) : 1);
         var curl = R * 0.1 * Math.sin(k * 2.7 + phase);
         curve = [V(T, dx * R * (0.1 + 0.035 * (k % 3)), -0.01, dz * R * (0.1 + 0.035 * (k % 3))), V(T, dx * reach * 0.43 - dz * curl, H * 0.3, dz * reach * 0.43 + dx * curl), V(T, dx * reach * 1.03 - dz * curl * 0.4, endY * 0.72, dz * reach * 1.03 + dx * curl * 0.4), V(T, dx * reach, endY, dz * reach)];
         b.tube(T, curve, R * (0.069 + 0.007 * (k % 3)), steps, sides, 0.52, tone);
-        for (var f = 0; f < (detail ? 2 : 1); f++) {
+        for (var f = 0; f < (broken ? k % 2 : detail ? 2 : 1); f++) {
           var base = bez(curve, f ? 0.7 : 0.42, new T.Vector3()), fa = a + (f ? 0.92 : -0.96), fx = Math.cos(fa), fz = Math.sin(fa), len = R * (0.39 - 0.08 * f), rise = H * (0.39 - 0.065 * f);
           var fork = [base, V(T, base.x + fx * len * 0.46, base.y + rise * 0.16, base.z + fz * len * 0.46), V(T, base.x + fx * len * 0.96, base.y + rise * 0.63, base.z + fz * len * 0.96), V(T, base.x + fx * len, Math.min(H * 0.97, base.y + rise), base.z + fz * len)];
           b.tube(T, fork, R * 0.044, 2, sides, 0.43, tone);
-          if (!lite && (detail ? f === 0 : k < 2)) {
+          if (!lite && !broken && (detail ? f === 0 : k < 2)) {
             var forkBase = bez(fork, 0.55, new T.Vector3()), forkA = fa + (f ? -0.9 : 0.9), reach2 = R * (0.16 + 0.04 * (k % 2)), end2 = Math.min(H * 0.98, forkBase.y + H * (0.23 + 0.02 * (k % 3)));
             b.tube(T, [forkBase, V(T, forkBase.x + Math.cos(forkA) * reach2 * 0.5, forkBase.y + H * 0.045, forkBase.z + Math.sin(forkA) * reach2 * 0.5), V(T, forkBase.x + Math.cos(forkA) * reach2, end2 - H * 0.06, forkBase.z + Math.sin(forkA) * reach2), V(T, forkBase.x + Math.cos(forkA) * reach2, end2, forkBase.z + Math.sin(forkA) * reach2)], R * 0.027, 2, sides, 0.35, tone);
           }
@@ -440,7 +552,7 @@
       }
     } else {
       b.tube(T, [V(T, 0, -0.01, 0), V(T, 0, H * 0.15, 0), V(T, R * 0.02, H * 0.3, 0), V(T, 0, H * 0.42, 0)], R * 0.145, lite ? 3 : 2, sides, 0.2, tone);
-      var twigs = detail ? 6 : lite ? 1 : 3, boughs = detail ? 6 : lite ? 4 : 5;
+      var twigs = detail ? 6 : lite ? 1 : 2, boughs = detail ? 6 : lite ? 4 : 5;
       for (k = 0; k < boughs; k++) {
         a = phase + k * TAU / boughs + 0.12 * Math.sin(k * 2.3 + phase); dx = Math.cos(a); dz = Math.sin(a);
         var span = R * (0.82 + 0.15 * ((k * 0.57) % 1));
@@ -456,22 +568,29 @@
     }
     return b.build(T, false);
   }
-  function buildMassive(T, R, H, variant, detail) {
-    var seg = detail ? 34 : 16, rings = detail ? 15 : 8, ph = variant * 2.17, theta = Math.PI * 0.58, low = Math.cos(theta);
+  // knobby: a lobed Porites head of rounded hummocks with pale crowns; without
+  // it, the smooth dome of a brain coral (its valleys come from the material).
+  function buildMassive(T, R, H, variant, detail, knobby) {
+    var seg = detail ? 34 : 16, rings = detail ? 15 : 8, ph = variant * 2.17, theta = Math.PI * 0.58, low = Math.cos(theta), knobs = [];
     var g = new T.SphereGeometry(1, seg, rings, 0, TAU, 0, theta), pos = g.attributes.position;
     for (var k = 0; k < pos.count; k++) {
       var x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k);
       var shoulder = Math.max(0, 1 - y * y), lobes = Math.sin(Math.atan2(z, x) * 4 + ph) * shoulder;
-      var lump = 1 + 0.3 * (noise3(x * 1.7 + ph, y * 1.7, z * 1.7 - ph) - 0.5) + 0.09 * (noise3(x * 4.3, y * 4.3 + ph, z * 4.3) - 0.5) + 0.055 * lobes;
+      var knob = knobby ? smooth(0.42, 0.82, noise3(x * 2.7 + ph, y * 2.7 + 1.3, z * 2.7 - ph)) * (0.35 + 0.65 * y) : 0;
+      var lump = 1 + 0.3 * (noise3(x * 1.7 + ph, y * 1.7, z * 1.7 - ph) - 0.5) + 0.09 * (noise3(x * 4.3, y * 4.3 + ph, z * 4.3) - 0.5) + 0.055 * lobes + 0.17 * knob - (knobby ? 0.05 : 0);
+      knobs.push(knob);
       pos.setXYZ(k, (x * lump + 0.065 * y * y) * R, ((y * lump - low) / (1 - low) - 0.03 + 0.035 * x * shoulder) * H, z * lump * R * 0.94);
     }
     g.computeVertexNormals(); weldSphere(g, seg, rings, false);
-    var b = new Builder();
-    b.absorb(T, g, new T.Matrix4(), function (x, y, z, nx, ny, nz, rgb) { var s = 0.55 + 0.45 * smooth(-0.05, 0.6, y / H) + 0.06 * (noise3(x * 9 + ph, y * 9, z * 9) - 0.5); rgb[0] = rgb[1] = rgb[2] = s; });
+    var b = new Builder(), at = 0;
+    b.absorb(T, g, new T.Matrix4(), function (x, y, z, nx, ny, nz, rgb) {
+      var s = 0.5 + 0.42 * smooth(-0.05, 0.6, y / H) + 0.16 * knobs[at++] + 0.06 * (noise3(x * 9 + ph, y * 9, z * 9) - 0.5);
+      rgb[0] = s * 1.02; rgb[1] = s; rgb[2] = s * 0.97;
+    });
     return b.build(T, false);
   }
   function buildPlate(T, R, H, variant, detail) {
-    var segs = detail ? 32 : 14, radii = detail ? [0.26, 0.52, 0.76, 0.94, 1] : [0.52, 0.9, 1], ph = variant * 1.3, thick = 0.013 + R * 0.031, b = new Builder();
+    var segs = detail ? 22 : 14, radii = detail ? [0.3, 0.62, 0.88, 1] : [0.52, 0.9, 1], ph = variant * 1.3, thick = 0.013 + R * 0.031, b = new Builder();
     b.caps = 2;
     b.tube(T, [V(T, 0, -0.01, 0), V(T, -R * 0.03, H * 0.1, 0), V(T, R * 0.04, H * 0.22, -R * 0.02), V(T, 0, H * 0.3, 0)], R * 0.19, 3, detail ? 6 : 5, 0.66, coralTone(H));
     // The growing rim is one continuous, rounded surface shared by the upper
@@ -479,25 +598,29 @@
     var shelves = detail ? [[0.73, 0.31, 0.24, 0.09], [1, 0.52, -0.04, -0.015], [0.64, 0.76, -0.23, -0.13]] : [[1, 0.43, 0.02, 0], [0.66, 0.73, -0.21, -0.12]];
     shelves.forEach(function (shelf, layer) {
       var rad = R * shelf[0], top = H * shelf[1], ox = R * shelf[2], oz = R * shelf[3], phase = ph + layer * 1.9;
-      function edge(a) { return rad * (0.89 + 0.07 * Math.sin(3 * a + phase) + (detail ? 0.027 * Math.sin(7 * a + 2 * phase) : 0.015 * Math.sin(2 * a - phase))); }
+      // Lobed, notched margins: a growing plate is never a cut-out disc.
+      function edge(a) { return rad * (0.86 + 0.085 * Math.sin(3 * a + phase) + 0.05 * Math.sin(5 * a + 2 * phase) + (detail ? 0.028 * Math.sin(9 * a - phase) : 0.015 * Math.sin(2 * a - phase)) - 0.12 * Math.pow(Math.max(0, Math.sin(2 * a + 1.3 * phase)), 10)); }
       function surfaceY(r, a) {
         // Broad shallow cups remain smooth at the middle LOD. Restrict the
         // small folds to the detailed perimeter so they cannot alias into spikes.
         var lip = smooth(0.32, 1, r), folds = Math.sin(a * 3 + phase) * 0.033 + (detail ? Math.sin(a * 7 - phase) * 0.009 : 0);
-        return top - H * 0.105 * (1 - r * r) + H * 0.045 * r * r + rad * folds * lip + H * 0.035 * Math.sin(a + phase) * r;
+        return top - H * 0.105 * (1 - r * r) + H * 0.045 * r * r + H * 0.07 * r * r * r + rad * folds * lip + H * 0.035 * Math.sin(a + phase) * r;
       }
       var plate = new Builder(), tops = [], bottoms = [];
-      function vertex(r, a, lower) {
+      function vertex(r, a, lower, j) {
         var e = edge(a) * r, x = ox + Math.cos(a) * e, z = oz + Math.sin(a) * e, y = surfaceY(r, a), growth = smooth(0.78, 1, r);
+        // Alternate spokes rise and fall: radiating ridges of corallites.
+        if (detail && !lower && r > 0.2 && r < 1) y += (j % 2 ? 1 : -1) * thick * 0.6 * r;
         // Rolling over at the outer edge removes the sharp cut-paper silhouette.
         y += lower ? -thick * (1.7 - 0.9 * r) : r === 1 ? -thick * 0.42 : thick * 0.12 * smooth(0.76, 0.94, r);
-        var light = lower ? 0.73 + 0.12 * r : 0.69 + 0.16 * r + 0.16 * growth + 0.035 * (noise2(x / R * 8 + phase, z / R * 8) - 0.5);
-        return plate.vertex(x, y, z, 0, lower ? -1 : 1, 0, light * (1.02 - 0.03 * growth), light, light * (0.96 + 0.07 * growth));
+        // Concentric growth bands, a shaded underside and a pale growing rim.
+        var light = lower ? 0.5 + 0.14 * r : (0.66 + 0.14 * r + 0.035 * (noise2(x / R * 8 + phase, z / R * 8) - 0.5)) * (0.94 + 0.06 * Math.cos(r * 15 + phase)) + 0.1 * growth;
+        return plate.vertex(x, y, z, 0, lower ? -1 : 1, 0, light * (1 + 0.16 * growth), light * (1 + 0.12 * growth), light * (1 + 0.4 * growth));
       }
-      var centreTop = vertex(0, 0, false), centreBottom = vertex(0, 0, true);
+      var centreTop = vertex(0, 0, false, 0), centreBottom = vertex(0, 0, true, 0);
       radii.forEach(function (r, ring) {
         var upper = [], lower = [];
-        for (var j = 0; j < segs; j++) { var a = j / segs * TAU; upper.push(vertex(r, a, false)); lower.push(r === 1 ? upper[j] : vertex(r, a, true)); }
+        for (var j = 0; j < segs; j++) { var a = j / segs * TAU; upper.push(vertex(r, a, false, j)); lower.push(r === 1 ? upper[j] : vertex(r, a, true, j)); }
         tops.push(upper); bottoms.push(lower);
       });
       function face(indices, lower) { if (lower) plate.i.push(indices[0], indices[2], indices[1]); else plate.i.push(indices[0], indices[1], indices[2]); }
@@ -518,21 +641,63 @@
     });
     return b.build(T, false);
   }
+  // Table coral (Acropora hyacinthus and kin): a short stalk holds a flat,
+  // lobed table of fused branchlets whose upturned tips fringe the margin.
+  function buildTable(T, R, H, variant, detail) {
+    var b = new Builder(), ph = variant * 1.37 + 0.3, segs = detail ? 30 : 16, radii = detail ? [0.22, 0.45, 0.68, 0.86, 1] : [0.45, 0.82, 1];
+    var deck = H * 0.56, thick = R * 0.05, tone = coralTone(H), k, j;
+    b.caps = 1;
+    b.tube(T, [V(T, 0, -0.01, 0), V(T, R * 0.05, H * 0.18, 0), V(T, -R * 0.04, H * 0.36, R * 0.02), V(T, 0, deck - thick, 0)], R * 0.2, detail ? 3 : 2, detail ? 6 : 4, 0.4, tone);
+    function edge(a) { return R * (0.85 + 0.08 * Math.sin(3 * a + ph) + 0.05 * Math.sin(5 * a - ph) + 0.03 * Math.sin(11 * a + 2 * ph) - 0.09 * Math.pow(Math.max(0, Math.sin(2 * a + ph)), 12)); }
+    function deckY(r, a) { return deck + H * 0.07 * r * r + H * 0.05 * Math.sin(a + ph) * r - H * 0.035 * (1 - r) * (1 - r); }
+    var tops = [], lows = [], c0 = b.count();
+    b.vertex(0, deckY(0, 0), 0, 0, 1, 0, 0.72, 0.72, 0.72);
+    b.vertex(0, deckY(0, 0) - thick * 1.6, 0, 0, -1, 0, 0.42, 0.42, 0.42);
+    radii.forEach(function (r) {
+      var up = [], dn = [];
+      for (j = 0; j < segs; j++) {
+        var a = j / segs * TAU, e = edge(a) * r, x = Math.cos(a) * e, z = Math.sin(a) * e, y = deckY(r, a), rim = smooth(0.8, 1, r);
+        // Alternating spokes give the deck its radiating rows of branchlets.
+        var ridge = detail && r < 1 ? (j % 2 ? 1 : -1) * thick * 0.45 * r : 0, l = (0.7 + 0.14 * r) * (0.95 + 0.05 * Math.cos(r * 13 + ph));
+        up.push(b.vertex(x, y + ridge, z, 0, 1, 0, l * (1 + 0.2 * rim), l * (1 + 0.16 * rim), l * (1 + 0.5 * rim)));
+        dn.push(r === 1 ? up[j] : b.vertex(x * 0.97, y - thick * (1.6 - 0.9 * r), z * 0.97, 0, -1, 0, 0.4 + 0.1 * r, 0.4 + 0.1 * r, 0.4 + 0.1 * r));
+      }
+      tops.push(up); lows.push(dn);
+    });
+    for (j = 0; j < segs; j++) {
+      var nx = (j + 1) % segs;
+      b.i.push(c0, tops[0][nx], tops[0][j], c0 + 1, lows[0][j], lows[0][nx]);
+      for (k = 1; k < radii.length; k++) {
+        b.i.push(tops[k - 1][j], tops[k - 1][nx], tops[k][j], tops[k - 1][nx], tops[k][nx], tops[k][j]);
+        b.i.push(lows[k - 1][j], lows[k][j], lows[k - 1][nx], lows[k - 1][nx], lows[k][j], lows[k][nx]);
+      }
+    }
+    // Upturned branchlet tips fringe the growing margin and stud the deck.
+    var fringe = detail ? 26 : 10, studs = detail ? 14 : 0;
+    for (k = 0; k < fringe + studs; k++) {
+      var on = k < fringe, aa = on ? (k + 0.5 * hash2(variant, k)) / fringe * TAU : ph + k * 2.39996, rr = on ? 0.95 : 0.25 + 0.65 * Math.sqrt((k - fringe + 0.5) / Math.max(1, studs));
+      var ee = edge(aa) * rr, px = Math.cos(aa) * ee, pz = Math.sin(aa) * ee, py = deckY(rr, aa), len = H * (on ? 0.1 + 0.05 * hash2(k, variant + 3) : 0.055), out = on ? R * 0.05 : 0;
+      b.tube(T, [V(T, px * 0.97, py - thick * 0.5, pz * 0.97), V(T, px + Math.cos(aa) * out * 0.5, py + len * 0.4, pz + Math.sin(aa) * out * 0.5), V(T, px + Math.cos(aa) * out, py + len * 0.8, pz + Math.sin(aa) * out), V(T, px + Math.cos(aa) * out, py + len, pz + Math.sin(aa) * out)], R * (on ? 0.024 : 0.02), 2, 3, 0.3, function (t, cap, x, y, z, rgb) { tone(0.6 + 0.4 * t, cap, x, y, z, rgb); });
+    }
+    return b.build(T, true);
+  }
   function buildEncrusting(T, R, H, variant, detail) {
-    var segs = detail ? 28 : 18, rings = detail ? 4 : 3, ph = variant * 0.91;
+    var segs = detail ? 28 : 18, rings = detail ? 6 : 3, ph = variant * 0.91;
     var g = polar(T, rings, segs, function (r, a, rgb) {
       // Lobed growth margins meet neighbouring colonies without the repeated
       // circular-pad silhouette. Broad relief remains legible at both LODs;
       // the material supplies the much finer corallites between those folds.
-      var edge = 0.89 + 0.055 * Math.sin(a * 3 + ph) + 0.027 * Math.sin(a * 5 - ph * 0.7) + 0.025 * Math.sin(a * 2 + ph);
+      var edge = 0.86 + 0.075 * Math.sin(a * 3 + ph) + 0.04 * Math.sin(a * 5 - ph * 0.7) + 0.025 * Math.sin(a * 2 + ph) + 0.02 * Math.sin(a * 8 + ph * 2);
       var e = R * edge * r, x = Math.cos(a) * e, z = Math.sin(a) * e;
       var lumps = noise2(x / R * 3.2 + ph, z / R * 3.2 - ph), rim = smooth(0.74, 1, r);
       var fold = Math.sin(a * 3 + ph + r * 2) * r * r * (1 - r);
-      var light = 0.72 + 0.13 * lumps + 0.11 * rim;
-      rgb[0] = light; rgb[1] = light * (0.98 + 0.02 * rim); rgb[2] = light * (0.94 + 0.06 * rim);
+      // Knobs and short columns crowd the centre (Montipora, encrusting Porites).
+      var knob = smooth(0.55, 0.84, noise2(x / R * 5.5 + ph * 2, z / R * 5.5 - ph)) * (1 - rim) * (detail ? 1 : 0.5);
+      var light = 0.66 + 0.13 * lumps + 0.14 * rim + 0.12 * knob;
+      rgb[0] = light * (1 + 0.1 * rim); rgb[1] = light * (1 + 0.08 * rim); rgb[2] = light * (1 + 0.3 * rim);
       // A fleshy low mound rolls into the growing margin, with more of the
       // original triangle budget moved to its smooth outer outline.
-      return [x, 0.002 + H * (0.075 + Math.pow(Math.max(0, 1 - r * r), 0.72) * (0.48 + 0.32 * lumps)) + H * 0.4 * fold, z];
+      return [x, 0.002 + H * (0.075 + Math.pow(Math.max(0, 1 - r * r), 0.72) * (0.48 + 0.32 * lumps)) + H * 0.4 * fold + H * 0.9 * knob, z];
     }, function (a, p, at, rgb) { rgb[0] = 0.63; rgb[1] = 0.62; rgb[2] = 0.59; return [p[at] * 0.97, -0.01, p[at + 2] * 0.97]; });
     var b = new Builder();
     var colors = g.attributes.color, index = 0;
@@ -560,7 +725,7 @@
     return b.build(T, false);
   }
   function buildRubble(T, R, variant, palette) {
-    var b = new Builder(), pieces = 10 + (variant % 3), m = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), s = new T.Vector3(1, 1, 1), p = new T.Vector3(), k;
+    var b = new Builder(), pieces = 7 + (variant % 2), m = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), s = new T.Vector3(1, 1, 1), p = new T.Vector3(), k;
     function tone(x, y, z, nx, ny, nz, rgb) {
       var turfW = smooth(0.38, 0.62, noise3(x * 30 + variant, y * 30, z * 30)) * 0.85 * palette.turfAmount, pink = smooth(0.66, 0.82, noise3(x * 22, y * 22 + 5, z * 22)) * 0.45, base = 0.38 + 0.16 * noise3(x * 60, y * 60, z * 60);
       rgb[0] = base * (1 - turfW) + palette.turf.r * turfW + (palette.cca.r - base) * pink;
@@ -571,7 +736,7 @@
       var h1 = hash2(variant, k * 7 + 1), h2 = hash2(variant, k * 7 + 2), h3 = hash2(variant, k * 7 + 3), h4 = hash2(variant, k * 7 + 4);
       var len = 0.05 + 0.1 * h1, rad = 0.011 + 0.012 * h2, ang = h3 * TAU, dist = R * 0.8 * Math.sqrt(h4);
       // Broken branch fragments mingle with flatter pieces of reef limestone.
-      var chunk = k % 4 === 0, cyl = chunk ? new T.IcosahedronGeometry(1, 0) : new T.CylinderGeometry(rad * 0.85, rad, len, 6, 2, false);
+      var chunk = k % 4 === 0, cyl = chunk ? new T.IcosahedronGeometry(1, 0) : new T.CylinderGeometry(rad * 0.85, rad, len, 5, 1, false);
       if (chunk) cyl.scale(rad * 1.7, len * 0.4, rad * 1.2);
       var cp = cyl.attributes.position;
       for (var j = 0; j < cp.count; j++) if (Math.abs(Math.abs(cp.getY(j)) - len / 2) < 1e-6) {
@@ -585,20 +750,23 @@
     }
     return b.build(T, false);
   }
+  // Fleshy seaweed (Sargassum, Turbinaria): leafy fronds rise and arch from one
+  // holdfast; each frond twists, so its leaves catch the light at many angles.
   function buildAlgae(T, R, H, variant, detail, tint) {
-    var b = new Builder(), blades = detail ? 14 : 7, sections = detail ? 8 : 5, baseC = tint.base, tipC = tint.tip;
+    var far = detail === 'far', b = new Builder(), blades = far ? 4 : detail ? 10 : 6, sections = far ? 3 : detail ? 10 : 6, baseC = tint.base, tipC = tint.tip;
     b.useExtra('reefBladePhase');
     for (var k = 0; k < blades; k++) {
       var h1 = hash2(variant, k * 5 + 1), h2 = hash2(variant, k * 5 + 2), h3 = hash2(variant, k * 5 + 3);
-      var yaw = k * 2.39996 + variant * 0.37, rr = R * 0.3 * Math.sqrt((k + 0.5) / blades), bx = Math.cos(yaw) * rr, bz = Math.sin(yaw) * rr;
-      var h = H * (0.5 + 0.5 * h1), width = (0.05 + 0.04 * h2) * Math.min(1, R / 0.2), lean = 0.5 + 0.6 * h3, dx = Math.cos(yaw), dz = Math.sin(yaw);
-      var turn = yaw + (h2 - 0.5) * 0.8, ax = -Math.sin(turn), az = Math.cos(turn), first = b.count(), row, col;
+      var yaw = k * 2.39996 + variant * 0.37, rr = R * 0.32 * Math.sqrt((k + 0.5) / blades), bx = Math.cos(yaw) * rr, bz = Math.sin(yaw) * rr;
+      var h = H * (0.55 + 0.45 * h1), width = (0.075 + 0.05 * h2) * Math.min(1.4, R / 0.2), lean = 0.45 + 0.6 * h3, dx = Math.cos(yaw), dz = Math.sin(yaw), first = b.count(), row, col;
       b.extra.value = h1 * TAU;
       for (row = 0; row <= sections; row++) {
-        var t = row / sections, env = (0.35 + 0.65 * Math.sin(t * Math.PI * 0.85)) * (1 - Math.pow(t, 4)) + 0.08 + 0.06 * Math.sin(t * 9 + k);
-        var out = lean * h * t * t * 0.6, cx = bx + dx * out, cz = bz + dz * out, y = t * h * (1 - 0.12 * lean * t) - 0.004, light = 0.9 + 0.1 * Math.sin(t * 7 + k);
+        var t = row / sections, turn = yaw + (h2 - 0.5) * 0.8 + t * (1.1 + h3), ax = -Math.sin(turn), az = Math.cos(turn);
+        // Leaf lobes along the frond, narrowing to a fine tip.
+        var env = (0.3 + 0.7 * Math.abs(Math.sin(t * Math.PI * 3.5 + k * 1.3))) * (1 - 0.75 * Math.pow(t, 3)) * smooth(0, 0.18, t) + 0.12;
+        var out = lean * h * t * t * 0.65, cx = bx + dx * out, cz = bz + dz * out, y = t * h * (1 - 0.15 * lean * t) - 0.004, light = 0.86 + 0.14 * Math.sin(t * 7 + k);
         for (col = 0; col < 3; col++) {
-          var side = col - 1, across = side * width * 0.5 * env, fold = (1 - Math.abs(side)) * width * 0.12 * Math.sin(t * Math.PI), sh = light * (side === 0 ? 1.06 : 0.94);
+          var side = col - 1, across = side * width * 0.5 * env, fold = (1 - Math.abs(side)) * width * 0.16 * Math.sin(t * Math.PI), sh = light * (side === 0 ? 1.06 : 0.94);
           b.vertex(cx + ax * across + dx * fold, y, cz + az * across + dz * fold, 0, 1, 0, (baseC.r + (tipC.r - baseC.r) * t) * sh, (baseC.g + (tipC.g - baseC.g) * t) * sh, (baseC.b + (tipC.b - baseC.b) * t) * sh);
         }
       }
@@ -625,7 +793,7 @@
   }
   // Soft coral: a fleshy trunk with branches ending in polyp lobes (sways).
   function buildSoftCoral(T, R, H, variant, detail) {
-    var b = new Builder(), sides = detail ? 6 : 4, steps = detail ? 4 : 3, branches = detail ? 7 : 5;
+    var b = new Builder(), sides = detail ? 5 : 4, steps = detail ? 3 : 3, branches = detail ? 6 : 5;
     function tone(t, cap, x, y, z, rgb) {
       var h = clamp(y / H, 0, 1), tissue = noise3(x * 27 + variant, y * 31, z * 27);
       rgb[0] = rgb[1] = rgb[2] = (0.61 + 0.32 * smooth(0.04, 0.85, h) + 0.07 * h) * (0.94 + 0.12 * tissue);
@@ -641,7 +809,7 @@
       b.tube(T, [V(T, dx * R * 0.045 + R * 0.025, H * (0.28 + 0.035 * f), dz * R * 0.045), V(T, dx * R * 0.36 - dz * curl, H * 0.43, dz * R * 0.36 + dx * curl), V(T, tip.x * 1.04 - dz * curl * 0.4, tip.y * 0.82, tip.z * 1.04 + dx * curl * 0.4), tip], R * (0.1 + 0.025 * f), steps, sides, 0.24, tone);
       // Split the fleshy crown into irregular finger-like lobes, rather than
       // ending every branch with an identical round bead.
-      var fingers = detail ? 4 : 2;
+      var fingers = detail ? 3 : 2;
       for (var j = 0; j < fingers; j++) {
         var fa = a + j * 2.39996 + 0.2 * Math.sin(k + j * 1.73), reach = R * (0.12 + 0.13 * hash2(k + variant, j + 41)), tx = tip.x + Math.cos(fa) * reach, tz = tip.z + Math.sin(fa) * reach;
         var top = tip.y + R * (0.18 + 0.23 * hash2(k + 73, j + variant)), rad = R * (0.069 + 0.013 * hash2(k + 93, j + variant));
@@ -654,7 +822,7 @@
   }
   // Sea fan: a flat branching lattice that faces across the current (sways).
   function buildFan(T, R, H, variant, detail, sparse) {
-    var b = new Builder(), spokes = sparse ? 3 : detail ? 7 : 5, rows = sparse ? 1 : detail ? 4 : 3;
+    var b = new Builder(), spokes = sparse ? 3 : detail ? 7 : 5, rows = sparse ? 1 : detail ? 4 : 2;
     function tone(t, cap, x, y, z, rgb) { rgb[0] = rgb[1] = rgb[2] = (0.65 + 0.32 * clamp(y / H, 0, 1)) * (0.96 + 0.08 * noise3(x * 21 + variant, y * 25, z * 21)); }
     b.useExtra('reefBladePhase'); b.extra.value = variant; b.caps = 1;
     // Linked veins share a phase: a net must bend as one living surface,
@@ -794,6 +962,31 @@
     'totalEmissiveRadiance+=diffuseColor.rgb*vec3(1.0,0.98,0.88)*reefCausticStrength*exp(-reefOpticalDepth/11.0)*reefSunFleck*reefLightCover*reefFleckDistance*smoothstep(0.10,0.95,reefSunFace);'
   ].join('\n');
   var ABSORB = 'diffuseColor.rgb*=mix(vec3(1.0),exp(-vec3(0.065,0.018,0.008)*max(0.0,-vReefWorld.y)),0.62);';
+  // The dive light. Its light crosses only the short path from the diver, so it
+  // brings back the colour that the long path down from the surface took away:
+  // the albedo is recovered by undoing ABSORB (every patch only multiplies it).
+  // Uniforms only, so switching it on never builds another shader program.
+  var TORCH_POWER = 7, TORCH_REACH = 5.5, TORCH_OUTER = Math.cos(30 * Math.PI / 180), TORCH_INNER = Math.cos(12 * Math.PI / 180);
+  var TORCH_COMMON = 'uniform vec3 reefTorchPos;uniform vec3 reefTorchDir;uniform vec4 reefTorch;';
+  var TORCH_LIGHT = [
+    'if(reefTorch.x>0.0){',
+    'vec3 reefTorchTo=reefTorchPos-vReefWorld;float reefTorchD=max(length(reefTorchTo),0.001);reefTorchTo/=reefTorchD;',
+    // A soft-edged cone, spreading with distance (softened close up, as from a
+    // lamp face, not a point) and a smooth end of reach.
+    'float reefTorchBeam=reefTorch.x*smoothstep(reefTorch.y,reefTorch.z,-dot(reefTorchTo,reefTorchDir))*(1.0-smoothstep(reefTorch.w*0.45,reefTorch.w,reefTorchD))/(reefTorchD*reefTorchD+2.5);',
+    'if(reefTorchBeam>0.0001){',
+    'vec3 reefTorchAlbedo=material.diffuseColor/mix(vec3(1.0),exp(-vec3(0.065,0.018,0.008)*max(0.0,-vReefWorld.y)),0.62);',
+    'IncidentLight reefTorchLight;reefTorchLight.direction=normalize((viewMatrix*vec4(reefTorchTo,0.0)).xyz);reefTorchLight.visible=true;',
+    'reefTorchLight.color=vec3(1.0,0.82,0.62)*reefTorchBeam*exp(-reefWaterExtinction*reefTorchD);',
+    'float reefTorchNL=saturate(dot(geometry.normal,reefTorchLight.direction));',
+    'reflectedLight.directDiffuse+=reefTorchLight.color*reefTorchNL*reefTorchAlbedo;',
+    // A lamp beside the eyes puts a highlight on every facing surface; a light
+    // one keeps the wet sheen without bleaching the colour it brings back.
+    '#ifdef REEF_TORCH_SPECULAR',
+    'reflectedLight.directSpecular+=reefTorchLight.color*reefTorchNL*PI*0.35*BRDF_Specular_GGX(reefTorchLight,geometry.viewDir,geometry.normal,material.specularColor,material.specularRoughness);',
+    '#endif',
+    '}}'
+  ].join('\n');
   function surfaceRelief(height, limit) {
     return [
       '#ifdef REEF_DERIVATIVES',
@@ -1059,6 +1252,125 @@
     return b.build(T, false);
   }
 
+  // ---- Parallel shader warm-up ------------------------------------------------------
+  // r128 links each new program and at once reads back its uniforms, which waits
+  // for the driver, so a cold first render links every program in turn with the
+  // page frozen (about 11 s for this reef on a laptop GPU). With
+  // KHR_parallel_shader_compile that read is held back instead: renderer.compile
+  // creates the programs, the driver links them on its own threads, and poll()
+  // says when all are done; the first real render then finds them linked. Without
+  // the extension submit() compiles one object at a time, so no single task is long.
+  // Link failures are read back afterwards (three's own check is the blocking read).
+  var HOLD = { reefShaderHold: true };
+  // Staged loading: a task's time budget (ms) and a step's "call me again" answers.
+  var LOAD_SLICE = 24, MORE = 1, WAIT = 2;
+  function shaderWarmup(renderer, scene, camera, clock) {
+    var gl = renderer && typeof renderer.getContext === 'function' ? renderer.getContext() : null;
+    var list = renderer && renderer.info && renderer.info.programs;
+    if (!gl || typeof renderer.compile !== 'function' || !Array.isArray(list)) return null;
+    var khr = null;
+    try { khr = gl.getExtension('KHR_parallel_shader_compile'); } catch (ignore) {}
+    var created = [], seen = new Set(), queue = [], holding = false, polled = 0, prepared = 0, has = Object.prototype.hasOwnProperty;
+    function capture(program) {
+      created.push(program);
+      if (!khr || typeof program.getUniforms !== 'function') return;
+      var read = program.getUniforms;
+      // Thrown from inside compile() after the program is stored on its
+      // material, so the first real render finishes that material's setup.
+      program.getUniforms = function () { if (holding) throw HOLD; program.getUniforms = read; return read.call(program); };
+    }
+    function compile(objects) {
+      var debug = renderer.debug, check = debug ? debug.checkShaderErrors : undefined, ownTraverse = has.call(scene, 'traverse'), traverse = scene.traverse;
+      list.push = function (program) { capture(program); return Array.prototype.push.apply(this, arguments); };
+      if (debug) debug.checkShaderErrors = false;
+      scene.traverse = function (visit) {
+        objects.forEach(function (o) {
+          // One visit per material, so a held program does not skip the rest of a material array.
+          var parts = Array.isArray(o.material) ? o.material.map(function (m) { return Object.create(o, { material: { value: m } }); }) : [o];
+          parts.forEach(function (part) { try { visit(part); } catch (error) { if (error !== HOLD) throw error; } });
+        });
+      };
+      holding = !!khr;
+      try { renderer.compile(scene, camera); } finally {
+        holding = false; delete list.push;
+        if (ownTraverse) scene.traverse = traverse; else delete scene.traverse;
+        if (debug) debug.checkShaderErrors = check;
+      }
+    }
+    function shaderLog(shader) {
+      if (!shader || gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return '';
+      return String(gl.getShaderInfoLog(shader) || '').replace(/\u0000/g, '').trim();
+    }
+    return {
+      parallel: !!khr,
+      // Queue every drawable object added since the last call.
+      collect: function () {
+        scene.traverse(function (o) { if (o.material && !seen.has(o)) { seen.add(o); queue.push(o); } });
+      },
+      // Creates programs for queued objects for up to budget ms; true once the queue is empty.
+      submit: function (budget) {
+        var t0 = clock();
+        while (queue.length) {
+          compile(queue.splice(0, khr ? 4 : 1));
+          if (clock() - t0 >= budget) break;
+        }
+        return !queue.length;
+      },
+      // True when every program created so far has finished linking.
+      poll: function (budget) {
+        if (!khr) return true;
+        var t0 = clock();
+        while (polled < created.length) {
+          var p = created[polled];
+          if (p.program && !gl.getProgramParameter(p.program, khr.COMPLETION_STATUS_KHR)) return false;
+          polled++;
+          if (clock() - t0 >= budget) break;
+        }
+        return polled >= created.length;
+      },
+      progress: function () { return created.length ? polled / created.length : 1; },
+      // Reads each linked program's uniform and attribute tables (hundreds of small
+      // driver round trips) before the first frame, a few programs per call.
+      prepare: function (budget) {
+        var t0 = clock();
+        while (prepared < created.length) {
+          var p = created[prepared++];
+          if (p.program) { p.getUniforms(); if (typeof p.getAttributes === 'function') p.getAttributes(); }
+          if (clock() - t0 >= budget) break;
+        }
+        return prepared >= created.length;
+      },
+      // Programs that did not link, with the driver's messages (the compiler's first).
+      failures: function () {
+        if (typeof gl.isContextLost === 'function' && gl.isContextLost()) return [];
+        return created.filter(function (p) { return p.program && !gl.getProgramParameter(p.program, gl.LINK_STATUS); }).map(function (p) {
+          var log = [shaderLog(p.fragmentShader), shaderLog(p.vertexShader), String(gl.getProgramInfoLog(p.program) || '').replace(/\u0000/g, '').trim()].filter(Boolean).join('\n');
+          return { name: p.name || 'shader', log: log };
+        });
+      }
+    };
+  }
+  // A staged load draws nothing for a few seconds: show the water colour (the
+  // canvas's CSS background) rather than an empty black canvas meanwhile.
+  function clearToWater(T, renderer) {
+    if (typeof renderer.setClearColor !== 'function' || typeof renderer.clear !== 'function' || typeof renderer.getClearColor !== 'function') return;
+    var keep = renderer.getClearColor(new T.Color()), alpha = renderer.getClearAlpha();
+    renderer.setClearColor(0x0b3a4d, 1); renderer.clear(); renderer.setClearColor(keep, alpha);
+  }
+  // Every 2D texture on the scene's materials (and their custom uniforms), to upload before the first frame.
+  function sceneTextures(scene, extra) {
+    var found = new Set();
+    function add(t) { if (t && t.isTexture && !t.isCubeTexture && !t.isDataTexture3D && !t.isDataTexture2DArray && !t.isVideoTexture && !t.isRenderTargetTexture) found.add(t); }
+    scene.traverse(function (o) {
+      (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (m) {
+        Object.keys(m).forEach(function (k) { add(m[k]); });
+        if (m.uniforms) Object.keys(m.uniforms).forEach(function (k) { add(m.uniforms[k] && m.uniforms[k].value); });
+      });
+    });
+    (extra || []).forEach(add);
+    return Array.from(found);
+  }
+
   // ---- Mount ----------------------------------------------------------------------
   function mount(canvas, options) {
     options = options || {};
@@ -1081,8 +1393,10 @@
     var organisms = [], byUid = {}, owner = new Map(), protos = [], groups = [], anemones = [], sessiles = [], decorMeshes = [], decorKinds = [];
     // Decor level of detail: full models near the diver, stand-ins further out, nothing in the fog beyond.
     var nearDist = high ? 17 : 13, farDist = high ? 34 : 25, smallFar = high ? 19 : 14;
-    // Budget governor: the measured frame (renderer.info) scales the decor and organism draw distances.
-    var gov = { scale: 1, frames: 0 }, TRI_BUDGET = high ? 860000 : 330000, CALL_BUDGET = high ? 400 : 170;
+    // Budget governor: the measured frame (renderer.info) scales the decor and organism draw
+    // distances, then thins the planktivore crowd, then refreshes the shadows less often;
+    // the frame's script time slices more work and thins the crowd too (perfGovern).
+    var gov = { scale: 1, frames: 0, level: 0, cpu: 0, cpuMs: 0, frameMs: 0, seen: 0, up: 0, down: 0, slice: 1, crowd: 1, shadowEvery: 1, t0: null }, TRI_BUDGET = high ? 860000 : 330000, CALL_BUDGET = high ? 400 : 170;
     var floorMesh = null, bommieMesh = null, orgRoot = null, diver = null, bubbles = null, focusRing = null, mask = null, backdrop = null, surface = null, motes = null, sun = null, hemi = null;
     var shafts = [], U = null, snowU = null, plantMotions = [], fogNear = new T.Color(), fogFar = new T.Color(), topNear = new T.Color(), topFar = new T.Color(), lastWaterDepth = -1;
     var diverPos = new T.Vector3(), bearing = 0, speed = 0, vy = 0, turnRate = 0, bodyPitch = 0, bodyRoll = 0, kick = 0, swimEffort = 0, autopilot = null;
@@ -1094,6 +1408,8 @@
     var mats = {}, phMaterial = null, phGeometry = {}, legs = [], diverBody = null, HEAD = new T.Vector3(0.74, 0.09, 0), REG = new T.Vector3(0.66, -0.05, 0.16);
     var bubbleState = [], bubbleClock = 0, bubbleBudget = 0, bubbleSide = 1, rbub = stream(seed, 901), BUBBLES = 64, apSpot = {}, settle = 0;
     var desired = new T.Vector3(), lookAt = new T.Vector3(), headW = new T.Vector3(), ndc = new T.Vector2(), closest = new T.Vector3(), controller = null;
+    // Staged loading (options.staged): the build runs as a queue of short steps; see "Loading" below.
+    var staged = options.staged === true, loaded = false, loadQueue = [], loadAt = 0, loadInsert = 0, loadTimer = 0, loadRaf = 0, loadShown = -1, warm = null, uploads = null;
     function own(resource) { owned.push(resource); return resource; }
     function lin(hex) { return new T.Color(hex).convertSRGBToLinear(); }
     function lin3(hex) { var c = lin(hex); return [c.r, c.g, c.b]; }
@@ -1112,7 +1428,7 @@
 
     function dispose() {
       if (disposed) return; disposed = true;
-      stopLoop(); clearTimer(notifyTimer); notifyTimer = 0;
+      stopLoop(); cancelLoad(); clearTimer(notifyTimer); notifyTimer = 0;
       listeners.forEach(function (off) { off(); }); listeners.length = 0;
       if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
       pointers.clear(); autopilot = null;
@@ -1180,41 +1496,51 @@
       if (renderer.shadowMap) { renderer.shadowMap.enabled = high; renderer.shadowMap.type = T.PCFSoftShadowMap; }
       var caps = renderer.capabilities || {}, ext2 = renderer.extensions;
       derivatives = !!(caps.isWebGL2 || (ext2 && typeof ext2.has === 'function' && ext2.has('OES_standard_derivatives')));
+      if (staged) clearToWater(T, renderer);
       build();
+      if (staged) { warm = shaderWarmup(renderer, scene, camera, now); queueFirstFrame(); } else runQueue();
     } catch (error) {
       dispose();
       throw new Error('This device could not start the 3D reef dive. ' + (error && error.message ? error.message : 'Please use the 2D survey.'));
     }
 
+    // The build is a queue of steps in this order; a step may queue its own parts,
+    // which run straight after it. A plain mount runs them all at once.
     function build() {
       var unitArea = restoration ? { reef_star: 1.5, reef_ball: 4.8, coral_tree_nursery: 9.5 }[restoration.kind] : 0;
       var patchRadius = restoration ? clamp(Math.sqrt(restoration.units * unitArea / Math.PI) + 1.4, 4, 9.5) : 4.5;
-      terrain = createTerrain(seed, site.depthM, patchRadius);
-      bommies = placeBommies(seed, terrain);
-      bommies.forEach(function (b) {
-        var reach = b.r * 1.35;
-        var i0 = cellOf(b.x - reach), i1 = cellOf(b.x + reach), j0 = cellOf(b.z - reach), j1 = cellOf(b.z + reach);
-        for (var j = j0; j <= j1; j++) for (var i = i0; i <= i1; i++) { var hgt = b.heightAt(GRID_MIN + i * GRID_STEP, GRID_MIN + j * GRID_STEP), k = j * GRID_N + i; if (hgt > obstacle[k]) obstacle[k] = hgt; }
+      loadStep(2, function () {
+        terrain = createTerrain(seed, site.depthM, patchRadius);
+        bommies = placeBommies(seed, terrain);
+        bommies.forEach(function (b) {
+          var reach = b.r * 1.35;
+          var i0 = cellOf(b.x - reach), i1 = cellOf(b.x + reach), j0 = cellOf(b.z - reach), j1 = cellOf(b.z + reach);
+          for (var j = j0; j <= j1; j++) for (var i = i0; i <= i1; i++) { var hgt = b.heightAt(GRID_MIN + i * GRID_STEP, GRID_MIN + j * GRID_STEP), k = j * GRID_N + i; if (hgt > obstacle[k]) obstacle[k] = hgt; }
+        });
+        var big = bommies.filter(function (b) { return b.r >= 1.4; });
+        station = big.slice().sort(function (a, b) { return Math.hypot(a.x - 4, a.z - 4) - Math.hypot(b.x - 4, b.z - 4); })[0];
+        crevice = big.filter(function (b) { return b !== station; }).sort(function (a, b) { return b.r * b.h - a.r * a.h; })[0] || station;
+        (function crevicePoint() {
+          var a = bearingTo(-crevice.x, -crevice.z), dx = fwdX(a), dz = fwdZ(a), lx = dx * crevice.c + dz * crevice.s, lz = -dx * crevice.s + dz * crevice.c, la = Math.atan2(lz, lx);
+          var e = crevice.edge(la) * 0.9, px = crevice.x + dx * e, pz = crevice.z + dz * e, py = Math.max(crevice.heightAt(px, pz) - crevice.h * 0.15, terrain.floorY(px, pz) + 0.25);
+          crevice.mouth = { x: px, y: py, z: pz, nx: dx, nz: dz };
+        })();
       });
-      var big = bommies.filter(function (b) { return b.r >= 1.4; });
-      station = big.slice().sort(function (a, b) { return Math.hypot(a.x - 4, a.z - 4) - Math.hypot(b.x - 4, b.z - 4); })[0];
-      crevice = big.filter(function (b) { return b !== station; }).sort(function (a, b) { return b.r * b.h - a.r * a.h; })[0] || station;
-      (function crevicePoint() {
-        var a = bearingTo(-crevice.x, -crevice.z), dx = fwdX(a), dz = fwdZ(a), lx = dx * crevice.c + dz * crevice.s, lz = -dx * crevice.s + dz * crevice.c, la = Math.atan2(lz, lx);
-        var e = crevice.edge(la) * 0.9, px = crevice.x + dx * e, pz = crevice.z + dz * e, py = Math.max(crevice.heightAt(px, pz) - crevice.h * 0.15, terrain.floorY(px, pz) + 0.25);
-        crevice.mouth = { x: px, y: py, z: pz, nx: dx, nz: dz };
-      })();
-      var causticTex = own(createCausticTexture(T, high ? 256 : 128));
-      U = { map: { value: causticTex }, time: { value: 4 }, strength: { value: 0.62 }, eye: { value: new T.Vector3() }, extinction: { value: new T.Vector3(0.065, 0.042, 0.030) }, scatter: { value: new T.Color() } };
-      buildMaterials();
-      buildFloor(); buildBommieMesh();
-      orgRoot = new T.Group(); orgRoot.name = 'reef-explore-organisms'; scene.add(orgRoot);
-      buildOrganisms(); immerseOrganisms();
-      buildDecor();
-      buildWater();
-      buildDiver(); buildBubbles(); buildFocusRing(); buildMask();
-      spawnDiver();
-      organisms.forEach(function (o) { if (o.path) { if (o.school) planSchoolRoute(o); poseMobile(o, 0, true); } });
+      loadStep(4, function () {
+        var causticTex = own(createCausticTexture(T, high ? 256 : 128));
+        U = { map: { value: causticTex }, time: { value: 4 }, strength: { value: 0.62 }, eye: { value: new T.Vector3() }, extinction: { value: new T.Vector3(0.065, 0.042, 0.030) }, scatter: { value: new T.Color() } };
+        buildMaterials();
+      });
+      loadStep(4, buildFloor); loadStep(3, buildBommieMesh);
+      loadStep(1, function () { orgRoot = new T.Group(); orgRoot.name = 'reef-explore-organisms'; scene.add(orgRoot); });
+      loadStep(60, buildOrganisms); loadStep(1, immerseOrganisms);
+      loadStep(10, buildDecor);
+      loadStep(2, buildWater);
+      loadStep(3, function () {
+        buildDiver(); buildBubbles(); buildFocusRing(); buildMask();
+        spawnDiver();
+        organisms.forEach(function (o) { if (o.path) { if (o.school) planSchoolRoute(o); poseMobile(o, 0, true); } });
+      });
     }
 
     // ---- Materials (shaders adapted from Reef3DHabitat) ---------------------
@@ -1225,11 +1551,14 @@
       if (derivatives) parts.fCommon.push('#define REEF_DERIVATIVES');
       if (high) parts.fCommon.push('#define REEF_CAUSTIC_LAYERS');
       parts.fCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''), GLSL_NOISE, CAUSTIC_COMMON);
+      // The light tier's torch is diffuse only, with no highlight.
+      parts.fCommon.push(TORCH_COMMON + (high ? '\n#define REEF_TORCH_SPECULAR' : ''));
       parts.vCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''));
       parts.vProject.push(WORLD_VERTEX + (local ? '\nvReefLocal=position;' : ''));
-      parts.fLighting = [CAUSTIC_APPLY.replace('reefCausticStrength*', 'reefCausticStrength*getShadowMask()*')];
+      parts.fLighting = [CAUSTIC_APPLY.replace('reefCausticStrength*', 'reefCausticStrength*getShadowMask()*'), TORCH_LIGHT];
     }
-    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; }
+    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; bindTorch(shader); }
+    function bindTorch(shader) { shader.uniforms.reefTorchPos = U.torchPos; shader.uniforms.reefTorchDir = U.torchDir; shader.uniforms.reefTorch = U.torch; }
     function immerseOrganisms() {
       // The species guide also uses these models in neutral studio light.
       // Apply the dive's water treatment here, preserving each species' own
@@ -1311,7 +1640,9 @@
     }
     function rockShader(shader) {
       var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
-      shader.uniforms.reefRockLife = { value: new T.Vector2(vitality, health.algae) };
+      // Coralline crust is a pink accent on living rock, not its whole skin: the
+      // coral patches painted into the vertex colours carry the reef's colour.
+      shader.uniforms.reefRockLife = { value: new T.Vector2(vitality * 0.45, health.algae) };
       shader.uniforms.reefSubstrateMap = U.substrate;
       parts.vCommon.push('varying vec3 vReefStoneNormal;');
       parts.vProject.push('vReefStoneNormal=inverseTransformDirection(transformedNormal,viewMatrix);');
@@ -1457,6 +1788,8 @@
       var brain = { a: { value: new T.Vector4(0.08, 0, 0.05, 60) }, b: { value: new T.Vector4(1.0, 28, 0, 0) } };
       var sponge = { a: { value: new T.Vector4(0.35, 0, 0.0, 30) }, b: { value: new T.Vector4(0, 18, 0, 0) } };
       U.substrate = { value: own(createSubstrateTexture(T)) };
+      // Dive light: x = power (0 when off), y and z = cone edge cosines, w = reach in metres.
+      U.torchPos = { value: new T.Vector3() }; U.torchDir = { value: new T.Vector3(0, -0.3, -1).normalize() }; U.torch = { value: new T.Vector4(0, TORCH_OUTER, TORCH_INNER, TORCH_REACH) };
       mats.floor = patch(std({ roughness: 0.95, metalness: 0 }), 'floor', floorShader);
       mats.rock = patch(std({ roughness: 0.92 }), 'rock', rockShader);
       mats.coral = patch(std({ roughness: 0.82 }), 'coral', coralShader(look));
@@ -1470,38 +1803,98 @@
     // ---- Seafloor and bommies -------------------------------------------------
     // Living reef crust: dark rock under pink and purple coralline, tan turf, green
     // algae on a degraded reef and bright encrusting sponges on a healthy one.
-    var CRUST = null, SANDC = null, RUBC = null;
+    var CRUST = null, SANDC = null, RUBC = null, benthos = null, PALETTE = null;
+    // Every patch of hard reef holds one state (benthicField); the floor, the
+    // bommies and the decorative colonies all read it, so they agree.
+    function cover() { return benthos || (benthos = benthicField(seed, terrain, bommies, health, !!restoration)); }
+    // Living colonies are mostly browns, tans, olives and greens (the algae in
+    // their tissue) with fluorescent accents; soft corals, fans and sponges
+    // carry the reds, oranges, purples and blues. Linear colours, lifted a little
+    // because the water column removes red even close to the diver.
+    function palette() {
+      if (PALETTE) return PALETTE;
+      // warm: the shared water treatment turns a plain brown grey-olive at 8 m;
+      // living tissue keeps its warmth close to the diver, as the guide asks.
+      function cols(list, boost, warm) { warm = warm || 1; return list.map(function (hex) { var c = lin(hex); return [Math.min(1.4, c.r * boost * warm), Math.min(1.4, c.g * boost), Math.min(1.4, c.b * boost / Math.sqrt(warm))]; }); }
+      PALETTE = {
+        acro: cols([0x9a643a, 0xa87a46, 0x8a7a3c, 0x6e7a3e, 0x945470, 0x7c5c94, 0x5a7890, 0xa88a50, 0x9c6040], 1.12, 1.18),
+        pocillo: cols([0xc07468, 0xb45e58, 0xa87048, 0xcc8676, 0x96844a], 1.12, 1.18),
+        porites: cols([0xb48c42, 0xb49462, 0x84924a, 0xa87c42, 0xa08c58, 0x8c6a70], 1.1, 1.15),
+        brain: cols([0x8a6e3c, 0x8a8044, 0x6c7444, 0xa07848, 0x845c34], 1.12, 1.18),
+        plate: cols([0x8a7c44, 0x9c6c42, 0x6c7650, 0xa88452, 0x80628a, 0x8a6a3c], 1.12, 1.18),
+        crust: cols([0x7a4884, 0x8c5434, 0x5c7848, 0xb46036, 0xaa6080, 0x7c6a3a], 1.12, 1.15),
+        soft: cols([0xdccb96, 0xdcb042, 0xd8782e, 0xc03c34, 0x924aa2, 0xcc96aa, 0x9ea66c], 1.22),
+        fan: cols([0xd8682a, 0xbc2e2c, 0x7e388e, 0xd09c30], 1.25),
+        sponge: cols([0x803aa4, 0x3a6abc, 0xd86e2a, 0x8e5a36, 0xd0a632, 0xa8384c], 1.25),
+        weed: cols([0x9c7a2c, 0x7c7226, 0xae8a36, 0x6c742a, 0x8c6024], 1.35, 1.1),
+        white: [1.05, 1.04, 1.0], sheen: [[0.94, 1.0, 1.1], [1.08, 0.95, 1.01], [1.05, 1.03, 0.86]],
+        skeleton: [[0.82, 0.8, 0.73], [0.7, 0.66, 0.54], [0.58, 0.54, 0.4]], turf: cols([0x5e5630, 0x6a5c32, 0x56532c], 1.25)
+      };
+      PALETTE.form = { finger: PALETTE.acro, antler: PALETTE.acro, table: PALETTE.acro, corym: PALETTE.pocillo, massive: PALETTE.porites, brain: PALETTE.brain, plate: PALETTE.plate, encrust: PALETTE.crust };
+      return PALETTE;
+    }
+    function pickC(list, roll) { return list[Math.floor(roll * list.length) % list.length]; }
+    // The colour a patch shows between and beneath its colonies. Living tissue
+    // drifts slowly through warm browns, tans and olives across the reef: a
+    // patch-by-patch mix of unrelated hues would average to grey on the rock.
+    var TISSUE = null;
+    function patchTint(k, x, z, out) {
+      var F = cover(), st = k < 0 ? ROCK : F.state[k], P = palette(), r1 = k < 0 ? 0.5 : F.roll[k * 4 + 1], c = null, w = 0;
+      if (!TISSUE) TISSUE = [0xa8643a, 0xb47c48, 0x946a30, 0x8a7434, 0xa25a40, 0xb88a52].map(function (h) { var q = lin(h); return [q.r * 1.3, q.g * 1.12, q.b]; });
+      if (st === LIVE) {
+        var u = noise2(x * 0.16 + 3.7, z * 0.16 - 1.9) * (TISSUE.length - 1), i0 = Math.floor(u), f = u - i0, a = TISSUE[i0], b = TISSUE[Math.min(TISSUE.length - 1, i0 + 1)], sh = 0.9 + 0.2 * r1;
+        out[0] = lerp(a[0], b[0], f) * sh; out[1] = lerp(a[1], b[1], f) * sh; out[2] = lerp(a[2], b[2], f) * sh;
+        return 0.9;
+      }
+      if (st === BLEACHED) { c = P.white; w = 0.7; }
+      else if (st === FRESH) { c = pickC(P.skeleton, r1); w = 0.5; }
+      else if (st === MACRO) { c = pickC(P.turf, r1); w = 0.82; }
+      else if (st === LIFE) { c = pickC(P.sponge, r1); w = 0.22; }
+      if (!w) return 0;
+      out[0] = c[0] * 1.05; out[1] = c[1] * 0.92; out[2] = c[2] * 0.85;
+      return w;
+    }
+    // Declared here but first used while mount() is still running its build.
+    var tintRgb = null;
     function crustColor(x, y, z, up, out, floor) {
-      if (!CRUST) CRUST = { stone: lin3(0x92866d), cca: lin3(0xa97986), purple: lin3(0x83718b), turf: lin3(0x5d633b), tan: lin3(0xaca080),
-        vivid: [0xa77959, 0x88708c, 0xa79864, 0x65878b, 0x9e717a, 0x648d80].map(function (h) { var c = lin(h); return [c.r, c.g, c.b]; }) };
+      if (!tintRgb) tintRgb = [0, 0, 0];
+      if (!CRUST) CRUST = { stone: lin3(0x92866d), cca: lin3(0xb07488), purple: lin3(0x86688e), turf: lin3(0x5d5a34), tan: lin3(0xaca080) };
       // Vertex colour carries only broad pigment washes. Fine crust boundaries
       // belong in the material: sampling them on a coarse rock mesh creates
       // conspicuous triangular patches as the detail level changes.
-      var algae = health.algae, m = 0.88 + 0.24 * noise3(x * 0.3, y * 0.3, z * 0.3);
-      var turfW = clamp((0.1 + 0.8 * algae) * smooth(0.3, 0.7, noise3(x * 0.45 + 4, y * 0.45, z * 0.45)) * (0.4 + 0.6 * up), 0, 0.95);
-      var ccaW = (1 - algae * 0.8) * 0.25 * smooth(0.35, 0.78, noise3(x * 0.38 - 9, y * 0.38, z * 0.38 + 3)) * (1 - turfW);
-      var purW = (1 - algae) * 0.14 * smooth(0.38, 0.8, noise3(x * 0.46 + 2, y * 0.46 - 5, z * 0.46)) * Math.max(0, 1 - turfW - ccaW);
-      var tanW = 0.6 * smooth(0.4, 0.75, noise3(x * 0.5 + 9, y * 0.5, z * 0.5 - 4)) * Math.max(0, 1 - turfW - ccaW - purW);
-      var vivW = (floor ? 0 : 0.13) * vitality * vitality * smooth(0.4, 0.78, noise3(x * 0.4 + 11, y * 0.4, z * 0.4)) * (1 - turfW), vc = CRUST.vivid[Math.floor(noise3(x * 0.24, y * 0.24, z * 0.24 + 8) * 6) % 6];
-      var rest = Math.max(0, 1 - turfW - ccaW - purW - tanW - vivW);
-      for (var c = 0; c < 3; c++) out[c] = CRUST.stone[c] * m * rest + CRUST.turf[c] * turfW + CRUST.cca[c] * ccaW + CRUST.purple[c] * purW + CRUST.tan[c] * tanW * m + vc[c] * vivW;
+      // Long-dead framework darkens under its turf.
+      // A warped lookup gives the painted patches ragged, organic margins.
+      var F = cover(), k = F.at(x + 0.9 * (noise3(x * 0.8 + 5, y * 0.8, z * 0.8) - 0.5), z + 0.9 * (noise3(x * 0.8, y * 0.8 + 3, z * 0.8 - 7) - 0.5)), algae = health.algae, damage = F.damage, m = (0.88 + 0.24 * noise3(x * 0.3, y * 0.3, z * 0.3)) * (1 - 0.45 * damage);
+      // Bare reef rock is never bare: long-dead framework wears a brown-olive
+      // turf, living reef rock pink and purple coralline crusts.
+      var turfW = clamp((0.14 + 0.5 * algae + 0.4 * damage) * smooth(0.25, 0.65, noise3(x * 0.45 + 4, y * 0.45, z * 0.45)) * (0.45 + 0.55 * up), 0, 0.92);
+      var ccaW = (1 - 0.8 * damage) * 0.3 * smooth(0.3, 0.72, noise3(x * 0.38 - 9, y * 0.38, z * 0.38 + 3)) * (1 - turfW);
+      var purW = (1 - damage) * 0.12 * smooth(0.36, 0.78, noise3(x * 0.46 + 2, y * 0.46 - 5, z * 0.46)) * Math.max(0, 1 - turfW - ccaW);
+      var tanW = 0.4 * (1 - 0.7 * damage) * smooth(0.4, 0.75, noise3(x * 0.5 + 9, y * 0.5, z * 0.5 - 4)) * Math.max(0, 1 - turfW - ccaW - purW);
+      var rest = Math.max(0, 1 - turfW - ccaW - purW - tanW);
+      for (var c = 0; c < 3; c++) out[c] = CRUST.stone[c] * m * rest + CRUST.turf[c] * turfW + CRUST.cca[c] * ccaW + CRUST.purple[c] * purW + CRUST.tan[c] * tanW * m;
+      var w = patchTint(k, x, z, tintRgb) * (floor ? 1 : 0.9 + 0.1 * up) * (0.88 + 0.24 * noise3(x * 1.3 + 2, y * 1.3, z * 1.3));
+      if (w > 0) for (c = 0; c < 3; c++) out[c] = lerp(out[c], tintRgb[c] * m, clamp(w, 0, 1));
       return out;
     }
     function buildFloor() {
       var step = high ? 0.5 : 1.0, xs = gridAxis(-31, 31, step, -80, 80, 1.18), zs = gridAxis(-31, 31, step, -80, 80, 1.18);
       var nx = xs.length, nz = zs.length, n = nx * nz, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), gr = new Float32Array(n * 2), idx = [], i, j;
       var algae = health.algae, rgb = [0, 0, 0];
-      SANDC = lin3(0xcac1a7); RUBC = lin3(0xb1aa97);
+      SANDC = lin3(0xcac1a7); RUBC = lin3(0xb1aa97); cover();
       for (j = 0; j < nz; j++) for (i = 0; i < nx; i++) {
         var x = xs[i], z = zs[j], k = j * nx + i, sand = terrain.sandMask(x, z), rub = terrain.rubbleMask(x, z);
         pos[k * 3] = x; pos[k * 3 + 1] = terrain.floorY(x, z); pos[k * 3 + 2] = z;
         var n1 = noise2(x * 0.35 + 3.1, z * 0.35 - 1.7), n2 = noise2(x * 1.7, z * 1.7 + 5.5);
         crustColor(x, pos[k * 3 + 1], z, 1, rgb, true);
         for (var c = 0; c < 3; c++) {
-          var turf = CRUST.turf[c], sandC = SANDC[c] * (0.95 + 0.08 * n2), rubC = RUBC[c] * (0.85 + 0.25 * n2) * (1 - 0.35 * algae * n1) + turf * 0.35 * algae * n1;
-          rgb[c] = lerp(lerp(rgb[c], sandC, sand), rubC, rub);
+          var turf = CRUST.turf[c], sandC = SANDC[c] * (0.95 + 0.08 * n2), rubC = RUBC[c] * (0.85 + 0.25 * n2) * 0.66 + turf * (0.22 + 0.3 * algae * n1) + CRUST.cca[c] * 0.12 * (1 - n1);
+          rgb[c] = lerp(lerp(rgb[c], sandC, sand), rubC, restoration ? rub : rub * 0.5);
         }
-        col[k * 3] = rgb[0]; col[k * 3 + 1] = rgb[1]; col[k * 3 + 2] = rgb[2]; gr[k * 2] = sand; gr[k * 2 + 1] = rub;
+        // Rubble patches of a damaged reef share the rubble field's chips and tone.
+        var cell = benthos.at(x, z), loose = cell >= 0 && benthos.state[cell] === RUBBLE ? 0.75 : 0;
+        if (loose > rub) for (c = 0; c < 3; c++) rgb[c] = lerp(rgb[c], lerp(RUBC[c] * (0.85 + 0.25 * n2), CRUST.turf[c] * 1.4, 0.3 + 0.5 * benthos.damage * (0.6 + 0.4 * n1)), loose - rub);
+        col[k * 3] = rgb[0]; col[k * 3 + 1] = rgb[1]; col[k * 3 + 2] = rgb[2]; gr[k * 2] = sand * (1 - loose); gr[k * 2 + 1] = Math.max(restoration ? rub : rub * 0.5, loose);
       }
       for (j = 0; j < nz - 1; j++) for (i = 0; i < nx - 1; i++) { var a = j * nx + i, cc = a + nx; idx.push(a, cc, a + 1, a + 1, cc, cc + 1); }
       var g = own(new T.BufferGeometry());
@@ -1510,12 +1903,13 @@
       floorMesh = new T.Mesh(g, mats.floor); floorMesh.name = 'reef-explore-floor'; floorMesh.receiveShadow = true; scene.add(floorMesh);
     }
     function buildBommieMesh() {
-      var b = new Builder(), w = {};
+      var b = new Builder(), w = {}, spans = [];
       bommies.forEach(function (bm) {
         // Spend detail on the large exposed shoulders; small knolls need fewer
         // vertices. Total rock geometry stays below the previous uniform grid.
         var large = bm.r >= 1.65, rings = high ? (large ? 14 : 8) : (large ? 9 : 6), segs = high ? (large ? 34 : 22) : (large ? 20 : 14);
         var first = b.count(), k, s;
+        spans.push({ x: bm.x, z: bm.z, v0: first, i0: b.i.length });
         b.vertex(bm.x, bm.heightAt(bm.x, bm.z), bm.z, 0, 1, 0, 1, 1, 1);
         for (k = 1; k <= rings; k++) {
           var rn = Math.pow(k / rings, 0.82);
@@ -1535,7 +1929,45 @@
       var g = own(b.build(T, true)), pos = g.attributes.position, nor = g.attributes.normal, col = g.attributes.color, rgb = [0, 0, 0];
       for (var i = 0; i < pos.count; i++) { crustColor(pos.getX(i), pos.getY(i), pos.getZ(i), smooth(0.2, 0.8, nor.getY(i)), rgb); col.setXYZ(i, rgb[0], rgb[1], rgb[2]); }
       col.needsUpdate = true;
-      bommieMesh = new T.Mesh(g, mats.rock); bommieMesh.name = 'reef-explore-bommies'; bommieMesh.castShadow = high; bommieMesh.receiveShadow = true; scene.add(bommieMesh);
+      // One identity instance with a white tint draws exactly as a plain mesh and
+      // shares the decor rocks' instanced program: one less shader to link.
+      bommieMesh = new T.InstancedMesh(g, mats.rock, 1); bommieMesh.setMatrixAt(0, new T.Matrix4()); bommieMesh.setColorAt(0, new T.Color(1, 1, 1));
+      bommieMesh.name = 'reef-explore-bommies'; bommieMesh.castShadow = high; bommieMesh.receiveShadow = true; scene.add(bommieMesh);
+      leanRockChunks(g, spans);
+    }
+    // On the high tier the rock is drawn in chunks: whole bommies grouped by which of
+    // 3 x 3 cells their centre lies in, so the camera and the shadow camera skip the
+    // chunks they cannot see. A chunk copies its bommies' vertices exactly and no bommie
+    // is split, so no seam can open. bommieMesh keeps the whole rock, undrawn, for
+    // picking and queries. Finer cells cull little more rock for many more draw calls,
+    // and the light tier (no shadow pass, a lighter rock) gains nothing from them.
+    function leanRockChunks(g, spans) {
+      if (!high) return;
+      var cells = {}, keys = [], P = g.attributes.position.array, N = g.attributes.normal.array, C = g.attributes.color.array, I = g.index.array;
+      function band(v) { return clamp(Math.floor((v + 31.5) / 21), 0, 2); }
+      spans.forEach(function (sp, k) {
+        sp.v1 = k + 1 < spans.length ? spans[k + 1].v0 : P.length / 3; sp.i1 = k + 1 < spans.length ? spans[k + 1].i0 : I.length;
+        var key = band(sp.x) + ':' + band(sp.z);
+        if (!cells[key]) { cells[key] = []; keys.push(key); }
+        cells[key].push(sp);
+      });
+      keys.forEach(function (key) {
+        var list = cells[key], nv = 0, ni = 0, at = 0, n = 0;
+        list.forEach(function (sp) { nv += sp.v1 - sp.v0; ni += sp.i1 - sp.i0; });
+        var pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), col = new Float32Array(nv * 3), idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+        list.forEach(function (sp) {
+          pos.set(P.subarray(sp.v0 * 3, sp.v1 * 3), at * 3); nor.set(N.subarray(sp.v0 * 3, sp.v1 * 3), at * 3); col.set(C.subarray(sp.v0 * 3, sp.v1 * 3), at * 3);
+          for (var q = sp.i0; q < sp.i1; q++) idx[n++] = I[q] - sp.v0 + at;
+          at += sp.v1 - sp.v0;
+        });
+        var cg = own(new T.BufferGeometry());
+        cg.setAttribute('position', new T.BufferAttribute(pos, 3)); cg.setAttribute('normal', new T.BufferAttribute(nor, 3)); cg.setAttribute('color', new T.BufferAttribute(col, 3));
+        cg.setIndex(new T.BufferAttribute(idx, 1)); cg.computeBoundingBox(); cg.computeBoundingSphere();
+        // An InstancedMesh is never culled by default; with one identity instance its geometry's bounds are exact.
+        var chunk = new T.InstancedMesh(cg, mats.rock, 1); chunk.setMatrixAt(0, new T.Matrix4()); chunk.setColorAt(0, new T.Color(1, 1, 1)); chunk.frustumCulled = true;
+        chunk.name = 'reef-explore-bommies-chunk'; chunk.castShadow = high; chunk.receiveShadow = true; scene.add(chunk);
+      });
+      bommieMesh.visible = false;
     }
 
     // ---- Organisms ----------------------------------------------------------------
@@ -1604,15 +2036,19 @@
         if (an) { o.anchor = an; o.ground = an.top; o.home = new T.Vector3(an.x, an.top + 0.14, an.z); return; }
         zone = 'bommie';
       }
-      if (beh === 'cleaner') zone = info.group === 'fish' ? 'station' : 'stationBase';
+      if (beh === 'cleaner' && placeCleaner(o)) return;
+      if (beh === 'cots' && placeCots(o)) return;
+      if (beh === 'graze' && info.habit === 'school') o.school = schoolSize(info, d[31]);
       if (beh === 'moray') { var mo = crevice.mouth; o.home = new T.Vector3(mo.x, mo.y, mo.z); o.ground = mo.y; o.yaw = bearingTo(mo.nx, mo.nz); o.viewDir = { x: mo.nx, z: mo.nz }; return; }
-      if (beh === 'manta') { o.anchor = station; o.ground = station.top; o.home = new T.Vector3(station.x, station.top + 2.4, station.z); return; }
+      if (beh === 'manta') { placeManta(o); return; }
       if (beh === 'cruise') { var hx = -18 + 36 * d[0]; o.ground = terrain.floorY(hx, 21); o.home = new T.Vector3(hx, o.ground + 1.6, 21); return; }
       var best = null, bestScore = -Infinity, sessile = beh === 'fixed' || beh === 'den' || beh === 'ray' || beh === 'cleaner' && info.group !== 'fish';
       for (k = 0; k < 8; k++) {
         var c = candidate(zone, d[k * 3], d[k * 3 + 1], d[k * 3 + 2], info);
         if (!c || Math.abs(c.x) > 27.5 || Math.abs(c.z) > 27.5) continue;
         var depth = -c.y, score = c.score;
+        // Planktivore schools gather over the larger coral heads.
+        if (zone === 'bommieAbove' && c.bommie) score += 0.6 * Math.min(1, c.bommie.r / 2);
         if (depth < info.depthM[0]) score -= (info.depthM[0] - depth) * 0.3;
         if (depth > info.depthM[1]) score -= (depth - info.depthM[1]) * 0.3;
         if (sessile) {
@@ -1655,6 +2091,7 @@
     function setupMotion(o) {
       var d = o.draws, L = o.info.lengthM, h = o.home, beh = o.behavior, a, b, sp;
       o.clear = 0.22 + 0.35 * Math.min(L, 1.6); o.lift = 0; o.sweep = null; o.bank = 0.12;
+      if (beh === 'cleaner' || beh === 'client' || beh === 'graze') { if (setupForager(o)) return; beh = 'wander'; o.pathPeriod = 60; }
       if (o.leader && beh === 'pair') {
         var lead = o.leader, ox = (d[28] - 0.5) * 0.8, oz = 0.25 + 0.3 * d[30], pairAhead = { x: 0, y: 0, z: 0 };
         // A companion follows the leader's wake, keeping its flank offset as
@@ -1670,30 +2107,57 @@
         a = clamp((beh === 'roam' ? 5 : 1.2) + 3 * L, 1.2, 9) * (0.7 + 0.6 * d[28]); b = a * (0.55 + 0.35 * d[30]);
         sp = clamp(0.2 + 0.45 * L, 0.15, 0.85) * (0.8 + 0.4 * d[30]);
         o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.3, 0.22);
+      } else if (beh === 'school' && L < 0.15) {
+        // Planktivores hold station over their coral head, facing into the current
+        // to pick plankton from it, and drop into the coral when a diver comes close.
+        a = 0.3 + 0.35 * d[28]; b = a * (0.55 + 0.3 * d[30]); sp = 0.06 + 0.05 * d[30];
+        o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.18, 0.15);
+        o.pathPeriod = TAU * ((a + b) / 2) / sp; o.bank = 0.04; o.planktivore = true;
+        o.sweep = intoCurrent(h.x, h.z, o.phase);
+        o.clear = Math.max(o.clear, (o.radius || 0.5) * 0.7 + 0.3);
+        o.shelterClear = 0.12 + 0.3 * (o.radius || 0.5);
+        partSchool(o);
       } else if (beh === 'school') {
         var small = L < 0.15; a = (small ? 1.2 : 3.5) + (small ? 1.5 : 5) * d[28]; b = a * (0.5 + 0.3 * d[30]);
         sp = (small ? 0.25 : 0.45) + 0.25 * d[30];
         o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.4, 0.12);
         o.pathPeriod = TAU * ((a + b) / 2) / sp; o.bank = 0.08;
         o.clear = Math.max(o.clear, (o.radius || 0.5) * 0.7 + 0.3);
+        partSchool(o);
       } else if (beh === 'hover' || beh === 'cleaner') {
         var hp = loopPath(h.x, h.y, h.z, 0.25 + 0.35 * d[28], 0.2 + 0.2 * d[30], o.yaw, 0.15 + 0.15 * d[30], o.phase, o.dir, 0.12, 0.1), base = o.yaw, ph = o.phase;
         o.path = hp; o.sweep = function (t) { return base + 0.8 * Math.sin(0.17 * t + ph) + 0.3 * Math.sin(0.41 * t + ph * 2); };
         o.clear = 0.12 + 0.3 * Math.min(L, 1); o.bank = 0.025;
       } else if (beh === 'clown') {
-        var an = o.anchor, cx = h.x, cz = h.z, top = an ? an.top : h.y - 0.14, rr = 0.16 + 0.12 * d[28], ph2 = o.phase + (o.leader ? Math.PI * 0.8 : 0);
-        o.path = function (t, out) { var th = ph2 + 0.9 * t; out.x = cx + rr * Math.cos(th) + 0.06 * Math.sin(3.1 * th); out.z = cz + rr * Math.sin(th) + 0.05 * Math.cos(2.3 * th); out.y = top + 0.12 + 0.07 * Math.sin(1.7 * th + ph2); return out; };
-        o.clear = 0.05; o.bank = 0.055;
+        var an = o.anchor, mat = an ? anemoneMat(an) : null, cx = mat ? mat.x : h.x, cz = mat ? mat.z : h.z, top = mat ? mat.y : h.y - 0.14, rr = 0.16 + 0.12 * d[28], ph2 = o.phase + (o.leader ? Math.PI * 0.8 : 0);
+        // When the diver comes close, the fish drop in among the tentacles (clownAct).
+        var cl = o.eco = { kind: 'clown', hide: 0, x: cx, y: top, z: cz };
+        o.path = function (t, out) {
+          var th = ph2 + 0.9 * t, k = cl.hide, r = rr * (1 - 0.7 * k), wob = 1 - k;
+          out.x = cx + r * Math.cos(th) + 0.06 * wob * Math.sin(3.1 * th); out.z = cz + r * Math.sin(th) + 0.05 * wob * Math.cos(2.3 * th);
+          out.y = Math.max(top + 0.12 + 0.07 * wob * Math.sin(1.7 * th + ph2) - 0.1 * k, rockSurfaceAt(out.x, out.z) + 0.05); return out;
+        };
+        // The path keeps them just over the rock itself. The obstacle grid would hold
+        // them well above their anemone: it is coarse on a sloping coral head, and the
+        // anemone's own stamp there follows its bounding box (see anemoneTop).
+        o.clear = -1.2; o.bank = 0.055; o.act = function (dt) { clownAct(o, dt); };
       } else if (beh === 'turtle') {
-        a = 6 + 6 * d[28]; b = a * (0.6 + 0.25 * d[30]); var tp = loopPath(h.x, 0, h.z, a, b, o.yaw, 0.3 / ((a + b) / 2), o.phase, o.dir, 0, 0.15), tph = o.phase;
+        a = 6 + 6 * d[28]; b = a * (0.6 + 0.25 * d[30]); var tp = loopPath(h.x, 0, h.z, a, b, o.yaw, 0.3 / ((a + b) / 2), o.phase, o.dir, 0, 0.15), tph = o.phase, br = turtleBreath(o);
         // Keep the cruise height continuous. The clearance planner below
         // anticipates tall colonies without stepping through their grid tops.
-        o.path = function (t, out) { tp(t, out); var th = tph + 0.3 / ((a + b) / 2) * t; out.y = terrain.floorY(out.x, out.z) + 0.65 + 2.2 * (0.5 + 0.5 * Math.sin(1.5 * th + tph)); return out; };
-        o.clear = 0.35;
+        o.eco = { kind: 'turtle', breath: br, env: { v: 0 }, cruise: function (t, out) { tp(t, out); var th = tph + 0.3 / ((a + b) / 2) * t; out.y = terrain.floorY(out.x, out.z) + 0.65 + 2.2 * (0.5 + 0.5 * Math.sin(1.5 * th + tph)); return out; } };
+        // Now and then the turtle climbs to the surface to breathe (turtleBreath).
+        o.path = function (t, out) { o.eco.cruise(t, out); out.y += (br.y - out.y) * breathAt(o, br, t, null); return out; };
+        o.clear = 0.35; o.ceiling = Math.max(o.ceiling, br.y + 0.05); o.act = function () { turtleAct(o); };
       } else if (beh === 'manta') {
-        var st = o.anchor, mx = st.x + Math.cos(o.yaw) * st.r * 0.6, mz = st.z + Math.sin(o.yaw) * st.r * 0.6, ma = 8.5, mb = 6.5, mw = 0.75 / 7.5, mph = o.phase, mrot = o.yaw;
-        var mp = loopPath(mx, 0, mz, ma, mb, mrot, mw, mph, o.dir, 0, 0.08);
-        o.path = function (t, out) { mp(t, out); out.y = st.top + 2.4 + 0.7 * Math.sin(2 * (mph + mw * t)); return out; };
+        // A wide loop over the reef, then slow circles over the cleaning station.
+        var mst = o.eco && o.eco.station, C = mst ? mst.top : { x: o.anchor.x, y: o.anchor.top, z: o.anchor.z }, mph = o.phase, mrot = o.yaw, mw = 0.1, mdir = o.dir;
+        var reachM = clamp((26 - Math.max(Math.abs(C.x), Math.abs(C.z))) / 8.5, 0.3, 1), cleanY = Math.min(C.y + 1.35, -1.45);
+        o.path = function (t, out) {
+          var th = mph + mdir * mw * t, v = mst ? mantaVisitW(o, t) : 0, u = th - mrot, rc = 8.5 * 6.5 / Math.hypot(6.5 * Math.cos(u), 8.5 * Math.sin(u)) * reachM, r = rc + (2.3 - rc) * v;
+          var yc = Math.min(C.y + 2.4 + 0.7 * Math.sin(2 * th), -1.6);
+          out.x = C.x + r * Math.cos(th); out.z = C.z + r * Math.sin(th); out.y = yc + (cleanY - yc) * v; return out;
+        };
         o.clear = 1.2; o.bank = 0.35;
       } else if (beh === 'cruise') {
         var sx = 18 + 3 * d[28], sz = 4.5 + 1.5 * d[30], sph = o.phase, sw = 0.85 / ((sx + sz) / 2), sdir = o.dir;
@@ -1701,11 +2165,859 @@
         o.clear = 0.8; o.bank = 0.2;
       } else o.path = null;
     }
-    // Reef3DSpecies coral health: 'healthy', 'bleached' or 'dead' (algae-covered); other groups are always 'healthy'.
+    // ---- Living reef interactions ---------------------------------------------------
+    // Cleaning stations, grazing parrotfish, breathing turtles, a crown-of-thorns
+    // feeding scar and anemonefish taking cover. Schedules are hashed per cycle and
+    // every swimmer's position is a closed-form function of worldTime, so any split
+    // of the frame times gives the same visits, bites and breaths; only the
+    // clownfish's retreat follows the diver and keeps a little state.
+    // Declared without values: a plain mount runs its whole build before this line
+    // is reached, so ecoPlan() fills them on first use.
+    var eco, ecoP, ecoQ, ecoR, ecoS, ecoW, ecoV, ecoRight, ecoUp, ecoHead;
+    function eh(a, b, c) { return hash2(Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663) ^ Math.imul((c | 0) + 7, 83492791), seed ^ 0x2545F491); }
+    function ease(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
+    function ease5(x) { x = clamp(x, 0, 1); return x * x * x * (x * (6 * x - 15) + 10); }
+    function countOf(id) { for (var i = 0; i < site.population.length; i++) if (site.population[i].id === id) return site.population[i].count; return 0; }
+    // The rock or coral surface itself (the obstacle grid, and the touch sensor's
+    // surfaceAt built on it, are coarser and higher on a sloping coral head).
+    function rockSurfaceAt(x, z) {
+      var y = terrain.floorY(x, z);
+      for (var q = 0; q < bommies.length; q++) {
+        var b = bommies[q]; if (Math.abs(b.x - x) > b.r * 1.3 || Math.abs(b.z - z) > b.r * 1.3) continue;
+        var hb = b.heightAt(x, z); if (hb > y) y = hb;
+      }
+      return y;
+    }
+    function ecoPlan() {
+      if (eco) return eco;
+      ecoP = { x: 0, y: 0, z: 0 }; ecoQ = { x: 0, y: 0, z: 0 }; ecoR = { x: 0, y: 0, z: 0 }; ecoS = { x: 0, y: 0, z: 0 }; ecoW = { x: 0, y: 0, z: 0 };
+      ecoV = new T.Vector3(); ecoRight = new T.Vector3(); ecoUp = new T.Vector3(); ecoHead = new T.Vector3();
+      eco = { stations: [], grazers: [], puffs: null, manta: null, hosts: [], cleanersPlaced: 0, cleanerFish: 0 };
+      // Station 0 is on the coral head the dive opens on (spawnDiver's choice of a
+      // large head), unless that head is the moray's crevice; a second pair of
+      // cleaners keeps a station elsewhere, about a dozen metres away.
+      var sp = terrain.spawn, first = null, best = 0, second = null, view = null, viewS = 0;
+      bommies.forEach(function (b) {
+        var d = Math.hypot(b.x - sp.x, b.z - sp.z);
+        if (!(d > 3 && d < 17)) return;
+        var s = b.r * b.h / d * (b === station ? 1.6 : 1);
+        if (s > viewS) { viewS = s; view = b; }
+        if (b.r >= 1.4 && b !== crevice && s > best) { best = s; first = b; }
+      });
+      // The heading the dive opens on (spawnDiver's choice).
+      eco.openBearing = view ? bearingTo(view.x - sp.x, view.z - sp.z) : 0;
+      first = first || station;
+      if (countOf('cleaner_wrasse') >= 2) {
+        if (station !== first && station !== crevice && Math.hypot(station.x - first.x, station.z - first.z) > 7) second = station;
+        else bommies.forEach(function (b) {
+          if (b.r < 1.4 || b === first || b === crevice) return;
+          var d = Math.abs(Math.hypot(b.x - first.x, b.z - first.z) - 12);
+          if (Math.hypot(b.x - first.x, b.z - first.z) > 7 && (!second || d < Math.abs(Math.hypot(second.x - first.x, second.z - first.z) - 12))) second = b;
+        });
+      }
+      [first, second].forEach(function (b, i) { if (b) eco.stations.push(makeStation(b, i)); });
+      // Readable for the lab's checks: where each cleaning station is.
+      if (orgRoot) orgRoot.userData.cleaningStations = eco.stations.map(function (st) { return { spot: [st.spot.x, st.spot.y, st.spot.z], out: [st.out.x, st.out.z], top: [st.top.x, st.top.y, st.top.z] }; });
+      return eco;
+    }
+    // A cleaning station sits on the upper shoulder of a prominent coral head
+    // (station 0 faces the diver's start), clear of colonies so it can be seen.
+    function makeStation(b, index) {
+      var sp = terrain.spawn, tx = index ? 0 : sp.x, tz = index ? 0 : sp.z;
+      if (Math.hypot(tx - b.x, tz - b.z) < 0.5) tx = b.x + 1;
+      var a = bearingTo(tx - b.x, tz - b.z), dx = fwdX(a), dz = fwdZ(a), lx = dx * b.c + dz * b.s, lz = -dx * b.s + dz * b.c, la = Math.atan2(lz, lx);
+      var e = b.edge(la) * 0.6, w = b.toWorld(Math.cos(la) * e, Math.sin(la) * e), y = b.heightLocal(Math.cos(la) * e, Math.sin(la) * e);
+      if (!(y > NONE)) y = terrain.floorY(w.x, w.z);
+      block(w.x, w.z, 0.5);
+      return { index: index, bommie: b, spot: { x: w.x, y: y, z: w.z }, out: { x: dx, z: dz }, bearing: a, top: { x: b.x, y: b.top, z: b.z },
+        clients: [], cleaners: [], shrimp: 0, n: -1, P: 64, t0: 13 + 7 * eh(index, 12, 3) + 9 * index };
+    }
+    function freeze(st) { if (st.n < 0) { st.n = st.clients.length; st.P = Math.max(64, 24 * st.n); } }
+    // Visit j of cycle c at a station: most cycles each client comes once, in its
+    // own slot, so two clients never pose together; some cycles it stays away.
+    function visitOf(st, j, c) {
+      if (c < 0 || j >= st.n) return null;
+      var salt = st.index * 97, o = st.clients[j], S = st.P / st.n;
+      if (!(c === 0 && j === 0) && eh(salt + 5, j, c) < 0.3) return null;
+      var hs = st.t0 + c * st.P + j * S + Math.max(0, S - 18) * eh(salt + 6, j, c), A = o.eco.approach;
+      return { o: o, st: st, j: j, c: c, hs: hs, hd: 9 + 6 * eh(salt + 7, j, c), W: eh(salt + 8, j, c) < 0.45 ? 0 : 1 + 3.5 * eh(salt + 9, j, c), A: A, D: A * 0.9, pose: Math.floor(eh(salt + 10, j, c) * 3) };
+    }
+    function clientVisit(o, t) {
+      var e = o.eco, st = e && e.station; if (!st) return null;
+      freeze(st); if (e.slot >= st.n) return null;
+      var S = st.P / st.n, c0 = Math.floor((t - st.t0 - e.slot * S) / st.P);
+      for (var c = c0 - 1; c <= c0 + 1; c++) { var v = visitOf(st, e.slot, c); if (v && t >= v.hs - v.W - v.A && t <= v.hs + v.hd + v.D) return v; }
+      return null;
+    }
+    // The visit currently posing (or just arriving) at a station, if any.
+    function stationVisit(st, t, lead, tail) {
+      freeze(st);
+      for (var j = 0; j < st.n; j++) {
+        var S = st.P / st.n, c0 = Math.floor((t - st.t0 - j * S) / st.P);
+        for (var c = c0 - 1; c <= c0 + 1; c++) { var v = visitOf(st, j, c); if (v && t >= v.hs - lead && t <= v.hs + v.hd + tail) return v; }
+      }
+      return null;
+    }
+    // Hover and waiting points beside a station for a client of length L.
+    // Both clear the coarse obstacle grid, so poseMobile never lifts a posing client
+    // off the point the cleaner works around.
+    function clientSpots(o, st) {
+      var L = o.eco.L, d = 0.55 + 0.55 * L, x = st.spot.x + st.out.x * d, z = st.spot.z + st.out.z * d, side = eh(st.index, o.serial, 21) < 0.5 ? 1 : -1;
+      o.eco.H = { x: x, y: Math.max(st.spot.y + 0.12, rockSurfaceAt(x, z) + 0.28 + 0.3 * L, groundTop(x, z) + o.clear + 0.06), z: z };
+      var wa = st.bearing + side * 0.75, wx = st.spot.x + fwdX(wa) * (d + 1.1), wz = st.spot.z + fwdZ(wa) * (d + 1.1);
+      o.eco.Q = { x: wx, y: Math.max(o.eco.H.y + 0.3, rockSurfaceAt(wx, wz) + 0.4 + 0.3 * L, groundTop(wx, wz) + o.clear + 0.1), z: wz };
+      // Posing side-on along the coral head: one flank faces the reef, one the open water.
+      o.eco.bh = wrapAngle(st.bearing + side * Math.PI / 2);
+    }
+    // Moves a client from its own route (base) to the station and back.
+    function visitBlend(o, v, t, base, out) {
+      var e = o.eco, H = e.H, Q = v.W > 0.5 ? e.Q : H, t1 = v.hs - v.W, he = v.hs + v.hd, w = 1, g, tx, ty, tz;
+      if (t < t1) { w = ease((t - (t1 - v.A)) / v.A); tx = Q.x; ty = Q.y; tz = Q.z; }
+      else if (t < v.hs) { g = ease((t - (v.hs - Math.min(1.2, v.W))) / Math.min(1.2, v.W)); tx = lerp(Q.x, H.x, g); ty = lerp(Q.y, H.y, g) + 0.03 * Math.sin(0.9 * t); tz = lerp(Q.z, H.z, g); }
+      else { tx = H.x + 0.025 * Math.sin(0.5 * t + o.phase); ty = H.y + 0.02 * Math.sin(0.7 * t); tz = H.z + 0.025 * Math.cos(0.43 * t); if (t > he) w = 1 - ease((t - he) / v.D); }
+      out.x = lerp(base.x, tx, w); out.y = lerp(base.y, ty, w); out.z = lerp(base.z, tz, w);
+      return w;
+    }
+    // Head-up, head-down or tilted on its side, fins spread: the client's pose.
+    function posing(v, t) { return v ? ease((t - v.hs) / 1.2) * (1 - ease((t - (v.hs + v.hd - 1)) / 1)) : 0; }
+
+    // Bearing for clients and grazers: along their motion when they swim, else held.
+    // Small shifts (a lunge back from a bite, a sidestep to the next bite mark) never
+    // turn the fish; a fish does not swim backwards. On the way to or from a station
+    // the swim itself sets the heading.
+    function forageFace(o, t) {
+      var p = ecoP, q = ecoQ; o.path(t, p); o.path(t + 0.4, q);
+      var dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz), hold = o.eco.hold(t);
+      if (d < 1e-6) return hold;
+      var mv = bearingTo(dx, dz), v = o.eco.station ? clientVisit(o, t) : null, k;
+      if (v && (t < v.hs - v.W || t > v.hs + v.hd)) k = smooth(0.005, 0.03, d);
+      else k = smooth(0.05, 0.14, d) * Math.max(smooth(-0.2, 0.35, Math.cos(mv - hold)), travelTurn(o, t));
+      return hold + wrapAngle(mv - hold) * k;
+    }
+
+    // ---- Grazers and clients notice the diver on their journeys ----------------------
+    // A parrotfish crossing to its next patch, a bumphead group on the move and a
+    // grouper between visits keep their flight distance from the diver (the same
+    // distance as other fish, flightSize, shrinking for a calm diver): they veer away,
+    // or hang back while the diver is in their way, and the window below brings them
+    // back onto their own route before they arrive. While a grazer bites and while a
+    // client comes in to pose, waits and is cleaned the window is zero, so the bite
+    // marks, the sediment puffs and the cleaner's work over the client follow H2's
+    // schedules exactly. The state steps in fixed 1/60 s steps of world time (as the
+    // flight state does), the first time the route is read in a frame.
+    var travelTmp;
+    function travelFleeWrap(o) {
+      var raw = o.path, f = o.travel = { base: flightSize(o), tick: null, x: 0, y: 0, z: 0, tx: 0, ty: 0, tz: 0, r: 0, h: 0 };
+      o.pathRaw = raw;
+      o.path = function (t, out) { raw(t, out); return travelFlee(o, f, t, out); };
+    }
+    // 1 while the fish is free to change its way, easing to 0 at both ends of a
+    // journey (a grazer) and through a station visit (any client).
+    function travelWindow(o, t) {
+      var e = o.eco, w = 1, v;
+      if (e.kind === 'graze') {
+        var sa = segAt(e, t), s = sa.seg;
+        if (s.kind !== 'travel') return 0;
+        w = smooth(0, Math.min(0.8, s.dur * 0.2), sa.u) * smooth(0, Math.min(2.5, s.dur * 0.4), s.dur - sa.u);
+      }
+      if (e.station && w > 0 && (v = clientVisit(o, t))) w *= 1 - visitWeight(v, t);
+      return w;
+    }
+    function travelFlee(o, f, t, out) {
+      var k = Math.floor(worldTime * 60 + 1e-6);
+      if (f.tick === null) f.tick = k;
+      else if (k > f.tick) { for (var j = Math.max(f.tick + 1, k - 29); j <= k; j++) travelTick(o, f, j / 60); f.tick = k; }
+      var w = travelWindow(o, t);
+      if (!(w > 0)) return out;
+      var off = fleeOffset(f, t, travelScratch().a);
+      out.x = clamp(out.x + off.x * w, -27, 27); out.z = clamp(out.z + off.z * w, -27, 27);
+      return out;
+    }
+    function travelScratch() { return travelTmp || (travelTmp = { p: { x: 0, y: 0, z: 0 }, a: { x: 0, y: 0, z: 0 }, b: { x: 0, y: 0, z: 0 } }); }
+    // One fixed step, like fleeTick but level: a grazer keeps low over the reef.
+    function travelTick(o, f, t) {
+      var p = o.pathRaw(t, travelScratch().p), w = travelWindow(o, t), give = o.school ? o.radius * 0.5 : 0, F = flightDistance(f.base, o.uid === focusedUid, f.h);
+      var home = Math.max(0, Math.hypot(p.x - diverPos.x, p.y - diverPos.y, p.z - diverPos.z) - give);
+      // Measured from where the fish is drawn now (its offset times the window).
+      var dx = p.x + f.x * w - diverPos.x, dy = p.y - diverPos.y, dz = p.z + f.z * w - diverPos.z, dh = Math.hypot(dx, dz), dist = Math.max(0, Math.hypot(dh, dy) - give);
+      if (dist < F) {
+        var want = (F - dist) * 0.95;
+        if (dh < 0.05) { dx = Math.cos(bearing); dz = Math.sin(bearing); dh = 1; }
+        f.tx = f.x + dx / dh * want; f.tz = f.z + dz / dh * want; f.ty = 0;
+        var m = Math.hypot(f.tx, f.tz), cap = Math.min(1.6 * F, o.school ? 3 : 2), g0 = groundTop(p.x, p.z);
+        if (m > cap) { f.tx *= cap / m; f.tz *= cap / m; }
+        // Around the coral, not over it: climbing a colony would leave the fish too high
+        // when it reaches its next bite.
+        for (var q = 0; q < 4 && groundTop(p.x + f.tx, p.z + f.tz) > g0 + 0.25; q++) { f.tx *= 0.6; f.tz *= 0.6; }
+      } else if (home >= F) { f.tx = 0; f.ty = 0; f.tz = 0; }
+      else { f.tx = f.x; f.ty = 0; f.tz = f.z; }
+      var cur = f.x * f.x + f.z * f.z, goal = f.tx * f.tx + f.tz * f.tz;
+      f.r = goal > cur ? (reducedMotion ? 2 : 2.6) : (reducedMotion ? 0.4 : 0.5);
+      var a = 1 - Math.exp(-f.r / 60);
+      f.x += (f.tx - f.x) * a; f.z += (f.tz - f.z) * a;
+      f.h = calmHabituate(f.h, dist + give, calmAlert(f, dist), false);
+    }
+    // While it veers or hangs back, the fish turns with its swim (it never swims backwards).
+    function travelTurn(o, t) {
+      var f = o.travel; if (!f || f.tick === null) return 0;
+      var w0 = travelWindow(o, t), w1 = travelWindow(o, t + 0.3); if (!(w0 > 0 || w1 > 0)) return 0;
+      var a = fleeOffset(f, t, travelScratch().a), b = fleeOffset(f, t + 0.3, travelScratch().b);
+      return smooth(0.05, 0.3, Math.hypot(b.x * w1 - a.x * w0, b.z * w1 - a.z * w0) / 0.3);
+    }
+    function pathPitch(o, t) {
+      var p = ecoP, q = ecoQ; o.path(t, p); o.path(t + 0.4, q);
+      var d = Math.hypot(q.x - p.x, q.z - p.z);
+      return clamp(Math.atan2(q.y - p.y, Math.max(d, 0.05)), -0.38, 0.38) * smooth(0.01, 0.05, d + Math.abs(q.y - p.y));
+    }
+    // Adds a closed-form pitch and roll to the pose poseMobile just set.
+    function lean(o, pitch, roll) {
+      var root = o.root; if (!root) return;
+      root.rotation.z += pitch; root.rotation.x += roll;
+      root.updateMatrix(); o.center.copy(o.centerLocal).applyMatrix4(root.matrix);
+    }
+
+    // ---- Clients: peacock groupers hover near a station's coral head between visits.
+    function setupClient(o) {
+      var plan = ecoPlan(), st = plan.stations[o.index % plan.stations.length], d = o.draws, b = st.bommie;
+      var a = st.bearing + (o.index % 2 ? -1 : 1) * (1.5 + 0.6 * d[28]), e2 = b.r * 1.2 + 0.3, hx = clamp(b.x + fwdX(a) * e2, -26, 26), hz = clamp(b.z + fwdZ(a) * e2, -26, 26);
+      var hy = rockSurfaceAt(hx, hz) + 0.35 + 0.35 * d[29], base = loopPath(hx, hy, hz, 0.3 + 0.35 * d[28], 0.2 + 0.2 * d[30], o.yaw, 0.12 + 0.12 * d[30], o.phase, o.dir, 0.1, 0.1), face = bearingTo(st.top.x - hx, st.top.z - hz) + Math.PI, ph = o.phase;
+      o.home.set(hx, hy, hz);
+      o.eco = { kind: 'client', station: st, slot: st.clients.length, L: o.info.lengthM * o.scale, approach: clamp(Math.hypot(hx - st.spot.x, hz - st.spot.z) / 0.3, 5, 14) };
+      o.clear = 0.16 + 0.2 * Math.min(o.info.lengthM, 1); o.bank = 0.03;
+      st.clients.push(o); clientSpots(o, st);
+      o.eco.hold = function (t) { var v = clientVisit(o, t); return v && t >= v.hs - v.W ? o.eco.bh : face + 0.7 * Math.sin(0.15 * t + ph) + 0.25 * Math.sin(0.37 * t + ph * 2); };
+      o.path = function (t, out) { base(t, ecoR); var v = clientVisit(o, t); if (v) visitBlend(o, v, t, ecoR, out); else { out.x = ecoR.x; out.y = ecoR.y; out.z = ecoR.z; } return out; };
+      travelFleeWrap(o);
+      o.sweep = function (t) { return forageFace(o, t); };
+      o.act = function () { clientAct(o); };
+    }
+    function clientAct(o) {
+      var t = worldTime, v = clientVisit(o, t), k = posing(v, t), pose = v ? POSES[v.pose] : POSES[0];
+      o.motion.spread = k;
+      lean(o, pathPitch(o, t) * (1 - k) + pose[0] * k, pose[1] * k);
+    }
+
+    // ---- Grazers: parrotfish swim from one patch of dead coral or rock to the
+    // next and take short head-down bites; bumpheads graze as a group. Every bite
+    // leaves a small puff of sediment that drifts and settles.
+    function grazeCentre(o, plan) {
+      var st0 = plan.stations[0], st1 = plan.stations[1] || null, sp = terrain.spawn, k = o.index;
+      if (o.school) {
+        // A wide, fairly level stretch of the reef slope a little way from the start.
+        var best = null, bestS = -Infinity;
+        for (var i = 0; i < 24; i++) for (var r = 8; r <= 15; r += 3.5) {
+          var a = i / 24 * TAU, x = sp.x + Math.sin(a) * r, z = sp.z - Math.cos(a) * r;
+          if (Math.abs(x) > 22 || Math.abs(z) > 22) continue;
+          var y0 = groundTop(x, z), lo = y0, hi = y0;
+          for (var q = 0; q < 8; q++) { var g = groundTop(x + Math.cos(q * 0.785) * 2, z + Math.sin(q * 0.785) * 2); lo = Math.min(lo, g); hi = Math.max(hi, g); }
+          var s = -(hi - lo) - 2 * terrain.sandMask(x, z) - 4 * Math.max(0, hi - (o.ceiling - o.clear - 0.9)) + 0.3 * eh(31, i, Math.round(r));
+          if (s > bestS) { bestS = s; best = { x: x, z: z }; }
+        }
+        return best || { x: o.home.x, z: o.home.z };
+      }
+      // The first parrotfish feeds between the opening coral head and the start, the
+      // second near the other station; the rest keep the homes the reef gave them.
+      if (k === 0 && st0) return { x: (st0.spot.x + st0.out.x * 3.5 + sp.x) / 2, z: (st0.spot.z + st0.out.z * 3.5 + sp.z) / 2 };
+      if (k === 1 && st0) { var s1 = st1 || st0, a1 = s1.bearing + (st1 ? 0 : 2.1); return { x: s1.spot.x + fwdX(a1) * 3.5, z: s1.spot.z + fwdZ(a1) * 3.5 }; }
+      return { x: o.home.x, z: o.home.z };
+    }
+    function grazeSpots(o, c, L, school) {
+      // On a coral-rich reef bare rock is scarce: look further out until there is enough.
+      for (var R = school ? 6 : 4.5, out = []; out.length < 3 && R <= 12; R += 3) out = grazeSpotsWithin(o, c, school, R);
+      return out;
+    }
+    function grazeSpotsWithin(o, c, school, R) {
+      var F = cover(), list = [], want = school ? 4 : 5, gap = school ? 3.2 : 1.5, q;
+      var fi = Math.floor((c.x - PATCH_LO) / PATCH), fj = Math.floor((c.z - PATCH_LO) / PATCH), span = Math.ceil(R / PATCH) + 1;
+      for (var dj = -span; dj <= span; dj++) for (var di = -span; di <= span; di++) {
+        var i = fi + di, j = fj + dj; if (i < 0 || j < 0 || i >= F.n || j >= F.n) continue;
+        var k = j * F.n + i, st = F.state[k], x = F.cx[k], z = F.cz[k], dd = Math.hypot(x - c.x, z - c.z);
+        if (dd > R || Math.abs(x) > 25.5 || Math.abs(z) > 25.5) continue;
+        if (!(st === ROCK || st === FRESH || st === RUBBLE || school && (st === LIVE || st === BLEACHED))) continue;
+        var y = rockSurfaceAt(x, z), sx = rockSurfaceAt(x + 0.25, z) - rockSurfaceAt(x - 0.25, z), sz = rockSurfaceAt(x, z + 0.25) - rockSurfaceAt(x, z - 0.25);
+        if (-y < 2.5 || Math.abs(sx) > 0.25 || Math.abs(sz) > 0.25 || obstacleTop(x, z) > y + 0.15 || isBlocked(x, z)) continue;
+        if (school) {
+          var hi = y; for (q = 0; q < 6; q++) hi = Math.max(hi, groundTop(x + Math.cos(q * 1.05) * 1.6, z + Math.sin(q * 1.05) * 1.6));
+          if (hi - y > 0.45 || hi + 0.9 + o.clear > o.ceiling) continue;
+        }
+        // Prefer open dead rock: colonies planted on neighbouring coral patches would
+        // otherwise overhang the bite marks (the decor is placed after the animals).
+        var coralN = 0, ring = school ? 2 : 1, cells = 0;
+        for (var nj = -ring; nj <= ring; nj++) for (var ni = -ring; ni <= ring; ni++) { var ii = i + ni, jj = j + nj; if (ii >= 0 && jj >= 0 && ii < F.n && jj < F.n && (ni || nj)) { cells++; var sn = F.state[jj * F.n + ii]; if (sn === LIVE || sn === BLEACHED || sn === FRESH) coralN++; } }
+        list.push({ x: x, y: y, z: z, s: 0.6 * eh(41 + o.serial, k, 2) + 0.5 * dd / R + 1.8 * coralN / cells });
+      }
+      list.sort(function (a, b) { return a.s - b.s; });
+      var out = [];
+      for (q = 0; q < list.length && out.length < want; q++) {
+        var ok = true; for (var m = 0; m < out.length; m++) if (Math.hypot(out[m].x - list[q].x, out[m].z - list[q].z) < gap) ok = false;
+        if (ok) out.push(list[q]);
+      }
+      var mx = 0, mz = 0; out.forEach(function (s) { mx += s.x / out.length; mz += s.z / out.length; });
+      out.sort(function (a, b) { return Math.atan2(a.z - mz, a.x - mx) - Math.atan2(b.z - mz, b.x - mx); });
+      return out;
+    }
+    function setupGraze(o) {
+      var plan = ecoPlan(), school = !!o.school, L = o.info.lengthM * (school ? 1 : o.scale);
+      // A grazing group settles low over the reef; its members dip their heads to the rock.
+      var clear0 = o.clear, bank0 = o.bank;
+      if (school) { o.clear = 0.26; o.bank = 0.06; } else { o.clear = 0.1; o.bank = 0.05; }
+      var spots = grazeSpots(o, grazeCentre(o, plan), L, school);
+      if (spots.length < 2) { o.clear = clear0; o.bank = bank0; return false; }
+      // The first parrotfish's round begins at its patch nearest the start and most
+      // in front of the opening view: the dive opens on it biting the rock.
+      var opening = !school && o.index === 0;
+      if (opening) {
+        var sp0 = terrain.spawn, near = 0, nearS = Infinity;
+        spots.forEach(function (sp, i) { var s0 = Math.hypot(sp.x - sp0.x, sp.z - sp0.z) + 3 * (1 - Math.cos(bearingTo(sp.x - sp0.x, sp.z - sp0.z) - plan.openBearing)); if (s0 < nearS) { nearS = s0; near = i; } });
+        spots = spots.slice(near).concat(spots.slice(0, near));
+      }
+      // Keep each patch bare so the bites land on rock, not on a colony planted later.
+      spots.forEach(function (sp) { block(sp.x, sp.z, school ? 1.7 : 1.05); });
+      var segs = [], t = 0, fm = 0.47 * L, phi = -0.68, n = spots.length, speed = school ? 0.32 : 0.38, prevH = bearingTo(spots[0].x - spots[n - 1].x, spots[0].z - spots[n - 1].z);
+      for (var k = 0; k < n; k++) {
+        var a = spots[(k + n - 1) % n], b = spots[k], h = bearingTo(b.x - a.x, b.z - a.z), chord = Math.hypot(b.x - a.x, b.z - a.z);
+        var tt = 1.2 + chord / speed, nb = 3 + Math.floor(4 * eh(51 + o.serial, k, 1)), bi = 1.5 + 0.4 * eh(52 + o.serial, k, 1);
+        var feed = school ? 11 + 6 * eh(53 + o.serial, k, 1) : 0.9 + nb * bi + 0.9;
+        segs.push({ kind: 'travel', t0: t, dur: tt, h0: prevH, h1: h, arc: (school ? 0.8 : 0.35) + 0.3 * eh(54 + o.serial, k, 1), a: a, b: b }); t += tt;
+        var bites = [];
+        if (!school) for (var i = 0; i < nb; i++) {
+          var ja = eh(55 + o.serial, k, i) * TAU, jr = 0.07 * eh(56 + o.serial, k, i), bx = b.x + Math.cos(ja) * jr, bz = b.z + Math.sin(ja) * jr;
+          bites.push({ t: t + 0.9 + i * bi + 0.22, x: bx, y: rockSurfaceAt(bx, bz), z: bz, n: i });
+        }
+        segs.push({ kind: 'feed', t0: t, dur: feed, h: h, spot: b, bites: bites, bi: bi }); t += feed;
+        prevH = h;
+      }
+      var e = o.eco = { kind: 'graze', segs: segs, period: t, fm: fm, phi: phi, L: L, school: school, station: null, slot: -1, approach: 0, lift: school ? 0.3 : 0 };
+      // Start mid-way along the first journey, so the fish is swimming when the dive
+      // opens; the opening fish is already at its first patch.
+      e.offset = opening ? segs[1].t0 + 0.4 : segs[0].dur * (0.25 + 0.2 * eh(57, o.serial, 1));
+      if (!school && o.index < 2 && plan.stations.length) {
+        var st = plan.stations[o.index % plan.stations.length];
+        e.station = st; e.slot = st.clients.length; st.clients.push(o); clientSpots(o, st);
+        var far = 0; spots.forEach(function (s) { far = Math.max(far, Math.hypot(s.x - st.spot.x, s.z - st.spot.z)); });
+        e.approach = clamp(far / 0.4, 6, 18);
+      }
+      o.home.set(spots[0].x, spots[0].y + 0.5, spots[0].z);
+      e.hold = function (t) { var v = e.station ? clientVisit(o, t) : null; return v && t >= v.hs - v.W ? e.bh : grazeHeading(o, t); };
+      o.path = function (t, out) {
+        grazePoint(o, t, ecoR); var v = e.station ? clientVisit(o, t) : null;
+        if (v) visitBlend(o, v, t, ecoR, out); else { out.x = ecoR.x; out.y = ecoR.y; out.z = ecoR.z; }
+        return out;
+      };
+      travelFleeWrap(o);
+      o.pathPeriod = e.period;
+      o.sweep = function (t) { return forageFace(o, t); };
+      o.act = function () { grazeAct(o); };
+      plan.grazers.push(o); puffPool();
+      return true;
+    }
+    function segAt(e, t) {
+      var u = ((t + e.offset) % e.period + e.period) % e.period, s = e.segs, lo = 0, hi = s.length - 1;
+      while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (s[mid].t0 <= u) lo = mid; else hi = mid - 1; }
+      return { seg: s[lo], u: u - s[lo].t0, base: t - u };
+    }
+    // Feeding envelope 0..1 (head down) and the mouth's height above the bite.
+    function feedEnv(e, sa) {
+      if (sa.seg.kind !== 'feed') return 0;
+      return e.school ? ease(sa.u / 1.5) * (1 - ease((sa.u - sa.seg.dur + 1.5) / 1.5)) : ease(sa.u / 0.9) * (1 - ease((sa.u - sa.seg.dur + 0.9) / 0.9));
+    }
+    function grazeHeading(o, t) {
+      var e = o.eco, sa = segAt(e, t), s = sa.seg;
+      if (s.kind === 'feed') return s.h;
+      var f = ease(sa.u / s.dur); return s.h0 + wrapAngle(s.h1 - s.h0) * f;
+    }
+    // Where the mouth is during a bite cycle: settle, lunge to the rock, scrape, lift.
+    function biteDip(seg, u) {
+      var dip = 0;
+      for (var i = 0; i < seg.bites.length; i++) {
+        var c = seg.bites[i].t - seg.t0, x = u - (c - 0.22);
+        if (x > -0.01 && x < 0.75) dip = Math.max(dip, x < 0.22 ? ease(x / 0.22) : x < 0.34 ? 1 : 1 - ease((x - 0.34) / 0.38));
+      }
+      return dip;
+    }
+    // Body height over the rock between bites and while travelling.
+    function restLift(e) { return e.school ? e.lift + 0.6 : 0.37; }
+    function grazePoint(o, t, out) {
+      var e = o.eco, sa = segAt(e, t), s = sa.seg, u = sa.u, ax, az, bx, bz;
+      if (s.kind === 'travel') {
+        // A Hermite curve leaves along the last heading and arrives along the new
+        // one; easing the progress lets the fish stop at each patch.
+        var f = ease(u / s.dur), a = s.a, b = s.b, ch = Math.hypot(b.x - a.x, b.z - a.z) * 0.9, back = e.school ? -0.8 : e.fm;
+        var h00 = 2 * f * f * f - 3 * f * f + 1, h10 = f * f * f - 2 * f * f + f, h01 = -2 * f * f * f + 3 * f * f, h11 = f * f * f - f * f;
+        ax = a.x - fwdX(s.h0) * back; az = a.z - fwdZ(s.h0) * back; bx = b.x - fwdX(s.h1) * Math.abs(back); bz = b.z - fwdZ(s.h1) * Math.abs(back);
+        out.x = h00 * ax + h10 * fwdX(s.h0) * ch + h01 * bx + h11 * fwdX(s.h1) * ch;
+        out.z = h00 * az + h10 * fwdZ(s.h0) * ch + h01 * bz + h11 * fwdZ(s.h1) * ch;
+        out.y = lerp(a.y, b.y, f) + restLift(e) + s.arc * Math.sin(Math.PI * f);
+        return out;
+      }
+      var env = feedEnv(e, sa), sp = s.spot;
+      if (e.school) {
+        // The group drifts slowly across the patch while it feeds.
+        var g = ease(u / s.dur) - 0.5; out.x = sp.x + fwdX(s.h) * 1.6 * g; out.z = sp.z + fwdZ(s.h) * 1.6 * g; out.y = sp.y + e.lift + 0.6 * (1 - env);
+        return out;
+      }
+      // The mouth moves from one bite mark to the next between bites; the body
+      // hangs head down behind it.
+      var bites = s.bites, i = 0, tx, ty, tz;
+      while (i < bites.length - 1 && bites[i + 1].t - s.t0 <= u) i++;
+      if (i < bites.length - 1 && u > bites[i].t - s.t0) {
+        var c = bites[i].t - s.t0, m = ease((u - c - 0.55) / (s.bi - 0.8));
+        tx = lerp(bites[i].x, bites[i + 1].x, m); ty = lerp(bites[i].y, bites[i + 1].y, m); tz = lerp(bites[i].z, bites[i + 1].z, m);
+      } else { tx = bites[i].x; ty = bites[i].y; tz = bites[i].z; }
+      var dip = biteDip(s, u) * (reducedMotion ? 0.5 : 1), lift = 0.32 * (1 - env) + 0.05 * (1 - dip), pitch = e.phi * env;
+      var mx = lerp(sp.x, tx, env), mz = lerp(sp.z, tz, env), my = lerp(sp.y, ty, env) + lift;
+      out.x = mx - fwdX(s.h) * e.fm * Math.cos(pitch) + fwdX(s.h) * 0.03 * dip;
+      out.z = mz - fwdZ(s.h) * e.fm * Math.cos(pitch) + fwdZ(s.h) * 0.03 * dip;
+      out.y = Math.max(my - e.fm * Math.sin(pitch), rockSurfaceAt(out.x, out.z) + 0.14);
+      return out;
+    }
+    function grazeAct(o) {
+      var e = o.eco, t = worldTime, sa = segAt(e, t), env = feedEnv(e, sa), v = e.station ? clientVisit(o, t) : null, w = v ? visitWeight(v, t) : 0, k = posing(v, t);
+      env *= 1 - w;
+      if (e.school) { o.motion.graze = env; lean(o, pathPitch(o, t) * (1 - env), 0); return; }
+      var dip = sa.seg.kind === 'feed' ? biteDip(sa.seg, sa.u) * (reducedMotion ? 0.5 : 1) * (1 - w) : 0, pose = v ? POSES[v.pose] : POSES[0];
+      // While it feeds the fish keeps itself off the rock (grazePoint): the coarse
+      // obstacle grid next to a coral head would hold its mouth off the bite mark.
+      o.clear = env > 0.05 ? -0.5 : 0.1;
+      o.motion.spread = k;
+      lean(o, pathPitch(o, t) * (1 - env) * (1 - k) + (e.phi * env - 0.12 * dip) + pose[0] * k, pose[1] * k);
+    }
+    function visitWeight(v, t) { var t1 = v.hs - v.W, he = v.hs + v.hd; return t < t1 ? ease((t - (t1 - v.A)) / v.A) : t <= he ? 1 : 1 - ease((t - he) / v.D); }
+    // Every bite that happened in (t - life, t]: closed-form, so puffs never drift
+    // with the frame rate. A bite taken while the fish is away being cleaned is skipped.
+    function grazerBites(o, t, life, list) {
+      var e = o.eco, from = t - life, k0 = Math.floor((from + e.offset) / e.period), k1 = Math.floor((t + e.offset) / e.period);
+      for (var k = k0; k <= k1; k++) {
+        var base = k * e.period - e.offset;
+        e.segs.forEach(function (s) {
+          if (s.kind !== 'feed') return;
+          if (e.school) { schoolBites(o, s, base, from, t, list); return; }
+          s.bites.forEach(function (b) {
+            var tb = base + b.t;
+            if (tb <= from || tb > t || tb < 0) return;
+            if (reducedMotion && b.n % 2) return;
+            if (e.station && clientVisit(o, tb)) return;
+            list.push({ x: b.x, y: b.y, z: b.z, t: tb, r: 0.055 + 0.02 * (b.n % 3) / 2, key: o.serial * 1000 + k * 50 + b.n });
+          });
+        });
+      }
+    }
+    // A grazing group's bites follow the schedule its model publishes (model.graze):
+    // member i bites when fract(t / period + i * stagger) reaches contact.
+    function schoolBites(o, s, base, from, t, list) {
+      var g = o.model && o.model.graze, n = g ? g.members.length : 8, period = g ? g.period : 6, stagger = g ? g.stagger : 0.618034, contact = g ? g.contact : 0.15;
+      var close = 1 - (g ? g.squeeze || 0 : 0.3), mouth = g ? g.mouth : 0.43, t0 = Math.max(from, base + s.t0 + 1.5), t1 = Math.min(t, base + s.t0 + s.dur - 1.5);
+      if (t1 <= t0) return;
+      for (var i = 0; i < n; i++) {
+        var m = g ? g.members[i] : { x: Math.cos(i * 2.4) * 0.8, z: Math.sin(i * 2.4) * 0.8 }, lx = m.x * close + mouth, lz = m.z * close;
+        // Members at the edge of the group bite the living coral around the clearing;
+        // only bites on the open rock in the middle raise a visible puff.
+        if (reducedMotion && i % 2 || Math.hypot(lx, lz) > 1.35) continue;
+        var ph = (contact - i * stagger) % 1, tb = (Math.ceil(t0 / period - ph) + ph) * period;
+        for (; tb <= t1; tb += period) {
+          if (tb <= t0) continue;
+          var hb = grazeHeading(o, tb), c = Math.cos(yawFor(hb)), sn = Math.sin(yawFor(hb));
+          grazePoint(o, tb, ecoS);
+          var x = ecoS.x + lx * c + lz * sn, z = ecoS.z - lx * sn + lz * c;
+          list.push({ x: x, y: rockSurfaceAt(x, z), z: z, t: tb, r: 0.09, key: o.serial * 100000 + i * 997 + Math.round(tb * 4) });
+        }
+      }
+    }
+
+    // ---- Sediment puffs: discs drawn with the contact shade's program ------------
+    // A second material with the same shader and cache key as the decor contact
+    // shade: three links one program for both, and only the colour differs.
+    function contactShade(shader) {
+      var parts = shaderParts();
+      shader.uniforms.reefWaterEye = U.eye;
+      parts.vCommon.push('attribute float reefContactWeight;varying float vReefContact;varying vec3 vReefContactWorld;');
+      parts.vBegin.push('vReefContact=reefContactWeight;'); parts.vProject.push('vReefContactWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
+      parts.fCommon.push('varying float vReefContact;varying vec3 vReefContactWorld;uniform vec3 reefWaterEye;');
+      parts.fColor.push('diffuseColor.a*=smoothstep(0.0,1.0,vReefContact)*(1.0-smoothstep(8.0,13.0,length(reefWaterEye-vReefContactWorld)));');
+      applyParts(shader, parts, 'contact');
+    }
+    function puffPool() {
+      var plan = ecoPlan();
+      if (plan.puffs) return plan.puffs;
+      var max = high ? 36 : 16, per = PUFF_RIM + 1, pos = new Float32Array(max * per * 3), wt = new Float32Array(max * per), idx = [];
+      for (var k = 0; k < max; k++) for (var j = 0; j < PUFF_RIM; j++) idx.push(k * per, k * per + 1 + j, k * per + 1 + (j + 1) % PUFF_RIM);
+      var g = own(new T.BufferGeometry());
+      g.setAttribute('position', new T.BufferAttribute(pos, 3).setUsage(T.DynamicDrawUsage)); g.setAttribute('reefContactWeight', new T.BufferAttribute(wt, 1).setUsage(T.DynamicDrawUsage));
+      g.setIndex(idx); g.setDrawRange(0, 0); g.boundingSphere = new T.Sphere(new T.Vector3(), 200);
+      var m = patch(new T.MeshBasicMaterial({ color: lin(0xc9cbb8), transparent: true, opacity: reducedMotion ? 0.42 : 0.6, depthWrite: false }), 'contact', contactShade);
+      var mesh = new T.Mesh(g, m);
+      mesh.name = 'reef-explore-sediment'; mesh.frustumCulled = false; mesh.renderOrder = 2; mesh.userData.decorative = true; mesh.userData.puffs = [];
+      mesh.onBeforeRender = function (r, sc, cam) { U.eye.value.setFromMatrixPosition(cam.matrixWorld); drawPuffs(cam); };
+      scene.add(mesh);
+      plan.puffs = { mesh: mesh, max: max, bites: [] };
+      return plan.puffs;
+    }
+    // One bite's puff at age a: kicked up off the rock, carried by the surge,
+    // spreading and thinning, then settling back.
+    function puffShapeAt(b, a, out) {
+      var calm = reducedMotion ? 0.5 : 1, life = reducedMotion ? 4 : PUFF_LIFE;
+      currentAt(b.x, b.z, b.t, ambientMotion.current);
+      // Downstream with the surge, spreading a little to one side or the other.
+      var cx = ambientMotion.current.x, cz = ambientMotion.current.z, side = 0.3 * Math.sin(b.key * 1.7);
+      out.x = b.x + (cx - cz * side) * a * 0.8;
+      out.z = b.z + (cz + cx * side) * a * 0.8;
+      out.r = b.r * (0.45 + 0.85 * (1 - Math.exp(-1.6 * a))) * (0.8 + 0.2 * calm);
+      out.y = b.y + 0.015 + out.r * 0.35 + Math.max(0, (0.14 * calm) * (1 - Math.exp(-3 * a)) - 0.035 * calm * a);
+      out.alpha = clamp(a / 0.12, 0, 1) * (1 - smooth(life * 0.4, life, a));
+      return out;
+    }
+    function collectPuffs() {
+      var pool = puffPool(), list = pool.bites, t = worldTime, life = reducedMotion ? 4 : PUFF_LIFE;
+      list.length = 0;
+      eco.grazers.forEach(function (o) {
+        // Puffs fade out beyond 13 m (the shade's distance fade); skip grazers far away.
+        if (Math.hypot(o.home.x - camera.position.x, o.home.z - camera.position.z) > 26) return;
+        grazerBites(o, t, life, list);
+      });
+      list.sort(function (a, b) { return b.t - a.t || a.key - b.key; });
+      if (list.length > pool.max) list.length = pool.max;
+      return list;
+    }
+    function drawPuffs(cam) {
+      var pool = puffPool(), list = collectPuffs(), g = pool.mesh.geometry, pos = g.attributes.position.array, wt = g.attributes.reefContactWeight.array, per = PUFF_RIM + 1, out = pool.mesh.userData.puffs, p = {};
+      ecoRight.setFromMatrixColumn(cam.matrixWorld, 0); ecoUp.setFromMatrixColumn(cam.matrixWorld, 1);
+      out.length = 0;
+      for (var k = 0; k < list.length; k++) {
+        var b = list[k]; puffShapeAt(b, worldTime - b.t, p);
+        out.push({ x: p.x, y: p.y, z: p.z, r: p.r, alpha: p.alpha, t: b.t, bx: b.x, by: b.y, bz: b.z, key: b.key, size: b.r });
+        var o = k * per;
+        pos[o * 3] = p.x; pos[o * 3 + 1] = p.y; pos[o * 3 + 2] = p.z; wt[o] = p.alpha;
+        for (var j = 0; j < PUFF_RIM; j++) {
+          var a = j / PUFF_RIM * TAU, rr = p.r * (1 + 0.12 * Math.sin(3 * a + b.key)), cx = Math.cos(a) * rr, cy = Math.sin(a) * rr, q = (o + 1 + j) * 3;
+          pos[q] = p.x + ecoRight.x * cx + ecoUp.x * cy; pos[q + 1] = p.y + ecoRight.y * cx + ecoUp.y * cy; pos[q + 2] = p.z + ecoRight.z * cx + ecoUp.z * cy; wt[o + 1 + j] = 0;
+        }
+      }
+      g.setDrawRange(0, list.length * PUFF_RIM * 3);
+      g.attributes.position.needsUpdate = true; g.attributes.reefContactWeight.needsUpdate = true;
+    }
+
+    // ---- Cleaners: the wrasse dances at its station, inspects each client and
+    // rises to a manta circling overhead; the shrimp waits on the rock.
+    function placeCleaner(o) {
+      var plan = ecoPlan(), fish = o.info.group === 'fish', k = fish ? plan.cleanerFish++ : plan.cleanersPlaced++, st = plan.stations[k % plan.stations.length], tang = st.bearing + Math.PI / 2;
+      if (fish) {
+        var rank = st.cleaners.length, side = rank % 2 ? -1 : 1, hx = st.spot.x + st.out.x * 0.24 + fwdX(tang) * 0.2 * side * Math.min(1, rank), hz = st.spot.z + st.out.z * 0.24 + fwdZ(tang) * 0.2 * side * Math.min(1, rank);
+        o.home = new T.Vector3(hx, Math.max(st.spot.y + 0.16, rockSurfaceAt(hx, hz) + 0.1), hz); o.ground = st.spot.y;
+        o.eco = { kind: 'cleaner', station: st, rank: rank, side: side };
+        st.cleaners.push(o);
+        return true;
+      }
+      // The shrimp sits on the rock of the station itself, facing the open water.
+      var n = st.shrimp++, a = tang + (n % 2 ? 1 : -1) * 0.5 * Math.ceil(n / 2), b = st.bommie, sx = st.spot.x + fwdX(a) * 0.12 * Math.min(1, n), sz = st.spot.z + fwdZ(a) * 0.12 * Math.min(1, n);
+      var y = b.heightAt(sx, sz); if (!(y > NONE)) y = rockSurfaceAt(sx, sz);
+      o.ground = y; o.home = new T.Vector3(sx, y, sz); o.bommie = b; o.yaw = st.bearing;
+      var h1 = rockSurfaceAt(sx + 0.12, sz), h0 = rockSurfaceAt(sx - 0.12, sz), h2 = rockSurfaceAt(sx, sz + 0.12), h3 = rockSurfaceAt(sx, sz - 0.12);
+      o.normal = new T.Vector3(-(h1 - h0) / 0.24, 1, -(h2 - h3) / 0.24).normalize();
+      sessiles.push({ x: sx, z: sz, r: 0.2 });
+      return true;
+    }
+    function clientFrame(v, t, out, lx, ly, lz) {
+      var o = v.o, e = o.eco, k = posing(v, t), pose = POSES[v.pose], pitch = pose[0] * k, roll = pose[1] * k;
+      // Rotation order YZX: roll about x, then pitch about z, then the heading.
+      var y1 = ly * Math.cos(roll) - lz * Math.sin(roll), z1 = ly * Math.sin(roll) + lz * Math.cos(roll);
+      var x2 = lx * Math.cos(pitch) - y1 * Math.sin(pitch), y2 = lx * Math.sin(pitch) + y1 * Math.cos(pitch), b = e.bh;
+      o.path(t, out);
+      out.x += fwdX(b) * x2 + Math.cos(b) * z1; out.z += fwdZ(b) * x2 + Math.sin(b) * z1; out.y += y2;
+      return out;
+    }
+    // Which inspection point the cleaner is at (or darting between) and on which flank.
+    var ecoStep;
+    function inspectStep(c, v, t) {
+      ecoStep = ecoStep || {};
+      var u = t - (v.hs - 0.3), step = 0, start = Math.floor(eh(61, v.j, v.c) * INSPECT.length), acc = 0, dwell = 1;
+      // Out-facing flank first; a second cleaner works the other side.
+      var e = v.o.eco, flank = Math.cos(e.bh) * v.st.out.x + Math.sin(e.bh) * v.st.out.z >= 0 ? 1 : -1;
+      if (c.eco.rank % 2) flank = -flank;
+      for (;;) { dwell = 0.8 + 0.7 * eh(62 + c.serial, v.c * 31 + v.j, step); if (acc + dwell + 0.28 > u || step > 60) break; acc += dwell + 0.28; step++; }
+      ecoStep.a = INSPECT[(start + step) % INSPECT.length]; ecoStep.b = INSPECT[(start + step + 1) % INSPECT.length];
+      ecoStep.f = ease((u - acc - dwell) / 0.28); ecoStep.step = step; ecoStep.flank = flank; ecoStep.tail = eh(63 + c.serial, v.c * 31 + v.j, step) < 0.3;
+      return ecoStep;
+    }
+    function inspectPoint(c, v, t, out) {
+      var L = v.o.eco.L, s = inspectStep(c, v, t), a = s.a, b = s.b, f = s.f, peck = reducedMotion ? 0 : 0.008 * Math.sin(t * 19) * (1 - f);
+      // Just off the skin: the client's half width is about a tenth of its length.
+      var lx = lerp(a[0], b[0], f) * L, ly = lerp(a[1], b[1], f) * L + peck, lz = s.flank * (lerp(a[2], b[2], f) * 0.1 * L + 0.022);
+      return clientFrame(v, t, out, lx, ly, lz);
+    }
+    function cleanerIdle(o, t, out) {
+      var h = o.home, ph = o.phase, dance = danceEnv(o, t) * (reducedMotion ? 0.4 : 1);
+      out.x = h.x + 0.12 * Math.sin(0.41 * t + ph) * (1 - 0.5 * dance); out.z = h.z + 0.12 * Math.cos(0.33 * t + ph * 1.3) * (1 - 0.5 * dance);
+      out.y = Math.max(h.y + 0.04 * Math.sin(0.7 * t + ph) + 0.035 * dance * Math.sin(3.4 * t), rockSurfaceAt(out.x, out.z) + 0.07);
+      return out;
+    }
+    // The "dance": bursts of bobbing while a client approaches, and now and then on its own.
+    function danceEnv(o, t) {
+      var st = o.eco.station, v = stationVisit(st, t, 14, -6), d = 0;
+      if (v) d = ease((t - (v.hs - v.W - 0.6 * v.A)) / 2) * (1 - ease((t - v.hs + 0.6) / 0.6));
+      var w = Math.floor(t / 14), u = t - w * 14;
+      if (eh(71 + o.serial, w, 1) < 0.3) d = Math.max(d, ease((u - 3) / 1.5) * (1 - ease((u - 9) / 1.5)));
+      return d;
+    }
+    function mantaReach(st, t, out) {
+      var m = eco && eco.manta; if (!m || m.eco.station !== st || !m.path) return 0;
+      m.path(t, out); var d = Math.hypot(out.x - st.spot.x, out.z - st.spot.z), w = smooth(2.6, 1.3, d) * mantaVisitW(m, t);
+      if (w <= 0) return 0;
+      m.path(t + 0.5, ecoS); var b = bearingTo(ecoS.x - out.x, ecoS.z - out.z);
+      out.x += fwdX(b) * 0.25 + Math.cos(b) * 0.45; out.z += fwdZ(b) * 0.25 + Math.sin(b) * 0.45; out.y -= 0.3;
+      return w;
+    }
+    function cleanerAt(o, t, out) {
+      var st = o.eco.station, v = stationVisit(st, t, 1.2, 0.9), wi = 0;
+      cleanerIdle(o, t, out);
+      if (v) {
+        wi = ease((t - (v.hs - 1.0)) / 0.9) * (1 - ease((t - v.hs - v.hd) / 0.8));
+        if (wi > 0) { inspectPoint(o, v, t, ecoS); out.x = lerp(out.x, ecoS.x, wi); out.y = lerp(out.y, ecoS.y, wi); out.z = lerp(out.z, ecoS.z, wi); }
+      }
+      var m = (1 - wi) * mantaReach(st, t, ecoV);
+      if (m > 0) { out.x = lerp(out.x, ecoV.x, m); out.y = lerp(out.y, ecoV.y, m); out.z = lerp(out.z, ecoV.z, m); }
+      return out;
+    }
+    function setupCleaner(o) {
+      if (!o.eco) placeCleaner(o);
+      var hold = o.eco.station.bearing;
+      o.path = function (t, out) { return cleanerAt(o, t, out); };
+      o.sweep = function (t) {
+        var v = stationVisit(o.eco.station, t, 1.2, 0.9);
+        var idle = hold + 0.6 * Math.sin(0.23 * t + o.phase);
+        if (!v || t <= v.hs - 1) return idle;
+        // Along the client's body, snout angled in to the skin (now and then facing its tail).
+        var s = inspectStep(o, v, t), along = wrapAngle(v.o.eco.bh + (s.tail ? Math.PI - 0.35 * s.flank : 0.35 * s.flank));
+        cleanerAt(o, t, ecoW); v.o.path(t, ecoQ);
+        var w = ease((t - (v.hs - 1.0)) / 0.9) * (1 - ease((t - v.hs - v.hd) / 0.8)), near = smooth(0.45, 0.15, Math.hypot(ecoQ.x - ecoW.x, ecoQ.z - ecoW.z));
+        var toward = bearingTo(ecoQ.x - ecoW.x, ecoQ.z - ecoW.z), aim = toward + wrapAngle(along - toward) * near;
+        return idle + wrapAngle(aim - idle) * w;
+      };
+      // Its path keeps it just off the rock and the client; the coarse obstacle grid
+      // on the coral head's shoulder would otherwise hold it well above its station.
+      o.clear = -0.4; o.bank = 0.02;
+      o.act = function () {
+        var t = worldTime, d = danceEnv(o, t);
+        // Rear up and down: the cleaner's advertising display.
+        lean(o, d * (reducedMotion ? 0.1 : 0.3) * Math.sin(t * (reducedMotion ? 4 : 9.5)), 0);
+      };
+    }
+
+    // ---- Manta: cruises over the reef, then circles slowly over the cleaning station.
+    function placeManta(o) {
+      var st = ecoPlan().stations[0];
+      o.anchor = st.bommie; o.ground = st.top.y; o.home = new T.Vector3(st.top.x, st.top.y + 2.4, st.top.z);
+      o.eco = { kind: 'manta', station: st, first: 16 + 10 * eh(81, o.serial, 1), period: 170 + 40 * eh(82, o.serial, 1) };
+      eco.manta = o;
+    }
+    function mantaVisitW(o, t) {
+      var e = o.eco, c0 = Math.floor((t - e.first) / e.period);
+      for (var c = Math.max(0, c0 - 1); c <= c0; c++) {
+        var s = e.first + c * e.period + 12 * eh(83, o.serial, c), hold = 70 + 30 * eh(84, o.serial, c), u = t - s;
+        if (u >= 0 && u <= hold + 32) return ease5(u / 16) * (1 - ease5((u - 16 - hold) / 16));
+      }
+      return 0;
+    }
+
+    // ---- Turtles surface to breathe -------------------------------------------------
+    // Active turtles in shallow water make short dives (about 1.5 minutes on average
+    // in one study), so each turtle here comes up every two to three minutes: an
+    // unhurried climb, a few breaths at the surface, then a long glide back down.
+    function turtleBreath(o) {
+      var L = o.info.lengthM * o.scale, fm = 0.48 * L;
+      ecoPlan();
+      return { first: 42 + 50 * eh(91, o.serial, 1), period: 150 + 40 * eh(92, o.serial, 1), hold: 5 + 3 * eh(93, o.serial, 1), y: 0.02 - fm * Math.sin(0.42) - 0.06 };
+    }
+    // 0..1 toward the surface; env.v is the breathing pause at the top. The climb's
+    // length is set by the depth the turtle starts from, read at the breath's start.
+    function breathAt(o, br, t, env) {
+      var c0 = Math.floor((t - br.first) / br.period);
+      for (var c = Math.max(0, c0 - 1); c <= c0; c++) {
+        var s = br.first + c * br.period + 8 * eh(94, o.serial, c), u = t - s;
+        if (u < 0) continue;
+        var up = clamp((br.y - o.eco.cruise(s, ecoS).y) / 0.24, 16, 46), down = up * 1.2;
+        if (u > up + br.hold + down) continue;
+        if (env) env.v = ease((u - up + 1.5) / 1.5) * (1 - ease((u - up - br.hold) / 2));
+        return u < up ? ease5(u / up) : u < up + br.hold ? 1 : 1 - ease5((u - up - br.hold) / down);
+      }
+      if (env) env.v = 0;
+      return 0;
+    }
+    function turtleAct(o) {
+      var t = worldTime, p = ecoP, q = ecoQ, env = o.eco.env;
+      o.path(t, p); o.path(t + 0.5, q);
+      var vh = Math.hypot(q.x - p.x, q.z - p.z) / 0.5, vy = (q.y - p.y) / 0.5, want = Math.atan2(vy, Math.max(vh, 0.1));
+      breathAt(o, o.eco.breath, t, env);
+      // poseMobile limits pitch to 0.38; a climbing or diving turtle angles more steeply,
+      // and lifts its head clear of the water while it breathes.
+      lean(o, clamp(want, -0.6, 0.6) - clamp(want, -0.38, 0.38) + env.v * (0.42 + (reducedMotion ? 0 : 0.04 * Math.sin(t * 2.1))), 0);
+    }
+
+    // ---- Crown-of-thorns starfish on a coral colony, beside its feeding scar --------
+    // The starfish turns its stomach out over the coral and digests the tissue,
+    // leaving bare white skeleton (COTS_HOST: the colonies it prefers).
+    function hostMeshes(h) {
+      var list = [], root = h.instanced ? h.model.root : h.root, inv = new T.Matrix4();
+      root.updateMatrixWorld(true);
+      if (h.instanced) inv.copy(root.matrixWorld).invert();
+      root.traverse(function (m) {
+        if (!m.isMesh || m.isInstancedMesh || !m.geometry || !m.geometry.attributes.position) return;
+        var w = new T.Matrix4();
+        if (h.instanced) w.multiplyMatrices(h.matrix, new T.Matrix4().multiplyMatrices(inv, m.matrixWorld)); else w.copy(m.matrixWorld);
+        list.push({ g: m.geometry, w: w });
+      });
+      return list;
+    }
+    // The colony's upper surface as a 4 cm height grid (empty cells are NONE).
+    function colonyTop(h) {
+      var meshes = hostMeshes(h), cx = h.center.x, cz = h.center.z, R = Math.max(0.3, h.radius * 1.1), cell = 0.04, n = Math.ceil(2 * R / cell) + 1, top = new Float32Array(n * n), p = new T.Vector3(), lo = Infinity;
+      for (var q = 0; q < top.length; q++) top[q] = NONE;
+      function stamp(i, j, y) { if (i >= 0 && j >= 0 && i < n && j < n && y > top[j * n + i]) top[j * n + i] = y; }
+      // Every triangle is rasterised into the grid (seen from above), so a coarse
+      // mesh with large faces gives the same surface as a fine one.
+      meshes.forEach(function (m) {
+        var a = m.g.attributes.position, idx = m.g.index, w = new Float32Array(a.count * 3), k;
+        for (k = 0; k < a.count; k++) {
+          p.fromBufferAttribute(a, k).applyMatrix4(m.w); w[k * 3] = p.x; w[k * 3 + 1] = p.y; w[k * 3 + 2] = p.z; lo = Math.min(lo, p.y);
+          stamp(Math.round((p.x - cx + R) / cell), Math.round((p.z - cz + R) / cell), p.y);
+        }
+        for (var f = 0, nf = idx ? idx.count : a.count; f + 2 < nf; f += 3) {
+          var i0 = (idx ? idx.getX(f) : f) * 3, i1 = (idx ? idx.getX(f + 1) : f + 1) * 3, i2 = (idx ? idx.getX(f + 2) : f + 2) * 3;
+          var ax = w[i0], az = w[i0 + 2], bx = w[i1], bz = w[i1 + 2], qx = w[i2], qz = w[i2 + 2], det = (bz - qz) * (ax - qx) + (qx - bx) * (az - qz);
+          if (Math.abs(det) < 1e-9) continue;
+          var gi0 = Math.ceil((Math.min(ax, bx, qx) - cx + R) / cell), gi1 = Math.floor((Math.max(ax, bx, qx) - cx + R) / cell);
+          var gj0 = Math.ceil((Math.min(az, bz, qz) - cz + R) / cell), gj1 = Math.floor((Math.max(az, bz, qz) - cz + R) / cell);
+          for (var gj = Math.max(0, gj0); gj <= Math.min(n - 1, gj1); gj++) for (var gi = Math.max(0, gi0); gi <= Math.min(n - 1, gi1); gi++) {
+            var px = cx - R + gi * cell, pz = cz - R + gj * cell, l0 = ((bz - qz) * (px - qx) + (qx - bx) * (pz - qz)) / det, l1 = ((qz - az) * (px - qx) + (ax - qx) * (pz - qz)) / det, l2 = 1 - l0 - l1;
+            if (l0 >= -1e-6 && l1 >= -1e-6 && l2 >= -1e-6) stamp(gi, gj, l0 * w[i0 + 1] + l1 * w[i1 + 1] + l2 * w[i2 + 1]);
+          }
+        }
+      });
+      function at(x, z) {
+        var i = Math.round((x - cx + R) / cell), j = Math.round((z - cz + R) / cell), y = NONE;
+        for (var dj = -1; dj <= 1; dj++) for (var di = -1; di <= 1; di++) { var ii = i + di, jj = j + dj; if (ii >= 0 && jj >= 0 && ii < n && jj < n && top[jj * n + ii] > y) y = top[jj * n + ii]; }
+        return y;
+      }
+      // The cell itself, without its neighbours: where the colony really ends.
+      function raw(x, z) { var i = Math.round((x - cx + R) / cell), j = Math.round((z - cz + R) / cell); return i >= 0 && j >= 0 && i < n && j < n ? top[j * n + i] : NONE; }
+      var reach = 0;
+      for (var a2 = 0; a2 < 16; a2++) for (var rr = 0.04; rr < R; rr += 0.04) if (at(cx + Math.cos(a2 * 0.3927) * rr, cz + Math.sin(a2 * 0.3927) * rr) > lo + 0.25 * (h.boxMaxY - h.boxMinY) * h.scale) reach = Math.max(reach, rr);
+      return { at: at, raw: raw, x: cx, z: cz, reach: reach, low: lo };
+    }
+    function placeCots(o) {
+      var plan = ecoPlan(), sp = terrain.spawn, list = [], best = null, top = null, a, rho, cx, cz, cy, rs, sx, sz;
+      // The first starfish takes the preferred colony nearest the start; the others are spread by hash.
+      organisms.forEach(function (h) {
+        if (COTS_HOST[h.speciesId] === undefined || h.restoration || plan.hosts.indexOf(h) >= 0 || !h.center || coralState(h) !== 'healthy' || h.radius < 0.3) return;
+        list.push([COTS_HOST[h.speciesId] + (plan.hosts.length ? eh(101, h.serial, o.index) : 0.04 * Math.hypot(h.center.x - sp.x, h.center.z - sp.z)), h.serial, h]);
+      });
+      list.sort(function (p, q) { return p[0] - q[0] || p[1] - q[1]; });
+      for (var i = 0; i < list.length && !best && i < 6; i++) {
+        var h = list[i][2], tp = colonyTop(h);
+        if (tp.reach < 0.28) continue;
+        // The starfish sits on living tissue at the scar's edge; the scar lies beside it.
+        a = eh(102, o.serial, i) * TAU; rho = Math.max(0.12, tp.reach * 0.5); cx = tp.x + Math.cos(a) * rho; cz = tp.z + Math.sin(a) * rho; cy = tp.at(cx, cz);
+        rs = clamp(tp.reach * 0.32, 0.1, 0.2);
+        var turn = (0.2 + rs) / rho * (eh(103, o.serial, i) < 0.5 ? 1 : -1);
+        sx = tp.x + Math.cos(a + turn) * rho; sz = tp.z + Math.sin(a + turn) * rho;
+        if (cy > NONE && tp.at(sx, sz) > NONE) { best = h; top = tp; }
+      }
+      if (!best) return false;
+      plan.hosts.push(best);
+      var g1 = top.at(cx + 0.08, cz), g0 = top.at(cx - 0.08, cz), g2 = top.at(cx, cz + 0.08), g3 = top.at(cx, cz - 0.08);
+      o.ground = cy + 0.015; o.home = new T.Vector3(cx, o.ground, cz); o.bommie = best.bommie || null; o.cotsHost = best.uid;
+      o.normal = g1 > NONE && g0 > NONE && g2 > NONE && g3 > NONE ? new T.Vector3(-(g1 - g0) / 0.16, 1, -(g2 - g3) / 0.16).normalize() : null;
+      o.scar = buildScar(top, sx, sz, rs, o.serial, best.uid);
+      return true;
+    }
+    // A lobed patch of bare skeleton laid over the colony's surface, drawn as one
+    // more instanced decor coral (same material and program, white instance colour).
+    function buildScar(top, x0, z0, rs, salt, hostUid) {
+      var b = new Builder(), rings = 5, segs = high ? 22 : 14, ph = eh(104, salt, 1) * TAU, ph2 = eh(105, salt, 1) * TAU, k, r, ring = [], first;
+      function edgeR(a) { return rs * (1 + 0.17 * Math.sin(3 * a + ph) + 0.1 * Math.sin(5 * a + ph2) + 0.05 * Math.sin(9 * a + ph)); }
+      // Each spoke stops where the colony ends.
+      for (k = 0; k < segs; k++) {
+        var a = k / segs * TAU, er = edgeR(a);
+        for (r = er; r > rs * 0.3 && !(top.raw(x0 + Math.cos(a) * (r + 0.03), z0 + Math.sin(a) * (r + 0.03)) > NONE); r -= 0.02);
+        ring.push(r);
+      }
+      function put(x, z, y, sh) {
+        var hx = top.at(x + 0.03, z), hx0 = top.at(x - 0.03, z), hz = top.at(x, z + 0.03), hz0 = top.at(x, z - 0.03);
+        var nx = hx > NONE && hx0 > NONE ? -(hx - hx0) / 0.06 : 0, nz = hz > NONE && hz0 > NONE ? -(hz - hz0) / 0.06 : 0, l = Math.hypot(nx, 1, nz);
+        return b.vertex(x, y, z, nx / l, 1 / l, nz / l, sh, sh * 0.985, sh * 0.94);
+      }
+      var cy = top.at(x0, z0);
+      first = put(x0, z0, cy + 0.006, 1.02);
+      var grid = [];
+      for (var i = 1; i <= rings; i++) {
+        var row = [];
+        for (k = 0; k < segs; k++) {
+          var aa = k / segs * TAU, rr = ring[k] * i / rings, x = x0 + Math.cos(aa) * rr, z = z0 + Math.sin(aa) * rr, y = top.at(x, z);
+          if (!(y > NONE)) y = cy;
+          // Fresh skeleton is bright white; the far rim is a day or two older and greyer.
+          var age = 0.5 + 0.5 * Math.cos(aa - ph), sh = 1.02 - 0.12 * age * (i / rings) - 0.03 * hash2(k * 7 + i, salt);
+          row.push(put(x, z, y + 0.006, sh));
+        }
+        grid.push(row);
+      }
+      for (k = 0; k < segs; k++) b.i.push(first, grid[0][(k + 1) % segs], grid[0][k]);
+      for (i = 1; i < rings; i++) for (k = 0; k < segs; k++) { var p0 = grid[i - 1][k], p1 = grid[i - 1][(k + 1) % segs], q0 = grid[i][k], q1 = grid[i][(k + 1) % segs]; b.i.push(p0, p1, q1, p0, q1, q0); }
+      // A short skirt down to the living surface hides the gap under the patch edge.
+      var skirt = [];
+      for (k = 0; k < segs; k++) { var ak = k / segs * TAU, xs = x0 + Math.cos(ak) * ring[k], zs = z0 + Math.sin(ak) * ring[k], ys = top.at(xs, zs); skirt.push(put(xs, zs, (ys > NONE ? ys : cy) - 0.05, 0.86)); }
+      for (k = 0; k < segs; k++) { var e0 = grid[rings - 1][k], e1 = grid[rings - 1][(k + 1) % segs]; b.i.push(e0, e1, skirt[(k + 1) % segs], e0, skirt[(k + 1) % segs], skirt[k]); }
+      var geo = own(b.build(T, false)), mesh = new T.InstancedMesh(geo, mats.coral, 1);
+      mesh.setMatrixAt(0, new T.Matrix4()); mesh.setColorAt(0, new T.Color(1, 1, 1));
+      mesh.name = 'reef-explore-feeding-scar'; mesh.receiveShadow = high; mesh.userData = { decorative: true, scar: true, hostUid: hostUid, centre: [x0, cy, z0], radius: rs };
+      scene.add(mesh);
+      return mesh;
+    }
+
+    // ---- Anemonefish drop into their anemone's tentacles when the diver comes close.
+    // The middle of the tentacle mat and its height: from the anemone model's hostSlots
+    // (where a clownfish pair hovers, 12 cm over the mat) when it has them. Its bounding
+    // box is no guide: the tentacles are instances of a one-metre unit tentacle.
+    function anemoneMat(an) {
+      if (an.mat) return an.mat;
+      var best = null, bd = 0.6;
+      organisms.forEach(function (a) { if (a.speciesId === 'magnificent_anemone' && a.center) { var dd = Math.hypot(a.center.x - an.x, a.center.z - an.z); if (dd < bd) { bd = dd; best = a; } } });
+      var slots = best && best.model && Array.isArray(best.model.hostSlots) ? best.model.hostSlots : null, m = best && (best.instanced ? best.matrix : best.root && best.root.matrix);
+      if (!slots || !m) return (an.mat = { x: an.x, y: an.top, z: an.z });
+      var c = new T.Vector3(0, slots[0][1] - 0.12, 0).applyMatrix4(m);
+      return (an.mat = { x: c.x, y: c.y, z: c.z });
+    }
+    function clownAct(o, dt) {
+      // From the diver's head (it leads the body by most of a metre) to the anemone.
+      var c = o.eco, head = diver ? (ecoHead = ecoHead || new T.Vector3()).copy(HEAD).applyMatrix4(diver.matrixWorld) : diverPos;
+      var d = Math.min(Math.hypot(diverPos.x - c.x, diverPos.y - c.y, diverPos.z - c.z), Math.hypot(head.x - c.x, head.y - c.y, head.z - c.z)), want = smooth(2, 1.1, d);
+      // Quick to take cover, slow to come back out.
+      c.hide += (want - c.hide) * damp(want > c.hide ? (reducedMotion ? 3 : 7) : 0.35, Math.min(0.1, dt));
+    }
+    function setupForager(o) {
+      if (o.behavior === 'cleaner') { setupCleaner(o); return true; }
+      if (o.behavior === 'client') { setupClient(o); return true; }
+      return setupGraze(o);
+    }
+    // Which Reef3DSpecies health states a species can show (info().healthStates):
+    // corals all three, animals with algae partners 'bleached' too, the rest none.
+    // Filled lazily: build() runs before this line is reached.
+    var healthStatesOf;
+    function healthStates(o) {
+      var id = o.speciesId, s, raw = null;
+      healthStatesOf = healthStatesOf || {}; s = healthStatesOf[id];
+      if (s) return s;
+      if (Species && typeof Species.info === 'function') { try { raw = Species.info(id); } catch (ignore) { raw = null; } }
+      s = raw && Array.isArray(raw.healthStates) ? raw.healthStates : o.info.group === 'coral' ? ['healthy', 'bleached', 'dead'] : ['healthy'];
+      return (healthStatesOf[id] = s);
+    }
+    // Reef3DSpecies health: 'healthy', 'bleached' or 'dead' (algae-covered), by one
+    // per-organism draw, so an anemone or clam bleaches at the site's coral rate.
     function coralState(o) {
-      if (o.info.group !== 'coral' || o.restoration) return 'healthy';
+      if (o.restoration) return 'healthy';
+      var states = healthStates(o);
+      if (states.length < 2) return 'healthy';
       var r = o.draws[31], dead = 0.45 * health.algae * (1 - 0.5 * health.coralCover);
-      return r < health.bleaching ? 'bleached' : r < health.bleaching + dead ? 'dead' : 'healthy';
+      var state = r < health.bleaching ? 'bleached' : r < health.bleaching + dead ? 'dead' : 'healthy';
+      return states.indexOf(state) >= 0 ? state : 'healthy';
     }
     // Within info().schoolSize; a degraded reef keeps its smallest schools, and each tier caps the crowd.
     function schoolSize(info, roll, fullPopulation) {
@@ -1755,12 +3067,19 @@
     }
     function localBounds(root) {
       root.position.set(0, 0, 0); root.quaternion.identity(); root.scale.set(1, 1, 1); root.updateMatrixWorld(true);
-      var box = new T.Box3().setFromObject(root);
-      // r128's Box3 omits instance transforms. Include every school member so
-      // surface clearance is based on the entire shoal, not a single fish.
+      // r128's Box3.setFromObject omits instance transforms and counts an instanced mesh's raw
+      // geometry where it was modelled (a 1 m unit tentacle made every anemone 1 m tall). Measure
+      // ordinary meshes by their vertices and instanced ones only through every instance, so
+      // surface clearance covers a whole shoal but no phantom template.
+      var box = new T.Box3(), point = new T.Vector3();
       var instance = new T.Matrix4(), world = new T.Matrix4(), part = new T.Box3();
       root.traverse(function (mesh) {
-        if (!mesh.isInstancedMesh) return;
+        if (!mesh.geometry || !mesh.geometry.attributes || !mesh.geometry.attributes.position) return;
+        if (!mesh.isInstancedMesh) {
+          var pos = mesh.geometry.attributes.position;
+          for (var v = 0; v < pos.count; v++) box.expandByPoint(point.fromBufferAttribute(pos, v).applyMatrix4(mesh.matrixWorld));
+          return;
+        }
         if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
         for (var i = 0; i < mesh.count; i++) {
           mesh.getMatrixAt(i, instance); world.multiplyMatrices(mesh.matrixWorld, instance);
@@ -1780,6 +3099,30 @@
       if (o.root) o.root.traverse(function (c) { owner.set(c, o); });
     }
     function isMobile(o) { var b = o.behavior; return !(b === 'fixed' || b === 'moray' || b === 'den' || b === 'ray' || (b === 'cleaner' && o.info.group !== 'fish')); }
+    // High tier shadow casters: animals over 0.35 m in radius (a school's radius is the
+    // whole school's, so that is every school). Schools are InstancedMeshes, which three.js
+    // never culls, so each was drawn in the shadow pass wherever it swam. A caster now casts
+    // only while it can reach the shadow map's square (leanShadowCasters, before each shadow
+    // pass): beyond it a shadow falls nowhere that is drawn. Same-frame renders match exactly.
+    // (Dropping small fish by size was measured: their schools' soft shade still shows.)
+    function leanCasters(o, root) {
+      if (!(o.radius > 0.35)) return;
+      var list = [];
+      root.traverse(function (c) { if (c.isMesh) list.push(c); });
+      o.leanCasters = list; o.leanCasting = null;
+    }
+    function leanShadowCasters() {
+      var box = perfShadowBox();
+      if (!box) return;
+      for (var i = 0; i < organisms.length; i++) {
+        var o = organisms[i], list = o.leanCasters, on;
+        if (!list) continue;
+        on = perfInShadow(box, o.center, o.radius);
+        if (on === o.leanCasting) continue;
+        o.leanCasting = on;
+        for (var k = 0; k < list.length; k++) list[k].castShadow = on;
+      }
+    }
     function attachObject(o, model) {
       var root = model.root, box = localBounds(root), id = o.speciesId;
       o.model = model; o.root = root; o.instanced = false; root.rotation.order = 'YZX';
@@ -1797,7 +3140,7 @@
       o.radius = r0 * (o.school ? 1 : o.scale); o.center = new T.Vector3(); o.boxMinY = box.min.y; o.boxMaxY = box.max.y;
       o.ceiling = o.school ? -0.25 - o.radius * 0.75 - o.info.lengthM * 0.15 : -0.55;
       orgRoot.add(root);
-      if (high && o.radius > 0.35) root.traverse(function (c) { if (c.isMesh) c.castShadow = true; });
+      if (high) leanCasters(o, root);
       o.path = null;
       if (isMobile(o)) setupMotion(o);
       // Reef3DSpecies says where a model's origin is (info().origin); placeholders are placed by their bounds.
@@ -1858,22 +3201,67 @@
         groups.push(group);
       });
     }
+    // The decor and the coral groups are refilled only after the camera has moved or
+    // turned a little (PERF_STEP m, PERF_TURN as a cosine: 0.75 m or 10 degrees on the
+    // light tier, 0.4 m or 5 degrees on the high one), so their view cone carries a margin
+    // for both. A turn needs the same margin at every distance; a step shifts near things
+    // most. Near things keep the old margin (0.45 rad beyond the view's half diagonal);
+    // from 6 m and 12 m out it is the turn plus the step's angle there, so far colonies
+    // behind the edges of the screen are no longer drawn.
+    var PERF_STEP = high ? 0.4 : 0.75, PERF_TURN = high ? 0.9962 : 0.985, perfCone = { near: 0, mid: 0, far: 0 };
+    function perfConeFor(fov, aspect) {
+      var half = Math.atan(Math.tan(fov * Math.PI / 360) * Math.hypot(1, aspect)), turn = Math.acos(PERF_TURN);
+      perfCone.near = Math.cos(Math.min(Math.PI * 0.95, half + 0.45));
+      perfCone.mid = Math.cos(Math.min(Math.PI * 0.95, half + turn + Math.asin(PERF_STEP / 6) + 0.02));
+      perfCone.far = Math.cos(Math.min(Math.PI * 0.95, half + turn + Math.asin(PERF_STEP / 12) + 0.02));
+      return perfCone;
+    }
+    function perfConeAt(cone, d) { return d < 6 ? cone.near : d < 12 ? cone.mid : cone.far; }
+    // Shadows (high tier): the sun's shadow map covers a 28 m square around the diver.
+    // A coral group is drawn in the shadow pass with only its members inside that square
+    // (they come first in its buffer; scene.onBeforeRender swaps the count before the
+    // shadow pass, each group mesh restores it for its own draw), so the colonies whose
+    // shadows fall outside the map are no longer drawn twice. Nothing visible changes.
+    var perfLight = null;
+    function perfShadowBox() {
+      if (!high || !sun || !sun.castShadow || !sun.userData.dir) return null;
+      var L = perfLight || (perfLight = { x: new T.Vector3(), y: new T.Vector3(), z: new T.Vector3(), cx: 0, cy: 0, cz: 0, half: 0 });
+      L.z.copy(sun.userData.dir).normalize(); L.x.set(0, 1, 0).cross(L.z).normalize(); L.y.crossVectors(L.z, L.x);
+      // Where the light's target will be (the rounded diver), with room for a step between refills.
+      L.cx = Math.round(diverPos.x); L.cy = Math.round(diverPos.y); L.cz = Math.round(diverPos.z); L.half = sun.shadow.camera.right + 1.6;
+      return L;
+    }
+    function perfInShadow(L, p, r) {
+      var dx = p.x - L.cx, dy = p.y - L.cy, dz = p.z - L.cz;
+      return Math.abs(dx * L.x.x + dy * L.x.y + dz * L.x.z) <= L.half + r && Math.abs(dx * L.y.x + dy * L.y.y + dz * L.y.z) <= L.half + r;
+    }
+    function perfShadowPass() { leanShadowCasters(); for (var i = 0; i < groups.length; i++) for (var m = 0; m < groups[i].meshes.length; m++) { var mesh = groups[i].meshes[m]; if (mesh.perfShadowCount !== undefined) mesh.count = mesh.perfShadowCount; } }
+    function perfMainCount() { if (this.perfMainCount !== undefined) this.count = this.perfMainCount; }
     // How far an organism stays drawn: small animals vanish into the haze sooner; the governor shortens it.
     function drawDistance(o) { return Math.min(cullDist, 8 + o.radius * 30) * (0.5 + 0.5 * gov.scale); }
-    function refreshGroups(cx, cy, cz, cosHalf) {
+    function refreshGroups(cx, cy, cz, cone) {
+      var box = perfShadowBox();
+      if (box && scene.onBeforeRender !== perfShadowPass) scene.onBeforeRender = perfShadowPass;
       groups.forEach(function (g) {
-        var n = 0, k, q, m;
-        for (k = 0; k < g.members.length; k++) {
-          var o = g.members[k], dx = o.center.x - cx, dy = o.center.y - cy, dz = o.center.z - cz, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          if (d - o.radius > drawDistance(o)) continue;
-          if (d > o.radius + 1.5 && dx * camFwd.x + dy * camFwd.y + dz * camFwd.z < cosHalf * d - o.radius) continue;
-          for (m = 0; m < g.meshes.length; m++) { var dst = g.meshes[m].instanceMatrix.array, src = g.all[m]; for (q = 0; q < 16; q++) dst[n * 16 + q] = src[k * 16 + q]; }
-          n++;
+        var n = 0, lit = 0, k, q, m, passes = box && g.meshes[0] && g.meshes[0].castShadow ? 2 : 1;
+        for (var pass = 0; pass < passes; pass++) {
+          for (k = 0; k < g.members.length; k++) {
+            var o = g.members[k], dx = o.center.x - cx, dy = o.center.y - cy, dz = o.center.z - cz, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (d - o.radius > drawDistance(o)) continue;
+            if (d > o.radius + 1.5 && dx * camFwd.x + dy * camFwd.y + dz * camFwd.z < perfConeAt(cone, d) * d - o.radius) continue;
+            // Two passes: members inside the shadow map first, then the rest.
+            if (passes === 2 && perfInShadow(box, o.center, o.radius) !== (pass === 0)) continue;
+            for (m = 0; m < g.meshes.length; m++) { var dst = g.meshes[m].instanceMatrix.array, src = g.all[m]; for (q = 0; q < 16; q++) dst[n * 16 + q] = src[k * 16 + q]; }
+            n++;
+          }
+          if (pass === 0) lit = n;
         }
-        g.meshes.forEach(function (mesh) {
-          mesh.count = n; mesh.visible = n > 0;
+        for (m = 0; m < g.meshes.length; m++) {
+          var mesh = g.meshes[m];
+          mesh.count = n; mesh.visible = n > 0; mesh.perfMainCount = n; mesh.perfShadowCount = passes === 2 ? lit : n;
+          if (mesh.onBeforeRender !== perfMainCount) mesh.onBeforeRender = perfMainCount;
           mesh.instanceMatrix.updateRange.offset = 0; mesh.instanceMatrix.updateRange.count = Math.max(16, n * 16); mesh.instanceMatrix.needsUpdate = true;
-        });
+        }
       });
     }
     function buildOrganisms() {
@@ -1887,8 +3275,9 @@
       for (var u = 0; restoration && u < restoration.units; u++) resUids.push('r' + (++serial));
       function pass(e) { return e.behavior === 'fixed' && (e.info.habit === 'sessile' || e.info.group === 'coral' || e.info.group === 'structure') ? 0 : e.behavior === 'fixed' || e.behavior === 'den' || e.behavior === 'ray' || e.behavior === 'moray' ? 1 : 2; }
       // Restoration units claim the rubble patch before anything else settles.
-      if (restoration) placeRestoration(resUids);
-      entries.slice().sort(function (a, b) { return pass(a) - pass(b) || a.order - b.order; }).forEach(function (e) {
+      if (restoration) loadStep(3, function () { placeRestoration(resUids); });
+      // One step per species, in placement order (a staged mount yields between them).
+      entries.slice().sort(function (a, b) { return pass(a) - pass(b) || a.order - b.order; }).forEach(function (e) { loadStep(1 + e.uids.length, function () {
         var rnd = stream(seed, 3001 + (hashInt(e.id) % 99991)), zone = ZONE[e.id] || defaultZone(e.info, e.behavior), members = [];
         for (var k = 0; k < e.uids.length; k++) {
           var draws = []; for (var q = 0; q < 32; q++) draws.push(rnd());
@@ -1900,17 +3289,19 @@
         if (beh === 'school') members.forEach(function (o) { o.school = schoolSize(info, o.draws[31]); });
         var sessile = beh === 'fixed' && (info.habit === 'sessile' || info.group === 'coral' || info.group === 'structure');
         if (sessile && members.length >= 2 && (info.group === 'coral' || info.group === 'structure' || members.length >= 5)) instanceMembers(e.id, info, members);
-        else members.forEach(function (o) { attachObject(o, makeModel(e.id, info, o, o.school)); });
-        members.forEach(function (o) {
+        // Each model is its own step (painting its textures can take a while); the
+        // grid stamps follow once the species is complete, as before.
+        else members.forEach(function (o) { loadStep(1, function () { attachObject(o, makeModel(e.id, info, o, o.school)); }); });
+        loadStep(0, function () { members.forEach(function (o) {
           if (!o.path && o.center) {
             block(o.center.x, o.center.z, o.radius * 0.85 + 0.2);
             var top = o.center.y + (o.boxMaxY - (o.boxMinY + o.boxMaxY) / 2) * o.scale;
             if (top - o.ground > 0.3) stampTop(o.center.x, o.center.z, o.radius * 0.7, top);
           }
           if (e.id === 'magnificent_anemone' && o.center) anemones.push({ x: o.center.x, z: o.center.z, top: o.ground + (o.boxMaxY - o.boxMinY) * o.scale * 0.85 });
-        });
-      });
-      organisms.sort(function (a, b) { return a.serial - b.serial; });
+        }); });
+      }); });
+      loadStep(0, function () { organisms.sort(function (a, b) { return a.serial - b.serial; }); });
     }
     function placeRestoration(uids) {
       var kind = restoration.kind, info = speciesInfo(Species, kind), rr = stream(seed, 4001), rb = terrain.rubble, spacing = kind === 'reef_star' ? 1.25 : kind === 'reef_ball' ? 2.3 : 3.2;
@@ -1938,6 +3329,8 @@
       // A large shoal needs a column of open water. Move its whole patrol
       // gently down-slope at placement time, instead of squeezing it against
       // the surface or letting individual members pass through a reef crest.
+      // Planktivores stay over their own head instead, among clouds on the heads around.
+      if (o.planktivore) { joinCrowd(o); return; }
       var path = o.path, point = { x: 0, y: 0, z: 0 }, samples = [], maxZ = -Infinity;
       for (var i = 0; i < 64; i++) { path(i / 64 * o.pathPeriod, point); samples.push({ x: point.x, z: point.z }); maxZ = Math.max(maxZ, point.z); }
       var maxShift = Math.max(0, 27.5 - maxZ), shift = 0, reach = o.radius * 0.7;
@@ -1961,21 +3354,36 @@
       var loose = o.behavior === 'school' ? 0.16 : o.behavior === 'wander' || o.behavior === 'roam' || o.behavior === 'turtle' || o.behavior === 'manta' || o.behavior === 'cruise' ? 0.1 : 0.025;
       var phase = t * 0.35 - o.home.x * 0.075 - o.home.z * 0.055;
       out.x += loose * Math.sin(phase); out.z += loose * 0.65 * Math.sin(phase + 0.4);
+      if (o.flight && o.flight.tick !== null) fleeFrom(o, t, out);
       return out;
     }
-    function poseMobile(o, dt, init) {
-      var p = mobilePoint(o, worldTime, tmpA), q = mobilePoint(o, worldTime + 0.3, tmpB), root = o.root;
-      var floor = groundTop(p.x, p.z) + o.clear, nowLift = Math.max(0, floor - p.y);
-      // Start climbing before a ledge and settle slowly on its far side. Keep
-      // the current footprint clear even at a sharp coral-grid boundary.
-      var target = Math.max(nowLift, groundTop(q.x, q.z) + o.clear - q.y);
+    // The lift a swimmer needs over the terrain ahead (eight path points, the costly part
+    // of a pose). Far and unseen swimmers redo it on their slice (perfRate) and keep the
+    // last answer in between; the footprint under them (nowLift) is always current.
+    function perfLookAhead(o, q, clear, nowLift, init) {
+      if (!init && o.perfAhead !== undefined && !perfDue(o, o.perfM || 1)) return Math.max(nowLift, o.perfAhead);
+      var target = Math.max(nowLift, groundTop(q.x, q.z) + clear - q.y);
       for (var lead = 1; lead <= 7; lead++) {
         var ahead = mobilePoint(o, worldTime + lead * 0.6, aheadPoint);
-        target = Math.max(target, groundTop(ahead.x, ahead.z) + o.clear - ahead.y - lead * 0.06);
+        target = Math.max(target, groundTop(ahead.x, ahead.z) + clear - ahead.y - lead * 0.06);
       }
+      o.perfAhead = target;
+      return target;
+    }
+    function poseMobile(o, dt, init) {
+      if (o.flight === undefined) o.flight = flightState(o);
+      if (o.flight) stepFlight(o, init);
+      // A sheltering planktivore may sink to just above the coral it hides in.
+      var clear = o.flight && o.flight.shelter ? lerp(o.clear, o.flight.shelter, shelterAt(o.flight, worldTime)) : o.clear;
+      var p = mobilePoint(o, worldTime, tmpA), q = mobilePoint(o, worldTime + 0.3, tmpB), root = o.root;
+      var floor = groundTop(p.x, p.z) + clear, nowLift = Math.max(0, floor - p.y);
+      // Start climbing before a ledge and settle slowly on its far side. Keep
+      // the current footprint clear even at a sharp coral-grid boundary.
+      var target = perfLookAhead(o, q, clear, nowLift, init);
       if (init) o.lift = target;
       else o.lift = Math.max(nowLift, o.lift + (target - o.lift) * damp(target > o.lift ? 2.8 : 1.1, dt));
       var dx = q.x - p.x, dz = q.z - p.z, horiz = Math.hypot(dx, dz), rawBear = o.sweep ? o.sweep(worldTime) : horiz > 1e-5 ? bearingTo(dx, dz) : (o.bearingNow || o.yaw);
+      if (o.sweep && o.flight && o.flight.tick !== null) rawBear = fleeBearing(o, rawBear);
       var previous = o.bearingNow, bear = init || previous === undefined ? rawBear : previous + wrapAngle(rawBear - previous) * damp(4.5, dt);
       var rate = dt > 0 && previous !== undefined ? wrapAngle(bear - previous) / dt : 0;
       var yGoal = Math.min(o.ceiling, p.y + o.lift);
@@ -1997,9 +3405,481 @@
       root.updateMatrix(); o.center.copy(o.centerLocal).applyMatrix4(root.matrix);
     }
 
+    // ---- Diver awareness ------------------------------------------------------------
+    // A reef fish lets a calm diver come to about its flight distance, then swims
+    // off just far enough to keep it. A fast diver startles fish sooner; fish that
+    // people hunt (parrotfish, groupers, snappers) leave earlier than small fish,
+    // venomous lionfish hardly move, and planktivores drop into their coral instead.
+    // Sharks, rays, turtles and the other special swimmers keep their own ways.
+    // Flight state advances in fixed 1/60 s steps of world time, so any split of the
+    // same frames swims the same; reduced motion keeps every reaction smaller and
+    // slower. Scratch values are made on first use: a plain mount builds the reef
+    // before this line runs.
+    var flightTmp;
+    function flightScratch() { return flightTmp || (flightTmp = { p: { x: 0, y: 0, z: 0 }, a: { x: 0, y: 0, z: 0 }, b: { x: 0, y: 0, z: 0 } }); }
+    function flightBase(o) {
+      var b = o.behavior;
+      if (b !== 'school' && b !== 'hover' && b !== 'pair' && b !== 'wander') return 0;
+      return flightSize(o);
+    }
+    // Grazers and cleaning-station clients use the same distance on their journeys (travelFleeWrap).
+    function flightSize(o) {
+      var wary = { parrotfish: 1.6, bumphead_parrotfish: 1.7, peacock_grouper: 1.3, bluestripe_snapper: 1.3, oriental_sweetlips: 1.2, emperor_angelfish: 1.1, clown_triggerfish: 1.1, porcupinefish: 0.6, yellow_boxfish: 0.7, lionfish: 0.3 };
+      return Math.min(4.5, clamp(1 + 2.2 * o.info.lengthM, 1.1, 3.4) * (wary[o.speciesId] || 1));
+    }
+    function flightState(o) {
+      var base = flightBase(o);
+      return base > 0 ? { base: base, tick: null, x: 0, y: 0, z: 0, tx: 0, ty: 0, tz: 0, r: 0, s: 0, ts: 0, rs: 0, shelter: o.shelterClear || 0, h: 0, visit: calmCurious(o), va: 0, sx: 0, sy: 0, sz: 0 } : null;
+    }
+    // A focused animal tolerates the student who is identifying it; h is how used
+    // the animal has grown to a calm diver (calmFactor).
+    function flightDistance(base, focused, h) {
+      var v = Math.min(1.6, Math.hypot(speed, vy));
+      return base * (0.7 + 0.75 * v) * (reducedMotion ? 0.6 : 1) * (focused ? 0.25 : 1) * calmFactor(h);
+    }
+
+    // ---- Calm diving ----------------------------------------------------------------
+    // Fish judge a diver by how it moves: a fast, direct approach scares them sooner,
+    // and fish that meet divers often learn to tolerate them, though only partly
+    // (Stankowich & Blumstein 2005; Titus et al. 2015). So while the diver hangs
+    // still, each animal that can see it calmly grows used to it (h, 0..1, in fixed
+    // 1/60 s steps of world time like the flight state): its flight distance and a
+    // cloud's alarm radius shrink to as little as 45% (floor), hidden clouds come
+    // back up, and a few roaming fish living close by drift in to swim a smaller
+    // round in front of the diver. A burst of speed, a quick climb or a brush with
+    // the reef undoes it within a second; ordinary swimming wears it off slowly.
+    // A fish the diver keeps inside its flight distance stays alert and does not
+    // settle (a planktivore cloud or school hiding in its coral slowly re-emerges).
+    // Made on first use, like the flight scratch.
+    var calmKit;
+    function calmState() {
+      if (calmKit) return calmKit;
+      var k = function (rate) { return Math.exp(-rate / 60); };
+      // Per-step multipliers: build (time constant 10 s), reset (0.25 s), fade after slow
+      // swimming (15 s), after ordinary swimming (4 s), out of sight (30 s).
+      calmKit = { at: null, mode: 2, floor: 0.45, build: k(0.1), build3: k(0.1 / 3), reset: k(4), slow: k(1 / 15), swim: k(0.25), away: k(1 / 30), sight: 14,
+        vx: 0, vy: 0, vz: 0, rx: 1, rz: 0, vb: 0, vd: 2.2, off: 0, ex: 0, ey: 0, ez: 0 };
+      return calmKit;
+    }
+    // How much smaller a habituated animal's flight distance is.
+    function calmFactor(h) { return h > 0 ? 1 - (1 - calmState().floor) * h : 1; }
+    // What the diver is doing this frame: 0 a burst (fast swim, fast climb or dive, or
+    // a brush with the reef: Lane H3's contact state), 1 a still hover (H3's steady
+    // calm, at any height above the reef, and all but stopped), 2 a slow swim or a
+    // Swim to glide, 3 ordinary swimming.
+    function calmInput() {
+      var s = touch, v = Math.abs(speed), up = Math.abs(vy);
+      if (autopilot) return 2;
+      if (v > 0.8 || up > 0.5 || s && s.state === 'touch') return 0;
+      var steady = !s || s.calmRun > 0 || Math.abs(turnRate) < 0.4 && up < 0.25;
+      return steady && v < 0.12 && up < 0.15 ? 1 : v < 0.4 ? 2 : 3;
+    }
+    // Once per frame: the diver's mode and the open water just in front of its mask,
+    // where calm visitors gather (straight ahead, or the nearest of six headings to
+    // the side, still in view, when the reef blocks the way within a couple of metres).
+    function calmFrame() {
+      var K = calmState();
+      if (K.at === worldTime) return K;
+      K.at = worldTime; K.mode = calmInput();
+      // The spot moves only while the diver hovers: visitors stay where they gathered when it leaves.
+      if (K.mode !== 1) return K;
+      // From the mask (the head leads the body by about 0.74 m).
+      var ex = diverPos.x + fwdX(bearing) * 0.74, ez = diverPos.z + fwdZ(bearing) * 0.74, eyeY = diverPos.y + 0.1, free = -1, bestB = bearing, list = [0, -0.3, 0.3, -0.5, 0.5, -0.65, 0.65];
+      for (var i = 0; i < list.length && free < 1.8; i++) {
+        var b = bearing + list[i], s = 0.6;
+        for (; s < 3; s += 0.3) if (groundTop(ex + fwdX(b) * s, ez + fwdZ(b) * s) > eyeY - 0.4) break;
+        if (s > free + 0.3 || !i) { free = s; bestB = b; }
+      }
+      K.ex = ex; K.ey = eyeY; K.ez = ez; K.vd = clamp(free - 0.4, 1.5, 2.4);
+      K.vx = ex + fwdX(bestB) * K.vd; K.vz = ez + fwdZ(bestB) * K.vd; K.vy = Math.max(eyeY - 0.2, groundTop(K.vx, K.vz) + 0.35);
+      K.rx = Math.cos(bestB); K.rz = Math.sin(bestB); K.vb = bestB; K.off = wrapAngle(bestB - bearing);
+      return K;
+    }
+    // One fixed step of an animal's habituation. d is how far the diver is; alert when
+    // the diver is too close for the animal to settle (calmAlert).
+    function calmHabituate(h, d, alert, shelter) {
+      var K = calmFrame(), m = K.mode;
+      h = h || 0;
+      if (m === 0) return h * K.reset;
+      if (m === 2) return h * K.slow;
+      if (m === 3) return h * K.swim;
+      if (d > K.sight) return h * K.away;
+      if (alert && !shelter) return h;
+      return 1 - (1 - h) * (alert ? K.build3 : K.build);
+    }
+    // A fish with the diver inside its own flight distance (even one kept close while it
+    // is identified) stays alert and does not settle.
+    function calmAlert(f, dist) { return dist < flightDistance(f.base, false, f.h); }
+    // Roaming fish that are not hunted much (H1's wary table) may come for a look.
+    function calmCurious(o) {
+      var b = o.behavior, size = clamp(1 + 2.2 * o.info.lengthM, 1.1, 3.4);
+      return (b === 'wander' || b === 'pair') && !o.planktivore && flightSize(o) <= size * 1.1 + 1e-6 ? 1 : 0;
+    }
+    // A settled visitor swims its own route at 30% of its size around its spot in front
+    // of the diver: p + va * (S + 0.3 (p - c) - p), with c the middle of the route (a pair
+    // shares its leader's), S the spot and va the visit weight. Applied to the flight
+    // step's home point and to every pose sample (fleeFrom), so the terrain look-ahead
+    // sees the same smaller route.
+    function calmVisitAt(o, f, out) {
+      if (!(f.va > 0)) return out;
+      var c = (o.leader || o).home, w = f.va;
+      out.x += w * (f.sx + 0.3 * (out.x - c.x) - out.x); out.y += w * (f.sy + 0.3 * (out.y - c.y) - out.y); out.z += w * (f.sz + 0.3 * (out.z - c.z) - out.z);
+      return out;
+    }
+    // One fixed step of a visit: the weight follows how settled the fish is (and how
+    // close it lives), and both it and the spot move at an easy swimming pace.
+    function calmVisitStep(o, f) {
+      var K = calmFrame(), lead = o.leader || o, c = lead.home, want = 0;
+      if (f.visit && !reducedMotion) want = smooth(0.35, 0.85, f.h) * smooth(12, 8, Math.hypot(c.x - diverPos.x, c.z - diverPos.z));
+      if (!(want > 0) && !(f.va > 0)) return;
+      // Its own place near the others (a pair as one): nearer or farther, a little to
+      // either side (toward the middle of the view when the spot is off to one side),
+      // above or below; never inside the reef, never closer to the diver than its
+      // settled flight distance nor within 1.5 m of the mask.
+      var side = (hash2(lead.serial, 71) - 0.5) * (0.4 + 0.3 * K.vd) - clamp(K.off, -0.3, 0.3), along = (hash2(lead.serial, 73) - 0.5) * 0.8;
+      var sx = K.vx + K.rx * side + fwdX(K.vb) * along, sz = K.vz + K.rz * side + fwdZ(K.vb) * along;
+      var sy = Math.max(K.vy + (hash2(lead.serial, 72) - 0.4) * 0.5, groundTop(sx, sz) + 0.35);
+      var near = Math.max(1.2, 1.3 * 0.7 * f.base * K.floor), ex = sx - diverPos.x, ey = sy - diverPos.y, ez = sz - diverPos.z, e = Math.hypot(ex, ey, ez);
+      if (e < near) { sx = diverPos.x + ex / Math.max(e, 0.01) * near; sy = diverPos.y + ey / Math.max(e, 0.01) * near; sz = diverPos.z + ez / Math.max(e, 0.01) * near; }
+      ex = sx - K.ex; ey = sy - K.ey; ez = sz - K.ez; e = Math.hypot(ex, ey, ez);
+      if (e < 1.5) { sx = K.ex + ex / Math.max(e, 0.01) * 1.5; sy = K.ey + ey / Math.max(e, 0.01) * 1.5; sz = K.ez + ez / Math.max(e, 0.01) * 1.5; }
+      if (!(f.va > 0)) { f.sx = sx; f.sy = sy; f.sz = sz; }
+      else { var dx = sx - f.sx, dy = sy - f.sy, dz = sz - f.sz, d = Math.hypot(dx, dy, dz), q = d > 0.4 / 60 ? 0.4 / 60 / d : 1; f.sx += dx * q; f.sy += dy * q; f.sz += dz * q; }
+      var stepW = 0.35 / 60 / Math.max(1, Math.hypot(f.sx - c.x, f.sy - c.y, f.sz - c.z));
+      f.va = want > f.va ? Math.min(want, f.va + stepW) : Math.max(want, f.va - stepW * 1.5);
+    }
+    function stepFlight(o, init) {
+      var f = o.flight, k = Math.floor(worldTime * 60 + 1e-6);
+      if (init || f.tick === null) { f.tick = k; return; }
+      for (var j = Math.max(f.tick + 1, k - 29); j <= k; j++) fleeTick(o, f, j / 60);
+      f.tick = Math.max(f.tick, k);
+    }
+    function fleeTick(o, f, t) {
+      var p = o.path(t, flightScratch().p), give = o.school ? o.radius * 0.5 : 0, F = flightDistance(f.base, o.uid === focusedUid, f.h);
+      // A calm diver's visitor swims its round in front of the diver (calmVisitAt).
+      calmVisitAt(o, f, p);
+      var home = Math.max(0, Math.hypot(p.x - diverPos.x, p.y - diverPos.y, p.z - diverPos.z) - give);
+      // Measured from where the fish is now, so a diver swimming past never draws it back through itself.
+      var dx = p.x + f.x - diverPos.x, dy = p.y + f.y - diverPos.y, dz = p.z + f.z - diverPos.z, dh = Math.hypot(dx, dz), dist = Math.max(0, Math.hypot(dh, dy) - give);
+      if (dist < F) {
+        // Planktivores mostly sink into their coral; the rest swim away, never far from home.
+        var want = (F - dist) * (f.shelter ? 0.35 : 0.95), up = clamp(dy / Math.max(0.05, Math.hypot(dh, dy)), -0.5, 0.5) * 0.6, side = Math.sqrt(1 - up * up);
+        if (dh < 0.05) { dx = Math.cos(bearing) * o.dir; dz = Math.sin(bearing) * o.dir; dh = 1; }
+        f.tx = f.x + dx / dh * want * side; f.tz = f.z + dz / dh * want * side; f.ty = f.y + want * up;
+        var m = Math.hypot(f.tx, f.ty, f.tz), cap = (f.shelter ? 0.6 : 1.6) * F;
+        if (m > cap) { f.tx *= cap / m; f.ty *= cap / m; f.tz *= cap / m; }
+      } else if (home >= F) { f.tx = 0; f.ty = 0; f.tz = 0; } // the way home is clear
+      else { f.tx = f.x; f.ty = f.y; f.tz = f.z; } // hold until the diver moves on
+      var cur = f.x * f.x + f.y * f.y + f.z * f.z, goal = f.tx * f.tx + f.ty * f.ty + f.tz * f.tz;
+      f.r = goal > cur ? (reducedMotion ? 2 : 2.6) : (reducedMotion ? 0.4 : 0.5);
+      var a = 1 - Math.exp(-f.r / 60);
+      f.x += (f.tx - f.x) * a; f.y += (f.ty - f.y) * a; f.z += (f.tz - f.z) * a;
+      if (f.shelter) {
+        // Judged from its station above the coral, so sinking out of reach does not call it back up.
+        f.ts = 1 - smooth(F * 0.8, F * 1.7, home); f.rs = f.ts > f.s ? (reducedMotion ? 1.6 : 2.2) : (reducedMotion ? 0.35 : 0.45);
+        f.s += (f.ts - f.s) * (1 - Math.exp(-f.rs / 60));
+      }
+      f.h = calmHabituate(f.h, dist + give, calmAlert(f, dist), !!f.shelter);
+      calmVisitStep(o, f);
+    }
+    // Between steps (and for the look-ahead samples) the state keeps easing toward its goal.
+    function fleeOffset(f, t, out) {
+      var h = t - f.tick / 60, e = h > 0 ? Math.exp(-f.r * h) : 1;
+      out.x = f.tx + (f.x - f.tx) * e; out.y = f.ty + (f.y - f.ty) * e; out.z = f.tz + (f.z - f.tz) * e;
+      return out;
+    }
+    function shelterAt(f, t) { var h = t - f.tick / 60; return f.tick === null ? 0 : f.ts + (f.s - f.ts) * (h > 0 ? Math.exp(-f.rs * h) : 1); }
+    function fleeFrom(o, t, out) {
+      var f = o.flight, off = fleeOffset(f, t, flightScratch().a);
+      calmVisitAt(o, f, out);
+      out.x = clamp(out.x + off.x, -28, 28); out.y += off.y; out.z = clamp(out.z + off.z, -28, 28);
+      if (f.shelter) { var s = shelterAt(f, t); if (s > 0.001) out.y -= s * Math.max(0, out.y - groundTop(out.x, out.z) - f.shelter); }
+      return out;
+    }
+    // A station-holding fish turns to swim away while it flees, then faces back.
+    function fleeBearing(o, rest) {
+      var a = fleeOffset(o.flight, worldTime, flightScratch().a), b = fleeOffset(o.flight, worldTime + 0.3, flightScratch().b), fx = b.x - a.x, fz = b.z - a.z, v = Math.hypot(fx, fz) / 0.3;
+      return v > 0.05 ? rest + wrapAngle(bearingTo(fx, fz) - rest) * smooth(0.05, 0.35, v) : rest;
+    }
+    // Facing into the current that brings the plankton, with a slow sway.
+    function intoCurrent(x, z, ph) {
+      var cur = { x: 0, z: 0, strength: 0 };
+      return function (t) { currentAt(x, z, t, cur); return bearingTo(-cur.x, -cur.z) + 0.35 * Math.sin(0.13 * t + ph) + 0.12 * Math.sin(0.37 * t + ph * 2); };
+    }
+    // School members near the diver part around it and close up behind; the shift
+    // is undone before every update, so a frozen (reduced motion) school never drifts.
+    function partSchool(o) {
+      var model = o.model, meshes = model && model.meshes;
+      var base = flightBase(o);
+      if (!(base > 0) || !Array.isArray(meshes) || !meshes.length || !meshes.every(function (m) { return m && m.isInstancedMesh; })) return;
+      var body = meshes.filter(function (m) { return m.userData && m.userData.part === 'body'; })[0] || meshes[0], n = body.count, shift = new Float32Array(n * 3), inner = model.update, shifted = false;
+      var inv = new T.Matrix4(), local = new T.Vector3();
+      function move(sign) {
+        meshes.forEach(function (m) {
+          var a = m.instanceMatrix.array;
+          for (var i = 0; i < Math.min(n, m.count); i++) { a[i * 16 + 12] += sign * shift[i * 3]; a[i * 16 + 13] += sign * shift[i * 3 + 1]; a[i * 16 + 14] += sign * shift[i * 3 + 2]; }
+          m.instanceMatrix.needsUpdate = true;
+        });
+      }
+      model.update = function (dt, t, motion) {
+        if (shifted) { move(-1); shifted = false; }
+        inner.call(model, dt, t, motion);
+        local.copy(diverPos).applyMatrix4(inv.copy(o.root.matrix).invert());
+        var R = Math.max(0.5, flightDistance(base, o.uid === focusedUid, o.flight ? o.flight.h : 0) * 0.75), a = body.instanceMatrix.array;
+        if (local.length() > R + o.radius * 1.2) return;
+        for (var i = 0; i < n; i++) {
+          var dx = a[i * 16 + 12] - local.x, dy = a[i * 16 + 13] - local.y, dz = a[i * 16 + 14] - local.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz), push = d < R ? (R - d) * 0.8 / Math.max(d, 0.05) : 0;
+          shift[i * 3] = dx * push; shift[i * 3 + 1] = dy * push * 0.6; shift[i * 3 + 2] = dz * push;
+          if (push) shifted = true;
+        }
+        if (shifted) move(1);
+      };
+    }
+
+    // ---- Planktivore clouds ------------------------------------------------------------
+    // Clouds of anthias and chromis hover over the coral heads and thickets, more and
+    // denser where the coral is alive. Each species is drawn as one instanced crowd
+    // that borrows a school's meshes, shaders and fin strokes. The crowd is scenery,
+    // not organisms (never in Nearby or the counts); a tap on one of its fish focuses
+    // the nearest school of that species. Made on first use, like the flight scratch.
+    var crowdKit;
+    function crowdState() {
+      return crowdKit || (crowdKit = { list: [], heads: [], M: new T.Matrix4(), W: new T.Matrix4(), Q: new T.Quaternion(), E: new T.Euler(0, 0, 0, 'YZX'),
+        P: new T.Vector3(), S: new T.Vector3(), fwd: new T.Vector3(), cur: { x: 0, z: 0, strength: 0 } });
+    }
+    // How much living shelter the reef offers its planktivores (about 1 on the healthy site).
+    function shelterIndex() { return clamp(health.coralCover / 0.5, 0, 1.1) * (1 - 0.45 * health.bleaching) * (1 - 0.4 * health.algae); }
+    function crowdTemplate(o) {
+      var meshes = o.model && o.model.meshes;
+      if (!Array.isArray(meshes) || !meshes.length || !meshes.every(function (m) { return m && m.isInstancedMesh && m.instanceColor && m.geometry && m.geometry.attributes.reefSchoolBeat; })) return null;
+      var body = meshes.filter(function (m) { return m.userData && m.userData.part === 'body'; })[0];
+      return body && body.count > 0 ? { meshes: meshes, body: body } : null;
+    }
+    // The school body is a lofted tube: crowd fish skip every second ring and side
+    // of it, far ones more. Any other layout keeps its own index.
+    function thinBody(g, coarse) {
+      var idx = g.index, V = g.attributes.position.count;
+      if (!idx || idx.count < 12) return idx;
+      var a = idx.array, na = a[2] - 1, nx = (V - 2) / (na + 1) - 1;
+      if (na < 2 || nx !== Math.round(nx) || nx < 2 || idx.count !== (nx + 1) * na * 6) return idx;
+      var sr = coarse && nx % 3 === 0 && nx >= 12 ? 3 : nx % 2 === 0 && nx >= 8 ? 2 : 1, out = [], r, c;
+      var sa = na % 2 === 0 && na >= 8 ? 2 : coarse && na % 3 === 0 && na >= 9 ? 3 : 1;
+      if (sr === 1 && sa === 1) return idx;
+      for (r = 0; r < nx; r += sr) for (c = 0; c < na; c += sa) { var i0 = r * (na + 1) + c, j0 = i0 + sr * (na + 1); out.push(i0, i0 + sa, j0, i0 + sa, j0 + sa, j0); }
+      for (c = 0; c < na; c += sa) out.push(c + sa, c, V - 2, nx * (na + 1) + c, nx * (na + 1) + c + sa, V - 1);
+      return new T.BufferAttribute(V > 65535 ? new Uint32Array(out) : new Uint16Array(out), 1);
+    }
+    // Every coral head may hold a cloud: the big heads mostly the larger planktivore
+    // (anthias), the knolls and thickets mostly the smaller one (chromis). Living,
+    // unbleached coral (the shelter index) sets how many clouds there are and how
+    // full; a species with fewer schools on the site (lower abundance) has fewer.
+    // Plans are made for the high tier; the light tier keeps a subset with fewer fish.
+    function joinCrowd(o) {
+      var K = crowdState();
+      if (K.planned) return;
+      K.planned = true;
+      var S = Math.min(1, shelterIndex()), kinds = {}, ids = [], salt = (seed % 65521 + 65521) % 65521;
+      organisms.forEach(function (x) {
+        if (!x.planktivore || !x.path) return;
+        if (!kinds[x.speciesId]) { kinds[x.speciesId] = { id: x.speciesId, tpl: null, L: x.info.lengthM, clouds: [], fish: [], schools: 0 }; ids.push(x.speciesId); }
+        var kind = kinds[x.speciesId];
+        kind.schools++;
+        if (!kind.tpl && (kind.tpl = crowdTemplate(x))) kind.tpl.owner = x;
+        K.heads.push([x.home.x, x.home.z]);
+      });
+      ids = ids.filter(function (id) { return kinds[id].tpl; }).sort(function (a, b) { return kinds[b].L - kinds[a].L || (a < b ? -1 : 1); });
+      if (!ids.length) return;
+      // size: 2 a big head, 1 a knoll, 0 a branching thicket. Rolls hash the spot, so
+      // a thicket that both tiers draw gets the same cloud on both.
+      function place(x0, z0, r, size) {
+        var key = salt + Math.round(x0 * 37) * 7919 + Math.round(z0 * 37) * 104729, h = function (s) { return hash2(key, s); };
+        if (Math.abs(x0) > 26 || Math.abs(z0) > 26) return;
+        var pick = ids.length < 2 ? 0 : h(2) < 0.75 ? (size === 2 ? 0 : ids.length - 1) : (size === 2 ? 1 + Math.floor(h(3) * (ids.length - 1)) : Math.floor(h(3) * (ids.length - 1)));
+        var kind = kinds[ids[pick]];
+        if (h(1) > [0.5, 0.95, 1][size] * S * Math.sqrt(S) * Math.sqrt(Math.min(1, kind.schools / 3))) return;
+        var px = x0 + (h(4) - 0.5) * 0.3 * r, pz = z0 + (h(5) - 0.5) * 0.3 * r;
+        if (K.heads.some(function (u) { return Math.hypot(u[0] - px, u[1] - pz) < (size ? 1.8 : 2.4); })) return;
+        K.heads.push([px, pz]);
+        var nHigh = Math.max(4, Math.round([5 + 8 * S, 8 + 14 * S, 16 + 34 * S][size] * (0.7 + 0.6 * h(6)))), n = high ? nHigh : Math.max(3, Math.round(nHigh * 0.6));
+        if (!high && h(7) > 0.75) return;
+        var R = Math.min(Math.max(0.3, r * (size === 2 ? 0.75 : 0.9)), 0.25 + 0.08 * Math.sqrt(n)), Ry = 0.14 + 0.03 * Math.sqrt(n), top = -Infinity;
+        for (var s = 0; s < 7; s++) top = Math.max(top, groundTop(px + (s ? Math.cos(s * TAU / 6) * R : 0), pz + (s ? Math.sin(s * TAU / 6) * R : 0)));
+        // Anthias hang higher in the water column than chromis over their thicket.
+        var alt = Math.min([0.15 + 0.3 * h(8), 0.4 + 0.6 * h(8), 0.8 + 1.2 * h(8)][size] + Ry * 0.5, SURFACE_Y - 0.6 - Ry - top);
+        if (alt < 0.15) return;
+        var cl = { x: px, z: pz, top: top, alt: alt, R: R, Ry: Ry, first: kind.fish.length / 7, n: n, a: 0, ta: 0, r: 0, ph: h(9) * TAU };
+        // Per fish: spiral radius and angle, height, phase, rate, size, heading offset.
+        for (var k = 0; k < n; k++) {
+          kind.fish.push(Math.sqrt((k + 0.5) / n), k * 2.39996 + cl.ph, (hash2(key + k, 3) - 0.5) * 2 * (1 - 0.4 * Math.sqrt((k + 0.5) / n)), hash2(key + k, 5) * TAU,
+            0.8 + 0.45 * hash2(key + k, 7), 0.85 + 0.3 * hash2(key + k, 11), (hash2(key + k, 13) - 0.5) * 0.5);
+        }
+        kind.clouds.push(cl);
+      }
+      bommies.forEach(function (b) { place(b.x, b.z, b.r, b.r >= 1.4 ? 2 : 1); });
+      decorKinds.forEach(function (dk) {
+        if (dk.kind !== 'finger' && dk.kind !== 'antler' && dk.kind !== 'corym') return;
+        for (var k = 0; k < dk.n; k++) if (dk.p[k * 4 + 3] >= 0.25) place(dk.p[k * 4], dk.p[k * 4 + 2], dk.p[k * 4 + 3], 0);
+      });
+      ids.forEach(function (id) { if (kinds[id].clouds.length) buildCrowd(K, kinds[id]); });
+      // The crowd moves with the shared prototypes: every frame, never while paused.
+      if (K.list.length) protos.push({ update: function (dt) { updateCrowds(dt); }, dispose: function () { K.list.length = 0; } });
+    }
+    function buildCrowd(K, kind) {
+      var tpl = kind.tpl, cap = kind.fish.length / 7, nT = Math.min(24, tpl.body.count), white = new T.Color(1, 1, 1), parts = [];
+      var beat = new T.InstancedBufferAttribute(new Float32Array(cap * 4), 4), farBeat = new T.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
+      beat.setUsage(T.DynamicDrawUsage); farBeat.setUsage(T.DynamicDrawUsage);
+      // Close fish draw every part, nearer ones the body and tail, far ones a coarser body.
+      tpl.meshes.concat([tpl.body]).forEach(function (src, si) {
+        var g = own(new T.BufferGeometry()), sg = src.geometry, isBody = src === tpl.body, far = si === tpl.meshes.length, part = far ? 'body-far' : src.userData.part || '';
+        Object.keys(sg.attributes).forEach(function (name) { if (name !== 'reefSchoolBeat') g.setAttribute(name, sg.attributes[name]); });
+        g.setAttribute('reefSchoolBeat', far ? farBeat : beat); g.setIndex(isBody ? thinBody(sg, far) : sg.index); g.computeBoundingSphere();
+        var im = new T.InstancedMesh(g, src.material, cap);
+        im.instanceMatrix.setUsage(T.DynamicDrawUsage); im.frustumCulled = false; im.castShadow = false; im.receiveShadow = src.receiveShadow;
+        for (var i = 0; i < cap; i++) im.setColorAt(i, white);
+        im.instanceColor.setUsage(T.DynamicDrawUsage); im.count = 0; im.visible = false;
+        im.name = 'reef-explore-ambient'; im.userData = { speciesId: kind.id, ambient: true, part: part, fish: cap, clouds: kind.clouds.length };
+        orgRoot.add(im);
+        // Fins and eyes ride on the body; the tail and pectorals keep their own strokes.
+        var same = true, sa = src.instanceMatrix.array, ba = tpl.body.instanceMatrix.array;
+        for (var e = 0; e < nT * 16 && same; e++) if (sa[e] !== ba[e]) same = false;
+        parts.push({ mesh: im, src: src, role: far ? 'far' : isBody || part === 'tail' ? 'mid' : 'close', same: same, A: same ? null : new Float32Array(nT * 16) });
+      });
+      K.list.push({ id: kind.id, owner: tpl.owner, body: tpl.body, parts: parts, beat: beat, farBeat: farBeat, clouds: kind.clouds, fish: new Float32Array(kind.fish), cap: cap, nT: nT, L: kind.L,
+        base: flightBase(tpl.owner), tick: null, pos: new Float32Array(cap * 3), drawn: 0, still: false, close: [], near: [], away: [] });
+    }
+    // The crowd's share of the slicing: an unseen school lends its strokes on the light
+    // tier every 2nd frame (more on a slow device), and the governor's density (gov.crowd)
+    // keeps an even subset of every cloud's fish, the same fish at any frame.
+    function perfStrokes(c, unseen, dt) {
+      c.perfAcc = (c.perfAcc || 0) + dt;
+      var n = unseen ? (high ? 1 : 2) * gov.slice : 1;
+      if (n > 1 && (perfFrame + c.cap) % n !== 0) return -1;
+      var step = c.perfAcc; c.perfAcc = 0;
+      return step;
+    }
+    function perfCrowdKeeps(k) { return gov.crowd >= 1 || (k * 0.618034) % 1 < gov.crowd; }
+    function updateCrowds(dt) {
+      var K = crowdState(), half = Math.min(Math.PI * 0.95, Math.atan(Math.tan(camera.fov * Math.PI / 360) * Math.hypot(1, camera.aspect)) + 0.45), cosHalf = Math.cos(half);
+      camera.getWorldDirection(K.fwd);
+      // The crowd's reach answers to its own stage of the governor (after the decor's).
+      K.list.forEach(function (c) { updateCrowd(K, c, dt, cosHalf, (high ? 15 : 12) * (0.5 + 0.5 * gov.crowd)); });
+    }
+    function updateCrowd(K, c, dt, cosHalf, reach) {
+      var t = worldTime, k = Math.floor(t * 60 + 1e-6), i, j, p, cl, F = flightDistance(c.base, false), calm = reducedMotion ? 0.5 : 1;
+      // The borrowed strokes keep beating while the school itself is out of sight.
+      var owner = c.owner, unseen = owner.root && !owner.root.visible, beat = perfStrokes(c, unseen, dt);
+      if (unseen && !c.still && beat >= 0) { try { owner.model.update(beat * (reducedMotion ? 0.45 : 1), t, owner.motion); } catch (ignore) {} }
+      var ba = c.body.instanceMatrix.array;
+      if (!c.still && beat >= 0) for (p = 0; p < c.parts.length; p++) {
+        var part = c.parts[p]; if (part.same) continue;
+        var sa = part.src.instanceMatrix.array;
+        for (j = 0; j < c.nT; j++) K.M.fromArray(ba, j * 16).invert().multiply(K.W.fromArray(sa, j * 16)).toArray(part.A, j * 16);
+      }
+      // A reduced-motion school never moves its members, so its strokes are read once.
+      c.still = reducedMotion;
+      // Each cloud's alarm: it sinks into its coral and draws together as the diver
+      // comes close, and rises again once the diver has passed. A cloud that has grown
+      // used to a calm diver (calmHabituate) lets it come much closer.
+      if (c.tick === null) c.tick = k;
+      for (var tk = Math.max(c.tick + 1, k - 29); tk <= k; tk++) {
+        for (i = 0; i < c.clouds.length; i++) {
+          cl = c.clouds[i];
+          var dd = Math.hypot(cl.x - diverPos.x, cl.top + cl.alt - diverPos.y, cl.z - diverPos.z) - cl.R * 0.7, Fc = F * calmFactor(cl.h);
+          cl.ta = 1 - smooth(Fc * 0.8, Fc * 1.5, dd); cl.r = cl.ta > cl.a ? (reducedMotion ? 1.6 : 2.2) : (reducedMotion ? 0.35 : 0.45);
+          cl.a += (cl.ta - cl.a) * (1 - Math.exp(-cl.r / 60));
+          cl.h = calmHabituate(cl.h, dd, dd < Fc * 0.8, true);
+        }
+      }
+      c.tick = Math.max(c.tick, k);
+      // Which clouds are drawn, and in how much detail.
+      var h = t - c.tick / 60, cx = camera.position.x, cy = camera.position.y, cz = camera.position.z, nearD = high ? 7 : 5;
+      c.close.length = 0; c.near.length = 0; c.away.length = 0;
+      for (i = 0; i < c.clouds.length; i++) {
+        cl = c.clouds[i];
+        cl.now = cl.ta + (cl.a - cl.ta) * (h > 0 ? Math.exp(-cl.r * h) : 1);
+        var sway = t * 0.35 - cl.x * 0.075 - cl.z * 0.055;
+        cl.ox = cl.x + 0.1 * Math.sin(sway) * calm; cl.oz = cl.z + 0.065 * Math.sin(sway + 0.4) * calm; cl.oy = cl.top + cl.alt * (1 - 0.85 * cl.now);
+        var dx = cl.ox - cx, dy = cl.oy - cy, dz = cl.oz - cz, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (d - cl.R > reach) continue;
+        if (d > cl.R + 1.5 && dx * K.fwd.x + dy * K.fwd.y + dz * K.fwd.z < cosHalf * d - cl.R) continue;
+        // Small fish fade into the haze by shrinking over the last few metres, and
+        // every second fish of a far cloud shrinks away first.
+        cl.fade = 0.35 + 0.65 * clamp((reach - (d - cl.R)) / 3, 0, 1); cl.thin = smooth(reach * 0.45, reach * 0.75, d - cl.R);
+        (d - cl.R < 3.5 ? c.close : d - cl.R < nearD ? c.near : c.away).push(i);
+      }
+      var n = 0, nClose = 0, nNear = 0, bodyColor = c.body.instanceColor.array, srcBeat = c.body.geometry.attributes.reefSchoolBeat.array;
+      for (var pass = 0; pass < 3; pass++) {
+        var list = pass === 0 ? c.close : pass === 1 ? c.near : c.away;
+        for (var li = 0; li < list.length; li++) {
+          cl = c.clouds[list[li]];
+          var a = cl.now, R = cl.R * (1 - 0.35 * a), Ry = cl.Ry * (1 - 0.5 * a), ox = cl.ox, oy = cl.oy, oz = cl.oz;
+          currentAt(cl.x, cl.z, t, K.cur);
+          var face = bearingTo(-K.cur.x, -K.cur.z);
+          for (var f = cl.first; f < cl.first + cl.n && n < c.cap; f++) {
+            var size = c.fish[f * 7 + 5] * cl.fade * ((f - cl.first) & 1 ? 1 - cl.thin : 1);
+            if (size < 0.05 || !perfCrowdKeeps(f - cl.first)) continue;
+            var q = f * 7, ru = c.fish[q] * R, th = c.fish[q + 1], ph = c.fish[q + 3], w = c.fish[q + 4];
+            var x = ox + ru * Math.cos(th) + 0.07 * calm * Math.sin(t * 0.9 * w + ph), y = oy + c.fish[q + 2] * Ry + 0.035 * calm * Math.sin(t * 0.7 * w + 2 * ph), z = oz + ru * Math.sin(th) + 0.06 * calm * Math.cos(t * 0.8 * w + 1.3 * ph);
+            var yaw = face + c.fish[q + 6] + calm * (0.3 * Math.sin(t * 0.23 * w + ph) + 0.1 * Math.sin(t * 0.61 + 2 * ph)), dart = 0.05 * calm * Math.sin(t * 1.3 * w + 3 * ph);
+            x += fwdX(yaw) * dart; z += fwdZ(yaw) * dart;
+            if (y < cl.top + 0.1) y = Math.max(y, groundTop(x, z) + 0.04);
+            y = Math.min(y, SURFACE_Y - 0.3);
+            K.E.set(0, yawFor(yaw), 0.12 * calm * Math.sin(t * 0.5 * w + ph)); K.Q.setFromEuler(K.E);
+            K.W.compose(K.P.set(x, y, z), K.Q, K.S.setScalar(size));
+            j = f % c.nT;
+            for (p = 0; p < c.parts.length; p++) {
+              var pp = c.parts[p], at = pp.role === 'far' ? n - nNear : n, pa = pp.mesh.instanceMatrix.array;
+              if (pass === 2 ? pp.role !== 'far' : pp.role === 'far' || pass === 1 && pp.role === 'close') continue;
+              if (pp.same) K.W.toArray(pa, at * 16);
+              else K.M.fromArray(pp.A, j * 16).premultiply(K.W).toArray(pa, at * 16);
+              if (pp.src === c.body) { var col = pp.mesh.instanceColor.array; col[at * 3] = bodyColor[j * 3]; col[at * 3 + 1] = bodyColor[j * 3 + 1]; col[at * 3 + 2] = bodyColor[j * 3 + 2]; }
+            }
+            for (p = 0; p < 4; p++) { c.beat.array[n * 4 + p] = srcBeat[j * 4 + p]; if (pass === 2) c.farBeat.array[(n - nNear) * 4 + p] = srcBeat[j * 4 + p]; }
+            c.pos[n * 3] = x; c.pos[n * 3 + 1] = y; c.pos[n * 3 + 2] = z;
+            n++;
+          }
+        }
+        if (pass === 0) nClose = n;
+        if (pass === 1) nNear = n;
+      }
+      c.drawn = n;
+      c.parts.forEach(function (pp) {
+        var m = pp.mesh, count = pp.role === 'close' ? nClose : pp.role === 'mid' ? nNear : n - nNear; m.count = count; m.visible = count > 0;
+        m.instanceMatrix.updateRange.offset = 0; m.instanceMatrix.updateRange.count = Math.max(16, count * 16); m.instanceMatrix.needsUpdate = true;
+        if (pp.src === c.body) { m.instanceColor.updateRange.offset = 0; m.instanceColor.updateRange.count = Math.max(3, count * 3); m.instanceColor.needsUpdate = true; }
+      });
+      c.beat.updateRange.offset = 0; c.beat.updateRange.count = Math.max(4, nNear * 4); c.beat.needsUpdate = true;
+      c.farBeat.updateRange.offset = 0; c.farBeat.updateRange.count = Math.max(4, (n - nNear) * 4); c.farBeat.needsUpdate = true;
+    }
+    // A tap on a crowd fish (within a few pixels) focuses the nearest school of its species, if one is within reach.
+    function pickAmbient(ray, wall, h) {
+      var list = crowdState().list;
+      if (!list.length) return null;
+      var perPx = 2 * Math.tan(camera.fov * Math.PI / 360) / h, o = ray.origin, dir = ray.direction, hit = null, hitAlong = Infinity;
+      list.forEach(function (c) {
+        for (var i = 0; i < c.drawn; i++) {
+          var x = c.pos[i * 3] - o.x, y = c.pos[i * 3 + 1] - o.y, z = c.pos[i * 3 + 2] - o.z, along = x * dir.x + y * dir.y + z * dir.z;
+          if (along <= 0 || along > wall || along >= hitAlong) continue;
+          var r = Math.max(c.L * 0.6, along * perPx * 8);
+          if (x * x + y * y + z * z - along * along <= r * r) { hitAlong = along; hit = { id: c.id, x: c.pos[i * 3], y: c.pos[i * 3 + 1], z: c.pos[i * 3 + 2] }; }
+        }
+      });
+      if (!hit) return null;
+      var best = null, bestD = 20;
+      organisms.forEach(function (x) {
+        if (x.speciesId !== hit.id || !x.center) return;
+        var d = Math.hypot(x.center.x - hit.x, x.center.y - hit.y, x.center.z - hit.z);
+        if (d < bestD) { bestD = d; best = x; }
+      });
+      return best;
+    }
+
     // ---- Decorative reef (non-pickable; seeded, draw counts fixed per slot) -------
     function buildDecor() {
-      var lists = {}, rd = stream(seed, 201), rbm = stream(seed, 202), rg = stream(seed, 203), g1 = rg() * 40, g2 = rg() * 40, current = rg() * Math.PI;
+      // Stream 203 keeps its first two draws, so the prevailing current (fan
+      // orientation) is unchanged; every other decor roll is a hash.
+      var lists = {}, F = cover(), P = palette(), rg = stream(seed, 203); rg(); rg();
+      var current = rg() * Math.PI;
       // Clearance belongs to the terrain and pickable organisms. Using the live
       // navigation grid here made every newly planted coral exclude its neighbours:
       // the result was a sparse, evenly spaced orchard instead of an interlocking reef.
@@ -2010,168 +3890,181 @@
         var i = Math.min(GRID_N - 2, Math.floor(fx)), j = Math.min(GRID_N - 2, Math.floor(fz)), k = j * GRID_N + i;
         return Math.max(substrateTop[k], substrateTop[k + 1], substrateTop[k + GRID_N], substrateTop[k + GRID_N + 1]) <= y + 0.15;
       }
-      var cover = health.coralCover, bleach = health.bleaching, algae = health.algae, deadShare = 0.55 * algae * (1 - 0.5 * cover);
-      function cols(list, boost) { return list.map(function (hex) { var c = lin(hex); return [Math.min(1.4, c.r * boost), Math.min(1.4, c.g * boost), Math.min(1.4, c.b * boost)]; }); }
-      // Neighbouring colonies share a hue family; fish and growth tips remain the brightest accents.
-      var VIVID = cols([0xc98564, 0xd1ab71, 0xbd857e, 0xba7188, 0x9478a8, 0x8274a2, 0x7099a5, 0x629d93, 0x80a385, 0x9eaa79, 0xb5b17a, 0xc2a173], 1.18);
-      var NATURAL = cols([0xa07c54, 0x8b9160, 0xa3916d, 0xaf9163, 0x7d926e, 0xa58979, 0x967b57], 1.22), DEAD = cols([0x6a6a3c, 0x5c5a34, 0x7a7244], 1.2);
-      var SOFT = cols([0xc27f9b, 0xd2926d, 0xb6af72, 0xa58db5, 0xce8588, 0xd7a2af], 1.15), FAN = cols([0xb85069, 0xc68a50, 0x946d9b, 0xb3a05b], 1.2), SPONGE = cols([0xc4774b, 0x8b6b9c, 0xb5a166, 0x5c87a0, 0xac6663], 1.2);
-      var WHITE = [1.05, 1.03, 0.98], RUBBLE = [0.95, 0.93, 0.88];
-      function pick(list, roll) { return list[Math.floor(roll * list.length) % list.length]; }
-      function pastel(c) { return [lerp(c[0], WHITE[0], 0.65), lerp(c[1], WHITE[1], 0.65), lerp(c[2], WHITE[2], 0.65)]; }
-      // Related colonies share an irregular neighbourhood. The nearest seeded
-      // nursery centre gives each thicket its own habit and pigment, while the
-      // broader colour field keeps adjacent thickets in the same reef palette.
-      // Hashes are independent of the fixed placement streams on both tiers.
-      function colonyPatch(x, z) {
-        var cellSize = 3.15, ix = Math.floor(x / cellSize), iz = Math.floor(z / cellSize), best = Infinity, p;
-        for (var dz = -1; dz <= 1; dz++) for (var dx = -1; dx <= 1; dx++) {
-          var cx = ix + dx, cz = iz + dz, id = hash2(cx + seed * 0.37, cz - seed * 0.19);
-          var px = (cx + 0.18 + 0.64 * id) * cellSize, pz = (cz + 0.18 + 0.64 * hash2(cx + 53.7, cz + seed * 0.61)) * cellSize;
-          // Colonies share broad, irregular ribbons along the prevailing current,
-          // rather than circular patches repeated over the seabed.
-          var flow = current + (id - 0.5) * 0.65, dxp = x - px, dzp = z - pz;
-          var along = dxp * Math.cos(flow) + dzp * Math.sin(flow), across = -dxp * Math.sin(flow) + dzp * Math.cos(flow);
-          var distance = Math.hypot(along / 1.18, across / 0.86);
-          if (distance < best) { best = distance; p = { x: px, z: pz, id: id, distance: distance, habit: hash2(cx - 31.2, cz + seed * 0.43) }; }
-        }
-        return p;
+      var algae = health.algae, damage = F.damage, salt = (seed % 99991 + 99991) % 99991;
+      // Every roll is a hash of the patch (or slot) and a purpose, so skipping an
+      // item on the light tier never shifts another.
+      function hr(k, s) { return hash2(k * 31 + s, salt + s * 4111); }
+      // Rubble carries pink coralline on a healthy reef, a brown turf on a damaged one.
+      var RUBBLE_C = [lerp(0.78, 0.5, damage), lerp(0.68, 0.46, damage), lerp(0.64, 0.32, damage)];
+      // Footprint radius of each prototype at scale 1, so a colony can be sized to its patch.
+      var BRANCH_CAP = { finger: 1.15, antler: 1.35, corym: 1.3 };
+      var KIND_R = { finger: 0.33, antler: 0.38, corym: 0.37, table: 0.46, massive: 0.4, brain: 0.4, plate: 0.42, encrust: 0.4, deadstand: 0.36 };
+      var ZONES = [
+        [['finger', 0.19], ['antler', 0.11], ['corym', 0.15], ['table', 0.15], ['massive', 0.2], ['brain', 0.09], ['plate', 0.05], ['encrust', 0.06]],
+        [['antler', 0.19], ['finger', 0.11], ['corym', 0.09], ['table', 0.14], ['massive', 0.17], ['brain', 0.11], ['plate', 0.13], ['encrust', 0.06]],
+        [['plate', 0.32], ['encrust', 0.12], ['massive', 0.24], ['brain', 0.12], ['antler', 0.08], ['table', 0.12]]];
+      function weighted(list, f) { for (var q = 0, acc = 0; q < list.length; q++) { acc += list[q][1]; if (f < acc) return list[q][0]; } return list[list.length - 1][0]; }
+      // A third of the patches join the growth form of their neighbourhood, so
+      // thickets and plate gardens form among an otherwise mixed community.
+      function formFor(k, depth, steep, alt) {
+        var f = hr(k, alt ? 41 : 3);
+        if (steep) return f < 0.34 ? 'plate' : f < 0.9 ? 'encrust' : 'massive';
+        if (!alt && hr(k, 4) < 0.34) f = hash2(Math.floor(F.cx[k] / 3.4 + 40) * 131 + Math.floor(F.cz[k] / 3.4 + 40), salt + 7);
+        return weighted(ZONES[depth < 6.5 ? 0 : depth < 12 ? 1 : 2], f);
       }
-      function coralColor(c1, c2, x, z) {
-        var p = colonyPatch(x, z), colony = noise2(p.x * 0.14 + g1, p.z * 0.14 + g2);
-        var hue = (Math.floor(colony * 19) + (p.id > 0.72 ? 1 : 0)) % VIVID.length / VIVID.length;
-        if (c1 < bleach) return c2 < 0.6 ? WHITE : pastel(pick(VIVID, hue));
-        if (c1 < bleach + deadShare) return pick(DEAD, c2);
-        // Blend pigments within a family instead of alternating unrelated pink,
-        // green and brown heads in the same colony. A little individual shade
-        // variation retains the living texture of a densely intergrown crown.
-        var vivid = pick(VIVID, hue), natural = pick(NATURAL, colony), mix = 0.35 + p.id * 0.5, shade = 0.9 + 0.2 * c2;
-        return [lerp(natural[0], vivid[0], mix) * shade, lerp(natural[1], vivid[1], mix) * shade, lerp(natural[2], vivid[2], mix) * shade];
-      }
-      function lifeColor(list, c1, c2) { return c1 < bleach * 0.7 ? pastel(pick(list, c2)) : pick(list, c2); }
-      function coralKind(depth, f) {
-        if (depth < 6.5) return f < 0.18 ? 'plate' : f < 0.38 ? 'corym' : f < 0.58 ? 'finger' : f < 0.86 ? 'massive' : 'encrust';
-        if (depth < 12) return f < 0.28 ? 'antler' : f < 0.42 ? 'finger' : f < 0.56 ? 'corym' : f < 0.8 ? 'massive' : f < 0.88 ? 'plate' : 'encrust';
-        return f < 0.12 ? 'antler' : f < 0.22 ? 'finger' : f < 0.5 ? 'massive' : f < 0.78 ? 'plate' : 'encrust';
-      }
-      function growthHabit(depth, roll, patch, edge, slope) {
-        var kind = coralKind(depth, roll);
-        // Each neighbourhood has a recognizable canopy, but its growing margin
-        // carries recruits and low crusts. Plate gardens now occur as actual
-        // shelves, alongside branching, knobby and massive coral communities.
-        if (roll < 0.7) kind = ['antler', 'corym', 'plate', 'massive', 'finger', 'plate'][Math.floor(patch.habit * 6)];
-        if (edge > 0.7 && roll > 0.46 && roll < 0.72) kind = 'encrust';
-        if (slope > 0.75 && kind === 'antler') kind = 'plate';
-        if (depth < 6.5 && kind === 'antler') kind = 'corym';
-        return kind;
+      function colonyColor(k, form, st, roll) {
+        var c1 = roll === undefined ? F.roll[k * 4 + 1] : roll, c2 = F.roll[k * 4 + 2];
+        // Bleached tissue is stark white, some with a pale fluorescent sheen.
+        if (st === BLEACHED) return c2 < 0.6 ? P.white : pickC(P.sheen, c1);
+        // A recently dead skeleton greys under a creeping film of turf.
+        if (st === FRESH) { var sk = pickC(P.skeleton, c1), tf = pickC(P.turf, c2), fw = 0.2 + 0.6 * algae; return [lerp(sk[0], tf[0] * 2.2, fw), lerp(sk[1], tf[1] * 2.2, fw), lerp(sk[2], tf[2] * 2.2, fw)]; }
+        var c = pickC(P.form[form], c1), sh = 0.88 + 0.24 * c2;
+        return [c[0] * sh, c[1] * sh, c[2] * sh];
       }
       function add(kind, x, y, z, yaw, sx, sy, sz, color, tx, tz, tier) {
         var tall = DECOR_H[kind] * sy > 0.42;
         // Obstacles never depend on the tier, so the diver and fish move the same on both.
         if (tall) stampTop(x, z, 0.38 * Math.max(sx, sz), y + DECOR_H[kind] * sy * 0.9);
-        if (!high && !tall && tier > 0.5) return;
+        // The light tier keeps every large colony and thins the small ones.
+        if (!high && (tall ? tier > 0.6 && DECOR_H[kind] * sy < 0.62 : tier > 0.36)) return;
         (lists[kind] = lists[kind] || []).push([x, y, z, yaw, sx, sy, sz, color, tx || 0, tz || 0]);
       }
-      var cell = 0.66, pCoral = 0.1 + 0.88 * cover, pAlgae = 0.03 + 0.5 * algae, pRubble = 0.02 + 0.18 * (1 - cover) * (0.35 + bleach);
-      var pSoft = 0.03 + 0.12 * vitality, pFan = 0.05 + 0.07 * vitality, pSponge = 0.05, pRock = 0.05;
-      for (var gx = -31.5; gx <= 31.5; gx += cell) for (var gz = -31.5; gz <= 31.5; gz += cell) {
-        var jx = rd(), jz = rd(), kr = rd(), fr = rd(), sr = rd(), yr = rd(), c1 = rd(), c2 = rd(), keep = rd(), tier = rd();
-        var x = gx + (jx - 0.5) * cell * 0.9, z = gz + (jz - 0.5) * cell * 0.9;
-        var colonyField = colonyPatch(x, z), gather = 0.26 * (1 - terrain.sandMask(x, z)) * (1 - terrain.rubbleMask(x, z));
-        // Pull the same number of crowns into loose interlocking thickets, with
-        // little channels between them. Recheck all exclusions after the move.
-        x += (colonyField.x - x) * gather; z += (colonyField.z - z) * gather;
-        if (isBlocked(x, z)) continue;
-        var y = terrain.floorY(x, z), depth = -y;
-        if (!substrateClear(x, z, y)) continue;
-        var sand = terrain.sandMask(x, z), rub = terrain.rubbleMask(x, z), reef = (1 - sand) * (1 - rub), yaw = yr * TAU;
-        // Broad gardens contain smaller thickets, with young colonies at their
-        // edges and mature crowns in their centres; the sand channel stays open.
-        var garden = noise2(x * 0.13 + g1, z * 0.13 + g2), patchy = smooth(0.24, 0.74, garden * 0.72 + noise2(x * 0.43 + g2, z * 0.43 - g1) * 0.28);
-        // A few mature crowns rise above a wider apron of juveniles. Stretch
-        // their footprints independently so neighbouring heads knit together
-        // without turning every colony into the same circular mound.
-        var core = 1 - smooth(0.3, 1.85, colonyField.distance), maturity = clamp(sr * 0.83 + core * 0.24, 0, 1);
-        var s = (0.46 + 1.48 * maturity * maturity) * (0.92 + 0.28 * patchy);
-        if (rub > 0.45) {
-          var rec = restoration ? 0.05 + 0.45 * growth : 0.04, rubP = 0.8 - (restoration ? 0.5 * growth : 0);
-          if (kr < rec) { var rs = (restoration ? 0.3 + 0.6 * growth : 0.35) * (0.7 + 0.6 * sr); add(fr < 0.35 ? 'finger' : fr < 0.6 ? 'corym' : fr < 0.85 ? 'massive' : 'encrust', x, y - 0.01, z, yaw, rs, rs, rs, coralColor(c1, c2, x, z), 0, 0, tier); }
-          else if (kr < rec + rubP) { var rbs = 0.9 + 0.5 * sr; add('rubble', x, y + 0.005, z, yaw, rbs, rbs, rbs, RUBBLE, 0, 0, tier); }
-          continue;
-        }
-        if (reef < 0.4) {
-          if (kr < 0.02) add('rubble', x, y + 0.005, z, yaw, 0.8, 0.8, 0.8, RUBBLE, 0, 0, tier);
-          else if (kr < 0.03) add('rock', x, y - 0.03, z, yaw, s * 0.6, s * 0.45, s * 0.6, [0.9, 0.88, 0.84], 0, 0, tier);
-          continue;
-        }
-        // Encrusting growth stitches the gaps between taller colonies. These
-        // shallow pads use an existing instanced mesh, disappear with the near
-        // understory, and never turn a sand channel into another coral garden.
-        // A spatial hash keeps the ten placement-stream draws per slot intact.
-        if (patchy > 0.28 && reef > 0.64 && hash2(gx * 17 + seed, gz * 19) < cover * (0.2 + 0.32 * patchy)) {
-          var ua = (c2 * 17.37 % 1) * TAU, ur = 0.2 + 0.17 * jx, ux = x + Math.cos(ua) * ur, uz = z + Math.sin(ua) * ur, uy = terrain.floorY(ux, uz);
-          if (!isBlocked(ux, uz) && substrateClear(ux, uz, uy) && terrain.sandMask(ux, uz) < 0.25 && terrain.rubbleMask(ux, uz) < 0.25) {
-            var us = (0.84 + 0.8 * c2) * (0.8 + 0.4 * patchy);
-            var unx = -(terrain.floorY(ux + 0.15, uz) - terrain.floorY(ux - 0.15, uz)) / 0.3, unz = -(terrain.floorY(ux, uz + 0.15) - terrain.floorY(ux, uz - 0.15)) / 0.3;
-            add('encrust', ux, uy - 0.008, uz, current + (ua - Math.PI) * 0.32, us * 1.3, 0.31 + 0.2 * jz, us * 0.86, coralColor(c1, c2, ux, uz), unx, unz, tier);
-          }
-        }
-        if (keep > (0.34 + 0.88 * patchy) * reef) continue;
-        var slope = smooth(-8, 0, z), acc = 0, pc = pCoral * (0.62 + 0.56 * patchy), pf = depth > 6 ? pFan * (0.45 + 0.55 * slope) : 0;
-        var ps = pSoft * (0.8 + 0.5 * (1 - garden)), pp = pSponge * (0.7 + 0.6 * garden);
-        // Normalize a full habitat mixture: in a healthy thicket the old coral
-        // threshold could exceed one, silently starving the moving soft corals,
-        // fans and sponges that should still live among its hard coral crowns.
-        var habitatRoll = kr * Math.max(1, pc + ps + pf + pp + pAlgae + pRock + pRubble);
-        if (habitatRoll < (acc += pc)) {
-          var floorNx = -(terrain.floorY(x + 0.16, z) - terrain.floorY(x - 0.16, z)) / 0.32, floorNz = -(terrain.floorY(x, z + 0.16) - terrain.floorY(x, z - 0.16)) / 0.32;
-          var kind = patchy > 0.35 ? growthHabit(depth, fr, colonyField, 1 - core, Math.hypot(floorNx, floorNz)) : coralKind(depth, fr);
-          var big = kind === 'massive' && sr > 0.91 ? 1.12 : 1;
-          var spread = kind === 'encrust' ? 1.34 : kind === 'plate' ? 1.22 + 0.22 * patchy : 1.1 + 0.24 * patchy;
-          var height = kind === 'plate' ? 0.66 + 0.3 * core : kind === 'encrust' ? 0.55 : 0.8 + 0.3 * jx;
-          var anchor = kind === 'massive' || kind === 'encrust' ? 0.7 : 0.28;
-          add(kind, x, y - 0.025 * s, z, yaw, s * big * spread * (0.88 + 0.28 * jx), s * big * height, s * big * spread * (1.02 - 0.18 * jx), coralColor(c1, c2, x, z), clamp(floorNx, -0.85, 0.85) * anchor + (jz - 0.5) * 0.12, clamp(floorNz, -0.85, 0.85) * anchor + (jx - 0.5) * 0.12, tier);
-        } else if (habitatRoll < (acc += ps)) add('soft', x, y - 0.02, z, yaw, s, s * (0.8 + 0.4 * jx), s * (0.82 + 0.25 * jz), lifeColor(SOFT, c1, c2), 0, 0, tier);
-        else if (habitatRoll < (acc += pf)) add('fan', x, y - 0.03, z, current + (yr - 0.5) * 0.85, 0.7 + 0.75 * sr, 0.72 + 0.76 * sr, 0.8 + 0.6 * sr, lifeColor(FAN, c1, c2), 0, 0, tier);
-        else if (habitatRoll < (acc += pp)) add('sponge', x, y - 0.02, z, yaw, s, s * (0.8 + 0.6 * jx), s, pick(SPONGE, c2), 0, 0, tier);
-        else if (habitatRoll < (acc += pAlgae)) add('algae', x, y, z, yaw, s * 1.2, s * (1 + 0.5 * jz), s * 1.2, [1, 1, 1], 0, 0, tier);
-        else if (habitatRoll < (acc += pRock)) add('rock', x, y - 0.04, z, yaw, s * 0.7, s * (0.45 + 0.4 * jx), s * 0.7, [0.95, 0.93, 0.9], 0, 0, tier);
-        else if (habitatRoll < (acc += pRubble)) add('rubble', x, y + 0.005, z, yaw, 0.8 + 0.4 * s, 0.8 + 0.4 * s, 0.8 + 0.4 * s, RUBBLE, 0, 0, tier);
+      function floorTilt(x, z, out) {
+        out[0] = clamp(-(terrain.floorY(x + 0.16, z) - terrain.floorY(x - 0.16, z)) / 0.32, -0.85, 0.85);
+        out[1] = clamp(-(terrain.floorY(x, z + 0.16) - terrain.floorY(x, z - 0.16)) / 0.32, -0.85, 0.85);
+        return out;
       }
-      // Coral heads crowd the bommie tops; walls carry sponges and soft corals.
-      bommies.forEach(function (bm) {
-        var slots = Math.max(9, Math.round(bm.r * bm.r * 7.2)), w = {};
-        for (var k = 0; k < slots; k++) {
-          var u = rbm(), v = rbm(), kr2 = rbm(), fr2 = rbm(), sr2 = rbm(), c12 = rbm(), c22 = rbm(), keep2 = rbm(), tier2 = rbm();
-          var a = k * 2.39996323 + u * 0.55, e = bm.edge(a) * 0.96 * Math.sqrt((k + 0.2 + 0.6 * v) / slots), lx = Math.cos(a) * e, lz = Math.sin(a) * e; bm.toWorld(lx, lz, w);
+      var tilt = [0, 0];
+      // One colony sized to fill (and slightly overlap) its patch: colonies touch.
+      // k picks the patch colour (roll overrides it), jk the slot's own size and turn.
+      function colony(form, st, k, x, y, z, rt, tx, tz, tier, roll, jk, head) {
+        if (jk === undefined) jk = k * 3 + (roll === undefined ? 0 : 1);
+        var j1 = hr(jk, 21), j2 = hr(jk, 22), s = rt / KIND_R[form], yaw = hr(jk, 23) * TAU;
+        var tallness = form === 'encrust' ? 1.1 + 0.7 * j1 : form === 'massive' ? 0.75 + 0.45 * j1 : form === 'brain' ? 0.7 + 0.3 * j1 : form === 'plate' ? 0.72 + 0.3 * j1 : form === 'table' ? 0.8 + 0.35 * j1 : 0.85 + 0.35 * j1;
+        // A recently dead colony keeps its shape for a while, then breaks.
+        if (st === FRESH) tallness *= 0.8;
+        var anchor = form === 'massive' || form === 'brain' || form === 'encrust' ? 0.7 : form === 'plate' ? 0.4 : 0.28, c = colonyColor(k, form, st, roll), cap = BRANCH_CAP[form];
+        // A wide branching patch is a thicket of several colonies, not one
+        // colony with swollen branches.
+        if (cap && s > cap * 1.15) {
+          var parts = s > cap * 1.7 ? 3 : 2, sub = s / Math.sqrt(parts) * 1.1;
+          for (var q = 0; q < parts; q++) {
+            var pa = yaw + q * TAU / parts, pd = rt * 0.42, ps = Math.min(cap, sub) * (0.85 + 0.3 * hr(jk * 4 + q, 24)), px = x + Math.cos(pa) * pd, pz = z + Math.sin(pa) * pd;
+            var py = head ? head.heightAt(px, pz) : terrain.floorY(px, pz);
+            add(form, px, (py > NONE && Math.abs(py - y) < 0.6 ? py : y) - 0.025 * ps, pz, yaw + q * 2.1, ps, ps * tallness, ps, c, tx * anchor, tz * anchor, q ? hr(jk * 4 + q, 25) : tier);
+          }
+          return;
+        }
+        add(form, x, y - 0.025 * s, z, yaw, s * (0.9 + 0.2 * j2), s * tallness, s * (1.1 - 0.2 * j2), c, tx * anchor, tz * anchor, tier);
+      }
+      function companions(k, x, y, z, depth, st, onHead) {
+        // Soft corals, fans and sponges live among the hard corals on every
+        // healthy patch, whatever the hard-coral cover.
+        var u = hr(k, 50), a = hr(k, 51) * TAU, d = 0.38 * F.size, px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
+        var pSoft = 0.05 + 0.1 * vitality, pFan = depth > 6 ? 0.025 + 0.04 * vitality : 0, pSponge = 0.04;
+        if (u > pSoft + pFan + pSponge) return;
+        var py = onHead ? onHead.heightAt(px, pz) : terrain.floorY(px, pz);
+        if (!(py > NONE) || isBlocked(px, pz) || (!onHead && !substrateClear(px, pz, py))) return;
+        var s = 0.7 + 0.6 * hr(k, 52), soft = st === BLEACHED ? (hr(k, 53) < 0.7 ? P.white : pickC(P.sheen, hr(k, 54))) : pickC(P.soft, hr(k, 54));
+        if (u < pSoft) add('soft', px, py - 0.02, pz, a, s, s * (0.8 + 0.4 * hr(k, 55)), s, soft, 0, 0, hr(k, 56));
+        else if (u < pSoft + pFan) add('fan', px, py - 0.03, pz, current + (hr(k, 55) - 0.5) * 0.8, 0.7 + 0.7 * hr(k, 52), 0.75 + 0.7 * hr(k, 52), 0.8 + 0.5 * hr(k, 52), pickC(P.fan, hr(k, 54)), 0, 0, hr(k, 56));
+        else add('sponge', px, py - 0.02, pz, a, s, s * (0.8 + 0.6 * hr(k, 55)), s, pickC(P.sponge, hr(k, 54)), 0, 0, hr(k, 56));
+      }
+      function seaweed(k, n, x, z, spread, base, onHead) {
+        for (var q = 0; q < n; q++) {
+          var a = hr(k, 60 + q) * TAU, d = spread * Math.sqrt(hr(k, 64 + q)), px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
+          var py = onHead ? onHead.heightAt(px, pz) : terrain.floorY(px, pz);
+          if (!(py > NONE) || isBlocked(px, pz) || (!onHead && !substrateClear(px, pz, py))) continue;
+          var s = (0.85 + 0.65 * hr(k, 68 + q)) * base, c = pickC(P.weed, hr(k, 72 + q)), sh = 0.85 + 0.3 * hr(k, 76 + q);
+          add('algae', px, py - 0.01, pz, a * 1.7, s * 1.15, s * (0.85 + 0.5 * hr(k, 80 + q)), s * 1.15, [c[0] * sh, c[1] * sh, c[2] * sh], 0, 0, hr(k, 84 + q));
+        }
+      }
+      function rubblePieces(k, n, x, z, spread, onHead) {
+        for (var q = 0; q < n; q++) {
+          var a = hr(k, 90 + q) * TAU, d = spread * Math.sqrt(hr(k, 94 + q)), px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
+          var py = onHead ? onHead.heightAt(px, pz) : terrain.floorY(px, pz);
+          if (!(py > NONE) || isBlocked(px, pz)) continue;
+          var s = 1.3 + 0.9 * hr(k, 98 + q);
+          add('rubble', px, py + 0.005, pz, a * 2.3, s, s, s, RUBBLE_C, 0, 0, hr(k, 102 + q));
+        }
+      }
+      // A natural rubble patch on a healthy reef is already being recolonised.
+      var rec = restoration ? 0.08 + 0.5 * growth : 0.06 + 0.5 * health.coralCover * (1 - damage), rubKeep = restoration ? 1 - 0.55 * growth : 1 - 0.4 * health.coralCover * (1 - damage);
+      // ---- The reef floor between the coral heads, one patch at a time.
+      for (var k = 0; k < F.n * F.n; k++) {
+        var st = F.state[k], x = F.cx[k], z = F.cz[k];
+        if (Math.abs(x) > 31 || Math.abs(z) > 31 || F.onReef[k] === 2) continue;
+        var y = terrain.floorY(x, z), depth = -y, tierK = hr(k, 5);
+        if (st === SAND) { if (hr(k, 6) < 0.03) rubblePieces(k, 1, x, z, 0.4); continue; }
+        floorTilt(x, z, tilt);
+        var open = !isBlocked(x, z) && substrateClear(x, z, y);
+        if (st === LIVE || st === BLEACHED || st === FRESH) {
+          var form = formFor(k, depth, false);
+          if (st === FRESH && !(form === 'finger' || form === 'antler' || form === 'table' || form === 'corym')) form = hr(k, 7) < 0.5 ? 'antler' : 'table';
+          var rt = F.size * (0.5 + 0.2 * hr(k, 8)) * ((form === 'massive' || form === 'table' || form === 'brain') && hr(k, 9) < 0.07 ? 1.7 : form === 'encrust' ? 0.7 : 1);
+          if (open) colony(form, st, k, x + (hr(k, 10) - 0.5) * 0.2, y, z + (hr(k, 11) - 0.5) * 0.2, rt, tilt[0], tilt[1], tierK);
+          // A second, smaller colony of another kind shares most patches.
+          if (hr(k, 12) < 0.6) {
+            var a2 = hr(k, 13) * TAU, d2 = 0.42 * F.size, x2 = x + Math.cos(a2) * d2, z2 = z + Math.sin(a2) * d2, y2 = terrain.floorY(x2, z2), f2 = hr(k, 14);
+            var form2 = f2 < 0.3 ? 'encrust' : f2 < 0.6 ? 'massive' : f2 < 0.75 ? 'brain' : st === FRESH ? 'antler' : 'finger';
+            if (!isBlocked(x2, z2) && substrateClear(x2, z2, y2) && terrain.sandMask(x2, z2) < 0.4) colony(form2, st, k, x2, y2, z2, F.size * (0.24 + 0.12 * hr(k, 15)), tilt[0], tilt[1], hr(k, 16), hr(k, 17));
+          }
+          if (st !== FRESH) companions(k, x, y, z, depth, st, null);
+        } else if (st === MACRO) seaweed(k, 2 + (hr(k, 7) < 0.55 ? 1 : 0), x, z, 0.42 * F.size, 1.35);
+        else if (st === RUBBLE) {
+          var inPatch = terrain.rubbleMask(x, z) > 0.5;
+          // Restoration frames stabilise the rubble; recruits settle as they grow.
+          if (hr(k, 7) < (inPatch ? rec : 0.06)) colony(hr(k, 8) < 0.4 ? 'finger' : hr(k, 8) < 0.65 ? 'corym' : hr(k, 8) < 0.85 ? 'massive' : 'encrust', LIVE, k, x, y, z, F.size * (inPatch && restoration ? 0.18 + 0.32 * growth : 0.22) * (0.8 + 0.4 * hr(k, 9)), 0, 0, tierK);
+          if (hr(k, 10) < rubKeep) rubblePieces(k, inPatch ? 3 : 2 + (hr(k, 11) < damage ? 1 : 0), x, z, 0.45 * F.size);
+          // Broken stands of dead branching coral stick out of a storm-rubble field.
+          if (!inPatch && hr(k, 12) < 0.25 * damage && !isBlocked(x, z)) add('deadstand', x, y - 0.03, z, hr(k, 13) * TAU, 0.9 + 0.5 * hr(k, 14), 0.7 + 0.4 * hr(k, 15), 0.9 + 0.5 * hr(k, 14), pickC(P.turf, hr(k, 16)), tilt[0] * 0.3, tilt[1] * 0.3, tierK);
+        } else if (st === ROCK) {
+          var u = hr(k, 7);
+          // Long-dead framework: eroded stands of branching coral under turf.
+          if (open && u < 0.08 + 0.5 * damage) add('deadstand', x, y - 0.03, z, hr(k, 8) * TAU, 1.1 + 0.6 * hr(k, 9), 0.9 + 0.5 * hr(k, 10), 1.1 + 0.6 * hr(k, 9), pickC(P.turf, hr(k, 11)), tilt[0] * 0.3, tilt[1] * 0.3, tierK);
+          else if (open && u < 0.2 + 0.5 * damage) add('rock', x, y - 0.04, z, hr(k, 8) * TAU, 0.6 + 0.4 * hr(k, 9), 0.4 + 0.4 * hr(k, 10), 0.6 + 0.4 * hr(k, 9), [0.95, 0.93, 0.9], 0, 0, tierK);
+          if (algae > 0.15 && hr(k, 12) < algae) seaweed(k, 1, x, z, 0.4 * F.size, 0.8);
+          companions(k, x, y, z, depth, ROCK, null);
+        } else if (st === LIFE && open) {
+          var v = hr(k, 7), s = 0.9 + 0.6 * hr(k, 8);
+          if (v < 0.45 || depth < 5.5 && v < 0.75) add('soft', x, y - 0.02, z, hr(k, 9) * TAU, s * 1.1, s * (0.9 + 0.4 * hr(k, 10)), s * 1.1, pickC(P.soft, hr(k, 11)), 0, 0, tierK);
+          else if (v < 0.75) add('sponge', x, y - 0.02, z, hr(k, 9) * TAU, s * 1.2, s * (0.9 + 0.5 * hr(k, 10)), s * 1.2, pickC(P.sponge, hr(k, 11)), 0, 0, tierK);
+          else add('fan', x, y - 0.03, z, current + (hr(k, 9) - 0.5) * 0.85, 0.8 + 0.7 * hr(k, 10), 0.8 + 0.7 * hr(k, 10), 0.8 + 0.5 * hr(k, 10), pickC(P.fan, hr(k, 11)), 0, 0, tierK);
+        }
+      }
+      // ---- Colonies crowd every coral head: crowns on top, shelves and crusts on its flanks.
+      bommies.forEach(function (bm, bi) {
+        var area = Math.PI * bm.r * bm.r * (1 + 0.45 * (bm.h / bm.r) * (bm.h / bm.r)), slots = Math.max(6, Math.round(area / 0.42)), spacing = Math.sqrt(area / slots), w = {};
+        for (var q = 0; q < slots; q++) {
+          var sk = 500000 + bi * 1000 + q, a = q * 2.39996323 + bm.ph + 0.5 * hr(sk, 1), e = bm.edge(a) * 0.97 * Math.pow((q + 0.3 + 0.4 * hr(sk, 2)) / slots, 0.42), lx = Math.cos(a) * e, lz = Math.sin(a) * e; bm.toWorld(lx, lz, w);
           var y2 = bm.heightLocal(lx, lz);
           if (!(y2 > NONE) || isBlocked(w.x, w.z)) continue;
           var hx1 = bm.heightAt(w.x + 0.12, w.z), hx0 = bm.heightAt(w.x - 0.12, w.z), hz1 = bm.heightAt(w.x, w.z + 0.12), hz0 = bm.heightAt(w.x, w.z - 0.12);
-          var nx = hx1 > NONE && hx0 > NONE ? -(hx1 - hx0) / 0.24 : 0, nz = hz1 > NONE && hz0 > NONE ? -(hz1 - hz0) / 0.24 : 0, steep = Math.hypot(nx, nz) > 1.6;
-          var s2 = (0.55 + 1.25 * sr2 * sr2) * clamp(0.6 + bm.r * 0.25, 0.75, 1.15), yaw2 = fr2 * 43.7 % TAU, tx = clamp(nx, -1.2, 1.2) * 0.55, tz = clamp(nz, -1.2, 1.2) * 0.55, d2 = -y2;
-          var shoulder = colonyPatch(w.x, w.z), shoulderKind = growthHabit(d2, fr2, shoulder, smooth(0.3, 1.85, shoulder.distance), Math.hypot(nx, nz));
-          // Shallow ledges support outward-spreading plates; crest colonies
-          // retain their height and leave the limestone relief readable.
-          var ledge = !steep && Math.hypot(nx, nz) > 0.5;
-          if (ledge && kr2 > 0.26 && kr2 < 0.62) shoulderKind = 'plate';
-          // Compact cushions can follow a curved shoulder without bridging its
-          // surface like a flat sheet. Sink each foot along the actual normal;
-          // their rounded crowns remain proud of the limestone.
-          var crustScale = clamp(s2 * 0.72, 0.5, 1.04), crustNx = clamp(nx, -2.8, 2.8), crustNz = clamp(nz, -2.8, 2.8);
-          var crustInset = (0.03 + crustScale * 0.018) / Math.hypot(crustNx, 1, crustNz), crustX = w.x - crustNx * crustInset, crustY = y2 - crustInset, crustZ = w.z - crustNz * crustInset;
-          if (keep2 < cover * 0.55 && kr2 > 0.5) add('encrust', crustX, crustY, crustZ, yaw2 + 0.6, crustScale, 1.15 + 0.35 * sr2, crustScale * 0.92, coralColor(c12, c22, w.x, w.z), crustNx, crustNz, tier2);
-          if (keep2 > (0.2 + 0.84 * cover) * (steep ? 0.72 : 1)) { if (kr2 < pAlgae * 1.6) add('algae', w.x, y2, w.z, yaw2, s2 * 1.2, s2, s2 * 1.2, [1, 1, 1], tx, tz, tier2); continue; }
-          // Low cushions cling to the steeper faces; horizontal crowns belong
-          // on the tops. Keep the silhouettes of the underlying ledges.
-          if (steep && kr2 < 0.5) add('encrust', crustX, crustY, crustZ, yaw2, crustScale * 1.08, 1.3 + 0.4 * sr2, crustScale, coralColor(c12, c22, w.x, w.z), crustNx, crustNz, tier2);
-          else if (kr2 < 0.62) {
-            var shelf = shoulderKind === 'plate', cushion = shoulderKind === 'encrust';
-            add(shoulderKind, w.x, y2 - 0.04, w.z, yaw2, s2 * (shelf ? 1.32 : 1 + 0.22 * u), s2 * (shelf ? 0.76 : cushion ? 0.65 : 0.82 + 0.3 * sr2), s2 * (shelf ? 1.17 : 1.15 - 0.15 * u), coralColor(c12, c22, w.x, w.z), shelf ? tx * 0.4 : tx, shelf ? tz * 0.4 : tz, tier2);
-          } else if (kr2 < 0.7) add('soft', w.x, y2 - 0.03, w.z, yaw2, s2, s2, s2, lifeColor(SOFT, c12, c22), tx, tz, tier2);
-          else if (kr2 < 0.76) add('fan', w.x, y2 - 0.035, w.z, current + (fr2 - 0.5) * 0.65, s2 * 0.75, s2 * 0.8, s2 * 0.75, lifeColor(FAN, c12, c22), tx * 0.45, tz * 0.45, tier2);
-          else if (kr2 < 0.84) add('sponge', w.x, y2 - 0.03, w.z, yaw2, s2, s2, s2, pick(SPONGE, c22), tx, tz, tier2);
-          else if (kr2 < 0.9) add('encrust', crustX, crustY, crustZ, yaw2, crustScale * 1.12, 1.25 + 0.35 * sr2, crustScale, coralColor(c12, c22, w.x, w.z), crustNx, crustNz, tier2);
-          else if (kr2 < 0.9 + pAlgae * 0.4) add('algae', w.x, y2, w.z, yaw2, s2 * 1.2, s2, s2 * 1.2, [1, 1, 1], tx, tz, tier2);
+          var nx = hx1 > NONE && hx0 > NONE ? -(hx1 - hx0) / 0.24 : 0, nz = hz1 > NONE && hz0 > NONE ? -(hz1 - hz0) / 0.24 : 0, grade = Math.hypot(nx, nz), steep = grade > 1.4;
+          var cell = F.at(w.x, w.z), st2 = cell < 0 ? ROCK : F.state[cell], depth2 = -y2, tier2 = hr(sk, 3);
+          if (st2 === SAND || st2 === RUBBLE) st2 = ROCK;
+          var tx = clamp(nx, -1.2, 1.2) * 0.55, tz = clamp(nz, -1.2, 1.2) * 0.55;
+          if (st2 === LIVE || st2 === BLEACHED || st2 === FRESH) {
+            var form3 = formFor(cell, depth2, steep || grade > 0.9 && hr(sk, 4) < 0.5);
+            if (st2 === FRESH && !(form3 === 'finger' || form3 === 'antler' || form3 === 'table' || form3 === 'corym')) form3 = steep ? 'encrust' : 'antler';
+            var rt2 = spacing * (0.55 + 0.22 * hr(sk, 5));
+            if (form3 === 'encrust') {
+              // Compact cushions follow a curved shoulder: sink each foot along the normal.
+              var cnx = clamp(nx, -2.8, 2.8), cnz = clamp(nz, -2.8, 2.8), sc = rt2 / KIND_R.encrust * 1.25, inset = (0.03 + sc * 0.018) / Math.hypot(cnx, 1, cnz);
+              add('encrust', w.x - cnx * inset, y2 - inset, w.z - cnz * inset, hr(sk, 6) * TAU, sc, 1.2 + 0.5 * hr(sk, 7), sc * 0.92, colonyColor(cell, 'encrust', st2), cnx, cnz, tier2);
+            } else colony(form3, st2, cell, w.x, y2, w.z, rt2, form3 === 'plate' ? tx * 0.8 : tx * 1.8, form3 === 'plate' ? tz * 0.8 : tz * 1.8, tier2, undefined, sk, bm);
+            if (st2 !== FRESH && hr(sk, 9) < 0.5) companions(sk, w.x, y2, w.z, depth2, st2, bm);
+          } else if (st2 === MACRO) seaweed(sk, 1 + (hr(sk, 4) < 0.5 ? 1 : 0), w.x, w.z, spacing * 0.35, 0.95, bm);
+          else if (st2 === LIFE) {
+            var v2 = hr(sk, 4), s2 = 0.9 + 0.5 * hr(sk, 7);
+            if (steep && v2 < 0.35) add('fan', w.x, y2 - 0.035, w.z, current + (hr(sk, 5) - 0.5) * 0.65, s2 * 0.8, s2 * 0.85, s2 * 0.8, pickC(P.fan, hr(sk, 6)), tx * 0.45, tz * 0.45, tier2);
+            else if (v2 < 0.65) add('soft', w.x, y2 - 0.03, w.z, hr(sk, 5) * TAU, s2, s2, s2, pickC(P.soft, hr(sk, 6)), tx, tz, tier2);
+            else add('sponge', w.x, y2 - 0.03, w.z, hr(sk, 5) * TAU, s2, s2, s2, pickC(P.sponge, hr(sk, 6)), tx, tz, tier2);
+          }
+          else {
+            if (!steep && hr(sk, 4) < 0.05 + 0.4 * damage) add('deadstand', w.x, y2 - 0.03, w.z, hr(sk, 5) * TAU, 1 + 0.5 * hr(sk, 6), 0.85 + 0.4 * hr(sk, 7), 1 + 0.5 * hr(sk, 6), pickC(P.turf, hr(sk, 8)), tx * 0.4, tz * 0.4, tier2);
+            else if (hr(sk, 9) < 0.3) companions(sk, w.x, y2, w.z, depth2, ROCK, bm);
+          }
         }
       });
       // The moray's crevice: a dark recess under two overhanging ledges.
@@ -2180,11 +4073,12 @@
       add('rock', mo.x + mo.nx * 0.2, mo.y + 0.32, mo.z + mo.nz * 0.2, -tang, 1.6, 0.55, 1.1, [0.8, 0.76, 0.7], 0, 0, 0);
       add('rock', mo.x + mo.nx * 0.1 + mo.nz * 0.55, mo.y - 0.05, mo.z + mo.nz * 0.1 - mo.nx * 0.55, -tang + 0.6, 0.9, 0.8, 0.8, [0.78, 0.74, 0.68], 0, 0, 0);
       var sides = high ? 5 : 4, rockPalette = { stone: lin(0x857b6c), turf: lin(0x5c5338), cca: lin(0xb48a98), turfAmount: 0.3 + 0.6 * algae, ccaAmount: 1 - 0.6 * algae };
-      var algaeTint = { base: lin(0x4b5a22), tip: lin(0xa7b04a) };
+      // Seaweed takes its hue from the instance; the blades shade dark to pale.
+      var algaeTint = { base: new T.Color(0.46, 0.45, 0.38), tip: new T.Color(1.02, 1.0, 0.84) };
       // Distant stand-ins: a few dozen triangles each, coloured by the instance.
       function proxy(parts, plant) {
         var b = new Builder(); if (plant) b.useExtra('reefBladePhase');
-        parts.forEach(function (p) { b.absorb(T, p[0], p[1], function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.68 + 0.26 * ny; }); });
+        parts.forEach(function (p) { b.absorb(T, p[0], p[1], function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.5 + 0.2 * ny; }); });
         return b.build(T, false);
       }
       function S(x, y, z, sx, sy, sz, ry) { return new T.Matrix4().compose(new T.Vector3(x, y, z), new T.Quaternion().setFromEuler(new T.Euler(0, ry || 0, 0)), new T.Vector3(sx, sy, sz)); }
@@ -2193,13 +4087,16 @@
         finger: [function () { return buildBranching(T, 0.35, 0.45, 0, sides, high); }, mats.coral, function () { return buildBranching(T, 0.35, 0.45, 0, 3, false, true); }],
         antler: [function () { return buildBranching(T, 0.4, 0.5, 1, sides, high); }, mats.coral, function () { return buildBranching(T, 0.4, 0.5, 1, 3, false, true); }],
         corym: [function () { return buildBranching(T, 0.38, 0.42, 2, sides, high); }, mats.coral, function () { return buildBranching(T, 0.38, 0.42, 2, 3, false, true); }],
-        massive: [function () { return buildMassive(T, 0.4, 0.42, 3, high); }, mats.brain, function () { return proxy([[new T.SphereGeometry(1, 9, 4, 0, TAU, 0, Math.PI / 2), S(0, -0.02, 0, 0.4, 0.44, 0.4)]]); }],
+        table: [function () { return buildTable(T, 0.5, 0.5, 3, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.44, 0.36, 0.06, 10), S(0, 0.3, 0, 1, 1, 1)], [new T.CylinderGeometry(0.07, 0.11, 0.28, 5), S(0, 0.14, 0, 1, 1, 1)]]); }],
+        massive: [function () { return buildMassive(T, 0.4, 0.42, 3, high, true); }, mats.coral, function () { return proxy([[new T.SphereGeometry(1, 9, 4, 0, TAU, 0, Math.PI / 2), S(0, -0.02, 0, 0.4, 0.44, 0.4)]]); }],
+        brain: [function () { return buildMassive(T, 0.4, 0.4, 5, high, false); }, mats.brain, function () { return proxy([[new T.SphereGeometry(1, 9, 4, 0, TAU, 0, Math.PI / 2), S(0, -0.02, 0, 0.4, 0.42, 0.4)]]); }],
         plate: [function () { return buildPlate(T, 0.45, 0.4, 5, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.42, 0.36, 0.06, 10), S(0, 0.28, 0, 1, 1, 1)], [new T.CylinderGeometry(0.05, 0.07, 0.26, 5), S(0, 0.13, 0, 1, 1, 1)]]); }],
         encrust: [function () { return buildEncrusting(T, 0.4, 0.08, 2, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.34, 0.38, 0.07, 9), S(0, 0.02, 0, 1, 1, 1)]]); }],
         soft: [function () { return buildSoftCoral(T, 0.25, 0.45, 3, high); }, mats.soft, function () { return proxy([[dome(), S(0, 0.08, 0, 0.27, 0.42, 0.27)]], true); }],
         fan: [function () { return buildFan(T, 0.5, 0.85, 2, high); }, mats.fan, function () { return buildFan(T, 0.5, 0.85, 2, false, true); }],
         sponge: [function () { return buildSponge(T, 0.18, 0.42, 4, sides); }, mats.sponge, function () { return proxy([[new T.CylinderGeometry(0.1, 0.08, 0.4, 6), S(0, 0.2, 0, 1, 1, 1)]]); }],
-        algae: [function () { return buildAlgae(T, 0.18, 0.2, 2, high, algaeTint); }, mats.algae, null],
+        algae: [function () { return buildAlgae(T, 0.22, 0.34, 2, high, algaeTint); }, mats.algae, function () { return buildAlgae(T, 0.22, 0.34, 2, 'far', algaeTint); }],
+        deadstand: [function () { return buildBranching(T, 0.4, 0.5, 1, sides, high, false, true); }, mats.rock, function () { return buildBranching(T, 0.4, 0.5, 1, 3, false, true, true); }],
         rubble: [function () { return buildRubble(T, 0.3, 13, rockPalette); }, mats.rock, null],
         rock: [function () { return buildRock(T, 0.4, 7, high, rockPalette); }, mats.rock, function () { return proxy([[new T.IcosahedronGeometry(0.4, 0), S(0, 0.08, 0, 1, 0.6, 1)]]); }]
       };
@@ -2210,11 +4107,15 @@
         finger: function () { return buildBranching(T, 0.35, 0.45, 0, 4, false); },
         antler: function () { return buildBranching(T, 0.4, 0.5, 1, 4, false); },
         corym: function () { return buildBranching(T, 0.38, 0.42, 2, 4, false); },
-        massive: function () { return buildMassive(T, 0.4, 0.42, 3, false); },
+        table: function () { return buildTable(T, 0.5, 0.5, 3, false); },
+        massive: function () { return buildMassive(T, 0.4, 0.42, 3, false, true); },
+        brain: function () { return buildMassive(T, 0.4, 0.4, 5, false, false); },
         plate: function () { return buildPlate(T, 0.45, 0.4, 5, false); },
         encrust: function () { return buildEncrusting(T, 0.4, 0.08, 2, false); },
         soft: function () { return buildSoftCoral(T, 0.25, 0.45, 3, false); },
-        fan: function () { return buildFan(T, 0.5, 0.85, 2, false); }
+        fan: function () { return buildFan(T, 0.5, 0.85, 2, false); },
+        algae: function () { return buildAlgae(T, 0.22, 0.34, 2, false, algaeTint); },
+        deadstand: function () { return buildBranching(T, 0.4, 0.5, 1, 4, false, false, true); }
       } : {};
       var mtx = new T.Matrix4(), qt = new T.Quaternion(), qy = new T.Quaternion(), pv = new T.Vector3(), sv = new T.Vector3(), nv = new T.Vector3(), up = new T.Vector3(0, 1, 0), color = new T.Color();
       function lodMesh(geometry, material, n, kind, lod) {
@@ -2226,7 +4127,8 @@
         scene.add(mesh); decorMeshes.push(mesh);
         return mesh;
       }
-      Object.keys(KINDS).forEach(function (kind) {
+      // Each kind is its own loading step (a staged mount yields between them).
+      Object.keys(KINDS).forEach(function (kind) { loadStep(1, function () {
         var list = lists[kind];
         if (!list || !list.length) return;
         var geometry = own(KINDS[kind][0]()), reach = geometry.boundingSphere.radius + geometry.boundingSphere.center.length(), n = list.length;
@@ -2239,31 +4141,34 @@
           dk.p[k * 4] = it[0]; dk.p[k * 4 + 1] = it[1] + DECOR_H[kind] * it[5] * 0.5; dk.p[k * 4 + 2] = it[2]; dk.p[k * 4 + 3] = reach * Math.max(it[4], it[5], it[6]);
         });
         dk.near = lodMesh(geometry, KINDS[kind][1], n, kind, 'near');
+        // Every placed item stays readable (positions and colours) for the lab's checks.
+        dk.near.userData.items = { matrices: dk.m, colors: dk.c, centres: dk.p };
         dk.mid = MIDDLE[kind] ? lodMesh(own(MIDDLE[kind]()), KINDS[kind][1], n, kind, 'mid') : null;
         dk.far = KINDS[kind][2] ? lodMesh(own(KINDS[kind][2]()), KINDS[kind][1], n, kind, 'far') : null;
         decorKinds.push(dk);
-      });
+      }); });
       // A single soft contact layer anchors the foreground colonies, including
       // on the low tier where real-time shadow maps are deliberately disabled.
       // Elevated bommie colonies are skipped so no shade is projected through rock.
-      var contact = new Builder(), segments = 12;
-      contact.useExtra('reefContactWeight');
-      Object.keys(lists).forEach(function (kind) {
-        if (DECOR_H[kind] < 0.3 || kind === 'fan') return;
-        lists[kind].forEach(function (it) {
-          var x = it[0], z = it[2], baseY = terrain.floorY(x, z);
-          if (it[1] > baseY + 0.2) return;
-          var radius = clamp(0.34 * Math.max(it[4], it[6]), 0.12, 0.85), first = contact.count();
-          contact.extra.value = 1; contact.vertex(x, baseY + 0.018, z, 0, 1, 0, 1, 1, 1);
-          contact.extra.value = 0;
-          for (var j = 0; j < segments; j++) {
-            var angle = j / segments * TAU, px = x + Math.cos(angle) * radius, pz = z + Math.sin(angle) * radius;
-            contact.vertex(px, terrain.floorY(px, pz) + 0.018, pz, 0, 1, 0, 1, 1, 1);
-            contact.i.push(first, first + 1 + (j + 1) % segments, first + 1 + j);
-          }
+      loadStep(1, function () {
+        var contact = new Builder(), segments = 12;
+        contact.useExtra('reefContactWeight');
+        Object.keys(lists).forEach(function (kind) {
+          if (DECOR_H[kind] < 0.3 || kind === 'fan' || kind === 'algae') return;
+          lists[kind].forEach(function (it) {
+            var x = it[0], z = it[2], baseY = terrain.floorY(x, z);
+            if (it[1] > baseY + 0.2 || Math.max(it[4], it[6]) < 0.8) return;
+            var radius = clamp(0.34 * Math.max(it[4], it[6]), 0.12, 0.85), first = contact.count();
+            contact.extra.value = 1; contact.vertex(x, baseY + 0.018, z, 0, 1, 0, 1, 1, 1);
+            contact.extra.value = 0;
+            for (var j = 0; j < segments; j++) {
+              var angle = j / segments * TAU, px = x + Math.cos(angle) * radius, pz = z + Math.sin(angle) * radius;
+              contact.vertex(px, terrain.floorY(px, pz) + 0.018, pz, 0, 1, 0, 1, 1, 1);
+              contact.i.push(first, first + 1 + (j + 1) % segments, first + 1 + j);
+            }
+          });
         });
-      });
-      if (contact.count()) {
+        if (!contact.count()) return;
         var contactMat = patch(new T.MeshBasicMaterial({ color: lin(0x183c3a), transparent: true, opacity: high ? 0.24 : 0.3, depthWrite: false }), 'contact', function (shader) {
           var parts = shaderParts();
           shader.uniforms.reefWaterEye = U.eye;
@@ -2276,38 +4181,42 @@
         var contactMesh = new T.Mesh(own(contact.build(T, false)), contactMat);
         contactMesh.onBeforeRender = function (r, sc, cam) { U.eye.value.setFromMatrixPosition(cam.matrixWorld); };
         contactMesh.name = 'reef-explore-contact-shade'; contactMesh.renderOrder = 1; contactMesh.userData.decorative = true; scene.add(contactMesh);
-      }
+      });
     }
     // Fill the near and far instance buffers with what lies within reach of the
     // camera and inside a widened view cone; skipped while the camera holds still.
-    var camFwd = new T.Vector3(), decorCam = { x: NaN, y: 0, z: 0, fx: 0, fy: 0, fz: 0, aspect: 0 };
+    var camFwd = new T.Vector3(), decorCam = { x: NaN, y: 0, z: 0, fx: 0, fy: 0, fz: 0, aspect: 0, fov: 0 };
     function refreshDecor(force) {
       camera.getWorldDirection(camFwd);
       var cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
       var moved = Math.hypot(cx - decorCam.x, cy - decorCam.y, cz - decorCam.z), facing = camFwd.x * decorCam.fx + camFwd.y * decorCam.fy + camFwd.z * decorCam.fz;
-      if (!force && moved < 0.75 && facing > 0.985 && decorCam.aspect === camera.aspect) return;
-      decorCam = { x: cx, y: cy, z: cz, fx: camFwd.x, fy: camFwd.y, fz: camFwd.z, aspect: camera.aspect };
-      var half = Math.min(Math.PI * 0.95, Math.atan(Math.tan(camera.fov * Math.PI / 360) * Math.hypot(1, camera.aspect)) + 0.45), cosHalf = Math.cos(half);
-      refreshGroups(cx, cy, cz, cosHalf);
+      if (!force && moved < PERF_STEP && facing > PERF_TURN && decorCam.aspect === camera.aspect && decorCam.fov === camera.fov) return;
+      decorCam.x = cx; decorCam.y = cy; decorCam.z = cz; decorCam.fx = camFwd.x; decorCam.fy = camFwd.y; decorCam.fz = camFwd.z; decorCam.aspect = camera.aspect; decorCam.fov = camera.fov;
+      var cone = perfConeFor(camera.fov, camera.aspect);
+      refreshGroups(cx, cy, cz, cone);
       decorKinds.forEach(function (dk) {
         var P = dk.p, M = dk.m, C = dk.c, nearN = 0, midN = 0, farN = 0, nearD = nearDist * gov.scale, maxD = dk.maxD * (0.64 + 0.36 * gov.scale), na = dk.near.instanceMatrix.array, nc = dk.near.instanceColor.array;
         var ma = dk.mid ? dk.mid.instanceMatrix.array : null, mc = dk.mid ? dk.mid.instanceColor.array : null;
         var fa = dk.far ? dk.far.instanceMatrix.array : null, fc = dk.far ? dk.far.instanceColor.array : null, q;
         for (var k = 0; k < dk.n; k++) {
-          var dx = P[k * 4] - cx, dy = P[k * 4 + 1] - cy, dz = P[k * 4 + 2] - cz, r = P[k * 4 + 3], d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          // A hero colony's reach is capped for the detail choice, so no full-detail
+          // model is drawn from beyond the near ring.
+          var dx = P[k * 4] - cx, dy = P[k * 4 + 1] - cy, dz = P[k * 4 + 2] - cz, r = Math.min(2, P[k * 4 + 3]), d = Math.sqrt(dx * dx + dy * dy + dz * dz);
           if (d - r > maxD) continue;
-          if (d > r + 1.5 && dx * camFwd.x + dy * camFwd.y + dz * camFwd.z < cosHalf * d - r) continue;
-          if (d - r < nearD * (ma ? 0.64 : 1) || !fa) { for (q = 0; q < 16; q++) na[nearN * 16 + q] = M[k * 16 + q]; nc[nearN * 3] = C[k * 3]; nc[nearN * 3 + 1] = C[k * 3 + 1]; nc[nearN * 3 + 2] = C[k * 3 + 2]; nearN++; }
+          if (d > r + 1.5 && dx * camFwd.x + dy * camFwd.y + dz * camFwd.z < perfConeAt(cone, d) * d - r) continue;
+          // The light tier's stand-ins take over a little sooner: a crowded reef has many crowns.
+          if (d - r < nearD * (ma ? 0.52 : 0.85) || !fa) { for (q = 0; q < 16; q++) na[nearN * 16 + q] = M[k * 16 + q]; nc[nearN * 3] = C[k * 3]; nc[nearN * 3 + 1] = C[k * 3 + 1]; nc[nearN * 3 + 2] = C[k * 3 + 2]; nearN++; }
           else if (ma && d - r < nearD) { for (q = 0; q < 16; q++) ma[midN * 16 + q] = M[k * 16 + q]; mc[midN * 3] = C[k * 3]; mc[midN * 3 + 1] = C[k * 3 + 1]; mc[midN * 3 + 2] = C[k * 3 + 2]; midN++; }
           else { for (q = 0; q < 16; q++) fa[farN * 16 + q] = M[k * 16 + q]; fc[farN * 3] = C[k * 3]; fc[farN * 3 + 1] = C[k * 3 + 1]; fc[farN * 3 + 2] = C[k * 3 + 2]; farN++; }
         }
-        [[dk.near, nearN], [dk.mid, midN], [dk.far, farN]].forEach(function (pair) {
-          var mesh = pair[0]; if (!mesh) return;
-          mesh.count = pair[1]; mesh.visible = pair[1] > 0;
-          mesh.instanceMatrix.updateRange.offset = 0; mesh.instanceMatrix.updateRange.count = Math.max(16, pair[1] * 16); mesh.instanceMatrix.needsUpdate = true;
-          mesh.instanceColor.updateRange.offset = 0; mesh.instanceColor.updateRange.count = Math.max(3, pair[1] * 3); mesh.instanceColor.needsUpdate = true;
-        });
+        perfShow(dk.near, nearN); perfShow(dk.mid, midN); perfShow(dk.far, farN);
       });
+    }
+    function perfShow(mesh, n) {
+      if (!mesh) return;
+      mesh.count = n; mesh.visible = n > 0;
+      mesh.instanceMatrix.updateRange.offset = 0; mesh.instanceMatrix.updateRange.count = Math.max(16, n * 16); mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.updateRange.offset = 0; mesh.instanceColor.updateRange.count = Math.max(3, n * 3); mesh.instanceColor.needsUpdate = true;
     }
 
     // ---- Water, light, shafts and motes (visual streams only) --------------------
@@ -2480,8 +4389,14 @@
         parts.vBegin.push('vec3 reefSnowMin=reefSnowCenter-reefSnowBox*0.5;float reefSnowPhase=reefSnowTime*0.19-dot(position.xz,vec2(0.13,0.09));float reefSnowLift=reefSnowTime*0.13+dot(position.xz,vec2(0.08,-0.11));vec3 reefSnowSurge=vec3(-0.17*cos(reefSnowPhase),0.055*sin(reefSnowLift),-0.12*cos(reefSnowPhase+0.45));transformed=reefSnowMin+mod(position+reefSnowDrift*reefSnowTime+reefSnowSurge-reefSnowMin,reefSnowBox);if(transformed.y>reefSnowTop)transformed.y-=reefSnowBox.y;vec3 reefSnowEdge=reefSnowBox*0.5-abs(transformed-reefSnowCenter);float reefSnowEdgeFade=smoothstep(0.0,0.7,min(reefSnowEdge.x,min(reefSnowEdge.y,reefSnowEdge.z)));vReefSnowDepth=length(transformed-reefWaterEye);vReefSnowSeed=fract(position.x*0.37+position.y*0.61);vReefSnowGlow=pow(max(0.0,dot((transformed-reefWaterEye)/max(vReefSnowDepth,0.001),normalize(vec3(0.42,1.0,0.3)))),4.0);float reefSnowPulse=0.91+0.09*sin(reefSnowTime*(0.22+vReefSnowSeed*0.08)+vReefSnowSeed*6.283185);vReefSnowVeil=reefSnowEdgeFade*smoothstep(0.0,0.4,reefSnowTop-transformed.y)*exp(-max(-transformed.y-3.0,0.0)*0.024)*reefSnowPulse;');
         parts.fCommon.push('varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowGlow;varying float vReefSnowVeil;');
         parts.fColor.push('vec2 reefPc=gl_PointCoord*2.0-1.0;float reefSnowAngle=vReefSnowSeed*6.283185;reefPc=mat2(cos(reefSnowAngle),-sin(reefSnowAngle),sin(reefSnowAngle),cos(reefSnowAngle))*reefPc;reefPc.x*=mix(1.0,1.5,vReefSnowSeed);float reefPr=dot(reefPc,reefPc);if(reefPr>1.0)discard;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.82,0.92,0.86),vReefSnowGlow*0.24);diffuseColor.a*=pow(1.0-reefPr,1.8)*smoothstep(0.65,1.8,vReefSnowDepth)*(1.0-smoothstep(4.8,7.5,vReefSnowDepth))*mix(0.22,0.78,vReefSnowSeed)*(0.72+vReefSnowGlow*0.58)*vReefSnowVeil;');
+        // Specks inside the dive light's beam catch it: the backscatter divers see.
+        bindTorch(shader);
+        parts.vCommon.push(TORCH_COMMON + 'varying float vReefSnowTorch;');
+        parts.vBegin.push('vec3 reefSnowTorchTo=transformed-reefTorchPos;float reefSnowTorchD=max(length(reefSnowTorchTo),0.001);vReefSnowTorch=reefTorch.x*smoothstep(reefTorch.y,reefTorch.z,dot(reefSnowTorchTo/reefSnowTorchD,reefTorchDir))*(1.0-smoothstep(reefTorch.w*0.45,reefTorch.w,reefSnowTorchD))/(reefSnowTorchD*reefSnowTorchD+2.5);');
+        parts.fCommon.push('varying float vReefSnowTorch;');
+        parts.fColor.push('float reefSnowLit=min(1.0,vReefSnowTorch*0.3);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.95,0.86),reefSnowLit);diffuseColor.a=min(1.0,diffuseColor.a*(1.0+12.0*reefSnowLit));');
         applyParts(shader, parts, 'snow');
-        shader.vertexShader = inject(shader.vertexShader, '#include <logdepthbuf_vertex>', 'gl_PointSize*=0.36+0.95*vReefSnowSeed*vReefSnowSeed*vReefSnowSeed;', 'snow-size');
+        shader.vertexShader = inject(shader.vertexShader, '#include <logdepthbuf_vertex>', 'gl_PointSize*=(0.36+0.95*vReefSnowSeed*vReefSnowSeed*vReefSnowSeed)*(1.0+0.8*min(1.0,vReefSnowTorch*0.3));', 'snow-size');
       };
       pm.customProgramCacheKey = function () { return key('snow-parcel-v2'); };
       motes = new T.Points(g, pm); motes.frustumCulled = false; motes.name = 'reef-explore-motes'; motes.userData.decorative = true; motes.renderOrder = 4;
@@ -2489,7 +4404,7 @@
       scene.add(motes);
     }
     function updateWater() {
-      U.eye.value.setFromMatrixPosition(camera.matrixWorld);
+      U.eye.value.setFromMatrixPosition(camera.matrixWorld); updateTorch();
       var depth = clamp(-camera.position.y, 0, 25);
       if (Math.abs(depth - lastWaterDepth) < 0.05) return;
       lastWaterDepth = depth;
@@ -2504,6 +4419,33 @@
       hemi.groundColor.setRGB(lerp(0.20, 0.07, k), lerp(0.26, 0.14, k), lerp(0.22, 0.18, k)); hemi.intensity = 0.42 - 0.08 * k;
       sun.color.setRGB(lerp(1.0, 0.57, k), lerp(0.96, 0.82, k), lerp(0.84, 0.97, k)); sun.intensity = 1.27 - 0.28 * k;
     }
+    // ---- Dive light ----------------------------------------------------------------
+    // Held at the mask in the first view, along the gaze. In the third it is in
+    // the diver's hand at the head: shone on the focused organism when that is in
+    // front and within reach, otherwise ahead, angled down to the reef.
+    var lightOn = options.light === true, torchAt = new T.Vector3(), torchFwd = new T.Vector3(), torchAim = new T.Vector3();
+    function updateTorch() {
+      if (!U || !U.torch) return;
+      U.torch.value.x = lightOn ? TORCH_POWER : 0;
+      if (!lightOn) return;
+      if (view === 'first' || !diver) { torchAt.setFromMatrixPosition(camera.matrixWorld); camera.getWorldDirection(torchFwd); torchAt.y -= 0.08; torchFwd.y -= 0.12; }
+      else {
+        torchAt.copy(HEAD).applyMatrix4(diver.matrixWorld); torchFwd.set(1, 0, 0).transformDirection(diver.matrixWorld);
+        var fo = focusedUid && byUid[focusedUid];
+        if (fo) torchAim.copy(fo.center).sub(torchAt);
+        var reach = fo ? torchAim.length() : 0;
+        if (reach > 0.2 && reach < TORCH_REACH * 0.8 && torchAim.x * fwdX(bearing) + torchAim.z * fwdZ(bearing) > 0) torchFwd.copy(torchAim);
+        else torchFwd.y -= 0.58;
+      }
+      torchFwd.normalize();
+      U.torchPos.value.copy(torchAt); U.torchDir.value.copy(torchFwd);
+    }
+    function setLight(on) {
+      if (disposed) return;
+      on = !!on;
+      if (on !== !!lightOn) { lightOn = on; updateTorch(); notify(true); }
+      refresh();
+    }
 
     // ---- Diver -----------------------------------------------------------------
     function buildDiver() {
@@ -2513,7 +4455,8 @@
       var mat = own(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.72, metalness: 0.035 }));
       var hardwareMat = own(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.34, metalness: 0.52 }));
       var finMat = own(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.49, metalness: 0.02, side: T.DoubleSide }));
-      var glass = own(new T.MeshStandardMaterial({ color: lin(0xa3e0dc), roughness: 0.12, metalness: 0.22, transparent: true, opacity: 0.48, depthWrite: false, side: T.DoubleSide }));
+      // The lenses' vertex colours are white, so vertexColors changes nothing but lets them share the fins' program.
+      var glass = own(new T.MeshStandardMaterial({ color: lin(0xa3e0dc), roughness: 0.12, metalness: 0.22, transparent: true, opacity: 0.48, depthWrite: false, side: T.DoubleSide, vertexColors: true }));
       var b = new Builder(), hw = new Builder(), lenses = new Builder(), axis = new T.Vector3(1, 0, 0), direction = new T.Vector3(), q = new T.Quaternion();
       function M(x, y, z, sx, sy, sz, rx, ry, rz) { return new T.Matrix4().compose(new T.Vector3(x, y, z), new T.Quaternion().setFromEuler(new T.Euler(rx || 0, ry || 0, rz || 0)), new T.Vector3(sx, sy, sz)); }
       function solid(c) { return function (x, y, z, nx, ny, nz, rgb) { var shade = 0.94 + 0.06 * ny; rgb[0] = c.r * shade; rgb[1] = c.g * shade; rgb[2] = c.b * shade; }; }
@@ -2626,7 +4569,10 @@
       });
       box(b, 0.531, -0.134, -0.157, 0.053, 0.018, 0.048, rubber, 0, -0.7, 0);
       box(hw, 0.531, -0.123, -0.157, 0.036, 0.004, 0.031, teal, 0, -0.7, 0);
-      diverBody = new T.Mesh(own(b.build(T, false)), mat); diverBody.name = 'reef-explore-diver-body'; diver.add(diverBody);
+      // The thighs and shins share the body's material, so they draw with it: their
+      // vertices join the body mesh and are posed from their rig nodes (leanSkin).
+      var limbs = [];
+      diverBody = new T.Mesh(undefined, mat); diverBody.name = 'reef-explore-diver-body'; diver.add(diverBody);
       var hardware = new T.Mesh(own(hw.build(T, false)), hardwareMat); hardware.name = 'reef-explore-diver-equipment'; diver.add(hardware);
       var glassMesh = new T.Mesh(own(lenses.build(T, false)), glass); glassMesh.name = 'reef-explore-diver-mask-lenses'; glassMesh.renderOrder = 2; diver.add(glassMesh);
 
@@ -2636,11 +4582,11 @@
         limb(thighB, [0, 0, 0], [-0.42, 0, 0], [0.085, 0.081, 0.059], suit);
         oval(thighB, -0.335, -0.006, 0, 0.104, 0.063, 0.065, rubber, 12);
         pipe(thighB, [[-0.015, 0.018, s * 0.079], [-0.14, 0.025, s * 0.086], [-0.27, 0.018, s * 0.071], [-0.345, 0.011, s * 0.059]], 0.009, panel, 8, 5);
-        var thigh = new T.Mesh(own(thighB.build(T, false)), mat); thigh.name = 'reef-explore-diver-thigh'; hip.add(thigh);
+        leanLimb(limbs, thighB, hip, 'reef-explore-diver-thigh');
         var knee = new T.Group(); knee.name = 'reef-explore-diver-knee-' + sideName; knee.position.set(-0.42, 0, 0); hip.add(knee);
         var shinB = new Builder(); limb(shinB, [0, 0, 0], [-0.4, 0, 0], [0.059, 0.064, 0.036], suit);
         pipe(shinB, [[-0.07, 0.018, s * 0.057], [-0.15, 0.021, s * 0.062], [-0.28, 0.01, s * 0.047], [-0.33, 0.007, s * 0.037]], 0.006, teal, 8, 5);
-        var shin = new T.Mesh(own(shinB.build(T, false)), mat); shin.name = 'reef-explore-diver-shin'; knee.add(shin);
+        leanLimb(limbs, shinB, knee, 'reef-explore-diver-shin');
         var ankle = new T.Group(); ankle.name = 'reef-explore-diver-ankle-' + sideName; ankle.position.set(-0.4, 0, 0); knee.add(ankle);
         var fb = new Builder(), rows = 16, columns = 12;
         oval(fb, -0.045, -0.004, 0, 0.115, 0.047, 0.061, rubber, 14);
@@ -2673,6 +4619,7 @@
         fin.name = 'reef-explore-diver-fin-' + sideName; ankle.add(fin);
         legs.push({ hip: hip, knee: knee, ankle: ankle, side: s, fin: fin, finRest: finRest, finRestNormal: finRestNormal, finFlex: finFlex });
       });
+      leanBody(diverBody, b, limbs);
       diver.traverse(function (c) { if (c.isMesh) { c.castShadow = high && c !== glassMesh; c.receiveShadow = true; c.userData.diver = true; } });
       scene.add(diver);
     }
@@ -2711,6 +4658,65 @@
       var bob = reducedMotion ? 0 : 0.012 * Math.sin(visualTime * TAU / 4.2);
       diver.position.set(diverPos.x, diverPos.y + bob, diverPos.z); diver.rotation.set(bodyRoll, yawFor(bearing), bodyPitch);
       diver.updateMatrixWorld(true);
+      leanSkin(diverBody);
+    }
+    // A limb of the body mesh: its vertices in a rig node's space, posed by leanSkin.
+    // The node keeps the place and the name the limb's own mesh had in the rig.
+    function leanLimb(list, builder, parent, name) {
+      var node = new T.Group(); node.name = name; parent.add(node);
+      list.push({ node: node, builder: builder });
+      return node;
+    }
+    // Appends the limbs to the body's builder and gives the body its one mesh. The
+    // bounds hold every pose: the body as built, plus around each hip the farthest
+    // limb vertex and the joints in between.
+    function leanBody(mesh, b, limbs) {
+      var pieces = [];
+      limbs.forEach(function (limb) {
+        var src = limb.builder, start = b.count(), k;
+        for (k = 0; k < src.count(); k++) b.vertex(src.p[k * 3], src.p[k * 3 + 1], src.p[k * 3 + 2], src.n[k * 3], src.n[k * 3 + 1], src.n[k * 3 + 2], src.c[k * 3], src.c[k * 3 + 1], src.c[k * 3 + 2]);
+        for (k = 0; k < src.i.length; k++) b.i.push(start + src.i[k]);
+        pieces.push({ node: limb.node, start: start, rest: new Float32Array(src.p), restNormal: new Float32Array(src.n), last: [] });
+      });
+      var geometry = own(b.build(T, false)), pos = geometry.attributes.position, nor = geometry.attributes.normal, first = pieces.length ? pieces[0].start : pos.count;
+      mesh.geometry = geometry; mesh.userData.leanSkin = { pieces: pieces, m: new T.Matrix4() };
+      leanSkin(mesh);
+      // Nothing is uploaded yet: the first draw sends the whole buffer.
+      pos.updateRange.count = -1; nor.updateRange.count = -1;
+      var box = new T.Box3(), v = new T.Vector3();
+      for (var i = 0; i < first; i++) box.expandByPoint(v.fromBufferAttribute(pos, i));
+      pieces.forEach(function (p) {
+        var reach = 0, o = p.node, j;
+        for (j = 0; j < p.rest.length; j += 3) reach = Math.max(reach, Math.hypot(p.rest[j], p.rest[j + 1], p.rest[j + 2]));
+        for (; o.parent !== diver; o = o.parent) reach += o.position.length();
+        box.expandByPoint(v.copy(o.position).addScalar(reach)); box.expandByPoint(v.copy(o.position).addScalar(-reach));
+      });
+      geometry.boundingBox = box; geometry.boundingSphere = box.getBoundingSphere(new T.Sphere());
+    }
+    // Poses the limbs inside the body mesh from their rig nodes: the vertices the
+    // separate thigh and shin meshes drew. The rig only turns and moves its nodes (no
+    // scale), so each normal turns with its vertex. An unchanged limb is not re-sent.
+    function leanSkin(mesh) {
+      var S = mesh && mesh.userData.leanSkin;
+      if (!S) return;
+      var pos = mesh.geometry.attributes.position, nor = mesh.geometry.attributes.normal, P = pos.array, N = nor.array, m = S.m, e = m.elements, lo = Infinity, hi = -1;
+      for (var k = 0; k < S.pieces.length; k++) {
+        var p = S.pieces[k], o, q, same = true;
+        m.identity();
+        for (o = p.node; o && o !== diver; o = o.parent) { o.updateMatrix(); m.premultiply(o.matrix); }
+        for (q = 0; q < 16; q++) if (p.last[q] !== e[q]) { same = false; p.last[q] = e[q]; }
+        if (same) continue;
+        var R = p.rest, RN = p.restNormal, at = p.start * 3;
+        for (var j = 0; j < R.length; j += 3) {
+          var x = R[j], y = R[j + 1], z = R[j + 2], nx = RN[j], ny = RN[j + 1], nz = RN[j + 2];
+          P[at + j] = e[0] * x + e[4] * y + e[8] * z + e[12]; P[at + j + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; P[at + j + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+          N[at + j] = e[0] * nx + e[4] * ny + e[8] * nz; N[at + j + 1] = e[1] * nx + e[5] * ny + e[9] * nz; N[at + j + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
+        }
+        lo = Math.min(lo, p.start); hi = Math.max(hi, p.start + R.length / 3);
+      }
+      if (hi < 0) return;
+      pos.updateRange.offset = nor.updateRange.offset = lo * 3; pos.updateRange.count = nor.updateRange.count = (hi - lo) * 3;
+      pos.needsUpdate = true; nor.needsUpdate = true;
     }
 
 
@@ -2744,6 +4750,7 @@
       var before = bubbleClock, after = before + Math.max(0, dt), period = 4.2;
       var releases = reducedMotion ? [2.08, 2.38, 2.70] : [2.03, 2.07, 2.12, 2.18, 2.26, 2.36, 2.54, 2.60, 2.67, 2.75, 2.83, 2.91];
       bubbleClock = after; bubbleBudget = 0;
+      if (typeof options.onEvent === 'function') soundEventStep(before, after, period, releases);
       for (var cycle = Math.floor(before / period); cycle <= Math.floor(after / period); cycle++) {
         for (var release = 0; release < releases.length; release++) {
           var birth = cycle * period + releases[release];
@@ -2781,6 +4788,37 @@
       });
       pos.needsUpdate = true; size.needsUpdate = true; alpha.needsUpdate = true;
     }
+
+    // ---- Sound events for the lab's reef soundscape (options.onEvent) ---------------
+    // Optional: each breath and each parrotfish bite as it happens, read from the same
+    // closed-form schedules as the bubbles and the sediment puffs, so a crunch lands on
+    // its puff and an exhale on its bubbles. Runs from updateBubbles (unpaused frames
+    // only) and never changes the dive. The inhale sits on the rising half of the
+    // camera's 4.2 s breathing sway, before the exhale's first bubbles.
+    var soundEventWorld = null, soundEventBites = [];
+    function soundEventStep(before, after, period, releases) {
+      for (var cycle = Math.floor(before / period); cycle <= Math.floor(after / period); cycle++) {
+        var tin = (cycle + 1) * period - 0.65, tout = cycle * period + releases[0];
+        if (tin > before && tin <= after) soundEventSend({ type: 'inhale', lag: after - tin, duration: 1.45 });
+        if (tout > before && tout <= after) soundEventSend({ type: 'exhale', lag: after - tout, duration: releases[releases.length - 1] - releases[0] + 0.4, clumps: releases.map(function (r) { return r - releases[0]; }) });
+      }
+      // Bites in (the last world time seen, now], as grazerBites finds them for the puffs.
+      var from = soundEventWorld; soundEventWorld = worldTime;
+      if (from === null || !(worldTime > from) || !eco) return;
+      eco.grazers.forEach(function (o) {
+        if (Math.hypot(o.home.x - diverPos.x, o.home.z - diverPos.z) > 40) return;
+        soundEventBites.length = 0;
+        grazerBites(o, worldTime, worldTime - from, soundEventBites);
+        soundEventBites.forEach(function (b) {
+          var dx = b.x - diverPos.x, dz = b.z - diverPos.z, dist = Math.hypot(dx, b.y - diverPos.y, dz);
+          if (dist > 25) return;
+          soundEventSend({ type: 'bite', key: b.key, t: b.t, speciesId: o.speciesId, school: !!o.eco.school, distanceM: r1(dist),
+            pan: Math.round(Math.sin(wrapAngle(bearingTo(dx, dz) - bearing)) * 100) / 100, lag: (worldTime - b.t) / (reducedMotion ? 0.45 : 1) });
+        });
+      });
+    }
+    // A listener's error never stops the dive.
+    function soundEventSend(event) { try { options.onEvent(event); } catch (ignore) {} }
 
     // ---- Focus ring and first-view mask ---------------------------------------------
     function buildFocusRing() {
@@ -2848,7 +4886,11 @@
       var sp = terrain.spawn;
       bommies.forEach(function (b) { var d = Math.hypot(b.x - sp.x, b.z - sp.z); if (d > 3 && d < 17) { var s = b.r * b.h / d * (b === station ? 1.6 : 1); if (s > score) { score = s; best = b; } } });
       bearing = best ? bearingTo(best.x - sp.x, best.z - sp.z) : 0;
-      diverPos.set(sp.x, Math.min(SURFACE_Y, groundTop(sp.x, sp.z) + 2.2), sp.z);
+      // Just inside the calm-hover band (senseReef counts calm below CALM_NEAR, 2.2 m), so a
+      // still hover at the start counts.
+      diverPos.set(sp.x, Math.min(SURFACE_Y, groundTop(sp.x, sp.z) + 2), sp.z);
+      // Each mount is one dive: its reef contacts, calm time and depth start here.
+      touch = freshTouch(); touch.maxDepth = -diverPos.y;
     }
     function currentInput() {
       return { forward: clamp(keys.forward - keys.back + ext.forward, -1, 1), turn: clamp(keys.right - keys.left + ext.turn, -1, 1), rise: clamp(keys.up - keys.down + ext.rise, -1, 1) };
@@ -2874,15 +4916,259 @@
         }
       }
       constrainDiver(dt);
+      senseReef(dt);
     }
     function constrainDiver(dt) {
       diverPos.x = clamp(diverPos.x, -HARD_EDGE, HARD_EDGE); diverPos.z = clamp(diverPos.z, -HARD_EDGE, HARD_EDGE);
       var ahead = Math.max(0, speed) * 1.2, top = Math.max(groundTop(diverPos.x, diverPos.z), groundTop(diverPos.x + fwdX(bearing) * ahead, diverPos.z + fwdZ(bearing) * ahead) - 0.1);
       var minY = top + DIVER_CLEAR;
-      if (diverPos.y < minY) { diverPos.y += (minY - diverPos.y) * damp(reducedMotion ? 10 : 5, dt); if (vy < 0) vy *= 0.5; }
-      var hard = Math.max(terrain.floorY(diverPos.x, diverPos.z) + DIVER_FLOOR, groundTop(diverPos.x, diverPos.z) + DIVER_CLEAR * 0.5);
+      // The climb over a coral head ahead is quick but never a lurch (diverClear keeps the
+      // body out of the rock meanwhile; before it, a head 2 m tall lifted 0.5 m in a frame).
+      if (diverPos.y < minY) { diverPos.y += Math.min((minY - diverPos.y) * damp(reducedMotion ? 10 : 5, dt), CLEAR_CLIMB * dt); if (vy < 0) vy *= 0.5; }
+      var hard = diverClearFloor(diverPos.x, diverPos.z);
       if (diverPos.y < hard) diverPos.y = hard;
+      diverClear(dt);
       if (diverPos.y > SURFACE_Y) { diverPos.y = SURFACE_Y; if (vy > 0) vy = 0; }
+    }
+    // ---- Diver clearance: no part of the diver inside rock -------------------------
+    // The checks above hold the body's centre over the reef and climb ahead; the legs
+    // trail up to 1.9 m behind, so backing or turning low could put the fins deep into
+    // a coral head. Points along the whole rig (fin blades, ankles, knees, hips, hands,
+    // chest, face) are tested against the rock itself, the floor and each bommie's own
+    // height field, and the diver moves out the shortest way: up off a gentle surface,
+    // out from a steep wall. A fin can rest on rock (a brush the contact sensing still
+    // notices), never sink into it. Swimming into the rock eases the stroke; nothing sticks.
+    var CLEAR_SKIN = 0.02, CLEAR_CLIMB = 2.5;
+    var CLEAR_FIN = [[-0.578, -0.044, 0], [-0.578, -0.044, 0.13], [-0.578, -0.044, -0.13], [-0.4, -0.035, 0.12], [-0.4, -0.035, -0.12], [-0.2, -0.025, 0]];
+    var CLEAR_BODY = [[0.77, 0.06, 0], [0.56, -0.21, 0], [0.15, -0.17, 0], [-0.42, -0.12, 0], [-0.2, -0.15, 0.15], [-0.2, -0.15, -0.15]];
+    var CLEAR_ANKLE = [0, -0.05, 0], CLEAR_KNEE = [0, -0.06, 0], clearKit = null;
+    // The lowest the body's centre may go: continuous, so crossing a 0.5 m grid cell
+    // never pops the diver up (the cell-maximum floor did, by up to 0.4 m in one frame).
+    function diverClearFloor(x, z) {
+      var top = surfaceAt(x, z);
+      for (var i = 0; i < bommies.length; i++) {
+        var b = bommies[i], dx = x - b.x, dz = z - b.z, reach = b.r * 1.36;
+        if (dx * dx + dz * dz < reach * reach) top = Math.max(top, b.heightAt(x, z));
+      }
+      return Math.max(terrain.floorY(x, z) + DIVER_FLOOR, top + DIVER_CLEAR * 0.5);
+    }
+    function diverClearKit() {
+      if (clearKit) return clearKit;
+      var n = legs.length * (CLEAR_FIN.length + 2) + CLEAR_BODY.length;
+      clearKit = { n: n, pts: new Float32Array(n * 3), near: [], hit: { b: null }, push: new T.Vector3(), v: new T.Vector3(), inv: new T.Matrix4(), now: new T.Matrix4(), carry: new T.Matrix4(), m: new T.Matrix4(),
+        pos: new T.Vector3(), q: new T.Quaternion(), e: new T.Euler(0, 0, 0, 'YZX'), one: new T.Vector3(1, 1, 1) };
+      return clearKit;
+    }
+    // The rig as animateDiver posed it last frame, carried to this frame's place and heading.
+    function diverClearPoints(K) {
+      K.inv.copy(diver.matrixWorld).invert();
+      K.now.compose(K.pos.set(diverPos.x, diverPos.y, diverPos.z), K.q.setFromEuler(K.e.set(bodyRoll, yawFor(bearing), bodyPitch, 'YZX')), K.one);
+      K.carry.multiplyMatrices(K.now, K.inv);
+      var at = 0, i, j;
+      for (i = 0; i < legs.length; i++) {
+        K.m.multiplyMatrices(K.carry, legs[i].fin.matrixWorld);
+        for (j = 0; j < CLEAR_FIN.length; j++) at = diverClearPut(K, K.m, CLEAR_FIN[j], at);
+        at = diverClearPut(K, K.m.multiplyMatrices(K.carry, legs[i].ankle.matrixWorld), CLEAR_ANKLE, at);
+        at = diverClearPut(K, K.m.multiplyMatrices(K.carry, legs[i].knee.matrixWorld), CLEAR_KNEE, at);
+      }
+      for (j = 0; j < CLEAR_BODY.length; j++) at = diverClearPut(K, K.now, CLEAR_BODY[j], at);
+    }
+    function diverClearPut(K, m, p, at) { K.v.set(p[0], p[1], p[2]).applyMatrix4(m); K.pts[at] = K.v.x; K.pts[at + 1] = K.v.y; K.pts[at + 2] = K.v.z; return at + 3; }
+    // The rock under (x, z): the floor or the highest bommie there (hit.b names it).
+    function diverClearRock(K, x, z) {
+      var top = terrain.floorY(x, z); K.hit.b = null;
+      for (var i = 0; i < K.near.length; i++) {
+        var b = K.near[i], dx = x - b.x, dz = z - b.z, reach = b.r * 1.36;
+        if (dx * dx + dz * dz >= reach * reach) continue;
+        var h = b.heightAt(x, z); if (h > top) { top = h; K.hit.b = b; }
+      }
+      return top;
+    }
+    // Distance out through a bommie's wall, along its radius, to where it is lower than y.
+    function diverClearExit(b, x, y, z) {
+      var dx = x - b.x, dz = z - b.z, lx = dx * b.c + dz * b.s, lz = -dx * b.s + dz * b.c, a = Math.atan2(lz, lx), e = b.edge(a), ca = Math.cos(a) * e, sa = Math.sin(a) * e;
+      var start = Math.hypot(lx, lz) / e, lo = start, hi = 1;
+      for (var k = 0; k < 8; k++) { var mid = (lo + hi) * 0.5; if (b.heightLocal(mid * ca, mid * sa) > y) lo = mid; else hi = mid; }
+      return Math.max(0.005, (hi - start) * e);
+    }
+    function diverClear(dt) {
+      if (!diver || !legs.length || !terrain) return;
+      var K = diverClearKit(), i, low = diverPos.y - 1.1;
+      // Only rock within reach of the legs can matter; high above the reef nothing does.
+      K.near.length = 0;
+      for (i = 0; i < bommies.length; i++) { var bm = bommies[i]; if (bm.base + bm.h * 1.23 > low && Math.hypot(bm.x - diverPos.x, bm.z - diverPos.z) < bm.r * 1.36 + 2.1) K.near.push(bm); }
+      if (!K.near.length && low > terrain.floorY(diverPos.x, diverPos.z) + 1.6) return;
+      diverClearPoints(K);
+      var push = K.push.set(0, 0, 0);
+      for (var it = 0; it < 4; it++) {
+        var worst = 0, sx = 0, sy = 0, sz = 0;
+        for (i = 0; i < K.n; i++) {
+          var x = K.pts[i * 3] + push.x, y = K.pts[i * 3 + 1] + push.y, z = K.pts[i * 3 + 2] + push.z, dv = diverClearRock(K, x, z) + CLEAR_SKIN - y;
+          if (dv <= 0) continue;
+          var px = 0, py = dv, pz = 0, d2 = dv * dv, b = K.hit.b;
+          if (b) {
+            // Up and out are both ways clear; the push takes the shorter, blended as for a plane.
+            var dh = diverClearExit(b, x, y - CLEAR_SKIN, z), rx = x - b.x, rz = z - b.z, rl = Math.hypot(rx, rz);
+            if (rl < 1e-3) { rx = diverPos.x - b.x; rz = diverPos.z - b.z; rl = Math.hypot(rx, rz) || 1; }
+            d2 = 1 / (1 / (dh * dh) + 1 / (dv * dv));
+            px = rx / rl * d2 / dh; pz = rz / rl * d2 / dh; py = d2 / dv;
+          }
+          if (d2 > worst) { worst = d2; sx = px; sy = py; sz = pz; }
+        }
+        if (!(worst > 0)) break;
+        push.x += sx; push.y += sy; push.z += sz;
+      }
+      if (push.x === 0 && push.y === 0 && push.z === 0) return;
+      diverPos.add(push);
+      diverPos.x = clamp(diverPos.x, -HARD_EDGE, HARD_EDGE); diverPos.z = clamp(diverPos.z, -HARD_EDGE, HARD_EDGE);
+      // Swimming into rock eases the stroke (and a sink onto it stops), so the diver
+      // rests against it instead of pressing on, and answers at once to a new direction.
+      var ph = Math.hypot(push.x, push.z), ease = damp(10, dt);
+      if (ph > 1e-6 && Math.abs(speed) > 1e-6) {
+        var into = -(fwdX(bearing) * push.x + fwdZ(bearing) * push.z) / ph * (speed > 0 ? 1 : -1);
+        if (into > 0) speed *= 1 - into * ease;
+      }
+      if (push.y > 0 && vy < 0) vy *= 1 - ease;
+    }
+
+    // ---- Reef contact: hover, don't touch -------------------------------------------
+    // Points on the diver (hands, chest, face, hips, knees, fin tips) are checked
+    // against the reef each unpaused frame. A brush of living coral or other
+    // attached life counts once, then rests (TOUCH_REST s from the last contact);
+    // the bare bottom counts apart, and so does a hard fin kick just above sand.
+    // Nothing pushes or harms anything: the dive notices, and a little sediment
+    // puffs up. Steady, slow hovering near the reef adds up as calm time.
+    var TOUCH_SKIN = 0.06, TOUCH_FREE = 0.15, TOUCH_CLOSE = 0.3, TOUCH_REST = 2, STIR_M = 0.3, CALM_NEAR = 2.2;
+    var TOUCH_BODY = [[0.56, -0.21, 0], [0.15, -0.17, 0], [0.7, -0.04, 0], [-0.42, -0.12, 0]];
+    var touch, lifeIndex, puff, touchV = new T.Vector3(), touchShift = new T.Vector3(), touchFound = { gap: 0, kind: null }, touchFlow = { x: 0, z: 0, strength: 0 };
+    function freshTouch() {
+      return { reef: 0, sand: 0, time: 0, calm: 0, calmRun: 0, maxDepth: 0, reefAt: -Infinity, sandAt: -Infinity, onReef: false, onSand: false, close: false, kind: null, state: 'swim' };
+    }
+    // The reef top between the grid's corners (bilinear, so a colony's edge slopes instead of stepping).
+    function surfaceAt(x, z) {
+      var fy = terrain.floorY(x, z), fx = clamp((x - GRID_MIN) / GRID_STEP, 0, GRID_N - 1), fz = clamp((z - GRID_MIN) / GRID_STEP, 0, GRID_N - 1);
+      var i = Math.min(GRID_N - 2, Math.floor(fx)), j = Math.min(GRID_N - 2, Math.floor(fz)), k = j * GRID_N + i, u = fx - i, v = fz - j;
+      return lerp(lerp(Math.max(fy, obstacle[k]), Math.max(fy, obstacle[k + 1]), u), lerp(Math.max(fy, obstacle[k + GRID_N]), Math.max(fy, obstacle[k + GRID_N + 1]), u), v);
+    }
+    // Attached living organisms (corals, restoration units, anemones, clams, fans,
+    // sponges), bucketed in 2 m cells; short ones never reach the grid, so they need this.
+    function buildLifeIndex() {
+      var index = {};
+      organisms.forEach(function (o) {
+        if (o.path || !o.center || o.behavior !== 'fixed') return;
+        var g = o.info.group;
+        if (!(g === 'coral' || g === 'structure' || o.info.habit === 'sessile') || coralState(o) === 'dead') return;
+        var half = (o.boxMaxY - o.boxMinY) * 0.5 * (o.scale || 1), cell = Math.floor((o.center.z - GRID_MIN) / 2) * 64 + Math.floor((o.center.x - GRID_MIN) / 2);
+        (index[cell] = index[cell] || []).push({ x: o.center.x, z: o.center.z, r: o.radius * 0.85 + 0.1, top: o.center.y + half, bottom: o.center.y - half - 0.15, kind: g === 'invertebrate' ? 'life' : 'coral' });
+      });
+      return index;
+    }
+    function lifeAt(x, y, z) {
+      if (!lifeIndex) lifeIndex = buildLifeIndex();
+      var ci = Math.floor((x - GRID_MIN) / 2), cj = Math.floor((z - GRID_MIN) / 2), found = null;
+      for (var dj = -1; dj <= 1; dj++) for (var di = -1; di <= 1; di++) {
+        var list = lifeIndex[(cj + dj) * 64 + ci + di];
+        for (var q = 0; list && q < list.length; q++) {
+          var e = list[q];
+          if (y < e.bottom || Math.hypot(e.x - x, e.z - z) > e.r || (found && y - e.top >= found.gap)) continue;
+          found = touchFound; found.gap = y - e.top; found.kind = e.kind;
+        }
+      }
+      return found;
+    }
+    // Living coral, bleached coral (still alive) and other attached life; the rest is bottom.
+    function patchState(x, z) { var F = cover(), k = F.at(x, z); return k < 0 ? SAND : F.onReef[k] === 2 && (F.state[k] === SAND || F.state[k] === RUBBLE) ? ROCK : F.state[k]; }
+    function touchPoint(i, out) {
+      var n = TOUCH_BODY.length;
+      if (i < n) diver.localToWorld(out.set(TOUCH_BODY[i][0], TOUCH_BODY[i][1], TOUCH_BODY[i][2]));
+      else if ((i - n) & 1) legs[(i - n) >> 1].fin.localToWorld(out.set(-0.5, -0.04, 0));
+      else legs[(i - n) >> 1].knee.localToWorld(out.set(0, -0.06, 0));
+      return out.add(touchShift);
+    }
+    function senseReef(dt) {
+      var s = touch || (touch = freshTouch());
+      if (!(dt > 0) || !diver || !terrain) return;
+      s.time += dt; s.maxDepth = Math.max(s.maxDepth, -diverPos.y);
+      // The rig was posed last frame; carry its points to where the diver is now.
+      touchShift.set(diverPos.x - diver.position.x, diverPos.y - diver.position.y, diverPos.z - diver.position.z);
+      var reefMin = Infinity, kind = null, rx = 0, ry = 0, rz = 0, bottomMin = Infinity, bx = 0, bz = 0, stir = false, count = TOUCH_BODY.length + legs.length * 2;
+      for (var i = 0; i < count; i++) {
+        var p = touchPoint(i, touchV), life = lifeAt(p.x, p.y, p.z);
+        if (life) { if (life.gap < reefMin) { reefMin = life.gap; kind = life.kind; rx = p.x; ry = p.y; rz = p.z; } continue; }
+        var g = p.y - surfaceAt(p.x, p.z), st = patchState(p.x, p.z);
+        if (st === LIVE || st === BLEACHED || st === LIFE) { if (g < reefMin) { reefMin = g; kind = st === LIFE ? 'life' : 'coral'; rx = p.x; ry = p.y; rz = p.z; } continue; }
+        if (g < bottomMin) { bottomMin = g; bx = p.x; bz = p.z; }
+        // A strong fin stroke just above loose sand or rubble lifts it.
+        if (i >= TOUCH_BODY.length && ((i - TOUCH_BODY.length) & 1) && g < STIR_M && swimEffort > 0.5 && (st === SAND || st === RUBBLE)) { stir = true; bx = p.x; bz = p.z; }
+      }
+      var onReef = reefMin < (s.onReef ? TOUCH_FREE : TOUCH_SKIN), onSand = bottomMin < (s.onSand ? TOUCH_FREE : TOUCH_SKIN) || stir;
+      // A swim the student is not steering (Swim to) never counts, and a brush
+      // that continues, or comes back within the rest, is the same contact.
+      if (onReef) {
+        if (!s.onReef && s.time - s.reefAt > TOUCH_REST && !autopilot) { s.reef++; s.kind = kind; puffAt(rx, Math.max(ry, surfaceAt(rx, rz)), rz, false); }
+        s.reefAt = s.time;
+      }
+      if (onSand) {
+        if (!s.onSand && s.time - s.sandAt > TOUCH_REST && !autopilot) { s.sand++; puffAt(bx, surfaceAt(bx, bz) + 0.03, bz, true); }
+        s.sandAt = s.time;
+      }
+      s.onReef = onReef; s.onSand = onSand;
+      s.close = reefMin < (s.close ? TOUCH_CLOSE + 0.1 : TOUCH_CLOSE);
+      var calm = !autopilot && !onReef && s.time - s.reefAt > TOUCH_REST && Math.abs(speed) < 0.4 && Math.abs(vy) < 0.25 && Math.abs(turnRate) < 0.4 && diverPos.y - groundTop(diverPos.x, diverPos.z) < CALM_NEAR;
+      s.calmRun = calm ? s.calmRun + dt : 0; if (calm) s.calm += dt;
+      s.state = onReef || s.time - s.reefAt < 1.5 ? 'touch' : s.close ? 'close' : s.calmRun >= 1.5 ? 'calm' : 'swim';
+      updatePuff(dt);
+    }
+    function buoyancyState() {
+      var s = touch;
+      if (!s) return { reefContacts: 0, sandContacts: 0, calmS: 0, diveS: 0, maxDepthM: 0, state: 'swim', lastReef: null, touching: false };
+      return { reefContacts: s.reef, sandContacts: s.sand, calmS: r1(s.calm), diveS: r1(s.time), maxDepthM: r1(s.maxDepth), state: s.state, lastReef: s.kind, touching: s.onReef };
+    }
+    // Calm time is news every 5 s, so a still hover still refreshes the tool's indicator.
+    function buoyancyKey(b) { return b ? b.reefContacts + '/' + b.sandContacts + b.state + Math.floor(b.calmS / 5) : ''; }
+    // The sediment puff shares the marine snow's program (same material settings and
+    // cache key) with its own, never-wrapping parcel; one puff plays at a time.
+    function buildPuff() {
+      var src = motes.material, m = own(src.clone()), n = reducedMotion ? 8 : high ? 26 : 18;
+      var cell = { center: { value: new T.Vector3(0, -100, 0) }, box: { value: new T.Vector3(400, 400, 400) }, time: { value: 0 }, top: { value: 0 } };
+      m.color.copy(lin(0xd8d0b4)); m.size = 0.36; m.opacity = 0;
+      m.onBeforeCompile = function (shader, r) {
+        src.onBeforeCompile(shader, r);
+        shader.uniforms.reefSnowCenter = cell.center; shader.uniforms.reefSnowBox = cell.box; shader.uniforms.reefSnowTime = cell.time; shader.uniforms.reefSnowTop = cell.top;
+      };
+      m.customProgramCacheKey = src.customProgramCacheKey;
+      var g = own(new T.BufferGeometry());
+      g.setAttribute('position', new T.BufferAttribute(new Float32Array(n * 3), 3).setUsage(T.DynamicDrawUsage)); g.setAttribute('reefSnowDrift', new T.BufferAttribute(new Float32Array(n * 3), 3));
+      var points = new T.Points(g, m); points.frustumCulled = false; points.visible = false; points.renderOrder = 4; points.name = 'reef-explore-touch-puff'; points.userData.decorative = true;
+      scene.add(points);
+      return { points: points, n: n, age: 0, life: 1, sandy: false, x: 0, y: 0, z: 0, cx: 0, cz: 0, sx: 0, sy: 0, sz: 0, serial: 0 };
+    }
+    function puffAt(x, y, z, sandy) {
+      if (!motes || !motes.material) return;
+      var p = puff || (puff = buildPuff());
+      p.serial++; p.age = 0; p.sandy = sandy; p.life = reducedMotion ? 1.8 : sandy ? 3.2 : 2.6; p.x = x; p.y = y; p.z = z;
+      currentAt(x, z, worldTime, touchFlow); p.cx = touchFlow.x; p.cz = touchFlow.z;
+      // The snow shader adds its slow surge; at time 0 it is a fixed offset, taken off here.
+      var phase = -(x * 0.13 + z * 0.09), lift = x * 0.08 - z * 0.11;
+      p.sx = -0.17 * Math.cos(phase); p.sy = 0.055 * Math.sin(lift); p.sz = -0.12 * Math.cos(phase + 0.45);
+      p.points.visible = true; updatePuff(0);
+    }
+    function updatePuff(dt) {
+      var p = puff;
+      if (!p || !p.points.visible) return;
+      p.age += dt;
+      var u = p.age / p.life;
+      if (u >= 1) { p.points.visible = false; p.points.material.opacity = 0; return; }
+      var pos = p.points.geometry.attributes.position, calm = reducedMotion ? 0.3 : 1, spread = (p.sandy ? 1.5 : 1) * calm;
+      var out = 1 - Math.exp(-2.2 * p.age), up = 1 - Math.exp(-1.5 * p.age);
+      for (var i = 0; i < p.n; i++) {
+        var a = hash2(i, p.serial * 7 + 1) * TAU, r = hash2(i, p.serial * 7 + 2), h = hash2(i, p.serial * 7 + 3), d = (0.06 + 0.3 * r) * spread * out;
+        pos.setXYZ(i, p.x - p.sx + Math.cos(a) * d + p.cx * p.age, p.y - p.sy + (0.03 + 0.22 * h) * spread * up - 0.03 * p.age * calm, p.z - p.sz + Math.sin(a) * d + p.cz * p.age);
+      }
+      pos.needsUpdate = true;
+      // Fades in at once, holds, then thins away as it settles. The snow shader thins
+      // each speck to about a fifth (it is made for faint motes), so the peak is above 1.
+      p.points.material.opacity = (p.sandy ? 3.4 : 2.8) * smooth(0, 0.06, u) * (1 - smooth(0.3, 1, u));
     }
     function viewDistance(o) { return clamp(0.9 + o.radius * 2.2, 1.4, 5); }
     function spotFor(ap, out) {
@@ -2925,11 +5211,37 @@
     }
 
     // ---- Camera ---------------------------------------------------------------------------
+    // A flat mask: light bends where the water meets the air behind the glass, so a thing
+    // ahead looks 4/3 as big (its image sits at three quarters of its distance) and the
+    // mask takes in a narrower slice of the water (NOAA Diving Manual 1991, 2.8.1.1). The
+    // unmasked view is 60 degrees tall; through the glass that is 46.8 degrees of water.
+    // A narrow or portrait screen still keeps at least 54 degrees across (up to 82 tall):
+    // there peripheral vision wins over the magnification.
+    var LENS_WATER = 4 / 3;
+    function lensWaterFov(airFov) { return 2 * Math.atan(Math.tan(airFov * Math.PI / 360) / LENS_WATER) * 180 / Math.PI; }
+    function lensMaskFov(aspect) { return clamp(2 * Math.atan(Math.tan(27 * Math.PI / 180) / aspect) * 180 / Math.PI, lensWaterFov(60), 82); }
     function updateLens() {
-      // Preserve peripheral vision on a portrait screen. This changes only on
-      // resize/view selection; breathing never zooms or distorts the reef.
-      camera.fov = view === 'first' ? clamp(2 * Math.atan(Math.tan(27 * Math.PI / 180) / camera.aspect) * 180 / Math.PI, 60, 82) : 60;
+      // Changes only on resize/view selection; breathing never zooms or distorts the reef.
+      camera.fov = view === 'first' ? lensMaskFov(camera.aspect) : 60;
       camera.updateProjectionMatrix();
+    }
+    // The dive starts facing a striking bommie, chosen for the view from behind; through
+    // the mask it is a wall of rock. Until the diver first swims, the eyes lift so the top
+    // of the reef ahead (the highest rock within 9 m of the gaze) sits just above the middle
+    // of the view, with water and reef beyond. Once the diver sets off it eases away.
+    var lensOpen = { on: true, lift: 0 };
+    function lensSkyline(yaw) {
+      var top = -Math.PI / 2, x = diverPos.x, y = diverPos.y + 0.09, z = diverPos.z;
+      for (var d = 1; d <= 9; d += 0.5) top = Math.max(top, Math.atan2(rockSurfaceAt(x + fwdX(yaw) * d, z + fwdZ(yaw) * d) - y, d));
+      return top;
+    }
+    function lensLift(yaw, snap, dt) {
+      if (paused && !snap) return lensOpen.lift;
+      var input = currentInput();
+      if (autopilot || Math.abs(input.forward) > 0.02 || Math.abs(input.rise) > 0.02 || Math.hypot(diverPos.x - terrain.spawn.x, diverPos.z - terrain.spawn.z) > 0.6) lensOpen.on = false;
+      var aim = lensOpen.on ? clamp(lensSkyline(yaw) - Math.atan(Math.tan(camera.fov * Math.PI / 360) * 0.15) + 0.12, 0, 0.45) : 0;
+      lensOpen.lift += (aim - lensOpen.lift) * (snap ? 1 : damp(lensOpen.on ? 3 : 1.2, dt));
+      return lensOpen.lift;
     }
     function updateCamera(dt, snap) {
       if (!paused && !dragging && (Math.abs(speed) > 0.15 || autopilot)) { var rc = damp(0.7, dt); look.yaw -= wrapAngle(look.yaw) * rc; look.pitch -= look.pitch * rc; }
@@ -2962,8 +5274,9 @@
         headW.x += Math.cos(yaw) * eyeMotion.sway + fwdX(yaw) * eyeMotion.surge;
         headW.y += eyeMotion.heave;
         headW.z += Math.sin(yaw) * eyeMotion.sway + fwdZ(yaw) * eyeMotion.surge;
+        var lift = lensLift(yaw, snap, dt);
         yaw += eyeMotion.yaw;
-        var p = clamp(-0.12 + look.pitch + bodyPitch * 0.5 + eyeMotion.pitch, -1.2, 1.2);
+        var p = clamp(-0.12 + lift + look.pitch + bodyPitch * 0.5 + eyeMotion.pitch, -1.2, 1.2);
         camera.position.copy(headW); camPos.copy(headW);
         lookAt.set(headW.x + fwdX(yaw) * Math.cos(p), headW.y + Math.sin(p), headW.z + fwdZ(yaw) * Math.cos(p)); camTarget.copy(lookAt);
         camera.lookAt(lookAt); camera.rotateZ(eyeMotion.roll);
@@ -2973,16 +5286,72 @@
     }
 
     // ---- Culling, organisms, focus ring -----------------------------------------------------
+    // Time slicing. A school Chromebook has a quarter of this laptop's CPU or less, and
+    // most of a frame's script is animals re-posing and re-animating. Near animals and
+    // the focused one do everything every frame; the rest redo the slow parts on a
+    // slice (every 2nd to 8th frame, at a phase set by their serial number), so the work
+    // spreads evenly and the same frames always update the same animals: deterministic
+    // for given frame times. Positions stay exact every frame (each path is a function
+    // of worldTime); what waits its turn is a swimmer's terrain look-ahead and a model's
+    // animation, which then takes the whole time since its last turn. Animals out of
+    // sight wait longest; the light tier slices more than the high one, and a slow
+    // device more again (perfGovern).
+    var perfFrame = 0, perfFwd = null, perfCos = 0, PERF_NEAR = high ? 12 : 8, PERF_SWIM = 10, PERF_MAX = 8;
+    function perfBegin(dt) {
+      if (!paused) perfFrame++;
+      gov.t0 = now();
+      // The frame interval, smoothed: the size budget only trims a frame that is slow.
+      if (!paused && dt > 0) gov.frameMs = gov.frameMs > 0 ? gov.frameMs + (dt * 1000 - gov.frameMs) * 0.1 : dt * 1000;
+      if (!perfFwd) perfFwd = new T.Vector3();
+      camera.getWorldDirection(perfFwd);
+      perfCos = Math.cos(Math.min(Math.PI * 0.95, Math.atan(Math.tan(camera.fov * Math.PI / 360) * Math.hypot(1, camera.aspect)) + 0.25));
+    }
+    // Frames between an organism's turns. The swimming look-ahead (o.perfM) depends only on
+    // where the camera is, so both tiers, and a focused or unfocused animal, swim exactly
+    // alike. The animation (returned) is 1 near or focused, more when far or out of view.
+    function perfRate(o, gap, visible) {
+      var dx = o.center.x - camera.position.x, dy = o.center.y - camera.position.y, dz = o.center.z - camera.position.z, d = gap + o.radius;
+      var seen = gap < 1.5 || dx * perfFwd.x + dy * perfFwd.y + dz * perfFwd.z >= perfCos * d - o.radius;
+      o.perfM = gap < 4 ? 1 : Math.min(PERF_MAX, (!seen ? 6 : gap < PERF_SWIM ? 2 : 3) * gov.slice);
+      // A sessile colony's slow sway reads the same at half rate, even close, on the light tier.
+      if (o.uid === focusedUid || gap < PERF_NEAR) return o.path || high ? 1 : 2;
+      return Math.min(PERF_MAX, (!seen || !visible ? 4 : o.path ? (high ? 1 : 2) : (high ? 2 : 3)) * gov.slice);
+    }
+    // Under the governor's last stage the shadow map is redrawn every 2nd or 3rd frame,
+    // and at once whenever its square moves on with the diver.
+    var perfSunAt = { x: NaN, y: 0, z: 0 };
+    function perfShadowRefresh() {
+      var sm = renderer && renderer.shadowMap, p = sun.target.position;
+      if (!sm || !sm.enabled) return;
+      var moved = p.x !== perfSunAt.x || p.y !== perfSunAt.y || p.z !== perfSunAt.z;
+      perfSunAt.x = p.x; perfSunAt.y = p.y; perfSunAt.z = p.z;
+      if (gov.shadowEvery <= 1) { sm.autoUpdate = true; return; }
+      sm.autoUpdate = false;
+      if (moved || perfFrame % gov.shadowEvery === 0) sm.needsUpdate = true;
+    }
+    function perfDue(o, n) { return n <= 1 || (perfFrame + (o.serial | 0)) % n === 0; }
+    // The time to animate a model by this frame, or -1 while it waits for its slice.
+    // A model coming back into sight moves at once.
+    function perfAnimate(o, dt, n) {
+      var fresh = o.perfLast !== perfFrame - 1;
+      o.perfLast = perfFrame; o.perfAcc = (fresh ? 0 : o.perfAcc) + dt;
+      if (!fresh && !perfDue(o, n)) return -1;
+      var step = o.perfAcc; o.perfAcc = 0;
+      return step;
+    }
     function updateWorld(dt) {
+      perfBegin(dt);
       organisms.forEach(function (o) {
         if (o.path && !paused) poseMobile(o, dt, false);
+        if (o.act && !paused) o.act(dt);
         if (!o.instanced && o.root) {
           // Small animals vanish into the haze sooner than big ones.
-          var visible = camera.position.distanceTo(o.center) - o.radius < drawDistance(o);
+          var gap = camera.position.distanceTo(o.center) - o.radius, visible = gap < drawDistance(o), step = -1;
           o.root.visible = visible;
-          if (visible && !paused) {
+          if (!paused) { var rate = perfRate(o, gap, visible); if (visible) step = perfAnimate(o, dt, rate); }
+          if (step >= 0) {
             if (!o.path) currentAt(o.root.position.x, o.root.position.z, worldTime, o.motion.current);
-            try { o.model.update(dt * (reducedMotion ? 0.45 : 1), worldTime, o.motion); } catch (error) { warn('Reef3DExplore: update failed for ' + o.speciesId); o.model.update = function () {}; }
+            try { o.model.update(step * (reducedMotion ? 0.45 : 1), worldTime, o.motion); } catch (error) { warn('Reef3DExplore: update failed for ' + o.speciesId); o.model.update = function () {}; }
           }
         }
       });
@@ -2990,11 +5359,14 @@
       refreshDecor(false);
       shafts.forEach(function (s) {
         // Wrap around the eye projected back to the surface along the sun.
-        // Every opening remains fixed in the world; even a tilted beam has
-        // faded completely before its forty-metre tile can be recycled.
+        // Every opening remains fixed in the world; a beam moves one forty-metre
+        // tile only when it is 22 m past the eye, long after it has faded.
         var beamAxis = sun.userData.dir;
         var eyeSurfaceX = camera.position.x - camera.position.y * beamAxis.x / beamAxis.y, eyeSurfaceZ = camera.position.z - camera.position.y * beamAxis.z / beamAxis.y;
-        var wx = eyeSurfaceX - 20 + (((s.bx - eyeSurfaceX + 20) % 40) + 40) % 40, wz = eyeSurfaceZ - 20 + (((s.bz - eyeSurfaceZ + 20) % 40) + 40) % 40;
+        if (s.wx == null) { s.wx = eyeSurfaceX - 20 + (((s.bx - eyeSurfaceX + 20) % 40) + 40) % 40; s.wz = eyeSurfaceZ - 20 + (((s.bz - eyeSurfaceZ + 20) % 40) + 40) % 40; }
+        while (s.wx - eyeSurfaceX > 22) s.wx -= 40; while (eyeSurfaceX - s.wx > 22) s.wx += 40;
+        while (s.wz - eyeSurfaceZ > 22) s.wz -= 40; while (eyeSurfaceZ - s.wz > 22) s.wz += 40;
+        var wx = s.wx, wz = s.wz;
         s.mesh.position.x = wx - beamAxis.x * 12; s.mesh.position.z = wz - beamAxis.z * 12;
         s.mesh.material.opacity = s.base * (reducedMotion ? 1 : 0.88 + 0.12 * Math.sin(visualTime * 0.17 + s.phase));
       });
@@ -3004,6 +5376,7 @@
       if (sun) {
         var c = diverPos, dir = sun.userData.dir;
         sun.target.position.set(Math.round(c.x), Math.round(c.y), Math.round(c.z)); sun.position.copy(sun.target.position).addScaledVector(dir, 30); sun.target.updateMatrixWorld();
+        perfShadowRefresh();
       }
       var f = focusedUid ? byUid[focusedUid] : null;
       focusRing.visible = !!f;
@@ -3032,19 +5405,134 @@
       }
       return res;
     }
+    // Where an organism lies from the diver's eyes: bearingDeg from the heading
+    // (-180..180, positive = to the right, as the camera sees it) and riseM, its
+    // height above the eyes. Measured from the head, which leads the body.
+    var cueEye = new T.Vector3();
+    function cueFrom() { if (diver) cueEye.copy(HEAD).applyMatrix4(diver.matrixWorld); else cueEye.copy(diverPos); return cueEye; }
+    function cue(o, eye, out) {
+      var dx = o.center.x - eye.x, dz = o.center.z - eye.z;
+      out.bearingDeg = Math.hypot(dx, dz) < 0.05 ? 0 : Math.round(wrapAngle(bearingTo(dx, dz) - bearing) * 180 / Math.PI) || 0;
+      out.riseM = r1(o.center.y - eye.y) || 0;
+      return out;
+    }
+    // A change of 30 degree sector (rounded the same way both sides, so ahead ends at
+    // 45 and behind starts at 135 on a sector edge), or of a rise of 1.5 m or more
+    // (worded as above or below by the tool), is news.
+    function cueKey(c) { var a = Math.abs(c.bearingDeg); return (c.bearingDeg < 0 ? '-' : '') + Math.round(a / 30) + (c.riseM >= 1.5 ? 'u' : c.riseM <= -1.5 ? 'd' : ''); }
+    // ---- Reef moments ---------------------------------------------------------------
+    // Which living-reef interactions are happening within about 10 m of the diver
+    // now: a client posing at a cleaning station, the manta circling one, a grazer
+    // feeding, a turtle's breath, a crown-of-thorns starfish on its feeding scar,
+    // anemonefish down in their anemone, a plankton cloud sheltering in its coral.
+    // Read from the behaviour state, never changing it, at most four times a second.
+    // snapshot() reports the nearest of each kind, main animal first in uids; the
+    // tool decides what to call them. Made on first use, after the reef is built.
+    var momentKit;
+    function momentCast() {
+      if (momentKit) return momentKit;
+      var k = momentKit = { at: -Infinity, list: [], turtles: [], cots: [], clowns: [], schools: [], hosts: {}, env: { v: 0 } };
+      organisms.forEach(function (o) {
+        var e = o.eco;
+        if (e && e.kind === 'turtle' && e.breath) k.turtles.push(o);
+        else if (e && e.kind === 'clown') k.clowns.push(o);
+        else if (o.scar && o.cotsHost) k.cots.push(o);
+        else if (o.planktivore) k.schools.push(o);
+      });
+      return k;
+    }
+    // The anemone a clownfish pair lives in (the organism under its anchor).
+    function momentHost(k, o) {
+      if (k.hosts[o.uid] !== undefined) return k.hosts[o.uid];
+      var c = o.eco, best = null, bd = 0.8;
+      organisms.forEach(function (a) { if (a.speciesId === 'magnificent_anemone' && a.center) { var d = Math.hypot(a.center.x - c.x, a.center.z - c.z); if (d < bd) { bd = d; best = a; } } });
+      return (k.hosts[o.uid] = best);
+    }
+    // The nearest school of a crowd cloud's species, as a tap on one of its fish picks.
+    function momentSchool(k, id, p) {
+      var best = null, bd = 20;
+      k.schools.forEach(function (o) { if (o.speciesId === id && o.center) { var d = Math.hypot(o.center.x - p.x, o.center.y - p.y, o.center.z - p.z); if (d < bd) { bd = d; best = o; } } });
+      return best;
+    }
+    function momentScan() {
+      var k = momentCast(), t = worldTime, best = {}, MOMENT_M = 10;
+      function offer(kind, o, others, extra) {
+        var d = surfaceDistance(o); if (!(d <= MOMENT_M) || best[kind] && best[kind].d <= d) return;
+        best[kind] = Object.assign({ kind: kind, o: o, d: d, with: (others || []).filter(Boolean) }, extra || null);
+      }
+      if (eco) {
+        eco.stations.forEach(function (st) {
+          // A client holding its pose while the cleaners work over it; the manta once it
+          // has closed in to circle the station.
+          var v = stationVisit(st, t, 0, 0);
+          if (v && v.o.center && posing(v, t) > 0.5) offer('cleaning', v.o, st.cleaners);
+          var m = eco.manta;
+          if (m && m.center && m.eco.station === st && mantaVisitW(m, t) > 0.8) offer('manta_cleaning', m, st.cleaners);
+        });
+        eco.grazers.forEach(function (o) {
+          if (!o.center) return;
+          var e = o.eco, v = e.station ? clientVisit(o, t) : null, w = v ? visitWeight(v, t) : 0;
+          if (feedEnv(e, segAt(e, t)) * (1 - w) > 0.5) offer('grazing', o, null, { group: !!e.school });
+        });
+      }
+      k.turtles.forEach(function (o) {
+        var br = o.eco.breath, b = breathAt(o, br, t, k.env), breathing = k.env.v > 0.5;
+        if (!o.center || b < 0.1) return;
+        var up = breathAt(o, br, t + 0.5, null) >= b;
+        // The climb, the breaths at the top, then the first part of the glide down.
+        if (breathing || up || b > 0.5) offer('turtle_breath', o, null, { phase: breathing ? 'breathing' : up ? 'up' : 'down' });
+      });
+      k.cots.forEach(function (o) { if (o.center) offer('cots_scar', o, [byUid[o.cotsHost]]); });
+      k.clowns.forEach(function (o) {
+        if (!o.center || !(o.eco.hide > 0.4)) return;
+        offer('anemonefish_hide', o, k.clowns.filter(function (p) { return p !== o && p.anchor === o.anchor && p.eco.hide > 0.4; }).concat([momentHost(k, o)]));
+      });
+      k.schools.forEach(function (o) { var f = o.flight; if (o.center && f && f.shelter && f.tick !== null && shelterAt(f, t) > 0.35) offer('cloud_shelter', o); });
+      // The crowd's clouds are scenery: the moment points at the cloud, and Look picks
+      // the nearest school of its species.
+      if (crowdKit && crowdKit.list) crowdKit.list.forEach(function (c) {
+        c.clouds.forEach(function (cl) {
+          if (!(cl.now > 0.35) || cl.ox === undefined) return;
+          var p = { center: new T.Vector3(cl.ox, cl.oy, cl.oz), radius: cl.R, speciesId: c.id, uid: null };
+          offer('cloud_shelter', p, null, { scenery: true });
+          if (best.cloud_shelter && best.cloud_shelter.o === p) best.cloud_shelter.school = momentSchool(k, c.id, p.center);
+        });
+      });
+      return Object.keys(best).map(function (kind) { return best[kind]; });
+    }
+    function momentList(eye) {
+      if (disposed) return [];
+      var k = momentCast(), t = now();
+      if (t - k.at >= 250) { k.at = t; try { k.list = momentScan(); } catch (error) { k.list = []; if (!k.failed) { k.failed = true; warn('Reef3DExplore: reef moments scan failed'); } } }
+      return k.list.map(function (m) {
+        var o = m.o, lead = m.scenery ? m.school : o, actors = (lead ? [lead] : []).concat(m.with);
+        // speciesIds runs alongside uids; speciesId is the main animal's (a crowd cloud's species).
+        var out = cue(o, eye, { kind: m.kind, speciesId: o.speciesId, uids: actors.map(function (a) { return a.uid; }), speciesIds: actors.map(function (a) { return a.speciesId; }),
+          distanceM: r1(surfaceDistance(o)), inView: frustum.intersectsSphere(sphere.set(o.center, Math.max(o.radius || 0, 0.05))) });
+        if (m.phase) out.phase = m.phase;
+        if (m.group) out.group = true;
+        if (m.scenery) out.scenery = true;
+        return out;
+      }).sort(function (a, b) { return a.distanceM - b.distanceM || (a.kind < b.kind ? -1 : 1); });
+    }
+    function momentKey(list) { return (list || []).map(function (m) { return m.kind + ':' + (m.uids[0] || '') + (m.phase || '') + ':' + cueKey(m); }).join(','); }
     function snapshot() {
-      var info = renderer && renderer.info && renderer.info.render, near = nearbyList(), f = focusedUid && byUid[focusedUid];
+      var info = renderer && renderer.info && renderer.info.render, near = loaded ? nearbyList() : [], f = focusedUid && byUid[focusedUid], eye = cueFrom();
       return {
-        ready: !disposed && !contextLost, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion,
+        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn,
         diver: { x: r2(diverPos.x), y: r2(diverPos.y), z: r2(diverPos.z), depthM: r1(-diverPos.y), headingDeg: (Math.round(bearing * 180 / Math.PI) % 360 + 360) % 360 },
-        nearby: near.map(function (n) { return { uid: n.o.uid, speciesId: n.o.speciesId, distanceM: r1(n.d), inView: n.inView }; }),
-        focused: f ? { uid: f.uid, speciesId: f.speciesId, distanceM: r1(surfaceDistance(f)) } : null,
+        // health ('healthy' | 'bleached' | 'dead') is fixed for the dive, so stateKey leaves it out.
+        nearby: near.map(function (n) { return cue(n.o, eye, { uid: n.o.uid, speciesId: n.o.speciesId, distanceM: r1(n.d), inView: n.inView, health: coralState(n.o) }); }),
+        focused: f ? cue(f, eye, { uid: f.uid, speciesId: f.speciesId, distanceM: r1(surfaceDistance(f)), health: coralState(f) }) : null,
+        buoyancy: buoyancyState(),
+        moments: loaded ? momentList(eye) : [],
         frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
       };
     }
     function stateKey(s) {
-      return [s.ready, s.paused, s.view, s.quality, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-'); }).join(','),
-        Math.round(s.diver.x), Math.round(s.diver.z), Math.round(s.diver.depthM * 2), Math.round(s.diver.headingDeg / 15)].join('|');
+      return [s.ready, s.paused, s.view, s.quality, s.light, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
+        momentKey(s.moments),
+        Math.round(s.diver.x), Math.round(s.diver.z), Math.round(s.diver.depthM * 2), Math.round(s.diver.headingDeg / 15), buoyancyKey(s.buoyancy)].join('|');
     }
     function emit(s, t) { pendingNotify = false; lastNotify = t; lastKey = stateKey(s); try { options.onState(s); } catch (error) { reportError(error); } }
     // At most one call per 200 ms; a change inside the window is delivered at its end.
@@ -3063,7 +5551,7 @@
     // ---- Loop ---------------------------------------------------------------------------------
     function hidden() { return !!(doc && doc.hidden); }
     function requestFrame() {
-      if (disposed || contextLost || raf || hidden()) return;
+      if (disposed || contextLost || raf || hidden() || !loaded) return;
       if (typeof global.requestAnimationFrame === 'function') { rafIsTimer = false; raf = global.requestAnimationFrame(tick); }
       else { rafIsTimer = true; raf = setTimer(function () { tick(now()); }, 16); }
     }
@@ -3075,12 +5563,34 @@
     function refresh() { requestFrame(); }
     function govern() {
       var info = renderer && renderer.info && renderer.info.render;
-      if (!info || ++gov.frames < 10) return;
+      if (!info) return;
+      // Script time of this frame (world update and draw, from perfBegin), smoothed; the
+      // first second is skipped, while late uploads and programs still settle.
+      if (gov.t0 !== null) { if (++gov.seen > 60) gov.cpuMs += (Math.max(0, now() - gov.t0) - gov.cpuMs) * 0.1; gov.t0 = null; }
+      if (++gov.frames < 10) return;
       gov.frames = 0;
-      var over = Math.max((info.triangles || 0) / TRI_BUDGET, (info.calls || 0) / CALL_BUDGET), next = gov.scale;
-      if (over > 1) next = Math.max(0.45, gov.scale * (over > 1.3 ? 0.8 : 0.92));
-      else if (over < 0.75) next = Math.min(1, gov.scale + 0.04);
-      if (next !== gov.scale) { gov.scale = next; refreshDecor(true); }
+      perfGovern(Math.max((info.triangles || 0) / TRI_BUDGET, (info.calls || 0) / CALL_BUDGET), gov.cpuMs);
+    }
+    // Two pressures: the frame's size against the budgets (level 0..3) and its script
+    // time (cpu 0..3). Level spends itself in stages: the decor's and animals' reach
+    // first (scale 1 to 0.45), then the crowd's density, then how often the shadows are
+    // redrawn. It trims only a frame that is over budget AND slow (under about 50 fps): a
+    // device that draws the whole reef in time keeps all of it. Script time spends itself
+    // too: first more slicing (no visible change), then the crowd's density, then some
+    // reach (fewer far animals to draw, scale down to 0.6). A short peak never trims: a
+    // mild overrun must last two checks, and what was trimmed comes back once the frame
+    // is well inside the budget or fast again.
+    function perfGovern(over, cpuMs) {
+      var slow = gov.frameMs > 20;
+      gov.up = over > 1 && slow ? gov.up + 1 : 0; gov.down = over < 0.9 || gov.frameMs < 18 ? gov.down + 1 : 0;
+      var level = gov.level + (over > 1.3 && slow ? 0.2 : gov.up >= 2 ? 0.08 : gov.down >= 2 ? -0.1 : 0);
+      var cpu = gov.cpu + (cpuMs > 22 ? 0.25 : cpuMs < 16 ? -0.1 : 0);
+      gov.level = clamp(level, 0, 3); gov.cpu = clamp(cpu, 0, 3);
+      gov.crowd = 1 - 0.5 * Math.max(clamp(gov.level - 1, 0, 1), clamp(gov.cpu - 1, 0, 1));
+      gov.shadowEvery = gov.level > 2.5 ? 3 : gov.level > 2 ? 2 : 1;
+      gov.slice = gov.cpu > 0.5 ? 2 : 1;
+      var scale = r2(Math.min(1 - 0.55 * clamp(gov.level, 0, 1), 1 - 0.4 * clamp(gov.cpu - 2, 0, 1)));
+      if (scale !== gov.scale) { gov.scale = scale; refreshDecor(true); }
     }
     function tick(stamp) {
       raf = 0;
@@ -3097,9 +5607,100 @@
       } catch (error) { stopLoop(); paused = true; reportError(error); }
     }
 
+    // ---- Loading ------------------------------------------------------------------------------
+    // A staged mount (options.staged) returns at once and runs the build queue a
+    // few steps per task, so the page keeps painting. Then every shader program is
+    // created and links in parallel (shaderWarmup; only once the lights and fog
+    // exist, as they are part of each program), uniforms are read, textures
+    // upload, and the first frame is drawn. getState().ready and onProgress(1)
+    // wait for that frame. A plain mount runs the same build and draws at once.
+    function loadStep(weight, run, part) { loadQueue.splice(loadInsert++, 0, { w: weight, run: run, part: part }); }
+    function queueFirstFrame() {
+      loadStep(4, function () { if (!warm) return; warm.collect(); return warm.submit(LOAD_SLICE) ? undefined : MORE; });
+      loadStep(30, function () { return !warm || warm.poll(8) ? undefined : WAIT; }, function () { return warm ? warm.progress() : 1; });
+      loadStep(1, function () { var failed = warm ? warm.failures() : []; if (failed.length) shaderFailed(failed); });
+      loadStep(2, function () { return !warm || warm.prepare(LOAD_SLICE) ? undefined : MORE; });
+      loadStep(4, function () {
+        if (typeof renderer.initTexture !== 'function') return;
+        if (!uploads) uploads = sceneTextures(scene, owned);
+        for (var t0 = now(); uploads.length && now() - t0 < LOAD_SLICE;) renderer.initTexture(uploads.shift());
+        return uploads.length ? MORE : undefined;
+      });
+    }
+    function runStep() {
+      var step = loadQueue[loadAt], size = loadQueue.length, k;
+      loadInsert = loadAt + 1;
+      var result = step.run(), added = loadQueue.length - size;
+      if (added > 0) {
+        // Parts a step queues share its weight, so progress never steps back.
+        var sum = 0;
+        for (k = 1; k <= added; k++) sum += loadQueue[loadAt + k].w;
+        for (k = 1; k <= added; k++) loadQueue[loadAt + k].w = step.w * 0.95 * (sum > 0 ? loadQueue[loadAt + k].w / sum : 1 / added);
+        step.w *= 0.05;
+      }
+      if (result !== MORE && result !== WAIT) loadAt++;
+      return result;
+    }
+    function runQueue() { while (loadAt < loadQueue.length) runStep(); }
+    function loadFraction() {
+      var total = 0, done = 0, step = loadQueue[loadAt];
+      loadQueue.forEach(function (s, i) { total += s.w; if (i < loadAt) done += s.w; });
+      if (step && step.part) done += step.w * clamp(step.part(), 0, 1);
+      return total > 0 ? done / total : 0;
+    }
+    function showProgress(f) {
+      if (!(f > loadShown)) return;
+      loadShown = f;
+      if (typeof options.onProgress === 'function') { try { options.onProgress(f); } catch (error) { reportError(error); } }
+    }
+    function pump() {
+      loadTimer = 0; loadRaf = 0;
+      if (disposed || contextLost) return;
+      var start = now(), result;
+      try {
+        while (loadAt < loadQueue.length) {
+          result = runStep();
+          if (disposed || result === WAIT || now() - start >= LOAD_SLICE) break;
+        }
+        if (!disposed && loadAt >= loadQueue.length) { firstFrame(); return; }
+      } catch (error) { loadFailed(error); return; }
+      if (disposed || contextLost) return;
+      showProgress(Math.min(0.99, loadFraction()));
+      if (disposed) return;
+      // Polling waits for the next frame; building continues as soon as the page has had its turn.
+      if (result === WAIT && typeof global.requestAnimationFrame === 'function') loadRaf = global.requestAnimationFrame(pump);
+      else loadTimer = setTimer(pump, result === WAIT ? 16 : 0);
+    }
+    function cancelLoad() {
+      clearTimer(loadTimer); loadTimer = 0;
+      if (loadRaf && typeof global.cancelAnimationFrame === 'function') global.cancelAnimationFrame(loadRaf);
+      loadRaf = 0; loadQueue.length = 0; loadAt = 0; uploads = null;
+    }
+    function loadFailed(error) {
+      dispose();
+      reportError(new Error('This device could not start the 3D reef dive. ' + (error && error.message ? error.message : 'Please use the 2D survey.')));
+    }
+    function shaderFailed(list) {
+      // three's own check is off while programs link in parallel; report what it would have.
+      var detail = list.map(function (f) { return f.name + ': ' + f.log; }).join('\n');
+      if (global.console && global.console.error) global.console.error('Reef3DExplore: ' + list.length + ' shader program(s) did not link.\n' + detail);
+      reportError(new Error('The 3D reef dive could not build ' + list.length + ' of its shaders. ' + (list[0].log.split('\n')[0] || list[0].name)));
+    }
+    function firstFrame() {
+      // Pose everything as an unpaused mount does, even if pause was pressed while loading.
+      var hold = paused; paused = false;
+      diver.visible = view === 'third'; mask.visible = view === 'first';
+      canvasW = canvasH = 0; // a resize while loading ran before the mask existed; size everything now
+      resize(); updateLens(); animateDiver(0); updateCamera(0, true); updateWater(); refreshDecor(true); updateWorld(0);
+      paused = hold;
+      renderer.render(scene, camera); frames++;
+      loaded = true; showProgress(1);
+      notify(true); requestFrame();
+    }
+
     // ---- Controller ---------------------------------------------------------------------------
     function focus(uid) {
-      if (disposed || uid === null || uid === undefined || !byUid[uid]) return false;
+      if (disposed || !loaded || uid === null || uid === undefined || !byUid[uid]) return false;
       if (focusedUid !== uid) { focusedUid = uid; notify(true); }
       refresh(); return true;
     }
@@ -3110,7 +5711,7 @@
       return list.map(function (n) { return n.o.uid; });
     }
     function cycleFocus(step) {
-      if (disposed) return null;
+      if (disposed || !loaded) return null;
       var t = now();
       if (t - cycle.at > 4000 || !focusedUid || cycle.list.indexOf(focusedUid) < 0) cycle.list = candidates();
       cycle.at = t;
@@ -3119,12 +5720,13 @@
       focus(next); return next;
     }
     function swimTo(uid) {
-      if (disposed) return false;
+      if (disposed || !loaded) return false;
       var o = byUid[uid]; if (!o) return false;
       focus(uid); startAutopilot(o); notify(true); refresh(); return true;
     }
     function setView(v) {
       if (disposed || (v !== 'third' && v !== 'first')) return;
+      if (!loaded) { view = v; notify(true); return; } // the first frame applies it
       view = v; diver.visible = v === 'third'; mask.visible = v === 'first'; look.pitch = 0;
       updateLens(); animateDiver(0); updateCamera(0, true); notify(true); refresh();
     }
@@ -3142,16 +5744,18 @@
       var w = Math.max(1, Math.round(rect.width || 0)), h = Math.max(1, Math.round(rect.height || 0));
       if (w === canvasW && h === canvasH) return;
       canvasW = w; canvasH = h; renderer.setSize(w, h, false); camera.aspect = w / h; updateLens();
+      if (staged && !loaded) clearToWater(T, renderer); // a resize blanks the canvas
       if (mask) mask.material.uniforms.aspect.value = w / h;
       refresh();
     }
     controller = {
       setView: setView, setPaused: setPaused, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
-      focus: focus, clearFocus: clearFocus, swimTo: swimTo, getState: snapshot, resize: resize, dispose: dispose
+      focus: focus, clearFocus: clearFocus, swimTo: swimTo, setLight: setLight, getState: snapshot, resize: resize, dispose: dispose
     };
 
     // ---- Picking ---------------------------------------------------------------------------------
     function pick(clientX, clientY) {
+      if (!loaded) return null;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0, width: canvasW, height: canvasH };
       var w = rect.width || canvasW || 1, h = rect.height || canvasH || 1;
       ndc.set(((clientX - (rect.left || 0)) / w) * 2 - 1, -((clientY - (rect.top || 0)) / h) * 2 + 1);
@@ -3163,6 +5767,7 @@
         if (o && hit.distance < wall) { best = o; return true; }
         return false;
       });
+      if (!best) best = pickAmbient(ray, wall, h);
       if (!best) {
         // Small or quick organisms: an inflated sphere of at least ~16 px.
         var perPx = 2 * Math.tan(camera.fov * Math.PI / 360) / h, bestT = Infinity, bestMiss = Infinity;
@@ -3187,6 +5792,7 @@
       if (held) { keys[held] = 1; if (autopilot) autopilot = null; refresh(); }
       else if (k === ' ' || k === 'spacebar') { if (!event.repeat) setPaused(!paused); }
       else if (k === 'n') { if (!event.repeat) cycleFocus(event.shiftKey ? -1 : 1); }
+      else if (k === 'l') { if (!event.repeat) setLight(!lightOn); }
       else if (k === 'enter') { if (!focusedUid) return; if (!event.repeat) swimTo(focusedUid); }
       else { if (k === 'escape' && autopilot) { autopilot = null; notify(true); } return; }
       if (event.preventDefault) event.preventDefault();
@@ -3196,7 +5802,7 @@
     function pid(event) { return event.pointerId !== undefined && event.pointerId !== null ? event.pointerId : 1; }
     function lookBy(dx, dy) {
       look.yaw += dx * 0.005; look.pitch = clamp(look.pitch + (view === 'third' ? dy : -dy) * 0.004, view === 'third' ? -0.6 : -1.0, view === 'third' ? 0.9 : 1.0);
-      if (view === 'first' || reducedMotion) updateCamera(0, true);
+      if (loaded && (view === 'first' || reducedMotion)) updateCamera(0, true);
       refresh();
     }
     function zoomBy(amount) { if (view !== 'third') return; camDist = clamp(camDist * Math.exp(amount), 2.2, 9); refresh(); }
@@ -3225,7 +5831,7 @@
     listen(canvas, 'wheel', function (event) { if (event.preventDefault) event.preventDefault(); zoomBy(clamp(event.deltaY || 0, -200, 200) * 0.0015); }, { passive: false });
     listen(canvas, 'webglcontextlost', function (event) {
       if (event && event.preventDefault) event.preventDefault();
-      contextLost = true; stopLoop(); pointers.clear(); clearKeys(); autopilot = null;
+      contextLost = true; stopLoop(); cancelLoad(); pointers.clear(); clearKeys(); autopilot = null;
       reportError(new Error('The 3D reef dive lost its graphics context. Reopen the dive or use the 2D survey.'));
       notify(true);
     });
@@ -3236,10 +5842,7 @@
     canvas._reef3dExplore = controller;
     if (canvas.tabIndex < 0) canvas.tabIndex = 0;
     if (canvas.style) canvas.style.touchAction = 'none';
-    diver.visible = view === 'third';
-    resize(); animateDiver(0); updateCamera(0, true); updateWater(); refreshDecor(true); updateWorld(0);
-    renderer.render(scene, camera); frames++;
-    notify(true); requestFrame();
+    if (staged) loadTimer = setTimer(pump, 0); else firstFrame();
     return controller;
   }
 
