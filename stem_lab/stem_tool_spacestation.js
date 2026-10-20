@@ -2082,6 +2082,11 @@
   var _issCommPathKm = (_issGeoR - (ISS_R_EARTH + ISS_REF_ALT)) + (_issGeoR - ISS_R_EARTH);
   var ISS_COMM_DELAY_MS = Math.round(2 * _issCommPathKm / ISS_C_KM_S * 1000 / 10) * 10;
 
+  // Station frame: -z forward, +y zenith (away from Earth), +x starboard.
+  // The truss runs above Destiny on struts: its 0.2 half-depth clears the
+  // lab's 0.58 radius. Wings, radiators, the arm and the heat-flow arrows all
+  // hang from this one height.
+  var ISS_TRUSS_Y = 0.9;
   var MODULES = [
     { id: 'zarya', name: 'Zarya (FGB)', agency: '🇷🇺 built / 🇺🇸 owned', launched: 'Nov 20, 1998 — Proton rocket', pos: [0, 0, 2.2], size: [0.55, 3.4], axis: 'z', color: 0xc9b18a,
       role: 'The very first ISS module. Provided early propulsion, power, and storage; today it is mostly a corridor and storage space.',
@@ -2107,11 +2112,11 @@
       role: 'The forward node: four crew sleep cabins, and the docking ports where SpaceX Crew Dragon and cargo ships arrive today.',
       fact: 'Each sleep cabin is phone-booth sized, with a sleeping bag strapped to the wall — you clip in so you don’t drift into a wall (or a crewmate).',
       eng: 'Its ports carry power, data, and air to visiting vehicles — a standardized interface, like USB for spacecraft.' },
-    { id: 'columbus', name: 'Columbus', agency: '🇪🇺 ESA', launched: 'Feb 7, 2008 — Shuttle Atlantis STS-122', pos: [-1.4, 0, -3.4], size: [0.55, 1.6], axis: 'x', color: 0xe4ddca,
+    { id: 'columbus', name: 'Columbus', agency: '🇪🇺 ESA', launched: 'Feb 7, 2008 — Shuttle Atlantis STS-122', pos: [1.4, 0, -3.4], size: [0.55, 1.6], axis: 'x', color: 0xe4ddca,
       role: 'Europe’s laboratory: fluid physics, materials science, and human biology, plus external platforms exposed to raw space.',
       fact: 'An external Columbus experiment showed some hardy organisms (like tardigrades and certain lichens) can survive direct exposure to space.',
       eng: 'Columbus is run day-to-day from a control center in Germany — the station is really flown by a network of control rooms across the planet.' },
-    { id: 'kibo', name: 'Kibo (JEM)', agency: '🇯🇵 JAXA', launched: '2008-2009 — three Shuttle flights', pos: [1.5, 0, -3.4], size: [0.6, 2.0], axis: 'x', color: 0xe9e9f2,
+    { id: 'kibo', name: 'Kibo (JEM)', agency: '🇯🇵 JAXA', launched: '2008-2009 — three Shuttle flights', pos: [-1.5, 0, -3.4], size: [0.6, 2.0], axis: 'x', color: 0xe9e9f2,
       role: 'The largest station module — "Hope" in Japanese. A pressurized lab plus a back porch (Exposed Facility) and its own small robotic arm.',
       fact: 'Kibo’s airlock and arm launch shoebox-sized CubeSats built by students around the world — the station doubles as a tiny satellite launch pad.',
       eng: 'The Exposed Facility lets experiments face vacuum, radiation, and 16 daily 250°C temperature swings without a spacewalk to install them.' },
@@ -2123,15 +2128,15 @@
       role: 'The seven-windowed dome facing Earth: part robotics workstation (flying Canadarm2 during captures), part the best window seat in existence.',
       fact: 'The central window is 80 cm across — the largest ever flown in space. Astronauts consistently call time here the psychological highlight of a mission.',
       eng: 'Each window has a shutter closed when not in use — armor against micrometeoroid strikes on the glass.' },
-    { id: 'leonardo', name: 'Leonardo (PMM)', agency: '🇮🇹 ASI / 🇺🇸 NASA', launched: 'Feb 24, 2011 — Shuttle Discovery STS-133', pos: [0, -0.85, 0.2], size: [0.5, 1.3], axis: 'y', color: 0xd8d3c2,
+    { id: 'leonardo', name: 'Leonardo (PMM)', agency: '🇮🇹 ASI / 🇺🇸 NASA', launched: 'Feb 24, 2011 — Shuttle Discovery STS-133', pos: [-1.2, 0, -1.05], size: [0.5, 1.3], axis: 'z', color: 0xd8d3c2,
       role: 'The station’s walk-in closet: a former cargo carrier bolted on permanently to add storage space.',
       fact: 'Leonardo flew to orbit and back seven times in the shuttle era as a moving van before being left aboard for good.',
       eng: 'Stowage is a real engineering problem: every item must be logged and strapped down, because a lost tool can drift into an air vent — or stay lost for years.' },
-    { id: 'nauka', name: 'Nauka (MLM) + Prichal', agency: '🇷🇺 Roscosmos', launched: 'Jul 21, 2021 — Proton rocket', pos: [0, 0.85, 4.6], size: [0.55, 1.9], axis: 'y', color: 0xb9c4a7,
+    { id: 'nauka', name: 'Nauka (MLM) + Prichal', agency: '🇷🇺 Roscosmos', launched: 'Jul 21, 2021 — Proton rocket', pos: [0, -0.85, 4.6], size: [0.55, 1.9], axis: 'y', color: 0xb9c4a7,
       role: 'Russia’s multipurpose lab (with the European Robotic Arm) plus the small Prichal docking hub — the newest large additions.',
       fact: 'Nauka waited over a decade on the ground for repairs and upgrades before finally flying — spacecraft schedules are hard.',
       eng: 'Minutes after docking, Nauka’s thrusters fired unexpectedly and slowly spun the whole station about 1.5 turns before controllers recovered — a famous reminder that docking two spacecraft makes one new, harder-to-predict spacecraft.' },
-    { id: 'truss', name: 'Integrated Truss + Solar Arrays', agency: '🇺🇸 NASA / 🇨🇦 CSA arm', launched: 'Assembled 2000-2009 (+ iROSA 2021-2023)', pos: [0, 0.35, -1.6], size: [0.2, 11.0], axis: 'x', color: 0x8a93a6,
+    { id: 'truss', name: 'Integrated Truss + Solar Arrays', agency: '🇺🇸 NASA / 🇨🇦 CSA arm', launched: 'Assembled 2000-2009 (+ iROSA 2021-2023)', pos: [0, ISS_TRUSS_Y, -1.6], size: [0.2, 11.0], axis: 'x', color: 0x8a93a6,
       role: 'The 109-meter backbone: eight paired solar-array wings, the ammonia cooling radiators, and rails that Canadarm2 rides along like a train.',
       fact: 'The arrays cover about 2,500 m² — near half a football field of solar panels — and the newer roll-out iROSA arrays unrolled over the originals like yoga mats.',
       eng: 'Sun-tracking joints slowly rotate the wings all orbit long; giant radiators dump waste heat, because in vacuum you can’t cool anything with a breeze.' }
@@ -2774,14 +2779,41 @@
     return geometry;
   }
 
+  // iROSA blanket: a fine grid of cells darker than the legacy wings'
+  // copper-brown, lighter string gaps, and the pale seams the two roll-out
+  // booms run along. Variation is index-seeded, so every mount matches.
+  var _issRosaCanvas = null;
+  function issRosaCanvas() {
+    if (_issRosaCanvas) return _issRosaCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var w = 128, hgt = 512, canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = hgt; canvas.setAttribute('aria-hidden', 'true');
+    var g = canvas.getContext && canvas.getContext('2d');
+    if (!g) return null;
+    var cols = 8, rows = 44, cw = w / cols, ch = hgt / rows;
+    g.fillStyle = '#3a4258'; g.fillRect(0, 0, w, hgt);
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        var n = Math.sin((r * 31 + c * 7 + 1) * 12.9898) * 43758.5453, shade = 18 + Math.round((n - Math.floor(n)) * 10);
+        g.fillStyle = 'rgb(' + shade + ',' + (shade + 6) + ',' + (shade + 28) + ')';
+        g.fillRect(c * cw + 1, r * ch + 1, cw - 2, ch - 2);
+      }
+    }
+    g.fillStyle = '#58637d';
+    for (var s = 11; s < rows; s += 11) g.fillRect(0, s * ch - 1, w, 2);
+    g.fillStyle = '#cfd6df'; g.fillRect(0, 0, 3, hgt); g.fillRect(w - 3, 0, 3, hgt);
+    _issRosaCanvas = canvas;
+    return canvas;
+  }
+
   // Equipment that gives the open truss its mass, in truss-local units (the
   // backbone runs along x, 0.4 square). Schematic placements on the real
   // segments: the two Solar Alpha Rotary Joints between S3/S4 and P3/P4, the
   // Integrated Equipment Assembly (batteries and power electronics) inboard
   // of each array pair, the four ExPRESS Logistics Carrier pallets on S3/P3,
   // AMS-02 on S3's zenith face, and avionics boxes packed into S0/S1/P1.
-  // Merged into one vertex-coloured geometry: one draw call for ~60 parts.
-  function issTrussHardwareGeometry(THREE) {
+  // Merged into one vertex-coloured geometry: one draw call for ~50 parts.
+  function issTrussHardwareGeometry(THREE, trussY) {
     var positions = [], normals = [], colors = [], parts = 0;
     var tone = {
       white: new THREE.Color(0xdfe4e8), grey: new THREE.Color(0xaab3bc), dark: new THREE.Color(0x5f6a76),
@@ -2822,6 +2854,13 @@
         });
       });
     });
+    // Four struts carry S0 on Destiny's back, from the curved hull (Destiny's
+    // 0.58 radius, at x = 0.3) up to the lattice's lower face, inside its 0.4
+    // square section.
+    var strutBottom = Math.sqrt(0.58 * 0.58 - 0.3 * 0.3) - trussY, strutTop = -0.2;
+    [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sz) {
+      box(.035, strutTop - strutBottom, .035, sx * .3, (strutTop + strutBottom) / 2, sz * .15, tone.metal);
+    }); });
     // AMS-02, the cosmic-ray detector, on S3's zenith face inboard of ELC-2.
     var ams = new THREE.CylinderGeometry(.13, .13, .17, 20, 1);
     add(ams, 2.24, .325, 0, tone.white);
@@ -3362,6 +3401,29 @@
     return built;
   }
 
+  // Where the station is over the Earth on the 3-D map: a 51.6 deg ground
+  // track, advanced by the map's own orbital phase, so each lap sweeps from
+  // 51.6 N to 51.6 S. Earth's own turn under the orbit is left out (the phase
+  // is one orbit, not a clock), so every lap retraces the same track. Phase 35
+  // (the default) is 32 N over Baja, heading north-east; the night pass runs
+  // from Iberia at sunset to 49 S south of Western Australia, under the
+  // southern auroral oval. meshToWorld (row-major 3x3) turns a sphere mesh
+  // (local +y north, +x longitude 0, -z longitude 90 E) so the sub-station
+  // point faces +y and the track heads -z, the way the station flies.
+  var ISS_MAP_TRACK = { inclination: 51.6, ascendingNode: -141.7, phaseOffset: 7.6 };
+  function issMapGroundTrack(phase) {
+    var d = Math.PI / 180, raw = Number(phase), p = isFinite(raw) ? ((raw % 360) + 360) % 360 : 35;
+    var inc = ISS_MAP_TRACK.inclination * d, node = ISS_MAP_TRACK.ascendingNode * d, u = (p + ISS_MAP_TRACK.phaseOffset) * d;
+    var cn = Math.cos(node), sn = Math.sin(node), ci = Math.cos(inc), si = Math.sin(inc), cu = Math.cos(u), su = Math.sin(u);
+    function earthFrame(x, y, z) { return [x * cn - y * sn, x * sn + y * cn, z]; }
+    var r = earthFrame(cu, su * ci, su * si), t = earthFrame(-su, cu * ci, cu * si), n = earthFrame(0, -si, ci);
+    var lon = Math.atan2(r[1], r[0]) / d;
+    return {
+      phase: p, lat: Math.asin(r[2]) / d, lon: lon, ascending: cu > 0, position: r, velocity: t, normal: n,
+      meshToWorld: [-n[0], -n[2], n[1], r[0], r[2], -r[1], -t[0], -t[2], t[1]]
+    };
+  }
+
   // Planet layers keep Phong's lighting; this patch adds what Phong cannot
   // know. 'surface': city lights follow the GROUND's night, not the
   // station's, and sunlit air adds blue path light that thickens toward the
@@ -3372,10 +3434,11 @@
   // instead of reading as a grey day deck. Both warm along the terminator,
   // where sunlight's slant path is longest. directionalLights[0] is the
   // planet scene's one Sun. 'veil' maps the field back to a soft deck, for a
-  // scene whose first light is not the Sun. Unknown chunks leave it as is.
+  // scene whose first light is not the Sun. 'glow' only gates emissive light
+  // to the night side (the aurora). Unknown chunks leave the shader as is.
   function issPatchPlanetLayer(material, kind) {
     if (!material) return material;
-    var cloud = kind !== 'surface', lit = kind !== 'veil';
+    var cloud = kind === 'cloud' || kind === 'veil', lit = kind !== 'veil';
     material.onBeforeCompile = function (shader) {
       var fs = shader && shader.fragmentShader;
       var chunks = ['#include <alphamap_pars_fragment>', '#include <alphamap_fragment>', '#include <emissivemap_fragment>', '#include <lights_fragment_end>', '#include <envmap_fragment>'];
@@ -3403,7 +3466,9 @@
       fs = fs.replace(chunks[2], [chunks[2],
         '#if NUM_DIR_LIGHTS > 0', 'float issSunNL = dot(normal, directionalLights[0].direction);', '#else', 'float issSunNL = 1.0;', '#endif',
         'float issDusk = exp(-(issSunNL / 0.13) * (issSunNL / 0.13));',
-        cloud ? '' : 'totalEmissiveRadiance *= smoothstep(0.06, -0.14, issSunNL);'].join('\n'));
+        // Aurorae are lost against twilight; city lights show from dusk on.
+        kind === 'glow' ? 'totalEmissiveRadiance *= smoothstep(-0.1, -0.32, issSunNL);' : cloud ? '' : 'totalEmissiveRadiance *= smoothstep(0.06, -0.14, issSunNL);'].join('\n'));
+      if (kind === 'glow') { shader.fragmentShader = fs; return; }
       // Low sunlight has crossed the most air and lost its blue: redden the
       // light that arrives, rather than adding orange light to dark ground.
       fs = fs.replace(chunks[3], [chunks[3],
@@ -3420,6 +3485,250 @@
     };
     material.customProgramCacheKey = function () { return 'iss-planet-' + kind; };
     return material;
+  }
+
+  // The ground under the interior Cupola's seven windows: one painted scene
+  // per observation target, in VIEW coordinates so it runs continuously across
+  // the cluster: canvas x = station +x (east on the ground), canvas y = station
+  // +z (south), across the cluster's span. Coastlines come from the same land
+  // mask as the globe. 1,400 km across: roughly what the seven windows take in
+  // from 420 km up. Each feature lies in the window its reticle is seen over
+  // from the room's starting view (the reticles float above the panes, so
+  // they appear over a neighbouring window, not the gap they sit above).
+  // rotate turns a scene (degrees) so north need not be up: which way the
+  // ground runs under the station depends on its track anyway.
+  var ISS_CUPOLA_VIEW_SPAN = 2.1;
+  var ISS_CUPOLA_VIEWS = {
+    // A hurricane, eye at the centre window, over the Bahamas; Cuba,
+    // Hispaniola and Puerto Rico to the south.
+    day: { lat: 23.5, lon: -73, km: 1400, rotate: 0 },
+    // Cairo and the delta's fan of lights in the window behind the reticle,
+    // canvas (0.319, 0.814); the Nile's thread of towns runs south from it
+    // into the centre window at Luxor.
+    night: { lat: 25.48, lon: 31.24, km: 1400, rotate: 150 },
+    // Northern Ontario and James Bay, turned 60 deg so an east-west auroral arc
+    // runs through the two windows either side of its reticle, canvas (0.781, 0.314).
+    aurora: { lat: 50, lon: -80, km: 1400, rotate: -60, arcNorth: 0.336 }
+  };
+  // Towns that light the Nile valley and delta at night [lat, lon, millions].
+  var ISS_NILE_LIGHTS = [
+    [29.07, 31.10, 0.4], [28.11, 30.74, 0.3], [27.18, 31.18, 0.5], [26.56, 31.70, 0.3], [26.16, 32.72, 0.3],
+    [25.69, 32.64, 0.5], [25.29, 32.55, 0.1], [24.98, 32.87, 0.1], [24.09, 32.90, 0.3],
+    [31.20, 29.92, 5.2], [30.79, 31.00, 0.5], [31.04, 31.38, 0.5], [30.59, 31.50, 0.4], [31.42, 31.81, 0.2],
+    [31.26, 32.30, 0.7], [30.60, 32.27, 0.4], [29.97, 32.53, 0.7], [32.08, 34.78, 4.0], [32.79, 34.99, 1.0],
+    [31.95, 35.93, 4.0], [33.89, 35.50, 2.4], [33.51, 36.29, 2.5], [35.19, 33.38, 0.3], [31.50, 34.47, 0.6]
+  ];
+  var _issCupolaViews = {};
+  function issCupolaViewCanvas(target) {
+    var view = ISS_CUPOLA_VIEWS[target];
+    if (!view) return null;
+    if (_issCupolaViews[target]) return _issCupolaViews[target];
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var S = 384, canvas = document.createElement('canvas');
+    canvas.width = canvas.height = S; canvas.setAttribute('aria-hidden', 'true');
+    var g = canvas.getContext && canvas.getContext('2d');
+    if (!g || typeof g.createImageData !== 'function') return null;
+    var img = g.createImageData(S, S), px = img.data;
+    // A stand-in context (jsdom) has no real pixel buffer: keep the flat pane.
+    if (!px || px.length !== S * S * 4) return null;
+    var mask = issLandMask(), rad = Math.PI / 180;
+    var spanLat = view.km / 111.2, spanLon = spanLat / Math.cos(view.lat * rad), kmPerPx = view.km / S;
+    function land(lat, lon) {
+      var fx = (lon + 180) / 360 * ISS_LAND_W - 0.5, fy = (90 - lat) / 180 * ISS_LAND_H - 0.5;
+      var gx = Math.floor(fx), gy = Math.floor(fy), tx = fx - gx, ty = fy - gy;
+      function at(x, y) { return y < 0 || y >= ISS_LAND_H ? 0 : mask[y * ISS_LAND_W + ((x % ISS_LAND_W) + ISS_LAND_W) % ISS_LAND_W]; }
+      return (at(gx, gy) * (1 - tx) + at(gx + 1, gy) * tx) * (1 - ty) + (at(gx, gy + 1) * (1 - tx) + at(gx + 1, gy + 1) * tx) * ty;
+    }
+    // Canvas offset (up positive) = R(rotate) applied to ground (east, north),
+    // both in units of the span.
+    var turn = (view.rotate || 0) * rad, cr = Math.cos(turn), sr = Math.sin(turn);
+    function ground(x, y) { var ox = x / S - 0.5, oy = 0.5 - y / S; return [cr * ox + sr * oy, -sr * ox + cr * oy]; }
+    function toPx(lat, lon) { var e = (lon - view.lon) / spanLon, n = (lat - view.lat) / spanLat; return [(0.5 + cr * e - sr * n) * S, (0.5 - (sr * e + cr * n)) * S]; }
+    var rgb = new Float32Array(S * S * 3);
+    function add(i, r, gg, b, k) { rgb[i * 3] += r * k; rgb[i * 3 + 1] += gg * k; rgb[i * 3 + 2] += b * k; }
+    // Soft round light, radius in pixels, peak in linear units.
+    function stamp(cx, cy, radius, peak, r, gg, b) {
+      for (var y = Math.max(0, Math.floor(cy - radius)); y <= Math.min(S - 1, Math.ceil(cy + radius)); y++) {
+        for (var x = Math.max(0, Math.floor(cx - radius)); x <= Math.min(S - 1, Math.ceil(cx + radius)); x++) {
+          var d = Math.sqrt((x + 0.5 - cx) * (x + 0.5 - cx) + (y + 0.5 - cy) * (y + 0.5 - cy)) / radius;
+          if (d < 1) add(y * S + x, r, gg, b, peak * (1 - d) * (1 - d));
+        }
+      }
+    }
+    for (var y = 0; y < S; y++) {
+      for (var x = 0; x < S; x++) {
+        var en = ground(x + 0.5, y + 0.5), lat = view.lat + en[1] * spanLat, lon = view.lon + en[0] * spanLon, i = y * S + x;
+        // The mask's 55 km cells are 15 pixels here: soften them, then warp
+        // the shoreline slightly so it reads as coast rather than as blocks.
+        var warpA = issFbm(lon * 3.1, lat * 3.1, 0, 3) - 0.5, warpB = issFbm(lon * 3.1 + 17.3, lat * 3.1 - 9.1, 0, 3) - 0.5;
+        var wLat = lat + warpA * 0.5, wLon = lon + warpB * 0.5 / Math.cos(lat * rad);
+        var l = (land(wLat + 0.22, wLon) + land(wLat - 0.22, wLon) + land(wLat, wLon + 0.22) + land(wLat, wLon - 0.22)) / 4;
+        l = Math.max(0, Math.min(1, (l - 0.38) / 0.24)); l = l * l * (3 - 2 * l);
+        var grain = issFbm(lon * 1.4, lat * 1.4, 0, 4);
+        var shore = Math.max(0, 1 - Math.abs(l - 0.5) * 3);
+        if (target === 'day') {
+          // Shelf water lightens toward the coast; land is dry scrub and forest.
+          var near = Math.min(1, (land(lat + 0.4, lon) + land(lat - 0.4, lon) + land(lat, lon + 0.4) + land(lat, lon - 0.4)) * 0.4);
+          var sea = [0.012 + 0.03 * near, 0.06 + 0.12 * near, 0.17 + 0.1 * near], soil = [0.07 + 0.05 * grain, 0.1 + 0.05 * grain, 0.045];
+          for (var c = 0; c < 3; c++) rgb[i * 3 + c] = sea[c] + (soil[c] - sea[c]) * l + 0.05 * shore;
+          // The hurricane: a clear eye, a dense eyewall and spiral rain bands
+          // winding anticlockwise (northern hemisphere) out to ~500 km.
+          var dx = ((x + 0.5) / S - 0.5) * view.km, dy = ((y + 0.5) / S - 0.5) * view.km;
+          var r = Math.sqrt(dx * dx + dy * dy), theta = Math.atan2(-dy, dx);
+          var eye = Math.max(0, Math.min(1, (r - 18) / 14)), wall = Math.exp(-((r - 45) / 22) * ((r - 45) / 22));
+          var arms = Math.max(0, Math.cos(2 * (theta + Math.log(Math.max(r, 20) / 40) * 1.9)));
+          var reach = Math.exp(-r / 260);
+          var cloud = eye * Math.min(1, wall * 1.2 + arms * arms * reach * 1.1 + reach * 0.35);
+          cloud += (1 - reach) * Math.max(0, issFbm(dx / 60, dy / 60, 0, 4) - 0.56) * 1.8;   // scattered cumulus
+          cloud = Math.max(0, Math.min(1, cloud * (0.75 + 0.5 * issFbm(dx / 25, dy / 25, 0, 3))));
+          for (var cc = 0; cc < 3; cc++) rgb[i * 3 + cc] += (0.82 - rgb[i * 3 + cc]) * cloud;
+        } else {
+          // Night: land barely above the sea, the coastline just traceable.
+          var base = target === 'aurora' ? [0.006, 0.009, 0.016] : [0.004, 0.006, 0.012];
+          var dark = 1 + l * (0.6 + 0.6 * grain);
+          rgb[i * 3] = base[0] * dark; rgb[i * 3 + 1] = base[1] * dark; rgb[i * 3 + 2] = base[2] * dark;
+        }
+      }
+    }
+    var cities = ISS_CITY_LIGHTS.concat(target === 'night' ? ISS_NILE_LIGHTS : []);
+    if (target !== 'day') cities.forEach(function (city, ci) {
+      var p = toPx(city[0], city[1]);
+      if (p[0] < -40 || p[0] > S + 40 || p[1] < -40 || p[1] > S + 40) return;
+      var size = Math.log(1 + city[2]), core = (6 + size * 9) / kmPerPx, glow = core * 3.2;
+      stamp(p[0], p[1], glow, 0.05 + size * 0.025, 1, 0.62, 0.25);
+      stamp(p[0], p[1], core, 0.5 + size * 0.25, 1, 0.78, 0.42);
+      // Satellite towns over land around each city.
+      for (var t = 0; t < 6 + Math.round(size * 10); t++) {
+        var a = Math.sin((ci + 1) * 91.7 + t * 12.9898) * 43758.5453; a = a - Math.floor(a);
+        var d = Math.sin((ci + 3) * 17.3 + t * 78.233) * 43758.5453; d = Math.sqrt(d - Math.floor(d)) * glow * 1.8;
+        var tx = p[0] + Math.cos(a * 6.283) * d, ty = p[1] + Math.sin(a * 6.283) * d;
+        var ten = ground(tx, ty), tLat = view.lat + ten[1] * spanLat, tLon = view.lon + ten[0] * spanLon;
+        if (land(tLat, tLon) > 0.5) stamp(tx, ty, Math.max(1.2, core * 0.35), 0.28, 1, 0.72, 0.36);
+      }
+    });
+    if (target === 'night') {
+      // The valley itself: a thread of light between the Nile towns.
+      var valley = [[30.04, 31.24], [29.07, 31.10], [28.11, 30.74], [27.18, 31.18], [26.56, 31.70], [26.16, 32.72], [25.69, 32.64], [25.29, 32.55], [24.98, 32.87], [24.09, 32.90]];
+      for (var s = 0; s < valley.length - 1; s++) {
+        var p0 = toPx(valley[s][0], valley[s][1]), p1 = toPx(valley[s + 1][0], valley[s + 1][1]);
+        for (var k = 0; k <= 30; k++) stamp(p0[0] + (p1[0] - p0[0]) * k / 30, p0[1] + (p1[1] - p0[1]) * k / 30, 1.6, 0.2, 1, 0.7, 0.32);
+      }
+    }
+    if (target === 'aurora') {
+      // From above, an aurora is a thin bright ribbon (the curtain seen nearly
+      // edge-on) with folds and knots, its rays smeared poleward, a fainter
+      // second arc beyond it and a dim red fringe on top. The arc runs
+      // magnetic east-west, here nearly geographic east-west, at view.arcNorth.
+      function arcNorth(e, lift) { return view.arcNorth + lift - 0.16 * e * e + 0.035 * Math.sin(e * 7.3); }
+      for (var ay = 0; ay < S; ay++) {
+        for (var ax = 0; ax < S; ax++) {
+          var gen = ground(ax + 0.5, ay + 0.5), e = gen[0], u = e + 0.5, knots = 0.45 + 1.0 * issFbm(u * 22, 1.7, 0, 3);
+          // off > 0 is poleward (north) of an arc.
+          var off1 = gen[1] - arcNorth(e, (issFbm(u * 14, 3.1, 0, 3) - 0.5) * 0.03), off2 = gen[1] - arcNorth(e, 0.085 + (issFbm(u * 9, 7.7, 0, 2) - 0.5) * 0.05);
+          var rays = 0.35 + 0.9 * issFbm(u * 90, 0.5, 0, 2);
+          function curtain(off, gain) {
+            var ribbon = Math.exp(-(off / 0.006) * (off / 0.006));
+            var smear = off > 0 ? Math.exp(-off / 0.03) * rays * 0.4 : Math.exp(off / 0.008) * 0.3;
+            return (ribbon + smear + 0.18 * Math.exp(-(off / 0.05) * (off / 0.05))) * gain;
+          }
+          var green = curtain(off1, 1) * knots + curtain(off2, 0.4) * (0.5 + 0.6 * issFbm(u * 17, 4.4, 0, 2));
+          var red = Math.exp(-((off1 - 0.06) / 0.035) * ((off1 - 0.06) / 0.035)) * 0.12;
+          add(ay * S + ax, 0.14, 0.95, 0.45, green * 0.6);
+          add(ay * S + ax, 0.5, 0.08, 0.32, red);
+        }
+      }
+    }
+    function srgb(linear) { var c = Math.max(0, Math.min(1, linear)); return Math.round(255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055)); }
+    for (var q = 0; q < S * S; q++) { px[q * 4] = srgb(rgb[q * 3]); px[q * 4 + 1] = srgb(rgb[q * 3 + 1]); px[q * 4 + 2] = srgb(rgb[q * 3 + 2]); px[q * 4 + 3] = 255; }
+    g.putImageData(img, 0, 0);
+    _issCupolaViews[target] = canvas;
+    return canvas;
+  }
+
+  // The Moon's near side, as seen from Earth: highland grey with the maria at
+  // their real selenographic places and sizes (lat, lon, half-extents in
+  // degrees, from each basin's diameter at about 30 km per degree), ragged at
+  // the edges so they merge as the real ones do, and the bright young craters
+  // Tycho and Copernicus. u = longitude, as on Earth.
+  var ISS_MOON_MARIA = [
+    [18, -55, 27, 20], [33, -16, 17, 19], [56, 1, 5, 40], [28, 17.5, 10, 11], [8.5, 31, 11, 13],
+    [17, 59, 7, 8.5], [-7.8, 51.3, 11, 9], [-15, 35, 5.5, 5.5], [-21, -16.6, 10, 11],
+    [-24.4, -38.6, 6, 6], [13.3, 3.6, 4, 4.5], [-10, -23, 5.5, 6], [7.5, -30.9, 7, 8],
+    [2.4, 1.7, 3, 3.5], [10.9, -8.8, 3.5, 4]
+  ];
+  var _issMoonCanvas = null;
+  function issMoonCanvas() {
+    if (_issMoonCanvas) return _issMoonCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var W = 512, H = 256, canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H; canvas.setAttribute('aria-hidden', 'true');
+    var g = canvas.getContext && canvas.getContext('2d');
+    if (!g) return null;
+    var img = g.createImageData(W, H), px = img.data;
+    for (var y = 0; y < H; y++) {
+      var lat = 90 - 180 * (y + 0.5) / H;
+      for (var x = 0; x < W; x++) {
+        var lon = -180 + 360 * (x + 0.5) / W, mare = 0;
+        var ragged = 1 + 0.56 * (issFbm(x / W * 48, lat / 5, 48, 3) - 0.5);
+        for (var i = 0; i < ISS_MOON_MARIA.length; i++) {
+          var m = ISS_MOON_MARIA[i], dl = (lat - m[0]) / m[2], dn = (lon - m[1]) / m[3];
+          var t = Math.max(0, Math.min(1, (1.1 - Math.sqrt(dl * dl + dn * dn) * ragged) / 0.3));
+          mare = Math.max(mare, t * t * (3 - 2 * t));
+        }
+        var tone = 0.68 + 0.14 * issFbm(x / W * 64, lat / 6, 64, 3) - 0.36 * mare * (0.85 + 0.3 * issFbm(x / W * 32, lat / 9, 32, 2));
+        // Rays and a bright floor at Tycho and Copernicus.
+        [[-43.3, -11.2, 1.5], [9.6, -20.1, 1.3]].forEach(function (c) {
+          var d = Math.sqrt((lat - c[0]) * (lat - c[0]) + (lon - c[1]) * (lon - c[1]) * Math.cos(lat * Math.PI / 180));
+          tone += 0.22 * Math.exp(-(d / c[2]) * (d / c[2])) + 0.05 * Math.exp(-d / 14);
+        });
+        var v = Math.round(255 * Math.max(0, Math.min(1, tone))), i4 = (y * W + x) * 4;
+        px[i4] = v; px[i4 + 1] = Math.round(v * 0.985); px[i4 + 2] = Math.round(v * 0.955); px[i4 + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    _issMoonCanvas = canvas;
+    return canvas;
+  }
+
+  // Auroral ovals in GEOGRAPHIC map coordinates, for a thin shell that turns
+  // with the Earth. Each rings a geomagnetic pole (about 80.7 N, 72.7 W, and
+  // its antipode) near 67 deg magnetic latitude, so the oval dips to about
+  // 60 N over Canada and stays near 75 N over Siberia, as the real one does.
+  // Green is oxygen near 100-150 km; the poleward fringe reddens with height.
+  var _issAuroraCanvas = null;
+  function issAuroraCanvas() {
+    if (_issAuroraCanvas) return _issAuroraCanvas;
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    var W = 1024, H = 512, canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H; canvas.setAttribute('aria-hidden', 'true');
+    var g = canvas.getContext && canvas.getContext('2d');
+    if (!g) return null;
+    var img = g.createImageData(W, H), px = img.data, rad = Math.PI / 180;
+    var poleLat = 80.7 * rad, poleLon = -72.7 * rad, gain = 0.55;
+    for (var a = 3; a < px.length; a += 4) px[a] = 255;
+    function srgb(linear) { var c = Math.max(0, Math.min(1, linear)); return Math.round(255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055)); }
+    for (var y = 0; y < H; y++) {
+      var lat = (90 - 180 * (y + 0.5) / H) * rad;
+      if (Math.abs(lat) < 40 * rad) continue;
+      for (var x = 0; x < W; x++) {
+        var lon = (-180 + 360 * (x + 0.5) / W) * rad;
+        var m = Math.abs(Math.asin(Math.max(-1, Math.min(1, Math.sin(lat) * Math.sin(poleLat) + Math.cos(lat) * Math.cos(poleLat) * Math.cos(lon - poleLon))))) / rad;
+        var band = Math.exp(-((m - 67) / 1.7) * ((m - 67) / 1.7)) + 0.22 * Math.exp(-((m - 65.5) / 4) * ((m - 65.5) / 4));
+        if (band < 0.01) continue;
+        // Curtains along the oval, cut by thin rays across it: a ridged field
+        // at half a degree. Both wrap in x, so the seam is clean.
+        var ray = 1 - Math.abs(2 * issFbm(x / W * 720, m * 0.15, 720, 2) - 1);
+        var k = band * (0.22 + 0.6 * issFbm(x / W * 160, m * 0.6, 160, 3) + 0.55 * ray * ray * ray) * gain;
+        // The poleward fringe reddens with height and is far fainter.
+        var red = Math.max(0, Math.min(1, (m - 68.2) / 2.5));
+        k *= 1 - 0.45 * red;
+        var i4 = (y * W + x) * 4;
+        px[i4] = srgb((0.18 + 0.7 * red) * k); px[i4 + 1] = srgb((1 - 0.6 * red) * k); px[i4 + 2] = srgb((0.42 + 0.2 * red) * k);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    _issAuroraCanvas = canvas;
+    return canvas;
   }
 
   // The Milky Way behind the map: a band of faint stars packed toward one
@@ -3691,7 +4000,7 @@
           '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch,.iss-interior-event,.iss-interior-braking,.iss-interior-objective,.iss-interior-next-hatch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}.iss-interior-reticle{--iss-motion-color:CanvasText}.iss-interior-impact-flash{display:none}}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}.iss-orientation-widget{position:absolute;right:10px;bottom:8px;width:88px;height:88px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(2,6,23,.45))}.iss-orientation-widget line{transition:x2 .08s linear,y2 .08s linear}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:10.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-system-steps{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-system-steps button{min-height:31px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer}.iss-system-steps button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(14,165,233,.18);color:#e0f2fe;box-shadow:inset 0 -2px 0 #38bdf8}.iss-system-coupling{margin-top:-4px}.iss-coupling-pipe{stroke-dasharray:6 6;animation:iss-flow 5s linear infinite}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
-          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-hover-name{position:absolute;z-index:3;left:0;top:0;padding:3px 7px;border:1px solid rgba(125,211,252,.45);border-radius:6px;background:rgba(2,6,23,.82);color:#e0f2fe;font:850 9.5px ui-monospace,monospace;letter-spacing:.6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .12s ease}.iss-quiz-hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:10px;padding:12px 14px;border:1px solid rgba(125,211,252,.28);border-radius:14px;background:radial-gradient(circle at 6% 50%,rgba(56,189,248,.22),transparent 38%),linear-gradient(120deg,rgba(2,6,23,.72),rgba(15,23,42,.5))}.iss-quiz-badge{filter:drop-shadow(0 0 8px rgba(56,189,248,.35))}.iss-quiz-kicker{color:#7dd3fc;font:850 9.5px ui-monospace,monospace;letter-spacing:1.3px}.iss-quiz-headline{color:#f1f5f9;font-size:15px;font-weight:800;margin:3px 0}.iss-quiz-meta{color:#94a3b8;font:800 9.5px ui-monospace,monospace;letter-spacing:.8px}.iss-quiz-letter{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border-radius:6px;border:1px solid #475569;background:rgba(2,6,23,.45);color:#bae6fd;font:850 10.5px ui-monospace,monospace;vertical-align:middle}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
+          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-cmg-spin{to{transform:rotate(360deg)}}.iss-cmg-rotor{animation:iss-cmg-spin 1.1s linear infinite}.iss-cmg-rotor[data-spin="reverse"]{animation-direction:reverse}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-hover-name{position:absolute;z-index:3;left:0;top:0;padding:3px 7px;border:1px solid rgba(125,211,252,.45);border-radius:6px;background:rgba(2,6,23,.82);color:#e0f2fe;font:850 9.5px ui-monospace,monospace;letter-spacing:.6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .12s ease}.iss-quiz-hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:10px;padding:12px 14px;border:1px solid rgba(125,211,252,.28);border-radius:14px;background:radial-gradient(circle at 6% 50%,rgba(56,189,248,.22),transparent 38%),linear-gradient(120deg,rgba(2,6,23,.72),rgba(15,23,42,.5))}.iss-quiz-badge{filter:drop-shadow(0 0 8px rgba(56,189,248,.35))}.iss-quiz-kicker{color:#7dd3fc;font:850 9.5px ui-monospace,monospace;letter-spacing:1.3px}.iss-quiz-headline{color:#f1f5f9;font-size:15px;font-weight:800;margin:3px 0}.iss-quiz-meta{color:#94a3b8;font:800 9.5px ui-monospace,monospace;letter-spacing:.8px}.iss-quiz-letter{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border-radius:6px;border:1px solid #475569;background:rgba(2,6,23,.45);color:#bae6fd;font:850 10.5px ui-monospace,monospace;vertical-align:middle}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
           '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}.iss-location-strip{flex-wrap:wrap;overflow-x:visible}.iss-location-link{display:none}.iss-assembly-stepper{grid-template-columns:1fr 1fr}.iss-assembly-stepper span{grid-column:1/-1;grid-row:1;text-align:center}.iss-assembly-stepper button{grid-row:2}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:visible;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-orbit-curve{padding-top:8px}.iss-orbit-curve svg{height:auto;max-width:720px;margin:0 auto}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-assembly-note{margin:0;padding:10px 14px 2px;color:#cbd5e1;font-size:11.5px;line-height:1.5}.iss-assembly-growth{border-top:1px solid rgba(125,211,252,.18);background:#07101d}.iss-assembly-growth svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:10px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
           '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}.iss-ops-health{display:none}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection,.iss-stage-hud .iss-hud-chip:nth-child(4){display:none}.iss-orientation-widget{width:70px;height:70px}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
           '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
@@ -3794,12 +4103,9 @@
           // carries the planet's hue and scaling it would shift the colour.
           var earthExposureMat = earthSkin ? earth.material : null;
           earth.position.set(0, -34.5, 0); earth.receiveShadow = false;
-          // Tilt the globe so the station flies over about 33 deg N and the
-          // overview looks south across subtropical coasts. The old +0.68 put
-          // 51 deg N underneath and turned the camera's side toward the pole,
-          // so the default view was sea ice, Greenland and storm-track cloud.
-          earth.rotation.x = -1;
-          earth.rotation.y = 0;
+          // Turned every frame by orientEarth() along issMapGroundTrack. (A fixed
+          // +0.68 tilt once put 51 N underneath with the camera's side facing
+          // the pole: the default view was sea ice and storm-track cloud.)
           scene.add(earth);
           var cloudMatOpts = { color: 0xf4f8ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
           if (earthSkin) {
@@ -3815,8 +4121,6 @@
           // the limb. Weather lives around 10 km.
           var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(earthSkin ? 30.06 : 30.18, 64, 40), issPatchPlanetLayer(new THREE.MeshPhongMaterial(cloudMatOpts), 'cloud'));
           cloudShell.position.copy(earth.position);
-          cloudShell.rotation.x = earth.rotation.x;
-          cloudShell.rotation.y = earth.rotation.y;
           scene.add(cloudShell);
           // Two additive back-side shells give the limb the "thin blue line":
           // a wide outer scatter halo plus a tight, brighter airglow band right
@@ -3876,12 +4180,17 @@
           // uniform white field reads as digital dust; real starlight varies in
           // both brightness and colour temperature, and the few bright ones are
           // what give the sky depth behind the station.
+          // The station flies Earth-facing, so in its own frame the whole sky
+          // wheels round once per orbit: the Sun's modeled direction already
+          // does, and the stars, Milky Way and Moon now turn with it (orientEarth).
+          var skyGroup = new THREE.Group(); skyGroup.name = 'iss-inertial-sky'; scene.add(skyGroup);
           function addStarTier(count, pointSize, opacity, warmth) {
             var starGeo = new THREE.BufferGeometry();
             var starPos = new Float32Array(count * 3);
             var starCol = new Float32Array(count * 3);
             for (var si = 0; si < count; si++) {
-              var sv = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.2), (Math.random() - 0.5)).normalize().multiplyScalar(90);
+              // Whole sphere: the sky turns, so no half can be the hidden one.
+              var sv = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5)).normalize().multiplyScalar(90);
               starPos[si * 3] = sv.x; starPos[si * 3 + 1] = sv.y; starPos[si * 3 + 2] = sv.z;
               // temp < 0 leans blue-white (hot stars), > 0 leans amber (cool).
               var temp = (Math.random() - 0.5) * 2 * warmth;
@@ -3892,14 +4201,14 @@
             }
             starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
             starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
-            scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: pointSize, vertexColors: true, transparent: true, opacity: opacity, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending })));
+            skyGroup.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: pointSize, vertexColors: true, transparent: true, opacity: opacity, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending })));
           }
           addStarTier(620, 0.28, 0.78, 0.5);
           addStarTier(58, 0.62, 0.95, 0.8);
           var milkyWaySkin = null;
           try { milkyWaySkin = issMilkyWayCanvas(); } catch (e) { milkyWaySkin = null; }
           var milkyWay = issMilkyWay(THREE, milkyWaySkin ? issTexture(milkyWaySkin, true) : null);
-          scene.add(milkyWay);
+          skyGroup.add(milkyWay);
 
           // The Sun itself, as an additive billboard past the star sphere. It
           // anchors the light: when the day/night sweep carries it behind the
@@ -3974,7 +4283,7 @@
             station.add(mesh);
             clickable.push(mesh);
             if (m.id === 'truss') {
-              var trussHardware = new THREE.Mesh(issTrussHardwareGeometry(THREE), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: .35, transparent: true, emissive: 0x000000 }));
+              var trussHardware = new THREE.Mesh(issTrussHardwareGeometry(THREE, ISS_TRUSS_Y), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, metalness: .35, transparent: true, emissive: 0x000000 }));
               trussHardware.name = 'iss-truss-hardware'; trussHardware.position.copy(mesh.position);
               trussHardware.castShadow = true; trussHardware.receiveShadow = true; trussHardware._issParentId = m.id;
               // Solid equipment is easier to click than thin lattice members.
@@ -4062,10 +4371,23 @@
           if (arrayFrontMap) { arrayFrontMap.name = 'iss-solar-cell-atlas'; arrayFrontMap.wrapS = THREE.ClampToEdgeWrapping; }
           if (arrayBackMap) { arrayBackMap.name = 'iss-solar-insulation-atlas'; arrayBackMap.wrapS = THREE.ClampToEdgeWrapping; }
           var wings = [];
+          // iROSA roll-out arrays, 2021-2023: 63 x 20 ft against the legacy
+          // wing's 112 x 39 ft, canted 10 deg above its cells from a bracket at
+          // the mast end, so they shade a little over half its length. They
+          // ride the wing, so they turn and feather with it. Real channels:
+          // 2B and 4B on P6, 4A on P4, 1A and 3A on S4, 1B on S6. Which of
+          // P4's and S6's two wings carries one here is schematic.
+          var ISS_IROSA_WINGS = [[1, -1], [1], [1, -1], [1]];   // P6, P4, S4, S6
+          var rosaSkin = issRosaCanvas(), rosaMap = rosaSkin ? issTexture(rosaSkin, true) : null;
+          if (rosaMap) { rosaMap.name = 'iss-irosa-cells'; rosaMap.wrapS = THREE.ClampToEdgeWrapping; }
+          var rosaFront = new THREE.MeshStandardMaterial({ color: rosaMap ? 0xffffff : 0x1d2640, map: rosaMap, roughness: .3, metalness: .4 });
+          var rosaBack = new THREE.MeshStandardMaterial({ color: 0x8f969e, roughness: .62, metalness: .2 });
+          var rosaEdge = new THREE.MeshStandardMaterial({ color: 0xc3cad3, roughness: .45, metalness: .55 });
+          var ROSA_CANT = 10 * Math.PI / 180;
           [-5.0, -3.6, 3.6, 5.0].forEach(function (tx, wi) {
             var wingGroup = new THREE.Group();
             wingGroup.name = 'iss-array-wing-' + wi;
-            wingGroup.position.set(tx, 0.35, -1.6);
+            wingGroup.position.set(tx, ISS_TRUSS_Y, -1.6);
             var bearing = new THREE.Mesh(new THREE.TorusGeometry(.19, .035, 8, 24), new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: .75, roughness: .3 }));
             bearing.rotation.y = Math.PI / 2; bearing.position.copy(wingGroup.position); station.add(bearing);
             var hinge = new THREE.Mesh(new THREE.CylinderGeometry(.105, .105, .24, 12), new THREE.MeshStandardMaterial({ color: 0x416782, metalness: .65, roughness: .4 }));
@@ -4083,6 +4405,21 @@
               boom.position.set(0, 0, side * 1.9);
               wingGroup.add(boom);
             });
+            ISS_IROSA_WINGS[wi].forEach(function (side) {
+              var rosa = new THREE.Group();
+              rosa.name = 'iss-irosa-' + wi + '-' + side;
+              rosa.position.set(0, .075, side * .34); rosa.rotation.x = -side * ROSA_CANT;
+              var cells = new THREE.Mesh(new THREE.BoxGeometry(.46, .01, 1.91), [rosaEdge, rosaEdge, rosaFront, rosaBack, rosaEdge, rosaEdge]);
+              cells.name = 'iss-irosa-blanket'; cells.position.set(0, 0, side * .955); cells.castShadow = true; cells.receiveShadow = true;
+              rosa.add(cells);
+              [-.235, .235].forEach(function (x) {
+                var spar = new THREE.Mesh(new THREE.CylinderGeometry(.011, .011, 1.95, 6), rosaEdge);
+                spar.rotation.x = Math.PI / 2; spar.position.set(x, .008, side * .955); rosa.add(spar);
+              });
+              var bracket = new THREE.Mesh(new THREE.BoxGeometry(.5, .075, .06), rosaEdge);
+              bracket.position.set(0, -.0375, 0); bracket.castShadow = true; rosa.add(bracket);
+              wingGroup.add(rosa);
+            });
             station.add(wingGroup);
             wings.push(wingGroup);
           });
@@ -4094,7 +4431,7 @@
           [-2.4, 2.4].forEach(function (tx, index) {
             var suffix = index === 0 ? 'a' : 'b', id = 'radiator-' + suffix;
             var hardware = new THREE.Group(); hardware.name = 'iss-' + id;
-            hardware.position.set(tx, -.55, -1.6); radiatorTargets[id] = hardware; station.add(hardware);
+            hardware.position.set(tx, ISS_TRUSS_Y - .9, -1.6); radiatorTargets[id] = hardware; station.add(hardware);
             // Materials are shared within one radiator only: cutaway may dim
             // the other radiator while the inspected one remains legible.
             var frameMat = new THREE.MeshStandardMaterial({ color: 0x8799a5, roughness: .48, metalness: .58, transparent: true });
@@ -4130,7 +4467,7 @@
           // that axis from the joint it grows out of.
           var armMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c0, roughness: 0.5 });
           var armJointMat = new THREE.MeshStandardMaterial({ color: 0xb9b3a2, roughness: 0.35, metalness: 0.6 });
-          var armBase = new THREE.Vector3(1.251, 0.315, -1.6);   // latched to the truss
+          var armBase = new THREE.Vector3(1.251, ISS_TRUSS_Y - .035, -1.6);   // latched to the truss
           var armAngle1 = 0.7, armLen1 = 1.4, armAngle2 = -1.2, armLen2 = 1.2;
           var armAxis1 = new THREE.Vector3(-Math.sin(armAngle1), Math.cos(armAngle1), 0);
           var armAxis2 = new THREE.Vector3(-Math.sin(armAngle2), Math.cos(armAngle2), 0);
@@ -4656,7 +4993,8 @@
           // ── Visiting vehicles ────────────────────────────────────────────
           // The real station is almost never alone: a crew or cargo Dragon sits
           // on Harmony's forward port and a Progress freighter on Zvezda's aft
-          // port for most of any given month, and the aft freighter is what
+          // port for most of any given month (a Cygnus often hangs under Unity
+          // too), and the aft freighter is what
           // performs the reboosts the Systems tab talks about. They are
           // attached as details of the module they are docked to, so the
           // cutaway control dims them with their host.
@@ -4700,6 +5038,30 @@
           var progressBell = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 0.14, 10), new THREE.MeshStandardMaterial({ color: 0x3f4a5a, roughness: 0.55, metalness: 0.5, transparent: true }));
           progressBell.rotation.x = Math.PI / 2; progressBell.position.set(0, 0, 7.49);
           addVisitor(progressBell, 'zvezda');
+          // Cygnus: berthed, not docked. Canadarm2 catches it and bolts it to
+          // Unity's Earth-facing port, free since Leonardo moved in 2015. A
+          // pressurized cargo module (3.07 m across) over a service module
+          // carrying two round UltraFlex arrays that fold open like fans.
+          var cygnusTop = -0.6, cygnusCbm = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.36, 0.08, 18), trunkMat);
+          cygnusCbm.position.set(0, cygnusTop - 0.04, 0.2); addVisitor(cygnusCbm, 'unity');
+          var cygnusCargo = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5, 20), hullMat);
+          cygnusCargo.position.set(0, cygnusTop - 0.08 - 0.75, 0.2); addVisitor(cygnusCargo, 'unity');
+          var cygnusBus = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.42, 8), new THREE.MeshStandardMaterial({ color: 0xc8b37a, roughness: 0.45, metalness: 0.5, transparent: true }));
+          cygnusBus.position.set(0, cygnusTop - 0.08 - 1.5 - 0.21, 0.2); addVisitor(cygnusBus, 'unity');
+          var cygnusArrayY = cygnusTop - 0.08 - 1.5 - 0.21;
+          [-1, 1].forEach(function (side) {
+            var boomLen = 0.18, fan = new THREE.Mesh(new THREE.CircleGeometry(0.5, 10), arrayMat);
+            fan.name = 'iss-cygnus-ultraflex'; fan.position.set(side * (0.38 + boomLen + 0.5), cygnusArrayY, 0.2);
+            addVisitor(fan, 'unity');
+            var boom = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, boomLen + 0.06, 6), trunkMat);
+            boom.rotation.z = Math.PI / 2; boom.position.set(side * (0.38 + boomLen / 2), cygnusArrayY, 0.2); addVisitor(boom, 'unity');
+            // The gores' ribs, so the disc reads as an UltraFlex fan.
+            for (var rib = 0; rib < 10; rib++) {
+              var a = rib * Math.PI / 5, spoke = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.012, 0.012), trunkMat);
+              spoke.position.set(fan.position.x + Math.cos(a) * 0.25, cygnusArrayY + Math.sin(a) * 0.25, 0.2 + side * 0.004);
+              spoke.rotation.z = a; addVisitor(spoke, 'unity');
+            }
+          });
 
           // Capture only hardware, before selection and experiment overlays exist.
           // Wing envelopes contain their complete two-axis sweep, not just this pose.
@@ -4741,11 +5103,11 @@
           var mapHeatViews = [], mapHeatCold = new THREE.Color(0x60a5fa), mapHeatWarm = new THREE.Color(0xfbbf24), mapHeatHot = new THREE.Color(0xf87171), mapHeatTint = new THREE.Color();
           ['a', 'b'].forEach(function (side) {
             var sign = side === 'a' ? -1 : 1;
-            var transfer = new THREE.ArrowHelper(new THREE.Vector3(sign, 0, 0), new THREE.Vector3(sign * .55, .62, -1.6), 1.85, 0xfbbf24, .18, .10);
+            var transfer = new THREE.ArrowHelper(new THREE.Vector3(sign, 0, 0), new THREE.Vector3(sign * .55, ISS_TRUSS_Y + .27, -1.6), 1.85, 0xfbbf24, .18, .10);
             transfer.name = 'iss-map-heat-transfer-' + side;
-            var feed = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(sign * 2.4, .62, -1.6), 1.17, 0xfbbf24, .18, .10);
+            var feed = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(sign * 2.4, ISS_TRUSS_Y + .27, -1.6), 1.17, 0xfbbf24, .18, .10);
             feed.name = 'iss-map-heat-feed-' + side;
-            var emission = new THREE.ArrowHelper(new THREE.Vector3(sign, 0, 0), new THREE.Vector3(sign * 2.51, -.55, -1.6), 1.15, 0xf0abfc, .22, .13);
+            var emission = new THREE.ArrowHelper(new THREE.Vector3(sign, 0, 0), new THREE.Vector3(sign * 2.51, ISS_TRUSS_Y - .9, -1.6), 1.15, 0xf0abfc, .22, .13);
             emission.name = 'iss-map-heat-emission-' + side;
             [transfer, feed, emission].forEach(function (arrow) {
               arrow.traverse(function (part) { part.frustumCulled = false; if (part.material) { part.material.transparent = true; part.material.opacity = 1; part.material.depthTest = false; part.material.depthWrite = false; part.material.toneMapped = false; } part.renderOrder = 31; });
@@ -4767,9 +5129,9 @@
                 if (mapThermalEnabled) view.body.material.color.copy(mapHeatTint); else view.body.material.color.setHex(0xffffff);
                 var outward = r.transferKW >= 0, sign = view.sign;
                 view.transfer.visible = view.feed.visible = Math.abs(r.transferKW) > 1e-6;
-                view.transfer.position.set(sign * (outward ? .55 : 2.4), .62, -1.6);
+                view.transfer.position.set(sign * (outward ? .55 : 2.4), ISS_TRUSS_Y + .27, -1.6);
                 view.transfer.setDirection(new THREE.Vector3(sign * (outward ? 1 : -1), 0, 0));
-                view.feed.position.set(sign * 2.4, outward ? .62 : -.55, -1.6);
+                view.feed.position.set(sign * 2.4, outward ? ISS_TRUSS_Y + .27 : ISS_TRUSS_Y - .9, -1.6);
                 view.feed.setDirection(new THREE.Vector3(0, outward ? -1 : 1, 0));
                 view.transfer.setColor(outward ? 0xfbbf24 : 0x7dd3fc); view.feed.setColor(outward ? 0xfbbf24 : 0x7dd3fc);
                 view.transfer.userData.heatKW = view.feed.userData.heatKW = r.transferKW;
@@ -5119,6 +5481,52 @@
           earthSun.name = 'iss-planet-sun';
           var planetFill = new THREE.AmbientLight(0x7288aa, 0.16);
           planetScene.add(earthSun, planetFill);
+          // Lit only where the ground below is in night, by the same Sun test
+          // the city lights use; ~95 km up, where the green emission starts.
+          var aurora = null, auroraSkin = null;
+          try { auroraSkin = issAuroraCanvas(); } catch (e) { auroraSkin = null; }
+          if (auroraSkin) {
+            aurora = new THREE.Mesh(new THREE.SphereGeometry(30.45, 96, 48), issPatchPlanetLayer(new THREE.MeshPhongMaterial({
+              color: 0x000000, specular: 0x000000, shininess: 1, emissive: 0xffffff, emissiveMap: issTexture(auroraSkin, true), emissiveIntensity: 1.2,
+              transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+            }), 'glow'));
+            aurora.name = 'iss-aurora'; aurora.position.copy(earth.position);
+            planetScene.add(aurora);
+          }
+          // The Moon at its true apparent size from the station (0.52 deg), in
+          // the planet scene so the Sun that lights Earth's far day side still
+          // lights it while the station is in shadow. Its inertial direction
+          // puts it in the open sky above the limb in the default view, about
+          // 120 deg from the Sun: a waxing gibbous Moon, near side toward Earth.
+          var MOON_DISTANCE = 85, MOON_RADIUS = MOON_DISTANCE * Math.tan(0.26 * Math.PI / 180);
+          var moonGroup = new THREE.Group(); moonGroup.name = 'iss-moon-orbit';
+          var moonSkin = null;
+          try { moonSkin = issMoonCanvas(); } catch (e) { moonSkin = null; }
+          var moon = new THREE.Mesh(new THREE.SphereGeometry(MOON_RADIUS, 48, 24), new THREE.MeshPhongMaterial({
+            color: moonSkin ? 0xffffff : 0xb8b5ad, map: moonSkin ? issTexture(moonSkin, true) : null, specular: 0x000000, shininess: 2
+          }));
+          moon.name = 'iss-moon';
+          var moonDirection = new THREE.Vector3(-0.9684, -0.1820, -0.1704).normalize();
+          moon.position.copy(moonDirection).multiplyScalar(MOON_DISTANCE);
+          // Sphere +x is longitude 0, the centre of the near side: face it home,
+          // with lunar north kept as close to the sky's +y as that allows.
+          var moonFace = moonDirection.clone().negate(), moonNorth = new THREE.Vector3(0, 1, 0).addScaledVector(moonFace, -moonFace.y).normalize();
+          moon.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(moonFace, moonNorth, new THREE.Vector3().crossVectors(moonFace, moonNorth)));
+          moonGroup.add(moon); planetScene.add(moonGroup);
+          var _trackBasis = new THREE.Matrix4(), _trackQ = new THREE.Quaternion(), _driftQ = new THREE.Quaternion(), _polarAxis = new THREE.Vector3(0, 1, 0);
+          function orientEarth(phase) {
+            var track = issMapGroundTrack(phase), m = track.meshToWorld;
+            _trackBasis.set(m[0], m[1], m[2], 0, m[3], m[4], m[5], 0, m[6], m[7], m[8], 0, 0, 0, 0, 1);
+            _trackQ.setFromRotationMatrix(_trackBasis);
+            earth.quaternion.copy(_trackQ);
+            if (aurora) aurora.quaternion.copy(_trackQ);
+            // The cloud deck drifts slowly against the ground, as weather does.
+            cloudShell.quaternion.copy(_trackQ).multiply(_driftQ.setFromAxisAngle(_polarAxis, track.phase * Math.PI / 180 * 0.015));
+            // Same rotation the Sun's direction makes in issMapLighting.
+            skyGroup.rotation.x = moonGroup.rotation.x = track.phase * Math.PI / 180;
+            return track;
+          }
+          orientEarth(issMapLighting({}).phase);
           renderer.autoClear = false;
           function renderMapScene() {
             renderer.setRenderTarget(null); renderer.autoClear = false;
@@ -6242,8 +6650,7 @@
             }
             // The inspection view stays still; only explicit playback advances the orbit.
             // Earth texture motion is schematic, driven by simulation time rather than frame count.
-            earth.rotation.y = lighting.phase * Math.PI / 180;
-            cloudShell.rotation.y = earth.rotation.y * 1.015;
+            orientEarth(lighting.phase);
             updateLighting(); updateDirectionGuides(); updateJointHandles(); updateMotionProbeHandle(); updateArmHandle(); syncCameraHUD();
             if (sunGlow) {
               // Parked far out along the light's own direction so the Earth's
@@ -7547,51 +7954,46 @@
             cupolaShutters.add(shutter);
           });
           cupolaShutters.visible = false;
-          // ★★THE SEVEN WINDOWS SHOWED NOTHING. Each was a bare torus FRAME with
-          // no pane, so with the shutters open (the default) you looked straight
-          // through to the scene background and every window read as a black
-          // hole — in the one module whose entire purpose is the view of Earth,
-          // and whose 2-D counterpart in this same tool was rebuilt at R22 for
-          // exactly this. The scene's Earth sphere sits at y -11.0 r 6.2, i.e.
-          // its top (-4.8) is BELOW the room shell's lower opening (-4.45) and
-          // it never reaches these pixels — verified by screenshot with the
-          // Earth's emissive boosted to 3.0 and a magenta fallback: still black.
-          // So the pane carries the view, inside the room volume where it is
-          // certainly visible.
-          // ★One shared texture with per-window UVs, not one picture per window:
-          // seven panes a metre apart look at the SAME Earth, so the coastlines
-          // must run CONTINUOUSLY across the cluster (R22's finding, in 3-D).
-          // ★★THE SEVEN WINDOWS SHOWED NOTHING. Each was a bare torus FRAME with
-          // no pane, so with the shutters open (the default) you looked straight
-          // through to the scene background and every window read as a BLACK HOLE
-          // — in the one module whose entire purpose is the view of Earth, and
-          // whose 2-D counterpart was rebuilt at R22 for exactly this. Proven by a
-          // shutters-open vs shutters-closed shot: closed draws slate discs, open
-          // drew background. The scene HAS an Earth (y -11.0, r 6.2) but its top
-          // (-4.8) sits below this room shell's opening (-4.45) and it never
-          // reaches these pixels — confirmed by screenshot with that Earth's
-          // emissive boosted to 3.0 and a magenta fallback: still black. So the
-          // pane carries the view, inside the room volume where it is visible.
-          // ★★DELIBERATELY A FLAT OCEAN BLUE, NOT THE REAL EARTH MAP. Sharing
-          // `earth.material.map` onto these panes (with per-window UVs, so the
-          // coastlines ran continuously across the cluster) LOOKED far better and
-          // pushed the interior tab's axe test from ~3 s to over its 120 s cap,
-          // reddening 9 tests. Bisected: the meshes alone are free, the shared
-          // texture is what costs — the interior render loop keeps running during
-          // axe's async pass, so an extra textured material is paid every frame
-          // for the whole analysis. Verified 76/76 in this form. A small
-          // purpose-built pane texture would be the way back to coastlines.
-          // ★Deeper than it looks: the renderer encodes output to sRGB, so an
-          // UNLIT material's colour is gamma-lifted on the way to the screen.
-          // 0x3f95d8 — a reasonable ocean blue as a hex literal — came out a pale
-          // frosted cyan that read as lit glass rather than a view of a planet.
-          // These values are chosen for how they LAND, not how they read here.
+          // The panes carry the view: the scene's Earth (top at -4.8) sits below
+          // this shell's opening (-4.45) and never reaches these pixels, and bare
+          // frames read as seven black holes (proved by an open/closed shutter
+          // shot). Each pane maps its own patch of ONE painted scene, so the
+          // ground runs continuously across the cluster, and the scene follows
+          // the observation target. Not the globe's big map: sharing that pushed
+          // the interior axe test past its 120 s cap; this is one small canvas,
+          // painted once per target, and skipped where no 2-D canvas exists.
+          // Without it the panes keep a flat ocean blue. Colours are chosen for
+          // how they LAND: output is sRGB-encoded, so unlit colours lift.
           var cupolaPaneMat = new THREE.MeshBasicMaterial({ color: 0x0a3466 });
           var cupolaRimMat = new THREE.MeshBasicMaterial({ color: 0x6fc6ee, transparent: true, opacity: 0.42 });
+          var cupolaViewTarget = null, cupolaViewTextures = {};
+          function setCupolaView(target) {
+            if (cupolaViewTarget === target) return;
+            cupolaViewTarget = target;
+            if (!cupolaViewTextures[target]) {
+              var viewCanvas = null;
+              try { viewCanvas = issCupolaViewCanvas(target); } catch (viewError) { viewCanvas = null; }
+              if (viewCanvas) cupolaViewTextures[target] = interiorEarthTexture(viewCanvas, true);
+            }
+            var viewTexture = cupolaViewTextures[target] || null;
+            if (cupolaPaneMat.map !== viewTexture) {
+              cupolaPaneMat.map = viewTexture;
+              cupolaPaneMat.color.setHex(viewTexture ? 0xffffff : 0x0a3466);
+              // A real view needs only a hint of glass at the edge.
+              cupolaRimMat.opacity = viewTexture ? 0.16 : 0.42;
+              cupolaPaneMat.needsUpdate = true;
+            }
+          }
           var cupolaPanes = new THREE.Group();
           cupolaWindowCenters.forEach(function (offset, index) {
             var paneRadius = (index ? 0.29 : 0.4) * 0.91;
-            var pane = new THREE.Mesh(new THREE.CircleGeometry(paneRadius, 28), cupolaPaneMat);
+            var paneGeometry = new THREE.CircleGeometry(paneRadius, 28), paneUv = paneGeometry.attributes.uv, panePos = paneGeometry.attributes.position;
+            // rotation.x = -PI/2 sends local +y to world -z; canvas y = world +z.
+            for (var uvIndex = 0; uvIndex < paneUv.count; uvIndex++) {
+              paneUv.setXY(uvIndex, 0.5 + (offset[0] + panePos.getX(uvIndex)) / ISS_CUPOLA_VIEW_SPAN, 0.5 - (offset[1] - panePos.getY(uvIndex)) / ISS_CUPOLA_VIEW_SPAN);
+            }
+            var pane = new THREE.Mesh(paneGeometry, cupolaPaneMat);
+            pane.name = 'iss-cupola-pane-' + index;
             pane.rotation.x = -Math.PI / 2;
             // Below the frame (-4.35) and below the shutter (-4.31), so a closed
             // shutter still covers it and both task states stay distinct.
@@ -7803,7 +8205,7 @@
             capillaryDistance: Infinity, capillaryAlignment: -1, capillaryStable: false,
             capillaryMaxSpeed: 0, capillaryMaxAngularSpeed: 0,
             observationPoint: observationPoint, observationTarget: persistedObservationTarget,
-            observationTargetPoint: cupolaTargetPoints[persistedObservationTarget], observationActive: false,
+            observationTargetPoint: (setCupolaView(persistedObservationTarget), cupolaTargetPoints[persistedObservationTarget]), observationActive: false,
             observationPressLatched: false, observationProgress: persistedObservationCaptured ? 1.2 : 0,
             observationCaptured: persistedObservationCaptured, observationSecured: persistedObservationSecured,
             observationOutcome: persistedObservationSecured ? 'secured' : persistedObservationCaptured ? 'captured' : 'idle',
@@ -8369,6 +8771,7 @@
           }
           function updateObservationVisual(now) {
             var shouldShow = state.room === 'cupola';
+            if (cupolaViewTarget !== state.observationTarget) { setCupolaView(state.observationTarget); dirty = true; }
             var showTarget = shouldShow && !state.observationSecured;
             if (cupolaObservationReticle.visible !== showTarget) {
               cupolaObservationReticle.visible = showTarget;
@@ -14528,7 +14931,13 @@
                     [-63,-26,21,49].map(function (y0) { return h('path', { key: y0, d: 'M-17 ' + y0 + ' H17', stroke: '#48657b', strokeWidth: 3 }); }),
                     h('rect', { x: -74, y: 23, width: 148, height: 28, rx: 12, fill: 'url(#iss-attitude-module)', stroke: '#b1c7d4' }),
                     h('rect', { x: -34, y: -20, width: 68, height: 35, rx: 5, fill: '#282947', stroke: focus === 'gyros' ? '#e9d5ff' : '#a78bfa', strokeWidth: focus === 'gyros' ? 3 : 1.5 }),
-                    [-20,20].map(function (x) { return h('g', { key: x }, [-8,6].map(function (y0) { return h('circle', { key: y0, cx: x, cy: y0, r: 5, fill: '#b8a4ea', stroke: '#ded3ff' }); })); }),
+                    // Four rotors turning at one constant speed, neighbours opposite: a CMG
+                    // changes the DIRECTION of that spin, never its rate. Spokes sit in
+                    // wrapper groups (CSS transforms override SVG transform attributes).
+                    [-20,20].map(function (x) { return h('g', { key: x }, [-8,6].map(function (y0) { var reverse = (x < 0) !== (y0 < 0); return h('g', { key: y0 },
+                      h('circle', { cx: x, cy: y0, r: 5, fill: '#b8a4ea', stroke: '#ded3ff' }),
+                      h('g', { className: 'iss-cmg-rotor', 'data-spin': reverse ? 'reverse' : 'forward', style: { transformOrigin: x + 'px ' + y0 + 'px' } },
+                        h('path', { d: 'M' + (x - 4) + ' ' + y0 + ' H' + (x + 4) + ' M' + x + ' ' + (y0 - 4) + ' V' + (y0 + 4), stroke: '#3b2a78', strokeWidth: 1.3, strokeLinecap: 'round' }))); })); }),
                     h('path', { d: 'M54 36 L78 77 103 68', stroke: '#a7bed0', strokeWidth: 5, fill: 'none', strokeLinejoin: 'round' }),
                     h('rect', { x: -284, y: -11, width: 12, height: 22, rx: 3, fill: '#836f60', stroke: focus === 'thrusters' ? '#fde68a' : '#e7c49f', strokeWidth: focus === 'thrusters' ? 3 : 1 }),
                     h('rect', { x: 272, y: -11, width: 12, height: 22, rx: 3, fill: '#836f60', stroke: focus === 'thrusters' ? '#fde68a' : '#e7c49f', strokeWidth: focus === 'thrusters' ? 3 : 1 }),
@@ -17614,11 +18023,23 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
                 h('text', { x: wing.x, y: wing.y >= 100 ? wing.y + 45 : wing.y - 5, textAnchor: 'middle', fill: '#fde68a', fontSize: 7, fontWeight: 850, letterSpacing: .6 }, wing.label));
             })),
             visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) {
+              // Leonardo berthed at Unity's Earth-facing port from 2011 until it
+              // moved to Tranquility's forward port in May 2015. The plan squeezes
+              // fore-aft, so there it draws short, its aft end on Tranquility's
+              // forward edge, clear of Kibo's row.
+              var planBh = null;
+              if (m.id === 'leonardo') {
+                if (parseInt(TIMELINE[step].y, 10) < 2015) m = Object.assign({}, m, { pos: [0, -0.85, 0.2], axis: 'y' });
+                else {
+                  var node3 = MODULES.filter(function (n) { return n.id === 'tranquility'; })[0];
+                  planBh = 18; m = Object.assign({}, m, { pos: [m.pos[0], m.pos[1], node3.pos[2] - (10 + planBh / 2) / 12] });
+                }
+              }
               var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12;
               var color = '#' + Number(m.color).toString(16).padStart(6, '0');
               var isNew = (thresholds[m.id] == null ? 6 : thresholds[m.id]) === step;
-              var bx = m.axis === 'x' ? -26 : -10, by = m.axis === 'z' ? -21 : -10;
-              var bw = m.axis === 'x' ? 52 : 20, bh = m.axis === 'z' ? 42 : 20;
+              var bw = m.axis === 'x' ? 52 : 20, bh = planBh || (m.axis === 'z' ? 42 : 20);
+              var bx = -bw / 2, by = -bh / 2;
               return h('g', { key: m.id, className: isNew ? 'iss-assembly-new' : '', opacity: step === TIMELINE.length - 1 ? .42 : 1, transform: 'translate(' + x + ',' + y + ')' },
                 h('title', null, m.name + ' — ' + m.launched),
                 isNew ? h('rect', { x: bx - 5, y: by - 5, width: bw + 10, height: bh + 10, rx: 13, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.7, strokeDasharray: '4 3' }) : null,

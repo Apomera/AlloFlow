@@ -6,7 +6,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let tool, host, root, latest, FS, updateSaved, xp;
 const hooks = () => window.__testHooks.flightSim;
 const active = () => hooks().getFlightChallengeRef().current;
-const missionIds = ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'];
+const missionIds = ['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'];
 
 async function mount(seed = {}) {
   if (root) await act(async () => { root.unmount(); });

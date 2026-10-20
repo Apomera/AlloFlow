@@ -110,7 +110,7 @@ describe('flightsim dynamic key sync', () => {
     'AIRCRAFT.desc': 7,
     'ACHIEVEMENTS.name': 16,
     'ACHIEVEMENTS.desc': 16,
-    LESSONS: 6,
+    LESSONS: 7,
   };
 
   it('pairs every family (a family that pairs nothing is checked vacuously)', () => {

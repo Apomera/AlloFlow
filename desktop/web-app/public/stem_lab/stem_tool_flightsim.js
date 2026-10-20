@@ -103,6 +103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     variables: 'In level flight: L=W and T=D. In a steady climb, lift is slightly LESS than weight (L = W·cos γ) — the extra THRUST does the climbing, not extra lift.' },
     bernoulli: { short: "Bernoulli", title: "Bernoulli's Principle", icon: '🌊', content: "Daniel Bernoulli discovered that as a fluid (including air) speeds up, its pressure drops. This is why airplane wings work: the curved upper surface makes air travel faster, reducing pressure on top. The higher pressure underneath pushes the wing up. You can demonstrate this by blowing over a piece of paper — it rises!", formula: 'P + ½ρv² + ρgh = constant', variables: 'P=static pressure, ρ=density, v=velocity, g=gravity, h=height — along a streamline' },
     navigation: { short: "Navigation", title: 'How Pilots Navigate', icon: '🧭', content: "Modern navigation uses GPS, but the fundamentals haven't changed: heading (compass direction), airspeed, altitude, and time. Great circle routes (the shortest path between two points on a sphere) appear curved on flat maps but are actually straight on a globe. That's why flights from the US West Coast to Europe often pass over Greenland!", contentId: 'navigation_v2', formula: 'd = 2R·arcsin(√(sin²(Δlat/2) + cos(lat1)·cos(lat2)·sin²(Δlon/2)))', variables: 'Haversine formula: calculates great-circle distance between two lat/lon points' },
+    weather: { short: "Weather", title: 'Wind, Density and Weather', icon: '🌦️', content: "Weather changes what the air does to your wings. Wind moves the whole air mass, so your airspeed (through the air) and your groundspeed (over the ground) are different numbers: groundspeed is your airspeed plus or minus the wind that points along your path. Into a headwind you cover the ground more slowly, but your wings still feel the same airflow, so you lift off sooner and land in a shorter run. A crosswind pushes you sideways and needs a heading correction to hold your track. Air density matters just as much. Warm, high or humid air is thinner, so the wings make less lift, the propeller bites less and the engine makes less power: takeoffs run longer and climbs are weaker. Pilots call this density altitude, and it is why a hot day at Denver feels like a much higher airport. Cloud, rain and fog cut visibility, storms bring turbulence, and flying through cold cloud can build ice on the wings, which spoils their shape and adds weight. Most light aircraft are not certified for known icing, so the safe plan is to avoid it.", contentId: 'weather_lesson', formula: 'Headwind = wind speed × cos(θ)', variables: 'θ is the angle between your heading and the direction the wind blows FROM. Headwind > 0 slows your groundspeed; a negative value is a tailwind. Thinner air (lower ρ) cuts lift, L = ½ρv²SCₗ, and engine power too.' },
   };
 
   // ── WORLD GEOGRAPHY DATABASE ──
@@ -213,6 +214,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
   // ── CHALLENGES: Structured flight missions ──
   var CHALLENGES = [
+    // A five-minute warm-up before First Flight: one objective, no timer, no landing.
+    { id: 'first_climb', name: 'First Climb', desc: 'Start on the Portland runway in a Cessna. Take off and climb to 1,000 ft MSL. That is all: no landing and no timer. A short warm-up before the full challenge.', goals: ['Take off and reach 1,000 ft MSL'], lesson: 'lift' },
     { id: 'first_flight', name: 'First Flight', desc: 'Start on the Portland runway in a Cessna. Climb to 3,000 ft MSL, hold level flight for 30 seconds, then make a controlled landing.', goals: ['Reach 3,000 ft MSL', 'Hold 3,000 ±200 ft for 30 continuous seconds', 'Touch down below 500 fpm after at least 10 seconds airborne'], lesson: 'lift' },
     { id: 'cross_country', name: 'Navigation Approach', desc: 'Start 10 nm from JFK at 3,000 ft in a Cessna. Use bearing and distance to find the airport, then make a controlled landing.', goals: ['Hold the bearing to JFK within 10° for 10 seconds', 'Reach within 2 nm while at least 100 ft above the field', 'Touch down at JFK below 500 fpm'], lesson: 'navigation' },
     { id: 'mountain_flying', name: 'High-Altitude Takeoff', desc: 'Start on Denver’s runway at 5,431 ft MSL. Compare air density, climb to 8,500 ft, hold steady flight, and return to Denver.', goals: ['Reach 8,500 ft MSL', 'Hold 8,500 ±200 ft for 10 continuous seconds', 'Touch down at Denver below 500 fpm'], lesson: 'lift' },
@@ -14381,6 +14384,7 @@ function getFlightCityLayout(city) {
   // Learning records are plain data: the host can save and restore them with
   // the rest of toolData. Simulation samples and assessment use the same model.
   var FLIGHT_CHALLENGE_OBJECTIVES = {
+    first_climb: ['climb'],
     first_flight: ['climb', 'steady', 'landing'],
     cross_country: ['heading', 'arrival', 'landing'],
     mountain_flying: ['climb', 'steady', 'landing'],
@@ -14470,7 +14474,10 @@ function getFlightCityLayout(city) {
     var nearby = Number.isFinite(context.nearestAirportDistance) && context.nearestAirportDistance >= 0 && context.nearestAirportDistance <= 2;
     var steady = safe && Number.isFinite(controls.bank) && Math.abs(controls.bank) <= 10 && Math.abs(state.vsi * 60) <= 200;
     var streak = false, target = 0;
-    if (record.id === 'first_flight' || record.id === 'mountain_flying') {
+    if (record.id === 'first_climb') {
+      // Off the ground and above 1,000 ft MSL (Portland's field is 76 ft).
+      if (airborne && state.altitude >= 1000) record.objectives.climb = true;
+    } else if (record.id === 'first_flight' || record.id === 'mountain_flying') {
       var altitude = record.id === 'first_flight' ? 3000 : 8500;
       target = record.id === 'first_flight' ? 30 : 10;
       if (airborne && state.altitude >= altitude) record.objectives.climb = true;
@@ -16412,6 +16419,10 @@ function getFlightCityLayout(city) {
       // rebuilt a few hundred vertices per frame, so travel never stalls a frame.
       var FAR_RING_INNER = 80000, FAR_RING_OUTER = 640000, FAR_RING_RINGS = 30, FAR_RING_SEGMENTS = 120;
       var FAR_RING_REBUILD_FT = 24000, FAR_RING_BATCH = 240, FAR_RING_EARTH_RADIUS_FT = 20902231;
+      // The near patch: 240,000 ft square in 2,000 ft cells, so a ridge or a
+      // canyon rim is drawn by vertices a third of a mile apart rather than
+      // three quarters. Recentres snap to 4,000 ft, a whole number of cells.
+      var NEAR_TERRAIN_SEGMENTS = 120;
       var updateFarTerrainRing = function(state, scene, resources, THREE) {
         var nearMesh = terrainMeshRef.current;
         if (!nearMesh || !originRef.current) return;
@@ -16508,13 +16519,13 @@ function getFlightCityLayout(city) {
         var scene = threeSceneRef.current;
 
         if (!terrainMeshRef.current) {
-          var geometry = new THREE.PlaneGeometry(240000, 240000, 60, 60);
+          var geometry = new THREE.PlaneGeometry(240000, 240000, NEAR_TERRAIN_SEGMENTS, NEAR_TERRAIN_SEGMENTS);
           geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count * 3), 3));
           geometry.setAttribute('landCoverage', new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count), 1));
           geometry.setAttribute('fieldCoverage', new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count), 1));
 
           // ── Ground detail texture ── below ~2,000 ft the vertex-colored
-          // terrain (4,000 ft cells) is a featureless wash. A repeating
+          // terrain (2,000 ft cells) is a featureless wash. A repeating
           // near-white patchwork multiplies over the vertex colors: faint
           // field rectangles + hairline country roads give low flight a
           // sense of place and speed. One tile = 24,000 ft (~4 nm); the
@@ -16716,55 +16727,95 @@ function getFlightCityLayout(city) {
         // Share the floating scene origin projection with city/runway geometry.
         var terrainProjectionLat = originRef.current ? originRef.current.lat : playerLat;
         var terrainLongitudeScale = R * Math.max(0.000001, Math.cos(terrainProjectionLat * Math.PI / 180));
-        var size = 60;
+        var size = NEAR_TERRAIN_SEGMENTS, stride = size + 1, cellFt = 240000 / size;
+        // Recentring moves the patch by whole cells, so most of its vertices
+        // land on ground the last patch already sampled. Reuse those samples
+        // (height, coverage, albedo) and sample only the rows and columns that
+        // are new: at four times the vertex count, a full resample stalled a
+        // frame every two miles of flight. Samples are pure functions of
+        // position, so a reused vertex is exactly what a resample would give;
+        // a new scene origin or a jump beyond the patch starts afresh.
+        var origin = originRef.current;
+        var oldSamples = mesh.userData.terrainSamples;
+        var shiftI = 0, shiftJ = 0;
+        var reuse = !!(origin && oldSamples && oldSamples.size === size &&
+          oldSamples.originLat === origin.lat && oldSamples.originLon === origin.lon);
+        if (reuse) {
+          shiftI = Math.round((meshLocal.x - oldSamples.x) / cellFt);
+          shiftJ = Math.round((meshLocal.z - oldSamples.z) / cellFt);
+          reuse = Math.abs(shiftI) < size && Math.abs(shiftJ) < size;
+        }
+        var nodeCount = stride * stride;
+        var samples = {
+          size: size, x: meshLocal.x, z: meshLocal.z,
+          originLat: origin ? origin.lat : null, originLon: origin ? origin.lon : null,
+          // Doubles, as a fresh sample is: a reused vertex is then bit-identical.
+          height: new Float64Array(nodeCount), color: new Float64Array(nodeCount * 3),
+          land: new Uint8Array(nodeCount), field: new Float64Array(nodeCount)
+        };
+        var reusedCount = 0;
         // Water vertices are recorded (index + mesh-local x/y + base color)
         // so the render loop can animate shimmer + sun glint on JUST those
         // vertices each frame without re-deriving the whole terrain.
         var waterIdx = [];
         for (var j = 0; j <= size; j++) {
           for (var i = 0; i <= size; i++) {
-            var index = j * (size + 1) + i;
+            var index = j * stride + i;
             var px = positionAttr.getX(index);
             var py = positionAttr.getY(index);
+            var oi = i + shiftI, oj = j + shiftJ;
+            var h, landValue, fieldValue, r, g, b;
+            if (reuse && oi >= 0 && oi <= size && oj >= 0 && oj <= size) {
+              var oldIndex = oj * stride + oi;
+              h = oldSamples.height[oldIndex];
+              landValue = oldSamples.land[oldIndex];
+              fieldValue = oldSamples.field[oldIndex];
+              r = oldSamples.color[oldIndex * 3]; g = oldSamples.color[oldIndex * 3 + 1]; b = oldSamples.color[oldIndex * 3 + 2];
+              reusedCount++;
+            } else {
+              var vlat = playerLat + py / R;
+              var vlon = playerLon + px / terrainLongitudeScale;
 
-            var vlat = playerLat + py / R;
-            var vlon = playerLon + px / terrainLongitudeScale;
+              var water = isWater(vlat, vlon);
+              landValue = water ? 0 : 1;
+              h = groundBelowAircraft(vlat, vlon);
 
-            var water = isWater(vlat, vlon);
-            landCoverageAttr.setX(index, water ? 0 : 1);
-            var h = groundBelowAircraft(vlat, vlon);
-
-            positionAttr.setZ(index, h);
-
-            var worldEnv = getWorldEnvironment(vlat, vlon, h, water);
-            // Roads and farmland belong in lowland field cover. Keep the
-            // geographic land mask intact for city foundations and water;
-            // natural fine grain can still describe rock, soil and snow.
-            fieldCoverageAttr.setX(index, water ? 0 : Math.max(0, Math.min(1, worldEnv.fieldDensity / 0.55)));
-            // Near-shore bathymetry: shallow water catches more green/cyan,
-            // giving coastlines a readable shelf instead of an abrupt blue cut.
-            if (water) {
-              var shoreNear = !isWaterMask(vlat + 0.22, vlon) || !isWaterMask(vlat - 0.22, vlon) ||
-                              !isWaterMask(vlat, vlon + 0.22) || !isWaterMask(vlat, vlon - 0.22);
-              if (shoreNear) {
-                worldEnv.color = worldEnv.color.map(function(channel, ci) {
-                  var shelf = [42, 139, 169][ci];
-                  return Math.round(channel * 0.55 + shelf * 0.45);
-                });
+              var worldEnv = getWorldEnvironment(vlat, vlon, h, water);
+              // Roads and farmland belong in lowland field cover. Keep the
+              // geographic land mask intact for city foundations and water;
+              // natural fine grain can still describe rock, soil and snow.
+              fieldValue = water ? 0 : Math.max(0, Math.min(1, worldEnv.fieldDensity / 0.55));
+              // Near-shore bathymetry: shallow water catches more green/cyan,
+              // giving coastlines a readable shelf instead of an abrupt blue cut.
+              if (water) {
+                var shoreNear = !isWaterMask(vlat + 0.22, vlon) || !isWaterMask(vlat - 0.22, vlon) ||
+                                !isWaterMask(vlat, vlon + 0.22) || !isWaterMask(vlat, vlon - 0.22);
+                if (shoreNear) {
+                  worldEnv.color = worldEnv.color.map(function(channel, ci) {
+                    var shelf = [42, 139, 169][ci];
+                    return Math.round(channel * 0.55 + shelf * 0.45);
+                  });
+                }
               }
+              // Keep vertex colors as surface albedo. The live Lambert lights and
+              // terrain normals provide sunlight, slope shading, and twilight warmth.
+              // Baking the sun here left old shading until the next recenter.
+              var reliefShade = water ? 1 : (0.90 + terrainHash(vlat * 18, vlon * 18) * 0.16);
+              r = Math.min(1, worldEnv.color[0] / 255 * reliefShade);
+              g = Math.min(1, worldEnv.color[1] / 255 * reliefShade);
+              b = Math.min(1, worldEnv.color[2] / 255 * reliefShade);
             }
-            // Keep vertex colors as surface albedo. The live Lambert lights and
-            // terrain normals provide sunlight, slope shading, and twilight warmth.
-            // Baking the sun here left old shading until the next recenter.
-            var reliefShade = water ? 1 : (0.90 + terrainHash(vlat * 18, vlon * 18) * 0.16);
-            var r = Math.min(1, worldEnv.color[0] / 255 * reliefShade);
-            var g = Math.min(1, worldEnv.color[1] / 255 * reliefShade);
-            var b = Math.min(1, worldEnv.color[2] / 255 * reliefShade);
-            if (water) waterIdx.push({ i: index, x: px, y: py, height: h, r: r, g: g, b: b });
-
+            samples.height[index] = h; samples.land[index] = landValue; samples.field[index] = fieldValue;
+            samples.color[index * 3] = r; samples.color[index * 3 + 1] = g; samples.color[index * 3 + 2] = b;
+            landCoverageAttr.setX(index, landValue);
+            fieldCoverageAttr.setX(index, fieldValue);
+            positionAttr.setZ(index, h);
+            if (!landValue) waterIdx.push({ i: index, x: px, y: py, height: h, r: r, g: g, b: b });
             colorAttr.setXYZ(index, r, g, b);
           }
         }
+        mesh.userData.terrainSamples = samples;
+        mesh.userData.terrainSamplesReused = reusedCount;
         mesh.userData.waterIdx = waterIdx;
         mesh.userData.flightWaterEffectsActive = false;
 
@@ -26195,7 +26246,7 @@ function getFlightCityLayout(city) {
       };
 
       var startFlightChallenge = function(id, airportId) {
-        if (['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(id) < 0) return;
+        if (['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(id) < 0) return;
         var originId = id === 'mountain_flying' ? 'kden' : id === 'cross_country' ? 'kjfk' : 'kpwm';
         if (id === 'world_tour') {
           var previousTour = dataRef.current.challengeResults && dataRef.current.challengeResults.world_tour;
@@ -29958,6 +30009,13 @@ function getFlightCityLayout(city) {
                 label: __alloT('stem.flightsim.start_step_lesson', 'Learn how a wing makes lift'),
                 action: __alloT('stem.flightsim.start_step_lesson_go', 'Open the lesson'),
                 go: function() { updMulti({ view: 'lesson', selectedLesson: 'lift' }); } },
+              // The warm-up is optional: passing First Flight counts it as done too.
+              { id: 'first_climb', done: !!((d.challengeCompleted && (d.challengeCompleted.first_climb || d.challengeCompleted.first_flight))
+                  || (d.challengeResults && ((d.challengeResults.first_climb && d.challengeResults.first_climb.status === 'complete')
+                    || (d.challengeResults.first_flight && d.challengeResults.first_flight.status === 'complete')))),
+                label: __alloT('stem.flightsim.start_step_first_climb', 'Take off and climb to 1,000 ft'),
+                action: __alloT('stem.flightsim.start_step_first_climb_go', 'Start First Climb'),
+                go: function() { startFlightChallenge('first_climb'); } },
               { id: 'first_flight', done: !!((d.challengeCompleted && d.challengeCompleted.first_flight)
                   || (d.challengeResults && d.challengeResults.first_flight && d.challengeResults.first_flight.status === 'complete')),
                 label: __alloT('stem.flightsim.start_step_first_flight', 'Fly the First Flight challenge'),
@@ -30372,7 +30430,7 @@ function getFlightCityLayout(city) {
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.try_it_free_flight', '✈️ Try It — Free Flight')),
             (function() {
-              var practice = CHALLENGES.filter(function(ch) { return ch.lesson === selectedLesson && ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(ch.id) >= 0; });
+              var practice = CHALLENGES.filter(function(ch) { return ch.lesson === selectedLesson && ['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(ch.id) >= 0; });
               if (!practice.length) return null;
               return h('div', { 'data-flight-lesson-practice': selectedLesson, style: { marginTop: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,64,175,0.18)', border: '1px solid rgba(96,165,250,0.35)' } },
                 h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#bfdbfe', marginBottom: '6px' } }, __alloT('stem.flightsim.lesson_practice_heading', 'Practise this lesson in a challenge')),
@@ -30535,7 +30593,7 @@ function getFlightCityLayout(city) {
         if (key === 'arrival') return __alloT('stem.flightsim.challenge_goal_arrival', 'Reach within 2 nm of JFK while at least 100 ft above the field.');
         if (key === 'glide') return __alloT('stem.flightsim.challenge_goal_glide', 'At idle power, descend at least 100 fpm while holding 85 kts or more for 5 continuous seconds.');
         if (key === 'climb' && id === 'energy_management') return __alloT('stem.flightsim.challenge_goal_energy_climb', 'From the glide snapshot, gain 300 ft and trade at least 5 kts; hold a powered climb of at least 100 fpm for 5 seconds.');
-        if (key === 'climb') return __alloT('stem.flightsim.challenge_goal_climb', 'Reach {alt} ft MSL.').replace('{alt}', id === 'mountain_flying' ? '8,500' : '3,000');
+        if (key === 'climb') return __alloT('stem.flightsim.challenge_goal_climb', 'Reach {alt} ft MSL.').replace('{alt}', id === 'mountain_flying' ? '8,500' : id === 'first_climb' ? '1,000' : '3,000');
         if (key === 'steady') return __alloT('stem.flightsim.challenge_goal_steady', 'Hold {alt} ±200 ft, within ±200 fpm and ±10° bank, for {sec} continuous seconds.').replace('{alt}', id === 'mountain_flying' ? '8,500' : '3,000').replace('{sec}', id === 'mountain_flying' ? '10' : '30');
         return __alloT('stem.flightsim.challenge_goal_landing', 'After at least 10 seconds airborne, touch down below 500 fpm{airport}.').replace('{airport}', id === 'cross_country' ? __alloT('stem.flightsim.challenge_at_jfk', ' at JFK') : id === 'mountain_flying' ? __alloT('stem.flightsim.challenge_at_den', ' at Denver') : '');
       };
@@ -30562,9 +30620,9 @@ function getFlightCityLayout(city) {
             ? __alloT('stem.flightsim.challenge_landing_coaching_touch', 'Return toward a runway. Drag down along the far right edge to reduce power; drag gently up/down from the middle to pitch. Aim for about {speed} kts IAS, then gently raise the nose just above the runway.')
             : __alloT('stem.flightsim.challenge_landing_coaching_keys', 'Return toward a runway. Reduce power with − and use W/S for small pitch changes. Aim for about {speed} kts IAS; just above the runway, gently raise the nose to slow the descent.')).replace('{speed}', approachSpeed);
           else if (nextGoal.key === 'steady') nextControlCue = __alloT('stem.flightsim.challenge_hold_coaching', 'Level the wings and use small pitch and power changes to keep vertical speed near zero. Hold the target altitude until the timer finishes.');
-          else if (nextGoal.key === 'climb' && (record.id === 'first_flight' || record.id === 'mountain_flying')) nextControlCue = (touchGuidance
+          else if (nextGoal.key === 'climb' && (record.id === 'first_climb' || record.id === 'first_flight' || record.id === 'mountain_flying')) nextControlCue = (touchGuidance
             ? __alloT('stem.flightsim.challenge_climb_coaching_touch', 'Drag gently up/down from the middle to pitch; use the far right edge for power. Climb toward {alt} ft MSL, then ease the nose down to level off.')
-            : __alloT('stem.flightsim.challenge_climb_coaching_keys', 'Use W/S for small pitch changes and +/− for power. Climb toward {alt} ft MSL, then ease the nose down to level off.')).replace('{alt}', record.id === 'mountain_flying' ? '8,500' : '3,000');
+            : __alloT('stem.flightsim.challenge_climb_coaching_keys', 'Use W/S for small pitch changes and +/− for power. Climb toward {alt} ft MSL, then ease the nose down to level off.')).replace('{alt}', record.id === 'mountain_flying' ? '8,500' : record.id === 'first_climb' ? '1,000' : '3,000');
         }
         return h('section', { 'aria-label': sectionTitle, style: { order: 0, padding: '14px', width: isDebrief ? undefined : '320px', maxWidth: '100%', boxSizing: 'border-box', border: '1px solid #7dd3fc', borderRadius: '12px', background: '#0f172a', color: '#f8fafc', maxHeight: isDebrief ? undefined : '42vh', overflowY: 'auto', fontSize: isDebrief ? '14px' : '12px', lineHeight: 1.5, marginBottom: isDebrief ? '16px' : 0 } },
           h('h3', { id: titleId, style: { fontSize: isDebrief ? '20px' : '15px', margin: '0 0 8px' } }, __alloT('stem.flightsim.' + record.id + '_name', challenge.name)),
@@ -31765,7 +31823,7 @@ function getFlightCityLayout(city) {
             h('button', { onClick: function() { upd('view', 'menu'); },
               style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #3b82f6', background: '#1e40af', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.back_to_menu_2', '🏠 Back to Menu')),
-            db.challenge && ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(db.challenge.id) >= 0 && h('button', { onClick: function() { startFlightChallenge(db.challenge.id); },
+            db.challenge && ['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'].indexOf(db.challenge.id) >= 0 && h('button', { onClick: function() { startFlightChallenge(db.challenge.id); },
               style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #f59e0b', background: '#78350f', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.retry_challenge', '🔁 Try the challenge again')),
             h('button', { onClick: function() { startFlying('kpwm'); },

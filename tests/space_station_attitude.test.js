@@ -333,3 +333,27 @@ describe('space station interactive pointing lab', () => {
     expect(view.read('fuel')).toBe(inspect(model, 92).fuelUsed.toFixed(3) + ' kg');
   });
 });
+
+describe('space station gyro cluster rotors', () => {
+  it('draws four constant-speed rotors, neighbours counter-rotating, that stop under reduced motion', () => {
+    const view = mountAttitude();
+    const rotors = [...view.host.querySelectorAll('.iss-cmg-rotor')];
+    expect(rotors).toHaveLength(4);
+    const spins = rotors.map((rotor) => rotor.getAttribute('data-spin'));
+    expect(spins.filter((spin) => spin === 'forward')).toHaveLength(2);
+    // Each rotor turns about its own centre, and a spoke is drawn inside its disc.
+    rotors.forEach((rotor) => {
+      const disc = rotor.previousElementSibling;
+      expect(disc.tagName.toLowerCase()).toBe('circle');
+      expect(rotor.style.transformOrigin).toBe(disc.getAttribute('cx') + 'px ' + disc.getAttribute('cy') + 'px');
+      expect(rotor.querySelector('path')).not.toBeNull();
+    });
+    // Neighbours along both axes of the 2 x 2 cluster turn opposite ways.
+    const at = (x, y) => rotors.find((rotor) => rotor.previousElementSibling.getAttribute('cx') === String(x) && rotor.previousElementSibling.getAttribute('cy') === String(y)).getAttribute('data-spin');
+    expect(at(-20, -8)).not.toBe(at(20, -8)); expect(at(-20, -8)).not.toBe(at(-20, 6)); expect(at(-20, -8)).toBe(at(20, 6));
+    // One speed for all, set by CSS; the global reduced-motion rule covers it.
+    const css = [...document.querySelectorAll('style')].map((el) => el.textContent).join('');
+    expect(css).toContain('.iss-cmg-rotor{animation:iss-cmg-spin 1.1s linear infinite}');
+    expect(css).toContain('@media (prefers-reduced-motion: reduce){.iss-root *,.iss-root *:before,.iss-root *:after{animation:none!important');
+  });
+});

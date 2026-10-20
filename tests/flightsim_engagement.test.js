@@ -62,28 +62,44 @@ const startHere = () => host.querySelector('[data-flight-start-here]');
 const buttonText = text => [...host.querySelectorAll('button')].find(b => b.textContent.includes(text));
 
 describe('Start here path', () => {
-  it('walks a new student through four first steps, one launcher at a time', async () => {
+  it('walks a new student through five first steps, one launcher at a time', async () => {
     await mount();
     const card = startHere();
     expect(card).toBeTruthy();
-    expect(card.textContent).toContain('0 of 4 done');
+    expect(card.textContent).toContain('0 of 5 done');
     const steps = [...card.querySelectorAll('[data-flight-start-step]')];
-    expect(steps.map(s => s.getAttribute('data-flight-start-step'))).toEqual(['lesson', 'first_flight', 'landing', 'mission']);
+    expect(steps.map(s => s.getAttribute('data-flight-start-step'))).toEqual(['lesson', 'first_climb', 'first_flight', 'landing', 'mission']);
     expect(card.querySelectorAll('button')).toHaveLength(1);
     await act(async () => card.querySelector('button').click());
     expect(latest.view).toBe('lesson');
     expect(latest.selectedLesson).toBe('lift');
   });
 
-  it('marks finished steps, offers the next one, and disappears when all four are done', async () => {
+  it('marks finished steps, offers the next one, and disappears when all five are done', async () => {
     await mount({ completedLessons: { lift: true }, challengeCompleted: { first_flight: '2026-10-17T00:00:00Z' } });
-    expect(startHere().textContent).toContain('2 of 4 done');
+    expect(startHere().textContent).toContain('3 of 5 done');
     const landing = startHere().querySelector('[data-flight-start-step="landing"]');
     expect(landing.getAttribute('data-done')).toBe('false');
     expect(landing.querySelector('button').textContent).toContain('Take off from Portland');
     expect(startHere().querySelector('[data-flight-start-step="first_flight"]').getAttribute('data-done')).toBe('true');
     await act(async () => setData(old => ({ ...old, flightSim: { ...old.flightSim, firstRunwayLanding: 'x', rescuesCompleted: 1 } })));
     expect(startHere()).toBeNull();
+  });
+
+  it('offers First Climb as the first launcher after the lesson, and a passed First Flight also counts it done', async () => {
+    await mount({ completedLessons: { lift: true } });
+    const climb = startHere().querySelector('[data-flight-start-step="first_climb"]');
+    expect(climb.getAttribute('data-done')).toBe('false');
+    expect(climb.querySelector('button').textContent).toContain('Start First Climb');
+    expect(climb.textContent).toContain('Take off and climb to 1,000 ft');
+    await act(async () => climb.querySelector('button').click());
+    expect(latest.selectedChallenge).toBe('first_climb');
+  });
+
+  it('counts the optional First Climb step done once First Flight is passed', async () => {
+    await mount({ completedLessons: { lift: true }, challengeResults: { first_flight: { id: 'first_flight', status: 'complete' } } });
+    expect(startHere().querySelector('[data-flight-start-step="first_climb"]').getAttribute('data-done')).toBe('true');
+    expect(startHere().querySelector('[data-flight-start-step="first_flight"]').getAttribute('data-done')).toBe('true');
   });
 
   it('keeps First Flight done after a later failed attempt', async () => {
@@ -221,5 +237,41 @@ describe('personal best rules', () => {
     expect(record(rescue.bests, { rescueSeconds: 200 }).bests.rescueSeconds).toBe(140);
     expect(record(rescue.bests, { rescueSeconds: 120 }).improved.rescue).toBe(true);
     expect(rescue.bests.challenges.first_flight).toBe(250);
+  });
+});
+
+describe('weather lesson', () => {
+  it('is the seventh lesson, reachable from the lesson list, with its own text and a way on', async () => {
+    const ids = [...Object.keys(FS.LESSONS)];
+    expect(ids).toEqual(['lift', 'drag', 'thrust', 'weight', 'bernoulli', 'navigation', 'weather']);
+    await mount({ view: 'lesson', selectedLesson: 'weather' });
+    const lesson = host.querySelector('[data-flightsim-lesson]');
+    expect(lesson.textContent).toContain('Wind, Density and Weather');
+    expect(lesson.textContent).toContain('Lesson 7 / 7');
+    expect(lesson.textContent).toContain('Headwind = wind speed × cos(θ)');
+    expect(lesson.textContent).toContain('density altitude');
+    // Last lesson: the way on is back to the menu, and the one before it is linked.
+    expect(lesson.textContent).toContain('Back to menu');
+    expect(lesson.textContent).toContain(FS.LESSONS.navigation.title);
+    const button = [...lesson.querySelectorAll('button')].find(b => b.textContent.includes('Mark lesson complete'));
+    await act(async () => button.click());
+    expect(latest.completedLessons.weather).toBe(true);
+  });
+
+  it('states the same headwind rule the cockpit computes, with the same sign convention', () => {
+    const aircraft = FS.AIRCRAFT.find(item => item.id === 'cessna172');
+    FS.Physics.configureAircraft(aircraft);
+    const base = { altitude: 4000, fieldElev: 76, speed: 100 / 0.5924838, vsi: 0, heading: 90, bank: 0, onGround: false, lat: 43.6, lon: -70.3, stalling: false, lowAirspeed: false };
+    const controls = { throttle: 0.6, bank: 0, pitch: 0 };
+    const lesson = FS.LESSONS.weather;
+    expect(lesson.formula).toBe('Headwind = wind speed × cos(θ)');
+    expect(lesson.variables).toContain('direction the wind blows FROM');
+    // Wind FROM the nose is all headwind; from behind is a tailwind (negative);
+    // from the side is all crosswind; in between follows the cosine.
+    for (const [fromOffset, wind] of [[0, 20], [180, 20], [90, 20], [60, 30], [-45, 12]]) {
+      const weather = { type: 'clear', wind, windDir: (base.heading + fromOffset + 360) % 360, visibility: 1, turbulence: 0 };
+      const telemetry = FS.computeFlightTelemetry(base, controls, weather, 0, 0, null, null, aircraft);
+      expect(telemetry.headwindKts).toBeCloseTo(wind * Math.cos(fromOffset * Math.PI / 180), 9);
+    }
   });
 });

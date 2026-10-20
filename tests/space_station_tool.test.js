@@ -2961,6 +2961,36 @@ describe('space station tool', () => {
       expect(p6X(6)).toBe(126);   // 150 port end - 24: relocated in 2007
     });
 
+    it('moves Leonardo from Unity to Tranquility in 2015, touching its new host and clear of Kibo', () => {
+      // Each module's plan box, read through the DOM: its group's translate()
+      // plus the first rect's offsets. Keyed by the module name in <title>.
+      const boxesAt = (assemblyIdx) => {
+        const host = document.createElement('div');
+        host.innerHTML = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx });
+        const boxes = {};
+        host.querySelectorAll('g > title').forEach((title) => {
+          const g = title.parentElement, rect = g.querySelector('rect');
+          const move = /translate\((-?[\d.]+),(-?[\d.]+)\)/.exec(g.getAttribute('transform') || '');
+          if (!move || !rect) return;
+          const x = Number(move[1]) + Number(rect.getAttribute('x')), y = Number(move[2]) + Number(rect.getAttribute('y'));
+          boxes[title.textContent.split(' — ')[0]] = { x0: x, y0: y, x1: x + Number(rect.getAttribute('width')), y1: y + Number(rect.getAttribute('height')) };
+        });
+        return boxes;
+      };
+      const overlap = (a, b) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > 0.01 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > 0.01;
+      const at2011 = boxesAt(8), at2020 = boxesAt(9);
+      const unity = at2011['Unity (Node 1)'], leo2011 = at2011['Leonardo (PMM)'];
+      // 2011-2015: on Unity's Earth-facing port, drawn on Unity's own centre.
+      expect((leo2011.x0 + leo2011.x1) / 2).toBeCloseTo((unity.x0 + unity.x1) / 2, 6);
+      expect((leo2011.y0 + leo2011.y1) / 2).toBeCloseTo(106 + 0.2 * 12, 6);
+      // Since May 2015: Tranquility's forward port, aft end on its forward edge.
+      const leo = at2020['Leonardo (PMM)'], node3 = at2020['Tranquility (Node 3)'], kibo = at2020['Kibo (JEM)'];
+      expect((leo.x0 + leo.x1) / 2).toBeCloseTo((node3.x0 + node3.x1) / 2, 6);
+      expect(leo.y1).toBeCloseTo(node3.y0, 6);
+      expect(overlap(leo, node3)).toBe(false);
+      expect(overlap(leo, kibo)).toBe(false);
+    });
+
     it('renders History and a completed quiz debrief', () => {
       const history = mountWithSeed({ ...BASE, tab: 'history' });
       expect(history).toIncludeText('ORBITAL ASSEMBLY');

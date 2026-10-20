@@ -238,7 +238,7 @@ function clusterSnapshot(cluster) {
 }
 
 function terrainSurface(scene) {
-  const terrain = scene.children.find(item => item.isMesh && item.geometry?.attributes?.position?.count === 3721);
+  const terrain = scene.children.find(item => item.isMesh && item.geometry?.type === 'PlaneGeometry' && item.geometry.parameters?.width === 240000);   // the near terrain patch
   expect(terrain).toBeTruthy();
   expect(terrain.geometry.attributes.landCoverage).toBeTruthy();
   return terrain;

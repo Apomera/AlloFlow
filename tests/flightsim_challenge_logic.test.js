@@ -51,7 +51,7 @@ describe('flight challenge records', () => {
   });
 
   it('creates only known challenges with empty observable goals', () => {
-    for (const id of ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour']) {
+    for (const id of ['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour']) {
       const record = FS.createFlightChallenge(id, state());
       expect(record.version).toBe(1);
       expect(record.status).toBe('active');
@@ -412,5 +412,35 @@ describe('verified airport tour', () => {
     const faster = FS.recordFlightPersonalBests(slower.bests, { challengeId: 'world_tour', challengeSeconds: 50, challengeTiming: 'tour-total-v1' });
     expect(faster.bests.challenges.world_tour).toBe(50);
     expect(faster.improved.challenge).toBe(true);
+  });
+});
+
+describe('first climb warm-up', () => {
+  const onRunway = () => state({ altitude: 76, onGround: true, speed: 0 });
+  it('is a single objective that needs a real takeoff and 1,000 ft MSL, with no timer or landing', () => {
+    expect(FS.CHALLENGES[0].id).toBe('first_climb');
+    expect(FS.CHALLENGES[0].goals).toEqual(['Take off and reach 1,000 ft MSL']);
+    const record = FS.createFlightChallenge('first_climb', onRunway());
+    expect(FS.flightChallengeSummary(record)).toMatchObject({ total: 1, done: 0, status: 'active' });
+    // On the runway, or climbing but still below 1,000 ft: not done.
+    expect(frames(record, 20, onRunway()).status).toBe('active');
+    expect(frames(record, 20, state({ altitude: 990 })).status).toBe('active');
+    // Above 1,000 ft MSL but still rolling on the ground (a hilltop strip): not airborne, not done.
+    expect(frames(record, 5, state({ altitude: 1200, onGround: true })).status).toBe('active');
+    // Airborne at 1,000 ft: complete at once, without holding anything or landing.
+    const done = advance(record, state({ altitude: 1000, vsi: 8 }));
+    expect(done.status).toBe('complete');
+    expect(FS.flightChallengeSummary(done)).toMatchObject({ total: 1, done: 1, complete: true });
+    expect(done.objectives).toEqual({ climb: true });
+  });
+
+  it('is not routed to a landing airport, and First Flight is unchanged', () => {
+    const record = FS.createFlightChallenge('first_climb', state());
+    expect(FS.getFlightChallengeDestination(record)).toBeNull();
+    // First Flight still needs 3,000 ft, a 30 s hold and a landing.
+    const flight = FS.createFlightChallenge('first_flight', state());
+    expect(advance(flight, state({ altitude: 1500 })).objectives.climb).toBe(false);
+    expect(frames(flight, 29).objectives.steady).toBe(false);
+    expect(frames(flight, 30).objectives.steady).toBe(true);
   });
 });

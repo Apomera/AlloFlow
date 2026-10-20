@@ -62,8 +62,8 @@ describe('Scale Explorer visual pass', () => {
     const g = new Proxy({ globalAlpha: 1 }, { get: (t, k) => (k in t ? t[k] : k === 'arc' ? (...a) => calls.push(a) : k.startsWith('create') ? () => grad : noop), set: (t, k, v) => { t[k] = v; return true; } });
     // Includes eiffel (🗼 is officially Tokyo Tower), milkyway (🌀 is a cyclone) and
     // chicxulub (☄️ is the impactor, not the crater).
-    for (const id of ['rbc', 'water', 'sand', 'flea', 'ecoli', 'hair', 'mitochondrion', 'ribosome', 'virus', 'light', 'xray', 'gamma', 'eiffel', 'milkyway', 'jupiter', 'pyramid', 'chicxulub', 'football-pitch', 'rice', 'pollen', 'mouse', 'dust-mite', 'paramecium', 'hydrogen', 'carbon', 'nucleus', 'proton', 'solar-system', 'heliosphere', 'virgo-sc', 'orion-nebula', 'oort', 'local-bubble', 'grand-canyon', 'universe', 'laniakea']) expect(glyph(g, id, 0, 0, 100), id).toBe(true);
-    for (const id of ['earth', 'human', 'dna']) expect(glyph(g, id, 0, 0, 100), id + ' keeps its emoji').toBe(false);
+    for (const id of ['rbc', 'water', 'sand', 'flea', 'ecoli', 'hair', 'mitochondrion', 'ribosome', 'virus', 'light', 'xray', 'gamma', 'eiffel', 'milkyway', 'jupiter', 'pyramid', 'chicxulub', 'football-pitch', 'rice', 'pollen', 'mouse', 'dust-mite', 'paramecium', 'hydrogen', 'carbon', 'nucleus', 'proton', 'solar-system', 'heliosphere', 'virgo-sc', 'orion-nebula', 'oort', 'local-bubble', 'grand-canyon', 'universe', 'laniakea', 'egg', 'moon', 'sun', 'betelgeuse', 'trex', 'blue-whale', 'ladybird', 'dna']) expect(glyph(g, id, 0, 0, 100), id).toBe(true);
+    for (const id of ['earth', 'human']) expect(glyph(g, id, 0, 0, 100), id + ' keeps its emoji').toBe(false);
     calls.length = 0; glyph(g, 'water', 0, 0, 100);
     // Two hydrogens then the oxygen: the H-O-H angle is the real 104.5 degrees.
     const [h1, h2, o] = calls.map((a) => ({ x: a[0], y: a[1], r: a[2] }));
@@ -146,11 +146,194 @@ describe('Scale Explorer visual pass', () => {
     expect(src.includes("['mercury',.387]") && src.includes("['venus',.723]"), 'shared orbit radii').toBe(true);
   });
 
+  it('words a comparison by what the two sizes measure, never tiling a height along a length', () => {
+    const kind = vm.runInNewContext(sliceBetween(src, '  var SPECIMEN_COPY={', '\n};', { file: FILE, includeEnd: true }) + sliceBetween(src, '  function fitMeasureKind(a,b){', '  function dimensionText(item,S){', { file: FILE }) + 'fitMeasureKind;');
+    const k = (a, b) => kind(byId[a], byId[b]);
+    expect(k('elephant', 'trex')).toBe('mixed');        // shoulder height vs body length
+    expect(k('egg', 'basketball')).toBe('mixed');       // length vs diameter
+    expect(k('human', 'giraffe')).toBe('tall');         // heights stack
+    expect(k('door', 'elephant')).toBe('mixed');        // its 3.2 m is a shoulder, not a whole height
+    expect(k('trex', 'blue-whale')).toBe('long');       // lengths end to end
+    expect(k('moon', 'earth')).toBe('across');          // diameters side by side
+    expect(k('au', 'light-minute')).toBe('mixed');      // distances are only a ratio
+    const tiling = sliceBetween(src, '      function tiling() {', '      function staircase() {', { file: FILE });
+    expect(tiling.includes('var kind = fitMeasureKind(compare.small, compare.big);'), 'tiling uses the rule').toBe(true);
+    // Each sentence is chosen by its kind; "side by side" is left only for widths.
+    const at = (key) => tiling.indexOf("S('" + key + "'");
+    for (const key of ['fit_line_measure', 'fit_line_long', 'fit_line_close_long', 'fit_line_tall', 'fit_line_close_tall', 'fit_line_close', 'fit_line']) expect(at(key), key).toBeGreaterThan(-1);
+    expect(at('fit_line_measure')).toBeLessThan(at('fit_line_long'));
+    expect(tiling.indexOf("kind === 'mixed'")).toBeLessThan(at('fit_line_measure'));
+    // The headline sentence follows the same rule: a height is never called "long".
+    const sentence = sliceBetween(src, '      function compareSentence() {', '      function openItem(', { file: FILE });
+    expect(sentence.includes('var kind = fitMeasureKind(compare.small, compare.big)'), 'sentence uses the rule').toBe(true);
+    expect(sentence.indexOf("if (kind === 'mixed') return S('atlas_comparison_line_measure'"), 'mixed measures named').toBeGreaterThan(-1);
+    expect(sentence.indexOf("if (kind === 'mixed')")).toBeLessThan(sentence.indexOf("return S('atlas_comparison_line',"));
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(fs.readFileSync(rel, 'utf8')).stem.scaleExplorer;
+      for (const m of tiling.matchAll(/S\('(fit_line\w*)', '([^']+)'/g)) expect(sec[m[1]], rel + ' ' + m[1]).toBe(m[2]);
+      for (const m of sentence.matchAll(/S\('(atlas_comparison_line\w*)', '([^']+)'/g)) expect(sec[m[1]], rel + ' ' + m[1]).toBe(m[2]);
+    }
+  });
+
+  it('makes only open ocean glint on the Earth, never ice, land or bright shallows', () => {
+    const water = vm.runInNewContext(sliceBetween(src, '  function earthIsWater(r,g,b){', '\n', { file: FILE }) + 'earthIsWater;');
+    for (const [name, rgb] of Object.entries({ 'deep Pacific': [6, 16, 52], 'Indian Ocean': [12, 28, 74], 'coastal water': [24, 48, 92] })) expect(water(...rgb), name).toBe(true);
+    for (const [name, rgb] of Object.entries({ forest: [32, 64, 28], desert: [205, 172, 120], 'polar ice': [238, 242, 250], 'Bahamas shallows': [70, 170, 190], tundra: [96, 90, 78] })) expect(water(...rgb), name).toBe(false);
+    // Water is smoother (lower roughness) than everything else, and the map is optional.
+    const rough = sliceBetween(src, '  function earthOceanRoughness(T,image){', '  function earthNightMaterial(', { file: FILE });
+    expect(rough.includes('earthIsWater(d[i],d[i+1],d[i+2])?105:235'), 'water smooth, land matte').toBe(true);
+    expect(rough.includes('catch(e){return null;}'), 'unreadable pixels keep the old look').toBe(true);
+    expect(src.includes('if(oceanRough){track(oceanRough);planetMat.roughnessMap=oceanRough;planetMat.roughness=1;}'), 'applied only when built').toBe(true);
+  });
+
+  it('keeps the Milky Way star samples in the disc, bulge and bar proportions it always had', () => {
+    const loop = sliceBetween(src, '      // 44,000 samples in the original proportions', '        px=clamp(px,-.497,.497);', { file: FILE });
+    const n = (re) => Number(re.exec(loop)[1]);
+    const total = n(/for\(var j=0;j<(\d+);j\+\+\)/), thin = n(/if\(j<(\d+)\)\{/), thick = n(/\}else if\(j<(\d+)\)\{\s*var r=Math\.min/), bulge = n(/\}else if\(j<(\d+)\)\{\s*px=gaussian\(\)\*\.037/);
+    // The 29,000-sample original: 21,600 thin disc, 3,400 thick disc, 2,700 bulge, 1,300 bar.
+    const was = [21600, 3400, 2700, 1300].map((v) => v / 29000), now = [thin, thick - thin, bulge - thick, total - bulge].map((v) => v / total);
+    now.forEach((f, i) => expect(f, ['thin disc', 'thick disc', 'bulge', 'bar'][i]).toBeCloseTo(was[i], 2));
+    expect(total).toBeGreaterThan(29000);
+  });
+
+  it('puts the whale in open water without touching the measured body, comparisons or high contrast', () => {
+    expect(src.includes("'open-ocean':[[0,"), 'ocean gradient').toBe(true);
+    const whale = sliceBetween(src, "      if(focal&&focal.id==='blue-whale'){", "      var distance=", { file: FILE });
+    expect(whale.includes("if(state.contrast)scene.background.set('#000000');else scene.background=skyGradient('open-ocean');"), 'contrast keeps black').toBe(true);
+    expect(src.includes("var whaleActive=!!activeRoot&&state.focusId==='blue-whale'&&close>.8&&!state.neighbors&&!state.flight&&!state.contrast;"), 'context only in the whale view').toBe(true);
+    const comparison = sliceBetween(src, '      var pair = state.comparison, visible = []', '      bloodBackdrop.visible=false;', { file: FILE });
+    expect(comparison.includes('if(whaleWater)whaleWater.visible=false;'), 'hidden in comparisons').toBe(true);
+    const water = sliceBetween(src, '    function buildWhaleWater(){', '      return water;', { file: FILE });
+    expect(water.includes("water.userData.whaleWater=true"), 'scene-level group').toBe(true);
+    expect(/depthWrite:false/.test(water) && !/castShadow=true/.test(water), 'never occludes or shadows the whale').toBe(true);
+  });
+
+  it('draws a height chart only behind two heights side by side, on the same scale as the objects', () => {
+    const step = vm.runInNewContext('function log10(v){return Math.log(v)/Math.LN10;}' + sliceBetween(src, '    function chartStep(top){', '\n', { file: FILE }) + 'chartStep;');
+    // Round-number steps that give three to six lines up to the taller object.
+    expect(step(byId.giraffe.size)).toBe(1);
+    expect(step(byId.elephant.size)).toBeCloseTo(1, 10);
+    expect(step(byId.eiffel.size)).toBe(100);
+    expect(step(byId.everest.size)).toBe(2000);
+    for (const id of ['door', 'human', 'giraffe', 'elephant', 'eiffel', 'liberty', 'sequoia', 'everest']) {
+      const lines = Math.floor(byId[id].size * 1.08 / step(byId[id].size)) + 1;
+      expect(lines, id).toBeGreaterThanOrEqual(3); expect(lines, id).toBeLessThanOrEqual(12);
+    }
+    // A line k steps up sits where an object k steps tall would reach.
+    expect(src.includes('root.scale.setScalar(3 * item.size / pair.big.size);'), 'object scale').toBe(true);
+    const layout = sliceBetween(src, '    function layoutComparisonGrid(grid,big,bounds,contrast){', '    }\n', { file: FILE });
+    expect(layout.includes('var metre=3/big.size,'), 'chart scale matches').toBe(true);
+    expect(layout.includes('var y=k<count?k*step*metre:0'), 'lines at whole steps').toBe(true);
+    expect(src.includes("var chartable=!silhouette&&visible.length===2&&pair.a.dim==='tall'&&pair.b.dim==='tall';"), 'only heights, only side by side').toBe(true);
+    expect(sliceBetween(src, '      }else if(footballStadium)footballStadium.visible=false;', '      if(whaleActive){', { file: FILE }).includes('if(comparisonGrid)comparisonGrid.visible=false;'), 'hidden when exploring').toBe(true);
+  });
+
+  it('crops each chart glyph to what was painted and tiles it at its own proportions', () => {
+    const box = vm.runInNewContext(sliceBetween(src, '  function glyphPaintedBox(rgba, size) {', '  function glyphAspect(id)', { file: FILE }) + 'glyphPaintedBox;');
+    const size = 40, rgba = new Uint8ClampedArray(size * size * 4);
+    const paint = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) rgba[(y * size + x) * 4 + 3] = 255; };
+    expect(box(rgba, size), 'nothing painted').toBeNull();
+    paint(10, 18, 29, 21); // a long, low shape, 20 x 4
+    rgba[(2 * size + 2) * 4 + 3] = 8; // anti-alias haze below the threshold is ignored
+    expect(box(rgba, size)).toEqual({ x: 8, y: 16, w: 24, h: 8 });
+    paint(0, 0, 0, 0); paint(39, 39, 39, 39); // the margin is clamped at the canvas edge
+    expect(box(rgba, size)).toEqual({ x: 0, y: 0, w: 40, h: 40 });
+    // The tile keeps the glyph's ratio and stays inside the cell and the bar,
+    // with lying copies (heights) swapping the two sides.
+    const tiling = sliceBetween(src, '      function tiling() {', '      function staircase() {', { file: FILE });
+    const fit = /var gk = lying \? Math\.min\(along, across \/ ga\) : Math\.min\(along \/ ga, across\), gw = gk \* ga, gh = gk;/;
+    expect(fit.test(tiling), 'aspect fit').toBe(true);
+    const gkOf = (lying, along, across, ga) => (lying ? Math.min(along, across / ga) : Math.min(along / ga, across));
+    for (const [lying, along, across, ga] of [[false, 120, 26, 3], [false, 30, 26, 1], [true, 80, 26, .4], [false, 20, 26, 4]]) {
+      const gk = gkOf(lying, along, across, ga), gw = gk * ga, gh = gk, run = lying ? gh : gw, side = lying ? gw : gh;
+      expect(run).toBeLessThanOrEqual(along + 1e-9); expect(side).toBeLessThanOrEqual(across + 1e-9);
+      expect(Math.max(run / along, side / across)).toBeCloseTo(1, 9); // as large as fits
+    }
+    expect(src.includes('function glyphAspect(id) { return glyphImage(id) && glyphAspects[id] || 1; }'), 'falls back to square').toBe(true);
+  });
+
+  it('draws DNA as B-DNA: 10 base pairs a turn, strands 0.38 of a turn apart so the grooves differ', () => {
+    const dna = sliceBetween(src, "    } else if (id === 'dna') {", "    } else if (id === 'light')", { file: FILE });
+    const shape = /var turns = ([\d.]+), steps = (\d+)/.exec(dna), turns = Number(shape[1]), steps = Number(shape[2]);
+    // Rungs are spaced one per tenth of a turn, the real 10 base pairs per turn of B-DNA.
+    expect(steps / turns).toBeCloseTo(10, 10);
+    const off = Number(/off = Math\.PI \* 2 \* ([\d.]+)/.exec(dna)[1]);
+    // Equal strand spacing (0.5) would make identical grooves; B-DNA has a wide and a narrow one.
+    expect(off).toBeGreaterThan(0.3); expect(off).toBeLessThan(0.45);
+  });
+
+  it('drops the stadium crowd in high contrast, keeping the measured pitch', () => {
+    const block = sliceBetween(src, "      if(footballActive){", "      }else if(footballStadium)footballStadium.visible=false;", { file: FILE });
+    expect(block.includes('footballStadium.visible=!state.contrast;'), 'stadium hidden in contrast').toBe(true);
+    // The pitch itself is never gated on contrast: only the stadium context is.
+    expect(block.includes("floor.visible=ground.visible=garden.visible=motes.visible=false;"), 'pitch scene unchanged').toBe(true);
+  });
+
+  it('keeps chart label text at 4.5:1 and rings at 3:1 however far an item fades (WCAG 1.4.3, 1.4.11)', () => {
+    const lin = (c) => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+    const lum = (hex) => { const n = parseInt(hex.slice(1), 16); return .2126 * lin(n >> 16) + .7152 * lin((n >> 8) & 255) + .0722 * lin(n & 255); };
+    const blend = (fg, bg, a) => { const F = parseInt(fg.slice(1), 16), B = parseInt(bg.slice(1), 16); return '#' + [16, 8, 0].map((s) => Math.round(((F >> s) & 255) * a + ((B >> s) & 255) * (1 - a)).toString(16).padStart(2, '0')).join(''); };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+    const palette = vm.runInNewContext('(function(){' + sliceBetween(src, '  function palette(theme) {', '\n  }\n', { file: FILE, includeEnd: true }) + 'return palette;})()');
+    const draw = sliceBetween(src, '      function draw() {', '        // Labels are a second pass', { file: FILE });
+    const labels = sliceBetween(src, '        // Labels are a second pass', '        // Film chrome', { file: FILE });
+    const ringFloor = Number(/g\.globalAlpha = Math\.max\(alpha, ([\d.]+)\);/.exec(draw)[1]);
+    const textFloor = Number(/clamp\(1 - \(lc\.dist \/ \(DECADES_ACROSS \* 1\.35\)\), ([\d.]+), 1\)/.exec(labels)[1]);
+    for (const theme of ['dark', 'light', 'contrast']) {
+      const P = palette(theme);
+      expect(ratio(blend(P.stageFg, P.stage, textFloor), P.stage), theme + ' name').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(blend(P.stageDim, P.stage, textFloor), P.stage), theme + ' size line').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(blend(P.ring, P.stage, ringFloor), P.stage), theme + ' ring').toBeGreaterThanOrEqual(3);
+    }
+    // The old floor really was illegible, so the assertion above is not vacuous.
+    const P = palette('dark');
+    expect(ratio(blend(P.stageDim, P.stage, .12), P.stage)).toBeLessThan(1.5);
+  });
+
+  it('keeps pressed buttons and legend text readable in every theme (WCAG 1.4.3)', () => {
+    const lin = (c) => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+    const lum = (hex) => { const n = parseInt(hex.slice(1), 16); return .2126 * lin(n >> 16) + .7152 * lin((n >> 8) & 255) + .0722 * lin(n & 255); };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+    const palette = vm.runInNewContext('(function(){' + sliceBetween(src, '  function palette(theme) {', '\n  }\n', { file: FILE, includeEnd: true }) + 'return palette;})()');
+    // The pressed lighting button is drawn in the theme's selected colours, never plain text on them.
+    const eiffel = sliceBetween(src, '      function eiffelLightingControls(scroll){', '      function eiffelNavigator(){', { file: FILE });
+    expect(eiffel.includes('background:!evening?P.selBg:P.bg,color:!evening?P.selFg:P.text'), 'daylight button').toBe(true);
+    expect(eiffel.includes('background:evening?P.selBg:P.bg,color:evening?P.selFg:P.text'), 'evening button').toBe(true);
+    for (const theme of ['dark', 'light', 'contrast']) { const P = palette(theme); expect(ratio(P.selFg, P.selBg), theme + ' selected').toBeGreaterThanOrEqual(4.5); expect(ratio(P.text, P.bg), theme + ' text').toBeGreaterThanOrEqual(4.5); }
+    // The water legend's oxygen colour, per theme, on that theme's panel.
+    const legend = /color:theme==='contrast'\?P\.text:theme==='light'\?'(#[0-9a-f]{6})':'(#[0-9a-f]{6})'\}\},S\('atlas_water_oxygen_legend'/.exec(src);
+    expect(legend, 'oxygen legend colours').toBeTruthy();
+    expect(ratio(legend[1], palette('light').panel), 'light').toBeGreaterThanOrEqual(4.5);
+    expect(ratio(legend[2], palette('dark').panel), 'dark').toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('lets overlay labels wrap and steer clear of each other under WCAG text spacing (1.4.12)', () => {
+    // Pins wrap inside the stage instead of staying on one clipped line.
+    for (const cls of ['sx-ruler-pin', 'sx-scene-pin']) {
+      const rule = new RegExp('\\.' + cls + '\\{[^}]*\\}').exec(src)[0];
+      expect(rule.includes('white-space:nowrap'), cls + ' must not force one line').toBe(false);
+      expect(rule.includes('max-width:calc(100% - 16px)') && rule.includes('overflow-wrap:anywhere'), cls + ' wraps inside the stage').toBe(true);
+    }
+    // The length tag is painted first, so the story pins can steer around where it landed.
+    const order = sliceBetween(src, '      // The length tag goes first', '      paintBetelgeusePins(', { file: FILE });
+    expect(order.includes('paintRulerTag(flight?null:activeRoot,width,height);'), 'tag first').toBe(true);
+    const pins = sliceBetween(src, '    function paintRulerStoryPins(root,state,width,height){', '    // A glazed egg cup', { file: FILE });
+    expect(pins.includes("comparisonLabels.querySelector('[data-scale-ruler-tag]')"), 'tag looked up where it lives').toBe(true);
+    expect(pins.includes('if(story&&tagAt)placed.push('), 'tag is an obstacle').toBe(true);
+    // The transform pattern really reads the tag's own transform (a stripped backslash once broke it).
+    const pattern = /tagAt=lengthTag&&!lengthTag\.hidden&&(\/translate[^\n]*?\/)\.exec/.exec(pins);
+    expect(pattern, 'transform pattern present').toBeTruthy();
+    const re = vm.runInNewContext(pattern[1]);
+    expect(re.exec('translate(102.5px, 282.3px)').slice(1, 3)).toEqual(['102.5', '282.3']);
+    // A pin tries both sides of the ruler, nearest first, and never gives up for lack of a free slot.
+    expect(pins.includes('top=slots.filter(function(t){return inView(t)&&free(t);})[0];if(top===undefined)top=slots.filter(inView)[0];'), 'free slots then any visible').toBe(true);
+  });
+
   it('gives screen readers every scene note, worded as the source shows it', () => {
     const notes = {};
     for (const m of src.matchAll(/S\('(atlas_\w+_scene_note)',\s*'([^']+)'\)/g)) notes[m[1]] = m[2];
     // Each composed setting is described: the stadium, Paris, the grove and the AU orbits included.
-    for (const key of ['atlas_pitch_scene_note', 'atlas_eiffel_scene_note', 'atlas_sequoia_scene_note', 'atlas_au_scene_note', 'atlas_helio_scene_note']) expect(notes[key], key).toBeTruthy();
+    for (const key of ['atlas_pitch_scene_note', 'atlas_eiffel_scene_note', 'atlas_sequoia_scene_note', 'atlas_au_scene_note', 'atlas_pyramid_scene_note', 'atlas_liberty_scene_note', 'atlas_helio_scene_note']) expect(notes[key], key).toBeTruthy();
     expect(notes.atlas_pitch_scene_note.includes('stadium'), 'pitch note names the stadium').toBe(true);
     for (const rel of UI_COPIES) {
       const sec = JSON.parse(fs.readFileSync(rel, 'utf8')).stem.scaleExplorer;

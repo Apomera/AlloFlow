@@ -124,7 +124,7 @@ function sceneObjects(scene, code, cityName) {
   const runway = scene.children.find(item => item.userData?.runwayModel?.airport?.code === code);
   const city = scene.children.find(item => item.userData?.geo && item.userData?.mats && item.userData?.lat != null
     && (!cityName || item.userData.lon === api.REAL_CITIES.find(row => row[0] === cityName)?.[2]));
-  const terrain = scene.children.find(item => item.isMesh && item.geometry?.attributes?.position?.count === 3721);
+  const terrain = scene.children.find(item => item.isMesh && item.geometry?.type === 'PlaneGeometry' && item.geometry.parameters?.width === 240000);   // the near terrain patch
   expect(player).toBeTruthy(); expect(runway).toBeTruthy(); expect(city).toBeTruthy(); expect(terrain).toBeTruthy();
   return { player, runway, city, terrain };
 }
