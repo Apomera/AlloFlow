@@ -66,7 +66,7 @@
       "deterministic": true,
       "prompts": 1,
       "axes": {
-        "grade": "absent",
+        "grade": "reaches",
         "lang": "reaches",
         "uiLang": "absent",
         "standards": "absent",
@@ -103,7 +103,7 @@
         "uiLang": "absent",
         "standards": "absent",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "absent",
         "emoji": "absent"
       }
@@ -367,7 +367,7 @@
     {
       "backend": "cloud",
       "type": "glossary",
-      "deterministic": true,
+      "deterministic": false,
       "prompts": 1,
       "axes": {
         "grade": "reaches",
@@ -377,7 +377,7 @@
         "interests": "reaches",
         "dok": "reaches",
         "custom": "reaches",
-        "emoji": "reaches"
+        "emoji": "unknown"
       }
     },
     {
@@ -402,7 +402,7 @@
       "deterministic": true,
       "prompts": 1,
       "axes": {
-        "grade": "absent",
+        "grade": "reaches",
         "lang": "reaches",
         "uiLang": "absent",
         "standards": "absent",
@@ -439,7 +439,7 @@
         "uiLang": "absent",
         "standards": "absent",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "absent",
         "emoji": "absent"
       }
