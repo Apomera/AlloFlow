@@ -11209,16 +11209,21 @@ const downloadSubmissionBackup = (submissionData, filename) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
   };
-const loadProjectFromJson = (parsed) => {
+const loadProjectFromJson = async (parsed) => {
     try {
       const jsonString = JSON.stringify(parsed);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const fileName = (parsed && parsed.title ? parsed.title : 'community-lesson') + '.json';
       const file = new File([blob], fileName, { type: 'application/json' });
       const fakeEvent = { target: { files: [file] } };
-      __d.handleLoadProject(fakeEvent);
+      const owner = await __d.handleLoadProject(fakeEvent);
+      if (!owner || !owner.completion || typeof owner.completion.then !== 'function') {
+        throw new Error('Project import completion is unavailable. Refresh AlloFlow and try again.');
+      }
+      return await owner.completion;
     } catch (err) {
       __d.addToast && __d.addToast(__d.t('toasts.failed_load_lesson') + (err && err.message), 'error');
+      return { success: false };
     }
   };
 const handleBotFinishedSpeaking = () => {

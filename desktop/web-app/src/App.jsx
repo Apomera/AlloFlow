@@ -3126,6 +3126,17 @@ const _alloReadShellDeepLinkTool = () => {
     return null;
   }
 };
+// LESSON_DEEP_LINK_READER_START
+// The query selects a catalog entry, never a URL or path to fetch. Approval and
+// existence are checked against the catalog index before its preview can load.
+const _alloReadLessonDeepLinkSlug = () => {
+  try {
+    const values = new URLSearchParams(window.location.search || '').getAll('lesson');
+    if (values.length !== 1) return null;
+    return /^[a-z0-9][a-z0-9_-]{0,127}$/i.test(values[0]) ? values[0] : null;
+  } catch (_) { return null; }
+};
+// LESSON_DEEP_LINK_READER_END
 // ResizeObserver loop guard. The browser reports "ResizeObserver loop completed with
 // undelivered notifications" whenever an observer callback changes layout in the same
 // frame it was notified — a canvas sized from its container inside the callback is
@@ -13914,6 +13925,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
   }, []);
   const [isCommunityCatalogOpen, setIsCommunityCatalogOpen] = useState(false);
+  // LESSON_DEEP_LINK_STATE_START
+  const [lessonDeepLinkSlug] = useState(() => _alloReadLessonDeepLinkSlug());
+  const [lessonDeepLinkDismissed, setLessonDeepLinkDismissed] = useState(false);
+  const lessonDeepLinkAppliedRef = useRef(false);
+  const [communityCatalogLessonSlug, setCommunityCatalogLessonSlug] = useState(null);
+  const closeCommunityCatalog = () => {
+    setIsCommunityCatalogOpen(false);
+    setCommunityCatalogLessonSlug(null);
+    setLessonDeepLinkDismissed(true);
+  };
+  // LESSON_DEEP_LINK_STATE_END
   // Reading Library (2026-07-05): StoryWeaver CC-BY picture books, browse + read + practice.
   const [isReadingLibraryOpen, _setIsReadingLibraryOpenRaw] = useState(false);
   // Deep-open slug for a lesson-pinned book (set by restore/sync, consumed by the module).
@@ -14691,7 +14713,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // onto in subsequent commits.
     loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=4173754e12');
     loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=4173754e12');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=4173754e12');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=4a4189a905');
     window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=4173754e12'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
     loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=4173754e12');
@@ -15032,8 +15054,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=4173754e12');
     // File selection must promote intake ahead of deferred background tools.
     // The registry handles in-flight deduplication and failed-load retries.
-    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=4173754e12'); };
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=4173754e12');
+    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=cd941ca2dc'); };
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=cd941ca2dc');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=4173754e12');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=4173754e12');
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=4173754e12');
@@ -15068,7 +15090,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=00a98b7e');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=f45aa89fc5');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=4173754e12');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=4173754e12');
@@ -15120,8 +15142,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // could hold the whole queue indefinitely. Once blocked this long, let one
       // module per window through so it still drains under continuous use.
       var PUMP_STARVE_MS = 8000;
+      var PUMP_IDLE_STARVE_MS = 1500;
       var pumpDispatched = Object.create(null);
       var starvedSince = 0;
+      var idleStarvedSince = 0;
       // What a door's first clicks wait on (Load Project, Quick Start, Generate, the
       // sidebar). These go first, and only these trickle in behind the launch pad.
       var FIRST_ACTION_MODULES = ['MiscHandlersModule', 'PhaseOHandlersModule', 'PureHelpersModule',
@@ -15201,8 +15225,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // is only running because continuous input has starved it.
         var budget = (trickle || blocked || slowBackground) ? 1 : PUMP_PARALLEL;
         var available = Math.max(0, budget - inFlight);
+        // Idle callbacks can keep arriving on time with <=10ms remaining. In
+        // that case didTimeout never becomes true, so waiting for a larger
+        // idle slice can park the queue forever. Allow one script per starvation
+        // window; the visibility, launch-pad and in-flight guards still apply.
+        var forceIdleProgress = false;
+        if (available > 0 && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
+          if (!idleStarvedSince) idleStarvedSince = nowMs;
+          if (nowMs - idleStarvedSince >= PUMP_IDLE_STARVE_MS) {
+            forceIdleProgress = true;
+            available = 1;
+          }
+        } else {
+          idleStarvedSince = 0;
+        }
         while (available > 0 && __alloDeferredModuleQueue.length
-          && (deadline.didTimeout || deadline.timeRemaining() > 10)) {
+          && (forceIdleProgress || deadline.didTimeout || deadline.timeRemaining() > 10)) {
           var nextHead = trickle ? nextLive() : null;
           if (trickle && !(nextHead && nextHead.name in firstActionRank)) break;
           var queued = __alloDeferredModuleQueue.shift();
@@ -15210,6 +15248,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           delete __alloDeferredModuleNames[queued.name];
           pumpDispatched[queued.name] = true;
           __alloLoadModuleNow(queued.name, queued.url);
+          idleStarvedSince = 0;
           available--;
         }
         schedule(trickle ? 600 : slowBackground ? 1200 : (available > 0 ? 180 : 360));
@@ -21839,13 +21878,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const [canvasRecoveryDecisionMade, setCanvasRecoveryDecisionMade] = useState(() => !isCanvas);
   const [shellDeepLinkTool, setShellDeepLinkTool] = useState(() => _alloReadShellDeepLinkTool());
+  // A lesson link reveals a preview, not a selected role or replacement workspace.
+  // Explicit tool routes take precedence if both query parameters are present.
+  const lessonDeepLinkActive = !!lessonDeepLinkSlug && !lessonDeepLinkDismissed && !shellDeepLinkTool;
   useEffect(() => {
       const body = typeof document !== 'undefined' ? document.body : null;
       if (!body) return undefined;
-      const concealWorkspace = !isAppReady || (!hasSelectedMode && !shellDeepLinkTool);
+      const concealWorkspace = !isAppReady || (!hasSelectedMode && !shellDeepLinkTool && !lessonDeepLinkActive);
       body.classList.toggle('alloflow-workspace-concealed', concealWorkspace);
       return () => body.classList.remove('alloflow-workspace-concealed');
-  }, [isAppReady, hasSelectedMode, shellDeepLinkTool]);
+  }, [isAppReady, hasSelectedMode, shellDeepLinkTool, lessonDeepLinkActive]);
   const [shellDeepLinkApplied, setShellDeepLinkApplied] = useState(false);
   // Deep-link visitor banner (2026-08-16): a stranger arriving via /<tool-slug>
   // has zero context. One slim dismissible strip names the platform and offers
@@ -21875,6 +21917,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setShellDeepLinkApplied(true);
   }, [shellDeepLinkTool, shellDeepLinkApplied, isAppReady, isHistoryLoaded, canvasRecoveryDecisionMade]);
+  // LESSON_DEEP_LINK_ARRIVAL_START
+  useEffect(() => {
+      if (!lessonDeepLinkActive || lessonDeepLinkAppliedRef.current || !isAppReady || !isHistoryLoaded || !canvasRecoveryDecisionMade) return;
+      lessonDeepLinkAppliedRef.current = true;
+      // Previewing never imports, clears history, changes roles, or races the
+      // existing recovery choice. The explicit catalog Import button owns that.
+      setCommunityCatalogLessonSlug(lessonDeepLinkSlug);
+      setIsCommunityCatalogOpen(true);
+      try { window.__alloPromoteModule?.('CommunityCatalog'); } catch (_) {}
+  }, [lessonDeepLinkActive, lessonDeepLinkSlug, isAppReady, isHistoryLoaded, canvasRecoveryDecisionMade]);
+  // LESSON_DEEP_LINK_ARRIVAL_END
   useEffect(() => {
       // Wait for authoritative history hydration before pruning. Otherwise the
       // initial empty history render would erase valid preparation saved for
@@ -37215,6 +37268,17 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // from a parsed lesson JSON so the existing handleLoadProject flow runs
   // unchanged (mode switching, settings, history, all the side-effects).
   const loadProjectFromJson = (...__a) => _alloHostHandlers().loadProjectFromJson(...__a);
+  // LESSON_DEEP_LINK_IMPORT_START
+  const handleImportCatalogLesson = async (lesson) => {
+    const result = await loadProjectFromJson(lesson);
+    if (communityCatalogLessonSlug && result && result.success === true) {
+      // Reveal the workspace only after the explicit import has completed.
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+    }
+    return result;
+  };
+  // LESSON_DEEP_LINK_IMPORT_END
   // Reading Library sync helper (2026-07-05): a pushed/restored 'readingBook'
   // resource opens the reader overlay instead of a content view (there is no
   // 'readingBook' activeView renderer — falling through would blank the pane).
@@ -39691,32 +39755,58 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           newConfig.recommendedResources.forEach(r => newSelection[r] = true);
       }
   };
+  const blueprintCreationRequestRef = useRef({ blueprint: activeBlueprint, pending: null });
+  blueprintCreationRequestRef.current.blueprint = activeBlueprint;
   const handleExecuteBlueprint = async () => {
-    const _adapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
-    if (!_adapterModule) return _alloAwaitModules([['AgentCoreUIAdapter', 'AgentCoreUIAdapter']], 'this tool').then(() => handleExecuteBlueprint());
-    if (typeof _adapterModule.createUIAdapter !== 'function') {
-      throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
+    const pending = blueprintCreationRequestRef.current.pending;
+    if (pending && pending.blueprint === activeBlueprint) return pending.promise;
+    const request = { blueprint: activeBlueprint, promise: null };
+    request.promise = (async () => {
+      // A reviewed plan can be ready before the creation engine. Promote the
+      // complete dependency set, then continue this click after bounded loading.
+      // These modules resolve their dependencies at invocation, so their script
+      // registration order is immaterial once every dependency is ready.
+      await _alloAwaitModules([
+        ['AgentCoreContracts', 'AgentCoreContracts'],
+        ['AgentCoreBlueprintService', 'AgentCoreBlueprintService'],
+        ['GenerationMatrix', 'GenerationMatrix'],
+        ['AgentCoreUIAdapter', 'AgentCoreUIAdapter'],
+        ['PhaseOHandlersModule', 'PhaseOHandlers'],
+      ], 'lesson generation tools');
+      // Cancel, editing, or replacing the plan while scripts arrive must not
+      // start the old plan when the wait completes.
+      if (blueprintCreationRequestRef.current.blueprint !== request.blueprint) {
+        return { ok: false, status: 'cancelled', reasonCode: 'blueprint-changed' };
+      }
+      const _adapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
+      if (typeof _adapterModule.createUIAdapter !== 'function') {
+        throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
+      }
+      const _knownTools = Array.isArray(window.TOOL_CATALOG)
+        ? window.TOOL_CATALOG.map(item => item && item.id).filter(Boolean)
+        : undefined;
+      const _uiAdapter = _adapterModule.createUIAdapter({ knownTools: _knownTools });
+      const _prepared = _uiAdapter.prepareExecution(activeBlueprint, {
+        gradeLevel,
+        language: leveledTextLanguage,
+        standards: standardsInput,
+        interests: studentInterests,
+      }, 'ui-confirmation');
+      if (!_prepared.ok) {
+        const _approvalError = new Error((_prepared.errors && _prepared.errors[0] && _prepared.errors[0].message) || 'Blueprint approval failed');
+        _approvalError.report = _prepared;
+        throw _approvalError;
+      }
+      const _executionBlueprint = _prepared.legacyConfig;
+      const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
+      if (_m && typeof _m.handleExecuteBlueprint === "function") return _m.handleExecuteBlueprint({ ..._alloPhaseOHandlersDeps(), activeBlueprint: _executionBlueprint });
+      throw new Error("[handleExecuteBlueprint] PhaseOHandlers module not loaded - reload the page");
+    })();
+    blueprintCreationRequestRef.current.pending = request;
+    try { return await request.promise; }
+    finally {
+      if (blueprintCreationRequestRef.current.pending === request) blueprintCreationRequestRef.current.pending = null;
     }
-    const _knownTools = Array.isArray(window.TOOL_CATALOG)
-      ? window.TOOL_CATALOG.map(item => item && item.id).filter(Boolean)
-      : undefined;
-    const _uiAdapter = _adapterModule.createUIAdapter({ knownTools: _knownTools });
-    const _prepared = _uiAdapter.prepareExecution(activeBlueprint, {
-      gradeLevel,
-      language: leveledTextLanguage,
-      standards: standardsInput,
-      interests: studentInterests,
-    }, 'ui-confirmation');
-    if (!_prepared.ok) {
-      const _approvalError = new Error((_prepared.errors && _prepared.errors[0] && _prepared.errors[0].message) || 'Blueprint approval failed');
-      _approvalError.report = _prepared;
-      throw _approvalError;
-    }
-    const _executionBlueprint = _prepared.legacyConfig;
-    const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
-    if (_m && typeof _m.handleExecuteBlueprint === "function") return _m.handleExecuteBlueprint({ ..._alloPhaseOHandlersDeps(), activeBlueprint: _executionBlueprint });
-    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleExecuteBlueprint());
-    throw new Error("[handleExecuteBlueprint] PhaseOHandlers module not loaded - reload the page");
   };
   // Stage 5 — rebuild a single plan row, addressed by its Stage 2 uiId.
   // Deliberately NOT routed through prepareExecution: that gate is the
@@ -45718,7 +45808,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           guidedMode, so a pathway picked before the recovery decision was silently
           undone by the restore that followed. Return users decide about saved work
           first, then choose a pathway. */}
-      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && !lessonDeepLinkActive && React.createElement(window.AlloModules.LaunchPadView, {
           t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
           requestMicPermission,
           enableVoiceAccess: enableGlobalVoiceAccess,
@@ -46375,12 +46465,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             }}
         </CDNModuleGate>
 
-        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={() => setIsCommunityCatalogOpen(false)} icon="🗂️" displayName="Community Catalog" t={t}>
+        <CDNModuleGate moduleKey="CommunityCatalog" isOpen={isCommunityCatalogOpen} onClose={closeCommunityCatalog} icon="🗂️" displayName={communityCatalogLessonSlug ? 'Lesson preview' : 'Community Catalog'} accessibleModal={true} t={t}>
             {(CC) => React.createElement(CC, {
                 isOpen: true,
-                onClose: () => setIsCommunityCatalogOpen(false),
+                onClose: closeCommunityCatalog,
+                selectedSlug: communityCatalogLessonSlug,
                 addToast,
-                loadProjectFromJson,
+                loadProjectFromJson: handleImportCatalogLesson,
             })}
         </CDNModuleGate>
 

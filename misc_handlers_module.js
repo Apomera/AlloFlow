@@ -582,11 +582,18 @@ function _createProjectLoadOperationManager(controllerFactory) {
             try { owner.onComplete(payload); } catch (_) {}
         }
     };
+    const settleCompletion = (owner, payload) => {
+        if (!owner || !owner.resolveCompletion) return;
+        const resolve = owner.resolveCompletion;
+        owner.resolveCompletion = null;
+        resolve(payload);
+    };
     const abortOwner = (owner, notifyLifecycle) => {
         if (!owner) return;
         try { if (owner.controller && typeof owner.controller.abort === 'function') owner.controller.abort(); } catch (_) {}
         try { if (owner.reader && typeof owner.reader.abort === 'function') owner.reader.abort(); } catch (_) {}
         if (notifyLifecycle !== false) completeLifecycle(owner, { success: false, cancelled: true });
+        settleCompletion(owner, { success: false, cancelled: true });
     };
     const cancelActive = (options) => {
         const owner = active;
@@ -601,7 +608,11 @@ function _createProjectLoadOperationManager(controllerFactory) {
             cancelActive({ notifyLifecycle: true });
             const opts = options || {};
             const controller = makeController();
+            let resolveCompletion;
+            const completion = new Promise(resolve => { resolveCompletion = resolve; });
             const owner = {
+                completion,
+                resolveCompletion,
                 generation: ++generation,
                 controller,
                 signal: controller && controller.signal ? controller.signal : null,
@@ -635,6 +646,7 @@ function _createProjectLoadOperationManager(controllerFactory) {
             active = null;
             generation += 1;
             completeLifecycle(owner, { success: success === true });
+            settleCompletion(owner, { success: success === true });
             return true;
         },
         cancel(owner, options) {

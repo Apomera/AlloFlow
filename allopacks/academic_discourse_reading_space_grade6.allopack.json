@@ -1,0 +1,351 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "A Reading Space We Can Share: Original Discussion Lesson Draft",
+    "author": "Codex-authored original example for Aaron; educator review pending",
+    "license": "Teacher review required",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "createdAt": "2026-10-21T18:24:44.058Z",
+    "standardsContext": null,
+    "instructionalContext": {
+      "schemaVersion": 1,
+      "instructionalGrade": "6th Grade",
+      "primaryTextPolicy": "preserve-primary",
+      "primaryTextAccess": "available",
+      "adaptedTextPolicy": "include",
+      "adaptedTextPolicySource": "workflow-default",
+      "textAccessReason": "default-access-companion",
+      "standardsContext": null,
+      "standardsFingerprint": "txt-77074ba4-4"
+    }
+  },
+  "sourceTopic": "Academic discourse and shared decisions: a fictional reading-space challenge",
+  "history": [
+    {
+      "id": "reading-space-directions",
+      "type": "directions",
+      "title": "Our Shared Challenge",
+      "timestamp": "2026-10-21T18:24:44.058Z",
+      "data": {
+        "body": "## Design a reading space together\n\n**Draft for teacher review. Suggested setting: grade 6, one 50-minute lesson.**\n\n**Our goal:** Explain a proposal using evidence, respond to a different idea, and improve a shared decision. We are learning how to think together. Speed, volume, handwriting, and eye contact are not measures of success.\n\n**You will make:** One group recommendation, including two evidence references, a response to a different idea, and one tradeoff or unanswered question. Each person will also explain their own thinking in the exit check.\n\n### The fictional case\n\nA school is changing one reading corner. Your group can spend **at most 6 equipment tokens**. Use the evidence below to decide what to choose. You may also propose a routine that costs no tokens. Every fact, number, and price in this case is invented for practice. These are not research findings or claims about real equipment.\n\n**Evidence A: Preferences.** In a fictional class of 30, 24 selected a quiet place for independent reading and 18 selected a place to discuss a book with a partner. They could select both choices, so do not add the counts to find a class total.\n\n**Evidence B: A space check.** In the trial layout, a large fixed table blocked the route to one shelf. Any new plan must keep a clear route to every shelf. The teacher will check the actual layout before use.\n\n**Evidence C: A sound check.** During three practice sessions, partner talk could be heard across this small corner. No one has tested whether a divider would reduce that sound.\n\n**Evidence D: A light check.** The existing corner light does not reach every reading position. The room already has another well-lit reading area.\n\n**Evidence E: Available equipment.** A divider costs 3 tokens; a task lamp costs 2; a movable table costs 3; a book basket costs 1; a set of seat pads costs 2. Choose each item at most once. A divider can mark two areas but is not guaranteed to block sound. A movable table can be repositioned; its fit must be checked. A basket can bring books closer; it must not block the route. Seat pads add floor-seating choices, but floor seating is optional. A lamp adds light at one position; check cords and placement before use.\n\n### Work through the decision\n\n1. **Prepare (5 minutes).** Read the case, listen to a partner or teacher read it, or use your usual reading tool. All options use the same evidence. Mark one useful fact and one question. You can write, type, sketch with labels, or prepare a message using your usual communication method.\n2. **Watch and notice (7 minutes).** Your teacher models a quick decision that skips someone else's idea, then models a response that checks the evidence and changes the plan. Identify what changed. Agree on how your group will invite contributions and leave enough response time.\n3. **Consider each idea (10 minutes).** Use the communication chart. Each person contributes a proposal and evidence, responds to another idea, and has the opportunity to clarify their own meaning. Do not assume silence means agreement. Use the shared notebook to keep track of ideas, not to rank people.\n4. **Decide and revise (15 minutes).** Compare at least two possible plans. Explain the equipment total. Test your plan against the clear-route rule and the evidence. Revise at least one feature in response to a contribution, or explain why you kept it after considering that contribution. If agreement is incomplete, record the remaining concern instead of forcing agreement.\n5. **Check the recommendation (5 minutes).** Share your group's plan as text, an annotated sketch, an audio explanation, signed communication, or another accessible format. Make the same reasoning visible in every format. A group member may help record the group's agreed message; everyone checks its meaning.\n6. **Reflect independently (8 minutes).** Complete the exit check using a response format that communicates your reasoning. Identify a useful contribution, what you did with it, and your next step.\n\n### Check your work\n\n- We used at least two specific evidence references to explain our recommendation.\n- We responded to a different proposal and explained how it influenced our thinking.\n- We stayed within 6 tokens and considered the clear route.\n- We identified a tradeoff or a question that still needs evidence.\n- Each person had a meaningful way to contribute and respond.\n\n**Idea attribution:** This original fictional lesson applies themes discussed in Katie Novak's [Beyond Turn & Talk: How to Teach Academic Discourse and Collaboration](https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration) (October 20, 2026). It does not reproduce her article or companion guide and has not been reviewed or endorsed by her.",
+        "objectives": [
+          {
+            "id": "goal-evidence",
+            "label": "Explain a recommendation using two evidence references.",
+            "kind": "manual"
+          },
+          {
+            "id": "goal-response",
+            "label": "Respond to another idea and explain how it affected the decision.",
+            "kind": "manual"
+          },
+          {
+            "id": "goal-tradeoff",
+            "label": "Identify one unresolved tradeoff or evidence gap.",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "Original draft | Grade 6 assumption | 50 minutes | Shared decision",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "unspecified",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      }
+    },
+    {
+      "id": "reading-space-chart",
+      "type": "anchor-chart",
+      "title": "Make Thinking Available to One Another",
+      "timestamp": "2026-10-21T18:24:44.058Z",
+      "data": {
+        "title": "Make Thinking Available to One Another",
+        "sections": [
+          {
+            "label": "Prepare and choose a way to contribute",
+            "bullets": [
+              "Use speech, writing, typing, signing, AAC, a labeled sketch, or another effective method. Partners agree how to receive and respond to each message.",
+              "Allow preparation and response time. Ask whether someone wants more time or another way to contribute; do not speak for them without permission.",
+              "Keep the case available. Evidence means information we can point to; reasoning explains why that information supports our choice."
+            ]
+          },
+          {
+            "label": "Explain and check meaning",
+            "bullets": [
+              "A possible plan is ____. Evidence ____ matters because ____.",
+              "I understand your idea to mean ____. Have I understood it?",
+              "What makes you think ____? Which evidence supports that part?"
+            ]
+          },
+          {
+            "label": "Compare, question, and revise",
+            "bullets": [
+              "The plans agree about ____ but differ about ____. That matters because ____.",
+              "I am uncertain about ____. The case says ____, but it does not tell us ____.",
+              "Your point about ____ changes my proposal in this way: ____.",
+              "I considered ____. I still recommend ____ because ____. A limitation is ____."
+            ]
+          },
+          {
+            "label": "Model: from preference to evidence",
+            "bullets": [
+              "First attempt: \"Choose the divider. I already decided.\" This leaves the other idea and the evidence unexplored.",
+              "Revised attempt: \"You proposed a task lamp because of Evidence D. I proposed a divider for quiet reading. Evidence C does not show that it blocks sound. Could we compare a lamp plan with a time-sharing routine?\"",
+              "Notice the link to the other proposal, the evidence reference, and the honest uncertainty. Use your own words; the sentence patterns are optional."
+            ]
+          },
+          {
+            "label": "Coordinate a real shared decision",
+            "bullets": [
+              "Share responsibilities: invite responses, locate evidence, record the agreed meaning, and check constraints. Rotate these responsibilities; each person still reasons about the entire plan.",
+              "Before finalizing, check: What did we learn from one another? Which idea changed our decision? Whose meaning still needs checking?",
+              "A group product is shared work when people influence the decision. Four separate paragraphs pasted together do not by themselves show this."
+            ]
+          }
+        ]
+      },
+      "meta": "Optional communication support | Same intellectual goal in every response format",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "unspecified",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      }
+    },
+    {
+      "id": "reading-space-notebook",
+      "type": "note-taking",
+      "title": "Our Decision Record",
+      "timestamp": "2026-10-21T18:24:44.058Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "cues": [
+          {
+            "id": "cue-1",
+            "text": "Prepare independently: What do I propose, which evidence supports it, and what remains uncertain?"
+          },
+          {
+            "id": "cue-2",
+            "text": "A different proposal: What is the idea and its evidence? Check that you have represented it accurately."
+          },
+          {
+            "id": "cue-3",
+            "text": "Compare the plans: What does each make possible? What does each leave unresolved? Use evidence labels."
+          },
+          {
+            "id": "cue-4",
+            "text": "Show our shared decision: List equipment, token total, and any routine. Explain how the route stays clear; flag anything the teacher must check."
+          },
+          {
+            "id": "cue-5",
+            "text": "Trace the reasoning: Which contribution changed the plan, or which did we consider and decline? Explain why."
+          },
+          {
+            "id": "cue-6",
+            "text": "State a limit: What tradeoff, remaining concern, or missing evidence matters? What would we test next?"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-1",
+            "text": ""
+          },
+          {
+            "id": "note-2",
+            "text": ""
+          },
+          {
+            "id": "note-3",
+            "text": ""
+          },
+          {
+            "id": "note-4",
+            "text": ""
+          },
+          {
+            "id": "note-5",
+            "text": ""
+          },
+          {
+            "id": "note-6",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "Practice support | Duplicate or answer on paper/in your chosen tool | No response storage implied",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "unspecified",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      }
+    },
+    {
+      "id": "reading-space-exit",
+      "type": "quiz",
+      "title": "What Changed in Your Thinking?",
+      "timestamp": "2026-10-21T18:24:44.058Z",
+      "data": {
+        "questions": [
+          {
+            "type": "shortAnswer",
+            "conceptLabel": "Evidence and limits",
+            "question": "Explain the group recommendation using two labeled pieces of evidence. Give the equipment total and one important uncertainty or tradeoff.",
+            "expectedAnswer": "Several plans are defensible. For example, a task lamp (2), seat pads (2), and book basket (1) cost 5 tokens; a scheduled quiet/partner routine could address the two preferences in A. D supports adding a light option, and B requires checking the route. The plan does not prove noise will be solved, and one lamp will not light every position. Score the relevance and reasoning, not agreement with this example. A response must cite two case references, respect the 6-token limit, consider a clear route, and name a defensible limitation."
+          },
+          {
+            "type": "shortAnswer",
+            "conceptLabel": "Reciprocal reasoning",
+            "question": "Describe one different idea someone contributed. How did you respond, and how did that exchange change or strengthen your reasoning? If the group did not reach agreement, explain the remaining concern.",
+            "expectedAnswer": "A strong response accurately represents a different idea, describes a specific question, comparison, or response to it, and explains its effect on the decision or reasoning. Keeping an original proposal can meet the goal if the student explains how they considered the other idea using evidence. Merely saying everyone had a turn or that the group agreed is insufficient. Do not require a particular communication mode or public disclosure of a peer identity."
+          },
+          {
+            "type": "shortAnswer",
+            "conceptLabel": "Transfer",
+            "question": "A new group says: \"We each made one slide, so our presentation proves we collaborated.\" What would you need to see or ask before accepting that claim?",
+            "expectedAnswer": "Ask how members shared and examined ideas, responded to one another, resolved or recorded differences, and made a decision influenced by multiple contributions. Dividing tasks can support collaboration, but a combined product alone does not show joint reasoning. Accept specific observable examples and questions expressed through any effective communication method."
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which support helped you communicate or understand an idea today? What will you keep, change, or try without next time?"
+          },
+          {
+            "text": "What is one specific move your group can improve next time so that more ideas influence the decision?"
+          }
+        ]
+      },
+      "meta": "Individual evidence of learning | Open responses | Teacher criteria are examples, not a single correct plan",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "unspecified",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      }
+    }
+  ],
+  "provenance": {
+    "contractVersion": "1.0",
+    "provider": "agent-context",
+    "model": "agent-selected",
+    "generatedAt": "2026-10-21T18:24:44.057Z"
+  }
+}
