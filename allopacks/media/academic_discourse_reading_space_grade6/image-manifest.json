@@ -74,7 +74,58 @@
       "encoding": "WebP quality 0.86; original dimensions and composition retained",
       "reviewStatus": "Actual generated image inspected by agent; educator review pending",
       "displayNote": "Fictional illustration, not a transcript, equipment menu, measured plan, or evidence of learning. Read the editable record and descriptions."
+    },
+    {
+      "id": "pause-preparation",
+      "file": "pause-preparation.webp",
+      "alt": "Two fictional learners sit with a tablet, an open notebook, and separate papers. One holds the tablet; the other has a pencil nearby. The caption supplies the situation, not their expressions.",
+      "altSource": "vision",
+      "width": 1024,
+      "height": 1024,
+      "originalWidth": 1254,
+      "originalHeight": 1254,
+      "bytes": 77114,
+      "sha256": "91444c7cffeb5e9b090d7855870cdf6fb0301af1b8b5c53e4256f08bae231e24",
+      "originalPngSha256": "f25b9a0a6b92d1acd4f258ae4e87035b42c821a76c1c36295626fb4352c896b1",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.84; full composition retained; longest edge capped at1024px",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Original fictional rehearsal prompt. Editable caption supplies facts and situation; appearance is not evidence of learning."
+    },
+    {
+      "id": "pause-compare-options",
+      "file": "pause-compare-options.webp",
+      "alt": "Two separate equipment groups: a task lamp with a book basket, and a divider with another book basket. Blank cards sit in front. Costs and limits are supplied in the caption; objects are not to scale.",
+      "altSource": "vision",
+      "width": 1024,
+      "height": 1024,
+      "originalWidth": 1254,
+      "originalHeight": 1254,
+      "bytes": 68356,
+      "sha256": "f09a9142e725c60a8eac6e8b5bbf1e2e2f13e110f2bdba46283d64bb85d8cc01",
+      "originalPngSha256": "41265cae87694784dbe518d396be33eb1f13616e9fdabbc77108ae4f0c01b345",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.84; full composition retained; longest edge capped at1024px",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Original fictional rehearsal prompt. Editable caption supplies facts and situation; appearance is not evidence of learning."
+    },
+    {
+      "id": "pause-next-step",
+      "file": "pause-next-step.webp",
+      "alt": "A working sheet has a small divider-and-lamp sketch and blank space below. Separate cards, a notebook, a pencil, and a tablet surround it. No written decision or agreed next action is visible.",
+      "altSource": "vision",
+      "width": 1024,
+      "height": 1024,
+      "originalWidth": 1254,
+      "originalHeight": 1254,
+      "bytes": 88514,
+      "sha256": "93157c12db76620a90f4c874b73d5d205bb2e14ddc1f702a8e2e91dd3886d699",
+      "originalPngSha256": "37e3fbec4dc2c129647b7c803fdfe603f793e08b3ccb9e2fef8b7dfa1ba53226",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.84; full composition retained; longest edge capped at1024px",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Original fictional rehearsal prompt. Editable caption supplies facts and situation; appearance is not evidence of learning."
     }
   ],
-  "updatedAt": "2026-10-22T21:57:41.811Z"
+  "updatedAt": "2026-10-22T22:35:31.937Z"
 }
