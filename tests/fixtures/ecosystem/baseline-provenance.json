@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "description": "Immutable inputs preserved byte-for-byte from existing reviewed Ecosystem reports. Normal regression runs read these fixtures; optional capture mode writes only report output, never frozen fixtures. Original report paths record provenance only.",
+  "regenerated": false,
+  "assertionsChanged": false,
+  "fixtures": [
+    {
+      "path": "tests/fixtures/ecosystem/crossing-fixation-baseline.json",
+      "originalReportPath": "reports/ecosystem-naturalism-next/crossing-fixation-baseline.json",
+      "bytes": 187328,
+      "sha256": "77242E5C63362BB309C565581543AFDAE02BDB1FF5F1A5C68DE0159BA6798AD8"
+    },
+    {
+      "path": "tests/fixtures/ecosystem/social-pinna-baseline.json",
+      "originalReportPath": "reports/ecosystem-coat-inquiry-next/social-pinna-baseline.json",
+      "bytes": 2153997,
+      "sha256": "6833607D970C821AAF95BE21B7BF1E5367C3328A114A50BC73666176111889E8"
+    }
+  ]
+}

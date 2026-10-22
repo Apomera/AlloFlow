@@ -298,7 +298,7 @@ const breakdown = (page: Page) => comparison(page).locator('[data-marked-compari
 const viewRow = (page: Page) => breakdown(page).locator('[data-marked-comparison-variable="view"]');
 const wingRow = (page: Page) => breakdown(page).locator('[data-marked-comparison-variable="wing"]');
 const baselineMonarch = JSON.parse(readFileSync(join(process.cwd(),
-  'reports/migration-deep-review-round25-2026-10-21/mobile-dark-monarch-primary-relief.json'), 'utf8')).views.find((entry: any) => entry.id === 'above').state;
+  'tests/fixtures/migration/round25/mobile-dark-monarch-primary-relief.json'), 'utf8')).views.find((entry: any) => entry.id === 'above').state;
 const formatView = (prefix: string, view: any) => prefix + ': ' + view.yaw + '° / ' + view.pitch + '° · ' + Math.round(view.zoom * 100) + '%';
 
 async function expectBreakdown(page: Page, kind: string, marked: any, current: any) {
@@ -561,7 +561,7 @@ async function identityFlow(page: Page, id: string, name: string, region: string
   let matchedBirdBaseline: any = null, profile: any = null;
   if (id !== 'monarch') {
     const baselineFile = id === 'canada_goose' ? 'desktop-goose-study-identity.json' : 'mobile-light-peregrine-study-identity.json';
-    const baseline = JSON.parse(readFileSync(join(process.cwd(), 'reports/migration-deep-review-round26-2026-10-21', baselineFile), 'utf8')).above;
+    const baseline = JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/migration/round26', baselineFile), 'utf8')).above;
     const actual = JSON.parse(JSON.stringify(above));
     for (const key of ['body', 'flock', 'allBodies', 'joints', 'phase', 'serial', 'paused']) expect(actual.pose[key]).toEqual(baseline.pose[key]);
     expect(actual.view).toEqual(baseline.view); expect(actual.canvas).toEqual(baseline.canvas);

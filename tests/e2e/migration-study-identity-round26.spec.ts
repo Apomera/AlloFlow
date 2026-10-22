@@ -268,7 +268,7 @@ const breakdown = (page: Page) => comparison(page).locator('[data-marked-compari
 const viewRow = (page: Page) => breakdown(page).locator('[data-marked-comparison-variable="view"]');
 const wingRow = (page: Page) => breakdown(page).locator('[data-marked-comparison-variable="wing"]');
 const baselineMonarch = JSON.parse(readFileSync(join(process.cwd(),
-  'reports/migration-deep-review-round25-2026-10-21/mobile-dark-monarch-primary-relief.json'), 'utf8')).views.find((entry: any) => entry.id === 'above').state;
+  'tests/fixtures/migration/round25/mobile-dark-monarch-primary-relief.json'), 'utf8')).views.find((entry: any) => entry.id === 'above').state;
 const formatView = (prefix: string, view: any) => prefix + ': ' + view.yaw + '° / ' + view.pitch + '° · ' + Math.round(view.zoom * 100) + '%';
 
 async function expectBreakdown(page: Page, kind: string, marked: any, current: any) {

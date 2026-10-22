@@ -62,7 +62,7 @@ test('the existing fox eye layers follow an actual current crossing peer, releas
   for(const sample of samples)checkApplied(sample,baselineMode||sample.look===0);
   const baselinePath=reportDir+'/crossing-fixation-baseline.json';
   if(baselineMode){for(const sample of samples){expect(sample.target).toBeNull();expect(sample.eyeAim).toBe(0);}await writeFile(baselinePath,JSON.stringify({sourceSha256,fixture,samples,visualProof},null,2)+'\n');return;}
-  const baseline=JSON.parse(await readFile(baselinePath,'utf8'));expect(fixture).toEqual(baseline.fixture);
+  const baseline=JSON.parse(await readFile('tests/fixtures/ecosystem/crossing-fixation-baseline.json','utf8'));expect(fixture).toEqual(baseline.fixture);
   for(let k=0;k<samples.length;k++)exact(samples[k].fixed,baseline.samples[k].fixed);
   expect(samples.some(sample=>sample.target?.id==='foxes'&&Math.abs(sample.eyeAim)>.02)).toBe(true);expect(samples.find(sample=>sample.step===69).stage).toBe('release');expect(samples.at(-1).eyes.every((eye:any)=>eye.applied.amount===0)).toBe(true);
   // Orienting in place and releasing to a centered eye are genuine parts of
