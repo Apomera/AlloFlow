@@ -44,6 +44,37 @@
       "imageGeneration": "built-in image_gen",
       "encoding": "WebP quality 0.86; original dimensions and composition retained",
       "reviewStatus": "Actual generated image inspected by agent; educator review pending"
+    },
+    {
+      "id": "preparing-contributions",
+      "file": "preparing-contributions.webp",
+      "alt": "Four fictional learners prepare at a table using separate papers, a room sketch, cards, and a tablet. The picture does not reveal what they think or whether they have responded to one another.",
+      "altSource": "vision",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 250980,
+      "sha256": "e8734f7829be99b7a4791609e4ee92d7444ddd8960c4be8c7483507772995435",
+      "originalPngSha256": "0a4a973a2d80c0b3c0eb9932f88cdc681aa13574a2c9bad67104afa4d20e68f3",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.86; original dimensions and composition retained",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Fictional illustration, not a transcript, equipment menu, measured plan, or evidence of learning. Read the editable record and descriptions."
+    },
+    {
+      "id": "reviewing-a-shared-record",
+      "file": "reviewing-a-shared-record.webp",
+      "alt": "Four fictional learners gather around two room sketches and a tablet. One points to a sketch; another holds a pencil over a notebook. Their messages and decisions are provided separately in the caption.",
+      "altSource": "vision",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 218738,
+      "sha256": "fd40a841df4e7ac5a9e14d52500c6699f26453c40013f178a6a8482742b76803",
+      "originalPngSha256": "95a2e9af8eef39110a01f097c2fe229929764d9af8c3ab1924530c713a6bf94a",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.86; original dimensions and composition retained",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Fictional illustration, not a transcript, equipment menu, measured plan, or evidence of learning. Read the editable record and descriptions."
     }
-  ]
+  ],
+  "updatedAt": "2026-10-22T21:57:41.811Z"
 }
