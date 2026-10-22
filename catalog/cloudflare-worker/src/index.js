@@ -1,3 +1,5 @@
+import { renderBugInbox } from './bug_inbox.js';
+
 /**
  * AlloFlow Catalog Submission Worker
  *
@@ -21,6 +23,7 @@
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
+ *   GET  /bug-inbox         developer inbox shell (report data requires a bearer token)
  *   GET  /pdSubmissions     token-gated PD-submission reader
  *   GET  /pluginSubmissions token-gated plugin-submission reader (?source=1 to include code)
  *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
@@ -408,7 +411,8 @@ async function handleItemCorrectionSubmit(request, env) {
 // student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
 // They're stored in the private BUG_REPORTS KV namespace instead. Defense-in-depth PII scan still
 // runs so findings are flagged. Read them via GET /bugs (token-gated) or `wrangler kv key list`.
-// Requires a KV binding `BUG_REPORTS` in wrangler.toml. Read route requires the ADMIN_TOKEN secret.
+// Requires a KV binding `BUG_REPORTS` in wrangler.toml. The inbox reader uses
+// BUG_REPORTS_ADMIN_TOKEN, with ADMIN_TOKEN retained as a legacy fallback.
 
 function validateBug(p) {
   if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
@@ -816,16 +820,40 @@ async function handlePdSubmit(request, env) {
   return jsonResponse({ ok: true, id, slug, module_content_digest: moduleContentDigest, pii_findings_count: piiFindings.length }, 201);
 }
 
+const BUG_RESPONSE_HEADERS = {
+  'Cache-Control': 'no-store, private',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+};
+const BUG_KEY_PATTERN = /^bug:\d{13}:[a-z0-9]{1,32}$/;
+
+function bugResponse(body, status = 200) {
+  return jsonResponse(body, status, BUG_RESPONSE_HEADERS);
+}
+
+function handleBugInbox() {
+  const nonce = crypto.randomUUID().replace(/-/g, '');
+  return new Response(renderBugInbox(nonce), {
+    headers: {
+      ...BUG_RESPONSE_HEADERS,
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`,
+    },
+  });
+}
+
 async function handleBugSubmit(request, env) {
-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing BUG_REPORTS KV binding.' }, 500);
+  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   const contentType = request.headers.get('Content-Type') || '';
-  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
-  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (!contentType.toLowerCase().includes('application/json')) return bugResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  let rawBody;
+  try { rawBody = await request.text(); } catch (_) { return bugResponse({ ok: false, error: 'Could not read report.' }, 400); }
+  if (bodyTooLarge(rawBody)) return bugResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
-  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  try { p = JSON.parse(rawBody); } catch (_) { return bugResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
   const err = validateBug(p);
-  if (err) return jsonResponse({ ok: false, error: err }, 400);
+  if (err) return bugResponse({ ok: false, error: err }, 400);
 
   const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
   const submittedAt = new Date().toISOString();
@@ -845,28 +873,66 @@ async function handleBugSubmit(request, env) {
     },
   };
   // Key sorts by time (13-digit epoch). No TTL — reports persist until manually purged.
-  const id = `bug:${Date.now()}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  const id = `bug:${Date.now()}:${crypto.randomUUID().slice(0, 8)}`;
   try {
     await env.BUG_REPORTS.put(id, JSON.stringify(record), {
       metadata: { submitted_at: submittedAt, pii: piiFindings.length > 0, country: record.submitter.ip_country },
     });
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not store report: ' + e.message }, 502);
+  } catch (_) {
+    return bugResponse({ ok: false, error: 'Could not store report. Please try again.' }, 502);
   }
-  return jsonResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
+  return bugResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
 }
 
 async function handleBugList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /bugs (or use `wrangler kv key list`).' }, 501);
-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Missing BUG_REPORTS KV binding.' }, 500);
-  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
-  const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit });
-  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
-  const reports = [];
-  for (const k of keys) { const v = await env.BUG_REPORTS.get(k); if (v) { try { reports.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
-  return jsonResponse({ ok: true, count: reports.length, reports });
+  // A dedicated bug token never enables the unrelated PD/plugin readers.
+  const expectedToken = env.BUG_REPORTS_ADMIN_TOKEN || env.ADMIN_TOKEN;
+  if (!expectedToken) return bugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
+  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  if (!authorization || !(await timingSafeTokenEq(authorization[1], expectedToken))) {
+    return bugResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  }
+  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
+
+  const before = url.searchParams.get('cursor') || '';
+  if (before && !BUG_KEY_PATTERN.test(before)) return bugResponse({ ok: false, error: 'Invalid report cursor.' }, 400);
+  const requestedLimit = Number(url.searchParams.get('limit') || 50);
+  const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(Math.floor(requestedLimit), 200)) : 50;
+
+  try {
+    // KV lists oldest keys first. Scan every page, retaining only the newest
+    // limit + 1 matching keys; the extra key tells the inbox whether more exist.
+    const selected = [];
+    const seenCursors = new Set();
+    let storageCursor;
+    while (true) {
+      const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit: 1000, ...(storageCursor ? { cursor: storageCursor } : {}) });
+      if (!listed || !Array.isArray(listed.keys) || typeof listed.list_complete !== 'boolean') throw new Error('Invalid storage page');
+      for (const key of listed.keys) {
+        const name = key && key.name;
+        if (typeof name !== 'string' || !BUG_KEY_PATTERN.test(name) || (before && name >= before) || selected.includes(name)) continue;
+        selected.push(name);
+        selected.sort();
+        if (selected.length > limit + 1) selected.shift();
+      }
+      if (listed.list_complete) break;
+      if (typeof listed.cursor !== 'string' || !listed.cursor || seenCursors.has(listed.cursor)) throw new Error('Invalid storage cursor');
+      seenCursors.add(listed.cursor);
+      storageCursor = listed.cursor;
+    }
+    selected.reverse();
+    const reports = [];
+    for (const key of selected.slice(0, limit)) {
+      const raw = await env.BUG_REPORTS.get(key);
+      const record = raw && JSON.parse(raw);
+      // A stale or unreadable record must not make the inbox silently omit data.
+      if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('Unavailable report');
+      reports.push({ ...record, id: key });
+    }
+    return bugResponse({ ok: true, count: reports.length, reports, cursor: selected.length > limit ? reports[reports.length - 1].id : null });
+  } catch (_) {
+    return bugResponse({ ok: false, error: 'Could not load reports. Please try again.' }, 502);
+  }
 }
 
 async function handlePdList(request, env, url) {
@@ -2136,6 +2202,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/bugs') {
       return handleBugList(request, env, url);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/bug-inbox') {
+      return handleBugInbox();
     }
 
     if (request.method === 'GET' && url.pathname === '/pdSubmissions') {

@@ -6,7 +6,7 @@
 // IMPORTANT: placeholders are replaced by postbuild.js.
 const RELEASE_ID = 'da7196dcf009fc4c28ac2e5583545313cdd05b0dcad59e6312f937127f1cba6e';
 const RELEASE_BUILT_AT = 1792616642948;
-const CACHE_NAME = 'alloflow-student-shell-vda7196dcf009fc4c28ac2e5583545313cdd05b0dcad59e6312f937127f1cba6e-1792616642948';
+const CACHE_NAME = 'alloflow-student-shell-vda7196dcf009fc4c28ac2e5583545313cdd05b0dcad59e6312f937127f1cba6e-1792616642948-report-receipts-20261021';
 const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./alloflow_update.js","./static/js/main.5fa0f2b6.js","./static/css/main.9de645f2.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
