@@ -8,8 +8,9 @@ const source = readFileSync(process.env.DINO_NECK_SHOULDER_SOURCE || resolve('st
 const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Dino Lab registration anchor was not found');
 window.StemLab = { registerTool() {} };
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
 new Function(source.replace(anchor,
-  'globalThis.__dinoNeckShoulder = { DINOS, postcranialSurfaceProfileFor, dinoCervicalEnvelope, dinoCervicalSkinEnvelope, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoNeckJunction, dinoLoftRadius };' + anchor))();
+  'globalThis.__dinoNeckShoulder = { DINOS, skeletalAnatomyProfileFor, ' + nativeTopLevelNames.join(',') + ' };' + anchor))();
 const art = globalThis.__dinoNeckShoulder;
 const species = id => {
   const dino = art.DINOS.find(value => value.id === id);
@@ -62,20 +63,25 @@ const callerEnd = source.indexOf('var tailMidA =', callerStart);
 if ([chainStart, chainEnd, callerStart, callerEnd].some(index => index < 0)) throw new Error('Neck skin construction was not found');
 const createChain = new Function('THREE', 'props', 'bodyMat', 'model', 'dinoCranialGeometry', 'dinoSurfaceGeometry',
   source.slice(chainStart, chainEnd) + 'return addSoftTissueChain;');
-const buildNeck = new Function('THREE', 'cervicalEnvelope', 'shoulder', 'thoraxCenter', 'cladeName', 'isSauropod', 'hasAnatomyPart',
-  'neckPoints', 'neckRadii', 'head', 'bodyMat', 'idleMotion', 'addSoftTissueChain', 'addContourGroup', 'dinoCervicalSkinEnvelope',
-  source.slice(callerStart, callerEnd) + 'return { neckMeshes, neckSkinEnvelope, neckSurfaceCurve, neckContours };');
+const buildNeck = new Function('context','with(context){'+source.slice(callerStart,callerEnd)+'return {neckMeshes,neckSkinEnvelope,neckSurfaceCurve,neckContours};}');
 function caller(data, clade = data.dn.clade, frill = true) {
   const model = new THREE.Group(), material = new THREE.MeshBasicMaterial(), idleMotion = { breathingMeshes: [] }, contourSnapshots = [];
   const chain = createChain(THREE, { showBody: true }, material, model, art.dinoCranialGeometry, art.dinoSurfaceGeometry);
-  const built = buildNeck(THREE, data.envelope, data.shoulder, data.thoraxCenter, clade, data.dn.group === 'sauropod', id => frill && id === 'frill',
-    data.envelope.points, data.envelope.radii, data.head, material, idleMotion, chain, meshes => meshes.map(mesh => {
-      contourSnapshots.push({ position: mesh.position.clone(), positions: mesh.geometry.attributes.position.array.slice() });
-      const contour = new THREE.Mesh(mesh.geometry, material);
-      contour.position.copy(mesh.position); contour.scale.copy(mesh.scale).multiplyScalar(1.012);
-      return contour;
-    }), art.dinoCervicalSkinEnvelope);
-  return { ...built, material, model, idleMotion, contourSnapshots };
+  const len=data.dn.lengthM*data.scale,ht=data.dn.heightM*data.scale;
+  const context={...art,THREE,dn:data.dn,model,cervicalEnvelope:data.envelope,shoulder:data.shoulder,thoraxCenter:data.thoraxCenter,
+    cladeName:clade,isSauropod:data.dn.group==='sauropod',hasAnatomyPart:id=>frill&&id==='frill',
+    neckPoints:data.envelope.points,neckRadii:data.envelope.radii,head:data.head,bodyMat:material,idleMotion,
+    addSoftTissueChain:chain,surfaceHypothesis:{neckSoftTissueScale:1},
+    ceratopsidCranium:art.dinoCeratopsidCraniumFrame(THREE,data.dn,data.head,len,ht),
+    lambeosaurBody:art.dinoLambeosaurBodyFrame(THREE,data.dn,{len,ht,headScale:art.reconstructionProfileFor(data.dn).head,
+      shoulder:data.shoulder,hip:data.hip,head:data.head,snout:data.head.clone().add(new THREE.Vector3(-len*.075,-ht*.020,0)),
+      tail:data.hip.clone().add(new THREE.Vector3(len*.4,0,0)),bodyHeight:data.height,bodyDepth:data.depth}),
+    addContourGroup:meshes=>meshes.map(mesh=>{
+      contourSnapshots.push({position:mesh.position.clone(),positions:mesh.geometry.attributes.position.array.slice()});
+      const contour=new THREE.Mesh(mesh.geometry,material);contour.position.copy(mesh.position);contour.scale.copy(mesh.scale).multiplyScalar(1.012);return contour;
+    })};
+  const built=buildNeck(context);
+  return {...built,material,model,idleMotion,contourSnapshots,context};
 }
 function disposeBuilt(built) {
   built.neckMeshes.forEach(mesh => mesh.geometry.dispose());
@@ -216,12 +222,19 @@ describe('Dino Lab neck skin shoulder transition', () => {
   it('keeps specimen positions and transformed bounds around the established shoulder pivot', () => {
     const data = setup(), built = caller(data, 'Ceratopsidae', true), mesh = built.neckMeshes[0];
     const raw = surface(built.neckSkinEnvelope);
+    raw.translate(-data.shoulder.x,-data.shoulder.y,-data.shoulder.z);
+    const fixedUV=raw.attributes.uv.array.slice(),fixedIndex=raw.index.array.slice();
+    const reference=new THREE.Mesh(raw,built.material);reference.position.copy(data.shoulder);
+    expect(art.dinoCeratopsidNapeGeometry(THREE,data.dn,reference,built.context.ceratopsidCranium,1)).toBe(true);
+    expect(reference.userData.dinoCeratopsidNape.fixedSkeleton).toBe(true);
     try {
+      expect(raw.attributes.uv.array).toEqual(fixedUV);expect(raw.index.array).toEqual(fixedIndex);
+      expect(mesh.geometry.attributes.uv.array).toEqual(fixedUV);expect(mesh.geometry.index.array).toEqual(fixedIndex);
       mesh.rotation.set(.045, -.035, .025); mesh.scale.set(1.012, 1.028, 1.012); mesh.updateMatrixWorld(true);
       const expectedBounds = new THREE.Box3(), actualBounds = new THREE.Box3();
       let maxError = 0;
       for (let i = 0; i < raw.attributes.position.count; i++) {
-        const expected = new THREE.Vector3().fromBufferAttribute(raw.attributes.position, i).sub(data.shoulder)
+        const expected = new THREE.Vector3().fromBufferAttribute(raw.attributes.position, i)
           .multiply(mesh.scale).applyQuaternion(mesh.quaternion).add(data.shoulder);
         const actual = mesh.localToWorld(new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position, i));
         expectedBounds.expandByPoint(expected); actualBounds.expandByPoint(actual);

@@ -19,8 +19,8 @@ function runContracts(THREE,source,before,register) {
   const model=new THREE.Group(),selectedBodyPartRef={current:selected};
   // Isolate the real selected-part loop and resolver from unrelated renderer
   // cache setup. These fixtures exercise the established generic foot path.
-  const factory=new Function('THREE','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','model','selectedBodyPartRef','dn','props','shapeStudyRef','supportingRelationRef','dinoShapePedalEvidenceEligible',text.slice(start,end)+'\n'+text.slice(boundsStart,boundsEnd)+'\nreturn {bodyPartStudyBounds,boundsForStudy};');
-  const result=factory(THREE,definitions,anchors,parts,studyBounds,3,8,model,selectedBodyPartRef,{id:'allosaurus'},{shapeStudy:null},{current:null},{current:null},pureHelper(text,'dinoShapePedalEvidenceEligible'));
+  const factory=new Function('THREE','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','model','selectedBodyPartRef','dn','props','shapeStudyRef','supportingRelationRef','dinoShapePedalEvidenceEligible','sauropodHeadFocus','dromaeosaurHeadFocus',text.slice(start,end)+'\n'+text.slice(boundsStart,boundsEnd)+'\nreturn {bodyPartStudyBounds,boundsForStudy};');
+  const result=factory(THREE,definitions,anchors,parts,studyBounds,3,8,model,selectedBodyPartRef,{id:'allosaurus'},{shapeStudy:null},{current:null},{current:null},pureHelper(text,'dinoShapePedalEvidenceEligible'),pureHelper(text,'dinoSauropodHeadFocusBounds')(THREE,model,'allosaurus'),pureHelper(text,'dinoDromaeosaurHeadFocusBounds')(THREE,model,'allosaurus'));
   return {...result,model,selectedBodyPartRef};
  }
  function context(transform) {

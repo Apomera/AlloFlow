@@ -43,7 +43,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("var viewerSummary = props.species.common + ' 3D model summary.");
     expect(source).toContain("Visible layers: ' + layerSummary");
     expect(source).toContain("Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.");
-    expect(source).toContain('var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;');
+    expect(source).toContain('var motionRunning = !motionPausedRef.current && !reducedMotionRef.current && !props.shapeStudy;');
     expect(source).toContain('dinoMotionStep(motionClockRef.current, performance.now(), motionRunning)');
     expect(source).toContain('var idleTime = motionClockRef.current.elapsed;');
     expect(source).toContain("loggedRings.forEach(function (ring, idx)");
@@ -57,7 +57,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-label': piece.label + ' fossil");
     expect(source).toContain('var DinoFieldStation3DStable = null;');
     expect(source).toContain('if (!DinoFieldStation3DStable) DinoFieldStation3DStable = DinoFieldStation3D;');
-    expect(source).toContain("el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id,");
+    expect(source).toContain("el(DinoFieldStation3DStable, { species: dn, shapeStudy: shapeStudy,");
+    expect(source).toContain("stage: shapeStudy ? 'studio' : (d.field3dStage || 'studio'), labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id,");
     expect(source).toContain("var focusMode = d.field3dFocusMode === true;");
     expect(source).toContain("else if (focusMode) { e.preventDefault(); toggleFieldFocus(); }");
     expect(source).toContain("'aria-keyshortcuts': focusMode ? 'Escape' : null");
@@ -88,7 +89,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite'");
     expect(source).toContain(`className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route')`);
     expect(source).toContain("onScanTargetChange: setScanTarget");
-    expect(source).toContain("scanActive: workflowStarted");
+    expect(source).toContain("scanActive: shapeStudy ? false : workflowStarted");
     expect(source).toContain("onLogScanTarget: logScanTarget");
     expect(source).toContain("'aria-label': 'Log ' + activeRoute.label + ' observation'");
     expect(source).toContain("Start the field scan to log observations.");
@@ -337,7 +338,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var cnemialBase = new THREE.Vector3()');
     expect(source).toContain('var freeUlnaStart = elbow.clone()');
     expect(source).toContain('addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee)');
-    expect(source).toContain('function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region)');
+    expect(source).toContain('function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region, centerline)');
     expect(source).toContain('var centrum = addSkeletonEllipsoid(point');
     expect(source).toContain('var archCenter = point.clone()');
     expect(source).toContain("if (region === 'dorsal' && vertebraIndex % 2 === 0)");
@@ -391,8 +392,10 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var rightGastralMedial = gastralCenter.clone()');
     expect(source).toContain('profile.gastralBasketMode = profile.gastralia ?');
     expect(source).toContain('var shoulderHalf = Math.max(');
-    expect(source).toContain('function addDigitFan(root, front, sideSign)');
-    expect(source).toContain('var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName)');
+    expect(source).toContain('function addDigitFan(root, front, sideSign, sauropodDistalFrame, hadrosaurDistalFrame)');
+    expect(source).toContain('var digitSpread = digitLayout.spread, digitLength = digitLayout.length, sickleDigit = digitLayout.raised;');
+    expect(source).toContain("var paravianPes = !front && /Dromaeosaur|Troodont/i.test(String(clade || ''));");
+    expect(source).toContain('var raised = paravianPes && digitIndex === 0;');
     expect(source).toContain('digitIndex === 0;');
     expect(source).toContain('var handDigits = skeletalProfile.manualDigits;');
     expect(source).toContain('var manualUngualVisible = handDigitIndex < skeletalProfile.manualUnguals;');
@@ -412,7 +415,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('for (var sternalRibIndex = 0; sternalRibIndex < skeletalProfile.sternalRibCount; sternalRibIndex++)');
     expect(source).toContain('var sternalCostalAnchor = ribDistalAnchors[sternalCostalIndex]');
     expect(source).toContain('var costalJointMat = THREE.MeshStandardMaterial');
-    expect(source).toContain('for (var chevronIndex = 1; chevronIndex <= skeletalProfile.chevronCount; chevronIndex++)');
+    expect(source).toContain("var displayedChevronCount = dn.id === 'spinosaurus' ? 12 : skeletalProfile.chevronCount;");
+    expect(source).toContain('for (var chevronIndex = 1; chevronIndex <= displayedChevronCount; chevronIndex++)');
     expect(source).toContain('var chevronLeftRoot = chevronBase.clone()');
     expect(source).toContain('var chevronRightRoot = chevronBase.clone()');
     expect(source).toContain('var chevronJunction = chevronBase.clone()');
@@ -437,7 +441,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('profile.pedalPhalanxFormula = [2, 3, 4, 5, 1];');
     expect(source).toContain('for (var phalanxIndex = 0; phalanxIndex < nonUngualCount; phalanxIndex++)');
     expect(source).toContain('for (var manualPhalanxIndex = 0; manualPhalanxIndex < manualNonUngualCount; manualPhalanxIndex++)');
-    expect(source).toContain('var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;');
+    expect(source).toContain('var spread = side * offset * spreadUnit * (front && compactManus ? 0.56 : 1);');
     expect(source).toContain('var terminalScale = skeletalProfile.hoofedDigits ?');
     expect(source).toContain('var visibleUngual = digitIndex < ungualCount;');
     expect(source).toContain('if (skeletalProfile.weightBearingForelimbs)');
@@ -569,7 +573,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('if (skeletalProfile.sternalPlates)');
     expect(source).toContain('skeletalProfile.caveat');
     expect(source).not.toContain("if (isTheropod || dn.diet === 'carnivore' || dn.diet === 'piscivore')");
-    expect(source).toContain('addVertebralChain(hip, tail, isSauropod ? 18 : 14');
+    expect(source).toContain("addVertebralChain(hip, dn.id === 'spinosaurus' ? hip.clone().lerp(tail, 0.975) : tail, isSauropod ? 18 : 14");
     expect(source).toContain('var interactionPauseUntil = 0;');
     expect(source).toContain('function pauseAutoRotate(ms)');
     expect(source).toContain('pauseAutoRotate(2400);');

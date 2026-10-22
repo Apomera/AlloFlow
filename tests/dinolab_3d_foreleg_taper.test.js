@@ -3,18 +3,31 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+const reviewedCranialCallers=JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_reviewed_construction_callers.json'),'utf8'));
+const reviewedFaceCallers=JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_reviewed_beak_construction_callers.json'),'utf8'));
+const reviewedForelegCallers=JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_reviewed_foreleg_construction.json'),'utf8'));
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(process.env.DINO_FORELEG_TAPER_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Dino Lab registration anchor missing');
 window.StemLab = { registerTool() {} };
+const nativeHelperNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
 new Function(source.replace(anchor,
-  'globalThis.__dinoForelegTaper = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, dinoFootSurfaceProfileFor, dinoCeratopsianForelegRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoPlantLimbSurface, dinoCompactFootGeometry, dinoCompactDigitGeometry, dinoBluntTerminalGeometry, dinoKeratinGeometry, dinoIguanodontThumbEnabled, dinoLongBoneGeometry };' + anchor))();
+  'globalThis.__dinoForelegTaper = { DINOS, skeletalAnatomyProfileFor, '+nativeHelperNames.join(',')+' };' + anchor))();
 const art = globalThis.__dinoForelegTaper;
 delete globalThis.__dinoForelegTaper;
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 const sha = value => createHash('sha256').update(value).digest('hex');
+function preservedConstruction(text,label,fixture,key='historical'){
+  const review=fixture.seams.find(seam=>seam.label===label);
+  expect(review,label+' exact reviewed source fixture').toBeTruthy();
+  for(const hunk of review.hunks){
+    expect(text.split(hunk.current).length-1,label+' '+hunk.id+' occurs once before reversal').toBe(1);
+    text=text.replace(hunk.current,hunk[key]);
+  }
+  return text;
+}
 function block(text, startMarker, endMarker) {
   const start = text.indexOf(startMarker), end = text.indexOf(endMarker, start);
   if (start < 0 || end <= start) throw new Error('Actual construction seam missing: ' + startMarker);
@@ -43,8 +56,8 @@ function caller(data, enabled = true) {
   const footProfile = art.dinoFootSurfaceProfileFor(data.dn, data.skeletalProfile, data.front);
   if (data.columnar) footProfile.columnar = true;
   const context = {
-    THREE, vec, model, props: { showBody: true, showSkeleton: true }, dn: data.dn, cladeName: data.dn.clade,
-    detailScale: data.scale, len: data.len, ht: data.ht, bodyDepth: data.bodyDepth, surfaceBodyDepth: data.bodyDepth, shoulder: data.shoulder, hip: data.hip,
+    ...art, THREE, vec, model, props: { showBody: true, showSkeleton: true }, dn: data.dn, cladeName: data.dn.clade,
+    detailScale: data.scale, len: data.len, ht: data.ht, bodyHeight: .58 * data.scale, bodyDepth: data.bodyDepth, surfaceBodyDepth: data.bodyDepth, shoulder: data.shoulder.clone(), hip: data.hip.clone(),
     posture: data.posture, skeletalProfile: data.skeletalProfile, postcranialSurface: data.postcranialSurface,
     isTheropod: data.dn.group === 'theropod', isSauropod: data.dn.group === 'sauropod',
     bodyMat: material, headMat: material, boneMat: material, bodyWireMat: material, keratinMat: material,
@@ -68,6 +81,21 @@ function caller(data, enabled = true) {
     addMuscleBelly: record('muscle'), addIguanodontThumb: record('thumb'), addContourPlumage: record('plumage'), addLimbPlumage: record('limbPlumage'),
     addKeratinCone: record('keratinCone'), addEllipsoid: record('ellipsoid'), addSoftTissueCylinder: record('softCylinder')
   };
+  // Complete the same fixed model-space fixture used by the companion
+  // blend harness, then resolve the actual native lambeosaur frame.
+  context.head=vec(-4,2,0).multiplyScalar(data.scale);
+  context.snout=context.head.clone().add(vec(-context.len*.075,-context.ht*.020,0));
+  context.tail=vec(context.len*.52,context.ht*.34,0);
+  context.lambeosaurBody=art.dinoLambeosaurBodyFrame(THREE,data.dn,{
+    len:context.len,ht:context.ht,headScale:art.reconstructionProfileFor(data.dn).head,
+    shoulder:context.shoulder,hip:context.hip,head:context.head,snout:context.snout,tail:context.tail,
+    bodyHeight:context.bodyHeight,bodyDepth:context.bodyDepth
+  });
+  if(context.lambeosaurBody){const frame=context.lambeosaurBody;
+    context.shoulder.copy(frame.shoulder);context.hip.copy(frame.hip);context.tail.copy(frame.tail);
+    context.bodyDepth=frame.bodyDepth;
+    model.userData.dinoFullBodyAnatomy=frame.metadata;model.userData.dinoLambeosaurBody=frame.metadata;
+  }
   context.addBodyContour = inContext(contourCode, 'addBodyContour', context);
   const nativeChain = inContext(chainCode, 'addSoftTissueChain', context);
   context.addSoftTissueChain = (points, radii, mat) => {
@@ -82,7 +110,7 @@ function caller(data, enabled = true) {
   };
   context.addSoftTissueDigitFan = inContext(digitCode, 'addSoftTissueDigitFan', context);
   const addLeg = inContext(legCode, 'addLeg', context);
-  addLeg((data.front ? data.shoulder : data.hip).x, data.side * .32 * data.scale, data.front);
+  addLeg((data.front ? context.shoulder : context.hip).x, data.side * .32 * data.scale, data.front);
   model.updateMatrixWorld(true);
   const mesh = records.chains[0].meshes[0], pad = model.children.find(child => child.userData.dinoFeature === 'plantar-pad');
   return { data, model, mesh, pad, material, footProfile, records, motion: context.idleMotion.legs[0] };
@@ -286,7 +314,7 @@ describe('Dino Lab bounded ceratopsid foreleg skin taper', () => {
     expect(cranialBoneBlock.split(nasalReliefCaller)).toHaveLength(2);
     const baryonychineNasalAnchor = '(/^(baryonyx|suchomimus)$/.test(dn.id) ? head.clone().lerp(snout, 0.64) : rostrumCenter.clone().lerp(snout, 0.45))';
     expect(cranialBoneBlock.split(baryonychineNasalAnchor)).toHaveLength(2);
-    const priorCranialBoneBlock = cranialBoneBlock.replace(nasalReliefCaller, '').replace(baryonychineNasalAnchor, 'rostrumCenter.clone().lerp(snout, 0.45)');
+    const priorCranialBoneBlock = preservedConstruction(cranialBoneBlock.replace(nasalReliefCaller, '').replace(baryonychineNasalAnchor, 'rostrumCenter.clone().lerp(snout, 0.45)'), 'skeletal frame and dentition', reviewedCranialCallers, 'reviewed');
     expect(sha(priorCranialBoneBlock)).toBe(distalAnatomyDigests['var cranialBoneBefore = model.children.slice();']);
     const cervicalCenterlineArgument = ', matureTyrannosaurPose.active ? dinoCervicalAxisCurve(THREE, cervicalEnvelope, axisCenter) : null';
     expect(priorCranialBoneBlock.split(cervicalCenterlineArgument)).toHaveLength(2);
@@ -296,17 +324,20 @@ describe('Dino Lab bounded ceratopsid foreleg skin taper', () => {
     // this historical face region; all original numerical and source locks stay.
     const baryonychineLowerJawCaller = "              if (/^(baryonyx|suchomimus)$/.test(dn.id)) dinoShapeBaryonychineRostrum(THREE, dn, lowerJawShell, head, surfaceSnout, 'lower');\n";
     expect(cranialFaceBlock.split(baryonychineLowerJawCaller)).toHaveLength(2);
-    const priorCranialFaceBlock = cranialFaceBlock.replace(baryonychineLowerJawCaller, '');
+    const priorCranialFaceBlock = preservedConstruction(cranialFaceBlock, 'jaw and eye', reviewedFaceCallers);
     for (const [start, end, digest] of protectedBlocks) {
-      const reviewed = start === 'var cranialBoneBefore = model.children.slice();' ? priorCranialBoneBlock
-        : start === 'var cranialFaceBefore = model.children.slice();' ? priorCranialFaceBlock : block(source, start, end);
+      const digitStart=start==='function addDigitFan(root, front, sideSign)';
+      let reviewed = start === 'var cranialBoneBefore = model.children.slice();' ? priorCranialBoneBlock
+        : start === 'var cranialFaceBefore = model.children.slice();' ? priorCranialFaceBlock : block(source, digitStart?'function addDigitFan(root, front, sideSign':start, end);
+      if(digitStart)reviewed=preservedConstruction(reviewed,'digit callers',reviewedForelegCallers);
+      if(start==='function dinoFootSurfaceProfileFor(dn, skeletal, front) {')reviewed=preservedConstruction(reviewed,'foot-profile neighbors',reviewedForelegCallers);
       expect(sha(reviewed)).toBe(distalAnatomyDigests[start] || digest);
     }
-    expect(sha(legCode.slice(0, legCode.indexOf('var upperLimbShell =')))).toBe('0817f718c622092e193107bcda30d9e4d0377383f9b74797682c035d9cdeb0b1');
+    expect(sha(preservedConstruction(legCode.slice(0, legCode.indexOf('var upperLimbShell =')),'limb prefix',reviewedForelegCallers))).toBe('0817f718c622092e193107bcda30d9e4d0377383f9b74797682c035d9cdeb0b1');
     // The later shading passes add two registration fields (f7b4d993f widened the forelimb blend
     // to ceratopsians and added the tyrannosauroid hindlimb blend). Remove only those exact
     // additions, then retain the original planting/anchor/motion guard.
-    const registration = legCode.slice(legCode.indexOf('upperLimbShell.userData.dinoRegion'));
+    const registration = preservedConstruction(legCode.slice(legCode.indexOf('upperLimbShell.userData.dinoRegion')),'limb registration',reviewedForelegCallers);
     const forelimbField = '                  forelimbBlendWidth: front && (isSauropod || /Ceratops/i.test(cladeName)) ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n';
     const hindlimbField = "                  hindlimbBlendWidth: !front && postcranialSurface.id === 'powerful-theropod' ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n";
     expect(registration.split(forelimbField)).toHaveLength(2);

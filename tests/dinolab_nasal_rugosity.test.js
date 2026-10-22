@@ -6,10 +6,18 @@ import { resolve } from 'node:path';
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
 window.StemLab = { registerTool() {} };
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__nasalRugosity={DINOS,reconstructionProfileFor,postureProfileFor,postcranialSurfaceProfileFor,dinoTyrannosaurPose,dinoArmoredCraniumFrame:typeof dinoArmoredCraniumFrame === 'function'?dinoArmoredCraniumFrame:function(){return null;},dinoCarnotaurusCraniumFrame: typeof dinoCarnotaurusCraniumFrame === 'function' ? dinoCarnotaurusCraniumFrame : function(){return null;}, dinoStegosaurBodyCraniumFrame: typeof dinoStegosaurBodyCraniumFrame === 'function' ? dinoStegosaurBodyCraniumFrame : function(){return null;}, dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoNasalRugosityProfileFor,dinoNasalRugosityGeometry,dinoAddNasalRugosities,dinoSurfaceAnchor,dinoCranialGeometry,dinoTheropodCranialRadii,cranialSurfaceProfileFor,dinoCranialDisplayProfile,dinoDetailedBodyPartDefinitions,dinoPartInspectionFor}; window.StemLab.registerTool('dinoLab'"))();
+const registration = "window.StemLab.registerTool('dinoLab'";
+const nativeHelpers = [...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match => match[1]))];
+new Function(source.replace(registration, 'globalThis.__nasalRugosity={DINOS,skeletalAnatomyProfileFor,' + nativeHelpers.join(',') + '};' + registration))();
 const art = globalThis.__nasalRugosity;
 const vec = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const animal = id => art.DINOS.find(d => d.id === id);
+function section(start, end) {
+  const a = source.indexOf(start), b = source.indexOf(end, a);
+  if (a < 0 || b <= a) throw new Error('Missing native nasal assembly seam');
+  return source.slice(a, b);
+}
+const proxyEnd = 'if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))';
 
 function productionSurfaces(id, scale = 1) {
   const dn = animal(id), model = new THREE.Group(), head = vec(0, 0), snout = vec(-1.4 * scale, -.03 * scale);
@@ -35,7 +43,7 @@ function nativeLeanSurfaces(id, scale) {
     return source.slice(a, b);
   }
   const dn = animal(id), model = new THREE.Group(), material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-  const context = { THREE, dn, len: dn.lengthM * scale, ht: dn.heightM * scale,
+  const context = { THREE, ...art, dn, len: dn.lengthM * scale, ht: dn.heightM * scale,
     isTheropod: true, isSauropod: false, cladeName: dn.clade,
     reconstructionProfile: art.reconstructionProfileFor(dn), posture: art.postureProfileFor(dn),
     cranialSurface: art.cranialSurfaceProfileFor(dn), postcranialSurface: art.postcranialSurfaceProfileFor(dn),
@@ -45,13 +53,13 @@ function nativeLeanSurfaces(id, scale) {
   context.addSoftTissueChain = new Function('context', 'with(context){' + section('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {', 'function addContourGroup(meshes)') + 'return addSoftTissueChain;}')(context);
   const assembly = section('var detailScale = Math.min(1, ht / 2);', 'var evidenceAnchorPoints =');
   const envelope = section('var surfaceHeadFactor = reconstructionProfile.head', 'if (headShell) {');
-  const anchors = new Function('context', 'with(context){' + assembly + 'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;' + envelope + 'return {head,snout,headShell,detailScale,len,ht,reconstructionProfile};}')(context);
+  const anchors = new Function('context', 'with(context){' + assembly + 'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;' + envelope + 'return {head,snout,headShell,detailScale,len,ht,reconstructionProfile,theropodCranium,sauropodCranium};}')(context);
   Object.assign(context, anchors, { boneMat: material,
     skullLength: Math.max(.20 * anchors.detailScale, anchors.len * .066) * anchors.reconstructionProfile.head,
     skullHeight: Math.max(.045 * anchors.detailScale, anchors.ht * .080) * anchors.reconstructionProfile.head,
     skullDepth: Math.max(.035 * anchors.detailScale, anchors.ht * .073) * anchors.reconstructionProfile.head });
   context.addSkeletonEllipsoid = new Function('context', 'with(context){' + section('function addSkeletonEllipsoid(pos, scale, mat) {', 'function addSkeletonCone(base, tip, radius, mat)') + 'return addSkeletonEllipsoid;}')(context);
-  const rostrum = new Function('context', 'with(context){' + section('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,', 'addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))') + 'return cranialRostrum;}')(context);
+  const rostrum = new Function('context', 'with(context){' + section('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,', proxyEnd) + 'return cranialRostrum;}')(context);
   model.updateMatrixWorld(true);
   return { model, material, skin: anchors.headShell, bone: rostrum, ht: anchors.ht };
 }
@@ -133,18 +141,20 @@ describe('species-specific nasal rugosities follow the supporting skull and life
 
   it('builds the native bone relief without reading the soft-tissue hypothesis', () => {
     const start = source.indexOf('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,'),
-      end = source.indexOf('addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))', start);
+      end = source.indexOf(proxyEnd, start);
     expect(start).toBeGreaterThan(0); expect(end).toBeGreaterThan(start);
     const build = new Function('context', 'with(context){' + source.slice(start, end) + 'return cranialRostrum;}');
     for (const id of ['alioramus', 'qianzhousaurus']) {
       const f = productionSurfaces(id), model = new THREE.Group();
-      const context = { THREE, dn: f.dn, props: { species: f.dn }, head: f.head, snout: f.snout,
+      const context = { THREE, ...art, model, dn: f.dn, props: { species: f.dn, showSkeleton: true }, head: f.head, snout: f.snout,
         skullLength: .5, skullHeight: f.boneHeight, skullDepth: .18, detailScale: 1, isTheropod: true,
-        boneMat: f.material, dinoCranialDisplayProfile: art.dinoCranialDisplayProfile, dinoAddNasalRugosities: art.dinoAddNasalRugosities,
-        addSkeletonEllipsoid(position, scale, material) {
-          const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), material);
-          mesh.position.copy(position); mesh.scale.copy(scale); model.add(mesh); return mesh;
-        } };
+        boneMat: f.material, dinoCranialDisplayProfile: art.dinoCranialDisplayProfile, dinoAddNasalRugosities: art.dinoAddNasalRugosities };
+
+      context.theropodCranium = art.dinoTheropodCraniumFrame(THREE, f.dn, {
+        head: f.head, snout: f.snout, len: f.dn.lengthM, ht: f.dn.heightM, bodyHeight: .58, bodyDepth: .70
+      });
+      context.sauropodCranium = art.dinoSauropodCraniumFrame(THREE, f.dn, f.head, f.snout);
+      context.addSkeletonEllipsoid = new Function('context', 'with(context){' + section('function addSkeletonEllipsoid(pos, scale, mat) {', 'function addSkeletonCone(base, tip, radius, mat)') + 'return addSkeletonEllipsoid;}')(context);
       Object.defineProperty(context, 'surfaceHypothesis', { get() { throw new Error('Bone nasal relief reads the tissue hypothesis'); } });
       const rostrum = build(context);
       expect(rostrum.children.filter(m => m.userData.dinoNasalRugosity?.core)).toHaveLength(art.dinoNasalRugosityProfileFor(f.dn).count);

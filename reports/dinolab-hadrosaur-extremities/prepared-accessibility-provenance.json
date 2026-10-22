@@ -1,0 +1,20 @@
+{
+  "scope": "18 accessible translation cases after test-only real MutationObserver cleanup",
+  "inputSHA256": {
+    "stem_lab/stem_tool_birdlab.js": "015BBF9300455C5DDEA06108663EC754A976E3D71E1EE9C61E1328FE2FB9E356",
+    "stem_lab/stem_tool_cell.js": "1F0ECFAB9D544CFE9BA29829129A5DA208F274E7246B8F4BEBB8A5618207371F",
+    "tests/stem_study_accessible_translation.test.js": "5154AB58F20E92D32036062F9674498EE684EB5314898CD1955DFB78C0FCEA63",
+    "tests/setup.js": "F6100B28ABEC183CC8499663DB55FC7688284C721504C5653FA7FC9F669DA88E",
+    "tests/helpers/stem_widgets_smoke_harness.js": "6D20BBC6932CBE79D899722B898A6054C262E20D5EA3464FFEB4F2DBC86D2680",
+    "stem_lab/stem_tool_raptorhunt.js": "73A5490294EA0283A645714D743131AB64A778104ECF31200CADC73333670330",
+    "stem_lab/stem_tool_ecosystem.js": "CDD73BFF996C2A441D2D5B373D2C5FF91D200105940CADFC47885D6E655490D1"
+  },
+  "finishedAtUTC": "2026-10-22T02:46:41.3840239Z",
+  "exitCode": 0,
+  "startedAtUTC": "2026-10-22T02:46:31.9676743Z",
+  "changedInputs": [],
+  "attempt": 3,
+  "files": [
+    "tests/stem_study_accessible_translation.test.js"
+  ]
+}

@@ -5,6 +5,12 @@ import { createRequire } from 'node:module';
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const registration = "window.StemLab.registerTool('dinoLab'";
+window.StemLab = { registerTool() {} };
+const nativeHelperNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__curvedBoneNative={DINOS,skeletalAnatomyProfileFor,'+nativeHelperNames.join(',')+'};'+registration))();
+const art=globalThis.__curvedBoneNative;delete globalThis.__curvedBoneNative;
+
 function section(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a);
   if (a < 0 || b <= a) throw new Error('Missing native curved-bone section: ' + start);
@@ -184,7 +190,9 @@ describe('Dino Lab native addCurvedBone caller', () => {
 function nativeThorax({ scale = 1, isSauropod = false, bodyHeight = 1, bodyDepth = .5, reverse = false, showSkeleton = true, profile = {} } = {}) {
   const model = new THREE.Group(), boneMat = new THREE.MeshStandardMaterial(), jointMat = new THREE.MeshStandardMaterial(), costalJointMat = new THREE.MeshStandardMaterial();
   const shoulder = vec(reverse ? 1 : -1, 2, 0).multiplyScalar(scale), hip = vec(reverse ? -1 : 1, 2, 0).multiplyScalar(scale);
-  const context = { THREE, vec, model, boneMat, jointMat, costalJointMat, shoulder, hip, props: { showSkeleton }, isSauropod,
+  const dn=art.DINOS.find(d=>d.id===(isSauropod?'mamenchisaurus':'ceratosaurus'));
+  if(!dn)throw new Error('Missing native unreviewed thorax control');
+  const context = { ...art, THREE, vec, dn, model, boneMat, jointMat, costalJointMat, shoulder, hip, props: { showSkeleton }, isSauropod, isTheropod:dn.group==='theropod',
     detailScale: scale, ht: 2 * scale, len: 4 * scale, bodyLen: 2 * scale, bodyHeight: bodyHeight * scale, bodyDepth: bodyDepth * scale,
     shoulderHalf: Math.max(.13, bodyDepth * .66) * scale,
     skeletalProfile: { ribHeadDetail: true, girdleDetail: true, uncinateProcesses: true, uncinateCount: 4, gastralia: true, sternalPlates: true, sternalRibCount: 3, ...profile },

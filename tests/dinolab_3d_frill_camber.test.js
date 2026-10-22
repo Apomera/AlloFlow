@@ -13,7 +13,8 @@ function capture(text) {
   const anchor = "window.StemLab.registerTool('dinoLab'";
   if (!text.includes(anchor)) throw new Error('Dino Lab registration anchor missing');
   window.StemLab = { registerTool() {} };
-  new Function(text.replace(anchor, 'globalThis.__dinoFrillCamber = { DINOS, cranialSurfaceProfileFor, dinoFrillGeometry, dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry, dinoProtoceratopsFrillGeometry, dinoDisplayShellGeometry, dinoConnectedCranialPose };' + anchor))();
+  const nativeTopLevelNames=[...new Set([...text.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+  new Function(text.replace(anchor, 'globalThis.__dinoFrillCamber = { DINOS, skeletalAnatomyProfileFor, ' + nativeTopLevelNames.join(',') + ' };' + anchor))();
   const result = globalThis.__dinoFrillCamber; delete globalThis.__dinoFrillCamber; return result;
 }
 const art = capture(source), oldArt = capture(baselineSource);
@@ -69,10 +70,11 @@ function manifold(geometry) {
 }
 function caller(data, isBone = false, baseline = false, hasFrill = true) {
   const model = new THREE.Group(), bodyMat = new THREE.MeshBasicMaterial(), boneMat = new THREE.MeshBasicMaterial();
-  const context = { THREE, vec, model, head: data.head, len: data.len, ht: data.ht, surfaceBodyDepth: data.bodyDepth,
+  const context = { ...(baseline ? oldArt : art), THREE, vec, model, head: data.head, len: data.len, ht: data.ht, bodyDepth: data.bodyDepth, surfaceBodyDepth: data.bodyDepth,
     cranialSurface: data.profile, props: { species: data.dn }, boneMat,
     hasAnatomyPart: id => id === 'frill' && hasFrill,
     dinoFrillGeometry: (baseline ? oldArt : art).dinoFrillGeometry, dinoBonyFrillGeometry: (baseline ? oldArt : art).dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry: (baseline ? oldArt : art).dinoStyracosaurusBonyFrillGeometry, dinoProtoceratopsFrillGeometry: (baseline ? oldArt : art).dinoProtoceratopsFrillGeometry, cranialMotionParts: [] };
+  context.ceratopsidCranium=art.dinoCeratopsidCraniumFrame(THREE,data.dn,data.head,data.len,data.ht);
   context.dinoMarkSpecialPart = inContext(block(source, 'function dinoMarkSpecialPart(mesh, id) {', 'function dinoTagSpecialParts(before, id) {'), 'dinoMarkSpecialPart', context);
   const motion = inContext(block(source, 'function registerCranialMotion(part) {', 'scene.add(model);'), '({registerCranialMotion, captureCranialMotion})', context);
   const build = inContext(block(source, 'function addFrillSurface(mat, size) {', 'var hasHighSail ='), 'addFrillSurface', context);

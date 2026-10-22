@@ -156,7 +156,7 @@ window.StemLab = window.StemLab || {
       h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.cell.cell_model','Cell model') }, ['animal', 'plant'].map(function(type) {
         return h('button', { key: type, type: 'button', className: button + (model.cellType === type ? ' ring-2 ring-cyan-700 bg-cyan-50' : ''), 'aria-pressed': model.cellType === type, onClick: function() { patch({ cellType: type }); } }, type === 'plant' ? 'Plant cell' : 'Animal cell');
       })),
-      renderOsmosisStage(h, visual, paused, patch),
+      renderOsmosisStage(h, visual, paused, patch, t),
       h('div', { 'data-osmo-controls': true },
         [{ key: 'inside', label: 'Inside solute (mOsm/L)', max: 200 }, { key: 'outside', label: 'Outside solute (mOsm/L)', max: 200 }, { key: 'perm', label: 'Water permeability (%)', max: 100 }].map(function(control) {
           return h('div', { key: control.key }, h('label', { htmlFor: 'oh-' + control.key, className: 'block text-sm font-bold' }, control.label + ': ' + model[control.key]),
@@ -369,7 +369,7 @@ window.StemLab = window.StemLab || {
         var lab = e.currentTarget.closest('[data-cell-comparison-lab]'), visible = model.filter === 'all' || row.status === model.filter;
         if (!visible) patch({ _cmpFilter: 'all' });
         setTimeout(function() { var el = lab && lab.querySelector('#cell-compare-property-' + row.key); if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'center' }); } }, visible ? 0 : 80);
-      }),
+      }, t),
       h('div', { 'data-cell-compare-tools': true }, h('div', { role: 'group', 'aria-label': t('stem.cell.comparison_property_filter','Comparison property filter'), 'data-cell-compare-filters': true },
         [{ id: 'all', label: 'All properties' }, { id: 'different', label: 'Differences' }, { id: 'shared', label: 'Shared descriptions' }].map(function(filter) {
           var active = model.filter === filter.id;
@@ -3341,7 +3341,8 @@ window.StemLab = window.StemLab || {
           h('ul', { className: 'mt-2 space-y-1', style: { listStyle: 'none', padding: 0 } },
             key('animal', 'Animal-cell trial'), key('plant', 'Plant-cell trial'), key('now', 'Now: current settings (not recorded)'), key('model', 'Model line at the current permeability (' + perm + '%)')))));
   }
-  function renderOsmosisStage(h, vs, paused, patch) {
+  function renderOsmosisStage(h, vs, paused, patch, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var m = vs.model, plant = m.cellType === 'plant';
     var chip = m.tonicity === 'Hypotonic' ? '#7dd3fc' : m.tonicity === 'Hypertonic' ? '#fcd34d' : '#86efac';
     var legend = [
@@ -3379,7 +3380,7 @@ window.StemLab = window.StemLab || {
         h('figure', { 'data-osmo-fig': 'membrane', className: 'm-0 rounded-lg overflow-hidden', style: { border: '1px solid rgba(148,163,184,0.45)', background: '#0b2a4a' } },
           h('figcaption', { className: 'px-3 text-xs font-bold uppercase tracking-wider text-cyan-100', style: { background: 'rgba(2,6,23,0.55)', paddingTop: '6px', paddingBottom: '6px' } }, 'Membrane close-up'),
           renderOsmosisMembraneView(h, vs))),
-      h('ul', { className: 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-200', 'aria-label': 'Diagram key', style: { listStyle: 'none', padding: 0 } },
+      h('ul', { className: 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-200', 'aria-label': __alloT("stem.cell.a11y_diagram_key", "Diagram key"), style: { listStyle: 'none', padding: 0 } },
         legend.filter(Boolean).map(function(item) { return h('li', { key: item[0], className: 'inline-flex items-center gap-2' }, swatch(item[0]), item[1]); })),
       h('p', { className: 'mt-2 text-xs text-slate-200' }, 'Schematic, not to scale. The drawing replays the first moments of change: it shows the direction of change, not a measured or final volume. A larger flow index changes faster; with 0% permeability nothing changes.'),
       h('p', { 'data-osmo-type-caption': m.cellType, className: 'mt-2 text-xs text-cyan-100' }, plant ?
@@ -5871,7 +5872,8 @@ window.StemLab = window.StemLab || {
       el.__cpIo = io;
     } catch (e) {}
   }
-  function renderCellProcDive(h, dive, st, act, reduced) {
+  function renderCellProcDive(h, dive, st, act, reduced, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var step = st.step, last = dive.steps.length - 1, cur = dive.steps[step];
     var still = reduced || st.paused;
     var btn = 'inline-flex min-h-[32px] items-center justify-center gap-1 rounded-lg border px-2.5 text-[0.75rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -5902,9 +5904,9 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': dive.title + ' animation steps' },
             h('div', { className: 'inline-flex flex-wrap items-center gap-1.5' },
-            h('button', { type: 'button', className: btn + ' border-slate-300 bg-white text-slate-800 hover:bg-slate-100', style: ringStyle, disabled: step <= 0, onClick: function() { act.step(dive.id, step - 1); }, 'aria-label': 'Previous step', 'data-cell-proc-prev': dive.id }, h('span', { 'aria-hidden': 'true' }, '◀'), 'Back'),
+            h('button', { type: 'button', className: btn + ' border-slate-300 bg-white text-slate-800 hover:bg-slate-100', style: ringStyle, disabled: step <= 0, onClick: function() { act.step(dive.id, step - 1); }, 'aria-label': __alloT("stem.cell.a11y_previous_step", "Previous step"), 'data-cell-proc-prev': dive.id }, h('span', { 'aria-hidden': 'true' }, '◀'), 'Back'),
             h('button', { type: 'button', className: btn + (st.paused ? ' border-slate-800 bg-slate-800 text-white' : ' border-slate-300 bg-white text-slate-800 hover:bg-slate-100'), style: ringStyle, disabled: reduced, 'aria-pressed': st.paused ? 'true' : 'false', onClick: function() { act.pause(dive.id); }, 'data-cell-proc-pause': dive.id }, h('span', { 'aria-hidden': 'true' }, st.paused ? '▶' : '❚❚'), reduced ? 'Motion off' : 'Pause'),
-            h('button', { type: 'button', className: btn + ' border-slate-300 bg-white text-slate-800 hover:bg-slate-100', style: ringStyle, disabled: step >= last, onClick: function() { act.step(dive.id, step + 1); }, 'aria-label': 'Next step', 'data-cell-proc-next': dive.id }, 'Next', h('span', { 'aria-hidden': 'true' }, '▶'))),
+            h('button', { type: 'button', className: btn + ' border-slate-300 bg-white text-slate-800 hover:bg-slate-100', style: ringStyle, disabled: step >= last, onClick: function() { act.step(dive.id, step + 1); }, 'aria-label': __alloT("stem.cell.a11y_next_step", "Next step"), 'data-cell-proc-next': dive.id }, 'Next', h('span', { 'aria-hidden': 'true' }, '▶'))),
             h('div', { className: 'inline-flex flex-wrap items-center gap-1.5' },
             dive.steps.map(function(s, i) {
               var on = i === step;
@@ -7228,7 +7230,8 @@ window.StemLab = window.StemLab || {
     var ids = knowIds(KNOW_THEMES);
     return knowArr(e && e.themes).filter(function (t) { return ids.indexOf(t) >= 0; });
   }
-  function knowHistoryView(h, T, k, api) {
+  function knowHistoryView(h, T, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var events = knowSortedHistory(T.history);
     var themeIds = knowIds(KNOW_THEMES), eraIds = knowIds(KNOW_ERAS);
     var theme = knowPick(k.histTheme, ['all'].concat(themeIds), 'all');
@@ -7245,7 +7248,7 @@ window.StemLab = window.StemLab || {
     }
     var first = events.length ? events[0].year : 0, last = events.length ? events[events.length - 1].year : 0;
 
-    var eraCards = h('div', { 'data-ck-eras': true, role: 'group', 'aria-label': 'Filter by era' },
+    var eraCards = h('div', { 'data-ck-eras': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_filter_by_era", "Filter by era") },
       KNOW_ERAS.map(function (er) {
         var inEra = events.filter(function (e) { return knowEraOf(e.year) === er.id && themeOk(e); });
         var to = er.id === 'e5' ? Math.max(nowYear, last) : er.to;
@@ -7310,7 +7313,7 @@ window.StemLab = window.StemLab || {
           : h('p', { key: 'none', 'data-ck-empty': true }, 'No milestones match this era and topic. Try another topic or choose "Show all".')
       ]),
       knowSection(h, 'seeing', 'What could we see?', 'The smallest detail each kind of microscope can separate, on a scale where each step down is 10 times smaller. Numbers are approximate; see each note for the source.', [
-        knowResolutionChart(h, nowYear)
+        knowResolutionChart(h, nowYear, __alloT)
       ], { glyph: 'microscope' })
     ]);
   }
@@ -7330,7 +7333,8 @@ window.StemLab = window.StemLab || {
         techs.length ? h('div', { 'data-ck-links': true }, techs.map(function (x) { return knowTechLink(h, x, api); })) : null,
         h('p', { 'data-ck-note': true }, 'Illustration is schematic, not to scale.')));
   }
-  function knowResolutionChart(h, nowYear) {
+  function knowResolutionChart(h, nowYear, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var x0 = 1650, x1 = 2035;
     var today = Math.max(2020, Math.min(x1 - 2, nowYear || 2026));
     function X(y) { return knowLinFrac(y, x0, x1); }
@@ -7371,7 +7375,7 @@ window.StemLab = window.StemLab || {
         h('span', { 'data-ck-objtick': true, style: { top: knowPct(Y(KNOW_EYE_NM)), fontWeight: 800 } }, 'Unaided eye'),
         KNOW_RES_EVENTS.map(function (ev) { var right = X(ev.year) > 0.5; return h('span', { key: 'el' + ev.year, style: { position: 'absolute', top: 4, left: knowPct(X(ev.year)), marginLeft: right ? -4 : 4, transform: right ? 'translateX(-100%)' : undefined, fontSize: 10.5, fontWeight: 700, color: '#475569', whiteSpace: 'nowrap', background: 'rgba(255,255,255,.85)', padding: '0 3px', borderRadius: 4 } }, ev.year + ' ' + ev.label); }),
         pts.map(function (p) { return h('span', { key: 'pt' + p.id, 'data-ck-pt': true, style: { left: knowPct(X(p.yr)), top: knowPct(Y(p.nm)), background: COL[p.series] } }, String(p.n)); })),
-      h('ol', { 'data-ck-legend': true, 'aria-label': 'Chart points' },
+      h('ol', { 'data-ck-legend': true, 'aria-label': __alloT("stem.cell.a11y_chart_points", "Chart points") },
         pts.map(function (p) {
           return h('li', { key: p.id },
             h('span', { 'data-ck-pt': true, 'aria-hidden': 'true', style: { background: COL[p.series] } }, String(p.n)),
@@ -7384,7 +7388,8 @@ window.StemLab = window.StemLab || {
 
   // ── BIOLOGISTS ──
   var KNOW_AXIS_FROM = 1620, KNOW_AXIS_TO = 2035;
-  function knowBiologistsView(h, T, k, api) {
+  function knowBiologistsView(h, T, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var nowYear = api.year || 2026;
     var people = knowArr(T.biologists).filter(function (b) { return b && typeof b.key === 'string' && typeof b.name === 'string' && typeof b.born === 'number'; })
       .slice().sort(function (a, b) { return a.born - b.born; });
@@ -7427,7 +7432,7 @@ window.StemLab = window.StemLab || {
       knowSection(h, 'lifespans', 'Lifespans on one time axis', 'Each bar runs from birth to death; an arrow means the person is alive. White dots mark their milestones in the History timeline.', [
         chips,
         h('div', { key: 'axis', 'data-ck-axis': true, 'aria-hidden': 'true' }, ticks.map(function (x) { return h('span', { key: x.y, 'data-minor': x.minor ? 'true' : undefined, style: { left: knowPct(F(x.y)) } }, String(x.y)); })),
-        shown.length ? h('ul', { key: 'rows', 'data-ck-rows': true, 'aria-label': 'Scientists, oldest first' }, rows) : h('p', { key: 'none', 'data-ck-empty': true }, 'Nobody matches this field.')
+        shown.length ? h('ul', { key: 'rows', 'data-ck-rows': true, 'aria-label': __alloT("stem.cell.a11y_scientists_oldest_first", "Scientists, oldest first") }, rows) : h('p', { key: 'none', 'data-ck-empty': true }, 'Nobody matches this field.')
       ], { glyph: 'people' })
     ]);
   }
@@ -7541,7 +7546,8 @@ window.StemLab = window.StemLab || {
     }
     return knowSvg(h, 120, 120, 'Microscope view: ' + (pos ? 'round Gram-positive cells in clusters' : 'rod-shaped Gram-negative cells') + ', ' + st.looks.toLowerCase() + '.', kids);
   }
-  function knowGramView(h, k, api) {
+  function knowGramView(h, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var step = Math.max(0, Math.min(4, Math.floor(Number(k.gramStep) || 0)));
     var timing = knowPick(k.gramTiming, ['short', 'right', 'long'], 'right');
     var pos = knowGramState(step, 'pos', timing), neg = knowGramState(step, 'neg', timing);
@@ -7574,7 +7580,7 @@ window.StemLab = window.StemLab || {
     if (step >= 3 && timing === 'long') warn = 'Too long: even the thick Gram-positive wall loses its purple, so Gram-positive cells end up pink and could be mistaken for Gram-negative.';
     return h('div', { 'data-cell-know-lab': 'gram' },
       h('p', { 'data-ck-sub': true }, 'The Gram stain (Hans Christian Gram, 1884) sorts most bacteria into two groups by the structure of their cell wall. Step through it and watch both walls.'),
-      h('ol', { 'data-ck-steps': true, 'aria-label': 'Gram stain steps' }, KNOW_GRAM_STEPS.map(function (s, i) {
+      h('ol', { 'data-ck-steps': true, 'aria-label': __alloT("stem.cell.a11y_gram_stain_steps", "Gram stain steps") }, KNOW_GRAM_STEPS.map(function (s, i) {
         return h('li', { key: s.id },
           h('button', { type: 'button', 'data-ck-step': true, 'data-cell-know-gram-step': i, 'aria-current': i === step ? 'step' : undefined, 'data-done': i < step ? 'true' : undefined, onClick: function () { go(i); } },
             h('span', { 'data-ck-stepnum': true, 'aria-hidden': 'true' }, String(i + 1)), h('b', null, s.label), h('small', null, s.reagent)));
@@ -7605,7 +7611,8 @@ window.StemLab = window.StemLab || {
     return 'ok';
   }
   var KNOW_RULER_BIG = 200000, KNOW_RULER_SMALL = 0.5;
-  function knowResolutionView(h, k, api) {
+  function knowResolutionView(h, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var wave = knowFind(KNOW_WAVELENGTHS, k.resWave) || KNOW_WAVELENGTHS[1];
     var obj = knowFind(KNOW_OBJECTIVES, k.resObj) || KNOW_OBJECTIVES[2];
     var dNm = knowAbbeLimitNm(wave.nm, obj.na);
@@ -7639,7 +7646,7 @@ window.StemLab = window.StemLab || {
         ticks.map(function (t) { return h('span', { key: 't' + t.v, 'data-ck-ruler-tick': true, style: { left: knowPct(R(t.v)) } }); }),
         ticks.map(function (t) { return h('span', { key: 'n' + t.v, 'data-ck-ruler-num': true, 'data-minor': t.minor ? 'true' : undefined, style: { left: knowPct(R(t.v)) } }, knowFormatLength(t.v)); }),
         KNOW_SIZES.map(function (s) { return h('span', { key: s.id, 'data-ck-ruler-obj': true, 'aria-hidden': 'true', style: { left: knowPct(R(s.nm)), background: s.color } }, s.n); })),
-      h('ul', { 'data-ck-objs': true, 'aria-label': 'What this microscope setting can show' }, KNOW_SIZES.map(function (s) {
+      h('ul', { 'data-ck-objs': true, 'aria-label': __alloT("stem.cell.a11y_what_this_microscope_setting_can_show", "What this microscope setting can show") }, KNOW_SIZES.map(function (s) {
         var st = STATUS[knowResolveStatus(s.nm, dNm, mag)];
         return h('li', { key: s.id, 'data-cell-know-obj': s.id },
           h('span', { 'data-ck-ruler-obj': true, 'aria-hidden': 'true', style: { background: s.color } }, s.n),
@@ -7648,7 +7655,8 @@ window.StemLab = window.StemLab || {
       })),
       h('p', { 'data-ck-note': true }, 'For comparison: the unaided eye separates about 0.1 mm, and electron microscopes show cell samples down to about 2 nm. The 0.1 mm "big enough to see" check assumes a 10× eyepiece. Real images also depend on contrast and staining.'));
   }
-  function knowStreakView(h, k, api) {
+  function knowStreakView(h, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var step = Math.max(0, Math.min(5, Math.floor(Number(k.streakStep) || 0)));
     var plate = knowStreakPlate();
     var STEPS = [
@@ -7690,7 +7698,7 @@ window.StemLab = window.StemLab || {
       : 'Agar plate after ' + STEPS[step].label.toLowerCase() + '. Dashed lines show where the loop has streaked.';
     return h('div', { 'data-cell-know-lab': 'streak' },
       h('p', { 'data-ck-sub': true }, 'A streak plate spreads a sample thinner and thinner across agar so that single cells land apart and grow into separate colonies.'),
-      h('ol', { 'data-ck-steps': true, 'aria-label': 'Streak plate steps', style: { gridTemplateColumns: 'repeat(6,minmax(0,1fr))' } }, STEPS.map(function (s, i) {
+      h('ol', { 'data-ck-steps': true, 'aria-label': __alloT("stem.cell.a11y_streak_plate_steps", "Streak plate steps"), style: { gridTemplateColumns: 'repeat(6,minmax(0,1fr))' } }, STEPS.map(function (s, i) {
         return h('li', { key: i }, h('button', { type: 'button', 'data-ck-step': true, 'data-cell-know-streak-step': i, 'aria-current': i === step ? 'step' : undefined, 'data-done': i < step ? 'true' : undefined, onClick: function () { knowCommit(api, { streakStep: i }); knowSay(api, s.label + '.'); } },
           h('span', { 'data-ck-stepnum': true, 'aria-hidden': 'true' }, String(i + 1)), h('b', null, s.label)));
       })),
@@ -7758,16 +7766,17 @@ window.StemLab = window.StemLab || {
             when.length ? h('p', { 'data-ck-label': true }, 'In the timeline') : null,
             when.length ? h('div', { 'data-ck-links': true }, when.map(function (e) { return knowEventLink(h, e, api); })) : null) : null);
   }
-  function knowLabView(h, T, k, api) {
+  function knowLabView(h, T, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var view = knowPick(k.labView, knowIds(KNOW_LAB_VIEWS), 'gram');
     var techs = knowArr(T.techniques);
-    var body = view === 'gram' ? knowGramView(h, k, api) : view === 'resolution' ? knowResolutionView(h, k, api) : view === 'streak' ? knowStreakView(h, k, api) : knowCatalogueView(h, T, k, api);
+    var body = view === 'gram' ? knowGramView(h, k, api, __alloT) : view === 'resolution' ? knowResolutionView(h, k, api, __alloT) : view === 'streak' ? knowStreakView(h, k, api, __alloT) : knowCatalogueView(h, T, k, api);
     var cur = knowFind(KNOW_LAB_VIEWS, view);
     return knowRoot(h, 'lab', 'ck-title-lab', [
       knowHeader(h, { id: 'ck-title-lab', glyph: 'microscope', kicker: 'Knowledge & history', title: 'Lab techniques',
         lede: 'How scientists actually see, grow and study cells. Try three classic techniques hands-on, or browse the full set.',
         stats: [[techs.length, 'techniques'], [KNOW_LAB_GROUPS.length, 'groups'], [KNOW_LAB_VIEWS.length - 1, 'interactive labs']] }),
-      h('div', { key: 'views', 'data-ck-views': true, role: 'group', 'aria-label': 'Choose a lab activity' }, KNOW_LAB_VIEWS.map(function (v) {
+      h('div', { key: 'views', 'data-ck-views': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_choose_a_lab_activity", "Choose a lab activity") }, KNOW_LAB_VIEWS.map(function (v) {
         return h('button', { key: v.id, type: 'button', 'data-ck-view': true, 'data-cell-know-view': v.id, 'aria-pressed': view === v.id ? 'true' : 'false', onClick: function () { knowCommit(api, { labView: v.id }); knowSay(api, v.label + '.'); } },
           knowGlyph(h, v.glyph, 24, 'currentColor'), v.id === 'catalogue' ? v.label + ' (' + techs.length + ')' : v.label);
       })),
@@ -7776,7 +7785,8 @@ window.StemLab = window.StemLab || {
   }
 
   // ── DISEASES (the caller gates this by grade band) ──
-  function knowDiseaseView(h, T, k, api) {
+  function knowDiseaseView(h, T, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var rows = knowArr(T.diseases).filter(function (r) { return r && typeof r.key === 'string' && typeof r.disease === 'string'; });
     var typeIds = knowIds(KNOW_PATHOGEN_TYPES), routeIds = knowIds(KNOW_ROUTES);
     var type = knowPick(k.disType, ['all'].concat(typeIds), 'all');
@@ -7804,7 +7814,7 @@ window.StemLab = window.StemLab || {
         stats: [[rows.length, 'diseases'], [KNOW_PATHOGEN_TYPES.length, 'kinds of cause'], [KNOW_ROUTES.length, 'ways of spreading']] }),
       knowSection(h, 'causes', 'What causes it?', null, [
         key, typeChips, routeChips,
-        shown.length ? h('ul', { key: 'grid', 'data-ck-grid': true, 'aria-label': 'Diseases' }, shown.map(function (r) {
+        shown.length ? h('ul', { key: 'grid', 'data-ck-grid': true, 'aria-label': __alloT("stem.cell.a11y_diseases", "Diseases") }, shown.map(function (r) {
           var p = knowFind(KNOW_PATHOGEN_TYPES, r.type) || KNOW_PATHOGEN_TYPES[0];
           var open = k.disSel === r.key;
           return h('li', { key: r.key, 'data-open': open ? 'true' : undefined },
@@ -7868,7 +7878,8 @@ window.StemLab = window.StemLab || {
         ? 'Group ranges: OpenStax Microbiology (cut-offs vary between textbooks). Records: Mykytczuk et al. 2013; Brock & Freeze 1969; Blöchl et al. 1997; Takai et al. 2008. Under high pressure, as at deep-sea vents, water stays liquid above 100 °C.'
         : 'Group ranges: OpenStax Microbiology (cut-offs vary between textbooks). Records: Schleper et al. 1995; Edwards et al. 2000; Takai et al. 2001.'));
   }
-  function knowEcologyView(h, T, k, api) {
+  function knowEcologyView(h, T, k, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var rows = knowArr(T.ecology).filter(function (r) { return r && typeof r.key === 'string' && typeof r.habitat === 'string'; });
     var groupIds = knowIds(KNOW_HABITAT_GROUPS);
     var group = knowPick(k.ecoGroup, ['all'].concat(groupIds), 'all');
@@ -7886,7 +7897,7 @@ window.StemLab = window.StemLab || {
         stats: [[rows.length, 'habitats'], [KNOW_HABITAT_GROUPS.length, 'kinds of place'], [limitRows.filter(function (x) { return x.r.kind === 'record'; }).length, 'record-holders']] }),
       knowSection(h, 'habitats', 'Habitats', null, [
         chips,
-        h('ul', { key: 'grid', 'data-ck-grid': true, 'data-compact': true, 'aria-label': 'Habitats' }, shown.map(function (r) {
+        h('ul', { key: 'grid', 'data-ck-grid': true, 'data-compact': true, 'aria-label': __alloT("stem.cell.a11y_habitats", "Habitats") }, shown.map(function (r) {
           var open = k.ecoSel === r.key;
           var recs = limitRows.filter(function (x) { return x.r.habitat === r.key; });
           var g = knowFind(KNOW_HABITAT_GROUPS, r.group);
@@ -7908,7 +7919,7 @@ window.StemLab = window.StemLab || {
       ], { glyph: 'globe' }),
       knowSection(h, 'limits', 'Limits of life', 'How hot, cold, acidic or alkaline can it get before nothing grows? Switch between temperature and pH.', [
         h('div', { key: 'tog', 'data-ck-controls': true, style: { marginTop: 0, marginBottom: 12 } },
-          h('div', { 'data-ck-seg': true, role: 'group', 'aria-label': 'Choose a limit' }, [['temp', 'Temperature'], ['ph', 'pH (acidity)']].map(function (o) {
+          h('div', { 'data-ck-seg': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_choose_a_limit", "Choose a limit") }, [['temp', 'Temperature'], ['ph', 'pH (acidity)']].map(function (o) {
             return h('button', { key: o[0], type: 'button', 'aria-pressed': which === o[0] ? 'true' : 'false', 'data-cell-know-limits-toggle': o[0], onClick: function () { knowCommit(api, { ecoLimits: o[0] }); knowSay(api, o[1] + ' limits shown.'); } }, o[1]);
           }))),
         knowLimitsChart(h, which, typeof k.limitSel === 'string' ? k.limitSel : null, api, T)
@@ -7916,15 +7927,16 @@ window.StemLab = window.StemLab || {
     ]);
   }
 
-  function renderCellKnowledge(h, mode, T, d, api) {
+  function renderCellKnowledge(h, mode, T, d, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var k = knowObj(d && d._know);
     var a = api || {};
     var tables = knowObj(T);
-    if (mode === 'disease') return a.clinical === true ? knowDiseaseView(h, tables, k, a) : null;
-    if (mode === 'history') return knowHistoryView(h, tables, k, a);
-    if (mode === 'biologists') return knowBiologistsView(h, tables, k, a);
-    if (mode === 'lab') return knowLabView(h, tables, k, a);
-    if (mode === 'ecology') return knowEcologyView(h, tables, k, a);
+    if (mode === 'disease') return a.clinical === true ? knowDiseaseView(h, tables, k, a, __alloT) : null;
+    if (mode === 'history') return knowHistoryView(h, tables, k, a, __alloT);
+    if (mode === 'biologists') return knowBiologistsView(h, tables, k, a, __alloT);
+    if (mode === 'lab') return knowLabView(h, tables, k, a, __alloT);
+    if (mode === 'ecology') return knowEcologyView(h, tables, k, a, __alloT);
     return null;
   }
   try {
@@ -8884,15 +8896,16 @@ window.StemLab = window.StemLab || {
     var base = 'Logarithmic size ladder from 10 nanometres to 10 centimetres with landmarks: ' + model.marks.map(function(m) { return m.label + ' about ' + m.text; }).join(', ') + '.';
     return model.parsed ? base + ' ' + model.name + ' is about ' + model.midText + (model.parsed.range ? ' (range ' + model.rangeText + ')' : '') + '.' : base + ' ' + model.name + ' has no single typical size, so it is not placed.';
   }
-  function renderCellRefLadder(h, organism, db) {
+  function renderCellRefLadder(h, organism, db, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var model = cellRefLadderModel(organism, db);
-    return h('section', { 'data-cell-ref-ladder': true, 'aria-label': 'Size ladder' },
+    return h('section', { 'data-cell-ref-ladder': true, 'aria-label': __alloT("stem.cell.a11y_size_ladder", "Size ladder") },
       h('h5', { 'data-cell-ref-subhead': true }, 'How big is it?'),
       model.parsed
         ? h('p', { 'data-cell-ref-ladder-lead': true }, h('strong', null, model.name + ': about ' + model.midText), ' (listed size: ' + organism.size + (model.parsed.range ? '; real individuals vary' : '') + ')', model.zone ? ' · to see it: ' + model.zone.short.toLowerCase() : '')
         : h('p', { 'data-cell-ref-ladder-lead': true }, h('strong', null, 'Size varies'), ' — ' + (organism && organism.size ? organism.size : 'no typical size recorded') + ', so it is not placed on the ladder.'),
       renderCellRefLadderH(h, model), renderCellRefLadderV(h, model),
-      h('ul', { 'data-cell-ref-zones': true, 'aria-label': 'What you need to see each size' }, CELL_REF_ZONES.map(function(z) {
+      h('ul', { 'data-cell-ref-zones': true, 'aria-label': __alloT("stem.cell.a11y_what_you_need_to_see_each_size", "What you need to see each size") }, CELL_REF_ZONES.map(function(z) {
         return h('li', { key: z.id }, h('span', { 'aria-hidden': true, style: { background: z.fill, borderColor: z.ink } }), z.label + (z.id === 'em' ? ' (below ~0.2 µm)' : z.id === 'lm' ? ' (~0.2 µm to ~0.1 mm)' : ' (above ~0.1 mm)'));
       })),
       model.comparisons.length ? h('ul', { 'data-cell-ref-compares': true }, model.comparisons.map(function(c, i) { return h('li', { key: i }, c); })) : null,
@@ -8942,11 +8955,12 @@ window.StemLab = window.StemLab || {
         h('div', { 'data-cell-compare-scale-names': true }, caption(a, 'a', m.pa), caption(b, 'b', m.pb))),
       h('p', { 'data-cell-compare-scale-note': true }, note));
   }
-  function renderCellRefPropertyStrip(h, model, onPick) {
+  function renderCellRefPropertyStrip(h, model, onPick, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var glyph = { shared: '=', different: '≠', unknown: '?' }, word = { shared: 'matching', different: 'different', unknown: 'incomplete' };
     return h('div', { 'data-cell-compare-strip': true },
       h('p', { 'data-cell-compare-strip-title': true }, 'At a glance: ' + model.shared + ' matching, ' + model.different + ' different' + (model.unknown ? ', ' + model.unknown + ' incomplete' : '')),
-      h('div', { role: 'group', 'aria-label': 'Jump to a property' }, model.rows.map(function(row) {
+      h('div', { role: 'group', 'aria-label': __alloT("stem.cell.a11y_jump_to_a_property", "Jump to a property") }, model.rows.map(function(row) {
         return h('button', { key: row.key, type: 'button', 'data-cell-compare-strip-item': row.status, 'aria-label': row.label + ': ' + word[row.status] + ' descriptions. Show this property.', onClick: function(e) { onPick(row, e); } },
           h('span', { 'aria-hidden': true, 'data-cell-compare-strip-glyph': true }, glyph[row.status]), h('span', null, row.label));
       })));
@@ -9096,7 +9110,8 @@ window.StemLab = window.StemLab || {
     return h('svg', { viewBox: '0 0 16 16', width: 16, height: 16, 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: CELL_REF_FACT_ICONS[key], fill: key === 'habitat' || key === 'relevance' ? '#ccfbf1' : 'none', stroke: '#0f766e', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
   }
   function cellRefText(v, fallback) { return typeof v === 'string' && v.trim() ? v : (fallback || 'Not recorded'); }
-  function renderCellRefEncyclopedia(h, db, d, api) {
+  function renderCellRefEncyclopedia(h, db, d, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     api = api || {};
     d = d && typeof d === 'object' ? d : {};
     var st = cellRefEncyclopediaState(db, d, !!api.allowClinical), item = st.item;
@@ -9127,14 +9142,14 @@ window.StemLab = window.StemLab || {
           h('p', { 'data-cell-ref-lead': true }, 'Pick a specimen to see its shape, how big it really is, and how it lives.')),
         h('span', { 'data-cell-ref-count': true }, st.filtered.length === st.all.length ? st.all.length + ' organisms' : st.filtered.length + ' of ' + st.all.length + ' organisms')),
       h('label', { 'data-cell-ref-search': true }, 'Search organisms',
-        h('input', { type: 'search', value: st.search, maxLength: 120, placeholder: 'Name, group, habitat or shape', 'aria-label': 'Search organism encyclopedia', onChange: function(e) { patch({ _encyclopediaSearch: e.target.value, _encyclopediaIdx: 0 }); } })),
-      h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': 'Filter organisms by group' },
+        h('input', { type: 'search', value: st.search, maxLength: 120, placeholder: __alloT("stem.cell.a11y_name_group_habitat_or_shape", "Name, group, habitat or shape"), 'aria-label': __alloT("stem.cell.a11y_search_organism_encyclopedia", "Search organism encyclopedia"), onChange: function(e) { patch({ _encyclopediaSearch: e.target.value, _encyclopediaIdx: 0 }); } })),
+      h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_filter_organisms_by_group", "Filter organisms by group") },
         [{ id: 'all', count: st.all.length }].concat(st.groups).map(function(g) {
           var sel = st.filterK === g.id;
           return h('button', { type: 'button', key: g.id, 'aria-pressed': sel ? 'true' : 'false', className: sel ? 'bg-green-700 text-white shadow-sm' : '', onClick: function() { patch({ _encyclopediaFilter: g.id, _encyclopediaIdx: 0 }); } },
             g.id === 'all' ? 'All groups' : g.id, h('span', { 'data-cell-ref-chip-n': true, 'aria-hidden': true }, g.count));
         })),
-      st.filtered.length ? h('div', { 'data-cell-ref-drawer': true, role: 'group', 'aria-label': 'Choose an organism' },
+      st.filtered.length ? h('div', { 'data-cell-ref-drawer': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_choose_an_organism", "Choose an organism") },
         st.filtered.map(function(o, i) {
           var sel = item && item.id === o.id, p = cellRefParseSize(o.size);
           return h('button', { type: 'button', key: o.id, 'data-cell-ref-tile': true, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { select(o, i); } },
@@ -9152,7 +9167,7 @@ window.StemLab = window.StemLab || {
             h('h4', { id: 'cell-ref-enc-name', 'data-cell-ref-name': true, tabIndex: -1 }, item.name),
             h('div', { 'data-cell-ref-badges': true }, h('span', null, cellRefText(item.kingdom)), h('span', null, cellRefText(item.cellType)), st.filtered.length > 1 ? h('span', null, (st.index + 1) + ' of ' + st.filtered.length) : null),
             h('p', { 'data-cell-ref-desc': true }, cellRefText(item.description, 'No description recorded.')),
-            renderCellRefLadder(h, item, db))),
+            renderCellRefLadder(h, item, db, __alloT))),
         h('dl', { 'data-cell-ref-facts': true }, facts.map(function(f) {
           return h('div', { key: f[0] }, h('dt', null, cellRefFactIcon(h, f[0]), f[1]), h('dd', null, cellRefText(item[f[0]])));
         })),
@@ -9545,7 +9560,8 @@ window.StemLab = window.StemLab || {
       h('p', null, g.definition),
       g.diagram ? renderCellRefDiagram(h, g.diagram) : null);
   }
-  function renderCellRefGlossary(h, glossary, d, api) {
+  function renderCellRefGlossary(h, glossary, d, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     api = api || {};
     d = d && typeof d === 'object' ? d : {};
     var st = cellRefGlossState(glossary, d), patch = typeof api.patch === 'function' ? api.patch : function() {};
@@ -9557,14 +9573,14 @@ window.StemLab = window.StemLab || {
       h('div', null, h('p', { 'data-cell-ref-kicker': true }, 'Reference'), h('h3', { id: 'cell-ref-gloss-title' }, 'Cell Biology Glossary'),
         h('p', { 'data-cell-ref-lead': true }, 'Key words grouped by topic, with diagrams for ten core processes. Test yourself when you are ready.')),
       h('span', { 'data-cell-ref-count': true }, st.list.length + ' terms'));
-    var topicChips = h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': 'Filter glossary by topic' },
+    var topicChips = h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_filter_glossary_by_topic", "Filter glossary by topic") },
       [{ id: 'all', label: 'All topics', n: st.list.length }].concat(CELL_REF_GLOSS_TOPICS.map(function(t) { return { id: t.id, label: t.label, n: st.counts[t.id] || 0 }; })).map(function(t) {
         var sel = st.topic === t.id;
         return h('button', { type: 'button', key: t.id, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { patch({ _glossTopic: t.id }); } }, t.id !== 'all' ? cellRefTopicIcon(h, t.id, 14) : null, t.label, h('span', { 'data-cell-ref-chip-n': true, 'aria-hidden': true }, t.n));
       }));
     var body;
     if (st.mode === 'test') {
-      body = renderCellRefGlossTest(h, glossary, d, st, patch, topicLabel);
+      body = renderCellRefGlossTest(h, glossary, d, st, patch, topicLabel, __alloT);
     } else {
       var letters = {}, sections = [];
       st.shown.forEach(function(g) { letters[cellRefLetter(g.term)] = true; });
@@ -9586,14 +9602,14 @@ window.StemLab = window.StemLab || {
       var az = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       body = h('div', null,
         h('label', { 'data-cell-ref-search': true }, 'Search terms and definitions',
-          h('input', { type: 'search', value: st.search, maxLength: 120, placeholder: 'e.g. osmosis, ribosome, ATP', 'aria-label': 'Search glossary terms', onChange: function(e) { patch({ _glossSearch: e.target.value }); } })),
+          h('input', { type: 'search', value: st.search, maxLength: 120, placeholder: __alloT("stem.cell.a11y_e_g_osmosis_ribosome_atp", "e.g. osmosis, ribosome, ATP"), 'aria-label': __alloT("stem.cell.a11y_search_glossary_terms", "Search glossary terms"), onChange: function(e) { patch({ _glossSearch: e.target.value }); } })),
         topicChips,
         h('div', { 'data-cell-ref-gloss-tools': true },
-          h('div', { role: 'group', 'aria-label': 'Arrange terms', 'data-cell-ref-seg': true },
+          h('div', { role: 'group', 'aria-label': __alloT("stem.cell.a11y_arrange_terms", "Arrange terms"), 'data-cell-ref-seg': true },
             h('button', { type: 'button', 'aria-pressed': st.view === 'topic' ? 'true' : 'false', onClick: function() { patch({ _glossView: 'topic' }); } }, 'Group by topic'),
             h('button', { type: 'button', 'aria-pressed': st.view === 'az' ? 'true' : 'false', onClick: function() { patch({ _glossView: 'az' }); } }, 'A–Z')),
           h('p', { role: 'status', 'data-cell-ref-gloss-status': true }, st.shown.length ? 'Showing ' + st.shown.length + ' of ' + st.list.length + ' terms' + (st.topic !== 'all' ? ' in ' + topicLabel : '') + (st.search.trim() ? ' matching "' + st.search.trim() + '"' : '') + '.' : 'No terms match. Try another word or topic.')),
-        st.view === 'az' && st.shown.length ? h('nav', { 'aria-label': 'Jump to letter', 'data-cell-ref-az': true }, az.map(function(L) {
+        st.view === 'az' && st.shown.length ? h('nav', { 'aria-label': __alloT("stem.cell.a11y_jump_to_letter", "Jump to letter"), 'data-cell-ref-az': true }, az.map(function(L) {
           return letters[L] ? h('button', { type: 'button', key: L, 'aria-label': 'Jump to terms starting with ' + L, onClick: function(e) {
             var root = e.currentTarget.closest('[data-cell-ref]'), el = root && root.querySelector('#cell-gloss-letter-' + L);
             if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'start', behavior: 'auto' }); }
@@ -9604,10 +9620,11 @@ window.StemLab = window.StemLab || {
     }
     return h('section', { 'data-cell-ref': 'glossary', 'data-cell-ref-panel': true, className: 'mt-4', 'aria-labelledby': 'cell-ref-gloss-title' },
       cellRefStyle(h), head,
-      h('div', { role: 'group', 'aria-label': 'Glossary mode', 'data-cell-ref-seg': 'mode' }, modeBtn('browse', 'Browse terms'), modeBtn('test', 'Self-test')),
+      h('div', { role: 'group', 'aria-label': __alloT("stem.cell.a11y_glossary_mode", "Glossary mode"), 'data-cell-ref-seg': 'mode' }, modeBtn('browse', 'Browse terms'), modeBtn('test', 'Self-test')),
       body);
   }
-  function renderCellRefGlossTest(h, glossary, d, st, patch, topicLabel) {
+  function renderCellRefGlossTest(h, glossary, d, st, patch, topicLabel, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var raw = d._glossQuiz && typeof d._glossQuiz === 'object' && !Array.isArray(d._glossQuiz) ? d._glossQuiz : null;
     var best = Math.max(0, Math.min(CELL_REF_GLOSS_ROUND, Math.floor(Number(d._glossBest)) || 0));
     function start() {
@@ -9619,7 +9636,7 @@ window.StemLab = window.StemLab || {
       h('p', null, 'You will see ' + CELL_REF_GLOSS_ROUND + ' definitions from ' + topicLabel + '. Pick the term each one describes. Choose a topic above to focus the round.'),
       best ? h('p', { 'data-cell-ref-quiz-best': true }, 'Your best so far: ' + best + ' of ' + CELL_REF_GLOSS_ROUND + '.') : null,
       h('button', { type: 'button', 'data-cell-ref-btn': 'primary', onClick: start }, 'Start a round'));
-    var topicChips = h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': 'Self-test topic' },
+    var topicChips = h('div', { 'data-cell-ref-chips': true, role: 'group', 'aria-label': __alloT("stem.cell.a11y_self_test_topic", "Self-test topic") },
       [{ id: 'all', label: 'All topics' }].concat(CELL_REF_GLOSS_TOPICS).map(function(t) {
         var sel = st.topic === t.id;
         return h('button', { type: 'button', key: t.id, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { patch({ _glossTopic: t.id, _glossQuiz: null }); } }, t.id !== 'all' ? cellRefTopicIcon(h, t.id, 14) : null, t.label);
@@ -9786,7 +9803,8 @@ window.StemLab = window.StemLab || {
       h('circle', { cx: 46, cy: 47, r: 7, fill: '#a78bfa', stroke: '#4c1d95', strokeWidth: 1.3 }),
       h('path', { d: 'M56 58 q4 -3 7 0 M58 42 q3 2 2 6', fill: 'none', stroke: '#0f766e', strokeWidth: 1.6, strokeLinecap: 'round' }));
   }
-  function renderCellRefFinale(h, d, progressRaw, api) {
+  function renderCellRefFinale(h, d, progressRaw, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     api = api || {};
     d = d && typeof d === 'object' ? d : {};
     var patch = typeof api.patch === 'function' ? api.patch : function() {};
@@ -9836,7 +9854,7 @@ window.StemLab = window.StemLab || {
           top.length ? h('ul', { 'data-cell-ref-cert-highlights': true }, top.map(function(s) { return h('li', { key: s.key }, s.label + ': ' + s.display); })) : null,
           dateText ? h('p', { 'data-cell-ref-cert-date': true }, dateText) : null)),
       h('label', { 'data-cell-ref-search': true, style: { maxWidth: '420px', margin: '12px auto 0' } }, 'Name on the certificate (optional)',
-        h('input', { type: 'text', value: name, maxLength: 60, autoComplete: 'off', placeholder: 'Type a name or nickname', onChange: function(e) { patch({ _finaleName: e.target.value.slice(0, 60) }); } })),
+        h('input', { type: 'text', value: name, maxLength: 60, autoComplete: 'off', placeholder: __alloT("stem.cell.a11y_type_a_name_or_nickname", "Type a name or nickname"), onChange: function(e) { patch({ _finaleName: e.target.value.slice(0, 60) }); } })),
       h('h4', { 'data-cell-ref-subhead': true }, 'Your discoveries'),
       h('div', { 'data-cell-ref-stats': true }, summary.stats.map(function(s) {
         return h('div', { key: s.key, 'data-cell-ref-stat': s.key, 'data-zero': s.value ? undefined : 'true' },
@@ -11301,7 +11319,8 @@ window.StemLab = window.StemLab || {
     return Array.isArray(list) && list.some(function (s) { return s && s.id === spec; });
   }
   var SC_LETTERS = ['A', 'B', 'C', 'D', 'E'];
-  function renderStemCellLab(h, raw, api) {
+  function renderStemCellLab(h, raw, api, translateStudy) {
+    var __alloT = typeof translateStudy === "function" ? translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     api = api && typeof api === 'object' ? api : {};
     var band = SC_BAND_IDS.indexOf(api.band) >= 0 ? api.band : 'k2';
     var clinical = api.clinical === true && scBandAtLeast(band, 'g68');
@@ -11434,7 +11453,7 @@ window.StemLab = window.StemLab || {
         ['#c4b5fd', T({ k2: 'Top: can become almost anything', g35: 'Pluripotent' })], ['#5eead4', T({ k2: 'Middle: one family', g35: 'Multipotent' })], ['#7dd3fc', T({ k2: 'Bottom: one job', g35: 'Specialized' })],
         ['#60a5fa', T(SC_NODES.ecto.name)], ['#f87171', T(SC_NODES.meso.name)], ['#facc15', T(SC_NODES.endo.name)]
       ];
-      return h('ul', { className: 'sc-legend', 'aria-label': 'Map key' }, items.map(function (it) { return h('li', { key: it[1] }, h('span', { className: 'sc-swatch', style: { background: it[0] } }), it[1]); }));
+      return h('ul', { className: 'sc-legend', 'aria-label': __alloT("stem.cell.a11y_map_key", "Map key") }, items.map(function (it) { return h('li', { key: it[1] }, h('span', { className: 'sc-swatch', style: { background: it[0] } }), it[1]); }));
     }
 
     function landscapeTab() {
@@ -11476,7 +11495,7 @@ window.StemLab = window.StemLab || {
           node.level >= 1 ? h('button', { type: 'button', className: 'sc-btn sc-btn-primary', 'data-sc-action': 'restart', onClick: restart }, T({ k2: 'New cell at the top', g35: 'Roll a new cell from the top' })) : null),
         isFate ? h('button', { type: 'button', className: 'sc-link', 'data-sc-goto': 'reprogram', onClick: function () { setTab('reprogram'); } }, T({ k2: 'Can it roll back up? Find out →', g35: 'Can a cell roll back up? See Reprogramming →' })) : null,
         h('p', { className: 'sc-notice', role: 'status', 'aria-live': 'polite' }, st.notice));
-      var fates = h('ul', { className: 'sc-fates', 'aria-label': 'Fates reached', key: 'fates' }, SC_LEAVES.map(function (id) {
+      var fates = h('ul', { className: 'sc-fates', 'aria-label': __alloT("stem.cell.a11y_fates_reached", "Fates reached"), key: 'fates' }, SC_LEAVES.map(function (id) {
         var done = st.reached.indexOf(id) >= 0;
         return h('li', { key: id, className: 'sc-fate' + (done ? ' is-done' : '') },
           h('span', { className: 'sc-fate-dot', style: { background: done ? SC_NODES[id].color : '#ffffff' }, 'aria-hidden': 'true' }),
@@ -11510,7 +11529,7 @@ window.StemLab = window.StemLab || {
                 h('span', { key: 'cap', className: 'sc-rung-cap' }, reach.length + ' / ' + SC_LEAVES.length))),
             open ? h('div', { id: 'sc-rung-' + r.id, className: 'sc-rung-detail' }, h('p', null, T(r.detail)), h('p', { className: 'sc-rung-count' }, count)) : null);
         })),
-        adv ? h('aside', { className: 'sc-hedge', 'aria-label': 'Still debated' },
+        adv ? h('aside', { className: 'sc-hedge', 'aria-label': __alloT("stem.cell.a11y_still_debated", "Still debated") },
           h('strong', null, 'Still debated'),
           h('ul', { className: 'sc-bullets' },
             h('li', null, '"Mesenchymal stem cells" from bone marrow and fat can make bone, cartilage and fat cells in a dish, but whether most of them are true self-renewing stem cells in the body is debated. Many scientists call them mesenchymal stromal cells.'),
@@ -11541,7 +11560,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'sc-stage-head' },
           h('div', null, h('p', { className: 'sc-eyebrow' }, 'Mystery cell ' + (puz.index + 1) + ' of ' + SC_TYPES.length), h('h4', null, T({ k2: 'Which cell has these genes switched on?', g35: 'Read the lamps: which cell is this?' }))),
           h('span', { className: 'sc-chip-dark' }, st.solved.length + ' of ' + SC_TYPES.length + ' solved')),
-        h('ul', { className: 'sc-lamps', 'aria-label': 'Genes in the mystery cell' }, SC_GENES.map(function (gn) {
+        h('ul', { className: 'sc-lamps', 'aria-label': __alloT("stem.cell.a11y_genes_in_the_mystery_cell", "Genes in the mystery cell") }, SC_GENES.map(function (gn) {
           var on = pattern.indexOf(gn.id) >= 0;
           return h('li', { key: gn.id, className: 'sc-lamp-row' + (on ? ' is-on' : '') + (gn.house ? ' is-house' : '') },
             h('span', { className: 'sc-lamp', 'aria-hidden': 'true' }),
@@ -11549,7 +11568,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'sc-lamp-role' }, T(gn.role)),
             h('span', { className: 'sc-lamp-state' }, on ? 'ON' : 'off'));
         })),
-        h('div', { className: 'sc-pick', role: 'group', 'aria-label': 'Choose the cell type' }, puz.choices.map(function (t) {
+        h('div', { className: 'sc-pick', role: 'group', 'aria-label': __alloT("stem.cell.a11y_choose_the_cell_type", "Choose the cell type") }, puz.choices.map(function (t) {
           var state = picked ? (t === puz.target ? ' is-right' : t === picked ? ' is-wrong' : '') : '';
           return h('button', { key: t, type: 'button', className: 'sc-pick-btn' + state, 'data-sc-pick': t, 'aria-pressed': picked === t ? 'true' : 'false', onClick: function () { pickType(t, puz); } },
             stemCellPortrait(h, t === 'es' ? 'es' : (SC_NODES[t].portrait || {}).kind, { uid: 'pick' + t, decorative: true }),
@@ -11560,7 +11579,7 @@ window.StemLab = window.StemLab || {
       var matrix = h('div', { className: 'sc-card', key: 'matrix' },
         h('h4', null, T({ k2: 'Gene map', g35: 'Gene expression map' })),
         h('p', { style: { margin: 0, fontSize: 13 } }, T({ k2: 'Solve mystery cells to fill in the map.', g35: 'Solve mystery cells to fill in each column. Notice the row of housekeeping genes that is on everywhere.' })),
-        h('div', { className: 'sc-table-wrap', tabIndex: 0, role: 'region', 'aria-label': 'Gene expression map (scrolls sideways)' },
+        h('div', { className: 'sc-table-wrap', tabIndex: 0, role: 'region', 'aria-label': __alloT("stem.cell.a11y_gene_expression_map_scrolls_sideways", "Gene expression map (scrolls sideways)") },
           h('table', { className: 'sc-matrix' },
             h('caption', { className: 'sc-sr' }, 'Which genes are switched on in each cell type you have solved'),
             h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Gene'), SC_TYPES.map(function (t) {
@@ -11590,10 +11609,10 @@ window.StemLab = window.StemLab || {
         build = h('div', { className: 'sc-card sc-build', key: 'build' },
           h('h4', null, 'Program a cell: flip the switches'),
           h('p', { style: { margin: 0, fontSize: 13 } }, 'Choose a target cell type, then switch on exactly the genes it uses.'),
-          h('div', { className: 'sc-targets', role: 'group', 'aria-label': 'Target cell type' }, SC_TYPES.map(function (t) {
+          h('div', { className: 'sc-targets', role: 'group', 'aria-label': __alloT("stem.cell.a11y_target_cell_type", "Target cell type") }, SC_TYPES.map(function (t) {
             return h('button', { key: t, type: 'button', className: 'sc-target', 'aria-pressed': st.buildTarget === t ? 'true' : 'false', 'data-sc-target': t, onClick: function () { setBuildTarget(t); } }, (st.built.indexOf(t) >= 0 ? '✓ ' : '') + scTypeShort(t, band));
           })),
-          h('div', { className: 'sc-switches', role: 'group', 'aria-label': 'Gene switches' }, SC_GENES.map(function (gn) {
+          h('div', { className: 'sc-switches', role: 'group', 'aria-label': __alloT("stem.cell.a11y_gene_switches", "Gene switches") }, SC_GENES.map(function (gn) {
             var on = st.buildOn.indexOf(gn.id) >= 0;
             return h('button', { key: gn.id, type: 'button', className: 'sc-switch', 'aria-pressed': on ? 'true' : 'false', 'data-sc-gene': gn.id, onClick: function () { toggleGene(gn.id); } },
               h('span', { className: 'sc-switch-track', 'aria-hidden': 'true' }, h('span', { className: 'sc-switch-knob' })),
@@ -11622,12 +11641,12 @@ window.StemLab = window.StemLab || {
       var controls = [];
       if (adv) {
         controls.push(h('p', { key: 'fl', className: 'sc-choices-title' }, 'Starting cell'));
-        controls.push(h('div', { key: 'from', className: 'sc-targets', role: 'group', 'aria-label': 'Starting cell' }, SC_REPROG_STARTS.map(function (s) {
+        controls.push(h('div', { key: 'from', className: 'sc-targets', role: 'group', 'aria-label': __alloT("stem.cell.a11y_starting_cell", "Starting cell") }, SC_REPROG_STARTS.map(function (s) {
           return h('button', { key: s.id, type: 'button', className: 'sc-target', 'aria-pressed': from === s.id ? 'true' : 'false', 'data-sc-from': s.id, onClick: function () { setFrom(s.id); } }, T(s.label));
         })));
         controls.push(h('p', { key: 'fn', style: { margin: '6px 0 0', fontSize: 13 } }, T(start.note)));
         controls.push(h('p', { key: 'ft', className: 'sc-choices-title', style: { marginTop: 14 } }, 'Reprogramming factors'));
-        controls.push(h('div', { key: 'facs', className: 'sc-factors', role: 'group', 'aria-label': 'Reprogramming factors' }, SC_FACTORS.map(function (f) {
+        controls.push(h('div', { key: 'facs', className: 'sc-factors', role: 'group', 'aria-label': __alloT("stem.cell.a11y_reprogramming_factors", "Reprogramming factors") }, SC_FACTORS.map(function (f) {
           var on = st.factors.indexOf(f.id) >= 0;
           return h('button', { key: f.id, type: 'button', className: 'sc-factor', 'aria-pressed': on ? 'true' : 'false', 'data-sc-factor': f.id, onClick: function () { setFactors(on ? st.factors.filter(function (x) { return x !== f.id; }) : st.factors.concat([f.id]), from); } },
             h('span', { className: 'sc-factor-dot', style: { background: f.color }, 'aria-hidden': 'true' }), f.name);
@@ -11698,7 +11717,7 @@ window.StemLab = window.StemLab || {
           var ans = st.myths[m.id], right = ans ? (ans === 'fact') === m.fact : false;
           return h('li', { key: m.id, className: 'sc-myth', 'data-sc-myth': m.id },
             h('p', null, m.text),
-            h('div', { className: 'sc-myth-btns', role: 'group', 'aria-label': 'Myth or fact' },
+            h('div', { className: 'sc-myth-btns', role: 'group', 'aria-label': __alloT("stem.cell.a11y_myth_or_fact", "Myth or fact") },
               ['myth', 'fact'].map(function (c) { return h('button', { key: c, type: 'button', 'aria-pressed': ans === c ? 'true' : 'false', 'data-sc-myth-choice': c, onClick: function () { answerMyth(m, c); } }, c === 'myth' ? 'Myth' : 'Fact'); })),
             ans ? h('p', { className: 'sc-feedback ' + (right ? 'is-right' : 'is-wrong'), style: { fontWeight: 500 } }, (right ? '✓ ' : '✗ ') + m.why) : null);
         }))
@@ -11740,7 +11759,7 @@ window.StemLab = window.StemLab || {
             h('h3', { id: 'sc-title' }, T({ k2: 'Stem cells: one cell, many jobs', g35: 'Stem cells & specialization' })),
             h('p', null, T({ k2: 'You began as one cell. Now you have skin cells, blood cells, nerve cells and more. Roll a cell down the hill to see how it picks its job!', g35: 'You started as a single cell. Stem cells divided and specialized into every kind of cell in your body. Roll a cell down the landscape, read its genes, and push it back uphill.', g68: 'Every specialized cell in your body descends from one fertilized egg. Follow a stem cell as signals commit it to a fate, see how one genome produces many cell types, and explore how scientists reprogram cells.' }))),
           h('div', { className: 'sc-stats' }, stat(T({ k2: 'Cells made', g35: 'Fates reached' }), st.reached.length + '/' + SC_LEAVES.length), stat('Mystery cells', st.solved.length + '/' + SC_TYPES.length), stat(T({ k2: 'Right guesses', g35: 'Checks right' }), checksRight + '/' + checkItems.length))),
-        h('nav', { className: 'sc-tabs', 'aria-label': 'Stem cell lab sections' }, SC_TABS.map(function (t) {
+        h('nav', { className: 'sc-tabs', 'aria-label': __alloT("stem.cell.a11y_stem_cell_lab_sections", "Stem cell lab sections") }, SC_TABS.map(function (t) {
           return h('button', { key: t.id, type: 'button', 'aria-pressed': st.tab === t.id ? 'true' : 'false', 'data-sc-tab': t.id, onClick: function () { setTab(t.id); } },
             h('span', { 'aria-hidden': 'true' }, t.icon), ' ', T(t.label));
         })),
@@ -34465,7 +34484,7 @@ var d = labToolData.cell || {};
                       drawInteriorFrame();
                       scheduleInteriorFrame();
                     } }),
-                  showLabels && narrowLabels && h('ol', { 'data-cell-int-label-legend': true, 'aria-label': 'Study label key: numbers on the diagram' },
+                  showLabels && narrowLabels && h('ol', { 'data-cell-int-label-legend': true, 'aria-label': __alloT("stem.cell.a11y_study_label_key_numbers_on_the_diagram", "Study label key: numbers on the diagram") },
                     interiorLabelLegend(ctype, zoomLevel, specializationId).map(function (entry) {
                       var color = CELL_ORGANELLES[entry.key].color || '#67e8f9';
                       return h('li', { key: 'legend-' + entry.key }, h('button', { type: 'button', 'aria-pressed': sel === entry.key ? 'true' : 'false', onClick: function () { pick(entry.key); } }, h('span', { 'aria-hidden': 'true', style: { borderColor: color } }, String(entry.number)), entry.name));
@@ -35254,7 +35273,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               ),
 
               // Microscope illumination (free observation only; missions keep brightfield cues).
-              activeCellMode === 'observe' && !d.quizMode && React.createElement("div", { "data-cell-illumination-control": cellPetriIllumEffective, role: "group", "aria-label": "Microscope illumination", "aria-describedby": "cell-illumination-caption" },
+              activeCellMode === 'observe' && !d.quizMode && React.createElement("div", { "data-cell-illumination-control": cellPetriIllumEffective, role: "group", "aria-label": __alloT("stem.cell.a11y_microscope_illumination", "Microscope illumination"), "aria-describedby": "cell-illumination-caption" },
                 React.createElement("style", { "data-cell-petri-style": true },
                   "[data-cell-illumination-control]{position:absolute;z-index:20;left:50%;bottom:8px;transform:translateX(-50%);display:flex;flex-direction:column;gap:5px;box-sizing:border-box;width:268px;max-width:calc(100% - 528px);padding:7px 9px 8px;border:1px solid #bfd2cd;border-radius:12px;background:rgba(248,253,251,.97);box-shadow:0 4px 16px #163c4320;color:#244b42}"
                   + "[data-cell-illumination-head]{display:flex;align-items:baseline;justify-content:space-between;gap:8px;line-height:14px}"
@@ -37049,7 +37068,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   )
                 ),
                 h('div', { className: 'grid gap-3' }, CELL_PROC_DIVES.map(function(dive) {
-                  return renderCellProcDive(h, dive, cellProcDiveState(d.cellProcDive, dive), diveActions, cpReduced);
+                  return renderCellProcDive(h, dive, cellProcDiveState(d.cellProcDive, dive), diveActions, cpReduced, __alloT);
                 }))
               );
             })(),
@@ -37070,7 +37089,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               },
               sound: cellSound,
               announce: announceToSR
-            }),
+            }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // FILTER MODE
@@ -37100,42 +37119,42 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             // ═══════════════════════════════════════════════════════════
             d.mode === 'history' && renderCellKnowledge(React.createElement, 'history',
               { history: CELL_HISTORY, biologists: FAMOUS_BIOLOGISTS, techniques: LAB_TECHNIQUES, diseases: MICROBIAL_DISEASES, ecology: MICRO_ECOLOGY },
-              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }),
+              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // BIOLOGISTS MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'biologists' && renderCellKnowledge(React.createElement, 'biologists',
               { history: CELL_HISTORY, biologists: FAMOUS_BIOLOGISTS, techniques: LAB_TECHNIQUES, diseases: MICROBIAL_DISEASES, ecology: MICRO_ECOLOGY },
-              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }),
+              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // LAB TECHNIQUES MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'lab' && renderCellKnowledge(React.createElement, 'lab',
               { history: CELL_HISTORY, biologists: FAMOUS_BIOLOGISTS, techniques: LAB_TECHNIQUES, diseases: MICROBIAL_DISEASES, ecology: MICRO_ECOLOGY },
-              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }),
+              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // DISEASE MODE (grades 6-12 only: cellBandAllowsClinical)
             // ═══════════════════════════════════════════════════════════
             d.mode === 'disease' && cellBandAllowsClinical && renderCellKnowledge(React.createElement, 'disease',
               { history: CELL_HISTORY, biologists: FAMOUS_BIOLOGISTS, techniques: LAB_TECHNIQUES, diseases: MICROBIAL_DISEASES, ecology: MICRO_ECOLOGY },
-              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }),
+              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // ECOLOGY MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'ecology' && renderCellKnowledge(React.createElement, 'ecology',
               { history: CELL_HISTORY, biologists: FAMOUS_BIOLOGISTS, techniques: LAB_TECHNIQUES, diseases: MICROBIAL_DISEASES, ecology: MICRO_ECOLOGY },
-              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }),
+              d, { set: setLabToolData, jump: jumpCellMode, clinical: cellBandAllowsClinical, year: new Date().getFullYear(), sound: cellSound, xp: awardStemXP, sr: announceToSR }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // GLOSSARY MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'glossary' && renderCellRefGlossary(React.createElement, CELL_GLOSSARY, d, {
               patch: function(p) { updateCellDataFunctional(function(cel) { return Object.assign(cel, p); }); }
-            }),
+            }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // LIBRARY MODE — the reference tables that were never wired
@@ -37453,7 +37472,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               patch: function(p) { updateCellDataFunctional(function(cel) { return Object.assign(cel, p); }); },
               jump: jumpCellMode,
               sound: cellSound
-            }),
+            }, __alloT),
 
             d.mode === 'stemcells' && renderStemCellLab(React.createElement, d._stemcell, {
               band: cellGradeBand, clinical: cellBandAllowsClinical,
@@ -37484,7 +37503,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 jumpCellMode('interior');
                 if (typeof announceToSR === 'function') announceToSR('Inside the Cell: ' + label);
               }
-            }),
+            }, __alloT),
             d.mode === 'osmoHunt' && renderOsmosisLab(React.createElement, d._osmoHunt, function(patch) {
               updateCellDataFunctional(function(current) {
                 return Object.assign({}, current, { _osmoHunt: Object.assign({}, current._osmoHunt || {}, patch) });

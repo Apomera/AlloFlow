@@ -702,7 +702,7 @@
     }
 
     if (selectedSlug) {
-      return e('section', { className: 'flex flex-col gap-4', 'aria-label': 'Published lesson preview' },
+      return e('section', { className: 'flex flex-col gap-4', 'aria-label': tr("catalog.a11y_published_lesson_preview", "Published lesson preview") },
         e('button', { type: 'button', className: 'self-start min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { setSelectedSlug(''); setActionError(''); } }, 'Back to catalog'),
         state.status === 'loading' && e('p', { role: 'status' }, 'Finding the published lesson…'),
         state.status === 'error' && e('div', { role: 'alert' }, e('p', null, 'Could not load catalog: ' + state.error), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setRetryVersion(function (v) { return v + 1; }); } }, 'Retry loading catalog')),
@@ -745,7 +745,7 @@
           e('input', {
             id: 'cat-filter-grade',
             type: 'text',
-            placeholder: 'e.g., 3, 6-8, K',
+            placeholder: tr("catalog.a11y_e_g_3_6_8_k", "e.g., 3, 6-8, K"),
             className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
             value: filters.grade,
             onChange: function (ev) { setFilters(Object.assign({}, filters, { grade: ev.target.value })); },
@@ -946,7 +946,7 @@
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-grade' }, 'Grade level *'),
-          e('input', { id: 'cat-grade', type: 'text', placeholder: 'e.g., 3, 6-8, K-2', className: inputClass, value: meta.grade_level, onChange: function (ev) { setMeta(Object.assign({}, meta, { grade_level: ev.target.value })); } })
+          e('input', { id: 'cat-grade', type: 'text', placeholder: tr("catalog.a11y_e_g_3_6_8_k_2", "e.g., 3, 6-8, K-2"), className: inputClass, value: meta.grade_level, onChange: function (ev) { setMeta(Object.assign({}, meta, { grade_level: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-tags' }, 'Tags ',

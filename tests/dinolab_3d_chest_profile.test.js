@@ -8,8 +8,9 @@ const source = readFileSync(process.env.DINO_CHEST_SOURCE || resolve('stem_lab/s
 const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Missing Dino Lab registration');
 window.StemLab = { registerTool() {} };
+const nativeHelpers = [...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match => match[1]))];
 new Function(source.replace(anchor,
-  'globalThis.__dinoChestProfile = { DINOS, postcranialSurfaceProfileFor, dinoTorsoRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTheropodBodyTorso };' + anchor))();
+  'globalThis.__dinoChestProfile = { DINOS, skeletalAnatomyProfileFor, ' + nativeHelpers.join(',') + ' };' + anchor))();
 const art = globalThis.__dinoChestProfile;
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 const at = (attribute, i) => new THREE.Vector3().fromBufferAttribute(attribute, i);
@@ -97,10 +98,18 @@ function buildBody(id, showBody = true, forceSauropod) {
   const shoulder = vec(-.4, 1.7, -.2), hip = vec(3.6, 1.76, -.2), postcranialSurface = art.postcranialSurfaceProfileFor(dn);
   const chain = new Function('THREE', 'props', 'bodyMat', 'model', 'dinoCranialGeometry', 'dinoSurfaceGeometry', chainCode + 'return addSoftTissueChain;')
     (THREE, { showBody }, bodyMat, model, art.dinoCranialGeometry, art.dinoSurfaceGeometry);
-  const context = { THREE, vec, dn, bodyMat, model, idleMotion, shoulder, hip, postcranialSurface,
+  const context = { THREE, vec, ...art, dn, bodyMat, model, idleMotion, shoulder, hip, postcranialSurface,
+    len: 8, ht: 3, detailScale: 1, skeletalProfile: art.skeletalAnatomyProfileFor(dn), posture: art.postureProfileFor(dn),
     bodyHeight: .7, bodyDepth: .8, bodyLen: 4, surfaceHypothesis: { bodyHeightScale: 1, bodyDepthScale: 1 },
     isSauropod: forceSauropod === undefined ? dn.group === 'sauropod' : forceSauropod,
     dinoTorsoRadii: art.dinoTorsoRadii, dinoTheropodBodyTorso: art.dinoTheropodBodyTorso, addSoftTissueChain: chain };
+  // The actual torso caller now shares its native pelvic/frame gates.
+  const head = shoulder.clone().add(vec(-3, .3, 0));
+  context.lambeosaurBody = art.dinoLambeosaurBodyFrame(THREE, dn, {
+    len: context.len, ht: context.ht, headScale: art.reconstructionProfileFor(dn).head,
+    shoulder, hip, head, snout: head.clone().add(vec(-.6, -.06, 0)), tail: hip.clone().add(vec(2.7, -.3, 0)),
+    bodyHeight: context.bodyHeight, bodyDepth: context.bodyDepth
+  });
   const snapshots = JSON.stringify({ shoulder, hip, postcranialSurface });
   const result = new Function('context', 'with(context){' + bodyCode + 'return { bodyShell, torsoPoints, torsoRadii, thoraxCenter, abdomenCenter, pelvisCenter, theropodTorso:typeof theropodTorso==="undefined"?null:theropodTorso };}')(context);
   expect(JSON.stringify({ shoulder, hip, postcranialSurface })).toBe(snapshots);

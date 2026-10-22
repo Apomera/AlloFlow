@@ -101,7 +101,7 @@ describe('family progress in the built teacher module', () => {
     await toggle.focus(); await page.keyboard.press('Enter');
     expect(await toggle.getAttribute('aria-expanded')).toBe('true');
     expect(await page.locator('[id=' + JSON.stringify(id) + ']').isVisible()).toBe(true);
-    await page.getByRole('button', { name: bank.common.close || 'Close progress dashboard', exact: true }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: bank.common.close_dashboard || 'Close progress dashboard', exact: true }).focus(); await page.keyboard.press('Enter');
     expect(await page.evaluate(() => window.__closed)).toBe(1);
     await page.locator('[data-help-key="learner_progress_share_teacher_btn"]').click();
     expect(await page.evaluate(() => window.__downloaded)).toBe(1);

@@ -1,0 +1,17 @@
+{
+  "trackedDinoHistoricalFixtures": 14,
+  "changedHistoricalFixtures": [],
+  "missingHistoricalFixtures": [],
+  "oldHashLiteralOccurrences": 31,
+  "missingOldHashLiteralOccurrences": 0,
+  "snapshotKeysOriginal": 23,
+  "snapshotKeysCurrent": 23,
+  "changedSnapshots": [
+    "Dino Lab \u2014 render per tab (golden master) > renders the anatomy tab (snapshot) 1",
+    "Dino Lab \u2014 render per tab (golden master) > renders the birds tab (snapshot) 1",
+    "Dino Lab \u2014 render per tab (golden master) > renders the field3d tab (snapshot) 1"
+  ],
+  "addedSnapshots": [],
+  "removedSnapshots": [],
+  "currentDinoSha256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585"
+}

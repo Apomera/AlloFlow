@@ -29,7 +29,7 @@ async function mount(extra = {}, collection = 'saved') {
 describe('focused second-look candidate continuity', () => {
   it('retains the known confusion outside the saved target collection while leaving ordinary seeded choices unchanged', () => {
     const normal = build(SEED + 2, ['clownfish'], ['clownfish']);
-    expect(normal).toEqual([{ id: 'clownfish', choices: ['giant_moray', 'peacock_grouper', 'clownfish'] }]);
+    expect(normal).toEqual([{ id: 'clownfish', choices: ['clownfish', 'threadfin_butterflyfish', 'moorish_idol'] }]);
     const focused = build(SEED + 2, ['clownfish'], ['clownfish'], [wrong('clownfish', 'lionfish')]);
     expect(focused.map(q => q.id)).toEqual(['clownfish']);
     expect(focused[0].choices).toContain('lionfish');
@@ -65,15 +65,16 @@ describe('focused second-look candidate continuity', () => {
   });
 
   it('uses the most recent wrong answer on successive retries and preserves the original contrast reminder', async () => {
-    const t = await mount(); expect(choices(t)).toEqual(['lionfish', 'reef_manta', 'clownfish']);
-    await click(query(t, '[data-practice-choice="lionfish"]')); await click(query(t, '[data-practice-compare-toggle]'));
+    const t = await mount(); expect(choices(t)).toEqual(build(SEED + 1, ['clownfish'], [])[0].choices);
+    const firstChoice = choices(t).find(id => id !== 'clownfish');
+    await click(query(t, '[data-practice-choice="' + firstChoice + '"]')); await click(query(t, '[data-practice-compare-toggle]'));
     await click(query(t, '[data-practice-guess-detail="2"]')); await click(query(t, '[data-practice-detail="1"]'));
     const reminder = query(t, '[data-practice-contrast-reminder]').textContent;
     await click(query(t, '[data-practice-next]')); await click(query(t, '[data-practice-second-look]'));
-    expect(choices(t)).toContain('lionfish');
+    expect(choices(t)).toContain(firstChoice);
     expect(query(t, '[data-practice-contrast-reminder]')).toBeNull(); expect(query(t, '[data-candidate-result]')).toBeNull();
     expect(t.host.querySelectorAll('[data-practice-choice][aria-disabled]')).toHaveLength(0);
-    const secondChoice = choices(t).find(id => id !== 'clownfish' && id !== 'lionfish');
+    const secondChoice = choices(t).find(id => id !== 'clownfish' && id !== firstChoice);
     await click(query(t, '[data-practice-choice="' + secondChoice + '"]')); await click(query(t, '[data-practice-next]'));
     expect(query(t, '[data-practice-earlier-review] [data-practice-contrast-reminder]').textContent).toBe(reminder);
     await click(query(t, '[data-practice-second-look]'));
@@ -87,7 +88,7 @@ describe('focused second-look candidate continuity', () => {
   });
 
   it('keeps setup rounds and persisted revisit collections independent of prior choices', async () => {
-    const t = await mount(); await click(query(t, '[data-practice-choice="lionfish"]')); await click(query(t, '[data-practice-next]'));
+    const t = await mount(), firstChoice = choices(t).find(id => id !== 'clownfish'); await click(query(t, '[data-practice-choice="' + firstChoice + '"]')); await click(query(t, '[data-practice-next]'));
     await click(named(t, 'Choose another group')); await click(query(t, '[data-practice-start]'));
     expect(choices(t)).toEqual(build(SEED + 2, ['clownfish'], [])[0].choices);
     const persisted = await mount({ speciesPractice: { rounds: 1, answered: 1, correct: 0, last: { total: 1, correct: 0, skipped: 0, missedIds: ['clownfish'], choice: 'lionfish', previousAnswers: [wrong('clownfish', 'lionfish')] } } }, 'revisit');

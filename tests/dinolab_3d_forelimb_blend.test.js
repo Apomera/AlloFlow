@@ -75,6 +75,21 @@ function build(id = 'brachiosaurus', scale = 1, showBody = true, transformed = f
       contour.position.copy(mesh.position); model.add(contour); return contour;
     }
   };
+  // Resolve the native connected frame before its torso and limb callers.
+  // The fixture also exercises a lambeosaur, whose frame is no longer optional.
+  context.snout = context.head.clone().add(vec(-context.len * .075, -context.ht * .020, 0));
+  context.tail = vec(context.len * .52, context.ht * .34, 0);
+  context.lambeosaurBody = art.dinoLambeosaurBodyFrame(THREE, dn, {
+    len: context.len, ht: context.ht, headScale: art.reconstructionProfileFor(dn).head,
+    shoulder: context.shoulder, hip: context.hip, head: context.head,
+    snout: context.snout, tail: context.tail, bodyHeight: context.bodyHeight, bodyDepth: context.bodyDepth
+  });
+  if (context.lambeosaurBody) {
+    const frame = context.lambeosaurBody;
+    context.shoulder.copy(frame.shoulder); context.hip.copy(frame.hip); context.tail.copy(frame.tail);
+    context.bodyDepth = frame.bodyDepth; context.bodyLen = Math.abs(context.hip.x - context.shoulder.x) * .72;
+    model.userData.dinoFullBodyAnatomy = frame.metadata; model.userData.dinoLambeosaurBody = frame.metadata;
+  }
   context.addSoftTissueChain = inContext(chainCode, 'addSoftTissueChain', context);
   Object.assign(context, inContext(torsoCode, '({ bodyShell, surfaceBodyDepth, surfaceBodyHeight })', context));
   const addLeg = inContext(legCode, 'addLeg', context);
@@ -143,10 +158,34 @@ describe('Dino Lab local weight-bearing forelimb shading', () => {
     finally { built.dispose(); }
   });
 
-  for (const id of ['parasaurolophus', 'tyrannosaurus']) it('leaves every actual off-group surface byte-identical for ' + id, () => {
+  for (const id of ['iguanodon', 'tyrannosaurus']) it('leaves every actual off-group surface byte-identical for ' + id, () => {
     const built = build(id), meshes = [built.context.bodyShell, ...built.context.idleMotion.legs.map(e => e.mesh)], before = meshes.map(snapshot);
     try { built.blendOnly(); expect(built.records.blends).toHaveLength(0); expect(built.context.idleMotion.legs.every(e => e.forelimbBlendWidth === 0)).toBe(true); meshes.forEach((mesh, i) => preserved(mesh, before[i], true)); }
     finally { built.dispose(); }
+  });
+
+  it('blends both native lambeosaur shoulders while preserving their meshes, anchors, contacts and fixed torso normals', () => {
+    const built = build('parasaurolophus'), { bodyShell, idleMotion } = built.context;
+    const meshes = [bodyShell, ...idleMotion.legs.map(entry => entry.mesh)], before = meshes.map(snapshot), anchorBefore = anchors(built), contacts = JSON.stringify(built.context.plantedFootContacts);
+    try {
+      expect(built.context.lambeosaurBody.metadata.species).toBe('parasaurolophus');
+      built.blendOnly();
+      expect(built.records.blends).toHaveLength(2);
+      const forelimbs = idleMotion.legs.filter(entry => entry.front);
+      expect(forelimbs).toHaveLength(2);
+      for (const call of built.records.blends) {
+        expect(call.first).toBe(bodyShell); expect(forelimbs.some(entry => entry.mesh === call.second)).toBe(true);
+        expect(call.secondOnly).toBe(true); expect(call.result.changed[0]).toBe(0); expect(call.result.changed[1]).toBeGreaterThan(0);
+        // These newer native lofts have different ring counts and sections.
+        // Check every real normal without imposing the older 48x24 topology.
+        for (const mesh of [call.first, call.second]) {
+          const normals = mesh.geometry.attributes.normal;
+          for (let i = 0; i < normals.count; i++) { const normal = at(normals, i); expect(normal.toArray().every(Number.isFinite)).toBe(true); expect(Math.abs(normal.length() - 1)).toBeLessThan(1e-6); }
+        }
+      }
+      meshes.forEach((mesh, i) => preserved(mesh, before[i])); preserved(bodyShell, before[0], true);
+      expect(anchors(built)).toEqual(anchorBefore); expect(JSON.stringify(built.context.plantedFootContacts)).toBe(contacts);
+    } finally { built.dispose(); }
   });
 
   it('does not blend positive-width entries outside the eligible clades', () => {

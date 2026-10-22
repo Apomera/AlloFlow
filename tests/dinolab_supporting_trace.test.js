@@ -27,11 +27,12 @@ function block(start, end) {
 }
 function load() {
   const captured = {};
+  const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
   window.StemLab = { ensureThree: () => new Promise(() => {}), registerTool(_id, cfg) { captured.cfg = cfg; } };
   new Function(source.replace('var cameraControlRef = React.useRef(null);', 'var cameraControlRef = React.useRef(null); window.__dinoTraceCameraRef = cameraControlRef;')
     .replace('var supportingRelationRef = React.useRef(null);', 'var supportingRelationRef = React.useRef(null); window.__dinoTraceRelationRef = supportingRelationRef;')
     .replace("var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';", "window.__dinoTraceSetStudyView = setStudyView; var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';")
-    .replace(marker, 'globalThis.__dinoTraceContract = { DINOS, skeletalAnatomyProfileFor, reconstructionHypothesesFor, dinoDetailedBodyPartDefinitions, dinoSupportingRelationsFor, dinoSupportingRelationBounds }; ' + marker))();
+    .replace(marker, 'globalThis.__dinoTraceContract = { DINOS, skeletalAnatomyProfileFor, '+nativeTopLevelNames.join(',')+' }; ' + marker))();
   const art = globalThis.__dinoTraceContract; delete globalThis.__dinoTraceContract;
   const dn = id => art.DINOS.find(entry => entry.id === id);
   function parts(id, mode = 'evidence') {
@@ -96,8 +97,8 @@ describe('Connected anatomical landmarks', () => {
     expect(api.art.dinoSupportingRelationBounds(THREE, pair, { knee: boxes.knee, ankle: new THREE.Box3(vec(NaN, 0, 0), vec(1, 1, 1)) })).toBeNull();
     const boundsCode = block('            function boundsForStudy(region) {', '            model.userData.studyBounds');
     const selected = { current: 'knee' }, relation = { current: pair }, region = new THREE.Box3(vec(-9, -9, -9), vec(9, 9, 9));
-    const getBounds = new Function('THREE', 'supportingRelationRef', 'bodyPartDefinitions', 'selectedBodyPartRef', 'bodyPartStudyBounds', 'studyBounds', 'dinoSupportingRelationBounds', 'props', boundsCode + '\nreturn boundsForStudy;')
-      (THREE, relation, api.parts('tyrannosaurus'), selected, boxes, { body: region, head: region }, api.art.dinoSupportingRelationBounds, { shapeStudy: null });
+    const getBounds = new Function('THREE', 'supportingRelationRef', 'bodyPartDefinitions', 'selectedBodyPartRef', 'bodyPartStudyBounds', 'studyBounds', 'dinoSupportingRelationBounds', 'props', 'dinoShapePedalEvidenceEligible', 'shapeStudyRef', boundsCode + '\nreturn boundsForStudy;')
+      (THREE, relation, api.parts('tyrannosaurus'), selected, boxes, { body: region, head: region }, api.art.dinoSupportingRelationBounds, { shapeStudy: null }, api.art.dinoShapePedalEvidenceEligible, { current: null });
     expect(getBounds('body').equals(union)).toBe(true); selected.current = 'ankle'; expect(getBounds('body').equals(union)).toBe(true);
     delete boxes.knee; expect(getBounds('body')).toBe(boxes.ankle);
     relation.current = null; expect(getBounds('head')).toBe(region);

@@ -25786,7 +25786,7 @@
       "pilot_compare_freeze_choice_aria": "Forecast {count} climate profiles at or below 0°C",
       "pilot_compare_freeze_choices_aria": "Freeze-line forecast choices",
       "pilot_compare_freeze_confirmed": "Confirmed: {count} of {total} climate profiles sit at or below 0°C at {altitude}: {climates}.",
-      "pilot_compare_freeze_hint": "Read the dashed freezing line, then choose 0–4.",
+      "pilot_compare_freeze_hint": "Read the dashed freezing line, then choose 0–{total}.",
       "pilot_compare_freeze_insight": "{scenario} reaches freezing near {m} m, so rising water can become ice sooner.",
       "pilot_compare_freeze_insight_title": "Temperature changes the phase",
       "pilot_compare_freeze_kicker": "Science challenge",

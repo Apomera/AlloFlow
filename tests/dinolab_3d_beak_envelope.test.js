@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+const reviewedConstructionCallers = JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_reviewed_beak_construction_callers.json'), 'utf8'));
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(process.env.DINO_BEAK_SURFACE_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
@@ -99,12 +100,19 @@ function section(startMarker, endMarker, after = 0) {
   return source.slice(start, end + endMarker.length);
 }
 const sha = value => createHash('sha256').update(value).digest('hex');
-// Preserve the anatomical frame while permitting this exact registered bulk-fill change.
+// Recover the original independent construction guards after exact reviewed
+// caller additions. Every hunk is frozen, occurs once and records native coverage.
+function preservedConstruction(block, label) {
+  const review = reviewedConstructionCallers.seams.find(seam => seam.label === label);
+  expect(review, label + ' reviewed caller fixture').toBeTruthy();
+  for (const hunk of review.hunks) {
+    expect(block.split(hunk.current).length - 1, label + ' ' + hunk.id + ' occurs once before reversal').toBe(1);
+    block = block.replace(hunk.current, hunk.historical);
+  }
+  return block;
+}
 function preservedSkeletalFrame() {
-  const block = section('var cranialBoneBefore = model.children.slice();', 'captureCranialMotion(cranialBoneBefore);');
-  const displayProxyCaller = "              var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout, skullLength, skullHeight, skullDepth, detailScale, isTheropod);\n              var cranialVault = addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);\n              var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);\n              var cranialRostrum = addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);\n              if (cranialDisplay.refined) {\n                [[cranialVault, 'vault'], [cranialRostrum, 'rostrum']].forEach(function (entry) {\n                  if (!entry[0]) return;\n                  entry[0].name = 'cranial-' + entry[1] + '-display-proxy';\n                  entry[0].userData.dinoCranialDisplayProxy = { region: entry[1], interpretive: true, tissueHypothesisIndependent: true };\n                });\n              }";
-  const originalBulkCaller = "              addSkeletonEllipsoid(head, vec(skullLength * 0.68, skullHeight, skullDepth), boneMat);\n              var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);\n              addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09 * detailScale, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);";
-  return block.includes(displayProxyCaller) ? block.replace(displayProxyCaller, originalBulkCaller) : block;
+  return preservedConstruction(section('var cranialBoneBefore = model.children.slice();', 'captureCranialMotion(cranialBoneBefore);'), 'skeletal frame');
 }
 
 
@@ -260,7 +268,7 @@ describe('Dino Lab bounded ceratopsian beak surface', () => {
   });
 
   it('preserves the exact jaw, eye and skeletal cranial construction blocks', () => {
-    expect(sha(section('var cranialFaceBefore = model.children.slice();', 'captureCranialMotion(cranialFaceBefore);'))).toBe('2b81e77a5fa505be745eecd6c26c0cf35b6557456471815f0baed3893fcc3514');
+    expect(sha(preservedConstruction(section('var cranialFaceBefore = model.children.slice();', 'captureCranialMotion(cranialFaceBefore);'), 'jaw and eye'))).toBe('2b81e77a5fa505be745eecd6c26c0cf35b6557456471815f0baed3893fcc3514');
     expect(sha(preservedSkeletalFrame())).toBe('0aa48b531de1c5dcb977239553d69a054f6caf9b6110de72115319f69f4909c0');
     const skeletalStart = source.indexOf('var cranialBoneBefore = model.children.slice();');
     expect(sha(section('} else if (/Oviraptor/i.test(cladeName)) {', '} else if (/Tyrannosaur/i.test(cladeName)', skeletalStart))).toBe('589a3149811aaa70cf3a04127ed42805415891f537ac7b4f038c61689ad06f09');

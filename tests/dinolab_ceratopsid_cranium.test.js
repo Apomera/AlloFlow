@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { api, source, THREE, vec, nativeCeratopsidCranium, enclosed } from './helpers/dino_native_ceratopsid_cranium_harness.js';
+const previousReviewedProfiles=JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_before_reviewed_paravian_sauropod_profiles.json'),'utf8')).rows;
 const ids=['triceratops','styracosaurus','centrosaurus','chasmosaurus'];
 function hash(x){return createHash('sha256').update(JSON.stringify(x)).digest('hex');}
 function boneState(b){return b.allBones.map(m=>({pos:m.position.toArray(),q:m.quaternion.toArray(),scale:m.scale.toArray(),
@@ -25,7 +28,26 @@ describe('reviewed ceratopsid faces and fixed ornaments',()=>{
     // unreviewed taxa match the current source with no numerical differences.
     const reviewed=[...ids,'ankylosaurus','euoplocephalus','sauropelta','borealopelta','stegosaurus','kentrosaurus','huayangosaurus','tuojiangosaurus','carnotaurus','allosaurus','dilophosaurus','coelophysis'];
     const other=api.DINOS.filter(d=>!reviewed.includes(d.id));
-    expect(hash(other.map(d=>[d.id,api.cranialSurfaceProfileFor(d)]))).toBe('ecb258b7d186369fe6ad137e5c4714ae11f01df58e52fa22fcff57a79276ec7d');
+    expect(other).toHaveLength(346);
+    expect(previousReviewedProfiles.map(row=>row.species).sort()).toEqual(['camarasaurus','deinonychus','diplodocus','velociraptor']);
+    const profiles=other.map(d=>{
+      const actual=api.cranialSurfaceProfileFor(d),previous=previousReviewedProfiles.find(row=>row.species===d.id);
+      if(previous){
+        const theropod=/^(velociraptor|deinonychus)$/.test(d.id);
+        const frameProfile=theropod?api.dinoTheropodCraniumProfileFor(d):api.dinoSauropodCraniumProfileFor(d);
+        expect(frameProfile,d.id+' reviewed native skull').not.toBeNull();
+        expect(actual.shortLabel,d.id).toBe(theropod?'Species-specific skull':'Genus-informed skull');
+        if(theropod)expect(actual.id,d.id).toBe(frameProfile.id);
+        const fields=theropod?'id label shortLabel muzzleLengthScale muzzleHeightScale muzzleDepthScale muzzleBaseScale muzzleTipScale cheekScale eyeScale nostrilPosition note'.split(' '):['shortLabel','label','note'];
+        expect(previous.fields,d.id+' historical field whitelist').toEqual(fields);
+        // These exact later frame fields are independently reviewed in the
+        // dromaeosaur/sauropod cranial suites; keep the original 346-row hash
+        // and every other profile field intact against the historical source.
+        for(const key of fields)actual[key]=previous.profile[key];
+      }
+      return[d.id,actual];
+    });
+    expect(hash(profiles)).toBe('ecb258b7d186369fe6ad137e5c4714ae11f01df58e52fa22fcff57a79276ec7d');
     expect(hash(other.map(d=>[d.id,api.dinoCranialDisplayProfile(THREE,d,vec(0,2),vec(-1,1.9),.7,.4,.3,.8,d.group==='theropod')]))).toBe('4c5f6dbbf7dfd3400a891c48278dca04e529ca7cabd1ea72849f33ec9f5a46b4');
   });
   it.each(ids.flatMap(id=>[.04,1,6].map(scale=>({id,scale}))))('encloses actual skull, jaw, neck transition, frill and horn cores for $id scale $scale',({id,scale})=>{

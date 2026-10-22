@@ -5,6 +5,12 @@ import { createRequire } from 'node:module';
 
 const T = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const registration="window.StemLab.registerTool('dinoLab'";
+window.StemLab={registerTool(){}};
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__fossilShadingNative={DINOS,skeletalAnatomyProfileFor,'+nativeTopLevelNames.join(',')+'};'+registration))();
+const art=globalThis.__fossilShadingNative;delete globalThis.__fossilShadingNative;
+
 function block(start, end) {
   const from = source.indexOf(start), to = source.indexOf(end, from);
   if (from < 0 || to < 0) throw new Error('Fossil material fixture boundary missing');
@@ -22,7 +28,7 @@ const noOp = () => {};
 function materials(phong) {
   const THREE = phong ? { ...T, MeshStandardMaterial: undefined, MeshPhysicalMaterial: undefined } : T;
   const context = {
-    THREE, bodyColor: '#819564', fieldPalette: { accent: '#8c8465', dark: '#343e30' },
+    ...art, THREE, bodyColor: '#819564', fieldPalette: { accent: '#8c8465', dark: '#343e30' },
     skinTexture: null, skinBumpTexture: null, skinRoughnessTexture: null,
     lifeSurface: false, inferenceOpacity: 0.28, ht: 5, len: 18,
     integument: { pattern: 'subtle' }, dinoSkinMapping: noOp,
@@ -39,10 +45,11 @@ function linearSwatch(hex) {
   return [srgbChannel((hex >> 16) & 255), srgbChannel((hex >> 8) & 255), srgbChannel(hex & 255)];
 }
 function executeTraversal(model, showBody, mappingCalls) {
-  new Function('THREE', 'model', 'props', 'dinoSkinCoordinates', 'len', 'ht', 'vec', traversal)(
-    T, model, { showBody }, (...args) => mappingCalls.push(args), 6, 2,
-    (x, y, z) => new T.Vector3(x, y, z)
-  );
+  const dn=art.DINOS.find(d=>d.id==='ceratosaurus');
+  if(!dn)throw Error('Missing native unreviewed shading control');
+  const context={...art,THREE:T,model,dn,props:{showBody},len:6,ht:2,
+    vec:(x,y,z)=>new T.Vector3(x,y,z),dinoSkinCoordinates:(...args)=>mappingCalls.push(args)};
+  new Function('context','with(context){'+traversal+'}')(context);
 }
 function meshSnapshot(mesh) {
   return {

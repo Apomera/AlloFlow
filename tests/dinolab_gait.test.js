@@ -144,8 +144,9 @@ describe('it is wired to the model correctly', () => {
     const body = SRC.slice(chain, chain + 700);
     expect(body).toMatch(/surfaceGeometry\.translate\(-points\[0\]\.x/);
     expect(body).toMatch(/mesh\.position\.copy\(points\[0\]\)/);
-    const legChain = SRC.slice(SRC.indexOf('var upperLimbShell'), SRC.indexOf('var upperLimbShell') + 160);
-    expect(legChain).toMatch(/\[limbSkinRoot,/);
+    const legChain = SRC.slice(SRC.indexOf('var limbSurfacePoints='), SRC.indexOf('var upperLimbShell') + 160);
+    expect(legChain).toMatch(/var limbSurfacePoints=\[limbSkinRoot,/);
+    expect(legChain).toContain('addSoftTissueChain(limbSurfacePoints,limbSurfaceRadii,bodyMat)');
   });
 
   it('offsets from the rest pose instead of overwriting it', () => {

@@ -5,6 +5,10 @@ import { resolve } from 'node:path';
 
 const T = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(process.env.DINO_NASAL_DEPTH_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+window.StemLab = { registerTool() {} };
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__nasalDepthNative={DINOS,dinoSauropodCraniumFrame};window.StemLab.registerTool('dinoLab'"))();
+const nativeFrames = globalThis.__nasalDepthNative;
+delete globalThis.__nasalDepthNative;
 function helper(name) {
   const start = source.indexOf('  function ' + name + '('), open = source.indexOf('{', start);
   if (start < 0) throw Error('Missing helper ' + name);
@@ -87,6 +91,10 @@ function construct(side, supported, materialKind = 'MeshStandardMaterial', exist
     vec: (x, y, z) => new T.Vector3(x, y, z), faceSurfacePoint: p => p,
     dinoSurfaceAnchor: () => supported ? { point: new T.Vector3(.56, 3.16, side * .42), normal: new T.Vector3(-.3, .1, side).normalize() } : null,
     dinoEyeSurfaceFrame: frameFor, dinoNostrilRimGeometry: () => null, dinoNostrilGeometry: makeOpening, dinoNostrilShading: shadeOpening };
+  // This shader fixture uses an actual non-sauropod catalog gate while
+  // retaining its authored nasal projection/material conditions.
+  context.sauropodCranium = nativeFrames.dinoSauropodCraniumFrame(T,
+    nativeFrames.DINOS.find(d => d.id === 'ceratosaurus'), context.head, context.surfaceSnout);
   const result = new Function(...Object.keys(context), source.slice(start, end) + '\nreturn { nostril, nostrilRim, nostrilMat, nostrilPos };')(...Object.values(context));
   return { ...result, model, mouthMat, radius, dispose() { result.nostril.geometry.dispose(); result.nostrilRim.geometry.dispose(); headMat.dispose(); mouthMat.dispose(); if (!existingMaterial) result.nostrilMat?.dispose(); } };
 }

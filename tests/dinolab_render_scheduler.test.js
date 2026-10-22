@@ -278,7 +278,13 @@ describe('DinoLab native render invalidation integration', () => {
       yawRef: {current: {}}, props: {shapeStudy: null}, model: {userData: {}}, dinoFrameDistance() { return 10; }, updateCameraReadout() {},
       canvas: {clientWidth: 800, clientHeight: 400}, renderer: {setSize() {}}
     };
-    const names = ['requestSceneRender', 'syncAnimation', 'updateCameraView', 'resize', 'fontMetricsChanged', 'contextWasLost', 'contextWasRestored', 'visibilityChanged'];
+    // Run the native isolation closures with their actual non-applicable-species
+    // factory results; camera invalidation must not need replacement callbacks.
+    for (const [field, helper] of [['sauropodDistalIsolation', 'dinoSauropodDistalIsolation'], ['hadrosaurDistalIsolation', 'dinoHadrosaurDistalIsolation']]) {
+      const factory = vm.runInNewContext('(' + extractFunction(helper) + ')', {});
+      state[field] = factory(state.model, 'allosaurus');
+    }
+    const names = ['requestSceneRender', 'syncAnimation', 'updateSauropodDistalIsolation', 'updateHadrosaurDistalIsolation', 'updateCameraView', 'resize', 'fontMetricsChanged', 'contextWasLost', 'contextWasRestored', 'visibilityChanged'];
     const build = new Function('context', 'with(context){' + names.map(name => extractFunction(name, true)).join('\n') + '\nreturn {' + names.join(',') + '};}');
     const api = build(state);
     api.requestSceneRender();

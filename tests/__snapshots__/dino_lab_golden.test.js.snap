@@ -862,7 +862,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the anatomy tab (
 <label class="dinolab-evidence-citation" style="display:flex;align-items:flex-start;gap:10px;padding:12px 8px;border-top:1px solid var(--allo-stem-border, #334155);cursor:pointer;font-size:13px;line-height:1.6">
 <input type="checkbox" data-bench-citation="fossil" style="margin-top:5px;flex-shrink:0"/>
 <span>
-<strong style="display:block;margin-bottom:4px">A · Fossil observation</strong>Researchers reported quill knobs on a Velociraptor forearm bone.</span>
+<strong style="display:block;margin-bottom:4px">A · Fossil observation</strong>Researchers reported quill knobs on forearm material referred to Velociraptor. Its species referral remains under study.</span>
 </label>
 <label class="dinolab-evidence-citation" style="display:flex;align-items:flex-start;gap:10px;padding:12px 8px;border-top:1px solid var(--allo-stem-border, #334155);cursor:pointer;font-size:13px;line-height:1.6">
 <input type="checkbox" data-bench-citation="comparison" style="margin-top:5px;flex-shrink:0"/>
@@ -871,6 +871,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the anatomy tab (
 </label>
 </fieldset>
 <a href="https://doi.org/10.1126/science.1145076" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:12px;font-size:12px;color:var(--allo-stem-text, #f1f5f9);line-height:1.6;text-decoration:underline">Read the research: Turner, Makovicky &amp; Norell (2007)</a>
+<a href="https://doi.org/10.1206/3982.1" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:6px;font-size:12px;color:var(--allo-stem-text, #f1f5f9);line-height:1.6;text-decoration:underline">Read the research: Napoli and colleagues (2021): corrected forearm specimen and species referral</a>
 <p style="margin:10px 0 0;font-size:11px;line-height:1.65;color:var(--allo-stem-text-soft, #94a3b8)">The paper supplies the observations. The statements and drawings here are teaching materials.</p>
 </aside>
 <section class="dinolab-evidence-task" aria-labelledby="dino-bench-task" style="padding:14px;border:1px solid var(--allo-stem-border, #334155);border-radius:12px;background:var(--allo-stem-panel, #1e293b);min-width:0">
@@ -921,7 +922,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the anatomy tab (
 </select>
 </div>
 <div class="dinolab-evidence-statement" style="padding:12px 0;border-top:1px solid var(--allo-stem-border, #334155)">
-<label for="dino-bench-sort-feathers" style="display:block;font-weight:700;font-size:14px;line-height:1.6;margin-bottom:7px">3. Velociraptor had large feathers on its forearms.</label>
+<label for="dino-bench-sort-feathers" style="display:block;font-weight:700;font-size:14px;line-height:1.6;margin-bottom:7px">3. The animal represented by this forearm probably had large feathers.</label>
 <select id="dino-bench-sort-feathers" style="padding:9px 12px;min-height:44px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer;width:100%;box-sizing:border-box">
 <option value="" selected="">Choose a statement type</option>
 <option value="observation">Observation</option>
@@ -1508,9 +1509,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the birds tab (sn
 <article data-feather-case="velociraptor" style="padding:14px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);border-radius:12px">
 <h3 style="margin:0 0 8px;font-size:16px">Velociraptor</h3>
 <div style="font-size:12px;font-weight:800;color:var(--allo-stem-text, #f1f5f9)">Evidence: feather attachment marks</div>
-<p style="font-size:13px;line-height:1.6">Quill knobs on a forearm bone support attached wing feathers. Feather presence is not just an artistic alternative.</p>
-<p style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.6">Still uncertain: The body coat and tail arrangement are inferred from relatives; the fossil does not give a complete plumage map.</p>
-<a href="https://doi.org/10.1126/science.1145076" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12px;color:var(--allo-stem-text, #f1f5f9);text-decoration:underline;margin-bottom:10px">Turner et al., 2007: forearm feather evidence</a>
+<p style="font-size:13px;line-height:1.6">Quill knobs on referred forearm material support vaned feathers; its species referral remains under study.</p>
+<p style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.6">Still uncertain: The corrected specimen is IGM 100/3503. Its historical assignment to Velociraptor is being reassessed; the body coat and tail arrangement use relatives, not a complete preserved plumage map.</p>
+<a href="https://doi.org/10.1206/3982.1" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12px;color:var(--allo-stem-text, #f1f5f9);text-decoration:underline;margin-bottom:10px">Napoli and colleagues, 2021: corrected forearm specimen and referral</a>
 <button type="button" aria-label="Open Velociraptor" style="padding:9px 12px;min-height:40px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Open species file</button>
 </article>
 <article data-feather-case="yutyrannus" style="padding:14px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);border-radius:12px">
@@ -7167,6 +7168,28 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </button>
 </div>
 </div>
+<details class="dinolab-shape-study" style="margin:0 0 12px;padding:12px;border:1px solid var(--allo-stem-border, #334155);border-radius:10px;background:var(--allo-stem-panel, #1e293b)">
+<summary style="min-height:44px;padding:8px 0;box-sizing:border-box;font-size:14px;font-weight:900;cursor:pointer">Compare anatomical shapes</summary>
+<h3 id="dinolab-shape-study-heading" tabindex="-1" style="margin:8px 0;font-size:16px">Choose a shape investigation</h3>
+<div role="group" aria-label="Shape investigation family" style="display:flex;flex-wrap:wrap;gap:7px">
+<button type="button" data-dino-shape-family="crests" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Head crests</button>
+<button type="button" data-dino-shape-family="dromaeosaur-feet" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Dromaeosaur feet</button>
+<button type="button" data-dino-shape-family="dromaeosaur-skulls" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Dromaeosaur skulls</button>
+<button type="button" data-dino-shape-family="dromaeosaur-pelvis" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Dromaeosaur pelvis</button>
+<button type="button" data-dino-shape-family="dromaeosaur-hands" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Dromaeosaur hands</button>
+<button type="button" data-dino-shape-family="theropod-skulls" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Theropod skull evidence</button>
+<button type="button" data-dino-shape-family="armor" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Back armor</button>
+<button type="button" data-dino-shape-family="sauropod-skulls" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Sauropod skulls</button>
+<button type="button" data-dino-shape-family="sauropods" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Sauropod body plans</button>
+<button type="button" data-dino-shape-family="lambeosaurs" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Lambeosaur body plans</button>
+<button type="button" data-dino-shape-family="ornithopods" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Ornithopod body plans</button>
+<button type="button" data-dino-shape-family="ceratopsids" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Ceratopsid body plans</button>
+<button type="button" data-dino-shape-family="ankylosaurs" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Armored body plans</button>
+<button type="button" data-dino-shape-family="theropods" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Theropod body plans</button>
+<button type="button" data-dino-shape-family="stegosaurs" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:9px;border:2px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">Stegosaur body plans</button>
+</div>
+<p style="color:var(--allo-stem-text-soft, #94a3b8);font-size:12px;line-height:1.6">Predict, inspect two actual 3D reconstructions from a shared direction, then revise your explanation in the existing comparison notebook.</p>
+</details>
 <section class="dinolab-model-lenses" aria-labelledby="dinolab-model-lenses-title" style="margin-bottom:10px">
 <style>.dinolab-model-lenses .dinolab-lens-art{display:block;width:100%;height:40px;background:#102a32;border-radius:5px;margin-bottom:6px}.dinolab-model-lenses .dinolab-lens-note{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.dinolab-model-lenses .dinolab-lens-choice:hover{border-color:#14b8a6!important}.dinolab-model-lenses .dinolab-lens-choice[aria-pressed=true] .dinolab-lens-art{background:#123c42}.dinolab-model-lenses .dinolab-lens-choice:focus-visible{outline:3px solid #5eead4;outline-offset:3px}@media(max-width:620px){.dinolab-model-lenses .dinolab-surface-presets{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dinolab-model-lenses .dinolab-lens-note{grid-template-columns:minmax(0,1fr);gap:7px}.dinolab-model-lenses .dinolab-lens-art{height:32px}}@media(prefers-reduced-motion:no-preference){.dinolab-model-lenses .dinolab-lens-choice{transition:border-color .15s,background-color .15s}}</style>
 <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px;margin-bottom:7px">
@@ -7337,9 +7360,207 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </div>
 <div class="dinolab-3d-shell">
 <div class="dinolab-3d-viewer" style="position:relative;min-height:clamp(520px, 62vh, 760px);border-radius:14px;overflow:hidden;border:1px solid rgba(148,163,184,0.26);background:#0f172a">
-<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Environment scene hypothesis: Seasonal floodplain / open woodland. A broad environmental scene hypothesis based on the listed formation and region; vegetation, water, and weather remain interpretive. Pose cue: Balanced bipedal stance with lightly flexed knees. Foot contact and joint flex are clade-informed visual cues; exact habitual posture remains inferred. Color evidence: Inferred palette. No direct pigment map is encoded for this taxon; the color is an evidence-compatible illustration, not a measured reconstruction. Reconstruction profile: Deep-skulled large theropod with strong fossil coverage. Active surface hypothesis: Evidence-led reconstruction, status Recommended. Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal. Limb osteology: Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.; evidence basis: Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.. Girdle architecture: Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.. Vertebral architecture: Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.; evidence basis: Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.. Thoracic cage: Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.; evidence basis: Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.. Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments. Uncinate evidence: No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.. Sacral load path: 5-element series; Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.; evidence basis: Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.. Caudal transition: Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.. Haemal arches: Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.; evidence basis: Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.. Distal limbs: Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.; evidence basis: Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.. Postcranial surface silhouette: Deep chest, narrow waist, powerful pelvis, and muscular tail base. Overlapping trunk volumes and graded neck, limb, and tail transitions follow clade-level postcranial proportions. Muscle thickness, skin folds, and the exact resting contour remain inferred. Cranial surface silhouette: Deep, broad tyrannosaur cranial silhouette. This visible head envelope follows clade-level skull proportions; lips, cheeks, brow thickness, beak margins, and external nostril shape remain inferred. The broad, deep muzzle and muscular S-shaped neck represent a mature tyrannosaurid; precise tissue thickness and resting flexion remain inferred (Snively and Russell, 2007, doi:10.1002/ar.20563). Cranial mechanics: braced, predominantly akinetic non-avian theropod skull; evidence basis: Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.. Head-neck junction: A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.; evidence basis: The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.. Mandibular lever: The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.; evidence basis: Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.. Integument mode: scaled; evidence basis: direct scale impressions in large derived tyrannosaurids. Respiratory reconstruction: air-sac proxy; evidence basis: Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
+<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Environment scene hypothesis: Seasonal floodplain / open woodland. A broad environmental scene hypothesis based on the listed formation and region; vegetation, water, and weather remain interpretive. Pose cue: Balanced bipedal stance with lightly flexed knees. Foot contact and joint flex are clade-informed visual cues; exact habitual posture remains inferred. Color evidence: Inferred palette. No direct pigment map is encoded for this taxon; the color is an evidence-compatible illustration, not a measured reconstruction. Reconstruction profile: Tyrannosaurus: robust trunk and raised metatarsus with strong fossil coverage. Active surface hypothesis: Evidence-led reconstruction, status Recommended. Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal. Limb osteology: Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.; evidence basis: Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.. Girdle architecture: Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.. Vertebral architecture: Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.; evidence basis: Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.. Thoracic cage: Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.; evidence basis: Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.. Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments. Uncinate evidence: No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.. Sacral load path: 5-element series; Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.; evidence basis: Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.. Caudal transition: Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.. Haemal arches: Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.; evidence basis: Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.. Distal limbs: Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.; evidence basis: Tyrannosaurus has two claw-bearing fingers. A slender third metacarpal is preserved in other specimens, without a third complete finger. The forearm is proportionally short relative to the robust upper arm. Named specimens constrain the represented ray pattern. Displayed absolute lengths, resting flexion, cartilage, palm outline and claw-covering extent are interpretive; this is not a specimen scan or a demonstration of maximum motion. The internal metacarpal III is based on BHI 6230 and MOR 690, rather than being an additional element measured from the reference arm; its displayed length is illustrative.. Postcranial surface silhouette: Tyrannosaurus: robust trunk and raised metatarsus. Overlapping trunk volumes and graded neck, limb, and tail transitions follow clade-level postcranial proportions. Muscle thickness, skin folds, and the exact resting contour remain inferred. Cranial surface silhouette: Deep, broad tyrannosaur cranial silhouette. This visible head envelope follows clade-level skull proportions; lips, cheeks, brow thickness, beak margins, and external nostril shape remain inferred. The broad, deep muzzle and muscular S-shaped neck represent a mature tyrannosaurid; precise tissue thickness and resting flexion remain inferred (Snively and Russell, 2007, doi:10.1002/ar.20563). Cranial mechanics: braced, predominantly akinetic non-avian theropod skull; evidence basis: Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.. Head-neck junction: A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.; evidence basis: The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.. Mandibular lever: The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.; evidence basis: Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.. Integument mode: scaled; evidence basis: direct scale impressions in large derived tyrannosaurids. Respiratory reconstruction: air-sac proxy; evidence basis: Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
 <canvas id="dinolab-3d-canvas-tyrannosaurus" class="dinolab-3d-canvas" tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Environment scene hypothesis: Floodplain woodland. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view." style="width:100%;height:clamp(520px, 62vh, 760px);display:block;touch-action:none;outline:none;outline-offset:-3px">
 </canvas>
+<svg class="dinolab-pedal-evidence-overlay" aria-hidden="true" focusable="false" width="100%" height="100%" style="display:none;position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<g data-dino-pedal-label="0" style="display:none">
+<line stroke-width="1.2">
+</line>
+<circle r="3.5" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="30" height="22" rx="5" fill="#0f172a">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-pedal-label="1" style="display:none">
+<line stroke-width="1.2">
+</line>
+<circle r="3.5" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="30" height="22" rx="5" fill="#0f172a">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-pedal-label="2" style="display:none">
+<line stroke-width="1.2">
+</line>
+<circle r="3.5" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="30" height="22" rx="5" fill="#0f172a">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-pedal-label="3" style="display:none">
+<line stroke-width="1.2">
+</line>
+<circle r="3.5" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="30" height="22" rx="5" fill="#0f172a">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+</svg>
+<svg class="dinolab-pelvic-evidence-overlay" aria-hidden="true" focusable="false" width="100%" height="100%" style="display:none;position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<g data-dino-pelvic-label="0" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<circle r="3.5" fill="#fcd34d" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="68" height="22" rx="5" fill="#0f172a" stroke="#fcd34d">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-pelvic-label="1" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<circle r="3.5" fill="#fcd34d" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="68" height="22" rx="5" fill="#0f172a" stroke="#fcd34d">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-pelvic-label="2" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<circle r="3.5" fill="#fcd34d" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect width="68" height="22" rx="5" fill="#0f172a" stroke="#fcd34d">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+</svg>
+<svg class="dinolab-skull-evidence-overlay" aria-hidden="true" focusable="false" width="100%" height="100%" style="display:none;position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<g data-dino-skull-support="0" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.3">
+</line>
+<circle r="4" fill="#fcd34d" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect height="22" rx="5" fill="#0f172a" stroke="#fcd34d">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+<g data-dino-skull-support="1" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.3">
+</line>
+<circle r="4" fill="#fcd34d" stroke="#0f172a" stroke-width="1.5">
+</circle>
+<rect height="22" rx="5" fill="#0f172a" stroke="#fcd34d">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-size:11px;font-family:system-ui,sans-serif">
+</text>
+</g>
+</svg>
+<svg class="dinolab-hand-evidence-overlay" aria-hidden="true" focusable="false" width="100%" height="100%" style="display:none;position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<polygon data-dino-hand-polygon="0" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="1" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="2" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="3" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="4" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="5" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="6" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="7" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="8" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="9" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="10" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="11" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="12" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="13" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="14" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+<polygon data-dino-hand-polygon="15" fill="rgba(250,204,21,0.10)" stroke="#fde047" stroke-width="1.7" stroke-linejoin="round" style="display:none;filter:drop-shadow(0 1px 2px #020617)">
+</polygon>
+</svg>
+<svg class="dinolab-joint-trace-overlay" aria-hidden="true" focusable="false" width="100%" height="100%" style="display:none;position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<g data-dino-joint-chain="fore" style="display:none">
+<polyline fill="none" stroke="#67e8f9" stroke-width="3" stroke-dasharray="6 3" stroke-linejoin="round" style="filter:drop-shadow(0 1px 2px #020617)">
+</polyline>
+<circle data-dino-joint-dot="fore-0" r="4.5" fill="#67e8f9" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="fore-1" r="4.5" fill="#67e8f9" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="fore-2" r="4.5" fill="#67e8f9" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="fore-3" r="4.5" fill="#67e8f9" stroke="#0f172a" stroke-width="2">
+</circle>
+<g data-dino-joint-label="fore-0" style="display:none">
+<line stroke="#67e8f9" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#67e8f9" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Shoulder</text>
+</g>
+<g data-dino-joint-label="fore-1" style="display:none">
+<line stroke="#67e8f9" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#67e8f9" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Elbow</text>
+</g>
+<g data-dino-joint-label="fore-2" style="display:none">
+<line stroke="#67e8f9" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#67e8f9" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Wrist</text>
+</g>
+</g>
+<g data-dino-joint-chain="hind" style="display:none">
+<polyline fill="none" stroke="#fcd34d" stroke-width="3" stroke-dasharray="6 3" stroke-linejoin="round" style="filter:drop-shadow(0 1px 2px #020617)">
+</polyline>
+<circle data-dino-joint-dot="hind-0" r="4.5" fill="#fcd34d" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="hind-1" r="4.5" fill="#fcd34d" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="hind-2" r="4.5" fill="#fcd34d" stroke="#0f172a" stroke-width="2">
+</circle>
+<circle data-dino-joint-dot="hind-3" r="4.5" fill="#fcd34d" stroke="#0f172a" stroke-width="2">
+</circle>
+<g data-dino-joint-label="hind-0" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#fcd34d" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Hip</text>
+</g>
+<g data-dino-joint-label="hind-1" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#fcd34d" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Knee</text>
+</g>
+<g data-dino-joint-label="hind-2" style="display:none">
+<line stroke="#fcd34d" stroke-width="1.2">
+</line>
+<rect rx="5" fill="#0f172a" stroke="#fcd34d" stroke-width="1">
+</rect>
+<text text-anchor="middle" fill="#f8fafc" style="font-family:inherit;font-size:12px;font-weight:800">Ankle</text>
+</g>
+</g>
+</svg>
 <div class="dinolab-body-label-overlay" role="group" aria-label="Model body-part labels" style="display:none;position:absolute;inset:0;pointer-events:none">
 <svg width="100%" height="100%" aria-hidden="true" focusable="false" style="position:absolute;inset:0;overflow:hidden">
 <g data-dino-part-line="head" style="display:none">
@@ -7675,7 +7896,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(245,158,11,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Pose Balanced biped</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(148,163,184,0.55);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Colour illustrated</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(34,197,94,0.70);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Fossils abundant</span>
-<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(251,146,60,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Body Powerful pelvis</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(251,146,60,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Body Reviewed theropod support</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(167,139,250,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Head Deep power skull</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(245,158,11,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Focus Skull</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(34,197,94,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Scan 0/3 | Logged 0/3 | Path 0/2</span>
@@ -7860,7 +8081,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </div>
 <div style="margin-bottom:9px;padding:9px;border-radius:8px;background:rgba(20,184,166,0.09);border:1px solid rgba(20,184,166,0.30)">
 <div style="font-size:11.5px;font-weight:900;color:#5eead4;margin-bottom:3px">Reconstruction profile | Strong coverage</div>
-<div style="font-size:12.5px;font-weight:800;margin-bottom:3px">Deep-skulled large theropod</div>
+<div style="font-size:12.5px;font-weight:800;margin-bottom:3px">Tyrannosaurus: robust trunk and raised metatarsus</div>
 <div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Strong fossil coverage for the main skeletal proportions. Profile differences are clade-based and remain simplified.</div>
 </div>
 <div role="note" style="margin-bottom:9px;padding:9px;border-radius:8px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.28)">
@@ -8072,7 +8293,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:5px">
 <strong>Skull: </strong>Fenestrated skull proxy with orbit, antorbital/nasal region, temporal opening, and a separate lower jaw. A distinct antorbital fenestra is rendered between the orbit and external naris.</div>
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
-<strong>Visible body silhouette: </strong>Deep chest, narrow waist, powerful pelvis, and muscular tail base</div>
+<strong>Visible body silhouette: </strong>Tyrannosaurus: robust trunk and raised metatarsus</div>
 <div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:5px">
 <strong>Body-surface inference: </strong>Overlapping trunk volumes and graded neck, limb, and tail transitions follow clade-level postcranial proportions. Muscle thickness, skin folds, and the exact resting contour remain inferred.</div>
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
@@ -8130,7 +8351,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
 <strong>Hands and feet mode: </strong>Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.</div>
 <div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
-<strong>Hands and feet evidence: </strong>Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.</div>
+<strong>Hands and feet evidence: </strong>Tyrannosaurus has two claw-bearing fingers. A slender third metacarpal is preserved in other specimens, without a third complete finger. The forearm is proportionally short relative to the robust upper arm. Named specimens constrain the represented ray pattern. Displayed absolute lengths, resting flexion, cartilage, palm outline and claw-covering extent are interpretive; this is not a specimen scan or a demonstration of maximum motion. The internal metacarpal III is based on BHI 6230 and MOR 690, rather than being an additional element measured from the reference arm; its displayed length is illustrative.</div>
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:6px">
 <strong>Soft-tissue inference: </strong>Expanded temporal jaw muscles and a powerful caudofemoral tail-base retractor follow large attachment regions; cheek-side tissues are shown but their exact composition is unresolved.</div>
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
@@ -8142,8 +8363,8 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
 <strong>Integument evidence: </strong>direct scale impressions in large derived tyrannosaurids</div>
 <div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:8px">
-<strong>Hands and feet: </strong>Two functional manual digits accompany a robust, three-toed hind limb. The three central metatarsals are rendered as a load-sharing bundle with the middle element pinched proximally.</div>
-<div role="note" style="padding:7px 8px;border-radius:8px;border:1px solid rgba(245,158,11,0.34);background:rgba(245,158,11,0.08);color:var(--allo-stem-text-soft, #94a3b8);font-size:11.3px;line-height:1.45">Clade-informed procedural reconstruction; it is not a specimen scan or an exact bone count. Missing elements use close-relative and biomechanical inference. Muscle scars constrain origins and insertions more securely than muscle thickness; skin depth, keratin extent, lips or cheek tissues, and coloration remain interpretive. Preserved integument is patchy: absence at an unpreserved body region is not proof of naked skin, and close-relative feather coverage is labeled as inference. Air sacs are soft-tissue proxies: pneumatic bone can support the presence and regional reach of diverticula, but not a specimen-exact organ outline, airflow direction, or cavity air fraction. Cranial bars mark homologous load paths, not exact sutural boundaries; palate, hyoid, cartilage thickness, and permitted joint motion require specimen-specific preservation or comparative inference. Long-bone curvature is conservative because burial can flatten, bend, or twist fossils; rendered joint surfaces omit unknown cartilage thickness and are not a pose-range claim. Shoulder and pelvic blades show functional architecture rather than specimen-exact margins; distal formulas are clade proxies and do not imply preserved cartilage, webbing, pads, or a single fixed resting pose. Vertebral centra and processes are regionalized, but zygapophyseal facets are orientation proxies rather than claims about exact joint clearance or habitual spinal flexibility. Rib heads and shafts show functional architecture, not specimen-exact costovertebral clearance; distal cartilage, sternal mobility, and thoracic excursion are not preserved as fixed bony shapes. Sacral contacts and haemal arches show load paths and regional change, not a specimen-exact fusion state, chevron formula, or fixed tail-transition vertebra.</div>
+<strong>Hands and feet: </strong>Tyrannosaurus has two claw-bearing fingers. A slender third metacarpal is preserved in other specimens, without a third complete finger. The forearm is proportionally short relative to the robust upper arm.</div>
+<div role="note" style="padding:7px 8px;border-radius:8px;border:1px solid rgba(245,158,11,0.34);background:rgba(245,158,11,0.08);color:var(--allo-stem-text-soft, #94a3b8);font-size:11.3px;line-height:1.45">Clade-informed procedural reconstruction; it is not a specimen scan or an exact bone count. Missing elements use close-relative and biomechanical inference. Muscle scars constrain origins and insertions more securely than muscle thickness; skin depth, keratin extent, lips or cheek tissues, and coloration remain interpretive. Preserved integument is patchy: absence at an unpreserved body region is not proof of naked skin, and close-relative feather coverage is labeled as inference. Air sacs are soft-tissue proxies: pneumatic bone can support the presence and regional reach of diverticula, but not a specimen-exact organ outline, airflow direction, or cavity air fraction. Cranial bars mark homologous load paths, not exact sutural boundaries; palate, hyoid, cartilage thickness, and permitted joint motion require specimen-specific preservation or comparative inference. Long-bone curvature is conservative because burial can flatten, bend, or twist fossils; rendered joint surfaces omit unknown cartilage thickness and are not a pose-range claim. Shoulder and pelvic blades show functional architecture rather than specimen-exact margins; distal formulas are clade proxies and do not imply preserved cartilage, webbing, pads, or a single fixed resting pose. Vertebral centra and processes are regionalized, but zygapophyseal facets are orientation proxies rather than claims about exact joint clearance or habitual spinal flexibility. Rib heads and shafts show functional architecture, not specimen-exact costovertebral clearance; distal cartilage, sternal mobility, and thoracic excursion are not preserved as fixed bony shapes. Sacral contacts and haemal arches show load paths and regional change, not a specimen-exact fusion state, chevron formula, or fixed tail-transition vertebra. Named specimens constrain the represented ray pattern. Displayed absolute lengths, resting flexion, cartilage, palm outline and claw-covering extent are interpretive; this is not a specimen scan or a demonstration of maximum motion. The internal metacarpal III is based on BHI 6230 and MOR 690, rather than being an additional element measured from the reference arm; its displayed length is illustrative.</div>
 </div>
 </details>
 <details style="margin-top:6px">

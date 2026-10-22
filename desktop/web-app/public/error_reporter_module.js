@@ -10,9 +10,8 @@
  *   badge in the bottom-right ONLY after at least one error is captured.
  * - Clicking the badge opens a modal with the captured log + metadata
  *   (URL, user agent, viewport size, timestamps).
- * - "Send to Developers" pre-fills a Google Form with the report and opens it
- *   in a new tab so the user reviews before submitting (privacy-respecting
- *   — no silent fetch).
+ * - "Send to Developers" saves the report privately and keeps a receipt visible.
+ *   If saving fails, the user can copy the log into a separate report form.
  *
  * Capture policy (default):
  *   ✓ Uncaught Errors (window.onerror)
@@ -46,9 +45,10 @@
 
   // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
   // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
-  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
-  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+  // public repo. If the worker is unreachable, offer the separate Google Form
+  // (private responses Sheet) and make clear that it still requires submission.
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
+  var SUBMIT_TIMEOUT_MS = 20000;
 
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
@@ -429,6 +429,10 @@
   var badge = null;
   var panel = null;
   var panelTrigger = null;
+  // Kept outside the panel DOM so log refreshes, tab switches, and closing the
+  // dialog cannot lose a pending submission or enable a duplicate send.
+  var submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
+  var activeSubmission = null;
 
   // Translator. The badge is built with raw DOM, so its accessible name never
   // passed through React and stayed English in every language.
@@ -766,6 +770,75 @@
       '</footer>';
   }
 
+  function submissionFooterHtml() {
+    var busy = submission.status === 'sending';
+    var saved = submission.status === 'saved';
+    var failed = submission.status === 'failed' || submission.status === 'uncertain';
+    var text = 'Send this log privately to the developers. A saved receipt confirms storage, not developer review.';
+    if (busy) text = 'Sending your report. You can close this window; the result will be here when you reopen it.';
+    if (failed) text = submission.message;
+    if (saved) text = 'Report saved. This confirms storage, not that a developer has reviewed it.';
+    return '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-shrink:0;">' +
+      '<div id="aer-submit-status" role="status" aria-live="polite" aria-atomic="true" style="width:100%;font:12px/1.5 system-ui,sans-serif;color:#334155;overflow-wrap:anywhere;">' +
+        '<p style="margin:0;">' + escapeHtml(text) + '</p>' +
+        (saved ? '<p style="margin:6px 0 0;"><strong>' + (submission.id ? 'Receipt: <span id="aer-receipt-id">' + escapeHtml(submission.id) + '</span>' : 'No receipt ID was returned by the server.') + '</strong><br>Saved: ' + escapeHtml(submission.savedAt) + '</p>' : '') +
+        (failed ? '<p style="margin:6px 0 0;">You can use Copy log above, paste it into the report form, and press Submit there. Opening the form does not send your report.' + (submission.formOpened ? ' This app cannot confirm a submission made in that form.' : '') + '</p>' : '') +
+      '</div>' +
+      '<button id="aer-send" type="button"' + (busy || saved ? ' disabled' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved ? 'default' : 'pointer') + ';">' +
+        (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : '📬 Send to Developers') + '</button>' +
+      (saved && submission.id ? '<button id="aer-copy-receipt" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Copy receipt</button>' : '') +
+      (saved ? '<button id="aer-new-report" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">New report</button>' : '') +
+      (failed ? '<a id="aer-report-form" href="' + escapeHtml(FORM_BASE) + '" target="_blank" rel="noopener noreferrer" style="color:#0f766e;font:700 12px/1.5 system-ui,sans-serif;">Open report form</a>' : '') +
+      '</footer>';
+  }
+
+  function submitReport() {
+    if (submission.status === 'sending' || submission.status === 'saved') return;
+    var p = buildReportPayload();
+    var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
+    var attempt = { controller: typeof AbortController === 'function' ? new AbortController() : null, timer: null };
+    activeSubmission = attempt;
+    submission = { status: 'sending', id: '', savedAt: '', message: '', formOpened: false };
+    refreshPanelIfOpen();
+    var finish = function (status, message, id) {
+      if (activeSubmission !== attempt) return;
+      clearTimeout(attempt.timer);
+      activeSubmission = null;
+      submission = { status: status, id: id || '', savedAt: status === 'saved' ? new Date().toISOString() : '', message: message || '', formOpened: false };
+      refreshPanelIfOpen();
+    };
+    attempt.timer = setTimeout(function () {
+      finish('uncertain', 'Save not confirmed. The request timed out and may have reached the server. Retrying could create a second report.');
+      if (attempt.controller) attempt.controller.abort();
+    }, SUBMIT_TIMEOUT_MS);
+    try {
+      var options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+      if (attempt.controller) options.signal = attempt.controller.signal;
+      fetch(SUBMIT_URL, options)
+        .then(function (response) {
+          return response.json().then(function (json) { return { ok: response.ok, json: json }; }, function () { return { ok: response.ok, json: null }; });
+        })
+        .then(function (result) {
+          if (result.ok && result.json && result.json.ok === true) {
+            var id = typeof result.json.id === 'string' ? result.json.id.trim() : '';
+            // Older endpoints confirm saving without returning an ID. Keep that
+            // confirmation honest; never invent a receipt or invite a duplicate.
+            if (!id || id.length > 200 || /[\u0000-\u001f\u007f]/.test(id)) id = '';
+            finish('saved', '', id);
+          } else if (!result.ok || result.json && result.json.ok === false) {
+            finish('failed', 'Report not saved. The reporting service did not accept this submission.');
+          } else {
+            finish('uncertain', 'Save not confirmed. The server did not return a valid confirmation. Retrying could create a second report.');
+          }
+        })
+        .catch(function () {
+          finish('uncertain', 'Save not confirmed. The connection was interrupted and the report may have reached the server. Retrying could create a second report.');
+        });
+    } catch (_) {
+      finish('uncertain', 'Save not confirmed. The report could not be sent from this browser.');
+    }
+  }
+
   function panelHtml() {
     var visible = buffer.filter(function (e) {
       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
@@ -806,12 +879,7 @@
         entriesHtml +
       '</div>' +
       // Footer / submit
-      '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
-        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
-          'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
-        '</p>' +
-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
-      '</footer>';
+      submissionFooterHtml();
     } else if (activeTab === 'session') {
       body = sessionTabHtml();
     } else if (activeTab === 'search') {
@@ -903,13 +971,13 @@
 
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
   // existing per-tab copy handlers (async clipboard, execCommand fallback).
-  function copyDiagnosticsText(text, btnId) {
+  function copyDiagnosticsText(text, btnId, resetLabel) {
     var $ = function (id) { return document.getElementById(id); };
     var flash = function (label) {
       var b = $(btnId);
       if (!b) return;
       b.textContent = label;
-      setTimeout(function () { var b2 = $(btnId); if (b2) b2.textContent = 'Copy diagnostics'; }, 1500);
+      setTimeout(function () { var b2 = $(btnId); if (b2) b2.textContent = resetLabel || 'Copy diagnostics'; }, 1500);
     };
     var fallback = function () {
       try {
@@ -1091,42 +1159,24 @@
         copyFallback(text);
       }
     };
-    if ($('aer-send')) $('aer-send').onclick = function () {
-      var btn = $('aer-send');
-      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
-      var openFormFallback = function () {
-        try {
-          var url = buildPrefilledFormUrl();
-          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
-          // If we exceed, drop stack traces from older entries.
-          if (url.length > 7500) {
-            var p = buildReportPayload();
-            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
-            url = FORM_BASE +
-              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
-              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
-              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
-              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
-          }
-          var win = window.open(url, '_blank', 'noopener,noreferrer');
-          if (!win) {
-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
-            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
-          }
-        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
-      };
-      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
-      var p = buildReportPayload();
-      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
-      btn.disabled = true; btn.textContent = 'Sending…';
-      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
-      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
-      try {
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
-          .catch(function () { fail(); });
-      } catch (_) { fail(); }
+    if ($('aer-send')) $('aer-send').onclick = submitReport;
+    if ($('aer-copy-receipt')) $('aer-copy-receipt').onclick = function () {
+      if (submission.status !== 'saved' || !submission.id) return;
+      copyDiagnosticsText('AlloFlow report saved\nReceipt: ' + submission.id + '\nSaved: ' + submission.savedAt + '\nStorage confirmed; developer review is not confirmed.', 'aer-copy-receipt', 'Copy receipt');
+    };
+    if ($('aer-new-report')) $('aer-new-report').onclick = function () {
+      if (submission.status !== 'saved') return;
+      submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
+      refreshPanelIfOpen();
+      if ($('aer-send')) $('aer-send').focus();
+    };
+    if ($('aer-report-form')) $('aer-report-form').onclick = function () {
+      if (submission.formOpened) return;
+      submission.formOpened = true;
+      // A form in another tab has its own Submit action. Never treat opening it
+      // as a successful report or put the captured log in its public URL.
+      var status = $('aer-submit-status');
+      if (status) status.appendChild(document.createTextNode(' This app cannot confirm a submission made in that form.'));
     };
   }
 

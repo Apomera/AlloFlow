@@ -5,6 +5,12 @@ import { createRequire } from 'node:module';
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const registration="window.StemLab.registerTool('dinoLab'";
+window.StemLab={registerTool(){}};
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__scapularNative={DINOS,skeletalAnatomyProfileFor,'+nativeTopLevelNames.join(',')+'};'+registration))();
+const art=globalThis.__scapularNative;delete globalThis.__scapularNative;
+
 function section(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a + start.length);
   if (a < 0 || b <= a) throw new Error('Missing native scapular section: ' + start);
@@ -18,7 +24,7 @@ const geometryFor = new Function(nativeFunction('dinoScapularBladeGeometry', 2) 
 const callerCode = nativeFunction('addScapularBlade', 12);
 const nativeHelpers = ['addTaperedBoneSegment', 'addGirdleBlade', 'addSkeletonEllipsoid'].map(name => nativeFunction(name, 12)).join('\n');
 const shoulderCode = section('              var shoulderHalf = Math.max(0.13 * detailScale, bodyDepth * 0.66);', '              if (skeletalProfile.sternalPlates) {');
-const pelvisCode = section('              var pelvisHalf = Math.max(0.16 * detailScale, bodyDepth * 0.76);', '              function addAnatomyCallout(');
+const pelvisCode = section('              var reviewedPelvicProfile=dinoDromaeosaurPelvisProfileFor(dn);', '              } // Legacy cage and girdles are bypassed');
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const at = (attribute, index) => vec().fromBufferAttribute(attribute, index);
 const nearVector = (actual, expected, tolerance = 1e-6) => expect(actual.distanceTo(expected)).toBeLessThan(tolerance);
@@ -203,7 +209,9 @@ describe('Dino Lab native scapular caller', () => {
 
 function nativeGirdles({ scale = 1, broad = false, girdleDetail = true, legacy = false } = {}) {
   const model = new THREE.Group(), boneMat = new THREE.MeshStandardMaterial(), skeletonCavityMat = new THREE.MeshStandardMaterial();
-  const context = { THREE, vec, model, boneMat, skeletonCavityMat, props: { showSkeleton: true },
+  const dn=art.DINOS.find(d=>d.id==='ceratosaurus');
+  if(!dn)throw Error('Missing native unreviewed girdle control');
+  const context = { ...art, THREE, vec, dn, isSauropod:false, posture:{footReach:1}, model, boneMat, skeletonCavityMat, props: { showSkeleton: true },
     detailScale: scale, ht: 2 * scale, len: 4 * scale, bodyHeight: (broad ? 1.8 : 1) * scale, bodyDepth: (broad ? .8 : .5) * scale,
     shoulder: vec(-1, 2, 0).multiplyScalar(scale), hip: vec(1, 2, 0).multiplyScalar(scale),
     skeletalProfile: { girdleDetail, scapularBladeScale: broad ? 1.22 : 1, coracoidPlateScale: 1, pubisMode: 'posterior', pubisScale: 1, supracetabularShelfScale: 1, prepubicProcess: true },

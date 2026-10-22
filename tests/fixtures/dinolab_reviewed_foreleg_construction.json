@@ -1,0 +1,269 @@
+{
+  "description": "Exact reviewed anatomical source reversals for foreleg-taper historical guards. These data modify source text only for unchanged digests, never model code.",
+  "provenance": {
+    "anatomicalReviewSourceSha256": "5dd0435c997bebb797acc05e80682f84df83071cac138be4b33a286013f9589f",
+    "authoredFromSourceByteSha256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585",
+    "sourcePath": "stem_lab/stem_tool_dinolab.js",
+    "historicalSources": [
+      {
+        "revisionExpression": "08d5e4b322^",
+        "revision": "8f00cbd9f7645097105d828cfe81ae4afd57f52a",
+        "sourceByteSha256": "320d9057598988e310f38fbccaa469e5a66ddf400789c048f8e596ceea0f67dd"
+      },
+      {
+        "revisionExpression": "549c12f384^",
+        "revision": "2f69704ab4161680431012d9222386914e19fbdb",
+        "sourceByteSha256": "e76f6ede8a5908cdb6a3395324808f0e0a6382563a97df43769c260dd5d57b04"
+      }
+    ],
+    "evidence": [
+      "Current beak, jaw, eye frame, eye geometry and common bone-helper blocks already equal their original unchanged expected digests.",
+      "08d5e4b322^ reproduces the original face68cc6546, Bone0a2228c8, limb-prefix0817f718 and post-registration3d83ad5a digests exactly.",
+      "549c12f384^ reproduces the existing reviewed bilateral-digit85934c38 and foot-profile0fc77155 digests exactly.",
+      "Existing permanent slender Bone and beak face fixtures recover their independent historical frames; this fixture covers only the remaining distal/limb source changes.",
+      "All existing expected hash literals and numerical anatomy assertions remain unchanged. Every exact current hunk must occur once before reversal."
+    ]
+  },
+  "seams": [
+    {
+      "label": "digit callers",
+      "start": "function addDigitFan(root, front, sideSign",
+      "end": "function surfaceAnchor(surface, center, outward) {",
+      "historicalRevisionExpression": "549c12f384^",
+      "historicalSha256": "85934c38bfaf10b83ca6ded446a79bd7079f6180ffb5ce6267960e4fe2ea3c05",
+      "currentSha256": "0d64f4bae2db67e408b3e174f1254fb5fe69ff235f98c1cb6b90e6e6c470658c",
+      "hunks": [
+        {
+          "id": "shared-bone-distal-frame-arguments",
+          "anatomicalPurpose": "Native digit-bone caller receives the shared sauropod and hadrosaur distal frames.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "function addDigitFan(root, front, sideSign, sauropodDistalFrame, hadrosaurDistalFrame) {\n",
+          "historical": "function addDigitFan(root, front, sideSign) {\n"
+        },
+        {
+          "id": "reviewed-bone-distal-dispatch",
+          "anatomicalPurpose": "Bone caller dispatches reviewed sauropod/hadrosaur constructions and exact-two dromaeosaur pes before the retained generic fan.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "              if(sauropodDistalFrame){dinoAddSauropodExtremity(THREE,dn,model,sauropodDistalFrame,{bone:boneMat,skin:headMat,keratin:keratinMat},true);return;}\n              if(hadrosaurDistalFrame){dinoAddHadrosaurExtremity(THREE,dn,model,hadrosaurDistalFrame,{bone:boneMat,skin:headMat,keratin:keratinMat},true);return;}\n              // DINO_DROMAEOSAUR_NATIVE_PES_BONE_START\n              if(!front&&/^(velociraptor|deinonychus)$/.test(dn.id)){\n                var reviewedPedalBone=dinoDromaeosaurPesFrame(THREE,dn,{root:root,side:sideSign,len:len,ht:ht,bodyDepth:bodyDepth,detailScale:detailScale,shaftRadius:Math.max(.016*detailScale,ht*.0065)*skeletalProfile.hindlimbRobustness});\n                if(reviewedPedalBone){dinoDromaeosaurPesMeshes(THREE,dn,model,reviewedPedalBone,{bone:boneMat,skin:headMat,keratin:keratinMat},true);return;}\n              }\n              // DINO_DROMAEOSAUR_NATIVE_PES_BONE_END\n\n",
+          "historical": ""
+        },
+        {
+          "id": "shared-life-distal-frame-arguments",
+          "anatomicalPurpose": "Life digit caller receives the same actual wrist/ankle/contact frame as Bone.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "            function addSoftTissueDigitFan(root, front, sideSign, distalScale, sauropodDistalFrame, hadrosaurDistalFrame) {\n",
+          "historical": "            function addSoftTissueDigitFan(root, front, sideSign, distalScale) {\n"
+        },
+        {
+          "id": "reviewed-life-distal-dispatch",
+          "anatomicalPurpose": "Life caller builds reviewed distal coverings/contours and exact-two dromaeosaur pes instead of generic digits.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "              if(sauropodDistalFrame){\n                dinoAddSauropodExtremity(THREE,dn,model,sauropodDistalFrame,{bone:boneMat,skin:headMat,keratin:keratinMat},false).forEach(addBodyContour);\n                addBodyPartAnchor(front?'fingers':'toes',sauropodDistalFrame.rays[1].points[0]);\n                var distalClaw=sauropodDistalFrame.rays[0].clawPoints;if(distalClaw)addBodyPartAnchor('claws',distalClaw[0].clone().lerp(distalClaw[3],.5));\n                return;\n              }\n              if(hadrosaurDistalFrame){dinoAddHadrosaurExtremity(THREE,dn,model,hadrosaurDistalFrame,{bone:boneMat,skin:headMat,keratin:keratinMat},false).forEach(addBodyContour);addBodyPartAnchor(front?'fingers':'toes',hadrosaurDistalFrame.rays[1].phalanges[1]);return;}\n              // DINO_DROMAEOSAUR_NATIVE_PES_LIFE_START\n              if(!front&&/^(velociraptor|deinonychus)$/.test(dn.id)){\n                var reviewedPedalLife=dinoDromaeosaurPesFrame(THREE,dn,{root:root,side:sideSign,len:len,ht:ht,bodyDepth:bodyDepth,detailScale:detailScale,shaftRadius:Math.max(.016*detailScale,ht*.0065)*skeletalProfile.hindlimbRobustness});\n                if(reviewedPedalLife){\n                  dinoDromaeosaurPesMeshes(THREE,dn,model,reviewedPedalLife,{bone:boneMat,skin:headMat,keratin:keratinMat},false).forEach(addBodyContour);\n                  addBodyPartAnchor('toes',reviewedPedalLife.rays[2].points[1]);\n                  addBodyPartAnchor('claws',reviewedPedalLife.rays[1].ungualRoot.clone().lerp(reviewedPedalLife.rays[1].clawPoints[3],.5));\n                  return;\n                }\n              }\n              // DINO_DROMAEOSAUR_NATIVE_PES_LIFE_END\n\n",
+          "historical": ""
+        }
+      ]
+    },
+    {
+      "label": "foot-profile neighbors",
+      "start": "function dinoFootSurfaceProfileFor(dn, skeletal, front) {",
+      "end": "function dinoSurfaceGeometry(THREE, points, radii, options) {",
+      "historicalRevisionExpression": "549c12f384^",
+      "historicalSha256": "0fc77155345d669be8c827a3a9af2dae30139cf535d40c7a9837264b94b169ef",
+      "currentSha256": "1018e5fb22f673cbccf9dc798e39b322e1c9ef597c6ee7aef5f10b9e55166117",
+      "hunks": [
+        {
+          "id": "reviewed-dromaeosaur-pes-helpers",
+          "anatomicalPurpose": "The independent exact-two dromaeosaur pes frame, bone/skin geometry and dispatch helpers were inserted between the unchanged foot-surface helpers and generic loft. This reversal removes only that exact reviewed insertion.",
+          "nativeCoverage": [
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "\n  // Exact two-species distal pes. The preserved bones constrain the pattern;\n  // coordinates, cartilage, resting angles and covering remain authored.\n  function dinoDromaeosaurPesProfileFor(dn) {\n    if(!dn||dn.group!=='theropod'||! /^(velociraptor|deinonychus)$/.test(dn.id))return null;\n    var velo=dn.id==='velociraptor';\n    var sources=[{title:'Fowler and colleagues, 2011: Deinonychus pedal anatomy and functional hypotheses',url:'https://doi.org/10.1371/journal.pone.0028964'},\n      {title:'Manafzadeh and colleagues, 2024: articular constraints on Deinonychus locomotor poses',url:'https://doi.org/10.1038/s41467-024-44832-z'},\n      {title:'Ostrom, 1969: Deinonychus osteology and comparative pedal digit II',url:'https://www.esp.org/foundations/genetics/classical/holdings/o/ostrom-1969.pdf'}];\n    if(velo)sources.push({title:'Norell and Makovicky, 1999: Velociraptor pedal anatomy, table 3',url:'https://hdl.handle.net/2246/3025'});\n    return {id:dn.id+'-reviewed-distal-pes',species:dn.id,unitFraction:.035,robustness:velo?.92:1.08,\n      clawII:velo?.53:.57,sources:sources,\n      referenceSpecimens:velo?['AMNH 6518','IGM 100/985','IGM 100/986']:['YPM 5205','MOR 747'],\n      evidence:'Four pedal rays I-IV are represented. The small first toe is unreversed. Medial digit II has two specialized non-ungual phalanges and a large, laterally compressed, recurved ungual; the outer digits retain distinct longer chains. Digit II is raised in this displayed pose, while III and IV extend towards the ground.',\n      limit:'The dimensions, symmetry, cartilage, toe spread and static resting angles are representative, not specimen scans or tested joint-motion limits. The four-ray 2-3-4-5 pattern is comparative; it does not claim every modeled element was recovered together in one individual. Only distal metatarsal portions are elaborated here; the existing lower-leg/metatarsal support is a proxy, and metatarsal V is not added. Keratin extent, pads and skin are inferred. Claw shape and a raised pose do not prove a hunting behavior.',\n      rays:[{ray:1,modeledPhalanges:2,clawBearing:true,pose:'elevated-unreversed',evidence:'An unreversed medial first toe follows articulated Velociraptor and the revised Deinonychus reconstruction.',limit:'The displayed inward/forward placement is authored; it is not a fully reversed perching toe.'},\n        {ray:2,modeledPhalanges:3,clawBearing:true,pose:'raised',evidence:'Two non-ungual phalanges support the enlarged recurved ungual. The raised configuration is consistent with specialized articular morphology.',limit:'The shown angles are authored and do not reproduce an articulation analysis or a maximum motion range.'},\n        {ray:3,modeledPhalanges:4,clawBearing:true,pose:'planted',evidence:'The third digit retains a separate multi-phalangeal chain rather than merging into the second toe.',limit:'Lengths, pads and contact posture remain representative.'},\n        {ray:4,modeledPhalanges:5,clawBearing:true,pose:'planted',evidence:'The fourth digit has an elongated chain, broadly comparable in reach to III in Deinonychus.',limit:'Rendered spread and exact length are authored; no prey-grasping movement is demonstrated.'}]};\n  }\n\n  function dinoDromaeosaurPesFrame(THREE,dn,f) {\n    var p=dinoDromaeosaurPesProfileFor(dn);\n    if(!p||!f||!f.root||typeof f.root.toArray!=='function'||typeof f.root.clone!=='function'||\n      !f.root.toArray().every(Number.isFinite)||![f.len,f.ht,f.bodyDepth,f.detailScale,f.shaftRadius].every(Number.isFinite)||\n      !(f.len>0&&f.ht>0&&f.bodyDepth>0&&f.shaftRadius>0)||!(f.side===-1||f.side===1))return null;\n    var u=f.len*p.unitFraction,side=f.side,root=f.root.clone(),sole=f.ht*.0015,r=u*.075;\n    function point(x,y,z){return root.clone().add(new THREE.Vector3(x*u,y*u,side*z*u));}\n    function planted(x,z){var v=point(x,0,z);v.y=sole+r;return v;}\n    var rays=[\n      {ray:1,metatarsal:point(.06,.20,-.08),points:[point(.01,.16,-.34),point(-.16,.14,-.31)],clawLength:u*.25,clawRadius:u*.040,clawLift:.10,clawDrop:.12},\n      {ray:2,metatarsal:point(.06,.20,-.055),points:[point(-.04,.15,-.18),point(-.25,.34,-.19),point(-.40,.52,-.20)],clawLength:u*p.clawII,clawRadius:u*.082,clawLift:.28,clawDrop:.36},\n      {ray:3,metatarsal:point(.06,.20,.0),points:[point(-.05,.11,.015),planted(-.37,-.005),planted(-.59,-.015),planted(-.81,-.025)],clawLength:u*.25,clawRadius:u*.046,clawLift:.18,clawDrop:.035},\n      {ray:4,metatarsal:point(.065,.18,.06),points:[point(-.035,.11,.20),planted(-.27,.27),planted(-.46,.29),planted(-.63,.30),planted(-.80,.29)],clawLength:u*.24,clawRadius:u*.043,clawLift:.16,clawDrop:.035}\n    ];\n    rays.forEach(function(ray){\n      ray.ungualRoot=ray.points[ray.points.length-1].clone();\n      var L=ray.clawLength,z=ray.ray===1?side*L*.24:0;\n      ray.clawPoints=[ray.ungualRoot.clone(),ray.ungualRoot.clone().add(new THREE.Vector3(-L*.26,L*ray.clawLift,z*.25)),\n        ray.ungualRoot.clone().add(new THREE.Vector3(-L*.82,L*ray.clawLift,z*.75)),ray.ungualRoot.clone().add(new THREE.Vector3(-L,-L*ray.clawDrop,z))];\n    });\n    var basalBottom=Math.max(sole,root.y-f.shaftRadius*1.65),basalTop=root.y+Math.max(u*.27,f.shaftRadius*2.1);\n    var basal={center:root.clone().add(new THREE.Vector3(u*.025,(basalTop+basalBottom)*.5-root.y,0)),\n      radii:[Math.max(u*.17,f.shaftRadius*2.2),(basalTop-basalBottom)*.5,Math.max(u*.14,f.shaftRadius*2)]};\n    return {profile:p,root:root,side:side,unit:u,sole:sole,skinRadius:r,rays:rays,basal:basal,\n      metadata:{side:side,root:root.toArray(),rays:rays.map(function(ray){return{ray:ray.ray,metatarsalRoot:ray.metatarsal.toArray(),\n        base:ray.points[0].toArray(),phalanges:ray.points.map(function(v){return v.toArray();}),ungualRoot:ray.ungualRoot.toArray(),ungualTip:ray.clawPoints[3].toArray()};}),\n        basalCover:{center:basal.center.toArray(),radii:basal.radii,retainedShaftRadius:f.shaftRadius,dimensionsAreInterpretive:true}}};\n  }\n\n  // Shared cubic centerline; the outer cover extends modestly past both ends\n  // and encloses a laterally compressed bony ungual, including its true tip.\n  function dinoDromaeosaurPesUngualGeometry(THREE,frame,ray,core) {\n    if(!frame||!ray)return null;\n    var control=ray.clawPoints.map(function(p){return p.clone().sub(frame.root);});\n    var curve=new THREE.CubicBezierCurve3(control[0],control[1],control[2],control[3]);\n    var positions=[],indices=[],uv=[],grain=[],rows=48,sides=24,start=core?0:-.085,end=core?1:1.115;\n    for(var row=0;row<=rows;row++){\n      var t=start+(end-start)*row/rows,center=curve.getPoint(t),tangent=control[1].clone().sub(control[0]).multiplyScalar(3*(1-t)*(1-t))\n        .addScaledVector(control[2].clone().sub(control[1]),6*(1-t)*t).addScaledVector(control[3].clone().sub(control[2]),3*t*t).normalize();\n      var lateral=new THREE.Vector3(0,0,1),normal=new THREE.Vector3().crossVectors(lateral,tangent).normalize();\n      lateral.crossVectors(tangent,normal).normalize();\n      var taper=Math.pow(Math.max(0,1-t/(core?1:1.115)),.72),radius=ray.clawRadius*(core?.70:1)*(taper+.006);\n      for(var column=0;column<sides;column++){\n        var angle=column/sides*Math.PI*2,point=center.clone().addScaledVector(normal,Math.cos(angle)*radius)\n          .addScaledVector(lateral,Math.sin(angle)*radius*(ray.ray===2?.43:.60));\n        positions.push(point.x,point.y,point.z);uv.push(column/sides,row/rows);grain.push(Math.cos(angle),Math.sin(angle),row/rows,1);\n        if(row<rows){var a=row*sides+column,b=row*sides+(column+1)%sides;indices.push(a,b,a+sides,b,b+sides,a+sides);}\n      }\n    }\n    [0,rows].forEach(function(row){var center=curve.getPoint(row?end:start),index=positions.length/3;positions.push(center.x,center.y,center.z);uv.push(.5,row/rows);grain.push(0,0,row/rows,1);\n      for(var column=0;column<sides;column++){var a=row*sides+column,b=row*sides+(column+1)%sides;if(row)indices.push(index,a,b);else indices.push(index,b,a);}});\n    var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));\n    g.setAttribute('dinoKeratin',new THREE.Float32BufferAttribute(grain,4));g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();\n    g.userData.dinoDromaeosaurUngual={closed:true,curved:true,core:core,ray:ray.ray,tipParameter:end,base:ray.ungualRoot.toArray()};return g;\n  }\n\n  function dinoDromaeosaurPesMeshes(THREE,dn,model,frame,materials,core) {\n    if(!frame||!dinoDromaeosaurPesProfileFor(dn))return[];\n    var out=[],u=frame.unit,p=frame.profile;\n    function mark(mesh,ray,element,index){\n      var layer=core?'bone':'life',id='pes-'+frame.side+'-ray-'+ray+'-'+element+'-'+index+'-'+layer;\n      mesh.position.add(frame.root);mesh.name=dn.id+'-'+id;mesh.castShadow=true;mesh.receiveShadow=true;\n      mesh.userData.dinoRegion='foot-'+frame.side;mesh.userData.dinoSide=frame.side;\n      mesh.userData.dinoFeature=element==='ungual-covering'?'keratin-claw':element==='ungual-core'?'pedal-ungual':element;\n      mesh.userData.dinoDromaeosaurPedalElement={species:dn.id,side:frame.side,ray:ray,layer:layer,element:element,index:index,id:id,representative:true};\n      dinoSurfacePartIds(mesh,/ungual/.test(element)?['foot','toes','claws']:['foot','toes']);model.add(mesh);out.push(mesh);return mesh;\n    }\n    function segment(a,b,ray,index,metatarsal){\n      var direction=b.clone().sub(a).normalize(),radius=u*(metatarsal?.032:.026)*p.robustness;\n      var proximal=radius*(ray===2&&index===1&&!metatarsal?1.55:1.26),distal=radius*1.22;\n      var start=a.clone(),end=b.clone(),middle=start.clone().add(end).multiplyScalar(.5);\n      if(!core){start.addScaledVector(direction,-radius*1.40);end.addScaledVector(direction,radius*1.40);proximal*=2.0;distal*=2.0;radius*=1.95;}\n      var g=dinoLongBoneGeometry(THREE,start.sub(frame.root),end.sub(frame.root),middle.sub(frame.root),proximal,radius,distal);\n      mark(new THREE.Mesh(g,core?materials.bone:materials.skin),ray,core?(metatarsal?'distal-metatarsal':'phalanx'):(metatarsal?'metatarsal-envelope':'digital-envelope'),index);\n    }\n    if(!core){\n      // A shared proximal cuff connects the retained metatarsal shaft to the\n      // four distinct toe bases. It is inferred tissue, not another digit.\n      var basal=new THREE.Mesh(new THREE.SphereGeometry(1,28,18),materials.skin);\n      basal.position.copy(frame.basal.center);basal.scale.set(frame.basal.radii[0],frame.basal.radii[1],frame.basal.radii[2]);\n      basal.name=dn.id+'-pes-base-'+frame.side+'-life';basal.castShadow=true;basal.receiveShadow=true;\n      basal.userData.dinoRegion='foot-'+frame.side;basal.userData.dinoFeature='pedal-base-envelope';\n      basal.userData.dinoDromaeosaurPedalBase={species:dn.id,side:frame.side,layer:'life',representative:true};\n      dinoSurfacePartIds(basal,['foot','toes']);model.add(basal);out.push(basal);\n    }\n    frame.rays.forEach(function(ray){\n      segment(ray.metatarsal,ray.points[0],ray.ray,0,true);\n      for(var i=0;i<ray.points.length-1;i++)segment(ray.points[i],ray.points[i+1],ray.ray,i,false);\n      if(core&&ray.ray===2){\n        var heel=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),materials.bone);\n        heel.position.copy(ray.points[1]).sub(frame.root).add(new THREE.Vector3(u*.024,-u*.025,0));heel.scale.set(u*.048,u*.030,u*.024);\n        mark(heel,2,'flexor-heel',1);\n      }\n      mark(new THREE.Mesh(dinoDromaeosaurPesUngualGeometry(THREE,frame,ray,core),core?materials.bone:materials.keratin),ray.ray,core?'ungual-core':'ungual-covering',0);\n    });\n    if(!model.userData.dinoDromaeosaurPes)model.userData.dinoDromaeosaurPes={species:dn.id,profile:p.id,sources:p.sources,\n      referenceSpecimens:p.referenceSpecimens,evidence:p.evidence,limit:p.limit,rays:p.rays,dimensionsAreInterpretive:true,\n      poseIsAuthored:true,notMotionSimulation:true,tissueHypothesisIndependentAnchors:true,feet:[]};\n    var feet=model.userData.dinoDromaeosaurPes.feet;\n    model.userData.dinoDromaeosaurPes.feet=feet.filter(function(foot){return foot.side!==frame.side;}).concat([frame.metadata]).sort(function(a,b){return a.side-b.side;});\n    return out;\n  }\n\n",
+          "historical": ""
+        }
+      ]
+    },
+    {
+      "label": "limb prefix",
+      "start": "function addLeg(x, z, front) {",
+      "end": "var upperLimbShell =",
+      "historicalRevisionExpression": "08d5e4b322^",
+      "historicalSha256": "0817f718c622092e193107bcda30d9e4d0377383f9b74797682c035d9cdeb0b1",
+      "currentSha256": "9b2af18071bcf637a6ceae6f59d24f7b41a5efda7b12512eb572b118b4aeb3a1",
+      "hunks": [
+        {
+          "id": "lambeosaur-bone-tag-snapshot",
+          "anatomicalPurpose": "Snapshot the pre-limb native model children for lambeosaur Bone ownership tags.",
+          "nativeCoverage": [
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "              var lambeosaurLimbBefore=model.children.slice();\n",
+          "historical": ""
+        },
+        {
+          "id": "reviewed-native-limb-and-distal-frames",
+          "anatomicalPurpose": "Resolve species-gated theropod, stegosaur, armored, ceratopsid, ornithopod, lambeosaur and sauropod limb axes, size metadata and native sauropod/hadrosaur distal frames.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_3d_ornithopod_body.test.js",
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js",
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "              var theropodBodyLimb=/^(tyrannosaurus|allosaurus|coelophysis|dilophosaurus|velociraptor|deinonychus)$/.test(dn.id)&&!front?dinoTheropodBodyHindlimb(THREE,dn,{front:false,len:len,topPoint:topPoint,ankle:ankle,foot:foot}):null;\n              if(theropodBodyLimb){\n                topPoint=theropodBodyLimb.topPoint;knee=theropodBodyLimb.knee;ankle=theropodBodyLimb.ankle;foot=theropodBodyLimb.foot;\n                if(model.userData.dinoFullBodyAnatomy)model.userData.dinoFullBodyAnatomy.limbs.push({front:false,side:sideSign,top:topPoint.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray()});\n              }\n              var stegosaurBodyLimb=/^(stegosaurus|kentrosaurus|huayangosaurus|tuojiangosaurus)$/.test(dn.id)?dinoStegosaurBodyLimb(THREE,dn,{\n                len:len,ht:ht,detailScale:detailScale,x:x,z:z,front:front,shoulder:shoulder,hip:hip,\n                bodyHeight:bodyHeight,bodyDepth:bodyDepth,topPoint:topPoint,knee:knee,ankle:ankle,foot:foot}):null;\n              if(stegosaurBodyLimb){\n                topPoint=stegosaurBodyLimb.topPoint;knee=stegosaurBodyLimb.knee;ankle=stegosaurBodyLimb.ankle;foot=stegosaurBodyLimb.foot;\n                if(model.userData.dinoFullBodyAnatomy)model.userData.dinoFullBodyAnatomy.limbs.push({front:!!front,side:sideSign,\n                  top:topPoint.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray()});\n              }\n              var armoredBodyLimb = /^(ankylosaurus|euoplocephalus|sauropelta|borealopelta)$/.test(dn.id) ? dinoAnkylosaurBodyLimb(THREE,dn,{\n                len:len,ht:ht,detailScale:detailScale,x:x,z:z,front:front,shoulder:shoulder,hip:hip,\n                bodyHeight:bodyHeight,bodyDepth:bodyDepth,topPoint:topPoint,knee:knee,ankle:ankle,foot:foot }) : null;\n              if (armoredBodyLimb) {\n                topPoint = armoredBodyLimb.topPoint; knee = armoredBodyLimb.knee; ankle = armoredBodyLimb.ankle; foot = armoredBodyLimb.foot;\n                if (model.userData.dinoFullBodyAnatomy) model.userData.dinoFullBodyAnatomy.limbs.push({ front:!!front,side:sideSign,\n                  top:topPoint.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray() });\n              }\n              var ceratopsidBodyLimb = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidBodyLimb(THREE, dn, {\n                len: len, ht: ht, detailScale: detailScale, x: x, z: z, front: front, shoulder: shoulder, hip: hip,\n                bodyHeight: bodyHeight, bodyDepth: bodyDepth, topPoint: topPoint, knee: knee, ankle: ankle, foot: foot }) : null;\n              if (ceratopsidBodyLimb) {\n                topPoint = ceratopsidBodyLimb.topPoint; knee = ceratopsidBodyLimb.knee; ankle = ceratopsidBodyLimb.ankle; foot = ceratopsidBodyLimb.foot;\n                if (model.userData.dinoFullBodyAnatomy) model.userData.dinoFullBodyAnatomy.limbs.push({ front: !!front, side: sideSign,\n                  top: topPoint.toArray(), joint: knee.toArray(), distal: ankle.toArray(), contact: foot.toArray(),\n                  knee: knee.toArray(), ankle: ankle.toArray(), foot: foot.toArray() });\n              }\n              var ornithopodBodyLimb = /^(iguanodon|edmontosaurus|maiasaura)$/.test(dn.id) ? dinoOrnithopodBodyLimb(THREE, dn, {\n                len: len, ht: ht, detailScale: detailScale, x: x, z: z, front: front, shoulder: shoulder, hip: hip,\n                bodyHeight: bodyHeight, bodyDepth: bodyDepth, topPoint: topPoint, knee: knee, ankle: ankle, foot: foot }) : null;\n              if (ornithopodBodyLimb) {\n                topPoint = ornithopodBodyLimb.topPoint; knee = ornithopodBodyLimb.knee; ankle = ornithopodBodyLimb.ankle; foot = ornithopodBodyLimb.foot;\n                if (model.userData.dinoFullBodyAnatomy) {\n                  var ornithopodLimbRecords = model.userData.dinoFullBodyAnatomy.limbs || [];\n                  ornithopodLimbRecords.push({ front: !!front, side: sideSign, top: topPoint.toArray(), joint: knee.toArray(), distal: ankle.toArray(), contact: foot.toArray(),\n                    knee: knee.toArray(), ankle: ankle.toArray(), foot: foot.toArray() });\n                  model.userData.dinoFullBodyAnatomy.limbs = ornithopodLimbRecords;\n                }\n              }\n              var lambeosaurLimb=typeof lambeosaurBody!=='undefined'&&lambeosaurBody?dinoLambeosaurBodyLimb(THREE,lambeosaurBody,front,sideSign):null;\n              if(lambeosaurLimb){topPoint=lambeosaurLimb.topPoint;knee=lambeosaurLimb.knee;ankle=lambeosaurLimb.ankle;foot=lambeosaurLimb.foot;\n                model.userData.dinoFullBodyAnatomy.limbs.push({front:!!front,side:sideSign,top:topPoint.toArray(),joint:knee.toArray(),distal:ankle.toArray(),contact:foot.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray()});}\n              var ornithopodBoneDetailScale = lambeosaurLimb || theropodBodyLimb || ornithopodBodyLimb || ceratopsidBodyLimb || armoredBodyLimb || stegosaurBodyLimb || (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) ? Math.min(detailScale, ht / dn.heightM) : detailScale;\n              if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) {\n                var reviewedSauropodLimb = dinoSauropodBodyLimb(THREE,dn,{ len:len,ht:ht,detailScale:detailScale,x:x,z:z,front:front,shoulder:shoulder,hip:hip,bodyHeight:bodyHeight,bodyDepth:bodyDepth,topPoint:topPoint,knee:knee,ankle:ankle,foot:foot });\n                if (reviewedSauropodLimb) {\n                  topPoint = reviewedSauropodLimb.topPoint; knee = reviewedSauropodLimb.knee; ankle = reviewedSauropodLimb.ankle; foot = reviewedSauropodLimb.foot;\n                  if (model.userData.dinoFullBodyAnatomy) model.userData.dinoFullBodyAnatomy.limbs.push({ front:front,side:sideSign,top:topPoint.toArray(),knee:knee.toArray(),ankle:ankle.toArray(),foot:foot.toArray() });\n                }\n              }\n              var sauropodDistalFrame=/^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)?dinoSauropodExtremityFrame(THREE,dn,{root:foot,ankle:ankle,front:front,side:sideSign,len:len,ht:ht,bodyDepth:bodyDepth}):null;\n              if(sauropodDistalFrame)dinoSauropodExtremitiesMetadata(model,dn,sauropodDistalFrame);\n              var hadrosaurDistalFrame=/^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan|edmontosaurus)$/.test(dn.id)?dinoHadrosaurExtremityFrame(THREE,dn,{root:foot,ankle:ankle,front:front,side:sideSign,len:len,ht:ht,bodyDepth:bodyDepth}):null;\n              if(hadrosaurDistalFrame)dinoHadrosaurExtremitiesMetadata(model,dn,hadrosaurDistalFrame);\n",
+          "historical": ""
+        },
+        {
+          "id": "local-native-shaft-scale",
+          "anatomicalPurpose": "Reviewed native limb shafts use a specimen-local detail scale.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_3d_ornithopod_body.test.js",
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "              var upperRadius = Math.max(0.034 * ornithopodBoneDetailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;\n              var lowerRadius = Math.max(0.028 * ornithopodBoneDetailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;\n",
+          "historical": "              var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;\n              var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;\n"
+        },
+        {
+          "id": "native-paired-bone-spacing",
+          "anatomicalPurpose": "Reviewed native limb frames keep companion bones within their actual envelopes.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_3d_ornithopod_body.test.js",
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "              if (lambeosaurLimb || theropodBodyLimb || ornithopodBodyLimb || ceratopsidBodyLimb || armoredBodyLimb || stegosaurBodyLimb) pairedOffset *= 0.60;\n",
+          "historical": ""
+        },
+        {
+          "id": "native-forearm-companion-axis",
+          "anatomicalPurpose": "Ceratopsid/armored/stegosaur forearm companion shafts follow their opposed-joint axis.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js"
+          ],
+          "current": "              if ((ceratopsidBodyLimb || armoredBodyLimb || stegosaurBodyLimb) && front) {\n                companionProximal.x = knee.x + lowerRadius * 0.22;\n                companionDistal.x += lowerRadius * 0.18;\n              }\n",
+          "historical": ""
+        },
+        {
+          "id": "native-metapodial-replacement",
+          "anatomicalPurpose": "Reviewed distal frames replace the duplicate generic metapodial; retained dromaeosaur context is tagged explicitly.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "              } else if(!sauropodDistalFrame&&!hadrosaurDistalFrame) {\n                var retainedMetatarsalShaft=addBone(ankle, foot, Math.max(0.016 * detailScale, ht * 0.0065) * limbRobustness);\n                if(!front&&/^(velociraptor|deinonychus)$/.test(dn.id)&&retainedMetatarsalShaft)retainedMetatarsalShaft.userData.dinoDromaeosaurMetatarsalContext={species:dn.id,side:sideSign,layer:'bone',representative:true};\n",
+          "historical": "              } else {\n                addBone(ankle, foot, Math.max(0.016 * detailScale, ht * 0.0065) * limbRobustness);\n"
+        },
+        {
+          "id": "native-joints-tags-and-digit-callers",
+          "anatomicalPurpose": "Native joints use frame-local scale; Bone ownership and shared-frame digit calls follow the resolved limb.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_3d_ornithopod_body.test.js",
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js",
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046 * ornithopodBoneDetailScale, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);\n              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050 * ornithopodBoneDetailScale, ht * 0.017) * limbRobustness, 1.34);\n              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * ornithopodBoneDetailScale, ht * 0.012) * limbRobustness * (ceratopsidBodyLimb || armoredBodyLimb || stegosaurBodyLimb ? 0.94 : 1), 1.20);\n              if(lambeosaurLimb&&props.showSkeleton)dinoLambeosaurBodyTag(model,lambeosaurLimbBefore,dn,'limbs',front?'forelimb-bones':'hindlimb-bones',sideSign,'bone');\n              addDigitFan(foot, front, sideSign, sauropodDistalFrame, hadrosaurDistalFrame);\n              addSoftTissueDigitFan(foot, front, sideSign, distalScale, sauropodDistalFrame, hadrosaurDistalFrame);\n",
+          "historical": "              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046 * detailScale, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);\n              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050 * detailScale, ht * 0.017) * limbRobustness, 1.34);\n              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034 * detailScale, ht * 0.012) * limbRobustness, 1.20);\n              addDigitFan(foot, front, sideSign);\n              addSoftTissueDigitFan(foot, front, sideSign, distalScale);\n"
+        },
+        {
+          "id": "reviewed-limb-skin-calibers",
+          "anatomicalPurpose": "Theropod and lambeosaur skin calibers enclose their actual supporting limb elements.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "                if(theropodBodyLimb){kneeRadius*=1.12;ankleRadius*=1.60;}\n                if(lambeosaurLimb){thighRadius*=front?1.15:1.30;kneeRadius*=1.15;ankleRadius*=1.45;}\n",
+          "historical": ""
+        },
+        {
+          "id": "shared-limb-surface-stations",
+          "anatomicalPurpose": "The existing seven skin stations/radii are named before the shell call so actual sauropod/hadrosaur distal envelopes can end at their shared ankle/wrist frames.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_extremities.test.js",
+            "tests/dinolab_hadrosaur_extremities.test.js",
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "                var limbSurfacePoints=[limbSkinRoot, proximalLimb, thighMid, knee, calfMid, ankle, foot];\n                var limbSurfaceRadii=dinoCeratopsianForelegRadii([thighRadius * 0.72, thighRadius * 0.96, thighRadius, kneeRadius, Math.max(kneeRadius * 1.02, ankleRadius * (footSurfaceProfile.columnar ? 1.12 : 1)), ankleRadius, ankleRadius * (footSurfaceProfile.padded ? 0.96 : 0.68)],\n                  front && /Ceratopsidae/i.test(cladeName) && !footSurfaceProfile.columnar);\n                var sauropodDistalLeg=sauropodDistalFrame?dinoSauropodDistalLegEnvelope(THREE,sauropodDistalFrame,limbSurfacePoints,limbSurfaceRadii):null;\n                if(sauropodDistalLeg){limbSurfacePoints=sauropodDistalLeg.points;limbSurfaceRadii=sauropodDistalLeg.radii;}\n                if(hadrosaurDistalFrame){var hadrosaurLegEnvelope=dinoHadrosaurDistalLegEnvelope(THREE,hadrosaurDistalFrame,limbSurfacePoints,limbSurfaceRadii);limbSurfacePoints=hadrosaurLegEnvelope.points;limbSurfaceRadii=hadrosaurLegEnvelope.radii;}\n",
+          "historical": ""
+        }
+      ]
+    },
+    {
+      "label": "limb registration",
+      "start": "upperLimbShell.userData.dinoRegion",
+      "end": "var stance =",
+      "historicalRevisionExpression": "08d5e4b322^",
+      "historicalSha256": "69727a6723ad30d1d62c723f2d1236532103fa8cbba65774f3da039d15c82f90",
+      "currentSha256": "49968e7f2eaaa0ca9105c4e11c038b73cda8284e5a9a8a9390ebbab9617f0055",
+      "hunks": [
+        {
+          "id": "lambeosaur-life-ownership",
+          "anatomicalPurpose": "Tag the actual lambeosaur limb skin with its species, region and Life ownership.",
+          "nativeCoverage": [
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "                if(lambeosaurLimb)dinoLambeosaurBodyTag(model,model.children.filter(function(m){return m!==upperLimbShell;}),dn,'limbs',front?'forelimb-envelope':'hindlimb-envelope',sideSign,'life');\n",
+          "historical": ""
+        },
+        {
+          "id": "dromaeosaur-metatarsal-life-context",
+          "anatomicalPurpose": "Tag the retained exact-two dromaeosaur lower-leg skin used by native pedal inspection.",
+          "nativeCoverage": [
+            "tests/dinolab_dromaeosaur_pes.test.js"
+          ],
+          "current": "                if(!front&&/^(velociraptor|deinonychus)$/.test(dn.id))upperLimbShell.userData.dinoDromaeosaurMetatarsalContext={species:dn.id,side:sideSign,layer:'life',minU:5/6,representative:true};\n",
+          "historical": ""
+        },
+        {
+          "id": "lambeosaur-shoulder-and-hip-lighting",
+          "anatomicalPurpose": "Include the actual lambeosaur frame in existing planted forelimb/hip normal blending; this does not move geometry, anchors or contacts.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_forelimb_blend.test.js",
+            "tests/dinolab_3d_hindlimb_blend.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "                  forelimbBlendWidth: front && (lambeosaurLimb || isSauropod || /Ceratops/i.test(cladeName)) ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n                  hindlimbBlendWidth: !front && (lambeosaurLimb || postcranialSurface.id === 'powerful-theropod') ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n",
+          "historical": "                  forelimbBlendWidth: front && (isSauropod || /Ceratops/i.test(cladeName)) ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n                  hindlimbBlendWidth: !front && postcranialSurface.id === 'powerful-theropod' ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,\n"
+        }
+      ]
+    }
+  ]
+}

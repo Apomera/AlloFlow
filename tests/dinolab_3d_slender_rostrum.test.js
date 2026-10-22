@@ -1,3 +1,4 @@
+import { historicalReviewedCranialProjection } from './fixtures/dinolab_historical_cranial_profiles.js';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -9,7 +10,8 @@ const source=readFileSync(process.env.DINO_SLENDER_ROSTRUM_SOURCE||resolve('stem
 const registration="window.StemLab.registerTool('dinoLab'";
 if(!source.includes(registration))throw Error('Missing Dino Lab registration');
 window.StemLab={registerTool(){}};
-new Function(source.replace(registration,'globalThis.__slenderRostrum={DINOS,cranialSurfaceProfileFor,dinoTheropodCranialRadii,dinoCranialGeometry,dinoSurfaceGeometry,dinoSurfaceAnchor,dinoCoatGeometry};'+registration))();
+const nativeHelpers=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__slenderRostrum={DINOS,skeletalAnatomyProfileFor,'+nativeHelpers.join(',')+'};'+registration))();
 const art=globalThis.__slenderRostrum;delete globalThis.__slenderRostrum;
 const vector=(a,i)=>new T.Vector3().fromBufferAttribute(a,i);
 const bytes=a=>new Uint8Array(a.array.buffer,a.array.byteOffset,a.array.byteLength);
@@ -115,13 +117,16 @@ describe('Cranial detail attachment and opt-in integration',()=>{
   });
   it('covers every affected catalog species while retaining the complete profile and radius inputs',()=>{
     const affected=art.DINOS.filter(d=>art.cranialSurfaceProfileFor(d).id==='slender-theropod');
-    expect(affected.map(d=>d.id).sort()).toEqual(['coelophysis','compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'].sort());
+    expect(affected.map(d=>d.id).sort()).toEqual(['compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'].sort());
+    const coelophysis=art.DINOS.find(d=>d.id==='coelophysis');
+    expect(art.cranialSurfaceProfileFor(coelophysis).id).toBe(art.dinoTheropodCraniumProfileFor(coelophysis).id);
+    // Native Coelophysis frame/proxy absence is covered in dinolab_3d_slender_skull.
     // Later mature-tyrannosaur metadata and the two reviewed Alioramini envelopes
     // have their own form tests. Retain the frozen source and pin every other
     // species/property here, including all original slender-theropod inputs.
     const reviewedMatureIds=new Set(['tyrannosaurus','tarbosaurus','gorgosaurus','daspletosaurus','nanuqsaurus','lythronax','teratophoneus','albertosaurus','thanatotheristes']);
     for(const dn of art.DINOS){
-      const actual={...art.cranialSurfaceProfileFor(dn)},expected=baselineCranialProfile(dn);
+      const expected=baselineCranialProfile(dn),actual=historicalReviewedCranialProjection(art,dn,art.cranialSurfaceProfileFor(dn),expected);
       if(reviewedMatureIds.has(dn.id)){
         expect(dn.clade).toBe('Tyrannosauridae');expect(actual.matureTyrannosaur).toBe(true);
         for(const key of ['note','matureTyrannosaur']){

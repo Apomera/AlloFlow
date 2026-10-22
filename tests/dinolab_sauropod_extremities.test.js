@@ -30,6 +30,8 @@ describe('native comparative sauropod hands and feet',()=>{
       expect(p.referenceDimensions).toBeNull();expect(p.limit).toMatch(/not specimen scans or exact catalog-species formulas/);expect(p.limit).toMatch(/track shape alone does not identify/);
       expect(api.dinoSauropodExtremityFrame(THREE,dn,{root:vec(NaN,0,0),ankle:vec(0,1,0),len:2,ht:1,bodyDepth:.1})).toBeNull();}
   });
+  // The scale-1 rows also classify actual triangle centres/edges and audit
+  // every closed solid. Shared CI workers can exceed the default 5 seconds.
   it.each(ids.flatMap(id=>[.05,1,8].map(scale=>[id,scale])))('%s uses five shared actual rays with contained bones at scale %s',(id,scale)=>{
     const b=nativeSauropodExtremities(id,scale);try{
       const metadata=b.model.userData.dinoSauropodExtremities;
@@ -63,7 +65,7 @@ describe('native comparative sauropod hands and feet',()=>{
       for(const m of b.meshes){for(const attribute of ['position','normal'])expect(Array.from(m.geometry.attributes[attribute].array).every(Number.isFinite),m.name).toBe(true);const p=m.geometry.attributes.position;let minY=Infinity;for(let i=0;i<p.count;i++)minY=Math.min(minY,vertex(m,i).y);expect(minY,m.name).toBeGreaterThan(0);}
       if(scale===1)for(const mesh of b.meshes)closedSolid(mesh,scale);
     }finally{b.dispose();}
-  });
+  },30000);
   it.each(ids)('%s exposes the same anatomy and metadata with either layer hidden',id=>{
     const both=nativeSauropodExtremities(id),bone=nativeSauropodExtremities(id,1,{body:false,bone:true}),life=nativeSauropodExtremities(id,1,{body:true,bone:false});
     try{expect(bone.life).toHaveLength(0);expect(life.bones).toHaveLength(0);expect(both.model.userData.dinoSauropodExtremities).toEqual(bone.model.userData.dinoSauropodExtremities);expect(bone.model.userData.dinoSauropodExtremities).toEqual(life.model.userData.dinoSauropodExtremities);expect(distalGeometryHash(both.bones)).toBe(distalGeometryHash(bone.bones));expect(distalGeometryHash(both.life)).toBe(distalGeometryHash(life.life));}finally{both.dispose();bone.dispose();life.dispose();}

@@ -50,7 +50,8 @@ GITHUB_BRANCH = "main"
 # public GitHub repo (unlike lessons/translations). One-time setup:
 #   npx wrangler kv namespace create BUG_REPORTS
 # then paste the printed id below (and, optionally, create a preview namespace for dev).
-# Optional: `npx wrangler secret put ADMIN_TOKEN` to enable the token-gated GET /bugs reader.
+# Optional: `npx wrangler secret put BUG_REPORTS_ADMIN_TOKEN` enables the developer
+# inbox at /bug-inbox and its bearer-authenticated GET /bugs reader.
 [[kv_namespaces]]
 binding = "BUG_REPORTS"
 id = "b8dddf6fa1404c088ab63376255e2620"

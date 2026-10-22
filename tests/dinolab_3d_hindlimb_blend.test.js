@@ -8,8 +8,9 @@ const source = readFileSync(process.env.DINO_HINDLIMB_BLEND_SOURCE || resolve('s
 const registration = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(registration)) throw new Error('Dino Lab registration missing');
 window.StemLab = { registerTool() {} };
+const nativeHelperNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
 new Function(source.replace(registration,
-  'globalThis.__hindlimbBlend = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCeratopsianForelegRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoPlantLimbSurface, dinoBlendSurfaceNormals, dinoSkinCoordinates, dinoBeakSkinClosure };' + registration))();
+  'globalThis.__hindlimbBlend = { DINOS, skeletalAnatomyProfileFor, '+nativeHelperNames.join(',')+' };' + registration))();
 const art = globalThis.__hindlimbBlend;
 delete globalThis.__hindlimbBlend;
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -70,6 +71,21 @@ function build(id = 'tyrannosaurus', scale = 1, showBody = true, transformed = f
       contour.position.copy(mesh.position); model.add(contour); return contour;
     }
   };
+  // Resolve the native connected frame before its torso and limb callers.
+  // The fixture also exercises a lambeosaur, whose frame is no longer optional.
+  context.snout = context.head.clone().add(vec(-context.len * .075, -context.ht * .020, 0));
+  context.tail = vec(context.len * .52, context.ht * .34, 0);
+  context.lambeosaurBody = art.dinoLambeosaurBodyFrame(THREE, dn, {
+    len: context.len, ht: context.ht, headScale: art.reconstructionProfileFor(dn).head,
+    shoulder: context.shoulder, hip: context.hip, head: context.head,
+    snout: context.snout, tail: context.tail, bodyHeight: context.bodyHeight, bodyDepth: context.bodyDepth
+  });
+  if (context.lambeosaurBody) {
+    const frame = context.lambeosaurBody;
+    context.shoulder.copy(frame.shoulder); context.hip.copy(frame.hip); context.tail.copy(frame.tail);
+    context.bodyDepth = frame.bodyDepth; context.bodyLen = Math.abs(context.hip.x - context.shoulder.x) * .72;
+    model.userData.dinoFullBodyAnatomy = frame.metadata; model.userData.dinoLambeosaurBody = frame.metadata;
+  }
   context.addSoftTissueChain = inContext(chainCode, 'addSoftTissueChain', context);
   Object.assign(context, inContext(torsoCode, '({ bodyShell, surfaceBodyDepth, surfaceBodyHeight })', context));
   const addLeg = inContext(legCode, 'addLeg', context);
@@ -113,6 +129,27 @@ function immutableState(built) {
     profile: JSON.stringify(built.context.postcranialSurface), skeleton: JSON.stringify(built.context.skeletalProfile)
   };
 }
+// Independent distance oracle over the actual immutable torso triangles.
+// AABB rejection uses a lower bound; it never enlarges the production width.
+function torsoDistanceOracle(mesh,width){
+  mesh.updateWorldMatrix(true,false);
+  const geometry=mesh.geometry,positions=geometry.attributes.position,index=geometry.index,faces=[];
+  const vertices=Array.from({length:positions.count},(_,i)=>at(positions,i).applyMatrix4(mesh.matrixWorld));
+  for(let i=0;i<index.count;i+=3){
+    const triangle=new THREE.Triangle(vertices[index.getX(i)],vertices[index.getX(i+1)],vertices[index.getX(i+2)]);
+    if(triangle.getArea()===0)continue;
+    faces.push({triangle,bounds:new THREE.Box3().setFromPoints([triangle.a,triangle.b,triangle.c])});
+  }
+  const nearest=new THREE.Vector3(),widthSquared=width*width;
+  return point=>{
+    let squared=widthSquared;
+    for(const face of faces){
+      const bound=face.bounds.distanceToPoint(point);if(bound*bound>=squared)continue;
+      face.triangle.closestPointToPoint(point,nearest);squared=Math.min(squared,nearest.distanceToSquared(point));
+    }
+    return squared;
+  };
+}
 function assertLocalHipChange(built, before) {
   const meshes = allMeshes(built), body = built.context.bodyShell;
   expect(built.records.blends).toHaveLength(2);
@@ -139,15 +176,23 @@ function assertLocalHipChange(built, before) {
     expect(entry.hindlimbBlendWidth).toBeGreaterThan(0);
     expect(entry.hindlimbBlendWidth).toBeLessThanOrEqual(built.context.surfaceBodyDepth * .30);
     const positions = mesh.geometry.attributes.position, normals = mesh.geometry.attributes.normal;
-    let protectedDistal = 0, modifiedProximal = 0;
+    const width=entry.hindlimbBlendWidth,distanceSquared=torsoDistanceOracle(body,width);
+    const reviewedNative=!!art.dinoTheropodBodyProfileFor(built.context.dn);
+    let protectedDistal = 0, modifiedAtJoin = 0;
     for (let i = 0; i < positions.count; i++) {
-      const point = built.model.worldToLocal(mesh.localToWorld(at(positions, i)));
+      // The reviewed belly descends below the former generic hip-height cutoff.
+      // Production blending is limited by actual world-space surface distance.
+      const point = mesh.localToWorld(at(positions, i));
       const old = previous.normal.slice(i * 3, i * 3 + 3), next = at(normals, i).toArray();
-      if (point.y < built.context.hip.y * .40) {
+      const squared=distanceSquared(point),changed=next.some((v,j)=>v!==old[j]);
+      // Keep the original generic-envelope height control as well.
+      if(!reviewedNative&&built.model.worldToLocal(point.clone()).y<built.context.hip.y*.40)expect(next).toEqual(old);
+      if (squared>=width*width) {
         protectedDistal++; expect(next).toEqual(old);
-      } else if (next.some((v, j) => v !== old[j])) modifiedProximal++;
+      }
+      if(changed){expect(squared,'changed normal stays inside the actual torso join').toBeLessThan(width*width);modifiedAtJoin++;}
     }
-    expect(protectedDistal).toBeGreaterThan(100); expect(modifiedProximal).toBeGreaterThan(0);
+    expect(protectedDistal).toBeGreaterThan(100); expect(modifiedAtJoin).toBeGreaterThan(0);
   }
 }
 
@@ -172,7 +217,7 @@ describe('Dino Lab local tyrannosauroid hip shading', () => {
     });
   }
 
-  for (const id of ['brachiosaurus', 'diplodocus', 'protoceratops', 'triceratops', 'parasaurolophus', 'velociraptor']) {
+  for (const id of ['brachiosaurus', 'diplodocus', 'protoceratops', 'triceratops', 'saurolophus', 'velociraptor']) {
     it('leaves off-profile anatomy and every normal exact for ' + id, () => {
       const built = build(id), meshes = allMeshes(built), before = meshes.map(snapshot), state = immutableState(built);
       try {
@@ -193,6 +238,30 @@ describe('Dino Lab local tyrannosauroid hip shading', () => {
       } finally { built.dispose(); }
     });
   }
+
+  it('blends both native lambeosaur hips while preserving their meshes, anchors, contacts and fixed torso normals', () => {
+    const built = build('parasaurolophus'), { bodyShell, idleMotion } = built.context;
+    const meshes = [bodyShell, ...idleMotion.legs.map(entry => entry.mesh)], before = meshes.map(snapshot), anchorBefore = anchors(built), contacts = JSON.stringify(built.context.plantedFootContacts);
+    try {
+      expect(built.context.lambeosaurBody.metadata.species).toBe('parasaurolophus');
+      built.blendOnly();
+      expect(built.records.blends).toHaveLength(2);
+      const hindlimbs = idleMotion.legs.filter(entry => !entry.front);
+      expect(hindlimbs).toHaveLength(2);
+      for (const call of built.records.blends) {
+        expect(call.first).toBe(bodyShell); expect(hindlimbs.some(entry => entry.mesh === call.second)).toBe(true);
+        expect(call.secondOnly).toBe(true); expect(call.result.changed[0]).toBe(0); expect(call.result.changed[1]).toBeGreaterThan(0);
+        // These newer native lofts have different ring counts and sections.
+        // Check every real normal without imposing the older 48x24 topology.
+        for (const mesh of [call.first, call.second]) {
+          const normals = mesh.geometry.attributes.normal;
+          for (let i = 0; i < normals.count; i++) { const normal = at(normals, i); expect(normal.toArray().every(Number.isFinite)).toBe(true); expect(Math.abs(normal.length() - 1)).toBeLessThan(1e-6); }
+        }
+      }
+      meshes.forEach((mesh, i) => preserved(mesh, before[i])); preserved(bodyShell, before[0], true);
+      expect(anchors(built)).toEqual(anchorBefore); expect(JSON.stringify(built.context.plantedFootContacts)).toBe(contacts);
+    } finally { built.dispose(); }
+  });
 
   it('does not access leg entries without a life torso', () => {
     const built = build(), meshes = allMeshes(built), before = meshes.map(snapshot);

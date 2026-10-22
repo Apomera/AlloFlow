@@ -19,7 +19,7 @@ function runtime() {
     AvianWoodlandBirds:{create(){},supports:id=>id==='mourningDove'||id==='grouse'},
     BirdLab3DBird:{create:model},
     BirdLab3DHabitat:{create(){return {root:new THREE.Group(),perch:new THREE.Vector3(0,3,0),groundHeight:()=>0,update(){},dispose(){}};}},
-    BirdLab3DWildlife:{create(){return {update(t){worldTimes.push(t);},snapshot(){return [{id:'mourningDove',heading:0},{id:'grouse',heading:0}];},getFocus(id,out){return out.set(0,.15,0);},dispose(){}};}}
+    BirdLab3DWildlife:{create(){return {root:new THREE.Group(),update(t){worldTimes.push(t);},snapshot(){return [{id:'mourningDove',heading:0},{id:'grouse',heading:0}];},getFocus(id,out){return out.set(0,.15,0);},dispose(){}};}}
   };
   Function('window',source)(local);
   const canvas=document.createElement('canvas');canvas.getBoundingClientRect=()=>({width:800,height:500});document.body.appendChild(canvas);

@@ -14,9 +14,11 @@ describe('STEM i18n registration gate', () => {
     expect(gate.includes('node dev-tools/check_stem_i18n_registration.cjs'), 'verify:gate no longer runs the STEM i18n registration ratchet').toBe(true);
   });
 
-  it('passes its own selftest, including camelCase and double-quoted keys', () => {
+  it('detects complete missing keys while ignoring computed prefixes, including comments and both quote styles', () => {
     const run = spawnSync(process.execPath, ['dev-tools/check_stem_i18n_registration.cjs', '--selftest'], { encoding: 'utf8' });
     expect(run.status, run.stdout + run.stderr).toBe(0);
     expect(run.stdout.includes('camelCase + double quotes seen'), run.stdout).toBe(true);
+    expect(run.stdout.includes('computed prefixes ignored'), run.stdout).toBe(true);
+    expect(run.stdout.includes('complete commented keys CAUGHT'), run.stdout).toBe(true);
   });
 });

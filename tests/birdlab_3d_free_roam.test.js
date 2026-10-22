@@ -24,6 +24,7 @@ function runtime(isBlocked = () => false, focus = new THREE.Vector3(1,.2,0), wit
       perches: [new THREE.Vector3(0, 3.2, 0), new THREE.Vector3(-5.7, 2.8, -4.4), new THREE.Vector3(6.3, 3.1, -5.8)],
       groundHeight: terrain, groundSurfaceHeight: terrain, isBlocked, update() {}, dispose() {} }; } },
     BirdLab3DWildlife: { create(T, scene, options) { return {
+      root: new THREE.Group(),
       setMode(mode) { modes.push(mode); }, update(time, dt, observer) { calls.push({ time, dt, observer, position: observer?.position.toArray(), collider: options.isBlocked }); },
       snapshot() { return [{ id: 'blueJay', heading: .2, name: 'Blue jay', behavior: 'Scanning' }]; },
       getFocus(id, out) { return out.copy(focus); }, dispose() {}

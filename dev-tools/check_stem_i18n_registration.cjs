@@ -52,7 +52,9 @@ function keysCalledBy(src) {
   // Stopping at two levels made 129 call sites invisible to this gate.
   // Both quote styles and camelCase segments (stem.paperTrail.*): lowercase
   // single-quoted keys alone missed ~700 call sites in 15 tools.
-  const re = /__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\1/g;
+  // A quoted prefix followed by + is a computed key, not a literal call site.
+  // Require the complete first argument; comments may separate it from the comma.
+  const re = /__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\1(?=(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r?\n|$))*[,\)])/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
     if (!byNs.has(m[2])) byNs.set(m[2], new Set());
     byNs.get(m[2]).add(m[3]);
@@ -158,6 +160,14 @@ if (SELFTEST) {
   // and it must handle BOTH quote styles, incl. an apostrophe in double quotes
   const dq = '__alloT(\'stem.demo.q\', "Predator\'s eye") __alloT(\'stem.demo.q\', \'Other\')';
   const okF = collidingKeys(dq).length === 1;
+  // Dynamic expansions are registered as concrete keys, never fake prefix labels.
+  // Keep detecting a genuinely missing complete key, including after a comment.
+  const computed = "__alloT('stem.demo.prefix_' + id, 'X') " +
+    "__alloT(\"stem.demo.other_\" /* field */ + i + '_title', 'Y') " +
+    "__alloT('stem.demo.third_' // field\n + id, 'Z')";
+  const okJ = unregisteredCount(computed, registry).called === 0;
+  const complete = unregisteredCount("__alloT('stem.demo.ghost' /* field */, 'G') __alloT(\"stem.demo.deep.ghost\" // field\n, 'G')", registry);
+  const okK = complete.called === 2 && complete.missing === 2;
   console.log(
     'SELFTEST: registered ' + (okA ? 'quiet OK' : 'FAIL') +
     ' | unregistered ' + (okB ? 'CAUGHT' : 'MISSED') +
@@ -167,9 +177,11 @@ if (SELFTEST) {
     ' | both quote styles ' + (okF ? 'OK' : 'FAIL') +
     ' | deep key ' + (okG ? 'seen' : 'FAIL') +
     ' | deep missing ' + (okH ? 'CAUGHT' : 'MISSED') +
-    ' | camelCase + double quotes ' + (okI ? 'seen' : 'MISSED')
+    ' | camelCase + double quotes ' + (okI ? 'seen' : 'MISSED') +
+    ' | computed prefixes ' + (okJ ? 'ignored' : 'FALSE POSITIVE') +
+    ' | complete commented keys ' + (okK ? 'CAUGHT' : 'MISSED')
   );
-  process.exit(okA && okB && okC && okD && okE && okF && okG && okH && okI ? 0 : 1);
+  process.exit(okA && okB && okC && okD && okE && okF && okG && okH && okI && okJ && okK ? 0 : 1);
 }
 
 const registry = loadRegistry();

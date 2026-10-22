@@ -1,0 +1,194 @@
+{
+  "provenance": {
+    "sourceSha256": "5dd0435c997bebb797acc05e80682f84df83071cac138be4b33a286013f9589f",
+    "historical": "08d5e4b322^",
+    "historicalSourceSha256": "320d9057598988e310f38fbccaa469e5a66ddf400789c048f8e596ceea0f67dd",
+    "historicalRevisionExpression": "08d5e4b322^",
+    "historicalRevision": "8f00cbd9f7645097105d828cfe81ae4afd57f52a",
+    "historicalSourcePath": "stem_lab/stem_tool_dinolab.js",
+    "existingBulkNormalization": "The historical bone target applies only the original test displayProxyCaller -> originalBulkCaller replacement; its unchanged 0aa48b5 digest is recovered exactly."
+  },
+  "seams": [
+    {
+      "label": "jaw and eye",
+      "start": "var cranialFaceBefore = model.children.slice();",
+      "end": "captureCranialMotion(cranialFaceBefore);",
+      "historicalSha256": "2b81e77a5fa505be745eecd6c26c0cf35b6557456471815f0baed3893fcc3514",
+      "currentSha256": "8ac409ecca7c7d33a4fb4eb3aa712075c7ed3c8f76a6d5193ad7825a5e40754e",
+      "hunks": [
+        {
+          "current": "              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale) * jawMuzzleDepth * (ceratopsidCranium ? 1.16 : 1);\n",
+          "historical": "              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale) * jawMuzzleDepth;\n",
+          "id": "ceratopsid-jaw-breadth",
+          "anatomicalPurpose": "The reviewed ceratopsid frame broadens the lower-jaw envelope around its fixed bone surface.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js"
+          ]
+        },
+        {
+          "current": "              var lowerJawEnd = head.clone().lerp(surfaceSnout, ceratopsidCranium ? 1.06 : 0.98).add(vec(0, -surfaceHeadHeight * 0.37 * jawMuzzleTip, 0));\n",
+          "historical": "              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37 * jawMuzzleTip, 0));\n",
+          "id": "ceratopsid-jaw-tip",
+          "anatomicalPurpose": "The reviewed ceratopsid jaw envelope extends the lower-jaw endpoint around its native dentary tip.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js"
+          ]
+        },
+        {
+          "current": "              if(stegosaurCranium){\n                // Add a short soft margin ahead of the fixed dentary tip; the\n                // generic closure otherwise rises through the mandibular cap.\n                jawProfile.points[3].x-=surfaceHeadLength*.08;jawProfile.points[4].x-=surfaceHeadLength*.08;\n                jawProfile.radii[2][1]*=1.18;jawProfile.radii[3][1]*=1.60;jawProfile.radii[3][0]*=1.15;\n              }\n              if(theropodCranium)jawProfile=dinoTheropodJawEnvelope(THREE,theropodCranium,surfaceHeadHeight,surfaceHeadDepth);\n              if(sauropodCranium)jawProfile=dinoSauropodJawEnvelope(THREE,sauropodCranium,surfaceHeadHeight,surfaceHeadDepth);\n              var lowerJawShell = addSoftTissueChain(jawProfile.points, jawProfile.radii, headMat,null,sauropodCranium?{smoothProfile:true,sectionPower:.74,sectionRootSpan:.10}:null)[0];\n              if (/^(baryonyx|suchomimus)$/.test(dn.id)) dinoShapeBaryonychineRostrum(THREE, dn, lowerJawShell, head, surfaceSnout, 'lower');\n",
+          "historical": "              var lowerJawShell = addSoftTissueChain(jawProfile.points, jawProfile.radii, headMat)[0];\n",
+          "id": "reviewed-jaw-envelopes",
+          "anatomicalPurpose": "Stegosaur, theropod, sauropod and baryonychine native callers provide connected mandibular envelopes and local section/rosette treatment.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js",
+            "tests/dinolab_baryonychine_rosette.test.js"
+          ]
+        },
+        {
+          "current": "                if(theropodCranium){lowerJawShell.userData.dinoPartIds=['jaw','head'];lowerJawShell.userData.dinoTheropodCranium={species:dn.id,profile:theropodCranium.profile.id,layer:'life',element:'mandibular-envelope',interpretive:true};}\n                if(sauropodCranium){lowerJawShell.userData.dinoPartIds=['jaw','head'];lowerJawShell.userData.dinoSauropodCranium={species:dn.id,layer:'life',element:'mandibular-envelope'};}\n",
+          "historical": "",
+          "id": "native-mandible-ownership",
+          "anatomicalPurpose": "Reviewed theropod and sauropod mandibles retain their head/jaw ownership and native element tags.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "                if(theropodCranium)eyePos=head.clone().lerp(surfaceSnout,theropodCranium.profile.orbitT).add(vec(0,theropodCranium.boneHeight*.18,faceSide*surfaceHeadDepth*.94));\n                if(sauropodCranium)eyePos=head.clone().lerp(snout,sauropodCranium.profile.orbitT).add(vec(0,sauropodCranium.boneHeight*.24,faceSide*surfaceHeadDepth*.94));\n",
+          "historical": "",
+          "id": "native-orbit-seats",
+          "anatomicalPurpose": "Reviewed theropod and sauropod cranial frames seat eyes at their genus-informed orbital stations before the existing surface projection.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js",
+            "tests/dinolab_3d_eyelid_seating.test.js"
+          ]
+        },
+        {
+          "current": "                if(sauropodCranium)nostrilPos=head.clone().lerp(snout,sauropodCranium.profile.nostrilT).add(vec(0,sauropodCranium.boneHeight*.12,faceSide*surfaceHeadDepth*.90));\n",
+          "historical": "",
+          "id": "native-sauropod-naris",
+          "anatomicalPurpose": "The reviewed sauropod frame sets its reconstructed external naris station before the existing surface projection.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "                var reviewedMouthPath=theropodCranium?dinoTheropodMouthPath(THREE,theropodCranium,surfaceHeadHeight):[mouthStart,mouthMiddle,mouthEnd];\n                addFacialStrip(reviewedMouthPath, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.013,\n",
+          "historical": "                addFacialStrip([mouthStart, mouthMiddle, mouthEnd], Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.013,\n",
+          "id": "native-theropod-mouth-path",
+          "anatomicalPurpose": "The reviewed theropod frame supplies a mouth path connected to its reconstructed cranial envelope.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_3d_mouth_surface.test.js"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "skeletal frame",
+      "start": "var cranialBoneBefore = model.children.slice();",
+      "end": "captureCranialMotion(cranialBoneBefore);",
+      "historicalSha256": "0aa48b531de1c5dcb977239553d69a054f6caf9b6110de72115319f69f4909c0",
+      "currentSha256": "5a65b43596d6da37a005ee717040bca5b8960ab2d4a75457799ec379a193431c",
+      "hunks": [
+        {
+          "current": "              if (ceratopsidCranium) { skullLength=ceratopsidCranium.boneLength; skullHeight=ceratopsidCranium.boneHeight; skullDepth=ceratopsidCranium.boneDepth; }\n              if (armoredCranium) { skullLength=armoredCranium.boneLength; skullHeight=armoredCranium.boneHeight; skullDepth=armoredCranium.boneDepth; }\n              if(carnotaurusCranium){skullLength=carnotaurusCranium.boneLength;skullHeight=carnotaurusCranium.boneHeight;skullDepth=carnotaurusCranium.boneDepth;}\n              if(stegosaurCranium){skullLength=stegosaurCranium.boneLength;skullHeight=stegosaurCranium.boneHeight;skullDepth=stegosaurCranium.boneDepth;}\n              if(theropodCranium){skullLength=theropodCranium.boneLength;skullHeight=theropodCranium.boneHeight;skullDepth=theropodCranium.boneDepth;}\n              var neckAxis = new THREE.Vector3().subVectors(lambeosaurBody?lambeosaurBody.legacyShoulder:shoulder, head).normalize();\n",
+          "historical": "              var neckAxis = new THREE.Vector3().subVectors(shoulder, head).normalize();\n",
+          "id": "native-skull-dimensions-axis",
+          "anatomicalPurpose": "Selected shared cranial frames supply bone dimensions while the lambeosaur skull retains its established cervical junction.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_armored_cranium_armor.test.js",
+            "tests/dinolab_carnotaurus_form.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ]
+        },
+        {
+          "current": "              if(theropodCranium){var cranialCervicalFrame=dinoTheropodCraniumCervicalFrame(THREE,theropodCranium,cervicalEnvelope);neckAxis=cranialCervicalFrame.axis;axisCenter=cranialCervicalFrame.axisCenter;}\n              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical', matureTyrannosaurPose.active ? dinoCervicalAxisCurve(THREE, cervicalEnvelope, axisCenter) : null);\n",
+          "historical": "              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');\n",
+          "id": "native-cervical-endpoint",
+          "anatomicalPurpose": "Reviewed theropod crania set the cervical endpoint and tangent; mature tyrannosaur vertebrae follow their connected neck axis.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_3d_tyrannosaur_form.test.js"
+          ]
+        },
+        {
+          "current": "              var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout, skullLength, skullHeight, skullDepth, detailScale, isTheropod);\n              var cranialVault = theropodCranium||sauropodCranium?null:addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);\n",
+          "historical": "              addSkeletonEllipsoid(head, vec(skullLength * 0.68, skullHeight, skullDepth), boneMat);\n",
+          "id": "native-vault-display",
+          "anatomicalPurpose": "The registered cranial display helper sizes the vault proxy and suppresses it for native theropod/sauropod bone builders.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_slender_skull.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "              var cranialRostrum = theropodCranium||sauropodCranium?null:addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);\n              if (/^(alioramus|qianzhousaurus)$/.test(dn.id)) dinoAddNasalRugosities(THREE, dn, cranialRostrum, head, snout, skullHeight, boneMat, true);\n              if (cranialDisplay.refined) {\n                [[cranialVault, 'vault'], [cranialRostrum, 'rostrum']].forEach(function (entry) {\n                  if (!entry[0]) return;\n                  entry[0].name = 'cranial-' + entry[1] + '-display-proxy';\n                  entry[0].userData.dinoCranialDisplayProxy = { region: entry[1], interpretive: true, tissueHypothesisIndependent: true };\n                });\n              }\n              if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));\n",
+          "historical": "              addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09 * detailScale, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);\n              addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));\n",
+          "id": "native-rostrum-display",
+          "anatomicalPurpose": "The registered cranial display helper sizes the rostrum proxy, records its role and nasal relief, and suppresses generic roof fill for reviewed bone builders.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_slender_skull.test.js",
+            "tests/dinolab_nasal_rugosity.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "              if (skeletalProfile.craniocervicalDetail&&!sauropodCranium) {\n",
+          "historical": "              if (skeletalProfile.craniocervicalDetail) {\n",
+          "id": "native-sauropod-neck-elements",
+          "anatomicalPurpose": "Reviewed sauropod cranial construction supplies its native cervical attachment instead of the generic craniocervical block.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "              if(theropodCranium)dinoAddTheropodCranium(THREE,dn,model,theropodCranium,{bone:boneMat,tooth:toothMat}).forEach(registerCranialMotion);\n              else if(sauropodCranium)dinoAddSauropodCranium(THREE,dn,model,sauropodCranium,{bone:boneMat,tooth:toothMat},{axis:neckAxis,axisCenter:axisCenter,envelope:cervicalEnvelope}).forEach(registerCranialMotion);\n              else [-1, 1].forEach(function (skullSide) {\n",
+          "historical": "              [-1, 1].forEach(function (skullSide) {\n",
+          "id": "native-cranial-bone-builders",
+          "anatomicalPurpose": "Dispatch closed theropod and sauropod cranial elements and representative dentition in place of generic bars and cavity overlays.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ]
+        },
+        {
+          "current": "                var nasalOpening = addSkeletonEllipsoid((/^(baryonyx|suchomimus)$/.test(dn.id) ? head.clone().lerp(snout, 0.64) : rostrumCenter.clone().lerp(snout, 0.45)).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008 * detailScale, skullDepth * 0.10)), skeletonCavityMat);\n",
+          "historical": "                var nasalOpening = addSkeletonEllipsoid(rostrumCenter.clone().lerp(snout, 0.45).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008 * detailScale, skullDepth * 0.10)), skeletonCavityMat);\n",
+          "id": "baryonychine-naris-station",
+          "anatomicalPurpose": "Reviewed Baryonyx/Suchomimus rostral narrowing places the skeletal nasal opening behind the expanded tooth-bearing tip.",
+          "nativeCoverage": [
+            "tests/dinolab_baryonychine_rosette.test.js"
+          ]
+        },
+        {
+          "current": "                var cranialBarRadius = Math.max(0.007 * (ceratopsidCranium || stegosaurCranium ? Math.min(detailScale,ht / dn.heightM) : detailScale), ht * 0.0027);\n",
+          "historical": "                var cranialBarRadius = Math.max(0.007 * detailScale, ht * 0.0027);\n",
+          "id": "small-scale-cranial-bars",
+          "anatomicalPurpose": "Ceratopsid and stegosaur bars use local specimen scale so small models retain the same native frame proportions.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js"
+          ]
+        }
+      ]
+    }
+  ],
+  "description": "Exact later anatomical caller reversals for the beak construction guard. Model code is never executed or altered by these data; the original jaw/eye and bone-frame hashes are retained."
+}
