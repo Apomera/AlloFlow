@@ -539,19 +539,32 @@ function createWordSoundsCore(options = {}) {
   };
   const normalize = (value) => String(value || "").normalize("NFC").trim().toLowerCase().replace(/^\/+|\/+$/g, "");
   const aliases = { c: "k", ck: "k", q: "k", qu: "k", ph: "f", wh: "w", tch: "ch", dge: "j", ai: "ay", ea: "ee", ir: "er", ur: "er", au: "aw", oe: "oa", oi: "oy", "\u0101": "ay", "\u0113": "ee", "\u012B": "ie", "\u014D": "oa", "\u016B": "oo", "\u0261": "g", "\u0283": "sh", "\u0292": "zh", "\u03B8": "th", "\xF0": "dh", "\u014B": "ng", "d\u0292": "j", "\u02A4": "j", "t\u0283": "ch", "\u02A7": "ch", "\xE6": "a", "\u025B": "e", "\u026A": "i", "\u0252": "o", "\u0251": "o", "\u0251\u02D0": "o", "\u028C": "u", "\u0259": "schwa", "i\u02D0": "ee", "u\u02D0": "oo", "\u028A": "oo_short", "e\u026A": "ay", "a\u026A": "ie", "o\u028A": "oa", "\u0259\u028A": "oa", "a\u028A": "ow", "\u0254\u026A": "oy", "\u0279": "r", "\u025D": "er", "\u025A": "er" };
-  const soundKey = (value) => {
-    const v = normalize(value);
-    return aliases[v] || v;
+  const phonemeToken = (value) => {
+    if (typeof value === "string") return normalize(value);
+    if (!value || typeof value !== "object") return "";
+    for (const field of ["ipa", "phoneme", "sound", "grapheme"]) {
+      if (typeof value[field] === "string" && normalize(value[field])) return normalize(value[field]);
+    }
+    return "";
   };
+  const ipaExtraKeys = { "\u025Cr": "er", "\u025C\u02D0": "er", "\u025C": "er", "\u0251r": "ar", "\u0251\u02D0r": "ar", "\u0254r": "or", "\u0254\u02D0r": "or", "\u0254": "aw", "\u0254\u02D0": "aw", "\u0250": "u" };
+  const soundKey = (value) => {
+    const token = phonemeToken(value).replace(/[\u02c8\u02cc\u0361]/g, "");
+    const explicitIpa = value && typeof value === "object" && typeof value.ipa === "string" && !!normalize(value.ipa);
+    if (explicitIpa && token === "i") return "ee";
+    if (explicitIpa && token === "u") return "oo";
+    if (explicitIpa && token === "j") return "y";
+    const key = Object.prototype.hasOwnProperty.call(ipaExtraKeys, token) ? ipaExtraKeys[token] : token;
+    return Object.prototype.hasOwnProperty.call(aliases, key) ? aliases[key] : key;
+  };
+  const phonemeLabel = (value, isEnglish = true) => typeof value === "string" || !isEnglish ? phonemeToken(value) : soundKey(value);
   const edgeSound = (word, position, phonemes) => {
     const w = normalize(word), last = position === "last";
     if (Object.prototype.hasOwnProperty.call(EDGES, w)) return EDGES[w][last ? 1 : 0];
     if (!Array.isArray(phonemes) || !phonemes.length) return null;
     const item = phonemes[last ? phonemes.length - 1 : 0];
-    const raw = typeof item === "string" ? item : item && (item.ipa || item.phoneme || item.grapheme);
-    if (!raw) return null;
-    if (item && typeof item === "object" && item.ipa === "j") return "y";
-    const key = soundKey(raw);
+    const key = soundKey(item);
+    if (!key) return null;
     return last && (key === "x" || key === "ks") ? "s" : key;
   };
   const unique = (values) => [...new Set((values || []).map(normalize).filter(Boolean))];
@@ -565,18 +578,134 @@ function createWordSoundsCore(options = {}) {
     }
     return out;
   };
-  const buildRhymeBoard = ({ word, answer, phonemes, pool = [], distractors = [], prepared, isEnglish = true, count = 4, exposure }) => {
+  const RHYME_VOWELS = /* @__PURE__ */ new Set(["a", "e", "i", "o", "u", "ay", "ee", "ie", "oa", "oo", "oo_short", "oy", "ow", "aw", "ar", "er", "or", "air", "ear", "ure", "schwa"]);
+  const REVIEWED_RHYMES = {
+    "a|t": "at bat cat fat flat hat mat pat rat sat that chat",
+    "a|p": "cap clap flap gap lap map nap rap snap tap trap",
+    "a|n": "an ban can fan man pan ran tan van",
+    "a|g": "bag brag drag flag rag tag",
+    "e|d": "bed bread fed head led red said shed sled spread thread",
+    "e|n": "den hen men pen ten then when",
+    "e|t": "bet get jet let met net pet set wet yet",
+    "i|g": "big dig fig gig jig pig wig",
+    "i|n": "bin chin fin grin in pin shin skin spin thin tin win",
+    "i|t": "bit fit hit it kit knit lit pit quit sit slit split wit",
+    "o|g": "bog cog dog fog frog hog jog log",
+    "o|p": "chop cop crop drop flop hop mop pop shop stop top",
+    "u|g": "bug dug hug jug mug plug rug slug snug",
+    "u|n": "bun done fun gun none one run son spun stun sun ton won",
+    "u|t": "but cut gut hut nut shut strut",
+    "oo_short|d": "good hood stood wood would should could",
+    "oo_short|k": "book brook cook hook look shook took",
+    "oo|d": "food mood rude",
+    "oo": "blue boo chew clue crew do drew flew glue grew knew new shoe stew through to too true two who zoo",
+    "oo|n": "boon June moon noon soon spoon tune",
+    "ay": "bay day gray grey hay lay may pay play ray say stay they way weigh",
+    "ay|n": "brain cane chain gain grain lane main mane pain plain plane rain sane stain train vain vein",
+    "ee": "be bee flea free key knee me pea sea see she tea three tree we",
+    "ie": "by cry dry fly fry guy high lie my pie shy sigh sky spy tie try why",
+    "oa": "blow bow dough flow glow go grow know low mow no row sew show slow snow so sow though throw toe tow",
+    "ar": "are bar car far jar scar star tar",
+    "or|n": "born corn horn morn scorn torn worn",
+    "or|m": "form storm warm",
+    "er": "fur her purr sir stir were",
+    "ow": "bow cow how now plow row sow wow",
+    "u|n|ee": "bunny funny honey money sunny"
+  };
+  const reviewedRhymeKeys = /* @__PURE__ */ new Map();
+  Object.entries(REVIEWED_RHYMES).forEach(([key, words]) => words.split(" ").map(normalize).forEach((word) => {
+    reviewedRhymeKeys.set(word, reviewedRhymeKeys.has(word) ? null : key);
+  }));
+  const reviewedRhymeEdit = (item, { answer, options: options2 } = {}) => {
+    const row = item && typeof item === "object" ? item : {};
+    const targetWord = normalize(row.targetWord || row.word || row.term);
+    const rawAnswer = typeof answer === "string" ? answer : String(row.rhymeWord || "");
+    const rawOptions = (Array.isArray(options2) ? options2 : [rawAnswer, ...row.rhymeDistractors || []]).map((value) => typeof value === "string" ? value : "");
+    const correct = normalize(rawAnswer), choices = rawOptions.map(normalize);
+    const answerIndex = choices.indexOf(correct);
+    const supported = !!targetWord && !!correct && correct !== targetWord && choices.length >= 2 && choices.every(Boolean) && new Set(choices).size === choices.length && answerIndex >= 0 && !choices.includes(targetWord);
+    const board = {
+      targetWord,
+      answer: correct,
+      options: choices,
+      teacherEdited: true,
+      supported,
+      contentStatus: supported ? "teacher_reviewed" : "teacher_review_required"
+    };
+    const updated = {
+      ...row,
+      rhymeWord: rawAnswer,
+      rhymes: correct ? [rawAnswer] : [],
+      rhymeDistractors: rawOptions.filter((_, index) => index !== answerIndex),
+      activityItems: { ...row.activityItems || {}, rhyming: board },
+      _rhymeSource: "teacher_review",
+      _packEdited: true
+    };
+    delete updated.rhymePronunciation;
+    delete updated._rhymeRejectedAnswer;
+    return updated;
+  };
+  const rhymePairStatus = ({ word, answer, phonemes, answerPhonemes, pool = [], prepared, isEnglish = true } = {}) => {
+    const target = normalize(word), correct = normalize(answer);
+    if (!target || !correct || target === correct) return { supported: false, rhymes: false, reason: "rhyme_answer_invalid" };
+    if (prepared?.teacherEdited === true) {
+      if (prepared.supported === false || prepared.targetWord != null && normalize(prepared.targetWord) !== target) {
+        return { supported: false, rhymes: null, reason: "rhyme_review_incomplete" };
+      }
+      return { supported: true, rhymes: true, source: "teacher_review" };
+    }
+    const data = new Map((Array.isArray(pool) ? pool : []).filter((value) => value && typeof value === "object").map((value) => [normalize(value.targetWord || value.word || value.term), value]));
+    const evidence = prepared?.pronunciations;
+    const bound = evidence?.targetWord === target && evidence.answer === correct;
+    const select = (given, raw, saved) => Array.isArray(given) && given.length ? given : Array.isArray(raw) && raw.length ? raw : bound && Array.isArray(saved) ? saved : [];
+    const targetSounds = select(phonemes, data.get(target)?.phonemes, evidence?.targetPhonemes).map(soundKey);
+    const correctSounds = select(answerPhonemes, data.get(correct)?.phonemes, evidence?.answerPhonemes).map(soundKey);
+    const rime = (value, sounds) => {
+      const reviewed = isEnglish ? reviewedRhymeKeys.get(value) : null;
+      if (!sounds.length) return reviewed || null;
+      const at = sounds.findIndex((sound) => RHYME_VOWELS.has(sound));
+      if (at < 0 || sounds.some((sound) => !RHYME_VOWELS.has(sound) && !/^(?:[b-df-hj-np-tv-z]|sh|ch|th|dh|zh|ng)$/.test(sound))) return null;
+      const key = sounds.slice(at).join("|");
+      return sounds.filter((sound) => RHYME_VOWELS.has(sound)).length === 1 || key === reviewed ? key : null;
+    };
+    const left = rime(target, targetSounds), right = rime(correct, correctSounds);
+    const mixedVariant = isEnglish && left !== right && !!targetSounds.length !== !!correctSounds.length && (targetSounds.length ? left !== reviewedRhymeKeys.get(target) : right !== reviewedRhymeKeys.get(correct));
+    const known = !!left && !!right && !mixedVariant;
+    return {
+      supported: known && left === right,
+      rhymes: known ? left === right : null,
+      reason: known ? left === right ? void 0 : "rhyme_pronunciation_mismatch" : "rhyme_pronunciation_review_required",
+      source: targetSounds.length && correctSounds.length ? "pronunciation" : "reviewed_words",
+      ...known && left === right && targetSounds.length && correctSounds.length ? { pronunciations: {
+        targetWord: target,
+        answer: correct,
+        targetPhonemes: targetSounds,
+        answerPhonemes: correctSounds
+      } } : {}
+    };
+  };
+  const buildRhymeBoard = ({ word, answer, phonemes, answerPhonemes, pool = [], distractors = [], prepared, isEnglish = true, count = 4, exposure }) => {
+    const checked = rhymePairStatus({ word, answer: prepared?.answer || answer, phonemes, answerPhonemes, pool, prepared, isEnglish });
+    if (!checked.supported) return {
+      answer: "",
+      options: [],
+      supported: false,
+      contentStatus: "teacher_review_required",
+      reason: checked.reason,
+      suggestedAnswer: prepared?.answer || answer || ""
+    };
     if (prepared && Array.isArray(prepared.options) && prepared.options.length > 1 && prepared.answer && prepared.options.includes(prepared.answer)) {
-      return { ...prepared, options: [...prepared.options] };
+      return {
+        ...prepared,
+        options: [...prepared.options],
+        ...!prepared.teacherEdited && checked.pronunciations ? { pronunciations: checked.pronunciations } : {}
+      };
     }
     const target = normalize(word), correct = normalize(answer);
     if (!correct) return { answer: answer || "", options: [] };
     const data = new Map(pool.filter((p) => p && typeof p === "object").map((p) => [normalize(p.targetWord || p.word || p.term), p]));
     if (Array.isArray(phonemes) && phonemes.length) data.set(target, { ...data.get(target), phonemes });
-    const labels = (w) => ((data.get(w) || {}).phonemes || []).map((p) => {
-      const raw = typeof p === "string" ? p : p && (p.ipa || p.phoneme || p.grapheme);
-      return soundKey(String(raw || "").replace(/[ˈˌ]/g, ""));
-    }).filter(Boolean);
+    const labels = (w) => ((data.get(w) || {}).phonemes || []).map(soundKey).filter(Boolean);
     const vowels = /* @__PURE__ */ new Set(["a", "e", "i", "o", "u", "ay", "ee", "ie", "oa", "oo", "oo_short", "oy", "ow", "aw", "ar", "er", "or", "air", "ear", "ure", "schwa"]);
     const rime = (w) => {
       const sounds = labels(w);
@@ -629,7 +758,11 @@ function createWordSoundsCore(options = {}) {
       return Math.min(3, uses) * 2 + (last.includes(w) ? 4 : recent.some((board) => board.includes(w)) ? 2 : 0);
     };
     const selected = challengePool.sort((a, b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
-    return { answer, options: shuffled([answer, ...selected], seed ^ 2654435769) };
+    return {
+      answer,
+      options: shuffled([answer, ...selected], seed ^ 2654435769),
+      ...checked.pronunciations ? { pronunciations: checked.pronunciations } : {}
+    };
   };
   const createRhymeSession = () => ({ counts: /* @__PURE__ */ new Map(), recent: [], occurrences: /* @__PURE__ */ new Map() });
   const buildSessionRhymeBoard = ({ session, occurrenceId, ...args }) => {
@@ -638,7 +771,14 @@ function createWordSoundsCore(options = {}) {
     const prepared = args.prepared;
     const hasPrepared = prepared && Array.isArray(prepared.options) && prepared.options.length > 1 && prepared.answer && prepared.options.includes(prepared.answer);
     const previous = session.occurrences.get(key);
-    const inputKey = JSON.stringify([normalize(args.word), normalize(args.answer), args.phonemes || [], args.distractors || []]);
+    const inputKey = JSON.stringify([
+      normalize(args.word),
+      normalize(args.answer),
+      args.phonemes || [],
+      args.answerPhonemes || [],
+      args.distractors || [],
+      (args.pool || []).filter((value) => value && typeof value === "object").map((value) => [value.targetWord || value.word || value.term, value.phonemes])
+    ]);
     if (previous && !hasPrepared && previous.inputKey === inputKey) return { ...previous.board, options: [...previous.board.options] };
     const board = buildRhymeBoard({ ...args, exposure: session });
     if (!board.answer || !Array.isArray(board.options) || board.options.length < 2 || !board.options.includes(board.answer)) return board;
@@ -1540,9 +1680,8 @@ function createWordSoundsCore(options = {}) {
   };
   const replacePackAssets = (words, replacements) => {
     if (!Array.isArray(words) || !words.length) return words;
-    const assets = /* @__PURE__ */ Object.create(null);
+    const assets = packAudioAssets(words);
     const replacedKeys = /* @__PURE__ */ new Set();
-    words.forEach((item) => Object.assign(assets, item && item._ttsAssets || {}));
     Object.entries(replacements || {}).forEach(([key, asset]) => {
       if (portablePackAsset(asset)) {
         assets[packAudioKey(key)] = asset;
@@ -1582,7 +1721,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter((item) => item.ttsReady).length });
     return next;
   };
-  return { loadSyllablePronunciations, resolveSyllableCount, isTeacherSpokenSyllableCount, createReviewedSyllableCount, createSyllableCountAudioContext, selectSyllableCountAudio, recoverSyllableRecordingDraft, syllableCountWords, syllableRecordingTemplate, normalizeRecordedSyllableDependencies, packAudioLanguageKey, packAudioKey, packAudioAssets, portablePackAsset, packAudioProvenance, packAudioProfileStatus, packAudioInventory, planPackRepair, replacePackAssets, createReviewedSyllableTask, reviewedSyllableReady, syllableAssetSource, resolveSyllableTask, syllableReady, validSyllableBoard, syllableWords, isSyllableLanguageSupported, createRhymeSession, buildSessionRhymeBoard, buildRhymeBoard, resolveManipulationTask, manipulationReady, VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
+  return { loadSyllablePronunciations, resolveSyllableCount, isTeacherSpokenSyllableCount, createReviewedSyllableCount, createSyllableCountAudioContext, selectSyllableCountAudio, recoverSyllableRecordingDraft, syllableCountWords, syllableRecordingTemplate, normalizeRecordedSyllableDependencies, packAudioLanguageKey, packAudioKey, packAudioAssets, portablePackAsset, packAudioProvenance, packAudioProfileStatus, packAudioInventory, planPackRepair, replacePackAssets, createReviewedSyllableTask, reviewedSyllableReady, syllableAssetSource, resolveSyllableTask, syllableReady, validSyllableBoard, syllableWords, isSyllableLanguageSupported, reviewedRhymeEdit, rhymePairStatus, createRhymeSession, buildSessionRhymeBoard, buildRhymeBoard, resolveManipulationTask, manipulationReady, VERSION, phonemeToken, phonemeLabel, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
 }
 const WS_CORE = createWordSoundsCore();
 const WORD_FAMILY_PRESETS = new Proxy({}, {
@@ -2496,21 +2635,19 @@ const packRimeOfWord = (w, isEnglish) => {
   if (isEnglish) return (v.match(/[aeiou][a-z]*$/) || [""])[0];
   return v.slice(-2);
 };
-const derivePackRhyme = (word, batchWords, isEnglish) => {
+const derivePackRhyme = (word, batchWords, isEnglish, phonemes = []) => {
   const w = String(word || "").trim().toLowerCase();
   if (!w) return "";
-  const rime = packRimeOfWord(w, isEnglish);
-  if (!rime || rime.length < 2) return "";
   const pool = [
     ...Array.isArray(batchWords) ? batchWords : [],
     ...isEnglish ? PACK_COMMON_WORDS : []
   ];
   const seen = /* @__PURE__ */ new Set([w]);
   for (const candidate of pool) {
-    const c = String(candidate || "").trim().toLowerCase();
+    const c = String(typeof candidate === "string" ? candidate : candidate?.targetWord || candidate?.word || candidate?.term || "").trim().toLowerCase();
     if (!c || seen.has(c)) continue;
     seen.add(c);
-    if (packRimeOfWord(c, isEnglish) === rime) return c;
+    if (WS_CORE.rhymePairStatus({ word: w, answer: c, phonemes, pool, isEnglish }).supported) return c;
   }
   return "";
 };
@@ -2642,14 +2779,40 @@ const espeakPackPhonemes = async (word, language) => {
     if (!espeak || !Array.isArray(espeak.ipa) || !espeak.ipa.length) return null;
     if (typeof window.AlloPhonics.buildPhonemes !== "function") return null;
     const built = window.AlloPhonics.buildPhonemes(w, espeak, null);
-    const graphemes = (built && built.phonemes || []).map(
-      (p) => typeof p === "string" ? p : p && (p.grapheme || p.ipa) || ""
-    );
-    if (!graphemes.length || graphemes.some((g) => !g)) return null;
-    return graphemes;
+    const phonemes = built && built.phonemes || [];
+    if (phonemes.length !== espeak.ipa.length || espeak.ipa.some((p) => typeof p !== "string" || !p.trim()) || phonemes.some((p, i) => WS_CORE.phonemeToken(p) !== espeak.ipa[i].trim())) return null;
+    const graphemes = phonemes.map((p) => typeof p === "string" ? p : p?.grapheme || "");
+    const aligned = graphemes.every((g) => typeof g === "string" && g.trim()) && graphemes.join("").normalize("NFC").toLowerCase() === w.normalize("NFC").toLowerCase();
+    return phonemes.map((p, i) => ({ ipa: espeak.ipa[i].trim(), grapheme: aligned ? graphemes[i] : "" }));
   } catch (e) {
     return null;
   }
+};
+const preparePackRhyme = async (word, phonemes, batchWords, suppliedAnswer, isEnglish, language) => {
+  const target = String(word || "").trim().toLowerCase();
+  const supplied = String(suppliedAnswer || "").trim().toLowerCase();
+  const pool = [...Array.isArray(batchWords) ? batchWords : [], ...isEnglish ? PACK_COMMON_WORDS : []];
+  const spellingRime = packRimeOfWord(target, isEnglish);
+  const candidates = [.../* @__PURE__ */ new Set([
+    supplied,
+    derivePackRhyme(target, pool, isEnglish, phonemes),
+    ...pool.map((value) => String(typeof value === "string" ? value : value?.word || value?.targetWord || "").trim().toLowerCase()).filter((value) => spellingRime.length >= 2 && packRimeOfWord(value, isEnglish) === spellingRime)
+  ])];
+  for (const answer of candidates) {
+    if (!answer || answer === target) continue;
+    let status = WS_CORE.rhymePairStatus({ word: target, answer, phonemes, pool, isEnglish });
+    let answerPhonemes = null;
+    if (status.rhymes == null) {
+      answerPhonemes = await espeakPackPhonemes(answer, language);
+      status = WS_CORE.rhymePairStatus({ word: target, answer, phonemes, answerPhonemes, pool, isEnglish });
+    }
+    if (status.supported) return {
+      answer,
+      source: answer === supplied ? "gemini" : "derived",
+      ...answerPhonemes ? { pronunciation: { word: answer, phonemes: answerPhonemes } } : {}
+    };
+  }
+  return { answer: "", source: void 0, rejectedAnswer: supplied || void 0 };
 };
 function createWordSoundsReviewedLibrary(core, indexedDb) {
   const databaseName = "allo-word-sounds-reviewed-recordings-v1";
@@ -4227,7 +4390,27 @@ function useWordSoundsAiTopic({ enabled, topic, language, gradeLevel, syllableRa
   };
   return { terms: result.contextKey === contextKey ? result.terms : emptyTerms.current, busy, failed, generate, cancel };
 }
-const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], syllableReviewSession, onShowReview, onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
+function wordSoundsSetupPreparationSelection(preloadedWords, selectedWords, fixedForm, itemIds = []) {
+  if (!fixedForm) return { wordsToProcess: selectedWords, sourceOccurrences: null, sourceOccurrenceIds: null };
+  const key = (word) => String(word || "").trim().toLowerCase();
+  const selected = new Set(selectedWords.map(key)), present = /* @__PURE__ */ new Set();
+  const sourceOccurrenceIds = [];
+  const sourceOccurrences = preloadedWords.filter((item, index) => {
+    const word = key(item.targetWord || item.word || item.term);
+    if (!selected.has(word)) return false;
+    present.add(word);
+    sourceOccurrenceIds.push(itemIds[index] ?? item.itemId ?? item.probeItemId ?? item.id ?? null);
+    return true;
+  });
+  const wordsToProcess = sourceOccurrences.map((item) => item.targetWord || item.word || item.term);
+  selectedWords.filter((word) => !present.has(key(word))).forEach((word) => {
+    wordsToProcess.push(word);
+    sourceOccurrences.push(null);
+    sourceOccurrenceIds.push(null);
+  });
+  return { wordsToProcess, sourceOccurrences, sourceOccurrenceIds };
+}
+const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, syllableReviewSession, onShowReview, onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
   const localReviewSession = React.useRef({});
   const reviewSession = syllableReviewSession || localReviewSession.current;
   const setupDraft = reviewSession.setupDraft || (reviewSession.setupDraft = {});
@@ -4281,7 +4464,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const [orthoSessionGoal, setOrthoSessionGoal] = useSetupState("orthoSessionGoal", () => 0);
   const includeOrthographic = orthoSessionGoal > 0;
   const [customText, setCustomText] = useSetupState("customText", () => "");
-  const [sessionType, setSessionType] = useSetupState("sessionType", () => isProbeMode ? "assessment" : "practice");
+  const [sessionType, setSessionType] = useSetupState("sessionType", () => isProbeMode || preparedSessionConfig.fixedForm ? "assessment" : "practice");
   const [probeActivitySel, setProbeActivitySel] = useSetupState(
     "probeActivitySel",
     () => probeActivity && probeActivity !== "orf" ? probeActivity : "segmentation"
@@ -4437,6 +4620,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         selectedVoice,
         ttsSpeed,
         t,
+        currentUiLanguage,
         signal: controller.signal
       });
       if (!controller.signal.aborted) setWordPracticeStatus({ busy: false, notice: "" });
@@ -4893,9 +5077,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       selectionControl.current = { manual: false, inputsKey: selectionInputsKey };
     }
     if (selectionControl.current.manual) return;
-    const next = chooseWordSoundsPreviewWords(previewList, wordCount, balanceCountBank ? WS_CORE.syllableCountWords() : null, syllableCountFor, syllableRange);
+    const next = chooseWordSoundsPreviewWords(previewList, typeof sessionType !== "undefined" && sessionType === "assessment" ? previewList.length : wordCount, balanceCountBank ? WS_CORE.syllableCountWords() : null, syllableCountFor, syllableRange);
     setSelectedWords((previous) => previous.size === next.size && [...previous].every((word) => next.has(word)) ? previous : next);
-  }, [previewWordsKey, selectionInputsKey, balanceCountBank, countBalanceKey]);
+  }, [previewWordsKey, selectionInputsKey, balanceCountBank, countBalanceKey, typeof sessionType === "undefined" ? null : sessionType]);
   const toggleSelection = (index) => {
     selectionControl.current.manual = true;
     const next = new Set(selectedWords), word = previewList[index];
@@ -4920,7 +5104,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     }
     return out;
   };
-  const flatPackPhoneme = (p) => typeof p === "string" ? p : p && (p.grapheme || p.ipa) || "";
+  const flatPackPhoneme = (p) => WS_CORE.phonemeLabel(p, packIsEnglish);
   const estimatePackPhonemes = (word) => {
     const w = normalizePackKey(word).replace(/[^a-z]/g, "");
     if (!w) return [];
@@ -5051,6 +5235,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         word,
         answer: item.rhymeWord || (item.rhymes || [])[0] || "",
         phonemes: item.phonemes,
+        answerPhonemes: item.rhymePronunciation && normalizePackKey(item.rhymePronunciation.word) === normalizePackKey(item.rhymeWord || (item.rhymes || [])[0]) ? item.rhymePronunciation.phonemes : void 0,
         pool: [...items, ...commonWords],
         distractors: item.rhymeDistractors || [],
         prepared: item.activityItems?.rhyming,
@@ -5089,7 +5274,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       recordingChoices.sort((a, b) => countDistance(a) - countDistance(b));
       const choiceBoard = [storedSyllable, itemSyllable].find((board) => WS_CORE.validSyllableBoard(board) && WS_CORE.packAudioKey(board.targetWord) === word && WS_CORE.resolveSyllableTask(word, board, wordSoundsLanguage).supported);
       const syllableOptions = syllableTask.supported ? choiceBoard ? [...choiceBoard.options] : boardWithAnswer(word, syllableTask.contentStatus === "teacher_recorded" ? recordingChoices : shuffleForPack(WS_CORE.syllableWords().filter((value) => value !== word)), 3) : [];
-      const graphemes = Array.isArray(item.graphemes) && item.graphemes.length ? item.graphemes : (item.phonemes || []).every((p) => p && typeof p === "object" && p.grapheme) ? item.phonemes.map((p) => p.grapheme) : word.split("");
+      const graphemes = [
+        item.graphemes,
+        (item.phonemes || []).map((p) => p && typeof p === "object" ? p.grapheme : ""),
+        word.split("")
+      ].find((values) => Array.isArray(values) && values.length === phonemes.length && values.length > 0 && values.every((value) => typeof value === "string" && value.trim()) && normalizePackKey(values.join("")).normalize("NFC") === word.normalize("NFC")) || [];
       item.graphemes = graphemes;
       const letters = word.split("");
       for (let i = letters.length - 1; i > 0; i--) {
@@ -5183,7 +5372,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         syllable_blending: { ...syllableTask, options: syllableOptions, answer: word },
         syllable_counting: { ...countingTask, answer: countingTask.supported ? countingTask.count : null },
         orthography: { options: shuffleForPack([.../* @__PURE__ */ new Set([word, ...item.orthographyDistractors || []])]), answer: word },
-        mapping: { graphemes, chipOrder: shuffleForPack(graphemes.map((value, index) => ({ id: index, text: String(value) }))) },
+        mapping: graphemes.length ? { graphemes, chipOrder: shuffleForPack(graphemes.map((value, index) => ({ id: index, text: String(value) }))) } : { supported: false, contentStatus: "teacher_review_required", graphemes: [], chipOrder: [] },
         spelling_bee: { answer: word },
         word_scramble: { letters, answer: word },
         missing_letter: { hiddenIndex, correctLetter, options: letterOptions },
@@ -5240,7 +5429,13 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   });
   const handleStart = async (options = {}) => {
     if (!generationMountedRef.current) return;
-    const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
+    const selectedVocabulary = previewList.filter((_, i) => selectedIndices.has(i));
+    const { wordsToProcess, sourceOccurrences, sourceOccurrenceIds } = wordSoundsSetupPreparationSelection(
+      sessionType === "assessment" ? applySetupSyllableReviews() : preloadedWords,
+      selectedVocabulary,
+      sessionType === "assessment",
+      preparedSessionConfig.itemIds
+    );
     const preparedActivities = sessionType === "assessment" ? [probeActivitySel] : prepareScope === "lesson" && includeLessonPlan ? lessonPlanOrder.filter((id) => lessonPlan[id]?.enabled) : null;
     if (preparedActivities && !preparedActivities.length) {
       setLessonPlanReorderStatus(tf("word_sounds.choose_lesson_activity", "Choose at least one lesson activity before preparing."));
@@ -5325,7 +5520,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       for (let i = 0; i < wordsToProcess.length; i++) {
         if (!isGenerationActive()) return;
         const rawWord = wordsToProcess[i];
-        const existing = preloadedMap[rawWord.toLowerCase().trim()];
+        const existing = typeof sourceOccurrences !== "undefined" && sourceOccurrences?.[i] || preloadedMap[rawWord.toLowerCase().trim()];
         if (existing && existing.phonemes && existing.phonemes.length > 0) {
           processed.push(JSON.parse(JSON.stringify(existing)));
           setGeneratedCount((prev) => prev + 1);
@@ -5447,8 +5642,15 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           }
           const validatedPhonemes = !_phonemesMissing ? data.phonemes : _espeakPhonemes || estimatePackPhonemes(data.word);
           const _phonemeSource = !_phonemesMissing ? "gemini" : _espeakPhonemes ? "espeak" : "estimated";
-          const _hasAiRhyme = !!(data.rhymeWord || data.rhymes && data.rhymes[0]);
-          const _derivedRhyme = _hasAiRhyme ? "" : derivePackRhyme(data.word, wordsToProcess, packIsEnglish);
+          const preparedRhyme = await awaitGeneration(preparePackRhyme(
+            data.word,
+            validatedPhonemes,
+            wordsToProcess,
+            data.rhymeWord || data.rhymes && data.rhymes[0],
+            packIsEnglish,
+            wordSoundsLanguage
+          ));
+          if (!isGenerationActive()) return;
           let manipTask = null;
           if (data.manipulationTask && data.manipulationTask.answer && Array.isArray(data.manipulationTask.distractors) && data.manipulationTask.distractors.length >= 2 && data.manipulationTask.instruction) {
             manipTask = {
@@ -5470,12 +5672,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             syllables: data.syllables,
             syllableBlendingOptions: data.syllableBlendingOptions || [],
             graphemes: data.graphemes || [],
-            rhymes: data.rhymes || [data.rhymeWord],
-            // Fall back to a derived rhyme rather than shipping an
-            // empty answer for the player to improvise, so the pack
-            // is complete on a student device with AI switched off.
-            rhymeWord: data.rhymeWord || data.rhymes && data.rhymes[0] || _derivedRhyme || "",
-            _rhymeSource: data.rhymeWord || data.rhymes && data.rhymes[0] ? "gemini" : _derivedRhyme ? "derived" : void 0,
+            rhymes: preparedRhyme.answer ? [preparedRhyme.answer] : [],
+            rhymeWord: preparedRhyme.answer,
+            rhymePronunciation: preparedRhyme.pronunciation,
+            _rhymeSource: preparedRhyme.source,
+            _rhymeRejectedAnswer: preparedRhyme.rejectedAnswer,
             rhymeDistractors: (data.rhymeDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             blendingDistractors: (data.blendingDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             orthographyDistractors: data.orthographyDistractors || [],
@@ -5486,8 +5687,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             story: Array.isArray(data.story) ? data.story : [],
             familyEnding: data.familyEnding || "",
             familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
-            firstSound: data.firstSound || validatedPhonemes[0] || "",
-            lastSound: data.lastSound || validatedPhonemes[validatedPhonemes.length - 1] || "",
+            firstSound: WS_CORE.phonemeLabel(validatedPhonemes[0] || data.firstSound, packIsEnglish),
+            lastSound: WS_CORE.phonemeLabel(validatedPhonemes[validatedPhonemes.length - 1] || data.lastSound, packIsEnglish),
             definition: data.definition,
             image: imageUrl,
             manipulationTask: manipTask,
@@ -5511,8 +5712,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             targetWord: rawWord,
             phonemes: fallbackPhonemes,
             phonemeCount: fallbackPhonemes.length,
-            firstSound: fallbackPhonemes[0] || rawWord[0],
-            lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1],
+            firstSound: WS_CORE.phonemeLabel(fallbackPhonemes[0] || rawWord[0], packIsEnglish),
+            lastSound: WS_CORE.phonemeLabel(fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1], packIsEnglish),
             image: null,
             _fallbackUsed: !_espeakRescue,
             _phonemeSource: _espeakRescue ? "espeak" : "estimated"
@@ -5541,7 +5742,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           if (unverified.length) item._unverifiedBySource = bySource;
         });
       }
+      const authoredAssessmentBoards = sessionType === "assessment" ? processed.map((item) => item.activityItems?.[probeActivitySel]) : [];
       compileActivityItems(processed);
+      authoredAssessmentBoards.forEach((board, index) => {
+        if (board) processed[index].activityItems[probeActivitySel] = board;
+      });
       if (preparedActivities) processed.forEach((item) => {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(([id]) => preparedActivities.includes(id)));
         item._preparedActivities = preparedActivities;
@@ -5882,6 +6087,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         grade: probeGradeLevel || gradeLevel || "K",
         form: probeForm || "A"
       } : { isProbe: false };
+      const sessionTtsSpeed = typeof ttsSpeed === "number" && Number.isFinite(ttsSpeed) && ttsSpeed >= 0.5 && ttsSpeed <= 1.5 ? ttsSpeed : 1;
       const sessionConfig = {
         schema: "alloflow-word-sounds-session/v1",
         ...preparedActivities ? { preparedActivities } : {},
@@ -5891,7 +6097,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         orthoSessionGoal: isAssessment || useLessonPlan ? 0 : Math.max(0, Number(orthoSessionGoal) || 0),
         imageVisibilityMode: isAssessment ? "off" : imageVisibilityMode,
         language: wordSoundsLanguage || "en",
+        wordSoundsTtsSpeed: sessionTtsSpeed,
+        ttsSpeed: sessionTtsSpeed,
         fixedForm: isAssessment,
+        ...isAssessment ? { itemIds: processed.map((item, index) => String(sourceOccurrenceIds?.[index] ?? item.itemId ?? item.probeItemId ?? item.id ?? `${probeActivitySel}:${index + 1}`)) } : {},
         probeItemCount: isAssessment ? processed.length : null,
         studentLocked: isAssessment,
         learnerId: probeStudentTrimmed || null,
@@ -6036,7 +6245,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       type: "text",
       list: probeStudentNames.length > 0 ? "ws-probe-student-names" : void 0,
       value: probeStudent,
-      onChange: (e) => setProbeStudent(e.target.value),
+      disabled: isProcessing,
+      onChange: (e) => {
+        if (!startRunRef.current) setProbeStudent(e.target.value);
+      },
       placeholder: tf("word_sounds.probe_student_placeholder", "Name or nickname"),
       autoComplete: "off",
       className: "w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700"

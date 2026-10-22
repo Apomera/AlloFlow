@@ -3,8 +3,8 @@ import { THREE, runtime, census, cleanup, site, loggingRuntime, toolSite } from 
 
 // The dive on school hardware. Far and unseen animals redo their slow work on a
 // time slice (deterministic, at least every 8 frames, no time lost); the governor degrades
-// in order (decor reach, then crowd density, then shadow refresh) and only when a frame is
-// slow; script time slices more, then thins, then trims reach; the decor and coral groups use
+// in order (mobile reach, then crowd density, then shadow refresh) and only when a frame is
+// slow; fixed scenery keeps its visibility bands; script time slices more, then thins; the decor and coral groups use
 // a tighter view cone that still never misses anything the camera can see; coral groups draw
 // only the members inside the shadow map in the shadow pass.
 vi.setConfig({ testTimeout: 300000 });
@@ -163,8 +163,10 @@ const decorDrawn = (t) => { let n = 0; t.scene.traverse((o) => { if (o.isInstanc
 const crowdDrawn = (t) => { let n = 0; t.scene.traverse((o) => { if (o.isInstancedMesh && o.userData.ambient && /^body/.test(o.userData.part) && o.visible) n += o.count; }); return n; };
 
 describe('the governor degrades in order, and only when it must', () => {
-  it('trims decor reach first, then the crowd, then the shadow refresh, on a slow frame over budget, and gives it all back', () => {
-    const t = logged({ quality: 'high', site: toolSite('healthy') }, undefined, { real: true });
+  it('preserves fixed scenery while reducing the crowd and shadow refresh on slow frames, then recovers', () => {
+    // Hold the sampling camera still: third-person breathing otherwise changes
+    // one edge-of-view item independently of the performance governor.
+    const t = logged({ quality: 'high', site: toolSite('healthy'), reducedMotion: true }, undefined, { real: true });
     t.run(1.5);
     const D0 = decorDrawn(t), C0 = crowdDrawn(t), sm = t.renderer.shadowMap;
     expect(D0).toBeGreaterThan(100); expect(C0).toBeGreaterThan(20);
@@ -177,11 +179,10 @@ describe('the governor degrades in order, and only when it must', () => {
     // Slow frames (20 per second): stage by stage.
     const stages = [];
     for (let i = 0; i < 40; i++) { t.run(0.5); stages.push({ d: decorDrawn(t), c: crowdDrawn(t), s: sm.autoUpdate !== false }); }
-    const decorAt = stages.findIndex((s) => s.d < D0 * 0.85), crowdAt = stages.findIndex((s) => s.c < C0 * 0.85), shadowAt = stages.findIndex((s) => !s.s);
-    expect(decorAt, 'the decor reach shrank').toBeGreaterThanOrEqual(0);
-    expect(crowdAt, 'then the crowd thinned').toBeGreaterThan(decorAt);
+    const crowdAt = stages.findIndex((s) => s.c < C0 * 0.85), shadowAt = stages.findIndex((s) => !s.s);
+    expect(stages.every((s) => s.d === D0), 'fixed scenery stays visible at every pressure stage').toBe(true);
+    expect(crowdAt, 'the mobile crowd thinned').toBeGreaterThanOrEqual(0);
     expect(shadowAt, 'then the shadows were redrawn less often').toBeGreaterThan(crowdAt);
-    expect(stages[decorAt].c, 'the crowd is whole while only the decor shrinks').toBeGreaterThan(C0 * 0.97);
     expect(stages[crowdAt].s, 'shadows still every frame while the crowd thins').toBe(true);
     // The last stage redraws the shadow map every 2nd or 3rd frame, and at once when its square moves.
     let redraws = 0;
@@ -190,12 +191,12 @@ describe('the governor degrades in order, and only when it must', () => {
     // Back under budget: everything returns.
     t.renderer.info.render.triangles = 1000;
     t.run(20);
-    expect(decorDrawn(t)).toBeGreaterThanOrEqual(D0 * 0.97);
+    expect(decorDrawn(t), 'fixed scenery remains stable through recovery').toBe(D0);
     expect(crowdDrawn(t)).toBeGreaterThanOrEqual(C0 * 0.97);
     expect(sm.autoUpdate).toBe(true);
   });
 
-  it('answers slow script first with more slicing, then fewer far things to draw, and recovers', () => {
+  it('answers slow script with more slicing and mobile reductions while fixed scenery stays stable', () => {
     const t = logged();
     t.run(4);
     const rate = (from, to) => t.log.filter((e) => e[1] > from && e[1] <= to).length / (to - from);
@@ -210,7 +211,7 @@ describe('the governor degrades in order, and only when it must', () => {
     expect(sliced, 'more slicing under slow script').toBeLessThan(before * 0.8);
     expect(decorDrawn(t), 'no visible change at the first stage').toBe(D0);
     t.run(8);
-    expect(decorDrawn(t), 'then less reach').toBeLessThan(D0 * 0.95);
+    expect(decorDrawn(t), 'fixed scenery survives sustained script pressure').toBe(D0);
     expect(roots(t).filter((r) => r.visible).length).toBeLessThanOrEqual(v0);
     t.clockStep = 0;
     t.run(20);

@@ -228,7 +228,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await act(async()=>button('Ruffed grouse').click());expect(button('Repeat flights').getAttribute('aria-pressed')).toBe('false');
     await act(async()=>root.unmount());root=null;expect(scene.dispose).toHaveBeenCalledTimes(1);
   });
-  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6],['darkEyedJunco','Dark-eyed junco',17.05],['tuftedTitmouse','Tufted titmouse',20.8],['easternTowhee','Eastern towhee',15.1]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
+  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6],['darkEyedJunco','Dark-eyed junco',17.05],['tuftedTitmouse','Tufted titmouse',20.8],['easternTowhee','Eastern towhee',15.1],['americanGoldfinch','American goldfinch',18],['easternBluebird','Eastern bluebird',22.3],['whiteThroatedSparrow','White-throated sparrow',12.97]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
     const scene = controller();
     window.BirdLab3D = { mount: vi.fn((canvas, options) => { options.onState({...state,wildlife:[{id,name:label,behavior:'Foraging'}]}); return scene; }) };
     await mount(() => Promise.resolve());

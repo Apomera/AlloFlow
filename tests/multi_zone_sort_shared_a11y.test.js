@@ -22,7 +22,8 @@ describe('Shared MultiZone sorter WCAG 2.2 accessibility', () => {
   });
 
   it.each(files)('%s announces accurate errors, completion, reset, and initialization', (_path, source) => {
-    expect(source).toContain('correctLabel');
+    expect(source).toContain('useDiagramSortHints');
+    expect(source).toContain('DiagramSortTip');
     expect(source).toContain('All sorted!');
     expect(source).toContain('Board reset. All items returned to the bank.');
     expect(source).toContain('items are in the bank.');

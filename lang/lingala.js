@@ -53405,6 +53405,15 @@
       "sr_critique_ready": "Botali esili kobongisama."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Botali ya vol oyo ebombami ezali te",
+      "debrief_unavailable_body": "Botali ya vol ya sika ezangi to ekoki kotángama te. Zongá na menu mpo na kobanda vol ya sika.",
+      "guided_idea_before_trials": "Ekomamaki liboso ya mimekano",
+      "guided_idea_saved": "Likanisi oyo ebombami",
+      "guided_idea_timing_unknown": "Ntango ya likanisi oyo ebombami ekomamaki te.",
+      "guided_idea_latest": "Likanisi ya suka oyo ebombami",
+      "guided_idea_latest_prediction": "Likanisi ya suka oyo ebombami mpo na oyo ekosalema: {prediction}",
+      "guided_idea_saved_prediction": "Likanisi oyo ebombami mpo na oyo ekosalema: {prediction}",
+      "milestone_stall_recovery": "Na ngonga oyo, lipapu ya mpɛpɔ ezali lisusu na ezalela ya stall te. Eloko moko oyo omoni ekoki te mpo na kondimisa ete ezongeli na ezalela malamu ekoumela.",
       "game_controls": "🎮 BAKONTROLE YA LISANO",
       "learn": "Yekola",
       "formula": "Formule",
@@ -53450,6 +53459,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "TOMBOLÁ ZOLO — tombolá zolo (W)",
+      "hud_rotate_touch": "TOMBOLÁ ZOLO — bendá likoló uta na katikati",
+      "hud_flare": "KITISÁ MBANGU YA KOKITA — tombolá zolo malɛmbɛ na W",
+      "hud_flare_touch": "KITISÁ MBANGU YA KOKITA — bendá likoló uta na katikati",
+      "landing_touch_power": "Bendá na nse na pembeni ya lobɔkɔ ya mobali mpo na kokitisa nguya na ~30%. Mbangu ekokita.",
+      "landing_touch_flare": "Mwa likoló ya nzela ya mpɛpɔ (~10 ft), bendá malɛmbɛ likoló uta na katikati mpo na kotombola zolo. Luká kokita na nse ya 200 fpm ntango bapinɛ esimbi mabele.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -87311,6 +87326,18 @@
     "card_progress": "Karte {n} na {total}",
     "add_words": "Bakisá maloba mpo na kobanda momesano.",
     "round_complete": "Mbala esili. Bandá mbala ya sika to talá lisusu maloba oyo otyelaki elembo.",
-    "practice_label": "Momesano ya maloba"
+    "practice_label": "Momesano ya maloba",
+    "use_mine_help": "Fisyé HTML esalelaka lolenge ya makomi, bonene ya makomi mpe esika oyo oponi.",
+    "preparing_reading": "Ezali kobakisa bobongisi na yo ya botangi…",
+    "font_not_embedded": "Ekokaki kobakisa lolenge ya makomi na yo na fisyé te, yango wana esalelaka lolenge ya makomi ya momesano."
+  },
+  "reading_settings": {
+    "title": "Bobongisi ya botangi",
+    "smaller": "Makomi mike koleka",
+    "larger": "Makomi minene koleka",
+    "overlay": "Elamba ya langi",
+    "ruler": "Molongo ya botangi",
+    "use_mine": "Salelá bobongisi ya botangi na ngai",
+    "use_mine_help": "Ebimisaka na papye na lolenge ya makomi, bonene ya makomi mpe esika oyo oponi."
   }
 }

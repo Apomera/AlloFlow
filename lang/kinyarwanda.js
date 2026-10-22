@@ -54699,6 +54699,15 @@
       "sr_critique_ready": "Isesengura ririteguye."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Isuzuma ry’urugendo rw’indege ryabitswe ntiriboneka",
+      "debrief_unavailable_body": "Isuzuma riheruka ry’urugendo rw’indege ntirihari cyangwa ntirishobora gusomwa. Subira kuri meni utangire urugendo rushya.",
+      "guided_idea_before_trials": "Cyanditswe mbere y’amagerageza",
+      "guided_idea_saved": "Igitekerezo cyabitswe",
+      "guided_idea_timing_unknown": "Igihe cy’iki gitekerezo cyabitswe nticyanditswe.",
+      "guided_idea_latest": "Igitekerezo giheruka kubikwa",
+      "guided_idea_latest_prediction": "Icyari cyitezwe giheruka kubikwa: {prediction}",
+      "guided_idea_saved_prediction": "Icyari cyitezwe cyabitswe: {prediction}",
+      "milestone_stall_recovery": "Muri aka kanya, ibaba ntirikiri mu mimerere ya stall. Ibyabonywe rimwe gusa ntibyemeza ko ryagarutse mu mimerere myiza ku buryo burambye.",
       "game_controls": "🎮 KUGENZURA UMUKINO",
       "back_to_stem_lab": "Subira kuri STEAM Lab",
       "learn": "Wige",
@@ -54744,6 +54753,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ZAMURA IZURU — zamura izuru (W)",
+      "hud_rotate_touch": "ZAMURA IZURU — kurura hejuru uvuye hagati",
+      "hud_flare": "GABANYA UKUMANUKA — zamura izuru buhoro ukoresheje W",
+      "hud_flare_touch": "GABANYA UKUMANUKA — kurura hejuru uvuye hagati",
+      "landing_touch_power": "Kurura umanura ku ruhande rw'iburyo ugabanye ingufu kugeza kuri ~30%. Umuvuduko uragabanuka.",
+      "landing_touch_flare": "Hejuru gato y'inzira y'indege (~10 ft), kurura buhoro hejuru uvuye hagati uzamure izuru. Gerageza kumanuka munsi ya 200 fpm igihe ukora ku butaka.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88726,6 +88741,18 @@
     "card_progress": "Ikarita {n} kuri {total}",
     "add_words": "Ongeraho amagambo kugira ngo utangire imyitozo.",
     "round_complete": "Icyiciro kirangiye. Tangira icyiciro gishya cyangwa usubiremo amagambo washyizeho akamenyetso.",
-    "practice_label": "Imyitozo y'amagambo"
+    "practice_label": "Imyitozo y'amagambo",
+    "use_mine_help": "Dosiye ya HTML ikoresha imyandikire, ingano y'umwandiko n'intera wahisemo.",
+    "preparing_reading": "Birimo kongeramo igenamiterere ryawe ryo gusoma…",
+    "font_not_embedded": "Ntibyashobotse gushyira imyandikire yawe muri dosiye, bityo ikoresha imyandikire isanzwe."
+  },
+  "reading_settings": {
+    "title": "Igenamiterere ryo gusoma",
+    "smaller": "Inyandiko nto kurushaho",
+    "larger": "Inyandiko nini kurushaho",
+    "overlay": "Ikorera ry'amabara",
+    "ruler": "Umurongo uyobora gusoma",
+    "use_mine": "Koresha igenamiterere ryanjye ryo gusoma",
+    "use_mine_help": "Gucapa bikoresha imyandikire, ingano y'umwandiko n'intera wahisemo."
   }
 }

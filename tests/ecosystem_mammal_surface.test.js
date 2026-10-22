@@ -41,7 +41,7 @@ describe('continuous mammal coat geometry',()=>{
     expect(highest(rabbit)).toBeLessThan(-.05);
     const undersideAt=x=>{let ring=0,delta=Infinity;for(let i=0;i<=fox.rings;i++){const d=Math.abs(fox.positions[i*(fox.sides+1)*3]-x);if(d<delta){delta=d;ring=i;}}return fox.positions[(ring*(fox.sides+1)+fox.sides/2)*3+1];};
     expect(undersideAt(.20)).toBeLessThan(undersideAt(-.12)-.07);
-    expect(api.mammalSurface('owls','torso')).toBeNull();expect(api.mammalSurface('rabbits','tail')).toBeNull();
+    expect(api.mammalSurface('owls','torso')).toBeNull();expect(api.mammalSurface('rabbits','tail')).toEqual(api.rabbitTailSurface());
     expect(api.mammalSurface('foxes','torso')).toEqual(fox);
   });
 

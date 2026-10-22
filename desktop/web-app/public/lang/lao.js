@@ -52818,6 +52818,15 @@
       "sr_critique_ready": "ຄຳວິຈານພ້ອມແລ້ວ."
     },
     "flightsim": {
+      "debrief_unavailable_title": "ບໍ່ສາມາດເປີດບົດທົບທວນການບິນທີ່ບັນທຶກໄວ້ໄດ້",
+      "debrief_unavailable_body": "ບົດທົບທວນການບິນຫຼ້າສຸດຫາຍໄປ ຫຼືບໍ່ສາມາດອ່ານໄດ້. ກັບໄປທີ່ເມນູເພື່ອເລີ່ມການບິນໃໝ່.",
+      "guided_idea_before_trials": "ບັນທຶກໄວ້ກ່ອນການທົດລອງ",
+      "guided_idea_saved": "ແນວຄິດທີ່ບັນທຶກໄວ້",
+      "guided_idea_timing_unknown": "ບໍ່ໄດ້ບັນທຶກເວລາຂອງແນວຄິດທີ່ເກັບໄວ້ນີ້.",
+      "guided_idea_latest": "ແນວຄິດທີ່ບັນທຶກໄວ້ຫຼ້າສຸດ",
+      "guided_idea_latest_prediction": "ຄຳຄາດຄະເນທີ່ບັນທຶກໄວ້ຫຼ້າສຸດ: {prediction}",
+      "guided_idea_saved_prediction": "ຄຳຄາດຄະເນທີ່ບັນທຶກໄວ້: {prediction}",
+      "milestone_stall_recovery": "ປີກບໍ່ຢູ່ໃນພາວະສູນເສຍແຮງຍົກຈາກກະແສອາກາດແຍກຕົວ (stall) ແລ້ວໃນຂະນະນີ້. ການສັງເກດພຽງຄັ້ງດຽວບໍ່ຢືນຢັນວ່າການຟື້ນຈາກພາວະນີ້ຄົງຢູ່ຕໍ່ເນື່ອງ.",
       "game_controls": "🎮 ການຄວບຄຸມເກມ",
       "cancel": "ຍົກເລີກ",
       "from": "ຈາກ",
@@ -52873,6 +52882,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ຍົກຫົວເຄື່ອງເພື່ອບິນຂຶ້ນ — ຍົກຫົວເຄື່ອງຂຶ້ນ (W)",
+      "hud_rotate_touch": "ຍົກຫົວເຄື່ອງເພື່ອບິນຂຶ້ນ — ລາກຂຶ້ນຈາກກາງ",
+      "hud_flare": "ຍົກຫົວເຄື່ອງກ່ອນແຕະພື້ນ — ໃຊ້ W ຍົກຫົວເຄື່ອງຂຶ້ນຄ່ອຍໆ",
+      "hud_flare_touch": "ຍົກຫົວເຄື່ອງກ່ອນແຕະພື້ນ — ລາກຂຶ້ນຈາກກາງ",
+      "landing_touch_power": "ລາກລົງຕາມຂອບຂວາ ເພື່ອຫຼຸດກຳລັງເຄື່ອງຈັກລົງເຫຼືອ ~30%. ຄວາມໄວຈະຫຼຸດລົງ.",
+      "landing_touch_flare": "ເມື່ອຢູ່ເໜືອທາງແລ່ນເລັກນ້ອຍ (~10 ft), ລາກຂຶ້ນຄ່ອຍໆຈາກກາງເພື່ອຍົກຫົວເຄື່ອງ. ຕັ້ງເປົ້າໃຫ້ອັດຕາລົດລະດັບຕ່ຳກວ່າ 200 fpm ໃນຂະນະທີ່ລໍ້ແຕະພື້ນ.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88542,6 +88557,18 @@
     "card_progress": "ບັດ {n} ຈາກ {total}",
     "add_words": "ເພີ່ມຄຳເພື່ອເລີ່ມການຝຶກ.",
     "round_complete": "ຈົບຮອບແລ້ວ. ເລີ່ມຮອບໃໝ່ ຫຼື ທົບທວນຄຳທີ່ເຈົ້າໝາຍໄວ້.",
-    "practice_label": "ການຝຶກຄຳ"
+    "practice_label": "ການຝຶກຄຳ",
+    "use_mine_help": "ໄຟລ໌ HTML ໃຊ້ຟອນ, ຂະໜາດຂໍ້ຄວາມ ແລະ ໄລຍະຫ່າງຂອງທ່ານ.",
+    "preparing_reading": "ກຳລັງເພີ່ມການຕັ້ງຄ່າການອ່ານຂອງທ່ານ…",
+    "font_not_embedded": "ບໍ່ສາມາດເພີ່ມຟອນຂອງທ່ານໃສ່ໄຟລ໌ໄດ້, ສະນັ້ນໄຟລ໌ຈຶ່ງໃຊ້ຟອນຂອງລະບົບ."
+  },
+  "reading_settings": {
+    "title": "ການຕັ້ງຄ່າການອ່ານ",
+    "smaller": "ຕົວໜັງສືນ້ອຍລົງ",
+    "larger": "ຕົວໜັງສືໃຫຍ່ຂຶ້ນ",
+    "overlay": "ໂອເວີເລການສີ",
+    "ruler": "ໄມ້ບັນທັດການອ່ານ",
+    "use_mine": "ໃຊ້ການຕັ້ງຄ່າການອ່ານຂອງຂ້ອຍ",
+    "use_mine_help": "ພິມດ້ວຍຟອນ, ຂະໜາດຂໍ້ຄວາມ ແລະ ໄລຍະຫ່າງຂອງເຈົ້າ."
   }
 }

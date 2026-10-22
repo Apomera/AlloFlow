@@ -9,8 +9,8 @@
  *
  * Measured on screen: print sizes rank the way the text's sizes do, and a
  * plover print is about a quarter across while a turkey's is several; webs
- * appear exactly where the text says the foot is webbed; a runner leaves a
- * single line while a walker's prints alternate.
+ * appear exactly where the text says the foot is webbed; the authored
+ * trackway gauge controls the spread of supplied alternating contacts.
  */
 import { test, expect, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
@@ -96,22 +96,27 @@ test('webbing is drawn where, and only where, the foot is webbed', async ({ page
   }
 });
 
-test('a runner leaves a single line, a walker alternates; non-walkers get a note', async ({ page }) => {
+test('authored track gauge changes native heel spread; unavailable walking references get a note', async ({ page }) => {
   await mount(page, 'tracksSign');
   await page.waitForSelector('[data-track-figure]');
-  const spread = async (name: string) => {
-    await pick(page, name);
-    return page.evaluate(() => {
-      const ys = [...document.querySelectorAll('[data-trail-print]')].map((g) => { const r = g.getBoundingClientRect(); return r.top + r.height / 2; });
-      return Math.max(...ys) - Math.min(...ys);
+  const spread = () => page.locator('[data-trackway-map="current"]').evaluate(node => {
+    const svg = node as SVGSVGElement;
+    const y = [...svg.querySelectorAll('[data-trackway-contact]')].map(contact => {
+      const matrix = svg.getScreenCTM()!.inverse().multiply((contact as SVGGraphicsElement).getScreenCTM()!);
+      return new DOMPoint(0, 0).matrixTransform(matrix).y;
     });
-  };
-  const plover = await spread('Piping Plover');
-  const turkey = await spread('Wild Turkey');
-  expect(turkey).toBeGreaterThan(plover * 2);
+    return Math.max(...y) - Math.min(...y);
+  });
+  await page.locator('#birdlab-trackway-gauge').fill('0');
+  await expect.poll(spread).toBeLessThan(.00001);
+  await page.locator('#birdlab-trackway-gauge').fill('1');
+  await expect.poll(async () => Math.abs(await spread() - 54)).toBeLessThan(.00001);
+  await page.locator('#birdlab-trackway-gauge').fill('1.5');
+  await expect.poll(async () => Math.abs(await spread() - 81)).toBeLessThan(.00001);
   await pick(page, 'Belted Kingfisher');
   await expect(page.locator('[data-track-figure] svg')).toHaveCount(0);
   await expect(page.locator('[data-track-figure]')).toContainText('rarely walks');
+  await expect(page.locator('[data-trackway-unavailable]')).toContainText('No constructed contact trail is supplied for Belted Kingfisher');
 });
 
 test('foot types show a drawing on every card', async ({ page }) => {

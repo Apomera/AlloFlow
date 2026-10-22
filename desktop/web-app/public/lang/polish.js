@@ -55932,6 +55932,15 @@
       "sr_critique_ready": "Ocena gotowa."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Zapisane podsumowanie lotu jest niedostępne",
+      "debrief_unavailable_body": "Ostatnie podsumowanie lotu nie istnieje lub nie można go odczytać. Wróć do menu, aby rozpocząć nowy lot.",
+      "guided_idea_before_trials": "Zapisano przed próbami",
+      "guided_idea_saved": "Zapisany pomysł",
+      "guided_idea_timing_unknown": "Nie zapisano czasu powstania tego pomysłu.",
+      "guided_idea_latest": "Ostatnio zapisany pomysł",
+      "guided_idea_latest_prediction": "Ostatnio zapisana prognoza: {prediction}",
+      "guided_idea_saved_prediction": "Zapisana prognoza: {prediction}",
+      "milestone_stall_recovery": "W tej chwili skrzydło nie jest już przeciągnięte. Pojedyncza obserwacja nie potwierdza trwałego wyjścia z przeciągnięcia.",
       "game_controls": "🎮 STEROWANIE GRĄ",
       "cancel": "Anuluj",
       "from": "Od",
@@ -55980,6 +55989,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTACJA — unieś nos (W)",
+      "hud_rotate_touch": "ROTACJA — przeciągnij w górę od środka",
+      "hud_flare": "WYRÓWNANIE — łagodnie unieś nos klawiszem W",
+      "hud_flare_touch": "WYRÓWNANIE — przeciągnij w górę od środka",
+      "landing_touch_power": "Przeciągnij w dół wzdłuż prawej krawędzi, aby zmniejszyć moc do ~30%. Prędkość spadnie.",
+      "landing_touch_flare": "Tuż nad pasem (~10 ft) przeciągnij delikatnie w górę od środka, aby unieść nos. Celuj w opadanie poniżej 200 fpm przy przyziemieniu.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92234,6 +92249,18 @@
     "card_progress": "Karta {n} z {total}",
     "add_words": "Dodaj słowa, aby rozpocząć ćwiczenie.",
     "round_complete": "Runda zakończona. Rozpocznij nową rundę lub powtórz zaznaczone słowa.",
-    "practice_label": "Ćwiczenie słów"
+    "practice_label": "Ćwiczenie słów",
+    "use_mine_help": "Plik HTML użyje wybranej czcionki, rozmiaru tekstu i odstępów.",
+    "preparing_reading": "Dodawanie ustawień czytania…",
+    "font_not_embedded": "Nie udało się dodać wybranej czcionki do pliku, więc używa on czcionki systemowej."
+  },
+  "reading_settings": {
+    "title": "Ustawienia czytania",
+    "smaller": "Mniejszy tekst",
+    "larger": "Większy tekst",
+    "overlay": "Nakładka kolorowa",
+    "ruler": "Linijka czytania",
+    "use_mine": "Użyj moich ustawień czytania",
+    "use_mine_help": "Wydruk użyje wybranej czcionki, rozmiaru tekstu i odstępów."
   }
 }

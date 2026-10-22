@@ -315,16 +315,16 @@ describe('stripExplicitCommandPrefix', () => {
 });
 
 describe('A1/A2 — the AI-routed path obeys the same policy', () => {
-  // "help me build a lesson" does not match the create_lesson grammar (which is
-  // anchored on the verb) and scores 0 against the aliases, so it reaches the
-  // one Gemini intent call. That is the exact phrasing Aaron reported.
+  // Keep this fixture outside the narrow lesson grammar so it continues to
+  // exercise the AI fallback. Polite "help me build a lesson" now has a
+  // deterministic route, covered by allobot_source_context_routing.test.js.
   const withAi = (commandId, confidence) => makeCtx({
     callGemini: vi.fn(() => Promise.resolve(JSON.stringify({ commandId, params: {}, confidence }))),
   });
 
   it('offers rather than acts when the model is confident about a navigation', async () => {
     const ctx = withAi('create_lesson', 0.95);
-    const spoken = await runUtterances(ctx, ['help me build a lesson']);
+    const spoken = await runUtterances(ctx, ['I would appreciate help assembling a lesson']);
     expect(ctx.callGemini).toHaveBeenCalled();
     expect(ctx.startLessonFlow).not.toHaveBeenCalled();
     expect(spoken.join(' | ')).toMatch(/say yes/i);

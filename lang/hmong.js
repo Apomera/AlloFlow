@@ -54699,6 +54699,15 @@
       "sr_critique_ready": "Cov lus tshuaj xyuas npaj tau lawm."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Qhov tshuaj xyuas kev ya uas khaws cia tsis muaj",
+      "debrief_unavailable_body": "Qhov tshuaj xyuas kev ya zaum kawg ploj lawm lossis nyeem tsis tau. Rov qab mus rau daim ntawv xaiv kom pib ya tshiab.",
+      "guided_idea_before_trials": "Sau tseg ua ntej cov kev sim",
+      "guided_idea_saved": "Lub tswv yim uas khaws cia",
+      "guided_idea_timing_unknown": "Tsis tau sau tseg lub sijhawm ntawm lub tswv yim uas khaws cia no.",
+      "guided_idea_latest": "Lub tswv yim uas khaws cia zaum kawg",
+      "guided_idea_latest_prediction": "Qhov kwv yees uas khaws cia zaum kawg: {prediction}",
+      "guided_idea_saved_prediction": "Qhov kwv yees uas khaws cia: {prediction}",
+      "milestone_stall_recovery": "Lub tis dav hlau tsis nyob hauv qhov xwm txheej stall lawm nyob rau lub sijhawm no. Ib qho kev pom xwb tsis txaus qhia tias tau rov zoo mus ntev.",
       "game_controls": "🎮 KEV TSWJ GAME",
       "back_to_stem_lab": "Rov qab mus rau STEAM Lab",
       "learn": "Kawm",
@@ -54742,6 +54751,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "TSA TAUB HAU — tsa taub hau (W)",
+      "hud_rotate_touch": "TSA TAUB HAU — rub sawv ntawm nruab nrab",
+      "hud_flare": "TXO KEV NQIS — siv W tsa taub hau maj mam",
+      "hud_flare_touch": "TXO KEV NQIS — rub sawv ntawm nruab nrab",
+      "landing_touch_power": "Rub nqes raws ntug sab xis kom txo zog mus rau ~30%. Kev ceev yuav nqis.",
+      "landing_touch_flare": "Thaum nyob saum txoj kev dav hlau me ntsis (~10 ft), rub sawv maj mam ntawm nruab nrab kom tsa taub hau. Npaj kom nqis tsawg dua 200 fpm thaum kov av.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88726,6 +88741,18 @@
     "card_progress": "Daim npav {n} ntawm {total}",
     "add_words": "Ntxiv cov lo lus kom pib xyaum.",
     "round_complete": "Zaus no tiav lawm. Pib zaus tshiab los yog tshuaj xyuas dua cov lo lus uas koj tau cim.",
-    "practice_label": "Xyaum lo lus"
+    "practice_label": "Xyaum lo lus",
+    "use_mine_help": "Cov ntaub ntawv HTML siv koj hom ntawv, qhov loj ntawv thiab kev nrug.",
+    "preparing_reading": "Tab tom ntxiv koj cov kev teeb tsa nyeem ntawv…",
+    "font_not_embedded": "Ntxiv tsis tau koj hom ntawv rau hauv cov ntaub ntawv, yog li nws siv hom ntawv ib txwm."
+  },
+  "reading_settings": {
+    "title": "Kev teeb tsa nyeem ntawv",
+    "smaller": "Ntawv me dua",
+    "larger": "Ntawv loj dua",
+    "overlay": "Daim npog xim",
+    "ruler": "Tus pas nyeem ntawv",
+    "use_mine": "Siv kuv cov kev teeb tsa nyeem ntawv",
+    "use_mine_help": "Luam tawm siv koj hom ntawv, qhov loj ntawv thiab kev nrug."
   }
 }

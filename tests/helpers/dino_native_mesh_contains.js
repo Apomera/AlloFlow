@@ -20,13 +20,23 @@ export function nativeMeshContains(mesh, tolerance) {
   }
   return point=>{
     if(point.x<box.min.x-tolerance||point.x>box.max.x+tolerance||point.y<box.min.y-tolerance||point.y>box.max.y+tolerance)return false;
-    let lo=Infinity,hi=-Infinity;
+    const crossings=[];
     for(const {a,b,c,d} of grid.get(gx(point.x)*cells+gy(point.y))||[]){
       const u=((b.y-c.y)*(point.x-c.x)+(c.x-b.x)*(point.y-c.y))/d;
       const v=((c.y-a.y)*(point.x-c.x)+(a.x-c.x)*(point.y-c.y))/d,w=1-u-v;
       if(u< -1e-7||v< -1e-7||w< -1e-7)continue;
-      const z=u*a.z+v*b.z+w*c.z;lo=Math.min(lo,z);hi=Math.max(hi,z);
+      const z=u*a.z+v*b.z+w*c.z;
+      if(!crossings.some(hit=>Math.abs(hit-z)<=tolerance))crossings.push(z);
     }
-    return point.z>=lo-tolerance&&point.z<=hi+tolerance;
+    crossings.sort((a,b)=>a-b);
+    if(crossings.some(z=>Math.abs(z-point.z)<=tolerance))return true;
+    // A nonconvex closed mesh can occupy several separate Z intervals.
+    // Taking only the outermost pair fills real gaps between those solids.
+    if(crossings.length%2===0){for(let i=0;i<crossings.length;i+=2)if(point.z>crossings[i]&&point.z<crossings[i+1])return true;return false;}
+    // Tangency at a shared edge can leave an ambiguous odd crossing count.
+    // Resolve it against the actual triangles along an independent direction.
+    const hits=new THREE.Raycaster(point,vec(1,.371,.217).normalize()).intersectObject(mesh,false),distances=[];
+    for(const hit of hits){if(hit.distance<=tolerance)return true;if(!distances.some(d=>Math.abs(d-hit.distance)<=tolerance))distances.push(hit.distance);}
+    return distances.length%2===1;
   };
 }

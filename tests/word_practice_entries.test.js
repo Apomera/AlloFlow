@@ -21,7 +21,7 @@ const buildSelection = new Function(setupSource.slice(selectionStart, selectionE
 const setupHandlerStart = setupSource.indexOf('const openWordPractice = async () =>');
 const setupHandlerEnd = setupSource.indexOf('const startRunRef =', setupHandlerStart);
 function setupHandler(overrides = {}) {
-  const deps = { isTeacherMode: true, isProbeMode: false, sessionType: 'practice', wordPracticeControllerRef: { current: null }, setWordPracticeStatus: vi.fn(), buildWordPracticeSelection: buildSelection, previewList: ['cat', 'ship'], selectedIndices: new Set([1]), glossaryTerms: [], preloadedWords: [], tf: (_key, fallback) => fallback, wordSoundsLanguage: 'English', callTTS: vi.fn(), selectedVoice: 'teacher', ttsSpeed: 0.75, t: key => key, ...overrides };
+  const deps = { isTeacherMode: true, isProbeMode: false, sessionType: 'practice', wordPracticeControllerRef: { current: null }, setWordPracticeStatus: vi.fn(), buildWordPracticeSelection: buildSelection, previewList: ['cat', 'ship'], selectedIndices: new Set([1]), glossaryTerms: [], preloadedWords: [], tf: (_key, fallback) => fallback, wordSoundsLanguage: 'English', currentUiLanguage: 'French', callTTS: vi.fn(), selectedVoice: 'teacher', ttsSpeed: 0.75, t: key => key, ...overrides };
   return { deps, open: new Function(...Object.keys(deps), setupSource.slice(setupHandlerStart, setupHandlerEnd) + '\nreturn openWordPractice;')(...Object.values(deps)) };
 }
 let mounted;
@@ -29,7 +29,7 @@ let mounted;
 function properties(extra = {}) {
   return {
     generatedContent: { type: 'word-sounds', id: 'lesson-1', title: 'Short vowels', data: [{ word: 'cat' }], sessionConfig: { language: 'English' } },
-    isTeacherMode: true, wsActivitySequence: ['counting'], t: key => key,
+    isTeacherMode: true, wsActivitySequence: ['counting'], t: key => key, currentUiLanguage: 'French',
     setWordSoundsActivity: vi.fn(), setIsWordSoundsMode: vi.fn(), setWordSoundsAutoReview: vi.fn(),
     ...extra,
   };
@@ -58,7 +58,7 @@ describe('Word Sounds presentation entry', () => {
     expect(window.__alloOpenWordPractice).not.toHaveBeenCalled();
     click(button(element)); await settle();
     expect(window.__alloOpenWordPractice).toHaveBeenCalledTimes(1);
-    expect(window.__alloOpenWordPractice).toHaveBeenCalledWith(expect.objectContaining({ words, callTTS, selectedVoice: 'teacher', ttsSpeed: 0.85, source: 'word-sounds', title: 'Short vowels' }));
+    expect(window.__alloOpenWordPractice).toHaveBeenCalledWith(expect.objectContaining({ words, callTTS, selectedVoice: 'teacher', ttsSpeed: 0.85, source: 'word-sounds', title: 'Short vowels', language: 'English', currentUiLanguage: 'French' }));
     expect(window.__alloOpenWordPractice.mock.calls[0][0].signal.aborted).toBe(false);
     expect(JSON.stringify(input.generatedContent)).toBe(before);
     expect(input.setIsWordSoundsMode).not.toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe('Word Sounds presentation entry', () => {
 describe('Word Sounds selected presentation words', () => {
   it('opens only selected words through the setup action without preparing activities', async () => {
     const { deps, open } = setupHandler(); await open();
-    expect(window.__alloOpenWordPractice).toHaveBeenCalledWith(expect.objectContaining({ words: [{ word: 'ship' }], callTTS: deps.callTTS, ttsSpeed: 0.75 }));
+    expect(window.__alloOpenWordPractice).toHaveBeenCalledWith(expect.objectContaining({ words: [{ word: 'ship' }], callTTS: deps.callTTS, ttsSpeed: 0.75, language: 'English', currentUiLanguage: 'French' }));
     expect(deps.wordPracticeControllerRef.current).toBeNull();
   });
 

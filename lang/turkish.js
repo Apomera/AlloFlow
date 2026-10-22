@@ -55168,6 +55168,15 @@
       "sr_critique_ready": "Değerlendirme hazır."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Kaydedilen uçuş incelemesi kullanılamıyor",
+      "debrief_unavailable_body": "En son uçuş incelemesi eksik veya okunamıyor. Yeni bir uçuş başlatmak için menüye dönün.",
+      "guided_idea_before_trials": "Denemelerden önce kaydedildi",
+      "guided_idea_saved": "Kaydedilen fikir",
+      "guided_idea_timing_unknown": "Kaydedilen bu fikrin zamanı kayda alınmamış.",
+      "guided_idea_latest": "Son kaydedilen fikir",
+      "guided_idea_latest_prediction": "Son kaydedilen tahmin: {prediction}",
+      "guided_idea_saved_prediction": "Kaydedilen tahmin: {prediction}",
+      "milestone_stall_recovery": "Kanat şu anda artık perdövites durumunda değil. Tek bir gözlem kalıcı toparlanmayı kanıtlamaz.",
       "game_controls": "🎮 OYUN KONTROLLERİ",
       "cancel": "İptal",
       "learn": "Öğren",
@@ -55222,6 +55231,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "BURNU KALDIR — burnu kaldır (W)",
+      "hud_rotate_touch": "BURNU KALDIR — ortadan yukarı sürükle",
+      "hud_flare": "PALYE — W ile burnu hafifçe kaldır",
+      "hud_flare_touch": "PALYE — ortadan yukarı sürükle",
+      "landing_touch_power": "Gücü ~30% düzeyine indirmek için sağ kenar boyunca aşağı sürükle. Hız azalacaktır.",
+      "landing_touch_flare": "Pistin hemen üzerinde (~10 ft), burnu kaldırmak için ortadan hafifçe yukarı sürükle. Teker koyarken 200 fpm altında alçalmayı hedefle.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90858,6 +90873,18 @@
     "card_progress": "Kart {n} / {total}",
     "add_words": "Alıştırmaya başlamak için kelime ekleyin.",
     "round_complete": "Tur tamamlandı. Yeni bir tur başlat veya işaretlediğin kelimeleri tekrar et.",
-    "practice_label": "Kelime alıştırması"
+    "practice_label": "Kelime alıştırması",
+    "use_mine_help": "HTML dosyası seçilen yazı tipini, metin boyutunu ve aralıkları kullanır.",
+    "preparing_reading": "Okuma ayarları ekleniyor…",
+    "font_not_embedded": "Seçilen yazı tipi dosyaya eklenemedi, bu yüzden sistem yazı tipi kullanılıyor."
+  },
+  "reading_settings": {
+    "title": "Okuma ayarları",
+    "smaller": "Daha küçük metin",
+    "larger": "Daha büyük metin",
+    "overlay": "Renk katmanı",
+    "ruler": "Okuma cetveli",
+    "use_mine": "Okuma ayarlarımı kullan",
+    "use_mine_help": "Seçilen yazı tipi, metin boyutu ve aralıklarla yazdırır."
   }
 }

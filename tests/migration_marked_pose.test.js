@@ -19,7 +19,11 @@ const createPose = new Function(section('      function createMigrationMarkedWin
 const advance = new Function('engineNow', 'live', 'migrNum', section('          var studyBirdIndex =', '          engineNow.flockRoot.position.x'));
 const dispose = new Function(section('      function disposeMigrationObject(', '      function releaseMigrationStudyPointer(') + '\nreturn disposeMigrationObject;')();
 const renderControls = new Function('h', 'React', 't', 'species', 'studyView', 'formationMode', 'season',
-  'studyMarkedPoseState', '_f3dEngineRef', '_liveVals', 'upd', 'announceToSR', 'migrNum',
+  'studyMarkedPoseState', '_f3dEngineRef', '_liveVals', 'upd', 'announceToSR', 'migrNum', '_f3dStudyCyclePauseRef',
+  'd', '_f3dHostRef', 'studyCyclePositionState', 'studyWingtipFollowState',
+  section('  function MigrationStudyContextReadout(', '  function migrNum(') +
+  section('      function migrationStudyCycleContext(', '      function renderFlight3D()') +
+  section('        function renderStudySceneNoteAction(', '        function renderStudyObservation()') +
   section('        function renderMarkedWingPoseControls()', '        function renderStudyControls()') + '\nreturn renderMarkedWingPoseControls();');
 const invalidateContext = new Function('useEffect', '_f3dEngineRef', 'studyMarkedPoseState', 'flightValues', 'studyView',
   section('      useEffect(function() {\n        var engine = _f3dEngineRef.current;\n        var marked = studyMarkedPoseState[0];', '      useEffect(function() {\n        return function() { destroyMigrationFlightEngine();'));
@@ -75,7 +79,7 @@ function controls(seed = {}, suppliedFixture) {
       tree = renderControls(React.createElement, React, (_, fallback) => fallback,
         { id: state.flightSpecies }, { bird: state.flightStudyBird, step: state.flightWingStep }, state.flightFormation, state.flightSeason,
         statuses, engineRef, live,
-        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num);
+        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num, { current: null }, state, { current: host }, [null], [null]);
       return ReactDOMServer.renderToStaticMarkup(tree);
     },
     action(name) { return walk(tree, node => node.props?.['data-marked-pose-action'] === name)[0]; },

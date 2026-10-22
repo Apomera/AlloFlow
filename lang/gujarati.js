@@ -55150,6 +55150,15 @@
       "sr_critique_ready": "સમીક્ષા તૈયાર છે."
     },
     "flightsim": {
+      "debrief_unavailable_title": "સાચવેલી ઉડાન સમીક્ષા ઉપલબ્ધ નથી",
+      "debrief_unavailable_body": "સૌથી તાજેતરની ઉડાન સમીક્ષા ગુમ છે અથવા વાંચી શકાતી નથી. નવી ઉડાન શરૂ કરવા મેનુ પર પાછા જાઓ.",
+      "guided_idea_before_trials": "પ્રયોગો પહેલાં નોંધાયેલું",
+      "guided_idea_saved": "સાચવેલો વિચાર",
+      "guided_idea_timing_unknown": "આ સાચવેલા વિચારનો સમય નોંધવામાં આવ્યો નહોતો.",
+      "guided_idea_latest": "સૌથી તાજેતરનો સાચવેલો વિચાર",
+      "guided_idea_latest_prediction": "સૌથી તાજેતરનું સાચવેલું અનુમાન: {prediction}",
+      "guided_idea_saved_prediction": "સાચવેલું અનુમાન: {prediction}",
+      "milestone_stall_recovery": "આ ક્ષણે પાંખ હવે સ્ટૉલ સ્થિતિમાં નથી. એક જ અવલોકનથી સ્ટૉલમાંથી થયેલો સુધારો સતત જળવાયો છે એવું સાબિત થતું નથી.",
       "game_controls": "🎮 ગેમ નિયંત્રણ",
       "cancel": "રદ કરો",
       "learn": "શીખો",
@@ -55204,6 +55213,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ઉડાન માટે નાક ઊંચું કરો — નાક ઊંચું કરો (W)",
+      "hud_rotate_touch": "ઉડાન માટે નાક ઊંચું કરો — મધ્યમાંથી ઉપર ખેંચો",
+      "hud_flare": "ઉતરાણ માટે નાક ઊંચું કરો — નાક ધીમેથી ઊંચું કરવા W વાપરો",
+      "hud_flare_touch": "ઉતરાણ માટે નાક ઊંચું કરો — મધ્યમાંથી ઉપર ખેંચો",
+      "landing_touch_power": "એન્જિનની શક્તિ ~30% સુધી ઘટાડવા જમણી ધાર પર નીચે ખેંચો. ઝડપ ઘટશે.",
+      "landing_touch_flare": "રનવેથી સહેજ ઉપર (~10 ft), નાક ઊંચું કરવા મધ્યમાંથી ધીમેથી ઉપર ખેંચો. જમીનને અડતી વખતે ઊતરવાનો દર 200 fpm કરતાં ઓછો રાખવાનું લક્ષ્ય રાખો.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90840,6 +90855,18 @@
     "card_progress": "{total}માંથી કાર્ડ {n}",
     "add_words": "અભ્યાસ શરૂ કરવા શબ્દો ઉમેરો.",
     "round_complete": "રાઉન્ડ પૂરો થયો. નવો રાઉન્ડ શરૂ કરો અથવા નિશાની કરેલા શબ્દોનું પુનરાવર્તન કરો.",
-    "practice_label": "શબ્દ અભ્યાસ"
+    "practice_label": "શબ્દ અભ્યાસ",
+    "use_mine_help": "HTML ફાઇલ તમારા ફોન્ટ, લખાણના કદ અને અંતરનો ઉપયોગ કરે છે.",
+    "preparing_reading": "તમારી વાંચન સેટિંગ્સ ઉમેરી રહ્યા છીએ…",
+    "font_not_embedded": "તમારો ફોન્ટ ફાઇલમાં ઉમેરી શકાયો નહીં, તેથી ફાઇલ સિસ્ટમ ફોન્ટ વાપરે છે."
+  },
+  "reading_settings": {
+    "title": "વાંચન સેટિંગ્સ",
+    "smaller": "નાનું લખાણ",
+    "larger": "મોટું લખાણ",
+    "overlay": "રંગ ઓવરલે",
+    "ruler": "વાંચન રૂલર",
+    "use_mine": "મારી વાંચન સેટિંગ્સ વાપરો",
+    "use_mine_help": "તમારા ફોન્ટ, લખાણના કદ અને અંતર સાથે છપાય છે."
   }
 }

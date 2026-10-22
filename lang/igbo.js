@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Nkatọ adịla njikere."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Ntụle njem ụgbọelu echekwara adịghị",
+      "debrief_unavailable_body": "Ntụle njem ụgbọelu kacha ọhụrụ adịghị ma ọ bụ enweghị ike ịgụ ya. Laghachi na menu ka ịmalite njem ụgbọelu ọhụrụ.",
+      "guided_idea_before_trials": "Edere tupu nnwale ndị ahụ",
+      "guided_idea_saved": "Echiche echekwara",
+      "guided_idea_timing_unknown": "Edeghị oge e chekwara echiche a.",
+      "guided_idea_latest": "Echiche ikpeazụ echekwara",
+      "guided_idea_latest_prediction": "Amụma ikpeazụ echekwara: {prediction}",
+      "guided_idea_saved_prediction": "Amụma echekwara: {prediction}",
+      "milestone_stall_recovery": "Nku ụgbọelu anọkwaghị n’ọnọdụ stall n’oge a. Otu ihe a hụrụ naanị anaghị egosi mgbake na-adịgide adịgide.",
       "game_controls": "🎮 NJIKWA EGWUREGWU",
       "cancel": "Kagbuo",
       "back_to_stem_lab": "Laghachi na STEAM Lab",
@@ -54760,6 +54769,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "BULIE IMI — bulie imi (W)",
+      "hud_rotate_touch": "BULIE IMI — dọrọ elu site n'etiti",
+      "hud_flare": "MEZIE ỌDỊDA — bulie imi nwayọọ site na W",
+      "hud_flare_touch": "MEZIE ỌDỊDA — dọrọ elu site n'etiti",
+      "landing_touch_power": "Dọrọ ala n'akụkụ aka nri iji belata ike ruo ~30%. Ọsọ ga-ebelata.",
+      "landing_touch_flare": "Mgbe ị nọ ntakịrị n'elu okporo ụzọ ụgbọelu (~10 ft), dọrọ elu nwayọọ site n'etiti iji bulie imi. Chọọ ọsọ ọdịda na-erughị 200 fpm mgbe wiil metụrụ ala.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91012,6 +91027,18 @@
     "card_progress": "Kaadị {n} n'ime {total}",
     "add_words": "Tinye okwu ka ịmalite mmega.",
     "round_complete": "Agba agwụla. Bido agba ọhụrụ ma ọ bụ nyochaa okwu ị kara akara.",
-    "practice_label": "Mmega okwu"
+    "practice_label": "Mmega okwu",
+    "use_mine_help": "Faịlụ HTML ahụ na-eji mkpụrụedemede, nha ederede na oghere gị.",
+    "preparing_reading": "Na-etinye ntọala ọgụgụ gị…",
+    "font_not_embedded": "Enweghị ike itinye mkpụrụedemede gị na faịlụ ahụ, ya mere ọ na-eji mkpụrụedemede ndabara."
+  },
+  "reading_settings": {
+    "title": "Ntọala ọgụgụ",
+    "smaller": "Ederede pere mpe",
+    "larger": "Ederede buru ibu",
+    "overlay": "Mkpuchi agba",
+    "ruler": "Eriri ndu ọgụgụ",
+    "use_mine": "Jiri ntọala ọgụgụ m",
+    "use_mine_help": "Na-ebipụta na mkpụrụedemede, nha ederede na oghere gị."
   }
 }

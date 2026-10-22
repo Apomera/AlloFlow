@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const WATER_CYCLE_PATHS = [
@@ -9,6 +10,38 @@ const WATER_CYCLE_PATHS = [
 const WATER_CYCLE_SOURCES = new Map(
   WATER_CYCLE_PATHS.map((filePath) => [filePath, readFileSync(filePath, 'utf8')]),
 );
+
+// Exercise the pooled presentation without constructing a WebGL renderer.
+function cloudInteriorPresentation(source, { form = 'cloud', cameraMode = 'water', exitProgress } = {}) {
+  const start = source.indexOf('function updateCloudInteriorPresentation(dt)');
+  const end = source.indexOf('function updateCloudInteriorLighting()', start);
+  if (start < 0 || end < start) throw new Error('Cloud presentation helper missing');
+  const children = Array.from({ length: 18 }, (_, index) => ({
+    material: { opacity: 0 }, userData: { baseOpacity: 0.075 + index * 0.005 },
+  }));
+  const capturedOpacities = children.map((_, index) => 0.04 + index * 0.003);
+  const active = exitProgress !== undefined;
+  const state = {
+    sim: { form, elapsed: active ? 10 + exitProgress * 1.32 : 10 },
+    input: { cameraMode, paused: true }, motionReduced: false, document: { hidden: false },
+    phaseHandoff: { visible: active, userData: { from: active ? 'cloud' : '' } },
+    phaseHandoffKind: active ? 'precipitation-release' : 'none',
+    phaseHandoffDuration: 1.7, phaseHandoffElapsed: 0.38,
+    cloudVeilEntry: { active: false, coverage: 1, startedAt: 0, duration: 0,
+      sourceFogNear: 620, sourceFogFar: 2300 },
+    cloudVeilExit: { active, coverage: 0, startedAt: 10, duration: 1.32,
+      sourceFogNear: 37.25, sourceFogFar: 311.5,
+      sourcePosition: {}, sourceQuaternion: {}, sourceScale: {} },
+    cloudVeilExitOpacities: capturedOpacities,
+    cloudVeil: { children, userData: {}, visible: false,
+      position: { copy() {} }, quaternion: { copy() {} }, scale: { copy() {} } },
+    scene: { fog: { near: 37.25, far: 311.5 } }, canvasEl: { dataset: {} },
+  };
+  state.clearCloudInteriorExit = () => { state.cloudVeilExit.active = false; };
+  state.clearCloudInteriorEntry = () => { state.cloudVeilEntry.active = false; };
+  runInNewContext(source.slice(start, end) + '\nupdateCloudInteriorPresentation(1 / 60);', state);
+  return { ...state, capturedOpacities };
+}
 
 describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath) => {
   const source = WATER_CYCLE_SOURCES.get(filePath);
@@ -105,11 +138,15 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('var rainField = new THREE.LineSegments');
     expect(source).toContain('var snowField = new THREE.Points');
     expect(source).toContain("? 'rain-streaks' : showingSnow ? 'snow-crystals' : 'hidden'");
-    expect(source).toContain("var cloudImmersion = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
-    const fogRange = source.match(/var fogFarGoal = cloudImmersion \? (\d+) : (\d+);/);
-    expect(fogRange).not.toBeNull();
-    expect(Number(fogRange[1])).toBeLessThan(250);
-    expect(Number(fogRange[2])).toBeGreaterThan(1500);
+    for (const form of ['droplet', 'cloud', 'ice', 'vapor', 'rain', 'snow', 'liquid']) {
+      for (const cameraMode of ['water', 'follow']) {
+        const view = cloudInteriorPresentation(source, { form, cameraMode });
+        const immersed = cameraMode === 'water' && ['droplet', 'cloud', 'ice'].includes(form);
+        expect(view.cloudVeil.visible).toBe(immersed);
+        expect(view.scene.fog.near).toBe(immersed ? 12 : 620);
+        expect(view.scene.fog.far).toBe(immersed ? 185 : 2300);
+      }
+    }
     expect(source).toContain('freeDrops.material.size = waterView ? 1.45 : 3.1;');
     expect(source).toContain('shoreFoam.children.forEach(function(foamMesh) { updateSunlightSurface(foamMesh); });');
     expect(source).toContain('shader.uniforms.pilotCoastTime = pilotWaterUniforms.rippleTime;');
@@ -228,7 +265,24 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("canvasEl.dataset.waterSurface = 'depth-layer-glints-foam';");
     expect(source).toContain("canvasEl.dataset.windVisual = showingWind ? 'advection-inland' : 'hidden';");
     expect(source).toContain("cloudShadow.userData.model = 'sun-projected-receiver-shader';");
-    expect(source).toContain("cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
+    for (const form of ['rain', 'snow']) {
+      const first = cloudInteriorPresentation(source, { form, exitProgress: 0 });
+      expect(first.cloudVeil.visible).toBe(true);
+      expect(first.scene.fog).toEqual({ near: 37.25, far: 311.5 });
+      expect(first.cloudVeil.children.map(lobe => lobe.material.opacity)).toEqual(first.capturedOpacities);
+      const middle = cloudInteriorPresentation(source, { form, exitProgress: 0.5 });
+      expect(middle.cloudVeil.visible).toBe(true);
+      middle.cloudVeil.children.forEach((lobe, index) => {
+        expect(lobe.material.opacity).toBeCloseTo(middle.capturedOpacities[index] * 0.5, 12);
+      });
+      expect(middle.scene.fog.far).toBeCloseTo((311.5 + 2300) / 2, 10);
+      const follow = cloudInteriorPresentation(source, { form, cameraMode: 'follow', exitProgress: 0.5 });
+      expect(follow.cloudVeil.visible).toBe(false);
+      expect(follow.scene.fog).toEqual({ near: 620, far: 2300 });
+      const end = cloudInteriorPresentation(source, { form, exitProgress: 1 });
+      expect(end.cloudVeil.visible).toBe(false);
+      expect(end.scene.fog).toEqual({ near: 620, far: 2300 });
+    }
     expect(source).toContain('var waterGlintT = pilotWaterUniforms.rippleTime.value;');
     expect(source).toContain('var windPhase = motionReduced');
     expect(source).toContain('var streamU = (streamFlowSeed[sfp] + pilotStreamTime.value * 0.075) % 1;');

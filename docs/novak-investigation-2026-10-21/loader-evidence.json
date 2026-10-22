@@ -1,0 +1,194 @@
+{
+  "scope": "Deferred background script pump, not proof of Katie Novak session root cause",
+  "reproducer": "Exact host pump extracted and executed with controlled timers; requestIdleCallback always delivers didTimeout:false and fixed timeRemaining. Script registration settles immediately. Baseline is current pump with only the idle starvation patch removed.",
+  "mirrors": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "before": [
+    {
+      "idleBudgetMs": 8,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 899885,
+      "modulesDispatched": 0,
+      "modulesStillQueued": 6,
+      "dispatches": []
+    },
+    {
+      "idleBudgetMs": 10,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 899885,
+      "modulesDispatched": 0,
+      "modulesStillQueued": 6,
+      "dispatches": []
+    },
+    {
+      "idleBudgetMs": 12,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 1762,
+      "modulesDispatched": 6,
+      "modulesStillQueued": 0,
+      "dispatches": [
+        {
+          "name": "Module0",
+          "atMs": 1401
+        },
+        {
+          "name": "Module1",
+          "atMs": 1401
+        },
+        {
+          "name": "Module2",
+          "atMs": 1401
+        },
+        {
+          "name": "Module3",
+          "atMs": 1762
+        },
+        {
+          "name": "Module4",
+          "atMs": 1762
+        },
+        {
+          "name": "Module5",
+          "atMs": 1762
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "idleBudgetMs": 8,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 12980,
+      "modulesDispatched": 6,
+      "modulesStillQueued": 0,
+      "dispatches": [
+        {
+          "name": "Module0",
+          "atMs": 3030
+        },
+        {
+          "name": "Module1",
+          "atMs": 5020
+        },
+        {
+          "name": "Module2",
+          "atMs": 7010
+        },
+        {
+          "name": "Module3",
+          "atMs": 9000
+        },
+        {
+          "name": "Module4",
+          "atMs": 10990
+        },
+        {
+          "name": "Module5",
+          "atMs": 12980
+        }
+      ]
+    },
+    {
+      "idleBudgetMs": 10,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 12980,
+      "modulesDispatched": 6,
+      "modulesStillQueued": 0,
+      "dispatches": [
+        {
+          "name": "Module0",
+          "atMs": 3030
+        },
+        {
+          "name": "Module1",
+          "atMs": 5020
+        },
+        {
+          "name": "Module2",
+          "atMs": 7010
+        },
+        {
+          "name": "Module3",
+          "atMs": 9000
+        },
+        {
+          "name": "Module4",
+          "atMs": 10990
+        },
+        {
+          "name": "Module5",
+          "atMs": 12980
+        }
+      ]
+    },
+    {
+      "idleBudgetMs": 12,
+      "simulatedWindowMs": 900000,
+      "lastCallbackMs": 1762,
+      "modulesDispatched": 6,
+      "modulesStillQueued": 0,
+      "dispatches": [
+        {
+          "name": "Module0",
+          "atMs": 1401
+        },
+        {
+          "name": "Module1",
+          "atMs": 1401
+        },
+        {
+          "name": "Module2",
+          "atMs": 1401
+        },
+        {
+          "name": "Module3",
+          "atMs": 1762
+        },
+        {
+          "name": "Module4",
+          "atMs": 1762
+        },
+        {
+          "name": "Module5",
+          "atMs": 1762
+        }
+      ]
+    }
+  ],
+  "regressionValidation": {
+    "suite": "tests/deferred_module_pump.test.js",
+    "passed": 12,
+    "failed": 0,
+    "command": "npx vitest run tests/deferred_module_pump.test.js --maxWorkers=1 --testTimeout=30000",
+    "environment": "TEMP and TMP redirected to writable repository tmp/novak-loader-tests"
+  },
+  "publicCdnProbe": {
+    "observedDate": "2026-10-21",
+    "urlBase": "https://alloflow-cdn.pages.dev/",
+    "query": "?v=4173754e12",
+    "allStatus": 200,
+    "cors": "*",
+    "cacheControl": "public, max-age=0, must-revalidate",
+    "matchingLocalBytes": [
+      "generation_helpers_module.js",
+      "generate_dispatcher_module.js",
+      "content_engine_module.js",
+      "allobot_module.js",
+      "host_handlers_module.js"
+    ],
+    "canvasHost": "AlloFlowANTI.txt differed from local but contained the 3-wide pump and per-script watchdog"
+  },
+  "limitations": [
+    "No Katie session logs, Canvas build hash, or browser/network trace available.",
+    "Current live availability does not establish historical availability or the state of a school network.",
+    "This bounded progress fix governs background hydration; explicit user actions should promote their own dependencies immediately."
+  ],
+  "fix": {
+    "idleStarvationMs": 1500,
+    "inputStarvationMs": 8000,
+    "policy": "At most one background script after an eligible idle wait exceeds the requested idle-callback timeout; visibility, launch-pad and in-flight limits preserved."
+  }
+}

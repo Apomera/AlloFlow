@@ -1,0 +1,142 @@
+[
+  {
+    "mix": "100% CO2",
+    "comps": [
+      [
+        "CO2",
+        100
+      ]
+    ],
+    "proc": "MIG, steel only",
+    "cost": "Cheapest",
+    "pen": "Yes",
+    "spatter": "High",
+    "use": "Budget MIG welding on mild steel. Deep penetration, but lots of spatter (anti-spatter spray helps). The old-school standard before C25 became cheap."
+  },
+  {
+    "mix": "75% Argon / 25% CO2 (C25)",
+    "comps": [
+      [
+        "Ar",
+        75
+      ],
+      [
+        "CO2",
+        25
+      ]
+    ],
+    "proc": "MIG, steel",
+    "cost": "Moderate",
+    "pen": "Yes",
+    "spatter": "Low",
+    "use": "THE most common MIG shielding gas for short-circuit work on steel: good penetration with little spatter. The default unless the procedure says otherwise."
+  },
+  {
+    "mix": "90% Argon / 10% CO2 (C10)",
+    "comps": [
+      [
+        "Ar",
+        90
+      ],
+      [
+        "CO2",
+        10
+      ]
+    ],
+    "proc": "MIG, carbon steel, spray",
+    "cost": "Higher",
+    "pen": "Less",
+    "spatter": "Very low",
+    "use": "Spray and pulsed-spray transfer on carbon steel, with a flatter, cleaner bead than C25. Stainless is usually run on a low-CO2 or argon-oxygen mix instead, to keep carbon out of the weld."
+  },
+  {
+    "mix": "98% Argon / 2% O2",
+    "comps": [
+      [
+        "Ar",
+        98
+      ],
+      [
+        "O2",
+        2
+      ]
+    ],
+    "proc": "MIG spray: stainless + carbon steel",
+    "cost": "High",
+    "pen": "Moderate",
+    "spatter": "Very low",
+    "use": "A spray-transfer mix: the small oxygen addition steadies the arc and helps the puddle wet out. Used for spray and pulsed-spray MIG on stainless and carbon steel. Not TriMix."
+  },
+  {
+    "mix": "TriMix: 90% Helium / 7.5% Argon / 2.5% CO2",
+    "comps": [
+      [
+        "He",
+        90
+      ],
+      [
+        "Ar",
+        7.5
+      ],
+      [
+        "CO2",
+        2.5
+      ]
+    ],
+    "proc": "Short-circuit MIG, stainless",
+    "cost": "Very high",
+    "pen": "Moderate",
+    "spatter": "Low",
+    "use": "What \"TriMix\" usually means: mostly helium for a hotter, more fluid puddle, with a little CO2 for arc stability. Used for short-circuit MIG on stainless, where it keeps carbon pickup low."
+  },
+  {
+    "mix": "100% Argon",
+    "comps": [
+      [
+        "Ar",
+        100
+      ]
+    ],
+    "proc": "TIG all metals, MIG aluminium",
+    "cost": "High",
+    "pen": "No",
+    "spatter": "None (TIG)",
+    "use": "The standard TIG gas, and the gas for aluminium MIG (CO2 and aluminium do not mix). Argon is heavier than air, so it blankets the puddle well."
+  },
+  {
+    "mix": "Argon-Helium (75/25 shown)",
+    "comps": [
+      [
+        "Ar",
+        75
+      ],
+      [
+        "He",
+        25
+      ]
+    ],
+    "proc": "TIG aluminium + copper, MIG thick aluminium",
+    "cost": "Very high",
+    "pen": "Yes",
+    "spatter": "None (TIG)",
+    "use": "Helium makes a hotter arc for thick aluminium and copper. Common mixes are 75/25, 50/50 and 25/75 argon/helium. Expensive, but needed on heavy aluminium."
+  },
+  {
+    "mix": "98% Argon / 2% CO2",
+    "comps": [
+      [
+        "Ar",
+        98
+      ],
+      [
+        "CO2",
+        2
+      ]
+    ],
+    "proc": "MIG spray + pulse, often stainless",
+    "cost": "Moderate-high",
+    "pen": "Less",
+    "spatter": "Very low",
+    "use": "A low-CO2 spray and pulsed-spray mix, common on stainless because so little CO2 adds very little carbon to the weld."
+  }
+]

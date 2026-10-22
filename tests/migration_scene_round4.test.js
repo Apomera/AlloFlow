@@ -120,8 +120,18 @@ describe('Migration species framing and identified anatomy', () => {
       expect(marker.quaternion.angleTo(camera.quaternion)).toBeCloseTo(0, 6);
       expect(marker.children[1].material.color.getHex()).toBe(0x082437);
       expect(marker.children[2].geometry.index.count).toBeGreaterThan(12);
-      const pixelRadius = marker.scale.x / camera.position.distanceTo(marker.position) / (2 * Math.tan(camera.fov * Math.PI / 360)) * engine.host.clientHeight;
-      expect(pixelRadius).toBeCloseTo(13, 6);
+      const disk = marker.children[0];
+      disk.updateWorldMatrix(true, false);
+      const viewHeight = engine.host.clientHeight, viewWidth = engine.host.clientWidth || viewHeight * camera.aspect;
+      const projectPixel = world => {
+        const point = world.clone().project(camera);
+        return new THREE.Vector2((point.x + 1) * viewWidth / 2, (1 - point.y) * viewHeight / 2);
+      };
+      const center = projectPixel(new THREE.Vector3().applyMatrix4(disk.matrixWorld));
+      for (let vertex = 1; vertex < disk.geometry.attributes.position.count; vertex++) {
+        const rendered = projectPixel(new THREE.Vector3().fromBufferAttribute(disk.geometry.attributes.position, vertex).applyMatrix4(disk.matrixWorld));
+        expect(rendered.distanceTo(center)).toBeCloseTo(13, 4);
+      }
       const screen = marker.position.clone().project(camera);
       expect(Math.abs(screen.x)).toBeLessThan(0.95);
       expect(Math.abs(screen.y)).toBeLessThan(0.95);

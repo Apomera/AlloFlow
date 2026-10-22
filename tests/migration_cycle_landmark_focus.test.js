@@ -38,12 +38,18 @@ function fixture(id = 'canada_goose') {
     cycle() { return root.getObjectByName('migration-wingtip-cycle'); }
   };
 }
+function projectedPixelRadius(f, node, instanceMatrix, height) {
+  const worldMatrix = node.matrixWorld.clone();
+  if (instanceMatrix) worldMatrix.multiply(instanceMatrix);
+  const center = new THREE.Vector3().applyMatrix4(worldMatrix).project(f.camera);
+  const edge = new THREE.Vector3(1, 0, 0).applyMatrix4(worldMatrix).project(f.camera);
+  return Math.hypot((edge.x - center.x) * height * f.camera.aspect / 2, (edge.y - center.y) * height / 2);
+}
 function ring(f, side, index, height = 390) {
   const matrix = new THREE.Matrix4(), position = new THREE.Vector3(), quaternion = new THREE.Quaternion(), scale = new THREE.Vector3();
   f.marks(side).getMatrixAt(index, matrix); matrix.decompose(position, quaternion, scale);
   const world = position.clone().applyMatrix4(f.bird.matrixWorld);
-  const physicalRadius = scale.x * f.bird.getWorldScale(new THREE.Vector3()).x;
-  const pixelRadius = physicalRadius / (world.distanceTo(f.camera.position) * 2 * Math.tan(f.camera.fov * Math.PI / 360) / height);
+  const pixelRadius = projectedPixelRadius(f, f.marks(side), matrix, height);
   return { position, world, matrix, quaternion, scale, pixelRadius };
 }
 function actualTip(f, side) {
@@ -151,9 +157,7 @@ describe('Study checkpoint selection uses existing pooled path landmarks', () =>
       f.update(checkpoint, checkpoint * tau / 8);
       for (let side = 0; side < 2; side++) {
         expect(f.marks(side).userData.activeCheckpoint).toBe(checkpoint);
-        const world = f.dot(side).getWorldPosition(new THREE.Vector3());
-        const radius = f.dot(side).scale.x * f.bird.getWorldScale(new THREE.Vector3()).x;
-        expect(radius / (world.distanceTo(f.camera.position) * 2 * Math.tan(f.camera.fov * Math.PI / 360) / 390)).toBeCloseTo(6, 5);
+        expect(projectedPixelRadius(f, f.dot(side), null, 390)).toBeCloseTo(6, 5);
       }
       expect(Array.from(f.cycle().geometry.attributes.position.array)).toEqual(frozen);
     }

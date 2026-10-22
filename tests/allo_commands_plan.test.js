@@ -496,7 +496,8 @@ describe('AlloBot plan recovery wiring', () => {
       expect(app).toContain('_previousBotPlanning.controller.abort()');
       expect(app).toContain('{ allowAi: true, preview: true, signal: _botPlanningSignal }');
       expect(app).toContain('{ signal: _botPlanningSignal }');
-      expect(app.match(/if \(!_isCurrentBotCommandPlanning\(\)\) return;/g)).toHaveLength(2);
+      // Local routing, AI fallback, and workflow planning each guard their awaited result.
+      expect(app.match(/if \(!_isCurrentBotCommandPlanning\(\)\) return;/g)).toHaveLength(3);
       expect(app).toContain("error && error.name === 'AbortError'");
     }
   });

@@ -423,6 +423,75 @@ describe('dissection frog fat-body surfaces', () => {
   });
 });
 
+describe('earthworm seminal vesicle surfaces', () => {
+  function fixture(overrides = {}) {
+    const ctx = new RecordingContext();
+    const frame = productionFunction('earthwormAnatomyFrame', {
+      earthwormCenterlinePoint: productionFunction('earthwormCenterlinePoint'),
+    });
+    const bindings = { ctx, W: 500, H: 600, wormRealistic: true, wormAccessible: false,
+      sceneDetail: true, highContrastEnabled: false, lightDirection: 'left',
+      d: { specimenCondition: 'standard' }, specimenCondition: 'standard', liveTissueState: { moisture: 76 },
+      earthwormAnatomyFrame: frame, paintCurrentOrganContact: () => ctx.stroke(), ...overrides };
+    bindings.traceEarthwormSeminalVesicle = productionFunction('traceEarthwormSeminalVesicle', bindings);
+    return { ctx, draw: productionFunction('drawEarthwormSeminalVesicles', bindings) };
+  }
+  it('paints three paired gross sacs with the posterior pair largest, bounded wet finish and actual-path clips', () => {
+    const f = fixture(); f.draw();
+    const painting = paintEvents(f.ctx), fills = painting.filter(event => event.operation === 'fill');
+    const clips = f.ctx.events.filter(event => event.operation === 'clip');
+    expect(fills).toHaveLength(6); expect(clips).toHaveLength(6); expect(painting).toHaveLength(24);
+    expect(fills.every(event => event.path.at(-1)[0] === 'closePath')).toBe(true);
+    expect(clips.map(event => event.path)).toEqual(fills.map(event => event.path));
+    expect(painting.filter(event => event.operation === 'fillRect').every(event => event.clipped)).toBe(true);
+    const sizes = f.ctx.events.filter(event => event.operation === 'scale').map(event => event.args);
+    expect(sizes).toEqual([[2.975, 4.08], [2.975, 4.08], [3.5, 4.8], [3.5, 4.8], [4.375, 6], [4.375, 6]]);
+    for (const path of fills.map(event => event.path)) for (const [op, ...coords] of path) {
+      if (op === 'closePath') continue;
+      for (let i = 0; i < coords.length; i += 2) {
+        expect(Number.isFinite(coords[i]) && Number.isFinite(coords[i + 1])).toBe(true);
+        expect(Math.hypot(coords[i], coords[i + 1])).toBeLessThanOrEqual(1.001);
+      }
+    }
+    expect(f.ctx.stack).toEqual([]); expect(f.ctx.clipDepth).toBe(0);
+    expect(f.ctx.fillStyle).toBe('#123456'); expect(f.ctx.strokeStyle).toBe('#654321');
+    expect(f.ctx.globalCompositeOperation).toBe('source-over'); expect(f.ctx.globalAlpha).toBe(.7);
+  });
+  it.each([
+    { wormRealistic: false }, { wormAccessible: true }, { highContrastEnabled: true }, { sceneDetail: false },
+  ])('retains all three paired sacs as simple silhouettes in a clarity mode (%j)', overrides => {
+    const f = fixture(overrides); f.draw();
+    const painting = paintEvents(f.ctx), fills = painting.filter(event => event.operation === 'fill');
+    expect(fills).toHaveLength(6); expect(painting).toHaveLength(12);
+    expect(fills.every(event => event.path.length === 1 && event.path[0][0] === 'ellipse')).toBe(true);
+    const radii = fills.map(event => event.path[0].slice(3, 5));
+    expect(radii[0]).toEqual(radii[1]); expect(radii[2]).toEqual(radii[3]); expect(radii[4]).toEqual(radii[5]);
+    expect(radii[4][0]).toBeGreaterThan(radii[0][0]);
+    expect(f.ctx.events.filter(event => event.operation === 'clip')).toEqual([]); expect(f.ctx.stack).toEqual([]);
+  });
+  it('responds to moisture and lamp direction without moving or regenerating the gross sac paths', () => {
+    const wet = fixture({ liveTissueState: { moisture: 100 } });
+    const dry = fixture({ liveTissueState: { moisture: 0 }, d: { specimenCondition: 'dehydrated' }, lightDirection: 'right' });
+    const same = fixture({ liveTissueState: { moisture: 100 } });
+    wet.draw(); dry.draw(); same.draw();
+    expect(same.ctx.events).toEqual(wet.ctx.events);
+    const geometry = f => paintEvents(f.ctx).map(event => ({ operation: event.operation, path: event.path, args: event.args }));
+    expect(geometry(wet)).toEqual(geometry(dry));
+    const alpha = f => paintEvents(f.ctx).filter(event => event.operation === 'fillRect')
+      .reduce((sum, event) => sum + Number(event.fill.stops[0][1].split(',').at(-1).slice(0, -1)), 0);
+    expect(alpha(wet)).toBeGreaterThan(alpha(dry));
+    expect(wet.ctx.stack).toEqual([]); expect(dry.ctx.stack).toEqual([]);
+  });
+  it.each(['fill', 'stroke', 'fillRect'])('restores canvas state when a vesicle %s paint fails', operation => {
+    const f = fixture();
+    f.ctx[operation] = () => { throw Error('injected vesicle paint failure'); };
+    expect(() => f.draw()).toThrow('injected vesicle paint failure');
+    expect(f.ctx.stack).toEqual([]); expect(f.ctx.clipDepth).toBe(0);
+    expect(f.ctx.fillStyle).toBe('#123456'); expect(f.ctx.strokeStyle).toBe('#654321');
+    expect(f.ctx.globalCompositeOperation).toBe('source-over'); expect(f.ctx.globalAlpha).toBe(.7);
+  });
+});
+
 describe('dissection closed visceral surfaces', () => {
   function finishSerosa(overrides = {}, salt = 'frog-stomach') {
     const fixture = tissueFixture(overrides);
@@ -677,6 +746,16 @@ describe('dissection organ contact, cavity, and membrane finishes', () => {
     expect(fixture.ctx.clipDepth).toBe(0);
     expect(fixture.ctx.shadowBlur).toBe(7);
     expect(fixture.ctx.stack).toEqual([]);
+  });
+
+  it('releases organ-contact shadow state when a stroke fails', () => {
+    const fixture = tissueFixture();
+    const contact = productionFunction('paintCurrentOrganContact', fixture.bindings);
+    fixture.ctx.stroke = () => { throw Error('injected contact failure'); };
+    expect(() => contact(20, 35)).toThrow('injected contact failure');
+    expect(fixture.ctx.stack).toEqual([]);
+    expect(fixture.ctx.shadowBlur).toBe(7); expect(fixture.ctx.shadowOffsetX).toBe(2); expect(fixture.ctx.shadowOffsetY).toBe(-3);
+    expect(fixture.ctx.strokeStyle).toBe('#654321'); expect(fixture.ctx.lineWidth).toBe(3);
   });
 
   it('skips all auxiliary finishes in Accessible, high contrast, and hidden-detail views', () => {

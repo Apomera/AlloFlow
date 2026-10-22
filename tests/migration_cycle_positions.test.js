@@ -15,7 +15,7 @@ const cycle = new Function('migrNum', section('      function migrationStudyCycl
   '\nreturn { select: selectMigrationStudyCyclePosition, matches: migrationStudyCyclePositionMatches };')(num);
 const advance = new Function('engineNow', 'live', 'migrNum', section('          var studyBirdIndex =', '          engineNow.flockRoot.position.x'));
 const installLoss = new Function('renderer', 'cancelMigrationStudyPreview', 'engine', 'host', 'statusNode', 't',
-  'studyCyclePositionState', '_liveVals', '_f3dStudyCyclePauseRef',
+  'studyCyclePositionState', '_liveVals', '_f3dStudyCyclePauseRef', 'studyWingtipFollowState', '_f3dStudyStepAckRef',
   section("          renderer.domElement.addEventListener('webglcontextlost'", "          host.setAttribute('data-flight-ready', 'true');"));
 const tau = Math.PI * 2;
 const normalize = value => ((value % tau) + tau) % tau;
@@ -151,8 +151,10 @@ describe('Study exact illustrative cycle positions', () => {
       expect(button.props['aria-pressed']).toBe('false'); expect(button.props['aria-controls']).toBe('migration-flight-stage');
       expect(button.props['aria-describedby']).toBe('migration-study-cycle-help');
     }
-    expect(ui.host.textContent).toContain('Predict how positions 1 and 5 will differ');
-    expect(ui.host.textContent).toContain('write your evidence in the existing notes');
+    expect(ui.host.textContent).toContain('Predict how positions 3 and 7 will differ');
+    expect(ui.host.textContent).toContain('use Compare opposite position to switch between 3 and 7');
+    expect(ui.host.textContent).toContain('predict whether live dots will meet marked diamonds when you return to 3');
+    expect(ui.host.textContent).toContain('describe your evidence in the existing notes');
     expect(ui.host.textContent).toContain('Write the position numbers in your note');
     ui.set({ flightShowWingtipPath: false }); expect(ui.positions()).toHaveLength(0);
     ui.set({ flightShowWingtipPath: true, flightCamera: 'chase' }); expect(ui.positions()).toHaveLength(0);
@@ -249,9 +251,11 @@ describe('Study exact illustrative cycle positions', () => {
   it('clears local selection and pause intent directly in the real context-loss listener', () => {
     const f = pureFixture(), clear = vi.fn(), selectionState = [{ index: 2 }, clear], liveRef = { current: f.live }, pauseRef = { current: { index: 2 } };
     const canvas = document.createElement('canvas'); f.engine.host.append(canvas); f.live.flightStudyCyclePosition = 2;
+    const stepAckRef = { current: { pending: { manualStep: 20 } } };
     installLoss({ domElement: canvas }, vi.fn(), f.engine, f.engine.host, document.createElement('div'), (_, fallback) => fallback,
-      selectionState, liveRef, pauseRef);
+      selectionState, liveRef, pauseRef, [null, vi.fn()], stepAckRef);
     const loss = new Event('webglcontextlost', { cancelable: true }); canvas.dispatchEvent(loss);
+    expect(stepAckRef.current.pending).toBeNull();
     expect(loss.defaultPrevented).toBe(true); expect(clear).toHaveBeenCalledWith(null); expect(pauseRef.current).toBeNull();
     expect(f.live.flightStudyCyclePosition).toBeUndefined(); expect(f.engine.host.hasAttribute('data-flight-ready')).toBe(false);
   });

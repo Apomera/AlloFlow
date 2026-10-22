@@ -13,8 +13,8 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'focus', 'focusNext', 'focusPrevious', 'getState', 'resize', 'setInput', 'setLight', 'setPaused', 'setView', 'swimTo'];
-const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'moments', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view'];
+const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'resize', 'setInput', 'setLight', 'setPaused', 'setView', 'setVision', 'swimTo'];
+const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'moments', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
   { id: 'staghorn_coral', count: 4 }, { id: 'giant_moray', count: 1 }, { id: 'green_turtle', count: 2 }, { id: 'reef_manta', count: 1 },
@@ -785,20 +785,20 @@ describe('Reef3DExplore budgets and level of detail', () => {
     groupPos.forEach((p) => expect(p.distanceTo(cam.position)).toBeLessThan(24 + 2));
   });
 
-  it('shrinks draw distances when the measured frame is over budget, and recovers when it is not', () => {
+  it('keeps fixed scenery while adapting mobile draw distances under frame pressure', () => {
     const t = runtime();
     t.run(1);
     const base = drawn(t).total, visibleOrganisms = () => census(t).filter((o) => o.object && o.object.visible).length, orgBase = visibleOrganisms();
     t.renderer.info.render.triangles = 2000000;
     t.run(4);
-    expect(drawn(t).total).toBeLessThan(base * 0.8);
+    expect(drawn(t).total).toBe(base);
     expect(visibleOrganisms()).toBeLessThanOrEqual(orgBase);
     t.renderer.info.render.triangles = 1000;
     t.run(12);
-    expect(drawn(t).total).toBeGreaterThanOrEqual(base * 0.95);
+    expect(drawn(t).total).toBe(base);
     t.renderer.info.render.calls = 900;
     t.run(3);
-    expect(drawn(t).total).toBeLessThan(base * 0.9);
+    expect(drawn(t).total).toBe(base);
   });
 });
 

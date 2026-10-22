@@ -10,6 +10,23 @@ if (window.AlloModules.AlloCommandContext) return;
 // variable of the original body as `deps`; module-scope bindings that the boot
 // sequence upgrades in place arrive as live getters on `deps.__live`.
 
+// A volatile identity for reviewed action choices. Raw values stay in this
+// module-private WeakMap, never in a chat message, prompt, storage or report.
+const _alloCommandScopeOwners = new WeakMap();
+let _alloCommandScopeSequence = 0;
+function _alloCommandScopeToken(deps) {
+  const owner = deps && deps._alloCmdCtxRef;
+  if (!owner || typeof owner !== 'object') return '';
+  const current = [deps.canvasRecoveryCurrentIdRef && deps.canvasRecoveryCurrentIdRef.current, deps.inputText, deps.generatedContent, deps.history, deps.activeView, deps.activeBlueprint, deps.fullPackRun, deps.isTeacherMode, deps.isStudentLinkMode, deps.isIndependentMode, deps.isParentMode, deps.isProcessing, deps.isGeneratingSource, deps.isGeneratingPersona, deps.isExtracting, deps.gradeLevel, deps.leveledTextLanguage, deps.dokLevel, deps.targetStandards, deps.studentInterests, deps.studentProjectSettings, deps.sourceTopic, deps.sourceTone, deps.sourceLength, deps.hasSourceOrAnalysis, deps.standardsInput, deps.standardInputValue, deps.studentAiPolicyForShare, deps.homeworkExpiryDays, deps.latestStudentPreviewShare, deps.latestLessonPlan];
+  const previous = _alloCommandScopeOwners.get(owner);
+  if (previous && current.every((value, index) => Object.is(value, previous.values[index]))) return previous.token;
+  const token = 'cmd-scope-' + (++_alloCommandScopeSequence).toString(36);
+  _alloCommandScopeOwners.set(owner, {
+    values: current,
+    token
+  });
+  return token;
+}
 function buildAlloCommandContext(deps) {
   const {
     GUIDED_TOUR_MAP,
@@ -54,6 +71,7 @@ function buildAlloCommandContext(deps) {
     colorOverlay,
     createHomeworkAssignmentLink,
     currentUiLanguage,
+    canvasRecoveryCurrentIdRef,
     customTourSteps,
     db,
     directionsProgress,
@@ -138,6 +156,7 @@ function buildAlloCommandContext(deps) {
     hasSelectedMode,
     hasSelectedRole,
     hasSourceOrAnalysis,
+    history,
     homeworkExpiryDays,
     initiateSaveStudentProject,
     inputText,
@@ -1372,6 +1391,7 @@ function buildAlloCommandContext(deps) {
     addToast,
     callGemini: __live.callGemini,
     commandAudience,
+    commandScopeToken: _alloCommandScopeToken(deps),
     openSchoolStoreRecognition: () => {
       if (!isTeacherMode || isStudentLinkMode || isParentMode || isIndependentMode) return false;
       if (!normalizeAlloEvaluationPortalUrl(schoolRewardsPortalUrl)) {
@@ -1736,6 +1756,9 @@ function buildAlloCommandContext(deps) {
     stemLabTool,
     behaviorLensOpen: showBehaviorLens,
     contentLoaded: !!generatedContent,
+    // Safe routing metadata only: never include the source text in the intent brief.
+    hasSourceText: !!String(inputText || '').trim(),
+    generationBusy: !!(isProcessing || isGeneratingSource || isGeneratingPersona || isExtracting),
     zenActive: isZenMode,
     focusActive: focusMode,
     // Slice 2 (2026-06-13): essential ACTION capabilities — thin wrappers on existing host

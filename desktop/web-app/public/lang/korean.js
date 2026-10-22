@@ -54727,6 +54727,15 @@
       "sr_critique_ready": "평이 준비되었습니다."
     },
     "flightsim": {
+      "debrief_unavailable_title": "저장된 비행 복기를 불러올 수 없음",
+      "debrief_unavailable_body": "가장 최근 비행 복기가 없거나 읽을 수 없습니다. 메뉴로 돌아가 새 비행을 시작하세요.",
+      "guided_idea_before_trials": "실험 전에 기록됨",
+      "guided_idea_saved": "저장된 생각",
+      "guided_idea_timing_unknown": "이 저장된 생각의 시점은 기록되지 않았습니다.",
+      "guided_idea_latest": "가장 최근에 저장된 생각",
+      "guided_idea_latest_prediction": "가장 최근에 저장된 예측: {prediction}",
+      "guided_idea_saved_prediction": "저장된 예측: {prediction}",
+      "milestone_stall_recovery": "현재 이 순간 날개는 더 이상 실속 상태가 아닙니다. 한 번의 관찰만으로 실속 회복이 지속된다고 확정할 수는 없습니다.",
       "game_controls": "🎮 게임 조작",
       "cancel": "취소",
       "quiz": "퀴즈",
@@ -54778,6 +54787,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "이륙 기수 들기 — 기수 올리기 (W)",
+      "hud_rotate_touch": "이륙 기수 들기 — 중앙에서 위로 드래그",
+      "hud_flare": "착륙 기수 들기 — W로 기수를 부드럽게 올리기",
+      "hud_flare_touch": "착륙 기수 들기 — 중앙에서 위로 드래그",
+      "landing_touch_power": "오른쪽 가장자리를 따라 아래로 드래그하여 출력을 ~30%로 줄이세요. 속도가 줄어듭니다.",
+      "landing_touch_flare": "활주로 바로 위(~10 ft)에서 중앙으로부터 부드럽게 위로 드래그하여 기수를 올리세요. 접지할 때 하강률이 200 fpm 미만이 되도록 하세요.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90819,6 +90834,18 @@
     "card_progress": "카드 {n}/{total}",
     "add_words": "연습을 시작하려면 단어를 추가하세요.",
     "round_complete": "라운드 완료! 새 라운드를 시작하거나 표시한 단어를 복습하세요.",
-    "practice_label": "단어 연습"
+    "practice_label": "단어 연습",
+    "use_mine_help": "HTML 파일에 선택한 글꼴, 글자 크기, 간격이 적용됩니다.",
+    "preparing_reading": "읽기 설정을 추가하는 중…",
+    "font_not_embedded": "선택한 글꼴을 파일에 넣을 수 없어 시스템 글꼴을 사용합니다."
+  },
+  "reading_settings": {
+    "title": "읽기 설정",
+    "smaller": "글자 작게",
+    "larger": "글자 크게",
+    "overlay": "색상 오버레이",
+    "ruler": "읽기 자",
+    "use_mine": "내 읽기 설정 사용",
+    "use_mine_help": "내 글꼴, 글자 크기, 간격으로 인쇄합니다."
   }
 }

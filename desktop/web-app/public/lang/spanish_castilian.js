@@ -9744,6 +9744,37 @@
     "decodable_orf": "Timed passage from your Word Sounds pack"
   },
   "games": {
+    "sort_steps": {
+      "venn": "Prueba con un círculo a la vez. Explica por qué este elemento cumple o no cumple la regla de cada círculo.",
+      "causeEffect": "Prueba con la frase '___ ocurrió porque ___.' ¿Qué parte describe este elemento?",
+      "tchart": "Nombra una característica de este elemento. Compárala con el encabezado de cada columna.",
+      "conceptMapSort": "Prueba a decir 'Esto va con ___ porque ___.' Busca una conexión con cada rama.",
+      "outlineSort": "Prueba a decir 'Este detalle ayuda a explicar ___.' Compara tu idea con cada encabezado.",
+      "fishboneSort": "¿Cómo podría este elemento contribuir a causar el problema? Compara esa explicación con cada encabezado.",
+      "problemSolutionSort": "¿Qué ayudaría a hacer este detalle? Compara esa acción con cada solución.",
+      "frayerSort": "¿Explica lo que significa la idea, cómo es o si algo es un ejemplo?",
+      "seeThinkWonderSort": "¿Es algo que puedes observar, una explicación que debes respaldar con pruebas o una pregunta para explorar?",
+      "storyMapSort": "Vuelve a contar la historia en orden. ¿Qué papel tiene este elemento al contarla?",
+      "generic": "Nombra una característica de este elemento y explica cómo se relaciona con cada encabezado."
+    },
+    "sort_support": {
+      "show_tip": "Consejo para clasificar",
+      "hide_tip": "Ocultar consejo",
+      "tip_hidden": "Consejo para clasificar oculto."
+    },
+    "sort_reminders": {
+      "venn": "Revisa la regla de cada círculo. ¿Este elemento encaja en un grupo o en ambos?",
+      "causeEffect": "Pregúntate qué hizo que algo ocurriera y qué pasó como resultado.",
+      "tchart": "Lee los encabezados de ambas columnas. ¿Qué característica de este elemento te ayuda a decidir dónde encaja?",
+      "conceptMapSort": "Compara el elemento con la idea principal de cada rama. Busca una conexión que tenga sentido.",
+      "outlineSort": "Lee cada encabezado y pregúntate qué idea principal apoya este detalle.",
+      "fishboneSort": "Piensa en el tipo de causa que describe este elemento y luego compara los encabezados de las categorías.",
+      "problemSolutionSort": "Pregúntate qué solución ayuda a explicar o a poner en práctica este detalle.",
+      "frayerSort": "Decide si el elemento define la idea, describe una característica, da un ejemplo o muestra algo que no es un ejemplo.",
+      "seeThinkWonderSort": "Distingue entre lo que puedes observar, lo que deduces y lo que todavía te preguntas.",
+      "storyMapSort": "Piensa en el papel del elemento en la historia y luego compara los encabezados de las secciones.",
+      "generic": "Lee los encabezados y compara el elemento con la idea principal de cada grupo."
+    },
     "syntax": {
       "title": "Lío de sintaxis",
       "subtitle": "Construye la oración",
@@ -10290,7 +10321,9 @@
     "audio_dialog_title": "Descargar tarjetas de estudio",
     "include_audio": "Incluir el audio preparado",
     "audio_summary": "{count} grabaciones preparadas, unos {size} MB.",
-    "audio_cap_note": "El archivo no superará los 20 MB, así que se omitirán algunas grabaciones."
+    "audio_cap_note": "El archivo no superará los 20 MB, así que se omitirán algunas grabaciones.",
+    "audio_language_stale_one": "Se omitió una grabación porque su idioma guardado ya no coincide con la tarjeta. Actualiza el audio para incluirla.",
+    "audio_language_stale": "Se omitieron {count} grabaciones porque su idioma guardado ya no coincide con las tarjetas. Actualiza el audio para incluirlas."
   },
   "timeline": {
     "title": "Constructor de Secuencias",
@@ -58882,6 +58915,15 @@
       "sr_critique_ready": "Crítica lista."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Revisión de vuelo guardada no disponible",
+      "debrief_unavailable_body": "La revisión de vuelo más reciente falta o no se puede leer. Vuelve al menú para empezar un vuelo nuevo.",
+      "guided_idea_before_trials": "Registrada antes de los ensayos",
+      "guided_idea_saved": "Idea guardada",
+      "guided_idea_timing_unknown": "No se registró el momento de esta idea guardada.",
+      "guided_idea_latest": "Última idea guardada",
+      "guided_idea_latest_prediction": "Última predicción guardada: {prediction}",
+      "guided_idea_saved_prediction": "Predicción guardada: {prediction}",
+      "milestone_stall_recovery": "El ala ya no está en pérdida en este momento. Una sola observación no demuestra una recuperación sostenida.",
       "game_controls": "🎮 CONTROLES DEL JUEGO",
       "cancel": "Cancelar",
       "learn": "Aprender",
@@ -58935,6 +58977,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTACIÓN — eleva el morro (W)",
+      "hud_rotate_touch": "ROTACIÓN — desliza arriba desde el centro",
+      "hud_flare": "RECOGIDA — eleva suavemente el morro con W",
+      "hud_flare_touch": "RECOGIDA — desliza arriba desde el centro",
+      "landing_touch_power": "Desliza hacia abajo por el borde derecho para reducir la potencia a ~30%. La velocidad disminuirá.",
+      "landing_touch_flare": "Justo sobre la pista (~10 ft), desliza suavemente hacia arriba desde el centro para elevar el morro. Busca un descenso inferior a 200 fpm al tocar tierra.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -93455,6 +93503,37 @@
     "card_progress": "Tarjeta {n} de {total}",
     "add_words": "Añade palabras para empezar la práctica.",
     "round_complete": "Ronda terminada. Empezad una nueva ronda o repasad las palabras que habéis marcado.",
-    "practice_label": "Práctica de palabras"
+    "practice_label": "Práctica de palabras",
+    "use_mine_help": "El archivo HTML usa tu fuente, tamaño de texto y espaciado.",
+    "preparing_reading": "Añadiendo tu configuración de lectura…",
+    "font_not_embedded": "No se ha podido añadir tu fuente al archivo, así que usa la fuente del sistema.",
+    "pptx_word_audio_failed": "No se pudo convertir el audio de «{word}» para PowerPoint.",
+    "pptx_word_audio_missing": "No se incluye una grabación de «{word}».",
+    "pptx_sounds_incomplete": "La secuencia de sonidos de «{word}» está incompleta y no se incluyó.",
+    "pptx_sounds_failed": "No se pudo convertir la secuencia de sonidos de «{word}» para PowerPoint.",
+    "pptx_example": "Ejemplo: ",
+    "pptx_answer": "Respuesta",
+    "pptx_part": "Parte {n}/{total}",
+    "pptx_list_changed": "La lista de palabras cambió. Inicia la exportación de nuevo.",
+    "pptx_sentence_missing": "Falta una actividad de oración preparada.",
+    "pptx_answer_note": "Respuesta: {answer}. Avanza para mostrarla.",
+    "pptx_spell_advance": "Avanza para comprobar cómo escribiste la palabra.",
+    "pptx_say_word_note": "Si es necesario, di esta palabra en voz alta: {word}",
+    "pptx_no_sounds": "No hay una secuencia de sonidos preparada para esta palabra.",
+    "meaning_choices": "Elegir significados",
+    "meaning_choices_help": "Las entradas que se escriben igual permanecen separadas. Selecciona los significados que quieres incluir.",
+    "meaning_number": "Significado {n}: ",
+    "audio_language_stale": "Se omitió una grabación guardada de «{word}» porque su idioma ya no coincide. Prepara el audio para reemplazarla.",
+    "audio_language_omitted": "{count} grabaciones guardadas usan otro idioma y no se reproducen. Prepara audio de reemplazo en «Presentar y exportar».",
+    "audio_language_omitted_one": "{count} grabación guardada usa otro idioma y no se reproduce. Prepara audio de reemplazo en «Presentar y exportar»."
+  },
+  "reading_settings": {
+    "title": "Configuración de lectura",
+    "smaller": "Texto más pequeño",
+    "larger": "Texto más grande",
+    "overlay": "Superposición de color",
+    "ruler": "Regla de lectura",
+    "use_mine": "Usar mi configuración de lectura",
+    "use_mine_help": "Imprime con tu fuente, tamaño de texto y espaciado."
   }
 }

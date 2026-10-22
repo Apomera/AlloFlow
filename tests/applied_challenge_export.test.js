@@ -49,7 +49,7 @@ const challenge = () => ({
     workspace: {
       workingQuestion: 'How can gravity reduce pumping needs?',
       response: 'Start with a terrain study.',
-      stakeholders: 'HIDDEN IN COMPACT SCOPE',
+      stakeholders: 'SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE',
     },
     evidenceLedger: [
       { id: 'row-1', claim: 'Gravity storage is cheaper to run.', evidence: 'Lesson: gravity moves water downhill.', status: 'verified', tradeoff: 'Needs elevation.' },
@@ -114,9 +114,10 @@ describe('Applied Challenge Studio export model', () => {
   it('exposes one export model with scope-aware phases, prompts, and status labels', () => {
     expect(typeof AC.exportModel).toBe('function');
     const model = AC.exportModel(challenge().data);
-    expect(model.phases.map((p) => p.id)).toEqual(['workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'testReflection', 'revision', 'transferReflection']);
+    expect(model.phases.map((p) => p.id)).toEqual(['workingQuestion', 'stakeholders', 'possibilities', 'evidence', 'tradeoffs', 'response', 'testReflection', 'revision', 'transferReflection']);
     expect(model.phases[0].prompt).toBe('CUSTOM PHASE PROMPT for framing.');
-    expect(model.phases[1].label).toBe('2. Possible designs or approaches');
+    expect(model.phases.find((phase) => phase.id === 'possibilities').label).toBe('3. Possible designs or approaches');
+    expect(model.phases.find((phase) => phase.id === 'stakeholders').text).toBe('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
     expect(model.familyLabel).toBe('Design');
     expect(model.evidenceLedger[0].statusLabel).toBe('Needs checking');
     expect(model.validationCycles[0].plan.methodLabel).toBe('Constraint test');
@@ -125,6 +126,27 @@ describe('Applied Challenge Studio export model', () => {
     expect(model.validationCycles[0].complete).toBe(true);
     expect(model.feedback.statusLabel).toBe('Grounded in verified facts');
     expect(JSON.stringify(model)).not.toContain('PRIVATE SOURCE EXCERPT');
+  });
+
+  it.each(['full', 'response', 'teacher'])('preserves saved optional reasoning in the compact %s model', preset => {
+    const item = challenge();
+    const model = AC.exportModel(item.data, { preset });
+    expect(model.phases.find(phase => phase.id === 'stakeholders')?.text).toBe('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
+    expect(model.phases.some(phase => phase.id === 'assumptions')).toBe(false);
+    if (preset !== 'full') expect(AC.renderPreset(item.data, preset)).toContain('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
+  });
+
+  it('keeps a fresh compact workspace and task or paper copies limited to compact phases', () => {
+    const item = challenge();
+    const fresh = { ...item.data, workspace: {} };
+    const compactPhases = ['workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'testReflection', 'revision', 'transferReflection'];
+    expect(AC.exportModel(fresh).phases.map(phase => phase.id)).toEqual(compactPhases);
+    for (const preset of ['task', 'paper']) {
+      const model = AC.exportModel(item.data, { preset });
+      expect(model.phases.map(phase => phase.id)).toEqual(compactPhases);
+      expect(model.phases.every(phase => phase.text === '')).toBe(true);
+      expect(AC.renderPreset(item.data, preset)).not.toContain('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
+    }
   });
 
   it('treats a translator that echoes the key as a miss and keeps the English fallback', () => {
@@ -161,14 +183,14 @@ describe('Applied Challenge Studio HTML export', () => {
     const keys = fields.map((f) => f.getAttribute('data-allo-response-key'));
     expect(keys).toContain('ac-export-1:applied:workingQuestion');
     expect(keys).toContain('ac-export-1:applied:response');
-    expect(keys).not.toContain('ac-export-1:applied:stakeholders');
+    expect(keys).toContain('ac-export-1:applied:stakeholders');
     const framing = fields.find((f) => f.getAttribute('data-allo-response-key') === 'ac-export-1:applied:workingQuestion');
     expect(framing.value).toBe('How can gravity reduce pumping needs?');
     expect(framing.getAttribute('data-allo-question')).toBe('1. Frame the challenge');
     expect(framing.className).toContain('alloflow-response-input');
     expect(section.textContent).toContain('CUSTOM PHASE PROMPT for framing.');
-    expect(section.textContent).toContain('2. Possible designs or approaches');
-    expect(section.textContent).not.toContain('HIDDEN IN COMPACT SCOPE');
+    expect(section.textContent).toContain('3. Possible designs or approaches');
+    expect(section.textContent).toContain('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
   });
 
   it('prints snapshot text and ruled lines on the paper worksheet', () => {
@@ -223,7 +245,7 @@ describe('Applied Challenge Studio HTML export', () => {
       expect(text).toContain('Start with a terrain study.');
       expect(text).toContain('Gravity storage is cheaper to run.');
       expect(text).toContain('FEEDBACK QUESTION SURVIVES EXPORT');
-      expect(text).not.toContain('HIDDEN IN COMPACT SCOPE');
+      expect(text).toContain('SAVED PEOPLE AND SYSTEMS REASONING SURVIVES COMPACT SCOPE');
     } finally {
       window.AlloModules.AppliedChallenge = saved;
     }

@@ -81,13 +81,13 @@ const callerStart = source.indexOf('if (skeletalProfile.keratinBeak) {', source.
 const callerEnd = source.indexOf('var integumentSeed =', callerStart);
 if ([chainStart, chainEnd, callerStart, callerEnd].some(index => index < 0)) throw new Error('Actual beak construction was not found');
 const createChain = new Function('THREE', 'props', 'bodyMat', 'model', 'dinoCranialGeometry', 'dinoSurfaceGeometry', source.slice(chainStart, chainEnd) + 'return addSoftTissueChain;');
-const buildBeak = new Function('THREE', 'skeletalProfile', 'head', 'surfaceSnout', 'surfaceHeadLength', 'surfaceHeadHeight', 'surfaceHeadDepth',
+const buildBeak = new Function('THREE', 'dn', 'skeletalProfile', 'head', 'surfaceSnout', 'surfaceHeadLength', 'surfaceHeadHeight', 'surfaceHeadDepth',
   'cranialSurface', 'cladeName', 'vec', 'addSoftTissueChain', 'keratinMat', 'registerCranialMotion', 'dinoBeakSurfaceGeometry',
   source.slice(callerStart, callerEnd) + 'return keratinBeak;');
 function caller(data, hasBeak = true) {
   const material = new THREE.MeshBasicMaterial(), model = new THREE.Group(), registered = [], helperCalls = [];
   const chain = createChain(THREE, { showBody: true }, material, model, art.dinoCranialGeometry, art.dinoSurfaceGeometry);
-  const mesh = buildBeak(THREE, { keratinBeak: hasBeak }, data.head, data.snout, data.length, data.height, data.depth,
+  const mesh = buildBeak(THREE, data.dino, { keratinBeak: hasBeak }, data.head, data.snout, data.length, data.height, data.depth,
     data.profile, data.dino.clade, (x, y, z) => new THREE.Vector3(x, y, z), chain, material, part => registered.push(part),
     (...args) => { helperCalls.push({ geometry: args[1], height: args[2], enabled: args[3] }); return art.dinoBeakSurfaceGeometry(...args); });
   return { mesh, material, model, registered, helperCalls };

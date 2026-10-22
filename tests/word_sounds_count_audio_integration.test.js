@@ -160,9 +160,10 @@ describe('runtime count audio selection', () => {
   });
 
   it.each([true, false])('blocks generic audio fallback after a count profile was rejected (play=%s)', async playImmediately => {
-    const guard = slice(runtime, "          const countingTarget = wordSoundsActivity === 'syllable_counting'", '          if (!text) return Promise.resolve();');
+    const guard = slice(runtime, "          const countingTarget = wordSoundsActivity === 'syllable_counting'", '          if (!text) return ');
     const env = {
       WS_CORE: core, wordSoundsActivity: 'syllable_counting', wordSoundsLanguage: 'en-GB',
+      englishPhonemeAudio: true,
       text: 'air', currentWordSoundsWord: 'air', wordSoundsPhonemes: { word: 'air' }, playImmediately,
       syllableCountWordKey: value => String(value || '').trim().toLowerCase(),
       syllableCountAudioRef: { current: { source: null, context: core.createSyllableCountAudioContext({ language: 'en-GB', voice: 'bf_emma' }) } },

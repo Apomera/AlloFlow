@@ -204,18 +204,20 @@ describe('SkySchool measured flight challenges', () => {
     expect(host.querySelector('#challenge-reflection').value).toBe(explanation);
   });
 
-  it('preserves interrupted evidence on reload and returns to launch without pretending to restore the aircraft', async () => {
+  it('preserves interrupted checkpoint evidence in a review without pretending to restore the aircraft', async () => {
     await mount();
     await start('first_flight');
     airborne();
     await evaluate();
     const saved = JSON.parse(JSON.stringify(latest));
     await mount(saved);
-    expect(latest.view).toBe('menu');
+    expect(latest.view).toBe('debrief');
     expect(latest.flightChallenge).toBeNull();
     expect(latest.selectedChallenge).toBeNull();
     expect(latest.challengeResults.first_flight).toMatchObject({ interrupted: true, objectives: { climb: true, steady: false, landing: false } });
+    expect(latest.lastDebrief).toMatchObject({ interrupted: true, challenge: { id: 'first_flight', objectives: { climb: true, steady: false, landing: false } } });
     expect(active()).toBeNull();
+    expect(hooks().flyingRef.current).toBe(false);
   });
 
   it('recovers a cockpit hydrated after mount without replacing the prior debrief', async () => {
@@ -248,15 +250,21 @@ describe('SkySchool measured flight challenges', () => {
     const best = latest.personalBests.challenges.first_flight;
     expect(xp).toHaveLength(1);
     await mount(JSON.parse(JSON.stringify(latest)));
-    expect(latest.view).toBe('menu');
+    expect(latest.view).toBe('debrief');
+    expect(latest.lastDebrief).toMatchObject({ interrupted: true, challenge: { id: 'first_flight', status: 'complete' } });
     expect(latest.challengeResults.first_flight.status).toBe('complete');
     expect(latest.personalBests.challenges.first_flight).toBe(best);
     expect(xp).toHaveLength(1);
+    await clickContaining('Menu');
+    expect(latest.view).toBe('menu');
     await start('first_flight'); airborne(); await evaluate();
     await mount(JSON.parse(JSON.stringify(latest)));
+    expect(latest.view).toBe('debrief');
     expect(latest.challengeResults.first_flight).toMatchObject({ status: 'active', interrupted: true, objectives: { climb: true, steady: false, landing: false } });
     expect(latest.challengeCompleted.first_flight).toBe(completedAt);
     expect(latest.personalBests.challenges.first_flight).toBe(best);
+    await clickContaining('Menu');
+    expect(latest.view).toBe('menu');
     expect(host.querySelector('[data-flight-start-step="first_flight"]').dataset.done).toBe('true');
     expect(xp).toHaveLength(1);
   });

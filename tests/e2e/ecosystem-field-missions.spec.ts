@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_ecosystem.js', toolId: 'ecosystem', width: 1100, height: 900, appStyles: true });
-const reportDir = 'reports/ecosystem-eyes-landing-field-guide';
+const reportDir = process.env.ECOLOGY_REPORT_DIR || 'reports/ecosystem-eyes-landing-field-guide';
 test.describe.configure({ timeout: 420_000, retries: 0 });
 test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());

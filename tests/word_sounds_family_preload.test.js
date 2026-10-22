@@ -110,7 +110,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     reportPreparedRuntimePlayback: vi.fn(), notifyAudioUnavailable: vi.fn(), audioCache: { current: new Map() },
     portableTtsSrcFor: () => packed, wordSoundsAudioLibraryRef: { current: {} },
     loadAudioFromStorage: () => null, ttsInflight: { current: new Map() }, callTTS: vi.fn(async () => null),
-    saveAudioToStorage: vi.fn(), wordSoundsLanguage: 'en', wordSoundsAudioLibrary: {}, speakWord: vi.fn(),
+    saveAudioToStorage: vi.fn(), wordSoundsLanguage: 'en', preloadedWords: [], wordSoundsAudioLibrary: {}, speakWord: vi.fn(),
   };
   if (cached) environment.audioInstances.current.set('hat', cached);
   const handleAudio = new Function(...Object.keys(environment), handleAudioSource + ';return handleAudio;')(...Object.values(environment));

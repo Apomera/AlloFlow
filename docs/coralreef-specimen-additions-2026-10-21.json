@@ -1,0 +1,221 @@
+{
+  "checked": "2026-10-21",
+  "scope": "Two additional Indo-West Pacific guide, identification-practice and dive specimens. Copy is newly paraphrased. Observation instructions are prompts, not claims that each behavior is simulated.",
+  "iucnYearConvention": "Assessment year, matching existing fish metadata; publication year is recorded separately. Direct IUCN pages returned inaccessible/403, so current museum/catalog and FishBase assessment exports corroborate the values; do not label this a successful direct IUCN check.",
+  "specimens": [
+    {
+      "id": "firefish",
+      "name": "Firefish (red firegoby)",
+      "scientific": "Nemateleotris magnifica",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2023,
+      "iucnPublishedYear": 2024,
+      "iucnDateAssessed": "2023-08-18",
+      "iucnCitation": "Stiefel, K.M. 2024. Nemateleotris magnifica. The IUCN Red List of Threatened Species 2024: e.T155229A238348905.",
+      "lookalikes": [],
+      "marks": [
+        "Very slender body, pale at the head and turning orange-red toward the tail",
+        "An exceptionally long first dorsal fin rises like a narrow pennant",
+        "The tail fin is rounded rather than deeply forked",
+        "Red rear dorsal and anal fins have darker outer areas"
+      ],
+      "role": "Feeds on tiny drifting animals above the reef, facing into the current to catch zooplankton.",
+      "fact": "A firefish usually stays close to its burrow and can dart inside when disturbed. Its spectacular pennant is the raised front part of its first dorsal fin.",
+      "habitat": "Sandy patches and burrows on the upper parts of outer reef slopes in the Indo-Pacific.",
+      "diet": "Zooplankton carried by the current, including copepods and crustacean larvae.",
+      "behavior": "Often seen alone or as a pair, hovering above a nearby refuge rather than joining a large school.",
+      "observe": "Compare the tall pennant with its slim body, then check the rounded tail and pale-to-red color change.",
+      "sources": [
+        "dx-foa-firefish",
+        "dx-fao-firefish",
+        "dx-cas-firefish"
+      ],
+      "claimSupport": {
+        "nameScientific": "dx-foa-firefish; dx-cas-firefish",
+        "marks": "dx-fao-firefish; dx-foa-firefish",
+        "roleDiet": "dx-foa-firefish; dx-fao-firefish",
+        "factBehaviorHabitat": "dx-fao-firefish; dx-foa-firefish",
+        "iucnCategoryPublishedYear": "dx-cas-firefish",
+        "iucnDateAssessmentYear": "dx-fishbase-firefish",
+        "iucnCitation": "dx-aquahoy-firefish-reference (bibliographic corroboration only, not biological copy)"
+      },
+      "caution": "FoA still cites the old 2010/2017 assessment, but the current Catalog of Fishes gives IUCN (2024) LC and the current FishBase IUCN export gives assessment 18 August 2023. Do not reuse the obsolete2010 firefish date."
+    },
+    {
+      "id": "copperband_butterflyfish",
+      "name": "Copperband butterflyfish (beaked coralfish)",
+      "scientific": "Chelmon rostratus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2009,
+      "iucnPublishedYear": 2010,
+      "iucnDateAssessed": "2009-10-09",
+      "iucnCitation": "Myers, R. & Pratchett, M. 2010. Chelmon rostratus. The IUCN Red List of Threatened Species 2010: e.T165659A6083324.",
+      "lookalikes": [
+        "threadfin_butterflyfish"
+      ],
+      "marks": [
+        "Deep, flattened white body crossed by orange-copper bars",
+        "A very long, narrow snout projects in front of the face",
+        "A dark-edged orange bar passes through the real eye",
+        "A black false eyespot sits near the rear of the dorsal fin"
+      ],
+      "role": "Picks small bottom-dwelling invertebrates from reef crevices with its narrow snout.",
+      "fact": "Its long adult snout develops after the young fish settles on the reef; the earliest stages already have similar markings.",
+      "habitat": "Shallow coastal reefs, rocky shores, bays and estuaries in the Indo-West Pacific, often in sheltered or silty water.",
+      "diet": "Small animals living on the bottom, reached by probing cracks and holes in the reef.",
+      "behavior": "Encountered singly or in pairs; adults form pairs during breeding.",
+      "observe": "Locate the real eye in its orange bar, then look toward the tail to find the false eyespot. Compare its long snout and broad bars with a threadfin butterflyfish.",
+      "sources": [
+        "dx-foa-copperband_butterflyfish",
+        "dx-am-copperband_butterflyfish",
+        "dx-cas-copperband_butterflyfish",
+        "dx-ga-copperband_butterflyfish"
+      ],
+      "claimSupport": {
+        "nameScientificMarks": "dx-am-copperband_butterflyfish; dx-foa-copperband_butterflyfish",
+        "roleDiet": "dx-cas-copperband_butterflyfish; dx-ga-copperband_butterflyfish",
+        "fact": "dx-am-copperband_butterflyfish",
+        "habitat": "dx-foa-copperband_butterflyfish; dx-ga-copperband_butterflyfish",
+        "behavior": "dx-ga-copperband_butterflyfish",
+        "iucnCategoryPublishedYear": "dx-foa-copperband_butterflyfish",
+        "iucnDateAssessmentYear": "dx-fishbase-copperband_butterflyfish"
+      },
+      "caution": "Do not say this is an obligate coral eater, or promise the eyespot fools predators. Museum accounts differ in how bars are counted (head vs body), so the marks intentionally avoid an exact total."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-foa-firefish",
+      "text": "Bray, D.J. (2023). Fishes of Australia: Red Firegoby, Nemateleotris magnifica. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/2943",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "accepted name",
+        "pale-to-red body",
+        "elongated dorsal",
+        "rounded tail",
+        "outer reef slopes/burrows",
+        "current-facing zooplankton feeding",
+        "single or paired occurrence"
+      ]
+    },
+    {
+      "id": "dx-fao-firefish",
+      "text": "FAO. Fishes of the Maldives: Fire dartfish, Nemateleotris magnifica, p.307.",
+      "url": "https://www.fao.org/fishery/docs/CDrom/bobp/cd1/Bobp/Publns/MAG/021.pdf",
+      "urlLabel": "fao.org",
+      "supports": [
+        "dorsal and tail anatomy",
+        "red rear fins with dark areas",
+        "sandy reef-slope burrows",
+        "rapid retreat",
+        "pairs",
+        "copepods and crustacean larvae"
+      ]
+    },
+    {
+      "id": "dx-cas-firefish",
+      "text": "Fricke, R., Eschmeyer, W.N. and Van der Laan, R. (eds). Eschmeyer's Catalog of Fishes: Nemateleotris magnifica. California Academy of Sciences. Online version updated August 2026; accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=21740",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "valid scientific name",
+        "Indo-West Pacific distribution including Sulawesi type locality",
+        "IUCN (2024): Least Concern"
+      ]
+    },
+    {
+      "id": "dx-fishbase-firefish",
+      "text": "FishBase. Nemateleotris magnifica: IUCN assessment export (Red List version 2025-2), assessed 18 August 2023. Accessed October 2026.",
+      "url": "https://fishbase.se/Fieldguide/FieldGuideSummary.php?c_code=690&genusname=Nemateleotris&speciesname=magnifica",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "IUCN LC",
+        "assessment date2023-08-18"
+      ],
+      "integration": "Use in maintained provenance; optional profile source because currentCAS provides primary institutional corroboration of category."
+    },
+    {
+      "id": "dx-aquahoy-firefish-reference",
+      "text": "Lujan, M. (2024). AquaHoy: Fire Goby. Bibliography identifies Stiefel (2024), e.T155229A238348905.",
+      "url": "https://aquahoy.com/fire-goby-nemateleotris-magnifica-care-feeding/",
+      "urlLabel": "aquahoy.com",
+      "supports": [
+        "exact newer IUCN citation only"
+      ],
+      "integration": "Provenance only. No copy derived from care advice."
+    },
+    {
+      "id": "dx-foa-copperband_butterflyfish",
+      "text": "Bray, D.J. (2020). Fishes of Australia: Beaked Coralfish, Chelmon rostratus. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/422",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "name",
+        "bars and eyespot",
+        "coastal bays/estuaries",
+        "LC",
+        "published2010 IUCN citation"
+      ]
+    },
+    {
+      "id": "dx-am-copperband_butterflyfish",
+      "text": "McGrouther, M. (2020). Australian Museum: Beaked Coralfish, Chelmon rostratus. Accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/beaked-coralfish-chelmon-rostratus/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "long snout",
+        "tall fins",
+        "orange bars",
+        "bar through real eye",
+        "ocellus",
+        "snout develops after settlement",
+        "Indo-West Pacific"
+      ]
+    },
+    {
+      "id": "dx-cas-copperband_butterflyfish",
+      "text": "California Academy of Sciences. Reef Lagoon Field Guide: Copperband butterflyfish. Accessed October 2026.",
+      "url": "https://www.calacademy.org/explore-science/reef-lagoon-field-guide",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "benthic invertebrate diet",
+        "snout finds prey in rock crevices",
+        "LC"
+      ]
+    },
+    {
+      "id": "dx-ga-copperband_butterflyfish",
+      "text": "Georgia Aquarium. Copperband Butterflyfish species account. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/copperband-butterflyfish/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": [
+        "benthic invertebrates",
+        "shallow rocky/silty inner reefs and estuaries",
+        "single or paired occurrence",
+        "breeding pairs",
+        "longsnout feeds in crevices"
+      ]
+    },
+    {
+      "id": "dx-fishbase-copperband_butterflyfish",
+      "text": "FishBase. Chelmon rostratus: IUCN assessment export (Red List version 2025-2), assessed 9 October 2009. Accessed October 2026.",
+      "url": "https://www.fishbase.org/summary/SpeciesSummary.php?id=5483&lang=English",
+      "urlLabel": "fishbase.org",
+      "supports": [
+        "LC",
+        "assessmentdate2009-10-09"
+      ],
+      "integration": "Maintained provenance; primary IUCN linked from FoA, but direct page was inaccessible."
+    }
+  ],
+  "integration": {
+    "existingFacts": "tmp/reef-field-guide-2026-10-20/current-species-facts.json contains extracted prior names/marks/roles/facts only, not meta or generator.",
+    "existingProfiles": "tmp/reef-field-guide-2026-10-20/profiles-data.json holds id:[habitat,diet,behavior,observe,sources]; profiles.js generated functions, profiles-sources/provenance separate.",
+    "maintainedSource": "No maintained generator/fact sheet found outside scratch tmp. Recommended docs/coralreef-specimen-additions-2026-10-21.json with new records plus source/provenance, then exact insertions into SPECIES_META, speciesText, marineProfiles and marineProfileSources. Never regenerate older records from stale tmp.",
+    "practice": "Global SPECIES_META and matching speciesText/profile/model IDs allow these specimens into the existing choices and guide/practice routes. Existing collected/seen/notes state must stay untouched; adding a specimen never marks it seen.",
+    "lookalikeNote": "Copperband/threadfin comparison is useful because both have eye bars and dorsal eyespots. Firefish has no genuinely close existing guide counterpart, so lookalikes is empty rather than inventing a confusing pair. Same-group practice distractors still work."
+  }
+}

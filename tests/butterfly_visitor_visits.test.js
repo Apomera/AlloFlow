@@ -132,6 +132,57 @@ describe('Autonomous butterfly flower visits',()=>{
     }
   });
 
+  it.each(['cabbage-white','painted-lady','tiger-swallowtail','monarch'])('adds a bounded %s inspection sweep before a precise landing',id=>{
+    const state=BF.freshState(),patches=BF.habitats(state).filter(p=>p.nectar),index=BF.visitorSpecies.indexOf(id),site=BF.visitorPatch(patches,index),scale=BF.meadowSpecies(id).scale;
+    const before=JSON.stringify({state,site}),saved=BF.save(state),at=time=>BF.visitorVisitPose(site,index,time,false,id);
+    // Discover the two visit windows from their actual phase transitions.
+    const rows=Array.from({length:2001},(_,n)=>({time:n*.05,pose:at(n*.05)}));
+    const runs=phaseRuns(rows,'approaching').filter(run=>run[0].time>.05&&run[run.length-1].time<99.95).slice(0,2);
+    expect(runs).toHaveLength(2);
+    function edge(lo,hi){
+      const phase=at(lo).phase;
+      for(let n=0;n<32;n++){const mid=(lo+hi)/2;if(at(mid).phase===phase)lo=mid;else hi=mid;}
+      return (lo+hi)/2;
+    }
+    const sides=[];
+    for(const run of runs){
+      const start=edge(run[0].time-.05,run[0].time),end=edge(run[run.length-1].time,run[run.length-1].time+.05),duration=end-start,touchdown=at(end+.002);
+      expect(touchdown.phase).toBe('feeding');expect(touchdown.perch).toBe(1);
+      expect(touchdown.y-touchdown.flower.y).toBeCloseTo(.11*scale,10);
+      expect(Math.hypot(touchdown.x-touchdown.flower.x,touchdown.z-touchdown.flower.z)).toBeCloseTo(.1*scale,10);
+      // The uncurved reference uses the actual route, touchdown and perch blend.
+      // This checks the visible behavior without copying the arc's pulse formula.
+      function offset(fraction){
+        const time=start+duration*fraction,pose=at(time),flight=BF.visitorFlightPose(site,index,time,false,id),weight=pose.perch;
+        return {x:pose.x-(flight.x+(touchdown.x-flight.x)*weight),y:pose.y-(flight.y+(touchdown.y-flight.y)*weight),z:pose.z-(flight.z+(touchdown.z-flight.z)*weight)};
+      }
+      const middle=offset(.5),lateral=Math.hypot(middle.x,middle.z);
+      expect(lateral).toBeGreaterThan(.25*scale);expect(lateral).toBeLessThan(.35*scale);
+      expect(middle.y).toBeGreaterThan(.15*scale);expect(middle.y).toBeLessThan(.21*scale);
+      sides.push(middle.x*Math.cos(touchdown.yaw)-middle.z*Math.sin(touchdown.yaw));
+      expect(Math.abs(middle.x*Math.sin(touchdown.yaw)+middle.z*Math.cos(touchdown.yaw))).toBeLessThan(1e-9);
+      for(let n=0;n<=30;n++){
+        const d=offset(n/30);
+        expect(Math.hypot(d.x,d.z)).toBeLessThanOrEqual(.35*scale);
+        expect(d.y).toBeGreaterThanOrEqual(-1e-9);expect(d.y).toBeLessThanOrEqual(.21*scale);
+      }
+      for(const fraction of [.04,.96]){
+        const d=offset(fraction);expect(Math.hypot(d.x,d.y,d.z)).toBeLessThan(1e-9);
+      }
+      for(const time of [end+.2,end+.9]){
+        const feeding=at(time);expect(feeding.phase).toBe('feeding');
+        expect(distance(feeding,touchdown)).toBeLessThan(1e-10);expect(feeding.flower).toEqual(touchdown.flower);
+      }
+      const time=start+duration*.5,paused=at(time),flex=BF.visitorWingFlex(site,index,time,false,id);
+      at(time+91);expect(at(time)).toEqual(paused);
+      expect(BF.visitorWingFlex(site,index,time,false,id)).toEqual(flex);
+      const still=BF.visitorVisitPose(site,index,0,true,id);
+      for(const clock of [time,time+91])expect(BF.visitorVisitPose(site,index,clock,true,id)).toEqual(still);
+    }
+    expect(sides[0]*sides[1]).toBeLessThan(0);
+    expect(JSON.stringify({state,site})).toBe(before);expect(BF.save(state)).toEqual(saved);
+  });
+
   it('never feeds on lawn or an unplanted restoration plot',()=>{
     for(const id of ['lawn','restoration']){
       const {patch}=patchFor(id);

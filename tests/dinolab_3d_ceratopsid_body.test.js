@@ -38,6 +38,19 @@ describe('Four fixed ceratopsid body frames',()=>{
       for(const limb of built.records.limbs){
         const [upper,lower,companion]=limb.bones.filter(bone=>bone.kind==='addLongBone');
         const [top,joint]=upper.args,[,distal]=lower.args;
+        const record=metadata.limbs.find(item=>item.front===limb.front&&item.side===limb.side);
+        const digitFan=built.records.distal.find(item=>item.kind==='addDigitFan'&&item.args[1]===limb.front&&item.args[2]===limb.side);
+        expect(record,'record for '+id+' '+(limb.front?'fore':'hind')+' side '+limb.side).toBeDefined();
+        expect(digitFan,'actual native foot endpoint').toBeDefined();
+        // Standard exploration aliases must describe the same centers passed
+        // into the native bone and digit builders, including scaled models.
+        expect(record.top).toEqual(top.toArray());
+        expect(record.knee).toEqual(joint.toArray());
+        expect(record.ankle).toEqual(distal.toArray());
+        expect(record.foot).toEqual(digitFan.args[0].toArray());
+        expect(record.knee).toEqual(record.joint);
+        expect(record.ankle).toEqual(record.distal);
+        expect(record.foot).toEqual(record.contact);
         expect(limb.front?joint.x>top.x:joint.x<top.x,'opposed joint '+id).toBe(true);
         const ratio=joint.distanceTo(distal)/top.distanceTo(joint);
         expect(Math.abs(ratio-(limb.front?profile.radiusHumerus:profile.tibiaFemur))<1e-10).toBe(true);

@@ -143,7 +143,7 @@
   const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
   // Bound and allowlist text trees. Media, private practice, teacher source,
   // and unknown future fields must never enter a response submission.
-  const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
+  const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactUrlDraft artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
   function textTree(value, depth = 0) {
     if (depth > 8) return null;
     if (typeof value === 'string') return value.slice(0, 12000);
@@ -162,11 +162,21 @@
       const key=text(row?.factKey,80); if(!/^link:[a-zA-Z0-9_-]+$/.test(key)||seen.has(key)) return false; seen.add(key); return true;
     }).slice(-20).map(row => ({factKey:text(row.factKey,80),cue:text(row.cue,200),explanation:text(row.explanation,600),cueKey:text(row.cueKey,80)}));
   }
+  function appliedWorkspaceResponse(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.artifactUrlDraft !== 'string') return value;
+    // A link draft is one learner-owned field. Its validated URL is derived by
+    // the view, so cross-tab merges cannot combine another tab's URL with it.
+    const workspace = { ...value };
+    delete workspace.artifactUrl;
+    return workspace;
+  }
   function responseFromData(type, data, reference, previous) {
     if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(data, data.studentAnswers), feedback: data.feedback || null, prevFeedbackScore: Number(data.prevFeedbackScore) || 0 };
     if (type === 'note-taking') return { schemaVersion: 1, ...legacyNotes(data || {}) };
     if (type === 'memory-aid') { const base = memoryCards(reference || data), prior = previous ? memoryCards(previous) : []; return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true, prior.find(item => item.id === card.id)) })) }; }
-    return { schemaVersion: 1, ...pick(data, appliedFields) };
+    const fields = pick(data, appliedFields);
+    if (fields.workspace) fields.workspace = appliedWorkspaceResponse(fields.workspace);
+    return { schemaVersion: 1, ...fields };
   }
   function project(resource, response) {
     const data = resource.data || {};
@@ -222,7 +232,7 @@
     const baseCards = resource.type === 'memory-aid' ? memoryCards(resource.data) : [];
     const data = resource.type === 'memory-aid'
       ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), ...(typeof card?.cueFactBasis === 'string' ? { cueFactBasis: card.cueFactBasis.slice(0, 80) } : {}), studentConnections: memoryConnections(card?.studentConnections) })) }
-      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(raw[key])])) };
+      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(key === 'workspace' ? appliedWorkspaceResponse(raw[key]) : raw[key])])) };
     return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
   }
   function toResponseEntries(resource, response) {

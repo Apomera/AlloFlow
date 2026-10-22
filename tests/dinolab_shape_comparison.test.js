@@ -58,11 +58,13 @@ async function mount(overrides = {}) {
 describe('Curated anatomical shape comparisons', () => {
   it('accepts only real fixed-reference relatives and distinguishes model shape from size, growth and function', () => {
     const { art, dn } = load();
-    expect(art.DINO_SHAPE_STUDY_FAMILIES.map(f => f.id)).toEqual(['crests', 'armor', 'sauropods', 'ornithopods', 'ceratopsids']);
+    expect(art.DINO_SHAPE_STUDY_FAMILIES.map(f => f.id)).toEqual(['crests', 'dromaeosaur-feet', 'dromaeosaur-skulls', 'dromaeosaur-pelvis', 'dromaeosaur-hands', 'theropod-skulls', 'armor', 'sauropod-skulls', 'sauropods', 'lambeosaurs', 'ornithopods', 'ceratopsids', 'ankylosaurs', 'theropods', 'stegosaurs']);
     for (const family of art.DINO_SHAPE_STUDY_FAMILIES) for (const id of family.choices) {
       const study = art.dinoShapeStudyFor({ family: family.id, b: id, active: 'b' });
       expect(study.a.id).toBe(family.reference); expect(study.species.id).toBe(id); expect(study.region).toBe(family.region);
-      expect(art.dinoShapeStudyPairFor(dn(id), dn(family.reference)).key).toBe(study.key);
+      // An explicit family retains legacy Back armor when that same species
+      // pair also has a reviewed full-body investigation.
+      expect(art.dinoShapeStudyPairFor(dn(id), dn(family.reference), family.id).key).toBe(study.key);
     }
     for (const raw of [{ family: 'crests', b: 'tyrannosaurus', active: 'b' }, { family: 'crests', b: 'parasaurolophus', active: 'a' }, { family: 'armor', b: 'kentrosaurus', active: 'x' }, { family: 'invented', b: 'edmontosaurus', active: 'b' }]) expect(art.dinoShapeStudyFor(raw)).toBeNull();
     expect(art.dinoShapeStudyNavigationPatch({}, { family: { id: 'crests' }, b: { id: 'tyrannosaurus' }, active: 'b', species: dn('tyrannosaurus') }, null)).toBeNull();

@@ -72,6 +72,15 @@ function makeHarness(options) {
     },
   };
 
+  // Real idle callbacks may fire promptly with a short deadline on every frame;
+  // those callbacks never set didTimeout even after minutes of queue starvation.
+  if (typeof settings.idleBudgetMs === 'number') {
+    environment.window.requestIdleCallback = (callback) => environment.setTimeout(() => callback({
+      didTimeout: false,
+      timeRemaining: () => settings.idleBudgetMs,
+    }), 1);
+  }
+
   function enqueue(count, prefix) {
     for (let index = 0; index < count; index++) {
       const entry = { name: (prefix || 'Module') + index, url: 'https://cdn.example/' + index + '.js' };
@@ -207,5 +216,43 @@ describe('deferred module pump', () => {
       harness.settleAll();
     }
     expect(new Set(harness.dispatched).size).toBe(harness.dispatched.length);
+  });
+
+  it.each([0, 8, 10])('makes bounded progress when every idle callback has only %ims left', (idleBudgetMs) => {
+    const harness = makeHarness({ idleBudgetMs });
+    harness.enqueue(6);
+    harness.runUntil(2500);
+    expect(harness.dispatched).toEqual([]);
+    harness.runUntil(3500);
+    expect(harness.dispatched).toHaveLength(1);
+    // Each recovery dispatch must earn another starvation window, even when the
+    // preceding script settles immediately; it must not burst through the queue.
+    harness.settleAll();
+    harness.runUntil(4500);
+    expect(harness.dispatched).toHaveLength(1);
+    harness.runUntil(5500);
+    expect(harness.dispatched).toHaveLength(2);
+    for (let until = 30000; until <= 900000; until += 10000) {
+      harness.settleAll();
+      harness.runUntil(until);
+    }
+    expect(harness.dispatched).toHaveLength(6);
+  });
+
+  it('keeps short-idle recovery behind visibility, launch-pad and in-flight limits', () => {
+    const hidden = makeHarness({ hidden: true, idleBudgetMs: 8 });
+    hidden.enqueue(6);
+    hidden.runUntil(60000);
+    expect(hidden.dispatched).toEqual([]);
+
+    const concealed = makeHarness({ bodyClasses: ['alloflow-launchpad-active'], idleBudgetMs: 8 });
+    concealed.enqueue(6);
+    concealed.runUntil(60000);
+    expect(concealed.dispatched).toEqual([]);
+
+    const pending = makeHarness({ idleBudgetMs: 8 });
+    pending.enqueue(6);
+    pending.runUntil(60000);
+    expect(pending.dispatched).toHaveLength(3);
   });
 });

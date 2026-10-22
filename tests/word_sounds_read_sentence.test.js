@@ -142,7 +142,7 @@ describe('the compiled pack carries the board', () => {
 
   it('AI sentence distractors pass through the unverified-word flag', () => {
     // Runs the real flag sweep (sliced from the source) with a stub word list.
-    const body = sliceBetween(SOURCE, 'const sessionWords = new Set(', '\n             }\n             compileActivityItems(processed);', { label: 'unverified-word flag sweep' });
+    const body = sliceBetween(SOURCE, 'const sessionWords = new Set(', '\n             }\n             // A fixed form is authored as occurrences', { label: 'unverified-word flag sweep' });
     expect(body).toContain('item._unverifiedWords = unverified;');
     const sweep = new Function('processed', 'isUnverifiedK2Word', body);
     const processed = [

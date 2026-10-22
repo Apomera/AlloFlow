@@ -66,6 +66,13 @@ function decomposeInstance(mesh, index) {
   mesh.getMatrixAt(index, matrix); matrix.decompose(position, quaternion, scale);
   return { matrix, position, quaternion, scale };
 }
+function projectedPixelRadius(f, node, instanceMatrix, height) {
+  const worldMatrix = node.matrixWorld.clone();
+  if (instanceMatrix) worldMatrix.multiply(instanceMatrix);
+  const center = new THREE.Vector3().applyMatrix4(worldMatrix).project(f.camera);
+  const edge = new THREE.Vector3(1, 0, 0).applyMatrix4(worldMatrix).project(f.camera);
+  return Math.hypot((edge.x - center.x) * height * f.camera.aspect / 2, (edge.y - center.y) * height / 2);
+}
 function resources(root) {
   const result = new Set(); root.traverse(node => { if (node.geometry) result.add(node.geometry); if (node.material) result.add(node.material); }); return result;
 }
@@ -99,11 +106,9 @@ describe('Wingtip path cycle landmarks and direction', () => {
       const cameraNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(f.camera.getWorldQuaternion(new THREE.Quaternion()));
       for (let side = 0; side < 2; side++) for (let checkpoint = 0; checkpoint < 8; checkpoint++) {
         const ring = decomposeInstance(f.marks(side), checkpoint);
-        const world = ring.position.clone().applyMatrix4(f.bird.matrixWorld);
-        const radiusWorld = ring.scale.x * f.bird.getWorldScale(new THREE.Vector3()).x;
-        const cssRadius = radiusWorld / (world.distanceTo(f.camera.position) * 2 * Math.tan(f.camera.fov * Math.PI / 360) / height);
+        const cssRadius = projectedPixelRadius(f, f.marks(side), ring.matrix, height);
         expect(cssRadius).toBeCloseTo(3.2, 5);
-        expect(ring.scale.x).toBeLessThan(f.dot(side).scale.x);
+        expect(cssRadius).toBeLessThan(projectedPixelRadius(f, f.dot(side), null, height));
         const ringNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(ring.quaternion).transformDirection(f.bird.matrixWorld);
         expect(ringNormal.dot(cameraNormal)).toBeCloseTo(1, 5);
       }
@@ -116,13 +121,16 @@ describe('Wingtip path cycle landmarks and direction', () => {
       f.bird.userData.applyWingPhase(phase); f.scene.updateMatrixWorld(true); f.update(phase);
       for (let side = 0; side < 2; side++) {
         const arrow = f.arrow(side), normalized = ((phase % tau) + tau) % tau;
-        const coordinate = normalized / tau * 64 + 2;
+        expect(arrow.userData.phase).toBeCloseTo(normalized, 10);
+        if (!arrow.visible) { expect(arrow.userData.anchorPhase).toBeNull(); continue; }
+        const coordinate = arrow.userData.anchorPhase / tau * 64;
+        const advance = ((arrow.userData.anchorPhase - normalized + tau) % tau) / tau * 64;
+        expect(advance).toBeGreaterThanOrEqual(2 - 0.000001);
+        expect(advance).toBeLessThanOrEqual(8 + 0.000001);
         const expectedPosition = independentSample(f, side, coordinate);
         const expectedTangent = independentSample(f, side, coordinate + 0.5).sub(independentSample(f, side, coordinate - 0.5)).normalize();
         expect(arrow.position.distanceTo(expectedPosition)).toBeLessThan(0.000001);
         expect(new THREE.Vector3().fromArray(arrow.userData.directionVector).distanceTo(expectedTangent)).toBeLessThan(0.00002);
-        expect(arrow.userData.phase).toBeCloseTo(normalized, 10);
-        expect(arrow.userData.anchorPhase).toBeCloseTo((coordinate / 64 * tau) % tau, 10);
         if (arrow.visible) {
           const cameraQ = f.camera.getWorldQuaternion(new THREE.Quaternion());
           const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cameraQ), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cameraQ);
@@ -152,7 +160,7 @@ describe('Wingtip path cycle landmarks and direction', () => {
         const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cameraQ), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cameraQ);
         for (let side = 0; side < 2; side++) {
           const arrow = f.arrow(side); if (!arrow.visible) continue; visible++;
-          const coordinate = phase / tau * 64 + 2;
+          const coordinate = arrow.userData.anchorPhase / tau * 64;
           const before = independentSample(f, side, coordinate - 0.5).applyMatrix4(f.bird.matrixWorld);
           const after = independentSample(f, side, coordinate + 0.5).applyMatrix4(f.bird.matrixWorld);
           const worldDirection = after.clone().sub(before).normalize();
@@ -181,16 +189,29 @@ describe('Wingtip path cycle landmarks and direction', () => {
     for (let side = 0; side < 2; side++) expect(f.arrow(side).matrix.elements.every(Number.isFinite)).toBe(true);
     f.camera.lookAt(body); f.camera.near = 20; f.camera.updateProjectionMatrix(); f.camera.updateMatrixWorld(true); f.update(1.234);
     expect(f.arrow(0).visible).toBe(false); expect(f.arrow(1).visible).toBe(false);
-    expect(f.root.visible).toBe(true); expect(f.marks(0).visible).toBe(true);
+    expect(f.root.visible).toBe(true); expect(f.marks(0).visible).toBe(false); expect(f.dot(0).visible).toBe(false);
   });
 
-  it('hides edge-on arrow projections safely while preserving rings, path and current tip dots', () => {
-    const f = fixture('monarch'); f.update(1.234);
-    const arrow = f.arrow(0), tangent = new THREE.Vector3().fromArray(arrow.userData.directionVector).transformDirection(f.bird.matrixWorld);
+  it('rejects an edge-on candidate or finds a later clear tangent while preserving rings, path and current tip dots', () => {
+    const f = fixture('canada_goose'), phase = Math.PI / 2;
+    const body = f.bird.getWorldPosition(new THREE.Vector3());
+    const radius = f.bird.userData.studyRadius * 1.18 / Math.sin(54 * Math.PI / 360);
+    f.camera.position.copy(body).add(new THREE.Vector3(0, Math.sin(Math.PI / 12) * radius, Math.cos(Math.PI / 12) * radius));
+    f.camera.lookAt(body); f.camera.updateMatrixWorld(true);
+    f.bird.userData.applyWingPhase(phase); f.scene.updateMatrixWorld(true); f.update(phase);
+    const arrow = f.arrow(0); expect(arrow.visible).toBe(true);
+    const previousAnchor = arrow.userData.anchorPhase;
+    const tangent = new THREE.Vector3().fromArray(arrow.userData.directionVector).transformDirection(f.bird.matrixWorld);
     const anchorWorld = arrow.position.clone().applyMatrix4(f.bird.matrixWorld);
     f.camera.position.copy(anchorWorld).addScaledVector(tangent, 6); f.camera.lookAt(anchorWorld); f.camera.updateMatrixWorld(true);
-    f.update(1.234);
-    expect(f.arrow(0).visible).toBe(false); expect(f.root.visible).toBe(true); expect(f.marks(0).visible).toBe(true); expect(f.dot(0).visible).toBe(true);
+    f.update(phase);
+    if (f.arrow(0).visible) {
+      expect(f.arrow(0).userData.anchorPhase).not.toBe(previousAnchor);
+      const actual = new THREE.Vector3().fromArray(f.arrow(0).userData.directionVector)
+        .transformDirection(f.bird.matrixWorld).transformDirection(f.camera.matrixWorldInverse);
+      expect(Math.hypot(actual.x, actual.y)).toBeGreaterThanOrEqual(0.08);
+    } else expect(f.arrow(0).userData.anchorPhase).toBeNull();
+    expect(f.root.visible).toBe(true); expect(f.marks(0).visible).toBe(true); expect(f.dot(0).visible).toBe(true);
     expect(f.arrow(0).matrix.elements.every(Number.isFinite)).toBe(true);
   });
 

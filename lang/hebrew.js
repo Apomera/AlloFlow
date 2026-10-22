@@ -56897,6 +56897,15 @@
       "sr_critique_ready": "הביקורת מוכנה."
     },
     "flightsim": {
+      "debrief_unavailable_title": "סקירת הטיסה השמורה אינה זמינה",
+      "debrief_unavailable_body": "סקירת הטיסה האחרונה חסרה או שלא ניתן לקרוא אותה. חזרו לתפריט כדי להתחיל טיסה חדשה.",
+      "guided_idea_before_trials": "תועד לפני הניסויים",
+      "guided_idea_saved": "רעיון שמור",
+      "guided_idea_timing_unknown": "העיתוי של הרעיון השמור הזה לא תועד.",
+      "guided_idea_latest": "הרעיון האחרון שנשמר",
+      "guided_idea_latest_prediction": "התחזית האחרונה שנשמרה: {prediction}",
+      "guided_idea_saved_prediction": "תחזית שמורה: {prediction}",
+      "milestone_stall_recovery": "הכנף כבר אינה במצב הזדקרות ברגע זה. תצפית יחידה אינה מוכיחה התאוששות מתמשכת.",
       "game_controls": "🎮 בקרות משחק",
       "learn": "למד",
       "formula": "נוסחה",
@@ -56950,6 +56959,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "הרמת אף להמראה — הרימו את האף (W)",
+      "hud_rotate_touch": "הרמת אף להמראה — גררו למעלה מהמרכז",
+      "hud_flare": "הצפה — הרימו את האף בעדינות עם W",
+      "hud_flare_touch": "הצפה — גררו למעלה מהמרכז",
+      "landing_touch_power": "גררו למטה לאורך הקצה הימני כדי להפחית כוח לכ־30%. המהירות תרד.",
+      "landing_touch_flare": "ממש מעל המסלול (~10 ft), גררו בעדינות למעלה מהמרכז כדי להרים את האף. כוונו לקצב הנמכה קטן מ־200 fpm בנגיעה בקרקע.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91044,6 +91059,18 @@
     "card_progress": "כרטיס {n} מתוך {total}",
     "add_words": "הוסיפו מילים כדי להתחיל לתרגל.",
     "round_complete": "הסבב הושלם. התחילו סבב חדש או חזרו על המילים שסימנתם.",
-    "practice_label": "תרגול מילים"
+    "practice_label": "תרגול מילים",
+    "use_mine_help": "קובץ ה-HTML משתמש בגופן, בגודל הטקסט ובמרווח שלך.",
+    "preparing_reading": "מוסיפים את הגדרות הקריאה שלך…",
+    "font_not_embedded": "לא ניתן היה להוסיף את הגופן שלך לקובץ, ולכן הקובץ משתמש בגופן המערכת."
+  },
+  "reading_settings": {
+    "title": "הגדרות קריאה",
+    "smaller": "טקסט קטן יותר",
+    "larger": "טקסט גדול יותר",
+    "overlay": "שכבת צבע",
+    "ruler": "סרגל קריאה",
+    "use_mine": "שימוש בהגדרות הקריאה שלי",
+    "use_mine_help": "ההדפסה תהיה בגופן, בגודל הטקסט ובמרווח שלך."
   }
 }

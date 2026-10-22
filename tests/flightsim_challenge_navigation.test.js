@@ -64,11 +64,34 @@ describe('challenge airport guidance', () => {
     expect(nav.airport.code).toBe('JFK');
   });
 
+  it.each([
+    ['eastbound crossing', 180.1, -179.9],
+    ['westbound crossing', -180.1, 179.9],
+    ['second eastbound crossing', 540.1, -179.9],
+    ['second westbound crossing', -540.1, 179.9],
+    ['several eastbound revolutions', 1260.1, -179.9],
+    ['several westbound revolutions', -1260.1, 179.9]
+  ])('keeps world-tour guidance on the live longitude branch after %s', (_label, lon, canonicalLon) => {
+    const challenge = record('world_tour');
+    const state = { ...sample(), lat: 35, lon, heading: 90 };
+    const original = { ...state };
+    const expected = FS.getFlightChallengeNavigation(challenge, { ...state, lon: canonicalLon }, 'ksfo');
+    const nav = FS.getFlightChallengeNavigation(challenge, state, 'ksfo');
+    expect(nav).not.toBeNull();
+    expect(nav.airport.id).toBe('ksfo');
+    expect(nav.distanceNm).toBeCloseTo(expected.distanceNm, 6);
+    expect(nav.bearingDeg).toBeCloseTo(expected.bearingDeg, 6);
+    expect(nav.headingErrorDeg).toBeCloseTo(expected.headingErrorDeg, 6);
+    expect(nav.turn).toBe(expected.turn);
+    expect(nav.runway.designator).toBe(expected.runway.designator);
+    expect(state).toEqual(original);
+  });
+
   it('rejects corrupt position or heading without displaying NaN guidance', () => {
-    for (const key of ['lat', 'lon', 'heading']) for (const value of [NaN, Infinity, undefined]) {
+    for (const key of ['lat', 'lon', 'heading']) for (const value of [NaN, Infinity, -Infinity, undefined, null, '90']) {
       expect(FS.getFlightChallengeNavigation(record('cross_country'), { ...sample(), [key]: value })).toBeNull();
     }
-    for (const invalid of [{ lat: 91 }, { lon: -181 }]) {
+    for (const invalid of [{ lat: 91 }, { lat: -91 }]) {
       expect(FS.getFlightChallengeNavigation(record('cross_country'), { ...sample(), ...invalid })).toBeNull();
     }
   });

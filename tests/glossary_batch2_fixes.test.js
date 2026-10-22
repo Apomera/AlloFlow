@@ -263,19 +263,20 @@ describe('Word Practice: translated dialog and player, offline file language', (
     expect(doc.querySelector('.awp-progress').textContent).toBe('Tarjeta 1 de 2');
   });
 
-  it('the offline HTML file carries the language code, direction and translated labels', () => {
+  it('the offline HTML file carries the explicit interface language independently from lesson content', () => {
     const win = load();
     win.AlloModules.ModuleScopeExtras = { getSpeechLangCode: (n) => (n === 'Arabic' ? 'ar-SA' : 'en-US'), isRtlLang: (n) => n === 'Arabic' };
-    const html = win.AlloModules.WordPractice.buildHtml({ words: ['ship'], language: 'Arabic' }, { repetitions: 1 }, undefined, { next: 'التالي', practice_label: 'تدريب الكلمات' });
+    const html = win.AlloModules.WordPractice.buildHtml({ words: [{ word: 'ship', termLanguage: 'English' }], language: 'Arabic' }, { repetitions: 1 }, undefined, { next: 'التالي', practice_label: 'تدريب الكلمات' }, undefined, 'Arabic');
     expect(html.startsWith('<!doctype html><html lang="ar" dir="rtl">'), html.slice(0, 60)).toBe(true);
     const offline = new JSDOM(html, { runScripts: 'dangerously' });
     windows.push(offline.window);
     expect(buttonIn(offline.window.document, 'التالي'), 'translated Next in the offline player').toBeTruthy();
     expect(buttonIn(offline.window.document, 'Previous'), 'English for the rest').toBeTruthy();
     expect(offline.window.document.querySelector('main').getAttribute('aria-label')).toBe('تدريب الكلمات');
-    expect(win.AlloModules.WordPractice.buildHtml({ words: ['ship'], language: 'fr' }).startsWith('<!doctype html><html lang="fr" dir="ltr">')).toBe(true);
+    expect(offline.window.document.querySelector('.awp-word').lang).toBe('en');
+    expect(win.AlloModules.WordPractice.buildHtml({ words: ['ship'], language: 'fr' }).startsWith('<!doctype html><html lang="en" dir="ltr">')).toBe(true);
     delete win.AlloModules.ModuleScopeExtras;
-    expect(win.AlloModules.WordPractice.buildHtml({ words: ['ship'], language: 'Arabic' }).startsWith('<!doctype html><html lang="en" dir="ltr">'), 'no helpers: the old safe default').toBe(true);
+    expect(win.AlloModules.WordPractice.buildHtml({ words: ['ship'], language: 'Arabic' }, undefined, undefined, undefined, undefined, 'Arabic').startsWith('<!doctype html><html lang="ar" dir="rtl">'), 'the portable resolver recognizes the explicit Arabic interface without host helpers').toBe(true);
   });
 
   it('closing right after a download does not cancel it; the link is released later', () => {

@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
 window.StemLab = { registerTool() {} };
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__nasalRugosity={DINOS,reconstructionProfileFor,postureProfileFor,postcranialSurfaceProfileFor,dinoTyrannosaurPose,dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoNasalRugosityProfileFor,dinoNasalRugosityGeometry,dinoAddNasalRugosities,dinoSurfaceAnchor,dinoCranialGeometry,dinoTheropodCranialRadii,cranialSurfaceProfileFor,dinoCranialDisplayProfile,dinoDetailedBodyPartDefinitions,dinoPartInspectionFor}; window.StemLab.registerTool('dinoLab'"))();
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__nasalRugosity={DINOS,reconstructionProfileFor,postureProfileFor,postcranialSurfaceProfileFor,dinoTyrannosaurPose,dinoArmoredCraniumFrame:typeof dinoArmoredCraniumFrame === 'function'?dinoArmoredCraniumFrame:function(){return null;},dinoCarnotaurusCraniumFrame: typeof dinoCarnotaurusCraniumFrame === 'function' ? dinoCarnotaurusCraniumFrame : function(){return null;}, dinoStegosaurBodyCraniumFrame: typeof dinoStegosaurBodyCraniumFrame === 'function' ? dinoStegosaurBodyCraniumFrame : function(){return null;}, dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoNasalRugosityProfileFor,dinoNasalRugosityGeometry,dinoAddNasalRugosities,dinoSurfaceAnchor,dinoCranialGeometry,dinoTheropodCranialRadii,cranialSurfaceProfileFor,dinoCranialDisplayProfile,dinoDetailedBodyPartDefinitions,dinoPartInspectionFor}; window.StemLab.registerTool('dinoLab'"))();
 const art = globalThis.__nasalRugosity;
 const vec = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const animal = id => art.DINOS.find(d => d.id === id);
@@ -41,7 +41,7 @@ function nativeLeanSurfaces(id, scale) {
     cranialSurface: art.cranialSurfaceProfileFor(dn), postcranialSurface: art.postcranialSurfaceProfileFor(dn),
     surfaceHypothesis: { headSoftTissueScale: .90, neckSoftTissueScale: .88, bodyHeightScale: .91 },
     vec, headMat: material, bodyMat: material, model, props: { species: dn, showBody: true, showSkeleton: true },
-    ...Object.fromEntries(['dinoTyrannosaurPose', 'dinoLongSnoutedTyrannosaurAnchors', 'dinoCervicalEnvelope', 'dinoNeckJunction', 'dinoTheropodCranialRadii', 'dinoCranialGeometry', 'dinoSurfaceGeometry', 'dinoAddNasalRugosities', 'dinoCranialDisplayProfile'].map(key => [key, art[key]])) };
+    ...Object.fromEntries(['dinoArmoredCraniumFrame', 'dinoCarnotaurusCraniumFrame', 'dinoStegosaurBodyCraniumFrame', 'dinoTyrannosaurPose', 'dinoLongSnoutedTyrannosaurAnchors', 'dinoCervicalEnvelope', 'dinoNeckJunction', 'dinoTheropodCranialRadii', 'dinoCranialGeometry', 'dinoSurfaceGeometry', 'dinoAddNasalRugosities', 'dinoCranialDisplayProfile'].map(key => [key, art[key]])) };
   context.addSoftTissueChain = new Function('context', 'with(context){' + section('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {', 'function addContourGroup(meshes)') + 'return addSoftTissueChain;}')(context);
   const assembly = section('var detailScale = Math.min(1, ht / 2);', 'var evidenceAnchorPoints =');
   const envelope = section('var surfaceHeadFactor = reconstructionProfile.head', 'if (headShell) {');

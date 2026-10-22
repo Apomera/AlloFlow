@@ -2693,6 +2693,8 @@ if (dryRun) {
         // BirdLab and Raptor Lab load these shared 3D companions on demand.
         'stem_lab/avian_feather_art.js',
         'stem_lab/avian_woodland_birds.js',
+        'stem_lab/stem_sim_assets.js',
+        'stem_lab/stem_sim_meadow.js',
         'stem_lab/birdlab_3d_bird.js',
         'stem_lab/birdlab_3d_habitat.js',
         'stem_lab/birdlab_3d_wildlife.js',

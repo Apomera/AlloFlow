@@ -1,0 +1,29 @@
+{
+  "paragraphs": [
+    "a² + b² = c² where c is the hypotenuse.",
+    "Diagonal of a 3 ft × 4 ft rectangle = √(3² + 4²) = √25 = 5 ft. Square check: a frame that measures 3×4 should diagonal exactly 5 (or 5'-0\").",
+    "Field shortcut — any 3-4-5 triangle is square. Measure 3 along one leg + 4 along the other; the diagonal must be exactly 5. Bigger versions: 6-8-10, 9-12-15, 12-16-20."
+  ],
+  "triangles": [
+    {
+      "name": "Right triangle (90° + 2 others)",
+      "use": "Cutting brackets, gussets, transitions. Use Pythagorean to find missing side."
+    },
+    {
+      "name": "Isoceles (2 equal sides)",
+      "use": "Symmetric brackets, splice plates. Bisect the apex angle to find centerline."
+    },
+    {
+      "name": "Equilateral (3 equal sides, all 60°)",
+      "use": "Decorative work, certain structural patterns. All angles 60°."
+    },
+    {
+      "name": "30-60-90",
+      "use": "Braces and gussets at 30° or 60°. Side ratios 1 : √3 : 2. If the short side = 3\", long side = 5.196\", hypotenuse = 6\"."
+    },
+    {
+      "name": "45-45-90",
+      "use": "Miter cuts at corners. Both legs equal, hypotenuse = leg × √2. If leg = 4\", hypotenuse = 5.657\"."
+    }
+  ]
+}

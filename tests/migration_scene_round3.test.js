@@ -44,9 +44,9 @@ function fixture(id = 'canada_goose', count = 11) {
 describe('Migration Study orbit, anatomical landmarks, and manual wingbeat', () => {
   it('builds one finite scalloped tail buffer and vertex tints without per-feather meshes', () => {
     const geometry = model.createMigrationTailGeometry(THREE);
-    expect(geometry.attributes.position.count).toBe(35);
-    expect(geometry.attributes.color.count).toBe(35);
-    expect(geometry.index.count).toBe(63);
+    expect(geometry.attributes.position.count).toBe(49);
+    expect(geometry.attributes.color.count).toBe(49);
+    expect(geometry.index.count).toBe(147);
     for (const attribute of Object.values(geometry.attributes)) {
       expect(Array.from(attribute.array).every(Number.isFinite)).toBe(true);
     }
@@ -54,8 +54,8 @@ describe('Migration Study orbit, anatomical landmarks, and manual wingbeat', () 
     let tails = 0;
     bird.traverse(part => { if (part.name === 'migration-tail-feathers') tails++; });
     expect(tails).toBe(1);
-    expect(bird.userData.primaries[0].geometry.attributes.position.count).toBe(25);
-    expect(bird.userData.primaries[0].geometry.attributes.color.count).toBe(25);
+    expect(bird.userData.primaries[0].geometry.attributes.position.count).toBe(35);
+    expect(bird.userData.primaries[0].geometry.attributes.color.count).toBe(35);
   });
 
   it('follows all four real anatomical parts while retaining pooled buffers', () => {

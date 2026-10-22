@@ -55147,6 +55147,15 @@
       "sr_critique_ready": "ವಿಮರ್ಶೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "flightsim": {
+      "debrief_unavailable_title": "ಉಳಿಸಿದ ಹಾರಾಟದ ವಿಮರ್ಶೆ ಲಭ್ಯವಿಲ್ಲ",
+      "debrief_unavailable_body": "ಇತ್ತೀಚಿನ ಹಾರಾಟದ ವಿಮರ್ಶೆ ಇಲ್ಲ ಅಥವಾ ಅದನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ. ಹೊಸ ಹಾರಾಟ ಪ್ರಾರಂಭಿಸಲು ಮೆನುಗೆ ಹಿಂತಿರುಗಿ.",
+      "guided_idea_before_trials": "ಪ್ರಯೋಗಗಳ ಮೊದಲು ದಾಖಲಿಸಲಾಗಿದೆ",
+      "guided_idea_saved": "ಉಳಿಸಿದ ಆಲೋಚನೆ",
+      "guided_idea_timing_unknown": "ಉಳಿಸಿದ ಈ ಆಲೋಚನೆಯ ಸಮಯವನ್ನು ದಾಖಲಿಸಲಾಗಿಲ್ಲ.",
+      "guided_idea_latest": "ಕೊನೆಯದಾಗಿ ಉಳಿಸಿದ ಆಲೋಚನೆ",
+      "guided_idea_latest_prediction": "ಕೊನೆಯದಾಗಿ ಉಳಿಸಿದ ಮುನ್ಸೂಚನೆ: {prediction}",
+      "guided_idea_saved_prediction": "ಉಳಿಸಿದ ಮುನ್ಸೂಚನೆ: {prediction}",
+      "milestone_stall_recovery": "ಈ ಕ್ಷಣದಲ್ಲಿ ರೆಕ್ಕೆ ಇನ್ನು ಸ್ಟಾಲ್ ಸ್ಥಿತಿಯಲ್ಲಿಲ್ಲ. ಒಂದೇ ಅವಲೋಕನದಿಂದ ಸ್ಟಾಲ್‌ನಿಂದ ಚೇತರಿಕೆ ನಿರಂತರವಾಗಿ ಉಳಿದಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಲಾಗದು.",
       "game_controls": "🎮 ಆಟದ ನಿಯಂತ್ರಣಗಳು",
       "from": "ಇಂದ",
       "learn": "ಕಲಿಯಿರಿ",
@@ -55202,6 +55211,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ಹಾರಲು ಮೂಗು ಮೇಲಕ್ಕೆತ್ತಿ — ಮೂಗು ಮೇಲಕ್ಕೆತ್ತಿ (W)",
+      "hud_rotate_touch": "ಹಾರಲು ಮೂಗು ಮೇಲಕ್ಕೆತ್ತಿ — ಮಧ್ಯದಿಂದ ಮೇಲಕ್ಕೆ ಎಳೆಯಿರಿ",
+      "hud_flare": "ಇಳಿಯುವಾಗ ಮೂಗು ಮೇಲಕ್ಕೆತ್ತಿ — W ಬಳಸಿ ಮೂಗನ್ನು ನಿಧಾನವಾಗಿ ಮೇಲಕ್ಕೆತ್ತಿ",
+      "hud_flare_touch": "ಇಳಿಯುವಾಗ ಮೂಗು ಮೇಲಕ್ಕೆತ್ತಿ — ಮಧ್ಯದಿಂದ ಮೇಲಕ್ಕೆ ಎಳೆಯಿರಿ",
+      "landing_touch_power": "ಎಂಜಿನ್ ಶಕ್ತಿಯನ್ನು ~30% ಗೆ ಇಳಿಸಲು ಬಲ ಅಂಚಿನ ಉದ್ದಕ್ಕೂ ಕೆಳಕ್ಕೆ ಎಳೆಯಿರಿ. ವೇಗ ಕಡಿಮೆಯಾಗುತ್ತದೆ.",
+      "landing_touch_flare": "ಓಡುದಾರಿಯಿಂದ ಸ್ವಲ್ಪ ಮೇಲಿರುವಾಗ (~10 ft), ಮೂಗನ್ನು ಮೇಲಕ್ಕೆತ್ತಲು ಮಧ್ಯದಿಂದ ನಿಧಾನವಾಗಿ ಮೇಲಕ್ಕೆ ಎಳೆಯಿರಿ. ನೆಲ ಮುಟ್ಟುವಾಗ ಇಳಿಯುವ ದರವನ್ನು 200 fpm ಗಿಂತ ಕಡಿಮೆ ಇಡುವ ಗುರಿ ಹೊಂದಿರಿ.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88564,6 +88579,18 @@
     "card_progress": "{total} ರಲ್ಲಿ ಕಾರ್ಡ್ {n}",
     "add_words": "ಅಭ್ಯಾಸ ಪ್ರಾರಂಭಿಸಲು ಪದಗಳನ್ನು ಸೇರಿಸಿ.",
     "round_complete": "ಸುತ್ತು ಮುಗಿದಿದೆ. ಹೊಸ ಸುತ್ತು ಪ್ರಾರಂಭಿಸಿ ಅಥವಾ ನೀವು ಗುರುತಿಸಿದ ಪದಗಳನ್ನು ಮರುಅಭ್ಯಾಸ ಮಾಡಿ.",
-    "practice_label": "ಪದ ಅಭ್ಯಾಸ"
+    "practice_label": "ಪದ ಅಭ್ಯಾಸ",
+    "use_mine_help": "HTML ಫೈಲ್ ನಿಮ್ಮ ಫಾಂಟ್, ಪಠ್ಯ ಗಾತ್ರ ಮತ್ತು ಅಂತರವನ್ನು ಬಳಸುತ್ತದೆ.",
+    "preparing_reading": "ನಿಮ್ಮ ಓದುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ…",
+    "font_not_embedded": "ನಿಮ್ಮ ಫಾಂಟ್ ಅನ್ನು ಫೈಲ್‌ಗೆ ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಫೈಲ್ ಸಿಸ್ಟಮ್ ಫಾಂಟ್ ಅನ್ನು ಬಳಸುತ್ತದೆ."
+  },
+  "reading_settings": {
+    "title": "ಓದುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "smaller": "ಚಿಕ್ಕ ಪಠ್ಯ",
+    "larger": "ದೊಡ್ಡ ಪಠ್ಯ",
+    "overlay": "ಬಣ್ಣದ ಹೊದಿಕೆ",
+    "ruler": "ಓದುವ ರೂಲರ್",
+    "use_mine": "ನನ್ನ ಓದುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿ",
+    "use_mine_help": "ನಿಮ್ಮ ಫಾಂಟ್, ಪಠ್ಯ ಗಾತ್ರ ಮತ್ತು ಅಂತರದೊಂದಿಗೆ ಮುದ್ರಿಸಲಾಗುತ್ತದೆ."
   }
 }

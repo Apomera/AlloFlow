@@ -33,7 +33,7 @@ function between(start, end) {
 const SRC = {
   registry: between('    var __alloModuleRegistry = (window.__alloModuleRegistry', '    // ── Error Reporter'),
   ensure: between('    var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises', '    // Teaching-script research'),
-  hostAwait: between('  const _alloAwaitModules = (mods, label) => {', '    const lastHandleSpeakRef = useRef(null);'),
+  hostAwait: between('  const _alloAwaitModules = ', '    const lastHandleSpeakRef = useRef(null);'),
   loadProject: between('  const handleLoadProject = (e) => {', '  // Bridge for the Community Catalog'),
   generate: between('  // Generation reaches these helpers synchronously', '  const GUIDED_RETRY_TYPES'),
   wizard: between('  const handleWizardComplete = (data) => {', '  const [showDice, setShowDice]'),

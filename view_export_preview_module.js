@@ -4407,6 +4407,50 @@ function ExportPreviewView(props) {
   React.useEffect(() => {
     if (isRemediationDocument && exportPreviewMode === "worksheet") setExportPreviewMode("print");
   }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
+  let readingSettingsReady = false;
+  try {
+    readingSettingsReady = !isRemediationDocument && exportPreviewMode !== "slides" && !!window.AlloModules?.UIFontLibrary?.readingSettingsAvailable?.();
+  } catch (_) {
+    readingSettingsReady = false;
+  }
+  const usingReadingSettings = readingSettingsReady && exportConfig?.useReadingSettings === true;
+  const builderText = (key, english) => {
+    let value = "";
+    try {
+      value = t(key);
+    } catch (_) {
+      value = "";
+    }
+    return typeof value === "string" && value && value !== key ? value : english;
+  };
+  const readerRefreshRef = React.useRef(updateExportPreview2);
+  readerRefreshRef.current = updateExportPreview2;
+  React.useEffect(() => {
+    const api = usingReadingSettings ? window.__alloReadingSettings : null;
+    if (!api || typeof api.subscribe !== "function") return void 0;
+    const keyOf = (s) => s ? [s.fontId, s.baseFontSize, s.lineHeight, s.letterSpacing].join("|") : "";
+    let last = keyOf(api.get());
+    let timer = null;
+    const off = api.subscribe((next) => {
+      const key = keyOf(next || api.get());
+      if (key === last) return;
+      last = key;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          if (typeof readerRefreshRef.current === "function") readerRefreshRef.current();
+        } catch (_) {
+        }
+      }, 400);
+    });
+    return () => {
+      clearTimeout(timer);
+      try {
+        if (typeof off === "function") off();
+      } catch (_) {
+      }
+    };
+  }, [usingReadingSettings]);
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [blockSuggestions, setBlockSuggestions] = React.useState(null);
   const [blockSuggestionsBusy, setBlockSuggestionsBusy] = React.useState(false);
@@ -9730,7 +9774,16 @@ ${pageCss}
         },
         "\u{1F3F7}\uFE0F ",
         p.name || "Brand"
-      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
+      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), readingSettingsReady && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer", "data-export-reading-settings": true }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "checkbox",
+          className: "mt-0.5 accent-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500",
+          checked: exportConfig.useReadingSettings === true,
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, useReadingSettings: e.target.checked })),
+          "aria-describedby": "doc-builder-reading-settings-help"
+        }
+      ), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, builderText("reading_settings.use_mine", "Use my reading settings")), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-reading-settings-help", className: "block text-slate-600" }, builderText("reading_settings.use_mine_help", "Prints with your font, text size and spacing.")))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
         "select",
         {
           value: exportConfig.fontId || (exportConfig.useAppFont ? "app" : "theme"),
@@ -9738,7 +9791,8 @@ ${pageCss}
             const v = e.target.value;
             setExportConfigAndRefresh((p) => ({ ...p, fontId: v, useAppFont: v === "app" }));
           },
-          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white",
+          disabled: usingReadingSettings,
+          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white disabled:opacity-60",
           "data-help-key": "doc_builder_font_select",
           "aria-label": t("a11y.export_font") || "Export font family"
         },
@@ -9762,7 +9816,8 @@ ${pageCss}
           max: 24,
           value: exportConfig.fontSize,
           onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, fontSize: parseInt(e.target.value) })),
-          className: "flex-1 accent-indigo-600",
+          disabled: usingReadingSettings,
+          className: "flex-1 accent-indigo-600 disabled:opacity-60",
           "data-help-key": "doc_builder_font_size_slider",
           "aria-label": t("a11y.font_size")
         }

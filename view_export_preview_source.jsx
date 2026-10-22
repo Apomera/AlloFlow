@@ -4336,6 +4336,30 @@ function ExportPreviewView(props) {
   React.useEffect(() => {
     if (isRemediationDocument && exportPreviewMode === 'worksheet') setExportPreviewMode('print');
   }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
+  // "Use my reading settings" (exportConfig.useReadingSettings, off by default). The
+  // remediated document and slides are not built by generateFullPackHTML, so not offered there.
+  let readingSettingsReady = false;
+  try { readingSettingsReady = !isRemediationDocument && exportPreviewMode !== 'slides' && !!window.AlloModules?.UIFontLibrary?.readingSettingsAvailable?.(); } catch (_) { readingSettingsReady = false; }
+  const usingReadingSettings = readingSettingsReady && exportConfig?.useReadingSettings === true;
+  const builderText = (key, english) => { let value = ''; try { value = t(key); } catch (_) { value = ''; } return typeof value === 'string' && value && value !== key ? value : english; };
+  const readerRefreshRef = React.useRef(updateExportPreview);
+  readerRefreshRef.current = updateExportPreview;
+  // The preview (and so the export) follows a change made while the option is on.
+  React.useEffect(() => {
+    const api = usingReadingSettings ? window.__alloReadingSettings : null;
+    if (!api || typeof api.subscribe !== 'function') return undefined;
+    const keyOf = (s) => s ? [s.fontId, s.baseFontSize, s.lineHeight, s.letterSpacing].join('|') : '';
+    let last = keyOf(api.get());
+    let timer = null;
+    const off = api.subscribe((next) => {
+      const key = keyOf(next || api.get());
+      if (key === last) return;
+      last = key;
+      clearTimeout(timer);
+      timer = setTimeout(() => { try { if (typeof readerRefreshRef.current === 'function') readerRefreshRef.current(); } catch (_) {} }, 400);
+    });
+    return () => { clearTimeout(timer); try { if (typeof off === 'function') off(); } catch (_) {} };
+  }, [usingReadingSettings]);
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
   // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
@@ -9762,6 +9786,19 @@ const _downloadBRF = (brf) => {
                 {/* Font */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
+                  {/* While on, the reader's font, size and spacing replace the Font and Size below. */}
+                  {readingSettingsReady && (
+                    <label className="flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer" data-export-reading-settings>
+                      <input type="checkbox" className="mt-0.5 accent-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        checked={exportConfig.useReadingSettings === true}
+                        onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, useReadingSettings: e.target.checked }))}
+                        aria-describedby="doc-builder-reading-settings-help" />
+                      <span>
+                        <span className="font-bold">{builderText('reading_settings.use_mine', 'Use my reading settings')}</span>
+                        <span id="doc-builder-reading-settings-help" className="block text-slate-600">{builderText('reading_settings.use_mine_help', 'Prints with your font, text size and spacing.')}</span>
+                      </span>
+                    </label>
+                  )}
                   {/* Font dropdown (2026-06-11): the builder previously had NO
                       font picker — only the use-app-font checkbox. Values:
                       'theme' = the theme's own font, 'app' = follow the app
@@ -9774,7 +9811,8 @@ const _downloadBRF = (brf) => {
                     <select
                       value={exportConfig.fontId || (exportConfig.useAppFont ? 'app' : 'theme')}
                       onChange={(e) => { const v = e.target.value; setExportConfigAndRefresh(p => ({ ...p, fontId: v, useAppFont: v === 'app' })); }}
-                      className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+                      disabled={usingReadingSettings}
+                      className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white disabled:opacity-60"
                       data-help-key="doc_builder_font_select" aria-label={t('a11y.export_font') || 'Export font family'}
                     >
                       <option value="theme">Theme font (default)</option>
@@ -9805,7 +9843,8 @@ const _downloadBRF = (brf) => {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
-                      className="flex-1 accent-indigo-600" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
+                      disabled={usingReadingSettings}
+                      className="flex-1 accent-indigo-600 disabled:opacity-60" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">

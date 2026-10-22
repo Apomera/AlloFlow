@@ -18,10 +18,11 @@ const envelope=seam('var surfaceHeadFactor = reconstructionProfile.head','if (he
 const chain=seam('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {','function addContourGroup(meshes)');
 const ellipsoid=seam('function addSkeletonEllipsoid(pos, scale, mat) {','function addSkeletonCone(base, tip, radius, mat)');
 const sizing=seam('var skullLength = Math.max(0.20 * detailScale,','var neckAxis =');
-const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,','addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))');
+const bulkEnd=['if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))','if(!theropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))','addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))'].find(marker=>source.includes(marker));
+const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,',bulkEnd);
 const createSkin=new Function('context','with(context){'+chain+'return addSoftTissueChain;}');
 const createBone=new Function('context','with(context){'+ellipsoid+'return addSkeletonEllipsoid;}');
-const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,shoulder,ceratopsidCranium,headShell,detailScale,len,ht,reconstructionProfile};}');
+const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,shoulder,ceratopsidCranium,armoredCranium,carnotaurusCranium:typeof carnotaurusCranium === "undefined"?null:carnotaurusCranium,stegosaurCranium:typeof stegosaurCranium === "undefined"?null:stegosaurCranium,theropodCranium:typeof theropodCranium === "undefined"?null:theropodCranium,sauropodCranium:typeof sauropodCranium === "undefined"?null:sauropodCranium,headShell,detailScale,len,ht,reconstructionProfile};}');
 const createSizing=new Function('context','with(context){'+sizing+'return {skullLength,skullHeight,skullDepth};}');
 const createBulk=new Function('context','with(context){'+bulk+'return {vault:cranialVault,rostrum:cranialRostrum,rostrumCenter,profile:cranialDisplay};}');
 function build(scale=1,mode=modes[2],id='triceratops',showSkeleton=true){

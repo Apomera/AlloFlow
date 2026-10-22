@@ -72,13 +72,24 @@ const pad = (n) => String(n).padStart(2, '0');
 const localStamp = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 const csvRows = (text) => text.split('\r\n').map((line) => line.split(','));
+const payloadSlice = sliceBetween(wsSource, 'const buildProbePayload = (score, extraEntry = null) => {', 'const emitProbeComplete', { label: 'probe payload' });
+function probeModel(bindings) {
+  return new Function('bindings', `
+    const { probeStartTimeRef, probeEndTimeRef, probeResultRef, probeHiddenMs, wordSoundsActivity, effectiveProbeGrade,
+      effectiveProbeForm, effectiveProbeFormId, sessionWordResults, runtimeSessionConfig, historyLearnerId,
+      activeHistorySessionIdRef, historyResourceId, sessionConfigVersion, isFixedForm, probeItemGoal,
+      PROBE_INTERRUPTION_MS, computeProbeByBand } = bindings;
+    ${payloadSlice}
+    return {buildProbePayload, freezeProbeResult};
+  `)(bindings);
+}
 
 describe('the probe results CSV', () => {
   const renderSlice = sliceBetween(wsSource, 'const renderProbeResults = () => {', 'React.useEffect(', { label: 'probe results renderer' });
   const countHelpers = sliceBetween(wsSource, '// BEGIN WORD SOUNDS COUNT RESULTS', '// END WORD SOUNDS COUNT RESULTS');
   const Results = new Function('React', countHelpers + '\nreturn WordSoundsCountResults;')(React);
   const makeRenderer = new Function('React', 'WordSoundsCountResults', 'bindings', `
-    const { probeStartTimeRef, probeEndTimeRef, wordSoundsScore, learnerScopedHistory, effectiveProbeGrade,
+    const { buildProbePayload, probeStartTimeRef, probeEndTimeRef, wordSoundsScore, learnerScopedHistory, effectiveProbeGrade,
       effectiveProbeForm, wordSoundsActivity, probeResultsDialogRef, handleDialogKeyDown, t, ts, probeHiddenMs,
       PROBE_INTERRUPTION_MS, sessionWordResults, isTeacherMode, isParentMode, emitProbeComplete,
       resetRuntimeSession, onClose } = bindings;
@@ -88,13 +99,19 @@ describe('the probe results CSV', () => {
 
   function openResults(startedAt, overrides = {}) {
     const bindings = {
-      probeStartTimeRef: { current: startedAt }, probeEndTimeRef: { current: null },
+      probeStartTimeRef: { current: startedAt }, probeEndTimeRef: { current: null }, probeResultRef: {current: null},
       wordSoundsScore: { correct: 8, total: 10 }, learnerScopedHistory: [], effectiveProbeGrade: 'K',
       effectiveProbeForm: 'A', wordSoundsActivity: 'segmentation', probeResultsDialogRef: { current: null },
       handleDialogKeyDown() {}, t: (key) => key, ts: () => '', probeHiddenMs: () => 0, PROBE_INTERRUPTION_MS: 2000,
       sessionWordResults: { current: [] }, isTeacherMode: true, isParentMode: false,
       emitProbeComplete: vi.fn(), resetRuntimeSession: vi.fn(), onClose: vi.fn(), ...overrides,
     };
+    const model = probeModel({...bindings, effectiveProbeFormId: null, runtimeSessionConfig: {}, historyLearnerId: null,
+      activeHistorySessionIdRef: {current: null}, historyResourceId: null, sessionConfigVersion: 1,
+      isFixedForm: false, probeItemGoal: 10, computeProbeByBand: () => ({easy: {c: 0, t: 0}, medium: {c: 0, t: 0}, hard: {c: 0, t: 0}})});
+    // Completion owns the snapshot; rendering and downloading only read it.
+    model.freezeProbeResult(bindings.wordSoundsScore);
+    bindings.buildProbePayload = model.buildProbePayload;
     const renderProbeResults = makeRenderer(React, Results, bindings);
     const Screen = ({ tick }) => React.createElement('div', { 'data-tick': tick }, renderProbeResults());
     host = document.createElement('div');
@@ -166,17 +183,9 @@ describe('the probe results CSV', () => {
 });
 
 describe('the probe payload sent on Finish', () => {
-  const payloadSlice = sliceBetween(wsSource, 'const buildProbePayload = (score, extraEntry = null) => {', 'const emitProbeComplete', { label: 'probe payload' });
-  const build = (bindings) => new Function('bindings', `
-    const { probeStartTimeRef, probeEndTimeRef, probeHiddenMs, wordSoundsActivity, effectiveProbeGrade,
-      effectiveProbeForm, effectiveProbeFormId, sessionWordResults, runtimeSessionConfig, historyLearnerId,
-      activeHistorySessionIdRef, historyResourceId, sessionConfigVersion, isFixedForm, probeItemGoal,
-      PROBE_INTERRUPTION_MS, computeProbeByBand } = bindings;
-    ${payloadSlice}
-    return buildProbePayload;
-  `)(bindings);
+  const build = bindings => probeModel(bindings).buildProbePayload;
   const bindings = (start, end) => ({
-    probeStartTimeRef: { current: start }, probeEndTimeRef: { current: end }, probeHiddenMs: () => 0,
+    probeStartTimeRef: { current: start }, probeEndTimeRef: { current: end }, probeResultRef: {current: null}, probeHiddenMs: () => 0,
     wordSoundsActivity: 'segmentation', effectiveProbeGrade: 'K', effectiveProbeForm: 'A', effectiveProbeFormId: null,
     sessionWordResults: { current: [] }, runtimeSessionConfig: {}, historyLearnerId: null,
     activeHistorySessionIdRef: { current: null }, historyResourceId: null, sessionConfigVersion: 1,

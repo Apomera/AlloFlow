@@ -18,10 +18,15 @@ const section = (start, end) => {
 const helperSource = section('function parseWordSoundsAnalysis(', 'const WordSoundsGenerator =');
 const { parse, useTopic } = new Function('React', helperSource + '; return {parse:parseWordSoundsAnalysis,useTopic:useWordSoundsAiTopic};')(React);
 const preparationLoop = section('             for (let i = 0; i < wordsToProcess.length; i++) {', '             // Flag generated words');
+const WS_CORE = new Function(readFileSync('word_sounds_core.js','utf8')+';return createWordSoundsCore();')();
+const rhymePreparation = new Function('WS_CORE','espeakPackPhonemes',
+  section('const PACK_COMMON_WORDS =','// ── eSpeak G2P')+
+  section('const preparePackRhyme =','// BEGIN WORD SOUNDS REVIEWED RECORDING LIBRARY')+
+  ';return preparePackRhyme;');
 const prepare = new Function('env', `
   const {wordsToProcess, processed, preloadedMap, isGenerationActive, wordSoundsLanguage, gradeLevel, packIsEnglish,
     signal, awaitGeneration, callImagen, effectiveImageTheme, callGemini, espeakPackPhonemes, estimatePackPhonemes,
-    derivePackRhyme, isUnusableAsPhonicsWord, setGeneratedCount, warnLog, parseWordSoundsAnalysis} = env;
+    WS_CORE, preparePackRhyme, isUnusableAsPhonicsWord, setGeneratedCount, warnLog, parseWordSoundsAnalysis} = env;
   return (async () => { ${preparationLoop} return processed; })();
 `);
 function generation(response, selected = 'cat') {
@@ -30,8 +35,9 @@ function generation(response, selected = 'cat') {
     awaitGeneration: value => value, effectiveImageTheme: '',
     callGemini: vi.fn().mockResolvedValue(JSON.stringify(response)), callImagen: vi.fn().mockResolvedValue('image:cat'),
     espeakPackPhonemes: vi.fn().mockResolvedValue(['k','a','t']), estimatePackPhonemes: () => [],
-    derivePackRhyme: () => '', isUnusableAsPhonicsWord: () => false, setGeneratedCount: () => {}, warnLog: vi.fn(),
+    WS_CORE, isUnusableAsPhonicsWord: () => false, setGeneratedCount: () => {}, warnLog: vi.fn(),
     parseWordSoundsAnalysis: parse };
+  env.preparePackRhyme=rhymePreparation(WS_CORE,env.espeakPackPhonemes);
   return { env, run: () => prepare(env) };
 }
 

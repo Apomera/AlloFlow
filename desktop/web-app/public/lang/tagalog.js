@@ -54705,6 +54705,15 @@
       "sr_critique_ready": "Handa na ang puna."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Hindi magamit ang naka-save na pagsusuri ng paglipad",
+      "debrief_unavailable_body": "Nawawala o hindi mabasa ang pinakabagong pagsusuri ng paglipad. Bumalik sa menu upang magsimula ng bagong paglipad.",
+      "guided_idea_before_trials": "Naitala bago ang mga pagsubok",
+      "guided_idea_saved": "Naka-save na ideya",
+      "guided_idea_timing_unknown": "Walang tala kung kailan naitala ang naka-save na ideyang ito.",
+      "guided_idea_latest": "Pinakabagong naka-save na ideya",
+      "guided_idea_latest_prediction": "Pinakabagong naka-save na hula: {prediction}",
+      "guided_idea_saved_prediction": "Naka-save na hula: {prediction}",
+      "milestone_stall_recovery": "Hindi na nasa stall ang pakpak sa sandaling ito. Ang iisang obserbasyon ay hindi patunay ng tuloy-tuloy na pagbangon mula sa stall.",
       "game_controls": "🎮 MGA KONTROL NG LARO",
       "cancel": "Kanselahin",
       "back_to_stem_lab": "Bumalik sa STEAM Lab",
@@ -54754,6 +54763,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "IANGAT ANG ILONG — iangat ang ilong (W)",
+      "hud_rotate_touch": "IANGAT ANG ILONG — mag-drag pataas mula sa gitna",
+      "hud_flare": "PAGPAPANTAY — marahang iangat ang ilong gamit ang W",
+      "hud_flare_touch": "PAGPAPANTAY — mag-drag pataas mula sa gitna",
+      "landing_touch_power": "Mag-drag pababa sa kanang gilid upang bawasan ang lakas sa ~30%. Bababa ang bilis.",
+      "landing_touch_flare": "Bago sumayad sa runway (~10 ft), marahang mag-drag pataas mula sa gitna upang iangat ang ilong. Targetin ang pagbaba na mas mababa sa 200 fpm sa pagsayad.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91005,6 +91020,18 @@
     "card_progress": "Card {n} sa {total}",
     "add_words": "Magdagdag ng mga salita para simulan ang pagsasanay.",
     "round_complete": "Tapos na ang round. Magsimula ng bagong round o i-rebyu ang mga salitang minarkahan mo.",
-    "practice_label": "Pagsasanay sa salita"
+    "practice_label": "Pagsasanay sa salita",
+    "use_mine_help": "Ginagamit ng HTML file ang iyong font, sukat ng teksto, at espasyo.",
+    "preparing_reading": "Idinadagdag ang iyong mga setting sa pagbabasa…",
+    "font_not_embedded": "Hindi maidagdag ang iyong font sa file, kaya font ng system ang ginagamit nito."
+  },
+  "reading_settings": {
+    "title": "Mga setting sa pagbabasa",
+    "smaller": "Paliitin ang teksto",
+    "larger": "Palakihin ang teksto",
+    "overlay": "Overlay ng kulay",
+    "ruler": "Ruler sa pagbabasa",
+    "use_mine": "Gamitin ang aking mga setting sa pagbabasa",
+    "use_mine_help": "Ipi-print gamit ang iyong font, sukat ng teksto, at espasyo."
   }
 }

@@ -187,10 +187,16 @@ describe('Dino Lab anatomy explorer contract', () => {
 // landmarks; they shade geometry and add no landmarks, so the landmark slice stops before them.
 const landmarkSource = block('            // DINO_DETAILED_LANDMARKS_V2', '            // Soften only the rear cranial join');
 const anchorSource = block('            function addBodyPartAnchor(', '            function addTextLabel(');
-const boundsSource = block('            var bodyPartStudyBounds = {};', '            function boundsForStudy(');
+// Capture generic landmark bounds through their public metadata materialization.
+// Subsequent species-specific focus caches have separate native geometry tests.
+const boundsStart = source.indexOf('            var bodyPartStudyBounds = {};');
+const boundsMetadata = source.indexOf('            model.userData.anatomyPartBounds = {};', boundsStart);
+const boundsEnd = source.indexOf('            });', boundsMetadata);
+if (boundsStart < 0 || boundsMetadata <= boundsStart || boundsEnd <= boundsMetadata) throw Error('Generic landmark bounds capture missing');
+const boundsSource = source.slice(boundsStart, boundsEnd + '            });'.length);
 const sceneNames = ['THREE','model','bodyPartDefinitions','bodyPartAnchors','bodyShell','headShell','lowerJawShell','idleMotion','head','hip','tail','shoulder','bodyCenter','surfaceSnout','surfaceHeadDepth','surfaceHeadHeight','surfaceHeadLength','surfaceBodyHeight','surfaceBodyDepth','eyeCenterX','ht','len','bodyDepth','bodyHeight'];
 const buildLandmarks = new Function(...sceneNames, 'function vec(x,y,z){return new THREE.Vector3(x,y,z);}\n' + anchorSource + landmarkSource + '\nreturn anatomyMeshParts;');
-const buildBounds = new Function('THREE','model','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len',boundsSource + '\nreturn bodyPartStudyBounds;');
+const buildBounds = new Function('THREE','model','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','dn','dromaeosaurHeadFocus','sauropodHeadFocus',boundsSource + '\nreturn bodyPartStudyBounds;');
 function sceneFixture() {
   const model = new THREE.Group(); model.position.set(.4,.2,-.3); model.rotation.y=.31;
   function mesh(name, position, feature) {
@@ -212,7 +218,7 @@ function sceneFixture() {
   model.updateMatrixWorld(true);
   const full=new THREE.Box3().setFromObject(model), seed=new THREE.Box3(new THREE.Vector3(-.4,.4,-.3),new THREE.Vector3(.6,1,.3));
   const study={full,head:seed.clone(),body:seed.clone(),tail:seed.clone()};
-  const bounds=buildBounds(THREE,model,parts,anchors,meshParts,study,1,3);
+  const bounds=buildBounds(THREE,model,parts,anchors,meshParts,study,1,3,art.DINOS.find(dn=>dn.id==='archaeopteryx'),null,null);
   return {model,parts,anchors,meshParts,bounds,headShell,limb};
 }
 

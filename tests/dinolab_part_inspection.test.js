@@ -121,9 +121,10 @@ describe('Selected dinosaur landmark comparison', () => {
     const velociraptor = art.DINOS.find(dn => dn.id === 'velociraptor');
     const feathers = art.dinoPartInspectionFor(velociraptor, { id: 'wing' });
     expect(feathers.bone).toContain('does not mean');
-    expect(feathers.limit).toContain('not powered flight');
+    expect(feathers.limit).toContain('whose species assignment remains under study');
+    expect(feathers.limit).toContain('do not preserve an exact body coat, vane outline or flight behavior');
     expect(feathers.limit).toContain('not drawn at this scale');
-    expect(feathers.source.url).toBe('https://doi.org/10.1126/science.1145076');
+    expect(feathers.source.url).toBe('https://doi.org/10.1206/3982.1');
     const ankylosaurus = art.DINOS.find(dn => dn.id === 'ankylosaurus');
     const club = art.dinoPartInspectionFor(ankylosaurus, { id: 'tailclub' });
     expect(club.bone).toContain('osteoderms, distinct from the vertebrae');

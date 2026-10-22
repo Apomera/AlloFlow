@@ -42849,6 +42849,15 @@
       "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
     },
     "flightsim": {
+      "debrief_unavailable_title": "Saved flight review unavailable",
+      "debrief_unavailable_body": "The latest flight review is missing or cannot be read. Return to the menu to start a fresh flight.",
+      "guided_idea_before_trials": "Recorded before the trials",
+      "guided_idea_saved": "Saved idea",
+      "guided_idea_timing_unknown": "The timing of this saved idea was not recorded.",
+      "guided_idea_latest": "Latest saved idea",
+      "guided_idea_latest_prediction": "Latest saved prediction: {prediction}",
+      "guided_idea_saved_prediction": "Saved prediction: {prediction}",
+      "milestone_stall_recovery": "The wing is no longer stalled at this moment. A single observation does not establish sustained recovery.",
       "from": "လၢ",
       "teacher_notes": "သရၣ် Notes",
       "question": "တၢ်သံကွၢ်",
@@ -42883,6 +42892,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTATE — pitch up (W)",
+      "hud_rotate_touch": "ROTATE — drag up from center",
+      "hud_flare": "FLARE — ease back on W",
+      "hud_flare_touch": "FLARE — drag up from center",
+      "landing_touch_power": "Drag down along the right edge to reduce power to ~30%. Speed will decrease.",
+      "landing_touch_flare": "Just above the runway (~10 ft), drag gently up from center to raise the nose. Target less than 200 fpm at touchdown.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -86744,6 +86759,18 @@
     "card_progress": "Card {n} လၢ {total} အပူၤ",
     "add_words": "ထၢနုၥ်တၢ်ကတိၤ ဒ်သိးကစးထီၣ်မၤလိ.",
     "round_complete": "တဘျီအံၤ ဝံၤလံ. စးထီၣ်တဘျီအသီ မ့တမ့ၢ် ကွၢ်သမံသမိးတၢ်ကတိၤလၢနမၤပနီၣ်ကဒီး.",
-    "practice_label": "တၢ်မၤလိတၢ်ကတိၤ"
+    "practice_label": "တၢ်မၤလိတၢ်ကတိၤ",
+    "use_mine_help": "HTML ဖဲလ် သူနလံာ်မဲာ်, လံာ်မဲာ်အဒိၣ်ဆံး ဒီးဘၢၣ်စၢၤ.",
+    "preparing_reading": "ထၢနုာ်ဝဲ နတၢ်ဖးအတၢ်ရဲၣ်ကျဲၤ…",
+    "font_not_embedded": "ထၢနုာ်နလံာ်မဲာ်ဆူဖဲလ်အပူၤ တသ့ဘၣ်. ဖဲလ်သူ system အလံာ်မဲာ်."
+  },
+  "reading_settings": {
+    "title": "တၢ်ဖးအတၢ်ရဲၣ်ကျဲၤ",
+    "smaller": "မၤဆံးလီၤလံာ်မဲာ်",
+    "larger": "မၤဒိၣ်ထီၣ်လံာ်မဲာ်",
+    "overlay": "လွဲၢ်အကံၢ်ပၤ",
+    "ruler": "တၢ်ဖးအထုၣ်",
+    "use_mine": "သူယတၢ်ဖးအတၢ်ရဲၣ်ကျဲၤ",
+    "use_mine_help": "သူနလံာ်မဲာ်, လံာ်မဲာ်အဒိၣ်ဆံး ဒီးဘၢၣ်စၢၤ လၢတၢ်ဒိအဂီၢ်."
   }
 }

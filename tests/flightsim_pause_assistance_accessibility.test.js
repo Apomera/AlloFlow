@@ -68,6 +68,8 @@ beforeEach(async () => {
   // is independently covered by the altitude and aircraft performance suites.
   vi.spyOn(FS.Physics, 'step').mockImplementation(state => ({ ...state,
     forces: { lift: 2550, thrust: 200, drag: 200, weight: 2550, normal: 2550 } }));
+  // The native hold button follows the live ground/air transition.
+  await frame();
 });
 afterEach(async () => {
   if (root) await act(async () => root.unmount()); root = null; host?.remove();
@@ -81,9 +83,9 @@ describe('accessible current-flight assistance', () => {
     await click(hold());
     expect(document.activeElement).toBe(hold());
     expect(hold().getAttribute('aria-pressed')).toBe('true');
-    expect(latest.autopilot).toMatchObject({ hdg: true, alt: true, spd: true, tgtHdg: 183, tgtAlt: 5000, tgtSpd: 120 });
+    expect(latest.autopilot).toMatchObject({ hdg: true, alt: true, spd: true, tgtHdg: 183, tgtAlt: 5032, tgtSpd: 120 });
     const text = host.querySelector('#skyschool-assistance-targets').textContent;
-    expect(text).toContain('183°'); expect(text).toContain('5,000 ft MSL'); expect(text).toContain('120 kt IAS');
+    expect(text).toContain('183°'); expect(text).toContain('5,032 ft MSL'); expect(text).toContain('120 kt IAS');
     expect(hooks().pausedRef.current).toBe(false); // Focusing a deck control is not window departure.
     await act(async () => { cockpit().focus(); key('keydown', 'b'); key('keyup', 'b'); });
     await frame();

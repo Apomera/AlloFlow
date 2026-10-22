@@ -1625,13 +1625,19 @@ const syncProgressToFirestore = async (deps) => {
       });
       return count > 0 ? Math.round(total / count) : 0;
     })();
-    const wsAcc = wordSoundsHistory?.length > 0 ? Math.round(wordSoundsHistory.filter((h) => h.correct).length / wordSoundsHistory.length * 100) : 0;
+    const wsHistory = Array.isArray(wordSoundsHistory) ? wordSoundsHistory : [];
+    const wsGraded = wsHistory.filter((row) => row && row.practiceOnly !== true && row.activity !== "letter_tracing" && (typeof row.correct === "boolean" || typeof row.isCorrect === "boolean"));
+    const legacyScoreAvailable = !wsHistory.length && Number.isFinite(wordSoundsScore?.total) && wordSoundsScore.total > 0 && Number.isFinite(wordSoundsScore.correct);
+    const wsGradedAttempts = wsHistory.length ? wsGraded.length : legacyScoreAvailable ? wordSoundsScore.total : 0;
+    const wsCorrect = wsHistory.length ? wsGraded.filter((row) => row.correct ?? row.isCorrect).length : legacyScoreAvailable ? wordSoundsScore.correct : 0;
+    const wsAcc = wsGradedAttempts > 0 ? Math.round(wsCorrect / wsGradedAttempts * 100) : null;
     const progressData = {
       studentNickname,
       lastSynced: (/* @__PURE__ */ new Date()).toISOString(),
       stats: {
         quizAvg,
         wsAccuracy: wsAcc,
+        wsGradedAttempts,
         fluencyWCPM: fluencyAssessments?.length > 0 ? fluencyAssessments[fluencyAssessments.length - 1]?.wcpm || 0 : 0,
         gamesPlayed: gameCompletions?.length || 0,
         totalActivities: (history?.length || 0) + (wordSoundsHistory?.length > 0 ? 1 : 0) + (gameCompletions?.length || 0),
@@ -1788,8 +1794,10 @@ const buildStudentProgressSummary = ({
   const latestFluency = asArray(fluencyAssessments)[asArray(fluencyAssessments).length - 1] || null;
   const wsHistory = asArray(wordSoundsHistory);
   const wsTotal = toNumber(wordSoundsScore.total) || wsHistory.length;
-  const wsCorrect = toNumber(wordSoundsScore.correct) || wsHistory.filter((item) => item && (item.correct || item.isCorrect)).length;
-  const wordSoundsAccuracy = wsTotal > 0 ? Math.round(wsCorrect / wsTotal * 100) : 0;
+  const wsGraded = wsHistory.filter((item) => item && item.practiceOnly !== true && item.activity !== "letter_tracing" && (typeof item.correct === "boolean" || typeof item.isCorrect === "boolean"));
+  const wsGradedAttempts = wsHistory.length ? wsGraded.length : toNumber(wordSoundsScore.total);
+  const wsCorrect = wsHistory.length ? wsGraded.filter((item) => item.correct ?? item.isCorrect).length : toNumber(wordSoundsScore.correct);
+  const wordSoundsAccuracy = wsGradedAttempts > 0 ? Math.round(wsCorrect / wsGradedAttempts * 100) : null;
   let focusRatio = null;
   try {
     if (typeof getFocusRatio === "function") focusRatio = getFocusRatio();
@@ -1858,6 +1866,7 @@ const buildStudentProgressSummary = ({
       quizAverage,
       quizCount,
       wordSoundsWords: wsTotal,
+      wordSoundsGradedAttempts: wsGradedAttempts,
       wordSoundsAccuracy,
       wordSoundsBestStreak: toNumber(wordSoundsScore.streak),
       wordSoundsBadges: wordSoundsBadges && typeof wordSoundsBadges === "object" ? Object.keys(wordSoundsBadges).length : 0,

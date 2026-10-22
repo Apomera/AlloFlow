@@ -1,0 +1,158 @@
+{
+  "d1_1": {
+    "note": "Clause numbers follow AWS D1.1:2020. Editions up to 2015 numbered them differently (Inspection was Clause 6, for example), so always check the edition your contract names. Statically and cyclically loaded requirements are parts within clauses such as Design and Inspection, not clauses of their own.",
+    "context": {
+      "full": "AWS D1.1/D1.1M — Structural Welding Code — Steel",
+      "publishedBy": "American Welding Society (AWS)",
+      "scope": "Welded steel structures: buildings, towers, sign and lighting supports, crane runways, offshore platforms and industrial frames, in carbon and low-alloy steel at least 1/8 in thick. (US highway bridges use the companion Bridge Welding Code, AASHTO/AWS D1.5.)",
+      "why": "One of the most widely used welding codes in the US. Building inspectors, structural engineers and fabrication shops all reference it. If you weld steel that holds up a building or a tower, it is usually the code named in the contract.",
+      "who": "Structural steel fabricators and erectors, building contractors, welding inspectors, and anyone bidding structural steel work. Navy shipyards such as Bath Iron Works weld hulls mainly to Navy (NAVSEA) welding specifications rather than D1.1, though the skills transfer."
+    },
+    "rows": [
+      {
+        "number": "Clause 1",
+        "title": "General Requirements",
+        "body": "Scope and limits of the code, and the responsibilities of the Engineer, the Contractor and the Inspector."
+      },
+      {
+        "number": "Clause 2",
+        "title": "Normative References",
+        "body": "The other standards the code calls on, such as ASTM steel specifications and AWS filler-metal specifications."
+      },
+      {
+        "number": "Clause 3",
+        "title": "Terms and Definitions",
+        "body": "What words like \"effective throat\", \"prequalified\" and \"Engineer\" mean in this code."
+      },
+      {
+        "number": "Clause 4",
+        "title": "Design of Welded Connections",
+        "body": "Joint geometry, allowable stresses, fatigue."
+      },
+      {
+        "number": "Clause 5",
+        "title": "Prequalification of WPSs",
+        "body": "Joint details, base metals, filler metals and minimum preheats that are exempt from WPS qualification testing when every condition is met. The WPS must still be written, and welders must still be qualified."
+      },
+      {
+        "number": "Clause 6",
+        "title": "Qualification",
+        "body": "How to qualify a WPS + a welder. THIS is the section every welder lives by."
+      },
+      {
+        "number": "Clause 7",
+        "title": "Fabrication",
+        "body": "Workmanship: cleaning, fit-up, preheat, interpass, tacks, cleaning between passes."
+      },
+      {
+        "number": "Clause 8",
+        "title": "Inspection",
+        "body": "Inspector qualification, inspection of WPSs, welders and work, and acceptance criteria: the visual acceptance table (Table 8.1) plus the criteria for MT, PT, UT and RT."
+      },
+      {
+        "number": "Clause 9",
+        "title": "Stud Welding",
+        "body": "Specialty section on shear stud + nelson stud welding."
+      },
+      {
+        "number": "Clause 10",
+        "title": "Tubular Structures",
+        "body": "Connections in round and box tubes (pipe and HSS), with their own design, qualification and inspection rules."
+      },
+      {
+        "number": "Clause 11",
+        "title": "Strengthening and Repair of Existing Structures",
+        "body": "How to weld on existing structures."
+      }
+    ]
+  },
+  "asme9": {
+    "note": "Section IX also has Part QB (brazing) and Part QF (plastic fusing). Paragraph numbers are stable across recent editions, but always check the edition your job names.",
+    "context": {
+      "full": "ASME Section IX — Welding, Brazing, and Fusing Qualifications",
+      "publishedBy": "American Society of Mechanical Engineers (ASME)",
+      "scope": "The qualification standard the ASME construction codes point to: Section I (power boilers), Section VIII (pressure vessels), B31.1 and B31.3 (piping). It qualifies procedures and welders; the construction code sets design and inspection.",
+      "why": "Pressure equipment holds gas or liquid that can explode, scald or poison if a weld fails: refineries, chemical and power plants, food and pharma processing. Section IX is where those industries prove that a procedure and a welder can make sound welds.",
+      "who": "Pressure vessel and boiler shops, refineries, power, nuclear and chemical plants, pharma. Code-stamped work (the ASME Certification Mark with a designator such as U for vessels or S for power boilers) is overseen by an Authorized Inspector, who must sign the Manufacturer's Data Report."
+    },
+    "rows": [
+      {
+        "number": "QW-100",
+        "title": "General Requirements",
+        "body": "Scope + definitions."
+      },
+      {
+        "number": "QW-200",
+        "title": "Welding Procedure Qualifications",
+        "body": "WPS and PQR requirements. Changing an essential variable (such as process, base metal P-Number or thickness range, filler F-Number, PWHT, or shielding gas for gas-shielded processes) needs a new PQR. Nonessential variables (such as groove design, or position for the procedure) only need the WPS revised."
+      },
+      {
+        "number": "QW-300",
+        "title": "Welding Performance Qualifications",
+        "body": "How welders qualify. Performance variables (process, base metal, position, thickness range, backing)."
+      },
+      {
+        "number": "QW-400",
+        "title": "Welding Data (the variables)",
+        "body": "Defines every variable (joints QW-402, base metals QW-403, filler metals QW-404, positions QW-405 and so on), plus the P-Number and F-Number groups and the thickness ranges a test coupon qualifies (QW-451). Which variables are essential is tabulated in QW-250 (procedures) and QW-350 (welders)."
+      },
+      {
+        "number": "QW-500",
+        "title": "Standard Welding Procedure Specifications (SWPS)",
+        "body": "Rules under which a shop may adopt AWS Standard Welding Procedure Specifications (the AWS B2.1 series) instead of qualifying its own procedure, within their stated limits and conditions."
+      }
+    ]
+  },
+  "api1104": {
+    "note": "Section numbers follow recent editions of API 1104; check the edition your company specification names.",
+    "context": {
+      "full": "API Standard 1104 — Welding of Pipelines and Related Facilities",
+      "publishedBy": "American Petroleum Institute (API)",
+      "scope": "Cross-country pipelines (oil + gas + petrochemical transmission). Compressor stations, pump stations, related facilities.",
+      "why": "A failed girth weld can rupture far from help and cause fires, spills and fatalities. API 1104 sets how pipeline procedures and welders are qualified, and the acceptance standards for inspecting welds by RT, UT and other methods. HOW MANY welds get inspected is set by the company specification or by regulation (in the US, federal pipeline-safety rules); on many lines it is every weld.",
+      "who": "Pipeline contractors (such as Michels and Henkels & McCoy), pipeline operators (such as TC Energy, Enbridge and Williams), and pipeline welders, who qualify to API 1104 by testing for the company that hires them."
+    },
+    "rows": [
+      {
+        "number": "Section 1-4",
+        "title": "General + Definitions",
+        "body": "Scope, references, terms."
+      },
+      {
+        "number": "Section 5",
+        "title": "Qualification of Welding Procedures",
+        "body": "PQR + WPS for pipeline welds."
+      },
+      {
+        "number": "Section 6",
+        "title": "Qualification of Welders",
+        "body": "Performance test requirements. Bend tests, nick-break tests."
+      },
+      {
+        "number": "Section 7",
+        "title": "Design + Preparation",
+        "body": "Joint geometry for cross-country pipeline."
+      },
+      {
+        "number": "Section 8",
+        "title": "Inspection + Testing",
+        "body": "The right to inspect production welds, the methods (visual, radiographic, ultrasonic and others), and the qualification of the people who do it. The limits themselves are in Section 9."
+      },
+      {
+        "number": "Section 9",
+        "title": "Acceptance Standards",
+        "body": "Acceptance standards for NDT: when an imperfection is acceptable, and when it is a defect that must be repaired or cut out."
+      },
+      {
+        "number": "Section 10",
+        "title": "Repair + Removal",
+        "body": "How to handle defects without compromising line integrity."
+      },
+      {
+        "number": "Section 11",
+        "title": "Procedures for NDT",
+        "body": "Non-destructive testing methodologies."
+      }
+    ]
+  }
+}

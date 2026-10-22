@@ -13530,6 +13530,37 @@
     "student_fallback_progress": "Fais une pause et nomme une chose que tu comprends maintenant et une question que tu te poses encore."
   },
   "games": {
+    "sort_steps": {
+      "venn": "Examine un cercle à la fois. Explique pourquoi cet élément respecte ou non la règle de chaque cercle.",
+      "causeEffect": "Essaie la phrase « ___ s'est produit parce que ___. » Quelle partie cet élément décrit-il ?",
+      "tchart": "Nomme une caractéristique de cet élément. Compare-la au titre de chaque colonne.",
+      "conceptMapSort": "Essaie de dire « Ceci va avec ___ parce que ___. » Cherche un lien avec chaque branche.",
+      "outlineSort": "Essaie de dire « Ce détail aide à expliquer ___. » Compare ton idée à chaque titre.",
+      "fishboneSort": "Comment cet élément pourrait-il contribuer à causer le problème ? Compare cette explication à chaque titre.",
+      "problemSolutionSort": "Qu'est-ce que ce détail aiderait une personne à faire ? Compare cette action à chaque solution.",
+      "frayerSort": "Cet élément explique-t-il ce que l'idée signifie, comment elle est ou si quelque chose en est un exemple ?",
+      "seeThinkWonderSort": "Est-ce quelque chose que tu peux observer, une explication à appuyer par des preuves ou une question à explorer ?",
+      "storyMapSort": "Raconte l'histoire dans l'ordre. Quel rôle cet élément joue-t-il dans ton récit ?",
+      "generic": "Nomme une caractéristique de cet élément, puis explique son lien avec chaque titre."
+    },
+    "sort_support": {
+      "show_tip": "Conseil pour trier",
+      "hide_tip": "Masquer le conseil",
+      "tip_hidden": "Conseil pour trier masqué."
+    },
+    "sort_reminders": {
+      "venn": "Vérifie la règle de chaque cercle. Cet élément correspond-il à un seul groupe ou aux deux ?",
+      "causeEffect": "Demande-toi ce qui a provoqué un événement et ce qui s'est passé en conséquence.",
+      "tchart": "Lis les titres des deux colonnes. Quelle caractéristique de cet élément t'aide à décider où le placer ?",
+      "conceptMapSort": "Compare l'élément à l'idée principale de chaque branche. Cherche un lien qui a du sens.",
+      "outlineSort": "Lis chaque titre et demande-toi quelle idée principale ce détail vient appuyer.",
+      "fishboneSort": "Réfléchis au type de cause que décrit cet élément, puis compare les titres des catégories.",
+      "problemSolutionSort": "Demande-toi quelle solution ce détail aide à expliquer ou à mettre en œuvre.",
+      "frayerSort": "Décide si l'élément définit l'idée, décrit une caractéristique, donne un exemple ou donne un contre-exemple.",
+      "seeThinkWonderSort": "Distingue ce que tu peux observer, ce que tu en déduis et les questions que tu te poses encore.",
+      "storyMapSort": "Réfléchis au rôle de l'élément dans l'histoire, puis compare les titres des sections.",
+      "generic": "Lis les titres et compare l'élément à l'idée principale de chaque groupe."
+    },
     "syntax": {
       "title": "Syntaxe Mélangée",
       "subtitle": "Construis la phrase",
@@ -58258,6 +58289,15 @@
       "sr_critique_ready": "Critique prête."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Bilan de vol enregistré non disponible",
+      "debrief_unavailable_body": "Le dernier bilan de vol est absent ou illisible. Retournez au menu pour commencer un nouveau vol.",
+      "guided_idea_before_trials": "Notée avant les essais",
+      "guided_idea_saved": "Idée enregistrée",
+      "guided_idea_timing_unknown": "Le moment où cette idée a été enregistrée n’a pas été consigné.",
+      "guided_idea_latest": "Dernière idée enregistrée",
+      "guided_idea_latest_prediction": "Dernière prédiction enregistrée : {prediction}",
+      "guided_idea_saved_prediction": "Prédiction enregistrée : {prediction}",
+      "milestone_stall_recovery": "L’aile ne décroche plus à cet instant. Une seule observation ne prouve pas un rétablissement durable.",
       "game_controls": "🎮 COMMANDES DU JEU",
       "cancel": "Annuler",
       "learn": "Apprendre",
@@ -58304,6 +58344,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTATION — relevez le nez (W)",
+      "hud_rotate_touch": "ROTATION — glissez vers le haut depuis le centre",
+      "hud_flare": "ARRONDI — relevez doucement le nez avec W",
+      "hud_flare_touch": "ARRONDI — glissez vers le haut depuis le centre",
+      "landing_touch_power": "Glissez vers le bas le long du bord droit pour réduire la puissance à ~30 %. La vitesse diminuera.",
+      "landing_touch_flare": "Juste au-dessus de la piste (~10 ft), glissez doucement vers le haut depuis le centre pour relever le nez. Visez moins de 200 fpm de descente au toucher des roues.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -93113,6 +93159,18 @@
     "card_progress": "Carte {n} sur {total}",
     "add_words": "Ajoutez des mots pour commencer la pratique.",
     "round_complete": "Ronde terminée. Commencez une nouvelle ronde ou révisez les mots que vous avez marqués.",
-    "practice_label": "Pratique des mots"
+    "practice_label": "Pratique des mots",
+    "use_mine_help": "Le fichier HTML utilise la police, la taille du texte et l'espacement choisis.",
+    "preparing_reading": "Ajout des paramètres de lecture…",
+    "font_not_embedded": "La police choisie n'a pas pu être ajoutée au fichier : il utilise donc la police du système."
+  },
+  "reading_settings": {
+    "title": "Paramètres de lecture",
+    "smaller": "Texte plus petit",
+    "larger": "Texte plus grand",
+    "overlay": "Superposition de couleur",
+    "ruler": "Règle de lecture",
+    "use_mine": "Utiliser mes paramètres de lecture",
+    "use_mine_help": "Imprime avec la police, la taille du texte et l'espacement choisis."
   }
 }

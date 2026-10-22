@@ -1,0 +1,22 @@
+{
+  "safetyRegionSha256": "2c615d9b5b6ad4a9d1f3b1157cdd259933ec9d1eaeb3eae2b0e54f54e9924bca",
+  "standards": [
+    {
+      "id": "osha",
+      "criterion": 90,
+      "exchange": 5
+    },
+    {
+      "id": "niosh",
+      "criterion": 85,
+      "exchange": 3
+    }
+  ],
+  "referenceHours": [
+    8,
+    4,
+    2,
+    1,
+    0.5
+  ]
+}

@@ -55307,6 +55307,15 @@
       "sr_critique_ready": "Đã có nhận xét."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Bản tổng kết chuyến bay đã lưu không khả dụng",
+      "debrief_unavailable_body": "Bản tổng kết chuyến bay mới nhất bị thiếu hoặc không thể đọc được. Hãy quay lại trình đơn để bắt đầu chuyến bay mới.",
+      "guided_idea_before_trials": "Đã ghi lại trước các lần thử",
+      "guided_idea_saved": "Ý tưởng đã lưu",
+      "guided_idea_timing_unknown": "Thời điểm ghi lại ý tưởng đã lưu này không được ghi nhận.",
+      "guided_idea_latest": "Ý tưởng được lưu gần nhất",
+      "guided_idea_latest_prediction": "Dự đoán được lưu gần nhất: {prediction}",
+      "guided_idea_saved_prediction": "Dự đoán đã lưu: {prediction}",
+      "milestone_stall_recovery": "Tại thời điểm này, cánh không còn bị thất tốc. Một lần quan sát không đủ để khẳng định trạng thái phục hồi được duy trì.",
       "game_controls": "🎮 ĐIỀU KHIỂN TRÒ CHƠI",
       "cancel": "Hủy",
       "from": "Từ",
@@ -55359,6 +55368,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "NÂNG MŨI — nâng mũi (W)",
+      "hud_rotate_touch": "NÂNG MŨI — kéo lên từ giữa",
+      "hud_flare": "GIẢM TỐC ĐỘ HẠ — nhẹ nhàng nâng mũi bằng W",
+      "hud_flare_touch": "GIẢM TỐC ĐỘ HẠ — kéo lên từ giữa",
+      "landing_touch_power": "Kéo xuống dọc mép phải để giảm công suất xuống ~30%. Tốc độ sẽ giảm.",
+      "landing_touch_flare": "Ngay trên đường băng (~10 ft), kéo nhẹ lên từ giữa để nâng mũi. Mục tiêu là tốc độ hạ dưới 200 fpm khi tiếp đất.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90726,6 +90741,18 @@
     "card_progress": "Thẻ {n}/{total}",
     "add_words": "Hãy thêm từ để bắt đầu luyện tập.",
     "round_complete": "Hoàn thành vòng. Hãy bắt đầu vòng mới hoặc ôn lại những từ bạn đã đánh dấu.",
-    "practice_label": "Luyện tập từ"
+    "practice_label": "Luyện tập từ",
+    "use_mine_help": "Tệp HTML dùng phông chữ, cỡ chữ và khoảng cách của bạn.",
+    "preparing_reading": "Đang thêm cài đặt đọc của bạn…",
+    "font_not_embedded": "Không thể thêm phông chữ của bạn vào tệp, nên tệp dùng phông chữ hệ thống."
+  },
+  "reading_settings": {
+    "title": "Cài đặt đọc",
+    "smaller": "Chữ nhỏ hơn",
+    "larger": "Chữ lớn hơn",
+    "overlay": "Lớp phủ màu",
+    "ruler": "Thước đọc",
+    "use_mine": "Dùng cài đặt đọc của tôi",
+    "use_mine_help": "In với phông chữ, cỡ chữ và khoảng cách của bạn."
   }
 }

@@ -54708,6 +54708,15 @@
       "sr_critique_ready": "ਸਮੀਖਿਆ ਤਿਆਰ ਹੈ।"
     },
     "flightsim": {
+      "debrief_unavailable_title": "ਸੰਭਾਲੀ ਉਡਾਣ ਸਮੀਖਿਆ ਉਪਲਬਧ ਨਹੀਂ",
+      "debrief_unavailable_body": "ਸਭ ਤੋਂ ਨਵੀਂ ਉਡਾਣ ਸਮੀਖਿਆ ਗੁੰਮ ਹੈ ਜਾਂ ਪੜ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕਦੀ। ਨਵੀਂ ਉਡਾਣ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਮੀਨੂ 'ਤੇ ਵਾਪਸ ਜਾਓ।",
+      "guided_idea_before_trials": "ਅਜ਼ਮਾਇਸ਼ਾਂ ਤੋਂ ਪਹਿਲਾਂ ਦਰਜ ਕੀਤਾ",
+      "guided_idea_saved": "ਸੰਭਾਲਿਆ ਵਿਚਾਰ",
+      "guided_idea_timing_unknown": "ਇਸ ਸੰਭਾਲੇ ਵਿਚਾਰ ਦਾ ਸਮਾਂ ਦਰਜ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਸੀ।",
+      "guided_idea_latest": "ਸਭ ਤੋਂ ਨਵਾਂ ਸੰਭਾਲਿਆ ਵਿਚਾਰ",
+      "guided_idea_latest_prediction": "ਸਭ ਤੋਂ ਨਵਾਂ ਸੰਭਾਲਿਆ ਅਨੁਮਾਨ: {prediction}",
+      "guided_idea_saved_prediction": "ਸੰਭਾਲਿਆ ਅਨੁਮਾਨ: {prediction}",
+      "milestone_stall_recovery": "ਇਸ ਵੇਲੇ ਪੰਖ ਹੁਣ ਸਟਾਲ ਦੀ ਹਾਲਤ ਵਿੱਚ ਨਹੀਂ ਹੈ। ਇੱਕੋ ਨਿਰੀਖਣ ਨਾਲ ਇਹ ਸਾਬਤ ਨਹੀਂ ਹੁੰਦਾ ਕਿ ਸਟਾਲ ਤੋਂ ਬਾਹਰ ਆਈ ਹਾਲਤ ਲਗਾਤਾਰ ਕਾਇਮ ਹੈ।",
       "game_controls": "🎮 ਗੇਮ ਨਿਯੰਤਰਣ",
       "cancel": "ਰੱਦ ਕਰੋ",
       "from": "ਤੋਂ",
@@ -54763,6 +54772,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ਉਡਾਣ ਲਈ ਨੱਕ ਚੁੱਕੋ — ਨੱਕ ਉੱਪਰ ਕਰੋ (W)",
+      "hud_rotate_touch": "ਉਡਾਣ ਲਈ ਨੱਕ ਚੁੱਕੋ — ਵਿਚਕਾਰੋਂ ਉੱਪਰ ਖਿੱਚੋ",
+      "hud_flare": "ਉਤਰਨ ਵੇਲੇ ਨੱਕ ਚੁੱਕੋ — W ਨਾਲ ਨੱਕ ਹੌਲੀ ਚੁੱਕੋ",
+      "hud_flare_touch": "ਉਤਰਨ ਵੇਲੇ ਨੱਕ ਚੁੱਕੋ — ਵਿਚਕਾਰੋਂ ਉੱਪਰ ਖਿੱਚੋ",
+      "landing_touch_power": "ਇੰਜਣ ਦੀ ਸ਼ਕਤੀ ~30% ਤੱਕ ਘਟਾਉਣ ਲਈ ਸੱਜੇ ਕਿਨਾਰੇ ਦੇ ਨਾਲ ਹੇਠਾਂ ਖਿੱਚੋ। ਰਫ਼ਤਾਰ ਘਟੇਗੀ।",
+      "landing_touch_flare": "ਰਨਵੇ ਤੋਂ ਥੋੜ੍ਹਾ ਉੱਪਰ (~10 ft), ਨੱਕ ਚੁੱਕਣ ਲਈ ਵਿਚਕਾਰੋਂ ਹੌਲੀ ਉੱਪਰ ਖਿੱਚੋ। ਜ਼ਮੀਨ ਨੂੰ ਛੂਹਣ ਵੇਲੇ ਹੇਠਾਂ ਆਉਣ ਦੀ ਦਰ 200 fpm ਤੋਂ ਘੱਟ ਰੱਖਣ ਦਾ ਟੀਚਾ ਰੱਖੋ।",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88736,6 +88751,18 @@
     "card_progress": "{total} ਵਿੱਚੋਂ ਕਾਰਡ {n}",
     "add_words": "ਅਭਿਆਸ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸ਼ਬਦ ਜੋੜੋ।",
     "round_complete": "ਗੇੜ ਪੂਰਾ ਹੋਇਆ। ਨਵਾਂ ਗੇੜ ਸ਼ੁਰੂ ਕਰੋ ਜਾਂ ਨਿਸ਼ਾਨ ਲਗਾਏ ਸ਼ਬਦਾਂ ਦੀ ਦੁਹਰਾਈ ਕਰੋ।",
-    "practice_label": "ਸ਼ਬਦ ਅਭਿਆਸ"
+    "practice_label": "ਸ਼ਬਦ ਅਭਿਆਸ",
+    "use_mine_help": "HTML ਫਾਈਲ ਤੁਹਾਡਾ ਫੌਂਟ, ਟੈਕਸਟ ਦਾ ਆਕਾਰ ਅਤੇ ਵਿੱਥ ਵਰਤਦੀ ਹੈ।",
+    "preparing_reading": "ਤੁਹਾਡੀਆਂ ਪੜ੍ਹਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਜੋੜੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ…",
+    "font_not_embedded": "ਤੁਹਾਡਾ ਫੌਂਟ ਫਾਈਲ ਵਿੱਚ ਨਹੀਂ ਜੋੜਿਆ ਜਾ ਸਕਿਆ, ਇਸ ਲਈ ਫਾਈਲ ਸਿਸਟਮ ਫੌਂਟ ਵਰਤਦੀ ਹੈ।"
+  },
+  "reading_settings": {
+    "title": "ਪੜ੍ਹਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ",
+    "smaller": "ਛੋਟਾ ਟੈਕਸਟ",
+    "larger": "ਵੱਡਾ ਟੈਕਸਟ",
+    "overlay": "ਰੰਗ ਓਵਰਲੇ",
+    "ruler": "ਪੜ੍ਹਨ ਵਾਲਾ ਰੂਲਰ",
+    "use_mine": "ਮੇਰੀਆਂ ਪੜ੍ਹਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਰਤੋ",
+    "use_mine_help": "ਤੁਹਾਡੇ ਫੌਂਟ, ਟੈਕਸਟ ਦੇ ਆਕਾਰ ਅਤੇ ਵਿੱਥ ਨਾਲ ਛਪਦਾ ਹੈ।"
   }
 }

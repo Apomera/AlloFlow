@@ -119,10 +119,17 @@ test('keyboard steering follows heading and supports braking, height and gliding
  await settled(page);expect(errors).toEqual([]);
 });
 
-test('the rendered follow camera stays behind the manually steered butterfly',async({page})=>{
+test('the rendered follow camera follows steering while player wing flex respects shared pause',async({page})=>{
  test.setTimeout(180000);
  await page.setViewportSize({width:1100,height:850});
- const errors=await mount(page,true),stage=page.locator('.bf-stage');await takeFlight(page);
+ const errors=await mount(page,true),stage=page.locator('.bf-stage');
+ const playerFlex=()=>page.evaluate(()=>{
+  const root=(window as any).__directScene.getObjectByName('player-monarch');
+  return root.getObjectByName('monarch-forewing-left').material.userData.playerWingFlex.value.toArray() as number[];
+ });
+ // Idle hovering uses meadow time, independently of the flight clock.
+ await expect.poll(async()=>(await playerFlex()).some(value=>Math.abs(value)>.002),{timeout:45000}).toBe(true);
+ await takeFlight(page);
  const heading=(await snapshot(page)).heading;
  await page.keyboard.down('d');
  await expect.poll(async()=>{
@@ -130,7 +137,8 @@ test('the rendered follow camera stays behind the manually steered butterfly',as
  },{timeout:45000}).toBeGreaterThan(.05);
  // Input release and deceleration are covered above without GPU timing. Freeze
  // this actual rendered turn to inspect camera alignment at exactly that pose.
- await page.keyboard.up('d');await stage.press('Space');await frozen(page);
+ await page.keyboard.up('d');await stage.press('Space');const heldFlex=await playerFlex();await frozen(page);
+ expect(await playerFlex()).toEqual(heldFlex);
  const framing=await page.evaluate(()=>{
   const w=window as any,player=w.__directScene.getObjectByName('player-monarch'),camera=w.__directCamera;
   const dx=camera.position.x-player.position.x,dz=camera.position.z-player.position.z,yaw=player.rotation.y;

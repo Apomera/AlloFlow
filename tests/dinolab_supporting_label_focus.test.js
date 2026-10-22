@@ -53,11 +53,11 @@ describe('Both endpoints receive a safe supporting-trace callout', () => {
 
   it('passes pair focus to the actual renderer call and leaves ordinary views without a focus list', () => {
     const call = source.split('\n').find(line => line.startsWith('              var layouts = dinoBodyLabelLayout('));
-    const run = new Function('dinoBodyLabelLayout', 'points', 'width', 'height', 'top', 'bottom', 'selectedBodyPartRef', 'previousBodyLabels', 'pairVisible', 'relation', 'cameraStudy', 'dinoInitialBodyLabelPriority', call + '\nreturn layouts;');
+    const run = new Function('dinoBodyLabelLayout', 'points', 'width', 'height', 'top', 'bottom', 'selectedBodyPartRef', 'previousBodyLabels', 'pairVisible', 'relation', 'cameraStudy', 'dinoInitialBodyLabelPriority', 'shapeLensVisible', 'shapeLensIds', call + '\nreturn layouts;');
     const mock = vi.fn(() => []), relation = { ids: ['knee', 'ankle'] };
-    run(mock, [], 390, 520, 100, 18, { current: 'ankle' }, [], true, relation, 'body', () => []);
+    run(mock, [], 390, 520, 100, 18, { current: 'ankle' }, [], true, relation, 'body', () => [], false, []);
     expect(mock.mock.calls.at(-1)).toHaveLength(9); expect(mock.mock.calls.at(-1).at(-1)).toBe(relation.ids);
-    run(mock, [], 390, 520, 100, 18, { current: 'ankle' }, [], false, null, 'body', () => []);
+    run(mock, [], 390, 520, 100, 18, { current: 'ankle' }, [], false, null, 'body', () => [], false, []);
     expect(mock.mock.calls.at(-1).at(-1)).toBeNull();
   });
 });

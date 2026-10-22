@@ -37,13 +37,13 @@ describe('Migration Study controls', () => {
   it('orbits and zooms with focused-scene keys while respecting browser shortcuts', () => {
     const ui = view({ flightStudyYaw: 175, flightStudyPitch: 60, flightStudyZoom: 1.6 });
     ui.key('ArrowRight'); ui.key('ArrowUp'); ui.key('+');
-    expect(ui.state.flightStudyYaw).toBe(180);
+    expect(ui.state.flightStudyYaw).toBe(-175);
     expect(ui.state.flightStudyPitch).toBe(60);
     expect(ui.state.flightStudyZoom).toBe(1.6);
     ui.key('ArrowLeft', { ctrlKey: true });
-    expect(ui.state.flightStudyYaw).toBe(180);
+    expect(ui.state.flightStudyYaw).toBe(-175);
     ui.key('ArrowLeft'); ui.key('ArrowDown'); ui.key('-');
-    expect(ui.state.flightStudyYaw).toBe(170);
+    expect(ui.state.flightStudyYaw).toBe(175);
     expect(ui.state.flightStudyPitch).toBe(55);
     expect(ui.state.flightStudyZoom).toBe(1.5);
   });

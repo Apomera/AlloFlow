@@ -133,7 +133,7 @@ function WordSoundsPreviewView(props) {
         title: generatedContent?.title || label('practice_title', 'Word Fluency Pop-Up'),
         language: generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || 'English',
         source: 'word-sounds', callTTS: props.callTTS, selectedVoice: props.selectedVoice,
-        ttsSpeed: props.ttsSpeed, t: props.t, signal: controller.signal,
+        ttsSpeed: props.ttsSpeed, t: props.t, currentUiLanguage: props.currentUiLanguage, signal: controller.signal,
       });
       if (!controller.signal.aborted) setPracticeStatus({ busy: false, notice: '' });
     } catch (_) {

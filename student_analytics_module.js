@@ -2086,7 +2086,8 @@ try {
               var snapshot = {
                 date: snapshotDate.toISOString().split('T')[0],
                 quizAvg: student.stats.quizAvg || 0,
-                wsAccuracy: student.stats.wsAccuracy || 0,
+                wsAccuracy: student.stats.wsAccuracy ?? null,
+                wsGradedAttempts: student.stats.wsGradedAttempts ?? null,
                 wsBestStreak: student.stats.wsBestStreak || 0,
                 fluencyWCPM: student.stats.fluencyWCPM || 0,
                 adventureXP: student.stats.adventureXP || 0,
@@ -2149,7 +2150,8 @@ try {
         interviewXP: 0,
         totalActivities: 0,
         wsWordsCompleted: 0,
-        wsAccuracy: 0,
+        wsAccuracy: null,
+        wsGradedAttempts: 0,
         wsBestStreak: 0,
         socraticMessageCount: 0,
         gamesPlayed: 0,
@@ -2207,11 +2209,21 @@ try {
       }
       if (data.wordSoundsState) {
         const ws = data.wordSoundsState;
-        stats.wsWordsCompleted = ws.history?.length || 0;
-        if (ws.sessionScore) {
-          stats.wsAccuracy = ws.sessionScore.total > 0 ? Math.round(ws.sessionScore.correct / ws.sessionScore.total * 100) : 0;
-          stats.wsBestStreak = ws.sessionScore.streak || 0;
+        const history = Array.isArray(ws.history) ? ws.history : [];
+        const graded = history.filter(row => row && row.practiceOnly !== true &&
+          row.activity !== 'letter_tracing' && (typeof row.correct === 'boolean' || typeof row.isCorrect === 'boolean'));
+        stats.wsWordsCompleted = history.length;
+        stats.wsGradedAttempts = graded.length;
+        if (graded.length) stats.wsAccuracy = Math.round(graded.filter(row =>
+          typeof row.correct === 'boolean' ? row.correct : row.isCorrect).length / graded.length * 100);
+        // Legacy files can contain only the aggregate score. An existing
+        // practice-only history must never be promoted into graded evidence.
+        else if (!history.length && Number.isFinite(ws.sessionScore?.total) && ws.sessionScore.total > 0 &&
+          Number.isFinite(ws.sessionScore.correct)) {
+          stats.wsGradedAttempts = ws.sessionScore.total;
+          stats.wsAccuracy = Math.round(ws.sessionScore.correct / ws.sessionScore.total * 100);
         }
+        stats.wsBestStreak = ws.sessionScore?.streak || 0;
         if (ws.dailyProgress) {
           stats.totalActivities += Object.keys(ws.dailyProgress).length;
         }
@@ -2272,7 +2284,16 @@ try {
         stats.quizAvg = academic.quizAverage ?? stats.quizAvg;
         stats.fluencyWCPM = academic.fluencyWCPM ?? stats.fluencyWCPM;
         stats.wsWordsCompleted = academic.wordSoundsWords ?? stats.wsWordsCompleted;
-        stats.wsAccuracy = academic.wordSoundsAccuracy ?? stats.wsAccuracy;
+        if (!Array.isArray(data.wordSoundsState?.history) || !data.wordSoundsState.history.length) {
+          const count = academic.wordSoundsGradedAttempts ?? academic.wordSoundsWords;
+          if (academic.wordSoundsGradedAttempts === 0) {
+            stats.wsGradedAttempts = 0;
+            stats.wsAccuracy = null;
+          } else if (Number.isFinite(count) && count > 0 && Number.isFinite(academic.wordSoundsAccuracy)) {
+            stats.wsGradedAttempts = count;
+            stats.wsAccuracy = academic.wordSoundsAccuracy;
+          }
+        }
         stats.wsBestStreak = academic.wordSoundsBestStreak ?? stats.wsBestStreak;
         stats.adventureXP = gameplay.adventureXP ?? stats.adventureXP;
         stats.level = gameplay.adventureLevel ?? stats.level;
@@ -2390,7 +2411,8 @@ try {
         reasons.push(`Quiz average in instructional range (${t3.quizTier3}-${t3.quizTier2 - 1}%)`);
         recs.push('Provide targeted review on missed concepts before advancing');
       }
-      if (stats.wsAccuracy > 0) {
+      if (Number.isFinite(stats.wsAccuracy) &&
+          (stats.wsGradedAttempts != null ? stats.wsGradedAttempts > 0 : stats.wsWordsCompleted > 0 || stats.wsAccuracy > 0)) {
         if (stats.wsAccuracy < t3.wsTier3) {
           tier = Math.max(tier, 3);
           reasons.push(`Word Sounds accuracy below ${t3.wsTier3}%`);
@@ -2818,7 +2840,7 @@ try {
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
         const tot = s.data?.timeOnTask?.totalSessionMinutes || 0;
-        return [s.name, new Date().toLocaleDateString(), 'Review group ' + rti.tier, s.stats.quizAvg + '%', s.stats.wsAccuracy + '%', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), rti.recommendations.join('; ')];
+        return [s.name, new Date().toLocaleDateString(), 'Review group ' + rti.tier, s.stats.quizAvg + '%', Number.isFinite(s.stats.wsAccuracy) ? s.stats.wsAccuracy + '%' : 'N/A', s.stats.wsWordsCompleted, s.stats.fluencyWCPM, s.stats.gamesPlayed, s.stats.totalActivities, s.stats.labelChallengeAvg + '%', Math.round(tot), rti.recommendations.join('; ')];
       });
       // Names are quoted (a comma used to shift every column) and the date is local, not UTC.
       const today = new Date();
@@ -2909,7 +2931,7 @@ try {
         comprehension: 'bg-purple-500',
         fluency: 'bg-emerald-500'
       };
-      const maxVal = Math.max(...Object.values(insights.profile), 1);
+      const maxVal = Math.max(...Object.values(insights.profile).filter(Number.isFinite), 1);
       return React.createElement('div', {
         className: 'mt-4 space-y-4'
       }, React.createElement('div', {
@@ -2934,13 +2956,13 @@ try {
       }, DOMAIN_LABELS[domain] || domain), React.createElement('div', {
         className: 'flex-1 bg-slate-100 rounded-full h-5 overflow-hidden'
       }, React.createElement('div', {
-        className: (domainColors[domain] || 'bg-slate-400') + ' h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2',
+        className: (Number.isFinite(value) ? domainColors[domain] || 'bg-slate-400' : 'bg-slate-400') + ' h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2',
         style: {
-          width: Math.max(8, value / Math.max(maxVal, 100) * 100) + '%'
+          width: (Number.isFinite(value) ? Math.max(8, value / Math.max(maxVal, 100) * 100) : 100) + '%'
         }
       }, React.createElement('span', {
         className: 'text-[11px] font-bold text-white'
-      }, Math.round(value)))), domain === insights.strength ? React.createElement('span', {
+      }, Number.isFinite(value) ? Math.round(value) : 'N/A'))), domain === insights.strength ? React.createElement('span', {
         className: 'text-xs text-emerald-600 font-bold'
       }, '⭐') : null, domain === insights.weakness ? React.createElement('span', {
         className: 'text-xs text-amber-500 font-bold'
@@ -2961,7 +2983,7 @@ try {
         className: 'text-center p-2 rounded-lg ' + (val > 0 ? 'bg-emerald-50' : val < 0 ? 'bg-red-50' : 'bg-slate-50')
       }, React.createElement('div', {
         className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-600')
-      }, (val > 0 ? '+' : '') + Math.round(val) + unit), React.createElement('div', {
+      }, Number.isFinite(val) ? (val > 0 ? '+' : '') + Math.round(val) + unit : 'N/A'), React.createElement('div', {
         className: 'text-[11px] text-slate-600 mt-0.5'
       }, label))))), insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-400 p-4'
@@ -3004,7 +3026,7 @@ try {
         className: 'py-1.5 text-slate-600'
       }, row.date), React.createElement('td', {
         className: 'py-1.5 text-right font-medium text-blue-700'
-      }, Math.round(row.wsAccuracy) + '%'), React.createElement('td', {
+      }, Number.isFinite(row.wsAccuracy) ? Math.round(row.wsAccuracy) + '%' : 'N/A'), React.createElement('td', {
         className: 'py-1.5 text-right font-medium text-purple-700'
       }, Math.round(row.quizAvg) + '%'), React.createElement('td', {
         className: 'py-1.5 text-right font-medium text-emerald-700'
@@ -3087,7 +3109,7 @@ try {
         const p1 = s.probes[0] || {},
           p2 = s.probes[1] || {},
           p3 = s.probes[2] || {};
-        return [s.name, ins.snapshots || 0, ins.probes || 0, ins.profile?.phonologicalAwareness || 0, ins.profile?.comprehension || 0, ins.profile?.fluency || 0, ins.growth?.wsAccuracy || 0, ins.growth?.quizAvg || 0, ins.growth?.fluencyWCPM || 0, ins.strength || '', ins.weakness || '', ins.correlations?.practiceToQuiz?.r ?? '', ins.correlations?.practiceToQuiz?.strength || '', ins.correlations?.practiceToQuiz?.n || '', ins.dosage?.totalInterventions || 0, ins.dosage?.avgFrequency || 0, ins.dosage?.avgMinutes || 0, s.stats?.totalActivities || 0, s.stats?.gamesPlayed || 0, s.stats?.adventureXP || 0, p1.activity || '', p1.accuracy || '', p1.itemsPerMin || '', p1.date || '', p2.activity || '', p2.accuracy || '', p2.itemsPerMin || '', p2.date || '', p3.activity || '', p3.accuracy || '', p3.itemsPerMin || '', p3.date || '', ext.source || '', ext.score || '', ext.date || ''].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+        return [s.name, ins.snapshots || 0, ins.probes || 0, ins.profile?.phonologicalAwareness ?? '', ins.profile?.comprehension || 0, ins.profile?.fluency || 0, ins.growth?.wsAccuracy ?? '', ins.growth?.quizAvg || 0, ins.growth?.fluencyWCPM || 0, ins.strength || '', ins.weakness || '', ins.correlations?.practiceToQuiz?.r ?? '', ins.correlations?.practiceToQuiz?.strength || '', ins.correlations?.practiceToQuiz?.n || '', ins.dosage?.totalInterventions || 0, ins.dosage?.avgFrequency || 0, ins.dosage?.avgMinutes || 0, s.stats?.totalActivities || 0, s.stats?.gamesPlayed || 0, s.stats?.adventureXP || 0, p1.activity || '', p1.accuracy || '', p1.itemsPerMin || '', p1.date || '', p2.activity || '', p2.accuracy || '', p2.itemsPerMin || '', p2.date || '', p3.activity || '', p3.accuracy || '', p3.itemsPerMin || '', p3.date || '', ext.source || '', ext.score || '', ext.date || ''].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
       });
       const csv = [headers.join(','), ...rows].join('\n');
       const blob = new Blob([csv], {
@@ -4239,7 +4261,7 @@ try {
     };
 
     const renderScatterPlot = studentName => {
-      const snapshots = (rosterKey?.progressHistory?.[studentName] || []).filter(s => (s.wsAccuracy || 0) > 0 && (s.quizAvg || 0) > 0);
+      const snapshots = (rosterKey?.progressHistory?.[studentName] || []).filter(s => Number.isFinite(s.wsAccuracy) && (s.quizAvg || 0) > 0);
       if (snapshots.length < 2) return null;
       const W = 280,
         H = 180,
@@ -5048,20 +5070,23 @@ try {
         snapshots: snapshots.length,
         probes: probes.length
       };
-      const practiceAccuracy = snapshots.map(s => s.wsAccuracy || 0);
-      const quizScores = snapshots.map(s => s.quizAvg || 0);
+      const wsAccuracyFor = snapshot => Number.isFinite(snapshot.wsAccuracy) &&
+        (snapshot.wsGradedAttempts == null || snapshot.wsGradedAttempts > 0) ? snapshot.wsAccuracy : null;
+      const pairedSnapshots = snapshots.filter(s => wsAccuracyFor(s) !== null && Number.isFinite(s.quizAvg));
+      const practiceAccuracy = pairedSnapshots.map(wsAccuracyFor);
+      const quizScores = pairedSnapshots.map(s => s.quizAvg);
       const latest = snapshots[snapshots.length - 1];
       const first = snapshots[0];
       const profile = {
-        phonologicalAwareness: latest.wsAccuracy || 0,
+        phonologicalAwareness: wsAccuracyFor(latest),
         comprehension: latest.quizAvg || 0,
         fluency: latest.fluencyWCPM || 0
       };
-      const domains = Object.entries(profile).filter(([, v]) => v > 0);
+      const domains = Object.entries(profile).filter(([domain, v]) => domain === 'phonologicalAwareness' ? Number.isFinite(v) : v > 0);
       const strength = domains.length > 0 ? domains.reduce((a, b) => a[1] > b[1] ? a : b)[0] : null;
       const weakness = domains.length > 0 ? domains.reduce((a, b) => a[1] < b[1] ? a : b)[0] : null;
       const growth = {
-        wsAccuracy: (latest.wsAccuracy || 0) - (first.wsAccuracy || 0),
+        wsAccuracy: wsAccuracyFor(latest) !== null && wsAccuracyFor(first) !== null ? wsAccuracyFor(latest) - wsAccuracyFor(first) : null,
         quizAvg: (latest.quizAvg || 0) - (first.quizAvg || 0),
         fluencyWCPM: (latest.fluencyWCPM || 0) - (first.fluencyWCPM || 0)
       };
@@ -5079,7 +5104,8 @@ try {
         },
         growthTrajectory: snapshots.map(s => ({
           date: s.date,
-          wsAccuracy: s.wsAccuracy || 0,
+          wsAccuracy: wsAccuracyFor(s),
+          wsGradedAttempts: s.wsGradedAttempts ?? null,
           quizAvg: s.quizAvg || 0,
           fluencyWCPM: s.fluencyWCPM || 0
         })),
@@ -5442,13 +5468,14 @@ try {
       };
       const tc = tierColors[rti.tier] || tierColors[1];
       const metricBar = (label, value, max, unit, icon) => {
-        const pct = max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
-        const barColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
+        const hasValue = value != null && value !== '' && Number.isFinite(Number(value));
+        const pct = hasValue && max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
+        const barColor = !hasValue ? '#64748b' : pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
         return `
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
                         <span style="font-size: 13px; font-weight: 600; color: #334155;">${icon} ${label}</span>
-                        <span style="font-size: 14px; font-weight: 800; color: ${barColor};">${value}${unit}</span>
+                        <span style="font-size: 14px; font-weight: 800; color: ${barColor};">${hasValue ? String(value) + unit : 'N/A'}</span>
                     </div>
                     <div style="background: #f1f5f9; border-radius: 6px; height: 10px; overflow: hidden;">
                         <div style="background: ${barColor}; height: 100%; border-radius: 6px; width: ${pct}%; transition: width 0.3s;"></div>
@@ -5705,7 +5732,7 @@ try {
     const handleExportCSV = () => {
       if (importedStudents.length === 0) return;
       const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', 'SEL Tools', 'SEL Reflections', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
-      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
+      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, Number.isFinite(student.stats.wsAccuracy) ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
       const csv = [headers, ...rows].join('\n');
       const blob = new Blob([csv], {
         type: 'text/csv;charset=utf-8;'
@@ -6368,13 +6395,14 @@ try {
       const totalActivities = (sessionData?.history || []).length;
       const quizzes = (sessionData?.history || []).filter(h => h.type === 'quiz');
       const avgQuizScore = quizzes.length > 0 ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length) : null;
-      const wsHistory = sessionData?.wordSoundsHistory || [];
+      const wsHistory = Array.isArray(sessionData?.wordSoundsHistory) ? sessionData.wordSoundsHistory : [];
       // Coach-until-right activities (Letter Trace) write practiceOnly rows that
       // are always correct:true — they measure practice volume, not accuracy, so
       // they stay out of the percentage. The activity test covers rows saved
       // before the flag existed.
-      const wsGraded = wsHistory.filter(h => h && h.practiceOnly !== true && h.activity !== 'letter_tracing');
-      const wsCorrect = wsGraded.filter(h => h.correct).length;
+      const wsGraded = wsHistory.filter(h => h && h.practiceOnly !== true && h.activity !== 'letter_tracing' &&
+        (typeof h.correct === 'boolean' || typeof h.isCorrect === 'boolean'));
+      const wsCorrect = wsGraded.filter(h => h.correct ?? h.isCorrect).length;
       const wsAccuracy = wsGraded.length > 0 ? Math.round(wsCorrect / wsGraded.length * 100) : null;
       const xp = sessionData?.globalPoints || 0;
       const level = sessionData?.globalLevel || 1;
@@ -6392,14 +6420,17 @@ try {
       const hasHistory = snapshots.length > 1;
       const first = hasHistory ? snapshots[0] : null;
       const latest = hasHistory ? snapshots[snapshots.length - 1] : null;
+      const snapshotWsAccuracy = snapshot => Number.isFinite(snapshot?.wsAccuracy) &&
+        (snapshot.wsGradedAttempts == null || snapshot.wsGradedAttempts > 0) ? snapshot.wsAccuracy : null;
       const growthCard = (label, startVal, endVal, unit) => {
+        if (!Number.isFinite(startVal) || !Number.isFinite(endVal)) return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid #64748b20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + label + '</div><div style="font-size:24px;font-weight:800;color:#64748b">N/A</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">Graded results are needed at both time points.</div></div>';
         const diff = Math.round(endVal - startVal);
         const color = diff > 0 ? '#16a34a' : diff < 0 ? '#dc2626' : '#64748b';
         const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
         return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid ' + color + '20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + label + '</div><div style="font-size:24px;font-weight:800;color:' + color + '">' + arrow + ' ' + (diff > 0 ? '+' : '') + diff + unit + '</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">' + Math.round(startVal) + unit + ' → ' + Math.round(endVal) + unit + '</div></div>';
       };
       const sessionRow = (snap, idx) => {
-        return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-size:12px;color:#64748b">' + (idx + 1) + '</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:#334155">' + snap.date + '</td><td style="padding:8px 12px;font-size:12px;color:#6366f1;font-weight:700">' + Math.round(snap.wsAccuracy || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#16a34a;font-weight:700">' + Math.round(snap.quizAvg || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#0891b2;font-weight:700">' + (snap.totalActivities || 0) + '</td></tr>';
+        return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-size:12px;color:#64748b">' + (idx + 1) + '</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:#334155">' + snap.date + '</td><td style="padding:8px 12px;font-size:12px;color:#6366f1;font-weight:700">' + (snapshotWsAccuracy(snap) === null ? 'N/A' : Math.round(snapshotWsAccuracy(snap)) + '%') + '</td><td style="padding:8px 12px;font-size:12px;color:#16a34a;font-weight:700">' + Math.round(snap.quizAvg || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#0891b2;font-weight:700">' + (snap.totalActivities || 0) + '</td></tr>';
       };
       const getEncouragement = score => {
         if (score >= 90) return {
@@ -6426,7 +6457,7 @@ try {
       };
       const badgeHtml = badgeCount > 0 ? '<div style="margin-top:24px;padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;border:2px solid #f59e0b40"><h3 style="font-size:18px;font-weight:800;color:#92400e;margin:0 0 12px">\u{1F3C5} My Badges (' + badgeCount + ')</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + Object.entries(badges).map(([name]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#92400e;border:1px solid #f59e0b60">\u{1F396}\u{FE0F} ' + name + '</span>').join('') + '</div></div>' : '';
       const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">✅ ' + phoneme + '</span>').join('') + '</div></div>' : '';
-      const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', first.wsAccuracy || 0, latest.wsAccuracy || 0, '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
+      const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', snapshotWsAccuracy(first), snapshotWsAccuracy(latest), '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
       const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.word_sounds') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.quiz_avg') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.activities') + '</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
       const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', 'Word Accuracy', wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + '</div>' + growthHtml + historyHtml + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
       const blob = new Blob([html], {
@@ -9549,8 +9580,8 @@ try {
         icon: '📝'
       }, {
         label: 'WS Accuracy',
-        value: s.wsAccuracy + '%',
-        color: s.wsAccuracy >= 75 ? '#16a34a' : s.wsAccuracy >= 50 ? '#d97706' : '#dc2626',
+        value: Number.isFinite(s.wsAccuracy) ? s.wsAccuracy + '%' : 'N/A',
+        color: !Number.isFinite(s.wsAccuracy) ? '#64748b' : s.wsAccuracy >= 75 ? '#16a34a' : s.wsAccuracy >= 50 ? '#d97706' : '#dc2626',
         icon: '🔊'
       }, {
         label: 'Fluency',
@@ -10490,7 +10521,7 @@ try {
       className: "font-bold text-emerald-700 mb-3 flex items-center gap-2"
     }, "\uD83D\uDD24 Word Sounds Performance"), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-2 md:grid-cols-4 gap-2"
-    }, selectedStudent.stats?.wsAccuracy > 0 && /*#__PURE__*/React.createElement("div", {
+    }, Number.isFinite(selectedStudent.stats?.wsAccuracy) && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-emerald-600"

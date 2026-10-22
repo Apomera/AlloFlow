@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-21",
+  "command": "node --test tests/blueprint_module_preflight.test.cjs",
+  "baseline": {
+    "command": "node --test tests/blueprint_module_preflight.test.cjs",
+    "status": 1,
+    "tests": 6,
+    "passed": 2,
+    "failed": 4,
+    "note": "Run before production patch and before adding repeated-click/cancel tests. Confirmed missing promotions for Contracts/Service/Matrix, cold path promoting adapter alone, and Matrix absent returning waiting without bounded loader. Failure-path test also reported an unhandled rejection after trying to fail a nonexistent registry entry; this is retained as an initial harness failure, not counted as a successful check."
+  },
+  "final": {
+    "status": 0,
+    "signal": null,
+    "stdout": "✔ a ready overview promotes every creation dependency and executes the same click after all arrive (13.265ms)\n✔ cold startup tolerates adapter and executor scripts registering before their dependencies (1.9364ms)\n✔ failed dependency rejects visibly without generation and a later click retries successfully (2.6889ms)\n✔ a script that never settles times out, preserves the plan, and permits a later retry (1.6188ms)\n✔ already ready tools execute without loading prompts or duplicate dispatch (1.2453ms)\n✔ repeated clicks during loading share one request and generate only once (1.4033ms)\n✔ cancelling or replacing the reviewed plan during loading cannot start its stale request (8.2651ms)\n✔ Canvas and both desktop host copies use the identical creation preflight (115.9472ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1407.2027\n",
+    "stderr": ""
+  },
+  "testSha256": "13a9b5c2f7aa97f1c18a237627ce5f2a1f224f9cbc06748d296c15578a26db5f",
+  "wrapperSha256ByHost": {
+    "AlloFlowANTI.txt": "a84fde99a69de53ea99f91b467888865d98e3e33adfc026486752ca7630d868f",
+    "desktop/web-app/src/AlloFlowANTI.txt": "a84fde99a69de53ea99f91b467888865d98e3e33adfc026486752ca7630d868f",
+    "desktop/web-app/src/App.jsx": "a84fde99a69de53ea99f91b467888865d98e3e33adfc026486752ca7630d868f"
+  },
+  "scope": "Only Blueprint execution wrapper changed in each host; exact before/after prefix and suffix equality checked during write. Full hosts contain unrelated pre-existing changes and concurrent pump fix.",
+  "limitations": "Controlled VM delivery uses real host wait/ensure/wrapper and stand-in adapter/executor. No live Gemini Canvas or AI request tested."
+}

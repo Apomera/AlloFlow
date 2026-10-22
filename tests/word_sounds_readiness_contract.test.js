@@ -44,6 +44,79 @@ function factory(mode = 'ready', tracker = {}) {
 afterEach(() => vi.useRealTimers());
 
 describe('Word Sounds readiness contract', () => {
+  it('replaces a cached older contract before applying the native pronunciation gates', () => {
+    const old = {VERSION: 7, portable: value => value, inspect: () => ({complete: true})};
+    const {api, host} = load({AlloModules: {WordSoundsReadiness: old}, __ALLO_PHONEME_AUDIO_BANK: {a: wav()}});
+    expect(api).not.toBe(old);
+    expect(host.AlloModules.WordSoundsReadiness).toBe(api);
+    const item = resource({lessonPlanSequence: ['blending'], sessionConfig: {language: 'es'}, data: [{
+      word: 'gato', phonemes: [{ipa: 'a', grapheme: 'a'}],
+      activityItems: {blending: {answer: 'gato', options: ['gato']}}, _ttsAssets: {gato: wav()},
+    }]});
+    const phoneme = api.inspect(item).clips.find(clip => clip.category === 'phoneme');
+    expect(phoneme).toMatchObject({key: 'a', source: 'resource', status: 'missing'});
+  });
+  it('requires exact native IPA pack assets instead of the English phoneme bank or a device cache',async()=>{
+    const {api}=load({__ALLO_PHONEME_AUDIO_BANK:{a:wav(),o:wav(),ee:wav()}});
+    const item=resource({lessonPlanSequence:['blending'],sessionConfig:{wordSoundsLanguage:'es'},data:[{
+      word:'gato',phonemes:[{ipa:'a',grapheme:'a'},{ipa:'o',grapheme:'o'},{ipa:'i',grapheme:'y'}],
+      activityItems:{blending:{answer:'gato',options:['gato']}},_ttsAssets:{gato:wav(),ee:wav(),a:{...wav(),provenance:{language:'en-US'}}},
+    }]});
+    expect(api.requirements(item).entries.filter(row=>row.category==='phoneme').map(row=>row.key)).toEqual(['a','o','i']);
+    let ready=await api.check(item,{audioFactory:factory(),deviceCache:{a:'cached',o:'cached',i:'cached'}});
+    expect(ready.clips.filter(row=>row.category==='phoneme').map(row=>[row.key,row.source,row.status])).toEqual([
+      ['a','resource','missing'],['o','resource','missing'],['i','resource','missing'],
+    ]);
+    for(const key of ['a','o','i'])item.data[0]._ttsAssets[key]={...wav(),provenance:{language:'es'}};
+    ready=await api.check(item,{audioFactory:factory()});
+    expect(ready.clips.filter(row=>row.category==='phoneme').every(row=>row.checked&&row.source==='resource')).toBe(true);
+    const equivalent={...item,data:[{...item.data[0],phonemes:['a','o','i']}]};
+    expect(api.requirements(item).entries).toEqual(api.requirements(equivalent).entries);
+  });
+
+  it('does not make an unlabelled native phoneme object ready through its grapheme',()=>{
+    const {api}=load();const item=resource({lessonPlanSequence:['blending'],language:'es',data:[{word:'gato',phonemes:[{grapheme:'a'}],_ttsAssets:{a:wav(),gato:wav()}}]});
+    expect(api.requirements(item).contentIssues.join(' ')).toContain('lesson language');
+    expect(api.inspect(item).complete).toBe(false);
+  });
+
+  it('requires review for a generated positive rhyme that conflicts with pronunciation evidence', () => {
+    const {api}=load();
+    const board={answer:'good',options:['good','cat','sun']};
+    const item=resource({lessonPlanSequence:['rhyming'],data:[
+      {word:'food',phonemes:['f','oo','d'],activityItems:{rhyming:board}},
+      {word:'good',phonemes:['g','uu','d'],activityItems:{rhyming:{answer:'wood',options:['wood','cat'],teacherEdited:true}}}]});
+    expect(api.requirements(item).contentIssues.join(' ')).toContain('Rhyme Time for food');
+    item.data[0].activityItems.rhyming={...board,teacherEdited:true};
+    expect(api.requirements(item).contentIssues).toEqual([]);
+  });
+
+  it('validates a saved non-English rhyme with the prepared peer pronunciations', () => {
+    const {api}=load();const data=[
+      {word:'sol',phonemes:['s','o','l'],activityItems:{rhyming:{answer:'col',options:['col','pan']}}},
+      {word:'col',phonemes:['k','o','l'],activityItems:{rhyming:{answer:'sol',options:['sol','pan']}}}];
+    expect(api.requirements(resource({lessonPlanSequence:['rhyming'],sessionConfig:{language:'es'},data})).contentIssues).toEqual([]);
+  });
+
+  it('requires the same canonical clips for IPA objects and equivalent string phonemes', async () => {
+    const { api } = load();
+    const phonemes=[{ipa:'r',grapheme:'r'},{ipa:'eɪ',grapheme:'ai'},{ipa:'n',grapheme:'n'},{ipa:'i',grapheme:'y'}];
+    const item=resource({lessonPlanSequence:['blending'],data:[{word:'rainy',phonemes,
+      activityItems:{blending:{options:['rainy','cat'],answer:'rainy'}},_ttsAssets:{rainy:wav(),cat:wav()}}]});
+    const equivalent={...item,data:[{...item.data[0],phonemes:['r','ay','n','ee']}]};
+    const dependencies=api.requirements(item).entries.map(entry=>entry.id);
+    expect(dependencies).toEqual(api.requirements(equivalent).entries.map(entry=>entry.id));
+    expect(dependencies.filter(id=>id.startsWith('phoneme:'))).toEqual(['phoneme:r','phoneme:ay','phoneme:n','phoneme:ee']);
+    const banks={phoneme:Object.fromEntries(['r','ay','n','ee'].map(key=>[key,wav()])),instruction:{inst_blending:wav(),which_word_did_you_hear:wav()}};
+    const ready=await api.check(item,{banks,audioFactory:factory()});
+    expect(ready.clips.filter(clip=>clip.category==='phoneme').every(clip=>clip.locallyChecked)).toBe(true);
+    const same=await api.check(equivalent,{banks,audioFactory:factory()});
+    expect(ready.clips.map(clip=>[clip.id,clip.status,clip.locallyChecked])).toEqual(same.clips.map(clip=>[clip.id,clip.status,clip.locallyChecked]));
+    delete banks.phoneme.ee;
+    const missing=api.inspect(item,{banks});expect(missing.complete).toBe(false);
+    expect(missing.clips.find(clip=>clip.id==='phoneme:ee').status).toBe('online-fetch');
+  });
+
   it('does not infer ready from a saved flag or nonempty corrupt base64', () => {
     const { api } = load(); const item = resource(); item.data[0].ttsReady = true; item.data[0]._ttsAssets.cat.base64 = 'QUJDRA==';
     expect(api.inspect(item)).toMatchObject({ complete: false, ready: 0, missing: 1 });

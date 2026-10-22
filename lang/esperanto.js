@@ -56347,6 +56347,15 @@
       "sr_critique_ready": "La kritiko pretas."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Konservita flugorevizio ne disponeblas",
+      "debrief_unavailable_body": "La plej nova flugorevizio mankas aŭ ne legeblas. Reiru al la menuo por komenci novan flugon.",
+      "guided_idea_before_trials": "Registrita antaŭ la provoj",
+      "guided_idea_saved": "Konservita ideo",
+      "guided_idea_timing_unknown": "La tempo de ĉi tiu konservita ideo ne estis registrita.",
+      "guided_idea_latest": "Plej laste konservita ideo",
+      "guided_idea_latest_prediction": "Plej laste konservita prognozo: {prediction}",
+      "guided_idea_saved_prediction": "Konservita prognozo: {prediction}",
+      "milestone_stall_recovery": "La flugilo en ĉi tiu momento ne plu estas en aerflua stalo. Unu sola observo ne pruvas daŭran revenon al normala aerfluo.",
       "game_controls": "🎮 LUDREGILOJ",
       "from": "De",
       "formula": "Formulo",
@@ -56399,6 +56408,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "LEVU LA NAZON — klinu la nazon supren (W)",
+      "hud_rotate_touch": "LEVU LA NAZON — ŝovu supren de la mezo",
+      "hud_flare": "LEVU LA NAZON POR SURTERIĜI — milde levu la nazon per W",
+      "hud_flare_touch": "LEVU LA NAZON POR SURTERIĜI — ŝovu supren de la mezo",
+      "landing_touch_power": "Ŝovu malsupren laŭ la dekstra rando por malpliigi potencon al ~30%. La rapido malpliiĝos.",
+      "landing_touch_flare": "Tuj super la kurejo (~10 ft), milde ŝovu supren de la mezo por levi la nazon. Celu malsupreniĝon de malpli ol 200 fpm ĉe surteriĝo.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -89764,6 +89779,18 @@
     "card_progress": "Karto {n} el {total}",
     "add_words": "Aldonu vortojn por komenci la ekzercadon.",
     "round_complete": "Rondo finita. Komencu novan rondon aŭ ripetu la vortojn, kiujn vi markis.",
-    "practice_label": "Vorta ekzercado"
+    "practice_label": "Vorta ekzercado",
+    "use_mine_help": "La HTML-dosiero uzas vian tiparon, tekstgrandecon kaj interspacon.",
+    "preparing_reading": "Aldonante viajn legajn agordojn…",
+    "font_not_embedded": "Via tiparo ne povis esti aldonita al la dosiero, do ĝi uzas la sisteman tiparon."
+  },
+  "reading_settings": {
+    "title": "Legaj agordoj",
+    "smaller": "Pli malgranda teksto",
+    "larger": "Pli granda teksto",
+    "overlay": "Kolora surtavolo",
+    "ruler": "Legada liniilo",
+    "use_mine": "Uzi miajn legajn agordojn",
+    "use_mine_help": "Presas per via tiparo, tekstgrandeco kaj interspaco."
   }
 }

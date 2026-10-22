@@ -8,8 +8,12 @@ const source = readFileSync(process.env.DINO_FORELIMB_BLEND_SOURCE || resolve('s
 const registration = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(registration)) throw new Error('Dino Lab registration missing');
 window.StemLab = { registerTool() {} };
+// Native construction sections call reviewed clade helpers added after this
+// harness originated. Export their real closure-backed functions rather than
+// replacing anatomy branches with stubs or maintaining an incomplete whitelist.
+const nativeHelpers = [...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match => match[1]))];
 new Function(source.replace(registration,
-  'globalThis.__forelimbBlend = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCeratopsianForelegRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoPlantLimbSurface, dinoBlendSurfaceNormals, dinoSkinCoordinates, dinoBeakSkinClosure };' + registration))();
+  'globalThis.__forelimbBlend = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, ' + nativeHelpers.join(',') + ' };' + registration))();
 const art = globalThis.__forelimbBlend;
 delete globalThis.__forelimbBlend;
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);

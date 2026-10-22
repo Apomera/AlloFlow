@@ -1,0 +1,88 @@
+{
+  "regionSha256": "2221ab932b6bf453f8b22ab5523dca1a6175da677b31f39067dc59e92cddee5d",
+  "rendererSha256": "bc6eeb1ebb9422af624355c6b1f3ad548cab7ad6c8f1a66b121dc199ffa7e189",
+  "legend": [
+    "Top view: upper left. Front view: below it. Right-side view: to its right (third-angle projection).",
+    "Parts: 6 x 4 x 1/2 in base plate, 6 in tall upright in two pieces, 3 x 3 in gusset. All A36 steel, inches.",
+    "Dashed outline under the base: an embedded steel plate already in the floor.",
+    "Title block (lower right): revision B, plate thickness 1/2 in, third-angle projection mark."
+  ],
+  "intro": "A real print shows the part in several views with symbols on leader lines. Read each symbol, then decide what weld goes where on the actual part.",
+  "callouts": [
+    {
+      "id": "c1",
+      "n": 1,
+      "junction": [
+        118,
+        330
+      ],
+      "tip": [
+        152,
+        372
+      ],
+      "spec": {
+        "type": "fillet",
+        "side": "both",
+        "size": "1/4",
+        "arrowAt": "right"
+      }
+    },
+    {
+      "id": "c2",
+      "n": 2,
+      "junction": [
+        118,
+        238
+      ],
+      "tip": [
+        152,
+        262
+      ],
+      "spec": {
+        "type": "vGroove",
+        "side": "other",
+        "size": "1/2",
+        "angle": 60,
+        "arrowAt": "right"
+      }
+    },
+    {
+      "id": "c3",
+      "n": 3,
+      "junction": [
+        302,
+        128
+      ],
+      "tip": [
+        166,
+        103
+      ],
+      "spec": {
+        "type": "fillet",
+        "side": "arrow",
+        "size": "3/16",
+        "arrowAt": "left"
+      }
+    },
+    {
+      "id": "c4",
+      "n": 4,
+      "junction": [
+        300,
+        342
+      ],
+      "tip": [
+        278,
+        386
+      ],
+      "spec": {
+        "type": "fillet",
+        "side": "arrow",
+        "size": "1/4",
+        "allAround": true,
+        "fieldWeld": true,
+        "arrowAt": "left"
+      }
+    }
+  ]
+}

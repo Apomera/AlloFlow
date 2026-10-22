@@ -55987,6 +55987,15 @@
       "sr_critique_ready": "Kritik bereit."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Gespeicherte Flugauswertung nicht verfügbar",
+      "debrief_unavailable_body": "Die letzte Flugauswertung fehlt oder kann nicht gelesen werden. Kehre zum Menü zurück, um einen neuen Flug zu starten.",
+      "guided_idea_before_trials": "Vor den Versuchen festgehalten",
+      "guided_idea_saved": "Gespeicherte Idee",
+      "guided_idea_timing_unknown": "Der Zeitpunkt dieser gespeicherten Idee wurde nicht festgehalten.",
+      "guided_idea_latest": "Zuletzt gespeicherte Idee",
+      "guided_idea_latest_prediction": "Zuletzt gespeicherte Vorhersage: {prediction}",
+      "guided_idea_saved_prediction": "Gespeicherte Vorhersage: {prediction}",
+      "milestone_stall_recovery": "An der Tragfläche liegt in diesem Moment kein Strömungsabriss mehr vor. Eine einzelne Beobachtung belegt keine anhaltende Erholung.",
       "game_controls": "🎮 SPIELSTEUERUNG",
       "cancel": "Abbrechen",
       "learn": "Lernen",
@@ -56040,6 +56049,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTIEREN — Nase anheben (W)",
+      "hud_rotate_touch": "ROTIEREN — von der Mitte nach oben ziehen",
+      "hud_flare": "ABFANGEN — Nase mit W sanft anheben",
+      "hud_flare_touch": "ABFANGEN — von der Mitte nach oben ziehen",
+      "landing_touch_power": "Ziehe am rechten Rand nach unten, um die Leistung auf ~30% zu senken. Die Geschwindigkeit nimmt ab.",
+      "landing_touch_flare": "Ziehe knapp über der Landebahn (~10 ft) von der Mitte sanft nach oben, um die Nase anzuheben. Ziele beim Aufsetzen auf weniger als 200 fpm Sinkrate.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92078,6 +92093,18 @@
     "card_progress": "Karte {n} von {total}",
     "add_words": "Wörter hinzufügen, um mit der Übung zu beginnen.",
     "round_complete": "Runde abgeschlossen. Neue Runde starten oder die markierten Wörter wiederholen.",
-    "practice_label": "Wortübung"
+    "practice_label": "Wortübung",
+    "use_mine_help": "Die HTML-Datei verwendet die gewählte Schriftart, Textgröße und Abstände.",
+    "preparing_reading": "Leseeinstellungen werden hinzugefügt…",
+    "font_not_embedded": "Die gewählte Schriftart konnte nicht zur Datei hinzugefügt werden, daher wird die Systemschriftart verwendet."
+  },
+  "reading_settings": {
+    "title": "Leseeinstellungen",
+    "smaller": "Kleinerer Text",
+    "larger": "Größerer Text",
+    "overlay": "Farb-Overlay",
+    "ruler": "Leselineal",
+    "use_mine": "Meine Leseeinstellungen verwenden",
+    "use_mine_help": "Der Ausdruck verwendet die gewählte Schriftart, Textgröße und Abstände."
   }
 }

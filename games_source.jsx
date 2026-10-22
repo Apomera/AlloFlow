@@ -454,7 +454,7 @@ const GameThemeToggle = () => {
       type="button"
     >
       <span aria-hidden="true">{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
-      <span className="text-[11px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
+      <span className="text-[0.6875rem] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
 };
@@ -515,6 +515,24 @@ const SpeakButton = ({ text, size = 13, className = "" }) => {
 
 // ── Post-game review screen ──
 const gameMessage = (t, key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
+
+// "Aa" reading settings (font, size, spacing) for game headers. Rendered only once
+// the host publishes them; the panel opens inside the game's dialog.
+const GameReadingSettingsButton = ({ className = '' }) => {
+  const { t } = useContext(LanguageContext);
+  const handleRef = useRef(null);
+  useEffect(() => () => { handleRef.current?.close(false); }, []);
+  const lib = typeof window !== 'undefined' ? window.AlloModules?.UIFontLibrary : null;
+  if (!lib || typeof lib.readingSettingsAvailable !== 'function' || !lib.readingSettingsAvailable()) return null;
+  const label = gameMessage(t, 'reading_settings.title', 'Reading settings');
+  return (
+    <button type="button" aria-haspopup="dialog" aria-label={label} title={label} data-reading-settings-button="true"
+      onClick={(event) => { handleRef.current = lib.openReadingSettings({ opener: event.currentTarget, t }); }}
+      className={`min-w-11 min-h-11 px-2 inline-flex items-center justify-center rounded-full text-base font-bold leading-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 ${className}`}>
+      Aa
+    </button>
+  );
+};
 
 const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t, onPractice, practiceCount = 0, playAgainLabel, focusOnMount = false }) => {
   const reviewTitleId = React.useId();
@@ -798,18 +816,18 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
             <Brain size={20} aria-hidden="true" /> {t('memory.title')}
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+              <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                 <RefreshCw size={10} className={isFullscreen ? 'text-slate-600' : 'text-slate-600'} aria-hidden="true" /> {t('memory.moves')}: {moves}
               </span>
-              <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? 'transition-all' : ''} ${scoreDelta !== null ? (scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? 'scale-105' : ''}` : `ring-2 ring-red-400 ${!useReducedMotion() ? 'scale-105' : ''}`) : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
+              <span className={`relative inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? 'transition-all' : ''} ${scoreDelta !== null ? (scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? 'scale-105' : ''}` : `ring-2 ring-red-400 ${!useReducedMotion() ? 'scale-105' : ''}`) : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
                 <Trophy size={10} className="text-yellow-500" aria-hidden="true" /> {t('memory.score')}: {score}
                 {scoreDelta !== null && (
-                  <span className={`absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
+                  <span className={`absolute -top-5 right-0 text-[0.6875rem] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
                     {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
                   </span>
                 )}
               </span>
-              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+              <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
                 <CheckCircle2 size={10} className="text-emerald-500" aria-hidden="true" /> {t('memory.pairs')}: {matchedPairs.size}/{totalPairs}
               </span>
           </div>
@@ -846,12 +864,13 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
           >
             {isFullscreen ? <Minimize size={18} aria-hidden="true"/> : <Maximize size={18} aria-hidden="true"/>}
           </button>
+          <GameReadingSettingsButton className={isFullscreen ? 'text-white hover:bg-white/10 focus-visible:ring-indigo-300' : 'text-slate-600 allo-ghov-tint focus-visible:ring-indigo-500'} />
           <button type="button" onClick={onClose} className={`min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18} aria-hidden="true"/></button>
         </div>
       </div>
       {!isWon && totalPairs > 0 && (
         <div className="mb-5">
-          <div className={`flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-600' : 'text-slate-600'}`}>
+          <div className={`flex items-center justify-between text-[0.6875rem] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-600' : 'text-slate-600'}`}>
             <span>{t('memory.pairs')}</span>
             <span>{progressPct}%</span>
           </div>
@@ -895,15 +914,15 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
             </div>
             <div className={`grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6`}>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
+                <div className={`text-[0.6875rem] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
                 <div className={`text-xl font-black ${valueColor}`}>{score}</div>
               </div>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
+                <div className={`text-[0.6875rem] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
                 <div className={`text-xl font-black ${valueColor}`}>{moves}</div>
               </div>
               <div className={`rounded-xl border p-3 ${cardBg}`}>
-                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
+                <div className={`text-[0.6875rem] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
                 <div className={`text-xl font-black ${valueColor}`}>{accuracy}%</div>
               </div>
             </div>
@@ -970,7 +989,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
                       />
                     ) : (
                       <div className="w-full h-full flex justify-center overflow-y-auto custom-scrollbar px-1">
-                          <p className={`font-bold w-full my-auto leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[11px] sm:text-[11px] font-normal text-slate-600 leading-snug'}`}>
+                          <p className={`font-bold w-full my-auto leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[0.6875rem] sm:text-[0.6875rem] font-normal text-slate-600 leading-snug'}`}>
                             {card.content}
                           </p>
                       </div>
@@ -1035,8 +1054,8 @@ function MatchingClue({ clue, pictureMode, t }) {
   return <figure className="w-full min-w-0 flex flex-col items-center justify-center gap-1">
     {clue.image && failedImage !== clue.image
       ? <img src={clue.image} alt={clue.text} draggable={false} onError={() => setFailedImage(clue.image)} style={{ width: '100%', height: 104, objectFit: 'contain' }} />
-      : <div><span className="block text-[10px] font-semibold text-slate-500">{clue.image ? gameMessage(t, 'matching.picture_unavailable', 'Picture unavailable') : gameMessage(t, 'matching.definition_clue', 'Definition clue')}</span><span>{clue.definition || clue.text}</span></div>}
-    {clue.image && clue.credit && <figcaption className="text-[9px] leading-tight text-slate-500 break-words">{clue.credit}</figcaption>}
+      : <div><span className="block text-[0.625rem] font-semibold text-slate-500">{clue.image ? gameMessage(t, 'matching.picture_unavailable', 'Picture unavailable') : gameMessage(t, 'matching.definition_clue', 'Definition clue')}</span><span>{clue.definition || clue.text}</span></div>}
+    {clue.image && clue.credit && <figcaption className="text-[0.5625rem] leading-tight text-slate-500 break-words">{clue.credit}</figcaption>}
   </figure>;
 }
 const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, roundSize = 8 }) => {
@@ -1326,11 +1345,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  <p id="matching-mode-help" className="text-xs text-slate-600 mt-1">{gameMessage(t, 'matching.mode_help', 'Changing this starts a new round.')}</p>
                  {clueMode === 'pictures' && <p className="text-xs text-slate-600 mt-1" role="status">{gameMessage(t, 'matching.pictures', 'Pictures')}: {items.filter(item => item.image).length}/{items.length}. {gameMessage(t, 'matching.picture_fallback', 'Missing or unavailable pictures use text clues.')}</p>}
                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full">
+                     <span className="inline-flex items-center gap-1 text-[0.6875rem] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full">
                          <GitMerge size={10} className="text-slate-600"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
                      </span>
                      {isChecked && (
-                         <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
+                         <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
                              <Trophy size={10} className="text-yellow-500"/> {t('matching.score_display')}: {score} pts
                          </span>
                      )}
@@ -1362,6 +1381,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                 >
                     <RefreshCw size={14}/> {t('memory.reset') || 'Reset'}
                 </button>
+                <GameReadingSettingsButton className="text-slate-600 allo-ghov-soft focus-visible:ring-indigo-500" />
                 <button
                     ref={matchingCloseRef}
                     type="button"
@@ -1586,7 +1606,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                  aria-valuenow={connections.length}
                              />
                          </div>
-                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 tabular-nums">{connections.length}/{items.length}</span>
+                         <span className="text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600 tabular-nums">{connections.length}/{items.length}</span>
                      </div>
                  )}
              </div>
@@ -2933,7 +2953,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
 });
 const BOTH_TRANSLATIONS = { English: 'Both', Spanish: 'Ambos', French: 'Les deux', Arabic: 'كلاهما', Chinese: '两者', Japanese: '両方', Korean: '둘 다', Portuguese: 'Ambos', German: 'Beide', Italian: 'Entrambi', Russian: 'Оба', Hindi: 'दोनों', Turkish: 'Her ikisi', Vietnamese: 'Cả hai', Thai: 'ทั้งสอง', Hebrew: 'שניהם', Swahili: 'Zote mbili', Dutch: 'Beide', Polish: 'Oba', Ukrainian: 'Обидва' };
 // Shared anti-score-farming economics for drag-sort games. A first-try correct
-// placement earns 20; a correction after a revealed hint earns 5, offsetting
+// placement earns 20; a correction after a mistake earns 5, offsetting
 // the prior -5; already-awarded items cannot award again.
 const makeSortScoreTracker = () => {
   const missed = new Set();
@@ -2944,8 +2964,96 @@ const makeSortScoreTracker = () => {
   };
 };
 
+// Reminders describe a sorting strategy, never the item's answer. Keep this
+// helper independent of item content and correct destinations, including for
+// screen-reader feedback and repeated attempts.
+const getDiagramSortHint = (t, gameKey, level = 1) => {
+  const reminders = {
+    venn: "Check each circle's rule. Does this item fit one group or both?",
+    causeEffect: 'Ask what made something happen and what happened as a result.',
+    tchart: 'Read both column headings. Which feature of this item helps you decide where it fits?',
+    conceptMapSort: 'Compare the item with the main idea of each branch. Look for a meaningful connection.',
+    outlineSort: 'Read each heading and ask which main idea this detail supports.',
+    fishboneSort: 'Think about the kind of cause this item describes, then compare the category headings.',
+    problemSolutionSort: 'Ask which solution this detail helps explain or carry out.',
+    frayerSort: 'Decide whether the item defines the idea, describes a feature, gives an example, or gives a non-example.',
+    seeThinkWonderSort: 'Separate what you can observe, what you infer, and what you are still wondering about.',
+    storyMapSort: "Think about the item's role in the story, then compare the section headings.",
+    generic: 'Read the headings and compare the item with the main idea of each group.',
+  };
+  const steps = {
+    venn: 'Test one circle at a time. Explain why each rule does or does not fit this item.',
+    causeEffect: "Try the sentence '___ happened because ___.' Which part does this item describe?",
+    tchart: 'Name one feature of this item. Compare that feature with each column heading.',
+    conceptMapSort: "Try saying 'This belongs with ___ because ___.' Look for a connection to each branch.",
+    outlineSort: "Try saying 'This detail helps explain ___.' Compare your idea with each heading.",
+    fishboneSort: 'How could this item help cause the problem? Compare that explanation with each heading.',
+    problemSolutionSort: 'What would this detail help someone do? Compare that action with each solution.',
+    frayerSort: 'Does it tell what the idea means, what it is like, or whether something is an example?',
+    seeThinkWonderSort: 'Is this something you can observe, an explanation to support with evidence, or a question to explore?',
+    storyMapSort: 'Retell the story in order. What job does this item do in that retelling?',
+    generic: 'Name a feature of this item, then explain how it connects to each heading.',
+  };
+  const key = Object.prototype.hasOwnProperty.call(reminders, gameKey) ? gameKey : 'generic';
+  if (level >= 2) return gameMessage(t, `games.sort_steps.${key}`, steps[key]);
+  return gameMessage(t, `games.sort_reminders.${key}`, reminders[key]);
+};
+
+// Help is free and untimed. Only an incorrect placement advances that card's
+// support, and every new round discards the previous round's mistake history.
+const useDiagramSortHints = (t, gameKey) => {
+  const [level, setLevel] = useState(0);
+  const mistakesRef = useRef(new Map());
+  const lastItemRef = useRef(null);
+  const clear = useCallback(() => {
+    setLevel(0);
+    lastItemRef.current = null;
+  }, []);
+  const reset = useCallback(() => {
+    mistakesRef.current.clear();
+    clear();
+  }, [clear]);
+  const showMistake = (itemId) => {
+    const count = (mistakesRef.current.get(itemId) || 0) + 1;
+    mistakesRef.current.set(itemId, count);
+    lastItemRef.current = itemId;
+    const nextLevel = count >= 2 ? 2 : 1;
+    setLevel(nextLevel);
+    return getDiagramSortHint(t, gameKey, nextLevel);
+  };
+  const toggle = (selectedItemId) => {
+    if (level > 0) {
+      setLevel(0);
+      return gameMessage(t, 'games.sort_support.tip_hidden', 'Sorting tip hidden.');
+    }
+    const itemId = selectedItemId || lastItemRef.current;
+    const nextLevel = (mistakesRef.current.get(itemId) || 0) >= 2 ? 2 : 1;
+    setLevel(nextLevel);
+    return getDiagramSortHint(t, gameKey, nextLevel);
+  };
+  return { isOpen: level > 0, text: getDiagramSortHint(t, gameKey, level), clear, reset, showMistake, toggle };
+};
+
+const DiagramSortTip = ({ hints, onToggle, t }) => {
+  const tipId = React.useId();
+  return (
+    <div data-diagram-sort-help="" style={{ width: 'calc(100% - 2rem)', maxWidth: '36rem', flexShrink: 0, alignSelf: 'center', margin: '0.5rem auto' }}>
+      <button type="button" data-diagram-sort-tip="" onClick={onToggle}
+        aria-expanded={hints.isOpen} aria-controls={hints.isOpen ? tipId : undefined}
+        className="min-h-11 px-3 py-2 rounded-lg border border-amber-400 bg-amber-50 text-amber-900 font-bold text-sm flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2">
+        <HelpCircle className="shrink-0" size={16} aria-hidden="true" />
+        {hints.isOpen ? gameMessage(t, 'games.sort_support.hide_tip', 'Hide tip') : gameMessage(t, 'games.sort_support.show_tip', 'Sorting tip')}
+      </button>
+      {hints.isOpen && <div id={tipId} data-diagram-sort-hint="" className="mt-2 bg-amber-100 border-2 border-amber-400 text-amber-900 px-4 py-3 rounded-xl font-bold text-sm" style={{ overflowWrap: 'anywhere' }}>
+        {hints.text}
+      </div>}
+    </div>
+  );
+};
+
 const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
+  const sortHints = useDiagramSortHints(t, 'venn');
   const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
@@ -2958,25 +3066,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const [gameLang, setGameLang] = useState('primary');
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
-  const [lastHint, setLastHint] = useState(null);
   const moveMenuRef = useRef(null);
-  const hintTimerRef = useRef(null);
   const vennDialogRef = useRef(null);
   const vennCloseRef = useRef(null);
   const vennVictoryRef = useRef(null);
   const vennPlayAgainRef = useRef(null);
   useGameDialogFocus(vennDialogRef, vennCloseRef, onClose);
   useEffect(() => { if (isWon) vennPlayAgainRef.current?.focus(); }, [isWon]);
-  useEffect(() => () => {
-      if (hintTimerRef.current) {
-          clearTimeout(hintTimerRef.current);
-      }
-  }, []);
-  const showZoneHint = (correctZone) => {
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-      setLastHint(correctZone);
-      hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
-  };
   useEffect(() => {
       if (keyboardSelectedItemId && moveMenuRef.current) {
           const firstBtn = moveMenuRef.current.querySelector('button');
@@ -3004,9 +3100,15 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
         const j = Math.floor(Math.random() * (i + 1));
         [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
     }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     setItems(allItems);
     setScore(0);
     setIsWon(false);
+    setAttempts(0);
+    setKeyboardSelectedItemId(null);
   }, [data]);
   const focusVennItem = (itemId) => {
       window.setTimeout(() => {
@@ -3027,6 +3129,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (keyboardSelectedItemId === item.id) {
           cancelKeyboardSelection();
       } else {
+          sortHints.clear();
           setKeyboardSelectedItemId(item.id);
           setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
           if (playSound) playSound('click');
@@ -3039,6 +3142,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (itemIndex === -1) return;
       const item = items[itemIndex];
       const itemName = item ? getText(item) : "Item";
+      sortHints.clear();
       if (targetZone === 'bank') {
            setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
            setAnnouncement(t('concept_map.venn.move_neutral', { item: itemName }));
@@ -3054,8 +3158,8 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                setAttempts(a => a + 1);
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
-               showZoneHint(item.correctZone);
-               setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: itemName })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(item.correctZone)}.`);
+               const sortHint = sortHints.showMistake(item.id);
+               setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: itemName })} ${sortHint}`);
            }
       }
       setKeyboardSelectedItemId(null);
@@ -3078,6 +3182,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       e.stopPropagation();
       setActiveDropZone(null);
       if (!draggedItem) return;
+      sortHints.clear();
       if (draggedItem.correctZone === targetZone) {
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
@@ -3088,8 +3193,8 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
-          showZoneHint(draggedItem.correctZone);
-          setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: getText(draggedItem) })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(draggedItem.correctZone)}.`);
+          const sortHint = sortHints.showMistake(draggedItem.id);
+          setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: getText(draggedItem) })} ${sortHint}`);
       }
       setDraggedItem(null);
   };
@@ -3110,14 +3215,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       }
   }, [items, score, onScoreUpdate, playSound, isWon]);
   const resetVennGame = () => {
-      if (hintTimerRef.current) {
-          clearTimeout(hintTimerRef.current);
-          hintTimerRef.current = null;
-      }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
       const shuffled = items.map(item => ({ ...item, currentZone: 'bank' }));
       for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       setItems(shuffled); setScore(0); setAttempts(0); setIsWon(false); setKeyboardSelectedItemId(null);
-      setLastHint(null);
       setAnnouncement(t('concept_map.venn.restarted') || 'Venn sort restarted.');
       window.setTimeout(() => vennDialogRef.current?.focus(), 0);
   };
@@ -3191,6 +3295,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   </button>
               </div>
           </div>
+      {!isWon && !keyboardSelectedItemId && <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle())} t={t} />}
           <div className="flex-grow relative bg-slate-100 overflow-auto flex flex-col items-center justify-start md:justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
@@ -3216,11 +3321,6 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                     {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
-              {lastHint && (
-                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
-                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: <span lang={getTitleLang(lastHint)}>{lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}</span>
-                </div>
-              )}
               {keyboardSelectedItemId && (
                 <div
                     role="presentation"
@@ -3229,6 +3329,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                 >
                     <div
                         ref={moveMenuRef}
+                        style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
                         className={`bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
@@ -3250,6 +3351,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                         }}
                     >
                         <h4 id="venn-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
+                        <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
                         <div className="grid grid-cols-2 gap-3">
                             <button type="button" data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="min-h-11 px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">
                                 <span lang={getTitleLang('setA')}>{getTitle('setA')}</span>
@@ -3392,6 +3494,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
 });
 const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const sortHints = useDiagramSortHints(t, 'causeEffect');
   const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
@@ -3403,10 +3506,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const [activeDropZone, setActiveDropZone] = useState(null);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
-  const [lastHint, setLastHint] = useState(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const moveMenuRef = useRef(null);
-  const hintTimerRef = useRef(null);
   const gameContainerRef = useRef(null);
   const playAgainRef = useRef(null);
   const causeEffectCloseRef = useRef(null);
@@ -3418,14 +3519,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   }, [isWon]);
   const confirmResetTimerRef = useRef(null);
   useEffect(() => () => {
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
   }, []);
-  const showZoneHint = (correctZone) => {
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-      setLastHint(correctZone);
-      hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
-  };
   useEffect(() => {
       if (keyboardSelectedItemId && moveMenuRef.current) {
           const firstBtn = moveMenuRef.current.querySelector('button');
@@ -3458,10 +3553,15 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         const j = Math.floor(Math.random() * (i + 1));
         [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
     }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     setItems(allItems);
     setScore(0);
     setIsWon(false);
     setAttempts(0);
+    setKeyboardSelectedItemId(null);
   }, [dataFingerprint]);
   const focusCauseEffectItem = (itemId) => {
       window.setTimeout(() => {
@@ -3482,6 +3582,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       if (keyboardSelectedItemId === item.id) {
           cancelCauseEffectSelection();
       } else {
+          sortHints.clear();
           setKeyboardSelectedItemId(item.id);
           setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
           if (playSound) playSound('click');
@@ -3493,6 +3594,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       const selectedId = keyboardSelectedItemId;
       const item = items.find(i => i.id === selectedId);
       if (!item) return;
+      sortHints.clear();
       if (targetZone === 'bank') {
            setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
            setAnnouncement(`Moved "${item.text}" back to the bank.`);
@@ -3508,8 +3610,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                setAttempts(a => a + 1);
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
-               showZoneHint(item.correctZone);
-               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${item.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
+               const sortHint = sortHints.showMistake(item.id);
+               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${sortHint}`);
            }
       }
       setKeyboardSelectedItemId(null);
@@ -3532,6 +3634,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       e.stopPropagation();
       setActiveDropZone(null);
       if (!draggedItem) return;
+      sortHints.clear();
       if (draggedItem.correctZone === targetZone) {
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
@@ -3542,8 +3645,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
-          showZoneHint(draggedItem.correctZone);
-          setAnnouncement(`Incorrect. "${draggedItem.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${draggedItem.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
+          const sortHint = sortHints.showMistake(draggedItem.id);
+          setAnnouncement(`Incorrect. "${draggedItem.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${sortHint}`);
       }
       setDraggedItem(null);
   };
@@ -3565,10 +3668,10 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
-      if (hintTimerRef.current) {
-          clearTimeout(hintTimerRef.current);
-          hintTimerRef.current = null;
-      }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
       if (confirmResetTimerRef.current) {
           clearTimeout(confirmResetTimerRef.current);
           confirmResetTimerRef.current = null;
@@ -3582,7 +3685,6 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setScore(0);
       setIsWon(false);
       setAttempts(0);
-      setLastHint(null);
       setKeyboardSelectedItemId(null);
       setConfirmingReset(false);
       setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
@@ -3658,6 +3760,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   </button>
               </div>
           </div>
+      {!isWon && !keyboardSelectedItemId && <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle())} t={t} />}
           <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
@@ -3684,15 +3787,11 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                     {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
-              {lastHint && (
-                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
-                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
-                </div>
-              )}
               {keyboardSelectedItemId && (
                 <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px] p-4" onClick={cancelCauseEffectSelection}>
                     <div
                         ref={moveMenuRef}
+                        style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
                         className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
@@ -3710,6 +3809,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         }}
                     >
                         <h4 id="cause-effect-move-menu-title" className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a destination:'}</h4>
+                        <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
                         <div className="grid grid-cols-2 gap-2">
                             <button type="button" onClick={() => handleKeyboardMove('causes')} className="min-h-11 px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                                 🔶 {t('games.ce_sort.causes_label') || 'Causes'}
@@ -3818,6 +3918,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 // Shape: data = { leftTitle, rightTitle, leftItems: [string], rightItems: [string] }
 const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const sortHints = useDiagramSortHints(t, 'tchart');
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -3828,10 +3929,8 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   const [activeDropZone, setActiveDropZone] = useState(null);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
-  const [lastHint, setLastHint] = useState(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const moveMenuRef = useRef(null);
-  const hintTimerRef = useRef(null);
   const confirmResetTimerRef = useRef(null);
   const gameContainerRef = useRef(null);
   const playAgainRef = useRef(null);
@@ -3841,16 +3940,10 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   useGameDialogFocus(gameContainerRef, tChartCloseRef, onClose);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
   useEffect(() => () => {
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
   }, []);
   const leftTitle = data?.leftTitle || 'Left';
   const rightTitle = data?.rightTitle || 'Right';
-  const showZoneHint = (zone) => {
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-    setLastHint(zone);
-    hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
-  };
   // Stable fingerprint to avoid re-init on parent re-renders.
   const dataFingerprint = useMemo(() => {
     if (!data) return '';
@@ -3876,12 +3969,15 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       const j = Math.floor(Math.random() * (i + 1));
       [all[i], all[j]] = [all[j], all[i]];
     }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     setItems(all);
     setScore(0);
     setIsWon(false);
     setAttempts(0);
     setKeyboardSelectedItemId(null);
-    setLastHint(null);
     setConfirmingReset(false);
     setAnnouncement(`T-Chart ready. ${all.length} items are in the unsorted bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3893,6 +3989,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     }
   }, [keyboardSelectedItemId]);
   const placeItem = (item, targetZone) => {
+    sortHints.clear();
     if (targetZone === 'bank') {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
       if (playSound) playSound('click');
@@ -3909,8 +4006,8 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       setAttempts(a => a + 1);
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
-      showZoneHint(item.correctZone);
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}. Try ${item.correctZone === 'left' ? leftTitle : rightTitle}.`);
+      const sortHint = sortHints.showMistake(item.id);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}. ${sortHint}`);
     }
   };
   const focusTChartItem = (itemId) => {
@@ -3928,6 +4025,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       cancelTChartSelection();
       return;
     }
+    sortHints.clear();
     setKeyboardSelectedItemId(item.id);
     setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle}, ${rightTitle}, or return it to the bank.`);
     if (playSound) playSound('click');
@@ -3970,14 +4068,17 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
     const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0);
     setKeyboardSelectedItemId(null); setConfirmingReset(false);
     setAnnouncement('Board reset. All items returned to the unsorted bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
@@ -4083,6 +4184,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           </button>
         </div>
       </div>
+      {!isWon && !keyboardSelectedItemId && <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle())} t={t} />}
       <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
         {isWon && (
@@ -4109,15 +4211,11 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
             {!reducedMotion && <ConfettiExplosion />}
           </div>
         )}
-        {lastHint && (
-          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2 ${reducedMotion ? '' : 'animate-in fade-in slide-in-from-top-2 duration-300'}`}>
-            <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'left' ? leftTitle : rightTitle}
-          </div>
-        )}
         {keyboardSelectedItemId && (
           <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelTChartSelection}>
             <div
               ref={moveMenuRef}
+              style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
               className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full ${reducedMotion ? '' : 'animate-in zoom-in duration-200'}`}
               role="dialog"
               aria-modal="true"
@@ -4135,6 +4233,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
               }}
             >
               <h4 id="tchart-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a column for the selected item:'}</h4>
+              <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => handleKeyboardMove('left')} className="min-h-11 px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">{leftTitle}</button>
                 <button type="button" onClick={() => handleKeyboardMove('right')} className="min-h-11 px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{rightTitle}</button>
@@ -4188,6 +4287,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
 // theme: { headerGradient, accentColor (tailwind suffix like 'cyan'), title }
 const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey = "multiBucket" }) => {
   const { t } = useContext(LanguageContext);
+  const sortHints = useDiagramSortHints(t, gameKey);
   const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
@@ -4199,10 +4299,8 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const [activeDropZone, setActiveDropZone] = useState(null);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
-  const [lastHint, setLastHint] = useState(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const moveMenuRef = useRef(null);
-  const hintTimerRef = useRef(null);
   const confirmResetTimerRef = useRef(null);
   const gameContainerRef = useRef(null);
   const playAgainRef = useRef(null);
@@ -4210,16 +4308,10 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const multiBucketWinRef = useRef(null);
   useGameDialogFocus(gameContainerRef, multiBucketCloseRef, onClose);
   useEffect(() => () => {
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
   }, []);
   useEffect(() => { if (isWon && playAgainRef.current) playAgainRef.current.focus(); }, [isWon]);
   const buckets = useMemo(() => Array.isArray(data?.buckets) ? data.buckets : [], [data]);
-  const showZoneHint = (bucketId) => {
-    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-    setLastHint(bucketId);
-    hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
-  };
   const dataFingerprint = useMemo(() => {
     if (!data) return '';
     return JSON.stringify([data.buckets || [], data.items || []]);
@@ -4236,9 +4328,13 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       const j = Math.floor(Math.random() * (i + 1));
       [all[i], all[j]] = [all[j], all[i]];
     }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     setItems(all);
     setScore(0); setIsWon(false); setAttempts(0); setKeyboardSelectedItemId(null);
-    setLastHint(null); setConfirmingReset(false);
+    setConfirmingReset(false);
     setAnnouncement(`${titleText} ready. ${all.length} items are in the bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
@@ -4249,6 +4345,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     }
   }, [keyboardSelectedItemId]);
   const placeItem = (item, targetBucketId) => {
+    sortHints.clear();
     if (targetBucketId === 'bank') {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentBucketId: 'bank' } : i));
       if (playSound) playSound('click');
@@ -4267,9 +4364,8 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       setAttempts(a => a + 1);
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
-      showZoneHint(item.correctBucketId);
-      const correctLabel = buckets.find(b => b.id === item.correctBucketId)?.title || item.correctBucketId;
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}. Try ${correctLabel}.`);
+      const sortHint = sortHints.showMistake(item.id);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}. ${sortHint}`);
     }
   };
   const focusMultiBucketItem = (itemId) => {
@@ -4288,6 +4384,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const toggleMultiBucketSelection = (event, item) => {
     event.stopPropagation();
     if (keyboardSelectedItemId === item.id) { cancelMultiBucketSelection(); return; }
+    sortHints.clear();
     setKeyboardSelectedItemId(item.id);
     setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
     if (playSound) playSound('click');
@@ -4327,12 +4424,16 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     const shuffled = [...items].map(i => ({ ...i, currentBucketId: 'bank' }));
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0);
     setKeyboardSelectedItemId(null); setConfirmingReset(false);
     setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
@@ -4362,7 +4463,6 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const accent = theme?.accentColor || 'indigo';
   const headerGradient = theme?.headerGradient || `from-${accent}-600 to-purple-600`;
   const titleText = theme?.title || (t('games.bucket_sort.title') || 'Sort');
-  const lastHintLabel = lastHint ? (buckets.find(b => b.id === lastHint)?.title || '') : '';
   const renderMultiBucketItem = (item, locationLabel, isBank = false) => {
     const selected = keyboardSelectedItemId === item.id;
     return (
@@ -4402,6 +4502,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
           </button>
         </div>
       </div>
+      {!isWon && !keyboardSelectedItemId && <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle())} t={t} />}
       <div className="flex-grow relative overflow-y-auto">
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
         {isWon && (
@@ -4428,15 +4529,11 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
             {!reducedMotion && <ConfettiExplosion />}
           </div>
         )}
-        {lastHint && lastHintLabel && (
-          <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
-            <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHintLabel}
-          </div>
-        )}
         {keyboardSelectedItemId && (
           <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelMultiBucketSelection}>
             <div
               ref={moveMenuRef}
+              style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
               className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
               role="dialog"
               aria-modal="true"
@@ -4454,6 +4551,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
               }}
             >
               <h4 id="multi-bucket-move-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('games.choose_destination_aria') || 'Choose a destination'}</h4>
+              <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {buckets.map(b => (
                   <button key={b.id} type="button" onClick={() => handleKeyboardMove(b.id)} className={`min-h-11 px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:ring-2 focus:ring-${accent}-500 focus:ring-offset-2`}>{b.title}</button>
@@ -5670,6 +5768,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 </select>
              )}
              <GameThemeToggle />
+             <GameReadingSettingsButton className="text-white hover:bg-indigo-500 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
              <button ref={crosswordCloseRef} type="button" data-help-key="crossword_close_btn" onClick={onClose} className="min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24} aria-hidden="true" /></button>
          </div>
       </div>
@@ -5755,7 +5854,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
-                           {cell.number && <span className="absolute top-0.5 start-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal print:text-slate-700">{cell.number}</span>}
+                           {cell.number && <span className="absolute top-0.5 start-0.5 text-[0.6875rem] sm:text-[0.6875rem] leading-none text-slate-600 font-normal print:text-slate-700">{cell.number}</span>}
                            {userChar && <span key={userChar} className="crossword-entered-letter inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
                         </div>
                      );
@@ -5770,7 +5869,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                  <div className="text-sm font-bold text-slate-600">
                     <div>{clues.across.length + clues.down.length} {t('games.crossword.clues')}</div>
                     {layout.placed > 0 && layout.considered > layout.placed && (
-                      <div className="mt-0.5 text-[11px] font-medium text-slate-600">
+                      <div className="mt-0.5 text-[0.6875rem] font-medium text-slate-600">
                         {t('games.crossword.placed_count', { placed: layout.placed, total: layout.considered })
                           || (layout.placed + ' of ' + layout.considered + ' terms fit this grid')}
                       </div>
@@ -5820,7 +5919,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      </ul>
                  </div>
              </div>
-             <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t no-print">
+             <div className="p-2 bg-slate-50 text-[0.6875rem] text-center text-slate-600 border-t no-print">
                  {t('games.crossword.footer_tip')}
              </div>
              {/* Teacher answer key, a separate printed page. Rendered only for
@@ -6201,6 +6300,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
         <GlossaryPrintStyles />
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
             <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+            <GameReadingSettingsButton className="absolute top-4 right-16 no-print text-slate-600 allo-ghov-soft focus-visible:ring-indigo-500" />
             <button
                 ref={bingoCloseRef}
                 type="button"
@@ -6210,7 +6310,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
             >
                 <X size={24} aria-hidden="true" />
             </button>
-            <div className="text-center mb-4 no-print">
+            <div className="text-center mb-4 no-print pt-12 sm:pt-0">
                 <h2 id="bingo-generator-title" className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
                     <Gamepad2 className="text-rose-500" aria-hidden="true" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
                 </h2>
@@ -6389,7 +6489,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
                                         <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between motion-safe:animate-in motion-safe:slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
-                                            <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
+                                            <span className="text-[0.6875rem] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
                                     ))}
                                     {currentCallIndex === -1 && <p className="text-center text-slate-600 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
@@ -6423,7 +6523,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                         {card.map((cell, cellIdx) => (
                                             <div
                                                 key={cellIdx}
-                                                className={`border border-slate-400 flex flex-col items-center justify-center text-center p-1 text-[11px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
+                                                className={`border border-slate-400 flex flex-col items-center justify-center text-center p-1 text-[0.6875rem] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
                                             >
                                                 {cell.type === 'free' ? (
                                                     <span className="text-black font-black print:text-white">★ {t('bingo.free_space')} ★</span>
@@ -6892,6 +6992,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                    {gameMessage(t, 'games.bingo.new_card', 'New card')}
                  </button>
                  <GameThemeToggle />
+                 <GameReadingSettingsButton className="text-white hover:bg-indigo-500 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
                  <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700" aria-label={t('bingo.close_game_aria')}>
                      <X size={24} aria-hidden="true" />
                  </button>
@@ -6909,7 +7010,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     {showImages && cell.imageUrl && (
                                         <img src={cell.imageUrl} alt="" aria-hidden="true" className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-100' : ''}`} />
                                     )}
-                                    <span style={{ overflowWrap: 'anywhere' }} className={`w-full text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-100' : ''}`}>
+                                    <span style={{ overflowWrap: 'anywhere' }} className={`w-full text-[0.6875rem] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-100' : ''}`}>
                                         {cell.text}
                                     </span>
                                     {isMarked && (
@@ -7126,6 +7227,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:zoom-in-95">
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative max-h-[95vh] overflow-y-auto p-4 sm:p-8 text-center border-4 border-indigo-500">
             <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+            <GameReadingSettingsButton className="absolute top-4 right-16 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 focus-visible:ring-indigo-600" />
             <button
                 type="button"
                 onClick={onClose}
@@ -7412,7 +7514,7 @@ const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGa
             <h2 id="definition-detective-title" className="text-2xl sm:text-3xl font-black break-words">{title}</h2>
             <p id="detective-instructions" className="mt-2 text-sm text-indigo-100">{message('instructions', 'Read the clue, choose a term, and check its meaning. Take your time.')}</p>
           </div>
-          <div className="flex shrink-0 gap-1"><GameThemeToggle /><button ref={closeRef} type="button" onClick={close} aria-label={gameMessage(t, 'common.close', 'Close')}
+          <div className="flex shrink-0 gap-1"><GameThemeToggle /><GameReadingSettingsButton className="text-white hover:bg-indigo-600 focus-visible:ring-white focus-visible:ring-offset-indigo-700" /><button ref={closeRef} type="button" onClick={close} aria-label={gameMessage(t, 'common.close', 'Close')}
             className="min-w-11 min-h-11 rounded-full hover:bg-indigo-600 focus-visible:ring-2 focus-visible:ring-white"><X size={22} aria-hidden="true" className="mx-auto" /></button></div>
         </header>
         <div className="p-4 sm:p-7">
@@ -7501,6 +7603,7 @@ const _MultiZoneColorMap = {
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = 'columns', captionText = "" }) => {
   const { t } = useContext(LanguageContext);
+  const sortHints = useDiagramSortHints(t, gameKey);
   const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
@@ -7543,6 +7646,10 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       const j = Math.floor(Math.random() * (i + 1));
       [all[i], all[j]] = [all[j], all[i]];
     }
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     setItems(all);
     setScore(0);
     setIsWon(false);
@@ -7552,6 +7659,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   const placeItem = (item, targetZone) => {
+    sortHints.clear();
     if (targetZone === 'bank') {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
       if (playSound) playSound('click');
@@ -7569,8 +7677,8 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       setAttempts(a => a + 1);
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
-      const correctLabel = (zoneConfig.find(z => z.id === item.correctZone) || {}).label || item.correctZone;
-      setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try ${correctLabel}.`);
+      const sortHint = sortHints.showMistake(item.id);
+      setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. ${sortHint}`);
     }
   };
   const focusMultiZoneItem = (itemId) => {
@@ -7585,6 +7693,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
   const toggleMultiZoneSelection = (event, item) => {
     event.stopPropagation();
     if (keyboardSelectedItemId === item.id) { cancelMultiZoneSelection(); return; }
+    sortHints.clear();
     setKeyboardSelectedItemId(item.id);
     const zoneNames = zoneConfig.map(z => z.label).join(', ');
     setAnnouncement(`Selected: ${item.text}. Choose a destination: ${zoneNames}, or Bank.`);
@@ -7627,6 +7736,10 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+    sortHints.reset();
+    scoreTrackerRef.current = makeSortScoreTracker();
+    setDraggedItem(null);
+    setActiveDropZone(null);
     const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -7706,6 +7819,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           </div>
         </div>
         <div className="sr-only" aria-live="polite">{announcement}</div>
+        {!isWon && !keyboardSelectedItemId && <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle())} t={t} />}
         {/* Bank */}
         <div
           role="group"
@@ -7734,6 +7848,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           <div role="presentation" className="fixed inset-0 z-[205] bg-slate-900/60 flex items-center justify-center p-4" onClick={cancelMultiZoneSelection}>
             <div
               ref={moveMenuRef}
+              style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
               role="dialog"
               aria-modal="true"
               aria-labelledby="multi-zone-move-title"
@@ -7751,6 +7866,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
               className={`bg-white rounded-2xl shadow-2xl border-2 border-indigo-500 p-5 max-w-lg w-full ${reducedMotion ? '' : 'animate-in zoom-in-95 duration-200'}`}
             >
               <h3 id="multi-zone-move-title" className="font-black text-slate-800 text-center mb-3">Choose a destination</h3>
+              <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {zoneConfig.map(zone => (
                   <button key={zone.id} type="button" onClick={() => handleKeyboardMove(zone.id)} className="min-h-11 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">

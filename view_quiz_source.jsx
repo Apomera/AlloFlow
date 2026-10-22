@@ -4670,6 +4670,115 @@ var _lazyIcon = function (name) {
       })
     }, meta || {});
   }
+
+  // Project-file responses are portable; device drafts are separately scoped.
+  // Rebuild only public learner inputs, never imported grading or answer keys.
+  function _quizProjectResponseCandidate(data, record, context) {
+    if (!record || !context || !context.resourceId || context.sessionCode || context.activityId) return null;
+    var candidates = [record.assessmentDraft, record.assessmentSubmitted].filter(function (value) {
+      return value && value.kind === 'alloflow-assessment-responses' && value.version === 1
+        && ['in-progress', 'submitted'].includes(value.status) && typeof value.attemptId === 'string' && value.attemptId;
+    }).sort(function (a, b) { return (Number(b.startedAt) || 0) - (Number(a.startedAt) || 0) || (Number(b.recordedAt || b.submittedAt) || 0) - (Number(a.recordedAt || a.submittedAt) || 0); });
+    var snapshot = candidates[0];
+    if (!snapshot) return null;
+    var identity = snapshot.assessmentIdentity;
+    if (identity && ['resourceId', 'sessionCode', 'activityId'].some(function (key) { return String(identity[key] || '') !== String(context[key] || ''); })) return null;
+    // An explicitly imported file gets a new workspace scope and may be opened
+    // by a fresh anonymous auth identity. A same-workspace account switch must
+    // not silently acquire the previous learner's answers.
+    if (identity && String(identity.userId || '') !== String(context.userId || '')
+      && !(identity.workspaceScope && context.workspaceScope && identity.workspaceScope !== context.workspaceScope)) return null;
+    // Older project snapshots have per-item public signatures, but no private
+    // grading fingerprint. They can restore answers without importing scores.
+    if (identity?.signature && !(context.compatibleSignatures || [context.signature]).includes(identity.signature)) return null;
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
+    if (!Array.isArray(snapshot.items) || snapshot.items.length !== questions.length || snapshot.total !== questions.length
+      || !Array.isArray(snapshot.reflections) || snapshot.reflections.length !== reflections.length) return null;
+    if (snapshot.items.some(function (row, index) { var q = questions[index]; return !q || typeof q !== 'object' || !row || row.number !== index + 1 || row.type !== (q.type || 'mcq') || row.questionSignature !== _quizAssessmentItemSignature(q); })) return null;
+    if (snapshot.reflections.some(function (row, index) { var reflection = reflections[index]; return !row || row.prompt !== String(typeof reflection === 'string' ? reflection : reflection && reflection.text || '').slice(0, 500) || typeof row.response !== 'string'; })) return null;
+    var items = { root: { mcqAnswers: {}, mcqConfidence: {}, reflectionAnswers: {}, attemptMeta: { attemptId: snapshot.attemptId, startedAt: Number(snapshot.startedAt) || Date.now(), status: 'in-progress' } } };
+    function choice(value, choices) { return Number.isInteger(value) && Array.isArray(choices) && value >= 0 && value < choices.length; }
+    var valid = snapshot.items.every(function (row, index) {
+      var q = questions[index], type = q.type || 'mcq', answer = row.answer, item = {};
+      items['q-' + index] = item;
+      if (['knew', 'guessed', 'no-idea'].includes(row.confidence)) {
+        if (type === 'mcq') items.root.mcqConfidence[index] = row.confidence; else item.confidence = row.confidence;
+      }
+      if (!row.hasResponse) return true;
+      if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return false;
+      if (answer.idk === true) { item.idk = true; return true; }
+      if (type === 'mcq') { if (!choice(answer.optionIdx, q.options)) return false; items.root.mcqAnswers[index] = answer.optionIdx; }
+      else if (type === 'multi-select') { if (!Array.isArray(answer.selectedIndices) || answer.selectedIndices.some(function (value) { return !choice(value, q.options); }) || new Set(answer.selectedIndices).size !== answer.selectedIndices.length) return false; item.selected = answer.selectedIndices.slice(); }
+      else if (type === 'answer-evidence') {
+        for (var field of ['answerIdx', 'evidenceIdx']) { var options = field === 'answerIdx' ? q.answerOptions || q.options : q.evidenceOptions; if (answer[field] != null) { if (!choice(answer[field], options)) return false; item[field] = answer[field]; } }
+      } else if (type === 'sequence-sense') {
+        if (answer.verifyAnswer != null) { if (!['yes', 'no'].includes(answer.verifyAnswer)) return false; item.verifyAnswer = answer.verifyAnswer; }
+        if (answer.clickedIdx != null) { if (!choice(answer.clickedIdx, q.items)) return false; item.clickedIdx = answer.clickedIdx; }
+        if (answer.orderAnswer != null) { if (!Array.isArray(answer.orderAnswer) || answer.orderAnswer.length !== (q.items || []).length || new Set(answer.orderAnswer).size !== answer.orderAnswer.length || answer.orderAnswer.some(function (value) { return !choice(value, q.items); })) return false; item.orderAnswer = answer.orderAnswer.slice(); }
+        if (answer.principleAnswer != null) { if (typeof answer.principleAnswer !== 'string') return false; item.principleAnswer = answer.principleAnswer; }
+      } else if (type === 'relation-mismatch') {
+        if (answer.clickedPairIdx != null) { if (!choice(answer.clickedPairIdx, q.pairs)) return false; item.clickedPairIdx = answer.clickedPairIdx; }
+        if (answer.partnerAnswer != null) { if (typeof answer.partnerAnswer !== 'string') return false; item.partnerAnswer = answer.partnerAnswer; }
+      } else if (['short-answer', 'self-explanation', 'fill-blank', 'numeric-response'].includes(type)) {
+        if (typeof answer.text !== 'string') return false;
+        item.response = answer.text;
+      } else return false;
+      return true;
+    });
+    if (!valid) return null;
+    snapshot.reflections.forEach(function (row, index) { items.root.reflectionAnswers[index] = { draft: row.response, submitted: snapshot.status === 'submitted' && !!row.response, submittedText: snapshot.status === 'submitted' ? row.response : '' }; });
+    return { snapshot: snapshot, items: items };
+  }
+  function _quizRestoreProjectResponses(namespace, data, record, context, isCurrent, unscopedNamespace) {
+    if (!namespace || namespace.indexOf('assess-preview:') === 0) return false;
+    var candidate = _quizProjectResponseCandidate(data, record, context);
+    if (!candidate) return false;
+    return _quizWithDraftLock(namespace, function () {
+      if (typeof isCurrent === 'function' && !isCurrent()) return false;
+      if (_quizReadAttemptReceipt(namespace) || _quizClosedDrafts[namespace]) return false;
+      var draft = _quizReadWorkingDraft(namespace), meta = draft.items?.root?.attemptMeta;
+      var progress = _quizResponseSnapshot(data, draft.items, {});
+      // Never replace work created here, including an explicitly restarted
+      // empty attempt. A late file restore may fill only an untouched view.
+      if (_quizReadDraft(namespace)?.projectResponseRestore || meta?.previousAttemptId || progress.responded
+        || progress.reflections.some(function (row) { return row.response; })
+        || progress.items.some(function (row) { return row.confidence; })
+        || Object.keys(draft.items?.root?.flaggedQuestions || {}).length) return false;
+      var storage = _quizLocalStorage();
+      if (!storage) { _quizDraftSaveEvent(namespace, false); return false; }
+      var snapshot = candidate.snapshot, now = Date.now(), items = candidate.items;
+      // Migrate an unscoped local copy only when this project's own attempt id
+      // and full response fingerprint prove ownership. Never adopt by title.
+      var legacy = unscopedNamespace && unscopedNamespace !== namespace ? _quizReadAttemptReceipt(unscopedNamespace, context.signature) || _quizReadDraft(unscopedNamespace) : null;
+      var legacyIdentity = legacy?.assessmentIdentity;
+      var legacyAttempt = legacy?.attemptId || legacy?.items?.root?.attemptMeta?.attemptId;
+      if (legacyAttempt === snapshot.attemptId && legacyIdentity?.signature === context.signature
+        && ['resourceId', 'sessionCode', 'activityId', 'userId'].every(function (key) { return String(legacyIdentity[key] || '') === String(context[key] || ''); })) items = legacy.responses || legacy.items || items;
+      try {
+        if (snapshot.status === 'submitted') {
+          var summary = _quizBuildAttemptProgress(data, { items: items });
+          var receipt = { version: 1, attemptId: snapshot.attemptId, startedAt: Number(snapshot.startedAt) || now, submittedAt: Number(snapshot.submittedAt) || now,
+            summary: { total: summary.total, answered: summary.answered, unanswered: summary.unanswered, flagged: summary.flagged }, responses: items,
+            feedbackTiming: _quizNormalizeDeliverySettings(data.deliverySettings).feedbackTiming, signature: context.signature, assessmentIdentity: context,
+            resourceId: context.resourceId, sessionCode: '', activityId: '', delivery: { status: 'local' }, projectResponseRestore: snapshot.attemptId };
+          storage.setItem(_quizAttemptStorageKey(namespace), JSON.stringify(receipt));
+          try { storage.removeItem(namespace); } catch (_) {}
+          _quizResetWorkingDraft(namespace); _quizClosedDrafts[namespace] = true;
+        } else {
+          storage.setItem(namespace, JSON.stringify({ version: 1, createdAt: Number(snapshot.startedAt) || now, updatedAt: now, assessmentIdentity: context, items: items, projectResponseRestore: snapshot.attemptId }));
+          _quizResetWorkingDraft(namespace);
+        }
+        _quizDraftContexts[namespace] = context;
+        return true;
+      } catch (_) { _quizDraftSaveEvent(namespace, false); return false; }
+    });
+  }
+  function _quizLearnerDraftSuffix(props) {
+    return (props.sessionData?.quizState?.activityId ? ':' + props.sessionData.quizState.activityId : '')
+      + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '')
+      + (!props.activeSessionCode && props.learnerResponseScope ? ':workspace-' + encodeURIComponent(props.learnerResponseScope) : '');
+  }
   function AssessmentAttemptFeedback(p) {
     var tr = typeof p.copy === 'function' ? p.copy : _quizPlainCopy;
     return <section data-assessment-attempt-feedback className="space-y-4" aria-label={tr('quiz.attempt.feedback_region', 'Assessment feedback')}><div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-indigo-950"><h2 className="text-lg font-bold">{tr('quiz.attempt.review_title', 'Review your responses')}</h2><p className="mt-1 text-sm">{tr('quiz.attempt.review_help', 'Compare your saved responses with the answer guides. Written responses may still need teacher review.')}</p></div>{(p.data.questions || []).map((q, i) => { var keyCheck = _quizKeyCheck(q), explanation = _quizStudentExplanation(q); return <article key={i} className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800"><h3 className="font-bold">{(i + 1) + '. ' + q.question}</h3><AssessmentQuestionSupport q={q} />{(q.type || "mcq") === "mcq" && <div data-assessment-feedback-stimulus className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">{(q.options || []).map((option, index) => <div key={index} className="rounded-lg border border-slate-200 p-3 text-sm"><AssessmentChoiceContent q={q} field="options" index={index} text={option} /></div>)}</div>}<p className="mt-3 text-sm whitespace-pre-wrap"><strong>{tr('quiz.attempt.your_response', 'Your response:') + ' '}</strong>{_quizResponseDescription(q, i, p.receipt.responses || {})}</p><div className="mt-3" data-assessment-answer-guide>{(q.type || 'mcq') === 'mcq' ? <p className="text-sm"><strong>{tr('quiz.attempt.answer_guide', 'Answer guide:') + ' '}</strong>{keyCheck && keyCheck.status === 'disputed' ? tr('quiz.attempt.key_under_review', 'Your teacher is reviewing this answer.') : q.correctAnswer || tr('quiz.attempt.teacher_review', 'Teacher review')}</p> : <AssessmentPresentationItem q={q} showAnswer={true} onToggleAnswer={null} formatInlineText={p.formatInlineText} readOnly={true} />}</div>{explanation && <p data-assessment-explanation className="mt-3 text-sm whitespace-pre-wrap">{_quizPlainExplanation(explanation)}</p>}</article>; })}</section>;
@@ -4723,10 +4832,28 @@ var _lazyIcon = function (name) {
     </div>;
   }
   function QuizView(props) {
-    var identity = JSON.stringify([props.generatedContent?.id, props.activeSessionCode || '', props.sessionData?.quizState?.activityId || '', props.user?.uid || '', !!props.isTeacherMode, !!props.isParentMode, !!props.isIndependentMode]);
+    var identity = JSON.stringify([props.generatedContent?.id, props.activeSessionCode || '', props.sessionData?.quizState?.activityId || '', props.user?.uid || '', props.learnerResponseScope || '', !!props.isTeacherMode, !!props.isParentMode, !!props.isIndependentMode]);
     var [previewScope, setPreviewScope] = React.useState('');
     var [previewNonce, setPreviewNonce] = React.useState(0);
     var [storageRevision, setStorageRevision] = React.useState(0);
+    var restoreIdentity = identity + ':' + _quizFeedbackSignature(props.generatedContent?.data);
+    var [projectRestoreState, setProjectRestoreState] = React.useState('');
+    var restoreEligible = !props.isTeacherMode && !props.isParentMode && !props._assessmentPreview && !props.activeSessionCode;
+    var restoreRecord = restoreEligible ? props.learnerResponses : null;
+    var restoreToken = JSON.stringify([restoreRecord?.assessmentDraft?.attemptId, restoreRecord?.assessmentDraft?.recordedAt, restoreRecord?.assessmentSubmitted?.attemptId, restoreRecord?.assessmentSubmitted?.recordedAt]);
+    React.useEffect(function () {
+      var current = true;
+      var data = props.generatedContent?.data || {}, resourceId = String(props.generatedContent?.id || '');
+      var suffix = _quizLearnerDraftSuffix(props), namespace = _quizDraftNamespace(data, '', resourceId) + suffix;
+      var context = { resourceId: resourceId, sessionCode: '', activityId: String(props.sessionData?.quizState?.activityId || ''), userId: String(props.user?.uid || ''), workspaceScope: String(props.learnerResponseScope || ''), signature: _quizFeedbackSignature(data), compatibleSignatures: _quizCompatibleFeedbackSignatures(data), title: data.title || 'Assessment' };
+      var unscoped = _quizDraftNamespace(data, '', resourceId) + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '');
+      Promise.resolve(restoreEligible && restoreRecord ? _quizRestoreProjectResponses(namespace, data, restoreRecord, context, function () { return current; }, unscoped) : false).then(function (restored) {
+        if (!current) return;
+        if (restored) setStorageRevision(value => value + 1);
+        setProjectRestoreState(restoreIdentity);
+      }, function () { if (current) setProjectRestoreState(restoreIdentity); });
+      return function () { current = false; };
+    }, [restoreIdentity, restoreToken]);
     var preview = !!(props.isTeacherMode || props.isParentMode) && previewScope === identity;
     var previewNamespace = 'assess-preview:' + previewNonce + ':' + identity;
     React.useEffect(() => () => { delete _quizDraftMemory[previewNamespace]; }, [previewNamespace, preview]);
@@ -4748,6 +4875,7 @@ var _lazyIcon = function (name) {
     // Include explicit storage refreshes in the child identity so every draft
     // field initializes from the newly selected attempt together.
     var contentIdentity = identity + ':' + storageRevision;
+    if (restoreRecord && projectRestoreState !== restoreIdentity) return <div role="status">Restoring saved assessment responses…</div>;
     return <div ref={previewRootRef} className="space-y-4">{(preview || props.isParentMode) && <section data-assessment-preview-controls className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white p-3 text-slate-800">{preview ? <p className="text-sm"><strong>{previewCopy('quiz.preview_banner_title', 'Student preview.')}</strong> {previewCopy('quiz.preview_banner_body', 'Responses are temporary. AI grading and submission are disabled.')}</p> : <p className="text-sm">{previewCopy('quiz.preview_parent_hint', "Check the questions and feedback settings from the learner's perspective.")}</p>}<button type="button" data-assessment-preview-toggle onClick={togglePreview} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900">{preview ? previewCopy('quiz.exit_preview', 'Exit student preview') : previewCopy('quiz.preview_as_student', 'Preview as student')}</button></section>}<QuizViewContent key={contentIdentity + ':' + (preview ? previewNonce : 'actual') + ((!props.isTeacherMode && !props.isParentMode) || preview ? ':' + _quizFeedbackSignature(props.generatedContent?.data) : '')} {...contentProps} /></div>;
   }
   function QuizViewContent(props) {
@@ -4794,9 +4922,9 @@ var _lazyIcon = function (name) {
     _quizFactCheckMarkerCache = quizFactCheckMarkers;
     var assessmentAudit = _quizAuditAssessment(assessmentData, { markers: quizFactCheckMarkers, copy: quizT });
     var assessmentH5PPreflight = _quizH5PPreflight(assessmentData);
-    var learnerDraftSuffix = (sessionData?.quizState?.activityId ? ':' + sessionData.quizState.activityId : '') + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '');
+    var learnerDraftSuffix = _quizLearnerDraftSuffix(props);
     var learnerBaseDraftNamespace = props._assessmentPreview ? props._previewNamespace : !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode, props.generatedContent?.id) + learnerDraftSuffix : '';
-    var draftContext = _quizMergeDraftIdentity(learnerBaseDraftNamespace, { resourceId: String(props.generatedContent?.id || ''), sessionCode: String(activeSessionCode || ''), activityId: String(sessionData?.quizState?.activityId || ''), userId: String(props.user?.uid || ''), signature: _quizFeedbackSignature(assessmentData), previousSignature: _quizPreviousFeedbackSignature(assessmentData), compatibleSignatures: _quizCompatibleFeedbackSignatures(assessmentData), title: assessmentData.title || 'Assessment' });
+    var draftContext = _quizMergeDraftIdentity(learnerBaseDraftNamespace, { resourceId: String(props.generatedContent?.id || ''), sessionCode: String(activeSessionCode || ''), activityId: String(sessionData?.quizState?.activityId || ''), userId: String(props.user?.uid || ''), workspaceScope: String(props.learnerResponseScope || ''), signature: _quizFeedbackSignature(assessmentData), previousSignature: _quizPreviousFeedbackSignature(assessmentData), compatibleSignatures: _quizCompatibleFeedbackSignatures(assessmentData), title: assessmentData.title || 'Assessment' });
     if (learnerBaseDraftNamespace && !props._assessmentPreview) _quizDraftContexts[learnerBaseDraftNamespace] = draftContext;
     var attemptReceiptState = React.useState(function () {
       if (!learnerBaseDraftNamespace) return null;
@@ -5179,6 +5307,9 @@ var _lazyIcon = function (name) {
         if (typeof props.addToast === 'function') props.addToast(message, 'error');
         return;
       }
+      recordAssessmentResponses('assessmentSubmitted', null);
+      var restarted = _quizReadWorkingDraft(learnerBaseDraftNamespace), restartedMeta = restarted.items?.root?.attemptMeta || {};
+      recordAssessmentResponses('assessmentDraft', _quizResponseSnapshot(assessmentData, restarted.items, { status: 'in-progress', attemptId: restartedMeta.attemptId || '', startedAt: restartedMeta.startedAt || null }));
       if (typeof props._onAssessmentStorageRefresh === 'function') props._onAssessmentStorageRefresh();
       else { setAttemptReceipt(null); try { window.location.reload(); } catch (e) {} }
     }
@@ -5196,7 +5327,7 @@ var _lazyIcon = function (name) {
       var signature = JSON.stringify(snapshot);
       if (recordedResponsesRef.current[key] === signature) return;
       recordedResponsesRef.current[key] = signature;
-      try { record(recordResourceId, key, snapshot ? Object.assign({}, snapshot, { recordedAt: Date.now() }) : null); } catch (e) {}
+      try { record(recordResourceId, key, snapshot ? Object.assign({}, snapshot, { assessmentIdentity: draftContext, recordedAt: Date.now() }) : null); } catch (e) {}
     }
     React.useEffect(function () {
       if (!draftNamespace || !recordResponsesRef.current) return undefined;

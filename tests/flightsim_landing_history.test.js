@@ -118,6 +118,29 @@ describe('landing evidence survives subsequent takeoffs', () => {
 });
 
 describe('onboarding records the objective actually demonstrated', () => {
+  it.each(['false', {}, 'not a date', '2026-02-31T01:02:03.000Z', '2025-02-29T01:02:03.000Z'])('keeps malformed landing markers actionable and replaces them after a qualifying touchdown: %j', async firstRunwayLanding => {
+    await mount({ firstRunwayLanding });
+    expect(host.querySelector('[data-flight-start-step="landing"]').dataset.done).toBe('false');
+    await start(); await land(120); await finish();
+    expect(latest.firstRunwayLanding).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    const saved = JSON.parse(JSON.stringify(latest));
+    await mount({ ...saved, view: 'menu' });
+    expect(host.querySelector('[data-flight-start-step="landing"]').dataset.done).toBe('true');
+  });
+
+  it.each([true, '2026-10-18T01:02:03.000Z'])('preserves a valid prior runway landing marker after another touchdown: %s', async firstRunwayLanding => {
+    await mount({ firstRunwayLanding });
+    expect(host.querySelector('[data-flight-start-step="landing"]').dataset.done).toBe('true');
+    await start(); await land(120); await finish();
+    expect(latest.firstRunwayLanding).toBe(firstRunwayLanding);
+  });
+
+  it('does not repair a malformed landing marker from an off-runway touchdown', async () => {
+    await mount({ firstRunwayLanding: 'false' }); await start(); await land(120, 'kpwm', 1000);
+    expect(latest.firstRunwayLanding).toBe('false');
+    expect(hooks().getLandingRef().current.onRunway).toBe(false);
+  });
+
   it('does not infer lift learning or runway contact from unrelated legacy progress', async () => {
     await mount({ completedLessons: { thrust: true, lift: false }, firstAirportLanding: 'legacy-vicinity' });
     expect(host.querySelector('[data-flight-start-step="lesson"]').dataset.done).toBe('false');

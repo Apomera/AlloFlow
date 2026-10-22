@@ -24,7 +24,7 @@ describe('shared word practice contract', () => {
   it('retains glossary definitions and resolves sounds independently of displayed spellings', () => {
     const pack = core.normalizeInput({ words: [{ term: 'city', def: 'A large town.', phonemes: [{ grapheme: 'c', ipa: 's' }] }], phonemeBank: { s: wav } });
     expect(pack.items[0].definition).toBe('A large town.');
-    expect(pack.items[0].phonemes[0]).toEqual({ label: 'c', soundKey: 's', audio: wav });
+    expect(pack.items[0].phonemes[0]).toEqual({ label: 'c', soundKey: 's', audio: wav, provenance: { language: 'en', source: 'recorded_bank' }, audioStatus: 'ready' });
     expect(core.normalizeInput(JSON.parse(core.serializePack(pack))).items[0].phonemes[0].soundKey).toBe('s');
   });
   it('never imports active URLs, markup as markup, or malformed audio', () => {
@@ -59,7 +59,7 @@ describe('shared word practice contract', () => {
   });
   it('exports prepared sentence activities without inventing boards for other words', () => {
     const pack = core.normalizeInput({ words: [{ word: 'ship', activityItems: { read_sentence: { sentence: 'The ship is big.', before: 'The ', after: ' is big.', options: ['rain', 'ship', 'light'] } } }, 'rain'] });
-    expect(pack.items[0].sentenceActivity).toEqual({ prompt: 'The ____ is big.', choices: ['rain', 'ship', 'light'], answer: 'ship' });
+    expect(pack.items[0].sentenceActivity).toEqual({ prompt: 'The ____ is big.', choices: ['rain', 'ship', 'light'], answer: 'ship', language: 'en' });
     expect(pack.items[1].sentenceActivity).toBe(null);
     const sequence = core.createSequence(pack, { mode: 'sentence', repetitions: 2 });
     expect(sequence.map(card => card.itemId)).toEqual(['w1', 'w1']);

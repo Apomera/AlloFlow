@@ -26,18 +26,26 @@ const targets = [
   { shape: 'frog', id: 'sm_intestine', region: [.463, .479, .601, .618] },
   { shape: 'frog', id: 'pancreas', region: [.52, .54, .53, .55] },
   { shape: 'frog', id: 'spleen', region: [.400, .416, .557, .573] },
+  { shape: 'pig', id: 'heart_p', region: [.424, .440, .442, .458] },
   { shape: 'pig', id: 'liver_p', region: [.51, .54, .44, .47] },
   { shape: 'pig', id: 'stomach_p', region: [.54, .58, .49, .52] },
+  { shape: 'pig', id: 'spleen_p', region: [.509, .525, .498, .514] },
   { shape: 'pig', id: 'lungs_p', region: [.378, .392, .417, .433] },
   { shape: 'pig', id: 'pancreas_p', region: [.60, .62, .528, .544] },
   { shape: 'pig', id: 'sm_int_p', region: [.552, .567, .533, .548] },
   { shape: 'fish', id: 'liver_f', region: [.37, .40, .46, .49] },
+  { shape: 'fish', id: 'heart_f', region: [.325, .335, .500, .510] },
+  { shape: 'fish', id: 'kidneys_f', region: [.505, .525, .358, .374] },
   { shape: 'fish', id: 'stomach_f', region: [.46, .49, .49, .52] },
+  { shape: 'fish', id: 'pyloric_ceca', region: [.527, .535, .536, .544] },
   { shape: 'fish', id: 'swim_bladder', region: [.505, .525, .397, .417] },
   { shape: 'fish', id: 'gonads_f', region: [.585, .605, .461, .481] },
   { shape: 'worm', id: 'pharynx', region: [.52, .535, .145, .155] },
   { shape: 'worm', id: 'crop', region: [.51, .53, .30, .32] },
   { shape: 'worm', id: 'gizzard', region: [.505, .525, .34, .36] },
+  { shape: 'worm', id: 'aortic_arches', region: [.555, .568, .184, .202] },
+  { shape: 'worm', id: 'nephridia', region: [.495, .513, .512, .529] },
+  { shape: 'worm', id: 'seminal_v', region: [.535, .55, .265, .285] },
   { shape: 'crayfish', id: 'heart_c', region: [.525, .545, .405, .425] },
   { shape: 'crayfish', id: 'gills_c', region: [.55, .565, .35, .365] },
   { shape: 'crayfish', id: 'gastric_mill', region: [.37, .39, .44, .46] },
@@ -46,9 +54,26 @@ const targets = [
   { shape: 'crayfish', id: 'gonads_c', region: [.565, .585, .44, .46] },
 ];
 function painted(shape, query = () => ({ _logicalW: 500, _logicalH: 600 })) {
+  const centerline = loadProductionFunction('earthwormCenterlinePoint');
+  const frame = loadProductionFunction('earthwormAnatomyFrame', { earthwormCenterlinePoint: centerline });
+  const nephridia = loadProductionFunction('earthwormNephridialGeometry', { earthwormAnatomyFrame: frame });
+  const aortic = loadProductionFunction('earthwormAorticGeometry', { earthwormAnatomyFrame: frame });
+  const cardiac = loadProductionFunction('perchCardiacGeometry');
+  const renal = loadProductionFunction('perchRenalGeometry');
+  const caecal = loadProductionFunction('perchCaecalGeometry');
+  const pigCardiac = loadProductionFunction('pigCardiacGeometry');
+  const frogGastric = loadProductionFunction('frogGastricGeometry');
+  const pigGastric = loadProductionFunction('pigGastricGeometry');
+  const pigSplenic = loadProductionFunction('pigSplenicGeometry');
   return loadProductionFunction('paintedSmallStructurePoint', {
     spec: { bodyShape: shape }, queryDissectionNode: query,
-    earthwormCenterlinePoint: loadProductionFunction('earthwormCenterlinePoint'),
+    earthwormCenterlinePoint: centerline, earthwormAnatomyFrame: frame, earthwormNephridialGeometry: nephridia,
+    earthwormAorticGeometry: aortic,
+    perchCardiacGeometry: cardiac, perchRenalGeometry: renal, perchCaecalGeometry: caecal,
+    pigCardiacGeometry: pigCardiac,
+    frogGastricGeometry: frogGastric,
+    pigGastricGeometry: pigGastric,
+    pigSplenicGeometry: pigSplenic,
   });
 }
 
@@ -117,7 +142,7 @@ describe('small painted anatomical landmarks', () => {
   });
 
   it.each([
-    ['heart', 'lens'], ['eye', 'aortic_v'], ['eye', 'retina'], ['frog', 'heart'], ['pig', 'heart_p'],
+    ['heart', 'lens'], ['eye', 'aortic_v'], ['eye', 'retina'], ['frog', 'heart'], ['pig', 'brain_p'],
   ])('leaves unrelated %s/%s anatomy in the normal model', (shape, id) => {
     const query = vi.fn(() => { throw Error('Unrelated organs must not query eye geometry'); });
     expect(painted(shape, query)({ id })).toBeNull();

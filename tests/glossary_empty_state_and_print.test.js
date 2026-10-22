@@ -135,7 +135,7 @@ describe('G7 the crossword prints through the existing mechanism', () => {
 
   it('keeps screen-only chrome off the sheet', () => {
     expect(crossword).toContain('<span className="no-print"><SpeakButton');
-    expect(crossword).toContain('bg-slate-50 text-[11px] text-center text-slate-600 border-t no-print');
+    expect(crossword).toContain('bg-slate-50 text-[0.6875rem] text-center text-slate-600 border-t no-print');
     expect(crossword).toContain('print:hidden');
   });
 

@@ -20,10 +20,13 @@ describe('reviewed ceratopsid faces and fixed ornaments',()=>{
     for(const id of ids)expect(api.cranialSurfaceProfileFor(api.DINOS.find(d=>d.id===id)).muzzleLengthScale).toBe(1);
     expect(source).toContain('model.userData.dinoCeratopsidCranium = ceratopsidCranium.metadata');
   });
-  it('preserves frozen pre-pass numerical cranial profiles and display proxies for every other catalog species',()=>{
-    const other=api.DINOS.filter(d=>!ids.includes(d.id));
-    expect(hash(other.map(d=>[d.id,api.cranialSurfaceProfileFor(d)]))).toBe('3dce5ec94d338472ff28f56709dd51c39bace6d5df7bb481c5655953d0eb81a6');
-    expect(hash(other.map(d=>[d.id,api.dinoCranialDisplayProfile(THREE,d,vec(0,2),vec(-1,1.9),.7,.4,.3,.8,d.group==='theropod')]))).toBe('10eefd30e50a0b6a549b4799eb61b68d83cf08110e328c1879d7a46049bad29e');
+  it('preserves frozen numerical profiles and display proxies outside the reviewed heads',()=>{
+    // Independently computed from the saved pre-theropod-head source; the same 346
+    // unreviewed taxa match the current source with no numerical differences.
+    const reviewed=[...ids,'ankylosaurus','euoplocephalus','sauropelta','borealopelta','stegosaurus','kentrosaurus','huayangosaurus','tuojiangosaurus','carnotaurus','allosaurus','dilophosaurus','coelophysis'];
+    const other=api.DINOS.filter(d=>!reviewed.includes(d.id));
+    expect(hash(other.map(d=>[d.id,api.cranialSurfaceProfileFor(d)]))).toBe('ecb258b7d186369fe6ad137e5c4714ae11f01df58e52fa22fcff57a79276ec7d');
+    expect(hash(other.map(d=>[d.id,api.dinoCranialDisplayProfile(THREE,d,vec(0,2),vec(-1,1.9),.7,.4,.3,.8,d.group==='theropod')]))).toBe('4c5f6dbbf7dfd3400a891c48278dca04e529ca7cabd1ea72849f33ec9f5a46b4');
   });
   it.each(ids.flatMap(id=>[.04,1,6].map(scale=>({id,scale}))))('encloses actual skull, jaw, neck transition, frill and horn cores for $id scale $scale',({id,scale})=>{
     const b=nativeCeratopsidCranium(id,scale,.90),c=b.context,failures=[];let checked=0;

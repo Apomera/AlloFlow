@@ -58412,6 +58412,15 @@
       "sr_critique_ready": "講評ができました。"
     },
     "flightsim": {
+      "debrief_unavailable_title": "保存済みのフライトレビューを利用できません",
+      "debrief_unavailable_body": "最新のフライトレビューが見つからないか、読み取れません。メニューに戻り、新しいフライトを開始してください。",
+      "guided_idea_before_trials": "試行前に記録",
+      "guided_idea_saved": "保存した考え",
+      "guided_idea_timing_unknown": "この保存した考えがいつ記録されたかは、記録されていません。",
+      "guided_idea_latest": "最新の保存済みの考え",
+      "guided_idea_latest_prediction": "最新の保存済みの予測：{prediction}",
+      "guided_idea_saved_prediction": "保存済みの予測：{prediction}",
+      "milestone_stall_recovery": "この瞬間、翼は失速状態ではなくなっています。1回の観測だけでは、回復が持続しているとは判断できません。",
       "game_controls": "🎮 ゲーム操作",
       "learn": "学ぶ",
       "quiz": "クイズ",
@@ -58466,6 +58475,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "機首上げ — 機首を上げる (W)",
+      "hud_rotate_touch": "機首上げ — 中央から上へドラッグ",
+      "hud_flare": "フレア — Wでゆっくり機首を上げる",
+      "hud_flare_touch": "フレア — 中央から上へドラッグ",
+      "landing_touch_power": "右端に沿って下へドラッグし、出力を約30%に下げます。速度が低下します。",
+      "landing_touch_flare": "滑走路のすぐ上（約10 ft）で、中央から上へやさしくドラッグして機首を上げます。接地時の降下率は200 fpm未満を目指します。",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92151,6 +92166,18 @@
     "card_progress": "カード {n}/{total}",
     "add_words": "練習を始めるには単語を追加してください。",
     "round_complete": "ラウンド終了。新しいラウンドを始めるか、印をつけた単語を復習しましょう。",
-    "practice_label": "単語練習"
+    "practice_label": "単語練習",
+    "use_mine_help": "HTML ファイルには、選んだフォント・文字サイズ・間隔が使われます。",
+    "preparing_reading": "読書設定を追加しています…",
+    "font_not_embedded": "選んだフォントをファイルに追加できなかったため、システムフォントを使用しています。"
+  },
+  "reading_settings": {
+    "title": "読書設定",
+    "smaller": "文字を小さく",
+    "larger": "文字を大きく",
+    "overlay": "カラーオーバーレイ",
+    "ruler": "読書ルーラー",
+    "use_mine": "自分の読書設定を使う",
+    "use_mine_help": "自分のフォント・文字サイズ・間隔で印刷します。"
   }
 }

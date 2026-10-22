@@ -136,7 +136,9 @@ test('four-beat fox walking eases toward a diagonal trot while lofted necks and 
   await stage.screenshot({ path: `${reportDir}/rabbit-neck-coat.jpg`, type: 'jpeg', quality: 92 });
   await meadow.getByRole('button', { name: 'Face view', exact: true }).click();
   await stage.screenshot({ path: `${reportDir}/rabbit-face-coat.jpg`, type: 'jpeg', quality: 92 });
-  await page.emulateMedia({ reducedMotion: 'reduce' }); const frozen = await anatomy(page, 'rabbits');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose');
+  const frozen = await anatomy(page, 'rabbits');
   await timeline.fill('160'); expect(await anatomy(page, 'rabbits')).toEqual(frozen);
   await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose');
 });

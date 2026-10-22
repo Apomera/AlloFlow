@@ -54841,6 +54841,15 @@
       "sr_critique_ready": "تنقید تیار ہے۔"
     },
     "flightsim": {
+      "debrief_unavailable_title": "محفوظ کردہ پرواز کا جائزہ دستیاب نہیں",
+      "debrief_unavailable_body": "تازہ ترین پرواز کا جائزہ موجود نہیں یا پڑھا نہیں جا سکتا۔ نئی پرواز شروع کرنے کے لیے مینو پر واپس جائیں۔",
+      "guided_idea_before_trials": "آزمائشوں سے پہلے درج کیا گیا",
+      "guided_idea_saved": "محفوظ کردہ خیال",
+      "guided_idea_timing_unknown": "اس محفوظ کردہ خیال کا وقت درج نہیں کیا گیا تھا۔",
+      "guided_idea_latest": "تازہ ترین محفوظ کردہ خیال",
+      "guided_idea_latest_prediction": "تازہ ترین محفوظ کردہ پیش گوئی: {prediction}",
+      "guided_idea_saved_prediction": "محفوظ کردہ پیش گوئی: {prediction}",
+      "milestone_stall_recovery": "اس لمحے طیارے کا پر اب اسٹال کی حالت میں نہیں ہے۔ ایک مشاہدے سے یہ ثابت نہیں ہوتا کہ اسٹال سے بحالی مسلسل برقرار رہی ہے۔",
       "game_controls": "🎮 گیم کنٹرولز",
       "from": "سے",
       "formula": "فارمولا",
@@ -54892,6 +54901,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "اڑان کے لیے ناک اٹھائیں — ناک اوپر کریں (W)",
+      "hud_rotate_touch": "اڑان کے لیے ناک اٹھائیں — درمیان سے اوپر کھینچیں",
+      "hud_flare": "اترتے وقت ناک اٹھائیں — W سے ناک آہستہ اوپر کریں",
+      "hud_flare_touch": "اترتے وقت ناک اٹھائیں — درمیان سے اوپر کھینچیں",
+      "landing_touch_power": "انجن کی طاقت ~30% تک کم کرنے کے لیے دائیں کنارے کے ساتھ نیچے کھینچیں۔ رفتار کم ہو جائے گی۔",
+      "landing_touch_flare": "رن وے سے ذرا اوپر (~10 ft)، ناک اٹھانے کے لیے درمیان سے آہستہ اوپر کھینچیں۔ زمین کو چھوتے وقت نیچے اترنے کی شرح 200 fpm سے کم رکھنے کا ہدف رکھیں۔",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90919,6 +90934,18 @@
     "card_progress": "کارڈ {n} از {total}",
     "add_words": "مشق شروع کرنے کے لیے الفاظ شامل کریں۔",
     "round_complete": "راؤنڈ مکمل۔ نیا راؤنڈ شروع کریں یا نشان زدہ الفاظ دہرائیں۔",
-    "practice_label": "الفاظ کی مشق"
+    "practice_label": "الفاظ کی مشق",
+    "use_mine_help": "HTML فائل آپ کا فونٹ، متن کا سائز اور فاصلہ استعمال کرتی ہے۔",
+    "preparing_reading": "آپ کی پڑھنے کی ترتیبات شامل کی جا رہی ہیں…",
+    "font_not_embedded": "آپ کا فونٹ فائل میں شامل نہیں کیا جا سکا، اس لیے فائل سسٹم فونٹ استعمال کرتی ہے۔"
+  },
+  "reading_settings": {
+    "title": "پڑھنے کی ترتیبات",
+    "smaller": "چھوٹا متن",
+    "larger": "بڑا متن",
+    "overlay": "رنگ اوور لے",
+    "ruler": "ریڈنگ رولر",
+    "use_mine": "میری پڑھنے کی ترتیبات استعمال کریں",
+    "use_mine_help": "آپ کے فونٹ، متن کے سائز اور فاصلے کے ساتھ پرنٹ ہوتا ہے۔"
   }
 }

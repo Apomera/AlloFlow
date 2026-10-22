@@ -52662,6 +52662,15 @@
       "sr_critique_ready": "ግምገማው ዝግጁ ነው።"
     },
     "flightsim": {
+      "debrief_unavailable_title": "የተቀመጠው የበረራ ግምገማ አይገኝም",
+      "debrief_unavailable_body": "የቅርብ ጊዜው የበረራ ግምገማ ጠፍቷል ወይም ሊነበብ አይችልም። አዲስ በረራ ለመጀመር ወደ ምናሌው ይመለሱ።",
+      "guided_idea_before_trials": "ከሙከራዎቹ በፊት ተመዝግቧል",
+      "guided_idea_saved": "የተቀመጠ ሐሳብ",
+      "guided_idea_timing_unknown": "የዚህ የተቀመጠ ሐሳብ ጊዜ አልተመዘገበም።",
+      "guided_idea_latest": "የመጨረሻው የተቀመጠ ሐሳብ",
+      "guided_idea_latest_prediction": "የመጨረሻው የተቀመጠ ትንበያ፦ {prediction}",
+      "guided_idea_saved_prediction": "የተቀመጠ ትንበያ፦ {prediction}",
+      "milestone_stall_recovery": "በዚህ ቅጽበት ክንፉ ከስቶል ሁኔታ ወጥቷል። አንድ ምልከታ ብቻ ከስቶል የመውጣት ሁኔታው በቀጣይነት መቆየቱን አያረጋግጥም።",
       "game_controls": "🎮 የጨዋታ መቆጣጠሪያዎች",
       "from": "ከ",
       "learn": "ተማር",
@@ -52716,6 +52725,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ለመነሳት አፍንጫውን አንሳ — አፍንጫውን ወደ ላይ አንሳ (W)",
+      "hud_rotate_touch": "ለመነሳት አፍንጫውን አንሳ — ከመሃል ወደ ላይ ጎትት",
+      "hud_flare": "ለማረፍ አፍንጫውን አንሳ — በW አፍንጫውን ቀስ ብለህ አንሳ",
+      "hud_flare_touch": "ለማረፍ አፍንጫውን አንሳ — ከመሃል ወደ ላይ ጎትት",
+      "landing_touch_power": "የሞተር ኃይሉን ወደ ~30% ለመቀነስ በቀኝ ጠርዝ ወደ ታች ጎትት። ፍጥነቱ ይቀንሳል።",
+      "landing_touch_flare": "ከማኮብኮቢያ መንገዱ በትንሹ ከፍ ብለህ (~10 ft)፣ አፍንጫውን ለማንሳት ከመሃል ቀስ ብለህ ወደ ላይ ጎትት። መሬትን ስትነካ የመውረድ ፍጥነቱ ከ200 fpm በታች እንዲሆን አድርግ።",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91008,6 +91023,18 @@
     "card_progress": "ካርድ {n} ከ{total}",
     "add_words": "ልምምድ ለመጀመር ቃላት ያክሉ።",
     "round_complete": "ዙሩ ተጠናቋል። አዲስ ዙር ጀምር ወይም ምልክት ያደረግካቸውን ቃላት ከልስ።",
-    "practice_label": "የቃል ልምምድ"
+    "practice_label": "የቃል ልምምድ",
+    "use_mine_help": "የHTML ፋይሉ የመረጥከውን የፊደል ዓይነት፣ የጽሑፍ መጠን እና ክፍተት ይጠቀማል።",
+    "preparing_reading": "የንባብ ቅንብሮችህን በማከል ላይ…",
+    "font_not_embedded": "የፊደል ዓይነትህን ወደ ፋይሉ ማከል አልተቻለም፤ ስለዚህ ነባሪውን የፊደል ዓይነት ይጠቀማል።"
+  },
+  "reading_settings": {
+    "title": "የንባብ ቅንብሮች",
+    "smaller": "አነስ ያለ ጽሑፍ",
+    "larger": "ተለቅ ያለ ጽሑፍ",
+    "overlay": "የቀለም ሽፋን",
+    "ruler": "የንባብ ማስመሪያ",
+    "use_mine": "የንባብ ቅንብሮቼን ተጠቀም",
+    "use_mine_help": "በመረጥከው የፊደል ዓይነት፣ የጽሑፍ መጠን እና ክፍተት ያትማል።"
   }
 }

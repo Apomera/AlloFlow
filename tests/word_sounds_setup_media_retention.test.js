@@ -34,9 +34,9 @@ const back = section(host,'onBackToSetup: () => {','},').slice('onBackToSetup: '
 const Host = new Function('React','Generator', `
  const {useRef,useEffect}=React;
  const setTimeout=fn=>fn();
- return function Host({initialWords,draft={},approvedAudio,capture,callTTS,callImagen}) {
+ return function Host({initialWords,initialConfig={},draft={},approvedAudio,capture,callTTS,callImagen}) {
   const [wsPreloadedWords,setWords]=React.useState(initialWords);
-  const [generatedContent,setGeneratedContent]=React.useState({id:'pack-a',type:'word-sounds',data:initialWords});
+  const [generatedContent,setGeneratedContent]=React.useState({id:'pack-a',type:'word-sounds',data:initialWords,sessionConfig:initialConfig});
   const [history,setHistory]=React.useState([]), [activeView,setActiveView]=React.useState('word-sounds-generator');
   const [isWordSoundsMode,setIsWordSoundsMode]=React.useState(false);
   const [wsActivitySequence,setWsActivitySequence]=React.useState([]);
@@ -60,6 +60,7 @@ const Host = new Function('React','Generator', `
   return activeView==='word-sounds-generator'
     ? React.createElement(Generator,{key:wordSoundsSetupReviewSession.key,syllableReviewSession:wordSoundsSetupReviewSession,
        preloadedWords:wsPreloadedWords,glossaryTerms:[],isTeacherMode:true,isProbeMode,probeActivity,wordSoundsLanguage:'en',
+       preparedSessionConfig:generatedContent.sessionConfig||{},
        selectedVoice:'af_heart',gradeLevel:'K',t,onShowReview,onStartGame,callTTS,callImagen,onClose:()=>setActiveView('output')})
     : React.createElement('button',{onClick:onBackToSetup},'Back to Setup');
  };
@@ -167,6 +168,50 @@ describe('selected pack media survives complete preparation',()=>{
 });
 
 describe('authoring configuration follows the current resource',()=>{
+  it('keeps a complete large form and its config-only occurrence IDs, including a selected subset',async()=>{
+    const initialWords=Array.from({length:12},(_,index)=>({word:['cat','dog','sun','hat','map','bed','cup','pin','log','fan','bat','fox'][index],phonemes:['k','a','t'],
+      activityItems:{isolation:{position:index%3,correctSound:['k','a','t'][index%3],options:['k','a','t']}}}));
+    initialWords.splice(2,0,{...initialWords[0],activityItems:{isolation:{position:2,correctSound:'t',options:['t','a','k']}}});
+    const itemIds=initialWords.map((_,index)=>'authored-'+index);
+    await render({initialWords,initialConfig:{fixedForm:true,itemIds},draft:{includeGlossary:false,probeActivitySel:'isolation'}});
+    expect(container.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(13); // twelve words plus Assessment
+    await click(byText('Start Activity'));
+    expect(state.generatedContent.data).toHaveLength(13);
+    expect(state.generatedContent.sessionConfig.itemIds).toEqual(itemIds);
+    await click(byText('Back to Setup'));
+    await click(container.querySelector('button[aria-label="dog: selected"]'));
+    await click(byText('Start Activity'));
+    expect(state.generatedContent.sessionConfig.itemIds).toEqual(itemIds.filter(id=>id!=='authored-1'));
+    expect(state.generatedContent.data.filter(item=>item.word==='cat')).toHaveLength(2);
+  });
+
+  it('preserves repeated assessment occurrences, IDs and distinct boards through Back to Setup and Start',async()=>{
+    const initialWords=[
+      {id:'cat-first',word:'cat',phonemes:['k','a','t'],activityItems:{isolation:{position:0,correctSound:'k',options:['k','m','t']}}},
+      {id:'cat-final',word:'cat',phonemes:['k','a','t'],activityItems:{isolation:{position:2,correctSound:'t',options:['t','k','m']}}},
+      {id:'dog',word:'dog',phonemes:['d','o','g'],activityItems:{isolation:{position:1,correctSound:'o',options:['o','g','d']}}},
+    ];
+    const original=structuredClone(initialWords);
+    await render({initialWords,draft:{includeGlossary:false,sessionType:'assessment',probeActivitySel:'isolation'}});
+    await click(byText('Review Words'));await click(byText('Back to Setup'));
+    await click(byText('Start Activity'));
+    expect(state.generatedContent.data.map(item=>item.id)).toEqual(['cat-first','cat-final','dog']);
+    expect(state.generatedContent.data.map(item=>item.activityItems.isolation)).toEqual(original.map(item=>item.activityItems.isolation));
+    expect(state.generatedContent.sessionConfig).toMatchObject({fixedForm:true,sessionGoal:3,probeItemCount:3,itemIds:['cat-first','cat-final','dog']});
+    await click(byText('Back to Setup'));await click(byText('Start Activity'));
+    expect(state.generatedContent.data.map(item=>item.id)).toEqual(['cat-first','cat-final','dog']);
+    expect(initialWords).toEqual(original);
+  });
+
+  it('keeps ordinary practice vocabulary selection unique when its source has repeated targets',async()=>{
+    const initialWords=words();initialWords.push({...initialWords[0],id:'cat-repeat'});
+    await render({initialWords,draft:lessonDraft()});
+    expect(container.querySelectorAll('button[aria-label="cat: selected"]')).toHaveLength(1);
+    await click(byText('Start Activity'));
+    expect(state.generatedContent.data.map(item=>item.word)).toEqual(['cat','dog']);
+    expect(state.generatedContent.sessionConfig.fixedForm).toBe(false);
+  });
+
   it('preserves real control edits through Review and Back to Setup',async()=>{
     const draft={...lessonDraft(),orthoSessionGoal:7,aacDefaultOn:true,imageVisibilityMode:'off',probeStudent:'Learner A',
       imageTheme:'pencil',imageThemeMode:'override',selectedFamily:'at',selectedSightWordList:'first',

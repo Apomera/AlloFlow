@@ -54652,6 +54652,15 @@
       "sr_critique_ready": "Iudicium paratum est."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Recensio volatus servata praesto non est",
+      "debrief_unavailable_body": "Recensio volatus novissima deest aut legi non potest. Ad indicem redi ut novum volatum incipias.",
+      "guided_idea_before_trials": "Ante experimenta notata",
+      "guided_idea_saved": "Sententia servata",
+      "guided_idea_timing_unknown": "Tempus huius sententiae servatae non notatum est.",
+      "guided_idea_latest": "Sententia novissime servata",
+      "guided_idea_latest_prediction": "Praedictio novissime servata: {prediction}",
+      "guided_idea_saved_prediction": "Praedictio servata: {prediction}",
+      "milestone_stall_recovery": "Ala hoc momento vim sustentantem ob aeris separationem non iam amittit. Una observatio recuperationem diuturnam non demonstrat.",
       "game_controls": "🎮 MODERAMINA LUDI",
       "learn": "Disce",
       "the_science": "🔬 Scientia",
@@ -54700,6 +54709,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "PRORAM TOLLE — proram sursum inclina (W)",
+      "hud_rotate_touch": "PRORAM TOLLE — e medio sursum trahe",
+      "hud_flare": "DESCENSUM LENI — proram leniter tolle ope W",
+      "hud_flare_touch": "DESCENSUM LENI — e medio sursum trahe",
+      "landing_touch_power": "Per marginem dextrum deorsum trahe ut potentiam ad ~30% minuas. Celeritas decrescet.",
+      "landing_touch_flare": "Proxime supra pistam (~10 ft), e medio leniter sursum trahe ut proram tollas. Descensum minorem quam 200 fpm in contactu cum solo pete.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88482,6 +88497,18 @@
     "card_progress": "Schedula {n} ex {total}",
     "add_words": "Adde verba ut exercitationem incipias.",
     "round_complete": "Cursus perfectus est. Novum cursum incipite aut verba notata repetite.",
-    "practice_label": "Exercitatio verborum"
+    "practice_label": "Exercitatio verborum",
+    "use_mine_help": "Fasciculus HTML genus litterarum, magnitudinem textus et intervalla tua adhibet.",
+    "preparing_reading": "Optiones legendi tuae adduntur…",
+    "font_not_embedded": "Genus litterarum tuum fasciculo addi non potuit, itaque genus litterarum systematis adhibetur."
+  },
+  "reading_settings": {
+    "title": "Optiones legendi",
+    "smaller": "Textus minor",
+    "larger": "Textus maior",
+    "overlay": "Superpositio colorata",
+    "ruler": "Regula legendi",
+    "use_mine": "Optiones legendi meas adhibe",
+    "use_mine_help": "Imprimitur genere litterarum, magnitudine textus et intervallis tuis."
   }
 }

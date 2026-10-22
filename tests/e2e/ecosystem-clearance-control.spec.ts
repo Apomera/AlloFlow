@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_ecosystem.js', toolId: 'ecosystem', width: 1100, height: 900, appStyles: true });
-const reportDir = 'reports/ecosystem-clearance-control';
+const reportDir = process.env.ECOLOGY_REPORT_DIR || 'reports/ecosystem-clearance-control';
 test.describe.configure({ timeout: 300_000, retries: 0 });
 test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
@@ -45,6 +45,7 @@ async function choose(page: Page, id: string, sample: any) {
   const representative = meadow.getByLabel('Representative animal', { exact: true });
   if (!(await representative.count())) await meadow.getByRole('button', { name: 'Inspect selected group', exact: true }).click();
   if (await representative.isEnabled()) await representative.selectOption(String(sample.index));
+  await expect(meadow.locator('canvas')).toHaveAttribute('data-selected-species', id);
   await expect(meadow.locator('canvas')).toHaveAttribute('data-representative-index', String(sample.index));
   await expect(meadow.locator('canvas')).toHaveAttribute('data-step', String(sample.step));
 }
@@ -129,8 +130,8 @@ test('four shared sculpted paw variants preserve rendered sole support while rec
     expect(sample.art.tailYaw - sample.noTurn.tailYaw).toBeCloseTo(-balance * (id === 'foxes' ? .19 : .018), 12);
     if (id === 'foxes') { expect(sample.art.tailCurl - sample.noTurn.tailCurl).toBeCloseTo(-balance * .12, 12); expect(turn.tailHash).not.toBe(ground.tailHash); }
     await choose(page, id, targets[id].ground); await choose(page, id, targets[id].turn); expect(await pawRig(page, id)).toEqual(turn);
-    await choose(page, id, { branch: 'baseline', step: 0, index: 0 }); await page.emulateMedia({ reducedMotion: 'reduce' }); const frozen = await pawRig(page, id);
-    expect(frozen.art.turnBalance).toBe(0); await timeline.fill('160'); expect(await pawRig(page, id)).toEqual(frozen); await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose'); await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await choose(page, id, { branch: 'baseline', step: 0, index: 0 }); await page.emulateMedia({ reducedMotion: 'reduce' }); await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose'); const frozen = await pawRig(page, id);
+    expect(frozen.art.turnBalance).toBe(0); await timeline.fill('160'); expect(await pawRig(page, id)).toEqual(frozen); await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose'); await page.emulateMedia({ reducedMotion: 'no-preference' }); await expect(canvas).not.toHaveAttribute('data-behavior', 'Starting pose');
   }
   expect(variantHashes.size).toBe(4);
 });

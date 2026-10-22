@@ -1,0 +1,293 @@
+{
+  "sourceHash": "ff64c32240de2ba19e88a2395bdebf668a46a317d4951022727fe6b842e0e59c",
+  "species": {
+    "parasaurolophus": {
+      "head": [
+        -2.85,
+        2.5296000000000003,
+        0
+      ],
+      "snout": [
+        -3.5625,
+        2.4496,
+        0
+      ],
+      "skin": {
+        "position": [
+          -2.440816769156452,
+          2.268331695586511,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "3b911077247e81a8bf451b0d9c79402a285fa121740b42a5c9c9975b8c6553b2",
+        "indices": "1121198b6c4913cb6b44e4fe7f0a165a11df100a921923298cc1fda247f0bb53"
+      },
+      "life": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "2013db2901020b097a93abeb681b45e2ca018eea226c3722109340a9a07cf4d5",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      },
+      "bone": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "c70e7cddb3c0beca35a8d6a59979b8876ec9da83abbc31d500f1a52a6d8795ef",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      }
+    },
+    "corythosaurus": {
+      "head": [
+        -2.6999999999999997,
+        2.2134000000000005,
+        0
+      ],
+      "snout": [
+        -3.3749999999999996,
+        2.1434000000000006,
+        0
+      ],
+      "skin": {
+        "position": [
+          -2.313222963261589,
+          1.9854619450874174,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "f1296746ee541cd56a2497df2053dfbb25dda03edb96e1dac40f35f7276e9da9",
+        "indices": "1121198b6c4913cb6b44e4fe7f0a165a11df100a921923298cc1fda247f0bb53"
+      },
+      "life": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "3a522857011a5a40d8ab98e51cda6a866cf1faea26c2786f5bfe407c8e616472",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      },
+      "bone": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "e5947996fe5a21a2c8eaf11c220921b9efad60b53200400099e76e57c99e4b9d",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      }
+    },
+    "lambeosaurus": {
+      "head": [
+        -2.6999999999999997,
+        2.2134000000000005,
+        0
+      ],
+      "snout": [
+        -3.3749999999999996,
+        2.1434000000000006,
+        0
+      ],
+      "skin": {
+        "position": [
+          -2.313222963261589,
+          1.9854619450874174,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "f1296746ee541cd56a2497df2053dfbb25dda03edb96e1dac40f35f7276e9da9",
+        "indices": "1121198b6c4913cb6b44e4fe7f0a165a11df100a921923298cc1fda247f0bb53"
+      },
+      "life": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "9ed9d2a324f5544dd86c0cb9e23111236958e24ce377172945bb1c2b42be0c60",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      },
+      "bone": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "796d5f5d9b01254eba02b480eaad1768412eb2ba176d96a03359dcdf72b0753a",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      }
+    },
+    "olorotitan": {
+      "head": [
+        -2.4,
+        1.8972000000000002,
+        0
+      ],
+      "snout": [
+        -3,
+        1.8372000000000002,
+        0
+      ],
+      "skin": {
+        "position": [
+          -2.0565437392180135,
+          1.7020817285043393,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "f8528d1b6f7ddd560051acc11e334c931f75adf6e0d9b535337296792356a9ef",
+        "indices": "1121198b6c4913cb6b44e4fe7f0a165a11df100a921923298cc1fda247f0bb53"
+      },
+      "life": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "dc37fd0cd0b1917107f56b93103687d87f1d2cf3b97d02ddeb02b52c1900ee4c",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      },
+      "bone": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "positions": "079f63780d95b7b39a7b6b10da6e088c49e41bccf6d426fb3337a5103e9fd6a1",
+        "indices": "22038d0e0aef814c7bd4bcadf00dc4209945cf01a7b37d50a98e7b9d1ee13bc7"
+      }
+    }
+  }
+}

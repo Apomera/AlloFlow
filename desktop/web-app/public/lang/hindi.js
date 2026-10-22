@@ -54728,6 +54728,15 @@
       "sr_critique_ready": "समीक्षा तैयार है।"
     },
     "flightsim": {
+      "debrief_unavailable_title": "सहेजी गई उड़ान समीक्षा उपलब्ध नहीं है",
+      "debrief_unavailable_body": "सबसे हाल की उड़ान समीक्षा मौजूद नहीं है या पढ़ी नहीं जा सकती। नई उड़ान शुरू करने के लिए मेन्यू पर लौटें।",
+      "guided_idea_before_trials": "परीक्षणों से पहले दर्ज",
+      "guided_idea_saved": "सहेजा गया विचार",
+      "guided_idea_timing_unknown": "इस सहेजे गए विचार का समय दर्ज नहीं किया गया था।",
+      "guided_idea_latest": "सबसे हाल में सहेजा गया विचार",
+      "guided_idea_latest_prediction": "सबसे हाल में सहेजा गया पूर्वानुमान: {prediction}",
+      "guided_idea_saved_prediction": "सहेजा गया पूर्वानुमान: {prediction}",
+      "milestone_stall_recovery": "इस क्षण पंख अब स्टॉल की स्थिति में नहीं है। एक अवलोकन से यह साबित नहीं होता कि स्टॉल से बाहर आने की स्थिति लगातार बनी रही है।",
       "game_controls": "🎮 गेम नियंत्रण",
       "cancel": "रद्द करें",
       "from": "से",
@@ -54782,6 +54791,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "उड़ान के लिए नाक उठाएँ — नाक ऊपर करें (W)",
+      "hud_rotate_touch": "उड़ान के लिए नाक उठाएँ — बीच से ऊपर खींचें",
+      "hud_flare": "उतरते समय नाक उठाएँ — W से नाक धीरे उठाएँ",
+      "hud_flare_touch": "उतरते समय नाक उठाएँ — बीच से ऊपर खींचें",
+      "landing_touch_power": "इंजन की शक्ति ~30% तक घटाने के लिए दाएँ किनारे पर नीचे खींचें। गति कम होगी।",
+      "landing_touch_flare": "रनवे से थोड़ा ऊपर (~10 ft), नाक उठाने के लिए बीच से धीरे ऊपर खींचें। ज़मीन छूते समय नीचे उतरने की दर 200 fpm से कम रखने का लक्ष्य रखें।",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90820,6 +90835,18 @@
     "card_progress": "{total} में से कार्ड {n}",
     "add_words": "अभ्यास शुरू करने के लिए शब्द जोड़ें।",
     "round_complete": "राउंड पूरा हुआ। नया राउंड शुरू करो या चिह्नित शब्दों को दोहराओ।",
-    "practice_label": "शब्द अभ्यास"
+    "practice_label": "शब्द अभ्यास",
+    "use_mine_help": "HTML फ़ाइल आपके फ़ॉन्ट, टेक्स्ट के आकार और अंतराल का उपयोग करती है।",
+    "preparing_reading": "आपकी पढ़ने की सेटिंग्स जोड़ी जा रही हैं…",
+    "font_not_embedded": "आपका फ़ॉन्ट फ़ाइल में नहीं जोड़ा जा सका, इसलिए फ़ाइल सिस्टम फ़ॉन्ट का उपयोग करती है।"
+  },
+  "reading_settings": {
+    "title": "पढ़ने की सेटिंग्स",
+    "smaller": "छोटा टेक्स्ट",
+    "larger": "बड़ा टेक्स्ट",
+    "overlay": "रंग ओवरले",
+    "ruler": "रीडिंग रूलर",
+    "use_mine": "मेरी पढ़ने की सेटिंग्स का उपयोग करें",
+    "use_mine_help": "आपके फ़ॉन्ट, टेक्स्ट के आकार और अंतराल के साथ प्रिंट होता है।"
   }
 }

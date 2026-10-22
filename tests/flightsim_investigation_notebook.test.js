@@ -102,7 +102,10 @@ describe('SkySchool investigation notebook', () => {
     await mount({ prediction: 'angle', attempts: [completeRecord({ hypothesis: 'Older idea' }), completeRecord({ hypothesis: 'Most recent idea' })] });
     const region = notebook();
     expect(region.querySelector('select').value).toBe('1');
-    expect(region.textContent).toContain('Earlier starting prediction: Airspeed. Current starting prediction: Angle of attack.');
+    expect(region.textContent).toContain('Earlier: Saved idea');
+    expect(region.textContent).toContain('Saved prediction: Airspeed');
+    expect(region.textContent).toContain('The timing of this saved idea was not recorded.');
+    expect(region.textContent).not.toContain('starting prediction:');
     expect(region.textContent).toContain('Most recent idea');
     expect(region.textContent).not.toContain('Older idea');
     expect(region.textContent).toContain('Completion recorded:');
@@ -216,11 +219,17 @@ describe('SkySchool investigation notebook', () => {
   });
 
   it('shows a past flight status as a saved record without offering to resume it', async () => {
-    await mount({ attempts: [completeRecord({ flight: { status: 'active', sawStall: true, recoverySeconds: 2, samples: [{ time: 1, aoa: 20, airspeed: 100, altitude: 5000 }] } })] });
+    const awardXP = vi.fn(), celebrate = vi.fn();
+    await mount({ attempts: [completeRecord({ flight: { status: 'active', sawStall: true, recoverySeconds: 2, samples: [{ time: 1, aoa: 20, airspeed: 100, altitude: 5000 }] } })] }, {}, { awardXP, celebrate });
+    const saved = JSON.stringify(record());
     expect(notebook().textContent).toContain('Optional flight status at save: active. Earlier flights cannot be resumed.');
-    expect(notebook().querySelector('button')).toBeNull();
+    expect(notebook().querySelector('#stall-earlier-practice-observation')).toBeTruthy();
+    expect([...notebook().querySelectorAll('button')].some(element => /resume|replay|try flight|start flight/i.test(element.textContent))).toBe(false);
+    await act(async () => notebook().querySelector('[data-stall-practice-jump="stall"]').click());
+    expect(JSON.stringify(record())).toBe(saved);
     expect(latest.view).toBe('stallHunt');
     expect(window.__testHooks.flightSim.flyingRef.current).toBe(false);
+    expect(awardXP).not.toHaveBeenCalled(); expect(celebrate).not.toHaveBeenCalled();
   });
 
   it('uses translated notebook labels without changing stored prediction identifiers', async () => {
@@ -233,7 +242,8 @@ describe('SkySchool investigation notebook', () => {
     })[key] || fallback || key });
     const region = host.querySelector('section[aria-label="Versuchsnotizbuch"]');
     expect(region.querySelector('label').textContent).toBe('Früherer Versuch');
-    expect(region.textContent).toContain('Earlier starting prediction: Geschwindigkeit. Current starting prediction: Anstellwinkel.');
+    expect(region.textContent).toContain('Saved prediction: Geschwindigkeit');
+    expect(region.textContent).not.toContain('starting prediction:');
     expect(record()).toEqual(active);
   });
 });

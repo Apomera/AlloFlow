@@ -56000,6 +56000,15 @@
       "sr_critique_ready": "Разбор готов."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Сохранённый разбор полёта недоступен",
+      "debrief_unavailable_body": "Последний разбор полёта отсутствует или не читается. Вернитесь в меню, чтобы начать новый полёт.",
+      "guided_idea_before_trials": "Записано до испытаний",
+      "guided_idea_saved": "Сохранённая идея",
+      "guided_idea_timing_unknown": "Время записи этой сохранённой идеи не было зафиксировано.",
+      "guided_idea_latest": "Последняя сохранённая идея",
+      "guided_idea_latest_prediction": "Последний сохранённый прогноз: {prediction}",
+      "guided_idea_saved_prediction": "Сохранённый прогноз: {prediction}",
+      "milestone_stall_recovery": "В этот момент крыло больше не находится в срыве потока. Одно наблюдение не подтверждает устойчивое восстановление.",
       "game_controls": "🎮 УПРАВЛЕНИЕ ИГРОЙ",
       "cancel": "Отмена",
       "formula": "Формула",
@@ -56052,6 +56061,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ПОДЪЁМ НОСА — поднимите нос (W)",
+      "hud_rotate_touch": "ПОДЪЁМ НОСА — ведите вверх от центра",
+      "hud_flare": "ВЫРАВНИВАНИЕ — плавно поднимите нос клавишей W",
+      "hud_flare_touch": "ВЫРАВНИВАНИЕ — ведите вверх от центра",
+      "landing_touch_power": "Ведите палец вниз вдоль правого края, чтобы уменьшить мощность до ~30%. Скорость снизится.",
+      "landing_touch_flare": "Прямо над полосой (~10 ft) плавно ведите палец вверх от центра, чтобы поднять нос. Стремитесь к снижению менее 200 fpm при касании.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92093,6 +92108,18 @@
     "card_progress": "Карточка {n} из {total}",
     "add_words": "Добавьте слова, чтобы начать упражнение.",
     "round_complete": "Раунд завершён. Начните новый раунд или повторите отмеченные слова.",
-    "practice_label": "Упражнение со словами"
+    "practice_label": "Упражнение со словами",
+    "use_mine_help": "HTML-файл использует выбранный шрифт, размер текста и интервалы.",
+    "preparing_reading": "Добавляем настройки чтения…",
+    "font_not_embedded": "Не удалось добавить выбранный шрифт в файл, поэтому используется системный шрифт."
+  },
+  "reading_settings": {
+    "title": "Настройки чтения",
+    "smaller": "Уменьшить текст",
+    "larger": "Увеличить текст",
+    "overlay": "Цветовое наложение",
+    "ruler": "Линейка чтения",
+    "use_mine": "Использовать мои настройки чтения",
+    "use_mine_help": "Печать с выбранным шрифтом, размером текста и интервалами."
   }
 }

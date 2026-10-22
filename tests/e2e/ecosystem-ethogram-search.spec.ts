@@ -167,6 +167,7 @@ test('real head and cupped ear meshes keep their anatomical geometry while eyes 
       await stage.screenshot({ path: `${reportDir}/rabbit-chewing-graze.jpg`, type: 'jpeg', quality: 92 });
     }
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose');
     const reduced = await readHead(page, id);
     expect(reduced.eyeOpen).toEqual([1, 1]);
     expect(reduced.lidOpening).toBe(1);
@@ -174,6 +175,7 @@ test('real head and cupped ear meshes keep their anatomical geometry while eyes 
     await timeline.fill('160');
     expect(await readHead(page, id)).toEqual(reduced);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(canvas).not.toHaveAttribute('data-behavior', 'Starting pose');
   }
   expect(targets.stationary, 'the recording includes a fully stationary resting animal').toBeTruthy();
   expect(targets.stationary.variation, 'recorded time continues blinking during a stationary rest').toBeGreaterThan(.15);

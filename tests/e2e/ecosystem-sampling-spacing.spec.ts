@@ -68,10 +68,18 @@ async function limbRig(page: Page, id: string) {
     if (animals.length !== 1) throw new Error(`Expected one isolated ${id} skin, found ${animals.length}`);
     const animal = animals[0], d = animal.userData, skin = d.limbSkin, attr = skin.geometry.getAttribute('position'), normals = skin.geometry.getAttribute('normal');
     const layout = skin.geometry.userData.limbLayout, joints = JSON.parse(skin.userData.lastFit);
-    let maxError = 0, invalidNormals = 0, invalidPositions = 0, seamError = 0;
+    const torsoMatrix = new T.Matrix4().multiplyMatrices(d.torso.parent.matrix, d.torso.matrix), origin = id === 'foxes' ? [-.10, .49, 0] : [-.12, .335, 0];
+    torsoMatrix.multiply(new T.Matrix4().makeTranslation(-origin[0], -origin[1], 0));
+    let maxError = 0, distalError = 0, invalidNormals = 0, invalidPositions = 0, seamError = 0;
     const endpoints = layout.map((part: any, k: number) => {
       const fitted = api.mammalLimbFit(id, part.hind, joints[k]);
-      const positions = fitted.positions || fitted;
+      const positions = fitted.positions || fitted, original = positions.slice();
+      api.mammalLimbAttachment(id, part.hind, joints[k], torsoMatrix.elements, positions, 0, part.side);
+      for (let v = 5 * 13; v < 221; v++) for (let axis = 0; axis < 3; axis++) distalError = Math.max(distalError, Math.abs(attr.array[(part.start + v) * 3 + axis] - original[v * 3 + axis]));
+      const socket = positions.slice(221 * 3, 222 * 3);
+      let ikHip;
+      if (id === 'foxes') ikHip = new T.Vector3().setFromMatrixPosition(d.legs[k].userData.rig.upper.matrixWorld).applyMatrix4(new T.Matrix4().copy(d.body.matrixWorld).invert()).toArray();
+      else { const bone = new T.Matrix4(); d.rabbitLimbs.getMatrixAt(k * 2, bone); const m = bone.elements, length = Math.hypot(m[4], m[5], m[6]), scale = 1 - .012 / length; ikHip = [m[12] - m[4] * scale, m[13] - m[5] * scale, m[14] - m[6] * scale]; }
       for (let v = 0; v < part.count; v++) for (let axis = 0; axis < 3; axis++) maxError = Math.max(maxError, Math.abs(attr.array[(part.start + v) * 3 + axis] - positions[v * 3 + axis]));
       const hip = new T.Vector3().fromBufferAttribute(attr, part.hipVertex).toArray(), paw = new T.Vector3().fromBufferAttribute(attr, part.pawVertex).toArray(), knee = [0, 0, 0];
       for (let side = 0; side < 12; side++) for (let axis = 0; axis < 3; axis++) knee[axis] += attr.array[(part.start + 8 * 13 + side) * 3 + axis] / 12;
@@ -79,7 +87,7 @@ async function limbRig(page: Page, id: string) {
         const first = part.start + ring * 13, last = first + 12;
         for (let axis = 0; axis < 3; axis++) seamError = Math.max(seamError, Math.abs(normals.array[first * 3 + axis] - normals.array[last * 3 + axis]));
       }
-      return { ...part, hip, knee, paw, target: joints[k] };
+      return { ...part, hip, socket, ikHip, knee, paw, target: joints[k] };
     });
     for (let k = 0; k < attr.count; k++) {
       if (![attr.getX(k), attr.getY(k), attr.getZ(k)].every(Number.isFinite)) invalidPositions++;
@@ -92,7 +100,7 @@ async function limbRig(page: Page, id: string) {
       return { center: center.toArray(), gap: center.y - Math.hypot(m[1], m[5], m[9]) - api.groundHeight(center.x, center.z) };
     });
     const base = d.torso.userData.baseScale;
-    return { name: skin.name, vertices: attr.count, triangles: skin.geometry.index.count / 3, layout, endpoints, maxError, invalidPositions, invalidNormals, seamError, feet, bodyScale: d.body.scale.toArray(), ribScaleY: d.torso.scale.y / base.y, ribScaleZ: d.torso.scale.z / base.z, ribRoll: d.mammalParts.back.rotation.x, positions: Array.from(attr.array), oldRabbitLimbsVisible: id === 'rabbits' ? d.rabbitLimbs?.visible : null };
+    return { name: skin.name, vertices: attr.count, triangles: skin.geometry.index.count / 3, layout, endpoints, maxError, distalError, invalidPositions, invalidNormals, seamError, feet, bodyScale: d.body.scale.toArray(), ribScaleY: d.torso.scale.y / base.y, ribScaleZ: d.torso.scale.z / base.z, ribRoll: d.mammalParts.back.rotation.x, positions: Array.from(attr.array), oldRabbitLimbsVisible: id === 'rabbits' ? d.rabbitLimbs?.visible : null };
   }, id);
 }
 
@@ -136,12 +144,14 @@ test('continuous muscle skins follow four actual joint chains and planted soles 
       expect(actual.triangles).toBe(1632);
       expect(actual.layout).toHaveLength(4);
       expect(actual.maxError).toBeLessThan(2e-6);
+      expect(actual.distalError).toBeLessThan(2e-6);
       expect(actual.invalidPositions).toBe(0);
       expect(actual.invalidNormals).toBe(0);
       expect(actual.seamError).toBeLessThan(1e-5);
       for (const limb of actual.endpoints) {
         expect(limb.count).toBe(223);
-        for (const part of ['hip', 'knee', 'paw'] as const) for (let axis = 0; axis < 3; axis++) expect(limb[part][axis]).toBeCloseTo(limb.target[part][axis], 5);
+        for (const part of ['knee', 'paw'] as const) for (let axis = 0; axis < 3; axis++) expect(limb[part][axis]).toBeCloseTo(limb.target[part][axis], 5);
+        for (let axis = 0; axis < 3; axis++) { expect(limb.ikHip[axis]).toBeCloseTo(limb.target.hip[axis], 5); expect(limb.hip[axis]).toBeCloseTo(limb.socket[axis], 5); }
       }
       expect(actual.ribScaleY).toBeCloseTo(sample.art.ribScaleY, 10);
       expect(actual.ribScaleZ).toBeCloseTo(sample.art.ribScaleZ, 10);
@@ -161,6 +171,7 @@ test('continuous muscle skins follow four actual joint chains and planted soles 
     // sample may legitimately remove a higher numbered representative.
     await chooseMammal(page, id, { branch: 'baseline', step: 0, index: 0 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose');
     const frozen = await limbRig(page, id);
     expect(frozen.ribScaleY).toBeCloseTo(1, 10);
     expect(frozen.ribScaleZ).toBeCloseTo(1, 10);
@@ -168,6 +179,7 @@ test('continuous muscle skins follow four actual joint chains and planted soles 
     await timeline.fill('160');
     expectSameRig(await limbRig(page, id), frozen);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect(canvas).not.toHaveAttribute('data-behavior', 'Starting pose');
   }
   expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.ecosystem.foodWeb.run))).toBe(run.run);
 });
@@ -216,6 +228,7 @@ test('feeding neighbors produce a real same-species spacing encounter with disti
   await stage.screenshot({ path: `${reportDir}/feeding-neighbors-spacing.jpg`, type: 'jpeg', quality: 92 });
   const lab = fieldwork.locator('[data-efw-pair-lab]');
   await lab.locator('summary').click();
+  await expect(canvas).toHaveAttribute('data-field-ruler', 'true');
   for (let k = 0; k < 3; k++) {
     await lab.getByLabel('Pair measurement time', { exact: true }).fill(String(recorded.steps[k]));
     await expect(timeline).toHaveValue(String(recorded.steps[k]));

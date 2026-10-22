@@ -49880,6 +49880,15 @@
       "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
     },
     "flightsim": {
+      "debrief_unavailable_title": "Saved flight review unavailable",
+      "debrief_unavailable_body": "The latest flight review is missing or cannot be read. Return to the menu to start a fresh flight.",
+      "guided_idea_before_trials": "Recorded before the trials",
+      "guided_idea_saved": "Saved idea",
+      "guided_idea_timing_unknown": "The timing of this saved idea was not recorded.",
+      "guided_idea_latest": "Latest saved idea",
+      "guided_idea_latest_prediction": "Latest saved prediction: {prediction}",
+      "guided_idea_saved_prediction": "Saved prediction: {prediction}",
+      "milestone_stall_recovery": "The wing is no longer stalled at this moment. A single observation does not establish sustained recovery.",
       "from": "In",
       "quiz": "Biahalnak",
       "the_science": "🔬 Science",
@@ -49918,6 +49927,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTATE — pitch up (W)",
+      "hud_rotate_touch": "ROTATE — drag up from center",
+      "hud_flare": "FLARE — ease back on W",
+      "hud_flare_touch": "FLARE — drag up from center",
+      "landing_touch_power": "Drag down along the right edge to reduce power to ~30%. Speed will decrease.",
+      "landing_touch_flare": "Just above the runway (~10 ft), drag gently up from center to raise the nose. Target less than 200 fpm at touchdown.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -86748,6 +86763,18 @@
     "card_progress": "Card {total} chung ah {n}",
     "add_words": "Hmanhthlak thawk dingah biafang chap.",
     "round_complete": "Voi a dih. Voi thar thawk asiloah na hmelchunhmi biafang hna zohkhenh.",
-    "practice_label": "Biafang hmanhthlak"
+    "practice_label": "Biafang hmanhthlak",
+    "use_mine_help": "HTML file nih na font, cafang ngandang le karlak a hman.",
+    "preparing_reading": "Na relnak settings telh lio…",
+    "font_not_embedded": "Na font cu file ah telh khawh a si lo. File nih system font a hman."
+  },
+  "reading_settings": {
+    "title": "Relnak settings",
+    "smaller": "Cafang a tete in ser",
+    "larger": "Cafang a nganpi in ser",
+    "overlay": "Rong overlay",
+    "ruler": "Relnak ruler",
+    "use_mine": "Ka relnak settings hman",
+    "use_mine_help": "Na font, cafang ngandang le karlak hman in a print."
   }
 }

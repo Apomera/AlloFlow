@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_ecosystem.js', toolId: 'ecosystem', width: 1100, height: 900, appStyles: true });
-const reportDir = 'reports/ecosystem-footfall-recovery';
+const reportDir = process.env.ECOLOGY_REPORT_DIR || 'reports/ecosystem-footfall-recovery';
 const paws = ['Left hind', 'Left fore', 'Right hind', 'Right fore'];
 test.describe.configure({ timeout: 300_000, retries: 0 });
 test.beforeAll(async () => harness.start());
@@ -159,7 +159,7 @@ test('recorded blinks close fitted eyelids over unchanged eyeballs while each co
     expect(states.closed.lids.hash).not.toBe(states.open.lids.hash);
     await choose(page, id, targets[id].closed); await meadow.getByRole('button', { name: 'Face view', exact: true }).click(); expect(await anatomy(page, id)).toEqual(states.closed);
     await choose(page, id, { branch: 'baseline', step: 0, index: 0 });
-    await page.emulateMedia({ reducedMotion: 'reduce' }); const frozen = await anatomy(page, id);
+    await page.emulateMedia({ reducedMotion: 'reduce' }); await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose'); const frozen = await anatomy(page, id);
     expect(frozen.lids.opening).toBe(1);
     await timeline.fill('160'); expect(await anatomy(page, id)).toEqual(frozen);
     await expect(canvas).toHaveAttribute('data-behavior', 'Starting pose');
@@ -288,11 +288,12 @@ test('twelve explicit contact codes require all three actual inspections and pre
     }
     await test.info().attach(`${id}-recorded-sole-gaps`, { body: JSON.stringify(soleEvidence), contentType: 'application/json' });
     await strip.getByRole('button', { name: 'Check my footfall strip', exact: true }).click();
-    await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('0 of 12 contact marks match');
+    await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('0 matching and 12 differing definite marks; 0 uncertain.');
     await setGrid(page, grid); await expect(strip.locator('[data-efw-footfall-feedback]')).toHaveCount(0);
     await strip.getByLabel('Footfall support prediction', { exact: true }).selectOption(prediction);
     await strip.getByRole('button', { name: 'Check revised footfall strip', exact: true }).click();
-    await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('12 of 12 contact marks match the recorded rig. First submission: 0 of 12.');
+    await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('12 matching and 0 differing definite marks; 0 uncertain.');
+    await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('First submission: 0 matching and 12 differing definite marks; 0 uncertain.');
     await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('Your current support prediction matches these checkpoints.');
     await expect(strip).toContainText('Three sparse checkpoints do not measure the duration of contact or prove continuous flight between samples.');
     await expect(strip.locator('[data-efw-footfall-map] circle')).toHaveCount(expected.plan.samples[2].supportCount + 1);
@@ -301,7 +302,8 @@ test('twelve explicit contact codes require all three actual inspections and pre
     await sequence.getByLabel('Movement evidence reflection', { exact: true }).fill(movementReflection);
     await sequence.getByRole('button', { name: 'Save movement observation', exact: true }).click();
     const note = await page.evaluate(() => (window as any).__toolData.ecosystem.foodWeb.notebook.at(-1));
-    expect(note.movement.footfall).toMatchObject({ version: 1, studyId: expected.movement.id, samples: expected.plan.samples, grid, firstGrid, prediction, firstPrediction: prediction === 'clear' ? 'supported' : 'clear', reflection });
+    expect(note.movement.footfall).toMatchObject({ version: 2, branch: 'baseline', species: id, index: expected.movement.index, studyId: expected.movement.id, samples: expected.plan.samples, grid, firstGrid, prediction, firstPrediction: prediction === 'clear' ? 'supported' : 'clear', reflection });
+    expect(JSON.parse(note.movement.footfall.sampleKey)).toEqual({ branch: 'baseline', species: id, index: expected.movement.index, studyId: expected.movement.id, samples: expected.plan.samples });
     expect(note.movement.order).toEqual([1, 0, 2]); expect(note.movement.latestOrder).toEqual([0, 1, 2]); expect(note.movement.reflection).toBe(movementReflection); expect(note.movement.runPrediction).toBe(ecologicalPrediction);
     await strip.screenshot({ path: `${reportDir}/${id}-footfall-strip.jpg`, type: 'jpeg', quality: 92 });
     if (id === 'rabbits') { rabbit = { ...expected, note }; savedJSON = JSON.stringify(note); }
@@ -329,7 +331,8 @@ test('twelve explicit contact codes require all three actual inspections and pre
   await expect(meadow.getByLabel('Meadow scene data', { exact: true })).toHaveValue('baseline');
   await expect(canvas).toHaveAttribute('data-selected-species', 'rabbits'); await expect(canvas).toHaveAttribute('data-representative-index', String(rabbit.movement.index));
   await expect(strip).toHaveAttribute('open', '');
-  await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('12 of 12 contact marks match the recorded rig. First submission: 0 of 12.');
+  await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('12 matching and 0 differing definite marks; 0 uncertain.');
+  await expect(strip.locator('[data-efw-footfall-feedback]')).toContainText('First submission: 0 matching and 12 differing definite marks; 0 uncertain.');
   await expect(strip.getByLabel('Footfall evidence reflection', { exact: true })).toHaveValue(rabbit.note.movement.footfall.reflection);
   const reopenedSequence = study.locator('[data-efw-motion-sequence]');
   for (let k = 0; k < 3; k++) await expect(reopenedSequence.getByLabel(['First', 'Middle', 'Last'][k] + ' movement snapshot', { exact: true })).toHaveValue(String(k));

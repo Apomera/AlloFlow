@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { Blob as NodeBlob } from 'node:buffer';
+import { loadWordSoundsDeliveryHydrator } from './helpers/word_sounds_delivery_host_harness.js';
 
 const read = path => readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 const live = read('live_aac_source.jsx');
@@ -120,6 +121,7 @@ function studentRestore(win) {
     setWordSoundsActivity: value => { state.activity = value; },
     setIsWordSoundsMode: value => { state.open = value; },
   }, { get(target, key) { return key in target ? target[key] : vi.fn(); } });
+  deps.hydrateWordSoundsFromSync = loadWordSoundsDeliveryHydrator(deps);
   const restore = new Function('window', `${between(misc, 'function handleRestoreView(', 'const detectClimaxArchetype =')}\nreturn handleRestoreView;`)(win);
   return { state, open: item => restore(item, { suppressLiveFollow: true }, deps) };
 }
@@ -419,11 +421,11 @@ describe('real project backup Blob and FileReader import route', () => {
     expect(student.state.sequence).toEqual(original.lessonPlanSequence);
     expect(student.state.activity).toBe('blending');
     expect(student.state.open).toBe(true);
-    expect(student.state.words).toEqual(prepared.data);
+    expect(student.state.words).toEqual(prepared.data.map(word => ({ ...word, _audioRequested: false })));
     expect(prepared.progress).toEqual(original.progress);
     student.open(prepared);
     await vi.runAllTimersAsync();
-    expect(student.state.words).toEqual(prepared.data);
+    expect(student.state.words).toEqual(prepared.data.map(word => ({ ...word, _audioRequested: false })));
     expect(prepared.progress).toEqual(original.progress);
   });
   it('retains the audio in the legacy wsPreloadedWords array that the real student opener consumes', async () => {

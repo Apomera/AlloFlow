@@ -51172,6 +51172,15 @@
       "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
     },
     "flightsim": {
+      "debrief_unavailable_title": "Saved flight review unavailable",
+      "debrief_unavailable_body": "The latest flight review is missing or cannot be read. Return to the menu to start a fresh flight.",
+      "guided_idea_before_trials": "Recorded before the trials",
+      "guided_idea_saved": "Saved idea",
+      "guided_idea_timing_unknown": "The timing of this saved idea was not recorded.",
+      "guided_idea_latest": "Latest saved idea",
+      "guided_idea_latest_prediction": "Latest saved prediction: {prediction}",
+      "guided_idea_saved_prediction": "Saved prediction: {prediction}",
+      "milestone_stall_recovery": "The wing is no longer stalled at this moment. A single observation does not establish sustained recovery.",
       "quiz": "Su'aalo",
       "the_science": "🔬 Sayniska",
       "the_science_2": "🔬 Sayniska",
@@ -51213,6 +51222,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTATE — pitch up (W)",
+      "hud_rotate_touch": "ROTATE — drag up from center",
+      "hud_flare": "FLARE — ease back on W",
+      "hud_flare_touch": "FLARE — drag up from center",
+      "landing_touch_power": "Drag down along the right edge to reduce power to ~30%. Speed will decrease.",
+      "landing_touch_flare": "Just above the runway (~10 ft), drag gently up from center to raise the nose. Target less than 200 fpm at touchdown.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88039,6 +88054,18 @@
     "card_progress": "Kaar {n} ka mid ah {total}",
     "add_words": "Ku dar erayo si aad u bilowdo tababarka.",
     "round_complete": "Wareeggu waa dhammaaday. Bilow wareeg cusub ama dib u eeg erayada aad calaamadeysay.",
-    "practice_label": "Tababarka erayada"
+    "practice_label": "Tababarka erayada",
+    "use_mine_help": "Faylka HTML wuxuu isticmaalaa farta, cabbirka qoraalka iyo kala-fogaanshaha aad dooratay.",
+    "preparing_reading": "Habaynta akhriskaaga waa lagu darayaa…",
+    "font_not_embedded": "Fartaada laguma dari karin faylka, sidaa darteed wuxuu isticmaalaa farta asalka ah."
+  },
+  "reading_settings": {
+    "title": "Habaynta akhriska",
+    "smaller": "Qoraal ka yar",
+    "larger": "Qoraal ka weyn",
+    "overlay": "Daboolka midabka",
+    "ruler": "Mastarada akhriska",
+    "use_mine": "Isticmaal habaynta akhriskayga",
+    "use_mine_help": "Waxaa lagu daabacaa farta, cabbirka qoraalka iyo kala-fogaanshaha aad dooratay."
   }
 }

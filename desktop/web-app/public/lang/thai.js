@@ -55999,6 +55999,15 @@
       "sr_critique_ready": "คำวิจารณ์พร้อมแล้ว"
     },
     "flightsim": {
+      "debrief_unavailable_title": "ไม่สามารถดูการทบทวนการบินที่บันทึกไว้ได้",
+      "debrief_unavailable_body": "การทบทวนการบินล่าสุดหายไปหรือไม่สามารถอ่านได้ กลับไปที่เมนูเพื่อเริ่มเที่ยวบินใหม่",
+      "guided_idea_before_trials": "บันทึกก่อนการทดลอง",
+      "guided_idea_saved": "แนวคิดที่บันทึกไว้",
+      "guided_idea_timing_unknown": "ไม่ได้บันทึกช่วงเวลาของแนวคิดที่บันทึกไว้นี้",
+      "guided_idea_latest": "แนวคิดที่บันทึกไว้ล่าสุด",
+      "guided_idea_latest_prediction": "การคาดการณ์ที่บันทึกไว้ล่าสุด: {prediction}",
+      "guided_idea_saved_prediction": "การคาดการณ์ที่บันทึกไว้: {prediction}",
+      "milestone_stall_recovery": "ขณะนี้ปีกไม่อยู่ในภาวะสตอลล์แล้ว การสังเกตเพียงครั้งเดียวไม่ยืนยันว่าการพ้นจากภาวะสตอลล์คงอยู่ต่อเนื่อง",
       "game_controls": "🎮 การควบคุมเกม",
       "cancel": "ยกเลิก",
       "learn": "เรียนรู้",
@@ -56050,6 +56059,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "เชิดหัวเพื่อขึ้นบิน — เชิดหัวขึ้น (W)",
+      "hud_rotate_touch": "เชิดหัวเพื่อขึ้นบิน — ลากขึ้นจากกึ่งกลาง",
+      "hud_flare": "เชิดหัวก่อนแตะพื้น — ใช้ W เชิดหัวขึ้นเบาๆ",
+      "hud_flare_touch": "เชิดหัวก่อนแตะพื้น — ลากขึ้นจากกึ่งกลาง",
+      "landing_touch_power": "ลากลงตามขอบด้านขวาเพื่อลดกำลังเครื่องยนต์เหลือ ~30% ความเร็วจะลดลง",
+      "landing_touch_flare": "เมื่ออยู่เหนือทางวิ่งเล็กน้อย (~10 ft) ให้ลากขึ้นเบาๆ จากกึ่งกลางเพื่อเชิดหัวเครื่อง ตั้งเป้าให้อัตราการลดระดับต่ำกว่า 200 fpm ขณะล้อแตะพื้น",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91700,6 +91715,18 @@
     "card_progress": "บัตร {n} จาก {total}",
     "add_words": "เพิ่มคำเพื่อเริ่มฝึก",
     "round_complete": "จบรอบแล้ว เริ่มรอบใหม่หรือทบทวนคำที่ทำเครื่องหมายไว้",
-    "practice_label": "การฝึกคำ"
+    "practice_label": "การฝึกคำ",
+    "use_mine_help": "ไฟล์ HTML ใช้ฟอนต์ ขนาดข้อความ และระยะห่างของคุณ",
+    "preparing_reading": "กำลังเพิ่มการตั้งค่าการอ่านของคุณ…",
+    "font_not_embedded": "ไม่สามารถใส่ฟอนต์ของคุณลงในไฟล์ได้ ไฟล์จึงใช้ฟอนต์ของระบบ"
+  },
+  "reading_settings": {
+    "title": "การตั้งค่าการอ่าน",
+    "smaller": "ตัวอักษรเล็กลง",
+    "larger": "ตัวอักษรใหญ่ขึ้น",
+    "overlay": "โอเวอร์เลย์สี",
+    "ruler": "ไม้บรรทัดการอ่าน",
+    "use_mine": "ใช้การตั้งค่าการอ่านของฉัน",
+    "use_mine_help": "พิมพ์ด้วยฟอนต์ ขนาดข้อความ และระยะห่างของคุณ"
   }
 }

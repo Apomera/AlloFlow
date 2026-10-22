@@ -102,7 +102,14 @@ describe('Word Sounds content readiness uses provenance, not schema or spelling 
     expect(item.activityItems.manipulation.options).toEqual([]);
     expect(item.activityItems.manipulation.task.contentStatus).toBe('teacher_review_required');
     expect(item.activityItems.blending.options).toContain('migrate');
-    expect(item.activityItems.mapping.graphemes.length).toBeGreaterThan(0);
+    // This deliberately incomplete draft retains the cat sound data from
+    // makePackItem; its c/a/t spelling cannot be used as a mapping for migrate.
+    expect(item.phonemes).toEqual(['k', 'a', 't']);
+    expect(item.activityItems.mapping).toEqual({supported: false, contentStatus: 'teacher_review_required', graphemes: [], chipOrder: []});
+    expect(item.activityItems.counting.answer).toBe(3);
+    expect(item.activityItems.segmentation.slotCount).toBe(3);
+    expect(item.activityItems.segmentation.chips.filter(chip => !chip.isDistractor)).toHaveLength(3);
+    expect(item.activityItems.word_scramble.letters.slice().sort()).toEqual('migrate'.split('').sort());
   });
   it('does not manufacture noun-only sentences, stories or pairs for missing examples', () => {
     const items = compileWords([word('migrate', {sentence: '', story: []}), word('plants', {sentence: '', story: []})]);
@@ -191,7 +198,7 @@ describe('Actual play and teacher-review render paths', () => {
       {useCallback: fn => fn}, 'manipulation', core, {current: {...invalid, contentStatus: 'curated', targetWord: 'migrate'}}, debugLog, {current: false});
     callback('correct', 'correct'); expect(debugLog).not.toHaveBeenCalled();
   });
-  it('full player exposes an unscored next route, then permits another activity', async () => {
+  it('full player keeps an unscored skip within its queued activity and permits switching to another activity', async () => {
     setupWordSounds();
     delete window.AlloModules.WordSoundsModal;
     new Function(embeddedSource)();
@@ -208,7 +215,10 @@ describe('Actual play and teacher-review render paths', () => {
     expect(m.host.textContent).toContain('This item will not be scored');
     const skip = [...m.host.querySelectorAll('button')].find(button => button.textContent === 'Skip unscored item and continue');
     expect(skip?.type).toBe('button'); act(() => skip.click());
-    expect(setActivity).toHaveBeenCalledWith('counting'); expect(history).not.toHaveBeenCalled();
+    // This externally controlled fixture has not consumed the queued draft.
+    // Skip tries that occurrence before moving to the next activity.
+    expect(setActivity).toHaveBeenCalledWith('manipulation');
+    expect(setActivity).not.toHaveBeenCalledWith('counting'); expect(history).not.toHaveBeenCalled();
     expect(score.mock.calls.flat().some(value => value?.correct > 0)).toBe(false);
     m.render({wordSoundsActivity: 'counting'});
     expect(m.host.querySelector('[aria-label="Number 1"]')).toBeTruthy();

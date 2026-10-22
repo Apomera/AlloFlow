@@ -6,13 +6,16 @@ import { THREE, vec, nativeTailHarness } from './helpers/dino_native_tail_harnes
 const source = readFileSync(process.env.DINO_STEGOSAUR_ARMOR_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 const registration = "window.StemLab.registerTool('dinoLab'";
 window.StemLab = { registerTool() {} };
-new Function(source.replace(registration, 'globalThis.__regionalArmor = { DINOS, dinoStegosaurArmorProfileFor, dinoStegosaurArmorReference, dinoStegosaurArmorLayout, dinoStegosaurArmorGeometry, dinoSurfaceGeometry, dinoTorsoRadii, dinoTailSkinEnvelope, dinoPlateGeometry, dinoKeratinGeometry, dinoDetailedBodyPartDefinitions, dinoPartInspectionFor, dinoStudyBounds };' + registration))();
+new Function(source.replace(registration, 'globalThis.__regionalArmor = { DINOS, dinoStegosaurArmorProfileFor, dinoStegosaurArmorReference, dinoStegosaurArmorLayout, dinoStegosaurArmorGeometry, dinoStegosaurBodyAnchors, dinoStegosaurBodyTorsoRadii, dinoSurfaceGeometry, dinoTorsoRadii, dinoTailSkinEnvelope, dinoPlateGeometry, dinoKeratinGeometry, dinoDetailedBodyPartDefinitions, dinoPartInspectionFor, dinoStudyBounds };' + registration))();
 const art = globalThis.__regionalArmor; delete globalThis.__regionalArmor;
 const native = nativeTailHarness(source);
+// Install reviewed body helpers before native anchor/torso evaluation begins.
+Object.assign(native.art, art);
 const modes = [{ bodyHeightScale: .91, bodyDepthScale: .89, tailSoftTissueScale: .90 },
   { bodyHeightScale: .98, bodyDepthScale: .98, tailSoftTissueScale: .97 },
   { bodyHeightScale: 1, bodyDepthScale: 1, tailSoftTissueScale: 1 }];
-const ids = ['kentrosaurus', 'tuojiangosaurus', 'hesperosaurus'];
+const ids = ['kentrosaurus', 'tuojiangosaurus', 'hesperosaurus', 'stegosaurus', 'huayangosaurus'];
+const entryCount = id => id === 'hesperosaurus' ? 12 : /^(stegosaurus|huayangosaurus)$/.test(id) ? 21 : 18;
 function section(start, end) { const a = source.indexOf(start), b = source.indexOf(end, a); if (a < 0 || b < a) throw Error(start); return source.slice(a, b); }
 function extract(name) {
   const start = source.indexOf('function ' + name + '('), open = source.indexOf('{', start);
@@ -78,6 +81,25 @@ function contains(mesh, tolerance) {
   };
 }
 function buffers(geometry) { return { position: Array.from(geometry.attributes.position.array), index: Array.from(geometry.index.array) }; }
+function closedEdges(geometry, tolerance) {
+  const positions = geometry.attributes.position, index = geometry.index, welded = new Map(), vertices = [], edges = new Map();
+  for (let i = 0; i < positions.count; i++) {
+    const point = vec().fromBufferAttribute(positions, i), key = point.toArray().map(value => Math.round(value / tolerance)).join('|');
+    if (!welded.has(key)) welded.set(key, welded.size);
+    vertices.push(welded.get(key));
+  }
+  for (let i = 0; i < index.count; i += 3) {
+    const original = [index.getX(i), index.getX(i + 1), index.getX(i + 2)], triangle = original.map(vertex => vertices[vertex]);
+    if (new Set(triangle).size !== 3) continue;
+    const a = vec().fromBufferAttribute(positions, original[0]), b = vec().fromBufferAttribute(positions, original[1]), c = vec().fromBufferAttribute(positions, original[2]);
+    if (b.sub(a).cross(c.sub(a)).lengthSq() <= tolerance ** 4) continue;
+    for (let edge = 0; edge < 3; edge++) {
+      const pair = [triangle[edge], triangle[(edge + 1) % 3]].sort((x, y) => x - y), key = pair.join('|');
+      edges.set(key, (edges.get(key) || 0) + 1);
+    }
+  }
+  return { count: edges.size, open: [...edges].filter(([, faces]) => faces !== 2) };
+}
 function runArmor(context, baseline = false) {
   // The native tail harness stops before idle-motion registration. Execute the
   // production assignment so armor attachment is checked against its real mesh.
@@ -95,8 +117,8 @@ function runArmor(context, baseline = false) {
   return meshes;
 }
 
-describe('Three regional stegosaur armor profiles', () => {
-  it('gates every helper to exactly the three reviewed ornithischians', () => {
+describe('Five regional stegosaur armor profiles', () => {
+  it('gates every helper to exactly the five reviewed ornithischians', () => {
     for (const dn of art.DINOS.filter(dino => !ids.includes(dino.id))) {
       expect(art.dinoStegosaurArmorProfileFor(dn), dn.id).toBeNull();
       expect(art.dinoStegosaurArmorReference(THREE, dn, {}), dn.id).toBeNull();
@@ -113,7 +135,8 @@ describe('Three regional stegosaur armor profiles', () => {
         references.push(reference);
         expect(reference.torso.parent).toBeNull(); expect(reference.tail.parent).toBeNull();
         expect(built.model.children).toEqual(before);
-        const nativeTorso = art.dinoSurfaceGeometry(THREE, frame.torsoPoints, art.dinoTorsoRadii(frame.bodyHeight * .90, frame.bodyDepth * .89, frame.postcranialSurface), { smoothProfile: true });
+        const nativeTorsoRadii = art.dinoStegosaurBodyTorsoRadii(context.dn, art.dinoTorsoRadii(frame.bodyHeight * .90, frame.bodyDepth * .89, frame.postcranialSurface));
+        const nativeTorso = art.dinoSurfaceGeometry(THREE, frame.torsoPoints, nativeTorsoRadii, { smoothProfile: true });
         geometries.push(nativeTorso);
         expect(buffers(reference.torso.geometry)).toEqual(buffers(nativeTorso));
         const nativeTail = art.dinoSurfaceGeometry(THREE, reference.envelope.points, reference.envelope.radii, { smoothProfile: true }); geometries.push(nativeTail);
@@ -124,7 +147,7 @@ describe('Three regional stegosaur armor profiles', () => {
           expect(context.tailSkinEnvelope.radii).toEqual(reference.envelope.radii);
         } finally { minimalSkin.dispose(); }
         const entries = art.dinoStegosaurArmorLayout(THREE, context.dn, frame);
-        expect(entries).toHaveLength(id === 'hesperosaurus' ? 12 : 18);
+        expect(entries).toHaveLength(entryCount(id));
         expect(built.model.children).toEqual(before);
         const outer = entries.map(entry => meshFor(entry, false, material)), cores = entries.map(entry => meshFor(entry, true, material));
         geometries.push(...outer.map(mesh => mesh.geometry), ...cores.map(mesh => mesh.geometry));
@@ -132,6 +155,15 @@ describe('Three regional stegosaur armor profiles', () => {
         for (const mesh of [...outer, ...cores]) {
           expect(Array.from(mesh.geometry.attributes.position.array).every(Number.isFinite)).toBe(true);
           expect(mesh.geometry.userData.dinoStegosaurArmor.sampledArrangement).toBe(true);
+          if (/^(stegosaurus|huayangosaurus)$/.test(id)) {
+            const topology = closedEdges(mesh.geometry, context.ht * 2e-7);
+            expect(topology.count).toBeGreaterThan(0);
+            expect(topology.open.slice(0, 8), 'open or nonmanifold armor edges ' + id).toEqual([]);
+          }
+        }
+        if (/^(stegosaurus|huayangosaurus)$/.test(id)) {
+          expect(entries.filter(e => e.kind === 'plate')).toHaveLength(17);
+          expect(entries.filter(e => e.kind === 'spike' && e.region === 'tail')).toHaveLength(4);
         }
         if (id === 'kentrosaurus') {
           expect(entries.filter(e => e.kind === 'plate')).toHaveLength(8);
@@ -215,7 +247,7 @@ describe('Three regional stegosaur armor profiles', () => {
       const { built, context } = contextFor(id, 1), boneMaterial = new THREE.MeshBasicMaterial(); context.boneMat = boneMaterial;
       try {
         const meshes = runArmor(context), cores = meshes.filter(mesh => mesh.userData.dinoStegosaurArmor.core);
-        expect(meshes).toHaveLength(id === 'hesperosaurus' ? 24 : 36); expect(cores).toHaveLength(meshes.length / 2);
+        expect(meshes).toHaveLength(entryCount(id) * 2); expect(cores).toHaveLength(meshes.length / 2);
         for (const mesh of meshes) {
           const spike = mesh.userData.dinoFeature.includes('spike');
           expect(mesh.userData.dinoPartIds).toEqual([spike ? 'spikes' : 'plates']);
@@ -236,8 +268,8 @@ describe('Three regional stegosaur armor profiles', () => {
       } finally { built.dispose(); boneMaterial.dispose(); }
     }
   });
-  it('retains exact legacy plate and spike geometry for Stegosaurus and Gigantspinosaurus', () => {
-    for (const id of ['stegosaurus', 'tuojiangosaurus2']) for (const scale of [.05, 1, 8]) {
+  it('retains exact legacy plate and spike geometry for Dacentrurus and Gigantspinosaurus', () => {
+    for (const id of ['dacentrurus', 'tuojiangosaurus2']) for (const scale of [.05, 1, 8]) {
       const { built, context } = contextFor(id, scale);
       try {
         const actual = runArmor(context), control = runArmor(context, true);

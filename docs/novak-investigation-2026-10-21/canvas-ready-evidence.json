@@ -1,0 +1,14 @@
+{
+  "source": "tmp/novak-release-isolated/AlloFlowANTI.txt",
+  "output": "artifacts/novak-investigation-2026-10-21/AlloFlowANTI.canvas-ready.txt",
+  "metrics": {
+    "sourceSha256": "bf3f0d626ed19d05f77ea9010316fea7fe15ad7c4993d197a82d999d7bc77063",
+    "outputSha256": "23f966ef1ea9fcdec3541ac4460630a58459299f00986e8d7c55f82286b5f98f",
+    "sourceBytes": 2910665,
+    "outputBytes": 1461868,
+    "sourceGzipBytes": 729587,
+    "outputGzipBytes": 456148
+  },
+  "authenticatedCanvasRun": false,
+  "existingShareUpdated": false
+}

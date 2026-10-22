@@ -31,11 +31,12 @@ describe('species-specific sauropod body plans connect the actual skeleton and l
     expect(api.dinoSauropodBodyLimb(THREE,dn('brachiosaurus'),{})).toBeNull();
   });
 
-  it('preserves profiles outside the reviewed sauropod and ceratopsid body groups exactly',()=>{
-    // These hashes come from the saved pre-ceratopsid source with the same
-    // explicit exclusions. The four newly reviewed profiles have native tests.
-    const reviewed=[...species,'triceratops','styracosaurus','centrosaurus','chasmosaurus'];
-    const expected={reconstructionProfileFor:'af5e3396d6e0214788c685ea726e668e9c8102936255ffa981664f18e1f636a3',postcranialSurfaceProfileFor:'29e8778cec93d54ed5f4cc114dafbd70f78cd806a2c61e48b9bfe65077f4a18d',skeletalAnatomyProfileFor:'723c0ee5c088891a171dd6798e4a2d53992c17433458909b359332c623c89613'};
+  it('preserves profiles outside the reviewed body groups exactly',()=>{
+    // Independently computed from the saved pre-dromaeosaur source with these
+    // same exclusions: all 339 remaining taxa match the current source exactly.
+    // The reviewed body groups have separate native geometry tests.
+    const reviewed=[...species,'triceratops','styracosaurus','centrosaurus','chasmosaurus','ankylosaurus','euoplocephalus','sauropelta','borealopelta','stegosaurus','kentrosaurus','huayangosaurus','tuojiangosaurus','carnotaurus','tyrannosaurus','allosaurus','coelophysis','dilophosaurus','velociraptor','deinonychus'];
+    const expected={reconstructionProfileFor:'33ee5e621a01e232adae4e8270c8898a4fa73a76528513eddae3a174c1ce333f',postcranialSurfaceProfileFor:'29760174847041dcc80fd7ca9f5307fe0cdff524a0c6e06a6c7d96371c7279ad',skeletalAnatomyProfileFor:'8f492a81ac5fbc60e62814aa14a9229a499798dc4b68cfdd5532488f8202f44f'};
     for(const [name,fingerprint]of Object.entries(expected)){
       const values=api.DINOS.filter(d=>!reviewed.includes(d.id)).map(d=>[d.id,api[name](d)]);
       expect(createHash('sha256').update(JSON.stringify(values)).digest('hex'),name).toBe(fingerprint);

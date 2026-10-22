@@ -1,0 +1,41 @@
+{
+  "checkedAtDate": "2026-10-21",
+  "baselineCommit": "2f69704ab4161680431012d9222386914e19fbdb",
+  "pagesGitIntegration": {
+    "status": "confirmed for current baseline commit",
+    "checkName": "Cloudflare Pages",
+    "checkUrl": "https://github.com/Apomera/AlloFlow/runs/118520005773",
+    "conclusion": "success",
+    "completedAt": "2026-10-20T08:00:28Z",
+    "immutableDeployment": "https://25fe821c.alloflow-cdn.pages.dev",
+    "readEndpoint": "https://api.github.com/repos/Apomera/AlloFlow/commits/2f69704ab4161680431012d9222386914e19fbdb/check-runs?check_name=Cloudflare%20Pages",
+    "notes": [
+      "The combined commit status endpoint returned empty statuses; deployment evidence is in GitHub Checks.",
+      "The separate Workers Builds: alloflow-cdn check failed on this commit. It is not the successful Cloudflare Pages app deployment.",
+      "Repository release docs identify main pushes as the normal Pages Git integration trigger."
+    ]
+  },
+  "publishedRoot": {
+    "path": "repository root",
+    "evidence": "deploy.sh:478 states root publication. The live /deploy.sh returns application/x-sh and exact gitshow bytes; desktop/web-app/public/deploy.sh does not exist.",
+    "byteChecks": [
+      { "path": "app/index.html", "productionMatchesCommit": true, "immutableMatchesProduction": true, "sha256": "328c2c2d4c9c8601385194a96198ee27320381bfb1224a13202a0a65d42f2ec7" },
+      { "path": "catalog/index.json", "productionMatchesCommit": true, "immutableMatchesProduction": true, "sha256": "266b23229c847383e6ecba10426c8bf958433e11437ca31d13efb871af718454" },
+      { "path": "deploy.sh", "productionMatchesCommit": true, "immutableMatchesProduction": true, "sha256": "c878037d0d81477613331d783c455c8c6cda31e0593251a0e0ba44d9b44d487e" }
+    ]
+  },
+  "releaseVerification": [
+    "Read the exact new commit's Cloudflare Pages check until completed/success.",
+    "Read its immutable preview URL and compare app/index.html, referenced app JavaScript, catalog_module.js, host_handlers_module.js, misc_handlers_module.js, catalog/index.json and approved lesson JSON to intended release bytes.",
+    "Repeat byte checks at production alloflow-cdn.pages.dev and open /app/?lesson=academic-discourse-reading-space-grade6 in a browser.",
+    "Verify preview arrival does not import; explicit Load remains pending until success, then opens the lesson workspace."
+  ],
+  "canvasUpdate": {
+    "separateFromPagesPublication": true,
+    "documentation": "docs/CHATGPT_HANDOFF_FEDERATED_AGENT_2026-07-14.md:78 requires re-pasting changed ANTI source into Gemini Canvas.",
+    "preparation": "Final isolated AlloFlowANTI.txt is the readable Canvas source. dev-tools/build_performance_release.cjs exports minify(source,{canvas:true}) to prepare a compact copy preserving JSX, imports, mode directive and licenses. Use final chosen release bytes, after CDN dependencies are published; do not reuse an old compact snapshot.",
+    "requiresAuthenticationToPrepareFile": false,
+    "existingSharedCanvasUpdate": "Requires maintainer access to the saved Gemini Canvas and a re-paste/update; publishing Pages alone does not change it."
+  },
+  "readOnlyCliLimitation": "The repository Wrangler wrapper could not run because its documented C:/tmp x64 Node runtime is absent. No tools were installed, credentials read, configuration changed or deployment triggered during this audit."
+}

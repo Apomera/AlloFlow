@@ -32,14 +32,42 @@ describe('Reviewed ornithopod full-body frame',()=>{
         expect(built.model.userData.dinoFullBodyAnatomy.limbs).toHaveLength(4);
         expect(built.contacts.map(item=>({point:item.point.toArray(),radiusX:item.radiusX,radiusZ:item.radiusZ,part:item.part,side:item.side})))
           .toEqual(baseline.contacts.map(item=>({point:item.point.toArray(),radiusX:item.radiusX,radiusZ:item.radiusZ,part:item.part,side:item.side})));
-        expect(built.records.distal.map(item=>({kind:item.kind,meshes:item.meshes.map(serial)})))
-          .toEqual(baseline.records.distal.map(item=>({kind:item.kind,meshes:item.meshes.map(serial)})));
+        if(!native.art.dinoHadrosaurExtremitiesProfileFor?.(c.dn)){
+          expect(built.records.distal.map(item=>({kind:item.kind,meshes:item.meshes.map(serial)})))
+            .toEqual(baseline.records.distal.map(item=>({kind:item.kind,meshes:item.meshes.map(serial)})));
+        }else{
+          // A true wrist/ankle-to-ray frame responds to the changed ankle in
+          // this deliberately disabled-body comparison. Test its real inputs;
+          // the frozen production fixture separately preserves reviewed axes.
+          for(const assembly of [built,baseline])for(const limb of assembly.records.limbs){
+            const lower=limb.bones.filter(bone=>bone.kind==='addLongBone')[1];
+            const boneFan=assembly.records.distal.find(row=>row.kind==='addDigitFan'&&row.args[1]===limb.front&&row.args[2]===limb.side);
+            const lifeFan=assembly.records.distal.find(row=>row.kind==='addSoftTissueDigitFan'&&row.args[1]===limb.front&&row.args[2]===limb.side);
+            expect(boneFan.args[4]).toBeDefined();expect(lifeFan.args[5]).toBe(boneFan.args[4]);
+            expect(boneFan.args[4].ankle.toArray()).toEqual(lower.args[1].toArray());
+            expect(boneFan.args[4].root.toArray()).toEqual(boneFan.args[0].toArray());
+            expect(boneFan.args[4].root.toArray()).toEqual(lifeFan.args[0].toArray());
+          }
+        }
         const limbLengths=[];
         const insideBody=nativeMeshContains(c.bodyShell,c.ht*2e-6),failures=[];
         for(const limb of built.records.limbs){
           const [upper,lower,companion]=limb.bones.filter(bone=>bone.kind==='addLongBone');
           expect(!!upper&&!!lower&&!!companion).toBe(true);
           const [top,joint]=upper.args,[,distal]=lower.args;
+          const metadata=built.model.userData.dinoFullBodyAnatomy.limbs.find(record=>record.front===limb.front&&record.side===limb.side);
+          const digitFan=built.records.distal.find(record=>record.kind==='addDigitFan'&&record.args[1]===limb.front&&record.args[2]===limb.side);
+          expect(metadata,'record for '+id+' '+(limb.front?'fore':'hind')+' side '+limb.side).toBeDefined();
+          expect(digitFan,'actual native foot endpoint').toBeDefined();
+          // The exploration guide reads the standard names. Check those against
+          // actual native bone/digit builder arguments, not copied metadata.
+          expect(metadata.top).toEqual(top.toArray());
+          expect(metadata.knee).toEqual(joint.toArray());
+          expect(metadata.ankle).toEqual(distal.toArray());
+          expect(metadata.foot).toEqual(digitFan.args[0].toArray());
+          expect(metadata.knee).toEqual(metadata.joint);
+          expect(metadata.ankle).toEqual(metadata.distal);
+          expect(metadata.foot).toEqual(metadata.contact);
           expect(limb.front?joint.x>top.x:joint.x<top.x,'opposed joint '+JSON.stringify({id,scale,front:limb.front,side:limb.side,top:top.toArray(),joint:joint.toArray()})).toBe(true);
           const ratio=joint.distanceTo(distal)/top.distanceTo(joint);
           expect(Math.abs(ratio-(limb.front?profile.radiusHumerus:profile.tibiaFemur))<1e-10).toBe(true);
@@ -57,7 +85,23 @@ describe('Reviewed ornithopod full-body frame',()=>{
         const fore=limbLengths.find(limb=>limb.front).length,hind=limbLengths.find(limb=>!limb.front).length;
         expect(fore/hind<.80&&fore/hind>.45,'fore/hind ratio '+fore/hind).toBe(true);
         expect(failures.slice(0,10),'exposed represented bone vertices '+failures.length).toEqual([]);
-        expect(Math.abs((c.head.y-baseline.context.head.y)-.60*(c.shoulder.y-baseline.context.shoulder.y))<c.ht*1e-12).toBe(true);
+        if(id==='edmontosaurus')expect(c.head.y).toBeGreaterThan(c.shoulder.y);
+        else expect(Math.abs((c.head.y-baseline.context.head.y)-.60*(c.shoulder.y-baseline.context.shoulder.y))<c.ht*1e-12).toBe(true);
+        if(id==='edmontosaurus'){
+          // Prevent the previous low-belly stance from merely relocating its
+          // near-right-angle crouch between femur, tibia and metatarsus.
+          expect(c.hip.y/c.len).toBeGreaterThan(.23);expect(c.hip.y/c.len).toBeLessThan(.27);
+          expect(c.shoulder.y/c.len).toBeGreaterThan(.18);expect(c.shoulder.y).toBeLessThan(c.hip.y);
+          let bellyMin=Infinity;const p=c.bodyShell.geometry.attributes.position;
+          for(let i=0;i<p.count;i++)bellyMin=Math.min(bellyMin,c.model.worldToLocal(vec().fromBufferAttribute(p,i).applyMatrix4(c.bodyShell.matrixWorld)).y);
+          expect(bellyMin/c.len,'actual torso clears the supporting limbs').toBeGreaterThan(.10);
+          for(const limb of built.records.limbs)for(const bone of limb.bones.filter(b=>b.kind==='addLongBone').slice(0,2)){
+            const mesh=bone.meshes.find(m=>m.userData.dinoLongBone),meta=mesh.geometry.userData.dinoLongBone,p=mesh.geometry.attributes.position,first=(meta.lengthSegments+1)*meta.radialSegments;
+            const a=c.model.worldToLocal(vec().fromBufferAttribute(p,first).applyMatrix4(mesh.matrixWorld)),b=c.model.worldToLocal(vec().fromBufferAttribute(p,first+meta.radialSegments+1).applyMatrix4(mesh.matrixWorld));
+            expect(a.distanceTo(bone.args[0])).toBeLessThan(c.ht*1e-6);expect(b.distanceTo(bone.args[1])).toBeLessThan(c.ht*1e-6);
+            expect((a.y-b.y)/a.distanceTo(b),'actual long-bone cap axis has substantial vertical support').toBeGreaterThan(.60);
+          }
+        }
         expect(Math.abs((c.tail.y-baseline.context.tail.y)-(c.hip.y-baseline.context.hip.y))<c.ht*1e-12).toBe(true);
       }finally{built.dispose();baseline.dispose();}
     },30000);

@@ -7,7 +7,7 @@ beforeEach(()=>{resetStemLab();loadTool(toolSource,'ecosystem');api=window.StemL
 const current=(extra={})=>({active:true,state:'Grazing',huntStage:'',...extra});
 const listening=(extra={})=>current({state:'Listening',listenCue:{id:'rabbits',index:0,distance:2,movement:.3,onsetMovement:.3,age:0},attention:{kind:'prey',id:'rabbits',index:0,turn:.48},...extra});
 const pose=(extra={})=>({active:true,state:'Grazing',x:0,z:0,yaw:0,altitude:.025,distance:.1,phase:0,stride:0,moving:0,forage:.75,rest:0,crouch:0,pounce:0,headTurn:0,...extra});
-const withoutPosture=frames=>frames.map(frame=>Object.fromEntries(Object.entries(frame).map(([id,animals])=>[id,animals.map(p=>{const {headRaise,listenTilt,...rest}=p;return rest;})])));
+const withoutPosture=frames=>frames.map(frame=>Object.fromEntries(Object.entries(frame).map(([id,animals])=>[id,animals.map(p=>{const {headRaise,listenTilt,earFollowPitch,earFollowYaw,...rest}=p;return rest;})])));
 
 describe('recorded interaction skull posture',()=>{
   it('raises a rabbit promptly for existing vigilance and lowers gradually when feeding resumes',()=>{

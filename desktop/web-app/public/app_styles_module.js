@@ -1217,13 +1217,13 @@ const AppStyles = ({
         @media screen { .theme-contrast .bg-yellow-200 *, .theme-contrast .bg-yellow-300 *, .theme-contrast .bg-yellow-400 * { color: #000000 !important; } }
         @font-face {
             font-family: 'OpenDyslexic';
-            src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format('woff');
+            src: url('https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-400-normal.woff') format('woff');
             font-weight: normal;
             font-style: normal;
         }
         @font-face {
             font-family: 'OpenDyslexic';
-            src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-bold.woff') format('woff');
+            src: url('https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-700-normal.woff') format('woff');
             font-weight: bold;
             font-style: normal;
         }

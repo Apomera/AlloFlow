@@ -56502,6 +56502,15 @@
       "sr_critique_ready": "Crítica pronta."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Revisão de voo guardada indisponível",
+      "debrief_unavailable_body": "A revisão de voo mais recente está em falta ou não pode ser lida. Volta ao menu para iniciar um novo voo.",
+      "guided_idea_before_trials": "Registada antes dos ensaios",
+      "guided_idea_saved": "Ideia guardada",
+      "guided_idea_timing_unknown": "O momento desta ideia guardada não foi registado.",
+      "guided_idea_latest": "Última ideia guardada",
+      "guided_idea_latest_prediction": "Última previsão guardada: {prediction}",
+      "guided_idea_saved_prediction": "Previsão guardada: {prediction}",
+      "milestone_stall_recovery": "A asa já não está em perda neste momento. Uma única observação não comprova uma recuperação sustentada.",
       "game_controls": "🎮 CONTROLES DO JOGO",
       "cancel": "Cancelar",
       "from": "De",
@@ -56554,6 +56563,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTAÇÃO — levante o nariz (W)",
+      "hud_rotate_touch": "ROTAÇÃO — arraste para cima a partir do centro",
+      "hud_flare": "ARREDONDAMENTO — levante suavemente o nariz com W",
+      "hud_flare_touch": "ARREDONDAMENTO — arraste para cima a partir do centro",
+      "landing_touch_power": "Arraste para baixo ao longo da margem direita para reduzir a potência para ~30%. A velocidade diminuirá.",
+      "landing_touch_flare": "Mesmo acima da pista (~10 ft), arraste suavemente para cima a partir do centro para levantar o nariz. Procure uma descida inferior a 200 fpm ao tocar no solo.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92890,6 +92905,18 @@
     "card_progress": "Cartão {n} de {total}",
     "add_words": "Adicione palavras para começar a prática.",
     "round_complete": "Ronda concluída. Comece uma nova ronda ou reveja as palavras marcadas.",
-    "practice_label": "Prática de palavras"
+    "practice_label": "Prática de palavras",
+    "use_mine_help": "O ficheiro HTML usa a fonte, o tamanho do texto e o espaçamento escolhidos.",
+    "preparing_reading": "A adicionar as definições de leitura…",
+    "font_not_embedded": "Não foi possível adicionar a fonte escolhida ao ficheiro, por isso é usada a fonte do sistema."
+  },
+  "reading_settings": {
+    "title": "Definições de leitura",
+    "smaller": "Texto mais pequeno",
+    "larger": "Texto maior",
+    "overlay": "Sobreposição de cor",
+    "ruler": "Régua de leitura",
+    "use_mine": "Usar as minhas definições de leitura",
+    "use_mine_help": "Imprime com a fonte, o tamanho do texto e o espaçamento escolhidos."
   }
 }

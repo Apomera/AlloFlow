@@ -52662,6 +52662,15 @@
       "sr_critique_ready": "እቲ ገምጋም ድሉው እዩ።"
     },
     "flightsim": {
+      "debrief_unavailable_title": "ዝተቐመጠ ግምገማ በረራ ኣይርከብን",
+      "debrief_unavailable_body": "እቲ ናይ መወዳእታ ግምገማ በረራ የለን ወይ ክንበብ ኣይክእልን። ሓድሽ በረራ ንምጅማር ናብ ዝርዝር ተመለስ።",
+      "guided_idea_before_trials": "ቅድሚ እቶም ፈተነታት ዝተመዝገበ",
+      "guided_idea_saved": "ዝተቐመጠ ሓሳብ",
+      "guided_idea_timing_unknown": "ግዜ እዚ ዝተቐመጠ ሓሳብ ኣይተመዝገበን።",
+      "guided_idea_latest": "ናይ መወዳእታ ዝተቐመጠ ሓሳብ",
+      "guided_idea_latest_prediction": "ናይ መወዳእታ ዝተቐመጠ ትንበያ፦ {prediction}",
+      "guided_idea_saved_prediction": "ዝተቐመጠ ትንበያ፦ {prediction}",
+      "milestone_stall_recovery": "ኣብዚ ህሞት እቲ ክንፊ ካብ ስቶል ወጺኡ ኣሎ። ሓደ ትዕዝብቲ ጥራይ ካብ ስቶል ምውጻእ ቀጻሊ ከም ዝኾነ ኣየረጋግጽን።",
       "game_controls": "🎮 ናይ ጸወታ መቆጻጸሪታት",
       "cancel": "ሰርዝ",
       "back_to_stem_lab": "ናብ STEAM Lab ተመለስ",
@@ -52715,6 +52724,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ንምብራር ኣፍንጫ ኣልዕል — ኣፍንጫ ኣልዕል (W)",
+      "hud_rotate_touch": "ንምብራር ኣፍንጫ ኣልዕል — ካብ ማእከል ንላዕሊ ጎትት",
+      "hud_flare": "ንምዕላብ ኣፍንጫ ኣልዕል — ብW ኣፍንጫ ቀስ ኢልካ ኣልዕል",
+      "hud_flare_touch": "ንምዕላብ ኣፍንጫ ኣልዕል — ካብ ማእከል ንላዕሊ ጎትት",
+      "landing_touch_power": "ሓይሊ ሞተር ናብ ~30% ንምቕናስ፡ ብየማናይ ወሰን ንታሕቲ ጎትት። ፍጥነት ክጎድል እዩ።",
+      "landing_touch_flare": "ልዕሊ መዕለቢ ነፈርቲ (~10 ft) ምስ በጻሕካ፡ ኣፍንጫ ንምልዓል ካብ ማእከል ቀስ ኢልካ ንላዕሊ ጎትት። ኣብ ግዜ ምትንካፍ መሬት፡ ፍጥነት ምውራድ ትሕቲ 200 fpm ክኸውን ግበር።",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88735,6 +88750,18 @@
     "card_progress": "ካርድ {n} ካብ {total}",
     "add_words": "ልምምድ ንምጅማር ቃላት ወስኹ።",
     "round_complete": "ዙር ተወዲኡ። ሓድሽ ዙር ጀምር ወይ ምልክት ዝገበርካሎም ቃላት ድገም።",
-    "practice_label": "ልምምድ ቃላት"
+    "practice_label": "ልምምድ ቃላት",
+    "use_mine_help": "እቲ HTML ፋይል ዝመረጽካዮ ዓይነት ፊደል፣ ዓቐን ጽሑፍን ምፍንታትን ይጥቀም።",
+    "preparing_reading": "ቅጥዕታት ምንባብካ ይውሰኽ ኣሎ…",
+    "font_not_embedded": "ዓይነት ፊደልካ ናብቲ ፋይል ክውሰኽ ኣይከኣለን፣ ስለዚ ልሙድ ዓይነት ፊደል ይጥቀም።"
+  },
+  "reading_settings": {
+    "title": "ቅጥዕታት ምንባብ",
+    "smaller": "ዝነኣሰ ጽሑፍ",
+    "larger": "ዝዓበየ ጽሑፍ",
+    "overlay": "ናይ ሕብሪ ሸፋን",
+    "ruler": "ናይ ምንባብ መስመር",
+    "use_mine": "ናተይ ቅጥዕታት ምንባብ ተጠቐም",
+    "use_mine_help": "ብዝመረጽካዮ ዓይነት ፊደል፣ ዓቐን ጽሑፍን ምፍንታትን ይሕትም።"
   }
 }

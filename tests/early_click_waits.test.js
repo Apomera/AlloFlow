@@ -17,7 +17,7 @@ const ANTI = readFileSync(resolve(process.cwd(), process.env.EARLY_CLICK_ANTI ||
 
 const slice = (from, to) => sliceBetween(ANTI, from, to, { file: 'AlloFlowANTI.txt' });
 
-const AWAIT = slice('  const _alloAwaitModules = (mods, label) => {', '  let __alloHostHandlersCache = null;');
+const AWAIT = slice('  const _alloAwaitModules = ', '  let __alloHostHandlersCache = null;');
 
 function harness(source, names, extra) {
   const pending = {};
@@ -52,10 +52,11 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
 describe('actions wait for their module instead of throwing', () => {
   it('Run Blueprint waits for the agent adapter, then runs', async () => {
     const run = vi.fn(() => 'ran');
-    const h = harness(slice('  const handleExecuteBlueprint = async () => {', '  // Stage 5'), ['handleExecuteBlueprint'], {
-      activeBlueprint: { id: 'plan' }, _alloPhaseOHandlersDeps: () => ({}),
+    const h = harness(slice('  const blueprintCreationRequestRef = useRef(', '  // Stage 5'), ['handleExecuteBlueprint'], {
+      activeBlueprint: { id: 'plan' }, _alloPhaseOHandlersDeps: () => ({}), useRef: value => ({ current: value }),
+      gradeLevel: '6', leveledTextLanguage: 'English', standardsInput: '', studentInterests: [],
     });
-    h.window.AlloModules.PhaseOHandlers = { handleExecuteBlueprint: run };
+    Object.assign(h.window.AlloModules, { AgentCoreContracts: {}, AgentCoreBlueprintService: {}, GenerationMatrix: {}, PhaseOHandlers: { handleExecuteBlueprint: run } });
     const result = h.api.handleExecuteBlueprint();
     await flush();
     expect(run).not.toHaveBeenCalled();
@@ -65,7 +66,8 @@ describe('actions wait for their module instead of throwing', () => {
   });
 
   it('Run Blueprint with a broken adapter still reports it (no wait loop)', async () => {
-    const h = harness(slice('  const handleExecuteBlueprint = async () => {', '  // Stage 5'), ['handleExecuteBlueprint'], { activeBlueprint: {} });
+    const h = harness(slice('  const blueprintCreationRequestRef = useRef(', '  // Stage 5'), ['handleExecuteBlueprint'], { activeBlueprint: {}, useRef: value => ({ current: value }) });
+    Object.assign(h.window.AlloModules, { AgentCoreContracts: {}, AgentCoreBlueprintService: {}, GenerationMatrix: {}, PhaseOHandlers: {} });
     h.window.AlloModules.AgentCoreUIAdapter = {};
     await expect(h.api.handleExecuteBlueprint()).rejects.toThrow(/AgentCoreUIAdapter/);
   });

@@ -12,7 +12,7 @@ const SOURCE = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_
 
 const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
-    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta'],
+    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish'],
   reptile: ['green_turtle', 'hawksbill_turtle'],
   invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral'],
   coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral'],
@@ -22,6 +22,8 @@ const ALL = Object.values(EXPECTED_IDS).flat();
 const COLONY = new Set([...EXPECTED_IDS.coral, ...EXPECTED_IDS.structure]);
 // Budgets in triangles per organism: [low, high]. School members are per fish.
 const BUDGET = { animal: [1500, 6000], colony: [4000, 12000], member: [400, 1500] };
+// Rounded instanced anemone fingers: 64 / 140 copies, still two draws.
+const ANEMONE_BUDGET = [2500, 8300];
 // Corals, sponges and frames do not move; everything else must animate.
 const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball'];
 
@@ -182,7 +184,7 @@ describe('Reef3DSpecies models', () => {
         expect(Number.isFinite(h.radius) && h.radius > 0, id).toBe(true);
         if (id === 'christmas_tree_worm') { expect(h.radius).toBeGreaterThan(0.05); expect(h.radius).toBeLessThan(0.4); }
         else { expect(h.radius / info.lengthM, id + ' radius vs length').toBeGreaterThan(0.25); expect(h.radius / info.lengthM, id + ' radius vs length').toBeLessThan(1.6); }
-        const n = tris(h.root), cap = BUDGET[COLONY.has(id) ? 'colony' : 'animal'][quality === 'low' ? 0 : 1];
+        const n = tris(h.root), cap = (id === 'magnificent_anemone' ? ANEMONE_BUDGET : BUDGET[COLONY.has(id) ? 'colony' : 'animal'])[quality === 'low' ? 0 : 1];
         expect(n, `${id} ${quality} triangles`).toBeLessThanOrEqual(cap);
         report.push(n);
         h.dispose();

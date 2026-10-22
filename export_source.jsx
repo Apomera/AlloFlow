@@ -2750,27 +2750,141 @@ const createExport = (deps) => {
         }
     };
 
+    // Strip balanced emphasis markup, while retaining literal operators
+    // such as ** and 2 ** 3. Those are meaningful glossary text, not empty fields.
+    const _glossaryPlainText = value => {
+        const source = typeof value === 'string' ? value : typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
+        const plain = text => text.replace(/(^|[^\p{L}\p{N}\\*])(\*{1,2})([^\s*](?:[^*]*[^\s*])?)\2(?!\*)/gu, '$1$3');
+        let result = '', plainStart = 0, position = 0;
+        // Only complete, equally sized delimiter runs form a code span. Bare
+        // ticks (including an empty JavaScript template literal) remain text.
+        while (position < source.length) {
+            if (source[position] !== '`') { position++; continue; }
+            const opening = position;
+            while (source[position] === '`') position++;
+            const runLength = position - opening;
+            let search = position, closing = -1, afterClosing = -1;
+            while (search < source.length) {
+                const next = source.indexOf('`', search);
+                if (next < 0) break;
+                let end = next;
+                while (source[end] === '`') end++;
+                if (end - next === runLength) { closing = next; afterClosing = end; break; }
+                search = end;
+            }
+            if (closing < 0 || closing === position) continue;
+            result += plain(source.slice(plainStart, opening)) + source.slice(position, closing);
+            position = afterClosing;
+            plainStart = position;
+        }
+        return result + plain(source.slice(plainStart));
+    };
+    const _glossaryLanguageNames = {
+        english: 'en', spanish: 'es', 'spanish (latin america)': 'es-419', 'spanish (castilian)': 'es-ES',
+        french: 'fr', 'french (canadian)': 'fr-CA', german: 'de', italian: 'it', portuguese: 'pt',
+        'portuguese (brazil)': 'pt-BR', 'portuguese (portugal)': 'pt-PT', 'portuguese (angola)': 'pt-AO',
+        arabic: 'ar', hebrew: 'he', persian: 'fa', farsi: 'fa', urdu: 'ur', pashto: 'ps', sindhi: 'sd',
+        uyghur: 'ug', yiddish: 'yi', dhivehi: 'dv', sorani: 'ckb', 'kurdish (sorani)': 'ckb',
+        chinese: 'zh', mandarin: 'zh', 'chinese (simplified)': 'zh-Hans', 'chinese (traditional)': 'zh-Hant',
+        hindi: 'hi', japanese: 'ja', korean: 'ko', russian: 'ru', ukrainian: 'uk', vietnamese: 'vi',
+        somali: 'so', 'haitian creole': 'ht', bengali: 'bn', punjabi: 'pa', tamil: 'ta', telugu: 'te',
+        turkish: 'tr', polish: 'pl', dutch: 'nl', swedish: 'sv', norwegian: 'no', danish: 'da',
+        finnish: 'fi', greek: 'el', romanian: 'ro', hungarian: 'hu', czech: 'cs', slovak: 'sk',
+        swahili: 'sw', indonesian: 'id', malay: 'ms', thai: 'th', tagalog: 'tl', filipino: 'fil',
+        afrikaans: 'af', amharic: 'am', albanian: 'sq', armenian: 'hy', azerbaijani: 'az',
+        basque: 'eu', belarusian: 'be', bosnian: 'bs', bulgarian: 'bg', catalan: 'ca',
+        croatian: 'hr', estonian: 'et', georgian: 'ka', gujarati: 'gu', icelandic: 'is',
+        irish: 'ga', kannada: 'kn', kazakh: 'kk', khmer: 'km', lao: 'lo', latvian: 'lv',
+        lithuanian: 'lt', macedonian: 'mk', malayalam: 'ml', maltese: 'mt', marathi: 'mr',
+        mongolian: 'mn', nepali: 'ne', serbian: 'sr', sinhala: 'si', slovenian: 'sl',
+        uzbek: 'uz', welsh: 'cy', zulu: 'zu'
+    };
+    const _glossaryLanguageInfo = value => {
+        const original = typeof value === 'string' ? value.trim() : '';
+        const canonical = input => {
+            const tag = input.replace(/_/g, '-');
+            if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i.test(tag)) return '';
+            try { return typeof Intl.getCanonicalLocales === 'function' ? Intl.getCanonicalLocales(tag)[0] || '' : tag; }
+            catch (_) { return ''; }
+        };
+        // An explicit tag wins over a host helper that resolves only its base.
+        let tag = canonical(original);
+        if (!tag && Object.prototype.hasOwnProperty.call(_glossaryLanguageNames, original.toLowerCase())) tag = canonical(_glossaryLanguageNames[original.toLowerCase()]);
+        if (!tag) {
+            try {
+                const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
+                const resolved = typeof resolve === 'function' ? canonical(String(resolve(original) || '')) : '';
+                // The host returns English for unknown names; that is not evidence.
+                if (resolved && !/^en(?:-|$)/i.test(resolved)) tag = resolved;
+            } catch (_) {}
+        }
+        if (!tag) return { tag: '', dir: 'auto', language: '', script: '', region: '' };
+        const parts = tag.split('-'), subtags = parts.slice(1);
+        const extension = subtags.findIndex(part => part.length === 1);
+        const core = extension < 0 ? subtags : subtags.slice(0, extension);
+        const script = core.find(part => /^[a-z]{4}$/i.test(part)) || '';
+        const region = core.find(part => /^[a-z]{2}$|^\d{3}$/i.test(part)) || '';
+        const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)$/i.test(parts[0]);
+        const dir = !script && /^(und|mul|zxx)$/i.test(parts[0]) ? 'auto' : rtl ? 'rtl' : 'ltr';
+        return { tag, dir, language: parts[0], script, region };
+    };
+    const _glossarySourceLanguage = (resource, item, field) => [item && item[field], resource && resource.language, resource && resource.baseLanguage]
+        .find(value => typeof value === 'string' && value.trim())?.trim() || 'English';
+    const _glossaryAudioLanguageMatches = (stored, requested) => {
+        // Older exact-text clips did not record language; retain that legacy
+        // lane. A known saved language must match the current card instead.
+        if (!stored || !requested) return true;
+        const left = _glossaryLanguageInfo(stored), right = _glossaryLanguageInfo(requested);
+        if (!left.tag || !right.tag) return stored.trim().toLocaleLowerCase() === requested.trim().toLocaleLowerCase();
+        // Named aliases normalize together, but a missing script or region is
+        // not a wildcard for an explicitly different pronunciation setting.
+        return left.tag.toLowerCase() === right.tag.toLowerCase();
+    };
+    // One translation adapter feeds cards, word lists, and audio identity.
+    const _flashcardTranslation = (item, language) => {
+        const translations = item && item.translations;
+        const value = translations && typeof translations === 'object' && !Array.isArray(translations) ? translations[language] : '';
+        const shared = window.AlloModules?.normalizeGlossaryTranslation;
+        if (typeof shared === 'function') {
+            const normalized = shared(value);
+            return { ...normalized, usable: !![normalized.term, normalized.definition].some(text => _glossaryPlainText(text).trim()) };
+        }
+        const text = value => typeof value === 'string' ? value.trim() : '';
+        let term = '', definition = '', spoken = '';
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            spoken = text(value.text) || text(value.translation);
+            if (!spoken) {
+                term = text(value.term) || text(value.word);
+                definition = text(value.def) || text(value.definition) || text(value.meaning);
+                spoken = [term, definition].filter(Boolean).join(': ');
+            }
+        } else spoken = text(value);
+        if (!term && !definition && spoken) {
+            const split = spoken.search(/[:：]/);
+            if (split >= 0) { term = spoken.slice(0, split).trim(); definition = spoken.slice(split + 1).trim(); }
+            else definition = spoken;
+        }
+        const usable = !![term, definition].some(value => _glossaryPlainText(value).trim());
+        return { term, definition, spoken, usable };
+    };
+
     // ─── handleExportFlashcards ───────────────────────────────────────
     const handleExportFlashcards = (mode = 'standard', exportOptions = {}) => {
         const { generatedContent, t, addToast } = liveRef.current;
         if (!generatedContent || generatedContent.type !== 'glossary') return;
         const audioOptions = exportOptions && typeof exportOptions === 'object' ? exportOptions : {};
-        const cleanText = (text) => _escapeExportText(text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '');
+        const cleanText = text => _escapeExportText(_glossaryPlainText(text));
         const cards = Array.isArray(generatedContent.data) ? generatedContent.data.filter(item => item && item.term) : [];
         if (!cards.length) { if (addToast) addToast(t('flashcards.export_empty') || 'Add glossary terms before exporting flashcards.', 'info'); return; }
         // lang/dir for a card side written in a named language ("Arabic"), from
         // the host's language utilities. A name they do not know comes back as
         // English, so it gets dir="auto" and no lang rather than a wrong one.
+        const sourceLanguage = (item, field) => _glossarySourceLanguage(generatedContent, item, field);
+        const languageLabel = language => /^english$/i.test(language) ? _gxText('languages.english', 'English') : language;
         const sideLangAttrs = (languageName) => {
             if (!languageName) return ' lang="en" dir="ltr"';
-            const m = window.AlloModules && window.AlloModules.ModuleScopeExtras;
-            let code = '', rtl = false;
-            try {
-                if (m && typeof m.getSpeechLangCode === 'function') code = String(m.getSpeechLangCode(languageName) || '').split('-')[0];
-                if (m && typeof m.isRtlLang === 'function') rtl = !!m.isRtlLang(languageName);
-            } catch (_) { code = ''; }
-            const known = /^[A-Za-z]{2,3}$/.test(code) && !(code.toLowerCase() === 'en' && !/^english/i.test(String(languageName)));
-            return (known ? ' lang="' + code + '"' : '') + ' dir="' + (rtl ? 'rtl' : known ? 'ltr' : 'auto') + '"';
+            const info = _glossaryLanguageInfo(languageName);
+            return (info.tag ? ' lang="' + _escapeExportText(info.tag) + '"' : '') + ' dir="' + info.dir + '"';
         };
 // No usable description (none, or one written for an earlier picture): name the
 // picture by its term rather than hide it. Only a decorative picture is silent.
@@ -2818,32 +2932,32 @@ function flashcardExportImageAlt(item) {
             }
             .card-picture { margin: 0 0 12px; max-width: 100%; }
             .card-picture img { display: block; max-width: 100%; width: auto; max-height: 160px; margin: auto; object-fit: contain; }
-            .card-picture figcaption { margin-top: 4px; font-size: 9px; color: #475569; overflow-wrap: anywhere; }
+            .card-picture figcaption { margin-top: 4px; font-size: 0.5625rem; color: #475569; overflow-wrap: anywhere; }
             .front { border-inline-end: 2px dashed #cbd5e1; }
             .cut-guide {
                 position: absolute;
                 top: 4px; left: 50%;
                 transform: translateX(-50%);
-                font-size: 10px; color: #475569;
+                font-size: 0.625rem; color: #475569;
                 background: white; padding: 0 5px;
                 font-weight: bold;
             }
             .lang-label {
-                font-size: 10px;
+                font-size: 0.625rem;
                 text-transform: uppercase;
                 color: #475569;
                 margin-bottom: 2px;
                 font-weight: bold;
             }
-            .primary-text { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
-            .secondary-text { font-size: 16px; color: #4f46e5; font-weight: bold; margin-top: 5px; }
-            .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
-            .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
-            .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
+            .primary-text { font-size: 1.25rem; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+            .secondary-text { font-size: 1rem; color: #4f46e5; font-weight: bold; margin-top: 5px; }
+            .def-text { font-size: 0.8125rem; color: #475569; line-height: 1.4; }
+            .def-trans { font-size: 0.8125rem; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+            .etym-text { font-size: 0.6875rem; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
             .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
-            .root-chip { font-size: 10px; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
+            .root-chip { font-size: 0.625rem; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
             .root-chip b { font-weight: 700; }
-            .root-chip i { font-size: 9px; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }
+            .root-chip i { font-size: 0.5625rem; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }
             .set-header {
                 background: #f1f5f9; color: #334155;
                 padding: 15px; margin: 40px 0 20px 0;
@@ -2862,8 +2976,8 @@ function flashcardExportImageAlt(item) {
         `;
         const allLanguages = new Set();
         cards.forEach(c => {
-            if (c.translations) {
-                Object.keys(c.translations).forEach(k => allLanguages.add(k));
+            if (c.translations && typeof c.translations === 'object' && !Array.isArray(c.translations)) {
+                Object.keys(c.translations).forEach(k => { if (_flashcardTranslation(c, k).usable) allLanguages.add(k); });
             }
         });
         const languagesList = Array.from(allLanguages);
@@ -2873,21 +2987,26 @@ function flashcardExportImageAlt(item) {
             else if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
             return;
         }
+        const sets = (languagesList.length ? languagesList : [null]).map(lang => ({ lang,
+            cards: isLanguageMode ? cards.filter(item => _flashcardTranslation(item, lang).usable) : cards }));
+        const incompleteCards = isLanguageMode ? sets.reduce((count, set) => count + cards.length - set.cards.length, 0) : 0;
         // Prepared recordings ride along as data URIs, each written once, within a size cap.
         const audioIndex = _flashcardAudioIndex(generatedContent);
         const sideClips = (item, lang) => ({
-            front: _flashcardClip(audioIndex, item, 'term'),
-            back: isLanguageMode ? _flashcardClip(audioIndex, item, 'translation', lang) : _flashcardClip(audioIndex, item, 'definition'),
+            front: _flashcardClip(audioIndex, item, 'term', null, generatedContent),
+            back: isLanguageMode ? _flashcardClip(audioIndex, item, 'translation', lang, generatedContent) : _flashcardClip(audioIndex, item, 'definition', null, generatedContent),
         });
         const availableClips = [];
-        (languagesList.length ? languagesList : [null]).forEach(lang => cards.forEach(item => {
-            const clips = sideClips(item, lang);
+        sets.forEach(set => set.cards.forEach(item => {
+            const clips = sideClips(item, set.lang);
             [clips.front, clips.back].forEach(clip => { if (clip && !availableClips.includes(clip)) availableClips.push(clip); });
         }));
-        if (availableClips.length && audioOptions.includeAudio === undefined) {
-            _flashcardAudioDialog(mode, availableClips, audioOptions.opener);
+        const reader = _flashcardReader();
+        if ((availableClips.length && audioOptions.includeAudio === undefined) || (reader && reader.differs && audioOptions.useReadingSettings === undefined)) {
+            _flashcardAudioDialog(mode, availableClips, audioOptions.opener, reader);
             return;
         }
+        const readerSettings = reader && audioOptions.useReadingSettings === true ? reader.settings : null;
         const audioIds = new Map();
         const audioData = {};
         let audioBytes = 0, audioSkipped = 0;
@@ -2910,34 +3029,33 @@ function flashcardExportImageAlt(item) {
             return typeof line === 'function' ? line(credit)
                 : [credit.set, credit.author, credit.license, credit.modified === true ? 'edited' : ''].filter(value => typeof value === 'string' && value.trim()).join(' · ');
         };
-        const renderSet = (lang = null) => {
+        const renderSet = (lang = null, setCards = cards) => {
+            const sourceLabels = [...new Set(setCards.map(item => languageLabel(sourceLanguage(item, 'termLanguage'))))].join(' / ');
             const header = lang
-                ? (isLanguageMode ? `${t('languages.english')} ⟷ ${lang}` : lang)
-                : t('languages.english');
+                ? (isLanguageMode ? `${sourceLabels} ⟷ ${lang}` : lang)
+                : sourceLabels;
             htmlBody += `<h2 class="set-header">${_escapeExportText(header)} ${_escapeExportText(t('flashcards.set_header'))}</h2>`;
-            cards.forEach(item => {
+            setCards.forEach(item => {
                 let transTerm = "";
                 let transDef = "";
                 if (lang) {
-                    const fullTrans = item.translations ? String(item.translations[lang] || '') : "";
-                    // Chinese and Japanese translations often use the full-width colon.
-                    const splitIdx = fullTrans.search(/[:：]/);
-                    if (splitIdx >= 0) {
-                        transTerm = fullTrans.substring(0, splitIdx).trim();
-                        transDef = fullTrans.substring(splitIdx + 1).trim();
-                    } else if (fullTrans) {
-                        transDef = fullTrans;
-                    }
+                    const translation = _flashcardTranslation(item, lang);
+                    transTerm = translation.term;
+                    transDef = translation.definition;
                 }
                 let frontContent = "";
                 let backContent = "";
-                const en = sideLangAttrs(null);
+                const termLanguage = sourceLanguage(item, 'termLanguage');
+                const definitionLanguage = sourceLanguage(item, 'definitionLanguage');
+                const termLabel = languageLabel(termLanguage), definitionLabel = languageLabel(definitionLanguage);
+                const termAttrs = sideLangAttrs(termLanguage), definitionAttrs = sideLangAttrs(definitionLanguage);
                 const tr = sideLangAttrs(lang);
                 if (isLanguageMode) {
                     frontContent = `
-                        <div class="lang-label">${_escapeExportText(t('languages.english'))}</div>
-                        <div class="primary-text"${en}>${cleanText(item.term)}</div>
-                        <div class="def-text"${en}>${cleanText(item.def || item.definition)}</div>
+                        <div class="lang-label">${_escapeExportText(termLabel)}</div>
+                        <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
+                        ${definitionLanguage !== termLanguage ? `<div class="lang-label">${_escapeExportText(definitionLabel)}</div>` : ''}
+                        <div class="def-text"${definitionAttrs}>${cleanText(item.def || item.definition)}</div>
                     `;
                     backContent = `
                         <div class="lang-label">${_escapeExportText(lang)}</div>
@@ -2947,12 +3065,12 @@ function flashcardExportImageAlt(item) {
                 } else {
                     frontContent = `
                         <div class="cut-guide">${_escapeExportText(t('flashcards.fold_guide'))}</div>
-                        <div class="lang-label">${_escapeExportText(t('languages.english'))}</div>
-                        <div class="primary-text"${en}>${cleanText(item.term)}</div>
+                        <div class="lang-label">${_escapeExportText(termLabel)}</div>
+                        <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
                         ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(lang)}</div>` : ''}
                     `;
                     backContent = `
-                        <div class="def-text"><strong>${_escapeExportText(t('languages.english'))}:</strong> <span${en}>${cleanText(item.def || item.definition)}</span></div>
+                        <div class="def-text"><strong>${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
                         ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}
                         ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                         ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
@@ -2988,14 +3106,10 @@ function flashcardExportImageAlt(item) {
                 `;
             });
         };
-        if (languagesList.length === 0) {
-            renderSet(null);
-        } else {
-            languagesList.forEach((lang, index) => {
-                if (index > 0) htmlBody += `<div style="page-break-before: always;"></div>`;
-                renderSet(lang);
-            });
-        }
+        sets.forEach((set, index) => {
+            if (index > 0) htmlBody += `<div style="page-break-before: always;"></div>`;
+            renderSet(set.lang, set.cards);
+        });
         const listedCredits = new Set();
         const creditEntries = pictureCredits.map(credit => {
             const where = [];
@@ -3026,9 +3140,9 @@ function flashcardExportImageAlt(item) {
                         .card-side * { color: #000 !important; }
                     }
                     ${cardStyle}${audioIds.size ? `
-                    .card-audio { min-width: 44px; min-height: 44px; margin: 8px 0; border: 2px solid #4f46e5; border-radius: 999px; background: #fff; color: #3730a3; font-size: 20px; cursor: pointer; }
+                    .card-audio { min-width: 44px; min-height: 44px; margin: 8px 0; border: 2px solid #4f46e5; border-radius: 999px; background: #fff; color: #3730a3; font-size: 1.25rem; cursor: pointer; }
                     .card-audio:focus-visible { outline: 3px solid #1e1b4b; outline-offset: 2px; }` : ''}
-                </style>
+                </style>${readerSettings ? _FLASHCARD_READER_SLOT : ''}
             </head>
             <body>
                 ${htmlBody}
@@ -3037,20 +3151,69 @@ function flashcardExportImageAlt(item) {
             </body>
             </html>
         `;
-        const blob = new Blob([fullHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        // Revoking in the same tick can cancel the download in some browsers.
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        try { if (typeof window.alloAnnounce === 'function') window.alloAnnounce(t('flashcards.export_done') || 'Flashcards downloaded.'); } catch (_) {}
-        if (audioSkipped && typeof addToast === 'function') addToast(audioSkipped === 1
-            ? _gxText('flashcards.audio_capped_one', '1 recording was left out to keep the file under 20 MB.')
-            : _gxText('flashcards.audio_capped', '{count} recordings were left out to keep the file under 20 MB.', { count: audioSkipped }), 'info');
+        const download = (html) => {
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            // Revoking in the same tick can cancel the download in some browsers.
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            try { if (typeof window.alloAnnounce === 'function') window.alloAnnounce(t('flashcards.export_done') || 'Flashcards downloaded.'); } catch (_) {}
+            if (audioOptions.includeAudio !== false && audioIndex.staleLanguageClips.size && typeof addToast === 'function') addToast(audioIndex.staleLanguageClips.size === 1
+                ? _gxText('flashcards.audio_language_stale_one', '1 recording was left out because its saved language no longer matches the card. Refresh the audio to include it.')
+                : _gxText('flashcards.audio_language_stale', '{count} recordings were left out because their saved language no longer matches the cards. Refresh the audio to include them.', { count: audioIndex.staleLanguageClips.size }), 'info');
+            if (incompleteCards && typeof addToast === 'function') addToast(incompleteCards === 1
+                ? _gxText('flashcards.translation_skipped_one', '1 card was skipped because its translation is missing.')
+                : _gxText('flashcards.translation_skipped', '{count} cards were skipped because their translations are missing.', { count: incompleteCards }), 'info');
+            if (audioSkipped && typeof addToast === 'function') addToast(audioSkipped === 1
+                ? _gxText('flashcards.audio_capped_one', '1 recording was left out to keep the file under 20 MB.')
+                : _gxText('flashcards.audio_capped', '{count} recordings were left out to keep the file under 20 MB.', { count: audioSkipped }), 'info');
+        };
+        if (!readerSettings) return download(fullHtml);
+        // The font is fetched and embedded first, so the file keeps it offline.
+        return _flashcardReaderFont(readerSettings.fontId)
+            .then(font => download(fullHtml.replace(_FLASHCARD_READER_SLOT, () => _flashcardReaderHead(readerSettings, font))))
+            .catch(error => { if (typeof warnLog === 'function') warnLog('Flash-card export failed', error); });
+    };
+
+    // ─── "Use my reading settings" for the flash-card file ───────────
+    // The host bridge's font, text size and spacing; differs = not the defaults.
+    const _FLASHCARD_READER_SLOT = '<!--allo-reader-settings-->';
+    const _flashcardReader = () => {
+        const lib = window.AlloModules && window.AlloModules.UIFontLibrary;
+        let settings = null;
+        try { if (lib && typeof lib.readerExportCss === 'function' && lib.readingSettingsAvailable()) settings = window.__alloReadingSettings.get(); } catch (_) { settings = null; }
+        if (!settings || typeof settings !== 'object') return null;
+        const differs = (settings.fontId || 'default') !== 'default' || Number(settings.baseFontSize) !== 16
+            || Number(settings.lineHeight) !== 1.6 || Number(settings.letterSpacing) !== 0;
+        return { settings, differs };
+    };
+    // Embedded font first (an offline file cannot fetch one), then a <link>, then the system font.
+    const _flashcardReaderFont = (fontId) => {
+        const none = { head: '', css: '' };
+        const lib = window.AlloModules && window.AlloModules.UIFontLibrary;
+        if (!lib || typeof lib.exportFontFaceCss !== 'function') return Promise.resolve(none);
+        const usable = face => face && typeof face === 'object' && (face.head || face.css) ? face : null;
+        let timer = null;
+        const giveUp = new Promise(resolve => { timer = setTimeout(() => resolve(null), 10000); });
+        return Promise.race([Promise.resolve().then(() => lib.exportFontFaceCss(fontId, { embed: true })), giveUp])
+            .then(usable, () => null)
+            .then(face => { clearTimeout(timer); return face; })
+            .then(face => face || Promise.resolve().then(() => lib.exportFontFaceCss(fontId)).then(usable, () => null))
+            .then(face => face || none);
+    };
+    // Larger text: the fold guide moves into the flow so it never covers a word,
+    // and from 24 px the two sides stack (fold across the middle) to keep lines readable.
+    const _flashcardReaderHead = (settings, font) => {
+        const lib = window.AlloModules.UIFontLibrary;
+        const stacked = Number(settings.baseFontSize) >= 24;
+        const layout = 'body{overflow-wrap:break-word}.cut-guide{position:static;transform:none;align-self:center;order:-1;margin:0 0 8px}'
+            + (stacked ? '.card-container{flex-direction:column}.front{border-inline-end:0;border-bottom:2px dashed #cbd5e1}' : '');
+        return (font.head || '') + '<style data-reader-settings>' + (font.css || '') + '\n' + lib.readerExportCss(settings) + '\n' + layout + '</style>';
     };
 
     // ─── Prepared glossary audio for the flash-card file ─────────────
@@ -3060,6 +3223,7 @@ function flashcardExportImageAlt(item) {
     const _flashcardAudioIndex = (resource) => {
         const raw = resource && resource.karaokeAudio;
         const index = new Map();
+        index.staleLanguageClips = new Set();
         if (!raw || raw.version !== 4 || !raw.entries || typeof raw.entries !== 'object') return index;
         const store = window.AlloModules && window.AlloModules.KaraokeAudioStore;
         Object.keys(raw.entries).forEach(key => {
@@ -3076,12 +3240,13 @@ function flashcardExportImageAlt(item) {
             } else if (!/^audio\/(?:mpeg|wav|webm|ogg|mp4|aac|flac)$/.test(mime) || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) return;
             const segmentId = String(identity.segmentId || '');
             if (!index.has(segmentId)) index.set(segmentId, []);
-            index.get(segmentId).push({ text: String(identity.spokenText || ''), src: 'data:' + mime + ';base64,' + b64 });
+            const profile = entry.synthesisProfile || entry.metadata || {};
+            index.get(segmentId).push({ text: String(identity.spokenText || ''), language: typeof profile.language === 'string' ? profile.language.trim() : '', src: 'data:' + mime + ';base64,' + b64 });
         });
         return index;
     };
     // Only a clip recorded for the text the card shows now; an edited term's old clip stays out.
-    const _flashcardClip = (index, item, field, language) => {
+    const _flashcardClip = (index, item, field, language, resource) => {
         const entryId = String(item && item.entryId != null ? item.entryId : '').trim().slice(0, 160);
         if (!entryId || !index.size) return null;
         const spoken = value => String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
@@ -3091,8 +3256,7 @@ function flashcardExportImageAlt(item) {
             const format = window.AlloModules && window.AlloModules.formatGlossaryDefinitionSpeech;
             texts = [typeof format === 'function' ? format(item.term, def) : '', def, spoken(item.term) + ': ' + spoken(def)];
         } else if (field === 'translation') {
-            const value = item.translations && typeof item.translations === 'object' ? item.translations[language] : '';
-            texts = [value && typeof value === 'object' ? (value.text != null ? value.text : value.translation != null ? value.translation : [value.term, value.def || value.definition].filter(Boolean).join(': ')) : value];
+            texts = [_flashcardTranslation(item, language).spoken];
             let key = 'und';
             try { key = encodeURIComponent(String(language || '').trim().normalize('NFKC').toLocaleLowerCase('en-US')) || 'und'; } catch (_) { key = encodeURIComponent(String(language || '').toLowerCase()) || 'und'; }
             suffix = 'translation/' + key;
@@ -3104,27 +3268,48 @@ function flashcardExportImageAlt(item) {
             try { if (typeof toSpoken === 'function') wanted.add(spoken(toSpoken(text))); } catch (_) {}
         });
         const list = index.get('entry/' + encodeURIComponent(entryId) + '/' + suffix) || [];
-        return list.find(clip => wanted.has(clip.text)) || null;
+        const expectedLanguage = field === 'translation' ? language : _glossarySourceLanguage(resource, item, field === 'definition' ? 'definitionLanguage' : 'termLanguage');
+        const matching = list.filter(clip => wanted.has(clip.text));
+        const current = matching.find(clip => clip.language && _glossaryAudioLanguageMatches(clip.language, expectedLanguage))
+            || matching.find(clip => !clip.language);
+        if (current) return current;
+        matching.forEach(clip => index.staleLanguageClips.add(clip));
+        return null;
     };
-    const _flashcardAudioDialog = (mode, clips, opener) => {
+    // The options step: prepared audio (when there is some) and the reader's own
+    // settings (on by default when they differ from the defaults).
+    const _flashcardAudioDialog = (mode, clips, opener, reader) => {
         const bytes = clips.reduce((sum, clip) => sum + clip.src.length, 0);
         let size = (bytes / 1048576).toFixed(1);
         try { size = new Intl.NumberFormat(_exportLanguage(), { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(bytes / 1048576); } catch (_) {}
         _gxDialog(_gxText('flashcards.audio_dialog_title', 'Download flash cards'), opener, (ui) => {
-            const row = ui.el('label', 'agx-option', '', ui.dialog);
-            const box = ui.el('input', '', '', row);
-            box.type = 'checkbox';
-            box.checked = true;
-            box.setAttribute('data-agx-autofocus', '');
-            ui.el('span', '', _gxText('flashcards.include_audio', 'Include prepared audio'), row);
-            ui.el('p', 'agx-note', _gxText('flashcards.audio_summary', '{count} prepared recordings, about {size} MB.', { count: clips.length, size }), ui.dialog);
-            if (bytes > _FLASHCARD_AUDIO_CAP) ui.el('p', 'agx-note', _gxText('flashcards.audio_cap_note', 'The file is kept under 20 MB, so some recordings will be left out.'), ui.dialog);
+            const option = (text, checked) => {
+                const row = ui.el('label', 'agx-option', '', ui.dialog);
+                const input = ui.el('input', '', '', row);
+                input.type = 'checkbox';
+                input.checked = checked;
+                ui.el('span', '', text, row);
+                return input;
+            };
+            const box = clips.length ? option(_gxText('flashcards.include_audio', 'Include prepared audio'), true) : null;
+            if (box) {
+                ui.el('p', 'agx-note', _gxText('flashcards.audio_summary', '{count} prepared recordings, about {size} MB.', { count: clips.length, size }), ui.dialog);
+                if (bytes > _FLASHCARD_AUDIO_CAP) ui.el('p', 'agx-note', _gxText('flashcards.audio_cap_note', 'The file is kept under 20 MB, so some recordings will be left out.'), ui.dialog);
+            }
+            const mine = reader ? option(_gxText('reading_settings.use_mine', 'Use my reading settings'), reader.differs) : null;
+            if (mine) {
+                const help = ui.el('p', 'agx-note', _gxText('reading_settings.use_mine_help', 'Prints with your font, text size and spacing.'), ui.dialog);
+                help.id = ui.uid + '-reader-help';
+                mine.setAttribute('aria-describedby', help.id);
+            }
+            if (box || mine) (box || mine).setAttribute('data-agx-autofocus', '');
             const actions = ui.el('div', 'agx-actions', '', ui.dialog);
             ui.button(_gxText('common.download', 'Download'), () => {
-                const includeAudio = box.checked;
+                const includeAudio = box ? box.checked : undefined;
+                const useReadingSettings = mine ? mine.checked : undefined;
                 const returnTo = ui.returnTo;
                 ui.close();
-                handleExportFlashcards(mode, { includeAudio, opener: returnTo });
+                handleExportFlashcards(mode, { includeAudio, useReadingSettings, opener: returnTo });
             }, true, actions);
             ui.button(_gxText('common.cancel', 'Cancel'), () => ui.close(), false, actions);
         });
@@ -3141,13 +3326,12 @@ function flashcardExportImageAlt(item) {
         Object.keys(params || {}).forEach(name => { text = String(text).split('{' + name + '}').join(String(params[name] == null ? '' : params[name])); });
         return text;
     };
-    const _gxPlain = value => String(value == null ? '' : value).replace(/\*\*/g, '');
+    const _gxPlain = value => _glossaryPlainText(value);
     const _gxOneLine = value => _gxPlain(value).replace(/\s+/g, ' ').trim();
     const _gxDefinition = item => (item.def != null ? item.def : item.definition);
     const _gxTranslation = (item, lang) => {
-        const value = item.translations && typeof item.translations === 'object' && !Array.isArray(item.translations) ? item.translations[lang] : '';
-        if (value && typeof value === 'object') return String(value.text != null ? value.text : value.translation != null ? value.translation : [value.term, value.def || value.definition].filter(Boolean).join(': '));
-        return String(value == null ? '' : value);
+        const translation = _flashcardTranslation(item, lang);
+        return translation.usable ? translation.spoken : '';
     };
     const _gxEntries = () => {
         const { generatedContent } = liveRef.current || {};
@@ -3181,8 +3365,9 @@ function flashcardExportImageAlt(item) {
         tags: _gxOneLine(item.tier).replace(/\s+/g, '_'),
     })).filter(pair => pair.front && pair.back);
     const _gxQuizlet = pairs => pairs.map(pair => pair.front + '\t' + pair.back).join('\n');
-    // A field that holds a quote is quoted, or Anki's reader would take it as a quoted field.
-    const _gxAnkiField = text => (text.includes('"') ? '"' + text.replace(/"/g, '""') + '"' : text);
+    // Anki ignores raw # comment records. Quoting preserves valid #include or
+    // #hashtag terms, in addition to escaping quotes already inside a field.
+    const _gxAnkiField = text => (text.includes('"') || text.startsWith('#') ? '"' + text.replace(/"/g, '""') + '"' : text);
     const _gxAnki = pairs => '#separator:tab\n#html:false\n#columns:Front\tBack\tTags\n#tags column:3\n'
         + pairs.map(pair => [pair.front, pair.back, pair.tags].map(_gxAnkiField).join('\t')).join('\n') + '\n';
     const _gxFileName = (kind, extension) => {
@@ -3206,14 +3391,14 @@ function flashcardExportImageAlt(item) {
         setTimeout(() => URL.revokeObjectURL(url), 1500);
     };
     const _GX_CSS = '.agx-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow:auto;background:rgba(15,23,42,.6);color-scheme:light}'
-        + '.agx-dialog{box-sizing:border-box;width:min(100%,34rem);max-height:calc(100vh - 24px);overflow:auto;padding:16px;border-radius:12px;background:#fff;color:#0f172a;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}'
-        + '.agx-dialog h2{margin:0 0 10px;font-size:18px}.agx-dialog [hidden]{display:none!important}'
+        + '.agx-dialog{box-sizing:border-box;width:min(100%,34rem);max-height:calc(100vh - 24px);overflow:auto;padding:16px;border-radius:12px;background:#fff;color:#0f172a;font:0.9375rem/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}'
+        + '.agx-dialog h2{margin:0 0 10px;font-size:1.125rem}.agx-dialog [hidden]{display:none!important}'
         + '.agx-dialog fieldset{margin:0 0 10px;padding:6px 12px;border:1px solid #94a3b8;border-radius:8px}.agx-dialog legend{padding:0 4px;font-weight:700}'
-        + '.agx-option{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}.agx-option input{width:20px;height:20px;margin:0}'
+        + '.agx-option{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}.agx-option input{flex:none;width:1.25rem;height:1.25rem;margin:0}'
         + '.agx-label{display:block;margin:8px 0 4px;font-weight:700}'
         + '.agx-dialog select,.agx-dialog textarea{box-sizing:border-box;width:100%;max-width:100%;padding:8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#0f172a;font:inherit}'
-        + '.agx-dialog select{min-height:44px}.agx-dialog textarea{font:13px/1.4 ui-monospace,monospace}'
-        + '.agx-note{margin:6px 0 0;font-size:14px;color:#334155}.agx-status{min-height:1.4em;margin:8px 0 0;font-size:14px;color:#1e293b}'
+        + '.agx-dialog select{min-height:44px}.agx-dialog textarea{font:0.8125rem/1.4 ui-monospace,monospace}'
+        + '.agx-note{margin:6px 0 0;font-size:0.875rem;color:#334155}.agx-status{min-height:1.4em;margin:8px 0 0;font-size:0.875rem;color:#1e293b}'
         + '.agx-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}'
         + '.agx-btn{min-height:44px;padding:8px 14px;border:1px solid #64748b;border-radius:8px;background:#fff;color:#0f172a;font:inherit;font-weight:700;cursor:pointer}'
         + '.agx-btn-primary{border-color:#4338ca;background:#4338ca;color:#fff}'
@@ -3370,8 +3555,18 @@ function flashcardExportImageAlt(item) {
             return false;
         }
         const languages = _gxLanguages(entries);
+        if ((format === 'anki' || format === 'quizlet') && typeof opts.back === 'string' && opts.back && opts.back !== 'definition' && !languages.includes(opts.back)) {
+            if (typeof addToast === 'function') addToast(_gxText('export.word_list_missing_translation', 'No usable {language} translations are available. Choose a different card back.', { language: opts.back }), 'info');
+            return false;
+        }
         const back = languages.includes(opts.back) ? opts.back : 'definition';
         const pairs = format === 'quizlet' || format === 'anki' ? _gxPairs(entries, back) : [];
+        const reportSkipped = () => {
+            const count = entries.length - pairs.length;
+            if (count && typeof addToast === 'function') addToast(count === 1
+                ? _gxText('export.word_list_skipped_back_one', '1 card was skipped because its selected back is missing.')
+                : _gxText('export.word_list_skipped_back', '{count} cards were skipped because their selected backs are missing.', { count }), 'info');
+        };
         const downloaded = () => {
             const message = _gxText('export.word_list_downloaded', 'Word list downloaded.');
             if (typeof addToast === 'function') addToast(message, 'success');
@@ -3389,10 +3584,12 @@ function flashcardExportImageAlt(item) {
         if (format === 'anki') {
             _gxDownload(_gxAnki(pairs), 'text/plain;charset=utf-8', _gxFileName('anki', 'txt'));
             downloaded();
+            reportSkipped();
             return true;
         }
         if (format === 'quizlet') {
             _gxQuizletDialog(_gxQuizlet(pairs), pairs.length, opts.opener);
+            reportSkipped();
             return true;
         }
         _gxChooser(languages, opts.opener);

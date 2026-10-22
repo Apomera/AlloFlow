@@ -1291,7 +1291,7 @@ const WordSoundsReviewPanel = ({
       {
         "aria-label": t("common.rhyme_time_options"),
         value: word.rhymeWord || "",
-        onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }),
+        onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true }),
         className: "px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none",
         "data-help-key": "word_sounds_review_distractor_input",
         placeholder: t("common.placeholder_correct_rhyme")
@@ -1304,7 +1304,7 @@ const WordSoundsReviewPanel = ({
         onChange: (e) => {
           const newDist = [...word.rhymeDistractors || []];
           newDist[i] = e.target.value;
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
+          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
         },
         className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none",
         "data-help-key": "word_sounds_review_distractor_input",
@@ -1361,7 +1361,7 @@ const WordSoundsReviewPanel = ({
         type: "button",
         onClick: () => {
           const newDist = [...word.rhymeDistractors || [], ""];
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
+          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
         },
         className: "px-3 py-1.5 bg-orange-100 text-orange-800 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
       },

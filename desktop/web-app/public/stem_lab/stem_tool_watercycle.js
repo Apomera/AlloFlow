@@ -17331,6 +17331,8 @@ const d = labToolData.waterCycle || {};
             cloudShadow.userData.opacity = pilotCloudShadowUniforms.opacity;
             cloudShadow.userData.sourceForm = 'none';
             cloudShadow.userData.maxProjectionTravel = 560;
+            var pilotCloudShadowSource = {active:false,opacity:0,source:new THREE.Vector3(),footprint:new THREE.Vector2(1,1)};
+            cloudShadow.userData.sourceMemory = pilotCloudShadowSource;
             cloudShadow.visible = false;
             scene.add(cloudShadow);
             var pilotCloudShadowReceivers = [ocean, lake, streamMesh, wetSand, beach,
@@ -17373,7 +17375,20 @@ const d = labToolData.waterCycle || {};
               material.customProgramCacheKey = function() { return previousShadowCacheKey + '-receiving-cloud-shadow-v1'; };
               material.needsUpdate = true;
             });
+            function clearPilotCloudShadowSource() {
+              pilotCloudShadowSource.active=false;pilotCloudShadowSource.opacity=0;
+              pilotCloudShadowSource.source.set(0,0,0);pilotCloudShadowSource.footprint.set(1,1);
+            }
+            function capturePilotCloudShadowSource() {
+              // Retain the actual last drawn strength, including a cloud whose
+              // assembly was interrupted. Copy pooled values, never live aliases.
+              pilotCloudShadowSource.source.copy(pilotCloudShadowUniforms.source.value);
+              pilotCloudShadowSource.footprint.copy(pilotCloudShadowUniforms.footprint.value);
+              pilotCloudShadowSource.opacity=pilotCloudShadowUniforms.opacity.value;
+              pilotCloudShadowSource.active=true;
+            }
             function clearPilotCloudShadow() {
+              clearPilotCloudShadowSource();
               pilotCloudShadowUniforms.opacity.value = 0;
               pilotCloudShadowUniforms.source.value.set(0, 0, 0);
               pilotCloudShadowUniforms.footprint.value.set(1, 1);
@@ -17384,15 +17399,21 @@ const d = labToolData.waterCycle || {};
               var formedCloud = sim.form === 'cloud';
               var sourceCloud = !formedCloud && phaseHandoff.visible
                 && phaseHandoffKind === 'precipitation-release' && phaseCloudGhost.userData.sourceSnapshot;
-              if (!formedCloud && !sourceCloud) { clearPilotCloudShadow(); return; }
-              pilotCloudShadowUniforms.source.value.copy(formedCloud ? parcel.position : phaseCloudSourcePosition);
-              var shadowStage = formedCloud ? selfCloud.userData.assemblyProgress : 1 - phaseFrontProgress.value;
-              var shadowHeight = Math.max(0, Math.min(1,
-                pilotCloudShadowUniforms.source.value.y / Math.max(1, m2u(env.ceilingM))));
-              var shadowRadius = 58 + Math.min(76, sim.mass * 38);
-              pilotCloudShadowUniforms.footprint.value.set(shadowRadius * 1.25, shadowRadius * 0.72);
-              pilotCloudShadowUniforms.opacity.value = 0.34 * (0.55 + 0.45 * env.solar)
-                * (1 - shadowHeight * 0.48) * Math.max(0, Math.min(1, shadowStage));
+              if (!formedCloud && (!sourceCloud || !pilotCloudShadowSource.active)) { clearPilotCloudShadow(); return; }
+              if(sourceCloud){
+                pilotCloudShadowUniforms.source.value.copy(pilotCloudShadowSource.source);
+                pilotCloudShadowUniforms.footprint.value.copy(pilotCloudShadowSource.footprint);
+                pilotCloudShadowUniforms.opacity.value=pilotCloudShadowSource.opacity*cloudVeilExit.coverage;
+              }else{
+                pilotCloudShadowUniforms.source.value.copy(parcel.position);
+                var shadowStage = selfCloud.userData.assemblyProgress;
+                var shadowHeight = Math.max(0, Math.min(1,
+                  pilotCloudShadowUniforms.source.value.y / Math.max(1, m2u(env.ceilingM))));
+                var shadowRadius = 58 + Math.min(76, sim.mass * 38);
+                pilotCloudShadowUniforms.footprint.value.set(shadowRadius * 1.25, shadowRadius * 0.72);
+                pilotCloudShadowUniforms.opacity.value = 0.34 * (0.55 + 0.45 * env.solar)
+                  * (1 - shadowHeight * 0.48) * Math.max(0, Math.min(1, shadowStage));
+              }
               cloudShadow.visible = pilotCloudShadowUniforms.opacity.value > 0;
               cloudShadow.userData.sourceForm = formedCloud ? 'cloud' : 'cloud-memory';
               canvasEl.dataset.cloudShadow = cloudShadow.visible ? 'sun-projected-receivers' : 'hidden';
@@ -17410,6 +17431,46 @@ const d = labToolData.waterCycle || {};
             var rainBufferWind = NaN, rainBufferRightX = NaN, rainBufferRightZ = NaN;
             var rainBufferEnvironment = null, rainBufferReduced = null;
             var rainBufferLakeVisible = null, rainBufferLakeHeight = NaN, rainBufferStreamVisible = null;
+            var rainBufferEmissionActive = null, rainBufferEmissionCeiling = NaN, rainBufferEmissionAge = NaN;
+            var rainBufferEmissionOrigin = NaN;
+            var rainBufferExposure = NaN;
+            // Virga is already accumulated by the parcel model. Let the
+            // illustrated shower become finer in that dry air, without changing
+            // its water mass, fall speed or phase-change threshold.
+            var rainVirga = {model:'dry-air-shower-thinning',exposure:0,visibility:1,lengthScale:1,widthScale:1};
+            function updateRainVirga() {
+              rainVirga.exposure=Math.max(0,Math.min(1,sim.dryAirExposure||0));
+              var dryEase=rainVirga.exposure*rainVirga.exposure*(3-2*rainVirga.exposure);
+              rainVirga.visibility=1-.8*dryEase;
+              rainVirga.lengthScale=1-.55*dryEase;rainVirga.widthScale=1-.45*dryEase;
+            }
+            // Keep the genuine releasing cloud's shelf in world space. The
+            // short source-memory lens can expire without lifting this ceiling.
+            var rainEmission = { model: 'captured-cloud-shelf', frontModel: 'source-born-fall-front',
+              active: false, ceilingY: 0, originY: 0, startedAt: 0, age: 0 };
+            function clearRainEmission() {
+              rainEmission.active = false; rainEmission.ceilingY = 0;
+              rainEmission.originY = 0; rainEmission.startedAt = 0; rainEmission.age = 0;
+            }
+            function rainBirthFront(speed) {
+              // Match the existing glyphs' local fall speed as their weather
+              // volume follows the parcel. The upper cloud shelf stays fixed.
+              return rainEmission.active
+                ? rainEmission.ceilingY - rainEmission.originY - speed * rainEmission.age : -Infinity;
+            }
+            function rainBirthFade(y, front) {
+              var born = Math.max(0, Math.min(1, (y - front) / 4));
+              return born * born * (3 - 2 * born);
+            }
+            function rainBoundaryFade(y, top, headY) {
+              var upper = Math.max(0, Math.min(1, (top - y) / 4));
+              upper = upper * upper * (3 - 2 * upper);
+              // Fade the whole streak before its head wraps. A long tail must
+              // not remain bright and then jump to the top of the local field.
+              var lower = Math.max(0, Math.min(1, (headY + 60) / 4));
+              lower = lower * lower * (3 - 2 * lower);
+              return upper * lower;
+            }
             var rainCachedImpactCount = 0, rainCachedCrownCount = 0, rainCachedReboundCount = 0;
             for (var ri = 0; ri < RAIN_STREAK_COUNT; ri++) {
               rainFieldSeed[ri * 3] = -48 + ((ri * 37) % 97);
@@ -17521,9 +17582,94 @@ const d = labToolData.waterCycle || {};
               referenceFallSpeed: 55, horizontalSpeed: 0 };
             rainField.userData.advection = rainRibbons.userData.advection = pilotRainAdvection;
             rainField.userData.dropProfile = rainRibbons.userData.dropProfile = rainDropProfile;
+            rainField.userData.emission = rainRibbons.userData.emission = rainEmission;
+            rainField.userData.virga = rainRibbons.userData.virga = rainVirga;
             rainField.add(rainRibbons);
             rainField.userData.visualModel = 'distributed-threads-and-ribbons';
             scene.add(rainField);
+
+            // Retire only the shower that was actually shown when the parcel
+            // leaves rain. Existing glyphs fall out of their captured world
+            // volume; there is no wrap, new drop, or new receiving-water event.
+            var rainShowerExit={model:'captured-falling-shower',active:false,destination:'none',duration:.65,
+              age:0,elapsed:0,startedAt:0,startedWaterTime:-1,lastClock:NaN,updates:0,
+              sourcePosition:new THREE.Vector3(),horizontalSpeed:0,lineOpacity:0,ribbonOpacity:0,
+              sourceLinePos:new Float32Array(rainFieldPos.length),sourceLineAlpha:new Float32Array(rainFieldAlpha.length),
+              sourceRibbonPos:new Float32Array(rainRibbonPos.length),sourceRibbonAlpha:new Float32Array(rainRibbonAlpha.length),
+              lineAlive:new Uint8Array(rainFieldAlpha.length),ribbonAlive:new Uint8Array(rainRibbonAlpha.length)};
+            rainField.userData.retirement=rainRibbons.userData.retirement=rainShowerExit;
+            function clearRainShowerExit(preserveRainBuffer) {
+              rainShowerExit.active=false;rainShowerExit.destination='none';rainShowerExit.age=rainShowerExit.elapsed=0;
+              rainShowerExit.startedAt=0;rainShowerExit.startedWaterTime=-1;rainShowerExit.lastClock=NaN;
+              rainShowerExit.updates=0;rainShowerExit.sourcePosition.set(0,0,0);
+              rainShowerExit.horizontalSpeed=rainShowerExit.lineOpacity=rainShowerExit.ribbonOpacity=0;
+              rainShowerExit.sourceLinePos.fill(0);rainShowerExit.sourceLineAlpha.fill(0);
+              rainShowerExit.sourceRibbonPos.fill(0);rainShowerExit.sourceRibbonAlpha.fill(0);
+              rainShowerExit.lineAlive.fill(0);rainShowerExit.ribbonAlive.fill(0);
+              if(!preserveRainBuffer)rainBufferTime=NaN;
+              if(sim.form!=='rain')rainField.visible=false;
+              canvasEl.dataset.rainRetirement='hidden';
+            }
+            function captureRainShowerExit() {
+              clearRainShowerExit(true);
+              if(sim.form!=='vapor'&&sim.form!=='liquid')return;
+              if(rainBufferEnvironment!==env.id||!Number.isFinite(rainBufferX)
+                ||!rainFieldAlpha.some(function(alpha){return alpha>0;}))return;
+              rainShowerExit.sourcePosition.copy(rainField.position);
+              rainShowerExit.sourceLinePos.set(rainFieldPos);rainShowerExit.sourceLineAlpha.set(rainFieldAlpha);
+              rainShowerExit.sourceRibbonPos.set(rainRibbonPos);rainShowerExit.sourceRibbonAlpha.set(rainRibbonAlpha);
+              for(var showerLine=0;showerLine<rainFieldAlpha.length;showerLine++)rainShowerExit.lineAlive[showerLine]=rainFieldAlpha[showerLine]>0?1:0;
+              for(var showerRibbon=0;showerRibbon<rainRibbonAlpha.length;showerRibbon++)rainShowerExit.ribbonAlive[showerRibbon]=rainRibbonAlpha[showerRibbon]>0?1:0;
+              rainShowerExit.horizontalSpeed=pilotRainAdvection.horizontalSpeed;
+              rainShowerExit.lineOpacity=rainField.material.opacity;rainShowerExit.ribbonOpacity=rainRibbons.material.opacity;
+              rainShowerExit.startedAt=sim.elapsed;rainShowerExit.destination=sim.form;rainShowerExit.active=true;
+            }
+            function updateRainShowerExit() {
+              if(!rainShowerExit.active)return;
+              rainShowerExit.elapsed=Math.max(0,sim.elapsed-rainShowerExit.startedAt);
+              if(sim.form!==rainShowerExit.destination||rainShowerExit.elapsed>=rainShowerExit.duration){clearRainShowerExit();return;}
+              var showerClock=pilotWaterUniforms.rippleTime.value;
+              if(rainShowerExit.startedWaterTime<0)rainShowerExit.startedWaterTime=showerClock;
+              if(!motionReduced)rainShowerExit.age=Math.max(rainShowerExit.age,showerClock-rainShowerExit.startedWaterTime);
+              var showerProgress=Math.max(0,Math.min(1,rainShowerExit.age/rainShowerExit.duration));
+              var showerFade=1-showerProgress*showerProgress*(3-2*showerProgress);
+              rainField.position.copy(rainShowerExit.sourcePosition);rainField.visible=showerFade>0;
+              rainField.material.opacity=rainShowerExit.lineOpacity*showerFade;
+              rainRibbons.material.opacity=rainShowerExit.ribbonOpacity*showerFade;
+              if(rainShowerExit.lastClock!==rainShowerExit.age){
+                var showerAge=rainShowerExit.age,showerWind=rainShowerExit.horizontalSpeed*showerAge;
+                for(var showerDrop=0;showerDrop<RAIN_STREAK_COUNT;showerDrop++){
+                  var showerFall=rainDropProfile[showerDrop*4]*showerAge;
+                  for(var showerPass=0;showerPass<2;showerPass++){
+                    var showerVertices=showerPass?8:4;
+                    var showerSource=showerPass?rainShowerExit.sourceRibbonPos:rainShowerExit.sourceLinePos;
+                    var showerTarget=showerPass?rainRibbonPos:rainFieldPos;
+                    var showerAlphaSource=showerPass?rainShowerExit.sourceRibbonAlpha:rainShowerExit.sourceLineAlpha;
+                    var showerAlphaTarget=showerPass?rainRibbonAlpha:rainFieldAlpha;
+                    var showerAlive=showerPass?rainShowerExit.ribbonAlive:rainShowerExit.lineAlive;
+                    for(var showerVertex=0;showerVertex<showerVertices;showerVertex++){
+                      var showerIndex=showerDrop*showerVertices+showerVertex,showerOffset=showerIndex*3;
+                      var showerX=showerSource[showerOffset]+showerWind;
+                      var showerY=showerSource[showerOffset+1]-showerFall;
+                      var showerZ=showerSource[showerOffset+2];
+                      var showerSurface=showerAge>0?rainWaterSurfaceY(rainShowerExit.sourcePosition.x+showerX,
+                        rainShowerExit.sourcePosition.z+showerZ)-rainShowerExit.sourcePosition.y:-Infinity;
+                      showerTarget[showerOffset]=showerX;showerTarget[showerOffset+1]=Math.max(showerY,showerSurface);
+                      showerTarget[showerOffset+2]=showerZ;
+                      // A submerged vertex retires rather than becoming a new
+                      // bright head at the receiver. Depth testing handles land.
+                      if(showerY<showerSurface)showerAlive[showerIndex]=0;
+                      showerAlphaTarget[showerIndex]=showerAlive[showerIndex]?showerAlphaSource[showerIndex]:0;
+                    }
+                  }
+                }
+                rainFieldGeo.attributes.position.needsUpdate=true;rainFieldGeo.attributes.rainAlpha.needsUpdate=true;
+                rainRibbonGeo.attributes.position.needsUpdate=true;rainRibbonGeo.attributes.rainAlpha.needsUpdate=true;
+                rainBufferTime=NaN;
+                rainShowerExit.lastClock=rainShowerExit.age;rainShowerExit.updates++;
+              }
+              canvasEl.dataset.rainRetirement=motionReduced?'static':input.paused||document.hidden?'frozen':'falling-away';
+            }
 
             // Receiving-water ripples share each illustrated drop's trajectory.
             // They appear only after that streak reaches the rendered surface;
@@ -17570,6 +17716,7 @@ const d = labToolData.waterCycle || {};
               color: 0xc1e7f4, transparent: true, opacity: 0.35, depthWrite: false
             }));
             rainImpacts.name = 'pilot-rain-water-impacts';
+            rainImpacts.userData.emission = rainEmission;
             rainImpacts.material.onBeforeCompile = rainField.material.onBeforeCompile;
             rainImpacts.frustumCulled = false;
             rainImpacts.visible = false;
@@ -17583,6 +17730,39 @@ const d = labToolData.waterCycle || {};
             rainImpacts.userData.activeImpactCount = 0;
             rainImpacts.userData.activeCrownCount = 0;
             rainImpacts.userData.activeReboundCount = 0;
+            rainImpacts.userData.splashMotion={model:'staggered-surface-response',ringBirth:.024,
+              crownSeeds:rainCrownUnit,reboundSeeds:rainReboundUnit};
+            // A contact belongs to the receiving water, not to the moving
+            // weather volume. One pooled slot per streak holds its world XZ
+            // through the ring, crown and rebound's shared short lifetime.
+            var rainContactMemory = { model:'world-anchored-water-contacts', duration:.48,
+              worldXZ:new Float64Array(RAIN_STREAK_COUNT*2), bornTime:new Float64Array(RAIN_STREAK_COUNT),
+              cycle:new Float64Array(RAIN_STREAK_COUNT), age:new Float64Array(RAIN_STREAK_COUNT),
+              lastClock:new Float64Array(RAIN_STREAK_COUNT),
+              active:new Uint8Array(RAIN_STREAK_COUNT), captures:0 };
+            rainImpacts.userData.contacts = rainContactMemory;
+            function clearRainContactMemory() {
+              rainContactMemory.worldXZ.fill(0);rainContactMemory.bornTime.fill(NaN);
+              rainContactMemory.cycle.fill(NaN);rainContactMemory.age.fill(0);rainContactMemory.lastClock.fill(NaN);
+              rainContactMemory.active.fill(0);rainContactMemory.captures=0;
+            }
+            function updateRainContactMemory(index,cycle,clock,eligible,worldX,worldZ,candidateAge) {
+              if(rainContactMemory.active[index]&&clock!==rainContactMemory.lastClock[index]){
+                rainContactMemory.age[index]=Math.max(0,clock-rainContactMemory.bornTime[index]);
+                rainContactMemory.lastClock[index]=clock;
+                if(rainContactMemory.age[index]>=rainContactMemory.duration)rainContactMemory.active[index]=0;
+              }
+              // Retain the cycle after expiry: steering or a moving wave must
+              // not replay this same contact. A streak's next fall is >1.5s away.
+              if(!rainContactMemory.active[index]&&eligible&&cycle!==rainContactMemory.cycle[index]){
+                rainContactMemory.worldXZ[index*2]=worldX;rainContactMemory.worldXZ[index*2+1]=worldZ;
+                rainContactMemory.bornTime[index]=clock-candidateAge;rainContactMemory.age[index]=candidateAge;
+                rainContactMemory.lastClock[index]=clock;
+                rainContactMemory.cycle[index]=cycle;rainContactMemory.active[index]=1;rainContactMemory.captures++;
+              }
+              return rainContactMemory.active[index]===1;
+            }
+            clearRainContactMemory();
             scene.add(rainImpacts);
             // Keep the weather volume readable at depth without allowing a
             // ribbon at the eye to become a screen-sized streak. Surface
@@ -17610,11 +17790,17 @@ const d = labToolData.waterCycle || {};
             rainField.userData.depthEnvelope = pilotRainDepthEnvelope;
             rainRibbons.userData.depthEnvelope = pilotRainDepthEnvelope;
             // The shower eases out of its actual source-cloud handoff. Once
-            // the parcel lands, only already-solved water rings linger briefly:
+            // the parcel lands, existing contacts finish their short motion:
             // their world anchor never follows the new surface-water parcel.
             var rainTailAnchor = new THREE.Vector3();
             var rainTailStartedAt = -1, rainTailImpactCount = 0, rainTailSurfaceTime = NaN;
+            var rainTailCrownCount=0,rainTailReboundCount=0;
             var RAIN_CONTACT_TAIL_DURATION = 0.42;
+            var rainTailContacts={model:'continuing-world-water-contacts',
+              worldXZ:new Float64Array(RAIN_STREAK_COUNT*2),sourceAge:new Float64Array(RAIN_STREAK_COUNT),
+              age:new Float64Array(RAIN_STREAK_COUNT),active:new Uint8Array(RAIN_STREAK_COUNT),
+              capturedCount:0,sourceOpacity:0,startedWaterTime:-1};
+            rainImpacts.userData.tailContacts=rainTailContacts;
             rainField.userData.onsetFactor = 0;
             rainImpacts.userData.tailAnchor = rainTailAnchor;
             rainImpacts.userData.tailActive = false;
@@ -17624,7 +17810,11 @@ const d = labToolData.waterCycle || {};
             rainImpacts.userData.tailSurfaceUpdates = 0;
             function clearRainContactTail() {
               rainTailStartedAt = -1; rainTailImpactCount = 0;
+              rainTailCrownCount=rainTailReboundCount=0;
               rainTailSurfaceTime = NaN;
+              rainTailContacts.worldXZ.fill(0);rainTailContacts.sourceAge.fill(0);
+              rainTailContacts.age.fill(0);rainTailContacts.active.fill(0);
+              rainTailContacts.capturedCount=0;rainTailContacts.sourceOpacity=0;rainTailContacts.startedWaterTime=-1;
               rainTailAnchor.set(0, 0, 0);
               rainImpacts.userData.tailActive = false;
               rainImpacts.userData.tailAge = 0;
@@ -17635,21 +17825,28 @@ const d = labToolData.waterCycle || {};
             }
             function beginRainContactTail() {
               clearRainContactTail();
-              // These are the previous actual rain frame's solved contacts,
-              // retained even though this frame's weather metadata has cleared.
-              if (rainCachedImpactCount <= 0 || rainBufferEnvironment !== env.id
-                || !Number.isFinite(rainBufferTime)) return;
-              rainTailAnchor.copy(rainImpacts.position);
-              rainTailStartedAt = sim.elapsed;
-              rainTailImpactCount = rainCachedImpactCount;
-              for (var tailStreak = 0; tailStreak < RAIN_STREAK_COUNT; tailStreak++) {
-                var tailFirstSplash = (tailStreak * RAIN_IMPACT_SEGMENTS + RAIN_RIPPLE_SEGMENTS) * 2;
-                var tailEndSplash = (tailStreak + 1) * RAIN_IMPACT_SEGMENTS * 2;
-                rainImpactAlpha.fill(0, tailFirstSplash, tailEndSplash);
+              // Wet landings defer the live-memory clear until this snapshot.
+              // Start from each last shown contact, including its raised splash,
+              // so the first learning pause cannot erase or restart that motion.
+              if(rainCachedImpactCount+rainCachedCrownCount+rainCachedReboundCount<=0||rainBufferEnvironment!==env.id||!Number.isFinite(rainBufferTime))return;
+              for(var tailStreak=0;tailStreak<RAIN_STREAK_COUNT;tailStreak++){
+                if(!rainContactMemory.active[tailStreak])continue;
+                var tailShown=false;
+                for(var tailVertex=tailStreak*RAIN_IMPACT_SEGMENTS*2;tailVertex<(tailStreak+1)*RAIN_IMPACT_SEGMENTS*2;tailVertex++){
+                  if(rainImpactAlpha[tailVertex]>0){tailShown=true;break;}
+                }
+                if(!tailShown)continue;
+                rainTailContacts.worldXZ[tailStreak*2]=rainContactMemory.worldXZ[tailStreak*2];
+                rainTailContacts.worldXZ[tailStreak*2+1]=rainContactMemory.worldXZ[tailStreak*2+1];
+                rainTailContacts.sourceAge[tailStreak]=rainTailContacts.age[tailStreak]=rainContactMemory.age[tailStreak];
+                rainTailContacts.active[tailStreak]=1;rainTailContacts.capturedCount++;
               }
-              rainImpactGeo.attributes.rainAlpha.needsUpdate = true;
-              // A later rain state must rebuild its crowns and rebound ticks.
-              rainBufferTime = NaN;
+              if(!rainTailContacts.capturedCount)return;
+              rainTailAnchor.copy(rainImpacts.position);rainTailStartedAt=sim.elapsed;
+              rainTailContacts.startedWaterTime=pilotWaterUniforms.rippleTime.value;
+              rainTailContacts.sourceOpacity=rainImpacts.material.opacity;
+              // A later rain state must rebuild the same pooled geometry.
+              rainBufferTime=NaN;
             }
             function updateRainContinuity() {
               var continuityRain = sim.form === 'rain';
@@ -17664,72 +17861,58 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.rainOnset = onsetFactor.toFixed(3);
               // Recompute from the same baseline each frame; never multiply a
               // previously faded material opacity and accumulate darkening.
-              rainField.material.opacity = (0.3 + pilotRainbowOptics.primaryStrength * 0.12) * onsetFactor;
-              rainRibbons.material.opacity = (0.66 + pilotRainbowOptics.primaryStrength * 0.1) * onsetFactor;
-              rainImpacts.material.opacity = 0.35 * onsetFactor;
+              var rainAirVisibility=continuityRain?rainVirga.visibility:1;
+              rainField.material.opacity = (0.3 + pilotRainbowOptics.primaryStrength * 0.12) * onsetFactor * rainAirVisibility;
+              rainRibbons.material.opacity = (0.66 + pilotRainbowOptics.primaryStrength * 0.1) * onsetFactor * rainAirVisibility;
+              rainImpacts.material.opacity = 0.35 * onsetFactor * rainAirVisibility;
               if (continuityRain) {
                 if (rainTailStartedAt >= 0) clearRainContactTail();
                 return;
               }
               if (rainTailStartedAt < 0) return;
               var tailElapsed = Math.max(0, sim.elapsed - rainTailStartedAt);
-              if (sim.form !== 'liquid' || tailElapsed >= RAIN_CONTACT_TAIL_DURATION) {
+              if ((sim.form !== 'liquid' && sim.form !== 'vapor') || tailElapsed >= RAIN_CONTACT_TAIL_DURATION) {
                 clearRainContactTail();
                 rainImpacts.visible = false;
                 return;
               }
-              // Simulation elapsed time freezes with pause or a hidden page.
-              // Reduced motion uses one representative frame until expiry.
-              var tailAge = motionReduced ? 0.12 : tailElapsed;
-              var tailFade = Math.max(0, 1 - tailAge / RAIN_CONTACT_TAIL_DURATION);
+              // The receiver clock holds with pause, hidden pages and reduced
+              // motion. Continue existing contacts only; no new rain can spawn.
+              var tailAge=Math.max(0,pilotWaterUniforms.rippleTime.value-rainTailContacts.startedWaterTime);
+              var tailFade=Math.max(0,1-tailAge/RAIN_CONTACT_TAIL_DURATION);
               rainImpacts.position.copy(rainTailAnchor);
-              // Keep the captured rings on the moving receiver. Their XZ,
-              // original alpha and world anchor stay fixed; only retained wet
-              // endpoints follow the same ocean/lake/stream sampler as rain.
-              // Water time is unchanged at pause, hidden time and reduced motion.
-              if (rainTailSurfaceTime !== pilotWaterUniforms.rippleTime.value) {
-                var tailWetCount = 0;
-                for (var tailRing = 0; tailRing < RAIN_STREAK_COUNT; tailRing++) {
-                  var tailRingWet = false;
-                  for (var tailSegment = 0; tailSegment < RAIN_RIPPLE_SEGMENTS; tailSegment++) {
-                    var tailVertex = (tailRing * RAIN_IMPACT_SEGMENTS + tailSegment) * 2;
-                    if (rainImpactAlpha[tailVertex] <= 0) continue;
-                    var tailOffset = tailVertex * 3;
-                    var tailX1 = rainTailAnchor.x + rainImpactPos[tailOffset];
-                    var tailZ1 = rainTailAnchor.z + rainImpactPos[tailOffset + 2];
-                    var tailX2 = rainTailAnchor.x + rainImpactPos[tailOffset + 3];
-                    var tailZ2 = rainTailAnchor.z + rainImpactPos[tailOffset + 5];
-                    var tailY1 = rainWaterSurfaceY(tailX1, tailZ1), tailY2 = rainWaterSurfaceY(tailX2, tailZ2);
-                    if (!Number.isFinite(tailY1) || !Number.isFinite(tailY2)
-                      || !Number.isFinite(rainWaterSurfaceY((tailX1 + tailX2) * 0.5, (tailZ1 + tailZ2) * 0.5))) {
-                      rainImpactAlpha[tailVertex] = rainImpactAlpha[tailVertex + 1] = 0;
-                      continue;
-                    }
-                    rainImpactPos[tailOffset + 1] = tailY1 + 0.045;
-                    rainImpactPos[tailOffset + 4] = tailY2 + 0.045;
-                    tailRingWet = true;
-                  }
-                  if (tailRingWet) tailWetCount++;
+              if(rainTailSurfaceTime!==pilotWaterUniforms.rippleTime.value){
+                var tailWetCount=0,tailCrownCount=0,tailReboundCount=0;
+                rainImpactAlpha.fill(0);
+                for(var tailRing=0;tailRing<RAIN_STREAK_COUNT;tailRing++){
+                  if(!rainTailContacts.active[tailRing])continue;
+                  var tailContactAge=rainTailContacts.sourceAge[tailRing]+tailAge;
+                  rainTailContacts.age[tailRing]=tailContactAge;
+                  if(tailContactAge>=rainContactMemory.duration){rainTailContacts.active[tailRing]=0;continue;}
+                  var tailDrawn=writeRainWaterContact(tailRing,
+                    rainTailContacts.worldXZ[tailRing*2]-rainTailAnchor.x,
+                    rainTailContacts.worldXZ[tailRing*2+1]-rainTailAnchor.z,tailContactAge);
+                  tailWetCount+=tailDrawn.rings;tailCrownCount+=tailDrawn.crowns;tailReboundCount+=tailDrawn.rebounds;
                 }
-                rainTailImpactCount = tailWetCount;
-                rainImpactGeo.attributes.position.needsUpdate = true;
-                rainImpactGeo.attributes.rainAlpha.needsUpdate = true;
-                rainTailSurfaceTime = pilotWaterUniforms.rippleTime.value;
-                rainImpacts.userData.tailSurfaceUpdates++;
+                rainTailImpactCount=tailWetCount;
+                rainTailCrownCount=tailCrownCount;rainTailReboundCount=tailReboundCount;
+                rainImpactGeo.attributes.position.needsUpdate=true;rainImpactGeo.attributes.rainAlpha.needsUpdate=true;
+                rainTailSurfaceTime=pilotWaterUniforms.rippleTime.value;rainImpacts.userData.tailSurfaceUpdates++;
               }
-              rainImpacts.visible = true;
-              rainImpacts.material.opacity = 0.35 * tailFade * tailFade;
-              rainImpacts.userData.activeImpactCount = rainTailImpactCount;
-              rainImpacts.userData.activeCrownCount = 0;
-              rainImpacts.userData.activeReboundCount = 0;
-              rainImpacts.userData.tailActive = true;
-              rainImpacts.userData.tailAge = tailAge;
-              rainImpacts.userData.tailElapsed = tailElapsed;
-              rainImpacts.userData.tailImpactCount = rainTailImpactCount;
-              canvasEl.dataset.rainContactTail = motionReduced ? 'static' : input.paused || document.hidden ? 'frozen' : 'fading';
-              canvasEl.dataset.rainWaterImpactCount = String(rainTailImpactCount);
+              rainImpacts.visible=rainTailImpactCount>0||rainTailCrownCount>0||rainTailReboundCount>0;
+              rainImpacts.material.opacity=rainTailContacts.sourceOpacity*tailFade*tailFade;
+              rainImpacts.userData.activeImpactCount=rainTailImpactCount;
+              rainImpacts.userData.activeCrownCount=rainTailCrownCount;
+              rainImpacts.userData.activeReboundCount=rainTailReboundCount;
+              rainImpacts.userData.tailActive=true;rainImpacts.userData.tailAge=tailAge;
+              rainImpacts.userData.tailElapsed=tailElapsed;rainImpacts.userData.tailImpactCount=rainTailImpactCount;
+              canvasEl.dataset.rainContactTail=motionReduced?'static':input.paused||document.hidden?'frozen':'fading';
+              canvasEl.dataset.rainWaterImpactCount=String(rainTailImpactCount);
+              canvasEl.dataset.rainWaterCrownCount=String(rainImpacts.userData.activeCrownCount);
+              canvasEl.dataset.rainWaterReboundCount=String(rainImpacts.userData.activeReboundCount);
             }
             function writeRainSplashSegment(segment, startX, startZ, startRise, endX, endZ, endRise, strength) {
+              if(!Number.isFinite(strength)||strength<=0)return false;
               var startY = rainWaterSurfaceY(rainImpacts.position.x + startX, rainImpacts.position.z + startZ);
               var endY = rainWaterSurfaceY(rainImpacts.position.x + endX, rainImpacts.position.z + endZ);
               // Each short leg needs water under both ends and its middle.
@@ -17746,6 +17929,101 @@ const d = labToolData.waterCycle || {};
               rainImpactPos[offset + 4] = endY + 0.045 + Math.max(0, endRise);
               rainImpactPos[offset + 5] = endZ;
               return true;
+            }
+
+            var rainWaterContactCounts={rings:0,crowns:0,rebounds:0};
+            function writeRainWaterContact(rf,rainImpactX,rainImpactZ,rainImpactAge){
+              rainWaterContactCounts.rings=rainWaterContactCounts.crowns=rainWaterContactCounts.rebounds=0;
+              rainImpactAlpha.fill(0,rf*RAIN_IMPACT_SEGMENTS*2,(rf+1)*RAIN_IMPACT_SEGMENTS*2);
+              if(!Number.isFinite(rainImpactAge)||rainImpactAge<0||rainImpactAge>=.48||!Number.isFinite(rainWaterSurfaceY(
+                rainImpacts.position.x+rainImpactX,rainImpacts.position.z+rainImpactZ)))return rainWaterContactCounts;
+              var rainImpactLife = rainImpactAge / 0.48;
+              // A newly touching drop grows a quiet ring, then its outward
+              // travel eases while the existing contact strength dies away.
+              var rainRingTravel=rainImpactLife*(1.35-.35*rainImpactLife);
+              var rainImpactRadius=.10+rainRingTravel*(.73+rainDropProfile[rf*4+3]);
+              var rainRingBirth=Math.max(0,Math.min(1,rainImpactAge/.024));
+              rainRingBirth=rainRingBirth*rainRingBirth*(3-2*rainRingBirth);
+              var rainImpactStrength=rainRingBirth*(1-rainImpactLife)*(1-rainImpactLife)*rainDropProfile[rf*4+3];
+              for (var rainImpactSegment = 0; rainImpactSegment < RAIN_RIPPLE_SEGMENTS; rainImpactSegment++) {
+                if(writeRainSplashSegment(rf*RAIN_IMPACT_SEGMENTS+rainImpactSegment,
+                  rainImpactX+rainImpactUnit[rainImpactSegment*4]*rainImpactRadius,
+                  rainImpactZ+rainImpactUnit[rainImpactSegment*4+1]*rainImpactRadius,0,
+                  rainImpactX+rainImpactUnit[rainImpactSegment*4+2]*rainImpactRadius,
+                  rainImpactZ+rainImpactUnit[rainImpactSegment*4+3]*rainImpactRadius,0,rainImpactStrength))rainWaterContactCounts.rings=1;
+              }
+              // Brief upward responses belong to this same solved water
+              // contact, with no particle events or additional water mass.
+              var rainSplashProfile = rainDropProfile[rf * 4 + 3];
+              var rainSplashSize = Math.max(0, Math.min(1, (rainSplashProfile - 0.38) / 0.5));
+              if (rainSplashProfile > 0.58 && rainImpactAge > 0 && rainImpactAge < 0.20) {
+                var rainCrownVisible = false;
+                for (var rainCrownIndex = 0; rainCrownIndex < RAIN_CROWN_RAYS; rainCrownIndex++) {
+                  var rainCrownOffset = (rf * RAIN_CROWN_RAYS + rainCrownIndex) * 3;
+                  var rainCrownX = rainCrownUnit[rainCrownOffset], rainCrownZ = rainCrownUnit[rainCrownOffset + 1];
+                  var rainCrownVariation = rainCrownUnit[rainCrownOffset + 2];
+                  // Seeded lobes rise and settle at slightly different times;
+                  // the sheet keeps its six pooled two-leg silhouettes.
+                  var rainCrownDelay=.003+((rf*11+rainCrownIndex*7)%9)*.0015;
+                  var rainCrownDuration=.160+.025*Math.max(0,Math.min(1,(rainCrownVariation-.72)/.38));
+                  var rainCrownLife=(rainImpactAge-rainCrownDelay)/rainCrownDuration;
+                  if(rainCrownLife<=0||rainCrownLife>=1)continue;
+                  var rainCrownRadius=.12+.55*rainCrownLife;
+                  var rainCrownRise=4*rainCrownLife*(1-rainCrownLife)*(.22+rainSplashSize*.50);
+                  var rainCrownBirth=Math.min(1,rainCrownLife/.12);
+                  rainCrownBirth=rainCrownBirth*rainCrownBirth*(3-2*rainCrownBirth);
+                  var rainCrownStrength=rainSplashProfile*rainCrownBirth*Math.pow(1-rainCrownLife,1.6);
+                  var rainCrownPeakRadius = rainCrownRadius * (0.9 + rainCrownVariation * 0.15);
+                  var rainCrownPeakX = rainImpactX + rainCrownX * rainCrownPeakRadius;
+                  var rainCrownPeakZ = rainImpactZ + rainCrownZ * rainCrownPeakRadius;
+                  var rainCrownPeakRise = rainCrownRise * rainCrownVariation;
+                  var rainCrownFootRadius = rainCrownPeakRadius * 0.57;
+                  var rainCrownSegment = rf * RAIN_IMPACT_SEGMENTS + RAIN_RIPPLE_SEGMENTS + rainCrownIndex * 2;
+                  if (writeRainSplashSegment(rainCrownSegment,
+                    rainImpactX + (rainCrownX * 0.9713379749 + rainCrownZ * 0.2377026264) * rainCrownFootRadius,
+                    rainImpactZ + (rainCrownZ * 0.9713379749 - rainCrownX * 0.2377026264) * rainCrownFootRadius, 0,
+                    rainCrownPeakX, rainCrownPeakZ, rainCrownPeakRise, rainCrownStrength)) rainCrownVisible = true;
+                  if (writeRainSplashSegment(rainCrownSegment + 1,
+                    rainCrownPeakX, rainCrownPeakZ, rainCrownPeakRise,
+                    rainImpactX + (rainCrownX * 0.9713379749 - rainCrownZ * 0.2377026264) * rainCrownFootRadius,
+                    rainImpactZ + (rainCrownZ * 0.9713379749 + rainCrownX * 0.2377026264) * rainCrownFootRadius, 0,
+                    rainCrownStrength)) rainCrownVisible = true;
+                }
+                if (rainCrownVisible) rainWaterContactCounts.crowns++;
+              }
+              if (rainSplashProfile > 0.70 && rainImpactAge > 0 && rainImpactAge < 0.30) {
+                for (var rainReboundIndex = 0; rainReboundIndex < RAIN_REBOUND_COUNT; rainReboundIndex++) {
+                  var rainReboundOffset = (rf * RAIN_REBOUND_COUNT + rainReboundIndex) * 3;
+                  var rainReboundVariation=rainReboundUnit[rainReboundOffset+2];
+                  var rainReboundDelay=.012+((rf*7+rainReboundIndex*11)%9)*.0025;
+                  var rainReboundDuration=.215+.045*Math.max(0,Math.min(1,(rainReboundVariation-.8)/.36));
+                  var rainReboundLife=(rainImpactAge-rainReboundDelay)/rainReboundDuration;
+                  if(rainReboundLife<=0||rainReboundLife>=1)continue;
+                  var rainReboundSpan=(.50+rainSplashSize*.70)*rainReboundVariation;
+                  var rainReboundRadius=.16+rainReboundLife*rainReboundSpan;
+                  var rainReboundPeak=(.32+rainSplashSize*.40)*rainReboundVariation;
+                  var rainReboundHeight=4*rainReboundLife*(1-rainReboundLife)*rainReboundPeak;
+                  var rainReboundX=rainImpactX+rainReboundUnit[rainReboundOffset]*rainReboundRadius;
+                  var rainReboundZ=rainImpactZ+rainReboundUnit[rainReboundOffset+1]*rainReboundRadius;
+                  var rainReboundBirth=Math.min(1,rainReboundLife/.10);
+                  rainReboundBirth=rainReboundBirth*rainReboundBirth*(3-2*rainReboundBirth);
+                  var rainReboundStrength=rainSplashProfile*rainReboundBirth*Math.pow(1-rainReboundLife,1.3);
+                  var rainReboundTaper=Math.max(0,Math.min(1,rainReboundLife/.08,(1-rainReboundLife)/.12));
+                  rainReboundTaper=rainReboundTaper*rainReboundTaper*(3-2*rainReboundTaper);
+                  var rainReboundHalfLength=(.018+rainSplashSize*.025)*rainReboundTaper;
+                  // A short glint follows the outgoing trajectory: upward on
+                  // launch, horizontal near its apex, then outward and down.
+                  var rainReboundVertical=4*rainReboundPeak*(1-2*rainReboundLife);
+                  var rainReboundTangent=Math.max(.0001,Math.hypot(rainReboundSpan,rainReboundVertical));
+                  var rainReboundTickX=rainReboundUnit[rainReboundOffset]*rainReboundSpan/rainReboundTangent*rainReboundHalfLength;
+                  var rainReboundTickZ=rainReboundUnit[rainReboundOffset+1]*rainReboundSpan/rainReboundTangent*rainReboundHalfLength;
+                  var rainReboundTickY=rainReboundVertical/rainReboundTangent*rainReboundHalfLength;
+                  if (writeRainSplashSegment(rf * RAIN_IMPACT_SEGMENTS + RAIN_RIPPLE_SEGMENTS + RAIN_CROWN_RAYS * 2 + rainReboundIndex,
+                    rainReboundX-rainReboundTickX,rainReboundZ-rainReboundTickZ,rainReboundHeight-rainReboundTickY,
+                    rainReboundX+rainReboundTickX,rainReboundZ+rainReboundTickZ,rainReboundHeight+rainReboundTickY,rainReboundStrength)) rainWaterContactCounts.rebounds++;
+                }
+              }
+              return rainWaterContactCounts;
             }
 
             // One pooled receipt of the parcel's actual water landing. It is
@@ -17880,6 +18158,7 @@ const d = labToolData.waterCycle || {};
                 ring.geometry.attributes.landingWet.needsUpdate = true;
                 ring.material.opacity = ringAge > 0 ? Math.max(0, 0.68 * (1 - ringAge / 1.8)) : 0;
                 if (snowArrival) ring.material.opacity *= 0.6 * Math.min(1, (landingDuration - age) / 0.4);
+                if (!surfaceArrival && !snowArrival && !motionReduced) ring.material.opacity *= Math.min(1, (landingDuration - age) / 0.35);
                 // Fade moving inflow rings out before the pooled cue is hidden.
                 if (surfaceArrival && !motionReduced) ring.material.opacity *= Math.min(1, (landingDuration - age) / 0.45);
               });
@@ -17901,7 +18180,8 @@ const d = labToolData.waterCycle || {};
                   oceanLanding.position.z + landingSprayPositions[sprayIndex * 3 + 2]) + 0.12 - oceanLanding.position.y;
               }
               landingSprayGeometry.attributes.position.needsUpdate = true;
-              landingSpray.material.opacity = Math.max(0, 0.85 - visualAge);
+              var landingSprayFade=Math.max(0,Math.min(1,(.8-visualAge)/.14));
+              landingSpray.material.opacity = Math.max(0, 0.85 - visualAge)*landingSprayFade*landingSprayFade*(3-2*landingSprayFade);
               canvasEl.dataset.waterLanding = motionReduced ? 'static-ripples' : snowArrival ? 'snowmelt-ripples' : seeping ? 'seep-ripples' : inflowing ? 'inflow-ripples' : 'ripples-and-spray';
               canvasEl.dataset.oceanLanding = inlandLanding ? 'hidden' : canvasEl.dataset.waterLanding;
             }
@@ -17931,6 +18211,7 @@ const d = labToolData.waterCycle || {};
             }
             var SNOW_CRYSTAL_COUNT = 76;
             var snowFieldPos = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
+            var snowAlpha = new Float32Array(SNOW_CRYSTAL_COUNT);
             var snowFieldSeed = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
             var snowVisual = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
             var snowVisualTime = { value: 0 };
@@ -17947,21 +18228,50 @@ const d = labToolData.waterCycle || {};
             }
             var snowFieldGeo = new THREE.BufferGeometry();
             snowFieldGeo.setAttribute('position', new THREE.BufferAttribute(snowFieldPos, 3));
+            snowFieldGeo.setAttribute('snowAlpha', new THREE.BufferAttribute(snowAlpha, 1));
             snowFieldGeo.setAttribute('snowVisual', new THREE.BufferAttribute(snowVisual, 3));
             var snowField = new THREE.Points(snowFieldGeo, new THREE.PointsMaterial({
               color: 0xf8fafc, size: 2.5, map: makePilotSnowTexture(), alphaTest: 0.06,
               transparent: true, opacity: 0.88, depthWrite: false, sizeAttenuation: true
             }));
             snowField.name = 'pilot-snow-field';
+            // Snow leaves the same captured cloud shelf as rain. Retain a
+            // separate clock: the slower crystal field can outlive its source
+            // teaching lens, and rain cleanup must not clear a snow release.
+            var snowEmission = { model:'captured-cloud-shelf',frontModel:'source-born-fall-front',
+              active:false,ceilingY:0,originY:0,startedAt:0,age:0 };
+            snowField.userData.emission=snowEmission;
+            function clearSnowEmission() {
+              snowEmission.active=false;snowEmission.ceilingY=0;snowEmission.originY=0;
+              snowEmission.startedAt=0;snowEmission.age=0;
+            }
+            function snowBirthFront(speed) {
+              return snowEmission.active?snowEmission.ceilingY-snowEmission.originY-speed*snowEmission.age:-Infinity;
+            }
+            function snowBoundaryFade(y,top) {
+              var upper=Math.max(0,Math.min(1,(top-y)/4));
+              var lower=Math.max(0,Math.min(1,(y+56)/4));
+              return upper*upper*(3-2*upper)*lower*lower*(3-2*lower);
+            }
+            function updateSnowOnset() {
+              if(snowEmission.active&&!motionReduced)snowEmission.age=Math.max(0,sim.elapsed-snowEmission.startedAt);
+              var snowTop=Math.min(56,snowEmission.active?snowEmission.ceilingY-snowField.position.y:56);
+              for(var snowOnsetIndex=0;snowOnsetIndex<SNOW_CRYSTAL_COUNT;snowOnsetIndex++){
+                var snowY=snowFieldPos[snowOnsetIndex*3+1];
+                snowAlpha[snowOnsetIndex]=snowBoundaryFade(snowY,snowTop)
+                  *rainBirthFade(snowY,snowBirthFront(9+(snowOnsetIndex%7)*1.3));
+              }
+              snowFieldGeo.attributes.snowAlpha.needsUpdate=true;
+            }
             // Vary the pooled sprites without adding draws. Camera-near flakes
             // fade away, and a pixel cap keeps the landscape readable.
             snowField.material.onBeforeCompile = function(shader) {
               shader.uniforms.snowVisualTime = snowVisualTime;
-              shader.vertexShader = 'attribute vec3 snowVisual; uniform float snowVisualTime; varying float vSnowAngle; varying float vSnowVisibility;\n' + shader.vertexShader;
+              shader.vertexShader = 'attribute vec3 snowVisual; attribute float snowAlpha; uniform float snowVisualTime; varying float vSnowAngle; varying float vSnowVisibility;\n' + shader.vertexShader;
               shader.vertexShader = shader.vertexShader.replace('#include <logdepthbuf_vertex>', [
                 'gl_PointSize = min(gl_PointSize * snowVisual.x, 28.0);',
                 'vSnowAngle = snowVisual.y + snowVisualTime * snowVisual.z;',
-                'vSnowVisibility = smoothstep(2.0, 12.0, -mvPosition.z) * (0.7 + snowVisual.x * 0.25);',
+                'vSnowVisibility = snowAlpha * smoothstep(2.0, 12.0, -mvPosition.z) * (0.7 + snowVisual.x * 0.25);',
                 '#include <logdepthbuf_vertex>'
               ].join('\n'));
               shader.fragmentShader = 'varying float vSnowAngle; varying float vSnowVisibility;\n' + shader.fragmentShader;
@@ -17974,7 +18284,7 @@ const d = labToolData.waterCycle || {};
               ].join('\n'));
               snowField.material.userData.snowShader = shader;
             };
-            snowField.material.customProgramCacheKey = function() { return 'pilot-snow-depth-v1'; };
+            snowField.material.customProgramCacheKey = function() { return 'pilot-snow-depth-source-onset-v2'; };
             snowField.frustumCulled = false;
             snowField.visible = false;
             scene.add(snowField);
@@ -18464,7 +18774,6 @@ const d = labToolData.waterCycle || {};
               var rainShapeHeight=1/(rainShapeWidth*rainShapeWidth);
               if(sim.form==='rain'){
                 rainMesh.scale.x*=rainShapeWidth;rainMesh.scale.y*=rainShapeHeight;rainMesh.scale.z*=rainShapeWidth;
-                if(meltingDropPreview.visible)meltingDropPreview.scale.copy(rainMesh.scale);
                 if(phaseRainPreview&&phaseRainPreview.visible)phaseRainPreview.scale.copy(rainMesh.scale);
               }
               rainMesh.userData.shapeTime=rainShapeTime;
@@ -18538,6 +18847,21 @@ const d = labToolData.waterCycle || {};
               installParcelWaterOptics(mesh.material,false);
             });
             liquidMesh.name = 'pilot-liquid-parcel';
+            var phaseCollectionCoverage = { value: 1 }, phaseLiquidRestScale = 1, phaseLiquidRestY = 0;
+            liquidMesh.userData.surfaceFloat={model:'receiving-water-parcel',clearance:.1,restY:0,restScale:1};
+            liquidMesh.material.userData.collectionCoverage = phaseCollectionCoverage;
+            var priorCollectionCompile = liquidMesh.material.onBeforeCompile;
+            var priorCollectionKey = liquidMesh.material.customProgramCacheKey.call(liquidMesh.material);
+            liquidMesh.material.onBeforeCompile = function(shader, renderer) {
+              priorCollectionCompile.call(this, shader, renderer);
+              shader.uniforms.pilotCollectionCoverage = phaseCollectionCoverage;
+              shader.fragmentShader = 'uniform float pilotCollectionCoverage;\n' + shader.fragmentShader;
+              // Multiply final coverage after transmission and the existing
+              // optical treatment; neither may make the incoming body opaque.
+              shader.fragmentShader = shader.fragmentShader.replace('#include <premultiplied_alpha_fragment>',
+                'gl_FragColor.a *= pilotCollectionCoverage;\n#include <premultiplied_alpha_fragment>');
+            };
+            liquidMesh.material.customProgramCacheKey = function() { return priorCollectionKey + '-collection-coverage-v1'; };
             dropletMesh.name = 'pilot-cloud-droplet';
             rainMesh.name = 'pilot-rain-parcel';
             iceMesh.name = 'pilot-ice-parcel';
@@ -18769,11 +19093,28 @@ const d = labToolData.waterCycle || {};
               }
               meltingSnow.renderOrder=foreground?9:0;meltingSnow.userData.foregroundLens=foreground;
             }
+            function resetSnowMeltPreviewTransform() {
+              meltingDropPreview.matrixAutoUpdate=true;
+              meltingDropPreview.position.set(0,0,0);meltingDropPreview.quaternion.set(0,0,0,1);
+              meltingDropPreview.scale.setScalar(1);meltingDropPreview.updateMatrix();
+            }
+            function updateSnowMeltPreviewTransform() {
+              if(!meltingDropPreview.visible||meltingTarget!=='rain')return;
+              // Keep the crystal's captured tumble and scale on its own parent.
+              // The incoming drop instead uses the actual rain's complete final
+              // profile, at the existing teaching-lens center. A local matrix
+              // preserves it even under a rotated, nonuniform parent.
+              meltingSnow.updateWorldMatrix(true,false);rainMesh.updateWorldMatrix(true,false);
+              meltingDropPreview.matrixAutoUpdate=false;
+              meltingDropPreview.matrix.copy(meltingSnow.matrixWorld).invert().multiply(rainMesh.matrixWorld);
+              meltingDropPreview.matrix.setPosition(0,0,0);meltingDropPreview.matrixWorldNeedsUpdate=true;
+            }
             function clearSnowMelt() {
               presentMeltingLens(false);
               meltingSnow.visible=false;meltingElapsed=0;meltingTarget='';meltingSourceCaptured=false;
               meltingSourcePosition.set(0,0,0);meltingSourceScale.setScalar(1);meltingSourceQuaternion.set(0,0,0,1);
               meltingSnow.position.set(0,0,0);meltingSnow.quaternion.set(0,0,0,1);meltingSnow.scale.setScalar(1);meltingDropPreview.visible=false;
+              resetSnowMeltPreviewTransform();
               meltingSnow.userData.kind='none';meltingSnow.userData.target='none';meltingSnow.userData.progress=0;
               meltingSnow.userData.sourceSnapshot=false;meltingSnow.userData.placement='none';
               meltingSnow.userData.visibleBeadCount=0;
@@ -18781,6 +19122,7 @@ const d = labToolData.waterCycle || {};
             }
             function beginSnowMelt(target) {
               meltingTarget=target==='liquid'?'liquid':'rain';
+              resetSnowMeltPreviewTransform();
               meltingElapsed = 0.18; meltingSnow.visible = true;
               meltingSnow.quaternion.copy(meltingSourceCaptured?meltingSourceQuaternion:snowMesh.quaternion);
               meltingSnow.scale.copy(meltingSourceScale);
@@ -18818,8 +19160,7 @@ const d = labToolData.waterCycle || {};
               if(meltingTarget==='liquid')liquidMesh.scale.multiplyScalar(meltDropScale);
               else rainMesh.scale.set(1.12 * meltDropScale, 0.82 * meltDropScale, 1.12 * meltDropScale);
               meltingDropPreview.visible = input.cameraMode === 'water';
-              meltingDropPreview.scale.copy(meltingIncoming.scale);
-              if (meltingTarget === 'liquid') meltingDropPreview.scale.divide(meltingSnow.scale);
+              if (meltingTarget === 'liquid') meltingDropPreview.scale.copy(meltingIncoming.scale).divide(meltingSnow.scale);
               meltingSnow.quaternion.copy(meltingSourceQuaternion);
               if (input.cameraMode === 'water') {
                 camera.getWorldDirection(meltViewDirection);
@@ -19002,6 +19343,15 @@ const d = labToolData.waterCycle || {};
             cloudVeil.userData.densityModel = 'open-corridor-billows';
             cloudVeil.userData.lightingModel = 'cool-base-diffuse-top';
             var cloudVeilVisualTime = 0;
+            var cloudVeilEntry={active:false,coverage:1,progress:1,fromCoverage:0,retained:false,startedAt:0,duration:0,
+              sourceFogNear:620,sourceFogFar:2300,sourceOpacities:new Float64Array(18),
+              sourcePosition:new THREE.Vector3(),targetPosition:new THREE.Vector3()};
+            cloudVeil.userData.entry=cloudVeilEntry;
+            var cloudVeilExit = {active:false,coverage:0,startedAt:0,duration:0,sourceFogNear:0,sourceFogFar:0,
+              sourcePosition:new THREE.Vector3(),sourceQuaternion:new THREE.Quaternion(),sourceScale:new THREE.Vector3(1,1,1)};
+            var cloudVeilExitOpacities = new Float64Array(18);
+            cloudVeil.userData.exit = cloudVeilExit;
+            cloudVeil.userData.exitModel = 'captured-cloud-interior';
             for (var veilIndex = 0; veilIndex < 18; veilIndex++) {
               var veilLayer = veilIndex % 3;
               var veilAngle = Math.floor(veilIndex / 3) * Math.PI / 3 + veilLayer * 0.41;
@@ -19029,10 +19379,121 @@ const d = labToolData.waterCycle || {};
               veilSprite.userData.driftPhase = veilAngle;
               veilSprite.userData.baseScaleX = veilSprite.scale.x;
               veilSprite.userData.baseScaleY = veilSprite.scale.y;
+              veilSprite.userData.baseOpacity = veilSprite.material.opacity;
               cloudVeil.add(veilSprite);
             }
             cloudVeil.visible = false;
             scene.add(cloudVeil);
+            function clearCloudInteriorEntry(){
+              cloudVeilEntry.active=false;cloudVeilEntry.coverage=1;
+              cloudVeilEntry.progress=1;cloudVeilEntry.fromCoverage=0;cloudVeilEntry.retained=false;
+              cloudVeilEntry.sourceOpacities.fill(0);cloudVeilEntry.sourcePosition.set(0,0,0);cloudVeilEntry.targetPosition.set(0,0,0);
+              cloudVeilEntry.startedAt=0;cloudVeilEntry.duration=0;
+              cloudVeilEntry.sourceFogNear=620;cloudVeilEntry.sourceFogFar=2300;
+            }
+            function beginCloudInteriorEntry(){
+              // A quick cloud-base recross can interrupt a still-visible exit.
+              // Rebuild from that actual haze instead of restarting at zero.
+              cloudVeilEntry.retained=cloudVeilExit.active;
+              var entrySourceTotal=0,entryBaseTotal=0;
+              for(var entryLobe=0;entryLobe<cloudVeil.children.length;entryLobe++){
+                var entrySprite=cloudVeil.children[entryLobe];
+                cloudVeilEntry.sourceOpacities[entryLobe]=cloudVeilEntry.retained?entrySprite.material.opacity:0;
+                entrySourceTotal+=cloudVeilEntry.sourceOpacities[entryLobe];entryBaseTotal+=entrySprite.userData.baseOpacity;
+              }
+              cloudVeilEntry.fromCoverage=Math.max(0,Math.min(1,entrySourceTotal/Math.max(.0001,entryBaseTotal)));
+              cloudVeilEntry.active=true;cloudVeilEntry.coverage=cloudVeilEntry.fromCoverage;cloudVeilEntry.progress=0;
+              cloudVeil.getWorldPosition(cloudVeilEntry.sourcePosition);
+              cloudVeilEntry.startedAt=sim.elapsed;cloudVeilEntry.duration=Math.max(.001,phaseHandoffDuration-.38);
+              cloudVeilEntry.sourceFogNear=input.cameraMode==='water'?scene.fog.near:cloudVeilEntry.retained
+                ?620+(cloudVeilExit.sourceFogNear-620)*cloudVeilExit.coverage:620;
+              cloudVeilEntry.sourceFogFar=input.cameraMode==='water'?scene.fog.far:cloudVeilEntry.retained
+                ?2300+(cloudVeilExit.sourceFogFar-2300)*cloudVeilExit.coverage:2300;
+            }
+            function captureCloudInteriorExit() {
+              cloudVeil.getWorldPosition(cloudVeilExit.sourcePosition);
+              cloudVeil.getWorldQuaternion(cloudVeilExit.sourceQuaternion);
+              cloudVeil.getWorldScale(cloudVeilExit.sourceScale);
+              // Follow hides immersion, but switching back to Water should
+              // retain the intended partial-entry fog rather than a full cloud.
+              var exitEntryCoverage=cloudVeilEntry.active?cloudVeilEntry.progress:1;
+              cloudVeilExit.sourceFogNear=input.cameraMode==='water'?scene.fog.near:
+                cloudVeilEntry.sourceFogNear*(1-exitEntryCoverage)+12*exitEntryCoverage;
+              cloudVeilExit.sourceFogFar=input.cameraMode==='water'?scene.fog.far:
+                cloudVeilEntry.sourceFogFar*(1-exitEntryCoverage)+185*exitEntryCoverage;
+              for(var exitLobe=0;exitLobe<cloudVeil.children.length;exitLobe++)
+                cloudVeilExitOpacities[exitLobe]=cloudVeil.children[exitLobe].material.opacity;
+              cloudVeilExit.active=true;cloudVeilExit.coverage=1;
+              cloudVeilExit.startedAt=sim.elapsed;cloudVeilExit.duration=0;
+            }
+            function clearCloudInteriorExit() {
+              cloudVeilExit.active=false;cloudVeilExit.coverage=0;
+              cloudVeilExit.startedAt=0;cloudVeilExit.duration=0;
+              cloudVeilExit.sourceFogNear=0;cloudVeilExit.sourceFogFar=0;
+              cloudVeilExit.sourcePosition.set(0,0,0);cloudVeilExit.sourceQuaternion.set(0,0,0,1);
+              cloudVeilExit.sourceScale.setScalar(1);cloudVeil.visible=false;
+              for(var clearExitLobe=0;clearExitLobe<cloudVeil.children.length;clearExitLobe++){
+                cloudVeil.children[clearExitLobe].material.opacity=cloudVeil.children[clearExitLobe].userData.baseOpacity;
+                cloudVeilExitOpacities[clearExitLobe]=0;
+              }
+            }
+            function updateCloudInteriorPresentation(dt) {
+              var interiorForm=sim.form==='droplet'||sim.form==='cloud'||sim.form==='ice';
+              var leavingCloud=cloudVeilExit.active&&phaseHandoff.visible
+                &&((phaseHandoffKind==='precipitation-release'&&(sim.form==='rain'||sim.form==='snow'))
+                  ||(phaseHandoffKind==='evaporation'&&phaseHandoff.userData.from==='droplet'&&sim.form==='vapor'));
+              if(cloudVeilEntry.active){
+                if(!interiorForm)clearCloudInteriorEntry();
+                else{
+                  var entryElapsed=Math.max(0,sim.elapsed-cloudVeilEntry.startedAt);
+                  if(entryElapsed>=cloudVeilEntry.duration)clearCloudInteriorEntry();
+                  else{
+                    var entryProgress=motionReduced?.5:Math.max(0,Math.min(1,entryElapsed/cloudVeilEntry.duration));
+                    cloudVeilEntry.progress=entryProgress*entryProgress*(3-2*entryProgress);
+                    cloudVeilEntry.coverage=cloudVeilEntry.fromCoverage+(1-cloudVeilEntry.fromCoverage)*cloudVeilEntry.progress;
+                    if(cloudVeilEntry.retained)cloudVeil.position.copy(cloudVeilEntry.sourcePosition)
+                      .lerp(cloudVeilEntry.targetPosition,cloudVeilEntry.progress);
+                  }
+                }
+              }
+              if(cloudVeilExit.active&&!leavingCloud)clearCloudInteriorExit();
+              if(leavingCloud){
+                // Start at the last shown pose, even when the first release
+                // frame is a learning pause. Fade over this cue's remaining time.
+                if(cloudVeilExit.duration===0)cloudVeilExit.duration=Math.max(.001,phaseHandoffDuration-phaseHandoffElapsed);
+                var exitProgress=motionReduced?.5:Math.max(0,Math.min(1,
+                  (sim.elapsed-cloudVeilExit.startedAt)/cloudVeilExit.duration));
+                cloudVeilExit.coverage=1-exitProgress*exitProgress*(3-2*exitProgress);
+                cloudVeil.position.copy(cloudVeilExit.sourcePosition);
+                cloudVeil.quaternion.copy(cloudVeilExit.sourceQuaternion);cloudVeil.scale.copy(cloudVeilExit.sourceScale);
+              }
+              var interiorCoverage=interiorForm?(cloudVeilEntry.active?cloudVeilEntry.coverage:1):leavingCloud?cloudVeilExit.coverage:0;
+              cloudVeil.visible=input.cameraMode==='water'&&interiorCoverage>0;
+              for(var presentExitLobe=0;presentExitLobe<cloudVeil.children.length;presentExitLobe++){
+                var presentLobe=cloudVeil.children[presentExitLobe];
+                presentLobe.material.opacity=leavingCloud?cloudVeilExitOpacities[presentExitLobe]*interiorCoverage
+                  :interiorForm&&cloudVeilEntry.active?cloudVeilEntry.sourceOpacities[presentExitLobe]
+                    +(presentLobe.userData.baseOpacity-cloudVeilEntry.sourceOpacities[presentExitLobe])*cloudVeilEntry.progress
+                    :presentLobe.userData.baseOpacity*interiorCoverage;
+              }
+              cloudVeil.userData.coverage=interiorCoverage;
+              canvasEl.dataset.cloudInterior=cloudVeil.visible?'layered':'hidden';
+              canvasEl.dataset.cloudInteriorLighting=cloudVeil.visible?'cool-base-diffuse-top':'hidden';
+              canvasEl.dataset.cloudInteriorExit=leavingCloud?'captured-world-source':'none';
+              var fogCoverage=input.cameraMode==='water'?interiorCoverage:0;
+              var entryFogNear=cloudVeilEntry.active?cloudVeilEntry.sourceFogNear:620;
+              var entryFogFar=cloudVeilEntry.active?cloudVeilEntry.sourceFogFar:2300;
+              var fogPhase=input.cameraMode==='water'&&cloudVeilEntry.active?cloudVeilEntry.progress:fogCoverage;
+              var fogNearGoal=(leavingCloud?cloudVeilExit.sourceFogNear:12)*fogPhase+(leavingCloud?620:entryFogNear)*(1-fogPhase);
+              var fogFarGoal=(leavingCloud?cloudVeilExit.sourceFogFar:185)*fogPhase+(leavingCloud?2300:entryFogFar)*(1-fogPhase);
+              if(input.cameraMode!=='water'){fogNearGoal=620;fogFarGoal=2300;}
+              // Phase fog follows the same model-time curve as its billows.
+              // Pausing cannot finish a lagging, wall-frame-based fog tween.
+              var fogEase=cloudVeilEntry.active||leavingCloud||motionReduced||input.paused||document.hidden?1:Math.min(1,dt*3.8);
+              scene.fog.near+=(fogNearGoal-scene.fog.near)*fogEase;
+              scene.fog.far+=(fogFarGoal-scene.fog.far)*fogEase;
+              canvasEl.dataset.cloudImmersion=fogCoverage>0?leavingCloud?'leaving-cloud':'inside-cloud':'clear-air';
+            }
             function updateCloudInteriorLighting(){
               // A broad height gradient separates shaded lower billows from
               // diffuse upper light. It is a lighting cue, not optical-depth data.
@@ -19398,6 +19859,16 @@ const d = labToolData.waterCycle || {};
             var phaseWaterGhost = new THREE.Mesh(dropletMesh.geometry,phaseWaterMaterial);
             phaseWaterGhost.name = 'pilot-phase-liquid-memory';
             var phaseFrontProgress={value:0},phaseFrontMode={value:0},phaseFrontRadius={value:2.2};
+            var phaseRefreezeActive={value:0},phaseRefreezeMeltProgress={value:0};
+            var phaseRefreezeIceToMelt={value:new THREE.Matrix4()};
+            var phaseRefreezeIceCarryActive={value:0},phaseRefreezeIceCarryProgress={value:0};
+            var phaseRefreeze={active:false,start:-1,progress:0,
+              sourceLiquidOpacity:0,sourceIceOpacity:0,sourceEdgeOpacity:0,
+              sourceIcePosition:new THREE.Vector3(),sourceIceScale:new THREE.Vector3(1,1,1),
+              sourceIceQuaternion:new THREE.Quaternion(),
+              uniforms:{active:phaseRefreezeActive,meltProgress:phaseRefreezeMeltProgress,
+                iceToMelt:phaseRefreezeIceToMelt,iceCarryActive:phaseRefreezeIceCarryActive,iceCarryProgress:phaseRefreezeIceCarryProgress}};
+            phaseHandoff.userData.refreezing=phaseWaterGhost.userData.refreezing=phaseRefreeze;
             var phaseWaterCarryActive={value:0},phaseWaterCarryProgress={value:0};
             var phaseWaterCarryLocalToSource={value:new THREE.Matrix4()},phaseWaterCarryCaptured=false;
             phaseWaterGhost.userData.carriedMeltingFront={active:phaseWaterCarryActive,
@@ -19409,11 +19880,12 @@ const d = labToolData.waterCycle || {};
               shader.uniforms.phaseFrontMode=phaseFrontMode;shader.uniforms.phaseFrontRadius=phaseFrontRadius;
               shader.uniforms.phaseWaterCarryActive=phaseWaterCarryActive;shader.uniforms.phaseWaterCarryProgress=phaseWaterCarryProgress;
               shader.uniforms.phaseWaterCarryLocalToSource=phaseWaterCarryLocalToSource;
+              shader.uniforms.phaseRefreezeActive=phaseRefreezeActive;
               shader.vertexShader='varying vec3 vPhaseLocal;\n'+shader.vertexShader;
               shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
                 '#include <begin_vertex>\nvPhaseLocal=position;');
               shader.fragmentShader='varying vec3 vPhaseLocal;\nuniform float phaseFrontProgress;\nuniform float phaseFrontMode;\nuniform float phaseFrontRadius;\n'+shader.fragmentShader;
-              shader.fragmentShader='uniform float phaseWaterCarryActive; uniform float phaseWaterCarryProgress; uniform mat4 phaseWaterCarryLocalToSource;\n'+shader.fragmentShader;
+              shader.fragmentShader='uniform float phaseWaterCarryActive; uniform float phaseWaterCarryProgress; uniform mat4 phaseWaterCarryLocalToSource; uniform float phaseRefreezeActive;\n'+shader.fragmentShader;
               shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>',
                 'if(phaseWaterCarryActive>0.5){\n'
                 +'vec3 carryUnit=(phaseWaterCarryLocalToSource*vec4(vPhaseLocal,1.0)).xyz/3.4;\n'
@@ -19421,18 +19893,21 @@ const d = labToolData.waterCycle || {};
                 +'carryField+=sin(carryUnit.x*13.0+carryUnit.z*7.0)*sin(carryUnit.y*11.0-carryUnit.z*9.0)*0.025;\n'
                 +'carryField=min(0.90,carryField);\n'
                 +'diffuseColor.a*=1.0-smoothstep(phaseWaterCarryProgress-0.09,phaseWaterCarryProgress+0.09,carryField);\n'
+                +'if(phaseRefreezeActive>0.5){float heldLiquidEdge=1.0-smoothstep(0.0,0.07,abs(carryField-phaseWaterCarryProgress));\n'
+                +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.60,0.85,0.91),heldLiquidEdge*0.38);}\n'
                 +'if(diffuseColor.a<0.001)discard;\n}\n'
                 +'if(phaseFrontMode>0.5){\n'
                 +'vec3 phaseUnit=vPhaseLocal/phaseFrontRadius;\n'
                 +'float phaseField=phaseFrontMode<1.5 ? 0.5-0.5*phaseUnit.y : length(phaseUnit-vec3(0.62,0.22,0.0))/1.9;\n'
                 +'phaseField+=sin(phaseUnit.x*13.0+phaseUnit.z*7.0)*sin(phaseUnit.y*11.0-phaseUnit.z*9.0)*0.025;\n'
+                +'if(phaseRefreezeActive>0.5)phaseField=clamp(phaseField,0.09,0.91);\n'
                 +'float phaseKeep=smoothstep(phaseFrontProgress-0.09,phaseFrontProgress+0.09,phaseField);\n'
                 +'float phaseEdge=1.0-smoothstep(0.0,0.07,abs(phaseField-phaseFrontProgress));\n'
                 +'diffuseColor.a*=phaseKeep;\n'
                 +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.68,0.88,0.96),phaseEdge*0.55);\n'
                 +'}\n#include <alphatest_fragment>');
             };
-            phaseWaterMaterial.customProgramCacheKey=function(){return 'pilot-local-phase-front-v2-carried-melt';};
+            phaseWaterMaterial.customProgramCacheKey=function(){return 'pilot-local-phase-front-v3-refreezing-source';};
             installParcelWaterOptics(phaseWaterMaterial,true);
             var phaseVaporMaterial = new THREE.MeshBasicMaterial({color:0xb5e6ef,
               transparent:true,opacity:0,depthWrite:false,wireframe:true});
@@ -19442,6 +19917,7 @@ const d = labToolData.waterCycle || {};
               transparent:true,opacity:0,depthWrite:false,specular:0xffffff,shininess:90});
             var phaseIceGhost = new THREE.Mesh(iceMesh.geometry,phaseIceMaterial);
             phaseIceGhost.name = 'pilot-phase-ice-memory';
+            phaseIceGhost.userData.refreezing=phaseRefreeze;
             var phaseIceEdgeMaterial=new THREE.LineBasicMaterial({color:0x9fc8d9,transparent:true,opacity:0.62,depthWrite:false});
             var phaseIceGhostEdges=new THREE.LineSegments(iceEdges.geometry,phaseIceEdgeMaterial);
             phaseIceGhost.add(phaseIceGhostEdges);
@@ -19460,12 +19936,32 @@ const d = labToolData.waterCycle || {};
                 shader.uniforms.phaseMeltActive=phaseMeltActive;shader.uniforms.phaseMeltProgress=phaseFrontProgress;
                 shader.uniforms.phaseMeltWorldToSource=phaseMeltWorldToSource;
                 shader.uniforms.phaseIceCarryActive=phaseIceCarryActive;shader.uniforms.phaseIceCarryProgress=phaseIceCarryProgress;
+                if(!incoming){
+                  shader.uniforms.phaseRefreezeActive=phaseRefreezeActive;shader.uniforms.phaseRefreezeMeltProgress=phaseRefreezeMeltProgress;
+                  shader.uniforms.phaseRefreezeIceToMelt=phaseRefreezeIceToMelt;
+                  shader.uniforms.phaseRefreezeIceCarryActive=phaseRefreezeIceCarryActive;
+                  shader.uniforms.phaseRefreezeIceCarryProgress=phaseRefreezeIceCarryProgress;
+                }
                 shader.vertexShader='varying vec3 vPhaseMeltWorld; varying vec3 vPhaseMeltLocal;\n'+shader.vertexShader;
                 shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',
                   '#include <project_vertex>\nvPhaseMeltWorld=(modelMatrix*vec4(transformed,1.0)).xyz;\nvPhaseMeltLocal=position;');
                 shader.fragmentShader='varying vec3 vPhaseMeltWorld; varying vec3 vPhaseMeltLocal;\nuniform float phaseMeltActive; uniform float phaseMeltProgress; uniform mat4 phaseMeltWorldToSource;\nuniform float phaseIceCarryActive; uniform float phaseIceCarryProgress;\n'+shader.fragmentShader;
+                if(!incoming)shader.fragmentShader='uniform float phaseRefreezeActive; uniform float phaseRefreezeMeltProgress; uniform mat4 phaseRefreezeIceToMelt; uniform float phaseRefreezeIceCarryActive; uniform float phaseRefreezeIceCarryProgress;\n'+shader.fragmentShader;
                 shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>',
-                  (incoming?'':'if(phaseIceCarryActive>0.5){\nvec3 carryIceUnit=vPhaseMeltLocal/3.4;\n'
+                  (incoming?'':'if(phaseRefreezeActive>0.5){\n'
+                    +'vec3 heldIceUnit=(phaseRefreezeIceToMelt*vec4(vPhaseMeltLocal,1.0)).xyz/3.4;\n'
+                    +'float heldIceField=length(heldIceUnit-vec3(0.62,0.22,0.0))/1.9;\n'
+                    +'heldIceField+=sin(heldIceUnit.x*13.0+heldIceUnit.z*7.0)*sin(heldIceUnit.y*11.0-heldIceUnit.z*9.0)*0.025;\n'
+                    +'heldIceField=min(0.90,heldIceField);\n'
+                    +'diffuseColor.a*=smoothstep(phaseRefreezeMeltProgress-0.09,phaseRefreezeMeltProgress+0.09,heldIceField);\n'
+                    +'if(phaseRefreezeIceCarryActive>0.5){\nvec3 heldCarryUnit=vPhaseMeltLocal/3.4;\n'
+                    +'float heldCarryField=length(heldCarryUnit-vec3(0.62,0.22,0.0))/1.9;\n'
+                    +'heldCarryField+=sin(heldCarryUnit.x*13.0+heldCarryUnit.z*7.0)*sin(heldCarryUnit.y*11.0-heldCarryUnit.z*9.0)*0.025;\n'
+                    +'diffuseColor.a*=1.0-smoothstep(phaseRefreezeIceCarryProgress-0.09,phaseRefreezeIceCarryProgress+0.09,heldCarryField);\n}\n'
+                    +'float heldIceEdge=1.0-smoothstep(0.0,0.07,abs(heldIceField-phaseRefreezeMeltProgress));\n'
+                    +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.60,0.85,0.91),heldIceEdge*0.38);\n'
+                    +'if(diffuseColor.a<0.001)discard;\n}\n'
+                    +'if(phaseIceCarryActive>0.5){\nvec3 carryIceUnit=vPhaseMeltLocal/3.4;\n'
                     +'float carryIceField=length(carryIceUnit-vec3(0.62,0.22,0.0))/1.9;\n'
                     +'carryIceField+=sin(carryIceUnit.x*13.0+carryIceUnit.z*7.0)*sin(carryIceUnit.y*11.0-carryIceUnit.z*9.0)*0.025;\n'
                     +'diffuseColor.a*=1.0-smoothstep(phaseIceCarryProgress-0.09,phaseIceCarryProgress+0.09,carryIceField);\n'
@@ -19480,7 +19976,7 @@ const d = labToolData.waterCycle || {};
                   +'float meltEdge=1.0-smoothstep(0.0,0.07,abs(meltField-phaseMeltProgress));\n'
                   +'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.60,0.85,0.91),meltEdge*0.38);\n}\n#include <alphatest_fragment>');
               };
-              material.customProgramCacheKey=function(){return priorMeltKey+'-complementary-melt-v2-carried-'+(incoming?'liquid':'ice');};
+              material.customProgramCacheKey=function(){return priorMeltKey+'-complementary-melt-v3-refreeze-'+(incoming?'liquid':'ice');};
             }
             installMeltingPhaseFront(phaseIceMaterial,false);installMeltingPhaseFront(phaseIceEdgeMaterial,false);
             installMeltingPhaseFront(dropletMesh.material,true);
@@ -19488,6 +19984,8 @@ const d = labToolData.waterCycle || {};
             // to a smaller silhouette when the tagged rain parcel separates.
             var phaseCloudGhost = buildCumulus(0.6,1.5,26);
             phaseCloudGhost.name = 'pilot-phase-cloud-memory';
+            var phaseCloudAssemblyLens={coverage:0,retireStart:.58};
+            phaseCloudGhost.userData.assemblyLens=phaseCloudAssemblyLens;
             // This source is a transparent memory of the tagged parcel's cloud.
             // Paint it before the enlarged avatar so the learner can still see
             // the raindrop while it begins falling through the cloud's base.
@@ -19508,6 +20006,77 @@ const d = labToolData.waterCycle || {};
             phaseBeads.name='pilot-phase-condensation-beads';phaseBeads.frustumCulled=false;
             phaseBeads.visible=false;phaseHandoff.add(phaseBeads);
             var phaseBeadDummy=new THREE.Object3D();
+            var phaseBeadSource=new THREE.Vector3(),phaseBeadTarget=new THREE.Vector3(),phaseBeadField=new THREE.Vector3();
+            var phaseBeadWorldToLocal=new THREE.Matrix4();
+            var phaseAssemblyBeadSeeds=new Float32Array(PHASE_CONDENSATION_BEADS*3);
+            var phaseAssemblyBeadCoverage=new Float32Array(PHASE_CONDENSATION_BEADS);
+            var phaseAssemblyBeadProgress=new Float32Array(PHASE_CONDENSATION_BEADS);
+            phaseBeads.userData.assemblyFlow={active:false,sourceSeeds:phaseAssemblyBeadSeeds,
+              sourceCoverage:phaseAssemblyBeadCoverage,progress:phaseAssemblyBeadProgress};
+            function seedCloudAssemblyBeads(){
+              // These representative droplets leave the displayed liquid side,
+              // including a partial thaw. Reuse deterministic surface candidates
+              // and the exact carried shader field; an empty source emits none.
+              for(var seedIndex=0;seedIndex<PHASE_CONDENSATION_BEADS;seedIndex++){
+                var seedBest=-1,seedAttempts=phaseWaterCarryActive.value>0.5?48:1;
+                for(var seedAttempt=0;seedAttempt<seedAttempts;seedAttempt++){
+                  var seedNumber=seedIndex+seedAttempt*PHASE_CONDENSATION_BEADS;
+                  var seedAngle=seedNumber*2.399963,seedLatitude=-.88+((seedNumber*7)%47)/46*1.76;
+                  var seedRing=Math.sqrt(Math.max(0,1-seedLatitude*seedLatitude));
+                  phaseBeadSource.set(Math.cos(seedAngle)*seedRing,seedLatitude,Math.sin(seedAngle)*seedRing).multiplyScalar(2.2);
+                  var seedCoverage=1;
+                  if(phaseWaterCarryActive.value>0.5){
+                    phaseBeadField.copy(phaseBeadSource).applyMatrix4(phaseWaterCarryLocalToSource.value).divideScalar(3.4);
+                    var seedField=Math.hypot(phaseBeadField.x-.62,phaseBeadField.y-.22,phaseBeadField.z)/1.9;
+                    seedField+=Math.sin(phaseBeadField.x*13+phaseBeadField.z*7)*Math.sin(phaseBeadField.y*11-phaseBeadField.z*9)*.025;
+                    seedField=Math.min(.90,seedField);
+                    var seedEdge=Math.max(0,Math.min(1,(seedField-phaseWaterCarryProgress.value+.09)/.18));
+                    seedCoverage=1-seedEdge*seedEdge*(3-2*seedEdge);
+                  }
+                  if(seedCoverage>seedBest){
+                    seedBest=seedCoverage;
+                    phaseAssemblyBeadSeeds[seedIndex*3]=phaseBeadSource.x;
+                    phaseAssemblyBeadSeeds[seedIndex*3+1]=phaseBeadSource.y;
+                    phaseAssemblyBeadSeeds[seedIndex*3+2]=phaseBeadSource.z;
+                  }
+                  if(seedCoverage>.98)break;
+                }
+                phaseAssemblyBeadCoverage[seedIndex]=Math.max(0,seedBest);
+                phaseAssemblyBeadProgress[seedIndex]=0;
+              }
+              phaseBeads.userData.assemblyFlow.active=true;
+            }
+            function updateCloudAssemblyBeads(progress){
+              // Launch from the liquid memory and land in the actual visible
+              // lobe frame, even when Follow leaves the source behind. Both
+              // teaching views reuse these twelve instances and pooled vectors.
+              phaseWaterGhost.updateWorldMatrix(true,false);phaseBeads.updateWorldMatrix(true,false);
+              phaseBeadWorldToLocal.copy(phaseBeads.matrixWorld).invert();
+              var assemblyRoot=input.cameraMode==='water'?phaseCloudGhost:selfCloud;
+              assemblyRoot.updateWorldMatrix(true,true);
+              for(var flowIndex=0;flowIndex<PHASE_CONDENSATION_BEADS;flowIndex++){
+                phaseBeadSource.fromArray(phaseAssemblyBeadSeeds,flowIndex*3)
+                  .applyMatrix4(phaseWaterGhost.matrixWorld).applyMatrix4(phaseBeadWorldToLocal);
+                var flowLobe=assemblyRoot.children[(flowIndex*7)%assemblyRoot.children.length];
+                phaseBeadTarget.setFromMatrixPosition(flowLobe.matrixWorld).applyMatrix4(phaseBeadWorldToLocal);
+                var flowDelay=(flowIndex%4)*.055+Math.floor(flowIndex/4)*.014;
+                var flowProgress=Math.max(0,Math.min(1,(progress-flowDelay)/(1-flowDelay)));
+                phaseAssemblyBeadProgress[flowIndex]=flowProgress;
+                var flowTravel=flowProgress*flowProgress*flowProgress*(flowProgress*(flowProgress*6-15)+10);
+                var flowArc=16*flowTravel*flowTravel*(1-flowTravel)*(1-flowTravel);
+                var flowBend=Math.min(4.5,.7+phaseBeadSource.distanceTo(phaseBeadTarget)*.08);
+                var flowAngle=flowIndex*2.399963;
+                phaseBeadDummy.position.copy(phaseBeadSource).lerp(phaseBeadTarget,flowTravel);
+                phaseBeadDummy.position.x-=Math.sin(flowAngle)*flowBend*flowArc*.55;
+                phaseBeadDummy.position.y+=flowBend*flowArc*(.65+(flowIndex%3)*.12);
+                phaseBeadDummy.position.z+=Math.cos(flowAngle)*flowBend*flowArc*.55;
+                var flowArrival=Math.max(0,Math.min(1,(flowProgress-.5)/.5));
+                flowArrival=flowArrival*flowArrival*(3-2*flowArrival);
+                phaseBeadDummy.scale.setScalar((1.15+(flowIndex%5)*.1)*(1-flowArrival)
+                  *Math.sqrt(phaseAssemblyBeadCoverage[flowIndex]));
+                phaseBeadDummy.updateMatrix();phaseBeads.setMatrixAt(flowIndex,phaseBeadDummy.matrix);
+              }
+            }
             var phaseFrostVertices=[];
             for(var phaseArm=0;phaseArm<6;phaseArm++){
               var phaseAngle=phaseArm*Math.PI/3,phaseCos=Math.cos(phaseAngle),phaseSin=Math.sin(phaseAngle);
@@ -19533,15 +20102,17 @@ const d = labToolData.waterCycle || {};
               material.onBeforeCompile=function(shader){
                 shader.uniforms.phaseIceActive=phaseIceActive;
                 shader.uniforms.phaseFrontProgress=phaseFrontProgress;
+                shader.uniforms.phaseRefreezeActive=phaseRefreezeActive;
                 shader.vertexShader='varying vec3 vIcePhaseLocal;\n'+shader.vertexShader;
                 shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
                   '#include <begin_vertex>\nvIcePhaseLocal=position;');
-                shader.fragmentShader='varying vec3 vIcePhaseLocal;\nuniform float phaseIceActive; uniform float phaseFrontProgress;\n'+shader.fragmentShader;
+                shader.fragmentShader='varying vec3 vIcePhaseLocal;\nuniform float phaseIceActive; uniform float phaseFrontProgress; uniform float phaseRefreezeActive;\n'+shader.fragmentShader;
                 shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>',
                   'vec3 icePhaseUnit=vIcePhaseLocal/3.4;\n'
                   +'if(phaseIceActive>0.5){\n'
                   +'float icePhaseField=length(icePhaseUnit-vec3(0.62,0.22,0.0))/1.9;\n'
                   +'icePhaseField+=sin(icePhaseUnit.x*13.0+icePhaseUnit.z*7.0)*sin(icePhaseUnit.y*11.0-icePhaseUnit.z*9.0)*0.025;\n'
+                  +'if(phaseRefreezeActive>0.5)icePhaseField=clamp(icePhaseField,0.09,0.91);\n'
                   +'float icePhaseKeep=1.0-smoothstep(phaseFrontProgress-0.09,phaseFrontProgress+0.09,icePhaseField);\n'
                   +'float icePhaseEdge=1.0-smoothstep(0.0,0.07,abs(icePhaseField-phaseFrontProgress));\n'
                   +'diffuseColor.a*=icePhaseKeep;\n'
@@ -19557,7 +20128,7 @@ const d = labToolData.waterCycle || {};
                   +'outgoingLight=mix(outgoingLight,vec3(0.12,0.33,0.43),pow(1.0-icePhaseFacing,2.0)*0.42);\n'
                   +'gl_FragColor = vec4( outgoingLight, diffuseColor.a );');
               };
-              material.customProgramCacheKey=function(){return 'pilot-complementary-ice-front-v1-'+(surfaceDetail?'surface':'line');};
+              material.customProgramCacheKey=function(){return 'pilot-complementary-ice-front-v2-refreeze-'+(surfaceDetail?'surface':'line');};
             }
             iceMesh.material.depthWrite=false;
             installIcePhaseReveal(iceMesh.material,true);
@@ -19573,15 +20144,18 @@ const d = labToolData.waterCycle || {};
             var phaseDropPreview=new THREE.Mesh(dropletMesh.geometry,dropletMesh.material);
             phaseDropPreview.name='pilot-phase-incoming-droplet';phaseDropPreview.visible=false;
             phaseDropPreview.userData.schematic=true;phaseDropPreview.userData.target='droplet';phaseHandoff.add(phaseDropPreview);
+            var phaseLiquidPreview=new THREE.Mesh(liquidMesh.geometry,liquidMesh.material);
+            phaseLiquidPreview.name='pilot-phase-incoming-liquid';phaseLiquidPreview.visible=false;
+            phaseLiquidPreview.userData.schematic=true;phaseLiquidPreview.userData.target='liquid';phaseHandoff.add(phaseLiquidPreview);
             var phaseSnowPreview=new THREE.Group();phaseSnowPreview.name='pilot-phase-incoming-snow';phaseSnowPreview.visible=false;
             phaseSnowPreview.add(new THREE.Mesh(snowCrystalBody.geometry,snowCrystalBody.material));
             phaseSnowPreview.add(new THREE.LineSegments(snowCrystalEdges.geometry,snowCrystalEdges.material));
             phaseSnowPreview.userData.schematic=true;phaseSnowPreview.userData.target='snow';phaseHandoff.add(phaseSnowPreview);
             phaseHandoff.userData.previewNames={droplet:phaseDropPreview.name,snow:phaseSnowPreview.name,
-              rain:phaseRainPreview.name,ice:phaseIcePreview.name};
+              rain:phaseRainPreview.name,ice:phaseIcePreview.name,liquid:phaseLiquidPreview.name};
             var phaseLensDepthStates=[phaseWaterMaterial,phaseVaporMaterial,phaseIceMaterial,phaseIceEdgeMaterial,
               phaseBeadMaterial,phaseFrostMaterial,dropletMesh.material,iceMesh.material,iceEdges.material,
-              rainMesh.material,snowCrystalMaterial,snowCrystalEdges.material].map(function(material){
+              rainMesh.material,liquidMesh.material,snowCrystalMaterial,snowCrystalEdges.material].map(function(material){
                 return {material:material,depthTest:material.depthTest,depthWrite:material.depthWrite};
               });
             phaseHandoff.userData.depthBaselines=phaseLensDepthStates.map(function(state){
@@ -19604,9 +20178,15 @@ const d = labToolData.waterCycle || {};
             var phasePreviousPosition=new THREE.Vector3(),phaseOriginOffset=new THREE.Vector3();
             var phaseWaterSourcePosition=new THREE.Vector3(),phaseWaterSourceScale=new THREE.Vector3(1,1,1);
             var phaseWaterSourceQuaternion=new THREE.Quaternion(),phaseWaterSourceCaptured=false;
+            var phaseWaterSourceCoverage={value:1};
+            var phaseAssemblySourceStart=-1,phaseAssemblySourceProgress={value:0};
+            var phaseCollectionReceiver=new THREE.Vector3();
+            phaseHandoff.userData.collectionReceiver=phaseCollectionReceiver;
             phaseWaterGhost.userData.sourcePosition=phaseWaterSourcePosition;
             phaseWaterGhost.userData.sourceScale=phaseWaterSourceScale;
             phaseWaterGhost.userData.sourceQuaternion=phaseWaterSourceQuaternion;
+            phaseWaterGhost.userData.sourceCoverage=phaseWaterSourceCoverage;
+            phaseWaterGhost.userData.assemblySourceProgress=phaseAssemblySourceProgress;
             phaseWaterGhost.userData.sourceSnapshot=false;phaseWaterGhost.userData.placement='none';
             var phaseIceSourcePosition=new THREE.Vector3(),phaseIceSourceScale=new THREE.Vector3(1,1,1);
             var phaseIceSourceQuaternion=new THREE.Quaternion(),phaseIceSourceCaptured=false;
@@ -19614,6 +20194,38 @@ const d = labToolData.waterCycle || {};
             phaseIceGhost.userData.sourcePosition=phaseIceSourcePosition;phaseIceGhost.userData.sourceScale=phaseIceSourceScale;
             phaseIceGhost.userData.sourceQuaternion=phaseIceSourceQuaternion;phaseIceGhost.userData.sourceSnapshot=false;
             phaseIceGhost.userData.placement='none';
+            function clearRefreezingSource(){
+              phaseRefreeze.active=false;phaseRefreeze.start=-1;phaseRefreeze.progress=0;
+              phaseRefreeze.sourceLiquidOpacity=phaseRefreeze.sourceIceOpacity=phaseRefreeze.sourceEdgeOpacity=0;
+              phaseRefreeze.sourceIcePosition.set(0,0,0);phaseRefreeze.sourceIceScale.setScalar(1);
+              phaseRefreeze.sourceIceQuaternion.set(0,0,0,1);
+              phaseRefreezeActive.value=phaseRefreezeMeltProgress.value=0;phaseRefreezeIceToMelt.value.identity();
+              phaseRefreezeIceCarryActive.value=phaseRefreezeIceCarryProgress.value=0;
+              canvasEl.dataset.phaseRefreezing='hidden';
+            }
+            function captureRefreezingSource(liquidSource){
+              // Capture both visible parts of the interrupted thaw before its
+              // shared uniforms and source transforms are cleared.
+              phaseRefreeze.active=true;phaseRefreeze.start=-1;phaseRefreeze.progress=0;
+              phaseRefreeze.sourceLiquidOpacity=liquidSource.material.opacity*phaseWaterSourceCoverage.value;
+              phaseRefreeze.sourceIceOpacity=phaseIceMaterial.opacity;phaseRefreeze.sourceEdgeOpacity=phaseIceEdgeMaterial.opacity;
+              phaseRefreeze.sourceIcePosition.copy(phaseIceSourcePosition);
+              phaseIceGhost.getWorldQuaternion(phaseRefreeze.sourceIceQuaternion);
+              phaseIceGhost.getWorldScale(phaseRefreeze.sourceIceScale);
+              phaseIceGhost.updateWorldMatrix(true,false);
+              phaseRefreezeIceToMelt.value.copy(phaseMeltWorldToSource.value).multiply(phaseIceGhost.matrixWorld);
+              phaseRefreezeMeltProgress.value=phaseFrontProgress.value;
+              phaseRefreezeIceCarryActive.value=phaseIceCarryActive.value;
+              phaseRefreezeIceCarryProgress.value=phaseIceCarryProgress.value;
+              phaseRefreezeActive.value=1;
+            }
+            function updateRefreezingProgress(ease){
+              if(!phaseRefreeze.active)return;
+              if(phaseRefreeze.start<0)phaseRefreeze.start=ease;
+              phaseRefreeze.progress=Math.max(phaseRefreeze.progress,
+                Math.max(0,Math.min(1,(ease-phaseRefreeze.start)/Math.max(.001,1-phaseRefreeze.start))));
+              canvasEl.dataset.phaseRefreezing=motionReduced?'static':input.paused||document.hidden?'frozen':'active';
+            }
             var phaseViewDirection=new THREE.Vector3();
             var phaseCloudSourcePosition=new THREE.Vector3(),phaseCloudSourceScale=new THREE.Vector3(1,1,1);
             var phaseCloudSourceQuaternion=new THREE.Quaternion(),phaseCloudSourceCaptured=false;
@@ -19623,24 +20235,35 @@ const d = labToolData.waterCycle || {};
             phaseCloudGhost.userData.sourceQuaternion=phaseCloudSourceQuaternion;
             phaseCloudGhost.userData.sourceSnapshot=false;
             phaseCloudGhost.userData.placement='none';
+            var phaseCloudRetirement={active:false,progress:0,coverage:0,startedAt:0,duration:0};
+            phaseCloudGhost.userData.retirement=phaseCloudRetirement;
             var phaseIceViewQuaternion=new THREE.Quaternion();
             var phaseIceLensTilt=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2-.35);
-            function clearPhaseHandoff(preserveCloudSource,preserveWaterSource,preserveIceSource,preserveCarriedMelt,preserveCarriedIce) {
+            function clearPhaseHandoff(preserveCloudSource,preserveWaterSource,preserveIceSource,preserveCarriedMelt,preserveCarriedIce,preserveInteriorExit,preserveRefreezingSource) {
               presentPhaseLens(false);
+              if(!preserveRefreezingSource)clearRefreezingSource();
+              if(!preserveCloudSource){if(!preserveInteriorExit)clearCloudInteriorExit();clearPilotCloudShadowSource();}
               if(phaseHandoffTarget===dropletMesh)dropletMesh.scale.setScalar(1+Math.min(1.6,sim.mass*.9));
               else if(phaseHandoffTarget===rainMesh)rainMesh.scale.set(1.12,.82,1.12);
+              else if(phaseHandoffTarget===liquidMesh)liquidMesh.scale.setScalar(phaseLiquidRestScale);
               else if(phaseHandoffTarget)phaseHandoffTarget.scale.setScalar(1);
+              phaseCollectionCoverage.value=1;liquidMesh.position.set(0,phaseLiquidRestY,0);
+              phaseCollectionReceiver.set(0,0,0);
               phaseHandoffTarget=null;phaseHandoffKind='none';phaseHandoffTo='';phaseHandoffElapsed=0;
               phaseHandoff.visible=false;
               phaseBeads.visible=false;phaseFrost.visible=false;phaseIcePreview.visible=false;phaseRainPreview.visible=false;
-              phaseDropPreview.visible=false;phaseSnowPreview.visible=false;
+              phaseDropPreview.visible=false;phaseSnowPreview.visible=false;phaseLiquidPreview.visible=false;
               phaseDropPreview.userData.kind='none';phaseSnowPreview.userData.kind='none';
               phaseBeads.userData.mode='none';
+              phaseBeads.userData.assemblyFlow.active=false;
+              phaseAssemblyBeadSeeds.fill(0);phaseAssemblyBeadCoverage.fill(0);phaseAssemblyBeadProgress.fill(0);
               phaseWaterGhost.position.set(0,0,0);
               phaseWaterGhost.userData.sourceSnapshot=false;phaseWaterGhost.userData.placement='none';
+              phaseAssemblySourceStart=-1;phaseAssemblySourceProgress.value=0;
               if(!preserveWaterSource){
                 phaseWaterSourcePosition.set(0,0,0);phaseWaterSourceScale.setScalar(1);
                 phaseWaterSourceQuaternion.set(0,0,0,1);phaseWaterSourceCaptured=false;
+                phaseWaterSourceCoverage.value=1;
               }
               canvasEl.dataset.evaporationHandoffPlacement='none';
               if(!preserveCarriedMelt){
@@ -19655,6 +20278,9 @@ const d = labToolData.waterCycle || {};
               phaseMeltActive.value=0;phaseMeltWorldToSource.value.identity();
               if(!preserveCarriedIce){phaseIceCarryActive.value=0;phaseIceCarryProgress.value=0;phaseIceCarryCaptured=false;}
               phaseCloudGhost.visible=false;phaseCloudGhost.position.set(0,0,0);phaseCloudGhost.scale.setScalar(1);
+              phaseCloudRetirement.active=false;phaseCloudRetirement.progress=phaseCloudRetirement.coverage=0;
+              phaseCloudRetirement.startedAt=phaseCloudRetirement.duration=0;
+              phaseCloudAssemblyLens.coverage=0;
               if(!preserveCloudSource){
                 phaseCloudSourcePosition.set(0,0,0);phaseCloudSourceScale.setScalar(1);
                 phaseCloudSourceQuaternion.set(0,0,0,1);phaseCloudSourceCaptured=false;
@@ -19668,6 +20294,7 @@ const d = labToolData.waterCycle || {};
               for(var clearCloudLobe=0;clearCloudLobe<selfCloud.children.length;clearCloudLobe++){
                 selfCloud.children[clearCloudLobe].material.opacity=selfCloud.children[clearCloudLobe].userData.motionBaseOpacity;
                 selfCloud.children[clearCloudLobe].material.userData.cloudLighting.density.value=1;
+                phaseCloudGhost.children[clearCloudLobe].material.opacity=0;
                 if(!preserveCloudSource){
                   phaseCloudGhost.children[clearCloudLobe].material.userData.cloudLighting.density.value=1;
                   phaseCloudDensities[clearCloudLobe]=1;
@@ -19680,9 +20307,23 @@ const d = labToolData.waterCycle || {};
               phaseHandoff.userData.front='none';canvasEl.dataset.phaseFront='none';
               phaseHandoff.userData.from='none';phaseHandoff.userData.to='none';
               phaseHandoff.userData.kind='none';phaseHandoff.userData.progress=0;
+              phaseHandoff.userData.duration=0;
               canvasEl.dataset.phaseHandoff='hidden';canvasEl.dataset.phaseHandoffKind='none';
               canvasEl.dataset.phaseHandoffFrom='none';canvasEl.dataset.phaseHandoffTo='none';
               canvasEl.dataset.phaseHandoffProgress='0.000';
+            }
+            function updatePhaseCloudRetirement() {
+              if(!phaseCloudRetirement.active)return;
+              // Start from the actual captured cloud, including a partially
+              // formed lobe. Match the interior/shadow's remaining cue time so
+              // the source does not dim at the first learning pause.
+              if(phaseCloudRetirement.duration===0)
+                phaseCloudRetirement.duration=Math.max(.001,phaseHandoffDuration-phaseHandoffElapsed);
+              var sourceProgress=motionReduced?.5:Math.max(0,Math.min(1,
+                (sim.elapsed-phaseCloudRetirement.startedAt)/phaseCloudRetirement.duration));
+              phaseCloudRetirement.progress=Math.max(phaseCloudRetirement.progress,
+                sourceProgress*sourceProgress*(3-2*sourceProgress));
+              phaseCloudRetirement.coverage=1-phaseCloudRetirement.progress;
             }
             function beginPhaseHandoff(fromForm,toForm) {
               // Capture before clearing a prior assembly cue, whose staged
@@ -19704,11 +20345,15 @@ const d = labToolData.waterCycle || {};
                 }
               }
               var evaporatingWater=toForm==='vapor'&&(fromForm==='liquid'||fromForm==='transpiring'||fromForm==='rain'||fromForm==='droplet');
+              var collectingRain=fromForm==='rain'&&toForm==='liquid'&&surfaceUnder(px,pz)==='water';
               var meltingIce=fromForm==='ice'&&toForm==='droplet';
-              var carryMeltingSource=fromForm==='droplet'&&toForm==='vapor'&&phaseWaterCarryCaptured;
-              clearPhaseHandoff(fromForm==='cloud',evaporatingWater&&phaseWaterSourceCaptured,meltingIce&&phaseIceSourceCaptured,
-                carryMeltingSource,meltingIce&&phaseIceCarryCaptured);
+              var assemblingCloud=fromForm==='droplet'&&toForm==='cloud';
+              var refreezingWater=fromForm==='droplet'&&toForm==='ice'&&phaseRefreeze.active;
+              var carryMeltingSource=fromForm==='droplet'&&(toForm==='vapor'||assemblingCloud||refreezingWater)&&phaseWaterCarryCaptured;
+              clearPhaseHandoff(fromForm==='cloud',(evaporatingWater||collectingRain||assemblingCloud||refreezingWater)&&phaseWaterSourceCaptured,meltingIce&&phaseIceSourceCaptured,
+                carryMeltingSource,meltingIce&&phaseIceCarryCaptured,fromForm==='droplet'&&toForm==='vapor',refreezingWater);
               if(evaporatingWater)phaseHandoffKind='evaporation';
+              else if(collectingRain)phaseHandoffKind='collection';
               else if(fromForm==='vapor'&&toForm==='droplet')phaseHandoffKind='condensation';
               else if(fromForm==='vapor'&&toForm==='ice')phaseHandoffKind='deposition';
               else if(meltingIce)phaseHandoffKind='melting';
@@ -19717,13 +20362,16 @@ const d = labToolData.waterCycle || {};
               else if(fromForm==='cloud'&&(toForm==='rain'||toForm==='snow'))phaseHandoffKind='precipitation-release';
               else if(fromForm==='ice'&&toForm==='snow')phaseHandoffKind='ice-growth';
               if(phaseHandoffKind==='none')return;
-              phaseHandoffTo=toForm;phaseHandoffElapsed=.38;
+              if(collectingRain)phaseCollectionReceiver.set(px,0,pz);
+              phaseHandoffTo=toForm;phaseHandoffElapsed=collectingRain?.08:.38;
               phaseWaterGhost.visible=fromForm==='liquid'||fromForm==='transpiring'||fromForm==='rain'||fromForm==='droplet';
-              phaseVaporGhost.visible=fromForm==='vapor';phaseIceGhost.visible=fromForm==='ice';
+              phaseVaporGhost.visible=fromForm==='vapor';phaseIceGhost.visible=fromForm==='ice'||refreezingWater;
               phaseCloudGhost.visible=fromForm==='cloud';
               if(phaseCloudGhost.visible){
                 phaseCloudGhost.userData.sourceSnapshot=true;
                 phaseCloudGhost.quaternion.copy(phaseCloudSourceQuaternion);
+                phaseCloudRetirement.active=true;phaseCloudRetirement.coverage=1;
+                phaseCloudRetirement.startedAt=sim.elapsed;
               }
               phaseWaterGhost.geometry=fromForm==='rain'?rainMesh.geometry:fromForm==='droplet'?dropletMesh.geometry:liquidMesh.geometry;
               phaseWaterGhost.quaternion.set(0,0,0,1);
@@ -19731,7 +20379,7 @@ const d = labToolData.waterCycle || {};
               phaseGhostScale.setScalar(fromForm==='droplet'?1+Math.min(1.6,sim.mass*.9):1);
               if(fromForm==='rain')phaseGhostScale.set(1.12,.82,1.12);
               if(fromForm==='transpiring')phaseGhostScale.multiplyScalar(.75);
-              if(evaporatingWater&&phaseWaterSourceCaptured){
+              if((evaporatingWater||collectingRain||assemblingCloud||refreezingWater)&&phaseWaterSourceCaptured){
                 // Retain the outgoing pulse/oscillation and its actual orientation,
                 // rather than snapping the source to the nominal avatar profile.
                 phaseGhostScale.copy(phaseWaterSourceScale);
@@ -19741,6 +20389,7 @@ const d = labToolData.waterCycle || {};
               phaseFrontMode.value=phaseHandoffKind==='evaporation'?1:phaseHandoffKind==='freezing'&&phaseWaterGhost.visible?2:0;
               phaseBeads.visible=phaseHandoffKind==='condensation'||phaseHandoffKind==='cloud-assembly';
               phaseBeads.userData.mode=phaseBeads.visible?phaseHandoffKind:'none';
+              if(assemblingCloud)seedCloudAssemblyBeads();
               phaseHandoff.userData.cloudTransition=phaseHandoffKind==='cloud-assembly'?'droplet-to-billows':phaseHandoffKind==='precipitation-release'
                 ?toForm==='snow'?'tagged-crystal-leaves-cloud':'tagged-drop-leaves-cloud':'none';
               phaseFrost.visible=phaseHandoffKind==='freezing'||phaseHandoffKind==='deposition';
@@ -19756,7 +20405,7 @@ const d = labToolData.waterCycle || {};
               phaseVaporGhost.quaternion.copy(vaporMarker.quaternion);
               phaseOriginOffset.copy(phasePreviousPosition).sub(parcel.position);
               phaseHandoffTarget=toForm==='vapor'?vaporMarker:toForm==='droplet'?dropletMesh:
-                toForm==='ice'?iceMesh:toForm==='snow'?snowMesh:toForm==='rain'?rainMesh:null;
+                toForm==='ice'?iceMesh:toForm==='snow'?snowMesh:toForm==='rain'?rainMesh:collectingRain?liquidMesh:null;
               phaseHandoff.userData.from=fromForm;phaseHandoff.userData.to=toForm;
               phaseHandoff.userData.kind=phaseHandoffKind;phaseHandoff.visible=true;
               canvasEl.dataset.phaseHandoff='active';canvasEl.dataset.phaseHandoffKind=phaseHandoffKind;
@@ -19766,20 +20415,26 @@ const d = labToolData.waterCycle || {};
               if(!phaseHandoff.visible)return;
               if(sim.form!==phaseHandoffTo){clearPhaseHandoff();return;}
               if(!input.paused&&!document.hidden)phaseHandoffElapsed+=dt;
-              if(phaseHandoffElapsed>=phaseHandoffDuration){clearPhaseHandoff();return;}
-              var phaseProgress=motionReduced ? .5 : Math.min(1,phaseHandoffElapsed/phaseHandoffDuration);
+              var phaseDuration=phaseHandoffKind==='collection'?.85:phaseHandoffDuration;
+              if(phaseHandoffElapsed>=phaseDuration){clearPhaseHandoff();return;}
+              var phaseProgress=motionReduced ? .5 : Math.min(1,phaseHandoffElapsed/phaseDuration);
               var phaseEase=phaseProgress*phaseProgress*(3-2*phaseProgress);
               var phaseFade=1-phaseEase;
               var phaseAssembly=phaseHandoffKind==='cloud-assembly';
               presentPhaseLens(input.cameraMode==='water');
-              phaseFrontProgress.value=phaseEase;
+              // A faint incoming sphere must not occlude the outgoing drop.
+              // The shared baseline is restored by clear or the next handoff.
+              if(phaseHandoffKind==='collection')liquidMesh.material.depthWrite=false;
+              updateRefreezingProgress(phaseEase);
+              phaseFrontProgress.value=phaseRefreeze.active?phaseRefreeze.progress:phaseEase;
               phaseHandoff.userData.progress=phaseProgress;
+              phaseHandoff.userData.duration=phaseDuration;
               canvasEl.dataset.phaseHandoffProgress=phaseProgress.toFixed(3);
               if(input.cameraMode==='water'){
                 camera.getWorldDirection(phaseViewDirection);
                 phaseHandoff.position.copy(camera.position).addScaledVector(phaseViewDirection,34);
               }else phaseHandoff.position.copy(parcel.position).addScaledVector(phaseOriginOffset,phaseFade);
-              if(phaseHandoffKind==='evaporation'&&phaseWaterGhost.userData.sourceSnapshot){
+              if((phaseHandoffKind==='evaporation'||phaseAssembly||phaseRefreeze.active)&&phaseWaterGhost.userData.sourceSnapshot){
                 if(input.cameraMode==='water'){
                   // The gas is invisible; this bounded lens is a teaching memory
                   // of its liquid source, never a visible plume of water vapour.
@@ -19791,22 +20446,68 @@ const d = labToolData.waterCycle || {};
                   phaseWaterGhost.position.copy(phaseWaterSourcePosition).sub(phaseHandoff.position);
                   phaseWaterGhost.userData.placement='captured-world-source';
                 }
-                canvasEl.dataset.evaporationHandoffPlacement=phaseWaterGhost.userData.placement;
+                if(phaseHandoffKind==='evaporation')canvasEl.dataset.evaporationHandoffPlacement=phaseWaterGhost.userData.placement;
               }
-              phaseWaterMaterial.opacity=.48*phaseFade;
+              // The cloud cue starts partway through its staged billows. Anchor
+              // its liquid memory at the first shown source, then dissolve it
+              // without an immediate shrink or regrowth on motion-mode changes.
+              if(phaseAssembly){
+                if(phaseAssemblySourceStart<0)phaseAssemblySourceStart=phaseEase;
+                phaseAssemblySourceProgress.value=Math.max(phaseAssemblySourceProgress.value,
+                  Math.max(0,Math.min(1,(phaseEase-phaseAssemblySourceStart)/Math.max(.001,1-phaseAssemblySourceStart))));
+              }
+              var phaseWaterEase=phaseRefreeze.active?phaseRefreeze.progress:phaseAssembly?phaseAssemblySourceProgress.value:phaseEase;
+              phaseWaterMaterial.opacity=phaseRefreeze.active?phaseRefreeze.sourceLiquidOpacity*(1-phaseWaterEase)
+                :.48*(1-phaseWaterEase)*phaseWaterSourceCoverage.value;
               phaseIceViewQuaternion.copy(iceMesh.quaternion);
               if(input.cameraMode==='water'&&phaseIceActive.value>0.5){
                 // Water view is already a teaching lens ahead of the eye. Tilt
                 // all visible phase surfaces together, keeping their fields aligned.
                 phaseIceViewQuaternion.copy(camera.quaternion).multiply(phaseIceLensTilt);
               }
-              if(phaseHandoffKind==='freezing')phaseWaterGhost.quaternion.copy(phaseIceViewQuaternion);
+              if(phaseHandoffKind==='freezing'&&!phaseRefreeze.active)phaseWaterGhost.quaternion.copy(phaseIceViewQuaternion);
               phaseVaporMaterial.opacity=.52*phaseFade;
               phaseIceMaterial.opacity=.52*phaseFade;
-              phaseWaterGhost.scale.copy(phaseGhostScale).multiplyScalar(1-phaseEase*.32);
+              phaseWaterGhost.scale.copy(phaseGhostScale).multiplyScalar(1-phaseWaterEase*.32);
+              if(phaseHandoffKind==='collection'){
+                // Collection keeps H2O liquid. Retain the last falling profile,
+                // then settle its illustrative memory into the actual receiver.
+                phaseWaterGhost.scale.copy(phaseGhostScale);
+                phaseWaterGhost.scale.x*=1+phaseEase*.30;phaseWaterGhost.scale.z*=1+phaseEase*.30;
+                phaseWaterGhost.scale.y*=1-phaseEase*.72;
+                phaseCollectionCoverage.value=phaseEase;
+                if(input.cameraMode==='water'){
+                  phaseWaterGhost.position.set(0,-phaseEase*1.4,0);
+                  phaseWaterGhost.userData.placement='bounded-water-lens';
+                }else{
+                  var collectionX=phaseWaterSourcePosition.x+(phaseCollectionReceiver.x-phaseWaterSourcePosition.x)*phaseEase;
+                  var collectionZ=phaseWaterSourcePosition.z+(phaseCollectionReceiver.z-phaseWaterSourcePosition.z)*phaseEase;
+                  phaseWaterGhost.position.set(collectionX-phaseHandoff.position.x,
+                    phaseWaterSourcePosition.y-phaseHandoff.position.y,collectionZ-phaseHandoff.position.z);
+                  var collectionHeight=rainWaterSurfaceY(collectionX,collectionZ);
+                  if(!Number.isFinite(collectionHeight))collectionHeight=rainWaterSurfaceY(phaseCollectionReceiver.x,phaseCollectionReceiver.z);
+                  if(Number.isFinite(collectionHeight)){
+                    var collectionCenter=collectionHeight+.03+2.236*phaseWaterGhost.scale.y;
+                    phaseWaterGhost.position.y+=(collectionCenter-phaseWaterSourcePosition.y)*phaseEase;
+                  }
+                  phaseWaterGhost.userData.placement='captured-source-to-water';
+                }
+              }
               phaseVaporGhost.scale.setScalar(1.55-phaseEase*1.15);
               phaseIceGhost.scale.setScalar(1-phaseEase*.12);
               phaseIceEdgeMaterial.opacity=.62*phaseFade;
+              if(phaseRefreeze.active){
+                phaseIceMaterial.opacity=phaseRefreeze.sourceIceOpacity*(1-phaseRefreeze.progress);
+                phaseIceEdgeMaterial.opacity=phaseRefreeze.sourceEdgeOpacity*(1-phaseRefreeze.progress);
+                phaseIceGhost.scale.copy(phaseRefreeze.sourceIceScale).multiplyScalar(1-phaseRefreeze.progress*.12);
+                phaseIceGhost.quaternion.copy(phaseRefreeze.sourceIceQuaternion);
+                if(input.cameraMode==='water'){
+                  phaseIceGhost.position.set(0,0,0);phaseIceGhost.userData.placement='bounded-water-lens';
+                }else{
+                  phaseIceGhost.position.copy(phaseRefreeze.sourceIcePosition).sub(phaseHandoff.position);
+                  phaseIceGhost.userData.placement='captured-world-source';
+                }
+              }
               if(phaseHandoffKind==='melting'&&phaseIceSourceCaptured){
                 phaseIceGhost.scale.copy(phaseIceSourceScale).multiplyScalar(1-phaseEase*.12);
                 phaseIceGhost.quaternion.copy(input.cameraMode==='water'
@@ -19840,20 +20541,35 @@ const d = labToolData.waterCycle || {};
                 }
                 canvasEl.dataset.cloudHandoffPlacement=phaseCloudGhost.userData.placement;
               }
+              updatePhaseCloudRetirement();
               for(var phaseCloudIndex=0;phaseCloudIndex<phaseCloudGhost.children.length&&!phaseAssembly;phaseCloudIndex++){
-                phaseCloudGhost.children[phaseCloudIndex].material.opacity=phaseCloudOpacities[phaseCloudIndex]*phaseFade;
-                phaseCloudGhost.children[phaseCloudIndex].material.userData.cloudLighting.density.value=phaseCloudDensities[phaseCloudIndex];
+                // Optical depth clears wispy edges before dense cores. Keep
+                // the captured material alpha rather than flattening every
+                // lobe into the same uniformly transparent ghost.
+                phaseCloudGhost.children[phaseCloudIndex].material.opacity=phaseCloudOpacities[phaseCloudIndex];
+                phaseCloudGhost.children[phaseCloudIndex].material.userData.cloudLighting.density.value=
+                  phaseCloudDensities[phaseCloudIndex]*phaseCloudRetirement.coverage;
               }
               if(phaseHandoffKind==='cloud-assembly'){
                 // Shelf, body, then crowns emerge around liquid droplets. A
                 // cloud remains an ensemble; the tagged parcel adds no water.
                 for(var assemblyCloudIndex=0;assemblyCloudIndex<selfCloud.children.length;assemblyCloudIndex++){
                   var assemblyCloudLobe=selfCloud.children[assemblyCloudIndex],assemblyCloudData=assemblyCloudLobe.userData;
-                  var assemblyTierProgress=Math.max(0,Math.min(1,(phaseEase-assemblyCloudData.cloudTier*.17)/.62));
+                  // Small seeded delays break up synchronized tier-wide fronts.
+                  // Shorten the remaining ramp so every crown is complete by .98.
+                  var assemblyLobeDelay=.08*((assemblyCloudIndex*7)%11)/10;
+                  var assemblyTierProgress=Math.max(0,Math.min(1,
+                    (phaseEase-assemblyCloudData.cloudTier*.17-assemblyLobeDelay)/(.62-assemblyLobeDelay*.75)));
                   assemblyCloudLobe.material.opacity=assemblyCloudData.motionBaseOpacity;
                   assemblyCloudLobe.material.userData.cloudLighting.density.value=assemblyTierProgress*assemblyTierProgress*(3-2*assemblyTierProgress);
                 }
                 selfCloud.userData.assemblyProgress=phaseEase;
+                // The compact Water cue gives way to the surrounding interior.
+                // Thin optical depth softens its fringes first and reaches zero
+                // before cleanup, without fading the real cloud in Follow.
+                var assemblyLensRetirement=Math.max(0,Math.min(1,
+                  (phaseEase-phaseCloudAssemblyLens.retireStart)/(1-phaseCloudAssemblyLens.retireStart)));
+                phaseCloudAssemblyLens.coverage=1-assemblyLensRetirement*assemblyLensRetirement*(3-2*assemblyLensRetirement);
                 if(input.cameraMode==='water'){
                   phaseCloudGhost.position.set(0,0,0);
                   phaseCloudGhost.quaternion.copy(selfCloud.quaternion);
@@ -19863,7 +20579,8 @@ const d = labToolData.waterCycle || {};
                     formingMemory.position.copy(formingCloud.position);formingMemory.scale.copy(formingCloud.scale);
                     copyCapturedCloudShelter(formingCloud,formingMemory);
                     formingMemory.material.opacity=formingCloud.material.opacity;
-                    formingMemory.material.userData.cloudLighting.density.value=formingCloud.material.userData.cloudLighting.density.value;
+                    formingMemory.material.userData.cloudLighting.density.value=
+                      formingCloud.material.userData.cloudLighting.density.value*phaseCloudAssemblyLens.coverage;
                   }
                   phaseCloudGhost.userData.placement='forming-water-lens';
                 }else phaseCloudGhost.userData.placement='real-parcel-assembly';
@@ -19874,25 +20591,14 @@ const d = labToolData.waterCycle || {};
                 var assemblyBeads=phaseHandoffKind==='cloud-assembly';
                 phaseBeadMaterial.opacity=phaseFade*(assemblyBeads?.9:.78);
                 var phaseBeadRadius=2+phaseFade*6.5;
-                for(var phaseBeadIndex=0;phaseBeadIndex<PHASE_CONDENSATION_BEADS;phaseBeadIndex++){
+                if(assemblyBeads)updateCloudAssemblyBeads(phaseAssemblySourceProgress.value);
+                for(var phaseBeadIndex=0;!assemblyBeads&&phaseBeadIndex<PHASE_CONDENSATION_BEADS;phaseBeadIndex++){
                   var phaseBeadAngle=phaseBeadIndex*2.399963;
                   var phaseBeadLatitude=-.8+((phaseBeadIndex*7)%12)/7;
                   var phaseBeadRing=Math.sqrt(Math.max(0,1-phaseBeadLatitude*phaseBeadLatitude));
-                  if(assemblyBeads){
-                    var assemblyLowerCount=Math.round(selfCloud.children.length*.42)+Math.round(selfCloud.children.length*.36);
-                    var assemblyTarget=selfCloud.children[(phaseBeadIndex*7)%assemblyLowerCount];
-                    var assemblyViewScale=input.cameraMode==='water'?.14:1;
-                    var assemblyRadius=3.5+phaseFade*2;
-                    phaseBeadDummy.position.set(
-                      Math.cos(phaseBeadAngle)*phaseBeadRing*assemblyRadius*phaseFade+assemblyTarget.position.x*selfCloud.scale.x*phaseEase*assemblyViewScale,
-                      phaseBeadLatitude*assemblyRadius*phaseFade+assemblyTarget.position.y*selfCloud.scale.y*phaseEase*assemblyViewScale,
-                      Math.sin(phaseBeadAngle)*phaseBeadRing*assemblyRadius*phaseFade+assemblyTarget.position.z*selfCloud.scale.z*phaseEase*assemblyViewScale);
-                    phaseBeadDummy.scale.setScalar(2.4+phaseEase*1.8);
-                  }else{
-                    phaseBeadDummy.position.set(Math.cos(phaseBeadAngle)*phaseBeadRing*phaseBeadRadius,
-                      phaseBeadLatitude*phaseBeadRadius,Math.sin(phaseBeadAngle)*phaseBeadRing*phaseBeadRadius);
-                    phaseBeadDummy.scale.setScalar(.7+phaseEase*.6);
-                  }
+                  phaseBeadDummy.position.set(Math.cos(phaseBeadAngle)*phaseBeadRing*phaseBeadRadius,
+                    phaseBeadLatitude*phaseBeadRadius,Math.sin(phaseBeadAngle)*phaseBeadRing*phaseBeadRadius);
+                  phaseBeadDummy.scale.setScalar(.7+phaseEase*.6);
                   phaseBeadDummy.updateMatrix();
                   phaseBeads.setMatrixAt(phaseBeadIndex,phaseBeadDummy.matrix);
                 }
@@ -19913,7 +20619,16 @@ const d = labToolData.waterCycle || {};
               if(phaseRainPreview.visible)phaseRainPreview.scale.copy(rainMesh.scale);
               if(phaseHandoffTarget===dropletMesh)dropletMesh.scale.setScalar((1+Math.min(1.6,sim.mass*.9))*phaseIncoming);
               else if(phaseHandoffTarget===rainMesh)rainMesh.scale.set(1.12*phaseIncoming,.82*phaseIncoming,1.12*phaseIncoming);
+              else if(phaseHandoffTarget===liquidMesh){
+                liquidMesh.scale.setScalar(phaseLiquidRestScale*phaseIncoming);
+                var collectionTargetHeight=rainWaterSurfaceY(px,pz);
+                liquidMesh.position.y=Number.isFinite(collectionTargetHeight)
+                  ? phaseLiquidRestY+(collectionTargetHeight+.07+3.1*liquidMesh.scale.y-parcel.position.y-phaseLiquidRestY)*phaseFade
+                  : phaseLiquidRestY;
+              }
               else if(phaseHandoffTarget)phaseHandoffTarget.scale.setScalar(phaseIncoming);
+              phaseLiquidPreview.visible=input.cameraMode==='water'&&phaseHandoffKind==='collection';
+              if(phaseLiquidPreview.visible)phaseLiquidPreview.scale.copy(liquidMesh.scale);
               phaseDropPreview.visible=input.cameraMode==='water'&&phaseHandoffTo==='droplet'
                 &&(phaseHandoffKind==='condensation'||phaseHandoffKind==='melting');
               if(phaseDropPreview.visible){phaseDropPreview.scale.copy(dropletMesh.scale);phaseDropPreview.quaternion.copy(dropletMesh.quaternion);}
@@ -20768,13 +21483,14 @@ const d = labToolData.waterCycle || {};
               trailWrite = 0; trailFilled = 0;
               lastForm = sim.form;
               cloudBurstT = 0;
-              rainShapeTime=0;selfCloudMotionTime=0;selfCloud.rotation.set(0,0,0);
+              rainShapeTime=0;selfCloudMotionTime=0;selfCloud.rotation.set(0,0,0);phaseLiquidRestScale=1;phaseLiquidRestY=0;
               iceMesh.rotation.set(.55,0,.12);
               resetWaterWake();
               clearPilotCloudShadow();
               rainMesh.userData.shapeTime=0;rainMesh.userData.shapeWidth=1;rainMesh.userData.shapeHeight=1;rainMesh.userData.shapeVolumeRatio=1;
               updateSelfCloudMotion(0);
               clearPhaseHandoff();
+              clearCloudInteriorEntry();
               latentEnergyKind = 'none';
               latentEnergyElapsed = 0;
               latentEnergyGroup.visible = false;
@@ -20795,6 +21511,11 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.collectionCue = 'hidden';
               oceanLanding.visible = false; oceanLandingTime = -1;
               clearRainContactTail();
+              clearRainShowerExit();
+              rainVirga.exposure=0;rainVirga.visibility=rainVirga.lengthScale=rainVirga.widthScale=1;
+              clearRainEmission();
+              clearRainContactMemory();
+              clearSnowEmission();
               rainField.userData.onsetFactor = 0;
               rainField.visible = false; rainImpacts.visible = false;
               rainBufferTime = NaN;
@@ -21410,10 +22131,33 @@ const d = labToolData.waterCycle || {};
                 snowMesh.getWorldScale(meltingSourceScale);meltingSourceCaptured=true;
               }
               if(f!==lastForm&&lastForm==='snowpack'&&['vapor','liquid','soil','runoff','plant'].indexOf(f)>=0)captureSnowpackRelease();
+              if(f!==lastForm&&lastForm==='vapor'&&(f==='droplet'||f==='ice'))beginCloudInteriorEntry();
+              if(f!==lastForm&&lastForm==='droplet'&&f==='vapor')captureCloudInteriorExit();
               if(f!==lastForm&&lastForm==='cloud'){
                 selfCloud.getWorldPosition(phaseCloudSourcePosition);selfCloud.getWorldScale(phaseCloudSourceScale);
                 selfCloud.getWorldQuaternion(phaseCloudSourceQuaternion);phaseCloudSourceCaptured=true;
+                if(f==='rain'||f==='snow'){captureCloudInteriorExit();capturePilotCloudShadowSource();}
+                if(f==='rain'){
+                  // Capture before the rain buffers and the first learning pause.
+                  // This plane sits inside the flat base tier, independent of a
+                  // camera-facing sprite's silhouette or the Water view lens.
+                  rainEmission.active=true;rainEmission.ceilingY=phaseCloudSourcePosition.y;
+                  rainEmission.originY=py;rainEmission.startedAt=sim.elapsed;
+                  // Reduced motion starts with one representative curtain;
+                  // subsequent simulation steps do not move that illustration.
+                  rainEmission.age=motionReduced?.6:0;
+                }
+                if(f==='snow'){
+                  snowEmission.active=true;snowEmission.ceilingY=phaseCloudSourcePosition.y;
+                  snowEmission.originY=py;snowEmission.startedAt=sim.elapsed;
+                  // Slower flakes need a deeper static representative curtain.
+                  snowEmission.age=motionReduced?2:0;
+                }
               }
+              if(f!==lastForm&&lastForm==='rain'&&(f==='vapor'||(f==='liquid'&&overWater)))captureRainShowerExit();
+              if(f!=='rain')clearRainEmission();
+              if(f!=='snow')clearSnowEmission();
+              if(f!=='rain'&&lastForm==='rain'&&!(f==='liquid'&&overWater)&&f!=='vapor')clearRainContactMemory();
               if(f!==lastForm&&lastForm==='ice'&&f==='droplet'){
                 iceMesh.getWorldPosition(phaseIceSourcePosition);iceMesh.getWorldScale(phaseIceSourceScale);
                 iceMesh.getWorldQuaternion(phaseIceSourceQuaternion);phaseIceSourceCaptured=true;
@@ -21421,14 +22165,20 @@ const d = labToolData.waterCycle || {};
                   phaseIceCarryProgress.value=phaseFrontProgress.value;phaseIceCarryActive.value=1;phaseIceCarryCaptured=true;
                 }
               }
-              if(f!==lastForm&&f==='vapor'&&(lastForm==='liquid'||lastForm==='transpiring'||lastForm==='rain'||lastForm==='droplet')){
+              var interruptingThaw=f!==lastForm&&f==='ice'&&lastForm==='droplet'&&phaseHandoffKind==='melting'&&phaseMeltActive.value>0.5;
+              if(f!==lastForm&&((f==='vapor'&&(lastForm==='liquid'||lastForm==='transpiring'||lastForm==='rain'||lastForm==='droplet'))
+                ||(f==='liquid'&&lastForm==='rain'&&overWater)||(f==='cloud'&&lastForm==='droplet')||interruptingThaw)){
                 // Capture the last shown liquid before moving the parcel or
                 // changing any form presentation. These pooled values include
                 // rain's volume-preserving oscillation and the leaf/surface scale.
                 var outgoingPhaseWater=lastForm==='rain'?rainMesh:lastForm==='droplet'?dropletMesh:liquidMesh;
                 outgoingPhaseWater.getWorldPosition(phaseWaterSourcePosition);
-                outgoingPhaseWater.getWorldQuaternion(phaseWaterSourceQuaternion);
-                outgoingPhaseWater.getWorldScale(phaseWaterSourceScale);
+                // Follow keeps the physical source location. Water uses the
+                // existing bounded lens with the last displayed droplet shape.
+                var displayedPhaseWater=(f==='cloud'||interruptingThaw)&&phaseDropPreview.visible?phaseDropPreview:outgoingPhaseWater;
+                displayedPhaseWater.getWorldQuaternion(phaseWaterSourceQuaternion);
+                displayedPhaseWater.getWorldScale(phaseWaterSourceScale);
+                phaseWaterSourceCoverage.value=outgoingPhaseWater===liquidMesh?phaseCollectionCoverage.value:1;
                 phaseWaterSourceCaptured=true;
                 if(lastForm==='droplet'&&phaseHandoffKind==='melting'&&phaseMeltActive.value>0.5){
                   // Retain the actually displayed incoming-liquid mask before
@@ -21440,6 +22190,7 @@ const d = labToolData.waterCycle || {};
                   phaseWaterCarryProgress.value=phaseFrontProgress.value;
                   phaseWaterCarryActive.value=1;phaseWaterCarryCaptured=true;
                 }
+                if(interruptingThaw)captureRefreezingSource(displayedPhaseWater);
               }
               phasePreviousPosition.copy(parcel.position);
               parcel.position.set(px, parcelDisplayY, pz);
@@ -21520,10 +22271,12 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.snowStorageVisible=String(snowpackField.visible);
               canvasEl.dataset.snowStorageWetness=snowSurfaceWetness.toFixed(3);
               selfCloud.visible = (f === 'cloud');
-              cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');
-              cloudVeil.position.set(px, py + 2, pz);
+              cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice' || cloudVeilExit.active);
+              cloudVeilEntry.targetPosition.set(px,py+2,pz);
+              if(!cloudVeilExit.active)cloudVeil.position.set(px, py + 2, pz);
               var parcelMotionDt = !input.paused && !document.hidden && !motionReduced ? dt : 0;
-              if (cloudVeil.visible && parcelMotionDt > 0) {
+              if (cloudVeil.visible && !cloudVeilExit.active && parcelMotionDt > 0
+                &&!(cloudVeilEntry.active&&cloudVeilEntry.retained&&sim.elapsed===cloudVeilEntry.startedAt)) {
                 cloudVeilVisualTime += parcelMotionDt;
                 cloudVeil.rotation.y += parcelMotionDt * 0.018;
                 for (var veilDriftIndex = 0; veilDriftIndex < cloudVeil.children.length; veilDriftIndex++) {
@@ -21539,8 +22292,6 @@ const d = labToolData.waterCycle || {};
                     veilData.baseScaleY * (2 - veilBreath), 1);
                 }
               }
-              canvasEl.dataset.cloudInterior = cloudVeil.visible ? 'layered' : 'hidden';
-              canvasEl.dataset.cloudInteriorLighting = cloudVeil.visible ? 'cool-base-diffuse-top' : 'hidden';
               halo.material.opacity = f === 'cloud' ? 0 : f === 'vapor' || f === 'transpiring' ? 0.4 : f === 'liquid' ? 0.12 : (f==='ice'||f==='droplet'||f==='rain') ? .06 : 0.18;
               var haloScale = (f === 'droplet' || f === 'ice') ? 11 : (f === 'rain' || f === 'snow') ? 15 : f === 'liquid' ? 12 : 22;
               halo.scale.set(haloScale, haloScale, 1);
@@ -21549,6 +22300,7 @@ const d = labToolData.waterCycle || {};
                 liquidMesh.material.color.setHex(0x22d3ee);
                 var pulse = motionReduced ? 1 : 1 + Math.sin(t * 3.4) * 0.05 * sim.energy;
                 liquidMesh.scale.setScalar(pulse);
+                phaseLiquidRestScale=pulse;
               } else if (f === 'soil' || f === 'groundwater') {
                 liquidMesh.material.color.setHex(f === 'soil' ? 0xa3e635 : 0x818cf8);
                 liquidMesh.scale.setScalar(0.8);
@@ -21681,6 +22433,8 @@ const d = labToolData.waterCycle || {};
               // Weather now surrounds the learner instead of being represented
               // by one icon. Both fields are pooled above and follow the parcel.
               var showingRain = f === 'rain';
+              if(showingRain)updateRainVirga();
+              canvasEl.dataset.rainDryAir=showingRain?rainVirga.exposure.toFixed(3):'0.000';
               var showingSnow = f === 'snow';
               var sunHorizontalLength = Math.max(0.001, Math.sqrt(
                 sun.position.x * sun.position.x + sun.position.z * sun.position.z));
@@ -21711,6 +22465,8 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.precipitationField = showingRain
                 ? 'rain-streaks' : showingSnow ? 'snow-crystals' : 'hidden';
               canvasEl.dataset.rainDetail = showingRain ? 'size-distributed-depth' : 'hidden';
+              canvasEl.dataset.rainEmitter = showingRain ? rainEmission.active ? 'captured-cloud-shelf' : 'local-weather-volume' : 'hidden';
+              canvasEl.dataset.snowEmitter = showingSnow ? snowEmission.active ? 'captured-cloud-shelf' : 'local-weather-volume' : 'hidden';
               if (!showingRain) {
                 canvasEl.dataset.rainWaterImpactCount = '0';
                 canvasEl.dataset.rainWaterCrownCount = '0';
@@ -21737,6 +22493,7 @@ const d = labToolData.waterCycle || {};
                   snowAttr.array[sf * 3 + 1] = 56 - snowPhase;
                 }
                 snowAttr.needsUpdate = true;
+                updateSnowOnset();
               }
 
               // Air motion is otherwise invisible. These streaks make the
@@ -21838,9 +22595,19 @@ const d = labToolData.waterCycle || {};
               }
               // Contact effects sample this frame's updated ocean, avoiding a wave-frame lag.
               updateWaterWake();
+              // Keep the enlarged liquid body above this frame's actual water,
+              // including its pulse radius. Move only the drawing, not the
+              // kernel altitude or the parcel's navigation/camera anchor.
+              var liquidReceiver=f==='liquid'&&overWater?rainWaterSurfaceY(px,pz):-Infinity;
+              phaseLiquidRestY=Number.isFinite(liquidReceiver)
+                ? liquidReceiver+.1+3.1*phaseLiquidRestScale-parcel.position.y:0;
+              liquidMesh.position.set(0,phaseLiquidRestY,0);
+              liquidMesh.userData.surfaceFloat.restY=phaseLiquidRestY;
+              liquidMesh.userData.surfaceFloat.restScale=phaseLiquidRestScale;
               if (showingRain) {
                 rainField.position.set(px, py, pz);
                 rainImpacts.position.set(px, 0, pz);
+                if(rainEmission.active&&!motionReduced)rainEmission.age=Math.max(0,t-rainEmission.startedAt);
                 // Horizontal camera-right gives the ribbon width; its centre
                 // line still follows the same physical wind slant as the thin
                 // threads. No independent clocks or drifting screen overlays.
@@ -21858,6 +22625,11 @@ const d = labToolData.waterCycle || {};
                   || rainBufferReduced !== motionReduced
                   || rainBufferLakeVisible !== lake.visible || rainBufferLakeHeight !== lake.position.y
                   || rainBufferStreamVisible !== streamGroup.visible
+                  || rainBufferEmissionActive !== rainEmission.active
+                  || rainBufferEmissionCeiling !== rainEmission.ceilingY
+                  || rainBufferEmissionAge !== rainEmission.age
+                  || rainBufferEmissionOrigin !== rainEmission.originY
+                  || rainBufferExposure !== rainVirga.exposure
                   || !Number.isFinite(rainBufferRightX)
                   || Math.abs(rainBufferRightX - rainCameraRightX) > 0.00001
                   || Math.abs(rainBufferRightZ - rainCameraRightZ) > 0.00001;
@@ -21868,6 +22640,10 @@ const d = labToolData.waterCycle || {};
                 rainBufferReduced = motionReduced;
                 rainBufferLakeVisible = lake.visible; rainBufferLakeHeight = lake.position.y;
                 rainBufferStreamVisible = streamGroup.visible;
+                rainBufferEmissionActive = rainEmission.active; rainBufferEmissionCeiling = rainEmission.ceilingY;
+                rainBufferEmissionAge = rainEmission.age;
+                rainBufferEmissionOrigin = rainEmission.originY;
+                rainBufferExposure = rainVirga.exposure;
                 rainBufferRightX = rainCameraRightX; rainBufferRightZ = rainCameraRightZ;
                 rainField.userData.bufferUpdates++;
                 // The shower shares one horizontal wind speed. Each drop's
@@ -21877,13 +22653,15 @@ const d = labToolData.waterCycle || {};
                 pilotRainAdvection.horizontalSpeed = rainWindAdvection;
                 var rainVisibleImpactCount = 0, rainVisibleCrownCount = 0, rainVisibleReboundCount = 0;
                 var rainAttr = rainFieldGeo.attributes.position;
+                var rainTopY = Math.min(60, rainEmission.active ? rainEmission.ceilingY - py : 60);
                 rainImpactAlpha.fill(0);
                 for (var rf = 0; rf < RAIN_STREAK_COUNT; rf++) {
                   var rainDropSpeed = rainDropProfile[rf * 4];
+                  var rainFrontY = rainBirthFront(rainDropSpeed);
                   var rainPhase = (rainFieldSeed[rf * 3 + 1]
                     + pilotWaterUniforms.rippleTime.value * rainDropSpeed) % 120;
                   var rainHeadY = 60 - rainPhase;
-                  var rainLength = rainDropProfile[rf * 4 + 1];
+                  var rainLength = rainDropProfile[rf * 4 + 1] * rainVirga.lengthScale;
                   var rainWindSlope = rainWindAdvection / rainDropSpeed;
                   var rainSlant = rainWindSlope * rainLength;
                   var rainHeadX = rainFieldSeed[rf * 3] + rainWindSlope * rainPhase;
@@ -21892,9 +22670,12 @@ const d = labToolData.waterCycle || {};
                   // Find contact along the wind-slanted streak, not at flat sea level.
                   // Terrain still uses depth testing; inland water keeps its raised height.
                   var rainTailY = rainHeadY + rainLength;
-                  var rainHidden = rainTailY + py < rainWaterSurfaceY(rainWorldX - rainSlant, rainWorldZ);
+                  var rainStart = Math.max(0, Math.min(1, (rainTailY - rainTopY) / rainLength));
+                  var rainHeadSurface = rainWaterSurfaceY(rainWorldX, rainWorldZ);
+                  var rainHidden = rainHeadY >= rainTopY
+                    || rainTailY + py < rainWaterSurfaceY(rainWorldX - rainSlant, rainWorldZ);
                   var rainEnd = 1;
-                  if (!rainHidden && rainHeadY + py < rainWaterSurfaceY(rainWorldX, rainWorldZ)) {
+                  if (!rainHidden && rainHeadY + py < rainHeadSurface) {
                     var rainAbove = 0, rainBelow = 1;
                     for (var rainContactStep = 0; rainContactStep < 16; rainContactStep++) {
                       var rainMid = (rainAbove + rainBelow) * 0.5;
@@ -21904,46 +22685,54 @@ const d = labToolData.waterCycle || {};
                     }
                     rainEnd = rainAbove;
                   }
+                  // Reveal only the part reached by this profile's falling
+                  // onset front. Seeded rain below it must not appear early.
+                  rainEnd=Math.min(rainEnd,Math.max(0,Math.min(1,(rainTailY-rainFrontY)/rainLength)));
+                  if (rainStart >= rainEnd) rainHidden = true;
                   for (var rainVertex = 0; rainVertex < 4; rainVertex++) {
                     var rainAlong = rainVertex === 0 ? 0 : rainVertex === 3 ? 1 : 0.55;
-                    var clippedAlong = Math.min(rainAlong, rainEnd);
+                    var clippedAlong = Math.max(rainStart, Math.min(rainAlong, rainEnd));
                     var rainY = rainTailY - rainLength * clippedAlong;
                     var rainOffset = rf * 12 + rainVertex * 3;
                     rainAttr.array[rainOffset] = rainHeadX - rainSlant * (1 - clippedAlong);
                     rainAttr.array[rainOffset + 1] = rainY;
                     rainAttr.array[rainOffset + 2] = rainZ;
                     rainFieldAlpha[rf * 4 + rainVertex] = rainHidden ? 0
-                      : (rainVertex === 0 ? 0.025 : rainVertex === 3 ? 0.76 : 0.25) * rainDropProfile[rf * 4 + 3];
+                      : (rainVertex === 0 ? 0.025 : rainVertex === 3 ? 0.76 : 0.25) * rainDropProfile[rf * 4 + 3]
+                        * rainBoundaryFade(rainY, rainTopY, rainHeadY) * rainBirthFade(rainY,rainFrontY);
                   }
                   for (var rainRibbonRing = 0; rainRibbonRing < 4; rainRibbonRing++) {
                     var ribbonAlong = rainRibbonRing === 0 ? 0 : rainRibbonRing === 1 ? 0.32 : rainRibbonRing === 2 ? 0.9 : 1;
-                    var ribbonClippedAlong = Math.min(ribbonAlong, rainEnd);
+                    var ribbonClippedAlong = Math.max(rainStart, Math.min(ribbonAlong, rainEnd));
                     var ribbonCentreX = rainHeadX - rainSlant * (1 - ribbonClippedAlong);
                     var ribbonY = rainTailY - rainLength * ribbonClippedAlong;
                     var ribbonTaper = rainRibbonRing === 0 ? 0.025 : rainRibbonRing === 1 ? 0.48 : rainRibbonRing === 2 ? 1 : 0.2;
-                    var ribbonWidth = rainDropProfile[rf * 4 + 2] * ribbonTaper;
+                    var ribbonWidth = rainDropProfile[rf * 4 + 2] * ribbonTaper * rainVirga.widthScale;
                     var ribbonStrength = rainRibbonRing === 0 ? 0.025 : rainRibbonRing === 1 ? 0.28 : rainRibbonRing === 2 ? 0.75 : 0.88;
                     for (var ribbonSide = 0; ribbonSide < 2; ribbonSide++) {
                       var ribbonSideOffset = (ribbonSide ? 1 : -1) * ribbonWidth;
                       var ribbonX = ribbonCentreX + rainCameraRightX * ribbonSideOffset;
                       var ribbonZ = rainZ + rainCameraRightZ * ribbonSideOffset;
+                      var ribbonSurfaceY = rainWaterSurfaceY(px + ribbonX, pz + ribbonZ) - py;
+                      var ribbonEdgeY = Math.min(rainTopY,Math.max(rainFrontY,
+                        Number.isFinite(ribbonSurfaceY) ? Math.max(ribbonY, ribbonSurfaceY) : ribbonY));
                       var ribbonVertex = rf * 8 + rainRibbonRing * 2 + ribbonSide;
                       rainRibbonPos[ribbonVertex * 3] = ribbonX;
                       // Both edges sample the rendered receiving surface, not
                       // just the old centreline. Thin tips cannot poke through
                       // a displaced ocean crest or a raised inland stream.
-                      rainRibbonPos[ribbonVertex * 3 + 1] = Math.max(ribbonY,
-                        rainWaterSurfaceY(px + ribbonX, pz + ribbonZ) - py);
+                      rainRibbonPos[ribbonVertex * 3 + 1] = ribbonEdgeY;
                       rainRibbonPos[ribbonVertex * 3 + 2] = ribbonZ;
-                      rainRibbonAlpha[ribbonVertex] = rainHidden ? 0
-                        : ribbonStrength * Math.min(1, rainEnd / 0.25) * rainDropProfile[rf * 4 + 3];
+                      rainRibbonAlpha[ribbonVertex] = rainHidden || ribbonSurfaceY >= rainTopY ? 0
+                        : ribbonStrength * Math.min(1, (rainEnd - rainStart) / 0.25) * rainDropProfile[rf * 4 + 3]
+                          * rainBoundaryFade(ribbonEdgeY, rainTopY, rainHeadY) * rainBirthFade(ribbonEdgeY,rainFrontY);
                     }
                   }
 
                   // Solve the same slanted trajectory at the receiving water.
                   // Two refinements follow displaced waves and raised inland
                   // water. Land never supplies a finite receiving-water height.
-                  var rainImpactSurface = rainWaterSurfaceY(rainWorldX, rainWorldZ);
+                  var rainImpactSurface = rainHeadSurface;
                   var rainImpactPhase = 60 + py - rainImpactSurface;
                   var rainImpactX = rainHeadX;
                   for (var rainImpactRefine = 0; rainImpactRefine < 2 && Number.isFinite(rainImpactSurface); rainImpactRefine++) {
@@ -21952,86 +22741,29 @@ const d = labToolData.waterCycle || {};
                     rainImpactPhase = 60 + py - rainImpactSurface;
                   }
                   var rainImpactAge = (rainPhase - rainImpactPhase) / rainDropSpeed;
+                  // A ring belongs to an impact after the shower began, not
+                  // an already-aged contact from the seeded local volume.
+                  var rainTravelTime=Math.max(0,
+                    (rainEmission.ceilingY-rainEmission.originY+py-rainImpactSurface)/rainDropSpeed);
                   var rainImpactActive = Number.isFinite(rainImpactSurface)
+                    && (!rainEmission.active || rainImpactSurface <= rainEmission.ceilingY)
+                    && (!rainEmission.active || rainEmission.age-rainImpactAge >= rainTravelTime)
                     && rainImpactPhase >= 0 && rainImpactPhase < 120
                     && rainImpactAge >= 0 && rainImpactAge < 0.48;
-                  if (!rainImpactActive) continue;
-                  var rainImpactLife = rainImpactAge / 0.48;
-                  var rainImpactRadius = 0.18 + rainImpactLife * (0.65 + rainDropProfile[rf * 4 + 3]);
-                  var rainImpactStrength = (1 - rainImpactLife) * (1 - rainImpactLife) * rainDropProfile[rf * 4 + 3];
-                  rainVisibleImpactCount++;
-                  for (var rainImpactSegment = 0; rainImpactSegment < RAIN_RIPPLE_SEGMENTS; rainImpactSegment++) {
-                    var rainImpactStartX = rainImpactX + rainImpactUnit[rainImpactSegment * 4] * rainImpactRadius;
-                    var rainImpactStartZ = rainZ + rainImpactUnit[rainImpactSegment * 4 + 1] * rainImpactRadius;
-                    var rainImpactEndX = rainImpactX + rainImpactUnit[rainImpactSegment * 4 + 2] * rainImpactRadius;
-                    var rainImpactEndZ = rainZ + rainImpactUnit[rainImpactSegment * 4 + 3] * rainImpactRadius;
-                    var rainImpactStartY = rainWaterSurfaceY(px + rainImpactStartX, pz + rainImpactStartZ);
-                    var rainImpactEndY = rainWaterSurfaceY(px + rainImpactEndX, pz + rainImpactEndZ);
-                    var rainImpactSegmentVisible = Number.isFinite(rainImpactStartY) && Number.isFinite(rainImpactEndY);
-                    var rainImpactVertex = (rf * RAIN_IMPACT_SEGMENTS + rainImpactSegment) * 2;
-                    rainImpactAlpha[rainImpactVertex] = rainImpactAlpha[rainImpactVertex + 1]
-                      = rainImpactSegmentVisible ? rainImpactStrength : 0;
-                    if (rainImpactSegmentVisible) {
-                      var rainImpactOffset = rainImpactVertex * 3;
-                      rainImpactPos[rainImpactOffset] = rainImpactStartX;
-                      rainImpactPos[rainImpactOffset + 1] = rainImpactStartY + 0.045;
-                      rainImpactPos[rainImpactOffset + 2] = rainImpactStartZ;
-                      rainImpactPos[rainImpactOffset + 3] = rainImpactEndX;
-                      rainImpactPos[rainImpactOffset + 4] = rainImpactEndY + 0.045;
-                      rainImpactPos[rainImpactOffset + 5] = rainImpactEndZ;
-                    }
-                  }
-                  // Brief upward responses belong to this same solved water
-                  // contact, with no particle events or additional water mass.
-                  var rainSplashProfile = rainDropProfile[rf * 4 + 3];
-                  var rainSplashSize = Math.max(0, Math.min(1, (rainSplashProfile - 0.38) / 0.5));
-                  if (rainSplashProfile > 0.58 && rainImpactAge > 0 && rainImpactAge < 0.20) {
-                    var rainCrownLife = rainImpactAge / 0.20;
-                    var rainCrownRadius = 0.12 + 0.55 * rainCrownLife;
-                    var rainCrownRise = Math.sin(Math.PI * rainCrownLife) * (0.22 + rainSplashSize * 0.50);
-                    var rainCrownStrength = rainSplashProfile * Math.min(1, rainCrownLife / 0.08)
-                      * Math.pow(1 - rainCrownLife, 1.6);
-                    var rainCrownVisible = false;
-                    for (var rainCrownIndex = 0; rainCrownIndex < RAIN_CROWN_RAYS; rainCrownIndex++) {
-                      var rainCrownOffset = (rf * RAIN_CROWN_RAYS + rainCrownIndex) * 3;
-                      var rainCrownX = rainCrownUnit[rainCrownOffset], rainCrownZ = rainCrownUnit[rainCrownOffset + 1];
-                      var rainCrownVariation = rainCrownUnit[rainCrownOffset + 2];
-                      var rainCrownPeakRadius = rainCrownRadius * (0.9 + rainCrownVariation * 0.15);
-                      var rainCrownPeakX = rainImpactX + rainCrownX * rainCrownPeakRadius;
-                      var rainCrownPeakZ = rainZ + rainCrownZ * rainCrownPeakRadius;
-                      var rainCrownPeakRise = rainCrownRise * rainCrownVariation;
-                      var rainCrownFootRadius = rainCrownPeakRadius * 0.57;
-                      var rainCrownSegment = rf * RAIN_IMPACT_SEGMENTS + RAIN_RIPPLE_SEGMENTS + rainCrownIndex * 2;
-                      if (writeRainSplashSegment(rainCrownSegment,
-                        rainImpactX + (rainCrownX * 0.9713379749 + rainCrownZ * 0.2377026264) * rainCrownFootRadius,
-                        rainZ + (rainCrownZ * 0.9713379749 - rainCrownX * 0.2377026264) * rainCrownFootRadius, 0,
-                        rainCrownPeakX, rainCrownPeakZ, rainCrownPeakRise, rainCrownStrength)) rainCrownVisible = true;
-                      if (writeRainSplashSegment(rainCrownSegment + 1,
-                        rainCrownPeakX, rainCrownPeakZ, rainCrownPeakRise,
-                        rainImpactX + (rainCrownX * 0.9713379749 - rainCrownZ * 0.2377026264) * rainCrownFootRadius,
-                        rainZ + (rainCrownZ * 0.9713379749 + rainCrownX * 0.2377026264) * rainCrownFootRadius, 0,
-                        rainCrownStrength)) rainCrownVisible = true;
-                    }
-                    if (rainCrownVisible) rainVisibleCrownCount++;
-                  }
-                  if (rainSplashProfile > 0.70 && rainImpactAge > 0 && rainImpactAge < 0.30) {
-                    var rainReboundLife = rainImpactAge / 0.30;
-                    var rainReboundRadius = 0.20 + rainReboundLife * (0.45 + rainSplashSize * 0.55);
-                    var rainReboundRise = 4 * rainReboundLife * (1 - rainReboundLife) * (0.32 + rainSplashSize * 0.40);
-                    var rainReboundStrength = rainSplashProfile * Math.min(1, rainReboundLife / 0.10)
-                      * Math.pow(1 - rainReboundLife, 1.3);
-                    for (var rainReboundIndex = 0; rainReboundIndex < RAIN_REBOUND_COUNT; rainReboundIndex++) {
-                      var rainReboundOffset = (rf * RAIN_REBOUND_COUNT + rainReboundIndex) * 3;
-                      var rainReboundVariation = rainReboundUnit[rainReboundOffset + 2];
-                      var rainReboundX = rainImpactX + rainReboundUnit[rainReboundOffset] * rainReboundRadius * rainReboundVariation;
-                      var rainReboundZ = rainZ + rainReboundUnit[rainReboundOffset + 1] * rainReboundRadius * rainReboundVariation;
-                      var rainReboundHeight = rainReboundRise * rainReboundVariation;
-                      var rainReboundHalfLength = 0.02 + rainSplashSize * 0.025;
-                      if (writeRainSplashSegment(rf * RAIN_IMPACT_SEGMENTS + RAIN_RIPPLE_SEGMENTS + RAIN_CROWN_RAYS * 2 + rainReboundIndex,
-                        rainReboundX, rainReboundZ, rainReboundHeight - rainReboundHalfLength,
-                        rainReboundX, rainReboundZ, rainReboundHeight + rainReboundHalfLength, rainReboundStrength)) rainVisibleReboundCount++;
-                    }
-                  }
+                  var rainContactClock=pilotWaterUniforms.rippleTime.value;
+                  var rainContactCycle=Math.floor((rainFieldSeed[rf*3+1]+rainContactClock*rainDropSpeed)/120);
+                  if(!updateRainContactMemory(rf,rainContactCycle,rainContactClock,rainImpactActive,
+                    px+rainImpactX,rainWorldZ,rainImpactAge))continue;
+                  // Convert the captured receiver position back into this
+                  // frame's moving local volume. Its world anchor never follows
+                  // the parcel; only the water height is sampled again.
+                  rainImpactX=rainContactMemory.worldXZ[rf*2]-px;
+                  var rainImpactZ=rainContactMemory.worldXZ[rf*2+1]-pz;
+                  rainImpactAge=rainContactMemory.age[rf];
+                  var rainDrawnContact=writeRainWaterContact(rf,rainImpactX,rainImpactZ,rainImpactAge);
+                  rainVisibleImpactCount+=rainDrawnContact.rings;
+                  rainVisibleCrownCount+=rainDrawnContact.crowns;
+                  rainVisibleReboundCount+=rainDrawnContact.rebounds;
                 }
                 rainFieldGeo.attributes.rainAlpha.needsUpdate = true;
                 rainAttr.needsUpdate = true;
@@ -22089,13 +22821,6 @@ const d = labToolData.waterCycle || {};
               // Follow view stays the default because it lets the learner SEE
               // each form change. Water view is the optional immersive lens;
               // the persistent HUD keeps that hidden form scientifically clear.
-              var cloudImmersion = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');
-              var fogNearGoal = cloudImmersion ? 12 : 620;
-              var fogFarGoal = cloudImmersion ? 185 : 2300;
-              var fogEase = motionReduced||input.paused||document.hidden ? 1 : Math.min(1, dt * 3.8);
-              scene.fog.near += (fogNearGoal - scene.fog.near) * fogEase;
-              scene.fog.far += (fogFarGoal - scene.fog.far) * fogEase;
-              canvasEl.dataset.cloudImmersion = cloudImmersion ? 'inside-cloud' : 'clear-air';
               if (f === 'cloud' && f !== lastForm) pitch = -0.08;
               // A learning pause is a still illustration. Settle its camera in
               // the same frame as its fog and phase lens; keep live flight eased.
@@ -22188,6 +22913,10 @@ const d = labToolData.waterCycle || {};
                 if (previousForm === 'rain' && sim.form === 'liquid' && surfaceUnder(px, pz) === 'water') {
                   beginOceanLanding();
                   beginRainContactTail();
+                  clearRainContactMemory();
+                }
+                if(previousForm==='rain'&&sim.form==='vapor'){
+                  beginRainContactTail();clearRainContactMemory();
                 }
                 if ((previousForm === 'groundwater' || previousForm === 'runoff') && sim.form === 'liquid' && surfaceUnder(px, pz) === 'water') beginOceanLanding(previousForm);
                 lastForm = sim.form;
@@ -22208,8 +22937,11 @@ const d = labToolData.waterCycle || {};
               updateSnowMelt(dt);
               updateSnowpackRelease(dt);
               updatePhaseHandoff(dt);
+              updateCloudInteriorPresentation(dt);
               updateRainShape(dt);
+              updateSnowMeltPreviewTransform();
               updateRainContinuity();
+              updateRainShowerExit();
               updatePilotCloudShadow();
               drawLandingMap(now);
               renderer.render(scene, camera);

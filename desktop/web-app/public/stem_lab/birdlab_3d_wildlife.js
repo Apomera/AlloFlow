@@ -327,10 +327,16 @@
       chickadee: {lift: .36, beat: 8.0, forage: [5.4, 7.2], hop: true},
       darkEyedJunco: {lift: .40, beat: 7.2, forage: [10.6, 12.1], hop: true},
       tuftedTitmouse: {lift: .42, beat: 7.0, forage: [9.2, 10.9], hop: true},
-      easternTowhee: {lift: .34, beat: 6.2, forage: [6.4, 8.0], hop: true}
+      easternTowhee: {lift: .34, beat: 6.2, forage: [6.4, 8.0], hop: true},
+      americanGoldfinch: {lift: .52, beat: 7.6, forage: [8.2, 10.0], hop: true},
+      easternBluebird: {lift: .58, beat: 6.8, forage: [10.5, 12.3], hop: true},
+      whiteThroatedSparrow: {lift: .32, beat: 7.0, forage: [5.6, 7.2], hop: true}
     };
     function addSharedBird(id, name, scientific, x, z, yaw, course, factoryId) {
-      var model = global.AvianWoodlandBirds.create(THREE, factoryId || id, {quality: detailed ? 'high' : 'low'});
+      var catalog = global.StemSimAssets, nativeId = factoryId || id;
+      var model = nativeId === 'mourningDove' && catalog && catalog.version === '1.0.0' && typeof catalog.available === 'function' && typeof catalog.create === 'function' && catalog.available('animal.mourning-dove', '1.0.0')
+        ? catalog.create(THREE, 'animal.mourning-dove', '1.0.0', {quality: detailed ? 'high' : 'low'})
+        : global.AvianWoodlandBirds.create(THREE, nativeId, {quality: detailed ? 'high' : 'low'});
       model.root.name = 'woodland-' + id; root.add(model.root);
       var resident = {id:id, name:name, scientificName:scientific, root:model.root, body:model.body,
         model:model, originX:x, originZ:z, baseYaw:yaw, course:course, behavior:'Scanning', altitude:0,
@@ -403,6 +409,26 @@
         {start:14.6,end:15.6,x:1.15,z:-.30,kind:'flight'},
         {start:24.5,end:25.8,x:1.01,z:-.25,kind:'ground',hops:2},
         {start:33.5,end:34.5,x:0,z:0,kind:'flight'}
+      ]);
+      // Append newcomers to preserve the existing residents' deterministic seeds.
+      // These seekable clearing visits illustrate movement, not habitat or cadence data.
+      if (global.AvianWoodlandBirds.supports('americanGoldfinch')) addSharedBird('americanGoldfinch', 'American goldfinch', 'Spinus tristis', .45, 1.55, -1.15, [
+        {start:4.8,end:6.1,x:.13,z:.06,kind:'ground',hops:2},
+        {start:17.4,end:18.65,x:-.62,z:.60,kind:'flight'},
+        {start:27.2,end:28.5,x:-.49,z:.54,kind:'ground',hops:2},
+        {start:36,end:37.25,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('easternBluebird')) addSharedBird('easternBluebird', 'Eastern bluebird', 'Sialia sialis', 1.25, 2.05, -.7, [
+        {start:6.6,end:7.8,x:-.14,z:.06,kind:'ground',hops:2},
+        {start:21.6,end:23.0,x:-.80,z:.42,kind:'flight'},
+        {start:29.6,end:30.8,x:-.66,z:.36,kind:'ground',hops:2},
+        {start:38.2,end:39.6,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('whiteThroatedSparrow')) addSharedBird('whiteThroatedSparrow', 'White-throated sparrow', 'Zonotrichia albicollis', -1.15, -.15, 1.9, [
+        {start:2.0,end:3.4,x:.14,z:-.04,kind:'ground',hops:2},
+        {start:12.4,end:13.55,x:.75,z:-.45,kind:'flight'},
+        {start:23.6,end:25.0,x:.61,z:-.41,kind:'ground',hops:2},
+        {start:32.4,end:33.6,x:0,z:0,kind:'flight'}
       ]);
     }
     function sampleCardinalHop(bird,move,u,startX,startZ) {

@@ -26,7 +26,7 @@ function rhymeEffect() {
   const correctAt = runtime.indexOf('const correctRhyme =', start);
   const end = runtime.indexOf('          } else {', runtime.indexOf('            lastWordForRhyming.current = currentWord;', correctAt));
   if (start < 0 || end <= start) throw new Error('Rhyme Time install branch not found');
-  const run = new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef', runtime.slice(start,end) + '\n          }');
+  const run = new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef', 'const setRhymeReviewRequired=()=>{};\n' + runtime.slice(start,end) + '\n          }');
   const epoch = {current: 0}, presentation = {current: 0}, session = {current: core.createRhymeSession()}, lastOccurrence = {current: null};
   return (...args) => run(...args, epoch, presentation, session, lastOccurrence);
 }

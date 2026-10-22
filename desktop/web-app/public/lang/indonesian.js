@@ -54735,6 +54735,15 @@
       "sr_critique_ready": "Kritik siap."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Tinjauan penerbangan tersimpan tidak tersedia",
+      "debrief_unavailable_body": "Tinjauan penerbangan terbaru hilang atau tidak dapat dibaca. Kembali ke menu untuk memulai penerbangan baru.",
+      "guided_idea_before_trials": "Tercatat sebelum uji coba",
+      "guided_idea_saved": "Gagasan tersimpan",
+      "guided_idea_timing_unknown": "Waktu pencatatan gagasan tersimpan ini tidak direkam.",
+      "guided_idea_latest": "Gagasan terakhir yang disimpan",
+      "guided_idea_latest_prediction": "Prediksi terakhir yang disimpan: {prediction}",
+      "guided_idea_saved_prediction": "Prediksi tersimpan: {prediction}",
+      "milestone_stall_recovery": "Sayap tidak lagi mengalami stall pada saat ini. Satu pengamatan tidak membuktikan pemulihan yang bertahan.",
       "game_controls": "🎮 KONTROL GAME",
       "cancel": "Batal",
       "formula": "Rumus",
@@ -54782,6 +54791,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTASI — angkat hidung (W)",
+      "hud_rotate_touch": "ROTASI — geser ke atas dari tengah",
+      "hud_flare": "FLARE — angkat hidung perlahan dengan W",
+      "hud_flare_touch": "FLARE — geser ke atas dari tengah",
+      "landing_touch_power": "Geser ke bawah sepanjang tepi kanan untuk mengurangi tenaga ke ~30%. Kecepatan akan menurun.",
+      "landing_touch_flare": "Tepat di atas landasan (~10 ft), geser perlahan ke atas dari tengah untuk mengangkat hidung. Targetkan laju turun kurang dari 200 fpm saat menyentuh landasan.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91035,6 +91050,18 @@
     "card_progress": "Kartu {n} dari {total}",
     "add_words": "Tambahkan kata untuk memulai latihan.",
     "round_complete": "Ronde selesai. Mulai ronde baru atau ulangi kata yang kamu tandai.",
-    "practice_label": "Latihan kata"
+    "practice_label": "Latihan kata",
+    "use_mine_help": "File HTML memakai font, ukuran teks, dan spasi pilihan Anda.",
+    "preparing_reading": "Menambahkan pengaturan baca Anda…",
+    "font_not_embedded": "Font Anda tidak dapat ditambahkan ke file, jadi file memakai font sistem."
+  },
+  "reading_settings": {
+    "title": "Pengaturan baca",
+    "smaller": "Perkecil teks",
+    "larger": "Perbesar teks",
+    "overlay": "Hamparan warna",
+    "ruler": "Penggaris baca",
+    "use_mine": "Gunakan pengaturan baca saya",
+    "use_mine_help": "Mencetak dengan font, ukuran teks, dan spasi pilihanmu."
   }
 }

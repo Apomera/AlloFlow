@@ -40,7 +40,7 @@ export function nativeBuild(id,scale=1,tissue='lean') {
   c.addSoftTissueChain=run(nativeChain,'addSoftTissueChain',c);
   c.addEllipsoid=factory('addEllipsoid',c);
   c.addKeratinCone=factory('addKeratinCone',c);
-  Object.assign(c,run(nativeAnchors,'({hip,shoulder,head,tail,snout,ceratopsidCranium:typeof ceratopsidCranium === "undefined" ? null : ceratopsidCranium,bodyHeight,bodyDepth,bodyLen,bodyCenter,detailScale,matureTyrannosaurPose})',c));
+  Object.assign(c,run(nativeAnchors,'({hip,shoulder,head,tail,snout,lambeosaurBody:typeof lambeosaurBody==="undefined"?null:lambeosaurBody,ceratopsidCranium:typeof ceratopsidCranium === "undefined" ? null : ceratopsidCranium,armoredCranium:typeof armoredCranium === "undefined" ? null : armoredCranium,carnotaurusCranium:typeof carnotaurusCranium === "undefined" ? null : carnotaurusCranium,stegosaurCranium:typeof stegosaurCranium === "undefined" ? null : stegosaurCranium,theropodCranium:typeof theropodCranium === "undefined" ? null : theropodCranium,sauropodCranium:typeof sauropodCranium === "undefined" ? null : sauropodCranium,bodyHeight,bodyDepth,bodyLen,bodyCenter,detailScale,matureTyrannosaurPose})',c));
   Object.assign(c,run(nativeTorso,'({bodyShell,surfaceBodyHeight,surfaceBodyDepth,torsoPoints,torsoRadii})',c));
   Object.assign(c,run(nativeHead,'({headShell,cervicalEnvelope,neckPoints,neckRadii,neckBaseRadius,neckTipRadius,surfaceHeadLength,surfaceHeadHeight,surfaceHeadDepth})',c));
   Object.assign(c,run(nativeNeck,'({neckMeshes})',c));

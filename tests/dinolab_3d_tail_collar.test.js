@@ -7,7 +7,7 @@ const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.mi
 const source = readFileSync(process.env.DINO_TAIL_COLLAR_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 const registration = "window.StemLab.registerTool('dinoLab'";
 window.StemLab = { registerTool() {} };
-new Function(source.replace(registration, 'globalThis.__tailCollar = { DINOS, postcranialSurfaceProfileFor, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoTailSkinEnvelope, dinoBlendSurfaceNormals, dinoSkinCoordinates, dinoSurfacePartIds };' + registration))();
+new Function(source.replace(registration, 'globalThis.__tailCollar = { DINOS, skeletalAnatomyProfileFor, postureProfileFor, dinoDromaeosaurPelvisMetadata: typeof dinoDromaeosaurPelvisMetadata === "function" ? dinoDromaeosaurPelvisMetadata : function(){return null;}, dinoDromaeosaurPelvisProfileFor: typeof dinoDromaeosaurPelvisProfileFor === "function" ? dinoDromaeosaurPelvisProfileFor : function(){return null;}, postcranialSurfaceProfileFor, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoTheropodBodyTorso, dinoCeratopsidBodyTorsoRadii, dinoTailSkinEnvelope, dinoBlendSurfaceNormals, dinoSkinCoordinates, dinoSurfacePartIds };' + registration))();
 const art = globalThis.__tailCollar; delete globalThis.__tailCollar;
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 function section(start, end) { const a = source.indexOf(start), b = source.indexOf(end, a); if (a < 0 || b <= a) throw Error('Missing construction section ' + start); return source.slice(a, b); }
@@ -23,11 +23,11 @@ function build(id, scale = 1, transformed = false) {
   const ht = dn.heightM * scale, len = dn.lengthM * scale, isSauropod = dn.group === 'sauropod', isTheropod = dn.group === 'theropod';
   const hip = vec(len * .12, ht * (isTheropod ? .78 : .45), 0), shoulder = vec(-len * (isTheropod ? .12 : .18), ht * (isSauropod ? .55 : .48), 0);
   const profile = art.postcranialSurfaceProfileFor(dn), bodyHeight = ht * (isSauropod ? .18 : .19);
-  const context = { ...art, THREE, vec, dn, model, bodyMat: material, props: { showBody: true },
+  const context = { ...art, THREE, vec, dn, model, bodyMat: material, lambeosaurBody: null, props: { showBody: true },
     ht, len, detailScale: Math.min(1, ht / 2), hip, shoulder, tail: vec(len * .52, ht * (isTheropod ? .65 : .34), 0),
     bodyHeight, bodyDepth: bodyHeight * (isTheropod ? .92 : 1.08), bodyLen: Math.abs(hip.x - shoulder.x) * .72,
     surfaceHypothesis: { bodyHeightScale: 1, bodyDepthScale: 1, tailSoftTissueScale: 1 }, reconstructionProfile: { tailTip: 1 },
-    postcranialSurface: profile, isSauropod, isTheropod, idleMotion: {},
+    postcranialSurface: profile, skeletalProfile: art.skeletalAnatomyProfileFor(dn), posture: art.postureProfileFor(dn), isSauropod, isTheropod, idleMotion: {},
     tailBaseRadius: Math.max(.045 * Math.min(1, ht / 2), ht * (isTheropod ? .105 : .075)) * profile.tailBaseFullness };
   context.addSoftTissueChain = evaluate(chainCode, 'addSoftTissueChain', context);
   Object.assign(context, evaluate(torsoCode, '({bodyShell, pelvisCenter, surfaceBodyHeight, surfaceBodyDepth})', context));

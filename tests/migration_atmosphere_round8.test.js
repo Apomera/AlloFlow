@@ -43,7 +43,7 @@ function canvasDocument() {
 function atmosphere() {
   const document = canvasDocument();
   const api = new Function('document', section('      function createMigrationStarfield(', '      function initMigrationFlightScene(') +
-    '\nreturn { createMigrationStarfield, createMigrationCloudDeck };')(document);
+    '\nreturn { createMigrationStarfield, createMigrationCloudDeck, createMigrationStudyLighting };')(document);
   return { document, ...api };
 }
 const backdrop = new Function('engine', 'study', section('          engine.updateStudyBackdrop = function(study) {', '          engine.rebuildFlock =') +
@@ -58,9 +58,9 @@ function skyFixture() {
   const scene = new THREE.Scene(), engine = {}, renderer = { setClearColor: vi.fn() };
   const deck = api.createMigrationCloudDeck(THREE);
   engine.movers = deck.clouds;
-  new Function('THREE', 'document', 'scene', 'engine', 'renderer', 'createMigrationStarfield', 'cloudMat', 'cirrusMat', 'riverDetailMat',
+  new Function('THREE', 'document', 'scene', 'engine', 'renderer', 'createMigrationStarfield', 'createMigrationStudyLighting', 'cloudMat', 'cirrusMat', 'riverDetailMat',
     section('          // ── Sky dome ──', '          // ── Land belt ──'))(
-    THREE, api.document, scene, engine, renderer, api.createMigrationStarfield, deck.material, { opacity: 0.24 }, { opacity: 0.26 });
+    THREE, api.document, scene, engine, renderer, api.createMigrationStarfield, api.createMigrationStudyLighting, deck.material, { opacity: 0.24 }, { opacity: 0.26 });
   return { ...api, deck, scene, engine, renderer };
 }
 function lobeBoxes(cloud) {
@@ -127,6 +127,7 @@ describe('Migration crisp starfield and volumetric cloud atmosphere', () => {
     const dome = document.canvases[0];
     expect([dome.width, dome.height]).toEqual([16, 512]);
     engine.applyTheme(false);
+    expect(engine.studyLighting.userData.active).toBe(false);
     expect(engine.nightStars.visible).toBe(false);
     const fillsAfterDay = dome.context.calls.filter(call => call.kind === 'fill').length;
     engine.applyTheme(false);

@@ -119,7 +119,15 @@ describe('Underwater: one cooling model', () => {
     it('every cooling multiple on screen comes from the model (' + s.uw_tech + ', ' + s.uw_depth + ' ft)', () => {
       const T = tech();
       const html = render({ view: 'underwater', uw_view: 'pressure', uw_depth: s.uw_depth, uw_tech: s.uw_tech, tech2_uw_pred: 'faster', tech2_uw_pred_from: s.from });
-      const t = studentText(html);
+      // The independent gas-law reference uses multiplication signs for its
+      // pressure/volume formulas. Keep this cooling-rate invariant on every
+      // original lesson element; the reference has its own geometry/math suite.
+      const coolingContent = document.createElement('div');
+      coolingContent.innerHTML = html;
+      const gasReferences = coolingContent.querySelectorAll('[data-uw-gas-bench]');
+      expect(gasReferences).toHaveLength(1);
+      gasReferences[0].remove();
+      const t = studentText(coolingContent.innerHTML);
       expect(t).toContain('Why wet welds harden');
       const allowed = new Set([1, T.coolingMultiple('wet', s.uw_depth), T.coolingMultiple('dry', s.uw_depth), T.coolingMultiple('wet', s.from)].map((v) => v.toFixed(1)));
       const shown = [...t.matchAll(/(\d+(?:\.\d+)?)\s?×/g)].map((m) => Number(m[1]).toFixed(1));
@@ -400,7 +408,7 @@ describe('Consumables: classification decoder', () => {
 describe('Consumables: rendering, facts, scenarios', () => {
   const SECTS = ['overview', 'sticks', 'mig_wires', 'decoder', 'tig_rods', 'gases', 'storage', 'cost'];
   const SIG = { overview: 'Quick consumable map by process', sticks: 'decoding AWS A5.1', mig_wires: 'AWS A5.18 / A5.20', decoder: 'Classification decoder',
-    tig_rods: 'Older and imported boxes', gases: 'TriMix: 90% Helium', storage: 'Damp E7018', cost: 'Cost per foot of fillet weld' };
+    tig_rods: 'Inspect the paint, read the box', gases: 'TriMix: 90% Helium', storage: 'Damp E7018', cost: 'Cost per foot of fillet weld' };
 
   it('no state renders "[object Object]"', () => {
     SECTS.forEach((s) => {
@@ -472,7 +480,10 @@ describe('Consumables: rendering, facts, scenarios', () => {
     expect(cons).not.toMatch(/Grade 60/);
     const tig = studentText(render({ view: 'consumables', cons_sect: 'tig_rods' }));
     expect(tig).toMatch(/Zirconiated \(EWZr-1\) Tip colour: brown/);
-    expect(tig).toContain('white WZ8 (0.8%)');
+    // Current CK/Miller charts use gray EWCe-2. The former AWS-orange/ISO-gray
+    // paragraph is replaced by product/edition context, including maker-specific EWG colors.
+    expect(tig).toContain('EWCe-2/WC20 as gray (formerly orange)');
+    expect(tig).toContain('EWG blends can use maker-specific colors');
     expect(tig).not.toMatch(/0\.8% Zirconiated \(EWZr-1\)/);
   });
 

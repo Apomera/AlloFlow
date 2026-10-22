@@ -56141,6 +56141,15 @@
       "sr_critique_ready": "نقد آماده است."
     },
     "flightsim": {
+      "debrief_unavailable_title": "مرور پرواز ذخیره‌شده در دسترس نیست",
+      "debrief_unavailable_body": "آخرین مرور پرواز موجود نیست یا قابل خواندن نیست. برای شروع یک پرواز تازه به منو برگردید.",
+      "guided_idea_before_trials": "پیش از آزمایش‌ها ثبت شده",
+      "guided_idea_saved": "ایدۀ ذخیره‌شده",
+      "guided_idea_timing_unknown": "زمان این ایدۀ ذخیره‌شده ثبت نشده است.",
+      "guided_idea_latest": "آخرین ایدۀ ذخیره‌شده",
+      "guided_idea_latest_prediction": "آخرین پیش‌بینی ذخیره‌شده: {prediction}",
+      "guided_idea_saved_prediction": "پیش‌بینی ذخیره‌شده: {prediction}",
+      "milestone_stall_recovery": "بال در این لحظه دیگر در حالت واماندگی نیست. یک مشاهده به‌تنهایی بهبود پایدار را ثابت نمی‌کند.",
       "game_controls": "🎮 کنترل‌های بازی",
       "cancel": "لغو",
       "from": "از",
@@ -56196,6 +56205,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "بلندکردن دماغه — دماغه را بالا ببرید (W)",
+      "hud_rotate_touch": "بلندکردن دماغه — از وسط به بالا بکشید",
+      "hud_flare": "تراز برای فرود — با W دماغه را آرام بالا ببرید",
+      "hud_flare_touch": "تراز برای فرود — از وسط به بالا بکشید",
+      "landing_touch_power": "در امتداد لبهٔ راست به پایین بکشید تا توان به حدود 30% کاهش یابد. سرعت کم می‌شود.",
+      "landing_touch_flare": "درست بالای باند (~10 ft)، از وسط به‌آرامی به بالا بکشید تا دماغه بالا برود. هنگام تماس با زمین، نرخ نزول را کمتر از 200 fpm نگه دارید.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92220,6 +92235,18 @@
     "card_progress": "کارت {n} از {total}",
     "add_words": "برای شروع تمرین، واژه اضافه کنید.",
     "round_complete": "دور تمام شد. دور تازه‌ای شروع کنید یا واژه‌های علامت‌خورده را مرور کنید.",
-    "practice_label": "تمرین واژه"
+    "practice_label": "تمرین واژه",
+    "use_mine_help": "فایل HTML از فونت، اندازه متن و فاصله شما استفاده می‌کند.",
+    "preparing_reading": "در حال افزودن تنظیمات خواندن شما…",
+    "font_not_embedded": "فونت شما به فایل اضافه نشد، بنابراین فایل از فونت سیستم استفاده می‌کند."
+  },
+  "reading_settings": {
+    "title": "تنظیمات خواندن",
+    "smaller": "متن کوچک‌تر",
+    "larger": "متن بزرگ‌تر",
+    "overlay": "همپوشانی رنگ",
+    "ruler": "خط‌کش خواندن",
+    "use_mine": "استفاده از تنظیمات خواندن من",
+    "use_mine_help": "با فونت، اندازه متن و فاصله شما چاپ می‌شود."
   }
 }

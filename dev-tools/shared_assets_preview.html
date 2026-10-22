@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared assets · Compatibility preview</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #203d34; background: #f5f2e9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1160px; margin: 0 auto; padding: 36px 24px 56px; }
+    .eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; color: #486958; }
+    h1 { margin: 0; font: 500 clamp(28px, 4vw, 43px)/1.15 Georgia, serif; }
+    .intro { max-width: 760px; color: #4e6258; font-size: 16px; line-height: 1.65; }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 24px 0 12px; padding: 20px; background: #fffdf6; border: 1px solid #cfd8cc; border-radius: 16px; }
+    label { display: flex; flex-direction: column; gap: 7px; font-weight: 650; font-size: 14px; }
+    select, button { font: inherit; min-height: 44px; border: 1px solid #829789; border-radius: 8px; padding: 9px 12px; }
+    select { background: #fffefa; color: #203d34; }
+    #asset-entry { min-width: 230px; }
+    button { cursor: pointer; font-weight: 700; background: #234c3c; color: #fffefa; }
+    button.secondary { background: transparent; color: #234c3c; }
+    :is(button, select):focus-visible { outline: 3px solid #be741e; outline-offset: 3px; }
+    :is(button, select):disabled { opacity: .5; cursor: default; }
+    #preview-status { min-height: 1.5em; margin: 12px 3px 18px; font-size: 14px; line-height: 1.5; }
+    .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .pane { overflow: hidden; min-width: 0; border: 1px solid #cbd4c6; border-radius: 16px; background: #e7ecdf; }
+    .pane-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; background: #fffdf6; }
+    h2 { font-size: 17px; margin: 0; }
+    .tag { color: #405c4d; font-size: 12px; padding: 5px 9px; border: 1px solid #c5d1c0; border-radius: 20px; }
+    .viewport { height: 340px; position: relative; }
+    .viewport canvas { display: block; width: 100%; height: 100%; }
+    .placeholder { display: grid; place-items: center; height: 100%; padding: 32px; text-align: center; color: #54685a; line-height: 1.6; }
+    .bounds { min-height: 48px; margin: 0; padding: 13px 18px; color: #395245; background: #f7f8ef; font: 12px/1.6 ui-monospace, monospace; overflow-wrap: anywhere; }
+    .details { margin-top: 22px; padding: 24px; background: #fffdf6; border: 1px solid #cfd8cc; border-radius: 16px; }
+    .details h2 { margin-bottom: 16px; }
+    dl { display: grid; grid-template-columns: 135px minmax(0, 1fr); gap: 11px 22px; margin: 0; font-size: 14px; line-height: 1.6; }
+    dt { font-weight: 700; color: #385a48; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    .note { margin: 22px 0 0; border-top: 1px solid #dce1d4; padding-top: 16px; color: #53645a; font-size: 13px; line-height: 1.65; }
+    @media (max-width: 650px) {
+      main { padding: 24px 16px 36px; } .controls { gap: 14px; padding: 16px; }
+      #asset-entry { min-width: 0; width: 100%; } .asset-field { width: 100%; }
+      .panes { grid-template-columns: 1fr; } .viewport { height: 280px; }
+      .details { padding: 18px; } dl { grid-template-columns: 1fr; gap: 3px; } dd { margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main id="shared-assets-preview" data-preview-live="false" data-open-count="0" data-disposed-models="0" data-disposed-renderers="0">
+    <p class="eyebrow">Developer workbench · Asset catalog pilot</p>
+    <h1>One asset. Two entry points.</h1>
+    <p class="intro">Compare the original provider with the shared catalog under identical lighting, camera, scale, and pose. This isolated preview does not change any simulation or learning activity.</p>
+    <div class="controls" aria-label="Preview controls">
+      <label class="asset-field" for="asset-entry">Asset<select id="asset-entry"></select></label>
+      <label for="asset-quality">Detail<select id="asset-quality"><option value="high">High</option><option value="low">Low</option></select></label>
+      <label for="asset-pose">Fixed pose<select id="asset-pose"><option value="ground">Resting</option><option value="walk">Walking</option><option value="flight">In flight</option></select></label>
+      <button id="open-preview" type="button">Open preview</button>
+      <button id="close-preview" class="secondary" type="button" disabled>Close preview</button>
+    </div>
+    <p id="preview-status" role="status" aria-live="polite">Metadata is available. Open preview to create the two 3D views.</p>
+    <div class="panes">
+      <section class="pane" id="native-pane" data-live="false" aria-labelledby="native-title">
+        <div class="pane-header"><h2 id="native-title">Native provider</h2><span class="tag">Original entry point</span></div>
+        <div class="viewport" id="native-viewport"><div class="placeholder">3D preview is closed.<br>No rendering resources are allocated.</div></div>
+        <p class="bounds" id="native-bounds">Bounds will appear when opened.</p>
+      </section>
+      <section class="pane" id="catalog-pane" data-live="false" aria-labelledby="catalog-title">
+        <div class="pane-header"><h2 id="catalog-title">Catalog</h2><span class="tag">Version 1.0.0</span></div>
+        <div class="viewport" id="catalog-viewport"><div class="placeholder">3D preview is closed.<br>No rendering resources are allocated.</div></div>
+        <p class="bounds" id="catalog-bounds">Bounds will appear when opened.</p>
+      </section>
+    </div>
+    <section class="details" aria-labelledby="metadata-title"><h2 id="metadata-title">Asset contract</h2><dl id="asset-metadata"></dl>
+      <p class="note">Each pane fits the same native bounds to its camera. Fitting changes the view, never the model scale. Authored dimensions and movement are illustrative; meadow primitives use relative units, not metres. Entry versions identify maintained contracts, not archived copies of provider code.</p>
+    </section>
+  </main>
+  <script src="../vendor/three-r128/three.min.js"></script>
+  <script src="../stem_lab/avian_woodland_birds.js"></script>
+  <script src="../stem_lab/stem_sim_meadow.js"></script>
+  <script src="../stem_lab/stem_sim_assets.js"></script>
+  <script src="shared_assets_preview.js"></script>
+</body>
+</html>

@@ -161,4 +161,37 @@ describe('checked syllable counts remain separate from spoken splits', () => {
     expect(DI.buildLessonScript(analysis, {activities: [{id: 'syllable_counting', count: 1}]}).sections
       .find(section => section.id === 'test_syllable_counting').teacherSays.join(' ')).toMatch(/review|unavailable/i);
   });
+
+  it('binds count approvals to the same clip for supported string and descriptor assets', () => {
+    const audio = sample => {
+      const wav = Buffer.alloc(46);
+      wav.write('RIFF', 0); wav.writeUInt32LE(38, 4); wav.write('WAVEfmt ', 8);
+      wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
+      wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28);
+      wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36);
+      wav.writeUInt32LE(2, 40); wav.writeInt16LE(sample, 44);
+      return {mime: 'audio/wav', base64: wav.toString('base64')};
+    };
+    const first = audio(0), replacement = audio(100);
+    const dataUri = asset => 'data:' + asset.mime + ';base64,' + asset.base64;
+    const approval = core.createReviewedSyllableCount({targetWord: 'fire', language: 'en', count: 1,
+      reviewed: true, revision: 1, audioContext: core.createSyllableCountAudioContext({asset: first, language: 'en'})});
+    const spokenApproval = core.createReviewedSyllableCount({targetWord: 'fire', language: 'en', count: 1,
+      reviewed: true, revision: 2, audioContext: core.createSyllableCountAudioContext({language: 'en'})});
+    const item = clip => ({word: 'fire', phonemes: ['f', 'ie', 'er'], _ttsAssets: {fire: clip},
+      activityItems: {syllable_counting: approval}});
+    for (const clip of [first, dataUri(first)]) {
+      expect(scriptFor(item(clip), 'syllable_counting').analysis.syllableCount).toBe(1);
+      expect(scriptFor(item(clip), 'syllable_counting').section.teacherSays[0]).toContain('One part');
+    }
+    for (const clip of [replacement, dataUri(replacement)]) {
+      const result = scriptFor(item(clip), 'syllable_counting');
+      expect(result.analysis.syllableCount).toBeNull();
+      expect(result.section.teacherSays.join(' ')).toMatch(/review|unavailable/i);
+    }
+    for (const clip of [first, dataUri(first)]) {
+      expect(scriptFor({...item(clip), activityItems: {syllable_counting: spokenApproval}}, 'syllable_counting').analysis.syllableCount).toBeNull();
+    }
+    expect(scriptFor({...item(undefined), _ttsAssets: {}, activityItems: {syllable_counting: spokenApproval}}, 'syllable_counting').analysis.syllableCount).toBe(1);
+  });
 });

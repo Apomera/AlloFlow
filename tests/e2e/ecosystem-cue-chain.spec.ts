@@ -1,0 +1,113 @@
+import {test,expect} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
+import {GlHarness} from './helpers/stem_gl_harness';
+
+const reportDir=process.env.ECOLOGY_REPORT_DIR||'reports/ecosystem-cue-chain';
+// This lifecycle uses the supported data-only path. Real GL and animal
+// geometry are independently covered by the existing ecology scene workflows.
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_ecosystem.js',toolId:'ecosystem',width:1100,height:900,appStyles:true,
+  probes:`window.THREE=undefined;window.StemLab.ensureThree=function(){return Promise.reject(new Error('Renderer deferred for cue-chain evidence lifecycle'));};`});
+test.use({acceptDownloads:true,trace:'off',video:'off'});
+test.describe.configure({timeout:180_000,retries:0});
+test.beforeAll(async()=>{await mkdir(reportDir,{recursive:true});await harness.start();});
+test.afterAll(async()=>harness.stop());
+test.afterEach(async({page})=>{expect(await page.evaluate(()=>(window as any).__events?.errors||[])).toEqual([]);expect(await harness.glContexts(page)).toEqual([]);await harness.destroy(page);});
+
+test('cue-chain choices preserve first submissions through revision, keyboard return, legacy reopening, mobile use and completed export without mission credit',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1140,height:1050});
+  await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
+  await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
+  await page.getByRole('button',{name:'Rabbit neighbors',exact:true}).click();
+  await page.getByLabel('Your prediction (optional)',{exact:true}).fill('I will distinguish earlier model inputs from the current three-animal display.');
+  await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  const meadow=page.locator('[data-efw-meadow]');if(!(await meadow.isVisible()))await page.getByRole('button',{name:'Show 3D meadow',exact:true}).click();
+  await meadow.getByLabel('Meadow scene data',{exact:true}).selectOption('baseline');
+  const fixture=await page.evaluate(()=>{const w=window as any,api=w.StemLab.ecosystemFoodWeb,c=w.__toolData.ecosystem.foodWeb.run.config,frames=api.behaviorTimeline(c,api.compare(c).baseline),encounter=api.encounters(frames,c).find((item:any)=>item.kind==='vigilance'),trial=api.inferenceTrial(frames,encounter,'baseline'),plan=api.cueChainCase(frames,trial);if(!plan)throw Error('The original vigilance checkpoints have no verified chain');return {encounter,trial,plan,codes:api.inferenceClaims(trial).map((card:any)=>card.category),run:JSON.stringify(w.__toolData.ecosystem.foodWeb.run)};});
+  const S=fixture.plan.trace.step,fieldwork=meadow.locator('[data-efw-fieldwork]'),challenge=fieldwork.locator('[data-efw-inference]'),save=fieldwork.getByRole('button',{name:'Save wildlife observation',exact:true}),progress=page.locator('[data-efw-mission-progress]');
+  await fieldwork.locator('[data-efw-encounter="vigilance"]').click();
+  await fieldwork.getByLabel('Wildlife prediction',{exact:true}).selectOption('avoid');
+  await fieldwork.getByRole('button',{name:'Reveal encounter',exact:true}).click();
+  await challenge.locator('summary').press('Enter');await expect(challenge.locator('[data-efw-inference-card]')).toHaveCount(4);
+  for(let k=0;k<4;k++)await challenge.getByLabel(`Evidence statement ${k+1} source`,{exact:true}).selectOption(fixture.codes[k]);
+  for(let k=0;k<3;k++){await challenge.getByRole('button',{name:`Inspect evidence checkpoint ${k+1}`,exact:true}).press('Enter');await expect(meadow.getByLabel('Meadow timeline',{exact:true})).toHaveValue(String(fixture.trial.samples[k].step));}
+  await challenge.getByRole('button',{name:'Check evidence sources',exact:true}).press('Enter');
+  await expect(challenge.locator('[data-efw-inference-feedback]')).toContainText('4 of 4 current sources match');
+  await save.click();
+  const legacy=await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook[0]),frozenLegacy=JSON.stringify(legacy);
+  expect(legacy.sighting.inference.version).toBe(1);expect(legacy.sighting.inference).not.toHaveProperty('chain');
+
+  const chain=challenge.locator('[data-efw-cue-chain]');await chain.locator('summary').press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-times]')).toContainText('Time '+((S-2)/10).toFixed(1));
+  await expect(chain.locator('[data-efw-cue-chain-times]')).toContainText('Time '+((S-1)/10).toFixed(1));
+  await expect(chain.locator('[data-efw-cue-chain-reduced]')).toContainText('freezes the 3D starting poses');
+  await expect(chain).toContainText('not a blind-prediction test');
+  await chain.getByLabel('Cue-chain cue role',{exact:true}).selectOption('predator');
+  await expect(save).toBeEnabled();
+  await chain.getByLabel('Predator-input time used by neighbor',{exact:true}).selectOption(String(S));
+  await chain.getByLabel('Neighbor-input time used by selected rabbit',{exact:true}).selectOption('unsure');
+  await chain.getByRole('button',{name:'Check cue chain',exact:true}).press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-feedback]')).toContainText('Compare your role and time choices');
+  const first=await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.fieldwork.inference.chain.firstAnswers);
+  expect(first).toEqual({cue:'predator',directInputStep:S,neighborInputStep:'unsure'});
+  await expect(save).toBeEnabled();
+  await chain.getByLabel('Cue-chain cue role',{exact:true}).selectOption('neighbor');
+  await expect(save).toBeDisabled();await expect(fieldwork).toContainText('Recheck the revised cue-chain choices');
+  const source=challenge.getByLabel('Evidence statement 1 source',{exact:true}),wrongSource=fixture.codes[0]==='unsupported'?'scene':'unsupported',readiness=fieldwork.locator('[data-efw-save-readiness]');
+  await source.selectOption(wrongSource);
+  await expect(chain).toHaveCount(0);await expect(save).toBeDisabled();
+  await expect(readiness.getByRole('button',{name:'Return to cue-chain choices',exact:true})).toHaveCount(0);
+  await challenge.locator(':scope > summary').press('Enter');await expect(challenge).not.toHaveAttribute('open','');
+  await readiness.getByRole('button',{name:'Return to evidence sources',exact:true}).press('Enter');
+  await expect(challenge).toHaveAttribute('open','');await expect(source).toBeFocused();
+  await challenge.getByRole('button',{name:'Check revised evidence sources',exact:true}).press('Enter');
+  await expect(challenge.locator('[data-efw-inference-feedback]')).toContainText('3 of 4 current sources match');
+  await expect(chain).toHaveCount(1);await expect(save).toBeDisabled();
+  await readiness.getByRole('button',{name:'Return to cue-chain choices',exact:true}).press('Enter');
+  await expect(chain.getByLabel('Cue-chain cue role',{exact:true})).toBeFocused();
+  expect(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.fieldwork.inference.firstCodes)).toEqual(fixture.codes);
+  expect(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.fieldwork.inference.chain.firstAnswers)).toEqual(first);
+  await source.selectOption(fixture.codes[0]);await expect(chain).toHaveCount(0);
+  await challenge.getByRole('button',{name:'Check revised evidence sources',exact:true}).press('Enter');
+  await expect(challenge.locator('[data-efw-inference-feedback]')).toContainText('4 of 4 current sources match');
+  expect(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.fieldwork.inference.firstCodes)).toEqual(fixture.codes);
+  await chain.locator('summary').press('Enter');await expect(chain).not.toHaveAttribute('open','');
+  await fieldwork.locator('[data-efw-save-readiness]').getByRole('button',{name:'Return to cue-chain choices',exact:true}).press('Enter');
+  await expect(chain).toHaveAttribute('open','');await expect(chain.getByLabel('Cue-chain cue role',{exact:true})).toBeFocused();
+  await chain.getByLabel('Predator-input time used by neighbor',{exact:true}).selectOption(String(S-2));
+  await chain.getByLabel('Neighbor-input time used by selected rabbit',{exact:true}).selectOption(String(S-1));
+  await chain.getByRole('button',{name:'Check revised cue chain',exact:true}).press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-feedback]')).toContainText('Your choices match this recorded cue chain.');
+  await chain.getByLabel('Cue-chain evidence explanation',{exact:true}).fill('The neighbor used earlier predator positions; the receiving rabbit used the next neighbor sample. The current display is later and does not show a measured sound wave.');
+  await save.click();
+  const saved=await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook[1]),frozenSaved=JSON.stringify(saved);
+  expect(saved.sighting.inference.chain).toMatchObject({version:1,case:fixture.plan,caseKey:JSON.stringify(fixture.plan),firstAnswers:first,answers:{cue:'neighbor',directInputStep:S-2,neighborInputStep:S-1}});
+  expect(JSON.stringify(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook[0]))).toBe(frozenLegacy);
+  await expect(progress).toHaveText('Evidence saved for 0 of 3 missions.');
+
+  await page.getByRole('button',{name:'Reopen observation 1',exact:true}).press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-first]')).toHaveCount(0);await expect(chain.locator('[data-efw-cue-chain-feedback]')).toHaveCount(0);
+  await page.getByRole('button',{name:'Reopen observation 2',exact:true}).press('Enter');
+  await expect(chain).toHaveAttribute('open','');await expect(chain.getByLabel('Cue-chain cue role',{exact:true})).toHaveValue('neighbor');
+  await expect(chain.locator('[data-efw-cue-chain-first]')).toContainText('Predator directly');
+  await chain.getByLabel('Neighbor-input time used by selected rabbit',{exact:true}).selectOption('unsure');await expect(save).toBeDisabled();
+  await chain.getByRole('button',{name:'Check revised cue chain',exact:true}).press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-feedback]')).toContainText('Some choices remain uncertain');
+  await save.click();
+  const revised=await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook[2]);expect(revised.sighting.inference.chain.firstAnswers).toEqual(first);expect(revised.sighting.inference.chain.answers.neighborInputStep).toBe('unsure');
+  expect(JSON.stringify(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook[1]))).toBe(frozenSaved);
+  await chain.screenshot({path:reportDir+'/cue-chain-desktop.jpg',type:'jpeg',quality:90});
+  await page.setViewportSize({width:390,height:844});await expect(chain.locator('table')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'cue-chain choices fit the phone viewport').toBe(true);
+  await chain.screenshot({path:reportDir+'/cue-chain-mobile.jpg',type:'jpeg',quality:90});
+  const frozenNotebook=JSON.stringify(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook));
+  await chain.getByRole('button',{name:'Start a new cue-chain sheet',exact:true}).press('Enter');
+  await expect(chain.locator('[data-efw-cue-chain-first]')).toHaveCount(0);await expect(chain.getByRole('button',{name:'Check cue chain',exact:true})).toBeDisabled();await expect(save).toBeEnabled();
+  expect(JSON.stringify(await page.evaluate(()=>(window as any).__toolData.ecosystem.foodWeb.notebook))).toBe(frozenNotebook);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb.run))).toBe(fixture.run);
+  await expect(progress).toHaveText('Evidence saved for 0 of 3 missions.');
+
+  const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Export field notebook',exact:true}).click();
+  const download=await downloading;expect(download.suggestedFilename()).toBe('ecosystem-field-notebook.txt');expect(await download.failure()).toBeNull();
+  const stream=await download.createReadStream();expect(stream).toBeTruthy();let text='';for await(const chunk of stream!)text+=chunk.toString();
+  const prefix='Frozen cue-chain case (JSON): ',records=text.split('\n').filter(line=>line.startsWith(prefix)).map(line=>JSON.parse(line.slice(prefix.length)));
+  expect(records).toEqual([saved.sighting.inference.chain,revised.sighting.inference.chain]);expect(text).toContain('First submitted cue prediction: predator directly');expect(text).toContain('not a claim that the learner had not inspected');
+});

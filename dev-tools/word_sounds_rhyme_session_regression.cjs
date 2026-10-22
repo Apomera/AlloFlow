@@ -77,7 +77,7 @@ function runRhymeSessionRegressions(coreSource, runtimeSource) {
   const correctAt=runtimeSource.indexOf('const correctRhyme =',start);
   const end=runtimeSource.indexOf('          } else {',correctAt);
   assert.ok(start>=0 && end>start);
-  const effect=new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef',runtimeSource.slice(start,end)+'\n          }');
+  const effect=new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef','const setRhymeReviewRequired=()=>{};\n'+runtimeSource.slice(start,end)+'\n          }');
   function harness() {
     const epoch={current:1},presentation={current:0},session={current:core.createRhymeSession()},last={current:null},occurrence={current:null};
     const installed=[]; let options=[];
@@ -108,7 +108,7 @@ function runRhymeSessionRegressions(coreSource, runtimeSource) {
     const resetStart=runtimeSource.indexOf('        rhymeSessionRef.current = WS_CORE.createRhymeSession();');
     const resetEnd=runtimeSource.indexOf('        sessionQueueRef.current = {};',resetStart);
     assert.ok(resetStart>=0&&resetEnd>resetStart);
-    new Function('WS_CORE','rhymeSessionRef','rhymePresentationRef','lastRhymeOccurrenceRef','lastWordForRhyming','setRhymeOptions',runtimeSource.slice(resetStart,resetEnd))(core,h.session,h.presentation,h.occurrence,h.last,()=>{});
+    new Function('WS_CORE','rhymeSessionRef','rhymePresentationRef','lastRhymeOccurrenceRef','lastWordForRhyming','setRhymeOptions','const setRhymeReviewRequired=()=>{};\n'+runtimeSource.slice(resetStart,resetEnd))(core,h.session,h.presentation,h.occurrence,h.last,()=>{});
     assert.equal(h.session.current.counts.size,0);assert.equal(h.session.current.occurrences.size,0);h.invoke('cat',undefined,[]);assert.deepEqual(h.installed.at(-1),first);
   });
   return groups;

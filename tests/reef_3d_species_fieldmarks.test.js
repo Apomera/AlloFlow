@@ -72,7 +72,7 @@ describe('Lane D load cost', () => {
     e1.dispose(); e2.dispose();
   });
 
-  it('gives every species material the same patch key, so programs differ only by three maps', () => {
+  it('shares one patch key and keeps material feature families within the established budget', () => {
     const keys = new Set(), sigs = new Set();
     const add = (h) => h.root.traverse((m) => {
       if (!m.isMesh) return; const t = m.material;
@@ -81,8 +81,10 @@ describe('Lane D load cost', () => {
     });
     for (const id of S.ids) { const h = S.create(THREE, id, { seed: 3, quality: 'high' }); add(h); h.dispose(); }
     for (const id of ['anthias', 'bumphead_parrotfish']) { const h = S.createSchool(THREE, id, 5, { seed: 3 }); add(h); h.dispose(); }
-    expect([...keys]).toEqual(['reef3d-species-v5|d']);
-    expect(sigs.size, 'material families across all 47 models (was 22 before lane D)').toBeLessThanOrEqual(10);
+    expect([...keys]).toEqual(['reef3d-species-v7|d']);
+    // The cucumber's existing roughness map adds the eleventh family. The new
+    // firefish and copperband reuse existing signatures and add no family.
+    expect(sigs.size, 'material families across the complete specimen collection').toBeLessThanOrEqual(11);
   }, 120000);
 });
 

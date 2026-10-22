@@ -9,6 +9,52 @@
     const clean = modules().PhaseKHelpers?.toSpokenText;
     return text(typeof clean === 'function' ? clean(String(value || '')) : String(value || '').replace(/\s+/g, ' '));
   };
+  const speechSetting = (value, min, max, fallback = 1) => {
+    const number = value == null || value === '' ? fallback : Number(value);
+    return Math.max(min, Math.min(max, Number.isFinite(number) ? number : fallback));
+  };
+  function speechTag(value) {
+    const tag = text(value).replace(/_/g, '-');
+    if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i.test(tag)) return '';
+    try { return typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function' ? Intl.getCanonicalLocales(tag)[0] || '' : tag; } catch (_) { return ''; }
+  }
+  // The full language utility can arrive after a standalone resource view.
+  // Keep common lesson names usable during that interval; tags need no table.
+  const deviceLanguageNames = {
+    english: 'en-US', spanish: 'es-ES', 'spanish (latin america)': 'es-419', 'spanish (castilian)': 'es-ES',
+    french: 'fr-FR', 'french (canadian)': 'fr-CA', german: 'de-DE', italian: 'it-IT',
+    portuguese: 'pt-BR', 'portuguese (brazil)': 'pt-BR', 'portuguese (portugal)': 'pt-PT', 'portuguese (angola)': 'pt-AO',
+    chinese: 'zh-CN', mandarin: 'zh-CN', 'chinese (simplified)': 'zh-CN', 'chinese (traditional)': 'zh-TW',
+    arabic: 'ar-SA', hindi: 'hi-IN', japanese: 'ja-JP', korean: 'ko-KR', russian: 'ru-RU',
+    vietnamese: 'vi-VN', ukrainian: 'uk-UA', somali: 'so-SO', 'haitian creole': 'ht-HT'
+  };
+  function speechLanguage(value) {
+    const direct = speechTag(value);
+    if (direct) return direct;
+    const name = text(value).toLowerCase();
+    const resolve = modules().ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
+    try {
+      const resolved = typeof resolve === 'function' ? speechTag(resolve(value)) : '';
+      // The shared resolver defaults unknown names to English. Leave those to
+      // the device default instead of explicitly assigning the wrong language.
+      if (resolved && (resolved.split('-')[0].toLowerCase() !== 'en' || /^english(?:\b|$)/.test(name))) return resolved;
+    } catch (_) {}
+    return Object.prototype.hasOwnProperty.call(deviceLanguageNames, name) ? deviceLanguageNames[name] : '';
+  }
+  function configureDeviceSpeech(utterance, language, speed, volume) {
+    const tag = speechLanguage(language);
+    if (tag) {
+      let voices = [];
+      try { voices = window.speechSynthesis?.getVoices?.() || []; } catch (_) {}
+      const matches = (Array.isArray(voices) ? voices : []).map(voice => ({ voice, tag: speechTag(voice?.lang) })).filter(value => value.tag);
+      const voice = matches.find(value => value.tag.toLowerCase() === tag.toLowerCase())?.voice
+        || matches.find(value => value.tag.split('-')[0].toLowerCase() === tag.split('-')[0].toLowerCase())?.voice;
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice ? speechTag(voice.lang) : tag;
+    }
+    utterance.rate = speechSetting(speed, 0.5, 2);
+    utterance.volume = speechSetting(volume, 0, 1);
+  }
   function fingerprint(value) { let hash = 2166136261; for (let i = 0; i < value.length; i++) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); } return 'txt-' + value.length.toString(36) + '-' + (hash >>> 0).toString(36); }
   function register(type, enumerate) {
     if (!type || typeof enumerate !== 'function') throw new Error('A resource adapter needs a type and enumerator.');
@@ -169,8 +215,7 @@
       window.dispatchEvent(new CustomEvent('alloflow:resource-read-aloud-start', { detail: id.current }));
       const utterance = new SpeechSynthesisUtterance(spoken(props.text)); current.current = utterance;
       utterance.onend = utterance.onerror = () => { current.current = null; setPlaying(false); setPaused(false); };
-      utterance.rate = Math.max(0.5, Math.min(2, Number(props.voiceSpeed) || 1));
-      utterance.volume = Math.max(0, Math.min(1, Number(props.voiceVolume ?? 1)));
+      configureDeviceSpeech(utterance, props.language || props.resource?.language || props.resource?.data?.language || props.resource?.data?.lessonRef?.language || 'English', props.voiceSpeed, props.voiceVolume);
       setPlaying(true); setPaused(false); window.speechSynthesis.speak(utterance);
     } }, playing ? tr('stop', 'Stop reading') : props.cue ? tr('read_cue', 'Read cue aloud') : tr('read_work', 'Read my writing')), playing && e('button', { type: 'button', className: 'ms-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => { if (!current.current) return; if (paused) window.speechSynthesis.resume(); else window.speechSynthesis.pause(); setPaused(!paused); } }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')));
   }
@@ -261,15 +306,13 @@
             const finish = () => { runtime.current.finish = null; runtime.current.audio = null; runtime.current.utterance = null; resolve(); };
             if (url) {
               const audio = new Audio(url); runtime.current.audio = audio;
-              audio.playbackRate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1)); audio.volume = Math.max(0, Math.min(1, Number(voiceVolume) || 0));
+              audio.playbackRate = speechSetting(voiceSpeed, 0.5, 2); audio.volume = speechSetting(voiceVolume, 0, 1);
               audio.onended = finish; audio.onerror = () => reject(new Error('Audio playback failed'));
               Promise.resolve(audio.play()).catch(reject);
             } else if (window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
               const utterance = new SpeechSynthesisUtterance(segment.text); runtime.current.utterance = utterance;
-              const voice = window.speechSynthesis.getVoices().find(voice => voice.lang === segment.language || voice.name.toLowerCase().includes(segment.language.toLowerCase()));
-              if (voice) { utterance.voice = voice; utterance.lang = voice.lang; }
-              else if (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(segment.language)) utterance.lang = segment.language;
-              utterance.rate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1)); utterance.onend = finish; utterance.onerror = reject; window.speechSynthesis.speak(utterance);
+              configureDeviceSpeech(utterance, segment.language, voiceSpeed, voiceVolume);
+              utterance.onend = finish; utterance.onerror = reject; window.speechSynthesis.speak(utterance);
             } else reject(new Error('No saved clip or device voice available'));
           });
           if (valid() && i + 1 < end && current.current.pauseBetween) { runtime.current.paused = true; setPaused(true); }

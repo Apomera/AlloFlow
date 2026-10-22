@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
+import { loadWordSoundsDeliveryHydrator } from './helpers/word_sounds_delivery_host_harness.js';
 
 let restoreView;
 
@@ -140,6 +141,7 @@ describe('resource restore handler extraction', () => {
         { targetWord: 'Dog', ttsReady: true, _ttsAssets: {} },
       ],
     };
+    deps.hydrateWordSoundsFromSync = loadWordSoundsDeliveryHydrator(deps);
 
     restoreView(item, { suppressLiveFollow: true }, deps);
     const restored = setWsPreloadedWords.mock.calls[0][0];

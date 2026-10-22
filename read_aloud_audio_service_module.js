@@ -1637,6 +1637,27 @@ const formatGlossaryDefinitionSpeech = (termValue, definitionValue) => {
 
 const glossaryEntryPathKey = (entryId) => encodeURIComponent(cleanGlossaryEntryId(entryId));
 
+// Glossary preparation, live playback and portable exports use the same text.
+// Model/legacy records may wrap usable strings; objects never become speech.
+const normalizeGlossaryTranslation = (value) => {
+    const text = input => typeof input === 'string' ? input.trim() : '';
+    let term = '', definition = '', spoken = '';
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        spoken = text(value.text) || text(value.translation);
+        if (!spoken) {
+            term = text(value.term) || text(value.word);
+            definition = text(value.def) || text(value.definition) || text(value.meaning);
+            spoken = [term, definition].filter(Boolean).join(': ');
+        }
+    } else spoken = text(value);
+    if (!term && !definition && spoken) {
+        const split = spoken.search(/[:：]/);
+        if (split >= 0) { term = spoken.slice(0, split).trim(); definition = spoken.slice(split + 1).trim(); }
+        else definition = spoken;
+    }
+    return { term, definition, spoken, usable: !!(term || definition) };
+};
+
 // Canonical glossary adapter enumeration shared by the host and tests. The
 // caller should normalize/persist entry IDs first; entries without an ID are
 // ignored rather than falling back to an unstable index identity.
@@ -1668,13 +1689,8 @@ const enumerateGlossaryReadAloudSegments = (resource, options = {}) => {
             ? entry.translations
             : {};
         Object.keys(translations).sort((a, b) => a.localeCompare(b)).forEach((language) => {
-            const translated = translations[language];
-            const text = translated && typeof translated === 'object'
-                ? (translated.text != null ? translated.text
-                    : (translated.translation != null ? translated.translation
-                        : [translated.term, translated.def || translated.definition].filter(Boolean).join(': ')))
-                : translated;
-            add(entry, 'translation', text, language, 'translation/' + glossaryLanguageKey(language));
+            const translation = normalizeGlossaryTranslation(translations[language]);
+            if (translation.usable) add(entry, 'translation', translation.spoken, language, 'translation/' + glossaryLanguageKey(language));
         });
     });
     return segments;
@@ -1684,6 +1700,7 @@ window.AlloModules.inspectReadAloudAudioBytes = inspectReadAloudAudioBytes;
 window.AlloModules.createGlossaryEntryId = createGlossaryEntryId;
 window.AlloModules.normalizeGlossaryEntries = normalizeGlossaryEntries;
 window.AlloModules.enumerateGlossaryReadAloudSegments = enumerateGlossaryReadAloudSegments;
+window.AlloModules.normalizeGlossaryTranslation = normalizeGlossaryTranslation;
 
 window.AlloModules.formatGlossaryDefinitionSpeech = formatGlossaryDefinitionSpeech;
 })();

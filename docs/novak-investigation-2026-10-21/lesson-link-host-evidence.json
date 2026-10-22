@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-21",
+  "native": {
+    "command": "node --test tests/lesson_deep_link_host.test.cjs",
+    "passed": 7,
+    "failed": 0,
+    "status": 0,
+    "testSha256": "88ed8a1d4a39fc8ecba6bb34a7731424e1e900c74047b8c0a511d734bcbb459a"
+  },
+  "existing": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/stem_deep_links.test.js tests/canvas_workspace_recovery.test.js --maxWorkers=1 --testTimeout=30000",
+    "passed": 41,
+    "skipped": 1,
+    "failed": 0,
+    "status": 0,
+    "tempDirectory": "tmp/novak-lesson-host-tests"
+  },
+  "syntax": {
+    "parser": "@babel/parser",
+    "files": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ],
+    "status": "passed"
+  },
+  "reviewCorrection": "Independent review found existing catalog slugs use underscores. Host parser now matches catalog pattern [a-z0-9][a-z0-9_-]{0,127} case-insensitively while preserving case for exact manifest lookup. Added underscore and uppercase regression coverage.",
+  "earlierAttempts": "Two Node writes to AlloFlowANTI.txt returned UNKNOWN opening the file; content was not changed. apply_patch then succeeded. After updating tests before the second write recovery, a test run had 6 passes/1 failure on the still-old 120-character parser. Final rerun passes 7/7.",
+  "scope": "Preview waits for app, history, and recovery and never invokes the importer or changes role/history. Explicit import delegates existing importer. No live browser host walkthrough or deployment performed by this agent.",
+  "release": {
+    "script": "tmp/novak-host-release/transplant-hosts.cjs",
+    "recipe": "tmp/novak-host-release/host-edits.json",
+    "mode": "--prepare then read-only check; isolated files not written",
+    "cleanHostSha256": "a64148411af7038226f91328b8d1b82809718e9621426f10612f290d9952861a"
+  }
+}

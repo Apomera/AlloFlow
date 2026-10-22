@@ -9,7 +9,7 @@ const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Missing Dino Lab registration');
 window.StemLab = { registerTool() {} };
 new Function(source.replace(anchor,
-  'globalThis.__dinoChestProfile = { DINOS, postcranialSurfaceProfileFor, dinoTorsoRadii, dinoSurfaceGeometry, dinoCranialGeometry };' + anchor))();
+  'globalThis.__dinoChestProfile = { DINOS, postcranialSurfaceProfileFor, dinoTorsoRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTheropodBodyTorso };' + anchor))();
 const art = globalThis.__dinoChestProfile;
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 const at = (attribute, i) => new THREE.Vector3().fromBufferAttribute(attribute, i);
@@ -100,9 +100,9 @@ function buildBody(id, showBody = true, forceSauropod) {
   const context = { THREE, vec, dn, bodyMat, model, idleMotion, shoulder, hip, postcranialSurface,
     bodyHeight: .7, bodyDepth: .8, bodyLen: 4, surfaceHypothesis: { bodyHeightScale: 1, bodyDepthScale: 1 },
     isSauropod: forceSauropod === undefined ? dn.group === 'sauropod' : forceSauropod,
-    dinoTorsoRadii: art.dinoTorsoRadii, addSoftTissueChain: chain };
+    dinoTorsoRadii: art.dinoTorsoRadii, dinoTheropodBodyTorso: art.dinoTheropodBodyTorso, addSoftTissueChain: chain };
   const snapshots = JSON.stringify({ shoulder, hip, postcranialSurface });
-  const result = new Function('context', 'with(context){' + bodyCode + 'return { bodyShell, torsoPoints, torsoRadii, thoraxCenter, abdomenCenter, pelvisCenter };}')(context);
+  const result = new Function('context', 'with(context){' + bodyCode + 'return { bodyShell, torsoPoints, torsoRadii, thoraxCenter, abdomenCenter, pelvisCenter, theropodTorso:typeof theropodTorso==="undefined"?null:theropodTorso };}')(context);
   expect(JSON.stringify({ shoulder, hip, postcranialSurface })).toBe(snapshots);
   return { ...result, ...context, dispose() { result.bodyShell?.geometry.dispose(); bodyMat.dispose(); } };
 }
@@ -167,12 +167,15 @@ describe('Dino Lab compact sauropod chest', () => {
     }
   });
 
-  for (const id of ['diplodocus', 'amargasaurus', 'nigersaurus', 'brachiosaurus', 'tyrannosaurus']) {
+  for (const id of ['diplodocus', 'amargasaurus', 'nigersaurus', 'brachiosaurus', 'tyrannosaurus', 'tarbosaurus']) {
     it('gates the actual torso caller and preserves mesh ownership for ' + id, () => {
       const built = buildBody(id), enabled = ['diplodocus', 'amargasaurus', 'nigersaurus'].includes(id);
-      // f7b4d993f gives powerful theropods their own dorsal-waist torso option (see dinolab_3d_dorsal_waist).
-      const waist = built.postcranialSurface.id === 'powerful-theropod';
-      const data = { points: built.torsoPoints, radii: built.torsoRadii }, expected = geometry(data, waist ? { dorsalWaist: true } : { compactChest: enabled });
+      // Unreviewed powerful theropods retain the seven-station dorsal bridge.
+      // The reviewed T.rex caller passes its aligned, explicitly sculpted arc.
+      const waist = built.postcranialSurface.id === 'powerful-theropod', reviewed = id === 'tyrannosaurus';
+      const data = { points: built.torsoPoints, radii: built.torsoRadii };
+      const options = reviewed ? built.theropodTorso.options : waist ? { dorsalWaist: true } : { compactChest: enabled };
+      const expected = geometry(data, options);
       const ordinary = geometry(data);
       expected.translate(-data.points[0].x, -data.points[0].y, -data.points[0].z);
       ordinary.translate(-data.points[0].x, -data.points[0].y, -data.points[0].z);
@@ -187,7 +190,18 @@ describe('Dino Lab compact sauropod chest', () => {
         expect(mesh.castShadow).toBe(true); expect(mesh.receiveShadow).toBe(true);
         expect(built.idleMotion.body).toBe(mesh); expect(built.idleMotion.bodyBaseScale.toArray()).toEqual([1, 1, 1]);
         expect(built.idleMotion.bodyBaseScale).not.toBe(mesh.scale); expect(built.idleMotion.breathingMeshes).toHaveLength(0);
-        expect(data.points[1].toArray()).toEqual(built.shoulder.toArray()); expect(data.points[5].toArray()).toEqual(built.hip.toArray());
+        expect(data.points[1].toArray()).toEqual(built.shoulder.toArray());
+        if (reviewed) {
+          expect(data.points).toHaveLength(11); expect(data.radii).toHaveLength(11);
+          expect(options.smoothProfile).toBe(true); expect(options.sculptCaps).toBe(true); expect(options.rings).toBe(80);
+          expect(typeof options.sculpt).toBe('function'); expect(built.postcranialSurface.id).toBe('powerful-theropod');
+          // Inspect the actual sculpted caller result for closed, outward
+          // triangles, finite normals, cap closure and matching seam normals.
+          const worldGeometry=mesh.geometry.clone();worldGeometry.translate(...data.points[0].toArray());worldGeometry.computeBoundingBox();worldGeometry.computeBoundingSphere();
+          try { closedOutwardSurface(worldGeometry,data,options.rings,24,1); } finally { worldGeometry.dispose(); }
+        } else {
+          expect(data.points).toHaveLength(7); expect(data.points[5].toArray()).toEqual(built.hip.toArray());
+        }
       } finally { ordinary.dispose(); expected.dispose(); built.dispose(); }
     });
   }

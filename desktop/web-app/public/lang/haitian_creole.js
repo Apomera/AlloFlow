@@ -58478,6 +58478,15 @@
       "sr_critique_ready": "Kritik la pare."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Revizyon vòl ki anrejistre a pa disponib",
+      "debrief_unavailable_body": "Revizyon vòl ki pi resan an manke oswa li pa ka li. Retounen nan meni an pou kòmanse yon nouvo vòl.",
+      "guided_idea_before_trials": "Anrejistre anvan esè yo",
+      "guided_idea_saved": "Lide ki anrejistre",
+      "guided_idea_timing_unknown": "Moman lide sa a te anrejistre a pa t note.",
+      "guided_idea_latest": "Dènye lide ki anrejistre",
+      "guided_idea_latest_prediction": "Dènye prediksyon ki anrejistre: {prediction}",
+      "guided_idea_saved_prediction": "Prediksyon ki anrejistre: {prediction}",
+      "milestone_stall_recovery": "Zèl la pa nan dekwochaj ankò nan moman sa a. Yon sèl obsèvasyon pa pwouve yon retablisman ki dire.",
       "game_controls": "🎮 KONTWÒL JWÈT",
       "cancel": "Anile",
       "learn": "Aprann",
@@ -58529,6 +58538,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "LEVE NEN AN — leve nen an (W)",
+      "hud_rotate_touch": "LEVE NEN AN — glise monte depi mitan",
+      "hud_flare": "REDRESE POU POZE — leve nen an dousman ak W",
+      "hud_flare_touch": "REDRESE POU POZE — glise monte depi mitan",
+      "landing_touch_power": "Glise desann sou rebò dwat la pou diminye puisans lan a ~30%. Vitès la ap bese.",
+      "landing_touch_flare": "Jis anwo pis la (~10 ft), glise monte dousman depi mitan pou leve nen an. Vize yon desant ki mwens pase 200 fpm lè wou yo touche tè.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -94130,6 +94145,18 @@
     "card_progress": "Kat {n} sou {total}",
     "add_words": "Ajoute mo pou kòmanse pratik la.",
     "round_complete": "Wonn nan fini. Kòmanse yon nouvo wonn oswa revize mo ou make yo.",
-    "practice_label": "Pratik mo"
+    "practice_label": "Pratik mo",
+    "use_mine_help": "Fichye HTML la itilize polis, gwosè tèks ak espasman ou chwazi yo.",
+    "preparing_reading": "N ap ajoute paramèt lekti ou yo…",
+    "font_not_embedded": "Nou pa t ka mete polis ou a nan fichye a, kidonk li itilize polis pa defo a."
+  },
+  "reading_settings": {
+    "title": "Paramèt lekti",
+    "smaller": "Tèks ki pi piti",
+    "larger": "Tèks ki pi gwo",
+    "overlay": "Filtè koulè",
+    "ruler": "Règ lekti",
+    "use_mine": "Itilize paramèt lekti mwen yo",
+    "use_mine_help": "Enprime ak polis, gwosè tèks ak espasman ou chwazi yo."
   }
 }

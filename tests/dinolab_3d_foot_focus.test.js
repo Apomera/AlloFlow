@@ -4,19 +4,23 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import assert from 'node:assert/strict';
 const THREE=createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
-const source=readFileSync(process.env.DINO_FOOT_FOCUS_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8');
-const focusedStart="              // Distal foot detail uses the actual geometry on both sides.\n              // Keep regional context when the visible layer supplies no foot meshes.\n              var footDetail = /^(foot|toes)$/.test(part.id) && (anatomyMeshParts[part.id] || []).length > 0;\n              var bounds = footDetail ? new THREE.Box3() : studyBounds[part.region].clone();\n";
+const source=readFileSync(process.env.DINO_FOOT_FOCUS_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8').replace(/\r\n/g,'\n');
+const focusedStart=source.match(/^[ \t]*var (?:footDetail|distalDetail) = [^\n]*\/\^\(foot\|toes\)\$\/[^\n]*;\n[ \t]*var bounds = (?:footDetail|distalDetail) \? new THREE\.Box3\(\) : studyBounds\[part\.region\]\.clone\(\);\n/m);
 const formerStart="              var bounds = studyBounds[part.region].clone();\n";
-if(source.split(focusedStart).length!==2)throw Error('Native selected-foot framing seam missing.');
-const before=source.replace(focusedStart,formerStart);
+if(!focusedStart||source.split(focusedStart[0]).length!==2)throw Error('Native selected-foot framing seam missing.');
+const before=source.replace(focusedStart[0],formerStart);
+function pureHelper(text,name){const start=text.indexOf('  function '+name+'(');if(start<0)return null;const end=text.indexOf('\n  function ',start+5);assert.ok(end>start,'Native pure-helper boundary missing: '+name);return new Function('return ('+text.slice(start,end)+'\n);')();}
 function runContracts(THREE,source,before,register) {
  const vec=(x,y,z)=>new THREE.Vector3(x,y,z),box=(a,b)=>new THREE.Box3(vec(...a),vec(...b));
  function execute(text,definitions,anchors,parts,studyBounds,selected='foot') {
-  const start=text.indexOf('            var bodyPartStudyBounds = {};'),end=text.indexOf('            model.userData.studyBounds = {};',start);
-  assert.ok(start>=0&&end>start,'Native anatomy framing block missing');
+  const start=text.indexOf('            var bodyPartStudyBounds = {};'),metadata=text.indexOf('            model.userData.anatomyPartBounds = {};',start),end=text.indexOf('            });',metadata)+'            });'.length;
+  const boundsStart=text.indexOf('            function boundsForStudy(region) {',end),boundsEnd=text.indexOf('            model.userData.studyBounds = {};',boundsStart);
+  assert.ok(start>=0&&metadata>start&&end>metadata&&boundsStart>end&&boundsEnd>boundsStart,'Native anatomy framing block missing');
   const model=new THREE.Group(),selectedBodyPartRef={current:selected};
-  const factory=new Function('THREE','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','model','selectedBodyPartRef',text.slice(start,end)+'\nreturn {bodyPartStudyBounds,boundsForStudy};');
-  const result=factory(THREE,definitions,anchors,parts,studyBounds,3,8,model,selectedBodyPartRef);
+  // Isolate the real selected-part loop and resolver from unrelated renderer
+  // cache setup. These fixtures exercise the established generic foot path.
+  const factory=new Function('THREE','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','model','selectedBodyPartRef','dn','props','shapeStudyRef','supportingRelationRef','dinoShapePedalEvidenceEligible',text.slice(start,end)+'\n'+text.slice(boundsStart,boundsEnd)+'\nreturn {bodyPartStudyBounds,boundsForStudy};');
+  const result=factory(THREE,definitions,anchors,parts,studyBounds,3,8,model,selectedBodyPartRef,{id:'allosaurus'},{shapeStudy:null},{current:null},{current:null},pureHelper(text,'dinoShapePedalEvidenceEligible'));
   return {...result,model,selectedBodyPartRef};
  }
  function context(transform) {

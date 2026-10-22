@@ -86,14 +86,20 @@ describe('Full-body comparative exploration', () => {
     const { art } = load();
     const families = art.DINO_SHAPE_STUDY_FAMILIES.filter(family => family.fullBody);
     expect(families.map(family => [family.id, family.reference, family.choices])).toEqual([
+      ['dromaeosaur-pelvis', 'velociraptor', ['deinonychus']],
+      ['dromaeosaur-hands', 'velociraptor', ['deinonychus']],
       ['sauropods', 'brachiosaurus', ['diplodocus', 'apatosaurus', 'camarasaurus']],
+      ['lambeosaurs', 'parasaurolophus', ['corythosaurus', 'lambeosaurus', 'olorotitan']],
       ['ornithopods', 'edmontosaurus', ['iguanodon', 'maiasaura']],
-      ['ceratopsids', 'triceratops', ['styracosaurus', 'centrosaurus', 'chasmosaurus']]
+      ['ceratopsids', 'triceratops', ['styracosaurus', 'centrosaurus', 'chasmosaurus']],
+      ['ankylosaurs', 'ankylosaurus', ['euoplocephalus', 'sauropelta', 'borealopelta']],
+      ['theropods', 'tyrannosaurus', ['allosaurus', 'coelophysis', 'dilophosaurus']],
+      ['stegosaurs', 'stegosaurus', ['kentrosaurus', 'huayangosaurus', 'tuojiangosaurus']]
     ]);
     for (const family of families) for (const b of family.choices) {
       const study = art.dinoShapeStudyFor({ family: family.id, b, active: 'b', lens: 'allocation' });
-      expect(study).toMatchObject({ region: 'full', partId: 'trunk', lens: { id: 'allocation' } });
-      expect(art.dinoShapeStudyFor({ family: family.id, b, active: 'b' }).lens.id).toBe('outline');
+      expect(study).toMatchObject({ region: 'full', partId: family.id === 'dromaeosaur-pelvis' ? 'pelvis' : family.id === 'dromaeosaur-hands' ? 'hand' : 'trunk', lens: { id: 'allocation' } });
+      expect(art.dinoShapeStudyFor({ family: family.id, b, active: 'b' }).lens.id).toBe(family.id === 'dromaeosaur-pelvis' ? 'pelvis' : family.id === 'dromaeosaur-hands' ? 'hands' : 'outline');
       expect(art.dinoShapeStudyFor({ family: family.id, b, active: 'b', lens: '__proto__' }).lens.id).toBe('outline');
       expect(family.limit).toMatch(/reconstruct|inferred|model outlines/); expect(family.sources.every(source => /^https:\/\//.test(source.url))).toBe(true);
     }

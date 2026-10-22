@@ -1,0 +1,65 @@
+[
+  {
+    "cls": "EWP",
+    "hex": "#16a34a",
+    "name": "Pure tungsten (EWP)",
+    "colour": "green",
+    "use": "The old standard for AC aluminium on transformer machines; balls easily. Largely replaced by lanthanated and ceriated."
+  },
+  {
+    "cls": "EWCe-2",
+    "hex": "#9ca3af",
+    "name": "2% Ceriated (EWCe-2)",
+    "colour": "gray",
+    "use": "AC or DC; strikes easily at low amperage. Good for thin material and small parts."
+  },
+  {
+    "cls": "EWLa-1",
+    "hex": "#111827",
+    "name": "1% Lanthanated (EWLa-1)",
+    "colour": "black",
+    "use": "AC or DC; less common than the 1.5% and 2% lanthanated grades."
+  },
+  {
+    "cls": "EWLa-1.5",
+    "hex": "#d4a017",
+    "name": "1.5% Lanthanated (EWLa-1.5)",
+    "colour": "gold",
+    "use": "General purpose on AC or DC: a good all-round tungsten."
+  },
+  {
+    "cls": "EWLa-2",
+    "hex": "#2563eb",
+    "name": "2% Lanthanated (EWLa-2)",
+    "colour": "blue",
+    "use": "Performs much like thoriated on DC steel and stainless, without the radioactivity. Increasingly the default for DC work."
+  },
+  {
+    "cls": "EWTh-1",
+    "hex": "#facc15",
+    "name": "1% Thoriated (EWTh-1)",
+    "colour": "yellow",
+    "use": "Lower-thoria version of EWTh-2; now rarely stocked."
+  },
+  {
+    "cls": "EWTh-2",
+    "hex": "#dc2626",
+    "name": "2% Thoriated (EWTh-2)",
+    "colour": "red",
+    "use": "Long the standard for DC steel, with excellent arc starts. Slightly radioactive (thorium), so grinding dust needs extraction; being phased out."
+  },
+  {
+    "cls": "EWZr-1",
+    "hex": "#92400e",
+    "name": "Zirconiated (EWZr-1)",
+    "colour": "brown",
+    "use": "AC aluminium: holds a clean balled tip and resists contamination from the puddle."
+  },
+  {
+    "cls": "EWG",
+    "hex": "#9ca3af",
+    "name": "Other / unspecified (EWG)",
+    "colour": "grey",
+    "use": "Any blend not covered above, such as proprietary rare-earth mixes; the maker states the additive."
+  }
+]

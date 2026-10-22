@@ -10,6 +10,10 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 vi.setConfig({ testTimeout: 20000 });
 let FS, tool, host, root, latest, setData, frameCallback, wallTime, toasts, xp;
 const hooks = () => window.__testHooks.flightSim;
+const completionDate = '2026-10-17T00:00:00.000Z';
+const firstFlightRecord = (complete = true) => ({ version: 1, id: 'first_flight', status: complete ? 'complete' : 'active',
+  objectives: { climb: true, steady: complete, landing: complete }, elapsedSeconds: 300,
+  airborneSeconds: 299, peakAGL: 3024, completedAt: complete ? completionDate : null });
 
 beforeEach(() => {
   resetStemLab();
@@ -82,7 +86,7 @@ describe('Start here path', () => {
     expect(landing.getAttribute('data-done')).toBe('false');
     expect(landing.querySelector('button').textContent).toContain('Take off from Portland');
     expect(startHere().querySelector('[data-flight-start-step="first_flight"]').getAttribute('data-done')).toBe('true');
-    await act(async () => setData(old => ({ ...old, flightSim: { ...old.flightSim, firstRunwayLanding: 'x', rescuesCompleted: 1 } })));
+    await act(async () => setData(old => ({ ...old, flightSim: { ...old.flightSim, firstRunwayLanding: completionDate, rescuesCompleted: 1 } })));
     expect(startHere()).toBeNull();
   });
 
@@ -97,13 +101,13 @@ describe('Start here path', () => {
   });
 
   it('counts the optional First Climb step done once First Flight is passed', async () => {
-    await mount({ completedLessons: { lift: true }, challengeResults: { first_flight: { id: 'first_flight', status: 'complete' } } });
+    await mount({ completedLessons: { lift: true }, challengeResults: { first_flight: firstFlightRecord() } });
     expect(startHere().querySelector('[data-flight-start-step="first_climb"]').getAttribute('data-done')).toBe('true');
     expect(startHere().querySelector('[data-flight-start-step="first_flight"]').getAttribute('data-done')).toBe('true');
   });
 
   it('keeps First Flight done after a later failed attempt', async () => {
-    await mount({ challengeCompleted: { first_flight: 'x' }, challengeResults: { first_flight: { id: 'first_flight', status: 'active' } } });
+    await mount({ challengeCompleted: { first_flight: completionDate }, challengeResults: { first_flight: firstFlightRecord(false) } });
     expect(startHere().querySelector('[data-flight-start-step="first_flight"]').getAttribute('data-done')).toBe('true');
   });
 });
@@ -155,7 +159,7 @@ describe('personal bests and debrief', () => {
 
   it('leads the debrief with the result and offers the same challenge again', async () => {
     await mount({ view: 'debrief', lastDebrief: { flightTime: 300, distance: 12, maxAlt: 3100, newBest: 'challenge',
-      challenge: { id: 'first_flight', status: 'complete', objectives: {} } } });
+      challenge: firstFlightRecord() } });
     const headline = host.querySelector('[data-flight-debrief-headline]');
     expect(headline.textContent).toBe('Challenge complete: 🎓 First Flight. New personal best!'.replace('🎓 First Flight', FS.CHALLENGES.find(c => c.id === 'first_flight').name));
     const retry = buttonText('Try the challenge again');

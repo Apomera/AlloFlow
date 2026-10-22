@@ -6,6 +6,7 @@ const coreSource = fs.readFileSync('word_practice_core.js', 'utf8');
 const mediaSource = fs.readFileSync('word_practice_media.js', 'utf8');
 const wav = 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + '\0'.repeat(40)).toString('base64');
 const webm = 'data:audio/webm;base64,' + Buffer.from([26, 69, 223, 163, ...Array(24).fill(0)]).toString('base64');
+const flattenText = value => Array.isArray(value) ? value.map(run => { expect(typeof run.text).toBe('string'); return run.text; }).join('') : value;
 let root, media, core, closeAudio, decodeAudio;
 class Presentation {
   constructor() { this.slides = []; }
@@ -95,8 +96,8 @@ describe('editable PowerPoint practice', () => {
     const callTTS = vi.fn();
     const pptx = await media.buildPptx(pack, { mode: 'popup', includeAudio: false }, [{ itemId: 'w2', position: 'top-right', scale: 0.8 }, { itemId: 'w1', position: 'bottom-left', scale: 1 }], { callTTS });
     expect(pptx.slides).toHaveLength(2);
-    expect(pptx.slides[0].texts.find(item => item.text === 'rain').options.x).toBe(6.7);
-    expect(pptx.slides[1].texts.find(item => item.text === 'ship').options.y).toBe(3.65);
+    expect(pptx.slides[0].texts.find(item => flattenText(item.text) === 'rain').options.x).toBe(6.7);
+    expect(pptx.slides[1].texts.find(item => flattenText(item.text) === 'ship').options.y).toBe(3.65);
     expect(pptx.slides.flatMap(slide => slide.sounds)).toHaveLength(0);
     expect(callTTS).not.toHaveBeenCalled();
     expect(decodeAudio).not.toHaveBeenCalled();
@@ -128,11 +129,11 @@ describe('editable PowerPoint practice', () => {
     const pack = core.normalizeInput({ words: [{ word: 'ship', wordAudio: wav, sentenceActivity: { prompt: 'The ____ is big.', choices: ['ship', 'rain'], answer: 'ship' } }] });
     const spelling = await media.buildPptx(pack, { mode: 'spelling', repetitions: 1 });
     expect(spelling.slides).toHaveLength(2);
-    expect(spelling.slides[0].texts.some(item => item.text === 'ship')).toBe(false);
-    expect(spelling.slides[1].texts.some(item => item.text === 'ship')).toBe(true);
+    expect(spelling.slides[0].texts.some(item => flattenText(item.text) === 'ship')).toBe(false);
+    expect(spelling.slides[1].texts.some(item => flattenText(item.text) === 'ship')).toBe(true);
     const sentence = await media.buildPptx(pack, { mode: 'sentence', repetitions: 1 });
     expect(sentence.slides).toHaveLength(2);
-    expect(sentence.slides[0].texts.some(item => item.text === 'The ____ is big.')).toBe(true);
+    expect(sentence.slides[0].texts.some(item => flattenText(item.text) === 'The ____ is big.')).toBe(true);
     expect(sentence.slides[0].sounds).toHaveLength(0);
     expect(sentence.slides[1].sounds).toHaveLength(1);
   });
@@ -142,7 +143,7 @@ describe('editable PowerPoint practice', () => {
     decodeAudio.mockRejectedValue(new Error('Unsupported codec'));
     const pptx = await media.buildPptx(pack, { mode: 'vocabulary', repetitions: 1 });
     expect(pptx.slides.length).toBeGreaterThan(1);
-    const body = pptx.slides.flatMap(slide => slide.texts.map(item => item.text)).join(' ');
+    const body = pptx.slides.flatMap(slide => slide.texts.map(item => flattenText(item.text))).join(' ');
     expect(body).toContain('term169');
     expect(body).toContain('Spanish: barco');
     expect(pptx.wordPracticeWarnings).toHaveLength(1);

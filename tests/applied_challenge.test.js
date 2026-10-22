@@ -207,16 +207,16 @@ describe('Applied Challenge Studio schema', () => {
     expect(standard.length).toBeGreaterThan(compact.length);
   });
 
-  it('reports sections started only for phases visible at the selected depth', () => {
+  it('keeps previously written sections visible and counted at compact depth', () => {
     const compact = H.appliedChallengeWorkspaceProgress({
       scope: 'compact',
       workspace: {
         workingQuestion: 'A framed question',
-        stakeholders: 'This hidden compact phase should not count',
+        stakeholders: 'Previously written stakeholder reasoning stays available',
         response: 'A draft response',
       },
     });
-    expect(compact).toEqual({ started: 2, total: 8, percentage: 25 });
+    expect(compact).toEqual({ started: 3, total: 9, percentage: 33 });
     const standard = H.appliedChallengeWorkspaceProgress({
       scope: 'standard',
       workspace: {
@@ -346,7 +346,8 @@ describe('Applied Challenge Studio schema', () => {
     ]));
     const snapshot = H.appliedChallengePromptContextSnapshot({
       family: 'design',
-      brief: { lockedLessonFacts: repeated, criteria: repeated, constraints: repeated, openQuestions: repeated },
+      instructions: 'd'.repeat(3000),
+      brief: { role: 'r'.repeat(500), audience: 'a'.repeat(500), lockedLessonFacts: repeated, criteria: repeated, constraints: repeated, openQuestions: repeated },
       workspace,
       evidenceLedger: Array.from({ length: 12 }, (_, index) => ({
         claim: 'Claim ' + index + ' ' + 'c'.repeat(1200),
@@ -371,7 +372,9 @@ describe('Applied Challenge Studio schema', () => {
     expect(snapshot).toContain('studentReportedObservation');
     expect(snapshot).toContain('SOURCE-');
     expect(snapshot).not.toContain('-END');
-    expect(snapshot.length).toBeLessThan(22000);
+    // The earlier 22k bound now also carries up to 4k of task directions,
+    // learner role, and audience without shortening the saved task itself.
+    expect(snapshot.length).toBeLessThan(26000);
   });
 });
 

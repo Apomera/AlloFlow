@@ -42769,15 +42769,61 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // Labels through t() (a key it echoes falls back to the English), and each
           // translation marked with its own direction (and language, when known).
           const _gl = (key, fallback) => { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
-          const _glossLangAttrs = (languageName) => {
-              const m = window.AlloModules && window.AlloModules.ModuleScopeExtras;
-              let code = '';
-              try { if (m && typeof m.getSpeechLangCode === 'function') code = String(m.getSpeechLangCode(languageName) || '').split('-')[0]; } catch (_) { code = ''; }
-              const known = /^[A-Za-z]{2,3}$/.test(code) && !(code.toLowerCase() === 'en' && !/^english/i.test(String(languageName)));
-              let rtl = false;
-              try { rtl = !!isRtlLang(languageName); } catch (_) { rtl = false; }
-              return (known ? ' lang="' + code + '"' : '') + ' dir="' + (rtl ? 'rtl' : known ? 'ltr' : 'auto') + '"';
+          // Named-language defaults match the portable Word Practice contract.
+          // Explicit BCP-47 input wins, so a script/region is never discarded.
+          const _glossLanguageNames = {
+              english: 'en', spanish: 'es', 'spanish (latin america)': 'es-419', 'spanish (castilian)': 'es-ES',
+              french: 'fr', 'french (canadian)': 'fr-CA', german: 'de', italian: 'it', portuguese: 'pt',
+              'portuguese (brazil)': 'pt-BR', 'portuguese (portugal)': 'pt-PT', 'portuguese (angola)': 'pt-AO',
+              arabic: 'ar', hebrew: 'he', persian: 'fa', farsi: 'fa', urdu: 'ur', pashto: 'ps', sindhi: 'sd',
+              uyghur: 'ug', yiddish: 'yi', dhivehi: 'dv', sorani: 'ckb', 'kurdish (sorani)': 'ckb',
+              chinese: 'zh', mandarin: 'zh', 'chinese (simplified)': 'zh-Hans', 'chinese (traditional)': 'zh-Hant',
+              hindi: 'hi', japanese: 'ja', korean: 'ko', russian: 'ru', ukrainian: 'uk', vietnamese: 'vi',
+              somali: 'so', 'haitian creole': 'ht', bengali: 'bn', punjabi: 'pa', tamil: 'ta', telugu: 'te',
+              turkish: 'tr', polish: 'pl', dutch: 'nl', swedish: 'sv', norwegian: 'no', danish: 'da',
+              finnish: 'fi', greek: 'el', romanian: 'ro', hungarian: 'hu', czech: 'cs', slovak: 'sk',
+              swahili: 'sw', indonesian: 'id', malay: 'ms', thai: 'th', tagalog: 'tl', filipino: 'fil',
+              afrikaans: 'af', amharic: 'am', albanian: 'sq', armenian: 'hy', azerbaijani: 'az',
+              basque: 'eu', belarusian: 'be', bosnian: 'bs', bulgarian: 'bg', catalan: 'ca',
+              croatian: 'hr', estonian: 'et', georgian: 'ka', gujarati: 'gu', icelandic: 'is',
+              irish: 'ga', kannada: 'kn', kazakh: 'kk', khmer: 'km', lao: 'lo', latvian: 'lv',
+              lithuanian: 'lt', macedonian: 'mk', malayalam: 'ml', maltese: 'mt', marathi: 'mr',
+              mongolian: 'mn', nepali: 'ne', serbian: 'sr', sinhala: 'si', slovenian: 'sl',
+              uzbek: 'uz', welsh: 'cy', zulu: 'zu'
           };
+          const _glossLangAttrs = (languageName) => {
+              const raw = typeof languageName === 'string' ? languageName.trim() : '';
+              const canonicalTag = value => {
+                  if (typeof value !== 'string') return '';
+                  const candidate = value.trim().replace(/_/g, '-');
+                  if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/.test(candidate)) return '';
+                  try {
+                      if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') return Intl.getCanonicalLocales(candidate)[0] || '';
+                  } catch (_) { return ''; }
+                  return candidate.split('-').map((part, index) => index === 0 ? part.toLowerCase() : /^[A-Za-z]{4}$/.test(part) ? part[0].toUpperCase() + part.slice(1).toLowerCase() : /^(?:[A-Za-z]{2}|\d{3})$/.test(part) ? part.toUpperCase() : part.toLowerCase()).join('-');
+              };
+              const m = window.AlloModules && window.AlloModules.ModuleScopeExtras;
+              let code = canonicalTag(raw) || canonicalTag(Object.prototype.hasOwnProperty.call(_glossLanguageNames, raw.toLowerCase()) ? _glossLanguageNames[raw.toLowerCase()] : '');
+              if (!code && raw) {
+                  try { if (m && typeof m.getSpeechLangCode === 'function') code = canonicalTag(m.getSpeechLangCode(raw)); } catch (_) { code = ''; }
+                  // The host resolver uses English as its default for unknown
+                  // names; that is not evidence that an unknown passage is English.
+                  if (/^en(?:-|$)/i.test(code) && !/^english(?:\s|\(|$)/i.test(raw)) code = '';
+              }
+              if (!code) return ' dir="auto"';
+              const parts = code.split('-').slice(1);
+              const extension = parts.findIndex(part => part.length === 1);
+              const script = (extension < 0 ? parts : parts.slice(0, extension)).find(part => /^[A-Za-z]{4}$/.test(part));
+              // A script explicitly overrides a language's usual direction. An
+              // extension such as ar-u-nu-latn only changes numbering, not script.
+              const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)(-|$)/i.test(code);
+              return ' lang="' + _escTxt(code) + '" dir="' + (/^(und|mul|zxx)$/i.test(code) ? 'auto' : rtl ? 'rtl' : 'ltr') + '"';
+          };
+          const _glossSourceLanguage = (gItem, field) => typeof gItem[field] === 'string' && gItem[field].trim() ? gItem[field].trim() : 'English';
+          // The teacher worksheet key returns before the other layouts below;
+          // keep its source text on the same tagged renderers as student copies.
+          const _glossTermHtml = gItem => `<span data-glossary-term${_glossLangAttrs(_glossSourceLanguage(gItem, 'termLanguage'))}>${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</span>`;
+          const _glossDefinitionHtml = (gItem, value = gItem.def || gItem.definition || '') => value ? `<span data-glossary-definition${_glossLangAttrs(_glossSourceLanguage(gItem, 'definitionLanguage'))}>${_escTxt(value)}</span>` : '';
           // One malformed glossary (no data, data saved as a JSON string, or an
           // empty entry) used to throw here and fail the whole lesson's export.
           item = { ...item, data: (() => {
@@ -42823,7 +42869,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _glossLetter = (index) => { let n = index + 1, s = ''; while (n > 0) { s = String.fromCharCode(65 + (n - 1) % 26) + s; n = Math.floor((n - 1) / 26); } return s; };
           if (isTeacher && cfg.glossaryDisplayMode === 'worksheet' && cfg.includeTeacherKey && cfg.assessmentMode !== true) {
               const plan = _glossWorksheetPlan();
-              const keyRows = plan.words.map((gItem, i) => `<li><strong>${_escTxt(gItem.term)}</strong>: ${_escTxt(_glossWorksheetVariant === 'matching' ? _glossLetter(plan.order.indexOf(i)) : (gItem.def || gItem.definition || ''))}</li>`).join('');
+              const keyRows = plan.words.map((gItem, i) => `<li><strong>${_glossTermHtml(gItem)}</strong>: ${_glossWorksheetVariant === 'matching' ? _escTxt(_glossLetter(plan.order.indexOf(i))) : _glossDefinitionHtml(gItem)}</li>`).join('');
               return `<div class="section alloflow-glossary-worksheet-key" id="${item.id}-key" data-glossary-worksheet-key="${_glossWorksheetVariant}"><h3>${_escTxt(_glp('glossary.worksheet_key_title', 'Answer key: {title}', { title }))}</h3><ol>${keyRows}</ol>${wordSearchHtml}</div>`;
           }
           if (isTeacher && !isIndependentMode) {
@@ -42850,7 +42896,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   return item.imageAlt.trim();
 }
           const hasAnyImages = item.data.some(gItem => gItem.image);
-          const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
+          // Same string-safe translation shapes as the standalone card/text
+          // exports. Empty wrappers can still contain useful term/meaning fields;
+          // arbitrary objects/arrays must never become instructional text.
+          const _glossTranslation = (gItem, lang) => {
+              const value = gItem.translations ? gItem.translations[lang] : '';
+              const text = value => typeof value === 'string' ? value.trim() : '';
+              let term = '', definition = '', spoken = '';
+              if (value && typeof value === 'object' && !Array.isArray(value)) {
+                  spoken = text(value.text) || text(value.translation);
+                  if (!spoken) {
+                      term = text(value.term) || text(value.word);
+                      definition = text(value.def) || text(value.definition) || text(value.meaning);
+                      spoken = [term, definition].filter(Boolean).join(': ');
+                  }
+              } else spoken = text(value);
+              if (!term && !definition && spoken) {
+                  const split = spoken.search(/[:：]/);
+                  if (split >= 0) { term = spoken.slice(0, split).trim(); definition = spoken.slice(split + 1).trim(); }
+                  else definition = spoken;
+              }
+              return { term, definition, spoken, usable: !!(term || definition) };
+          };
+          const _glossTranslations = gItem => Object.keys(gItem.translations || {}).map(lang => ({ lang, ..._glossTranslation(gItem, lang) })).filter(value => value.usable);
+          const hasAnyTranslations = item.data.some(gItem => _glossTranslations(gItem).length > 0);
           // The credit drawn under a picked picture is unreadable at these sizes: a text
           // credit on each card, and every full credit once at the end of the section.
           const _glossCredit = gItem => {
@@ -42882,11 +42951,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           //   'language-cards' — same as flash-cards but emphasizes translations
           //     (renders translations on the flip side instead of definitions)
           const glossaryMode = cfg.glossaryDisplayMode || 'table';
-          const _glossTranslationText = (gItem, lang) => {
-              const value = gItem.translations ? gItem.translations[lang] : '';
-              return value && typeof value === 'object' ? String(value.text != null ? value.text : value.translation != null ? value.translation : [value.term, value.def || value.definition].filter(Boolean).join(': ')) : String(value == null ? '' : value);
-          };
-          const _glossTermHtml = gItem => `${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}`;
+          const _glossTranslationText = (gItem, lang) => { const value = _glossTranslation(gItem, lang); return value.usable ? value.spoken : ''; };
           const _glossPicture = (gItem, style) => gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="${style}"/>` : '';
           if (glossaryMode === 'bilingual') {
               // Term, definition, then one column per chosen language (all by default).
@@ -42894,7 +42959,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               item.data.forEach(gItem => Object.keys(gItem.translations || {}).forEach(lang => { if (!allLanguages.includes(lang) && _glossTranslationText(gItem, lang).trim()) allLanguages.push(lang); }));
               const languages = Array.isArray(cfg.glossaryBilingualLanguages) ? allLanguages.filter(lang => cfg.glossaryBilingualLanguages.includes(lang)) : allLanguages;
               const head = `<th scope="col">${_escTxt(_gl('output.col_term', 'Term'))}</th><th scope="col">${_escTxt(_gl('output.col_def', 'Definition'))}</th>${languages.map(lang => `<th scope="col">${_escTxt(lang)}</th>`).join('')}`;
-              const rows = item.data.map(gItem => `<tr><th scope="row">${_glossTermHtml(gItem)}</th><td>${_escTxt(gItem.def || gItem.definition || '')}</td>${languages.map(lang => `<td${_glossLangAttrs(lang)}>${_escTxt(_glossTranslationText(gItem, lang))}</td>`).join('')}</tr>`).join('');
+              const rows = item.data.map(gItem => `<tr><th scope="row">${_glossTermHtml(gItem)}</th><td>${_glossDefinitionHtml(gItem)}</td>${languages.map(lang => `<td${_glossLangAttrs(lang)}>${_escTxt(_glossTranslationText(gItem, lang))}</td>`).join('')}</tr>`).join('');
               return `
                   <style>
                     .alloflow-glossary-bilingual table { width:100%; border-collapse:collapse; }
@@ -42920,8 +42985,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           }
           if (glossaryMode === 'word-wall') {
-              // Large printable cards, grouped per printed page so a card never splits.
+              // Page groups preserve the requested card count for ordinary content.
+              // Intrinsic height is the last resort for a long term/credit: reflow is
+              // preferable to cutting off part of a picture or definition.
               const perPage = [2, 3, 4].includes(Number(cfg.glossaryWordWallPerPage)) ? Number(cfg.glossaryWordWallPerPage) : 2;
+              const wallPage = ({ letter: [8.5, 11], legal: [8.5, 14], a4: [8.27, 11.69] })[cfg.pageSize] || [8.5, 11];
+              const wallMargin = ['0.5in', '1in', '1.5in'].includes(cfg.pageMargin) ? parseFloat(cfg.pageMargin) : 1;
+              const wallHeight = (cfg.pageOrientation === 'landscape' ? wallPage[0] : wallPage[1]) - wallMargin * 2;
+              const wallRows = perPage === 3 ? 3 : 2;
+              const wallCardHeight = Math.max(1, (wallHeight - 1.25 - 0.18 * (wallRows - 1)) / wallRows);
+              const wallTermSize = Math.max(22, Math.min(perPage === 2 ? 48 : perPage === 3 ? 36 : 30, wallCardHeight * 10));
+              const wallPictureHeight = Math.max(0.45, Math.min(perPage === 2 ? 1.25 : perPage === 3 ? 0.75 : 0.85, wallCardHeight * 0.26));
               const shortDefinition = value => {
                   const clean = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
                   const first = (clean.match(/^.*?[.!?。！？](?=\s|$)/) || [clean])[0];
@@ -42929,36 +43003,35 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               };
               const cards = item.data.filter(gItem => String(gItem.term == null ? '' : gItem.term).trim()).map(gItem => {
                   const definition = cfg.glossaryWordWallDefinition === true ? shortDefinition(gItem.def || gItem.definition) : '';
-                  return `<div class="alloflow-word-wall-card">${_glossPicture(gItem, '')}<p class="alloflow-word-wall-term">${_glossTermHtml(gItem)}</p>${definition ? `<p class="alloflow-word-wall-def">${_escTxt(definition)}</p>` : ''}${_glossCredit(gItem) ? `<p class="alloflow-word-wall-credit">${_escTxt(_glossCredit(gItem))}</p>` : ''}</div>`;
+                  return `<div class="alloflow-word-wall-card">${_glossPicture(gItem, '')}<p class="alloflow-word-wall-term">${_glossTermHtml(gItem)}</p>${definition ? `<p class="alloflow-word-wall-def">${_glossDefinitionHtml(gItem, definition)}</p>` : ''}${_glossCredit(gItem) ? `<p class="alloflow-word-wall-credit">${_escTxt(_glossCredit(gItem))}</p>` : ''}</div>`;
               });
               const pages = [];
               for (let i = 0; i < cards.length; i += perPage) pages.push(`<div class="alloflow-word-wall-page">${cards.slice(i, i + perPage).join('')}</div>`);
               return `
                   <style>
+                    @page { size:${['letter', 'legal', 'a4'].includes(cfg.pageSize) ? cfg.pageSize : 'letter'} ${cfg.pageOrientation === 'landscape' ? 'landscape' : 'portrait'}; }
                     .alloflow-word-wall-page { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr)); gap:16px; margin:0 0 16px; }
-                    .alloflow-word-wall-card { box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4em; min-height:14em; padding:1.25em; border:3px solid #059669; border-radius:16px; background:#fff; text-align:center; break-inside:avoid; page-break-inside:avoid; overflow:hidden; }
+                    .alloflow-word-wall-card { box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4em; min-width:0; min-height:14em; padding:1.25em; border:3px solid #059669; border-radius:16px; background:#fff; text-align:center; break-inside:avoid; page-break-inside:avoid; overflow:visible; }
                     .alloflow-word-wall-card img { max-width:100%; max-height:9em; object-fit:contain; }
                     .alloflow-word-wall-term { margin:0; font-size:clamp(2.25rem,7vw,4.5rem); font-weight:800; line-height:1.1; color:#064e3b; overflow-wrap:anywhere; hyphens:auto; }
-                    .alloflow-word-wall-def { margin:0; font-size:1.15em; line-height:1.35; color:#1e293b; }
+                    .alloflow-word-wall-def { margin:0; font-size:1.15em; line-height:1.35; color:#1e293b; overflow-wrap:anywhere; }
                     .alloflow-word-wall-credit { margin:0; font-size:0.7em; color:#475569; overflow-wrap:anywhere; }
                     @media print {
                       .alloflow-word-wall-section { padding:0 !important; border:0 !important; break-inside:auto !important; }
-                      .alloflow-word-wall-page { grid-template-columns:1fr; gap:0.25in; margin:0; break-after:page; page-break-after:always; }
+                      .alloflow-word-wall-page { grid-template-columns:minmax(0,1fr); gap:0.18in; margin:0; break-inside:avoid; page-break-inside:avoid; break-after:page; page-break-after:always; }
                       .alloflow-word-wall-page:last-child { break-after:auto; page-break-after:auto; }
-                      .alloflow-word-wall[data-per-page="4"] .alloflow-word-wall-page { grid-template-columns:1fr 1fr; }
-                      .alloflow-word-wall-card { height:3.9in; min-height:0; border-color:#000; }
-                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-card { height:2.7in; }
-                      .alloflow-word-wall-term { font-size:64pt; color:#000; }
-                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-term { font-size:48pt; }
-                      .alloflow-word-wall[data-per-page="4"] .alloflow-word-wall-term { font-size:40pt; }
-                      .alloflow-word-wall-card img { max-height:1.8in; }
-                      .alloflow-word-wall[data-per-page="3"] .alloflow-word-wall-card img { max-height:1in; }
-                      .alloflow-word-wall-def { font-size:14pt; color:#000; }
+                      .alloflow-word-wall[data-per-page="4"] .alloflow-word-wall-page { grid-template-columns:repeat(2,minmax(0,1fr)); }
+                      .alloflow-word-wall-card { height:auto; min-height:var(--wall-card-height); padding:0.15in; gap:0.06in; border-color:#000; border-radius:0.12in; }
+                      .alloflow-word-wall-card > * { flex:none; max-width:100%; }
+                      .alloflow-word-wall-term { font-size:var(--wall-term-size); color:#000; }
+                      .alloflow-word-wall-card img { max-height:var(--wall-picture-height); width:auto; height:auto; }
+                      .alloflow-word-wall-def { font-size:12pt; line-height:1.3; color:#000; }
+                      .alloflow-word-wall-credit { font-size:9pt; line-height:1.3; color:#000; }
                     }
                   </style>
                   <div class="section alloflow-word-wall-section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
-                      <div class="alloflow-word-wall" data-per-page="${perPage}">${pages.join('')}</div>
+                      <div class="alloflow-word-wall" data-per-page="${perPage}" style="--wall-card-height:${wallCardHeight.toFixed(2)}in;--wall-term-size:${wallTermSize.toFixed(1)}pt;--wall-picture-height:${wallPictureHeight.toFixed(2)}in;">${pages.join('')}</div>
                       ${_glossCreditsHtml}
                       ${wordSearchHtml}
                   </div>
@@ -42975,7 +43048,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <ol data-glossary-worksheet-words style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_words', 'Words'))}">${plan.words.map((gItem, i) => `<li style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;">${isWorksheet
                           ? `<span>${i + 1}.</span>${fillableBlank(48)}${picture(gItem)}<strong>${_glossTermHtml(gItem)}</strong>`
                           : `${picture(gItem)}<label for="gw-${sid}-${i}"><span>${i + 1}.</span> <strong>${_glossTermHtml(gItem)}</strong></label><input id="gw-${sid}-${i}" type="text" maxlength="3" size="3" autocomplete="off" data-allo-response-key="glossary-worksheet:${sid}:match:${i}" style="${field}width:4em;text-align:center;">`}</li>`).join('')}</ol>
-                      <ol data-glossary-worksheet-definitions style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_definitions', 'Definitions'))}">${plan.order.map((wordIndex, k) => `<li style="margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;"><strong>${_glossLetter(k)}.</strong> ${_escTxt(plan.words[wordIndex].def || plan.words[wordIndex].definition || '')}</li>`).join('')}</ol>
+                      <ol data-glossary-worksheet-definitions style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_definitions', 'Definitions'))}">${plan.order.map((wordIndex, k) => `<li style="margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;"><strong>${_glossLetter(k)}.</strong> ${_glossDefinitionHtml(plan.words[wordIndex])}</li>`).join('')}</ol>
                     </div>`
                   : `<ol data-glossary-worksheet-words style="padding-inline-start:1.6em;margin:0;">${plan.words.map((gItem, i) => `<li style="margin:0 0 14px;break-inside:avoid;page-break-inside:avoid;">${picture(gItem)}${isWorksheet
                       ? `<strong>${_glossTermHtml(gItem)}</strong>${ruledLines(2)}`
@@ -42993,27 +43066,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
           }
           if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
-              const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
+              const showTranslations = glossaryMode === 'language-cards';
               const cardsHtml = `
-                  <div role="list" class="alloflow-glossary-card-list" aria-label="${_escTxt(_gl('glossary.export_cards_aria', 'Glossary flash cards'))}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr));gap:14px;margin-top:8px;">
+                  <div role="group" class="alloflow-glossary-card-list" aria-label="${_escTxt(_gl('glossary.export_cards_aria', 'Glossary flash cards'))}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr));gap:14px;margin-top:8px;">
                       ${item.data.map((gItem, idx) => {
-                          const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
-                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${_escTxt(k)}:</strong> <span${_glossLangAttrs(k)}>${_escTxt(v)}</span></div>`).join('')
-                              : '';
+                          const translationsHtml = _glossTranslations(gItem).map(value => `<div style="margin-top:4px;font-size:0.85em;"><strong>${_escTxt(value.lang)}:</strong> <span${_glossLangAttrs(value.lang)}>${_escTxt(value.spoken)}</span></div>`).join('');
                           const imageHtml = gItem.image
                               ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
                                 + (_glossCredit(gItem) ? `<div class="alloflow-glossary-card-credit" style="margin:-4px 0 8px;font-size:0.7em;line-height:1.3;color:#475569;overflow-wrap:anywhere;">${_escTxt(_glossCredit(gItem))}</div>` : '')
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
-                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#64748b;">${_escTxt(_gl('glossary.export_no_translations', '(no translations)'))}</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${_escTxt(gItem.def || gItem.definition || '')}</div>`
-                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${_escTxt(gItem.def || gItem.definition || '')}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span data-glossary-translation-missing style="font-style:italic;color:#64748b;">${_escTxt(_gl('glossary.export_no_translations', '(no translations)'))}</span>`}</div>${gItem.def || gItem.definition ? `<div class="alloflow-glossary-card-reference" style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;"><strong>${_escTxt(_gl('output.col_def', 'Definition'))}:</strong> ${_glossDefinitionHtml(gItem)}</div>` : ''}`
+                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${_glossDefinitionHtml(gItem)}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
                           return `
-                              <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
+                              <div class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
                                   <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                                       ${imageHtml}
-                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
-                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${_glossTermHtml(gItem)}</strong>
+                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div${_glossLangAttrs('English')} style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
                                   <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / click to flip ▼'))}</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
@@ -43062,7 +43133,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // to check themselves. Default off — opt-in via config. Worksheet
           // mode disables it (paper printout should show everything flat).
           const _glossarySelfTest = (cfg.glossarySelfTest === true && !isWorksheet);
-          const _hideCell = (content) => _glossarySelfTest
+          const _hideCell = (content) => _glossarySelfTest && content
               ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>${_escTxt(_gl('glossary.export_reveal', 'Reveal'))}</summary><div style="margin-top:6px;">${content}</div></details>`
               : content;
           // Glossary image size: configurable via cfg.glossaryImageSize.
@@ -43178,10 +43249,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <tr>
                           ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
-                            <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
+                            <strong class="gloss-term">${_glossTermHtml(gItem)}</strong>
                           </td>
-                          <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(_escTxt(gItem.def || gItem.definition || ''))}</td>
-                          ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${_escTxt(k)}:</strong> <span${_glossLangAttrs(k)}>${_escTxt(v)}</span>`).join('<br><br>'))}</td>` : ''}
+                          <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(_glossDefinitionHtml(gItem))}</td>
+                          ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(_glossTranslations(gItem).map(value => `<strong>${_escTxt(value.lang)}:</strong> <span${_glossLangAttrs(value.lang)}>${_escTxt(value.spoken)}</span>`).join('<br><br>'))}</td>` : ''}
                       </tr>
                       `).join('')}
                   </tbody>
@@ -43197,7 +43268,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     // the roles were hardcoded into the markup). So: no roles in
                     // the shipped HTML, roles applied by measurement.
                     (function () {
-                      var tbl = document.querySelector('[data-glossary-section="${item.id}"] [data-gloss-table]');
+                      var script = document.currentScript;
+                      var section = script && script.closest ? script.closest('[data-glossary-section]') : document.querySelector('[data-glossary-section="${item.id}"]');
+                      var tbl = section && section.querySelector('[data-gloss-table]');
                       if (!tbl) return;
                       var ROLES = [['table', 'table'], ['thead', 'rowgroup'], ['tbody', 'rowgroup'], ['tr', 'row'], ['th', 'columnheader'], ['td', 'cell']];
                       function sync() {
@@ -43248,13 +43321,41 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <script>
                         (function() {
-                            var sec = document.querySelector('[data-glossary-section="${item.id}"]');
+                            // The independent-mode teacher appendix can repeat the
+                            // resource ID; bind to this script's own rendered copy.
+                            var script = document.currentScript;
+                            var sec = script && script.closest ? script.closest('[data-glossary-section]') : document.querySelector('[data-glossary-section="${item.id}"]');
                             if (!sec) return;
                             var items = sec.querySelectorAll('details.alloflow-glossary-cell');
                             var btnShow = sec.querySelector('.alloflow-glossary-reveal-all');
                             var btnHide = sec.querySelector('.alloflow-glossary-hide-all-tbl');
                             if (btnShow) btnShow.addEventListener('click', function () { items.forEach(function (d) { d.open = true; }); });
                             if (btnHide) btnHide.addEventListener('click', function () { items.forEach(function (d) { d.open = false; }); });
+                            // Closed details are not printable content in Chromium,
+                            // even when their child has display:block. Reveal only
+                            // for the print lifecycle and then restore each choice.
+                            var printState = null;
+                            function preparePrint() {
+                                if (printState) return;
+                                printState = Array.prototype.map.call(items, function (d) { return d.open; });
+                                items.forEach(function (d) { d.open = true; });
+                            }
+                            function restorePrint() {
+                                if (!printState) return;
+                                items.forEach(function (d, i) { d.open = printState[i]; });
+                                printState = null;
+                            }
+                            window.addEventListener('beforeprint', preparePrint);
+                            window.addEventListener('afterprint', restorePrint);
+                            // Also supports engines that signal only print media
+                            // changes (and print-preview entry/exit).
+                            if (typeof window.matchMedia === 'function') {
+                                var printMedia = window.matchMedia('print');
+                                var syncPrint = function (e) { if (e.matches) preparePrint(); else restorePrint(); };
+                                if (printMedia.addEventListener) printMedia.addEventListener('change', syncPrint);
+                                else if (printMedia.addListener) printMedia.addListener(syncPrint);
+                                if (printMedia.matches) preparePrint();
+                            }
                         })();
                     </script>
                   ` : ''}
@@ -46398,7 +46499,7 @@ function projectStudentGuideData(data, mode) {
                   family, familyLabel: families[family], familyExample: '',
                   agencyMode: str(raw.agencyMode, 40), agencyLabel: '', agencyDescription: '',
                   scope: raw.scope, scopeLabel: '',
-                  artifactUrl: safeLink(workspace.artifactUrl), artifactDescription: str(workspace.artifactDescription,4000),
+                  artifactUrl: safeLink(typeof workspace.artifactUrlDraft === 'string' ? workspace.artifactUrlDraft : workspace.artifactUrl), artifactDescription: str(workspace.artifactDescription,4000),
                   visual: visual.reviewed === true && str(visual.alt,1200).trim() && safeImage ? { image: safeImage, alt: str(visual.alt,1200), purpose: str(visual.purpose,1200) } : null,
                   feedbackOutdated: !!feedback,
                   brief: {
@@ -46413,7 +46514,7 @@ function projectStudentGuideData(data, mode) {
                       parallelExample: { context: str(example.context, 1800), move: str(example.move, 2500), whyItHelps: str(example.whyItHelps, 1800) },
                       frameStarter: str(supports.frameStarter, 2200), frameChoices: list(supports.frameChoices), coachPrompts: list(supports.coachPrompts),
                   },
-                  phases: allPhases.filter((p) => raw.scope !== 'compact' || p[2]).map((p, index) => ({
+                  phases: allPhases.filter((p) => raw.scope !== 'compact' || p[2] || str(workspace[p[0]], 12000).trim()).map((p, index) => ({
                       id: p[0], label: (index + 1) + '. ' + p[1].replace(/^\d+\.\s*/, ''), prompt: str(phasePrompts[p[0]], 1200), text: str(workspace[p[0]], 12000), long: p[0] === 'response' || p[0] === 'revision',
                   })),
                   sourceRecords: (Array.isArray(raw.sourceRecords) ? raw.sourceRecords : []).filter(source => source && safeLink(source.url)).slice(0,24).map(source => ({url:safeLink(source.url),title:str(source.title,350),author:str(source.author,250),publicationDate:str(source.publicationDate,100),foundAt:/^\d{4}-\d{2}-\d{2}$/.test(source.foundAt)?source.foundAt:'',reviewNote:str(source.reviewNote,2000),connectionLabel:source.rowId?'Connected evidence row: '+str(source.rowId,80):'For my overall reasoning'})),
@@ -46923,6 +47024,13 @@ function projectStudentGuideData(data, mode) {
       };
       const _studentEntries = _materializeRenderable(historyItems, false);
       const _teacherEntries = cfg.includeTeacherKey ? _materializeRenderable(historyItems, true) : [];
+      // A vocabulary wall needs card sheets, rather than a cover and a closing
+      // accessibility sheet. Scope this to wall-only interactive documents;
+      // mixed lessons, worksheets and nonempty teacher keys keep their full
+      // print chrome. The complete reference document remains on screen.
+      const _wordWallEconomy = !isWorksheet && cfg.glossaryDisplayMode === 'word-wall'
+          && _studentEntries.length > 0 && _studentEntries.every(entry => entry.item.type === 'glossary')
+          && _teacherEntries.length === 0;
       const _wrapSection = (item, idx, total, html, isTeacher = false) => {
         if (!html) return '';
         const tv = { ...(_typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' }) };
@@ -46936,7 +47044,7 @@ function projectStudentGuideData(data, mode) {
           </span>
         </div>`;
         const terminator = idx < total - 1
-          ? `<div aria-hidden="true" style="text-align:center;margin:18px 0 4px;color:${tv.color};opacity:0.45;font-size:14px;letter-spacing:10px;line-height:1;">◆ ◆ ◆</div>`
+          ? `<div class="alloflow-section-terminator" aria-hidden="true" style="text-align:center;margin:18px 0 4px;color:${tv.color};opacity:0.45;font-size:14px;letter-spacing:10px;line-height:1;">◆ ◆ ◆</div>`
           : '';
         // A paper packet is easily separated after the first sheet. Give each
         // later STUDENT resource a compact identity row without adding screen
@@ -47034,7 +47142,12 @@ function projectStudentGuideData(data, mode) {
       // app reading-support font; 'theme'/absent falls back to the theme font.
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
       const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
-      const _fid = cfg.fontId;
+      // "Use my reading settings" (cfg.useReadingSettings): the reader's font, size and
+      // spacing win over the Builder's font and size while on; a default reader font keeps the theme font.
+      const _readerLib = cfg.useReadingSettings === true && typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UIFontLibrary;
+      let _reader = null;
+      try { if (_readerLib && _readerLib.readingSettingsAvailable()) _reader = window.__alloReadingSettings.get(); } catch (_) { _reader = null; }
+      const _fid = _reader ? (_reader.fontId && _reader.fontId !== 'default' ? _reader.fontId : 'theme') : cfg.fontId;
       const appFontEntry = (_fid === 'app' || (_fid == null && cfg.useAppFont))
         ? _fontOptions.find(f => f.id === selectedFont)
         : (_fid && _fid !== 'theme' ? _fontOptions.find(f => f.id === _fid) : null);
@@ -47056,8 +47169,9 @@ function projectStudentGuideData(data, mode) {
         ? ' font-style: italic;' + (/bold/.test(appFontEntry.id) ? ' font-weight: 700;' : '')
         : '';
       const _odFontFace = "@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }";
-      const exportFontImport = _useExportFont && appFontEntry.googleFont
-        ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');`
+      const _exportGoogleFont = _useExportFont && (appFontEntry.googleFont || (/^andika-/.test(appFontEntry.id) ? (_fontOptions.find(f => f.id === 'andika') || {}).googleFont : null));
+      const exportFontImport = _exportGoogleFont
+        ? `@import url('https://fonts.googleapis.com/css2?family=${_exportGoogleFont}&display=swap');`
         : (_useExportFont && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
       // ── Reader-side font choices (2026-08-16) ────────────────────────────
       // The teacher's build-time font picker offers the full app catalog, but
@@ -47119,7 +47233,9 @@ function projectStudentGuideData(data, mode) {
             + '</optgroup>'
           : '',
       ].join('');
-      const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
+      const exportFontSize = _reader ? `${Math.max(10, Math.min(48, Number(_reader.baseFontSize) || 16))}px` : cfg.fontSize ? `${cfg.fontSize}px` : '16px';
+      // Yields to the page's own font and spacing tools once a reader uses them (data-rt-custom).
+      const _readerExportCss = _reader && typeof _readerLib.readerExportCss === 'function' ? _readerLib.readerExportCss(_reader, { scope: 'html:not([data-rt-custom]) body' }) : '';
       const _printPageMargin = ['0.5in', '1in', '1.5in'].includes(cfg.pageMargin) ? cfg.pageMargin : '1in';
       const _printMarginInches = parseFloat(_printPageMargin) || 1;
       const _printPageDimensions = ({ letter: [8.5, 11], legal: [8.5, 14], a4: [8.27, 11.69] })[cfg.pageSize] || [8.5, 11];
@@ -47573,6 +47689,7 @@ function projectStudentGuideData(data, mode) {
           ${exportFontImport}
           ${readerWebFontFaces}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
+          ${_readerExportCss}
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           /* NO overflow:hidden here. It used to be set so the 12px radius clipped
@@ -48030,7 +48147,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-anno-confirm-cancel { background: #ffffff; color: #1e293b; border: 1px solid #64748b; }
           .alloflow-anno-confirm-delete { background: #b91c1c; color: #ffffff; border: 1px solid #991b1b; }
           .alloflow-anno-confirm-btn:focus-visible { outline: 3px solid #4338ca; outline-offset: 3px; }
-          @media print { .alloflow-anno-sb, .alloflow-anno-confirm-backdrop { display: none !important; } }
+          @media print { .alloflow-anno-sb, .alloflow-anno-confirm-backdrop, .alloflow-export-notice { display: none !important; } }
 
           /* ─── Sidebar dark/sepia/HC overrides ─── */
           html[data-alloflow-theme="dark"] .alloflow-anno-sb { background: #1e293b; border-color: #334155; color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
@@ -48460,9 +48577,49 @@ function projectStudentGuideData(data, mode) {
              color, leaving the title gray or dark against the banner. */
           .export-header .export-title,
           .export-header .export-meta { color: ${_headerColors.fg} !important; opacity: 1 !important; }
+          .alloflow-word-wall-print-attribution { display:none; }
+          @media print {
+            body[data-alloflow-word-wall-print="economical"] .export-header {
+              background:none !important; color:#000 !important; border:0 !important;
+              border-radius:0 !important; box-shadow:none !important; padding:0 !important; margin:0 0 2pt !important;
+            }
+            body[data-alloflow-word-wall-print="economical"] .export-header .export-title {
+              color:#000 !important; font-size:12pt !important; line-height:1.15 !important; margin:0 !important;
+            }
+            body[data-alloflow-word-wall-print="economical"] .export-header .export-meta {
+              color:#000 !important; font-size:9pt !important; line-height:1.15 !important; margin:1pt 0 0 !important;
+            }
+            body[data-alloflow-word-wall-print="economical"] .alloflow-word-wall-print-attribution {
+              display:block; color:#000 !important; font-size:7pt; line-height:1.1; margin:1pt 0 0;
+            }
+            body[data-alloflow-word-wall-print="economical"] :is(
+              .alloflow-section-marker, .alloflow-section-terminator, .alloflow-toc,
+              .a11y-badge, .teacher-view, .page-break, .alloflow-export-footer
+            ) { display:none !important; }
+            body[data-alloflow-word-wall-print="economical"] .alloflow-word-wall-section { margin:0 !important; }
+            body[data-alloflow-word-wall-print="economical"] .alloflow-word-wall-section > .resource-header {
+              background:none !important; color:#000 !important; font-size:12pt !important;
+              line-height:1.15 !important; padding:3pt 0 !important; margin:0 0 2pt !important;
+            }
+            body[data-alloflow-word-wall-print="economical"] .alloflow-word-wall-section > .alloflow-word-wall { padding-top:0 !important; }
+            /* Keep the selected school identity in the card sheets. Running
+               elements are unsupported in some print engines; compact bands
+               also fit safely in normal flow without a footer-only sheet. */
+            body[data-alloflow-word-wall-print="economical"] :is(.brand-header, .brand-footer) {
+              position:static !important; display:flex !important; flex-wrap:wrap; min-width:0;
+              background:none !important; color:#000 !important; border-radius:0 !important;
+              padding:2pt 0 !important; margin:0 !important; gap:6pt;
+              font-size:9pt !important; line-height:1.15 !important; break-inside:avoid; page-break-inside:avoid;
+            }
+            body[data-alloflow-word-wall-print="economical"] .brand-footer { margin-top:4pt !important; }
+            body[data-alloflow-word-wall-print="economical"] .brand-header img {
+              width:auto !important; height:auto !important; max-width:0.4in !important; max-height:16pt !important;
+            }
+            body[data-alloflow-word-wall-print="economical"] :is(.brand-header-text, .brand-footer-text) { min-width:0; overflow-wrap:anywhere; }
+          }
         </style>
       </head>
-      <body${isWorksheet ? ' data-alloflow-output="worksheet"' : ''}>
+      <body${isWorksheet ? ' data-alloflow-output="worksheet"' : ''}${_wordWallEconomy ? ' data-alloflow-word-wall-print="economical"' : ''}>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">${_runtimeCopy.skipToContent}</a>
         ${_brandHeaderHTML}
         <aside class="alloflow-reading-tools-shell expanded" aria-label="${_runtimeCopy.readingToolsLabel}">
@@ -48590,6 +48747,7 @@ function projectStudentGuideData(data, mode) {
               } catch (e) {}
               try {
                 var notice = document.createElement('div');
+                notice.className = 'alloflow-export-notice';
                 var isError = type === 'error';
                 notice.setAttribute('role', isError ? 'alert' : 'status');
                 notice.setAttribute('aria-live', isError ? 'assertive' : 'polite');
@@ -48888,6 +49046,8 @@ function projectStudentGuideData(data, mode) {
                 host.style.letterSpacing = (LETTERS[st.c] || 0) ? (LETTERS[st.c] + 'em') : '';
                 host.style.fontFamily = FONTS[st.f] || '';
               }
+              // A font or spacing chosen here replaces the exporter's reading settings.
+              document.documentElement.toggleAttribute('data-rt-custom', st.l !== 0 || st.c !== 0 || (st.f !== 'original' && st.f !== 'document'));
               var fontSel = document.querySelector('[data-rt-font]');
               if (fontSel && fontSel.value !== st.f) fontSel.value = st.f;
               var largeText = (SCALES[st.s] || 1) >= 1.3;
@@ -50936,6 +51096,7 @@ function projectStudentGuideData(data, mode) {
         <div class="export-header" style="background:${_headerColors.bg};color:${_headerColors.fg};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
           <h1 class="export-title" style="color:${_headerColors.fg};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
           ${!isWorksheet ? `<p class="export-meta" style="color:${_headerColors.fg};opacity:1;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
+          ${_wordWallEconomy ? `<p class="alloflow-word-wall-print-attribution">${_escTxt(t('output.generated_via'))}</p>` : ''}
         </div>
         ${worksheetHeader}
         ${studentTOC}
@@ -50966,7 +51127,7 @@ function projectStudentGuideData(data, mode) {
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">${_runtimeCopy.answerFileHelp}</p>
         </div>
         </aside>
-        <footer role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
+        <footer class="alloflow-export-footer" role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
         <script>
@@ -51445,8 +51606,8 @@ function projectStudentGuideData(data, mode) {
                 // @media print to force backs visible so paper output still
                 // shows both sides for fold-and-cut use.
                 (function() {
-                    var cards = document.querySelectorAll('.alloflow-glossary-card');
-                    if (cards.length === 0) return;
+                    var sections = document.querySelectorAll('.alloflow-glossary-cards-section');
+                    if (sections.length === 0) return;
                     var BACK_HIDDEN_CLASS = 'alloflow-glossary-back-hidden';
                     var styleEl = document.createElement('style');
                     styleEl.textContent =
@@ -51458,7 +51619,11 @@ function projectStudentGuideData(data, mode) {
                         '  .alloflow-glossary-show-all, .alloflow-glossary-hide-all, .alloflow-glossary-shuffle { display: none !important; }' +
                         '}';
                     document.head.appendChild(styleEl);
-                    cards.forEach(function(c) {
+                    sections.forEach(function(section) {
+                      var grid = section.querySelector('.alloflow-glossary-card-list');
+                      if (!grid) return;
+                      var cards = grid.querySelectorAll('.alloflow-glossary-card');
+                      cards.forEach(function(c) {
                         c.classList.add(BACK_HIDDEN_CLASS);
                         c.setAttribute('tabindex', '0');
                         c.setAttribute('role', 'button');
@@ -51471,10 +51636,10 @@ function projectStudentGuideData(data, mode) {
                         c.addEventListener('keydown', function(e) {
                             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
                         });
-                    });
-                    var showBtn = document.querySelector('.alloflow-glossary-show-all');
-                    var hideBtn = document.querySelector('.alloflow-glossary-hide-all');
-                    var shufBtn = document.querySelector('.alloflow-glossary-shuffle');
+                      });
+                    var showBtn = section.querySelector('.alloflow-glossary-show-all');
+                    var hideBtn = section.querySelector('.alloflow-glossary-hide-all');
+                    var shufBtn = section.querySelector('.alloflow-glossary-shuffle');
                     if (showBtn) showBtn.addEventListener('click', function() {
                         cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
                     });
@@ -51482,14 +51647,14 @@ function projectStudentGuideData(data, mode) {
                         cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
                     });
                     if (shufBtn) shufBtn.addEventListener('click', function() {
-                        var grid = cards[0].parentNode;
-                        var nodes = Array.prototype.slice.call(grid.children);
+                        var nodes = Array.prototype.slice.call(cards);
                         for (var i = nodes.length - 1; i > 0; i--) {
                             var j = Math.floor(Math.random() * (i + 1));
-                            grid.insertBefore(nodes[i], nodes[j]);
                             var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
                         }
+                        nodes.forEach(function(c) { grid.appendChild(c); });
                         cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
                     });
                 })();
                 // ── Concept-sort tap-to-place interaction (May 11 2026) ──

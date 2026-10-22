@@ -50,7 +50,7 @@ function constructEyes(side, size, normal, species = 'tyrannosaurus', headShell 
     surfaceHeadLength: 2 * size, surfaceHeadHeight: .8 * size,
     surfaceHeadDepth: .6 * size, faceSide: side, eyeRadius: .1 * size,
     cranialSurface: { eyeForwardScale: 1, eyeHeightScale: 1, browScale: 1 },
-    props: { species: { id: species } }, headShell,
+    props: { species: { id: species } }, headShell, theropodCranium: null, sauropodCranium: null,
     vec: (x, y, z) => new T.Vector3(x, y, z),
     faceSurfacePoint: (p, s, inset) => headShell ? p.clone().add(new T.Vector3(0, 0, s * inset)) : p,
     dinoSurfaceAnchor: () => {

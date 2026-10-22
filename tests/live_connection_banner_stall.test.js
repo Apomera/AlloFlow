@@ -184,7 +184,7 @@ describe('module watchdog tolerates sleep and background tabs', () => {
   it('arms every watchdog with its own start time and re-arms once', () => {
     const loader = slice(anti, '      var watchdogRearmed = false;', '      var clearModuleLoadWatchdog = function() {');
     expect(loader).toMatch(/var expireModuleLoad = function\(armedAt\) \{/);
-    expect(loader).toMatch(/if \(_alloModuleWatchdogShouldWait\(armedAt, Date\.now\(\), typeof document !== 'undefined' && document\.hidden, watchdogRearmed\)\) \{\s*watchdogRearmed = true;\s*moduleLoadWatchdog = setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\);\s*return;\s*\}\s*console\.error\('\[CDN-TIMEOUT\]/);
+    expect(loader).toMatch(/if \(_alloModuleWatchdogShouldWait\(armedAt, Date\.now\(\), typeof document !== 'undefined' && document\.hidden, watchdogRearmed\)\) \{\s*watchdogRearmed = true;\s*entry\.watchdogDeadlineAt = Date\.now\(\) \+ 30000;\s*moduleLoadWatchdog = setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\);\s*return;\s*\}\s*console\.error\('\[CDN-TIMEOUT\]/);
     expect(loader).toContain('var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());');
     expect(anti).not.toContain('setTimeout(expireModuleLoad, 30000);');
   });

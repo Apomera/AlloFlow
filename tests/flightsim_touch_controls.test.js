@@ -16,13 +16,27 @@ function focusCockpit() {
   cockpit.focus();
 }
 async function launchAircraft(aircraft, railCollapsed) {
+  const previousAttempt = latest.flightSim.flightPractice?.attemptId;
+  if (!button('✕ Exit')) await act(async () => { flightButton('Expand the flight deck controls').click(); });
+  await act(async () => { button('✕ Exit').click(); });
+  expect(latest.flightSim.view).toBe('debrief');
+  expect(latest.flightSim.flightPractice).toBeNull();
+  const endedAttempt = latest.flightSim.lastDebrief.attemptId;
+  if (previousAttempt) expect(endedAttempt).toBe(previousAttempt);
+  await act(async () => { button('🏠 Back to Menu').click(); });
+  expect(latest.flightSim.view).toBe('menu');
   await act(async () => {
     setData(previous => ({ ...previous, flightSim: { ...previous.flightSim,
-      view: 'menu', aircraft, railCollapsed, showHelp: false,
+      aircraft, railCollapsed, showHelp: false,
       autopilot: { hdg: false, alt: false, spd: false },
     } }));
   });
   await act(async () => { flightButton('Free Flight from Portland, ME').click(); });
+  expect(latest.flightSim.view).toBe('flying');
+  expect(latest.flightSim.flightPractice.attemptId).not.toBe(endedAttempt);
+  expect(hooks().timeRef.current).toBe(0);
+  expect(hooks().pausedRef.current).toBe(false);
+  expect(controls()).toMatchObject({ throttle: 0, pitch: 0, bank: 0, brake: 0 });
   focusCockpit();
 }
 function airborne() {

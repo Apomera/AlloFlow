@@ -55149,6 +55149,15 @@
       "sr_critique_ready": "समीक्षा तयार आहे."
     },
     "flightsim": {
+      "debrief_unavailable_title": "जतन केलेले उड्डाण पुनरावलोकन उपलब्ध नाही",
+      "debrief_unavailable_body": "सर्वात अलीकडील उड्डाण पुनरावलोकन सापडत नाही किंवा वाचता येत नाही. नवीन उड्डाण सुरू करण्यासाठी मेनूवर परत जा.",
+      "guided_idea_before_trials": "प्रयोगांपूर्वी नोंदवलेले",
+      "guided_idea_saved": "जतन केलेली कल्पना",
+      "guided_idea_timing_unknown": "या जतन केलेल्या कल्पनेची वेळ नोंदवलेली नाही.",
+      "guided_idea_latest": "सर्वात अलीकडे जतन केलेली कल्पना",
+      "guided_idea_latest_prediction": "सर्वात अलीकडे जतन केलेले भाकीत: {prediction}",
+      "guided_idea_saved_prediction": "जतन केलेले भाकीत: {prediction}",
+      "milestone_stall_recovery": "या क्षणी पंख आता स्टॉल स्थितीत नाही. एका निरीक्षणावरून स्टॉलमधून बाहेर आलेली स्थिती सतत टिकून आहे असे सिद्ध होत नाही.",
       "game_controls": "🎮 गेम नियंत्रणे",
       "cancel": "रद्द करा",
       "learn": "शिका",
@@ -55204,6 +55213,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "उड्डाणासाठी नाक उचला — नाक वर करा (W)",
+      "hud_rotate_touch": "उड्डाणासाठी नाक उचला — मध्यातून वर ओढा",
+      "hud_flare": "उतरताना नाक उचला — W वापरून नाक हळूच वर करा",
+      "hud_flare_touch": "उतरताना नाक उचला — मध्यातून वर ओढा",
+      "landing_touch_power": "इंजिनची शक्ती ~30% पर्यंत कमी करण्यासाठी उजव्या कडेने खाली ओढा. वेग कमी होईल.",
+      "landing_touch_flare": "धावपट्टीच्या किंचित वर (~10 ft), नाक वर करण्यासाठी मध्यातून हळूच वर ओढा. जमिनीला स्पर्श होताना खाली येण्याचा दर 200 fpm पेक्षा कमी ठेवण्याचे लक्ष्य ठेवा.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90839,6 +90854,18 @@
     "card_progress": "{total} पैकी कार्ड {n}",
     "add_words": "सराव सुरू करण्यासाठी शब्द जोडा.",
     "round_complete": "फेरी पूर्ण झाली. नवी फेरी सुरू करा किंवा खूण केलेल्या शब्दांची उजळणी करा.",
-    "practice_label": "शब्द सराव"
+    "practice_label": "शब्द सराव",
+    "use_mine_help": "HTML फाइल तुमचा फॉन्ट, मजकूर आकार आणि अंतर वापरते.",
+    "preparing_reading": "तुमची वाचन सेटिंग्ज जोडत आहे…",
+    "font_not_embedded": "तुमचा फॉन्ट फाइलमध्ये जोडता आला नाही, म्हणून फाइल सिस्टम फॉन्ट वापरते."
+  },
+  "reading_settings": {
+    "title": "वाचन सेटिंग्ज",
+    "smaller": "लहान मजकूर",
+    "larger": "मोठा मजकूर",
+    "overlay": "रंग आच्छादन",
+    "ruler": "वाचन पट्टी",
+    "use_mine": "माझी वाचन सेटिंग्ज वापरा",
+    "use_mine_help": "तुमचा फॉन्ट, मजकूर आकार आणि अंतर वापरून मुद्रित होते."
   }
 }

@@ -54728,6 +54728,15 @@
       "sr_critique_ready": "Uhakiki uko tayari."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Mapitio ya safari ya ndege yaliyohifadhiwa hayapatikani",
+      "debrief_unavailable_body": "Mapitio ya hivi karibuni ya safari ya ndege hayapo au hayawezi kusomwa. Rudi kwenye menyu ili kuanza safari mpya.",
+      "guided_idea_before_trials": "Liliandikwa kabla ya majaribio",
+      "guided_idea_saved": "Wazo lililohifadhiwa",
+      "guided_idea_timing_unknown": "Wakati wa wazo hili lililohifadhiwa haukurekodiwa.",
+      "guided_idea_latest": "Wazo la mwisho lililohifadhiwa",
+      "guided_idea_latest_prediction": "Utabiri wa mwisho uliohifadhiwa: {prediction}",
+      "guided_idea_saved_prediction": "Utabiri uliohifadhiwa: {prediction}",
+      "milestone_stall_recovery": "Bawa haliko tena katika hali ya stall kwa wakati huu. Uchunguzi mmoja hauthibitishi kurejea katika hali nzuri kwa muda endelevu.",
       "game_controls": "🎮 VIDHIBITI VYA MCHEZO",
       "cancel": "Ghairi",
       "learn": "Jifunze",
@@ -54781,6 +54790,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "INUA PUA — inua pua (W)",
+      "hud_rotate_touch": "INUA PUA — buruta juu kuanzia katikati",
+      "hud_flare": "LAINISHA KUTUA — inua pua taratibu kwa W",
+      "hud_flare_touch": "LAINISHA KUTUA — buruta juu kuanzia katikati",
+      "landing_touch_power": "Buruta chini kwenye ukingo wa kulia ili kupunguza nguvu hadi ~30%. Kasi itapungua.",
+      "landing_touch_flare": "Juu kidogo ya njia ya ndege (~10 ft), buruta taratibu juu kuanzia katikati ili kuinua pua. Lenga mteremko wa chini ya 200 fpm unapogusa ardhi.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91029,6 +91044,18 @@
     "card_progress": "Kadi {n} kati ya {total}",
     "add_words": "Ongeza maneno ili kuanza mazoezi.",
     "round_complete": "Raundi imekamilika. Anza raundi mpya au rudia maneno uliyowekea alama.",
-    "practice_label": "Mazoezi ya maneno"
+    "practice_label": "Mazoezi ya maneno",
+    "use_mine_help": "Faili la HTML linatumia fonti, ukubwa wa maandishi na nafasi kama ulivyochagua.",
+    "preparing_reading": "Inaongeza mipangilio yako ya kusoma…",
+    "font_not_embedded": "Fonti yako haikuweza kuongezwa kwenye faili, kwa hivyo linatumia fonti ya kawaida."
+  },
+  "reading_settings": {
+    "title": "Mipangilio ya kusoma",
+    "smaller": "Maandishi madogo zaidi",
+    "larger": "Maandishi makubwa zaidi",
+    "overlay": "Kifuniko cha rangi",
+    "ruler": "Rula ya kusoma",
+    "use_mine": "Tumia mipangilio yangu ya kusoma",
+    "use_mine_help": "Inachapisha kwa fonti, ukubwa wa maandishi na nafasi kama ulivyochagua."
   }
 }

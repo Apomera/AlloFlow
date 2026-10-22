@@ -7,7 +7,7 @@ const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.mi
 const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 const anchor = "window.StemLab.registerTool('dinoLab'";
 window.StemLab = { registerTool() {} };
-new Function(source.replace(anchor, 'globalThis.__dinoBilateral = { DINOS, skeletalAnatomyProfileFor, dinoDistalDigitLandmarks, dinoManualDigitLandmarks, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCompactFootGeometry, dinoCompactDigitGeometry, dinoBluntTerminalGeometry, dinoFoldedWingProfileFor, dinoForelimbRestPose, dinoKeratinGeometry };' + anchor))();
+new Function(source.replace(anchor, 'globalThis.__dinoBilateral = { DINOS, skeletalAnatomyProfileFor, dinoDistalDigitLandmarks, dinoManualDigitLandmarks, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCompactFootGeometry, dinoCompactDigitGeometry, dinoBluntTerminalGeometry, dinoFoldedWingProfileFor, dinoForelimbRestPose, dinoKeratinGeometry, dinoDromaeosaurPesProfileFor, dinoDromaeosaurPesFrame, dinoDromaeosaurPesUngualGeometry, dinoDromaeosaurPesMeshes, dinoLongBoneGeometry, dinoSurfacePartIds };' + anchor))();
 const art = globalThis.__dinoBilateral;
 delete globalThis.__dinoBilateral;
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -51,7 +51,55 @@ function buildFoot(dn, front, side, scale = 1) {
   const root = v(0, .03 * scale, side * .6 * scale);
   fan.addDigitFan(root, front, side);
   fan.addSoftTissueDigitFan(root, front, side, front ? 1 : skeletalProfile.distalLegScale);
-  return { records, model, profile: skeletalProfile, root, dispose() { model.traverse(mesh => mesh.geometry?.dispose()); material.dispose(); } };
+  model.updateMatrixWorld(true);
+  const pedal = model.children.filter(mesh => mesh.userData.dinoDromaeosaurPedalElement || mesh.userData.dinoDromaeosaurPedalBase);
+  return { records, model, pedal, profile: skeletalProfile, root, dispose() { model.traverse(mesh => mesh.geometry?.dispose()); material.dispose(); } };
+}
+
+// The reviewed pes builder creates real geometry directly rather than calling
+// the generic segment spies. Compare every native vertex, allowing circular
+// rings to be reindexed by the mirrored local bone frame.
+function expectMirroredPedal(left, right, scale) {
+  expect(left.pedal.length).toBeGreaterThan(8);
+  expect(left.pedal).toHaveLength(right.pedal.length);
+  const tolerance = 2e-7 * Math.max(1, scale), toleranceSq = tolerance * tolerance;
+  const cell = point => [point.x, point.y, point.z].map(value => Math.floor(value / tolerance));
+  const key = indices => indices.join(',');
+  left.pedal.forEach((mesh, index) => {
+    const opposite = right.pedal[index], tag = mesh.userData.dinoDromaeosaurPedalElement;
+    const otherTag = opposite.userData.dinoDromaeosaurPedalElement;
+    if (tag) {
+      expect([tag.ray, tag.layer, tag.element, tag.index]).toEqual([otherTag.ray, otherTag.layer, otherTag.element, otherTag.index]);
+      expect(tag.side).toBe(-otherTag.side);
+    } else {
+      expect(opposite.userData.dinoDromaeosaurPedalBase.layer).toBe('life');
+      expect(mesh.userData.dinoDromaeosaurPedalBase.side).toBe(-opposite.userData.dinoDromaeosaurPedalBase.side);
+    }
+    const a = mesh.geometry.attributes.position, b = opposite.geometry.attributes.position;
+    expect(a.count).toBe(b.count);
+    const cells = new Map();
+    for (let vertex = 0; vertex < b.count; vertex++) {
+      const point = opposite.localToWorld(v(0, 0, 0).fromBufferAttribute(b, vertex)), bucket = key(cell(point));
+      if (!cells.has(bucket)) cells.set(bucket, []);
+      cells.get(bucket).push(point);
+    }
+    let nonfinite = 0, unmatched = 0;
+    for (let vertex = 0; vertex < a.count; vertex++) {
+      const point = mesh.localToWorld(v(0, 0, 0).fromBufferAttribute(a, vertex)); point.z *= -1;
+      if (!point.toArray().every(Number.isFinite)) { nonfinite++; continue; }
+      const origin = cell(point); let found = false;
+      for (let x = -1; x <= 1 && !found; x++) for (let y = -1; y <= 1 && !found; y++) for (let z = -1; z <= 1 && !found; z++) {
+        found = (cells.get(key([origin[0] + x, origin[1] + y, origin[2] + z])) || []).some(candidate => candidate.distanceToSquared(point) <= toleranceSq);
+      }
+      if (!found) unmatched++;
+    }
+    expect(nonfinite).toBe(0); expect(unmatched).toBe(0);
+  });
+  for (const built of [left, right]) {
+    expect(built.model.userData.dinoDromaeosaurPes.rays.map(ray => ray.ray)).toEqual([1, 2, 3, 4]);
+    expect(built.pedal.filter(mesh => mesh.userData.dinoDromaeosaurPedalElement?.element === 'ungual-core')).toHaveLength(4);
+    expect(built.pedal.filter(mesh => mesh.userData.dinoDromaeosaurPedalElement?.element === 'ungual-covering')).toHaveLength(4);
+  }
 }
 
 describe('bilateral dinosaur digit anatomy', () => {
@@ -61,7 +109,8 @@ describe('bilateral dinosaur digit anatomy', () => {
         for (const scale of [.08, 1, 5]) {
           const left = buildFoot(species(id), front, -1, scale), right = buildFoot(species(id), front, 1, scale);
           try {
-            expect(left.records.length).toBeGreaterThan(8);
+            if (id === 'velociraptor') expectMirroredPedal(left, right, scale);
+            else expect(left.records.length).toBeGreaterThan(8);
             expect(left.records).toHaveLength(right.records.length);
             left.records.forEach((item, index) => {
               const opposite = right.records[index];
@@ -83,13 +132,17 @@ describe('bilateral dinosaur digit anatomy', () => {
     for (const side of [-1, 1]) {
       const built = buildFoot(species('velociraptor'), false, side);
       try {
-        const claws = built.records.filter(item => item.kind === 'ungual');
-        const raised = claws[0];
-        expect(raised.points[0][1]).toBeGreaterThan(claws[1].points[0][1] * 2);
-        expect((raised.points[0][2] - built.root.z) * side).toBeLessThan(0);
-        expect(raised.points[1][1]).toBeGreaterThan(0);
-        const hallux = built.records.find(item => item.kind === 'skin-digit' && item.points[0][0] > 0);
-        expect((hallux.points[1][2] - built.root.z) * side).toBeLessThan(0);
+        const rays = built.model.userData.dinoDromaeosaurPes.feet[0].rays;
+        expect(rays.map(ray => ray.ray)).toEqual([1, 2, 3, 4]);
+        const raised = rays.find(ray => ray.ray === 2), third = rays.find(ray => ray.ray === 3);
+        expect(raised.ungualRoot[1]).toBeGreaterThan(third.ungualRoot[1] * 2);
+        expect((raised.ungualRoot[2] - built.root.z) * side).toBeLessThan(0);
+        const core = built.pedal.find(mesh => mesh.userData.dinoDromaeosaurPedalElement?.element === 'ungual-core' && mesh.userData.dinoDromaeosaurPedalElement.ray === 2);
+        const points = core.geometry.attributes.position;
+        for (let index = 0; index < points.count; index++) expect(core.localToWorld(v(0, 0, 0).fromBufferAttribute(points, index)).y).toBeGreaterThan(0);
+        const hallux = rays.find(ray => ray.ray === 1);
+        expect((hallux.ungualTip[2] - built.root.z) * side).toBeLessThan(0);
+        expect(hallux.ungualTip[0]).toBeLessThan(hallux.base[0]); // unreversed, not a backward perching toe
       } finally { built.dispose(); }
     }
   });

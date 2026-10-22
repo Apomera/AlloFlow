@@ -40,17 +40,18 @@ describe('prepared syllable presentation survives phoneme fallback', () => {
     expect(resolveCount(repaired).supported).toBe(false);
   });
 
-  it.each([
-    ['retryTargetWord', 'retryPreloaded', 'retryWord'],
-    ['targetWord', 'preloadedWord', 'word'],
-    ['targetWord', 'preloadedMatch', 'word'],
-    ['target', 'refillPreloaded', 'retryWord'],
-  ])('preserves the prepared item in the production %s/%s fallback path', (targetName, preloadName, queueName) => {
-    const statement = source.match(new RegExp('const fallback = generateFallbackData\\(' + targetName + ', ' + preloadName + ' \\|\\| ' + queueName + '\\);'))?.[0];
+  it('routes initial presentation, retry, advancement and refill through the prepared-item fallback', () => {
+    const initializer = between('      const startActivity = React.useCallback(', '      // Recovery for the "Loading your words');
+    const statement = initializer.match(/const fallback = generateFallbackData\(targetWord, preloadedWord \|\| word\);/)?.[0];
     expect(statement).toBeTruthy();
+    expect(initializer).toContain('startActivity(activityId, retryWord, excludeWord, recursionDepth + 1, continuingForm);');
+    const advancement = between('                const actId = wordSoundsActivity || "segmentation";', '              // Keep scored probe exposure intervals');
+    expect(advancement).toContain('generateSessionQueue(actId, "medium");');
+    expect(advancement).toContain('startActivity(actId, nextItem, null, 0, true);');
+    expect(advancement).not.toContain('generateFallbackData(');
     for (const usePreload of [true, false]) {
       const item = preparedWord();
-      const repaired = new Function(targetName, preloadName, queueName, 'generateFallbackData', statement + '\nreturn fallback;')(
+      const repaired = new Function('targetWord', 'preloadedWord', 'word', 'generateFallbackData', statement + '\nreturn fallback;')(
         item.word, usePreload ? item : null, usePreload ? { word: item.word } : item, makeFallback(() => ['k']),
       );
       expect(repaired.activityItems).toBe(item.activityItems);

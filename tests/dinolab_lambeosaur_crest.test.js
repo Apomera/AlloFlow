@@ -5,11 +5,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
-const source = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
+const source = readFileSync(process.env.DINO_LAMBEOSAUR_BODY_SOURCE || 'stem_lab/stem_tool_dinolab.js', 'utf8');
 const integrated = source.includes('function dinoLambeosaurCrestProfileFor(');
 const helpers = integrated ? '' : readFileSync('tmp/dinolab-lambeosaur-crests-helpers.js', 'utf8');
 window.StemLab = { registerTool() {} };
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", helpers + "\nglobalThis.__lambeosaurCrest={DINOS,reconstructionProfileFor,postureProfileFor,postcranialSurfaceProfileFor,dinoTyrannosaurPose,dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoCranialGeometry,cranialSurfaceProfileFor,dinoCranialDisplayProfile,dinoLambeosaurCrestProfileFor,dinoLambeosaurCrestGeometry,dinoAddLambeosaurCrest,dinoDetailedBodyPartDefinitions,dinoPartInspectionFor,dinoPartViewpointTaskFor};window.StemLab.registerTool('dinoLab'"))();
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", helpers + "\nglobalThis.__lambeosaurCrest={dinoLambeosaurBodyFrame:typeof dinoLambeosaurBodyFrame==='function'?dinoLambeosaurBodyFrame:function(){return null;},dinoLambeosaurBodyNeck:typeof dinoLambeosaurBodyNeck==='function'?dinoLambeosaurBodyNeck:function(){return null;},DINOS,reconstructionProfileFor,postureProfileFor,postcranialSurfaceProfileFor,dinoTyrannosaurPose,dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoCranialGeometry,cranialSurfaceProfileFor,dinoCranialDisplayProfile,dinoArmoredCraniumFrame:typeof dinoArmoredCraniumFrame === 'function'?dinoArmoredCraniumFrame:function(){return null;},dinoCarnotaurusCraniumFrame: typeof dinoCarnotaurusCraniumFrame === 'function' ? dinoCarnotaurusCraniumFrame : function(){return null;}, dinoStegosaurBodyCraniumFrame: typeof dinoStegosaurBodyCraniumFrame === 'function' ? dinoStegosaurBodyCraniumFrame : function(){return null;}, dinoLambeosaurCrestProfileFor,dinoLambeosaurCrestGeometry,dinoAddLambeosaurCrest,dinoDetailedBodyPartDefinitions,dinoPartInspectionFor,dinoPartViewpointTaskFor};window.StemLab.registerTool('dinoLab'"))();
 const art = globalThis.__lambeosaurCrest;
 const species = ['parasaurolophus', 'corythosaurus', 'lambeosaurus', 'olorotitan'];
 const vec = (x, y, z = 0) => new THREE.Vector3(x, y, z);
@@ -31,7 +31,7 @@ function nativeSurfaces(id, scale, softTissue = .90, transformed = false) {
     cranialSurface: art.cranialSurfaceProfileFor(dn), postcranialSurface: art.postcranialSurfaceProfileFor(dn),
     surfaceHypothesis: { headSoftTissueScale: softTissue, neckSoftTissueScale: .88, bodyHeightScale: .91 },
     vec, headMat: material, bodyMat: material, model, props: { species: dn, showBody: true, showSkeleton: true },
-    ...Object.fromEntries(['dinoTyrannosaurPose', 'dinoLongSnoutedTyrannosaurAnchors', 'dinoCervicalEnvelope', 'dinoNeckJunction', 'dinoCranialGeometry', 'dinoSurfaceGeometry'].map(key => [key, art[key]])) };
+    ...Object.fromEntries(['dinoLambeosaurBodyFrame','dinoLambeosaurBodyNeck','dinoArmoredCraniumFrame', 'dinoCarnotaurusCraniumFrame', 'dinoStegosaurBodyCraniumFrame', 'dinoTyrannosaurPose', 'dinoLongSnoutedTyrannosaurAnchors', 'dinoCervicalEnvelope', 'dinoNeckJunction', 'dinoCranialGeometry', 'dinoSurfaceGeometry'].map(key => [key, art[key]])) };
   context.addSoftTissueChain = new Function('context', 'with(context){' + section('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {', 'function addContourGroup(meshes)') + 'return addSoftTissueChain;}')(context);
   const assembly = section('var detailScale = Math.min(1, ht / 2);', 'var evidenceAnchorPoints =');
   const envelope = section('var surfaceHeadFactor = reconstructionProfile.head', 'if (headShell) {');

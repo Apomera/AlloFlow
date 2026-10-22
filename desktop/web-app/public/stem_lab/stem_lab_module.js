@@ -1068,6 +1068,23 @@
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
         },
+        // Optional asset catalog: metadata and adapters only; no provider is fetched here.
+        // Existing tool factories remain usable if an older/offline bundle lacks it.
+        ensureSimulationAssets: function () {
+          function ready() { var a=window.StemSimAssets;return !!(a&&a.version==='1.0.0'&&typeof a.available==='function'&&typeof a.create==='function'); }
+          if(ready())return Promise.resolve(window.StemSimAssets);
+          var urls=[];
+          Array.prototype.forEach.call(document.getElementsByTagName('script'),function(script){
+            var src=script.src||'';
+            if(/\/stem_lab\/(stem_lab_module|stem_tool_birdlab|stem_tool_raptorhunt)\.js(?:[?#]|$)/.test(src)){
+              var url=new URL('stem_sim_assets.js',src);url.search=new URL(src).search;urls.push(url.href);
+            }
+          });
+          if(!urls.length)urls.push(new URL('stem_lab/stem_sim_assets.js',document.baseURI).href);
+          return this.loadScriptResilient(urls.filter(function(url,i){return urls.indexOf(url)===i;}),{
+            cacheKey:'stem-sim-assets-v1',timeoutMs:4000,check:ready,failMessage:'The shared asset catalog could not load.'
+          }).then(function(){return window.StemSimAssets;});
+        },
         // Small shared scene kit, loaded only by meadow consumers. Resolve beside the
         // actual script so bundled, local-preview and CDN paths all behave alike.
         ensureMeadow: function () {

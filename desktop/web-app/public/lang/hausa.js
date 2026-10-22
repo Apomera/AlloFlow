@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Sharhin ya shirya."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Bitar tafiyar jirgin da aka ajiye ba ta samuwa",
+      "debrief_unavailable_body": "Bitar tafiyar jirgi ta baya-bayan nan ta ɓace ko ba za a iya karanta ta ba. Koma menu don fara sabuwar tafiya.",
+      "guided_idea_before_trials": "An rubuta kafin gwaje-gwajen",
+      "guided_idea_saved": "Ra’ayin da aka ajiye",
+      "guided_idea_timing_unknown": "Ba a rubuta lokacin wannan ra’ayin da aka ajiye ba.",
+      "guided_idea_latest": "Ra’ayin da aka ajiye na baya-bayan nan",
+      "guided_idea_latest_prediction": "Hasashen da aka ajiye na baya-bayan nan: {prediction}",
+      "guided_idea_saved_prediction": "Hasashen da aka ajiye: {prediction}",
+      "milestone_stall_recovery": "A wannan lokacin reshen jirgin ba ya cikin yanayin stall. Kallo guda ɗaya ba ya tabbatar da farfaɗowa mai ɗorewa.",
       "game_controls": "🎮 SARRAFA WASA",
       "cancel": "Soke",
       "back_to_stem_lab": "Koma zuwa STEAM Lab",
@@ -54760,6 +54769,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ƊAGA HANCI — ɗaga hanci (W)",
+      "hud_rotate_touch": "ƊAGA HANCI — ja sama daga tsakiya",
+      "hud_flare": "DAIDAITA SAUKA — ɗaga hanci a hankali da W",
+      "hud_flare_touch": "DAIDAITA SAUKA — ja sama daga tsakiya",
+      "landing_touch_power": "Ja ƙasa a gefen dama don rage ƙarfi zuwa ~30%. Sauri zai ragu.",
+      "landing_touch_flare": "Ɗan sama da titin jirgi (~10 ft), ja sama a hankali daga tsakiya don ɗaga hanci. Nufi sauka ƙasa da 200 fpm lokacin taɓa ƙasa.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88739,6 +88754,18 @@
     "card_progress": "Kati {n} cikin {total}",
     "add_words": "Ƙara kalmomi don fara horo.",
     "round_complete": "An kammala zagaye. Fara sabon zagaye ko duba kalmomin da kuka yi wa alama.",
-    "practice_label": "Horon kalmomi"
+    "practice_label": "Horon kalmomi",
+    "use_mine_help": "Fayil ɗin HTML yana amfani da salon rubutu, girman rubutu da tazarar da ka zaɓa.",
+    "preparing_reading": "Ana ƙara saitunan karatunka…",
+    "font_not_embedded": "An kasa saka salon rubutunka a cikin fayil ɗin, don haka yana amfani da salon rubutu na asali."
+  },
+  "reading_settings": {
+    "title": "Saitunan karatu",
+    "smaller": "Rubutu mafi ƙanƙanta",
+    "larger": "Rubutu mafi girma",
+    "overlay": "Rufin launi",
+    "ruler": "Ma'aunin karatu",
+    "use_mine": "Yi amfani da saitunan karatuna",
+    "use_mine_help": "Za a buga da salon rubutu, girman rubutu da tazarar da ka zaɓa."
   }
 }

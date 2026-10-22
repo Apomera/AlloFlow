@@ -55986,6 +55986,15 @@
       "sr_critique_ready": "Розбір готовий."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Збережений розбір польоту недоступний",
+      "debrief_unavailable_body": "Останній розбір польоту відсутній або його неможливо прочитати. Поверніться до меню, щоб почати новий політ.",
+      "guided_idea_before_trials": "Записано до випробувань",
+      "guided_idea_saved": "Збережена ідея",
+      "guided_idea_timing_unknown": "Час запису цієї збереженої ідеї не зафіксовано.",
+      "guided_idea_latest": "Остання збережена ідея",
+      "guided_idea_latest_prediction": "Останній збережений прогноз: {prediction}",
+      "guided_idea_saved_prediction": "Збережений прогноз: {prediction}",
+      "milestone_stall_recovery": "У цей момент крило вже не перебуває у зриві потоку. Одне спостереження не підтверджує стійке відновлення.",
       "game_controls": "🎮 КЕРУВАННЯ ГРОЮ",
       "cancel": "Скасувати",
       "formula": "Формула",
@@ -56038,6 +56047,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ПІДНЯТТЯ НОСА — підніміть ніс (W)",
+      "hud_rotate_touch": "ПІДНЯТТЯ НОСА — ведіть угору від центру",
+      "hud_flare": "ВИРІВНЮВАННЯ — плавно підніміть ніс клавішею W",
+      "hud_flare_touch": "ВИРІВНЮВАННЯ — ведіть угору від центру",
+      "landing_touch_power": "Ведіть палець униз уздовж правого краю, щоб зменшити потужність до ~30%. Швидкість знизиться.",
+      "landing_touch_flare": "Просто над смугою (~10 ft) плавно ведіть палець угору від центру, щоб підняти ніс. Прагніть зниження менш ніж 200 fpm під час торкання.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -94891,6 +94906,18 @@
     "card_progress": "Картка {n} з {total}",
     "add_words": "Додайте слова, щоб почати практику.",
     "round_complete": "Раунд завершено. Почни новий раунд або повтори позначені слова.",
-    "practice_label": "Практика слів"
+    "practice_label": "Практика слів",
+    "use_mine_help": "HTML-файл використовує вибраний шрифт, розмір тексту й інтервали.",
+    "preparing_reading": "Додаємо налаштування читання…",
+    "font_not_embedded": "Не вдалося додати вибраний шрифт до файлу, тому використовується системний шрифт."
+  },
+  "reading_settings": {
+    "title": "Налаштування читання",
+    "smaller": "Зменшити текст",
+    "larger": "Збільшити текст",
+    "overlay": "Кольоровий накладний шар",
+    "ruler": "Лінійка для читання",
+    "use_mine": "Використати мої налаштування читання",
+    "use_mine_help": "Друк із вибраним шрифтом, розміром тексту й інтервалами."
   }
 }

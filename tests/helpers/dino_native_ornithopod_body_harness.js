@@ -16,7 +16,7 @@ export function nativeOrnithopodBodyHarness(source, reviewed = {}) {
     while (depth && end < source.length) { if (source[end] === '{') depth++; if (source[end] === '}') depth--; end++; }
     return source.slice(start, end);
   }
-  function build(id, scale = 1, enabled = true, transformed = false) {
+  function build(id, scale = 1, enabled = true, transformed = false, layers = null) {
     const anchorName = reviewed.anchorName || 'dinoOrnithopodBodyAnchors';
     const limbName = reviewed.limbName || 'dinoOrnithopodBodyLimb';
     const savedAnchors = native.art[anchorName];
@@ -26,6 +26,7 @@ export function nativeOrnithopodBodyHarness(source, reviewed = {}) {
     const context = base.context, material = context.bodyMat;
     Object.assign(context, art, { cladeName: context.dn.clade, bodyWireMat: material, headMat: material, keratinMat: material, muscleMat: material, toothMat: material,
       plantedFootContacts: [], idleMotion: { legs: [] }, surfaceHypothesis: { featureScales: true } });
+    if(layers)context.props={...context.props,...layers};
     if (!enabled) context[limbName] = () => null;
     const records = { bones: [], distal: [], anchors: [], thumbs: [], limbs: [] };
     context.addBodyPartAnchor = (id, point) => {
@@ -56,7 +57,7 @@ export function nativeOrnithopodBodyHarness(source, reviewed = {}) {
     for (const front of [false, true]) for (const side of [-1, 1]) {
       const boneStart = records.bones.length, anchorStart = records.anchors.length;
       addLeg((front ? context.shoulder : context.hip).x, side * stance, front);
-      records.limbs.push({ front, side, skin: context.idleMotion.legs.at(-1).mesh,
+      records.limbs.push({ front, side, skin: context.idleMotion.legs.at(-1)?.mesh || null,
         bones: records.bones.slice(boneStart), anchors: records.anchors.slice(anchorStart) });
     }
     if (transformed) { context.model.position.set(scale, -.3 * scale, 2 * scale); context.model.rotation.set(.12, -.25, .18); context.model.scale.set(1.12, .94, 1.06); }

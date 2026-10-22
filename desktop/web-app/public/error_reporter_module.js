@@ -77,7 +77,7 @@
   function redactSecrets(s) {
     if (!s) return s || '';
     return String(s)
-      .replace(/([?&#]allo_mbp?=)[^&#\s"']*/g, '$1[redacted]')
+      .replace(/([?&#]allo_(?:mbp?|pack)=)[^&#\s"']*/g, '$1[redacted]')
       .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
   }
 
@@ -301,21 +301,65 @@
     }).join('\n');
   }
 
+
+  function moduleLoadTraceLines() {
+    var stages = ['module-wait', 'blueprint-preflight', 'blueprint-generation', 'background-queue'];
+    var outcomes = ['started', 'slow', 'ready', 'recovered', 'failed', 'timeout', 'cancelled', 'completed', 'partial', 'blocked', 'waiting', 'stopped', 'paused'];
+    var statuses = ['queued', 'pending', 'loaded', 'failed', 'idle', 'unknown'];
+    var idPattern = /^ml-[a-z0-9-]{1,80}$/i;
+    var count = function (v) { return Number.isInteger(v) && v >= 0 ? Math.min(v, 10000) : 0; };
+    try {
+      var entries = Array.isArray(window.__alloModuleLoadTrace) ? window.__alloModuleLoadTrace : [];
+      var lines = entries.slice(-60).filter(function (e) {
+        return e && e.schemaVersion === 1 && stages.indexOf(e.stage) >= 0 && outcomes.indexOf(e.outcome) >= 0
+          && idPattern.test(e.attemptId || '') && idPattern.test(e.correlationId || '');
+      }).slice(-8).map(function (e) {
+        var date = Number.isFinite(e.at) ? new Date(e.at) : null;
+        var when = date && Number.isFinite(date.getTime()) ? date.toISOString().slice(11, 19) : '?';
+        var elapsed = Number.isFinite(e.elapsedMs) ? Math.max(0, Math.min(Math.round(e.elapsedMs), 86400000)) : 0;
+        var modules = (Array.isArray(e.modules) ? e.modules : []).filter(function (m) {
+          return m && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(m.name || '') && statuses.indexOf(m.status) >= 0;
+        }).slice(0, 8).map(function (m) { return m.name + ':' + m.status; }).join(',');
+        var counts = e.counts || {};
+        return when + ' ' + e.stage + '/' + e.outcome + ' ' + elapsed + 'ms attempt=' + e.attemptId
+          + ' group=' + e.correlationId + ' queued=' + count(counts.queued) + ' pending=' + count(counts.pending)
+          + ' failed=' + count(counts.failed) + (modules ? ' [' + modules + ']' : '');
+      });
+      var kept = [];
+      var used = 0;
+      for (var i = lines.length - 1; i >= 0; i--) {
+        if (used + lines[i].length + 1 > 2800) break;
+        kept.unshift(lines[i]);
+        used += lines[i].length + 1;
+      }
+      return kept.join('\n');
+    } catch (_) { return ''; }
+  }
+
   function identityLine() {
     var bits = [];
     try {
       var stamp = window.__alloBuildStamp;
       if (stamp && stamp.hash) bits.push('build ' + stamp.hash + (stamp.surface ? ' · ' + stamp.surface : ''));
+      if (stamp && /^\d{4}-\d{2}-\d{2}-stall-v\d+$/.test(stamp.hostLoaderRevision || '')) bits.push('loader ' + stamp.hostLoaderRevision);
     } catch (_) {}
     bits.push(APP_BUILD_TAG);
     try {
-      if (typeof window.__alloModuleSnapshot === 'function') {
-        var snap = window.__alloModuleSnapshot();
-        if (snap.failed.length) bits.push(snap.failed.length + ' module(s) FAILED: ' + snap.failed.join(', '));
-        else if (snap.pending.length) bits.push(snap.pending.length + ' module(s) still loading');
-        else bits.push('all modules loaded');
+      var snap = typeof window.__alloModuleSnapshot === 'function' ? window.__alloModuleSnapshot() : null;
+      if (!snap || !Array.isArray(snap.failed) || !Array.isArray(snap.pending)) {
+        bits.push('module status unavailable');
+      } else {
+        var queued = Array.isArray(snap.queued) ? snap.queued : [];
+        if (snap.failed.length) {
+          var failedNames = snap.failed.filter(function (name) { return typeof name === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,79}$/.test(name); }).slice(0, 8);
+          bits.push(snap.failed.length + ' module(s) FAILED: ' + failedNames.join(', ') + (snap.failed.length > failedNames.length ? ' …' : ''));
+        }
+        if (snap.pending.length) bits.push(snap.pending.length + ' module(s) still loading');
+        if (queued.length) bits.push(queued.length + ' module(s) queued');
+        if (!Array.isArray(snap.queued)) bits.push('queue status unavailable');
+        else if (!snap.failed.length && !snap.pending.length && !queued.length) bits.push('all modules loaded');
       }
-    } catch (_) {}
+    } catch (_) { bits.push('module status unavailable'); }
     return bits.join(' · ');
   }
 
@@ -324,6 +368,8 @@
   // sync refusal rarely THROWS — without these, reports arrived blind.
   function buildReportExtras() {
     var parts = ['== Diagnostics: ' + identityLine() + ' =='];
+    var moduleTrace = moduleLoadTraceLines();
+    if (moduleTrace) parts.push('-- Tool-loading trace (latest attempts) --\n' + moduleTrace);
     try {
       var tts = (window.__alloTtsTrace || []);
       if (tts.length) parts.push('-- Read-aloud trace (last ' + Math.min(tts.length, 25) + ') --\n' + traceLinesForReport(tts, 25));
@@ -351,7 +397,7 @@
     }).join('\n\n---\n\n');
     if (!what) what = '(No errors captured. Sending a manual report.)';
     else what = 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '. Others below are labelled.\n\n' + what;
-    try { what += '\n\n' + buildReportExtras(); } catch (_) {}
+    try { what = buildReportExtras().slice(0, 4000) + '\n\n' + what; } catch (_) {}
     what = redactSecrets(what);
 
     var steps = 'URL: ' + redactSecrets(window.location.href);

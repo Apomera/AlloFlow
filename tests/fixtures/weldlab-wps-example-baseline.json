@@ -1,0 +1,82 @@
+{
+  "codesRegionSha256": "494e15106a7a0368ef7398220379a9a80aed6c134c2a619b72c8ffedb05ac9a7",
+  "fields": [
+    {
+      "id": "pqr",
+      "cat": "I",
+      "label": "WPS No. / supporting PQR",
+      "value": "WL-101 Rev 0 · PQR-101",
+      "ex": "Every qualified WPS must name the PQR or PQRs that support it. An inspector checks this link first: a WPS with no PQR behind it (and not prequalified) is just a piece of paper."
+    },
+    {
+      "id": "process",
+      "cat": "E",
+      "label": "Process",
+      "value": "GMAW, spray transfer, semi-automatic",
+      "ex": "Changing the process (say GMAW to FCAW) needs its own qualification. Under ASME IX the GMAW transfer mode counts too: spray and short-circuit need separate PQRs (QW-409.2)."
+    },
+    {
+      "id": "joint",
+      "cat": "N",
+      "label": "Joint design",
+      "value": "Single-V groove, 60°, 1/8 in root opening, steel backing",
+      "ex": "For an ASME IX procedure, groove design is a nonessential variable (QW-402.1): revise the WPS, no new PQR. Removing the backing does matter for the welder's own qualification."
+    },
+    {
+      "id": "base",
+      "cat": "E",
+      "label": "Base metal",
+      "value": "P-No. 1 to P-No. 1 · up to 3/4 in (3/8 in PQR coupon)",
+      "ex": "A change of P-Number (QW-403.11), or thickness outside the range the coupon qualified, needs a new PQR. Under QW-451.1 a 3/8 in coupon qualifies up to 2T = 3/4 in."
+    },
+    {
+      "id": "filler",
+      "cat": "E",
+      "label": "Filler metal",
+      "value": "ER70S-6 · F-No. 6 · A-No. 1 · 0.045 in wire",
+      "ex": "A change of F-Number (QW-404.4) or of weld-metal analysis A-Number (QW-404.5) is essential. Wire diameter is usually nonessential, so it only has to be listed on the WPS."
+    },
+    {
+      "id": "pos",
+      "cat": "N",
+      "label": "Position",
+      "value": "Flat and horizontal",
+      "ex": "For the PROCEDURE, ASME IX says a qualification in any position qualifies all positions unless notch-toughness rules apply (QW-203). The WELDER is different: position is a performance essential variable, so each welder needs a WPQ that covers it. D1.1 handles positions differently, so check its tables."
+    },
+    {
+      "id": "preheat",
+      "cat": "E",
+      "label": "Preheat / interpass",
+      "value": "50 °F minimum · 500 °F maximum interpass",
+      "ex": "Under ASME IX, a preheat more than 100 °F below the PQR value is an essential change (QW-406.1). Preheat slows cooling and drives off moisture, which is how it fights hydrogen cracking."
+    },
+    {
+      "id": "pwht",
+      "cat": "E",
+      "label": "Post-weld heat treatment",
+      "value": "None",
+      "ex": "Adding, removing or changing PWHT changes the metal's properties, so it is essential (QW-407.1) and needs a new PQR."
+    },
+    {
+      "id": "gas",
+      "cat": "E",
+      "label": "Shielding gas",
+      "value": "90% argon / 10% CO2 · 35-45 cfh",
+      "ex": "For GMAW and GTAW, changing the gas or the mix percentages is essential (QW-408.2). A different flow rate inside a listed range is not."
+    },
+    {
+      "id": "elec",
+      "cat": "D",
+      "label": "Electrical",
+      "value": "DCEP · 260-300 A · 27-30 V",
+      "ex": "Welding anywhere inside these ranges follows the WPS. Amperage and voltage are usually nonessential for the procedure, but when notch toughness is required heat input becomes a supplementary essential variable (QW-409.1), and current type or polarity matters for some processes."
+    },
+    {
+      "id": "travel",
+      "cat": "N",
+      "label": "Travel speed / technique",
+      "value": "10-16 in/min · stringer or slight weave",
+      "ex": "Usually nonessential, so staying inside the range is enough. Speed still sets heat input: faster travel puts less heat into each inch, which matters when toughness is controlled."
+    }
+  ]
+}

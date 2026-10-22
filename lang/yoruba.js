@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Àríwísí ti ṣetán."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Àtúnyẹ̀wò ìrìn ọkọ̀ òfurufú tí a fipamọ́ kò sí",
+      "debrief_unavailable_body": "Àtúnyẹ̀wò ìrìn ọkọ̀ òfurufú tuntun jù lọ kò sí tàbí a kò lè kà á. Padà sí àkójọ aṣàyàn láti bẹ̀rẹ̀ ìrìn tuntun.",
+      "guided_idea_before_trials": "A kọ ọ́ sílẹ̀ ṣáájú àwọn ìdánwò",
+      "guided_idea_saved": "Èrò tí a fipamọ́",
+      "guided_idea_timing_unknown": "A kò ṣe àkọsílẹ̀ àkókò èrò tí a fipamọ́ yìí.",
+      "guided_idea_latest": "Èrò tí a fipamọ́ kẹ́yìn",
+      "guided_idea_latest_prediction": "Àsọtẹ́lẹ̀ tí a fipamọ́ kẹ́yìn: {prediction}",
+      "guided_idea_saved_prediction": "Àsọtẹ́lẹ̀ tí a fipamọ́: {prediction}",
+      "milestone_stall_recovery": "Ìyẹ́ ọkọ̀ òfurufú kò sí nínú ipò stall mọ́ ní àkókò yìí. Àkíyèsí kan ṣoṣo kò jẹ́ ẹ̀rí ìpadà sípò tó ń bá a lọ.",
       "game_controls": "🎮 AWỌN IDARI ERE",
       "back_to_stem_lab": "Padà sí STEAM Lab",
       "learn": "Kọ́",
@@ -54762,6 +54771,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "GBÉ IMÚ SÓKÈ — gbé imú sókè (W)",
+      "hud_rotate_touch": "GBÉ IMÚ SÓKÈ — fa sókè láti àárín",
+      "hud_flare": "DÍN ÌSỌ̀KALẸ̀ KÙ — gbé imú sókè rọra pẹ̀lú W",
+      "hud_flare_touch": "DÍN ÌSỌ̀KALẸ̀ KÙ — fa sókè láti àárín",
+      "landing_touch_power": "Fa sísàlẹ̀ lẹ́gbẹ̀ẹ́ etí ọ̀tún láti dín agbára sí ~30%. Ìyára yóò dín kù.",
+      "landing_touch_flare": "Níbi tí o wà díẹ̀ lókè ojú pópó (~10 ft), fa sókè rọra láti àárín láti gbé imú sókè. Fojú sí ìsọ̀kalẹ̀ tí ó kéré ju 200 fpm nígbà tí kẹ̀kẹ́ bá kan ilẹ̀.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -88739,6 +88754,18 @@
     "card_progress": "Káàdì {n} nínú {total}",
     "add_words": "Fi àwọn ọ̀rọ̀ kún un láti bẹ̀rẹ̀ ìdánrawò.",
     "round_complete": "Ìyípo ti parí. Bẹ̀rẹ̀ ìyípo tuntun tàbí ṣàyẹ̀wò àwọn ọ̀rọ̀ tí o sàmì sí.",
-    "practice_label": "Ìdánrawò ọ̀rọ̀"
+    "practice_label": "Ìdánrawò ọ̀rọ̀",
+    "use_mine_help": "Fáìlì HTML náà ń lo fọ́ńtì, ìwọ̀n ọ̀rọ̀ àti àyè tí o yàn.",
+    "preparing_reading": "Ń fi ètò kíkà rẹ kún un…",
+    "font_not_embedded": "A kò lè fi fọ́ńtì rẹ sínú fáìlì náà, nítorí náà ó ń lo fọ́ńtì ìpilẹ̀ṣẹ̀."
+  },
+  "reading_settings": {
+    "title": "Ètò kíkà",
+    "smaller": "Ọ̀rọ̀ tó kéré sí i",
+    "larger": "Ọ̀rọ̀ tó tóbi sí i",
+    "overlay": "Ìpele àwọ̀",
+    "ruler": "Ìlà ìtọ́sọ́nà kíkà",
+    "use_mine": "Lo ètò kíkà mi",
+    "use_mine_help": "Ó máa tẹ̀ ẹ́ jáde pẹ̀lú fọ́ńtì, ìwọ̀n ọ̀rọ̀ àti àyè tí o yàn."
   }
 }

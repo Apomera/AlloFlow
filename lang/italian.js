@@ -55959,6 +55959,15 @@
       "sr_critique_ready": "Critica pronta."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Riepilogo del volo salvato non disponibile",
+      "debrief_unavailable_body": "Il riepilogo del volo più recente manca o non può essere letto. Torna al menu per iniziare un nuovo volo.",
+      "guided_idea_before_trials": "Annotata prima delle prove",
+      "guided_idea_saved": "Idea salvata",
+      "guided_idea_timing_unknown": "Il momento in cui questa idea è stata salvata non è stato registrato.",
+      "guided_idea_latest": "Ultima idea salvata",
+      "guided_idea_latest_prediction": "Ultima previsione salvata: {prediction}",
+      "guided_idea_saved_prediction": "Previsione salvata: {prediction}",
+      "milestone_stall_recovery": "In questo momento l’ala non è più in stallo. Una sola osservazione non dimostra un recupero duraturo.",
       "game_controls": "🎮 CONTROLLI DI GIOCO",
       "cancel": "Annulla",
       "learn": "Impara",
@@ -56008,6 +56017,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTAZIONE — alza il muso (W)",
+      "hud_rotate_touch": "ROTAZIONE — trascina in alto dal centro",
+      "hud_flare": "RICHIAMATA — alza dolcemente il muso con W",
+      "hud_flare_touch": "RICHIAMATA — trascina in alto dal centro",
+      "landing_touch_power": "Trascina verso il basso lungo il bordo destro per ridurre la potenza a ~30%. La velocità diminuirà.",
+      "landing_touch_flare": "Appena sopra la pista (~10 ft), trascina delicatamente in alto dal centro per alzare il muso. Punta a una discesa inferiore a 200 fpm al contatto con il suolo.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92050,6 +92065,18 @@
     "card_progress": "Scheda {n} di {total}",
     "add_words": "Aggiungi parole per iniziare l'esercitazione.",
     "round_complete": "Giro completato. Iniziate un nuovo giro o ripassate le parole segnate.",
-    "practice_label": "Esercitazione sulle parole"
+    "practice_label": "Esercitazione sulle parole",
+    "use_mine_help": "Il file HTML usa il carattere, la dimensione del testo e la spaziatura che hai scelto.",
+    "preparing_reading": "Aggiunta delle tue impostazioni di lettura…",
+    "font_not_embedded": "Non è stato possibile aggiungere il tuo carattere al file, quindi usa il carattere di sistema."
+  },
+  "reading_settings": {
+    "title": "Impostazioni di lettura",
+    "smaller": "Testo più piccolo",
+    "larger": "Testo più grande",
+    "overlay": "Overlay colorato",
+    "ruler": "Righello di lettura",
+    "use_mine": "Usa le mie impostazioni di lettura",
+    "use_mine_help": "Stampa con il carattere, la dimensione del testo e la spaziatura che hai scelto."
   }
 }

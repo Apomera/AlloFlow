@@ -145,7 +145,7 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
     // Nine families (the corals suite allows up to ten), one program cache key, as before this lane.
     const healthy = fams('healthy'), all = new Set([...healthy, ...fams('bleached'), ...fams('dead')]);
     expect(all.size, 'the same material families as before').toBe(9);
-    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v5|d']));
+    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v6|d']));
     for (const id of PARTNERS) for (const quality of ['low', 'high']) {
       const a = build(id, { seed: 3, quality }, (h) => meshes(h).map(sig)), b = build(id, { seed: 3, quality, health: 'bleached' }, (h) => meshes(h).map(sig));
       expect(b, id + ' ' + quality).toEqual(a);

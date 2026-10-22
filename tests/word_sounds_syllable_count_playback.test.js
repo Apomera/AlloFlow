@@ -35,7 +35,7 @@ afterEach(async () => {
   vi.clearAllTimers(); vi.useRealTimers();
 });
 
-async function harness({ word = 'air', activity = 'syllable_counting', clip = asset(1), currentWord = word } = {}) {
+async function harness({ word = 'air', activity = 'syllable_counting', clip = asset(1), currentWord = word, language = 'en-US', voice = 'af_heart', items = [] } = {}) {
   const created = [], played = [];
   class ControlledAudio {
     constructor(src) { this.src = src; this.currentTime = 0; this.paused = true; this.ended = false; created.push(this); }
@@ -57,7 +57,7 @@ async function harness({ word = 'air', activity = 'syllable_counting', clip = as
     setSyllableCountDelivery: vi.fn(),
     setHighlightedBlendIndex: vi.fn(), setHighlightedRhymeIndex: vi.fn(), setHighlightedManipIndex: vi.fn(), setPlayingOptionIndex: vi.fn(),
     elkoninBoxes: [{ phoneme: 'k' }, { phoneme: 'a' }, { phoneme: 't' }],
-    wordSoundsLanguage: 'en-US', selectedVoice: 'af_heart', wordSoundsVoiceRef: { current: 'af_heart' }, ttsSpeed: 1,
+    wordSoundsLanguage: language, selectedVoice: voice, wordSoundsVoiceRef: { current: voice }, preloadedWords: items, ttsSpeed: 1,
     wordSoundsAudioLibrary: {}, wordSoundsAudioLibraryRef: { current: {} },
     audioRunIdRef: { current: 1 }, audioCancelledRef: { current: false }, isMountedRef: { current: true },
     feedbackPlaybackRef: { current: null }, currentActiveAudio: { current: null }, activePlaybackRef: { current: null },
@@ -99,6 +99,49 @@ async function harness({ word = 'air', activity = 'syllable_counting', clip = as
 }
 
 describe('latest audible request ownership', () => {
+  it('plays non-English phoneme objects only from exact IPA assets in the lesson pack', async () => {
+    const nativeA = { ...asset(21), provenance: { language: 'es', resolvedVoice: 'native', provider: 'recorded' } };
+    const h = await harness({activity:'blending',language:'es',voice:'native',items:[{word:'gato',_ttsAssets:{a:nativeA}}]});
+    h.env.window.__ALLO_PHONEME_AUDIO_BANK.a = dataUri(asset(22));
+    h.env.wordSoundsAudioLibraryRef.current.a = dataUri(asset(23));
+    h.env.portableTtsSrcFor.mockImplementation(key=>key==='a'?dataUri(nativeA):null);
+    expect(await h.finishPlayback({ipa:'a',grapheme:'a'})).toBe(dataUri(nativeA));
+    expect(h.played).toEqual([dataUri(nativeA)]);
+    expect(h.env.loadAudioFromStorage).not.toHaveBeenCalled();expect(h.env.callTTS).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {name:'missing exact IPA asset',input:{ipa:'i',grapheme:'y'},assets:{ee:asset(24),y:asset(25)}},
+    {name:'missing IPA on an object',input:{grapheme:'a'},assets:{a:asset(24)}},
+    {name:'different language provenance',input:{ipa:'a',grapheme:'a'},assets:{a:{...asset(24),provenance:{language:'en-US'}}}},
+    {name:'raw IPA string without a native asset',input:'eɪ',assets:{ay:asset(24)}},
+    {name:'slash marked native sound without an asset',input:'/rr/',assets:{}},
+  ])('does not substitute English bank, cache, or letter TTS for $name', async ({input,assets})=>{
+    const h=await harness({activity:'blending',language:'es',voice:'native',items:[{word:'gato',_ttsAssets:assets}]});
+    h.env.window.__ALLO_PHONEME_AUDIO_BANK={a:dataUri(asset(26)),ee:dataUri(asset(27)),i:dataUri(asset(28))};
+    h.env.wordSoundsAudioLibraryRef.current={a:'blob:english-cache',i:'blob:english-cache'};
+    h.env.portableTtsSrcFor.mockImplementation(key=>assets[key]?dataUri(assets[key]):null);
+    expect(await h.callback(input)).toMatchObject({ok:false,status:'unavailable'});
+    expect(h.played).toEqual([]);expect(h.created).toEqual([]);
+    expect(h.env.callTTS).not.toHaveBeenCalled();expect(h.env.loadAudioFromStorage).not.toHaveBeenCalled();
+    expect(h.env.setAudioNotice).toHaveBeenCalledWith(expect.stringContaining('lesson language'));
+  });
+
+  it('preserves raw IPA identity on the retry notice instead of turning an object into word TTS',async()=>{
+    const h=await harness({activity:'blending',language:'es',voice:'native'});const input={ipa:'aː',grapheme:'a'};
+    await h.callback(input);expect(h.env.lastAudioRef.current).toBe(input);
+    expect(await h.callback(h.env.lastAudioRef.current)).toMatchObject({ok:false,status:'unavailable'});
+    expect(h.env.callTTS).not.toHaveBeenCalled();expect(h.played).toEqual([]);
+  });
+
+  it('preserves explicit native word and media requests',async()=>{
+    const h=await harness({activity:'blending',language:'es',voice:'native'});
+    h.env.portableTtsSrcFor.mockImplementation(key=>key==='a'?'blob:word-a':null);
+    expect(await h.finishPlayback({word:'a'})).toBe('blob:word-a');
+    expect(await h.finishPlayback({audioSrc:'blob:checked-native-sound'})).toMatchObject({ok:true});
+    expect(h.played).toEqual(['blob:word-a','blob:checked-native-sound']);
+  });
+
   it.each(['ready', 'error'])('ignores an older media load finishing with %s after the newer option starts', async outcome => {
     const h = await harness({ activity: 'rhyming' });
     h.env.portableTtsSrcFor.mockImplementation(word => 'blob:' + word);

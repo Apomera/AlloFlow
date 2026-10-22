@@ -1820,7 +1820,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg(t('chat_guide.flow.running_analysis'));
                          const resultItem = await _genTracked('analysis');
                          if (isShowMeMode) performHighlight('tour-tool-analysis');
-                         setUdlMessages(prev => [...prev, buildStepPackChoices("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I generate the complete resource pack instantly based on this analysis.", 'post_analysis_route')]);
+                         setUdlMessages(prev => [...prev, buildStepPackChoices("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I prepare a resource-pack plan based on this analysis for you to review before generation.", 'post_analysis_route')]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'post_analysis_route' }));
                          setIsChatProcessing(false);
                          return;
@@ -2341,7 +2341,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          });
                          if (hasInput) {
                               const snippet = sourceTopic || inputText.substring(0, 40).replace(/\n/g, ' ') + "...";
-                              const msg = `I've detected source material ("${snippet}").\n\nHow would you like to proceed?\n\n1. **Step-by-Step:** We build resources one by one together.\n2. **Full Pack:** I analyze the text and generate a complete lesson pack instantly.`;
+                              const msg = `I've detected source material ("${snippet}").\n\nHow would you like to proceed?\n\n1. **Step-by-Step:** We build resources one by one together.\n2. **Full Pack:** I prepare a lesson-pack plan from this text for you to review before generation.`;
                               setUdlMessages(prev => [...prev, buildStepPackChoices(msg, 'initial_choice')]);
                          } else {
                               const msg = "Let's build your lesson sequentially. First step: **Source Material**.\n\nDo you have a **Link** to an article, or a **Topic** you'd like to generate text for?";
@@ -2772,6 +2772,16 @@ function _commandWorkflowLibraryCard(service, ctx, t, mode, prefix, hasCurrentPl
   return { role: 'model', type: 'choices', text: text + empty, choices };
 }
 
+function _captureBotCommandScope(ctx, deps) {
+  if (ctx && typeof ctx.commandScopeToken === 'string' && ctx.commandScopeToken) return [ctx.commandScopeToken];
+  return [deps.inputText, deps.generatedContent, deps.history, deps.activeView,
+    ctx && ctx.commandAudience, !!(ctx && ctx.isTeacherMode), !!(ctx && ctx.isStudentLinkMode),
+    !!(ctx && ctx.generationBusy), !!(ctx && ctx.hasSourceText), !!(ctx && ctx.hasActiveBlueprint), !!(ctx && ctx.fullPackPlanReady)];
+}
+function _sameBotCommandScope(left, right) {
+  return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 // AlloBot command-planning layer — extracted to UdlChat (2026-07-20).
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function planAndSendUdlMessage(manualText, deps) {
@@ -2785,7 +2795,9 @@ async function planAndSendUdlMessage(manualText, deps) {
     const _sendUdlToChat = text => _handleStoreRecognitionBoundary(text == null ? udlInput : text, deps) ? { ok: false, localOnly: true } : sendOrdinaryUdlChat(text);
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _inputAction = manualText && typeof manualText === 'object' ? manualText : null;
-    const _rawUtter = _inputAction ? '' : String((manualText != null ? manualText : udlInput) || '');
+    if (_inputAction && /^command-(?:option|choice|params)$/.test(_inputAction.action || '') &&
+        (!_pendingBotCmdRef.current || _inputAction.requestId !== _pendingBotCmdRef.current.id)) return;
+    const _rawUtter = _inputAction ? (_inputAction.action === 'command-choice' ? String(_inputAction.value || '') : '') : String((manualText != null ? manualText : udlInput) || '');
     const answerQuestion = async text => {
       if (_handleStoreRecognitionBoundary(text, deps)) return { ok: false, localOnly: true };
       setIsChatProcessing(true);
@@ -2806,11 +2818,34 @@ async function planAndSendUdlMessage(manualText, deps) {
     const commandCard = (pending, prefix) => {
       if (!pending.id) pending.id = _botInteractionId();
       const contract = _AC && _AC.getCommandContract ? _AC.getCommandContract(pending.commandId) : {};
+      const options = !pending.needsInput && Array.isArray(pending.suggestions) ? pending.suggestions.slice(0, 5) : [];
+      const multiple = options.length > 1;
+      const explanation = options[0] ? [options[0].reason, options[0].effect].filter(Boolean).join(' ') : '';
       return { role: 'model', type: 'choices', operationKind: 'command', operationId: pending.id, operationStatus: 'review',
-        text: prefix || _chatText(t, 'chat_guide.cmd_confirm_prompt', 'It looks like you want to **{label}**. Run that, or keep chatting?', { label: pending.label || pending.commandId }),
+        text: prefix || (multiple ? _chatText(t, 'chat_guide.action_options_intro', 'There are a few useful ways to approach this. The first is my suggestion; choose the action that fits what you want to do.') :
+          (explanation ? '**' + (pending.label || pending.commandId) + '**\n\n' + explanation : '') || _chatText(t, 'chat_guide.cmd_confirm_prompt', 'It looks like you want to **{label}**. Run that, or keep chatting?', { label: pending.label || pending.commandId })),
+        ...(multiple ? { commandOptions: options.map(option => ({ commandId: option.commandId, label: option.label, reason: option.reason, effect: option.effect })) } : {}),
         commandReview: { requestId: pending.id, params: pending.params || {}, fields: Object.fromEntries((contract.params || []).map(key => [key, (contract.paramSchema || {})[key] || { type: 'string', label: key }])) },
-        choices: [ { label: _chatText(t, 'chat_guide.cmd_confirm_do', 'Do it'), value: '__allo_do' },
+        choices: [ ...(multiple ? [] : [{ label: _chatText(t, 'chat_guide.cmd_confirm_do', 'Do it'), value: '__allo_do' }]),
           { label: _chatText(t, 'chat_guide.cmd_confirm_skip', 'Just chat'), value: '__allo_skip' } ] };
+    };
+    const makeCommandPending = (ctx, match, originalText, suggestions) => ({
+      commandId: suggestions && suggestions[0] ? suggestions[0].commandId : match.commandId,
+      params: suggestions && suggestions[0] ? suggestions[0].params || {} : match.params || {},
+      label: suggestions && suggestions[0] ? suggestions[0].label : match.label,
+      suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 5) : [], originalText,
+      scope: _captureBotCommandScope(ctx, deps), id: _botInteractionId(),
+    });
+    const refreshCommandOffer = (pending, ctx) => {
+      _pendingBotCmdRef.current = null;
+      const text = _chatText(t, 'chat_guide.action_options_changed', 'Your lesson or available actions changed. Review the updated choices before continuing.');
+      closeOperation(pending, text);
+      const suggestions = _AC && typeof _AC.getCommandSuggestions === 'function' ? _AC.getCommandSuggestions(ctx, pending.originalText || '', pending) : [];
+      if (suggestions.length) {
+        const fresh = makeCommandPending(ctx, pending, pending.originalText, suggestions);
+        _pendingBotCmdRef.current = fresh;
+        setUdlMessages(prev => [...prev, commandCard(fresh, text)]);
+      }
     };
     const commandMessage = (result, id) => {
       const view = _AC && typeof _AC.formatCommandResult === 'function' ? _AC.formatCommandResult(result, { t }) : {
@@ -2840,6 +2875,10 @@ async function planAndSendUdlMessage(manualText, deps) {
       return;
     }
     if (_inputAction && _inputAction.action === 'retry-chat') {
+      if (_pendingBotCmdRef.current) {
+        closeOperation(_pendingBotCmdRef.current, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+        _pendingBotCmdRef.current = null;
+      }
       await answerQuestion(String(_inputAction.text || ''));
       return;
     }
@@ -2904,19 +2943,49 @@ async function planAndSendUdlMessage(manualText, deps) {
     if (_pending) {
       if (_inputAction && _inputAction.action === 'command-params') {
         if (_inputAction.requestId !== _pending.id) return;
+        if (_pending.scope && !_sameBotCommandScope(_pending.scope, _captureBotCommandScope(_alloCmdCtx(), deps))) {
+          refreshCommandOffer(_pending, _alloCmdCtx()); return;
+        }
         _pending.params = _AC.sanitizeCommandParams(_pending.commandId, _inputAction.params || {});
+        _pending.suggestions = [];
         setUdlMessages(prev => [...prev, commandCard(_pending)]);
         return;
       }
       const _reply = String(_rawUtter).trim().toLowerCase();
-      const _isDo = _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
+      const _options = Array.isArray(_pending.suggestions) ? _pending.suggestions : [];
+      const _optionNumber = /^[1-5]$/.test(_reply) ? Number(_reply) - 1 : -1;
+      const _selectedOption = _inputAction && _inputAction.action === 'command-option'
+        ? _options.find(option => option.commandId === _inputAction.commandId)
+        : _optionNumber >= 0 && _options.length > 1 ? _options[_optionNumber] : null;
+      if (_inputAction && _inputAction.action === 'command-option' && !_selectedOption) return;
+      const _isDo = !!_selectedOption || _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
       const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','stop','chat','nevermind','never mind'].indexOf(_reply) >= 0;
       if (_isDo || _isSkip) {
+        const _acceptCtx = _alloCmdCtx();
+        if (_isDo && _pending.scope) {
+          const visible = !Array.isArray(udlMessages) || udlMessages.some(message => message.operationId === _pending.id && message.operationStatus === 'review');
+          if (!visible) { _pendingBotCmdRef.current = null; return; }
+          if (!_sameBotCommandScope(_pending.scope, _captureBotCommandScope(_acceptCtx, deps))) {
+            refreshCommandOffer(_pending, _acceptCtx); return;
+          }
+          const selected = _selectedOption || _options.find(option => option.commandId === _pending.commandId);
+          if (selected && typeof _AC.validateCommandSuggestion === 'function' && !_AC.validateCommandSuggestion(_acceptCtx, selected).ok) {
+            refreshCommandOffer(_pending, _acceptCtx); return;
+          }
+        }
+        if (_selectedOption) {
+          _pending.commandId = _selectedOption.commandId;
+          _pending.label = _selectedOption.label;
+          _pending.params = _selectedOption.params || {};
+          _pending.suggestions = [_selectedOption];
+        }
         _pendingBotCmdRef.current = null;
         setUdlInput('');
         if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
+          setUdlMessages(prev => [...prev, { role: 'model', operationKind: 'command', operationId: _pending.id, operationStatus: 'pending',
+            text: _chatText(t, 'chat_guide.action_starting', 'Starting: {label}', { label: _pending.label || _pending.commandId }) }]);
           try {
-            const _res = await _AC.runCommandById(_alloCmdCtx(), _pending.commandId, _pending.params, { confirmed: true });
+            const _res = await _AC.runCommandById(_acceptCtx, _pending.commandId, _pending.params, { confirmed: true });
             if (_res && _res.needsInput) {
               _pending.needsInput = true;
               _pendingBotCmdRef.current = _pending;
@@ -3284,11 +3353,38 @@ async function planAndSendUdlMessage(manualText, deps) {
           }
         }
         if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
-          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
+          const _routingCtx = _alloCmdCtx();
+          const _routingScope = _captureBotCommandScope(_routingCtx, deps);
+          const _canSuggest = typeof _AC.getCommandSuggestions === 'function';
+          let _match = await _AC.routeUtterance(_routingCtx, _rawUtter, { allowAi: !_canSuggest, preview: true, signal: _botPlanningSignal });
           if (!_isCurrentBotCommandPlanning()) return;
-          if (_match && _match.preview && _match.commandId) {
+          let _suggestions = _canSuggest ? _AC.getCommandSuggestions(_alloCmdCtx(), _rawUtter, _match) : [];
+          if (!_match && !_suggestions.length && _canSuggest) {
+            _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
+            if (!_isCurrentBotCommandPlanning()) return;
+            _suggestions = _AC.getCommandSuggestions(_alloCmdCtx(), _rawUtter, _match);
+          }
+          if (_canSuggest && !_suggestions.length && _match && _match.preview && !_match.destructive && typeof _AC.validateCommandSuggestion === 'function') {
+            const availability = _AC.validateCommandSuggestion(_alloCmdCtx(), _match);
+            if (!availability.ok && availability.reasonCode === 'unavailable') {
+              _releaseBotCommandPlanning();
+              setUdlInput('');
+              setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: availability.reason }]);
+              return;
+            }
+          }
+          if (_suggestions.length || (_match && _match.preview && _match.commandId)) {
             _releaseBotCommandPlanning();
-            _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
+            const _currentCtx = _alloCmdCtx();
+            if (!_sameBotCommandScope(_routingScope, _captureBotCommandScope(_currentCtx, deps))) {
+              if (!_suggestions.length) {
+                setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: _chatText(t, 'chat_guide.action_request_changed', 'Your lesson changed while I was finding an action. Please ask again using the current lesson.') }]);
+                return;
+              }
+              _suggestions = _AC.getCommandSuggestions(_currentCtx, _rawUtter, _match);
+              if (!_suggestions.length) return;
+            }
+            _pendingBotCmdRef.current = makeCommandPending(_currentCtx, _match, _rawUtter, _suggestions);
             if (!manualText) setUdlInput('');
             setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, commandCard(_pendingBotCmdRef.current)]);
             try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'Confirm to run this command, or keep chatting.'); } catch (_) {}

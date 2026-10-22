@@ -54725,6 +54725,15 @@
       "sr_critique_ready": "সমালোচনা প্রস্তুত।"
     },
     "flightsim": {
+      "debrief_unavailable_title": "সংরক্ষিত উড়ান পর্যালোচনা পাওয়া যাচ্ছে না",
+      "debrief_unavailable_body": "সর্বশেষ উড়ান পর্যালোচনাটি নেই বা পড়া যাচ্ছে না। নতুন উড়ান শুরু করতে মেনুতে ফিরে যান।",
+      "guided_idea_before_trials": "পরীক্ষাগুলোর আগে নথিভুক্ত",
+      "guided_idea_saved": "সংরক্ষিত ভাবনা",
+      "guided_idea_timing_unknown": "এই সংরক্ষিত ভাবনার সময়সংক্রান্ত তথ্য নথিভুক্ত করা হয়নি।",
+      "guided_idea_latest": "সর্বশেষ সংরক্ষিত ভাবনা",
+      "guided_idea_latest_prediction": "সর্বশেষ সংরক্ষিত পূর্বানুমান: {prediction}",
+      "guided_idea_saved_prediction": "সংরক্ষিত পূর্বানুমান: {prediction}",
+      "milestone_stall_recovery": "এই মুহূর্তে ডানা আর স্টল অবস্থায় নেই। একটি পর্যবেক্ষণ থেকে স্টল কাটিয়ে ওঠার অবস্থা টানা বজায় আছে বলে নিশ্চিত হওয়া যায় না।",
       "game_controls": "🎮 গেম নিয়ন্ত্রণ",
       "from": "থেকে",
       "learn": "শিখুন",
@@ -54780,6 +54789,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "উড্ডয়নে নাক তুলুন — নাক উপরে তুলুন (W)",
+      "hud_rotate_touch": "উড্ডয়নে নাক তুলুন — মাঝখান থেকে উপরে টানুন",
+      "hud_flare": "অবতরণে নাক তুলুন — W দিয়ে নাক আস্তে তুলুন",
+      "hud_flare_touch": "অবতরণে নাক তুলুন — মাঝখান থেকে উপরে টানুন",
+      "landing_touch_power": "ইঞ্জিনের শক্তি ~30% করতে ডান ধার বরাবর নিচে টানুন। গতি কমবে।",
+      "landing_touch_flare": "রানওয়ের সামান্য উপরে (~10 ft), নাক তুলতে মাঝখান থেকে আস্তে উপরে টানুন। মাটি ছোঁয়ার সময় নিচে নামার হার 200 fpm-এর কম রাখার লক্ষ্য নিন।",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91027,6 +91042,18 @@
     "card_progress": "{total}টির মধ্যে কার্ড {n}",
     "add_words": "অনুশীলন শুরু করতে শব্দ যোগ করুন।",
     "round_complete": "রাউন্ড শেষ। নতুন রাউন্ড শুরু করো বা চিহ্নিত শব্দগুলো আবার দেখো।",
-    "practice_label": "শব্দ অনুশীলন"
+    "practice_label": "শব্দ অনুশীলন",
+    "use_mine_help": "HTML ফাইলটি আপনার ফন্ট, পাঠ্যের আকার ও ব্যবধান ব্যবহার করে।",
+    "preparing_reading": "আপনার পড়ার সেটিংস যোগ করা হচ্ছে…",
+    "font_not_embedded": "আপনার ফন্ট ফাইলে যোগ করা যায়নি, তাই ফাইলটি সিস্টেম ফন্ট ব্যবহার করে।"
+  },
+  "reading_settings": {
+    "title": "পড়ার সেটিংস",
+    "smaller": "ছোট টেক্সট",
+    "larger": "বড় টেক্সট",
+    "overlay": "রঙ ওভারলে",
+    "ruler": "পড়ার রুলার",
+    "use_mine": "আমার পড়ার সেটিংস ব্যবহার করুন",
+    "use_mine_help": "আপনার ফন্ট, পাঠ্যের আকার ও ব্যবধান দিয়ে প্রিন্ট হয়।"
   }
 }

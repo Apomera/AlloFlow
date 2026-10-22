@@ -100,7 +100,7 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("reason: 'glossary-playback'");
     expect(source).toContain("handleGlossarySpeak(item, 'term', item.term");
     expect(source).toContain("handleGlossarySpeak(item, 'definition', item.def");
-    expect(source).toContain("handleGlossarySpeak(item, 'translation', item.translations[lang]");
+    expect(source).toContain("handleGlossarySpeak(item, 'translation', glossaryTranslationText(item.translations[lang])");
     expect(source).toContain("aria-label={glossaryText('glossary.audio_scope', 'Audio to prepare')}");
     expect(source).toContain('value={glossaryAudioScope}');
     expect(source).toContain("includeDefinitions: includeDefinitions, languages: preparedLanguages");

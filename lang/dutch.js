@@ -56354,6 +56354,15 @@
       "sr_critique_ready": "Kritiek klaar."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Opgeslagen vluchtbespreking niet beschikbaar",
+      "debrief_unavailable_body": "De nieuwste vluchtbespreking ontbreekt of kan niet worden gelezen. Ga terug naar het menu om een nieuwe vlucht te starten.",
+      "guided_idea_before_trials": "Vastgelegd vóór de proeven",
+      "guided_idea_saved": "Opgeslagen idee",
+      "guided_idea_timing_unknown": "Het tijdstip van dit opgeslagen idee is niet vastgelegd.",
+      "guided_idea_latest": "Laatst opgeslagen idee",
+      "guided_idea_latest_prediction": "Laatst opgeslagen voorspelling: {prediction}",
+      "guided_idea_saved_prediction": "Opgeslagen voorspelling: {prediction}",
+      "milestone_stall_recovery": "De vleugel is op dit moment niet meer overtrokken. Eén waarneming toont geen blijvend herstel aan.",
       "game_controls": "🎮 SPELBESTURING",
       "cancel": "Annuleren",
       "learn": "Leren",
@@ -56404,6 +56413,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTATIE — neus omhoog (W)",
+      "hud_rotate_touch": "ROTATIE — sleep vanuit het midden omhoog",
+      "hud_flare": "AFVANGEN — breng de neus zacht omhoog met W",
+      "hud_flare_touch": "AFVANGEN — sleep vanuit het midden omhoog",
+      "landing_touch_power": "Sleep omlaag langs de rechterrand om het vermogen tot ~30% te verminderen. De snelheid neemt af.",
+      "landing_touch_flare": "Sleep vlak boven de baan (~10 ft) vanuit het midden voorzichtig omhoog om de neus te heffen. Streef bij de landing naar een daalsnelheid onder 200 fpm.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92043,6 +92058,18 @@
     "card_progress": "Kaart {n} van {total}",
     "add_words": "Voeg woorden toe om te beginnen met oefenen.",
     "round_complete": "Ronde voltooid. Start een nieuwe ronde of herhaal de woorden die je hebt gemarkeerd.",
-    "practice_label": "Woorden oefenen"
+    "practice_label": "Woorden oefenen",
+    "use_mine_help": "Het HTML-bestand gebruikt je lettertype, tekstgrootte en afstand.",
+    "preparing_reading": "Je leesinstellingen worden toegevoegd…",
+    "font_not_embedded": "Je lettertype kon niet aan het bestand worden toegevoegd, dus het gebruikt het systeemlettertype."
+  },
+  "reading_settings": {
+    "title": "Leesinstellingen",
+    "smaller": "Kleinere tekst",
+    "larger": "Grotere tekst",
+    "overlay": "Kleuroverlay",
+    "ruler": "Leesliniaal",
+    "use_mine": "Mijn leesinstellingen gebruiken",
+    "use_mine_help": "Drukt af met je lettertype, tekstgrootte en afstand."
   }
 }

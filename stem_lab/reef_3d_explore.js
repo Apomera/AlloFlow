@@ -122,7 +122,8 @@
     mushroom_coral: ['coral', 'sessile', 0.22, 1, 25], boulder_coral: ['coral', 'sessile', 1.8, 1, 25],
     cauliflower_coral: ['coral', 'sessile', 0.45, 1, 20], foliose_coral: ['coral', 'sessile', 0.85, 2, 20],
     reef_star: ['structure', 'sessile', 1.0, 1, 20], reef_ball: ['structure', 'sessile', 1.2, 1, 30],
-    coral_tree_nursery: ['structure', 'sessile', 2.6, 3, 20]
+    coral_tree_nursery: ['structure', 'sessile', 2.6, 3, 20],
+    firefish: ['fish', 'hover', 0.09, 6, 60], copperband_butterflyfish: ['fish', 'pair', 0.2, 1, 25]
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
@@ -143,7 +144,8 @@
     blue_sea_star: 'flat', sea_cucumber: 'sand', bluespotted_stingray: 'channel', long_spined_urchin: 'reef', crown_of_thorns: 'garden', nudibranch: 'reef',
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
-    porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden'
+    porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
+    firefish: 'bommieAbove', copperband_butterflyfish: 'garden'
   };
   function speciesInfo(Species, id) {
     var raw = null, fb = INFO[id] || null;
@@ -511,13 +513,16 @@
   }
   function V(T, x, y, z) { return new T.Vector3(x, y, z); }
   function buildBranching(T, R, H, variant, sides, detail, lite, broken) {
+    var far = lite || detail === 'far'; detail = detail === true;
     var b = new Builder(), style = variant % 3, phase = variant * 1.71 + 0.4, tone = coralTone(H, broken ? [1, 1, 1] : null), steps = detail ? 4 : 2;
     // Spend long-shaft subdivisions on more live growing tips. Short, plump
     // branchlets give the crown its density; two cap rings soften the ends.
-    b.caps = lite ? 1 : 2;
+    b.caps = far ? 1 : 2;
+    // Every tier samples the same colony. Dropping branches or changing the
+    // denominator in their radial layout made anchored coral appear to move.
     var k, a, dx, dz, curve, tmp = new T.Vector3();
     if (style === 0) {
-      var fingers = detail ? 14 : lite ? 6 : 8;
+      var fingers = 14;
       for (k = 0; k < fingers; k++) {
         a = phase + k * 2.39996; dx = Math.cos(a); dz = Math.sin(a);
         var rr = R * 0.61 * Math.sqrt((k + 0.5) / fingers), top = H * (0.72 + 0.27 * ((k * 0.37 + variant * 0.11) % 1)) * (1 - 0.14 * rr / R), lean = R * (0.05 + 0.11 * ((k * 0.71) % 1)), bend = R * 0.11 * Math.sin(k * 1.8 + phase);
@@ -525,44 +530,44 @@
         // upward at their tips. Lateral growth replaces a few bare main shafts.
         curve = [V(T, dx * rr * 0.61, -0.01, dz * rr * 0.61), V(T, dx * rr * 0.88 - dz * bend, top * 0.27, dz * rr * 0.88 + dx * bend), V(T, dx * (rr + lean) + dz * bend * 0.35, top * 0.73, dz * (rr + lean) - dx * bend * 0.35), V(T, dx * (rr + lean * 0.78), top, dz * (rr + lean * 0.78))];
         b.tube(T, curve, R * (0.068 + 0.009 * (k % 3)), steps, sides, 0.5, tone);
-        if (!lite && (detail || k < 5)) {
+        {
           var bud = bez(curve, 0.42 + 0.085 * (k % 3), new T.Vector3()), ba = a + (k % 4 < 2 ? 1.1 : -1.1), br = R * (0.2 + 0.04 * (k % 2)), by = Math.min(H * 0.97, top * (0.85 + 0.07 * (k % 3)));
-          b.tube(T, [bud, V(T, bud.x + Math.cos(ba) * br * 0.66, bud.y + (by - bud.y) * 0.13, bud.z + Math.sin(ba) * br * 0.66), V(T, bud.x + Math.cos(ba) * br * 1.05, by - H * 0.13, bud.z + Math.sin(ba) * br * 1.05), V(T, bud.x + Math.cos(ba) * br, by, bud.z + Math.sin(ba) * br)], R * 0.049, 2, sides, 0.43, tone);
+          b.tube(T, [bud, V(T, bud.x + Math.cos(ba) * br * 0.66, bud.y + (by - bud.y) * 0.13, bud.z + Math.sin(ba) * br * 0.66), V(T, bud.x + Math.cos(ba) * br * 1.05, by - H * 0.13, bud.z + Math.sin(ba) * br * 1.05), V(T, bud.x + Math.cos(ba) * br, by, bud.z + Math.sin(ba) * br)], R * 0.049, far ? 1 : 2, sides, 0.43, tone);
         }
       }
-      if (!lite) b.absorb(T, new T.SphereGeometry(1, sides + 3, 4, 0, TAU, 0, Math.PI / 2), new T.Matrix4().makeScale(R * 0.62, H * 0.12, R * 0.62), function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.6; });
+      b.absorb(T, new T.SphereGeometry(1, sides + 3, far ? 2 : 4, 0, TAU, 0, Math.PI / 2), new T.Matrix4().makeScale(R * 0.62, H * 0.12, R * 0.62), function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.6; });
     } else if (style === 1) {
       // A long-dead stand keeps a few eroded stumps of its antlers.
-      var antlers = broken ? (detail ? 5 : 4) : detail ? 6 : lite ? 4 : 5;
+      var antlers = broken ? 5 : 6;
       for (k = 0; k < antlers; k++) {
         a = phase + k * 2.399963 + 0.3 * Math.sin(k * 2.1 + variant); dx = Math.cos(a); dz = Math.sin(a);
         var reach = R * (0.76 + 0.21 * ((k * 0.43 + 0.11) % 1)) * (broken ? 0.82 : 1), endY = H * (0.69 + 0.29 * ((k * 0.61 + 0.3) % 1)) * (broken ? 0.4 + 0.5 * ((k * 0.37 + 0.2) % 1) : 1);
         var curl = R * 0.1 * Math.sin(k * 2.7 + phase);
         curve = [V(T, dx * R * (0.1 + 0.035 * (k % 3)), -0.01, dz * R * (0.1 + 0.035 * (k % 3))), V(T, dx * reach * 0.43 - dz * curl, H * 0.3, dz * reach * 0.43 + dx * curl), V(T, dx * reach * 1.03 - dz * curl * 0.4, endY * 0.72, dz * reach * 1.03 + dx * curl * 0.4), V(T, dx * reach, endY, dz * reach)];
         b.tube(T, curve, R * (0.069 + 0.007 * (k % 3)), steps, sides, 0.52, tone);
-        for (var f = 0; f < (broken ? k % 2 : detail ? 2 : 1); f++) {
+        for (var f = 0; f < (broken ? k % 2 : 2); f++) {
           var base = bez(curve, f ? 0.7 : 0.42, new T.Vector3()), fa = a + (f ? 0.92 : -0.96), fx = Math.cos(fa), fz = Math.sin(fa), len = R * (0.39 - 0.08 * f), rise = H * (0.39 - 0.065 * f);
           var fork = [base, V(T, base.x + fx * len * 0.46, base.y + rise * 0.16, base.z + fz * len * 0.46), V(T, base.x + fx * len * 0.96, base.y + rise * 0.63, base.z + fz * len * 0.96), V(T, base.x + fx * len, Math.min(H * 0.97, base.y + rise), base.z + fz * len)];
-          b.tube(T, fork, R * 0.044, 2, sides, 0.43, tone);
-          if (!lite && !broken && (detail ? f === 0 : k < 2)) {
+          b.tube(T, fork, R * 0.044, far ? 1 : 2, sides, 0.43, tone);
+          if (!broken && f === 0) {
             var forkBase = bez(fork, 0.55, new T.Vector3()), forkA = fa + (f ? -0.9 : 0.9), reach2 = R * (0.16 + 0.04 * (k % 2)), end2 = Math.min(H * 0.98, forkBase.y + H * (0.23 + 0.02 * (k % 3)));
-            b.tube(T, [forkBase, V(T, forkBase.x + Math.cos(forkA) * reach2 * 0.5, forkBase.y + H * 0.045, forkBase.z + Math.sin(forkA) * reach2 * 0.5), V(T, forkBase.x + Math.cos(forkA) * reach2, end2 - H * 0.06, forkBase.z + Math.sin(forkA) * reach2), V(T, forkBase.x + Math.cos(forkA) * reach2, end2, forkBase.z + Math.sin(forkA) * reach2)], R * 0.027, 2, sides, 0.35, tone);
+            b.tube(T, [forkBase, V(T, forkBase.x + Math.cos(forkA) * reach2 * 0.5, forkBase.y + H * 0.045, forkBase.z + Math.sin(forkA) * reach2 * 0.5), V(T, forkBase.x + Math.cos(forkA) * reach2, end2 - H * 0.06, forkBase.z + Math.sin(forkA) * reach2), V(T, forkBase.x + Math.cos(forkA) * reach2, end2, forkBase.z + Math.sin(forkA) * reach2)], R * 0.027, far ? 1 : 2, sides, 0.35, tone);
           }
         }
       }
     } else {
-      b.tube(T, [V(T, 0, -0.01, 0), V(T, 0, H * 0.15, 0), V(T, R * 0.02, H * 0.3, 0), V(T, 0, H * 0.42, 0)], R * 0.145, lite ? 3 : 2, sides, 0.2, tone);
-      var twigs = detail ? 6 : lite ? 1 : 2, boughs = detail ? 6 : lite ? 4 : 5;
+      b.tube(T, [V(T, 0, -0.01, 0), V(T, 0, H * 0.15, 0), V(T, R * 0.02, H * 0.3, 0), V(T, 0, H * 0.42, 0)], R * 0.145, 2, sides, 0.2, tone);
+      var twigs = 6, boughs = 6;
       for (k = 0; k < boughs; k++) {
         a = phase + k * TAU / boughs + 0.12 * Math.sin(k * 2.3 + phase); dx = Math.cos(a); dz = Math.sin(a);
         var span = R * (0.82 + 0.15 * ((k * 0.57) % 1));
         var bendY = H * 0.045 * Math.sin(k * 2.1 + phase);
         curve = [V(T, 0, H * 0.38, 0), V(T, dx * span * 0.3, H * 0.46 + bendY, dz * span * 0.3), V(T, dx * span * 0.8, H * 0.49 + bendY, dz * span * 0.8), V(T, dx * span, H * 0.63 + bendY, dz * span)];
-        b.tube(T, curve, R * 0.061, lite ? 4 : 2, sides, 0.35, tone);
+        b.tube(T, curve, R * 0.061, 2, sides, 0.35, tone);
         for (var w = 0; w < twigs; w++) {
           var tt = 0.2 + w * (0.72 / Math.max(1, twigs - 1)), tb = bez(curve, tt, tmp).clone(), top2 = H * (0.82 + 0.16 * (((k + w) * 0.39) % 1));
           var spread = (w % 2 ? -1 : 1) * R * (0.12 + 0.06 * (1 - tt)), tx = tb.x + dx * R * 0.055 - dz * spread, tz = tb.z + dz * R * 0.055 + dx * spread;
-          b.tube(T, [tb, V(T, lerp(tb.x, tx, 0.65), tb.y + (top2 - tb.y) * 0.2, lerp(tb.z, tz, 0.65)), V(T, tx + dx * R * 0.02, top2 - H * 0.1, tz + dz * R * 0.02), V(T, tx + dx * R * 0.012, top2, tz + dz * R * 0.012)], R * (detail ? 0.034 : 0.037), lite ? 3 : detail || (k < 3 && w === 1) ? 2 : 1, sides, 0.39, tone);
+          b.tube(T, [tb, V(T, lerp(tb.x, tx, 0.65), tb.y + (top2 - tb.y) * 0.2, lerp(tb.z, tz, 0.65)), V(T, tx + dx * R * 0.02, top2 - H * 0.1, tz + dz * R * 0.02), V(T, tx + dx * R * 0.012, top2, tz + dz * R * 0.012)], R * 0.034, far ? 1 : 2, sides, 0.39, tone);
         }
       }
     }
@@ -571,7 +576,8 @@
   // knobby: a lobed Porites head of rounded hummocks with pale crowns; without
   // it, the smooth dome of a brain coral (its valleys come from the material).
   function buildMassive(T, R, H, variant, detail, knobby) {
-    var seg = detail ? 34 : 16, rings = detail ? 15 : 8, ph = variant * 2.17, theta = Math.PI * 0.58, low = Math.cos(theta), knobs = [];
+    var far = detail === 'far'; detail = detail === true;
+    var seg = far ? 12 : detail ? 34 : 16, rings = far ? 6 : detail ? 15 : 8, ph = variant * 2.17, theta = Math.PI * 0.58, low = Math.cos(theta), knobs = [];
     var g = new T.SphereGeometry(1, seg, rings, 0, TAU, 0, theta), pos = g.attributes.position;
     for (var k = 0; k < pos.count; k++) {
       var x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k);
@@ -590,29 +596,34 @@
     return b.build(T, false);
   }
   function buildPlate(T, R, H, variant, detail) {
-    var segs = detail ? 22 : 14, radii = detail ? [0.3, 0.62, 0.88, 1] : [0.52, 0.9, 1], ph = variant * 1.3, thick = 0.013 + R * 0.031, b = new Builder();
+    var far = detail === 'far'; detail = detail === true;
+    var segs = far ? 10 : detail ? 22 : 14, radii = far ? [0.62, 0.86, 1] : detail ? [0.3, 0.62, 0.86, 0.96, 1] : [0.52, 0.86, 0.96, 1], ph = variant * 1.3, thick = 0.013 + R * 0.031, b = new Builder();
     b.caps = 2;
     b.tube(T, [V(T, 0, -0.01, 0), V(T, -R * 0.03, H * 0.1, 0), V(T, R * 0.04, H * 0.22, -R * 0.02), V(T, 0, H * 0.3, 0)], R * 0.19, 3, detail ? 6 : 5, 0.66, coralTone(H));
     // The growing rim is one continuous, rounded surface shared by the upper
     // and lower faces. Most radial detail is reserved for that curved lip.
-    var shelves = detail ? [[0.73, 0.31, 0.24, 0.09], [1, 0.52, -0.04, -0.015], [0.64, 0.76, -0.23, -0.13]] : [[1, 0.43, 0.02, 0], [0.66, 0.73, -0.21, -0.12]];
+    var shelves = [[0.73, 0.31, 0.24, 0.09], [1, 0.52, -0.04, -0.015], [0.64, 0.76, -0.23, -0.13]];
     shelves.forEach(function (shelf, layer) {
       var rad = R * shelf[0], top = H * shelf[1], ox = R * shelf[2], oz = R * shelf[3], phase = ph + layer * 1.9;
       // Lobed, notched margins: a growing plate is never a cut-out disc.
-      function edge(a) { return rad * (0.86 + 0.085 * Math.sin(3 * a + phase) + 0.05 * Math.sin(5 * a + 2 * phase) + (detail ? 0.028 * Math.sin(9 * a - phase) : 0.015 * Math.sin(2 * a - phase)) - 0.12 * Math.pow(Math.max(0, Math.sin(2 * a + 1.3 * phase)), 10)); }
+      function edge(a) { return rad * (0.86 + 0.085 * Math.sin(3 * a + phase) + 0.05 * Math.sin(5 * a + 2 * phase) + 0.028 * Math.sin(9 * a - phase) - 0.12 * Math.pow(Math.max(0, Math.sin(2 * a + 1.3 * phase)), 10)); }
       function surfaceY(r, a) {
         // Broad shallow cups remain smooth at the middle LOD. Restrict the
         // small folds to the detailed perimeter so they cannot alias into spikes.
-        var lip = smooth(0.32, 1, r), folds = Math.sin(a * 3 + phase) * 0.033 + (detail ? Math.sin(a * 7 - phase) * 0.009 : 0);
-        return top - H * 0.105 * (1 - r * r) + H * 0.045 * r * r + H * 0.07 * r * r * r + rad * folds * lip + H * 0.035 * Math.sin(a + phase) * r;
+        var lip = smooth(0.24, 1, r), folds = Math.sin(a * 3 + phase + r * 0.45) * 0.047 + Math.sin(a * 5 - phase + r * 0.7) * 0.012;
+        folds += Math.sin(a * 7 - phase) * 0.004;
+        return top - H * 0.13 * (1 - r * r) + H * 0.045 * r * r + H * 0.07 * r * r * r + rad * folds * lip + H * 0.035 * Math.sin(a + phase) * r;
       }
       var plate = new Builder(), tops = [], bottoms = [];
       function vertex(r, a, lower, j) {
         var e = edge(a) * r, x = ox + Math.cos(a) * e, z = oz + Math.sin(a) * e, y = surfaceY(r, a), growth = smooth(0.78, 1, r);
-        // Alternate spokes rise and fall: radiating ridges of corallites.
-        if (detail && !lower && r > 0.2 && r < 1) y += (j % 2 ? 1 : -1) * thick * 0.6 * r;
-        // Rolling over at the outer edge removes the sharp cut-paper silhouette.
-        y += lower ? -thick * (1.7 - 0.9 * r) : r === 1 ? -thick * 0.42 : thick * 0.12 * smooth(0.76, 0.94, r);
+        // Continuous shallow folds carry through both faces. Alternating vertex
+        // heights made a corrugated fan and changed its shape abruptly at LOD.
+        y += thick * 0.25 * Math.sin(a * 4 + phase + r * 1.4) * smooth(0.1, 0.65, r);
+        // A sampled elliptical cross-section rolls the tissue over a rounded
+        // growing edge; upper and lower faces meet at one shared outer ring.
+        var rimT = clamp((r - 0.86) / 0.14, 0, 1), half = thick * (1.7 - 0.9 * r) * 0.5;
+        y += -half + (lower ? -1 : 1) * half * Math.sqrt(Math.max(0, 1 - rimT * rimT));
         // Concentric growth bands, a shaded underside and a pale growing rim.
         var light = lower ? 0.5 + 0.14 * r : (0.66 + 0.14 * r + 0.035 * (noise2(x / R * 8 + phase, z / R * 8) - 0.5)) * (0.94 + 0.06 * Math.cos(r * 15 + phase)) + 0.1 * growth;
         return plate.vertex(x, y, z, 0, lower ? -1 : 1, 0, light * (1 + 0.16 * growth), light * (1 + 0.12 * growth), light * (1 + 0.4 * growth));
@@ -644,12 +655,13 @@
   // Table coral (Acropora hyacinthus and kin): a short stalk holds a flat,
   // lobed table of fused branchlets whose upturned tips fringe the margin.
   function buildTable(T, R, H, variant, detail) {
-    var b = new Builder(), ph = variant * 1.37 + 0.3, segs = detail ? 30 : 16, radii = detail ? [0.22, 0.45, 0.68, 0.86, 1] : [0.45, 0.82, 1];
+    var far = detail === 'far'; detail = detail === true;
+    var b = new Builder(), ph = variant * 1.37 + 0.3, segs = far ? 10 : detail ? 30 : 16, radii = far ? [0.45, 0.86, 1] : detail ? [0.22, 0.45, 0.68, 0.86, 0.96, 1] : [0.45, 0.86, 0.96, 1];
     var deck = H * 0.56, thick = R * 0.05, tone = coralTone(H), k, j;
     b.caps = 1;
     b.tube(T, [V(T, 0, -0.01, 0), V(T, R * 0.05, H * 0.18, 0), V(T, -R * 0.04, H * 0.36, R * 0.02), V(T, 0, deck - thick, 0)], R * 0.2, detail ? 3 : 2, detail ? 6 : 4, 0.4, tone);
-    function edge(a) { return R * (0.85 + 0.08 * Math.sin(3 * a + ph) + 0.05 * Math.sin(5 * a - ph) + 0.03 * Math.sin(11 * a + 2 * ph) - 0.09 * Math.pow(Math.max(0, Math.sin(2 * a + ph)), 12)); }
-    function deckY(r, a) { return deck + H * 0.07 * r * r + H * 0.05 * Math.sin(a + ph) * r - H * 0.035 * (1 - r) * (1 - r); }
+    function edge(a) { return R * (0.85 + 0.08 * Math.sin(3 * a + ph) + 0.05 * Math.sin(5 * a - ph) + 0.015 * Math.sin(11 * a + 2 * ph) - 0.09 * Math.pow(Math.max(0, Math.sin(2 * a + ph)), 12)); }
+    function deckY(r, a) { return deck + H * 0.07 * r * r + H * 0.05 * Math.sin(a + ph) * r - H * 0.035 * (1 - r) * (1 - r) + thick * 0.32 * Math.sin(a * 5 + ph + r * 1.8) * smooth(0.08, 0.68, r); }
     var tops = [], lows = [], c0 = b.count();
     b.vertex(0, deckY(0, 0), 0, 0, 1, 0, 0.72, 0.72, 0.72);
     b.vertex(0, deckY(0, 0) - thick * 1.6, 0, 0, -1, 0, 0.42, 0.42, 0.42);
@@ -657,10 +669,10 @@
       var up = [], dn = [];
       for (j = 0; j < segs; j++) {
         var a = j / segs * TAU, e = edge(a) * r, x = Math.cos(a) * e, z = Math.sin(a) * e, y = deckY(r, a), rim = smooth(0.8, 1, r);
-        // Alternating spokes give the deck its radiating rows of branchlets.
-        var ridge = detail && r < 1 ? (j % 2 ? 1 : -1) * thick * 0.45 * r : 0, l = (0.7 + 0.14 * r) * (0.95 + 0.05 * Math.cos(r * 13 + ph));
-        up.push(b.vertex(x, y + ridge, z, 0, 1, 0, l * (1 + 0.2 * rim), l * (1 + 0.16 * rim), l * (1 + 0.5 * rim)));
-        dn.push(r === 1 ? up[j] : b.vertex(x * 0.97, y - thick * (1.6 - 0.9 * r), z * 0.97, 0, -1, 0, 0.4 + 0.1 * r, 0.4 + 0.1 * r, 0.4 + 0.1 * r));
+        var rimT = clamp((r - 0.86) / 0.14, 0, 1), half = thick * (1.6 - 0.9 * r) * 0.5, round = half * Math.sqrt(Math.max(0, 1 - rimT * rimT));
+        var l = (0.7 + 0.14 * r) * (0.95 + 0.05 * Math.cos(r * 13 + ph));
+        up.push(b.vertex(x, y - half + round, z, 0, 1, 0, l * (1 + 0.2 * rim), l * (1 + 0.16 * rim), l * (1 + 0.5 * rim)));
+        dn.push(r === 1 ? up[j] : b.vertex(x, y - half - round, z, 0, -1, 0, 0.4 + 0.1 * r, 0.4 + 0.1 * r, 0.4 + 0.1 * r));
       }
       tops.push(up); lows.push(dn);
     });
@@ -673,16 +685,17 @@
       }
     }
     // Upturned branchlet tips fringe the growing margin and stud the deck.
-    var fringe = detail ? 26 : 10, studs = detail ? 14 : 0;
+    var fringe = 26, studs = 14;
     for (k = 0; k < fringe + studs; k++) {
       var on = k < fringe, aa = on ? (k + 0.5 * hash2(variant, k)) / fringe * TAU : ph + k * 2.39996, rr = on ? 0.95 : 0.25 + 0.65 * Math.sqrt((k - fringe + 0.5) / Math.max(1, studs));
       var ee = edge(aa) * rr, px = Math.cos(aa) * ee, pz = Math.sin(aa) * ee, py = deckY(rr, aa), len = H * (on ? 0.1 + 0.05 * hash2(k, variant + 3) : 0.055), out = on ? R * 0.05 : 0;
-      b.tube(T, [V(T, px * 0.97, py - thick * 0.5, pz * 0.97), V(T, px + Math.cos(aa) * out * 0.5, py + len * 0.4, pz + Math.sin(aa) * out * 0.5), V(T, px + Math.cos(aa) * out, py + len * 0.8, pz + Math.sin(aa) * out), V(T, px + Math.cos(aa) * out, py + len, pz + Math.sin(aa) * out)], R * (on ? 0.024 : 0.02), 2, 3, 0.3, function (t, cap, x, y, z, rgb) { tone(0.6 + 0.4 * t, cap, x, y, z, rgb); });
+      b.tube(T, [V(T, px * 0.97, py - thick * 0.5, pz * 0.97), V(T, px + Math.cos(aa) * out * 0.5, py + len * 0.4, pz + Math.sin(aa) * out * 0.5), V(T, px + Math.cos(aa) * out, py + len * 0.8, pz + Math.sin(aa) * out), V(T, px + Math.cos(aa) * out, py + len, pz + Math.sin(aa) * out)], R * (on ? 0.024 : 0.02), far ? 1 : 2, 3, 0.3, function (t, cap, x, y, z, rgb) { tone(0.6 + 0.4 * t, cap, x, y, z, rgb); });
     }
     return b.build(T, true);
   }
   function buildEncrusting(T, R, H, variant, detail) {
-    var segs = detail ? 28 : 18, rings = detail ? 6 : 3, ph = variant * 0.91;
+    var far = detail === 'far'; detail = detail === true;
+    var segs = far ? 12 : detail ? 28 : 18, rings = detail ? 6 : 3, ph = variant * 0.91;
     var g = polar(T, rings, segs, function (r, a, rgb) {
       // Lobed growth margins meet neighbouring colonies without the repeated
       // circular-pad silhouette. Broad relief remains legible at both LODs;
@@ -692,7 +705,7 @@
       var lumps = noise2(x / R * 3.2 + ph, z / R * 3.2 - ph), rim = smooth(0.74, 1, r);
       var fold = Math.sin(a * 3 + ph + r * 2) * r * r * (1 - r);
       // Knobs and short columns crowd the centre (Montipora, encrusting Porites).
-      var knob = smooth(0.55, 0.84, noise2(x / R * 5.5 + ph * 2, z / R * 5.5 - ph)) * (1 - rim) * (detail ? 1 : 0.5);
+      var knob = smooth(0.55, 0.84, noise2(x / R * 5.5 + ph * 2, z / R * 5.5 - ph)) * (1 - rim);
       var light = 0.66 + 0.13 * lumps + 0.14 * rim + 0.12 * knob;
       rgb[0] = light * (1 + 0.1 * rim); rgb[1] = light * (1 + 0.08 * rim); rgb[2] = light * (1 + 0.3 * rim);
       // A fleshy low mound rolls into the growing margin, with more of the
@@ -753,7 +766,7 @@
   // Fleshy seaweed (Sargassum, Turbinaria): leafy fronds rise and arch from one
   // holdfast; each frond twists, so its leaves catch the light at many angles.
   function buildAlgae(T, R, H, variant, detail, tint) {
-    var far = detail === 'far', b = new Builder(), blades = far ? 4 : detail ? 10 : 6, sections = far ? 3 : detail ? 10 : 6, baseC = tint.base, tipC = tint.tip;
+    var far = detail === 'far', b = new Builder(), blades = 10, sections = far ? 3 : detail ? 10 : 6, baseC = tint.base, tipC = tint.tip;
     b.useExtra('reefBladePhase');
     for (var k = 0; k < blades; k++) {
       var h1 = hash2(variant, k * 5 + 1), h2 = hash2(variant, k * 5 + 2), h3 = hash2(variant, k * 5 + 3);
@@ -776,24 +789,33 @@
   }
   function buildSponge(T, R, H, variant, sides) {
     var b = new Builder();
+    // Every detail tier samples the same three tubes and rounded wall profile.
+    // Additional rim samples soften the osculum without moving its centre.
+    var profile = [[0, 0.82, 0.65], [0.32, 0.94, 0.73], [0.7, 1.10, 0.825], [0.91, 1.11, 0.87], [0.985, 1.08, 0.89], [1.012, 1.01, 0.88], [1.018, 0.94, 0.84], [1.005, 0.86, 0.77], [0.96, 0.76, 0.61], [0.86, 0.70, 0.38], [0.68, 0.40, 0.22], [0.56, 0.08, 0.15]];
     for (var k = 0; k < 3; k++) {
       var a = variant + k * 2.1, d = k ? R * (0.33 + 0.045 * Math.sin(k + variant)) : 0, x = Math.cos(a) * d, z = Math.sin(a) * d, h = H * (1 - k * 0.22);
       var bulge = 0.045 + 0.035 * hash2(k + 12, variant);
-      var radius = R * (0.26 - k * 0.04), profile = [[0, 0.82], [0.32, 0.94], [0.7, 1.10], [0.992, 1.08], [1.012, 0.91], [0.86, 0.70], [0.56, 0.08]], first = b.count();
-      // A rolled lip and recessed cavity leave a real opening at each osculum.
+      var radius = R * (0.26 - k * 0.04), first = b.count();
       for (var row = 0; row < profile.length; row++) for (var j = 0; j < sides; j++) {
         var ang = j / sides * TAU, t = profile[row][0], r = radius * profile[row][1] * (1 + bulge * Math.sin(ang * 3 + a + t * 0.8) + 0.025 * Math.sin(ang * 5 - t * 2));
         var lip = Math.pow(t, 4) * h * (0.026 * Math.sin(ang * 2 + k) + 0.012 * Math.sin(ang * 3 + a));
-        var tone = (row < 4 ? 0.65 + t * 0.25 : row === 4 ? 0.86 : row === 5 ? 0.31 : 0.15) * (0.96 + 0.07 * noise3(Math.cos(ang) * 4, t * 7, Math.sin(ang) * 4));
+        var tone = profile[row][2] * (0.96 + 0.07 * noise3(Math.cos(ang) * 4, t * 7, Math.sin(ang) * 4));
         b.vertex(x * (1 + 0.3 * t * t) + Math.cos(ang) * r * (1.04 - 0.035 * t) + radius * 0.2 * t * t * Math.cos(a), h * t + lip, z * (1 + 0.3 * t * t) + Math.sin(ang) * r * (0.96 + 0.025 * t) + radius * 0.2 * t * t * Math.sin(a), 0, 1, 0, tone, tone, tone);
         if (row) { var q = first + (row - 1) * sides + j, qn = first + (row - 1) * sides + (j + 1) % sides; b.i.push(q, q + sides, qn, qn, q + sides, qn + sides); }
       }
+      // The tapered inner wall closes well below the lip, retaining a shaded
+      // opening instead of letting the background show through its floor.
+      var floor = b.count(), last = first + (profile.length - 1) * sides, fx = 0, fy = 0, fz = 0;
+      for (j = 0; j < sides; j++) { var pi = (last + j) * 3; fx += b.p[pi]; fy += b.p[pi + 1]; fz += b.p[pi + 2]; }
+      b.vertex(fx / sides, fy / sides, fz / sides, 0, 1, 0, 0.15, 0.15, 0.15);
+      for (j = 0; j < sides; j++) b.i.push(last + j, floor, last + (j + 1) % sides);
     }
     return b.build(T, true);
   }
   // Soft coral: a fleshy trunk with branches ending in polyp lobes (sways).
   function buildSoftCoral(T, R, H, variant, detail) {
-    var b = new Builder(), sides = detail ? 5 : 4, steps = detail ? 3 : 3, branches = detail ? 6 : 5;
+    var far = detail === 'far'; detail = detail === true;
+    var b = new Builder(), sides = far ? 3 : detail ? 5 : 4, steps = far ? 2 : 3, branches = 6;
     function tone(t, cap, x, y, z, rgb) {
       var h = clamp(y / H, 0, 1), tissue = noise3(x * 27 + variant, y * 31, z * 27);
       rgb[0] = rgb[1] = rgb[2] = (0.61 + 0.32 * smooth(0.04, 0.85, h) + 0.07 * h) * (0.94 + 0.12 * tissue);
@@ -809,11 +831,11 @@
       b.tube(T, [V(T, dx * R * 0.045 + R * 0.025, H * (0.28 + 0.035 * f), dz * R * 0.045), V(T, dx * R * 0.36 - dz * curl, H * 0.43, dz * R * 0.36 + dx * curl), V(T, tip.x * 1.04 - dz * curl * 0.4, tip.y * 0.82, tip.z * 1.04 + dx * curl * 0.4), tip], R * (0.1 + 0.025 * f), steps, sides, 0.24, tone);
       // Split the fleshy crown into irregular finger-like lobes, rather than
       // ending every branch with an identical round bead.
-      var fingers = detail ? 3 : 2;
+      var fingers = 3;
       for (var j = 0; j < fingers; j++) {
         var fa = a + j * 2.39996 + 0.2 * Math.sin(k + j * 1.73), reach = R * (0.12 + 0.13 * hash2(k + variant, j + 41)), tx = tip.x + Math.cos(fa) * reach, tz = tip.z + Math.sin(fa) * reach;
         var top = tip.y + R * (0.18 + 0.23 * hash2(k + 73, j + variant)), rad = R * (0.069 + 0.013 * hash2(k + 93, j + variant));
-        b.tube(T, [V(T, tip.x, tip.y - R * 0.06, tip.z), V(T, tip.x + (tx - tip.x) * 0.65, tip.y + R * 0.02, tip.z + (tz - tip.z) * 0.65), V(T, tx, top - rad, tz), V(T, tx, top, tz)], rad, detail ? 3 : 2, detail ? 5 : 4, 0.25, tone);
+        b.tube(T, [V(T, tip.x, tip.y - R * 0.06, tip.z), V(T, tip.x + (tx - tip.x) * 0.65, tip.y + R * 0.02, tip.z + (tz - tip.z) * 0.65), V(T, tx, top - rad, tz), V(T, tx, top, tz)], rad, far ? 1 : detail ? 3 : 2, sides, 0.25, tone);
       }
     }
     var geometry = b.build(T, false);
@@ -822,7 +844,7 @@
   }
   // Sea fan: a flat branching lattice that faces across the current (sways).
   function buildFan(T, R, H, variant, detail, sparse) {
-    var b = new Builder(), spokes = sparse ? 3 : detail ? 7 : 5, rows = sparse ? 1 : detail ? 4 : 2;
+    var b = new Builder(), spokes = 7, rows = 4;
     function tone(t, cap, x, y, z, rgb) { rgb[0] = rgb[1] = rgb[2] = (0.65 + 0.32 * clamp(y / H, 0, 1)) * (0.96 + 0.08 * noise3(x * 21 + variant, y * 25, z * 21)); }
     b.useExtra('reefBladePhase'); b.extra.value = variant; b.caps = 1;
     // Linked veins share a phase: a net must bend as one living surface,
@@ -847,12 +869,12 @@
         var p1 = start.clone().lerp(end, 0.32), p2 = start.clone().lerp(end, 0.7);
         p1.y += H * (0.016 + 0.025 * hash2(i + 5, j + variant)); p2.y += H * (0.012 + 0.025 * hash2(j, i + variant));
         p1.z += R * 0.025; p2.z += R * 0.02;
-        b.tube(T, [start, p1, p2, end], R * (0.008 + 0.003 * (1 - t)), 2, 3, 0.1, tone);
+        b.tube(T, [start, p1, p2, end], R * (0.008 + 0.003 * (1 - t)), sparse ? 1 : 2, 3, 0.1, tone);
       }
-      if (!sparse) for (var side = -1; side <= 1; side += 2) {
+      for (var side = -1; side <= 1; side += 2) {
         var tip = point(i, 0.82), twig = point(i, 1);
         twig.x += side * R * (0.06 + 0.05 * hash2(i + variant, side + 3)); twig.y -= H * (0.018 + 0.035 * hash2(i + 27, side + variant));
-        b.tube(T, [tip, tip.clone().lerp(twig, 0.36), tip.clone().lerp(twig, 0.72), twig], R * 0.008, 2, 3, 0.7, tone);
+        b.tube(T, [tip, tip.clone().lerp(twig, 0.36), tip.clone().lerp(twig, 0.72), twig], R * 0.008, sparse ? 1 : 2, 3, 0.7, tone);
       }
     }
     var geometry = b.build(T, false);
@@ -892,6 +914,75 @@
     }
     return src.replace(anchor, function () { return anchor + '\n' + code; });
   }
+  // A cheap single-scattering segment integral. Sunlit particles near the
+  // surface contribute more than the same water below a deep viewpoint.
+  // The scalar form is inlined per colour channel and has a stable horizon.
+  var WATER_COLUMN_SOURCE = [
+    'float reefWaterSource(float extinction,float distanceM,float eyeDepth,float rayUp,float sunFalloff){',
+    'float d=max(0.0,distanceM),k=max(extinction,0.0001);',
+    'float transmission=exp(-k*d);',
+    'float sunPath=max(0.001,k-sunFalloff*clamp(rayUp,-1.0,1.0));',
+    'float sunIntegral=(1.0-exp(-sunPath*d))*k/sunPath;',
+    'float sunlight=exp(-max(0.0,sunFalloff)*max(0.0,eyeDepth));',
+    'return min(1.08*(1.0-transmission),0.36*(1.0-transmission)+0.72*sunlight*sunIntegral);}'
+  ].join('\n');
+  // Normalized Schlick phase: a restrained forward lobe shared by the water
+  // veil and the visible shafts, without additional texture or scene passes.
+  var WATER_SCATTER_PHASE = 'float reefScatterPhase(float cosine){float g=0.48;float denominator=1.0-g*clamp(cosine,-1.0,1.0);return (1.0-g*g)/(denominator*denominator);}';
+
+  // Display choices, not measured spectral data. Fluorescence is a teaching
+  // illustration of visible emission under blue excitation, never UV vision.
+  // It is restricted to living hard coral; other organisms keep their markings.
+  var VISION_SURFACE = [
+    'if(reefVision.y>0.5){',
+    'gl_FragColor.rgb*=0.55;',
+    'float reefGlowLiving=reefFluorescent;',
+    '#ifdef REEF_DECOR_CORAL',
+    'reefGlowLiving*=1.0-step(0.5,vReefSkeleton);',
+    '#endif',
+    'if(reefGlowLiving>0.5){',
+    'float reefGlowSeed=reefFluorSeed,reefGlowStructure=0.62,reefGlowPigment=0.5;',
+    '#ifdef REEF_DECOR_CORAL',
+    // Use the colony's existing local tissue field. The palette and polyp
+    // pattern stay attached to that colony through every detail tier.
+    'reefGlowSeed=reefColonySeed;',
+    'reefGlowPigment=reefTissue;',
+    'reefGlowStructure=clamp(0.38+0.60*reefRim+0.20*reefSepta-0.23*reefPore-0.17*reefGroove+0.045*reefGrowthBands,0.16,1.0);',
+    '#endif',
+    // Illustrative pigment families, not species-specific spectral records.
+    // One family per colony avoids world-space red/green patches crossing it.
+    'float reefGlowFamily=reefHash(vec3(reefGlowSeed*79.0,13.7,5.3));',
+    'vec3 reefGlowGreen=mix(vec3(0.055,0.86,0.16),vec3(0.035,0.72,0.54),smoothstep(0.05,0.70,reefGlowFamily));',
+    'vec3 reefGlowAmber=mix(vec3(1.0,0.34,0.025),vec3(0.95,0.095,0.025),reefGlowSeed);',
+    'vec3 reefGlowColor=mix(reefGlowGreen,reefGlowAmber,smoothstep(0.70,0.84,reefGlowFamily));',
+    // Blue excitation reaches upward-facing tissue more strongly. This
+    // leaves the undersides and recessed cups readable without extra lights.
+    'float reefBlueFacing=0.72;',
+    '#if defined(STANDARD) || defined(PHYSICAL)',
+    'vec3 reefGlowNormal=inverseTransformDirection(normal,viewMatrix);',
+    'reefBlueFacing=0.24+0.76*max(0.0,dot(reefGlowNormal,normalize(vec3(0.42,1.0,0.3))));',
+    '#endif',
+    'float reefGlowTissue=clamp(dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722))*2.3,0.12,0.88);',
+    'float reefExcitation=exp(-0.018*max(0.0,-vReefWorld.y))*reefBlueFacing;',
+    'gl_FragColor.rgb+=reefGlowColor*(0.28+0.86*reefGlowTissue)*(0.72+0.48*reefGlowPigment)*reefGlowStructure*reefExcitation;',
+    '}}'
+  ].join('\n');
+  // Enhance colored midtones while protecting pale sand and highlights. Limit
+  // the gain to available RGB headroom instead of clipping individual channels;
+  // this preserves hue, luminance and the water's distance attenuation.
+  var VISION_GRADE = [
+    'if(reefVision.x>0.5){',
+    'float reefLuma=dot(gl_FragColor.rgb,vec3(0.2126,0.7152,0.0722));',
+    'vec3 reefColorDelta=gl_FragColor.rgb-vec3(reefLuma);',
+    'float reefColorMax=max(max(gl_FragColor.r,gl_FragColor.g),gl_FragColor.b),reefColorMin=min(min(gl_FragColor.r,gl_FragColor.g),gl_FragColor.b);',
+    'float reefColorfulness=smoothstep(0.035,0.22,reefColorMax-reefColorMin);',
+    'float reefChroma=1.0+0.40*reefColorfulness*(1.0-0.55*smoothstep(0.50,0.92,reefLuma));',
+    'float reefHeadroom=min((1.0-reefLuma)/max(0.0001,reefColorMax-reefLuma),reefLuma/max(0.0001,reefLuma-reefColorMin));',
+    'reefChroma=min(reefChroma,max(1.0,reefHeadroom));',
+    'gl_FragColor.rgb=clamp(vec3(reefLuma)+reefColorDelta*reefChroma,0.0,1.0);}'
+  ].join('\n');
+  function visionMode(value) { return value === 'vivid' || value === 'fluorescence' ? value : 'natural'; }
+
   function shaderParts() { return { vCommon: [], vNormal: [], vBegin: [], vProject: [], fCommon: [], fColor: [], fRough: [], fNormal: [], fEmissive: [] }; }
   function applyParts(shader, parts, where) {
     var v = shader.vertexShader, f = shader.fragmentShader;
@@ -909,8 +1000,10 @@
     // the renderer tone-maps and encodes it. Applying ordinary fog afterward
     // would add a second, output-space veil and flatten the reef's colours.
     if (parts.waterColumn) {
-      f = f.replace('#include <tonemapping_fragment>', "#ifdef USE_FOG\nfloat reefOpticalDistance=length(vViewPosition);\nfloat reefMeanDepth=max(0.0,-0.5*(reefWaterEye.y+vReefWorld.y));\nvec3 reefTransmission=exp(-reefWaterExtinction*reefOpticalDistance*(1.0+0.012*reefMeanDepth));\nvec3 reefWaterRay=normalize(vReefWorld-reefWaterEye+vec3(0.0,0.00001,0.0));\nfloat reefColumnLight=mix(0.72,1.12,smoothstep(-0.72,0.6,reefWaterRay.y));\nfloat reefForwardGlow=pow(max(0.0,dot(reefWaterRay,normalize(vec3(0.42,1.0,0.3)))),6.0);\nvec3 reefInscatter=reefWaterScatter*(reefColumnLight+0.1*reefForwardGlow);\ngl_FragColor.rgb=gl_FragColor.rgb*reefTransmission+reefInscatter*(1.0-reefTransmission);\n#endif" + '\n#include <tonemapping_fragment>');
+      f = f.replace('#include <tonemapping_fragment>', VISION_SURFACE + '\n#include <tonemapping_fragment>');
+      f = f.replace('#include <tonemapping_fragment>', "#ifdef USE_FOG\nfloat reefOpticalDistance=length(vViewPosition);\nvec3 reefTransmission=exp(-reefWaterExtinction*reefOpticalDistance);\nvec3 reefWaterRay=(vReefWorld-reefWaterEye)/max(reefOpticalDistance,0.0001);\nfloat reefEyeDepth=max(0.0,-reefWaterEye.y);\nvec3 reefColumnSource=vec3(reefWaterSource(reefWaterExtinction.r,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,reefWaterSunFalloff),reefWaterSource(reefWaterExtinction.g,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,reefWaterSunFalloff),reefWaterSource(reefWaterExtinction.b,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,reefWaterSunFalloff));\nfloat reefForwardPhase=reefScatterPhase(dot(reefWaterRay,normalize(vec3(0.42,1.0,0.3))));\nvec3 reefInscatter=reefWaterScatter*reefColumnSource*(0.88+0.1*reefForwardPhase);\ngl_FragColor.rgb=gl_FragColor.rgb*reefTransmission+reefInscatter;\n#endif" + '\n#include <tonemapping_fragment>');
       f = f.replace('#include <fog_fragment>', '');
+      f = f.replace('#include <encodings_fragment>', VISION_GRADE + '\n#include <encodings_fragment>');
     }
     shader.vertexShader = v; shader.fragmentShader = f;
   }
@@ -1384,7 +1477,7 @@
     var site = normalizeSite(options.site), health = site.health, seed = site.seed, restoration = site.restoration;
     var growth = restoration ? clamp(restoration.yearsSince / 4, 0, 1) : 0;
     var vitality = clamp(0.55 * health.coralCover + 0.25 * (1 - health.bleaching) + 0.2 * (1 - health.algae), 0, 1);
-    var view = options.view === 'first' ? 'first' : 'third';
+    var view = options.view === 'first' ? 'first' : 'third', vision = visionMode(options.vision);
     var scene = new T.Scene(), camera = new T.PerspectiveCamera(60, 1, 0.05, 70), renderer = null;
     var disposed = false, contextLost = false, raf = 0, rafIsTimer = false, lastStamp = null, worldTime = 0, visualTime = 0, frames = 0, paused = false;
     var listeners = [], resizeObserver = null, notifyTimer = 0, lastNotify = -Infinity, lastCheck = -Infinity, lastKey = '', pendingNotify = false;
@@ -1528,7 +1621,7 @@
       });
       loadStep(4, function () {
         var causticTex = own(createCausticTexture(T, high ? 256 : 128));
-        U = { map: { value: causticTex }, time: { value: 4 }, strength: { value: 0.62 }, eye: { value: new T.Vector3() }, extinction: { value: new T.Vector3(0.065, 0.042, 0.030) }, scatter: { value: new T.Color() } };
+        U = { map: { value: causticTex }, time: { value: 4 }, strength: { value: 0.62 }, eye: { value: new T.Vector3() }, extinction: { value: new T.Vector3(0.065, 0.042, 0.030) }, scatter: { value: new T.Color() }, sunFalloff: { value: 0.024 }, vision: { value: new T.Vector2(vision === 'vivid' ? 1 : 0, vision === 'fluorescence' ? 1 : 0) } };
         buildMaterials();
       });
       loadStep(4, buildFloor); loadStep(3, buildBommieMesh);
@@ -1547,7 +1640,8 @@
     function key(name) { return 'reef3dx-' + name + '-v1|' + (derivatives ? 'd' : 'n') + (high ? 'h' : 'l'); }
     function commonFragment(parts, local) {
       parts.waterColumn = true;
-      parts.fCommon.push('uniform vec3 reefWaterExtinction;uniform vec3 reefWaterScatter;uniform vec3 reefWaterEye;');
+      parts.fCommon.push('uniform vec2 reefVision;uniform float reefFluorescent;uniform float reefFluorSeed;');
+      parts.fCommon.push('uniform vec3 reefWaterExtinction;uniform vec3 reefWaterScatter;uniform vec3 reefWaterEye;uniform float reefWaterSunFalloff;', WATER_COLUMN_SOURCE, WATER_SCATTER_PHASE);
       if (derivatives) parts.fCommon.push('#define REEF_DERIVATIVES');
       if (high) parts.fCommon.push('#define REEF_CAUSTIC_LAYERS');
       parts.fCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''), GLSL_NOISE, CAUSTIC_COMMON);
@@ -1557,7 +1651,7 @@
       parts.vProject.push(WORLD_VERTEX + (local ? '\nvReefLocal=position;' : ''));
       parts.fLighting = [CAUSTIC_APPLY.replace('reefCausticStrength*', 'reefCausticStrength*getShadowMask()*'), TORCH_LIGHT];
     }
-    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; bindTorch(shader); }
+    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefWaterSunFalloff = U.sunFalloff; shader.uniforms.reefVision = U.vision; shader.uniforms.reefFluorescent = { value: 0 }; shader.uniforms.reefFluorSeed = { value: 0.37 }; bindTorch(shader); }
     function bindTorch(shader) { shader.uniforms.reefTorchPos = U.torchPos; shader.uniforms.reefTorchDir = U.torchDir; shader.uniforms.reefTorch = U.torch; }
     function immerseOrganisms() {
       // The species guide also uses these models in neutral studio light.
@@ -1571,10 +1665,18 @@
         materials.forEach(function (material) {
           if (!material || seen.has(material) || !(material.isMeshStandardMaterial || material.isMeshPhysicalMaterial)) return;
           seen.add(material);
+          var habitatRoot = object;
+          while (habitatRoot && !habitatRoot.userData.exploreUid) habitatRoot = habitatRoot.parent;
+          // Fixed colonies are batched by species and health; their first UID
+          // identifies the shared material without adding a per-instance channel.
+          var organism = object.userData.exploreUids ? byUid[object.userData.exploreUids[0]] : habitatRoot && byUid[habitatRoot.userData.exploreUid];
+          var fluorescent = material !== phMaterial && organism && organism.info.group === 'coral' && coralState(organism) !== 'dead' ? 1 : 0;
           var original = material.onBeforeCompile, originalKey = material.customProgramCacheKey();
           material.onBeforeCompile = function (shader, renderer) {
             if (original) original.call(this, shader, renderer);
             var parts = shaderParts(); commonFragment(parts, false); bindCaustics(shader);
+            shader.uniforms.reefFluorescent.value = fluorescent;
+            shader.uniforms.reefFluorSeed.value = organism ? hash2(organism.seedInt, 31) : 0.37;
             parts.fColor.push(ABSORB);
             applyParts(shader, parts, 'organism-water');
           };
@@ -1674,9 +1776,16 @@
       return function (shader) {
         var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
         shader.uniforms.reefCoralA = look.a; shader.uniforms.reefCoralB = look.b;
-        parts.vCommon.push('varying vec3 vReefCoralNormal;');
-        parts.vBegin.push('vReefCoralNormal=normal;');
-        parts.fCommon.push('uniform vec4 reefCoralA;uniform vec4 reefCoralB;varying vec3 vReefCoralNormal;');
+        shader.uniforms.reefFluorescent.value = look.a.value.y;
+        parts.vCommon.push('attribute float reefSkeleton;varying float vReefSkeleton;varying vec4 vReefCoralNormal;');
+        parts.vBegin.push('vReefSkeleton=reefSkeleton;');
+        parts.fCommon.push('#define REEF_DECOR_CORAL\n varying float vReefSkeleton;');
+        parts.vBegin.push('vReefCoralNormal=vec4(normal,0.0);');
+        // A colony keeps its own pigment and cup pattern across near/middle/far
+        // LODs. The seed shares the normal varying so mobile varying limits stay
+        // unchanged; its origin is constant within an instance.
+        parts.vProject.push(['mat4 reefColonyFrame=modelMatrix;', '#ifdef USE_INSTANCING', 'reefColonyFrame=modelMatrix*instanceMatrix;', '#endif', 'vReefCoralNormal.w=fract(sin(dot(reefColonyFrame[3].xyz,vec3(12.9898,78.233,39.425)))*43758.5453);'].join('\n'));
+        parts.fCommon.push('uniform vec4 reefCoralA;uniform vec4 reefCoralB;varying vec4 vReefCoralNormal;');
         // A staggered, slightly irregular surface lattice gives actual circular
         // cups instead of slicing spheres through a square 3D voxel grid.
         parts.fCommon.push([
@@ -1704,11 +1813,13 @@
           'return min(abs(length(q)-0.5),abs(length(1.0-q)-0.5));}'
         ].join('\n'));
         parts.fColor.push([
-          'vec3 reefQ=vReefLocal*reefCoralA.w;',
-          'float reefPigment=reefNoise(vReefLocal*11.0+vec3(1.7,5.2,2.9));',
+          'float reefColonySeed=vReefCoralNormal.w;',
+          'vec3 reefColonyOffset=reefColonySeed*vec3(17.3,41.7,29.1);',
+          'vec3 reefQ=vReefLocal*reefCoralA.w+reefColonyOffset;',
+          'float reefPigment=reefNoise(vReefLocal*11.0+reefColonyOffset+vec3(1.7,5.2,2.9));',
           'float reefAA=0.08,reefDetail=0.55,reefGrooveAA=0.06;',
-          'float reefTissue=reefNoise(vReefLocal*6.5+vec3(5.2,1.3,8.1));',
-          'vec3 reefProjection=pow(abs(normalize(vReefCoralNormal)),vec3(8.0));reefProjection/=max(dot(reefProjection,vec3(1.0)),0.0001);',
+          'float reefTissue=reefNoise(vReefLocal*6.5+reefColonyOffset+vec3(5.2,1.3,8.1));',
+          'vec3 reefProjection=pow(abs(normalize(vReefCoralNormal.xyz)),vec3(8.0));reefProjection/=max(dot(reefProjection,vec3(1.0)),0.0001);',
           'float reefGrooveN=0.4;',
           'if(reefCoralB.x>0.5){vec3 maze=vReefLocal*reefCoralB.y;reefGrooveN=reefMeander(maze.yz)*reefProjection.x+reefMeander(maze.xz)*reefProjection.y+reefMeander(maze.xy)*reefProjection.z;}',
           '#ifdef REEF_DERIVATIVES',
@@ -1716,27 +1827,47 @@
           'reefAA=clamp(reefFootprint*0.6,0.015,0.15);reefDetail=1.0-smoothstep(0.22,0.85,reefFootprint);',
           'reefGrooveAA=max(0.02,fwidth(reefGrooveN)*1.2);',
           '#endif',
-          'vec3 reefPolyps=reefPolypField(reefQ.yz,reefDetail,reefAA)*reefProjection.x+reefPolypField(reefQ.xz+vec2(7.2,3.1),reefDetail,reefAA)*reefProjection.y+reefPolypField(reefQ.xy+vec2(2.3,9.1),reefDetail,reefAA)*reefProjection.z;',
+          // Sponges have fine irregular intake pores, not coral polyp cups.
+          // This uniform branch keeps their texture on the same shader family.
+          'vec3 reefPolyps;',
+          'if(reefCoralB.z< -0.5){reefPolyps=vec3(smoothstep(0.53-reefAA,0.77+reefAA,reefNoise(reefQ))*reefDetail,0.0,0.0);}',
+          'else {reefPolyps=reefPolypField(reefQ.yz,reefDetail,reefAA)*reefProjection.x+reefPolypField(reefQ.xz+vec2(7.2,3.1),reefDetail,reefAA)*reefProjection.y+reefPolypField(reefQ.xy+vec2(2.3,9.1),reefDetail,reefAA)*reefProjection.z;}',
           'float reefPore=reefPolyps.x,reefRim=reefPolyps.y,reefSepta=reefPolyps.z;',
-          'float reefGrooveRaw=1.0-smoothstep(0.025,0.12,reefGrooveN);',
+          // Fine growth ridges belong to the upper faces of plates, not to
+          // every coral. Uniform mode branches keep the other forms cheap.
+          'float reefGrowthBands=0.0;',
+          'if(reefCoralB.z>1.5){float reefGrowthPhase=length(vReefLocal.xz)*reefCoralB.w+reefTissue*2.1;float reefGrowthDetail=1.0;',
+          '#ifdef REEF_DERIVATIVES',
+          'reefGrowthDetail=1.0-smoothstep(0.45,1.7,fwidth(reefGrowthPhase));',
+          '#endif',
+          'reefGrowthBands=(sin(reefGrowthPhase)+0.23*sin(reefGrowthPhase*2.0+0.6))*reefProjection.y*reefGrowthDetail;}',
           'float reefGroove=(1.0-smoothstep(0.025,0.12+reefGrooveAA,reefGrooveN))*reefCoralB.x*(1.0-smoothstep(0.12,0.6,reefGrooveAA));',
           // Slow pigment changes sit beneath tiny polyp cups; the growing
           // skeletal ridges remain softly pale instead of sharp white dots.
           'float reefMantle=smoothstep(0.18,0.82,reefPigment);',
           'vec3 reefTissueTint=mix(vec3(0.91,0.955,0.93),vec3(1.045,1.025,1.02),reefMantle);',
-          'diffuseColor.rgb*=reefTissueTint*(1.0-reefCoralA.x*reefPore+reefCoralA.z*(reefRim+0.26*reefSepta))*(0.94+0.12*reefTissue)*(1.0-0.23*reefGroove);',
+          'diffuseColor.rgb*=reefTissueTint*(1.0-reefCoralA.x*reefPore+reefCoralA.z*(reefRim+0.26*reefSepta))*(0.92+0.16*reefTissue)*(1.0-0.23*reefGroove+0.026*reefGrowthBands);',
           ABSORB
         ].join('\n'));
-        parts.fRough.push('roughnessFactor=clamp(roughnessFactor-0.045*reefRim+0.035*reefPore+0.035*reefGroove,0.35,1.0);');
-        // Small raised corallite rims catch light around the recessed polyp cups.
-        parts.fNormal.push(surfaceRelief('(0.0009*reefRim+0.00022*reefSepta-0.0018*reefPore)*reefCoralA.x-0.0011*reefGrooveRaw*reefCoralB.x', '0.28'));
+        // Broad tissue folds stay legible after the tiny cups become subpixel.
+        // Reuse colony-local fields so texture stays attached across every LOD.
+        parts.fRough.push('roughnessFactor=clamp(roughnessFactor-0.045*reefRim+0.035*reefPore+0.055*reefGroove-0.012*reefGrowthBands+0.065*(0.5-reefTissue)-0.025*reefMantle,0.35,1.0);');
+        // Filter both colour and relief at the same footprint to avoid distant
+        // maze shimmer. Raised lips surround recessed, gently folded tissue.
+        parts.fNormal.push(surfaceRelief('(0.0013*reefRim+0.0003*reefSepta-0.0022*reefPore)*reefCoralA.x-0.0024*reefGroove+0.00045*reefGrowthBands+0.0045*(reefTissue-0.5)', '0.28'));
+        // Small cavities occlude diffuse skylight rather than baking another
+        // dark stripe into the pigment. Direct sun and the torch still light them.
+        parts.fLighting.push('float reefCavity=clamp(1.0-0.22*reefPore*reefCoralA.x-0.34*reefGroove,0.55,1.0);reflectedLight.indirectDiffuse*=reefCavity;reflectedLight.indirectSpecular*=mix(1.0,reefCavity,0.45);');
         applyParts(shader, parts, 'coral');
       };
     }
-    function plantShader(motion) {
+    function plantShader(motion, fleshy, blade) {
       return function (shader) {
         var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
         shader.uniforms.reefPlantMotion = motion;
+        shader.uniforms.reefPlantTissue = { value: fleshy ? 1 : 0 };
+        shader.uniforms.reefPlantBlade = { value: blade ? 1 : 0 };
+        parts.fCommon.push('uniform vec4 reefPlantMotion;uniform float reefPlantTissue;uniform float reefPlantBlade;');
         parts.vCommon.push([
           'uniform vec4 reefPlantMotion;attribute float reefBladePhase;',
           'vec2 reefPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float ripple=phase*2.0+0.8-(travel+4.0)*t;',
@@ -1745,10 +1876,13 @@
         ].join('\n'));
         parts.vNormal.push([
           'float reefPlantT=clamp(position.y/max(reefPlantMotion.z,0.001),0.0,1.12);',
-          'float reefPlantPhase=reefBladePhase*0.12;mat4 reefPlantFrame=modelMatrix;',
+          'mat4 reefPlantFrame=modelMatrix;',
           '#ifdef USE_INSTANCING',
           'reefPlantFrame=modelMatrix*instanceMatrix;',
           '#endif',
+          // Every branch of one colony shares its lag. Neighbouring colonies
+          // respond a little differently to the same world-aligned current.
+          'float reefPlantPhase=reefBladePhase*0.12+fract(dot(reefPlantFrame[3].xyz,vec3(0.1031,0.11369,0.13787)))*1.7;',
           'float reefSurge=reefPlantMotion.x-dot(reefPlantFrame[3].xz,vec2(0.075,0.055));',
           'vec3 reefFlow=vec3(0.035+0.018*sin(reefSurge),0.0,0.022+0.012*sin(reefSurge+0.4));',
           'float reefPlantPulse=length(reefFlow)/0.065;reefFlow=normalize(reefFlow);',
@@ -1771,22 +1905,42 @@
           '#ifdef REEF_DERIVATIVES',
           'reefPlantDetail*=1.0-smoothstep(0.4,1.5,max(length(dFdx(vReefLocal)),length(dFdy(vReefLocal)))*185.0);',
           '#endif',
-          'float reefPolypCups=smoothstep(0.59,0.76,reefPolyp)*reefPlantDetail;',
-          'diffuseColor.rgb*=0.95+0.09*reefTissue-0.085*reefPolypCups;',
-          'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.08,1.045,1.02),smoothstep(0.72,0.9,reefPolyp)*reefPlantDetail*0.45);',
+          'float reefPolypCups=smoothstep(0.59,0.76,reefPolyp)*reefPlantDetail*(1.0-reefPlantBlade);',
+          // Broad, softly striated blade tissue replaces coral-like cups on algae.
+          'float reefBladeGrain=0.5;',
+          'if(reefPlantBlade>0.5){reefBladeGrain+=(reefNoise(vReefLocal*vec3(96.0,17.0,96.0)+vec3(3.7,0.0,1.9))-0.5)*reefPlantDetail;}',
+          'float reefSoftCrown=reefPlantTissue*smoothstep(0.22,0.72,vReefLocal.y/max(reefPlantMotion.z,0.001));',
+          'float reefPolypCollar=smoothstep(0.46,0.62,reefPolyp)*(1.0-smoothstep(0.62,0.76,reefPolyp))*reefPlantDetail*reefSoftCrown;',
+          'diffuseColor.rgb*=0.95+0.09*reefTissue-0.085*reefPolypCups+0.065*reefPolypCollar-0.035*reefPolypCups*reefSoftCrown+0.11*(reefBladeGrain-0.5)*reefPlantBlade;',
+          'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.08,1.045,1.02),smoothstep(0.72,0.9,reefPolyp)*reefPlantDetail*0.45*(1.0-reefPlantBlade));',
           ABSORB
         ].join('\n'));
-        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.035*reefPolypCups,0.55,0.95);');
-        parts.fNormal.push(surfaceRelief('(reefTissue*0.0007-reefPolypCups*0.00075)*reefPlantDetail', '0.16'));
+        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.035*reefPolypCups+reefPlantBlade*(-0.07+0.06*(reefBladeGrain-0.5)),0.55,0.95);');
+        parts.fNormal.push(surfaceRelief('(reefTissue*0.0007-reefPolypCups*0.00075+reefPolypCollar*0.0005+reefPlantBlade*(reefBladeGrain-0.5)*0.00045)*reefPlantDetail', '0.16'));
+        // A restrained thin-blade light approximation follows the existing sun,
+        // deformed normal and shadow. It vanishes with the light, not an emission.
+        parts.fLighting.push([
+          '#if NUM_DIR_LIGHTS > 0',
+          'if(reefPlantBlade>0.5){',
+          'float reefBladeBack=max(0.0,-dot(normal,directionalLights[0].direction));',
+          'float reefBladeThrough=0.08*reefBladeBack*reefBladeBack*getShadowMask()*(0.85+0.3*reefBladeGrain);',
+          'reflectedLight.directDiffuse+=material.diffuseColor*directionalLights[0].color*reefBladeThrough;',
+          '}',
+          '#endif'
+        ].join('\n'));
         applyParts(shader, parts, 'plant');
       };
     }
     function plantMotion(height, amount) { var m = { value: new T.Vector4(0, 0, height, reducedMotion ? 0 : amount) }; m.amount = amount; plantMotions.push(m); return m; }
     function buildMaterials() {
       function std(params) { params.color = params.color || 0xffffff; params.vertexColors = true; return new T.MeshStandardMaterial(params); }
-      var look = { a: { value: new T.Vector4(0.25, 0, 0.08, 75) }, b: { value: new T.Vector4(0.0, 18, 0, 0) } };
-      var brain = { a: { value: new T.Vector4(0.08, 0, 0.05, 60) }, b: { value: new T.Vector4(1.0, 28, 0, 0) } };
-      var sponge = { a: { value: new T.Vector4(0.35, 0, 0.0, 30) }, b: { value: new T.Vector4(0, 18, 0, 0) } };
+      var look = { a: { value: new T.Vector4(0.25, 1, 0.08, 75) }, b: { value: new T.Vector4(0.0, 18, 0, 0) } };
+      var brain = { a: { value: new T.Vector4(0.08, 1, 0.05, 60) }, b: { value: new T.Vector4(1.0, 28, 0, 0) } };
+      // The same shader family gives Porites-like heads fine compact cups,
+      // and foliose/table colonies subtle growth ridges on their upper faces.
+      var massive = { a: { value: new T.Vector4(0.17, 1, 0.055, 118) }, b: { value: new T.Vector4(0, 18, 1, 0) } };
+      var plate = { a: { value: new T.Vector4(0.2, 1, 0.075, 96) }, b: { value: new T.Vector4(0, 18, 2, 135) } };
+      var sponge = { a: { value: new T.Vector4(0.35, 0, 0.0, 132) }, b: { value: new T.Vector4(0, 18, -1, 0) } };
       U.substrate = { value: own(createSubstrateTexture(T)) };
       // Dive light: x = power (0 when off), y and z = cone edge cosines, w = reach in metres.
       U.torchPos = { value: new T.Vector3() }; U.torchDir = { value: new T.Vector3(0, -0.3, -1).normalize() }; U.torch = { value: new T.Vector4(0, TORCH_OUTER, TORCH_INNER, TORCH_REACH) };
@@ -1794,9 +1948,11 @@
       mats.rock = patch(std({ roughness: 0.92 }), 'rock', rockShader);
       mats.coral = patch(std({ roughness: 0.82 }), 'coral', coralShader(look));
       mats.brain = patch(std({ roughness: 0.8 }), 'coral', coralShader(brain));
+      mats.massive = patch(std({ roughness: 0.88 }), 'coral', coralShader(massive));
+      mats.plate = patch(std({ roughness: 0.82 }), 'coral', coralShader(plate));
       mats.sponge = patch(std({ roughness: 0.88 }), 'coral', coralShader(sponge));
-      mats.algae = patch(std({ roughness: 0.65, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.22, 1)));
-      mats.soft = patch(std({ roughness: 0.76 }), 'plant', plantShader(plantMotion(0.45, 0.55)));
+      mats.algae = patch(std({ roughness: 0.65, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.22, 1), false, true));
+      mats.soft = patch(std({ roughness: 0.76 }), 'plant', plantShader(plantMotion(0.45, 0.55), true));
       mats.fan = patch(std({ roughness: 0.7 }), 'plant', plantShader(plantMotion(0.85, 0.35)));
     }
 
@@ -1909,7 +2065,7 @@
         // vertices. Total rock geometry stays below the previous uniform grid.
         var large = bm.r >= 1.65, rings = high ? (large ? 14 : 8) : (large ? 9 : 6), segs = high ? (large ? 34 : 22) : (large ? 20 : 14);
         var first = b.count(), k, s;
-        spans.push({ x: bm.x, z: bm.z, v0: first, i0: b.i.length });
+        spans.push({ x: bm.x, z: bm.z, v0: first, i0: b.i.length, crownEnd: first + 1 + (rings - 1) * segs });
         b.vertex(bm.x, bm.heightAt(bm.x, bm.z), bm.z, 0, 1, 0, 1, 1, 1);
         for (k = 1; k <= rings; k++) {
           var rn = Math.pow(k / rings, 0.82);
@@ -1929,6 +2085,32 @@
       var g = own(b.build(T, true)), pos = g.attributes.position, nor = g.attributes.normal, col = g.attributes.color, rgb = [0, 0, 0];
       for (var i = 0; i < pos.count; i++) { crustColor(pos.getX(i), pos.getY(i), pos.getZ(i), smooth(0.2, 0.8, nor.getY(i)), rgb); col.setXYZ(i, rgb[0], rgb[1], rgb[2]); }
       col.needsUpdate = true;
+      // Let light follow the same continuous limestone surface used by the
+      // attached colonies. Area-averaged radial triangles otherwise leave
+      // broad spokes across the shoulders. Keep their original pigment, all
+      // picking vertices, and the forced rim/skirt normals exactly as built.
+      spans.forEach(function (sp, bi) {
+        var bm = bommies[bi], epsilon = Math.min(0.025, bm.r * 0.02);
+        for (var j = sp.v0; j < sp.crownEnd; j++) {
+          var x = pos.getX(j), z = pos.getZ(j), dx = x - bm.x, dz = z - bm.z;
+          var lx = dx * bm.c + dz * bm.s, lz = -dx * bm.s + dz * bm.c;
+          var radius = Math.hypot(lx, lz) / bm.edge(Math.atan2(lz, lx));
+          var blend = 1 - smooth(0.76, 0.96, radius);
+          if (blend <= 0) continue;
+          var xp = bm.heightAt(x + epsilon, z), xm = bm.heightAt(x - epsilon, z);
+          var zp = bm.heightAt(x, z + epsilon), zm = bm.heightAt(x, z - epsilon);
+          if (!(xp > NONE && xm > NONE && zp > NONE && zm > NONE)) continue;
+          var nx = -(xp - xm) / (2 * epsilon), nz = -(zp - zm) / (2 * epsilon);
+          var length = Math.sqrt(nx * nx + 1 + nz * nz);
+          if (!isFinite(length) || length <= 0) continue;
+          nx = lerp(nor.getX(j), nx / length, blend);
+          var ny = lerp(nor.getY(j), 1 / length, blend);
+          nz = lerp(nor.getZ(j), nz / length, blend);
+          length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+          if (length > 0) nor.setXYZ(j, nx / length, ny / length, nz / length);
+        }
+      });
+      nor.needsUpdate = true;
       // One identity instance with a white tint draws exactly as a plain mesh and
       // shares the decor rocks' instanced program: one less shader to link.
       bommieMesh = new T.InstancedMesh(g, mats.rock, 1); bommieMesh.setMatrixAt(0, new T.Matrix4()); bommieMesh.setColorAt(0, new T.Color(1, 1, 1));
@@ -2965,7 +3147,9 @@
       var skirt = [];
       for (k = 0; k < segs; k++) { var ak = k / segs * TAU, xs = x0 + Math.cos(ak) * ring[k], zs = z0 + Math.sin(ak) * ring[k], ys = top.at(xs, zs); skirt.push(put(xs, zs, (ys > NONE ? ys : cy) - 0.05, 0.86)); }
       for (k = 0; k < segs; k++) { var e0 = grid[rings - 1][k], e1 = grid[rings - 1][(k + 1) % segs]; b.i.push(e0, e1, skirt[(k + 1) % segs], e0, skirt[(k + 1) % segs], skirt[k]); }
-      var geo = own(b.build(T, false)), mesh = new T.InstancedMesh(geo, mats.coral, 1);
+      var geo = own(b.build(T, false));
+      geo.setAttribute('reefSkeleton', new T.InstancedBufferAttribute(new Float32Array([1]), 1));
+      var mesh = new T.InstancedMesh(geo, mats.coral, 1);
       mesh.setMatrixAt(0, new T.Matrix4()); mesh.setColorAt(0, new T.Color(1, 1, 1));
       mesh.name = 'reef-explore-feeding-scar'; mesh.receiveShadow = high; mesh.userData = { decorative: true, scar: true, hostUid: hostUid, centre: [x0, cy, z0], radius: rs };
       scene.add(mesh);
@@ -3237,8 +3421,12 @@
     }
     function perfShadowPass() { leanShadowCasters(); for (var i = 0; i < groups.length; i++) for (var m = 0; m < groups[i].meshes.length; m++) { var mesh = groups[i].meshes[m]; if (mesh.perfShadowCount !== undefined) mesh.count = mesh.perfShadowCount; } }
     function perfMainCount() { if (this.perfMainCount !== undefined) this.count = this.perfMainCount; }
-    // How far an organism stays drawn: small animals vanish into the haze sooner; the governor shortens it.
-    function drawDistance(o) { return Math.min(cullDist, 8 + o.radius * 30) * (0.5 + 0.5 * gov.scale); }
+    // Small animals vanish into the haze sooner; only mobile life uses adaptive reach.
+    function drawDistance(o) {
+      var reach = Math.min(cullDist, 8 + o.radius * 30);
+      // Anchored life remains part of the same landscape under renderer load.
+      return o.path ? reach * (0.5 + 0.5 * gov.scale) : reach;
+    }
     function refreshGroups(cx, cy, cz, cone) {
       var box = perfShadowBox();
       if (box && scene.onBeforeRender !== perfShadowPass) scene.onBeforeRender = perfShadowPass;
@@ -3921,13 +4109,13 @@
         var c = pickC(P.form[form], c1), sh = 0.88 + 0.24 * c2;
         return [c[0] * sh, c[1] * sh, c[2] * sh];
       }
-      function add(kind, x, y, z, yaw, sx, sy, sz, color, tx, tz, tier) {
+      function add(kind, x, y, z, yaw, sx, sy, sz, color, tx, tz, tier, skeleton) {
         var tall = DECOR_H[kind] * sy > 0.42;
         // Obstacles never depend on the tier, so the diver and fish move the same on both.
         if (tall) stampTop(x, z, 0.38 * Math.max(sx, sz), y + DECOR_H[kind] * sy * 0.9);
         // The light tier keeps every large colony and thins the small ones.
         if (!high && (tall ? tier > 0.6 && DECOR_H[kind] * sy < 0.62 : tier > 0.36)) return;
-        (lists[kind] = lists[kind] || []).push([x, y, z, yaw, sx, sy, sz, color, tx || 0, tz || 0]);
+        (lists[kind] = lists[kind] || []).push([x, y, z, yaw, sx, sy, sz, color, tx || 0, tz || 0, skeleton || 0]);
       }
       function floorTilt(x, z, out) {
         out[0] = clamp(-(terrain.floorY(x + 0.16, z) - terrain.floorY(x - 0.16, z)) / 0.32, -0.85, 0.85);
@@ -3951,11 +4139,11 @@
           for (var q = 0; q < parts; q++) {
             var pa = yaw + q * TAU / parts, pd = rt * 0.42, ps = Math.min(cap, sub) * (0.85 + 0.3 * hr(jk * 4 + q, 24)), px = x + Math.cos(pa) * pd, pz = z + Math.sin(pa) * pd;
             var py = head ? head.heightAt(px, pz) : terrain.floorY(px, pz);
-            add(form, px, (py > NONE && Math.abs(py - y) < 0.6 ? py : y) - 0.025 * ps, pz, yaw + q * 2.1, ps, ps * tallness, ps, c, tx * anchor, tz * anchor, q ? hr(jk * 4 + q, 25) : tier);
+            add(form, px, (py > NONE && Math.abs(py - y) < 0.6 ? py : y) - 0.025 * ps, pz, yaw + q * 2.1, ps, ps * tallness, ps, c, tx * anchor, tz * anchor, q ? hr(jk * 4 + q, 25) : tier, st === FRESH ? 1 : 0);
           }
           return;
         }
-        add(form, x, y - 0.025 * s, z, yaw, s * (0.9 + 0.2 * j2), s * tallness, s * (1.1 - 0.2 * j2), c, tx * anchor, tz * anchor, tier);
+        add(form, x, y - 0.025 * s, z, yaw, s * (0.9 + 0.2 * j2), s * tallness, s * (1.1 - 0.2 * j2), c, tx * anchor, tz * anchor, tier, st === FRESH ? 1 : 0);
       }
       function companions(k, x, y, z, depth, st, onHead) {
         // Soft corals, fans and sponges live among the hard corals on every
@@ -4051,7 +4239,7 @@
             if (form3 === 'encrust') {
               // Compact cushions follow a curved shoulder: sink each foot along the normal.
               var cnx = clamp(nx, -2.8, 2.8), cnz = clamp(nz, -2.8, 2.8), sc = rt2 / KIND_R.encrust * 1.25, inset = (0.03 + sc * 0.018) / Math.hypot(cnx, 1, cnz);
-              add('encrust', w.x - cnx * inset, y2 - inset, w.z - cnz * inset, hr(sk, 6) * TAU, sc, 1.2 + 0.5 * hr(sk, 7), sc * 0.92, colonyColor(cell, 'encrust', st2), cnx, cnz, tier2);
+              add('encrust', w.x - cnx * inset, y2 - inset, w.z - cnz * inset, hr(sk, 6) * TAU, sc, 1.2 + 0.5 * hr(sk, 7), sc * 0.92, colonyColor(cell, 'encrust', st2), cnx, cnz, tier2, st2 === FRESH ? 1 : 0);
             } else colony(form3, st2, cell, w.x, y2, w.z, rt2, form3 === 'plate' ? tx * 0.8 : tx * 1.8, form3 === 'plate' ? tz * 0.8 : tz * 1.8, tier2, undefined, sk, bm);
             if (st2 !== FRESH && hr(sk, 9) < 0.5) companions(sk, w.x, y2, w.z, depth2, st2, bm);
           } else if (st2 === MACRO) seaweed(sk, 1 + (hr(sk, 4) < 0.5 ? 1 : 0), w.x, w.z, spacing * 0.35, 0.95, bm);
@@ -4075,34 +4263,27 @@
       var sides = high ? 5 : 4, rockPalette = { stone: lin(0x857b6c), turf: lin(0x5c5338), cca: lin(0xb48a98), turfAmount: 0.3 + 0.6 * algae, ccaAmount: 1 - 0.6 * algae };
       // Seaweed takes its hue from the instance; the blades shade dark to pale.
       var algaeTint = { base: new T.Color(0.46, 0.45, 0.38), tip: new T.Color(1.02, 1.0, 0.84) };
-      // Distant stand-ins: a few dozen triangles each, coloured by the instance.
-      function proxy(parts, plant) {
-        var b = new Builder(); if (plant) b.useExtra('reefBladePhase');
-        parts.forEach(function (p) { b.absorb(T, p[0], p[1], function (x, y, z, nx, ny, nz, rgb) { rgb[0] = rgb[1] = rgb[2] = 0.5 + 0.2 * ny; }); });
-        return b.build(T, false);
-      }
-      function S(x, y, z, sx, sy, sz, ry) { return new T.Matrix4().compose(new T.Vector3(x, y, z), new T.Quaternion().setFromEuler(new T.Euler(0, ry || 0, 0)), new T.Vector3(sx, sy, sz)); }
-      function dome() { return new T.SphereGeometry(1, 7, 3, 0, TAU, 0, Math.PI / 2); }
+      // Distance changes tessellation, never the colony or its placement.
       var KINDS = {
         finger: [function () { return buildBranching(T, 0.35, 0.45, 0, sides, high); }, mats.coral, function () { return buildBranching(T, 0.35, 0.45, 0, 3, false, true); }],
         antler: [function () { return buildBranching(T, 0.4, 0.5, 1, sides, high); }, mats.coral, function () { return buildBranching(T, 0.4, 0.5, 1, 3, false, true); }],
         corym: [function () { return buildBranching(T, 0.38, 0.42, 2, sides, high); }, mats.coral, function () { return buildBranching(T, 0.38, 0.42, 2, 3, false, true); }],
-        table: [function () { return buildTable(T, 0.5, 0.5, 3, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.44, 0.36, 0.06, 10), S(0, 0.3, 0, 1, 1, 1)], [new T.CylinderGeometry(0.07, 0.11, 0.28, 5), S(0, 0.14, 0, 1, 1, 1)]]); }],
-        massive: [function () { return buildMassive(T, 0.4, 0.42, 3, high, true); }, mats.coral, function () { return proxy([[new T.SphereGeometry(1, 9, 4, 0, TAU, 0, Math.PI / 2), S(0, -0.02, 0, 0.4, 0.44, 0.4)]]); }],
-        brain: [function () { return buildMassive(T, 0.4, 0.4, 5, high, false); }, mats.brain, function () { return proxy([[new T.SphereGeometry(1, 9, 4, 0, TAU, 0, Math.PI / 2), S(0, -0.02, 0, 0.4, 0.42, 0.4)]]); }],
-        plate: [function () { return buildPlate(T, 0.45, 0.4, 5, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.42, 0.36, 0.06, 10), S(0, 0.28, 0, 1, 1, 1)], [new T.CylinderGeometry(0.05, 0.07, 0.26, 5), S(0, 0.13, 0, 1, 1, 1)]]); }],
-        encrust: [function () { return buildEncrusting(T, 0.4, 0.08, 2, high); }, mats.coral, function () { return proxy([[new T.CylinderGeometry(0.34, 0.38, 0.07, 9), S(0, 0.02, 0, 1, 1, 1)]]); }],
-        soft: [function () { return buildSoftCoral(T, 0.25, 0.45, 3, high); }, mats.soft, function () { return proxy([[dome(), S(0, 0.08, 0, 0.27, 0.42, 0.27)]], true); }],
+        table: [function () { return buildTable(T, 0.5, 0.5, 3, high); }, mats.plate, function () { return buildTable(T, 0.5, 0.5, 3, 'far'); }],
+        massive: [function () { return buildMassive(T, 0.4, 0.42, 3, high, true); }, mats.massive, function () { return buildMassive(T, 0.4, 0.42, 3, 'far', true); }],
+        brain: [function () { return buildMassive(T, 0.4, 0.4, 5, high, false); }, mats.brain, function () { return buildMassive(T, 0.4, 0.4, 5, 'far', false); }],
+        plate: [function () { return buildPlate(T, 0.45, 0.4, 5, high); }, mats.plate, function () { return buildPlate(T, 0.45, 0.4, 5, 'far'); }],
+        encrust: [function () { return buildEncrusting(T, 0.4, 0.08, 2, high); }, mats.massive, function () { return buildEncrusting(T, 0.4, 0.08, 2, 'far'); }],
+        soft: [function () { return buildSoftCoral(T, 0.25, 0.45, 3, high); }, mats.soft, function () { return buildSoftCoral(T, 0.25, 0.45, 3, 'far'); }],
         fan: [function () { return buildFan(T, 0.5, 0.85, 2, high); }, mats.fan, function () { return buildFan(T, 0.5, 0.85, 2, false, true); }],
-        sponge: [function () { return buildSponge(T, 0.18, 0.42, 4, sides); }, mats.sponge, function () { return proxy([[new T.CylinderGeometry(0.1, 0.08, 0.4, 6), S(0, 0.2, 0, 1, 1, 1)]]); }],
+        sponge: [function () { return buildSponge(T, 0.18, 0.42, 4, high ? 10 : 6); }, mats.sponge, function () { return buildSponge(T, 0.18, 0.42, 4, 5); }],
         algae: [function () { return buildAlgae(T, 0.22, 0.34, 2, high, algaeTint); }, mats.algae, function () { return buildAlgae(T, 0.22, 0.34, 2, 'far', algaeTint); }],
         deadstand: [function () { return buildBranching(T, 0.4, 0.5, 1, sides, high, false, true); }, mats.rock, function () { return buildBranching(T, 0.4, 0.5, 1, 3, false, true, true); }],
         rubble: [function () { return buildRubble(T, 0.3, 13, rockPalette); }, mats.rock, null],
-        rock: [function () { return buildRock(T, 0.4, 7, high, rockPalette); }, mats.rock, function () { return proxy([[new T.IcosahedronGeometry(0.4, 0), S(0, 0.08, 0, 1, 0.6, 1)]]); }]
+        rock: [function () { return buildRock(T, 0.4, 7, high, rockPalette); }, mats.rock, function () { return buildRock(T, 0.4, 7, 7, rockPalette); }]
       };
-      // Spend extra branches and corallites where they can be seen. The middle
-      // distance keeps complete colony silhouettes using low-tier geometry;
-      // a dense landscape need not trade its whole horizon for tiny branchlets.
+      // All detail tiers retain the same branch, cup and frond layout. The
+      // middle distance reduces surface tessellation while the far tier uses
+      // coarser cross-sections on the same anchored shapes.
       var MIDDLE = high ? {
         finger: function () { return buildBranching(T, 0.35, 0.45, 0, 4, false); },
         antler: function () { return buildBranching(T, 0.4, 0.5, 1, 4, false); },
@@ -4119,6 +4300,9 @@
       } : {};
       var mtx = new T.Matrix4(), qt = new T.Quaternion(), qy = new T.Quaternion(), pv = new T.Vector3(), sv = new T.Vector3(), nv = new T.Vector3(), up = new T.Vector3(0, 1, 0), color = new T.Color();
       function lodMesh(geometry, material, n, kind, lod) {
+        // Keep living tissue and bare skeleton in the same draw batch. The
+        // health buffer follows the instance when it changes detail tiers.
+        geometry.setAttribute('reefSkeleton', new T.InstancedBufferAttribute(new Float32Array(n), 1).setUsage(T.DynamicDrawUsage));
         var mesh = new T.InstancedMesh(geometry, material, n);
         mesh.setColorAt(0, color.setRGB(1, 1, 1));
         mesh.instanceMatrix.setUsage(T.DynamicDrawUsage); mesh.instanceColor.setUsage(T.DynamicDrawUsage);
@@ -4132,17 +4316,18 @@
         var list = lists[kind];
         if (!list || !list.length) return;
         var geometry = own(KINDS[kind][0]()), reach = geometry.boundingSphere.radius + geometry.boundingSphere.center.length(), n = list.length;
-        var dk = { kind: kind, n: n, m: new Float32Array(n * 16), c: new Float32Array(n * 3), p: new Float32Array(n * 4), maxD: DECOR_H[kind] < 0.3 ? smallFar : farDist };
+        var dk = { kind: kind, n: n, m: new Float32Array(n * 16), c: new Float32Array(n * 3), s: new Float32Array(n), lod: new Uint8Array(n), p: new Float32Array(n * 4), maxD: DECOR_H[kind] < 0.3 ? smallFar : farDist };
         list.forEach(function (it, k) {
           nv.set(it[8], 1, it[9]).normalize(); qt.setFromUnitVectors(up, nv); qy.setFromAxisAngle(up, it[3]); qt.multiply(qy);
           pv.set(it[0], it[1], it[2]); sv.set(it[4], it[5], it[6]);
           mtx.compose(pv, qt, sv).toArray(dk.m, k * 16);
+          dk.s[k] = it[10];
           dk.c[k * 3] = it[7][0]; dk.c[k * 3 + 1] = it[7][1]; dk.c[k * 3 + 2] = it[7][2];
           dk.p[k * 4] = it[0]; dk.p[k * 4 + 1] = it[1] + DECOR_H[kind] * it[5] * 0.5; dk.p[k * 4 + 2] = it[2]; dk.p[k * 4 + 3] = reach * Math.max(it[4], it[5], it[6]);
         });
         dk.near = lodMesh(geometry, KINDS[kind][1], n, kind, 'near');
         // Every placed item stays readable (positions and colours) for the lab's checks.
-        dk.near.userData.items = { matrices: dk.m, colors: dk.c, centres: dk.p };
+        dk.near.userData.items = { matrices: dk.m, colors: dk.c, centres: dk.p, skeletons: dk.s };
         dk.mid = MIDDLE[kind] ? lodMesh(own(MIDDLE[kind]()), KINDS[kind][1], n, kind, 'mid') : null;
         dk.far = KINDS[kind][2] ? lodMesh(own(KINDS[kind][2]()), KINDS[kind][1], n, kind, 'far') : null;
         decorKinds.push(dk);
@@ -4195,7 +4380,7 @@
       var cone = perfConeFor(camera.fov, camera.aspect);
       refreshGroups(cx, cy, cz, cone);
       decorKinds.forEach(function (dk) {
-        var P = dk.p, M = dk.m, C = dk.c, nearN = 0, midN = 0, farN = 0, nearD = nearDist * gov.scale, maxD = dk.maxD * (0.64 + 0.36 * gov.scale), na = dk.near.instanceMatrix.array, nc = dk.near.instanceColor.array;
+        var P = dk.p, M = dk.m, C = dk.c, S = dk.s, ns = dk.near.geometry.getAttribute('reefSkeleton').array, ms = dk.mid ? dk.mid.geometry.getAttribute('reefSkeleton').array : null, fs = dk.far ? dk.far.geometry.getAttribute('reefSkeleton').array : null, nearN = 0, midN = 0, farN = 0, nearD = nearDist, maxD = dk.maxD, na = dk.near.instanceMatrix.array, nc = dk.near.instanceColor.array;
         var ma = dk.mid ? dk.mid.instanceMatrix.array : null, mc = dk.mid ? dk.mid.instanceColor.array : null;
         var fa = dk.far ? dk.far.instanceMatrix.array : null, fc = dk.far ? dk.far.instanceColor.array : null, q;
         for (var k = 0; k < dk.n; k++) {
@@ -4204,10 +4389,15 @@
           var dx = P[k * 4] - cx, dy = P[k * 4 + 1] - cy, dz = P[k * 4 + 2] - cz, r = Math.min(2, P[k * 4 + 3]), d = Math.sqrt(dx * dx + dy * dy + dz * dz);
           if (d - r > maxD) continue;
           if (d > r + 1.5 && dx * camFwd.x + dy * camFwd.y + dz * camFwd.z < perfConeAt(cone, d) * d - r) continue;
-          // The light tier's stand-ins take over a little sooner: a crowded reef has many crowns.
-          if (d - r < nearD * (ma ? 0.52 : 0.85) || !fa) { for (q = 0; q < 16; q++) na[nearN * 16 + q] = M[k * 16 + q]; nc[nearN * 3] = C[k * 3]; nc[nearN * 3 + 1] = C[k * 3 + 1]; nc[nearN * 3 + 2] = C[k * 3 + 2]; nearN++; }
-          else if (ma && d - r < nearD) { for (q = 0; q < 16; q++) ma[midN * 16 + q] = M[k * 16 + q]; mc[midN * 3] = C[k * 3]; mc[midN * 3 + 1] = C[k * 3 + 1]; mc[midN * 3 + 2] = C[k * 3 + 2]; midN++; }
-          else { for (q = 0; q < 16; q++) fa[farN * 16 + q] = M[k * 16 + q]; fc[farN * 3] = C[k * 3]; fc[farN * 3 + 1] = C[k * 3 + 1]; fc[farN * 3 + 2] = C[k * 3 + 2]; farN++; }
+          // Fixed distance bands and hysteresis stop hovering or a frame-time
+          // fluctuation from repeatedly replacing a familiar colony's shape.
+          var edge = d - r, oldTier = dk.lod[k], nearEdge = nearD * (ma ? 0.52 : 0.85), margin = high ? 1.0 : 0.8;
+          var tier = !fa || edge < nearEdge + (oldTier === 1 ? margin : oldTier ? -margin : 0) ? 1
+            : ma && edge < nearD + (oldTier === 2 ? margin : oldTier === 3 ? -margin : 0) ? 2 : 3;
+          dk.lod[k] = tier;
+          if (tier === 1) { for (q = 0; q < 16; q++) na[nearN * 16 + q] = M[k * 16 + q]; nc[nearN * 3] = C[k * 3]; nc[nearN * 3 + 1] = C[k * 3 + 1]; nc[nearN * 3 + 2] = C[k * 3 + 2]; ns[nearN] = S[k]; nearN++; }
+          else if (tier === 2) { for (q = 0; q < 16; q++) ma[midN * 16 + q] = M[k * 16 + q]; mc[midN * 3] = C[k * 3]; mc[midN * 3 + 1] = C[k * 3 + 1]; mc[midN * 3 + 2] = C[k * 3 + 2]; ms[midN] = S[k]; midN++; }
+          else { for (q = 0; q < 16; q++) fa[farN * 16 + q] = M[k * 16 + q]; fc[farN * 3] = C[k * 3]; fc[farN * 3 + 1] = C[k * 3 + 1]; fc[farN * 3 + 2] = C[k * 3 + 2]; fs[farN] = S[k]; farN++; }
         }
         perfShow(dk.near, nearN); perfShow(dk.mid, midN); perfShow(dk.far, farN);
       });
@@ -4217,6 +4407,8 @@
       mesh.count = n; mesh.visible = n > 0;
       mesh.instanceMatrix.updateRange.offset = 0; mesh.instanceMatrix.updateRange.count = Math.max(16, n * 16); mesh.instanceMatrix.needsUpdate = true;
       mesh.instanceColor.updateRange.offset = 0; mesh.instanceColor.updateRange.count = Math.max(3, n * 3); mesh.instanceColor.needsUpdate = true;
+      var skeleton = mesh.geometry.getAttribute('reefSkeleton');
+      if (skeleton) { skeleton.updateRange.offset = 0; skeleton.updateRange.count = Math.max(1, n); skeleton.needsUpdate = true; }
     }
 
     // ---- Water, light, shafts and motes (visual streams only) --------------------
@@ -4229,9 +4421,9 @@
       var sunDir = new T.Vector3(0.42, 1, 0.3).normalize();
       backdrop = new T.Mesh(own(new T.SphereGeometry(1, 24, 16)), own(new T.ShaderMaterial({
         side: T.BackSide, depthWrite: false, fog: false,
-        uniforms: { topColor: { value: topNear.clone() }, bottomColor: { value: fogNear.clone() }, sunDir: { value: sunDir }, reefCausticTime: U.time },
+        uniforms: { topColor: { value: topNear.clone() }, bottomColor: { value: fogNear.clone() }, sunDir: { value: sunDir }, reefCausticTime: U.time, reefVision: U.vision },
         vertexShader: 'varying vec3 vReefDir;void main(){vReefDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-        fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
+        fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;uniform vec2 reefVision;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
           'float sunward=max(0.0,dot(d,sunDir));float up=smoothstep(-0.10,0.98,d.y);' +
           'vec3 column=bottomColor*mix(0.63,1.0,smoothstep(-0.85,-0.06,d.y));column=mix(column,topColor,up*0.70);' +
           'float swell=sin(d.x*15.0+d.z*8.0-reefCausticTime*0.16+sin(d.z*7.0)*0.55);' +
@@ -4244,7 +4436,7 @@
           'column+=topColor*silver*window*0.065;' +
           'vec3 scatter=max(topColor-bottomColor,vec3(0.0))*(0.13*pow(sunward,4.0)+0.22*pow(sunward,25.0))*smoothstep(0.05,0.72,d.y);' +
           'float sunHalo=pow(sunward,92.0)*0.045;float sunDisc=pow(sunward,1350.0)*0.24;' +
-          'vec3 sunlight=vec3(1.0,0.97,0.85)*(sunHalo+sunDisc)*window;' +
+          'vec3 sunlight=vec3(1.0,0.97,0.85)*(sunHalo+sunDisc)*window*mix(1.0,0.14,reefVision.y);' +
           'gl_FragColor=vec4(min(column+scatter+sunlight,vec3(1.0)),1.0);}'
       })));
       backdrop.name = 'reef-explore-backdrop'; backdrop.renderOrder = -10; backdrop.frustumCulled = false;
@@ -4267,6 +4459,7 @@
       if (derivatives) smat.extensions = { derivatives: true };
       smat.onBeforeCompile = function (shader) {
         var parts = shaderParts(); shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefWaterEye = U.eye;
+        shader.uniforms.reefVision = U.vision; parts.fCommon.push('uniform vec2 reefVision;');
         shader.uniforms.reefSurfaceTop = backdrop.material.uniforms.topColor; shader.uniforms.reefSurfaceDeep = backdrop.material.uniforms.bottomColor;
         if (derivatives) parts.fCommon.push('#define REEF_DERIVATIVES');
         parts.vCommon.push('varying vec3 vReefWorld;'); parts.vProject.push(WORLD_VERTEX);
@@ -4306,7 +4499,7 @@
           'vec3 reefSeaReflected=reefSeaDeep*(0.83+reefSeaSwell*0.21)+reefSeaSky*(0.14+reefSeaCross*0.10+reefSeaSilver*0.18);',
           'vec3 reefSeaThrough=reefSeaSky*(0.94+reefSeaCross*0.12+reefSeaSilver*0.13)+vec3(0.012,0.026,0.023);',
           'float reefSeaSun=max(0.0,dot(normalize(-reefSeaView+vec3(reefSeaNormal.x*0.28,0.0,reefSeaNormal.z*0.28)),normalize(vec3(0.42,1.0,0.3))));',
-          'vec3 reefSeaWarm=vec3(1.0,0.91,0.72)*(pow(reefSeaSun,72.0)*0.040+pow(reefSeaSun,1150.0)*0.37)*reefWindow;',
+          'vec3 reefSeaWarm=vec3(1.0,0.91,0.72)*(pow(reefSeaSun,72.0)*0.040+pow(reefSeaSun,1150.0)*0.37)*reefWindow*mix(1.0,0.14,reefVision.y);',
           'diffuseColor.rgb=mix(reefSeaThrough,reefSeaReflected,reefSeaFresnel)+reefSeaWarm;',
           'diffuseColor.a*=mix(0.47,0.96,reefSeaFresnel)*(0.98+reefSeaCross*0.045);'
         ].join('\n'));
@@ -4328,8 +4521,9 @@
         var mat = own(new T.MeshBasicMaterial({ color: lin(0xd7eddf), transparent: true, opacity: base, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false }));
         mat.onBeforeCompile = function (shader) {
           var parts = shaderParts();
+          shader.uniforms.reefVision = U.vision; parts.fCommon.push('uniform vec2 reefVision;');
           parts.vCommon.push('varying vec2 vReefShaftUv;varying vec3 vReefShaftWorld;'); parts.vBegin.push('vReefShaftUv=uv;');
-          parts.vProject.push('vReefShaftWorld=(modelMatrix*vec4(transformed,1.0)).xyz;'); parts.fCommon.push('varying vec2 vReefShaftUv;varying vec3 vReefShaftWorld;uniform float reefCausticTime;uniform vec3 reefWaterEye;'); shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefWaterEye = U.eye;
+          parts.vProject.push('vReefShaftWorld=(modelMatrix*vec4(transformed,1.0)).xyz;'); parts.fCommon.push('varying vec2 vReefShaftUv;varying vec3 vReefShaftWorld;uniform float reefCausticTime;uniform vec3 reefWaterEye;uniform vec3 reefWaterExtinction;', WATER_SCATTER_PHASE); shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefWaterExtinction = U.extinction;
           parts.fColor.push([
             'vec3 reefBeamSun=normalize(vec3(0.42,1.0,0.3));',
             // Project every point back to the water plane. Light texture then
@@ -4340,7 +4534,7 @@
             'float reefFeather=exp(-3.4*reefAcross*reefAcross)*(1.0-smoothstep(0.60,1.0,reefAcross));',
             // Both endpoints disappear gently; the submerged endpoint cannot
             // leave a horizontal cut through the open water or a deep reef.
-            'float reefBeamDepth=max(0.0,-vReefShaftWorld.y);',
+            'float reefBeamDepth=max(0.0,-vReefShaftWorld.y)/reefBeamSun.y;',
             'float reefFall=smoothstep(0.0,0.28,vReefShaftUv.y)*(1.0-smoothstep(0.94,1.0,vReefShaftUv.y));',
             'vec3 reefBeamView=vReefShaftWorld-reefWaterEye;float reefBeamDistance=length(reefBeamView);',
             'float reefBeamFade=smoothstep(1.0,3.8,reefBeamDistance)*(1.0-smoothstep(11.5,16.5,reefBeamDistance));',
@@ -4348,11 +4542,11 @@
             // A forward scattering lobe makes rays strongest toward the sun,
             // with a quiet ambient component at the edges of the dive view.
             'float reefBeamCos=dot(reefBeamView/max(reefBeamDistance,0.001),reefBeamSun);',
-            'float reefBeamPhase=0.40+0.60*pow(max(0.0,reefBeamCos),3.0);',
+            'float reefBeamPhase=0.24+0.267*reefScatterPhase(reefBeamCos);',
             'float reefBeamPath=1.0-exp(-reefBeamDistance*0.23);',
-            'vec3 reefBeamTransmission=exp(-vec3(0.052,0.024,0.014)*reefBeamDepth);',
+            'vec3 reefBeamTransmission=exp(-reefWaterExtinction*reefBeamDepth);',
             'diffuseColor.rgb*=reefBeamTransmission;',
-            'diffuseColor.a*=reefFeather*reefFall*reefBeamFade*reefAperture*reefBeamPhase*reefBeamPath;'
+            'diffuseColor.a*=reefFeather*reefFall*reefBeamFade*reefAperture*reefBeamPhase*reefBeamPath*mix(1.0,0.14,reefVision.y);'
           ].join('\n'));
           applyParts(shader, parts, 'shaft');
         };
@@ -4383,8 +4577,10 @@
       var pm = own(new T.PointsMaterial({ color: lin(0xb4d9d7), size: 0.023, sizeAttenuation: true, transparent: true, opacity: 0.38, depthWrite: false }));
       pm.onBeforeCompile = function (shader) {
         shader.uniforms.reefWaterEye = U.eye;
+        shader.uniforms.reefVision = U.vision;
         shader.uniforms.reefSnowCenter = snowU.center; shader.uniforms.reefSnowBox = snowU.box; shader.uniforms.reefSnowTime = snowU.time; shader.uniforms.reefSnowTop = snowU.top;
         var parts = shaderParts();
+        parts.fCommon.push('uniform vec2 reefVision;');
         parts.vCommon.push('uniform vec3 reefWaterEye;uniform vec3 reefSnowCenter;uniform vec3 reefSnowBox;uniform float reefSnowTime;uniform float reefSnowTop;attribute vec3 reefSnowDrift;varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowGlow;varying float vReefSnowVeil;');
         parts.vBegin.push('vec3 reefSnowMin=reefSnowCenter-reefSnowBox*0.5;float reefSnowPhase=reefSnowTime*0.19-dot(position.xz,vec2(0.13,0.09));float reefSnowLift=reefSnowTime*0.13+dot(position.xz,vec2(0.08,-0.11));vec3 reefSnowSurge=vec3(-0.17*cos(reefSnowPhase),0.055*sin(reefSnowLift),-0.12*cos(reefSnowPhase+0.45));transformed=reefSnowMin+mod(position+reefSnowDrift*reefSnowTime+reefSnowSurge-reefSnowMin,reefSnowBox);if(transformed.y>reefSnowTop)transformed.y-=reefSnowBox.y;vec3 reefSnowEdge=reefSnowBox*0.5-abs(transformed-reefSnowCenter);float reefSnowEdgeFade=smoothstep(0.0,0.7,min(reefSnowEdge.x,min(reefSnowEdge.y,reefSnowEdge.z)));vReefSnowDepth=length(transformed-reefWaterEye);vReefSnowSeed=fract(position.x*0.37+position.y*0.61);vReefSnowGlow=pow(max(0.0,dot((transformed-reefWaterEye)/max(vReefSnowDepth,0.001),normalize(vec3(0.42,1.0,0.3)))),4.0);float reefSnowPulse=0.91+0.09*sin(reefSnowTime*(0.22+vReefSnowSeed*0.08)+vReefSnowSeed*6.283185);vReefSnowVeil=reefSnowEdgeFade*smoothstep(0.0,0.4,reefSnowTop-transformed.y)*exp(-max(-transformed.y-3.0,0.0)*0.024)*reefSnowPulse;');
         parts.fCommon.push('varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowGlow;varying float vReefSnowVeil;');
@@ -4394,7 +4590,7 @@
         parts.vCommon.push(TORCH_COMMON + 'varying float vReefSnowTorch;');
         parts.vBegin.push('vec3 reefSnowTorchTo=transformed-reefTorchPos;float reefSnowTorchD=max(length(reefSnowTorchTo),0.001);vReefSnowTorch=reefTorch.x*smoothstep(reefTorch.y,reefTorch.z,dot(reefSnowTorchTo/reefSnowTorchD,reefTorchDir))*(1.0-smoothstep(reefTorch.w*0.45,reefTorch.w,reefSnowTorchD))/(reefSnowTorchD*reefSnowTorchD+2.5);');
         parts.fCommon.push('varying float vReefSnowTorch;');
-        parts.fColor.push('float reefSnowLit=min(1.0,vReefSnowTorch*0.3);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.95,0.86),reefSnowLit);diffuseColor.a=min(1.0,diffuseColor.a*(1.0+12.0*reefSnowLit));');
+        parts.fColor.push('float reefSnowLit=min(1.0,vReefSnowTorch*0.3);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,0.95,0.86),reefSnowLit);diffuseColor.a=min(1.0,diffuseColor.a*(1.0+12.0*reefSnowLit))*mix(1.0,0.25,reefVision.y);');
         applyParts(shader, parts, 'snow');
         shader.vertexShader = inject(shader.vertexShader, '#include <logdepthbuf_vertex>', 'gl_PointSize*=(0.36+0.95*vReefSnowSeed*vReefSnowSeed*vReefSnowSeed)*(1.0+0.8*min(1.0,vReefSnowTorch*0.3));', 'snow-size');
       };
@@ -4409,15 +4605,33 @@
       if (Math.abs(depth - lastWaterDepth) < 0.05) return;
       lastWaterDepth = depth;
       var k = waterDepth(depth), murk = 1 + 0.35 * health.algae;
-      scene.fog.color.copy(fogNear).lerp(fogFar, k); scene.background.copy(scene.fog.color);
+      var fluorescent = vision === 'fluorescence', ambient = fluorescent ? 0.34 : 1;
+      U.vision.value.set(vision === 'vivid' ? 1 : 0, fluorescent ? 1 : 0);
+      U.strength.value = 0.62 * (vision === 'vivid' ? 1.14 : 1);
+      scene.fog.color.copy(fogNear).lerp(fogFar, k);
+      if (fluorescent) scene.fog.color.multiplyScalar(0.32);
+      scene.background.copy(scene.fog.color);
       U.extinction.value.set(0.065, 0.042, 0.030).multiplyScalar(murk);
       U.scatter.value.copy(scene.fog.color).convertSRGBToLinear();
       scene.fog.density = (0.027 + 0.0011 * depth) * murk * (high ? 1 : 1.1);
       backdrop.material.uniforms.topColor.value.copy(topNear).lerp(topFar, k); backdrop.material.uniforms.bottomColor.value.copy(scene.fog.color);
+      if (fluorescent) backdrop.material.uniforms.topColor.value.multiplyScalar(0.28);
       // The water column cools gradually as the diver descends, on both quality tiers.
       hemi.color.setRGB(lerp(0.39, 0.17, k), lerp(0.69, 0.43, k), lerp(0.81, 0.65, k));
-      hemi.groundColor.setRGB(lerp(0.20, 0.07, k), lerp(0.26, 0.14, k), lerp(0.22, 0.18, k)); hemi.intensity = 0.42 - 0.08 * k;
-      sun.color.setRGB(lerp(1.0, 0.57, k), lerp(0.96, 0.82, k), lerp(0.84, 0.97, k)); sun.intensity = 1.27 - 0.28 * k;
+      hemi.groundColor.setRGB(lerp(0.20, 0.07, k), lerp(0.26, 0.14, k), lerp(0.22, 0.18, k)); hemi.intensity = (0.42 - 0.08 * k) * ambient;
+      sun.color.setRGB(lerp(1.0, 0.57, k), lerp(0.96, 0.82, k), lerp(0.84, 0.97, k)); sun.intensity = (1.27 - 0.28 * k) * ambient;
+    }
+    function setVision(value) {
+      if (disposed) return;
+      var mode = visionMode(value);
+      if (mode !== vision) {
+        vision = mode;
+        if (U && U.vision) U.vision.value.set(mode === 'vivid' ? 1 : 0, mode === 'fluorescence' ? 1 : 0);
+        lastWaterDepth = -1;
+        if (loaded) updateWater();
+        notify(true);
+      }
+      refresh();
     }
     // ---- Dive light ----------------------------------------------------------------
     // Held at the mask in the first view, along the gaze. In the third it is in
@@ -5519,7 +5733,7 @@
     function snapshot() {
       var info = renderer && renderer.info && renderer.info.render, near = loaded ? nearbyList() : [], f = focusedUid && byUid[focusedUid], eye = cueFrom();
       return {
-        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn,
+        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn, vision: vision,
         diver: { x: r2(diverPos.x), y: r2(diverPos.y), z: r2(diverPos.z), depthM: r1(-diverPos.y), headingDeg: (Math.round(bearing * 180 / Math.PI) % 360 + 360) % 360 },
         // health ('healthy' | 'bleached' | 'dead') is fixed for the dive, so stateKey leaves it out.
         nearby: near.map(function (n) { return cue(n.o, eye, { uid: n.o.uid, speciesId: n.o.speciesId, distanceM: r1(n.d), inView: n.inView, health: coralState(n.o) }); }),
@@ -5530,7 +5744,7 @@
       };
     }
     function stateKey(s) {
-      return [s.ready, s.paused, s.view, s.quality, s.light, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
+      return [s.ready, s.paused, s.view, s.quality, s.light, s.vision, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
         momentKey(s.moments),
         Math.round(s.diver.x), Math.round(s.diver.z), Math.round(s.diver.depthM * 2), Math.round(s.diver.headingDeg / 15), buoyancyKey(s.buoyancy)].join('|');
     }
@@ -5562,6 +5776,9 @@
     }
     function refresh() { requestFrame(); }
     function govern() {
+      // Pausing preserves the scene while a diver studies it or compares views.
+      // Settling frames are not evidence of interactive performance pressure.
+      if (paused) { gov.t0 = null; return; }
       var info = renderer && renderer.info && renderer.info.render;
       if (!info) return;
       // Script time of this frame (world update and draw, from perfBegin), smoothed; the
@@ -5572,12 +5789,14 @@
       perfGovern(Math.max((info.triangles || 0) / TRI_BUDGET, (info.calls || 0) / CALL_BUDGET), gov.cpuMs);
     }
     // Two pressures: the frame's size against the budgets (level 0..3) and its script
-    // time (cpu 0..3). Level spends itself in stages: the decor's and animals' reach
+    // time (cpu 0..3). Level spends itself in stages: mobile animals' reach
     // first (scale 1 to 0.45), then the crowd's density, then how often the shadows are
     // redrawn. It trims only a frame that is over budget AND slow (under about 50 fps): a
     // device that draws the whole reef in time keeps all of it. Script time spends itself
     // too: first more slicing (no visible change), then the crowd's density, then some
-    // reach (fewer far animals to draw, scale down to 0.6). A short peak never trims: a
+    // reach (fewer far animals to draw, scale down to 0.6). Anchored scenery keeps
+    // fixed distance bands and never disappears just because a frame was slow.
+    // A short peak never trims: a
     // mild overrun must last two checks, and what was trimmed comes back once the frame
     // is well inside the budget or fast again.
     function perfGovern(over, cpuMs) {
@@ -5699,6 +5918,21 @@
     }
 
     // ---- Controller ---------------------------------------------------------------------------
+    // A field-guide request looks up the nearest real organism across the
+    // whole reef, without changing focus, movement, population or dive credit.
+    function findSpecies(speciesId) {
+      if (disposed || contextLost || !loaded || typeof speciesId !== 'string' || !Object.prototype.hasOwnProperty.call(INFO, speciesId) || INFO[speciesId][0] === 'structure') return null;
+      var best = null, distance = Infinity;
+      organisms.forEach(function (o) {
+        if (o.speciesId !== speciesId || !o.center || o.restoration || !o.info || ['fish', 'reptile', 'invertebrate', 'coral'].indexOf(o.info.group) < 0) return;
+        var d = surfaceDistance(o);
+        if (d < distance || d === distance && best && o.serial < best.serial) { best = o; distance = d; }
+      });
+      if (!best) return null;
+      updateFrustum();
+      return cue(best, cueFrom(), { uid: best.uid, speciesId: best.speciesId, distanceM: r1(distance),
+        inView: frustum.intersectsSphere(sphere.set(best.center, Math.max(best.radius, 0.05))), health: coralState(best) });
+    }
     function focus(uid) {
       if (disposed || !loaded || uid === null || uid === undefined || !byUid[uid]) return false;
       if (focusedUid !== uid) { focusedUid = uid; notify(true); }
@@ -5750,7 +5984,7 @@
     }
     controller = {
       setView: setView, setPaused: setPaused, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
-      focus: focus, clearFocus: clearFocus, swimTo: swimTo, setLight: setLight, getState: snapshot, resize: resize, dispose: dispose
+      focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
     };
 
     // ---- Picking ---------------------------------------------------------------------------------

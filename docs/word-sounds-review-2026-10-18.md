@@ -2,6 +2,8 @@
 
 October 18, 2026. Nine remaining issues were reproduced after the [seven earlier fixes](word-sounds-refinements-2026-10-17.md) and the [XP and IPA refinements](word-sounds-xp-ipa-refinements-2026-10-17.md). The highest priorities are correct sound comparisons, preserving prepared questions during ordinary practice, and retaining repeated assessment items when returning through setup.
 
+Implementation follow-up: [October 21 refinements and verification](word-sounds-refinements-2026-10-21.md). The findings below record the pre-fix behavior; their historical source locations and diagnostic assertions may no longer apply to the updated code.
+
 ## Recommended priorities
 
 | Priority | Issue | Reproduced consequence |

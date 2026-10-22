@@ -56107,6 +56107,15 @@
       "sr_critique_ready": "نیوکه چمتو ده."
     },
     "flightsim": {
+      "debrief_unavailable_title": "د خوندي شوې الوتنې بیاکتنه نشته",
+      "debrief_unavailable_body": "د وروستۍ الوتنې بیاکتنه نشته یا نه لوستل کېږي. د نوې الوتنې د پیل لپاره غورنۍ ته بېرته لاړ شئ.",
+      "guided_idea_before_trials": "له ازموینو مخکې ثبت شوی",
+      "guided_idea_saved": "خوندي شوی نظر",
+      "guided_idea_timing_unknown": "د دې خوندي شوي نظر وخت نه دی ثبت شوی.",
+      "guided_idea_latest": "وروستی خوندي شوی نظر",
+      "guided_idea_latest_prediction": "وروستۍ خوندي شوې وړاندوینه: {prediction}",
+      "guided_idea_saved_prediction": "خوندي شوې وړاندوینه: {prediction}",
+      "milestone_stall_recovery": "وزر په دې شېبه کې نور په سټال حالت کې نه دی. یوازې یوه کتنه دوامداره رغېدنه نه ثابتوي.",
       "game_controls": "🎮 د لوبې کنټرولونه",
       "formula": "فورمول",
       "the_science": "🔬 ساینس",
@@ -56157,6 +56166,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "پوزه پورته کړئ — پوزه پورته کړئ (W)",
+      "hud_rotate_touch": "پوزه پورته کړئ — له منځه پورته راکش کړئ",
+      "hud_flare": "د ناستې سمون — پوزه په W ورو پورته کړئ",
+      "hud_flare_touch": "د ناستې سمون — له منځه پورته راکش کړئ",
+      "landing_touch_power": "د ښۍ څنډې په اوږدو کې ښکته راکش کړئ څو ځواک شاوخوا 30% ته کم شي. چټکتیا به راکمه شي.",
+      "landing_touch_flare": "د ځغاست‌لیکې سم پورته (~10 ft)، له منځه ورو پورته راکش کړئ څو پوزه پورته شي. له ځمکې سره د تماس پر مهال د ښکته کېدو کچه تر 200 fpm کمه وساتئ.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92185,6 +92200,18 @@
     "card_progress": "کارت {n} له {total} څخه",
     "add_words": "د تمرین د پیل لپاره کلمې ور زیاتې کړئ.",
     "round_complete": "پړاو بشپړ شو. نوی پړاو پیل کړئ یا هغه کلمې بیا وګورئ چې په نښه کړې مو دي.",
-    "practice_label": "د کلمو تمرین"
+    "practice_label": "د کلمو تمرین",
+    "use_mine_help": "د HTML فایل ستاسو فونټ، د متن اندازه او فاصله کاروي.",
+    "preparing_reading": "ستاسو د لوستلو تنظیمات اضافه کېږي…",
+    "font_not_embedded": "ستاسو فونټ فایل ته اضافه نه شو، نو فایل د سیسټم فونټ کاروي."
+  },
+  "reading_settings": {
+    "title": "د لوستلو تنظیمات",
+    "smaller": "کوچنی متن",
+    "larger": "لوی متن",
+    "overlay": "د رنګ پوښ",
+    "ruler": "د لوستلو مټر",
+    "use_mine": "زما د لوستلو تنظیمات کارول",
+    "use_mine_help": "چاپ ستاسو فونټ، د متن اندازه او فاصله کاروي."
   }
 }

@@ -54702,6 +54702,15 @@
       "sr_critique_ready": "Critica este gata."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Analiza de zbor salvată nu este disponibilă",
+      "debrief_unavailable_body": "Cea mai recentă analiză de zbor lipsește sau nu poate fi citită. Revino la meniu pentru a începe un zbor nou.",
+      "guided_idea_before_trials": "Notată înainte de încercări",
+      "guided_idea_saved": "Idee salvată",
+      "guided_idea_timing_unknown": "Momentul acestei idei salvate nu a fost înregistrat.",
+      "guided_idea_latest": "Cea mai recentă idee salvată",
+      "guided_idea_latest_prediction": "Cea mai recentă predicție salvată: {prediction}",
+      "guided_idea_saved_prediction": "Predicție salvată: {prediction}",
+      "milestone_stall_recovery": "Aripa nu mai este în pierdere de portanță în acest moment. O singură observație nu dovedește o redresare susținută.",
       "game_controls": "🎮 COMENZI JOC",
       "cancel": "Anulează",
       "learn": "Învață",
@@ -54755,6 +54764,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ROTAȚIE — ridică botul (W)",
+      "hud_rotate_touch": "ROTAȚIE — glisează în sus din centru",
+      "hud_flare": "REDRESARE — ridică ușor botul cu W",
+      "hud_flare_touch": "REDRESARE — glisează în sus din centru",
+      "landing_touch_power": "Glisează în jos pe marginea din dreapta pentru a reduce puterea la ~30%. Viteza va scădea.",
+      "landing_touch_flare": "Chiar deasupra pistei (~10 ft), glisează ușor în sus din centru pentru a ridica botul. Țintește o coborâre sub 200 fpm la contactul cu solul.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -91003,6 +91018,18 @@
     "card_progress": "Fișa {n} din {total}",
     "add_words": "Adaugă cuvinte pentru a începe exersarea.",
     "round_complete": "Runda s-a încheiat. Începeți o rundă nouă sau recapitulați cuvintele marcate.",
-    "practice_label": "Exersarea cuvintelor"
+    "practice_label": "Exersarea cuvintelor",
+    "use_mine_help": "Fișierul HTML folosește fontul, mărimea textului și spațierea alese de tine.",
+    "preparing_reading": "Se adaugă setările tale de citire…",
+    "font_not_embedded": "Fontul tău nu a putut fi adăugat în fișier, așa că se folosește fontul sistemului."
+  },
+  "reading_settings": {
+    "title": "Setări de citire",
+    "smaller": "Text mai mic",
+    "larger": "Text mai mare",
+    "overlay": "Suprapunere colorată",
+    "ruler": "Riglă de citire",
+    "use_mine": "Folosește setările mele de citire",
+    "use_mine_help": "Tipărește cu fontul, mărimea textului și spațierea alese de tine."
   }
 }

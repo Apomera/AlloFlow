@@ -57819,6 +57819,15 @@
       "sr_critique_ready": "التقييم جاهز."
     },
     "flightsim": {
+      "debrief_unavailable_title": "مراجعة الرحلة المحفوظة غير متاحة",
+      "debrief_unavailable_body": "مراجعة الرحلة الأحدث مفقودة أو لا يمكن قراءتها. عُد إلى القائمة لبدء رحلة جديدة.",
+      "guided_idea_before_trials": "سُجّلت قبل التجارب",
+      "guided_idea_saved": "فكرة محفوظة",
+      "guided_idea_timing_unknown": "لم يُسجَّل توقيت هذه الفكرة المحفوظة.",
+      "guided_idea_latest": "أحدث فكرة محفوظة",
+      "guided_idea_latest_prediction": "أحدث تنبؤ محفوظ: {prediction}",
+      "guided_idea_saved_prediction": "تنبؤ محفوظ: {prediction}",
+      "milestone_stall_recovery": "لم يعد الجناح في حالة انهيار هوائي في هذه اللحظة. لا تكفي ملاحظة واحدة لإثبات تعافٍ مستمر.",
       "game_controls": "🎮 أدوات التحكم باللعبة",
       "cancel": "إلغاء",
       "from": "من",
@@ -57872,6 +57881,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "ارفع المقدمة — ارفع المقدمة (W)",
+      "hud_rotate_touch": "ارفع المقدمة — اسحب للأعلى من المنتصف",
+      "hud_flare": "التسوية للهبوط — ارفع المقدمة برفق باستخدام W",
+      "hud_flare_touch": "التسوية للهبوط — اسحب للأعلى من المنتصف",
+      "landing_touch_power": "اسحب للأسفل على الحافة اليمنى لتقليل القدرة إلى نحو 30%. ستنخفض السرعة.",
+      "landing_touch_flare": "فوق المدرج مباشرة (~10 ft)، اسحب برفق للأعلى من المنتصف لرفع المقدمة. استهدف معدل هبوط أقل من 200 fpm عند ملامسة الأرض.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -96386,6 +96401,24 @@
     "card_progress": "البطاقة {n} من {total}",
     "add_words": "أضف كلمات لبدء الممارسة.",
     "round_complete": "اكتملت الجولة. ابدأ جولة جديدة أو راجع الكلمات التي حدَّدتها.",
-    "practice_label": "ممارسة الكلمات"
+    "practice_label": "ممارسة الكلمات",
+    "use_mine_help": "يستخدم ملف HTML خطك وحجم نصك وتباعدك.",
+    "preparing_reading": "جارٍ إضافة إعدادات القراءة الخاصة بك…",
+    "font_not_embedded": "تعذَّر إضافة خطك إلى الملف، لذا يستخدم الملف خط النظام.",
+    "meaning_choices": "اختيار المعاني",
+    "meaning_choices_help": "تبقى المدخلات ذات التهجئة نفسها منفصلة. حدد المعاني التي تريد تضمينها.",
+    "meaning_number": "المعنى {n}: ",
+    "audio_language_stale": "لم يتم تضمين تسجيل محفوظ لكلمة «{word}» لأن لغته لم تعد مطابقة. حضّر الصوت لاستبداله.",
+    "audio_language_omitted": "{count} من التسجيلات المحفوظة تستخدم لغة مختلفة ولا يتم تشغيلها. حضّر صوتًا بديلًا في «العرض والتصدير».",
+    "audio_language_omitted_one": "التسجيل المحفوظ وعدده {count} يستخدم لغة مختلفة ولا يتم تشغيله. حضّر صوتًا بديلًا في «العرض والتصدير»."
+  },
+  "reading_settings": {
+    "title": "إعدادات القراءة",
+    "smaller": "نص أصغر",
+    "larger": "نص أكبر",
+    "overlay": "تراكب لوني",
+    "ruler": "مسطرة القراءة",
+    "use_mine": "استخدام إعدادات القراءة الخاصة بي",
+    "use_mine_help": "تتم الطباعة بخطك وحجم نصك وتباعدك."
   }
 }

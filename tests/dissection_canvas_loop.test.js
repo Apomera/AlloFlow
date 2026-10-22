@@ -112,7 +112,7 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('var fullLabel = !d.quizMode &&');
       expect(source).toContain('if (!d.quizMode && screenCompactCount > 0) {');
       expect(source).toContain('} else if (!d.quizMode && layout.showCallout) {');
-      expect(source).toMatch(/if \(!d\.quizMode && layout\.showCallout\) \{\s*var leaderStartX/);
+      expect(source).toMatch(/var calloutLeader = !d\.quizMode && layout\.showCallout \? dissectionCalloutLeader\(layout, labelUiScale, specimenTextScaleX\) : null;\s*if \(calloutLeader\) \{/);
       expect(source).toContain('!d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen');
       expect(source).toContain('!d.quizMode && React.createElement(React.Fragment, null,');
       expect(source).toContain("touchAction: (d.canvasZoom || 1) <= 1.01 && (d.quizMode || guidedMode || currentLearningGate.required || !currentToolReadiness.safeToAct || procedureNext.action === 'complete') ? 'pan-y'");

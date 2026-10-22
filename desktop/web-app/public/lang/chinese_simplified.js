@@ -56708,6 +56708,15 @@
       "sr_critique_ready": "点评已就绪。"
     },
     "flightsim": {
+      "debrief_unavailable_title": "已保存的飞行回顾不可用",
+      "debrief_unavailable_body": "最新的飞行回顾丢失或无法读取。请返回菜单，开始新的飞行。",
+      "guided_idea_before_trials": "试验前已记录",
+      "guided_idea_saved": "已保存的想法",
+      "guided_idea_timing_unknown": "未记录这个已保存想法的时间信息。",
+      "guided_idea_latest": "最近保存的想法",
+      "guided_idea_latest_prediction": "最近保存的预测：{prediction}",
+      "guided_idea_saved_prediction": "已保存的预测：{prediction}",
+      "milestone_stall_recovery": "机翼此刻已不再处于失速状态。单次观测不能证明已维持恢复状态。",
       "game_controls": "🎮 游戏控制",
       "cancel": "取消",
       "learn": "学习",
@@ -56764,6 +56773,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "抬轮 — 抬起机头 (W)",
+      "hud_rotate_touch": "抬轮 — 从中央向上拖动",
+      "hud_flare": "拉平 — 轻按 W 抬起机头",
+      "hud_flare_touch": "拉平 — 从中央向上拖动",
+      "landing_touch_power": "沿右侧边缘向下拖动，将动力减至约30%。速度会降低。",
+      "landing_touch_flare": "在跑道正上方（约10 ft），从中央轻轻向上拖动以抬起机头。接地时下降率应小于200 fpm。",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -92210,6 +92225,18 @@
     "card_progress": "第 {n} 张，共 {total} 张",
     "add_words": "请添加单词以开始练习。",
     "round_complete": "本轮完成。可以开始新一轮，或复习你标记的单词。",
-    "practice_label": "单词练习"
+    "practice_label": "单词练习",
+    "use_mine_help": "该 HTML 文件使用您的字体、文字大小和间距。",
+    "preparing_reading": "正在添加您的阅读设置…",
+    "font_not_embedded": "无法将您的字体添加到文件中，因此文件使用系统字体。"
+  },
+  "reading_settings": {
+    "title": "阅读设置",
+    "smaller": "缩小文字",
+    "larger": "放大文字",
+    "overlay": "颜色叠加",
+    "ruler": "阅读尺",
+    "use_mine": "使用我的阅读设置",
+    "use_mine_help": "按你的字体、文字大小和间距打印。"
   }
 }

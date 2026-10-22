@@ -54388,6 +54388,15 @@
       "sr_critique_ready": "Faalladu waa diyaar."
     },
     "flightsim": {
+      "debrief_unavailable_title": "Dib-u-eegistii duulimaadka ee la kaydiyey lama heli karo",
+      "debrief_unavailable_body": "Dib-u-eegistii duulimaadka ugu dambaysay way maqan tahay ama lama akhrin karo. Ku noqo liiska si aad duulimaad cusub u bilowdo.",
+      "guided_idea_before_trials": "La diiwaangeliyey ka hor tijaabooyinka",
+      "guided_idea_saved": "Fikrad la kaydiyey",
+      "guided_idea_timing_unknown": "Waqtiga fikraddan la kaydiyey lama diiwaangelin.",
+      "guided_idea_latest": "Fikraddii ugu dambaysay ee la kaydiyey",
+      "guided_idea_latest_prediction": "Saadaashii ugu dambaysay ee la kaydiyey: {prediction}",
+      "guided_idea_saved_prediction": "Saadaal la kaydiyey: {prediction}",
+      "milestone_stall_recovery": "Baalku xilligan kuma jiro xaaladda stall-ka. Hal mar oo la arkay ma caddaynayso soo kabasho joogto ah.",
       "game_controls": "🎮 KONTOROOLKA CIYAARTA",
       "cancel": "Jooji",
       "back_to_stem_lab": "Ku noqo STEAM Lab",
@@ -54438,6 +54447,12 @@
       "4_2_mile_stretch_of_casinos_visible_fr": "4.2-mile stretch of casinos. Visible from space at night due to extreme light output.",
       "4_climb": "4. Climb: ",
       "4_flare": "4. Flare: ",
+      "hud_rotate_keys": "SANKA QAAD — sanka kor u qaad (W)",
+      "hud_rotate_touch": "SANKA QAAD — kor uga jiid bartamaha",
+      "hud_flare": "SIMITAANKA DEGISTA — sanka tartiib ugu qaad W",
+      "hud_flare_touch": "SIMITAANKA DEGISTA — kor uga jiid bartamaha",
+      "landing_touch_power": "Hoos ugu jiid geeska midig si aad xoogga ugu yarayso ~30%. Xawaaruhu wuu yaraan doonaa.",
+      "landing_touch_flare": "Markaad wax yar ka sarreyso dhabaha (~10 ft), bartamaha si tartiib ah kor uga jiid si aad sanka u qaaddo. Beegso hoos-u-degid ka yar 200 fpm markaad dhulka taabanayso.",
       "4_you_re_flying_use": "4. You’re flying! Use ",
       "55_65_kts": "~55–65 kts",
       "5_604_ft_wide_354_ft_tall_largest_shee": "5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.",
@@ -90929,6 +90944,18 @@
     "card_progress": "Kaadh {n} ka mid ah {total}",
     "add_words": "Ku dar erayo si aad u bilowdo tababarka.",
     "round_complete": "Wareeggu waa dhammaaday. Bilow wareeg cusub ama dib u eeg erayada aad calaamadeysay.",
-    "practice_label": "Tababarka erayada"
+    "practice_label": "Tababarka erayada",
+    "use_mine_help": "Faylka HTML wuxuu isticmaalaa farta, cabbirka qoraalka iyo kala-fogaanshaha aad dooratay.",
+    "preparing_reading": "Dejinta akhrintaada waa lagu darayaa…",
+    "font_not_embedded": "Fartaada laguma dari karin faylka, sidaa darteed wuxuu isticmaalaa farta caadiga ah."
+  },
+  "reading_settings": {
+    "title": "Dejinta akhrinta",
+    "smaller": "Qoraal ka yar",
+    "larger": "Qoraal ka weyn",
+    "overlay": "Daboolka midabka",
+    "ruler": "Mastarayda akhrinta",
+    "use_mine": "Isticmaal dejintayda akhrinta",
+    "use_mine_help": "Waxaa lagu daabacaa farta, cabbirka qoraalka iyo kala-fogaanshaha aad dooratay."
   }
 }

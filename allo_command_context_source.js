@@ -3,6 +3,32 @@
 // variable of the original body as `deps`; module-scope bindings that the boot
 // sequence upgrades in place arrive as live getters on `deps.__live`.
 
+// A volatile identity for reviewed action choices. Raw values stay in this
+// module-private WeakMap, never in a chat message, prompt, storage or report.
+const _alloCommandScopeOwners = new WeakMap();
+let _alloCommandScopeSequence = 0;
+function _alloCommandScopeToken(deps) {
+  const owner = deps && deps._alloCmdCtxRef;
+  if (!owner || typeof owner !== 'object') return '';
+  const current = [
+    deps.canvasRecoveryCurrentIdRef && deps.canvasRecoveryCurrentIdRef.current,
+    deps.inputText, deps.generatedContent, deps.history, deps.activeView,
+    deps.activeBlueprint, deps.fullPackRun,
+    deps.isTeacherMode, deps.isStudentLinkMode, deps.isIndependentMode, deps.isParentMode,
+    deps.isProcessing, deps.isGeneratingSource, deps.isGeneratingPersona, deps.isExtracting,
+    deps.gradeLevel, deps.leveledTextLanguage, deps.dokLevel, deps.targetStandards,
+    deps.studentInterests, deps.studentProjectSettings, deps.sourceTopic,
+    deps.sourceTone, deps.sourceLength, deps.hasSourceOrAnalysis,
+    deps.standardsInput, deps.standardInputValue, deps.studentAiPolicyForShare,
+    deps.homeworkExpiryDays, deps.latestStudentPreviewShare, deps.latestLessonPlan,
+  ];
+  const previous = _alloCommandScopeOwners.get(owner);
+  if (previous && current.every((value, index) => Object.is(value, previous.values[index]))) return previous.token;
+  const token = 'cmd-scope-' + (++_alloCommandScopeSequence).toString(36);
+  _alloCommandScopeOwners.set(owner, { values: current, token });
+  return token;
+}
+
 function buildAlloCommandContext(deps) {
   const {
     GUIDED_TOUR_MAP, LIVE_SIGNAL_OPTIONS, READING_THEME_IDS, ReactDOM, _alloCmdCtx, _alloCmdCtxRef,
@@ -12,7 +38,7 @@ function buildAlloCommandContext(deps) {
     activeSessionAppId, activeSessionCode, activeSidebarTab, activeView, addToast, adventureFluencyEnabled,
     adventureFreeResponseEnabled, adventureState, adventureTypingPaceEnabled, alloBotRef, alloVoiceActive, alloVoiceSessionStatus,
     appId, callGeminiAudio, closeReadThisPage, colorOverlay, createHomeworkAssignmentLink, currentUiLanguage,
-    customTourSteps, db, directionsProgress, disableAnimations, dokLevel, executeRoleSelect,
+    canvasRecoveryCurrentIdRef, customTourSteps, db, directionsProgress, disableAnimations, dokLevel, executeRoleSelect,
     focusGuidedTarget, focusMode, fullPackRun, generatedContent, getDefaultTitle, getFilteredHistory,
     gradeLevel, guidedActiveSteps, guidedCompletedIds, guidedCreatedHistoryIds, guidedMode, guidedStep,
     handleApplyLessonTemplate, handleApproveFullPack, handleAutoFillToggle, handleClearHistory, handleCloseStudentEntry, handleCloseSubmitModal,
@@ -26,7 +52,7 @@ function buildAlloCommandContext(deps) {
     handleToggleIsEditingAnalysis, handleToggleIsEditingBrainstorm, handleToggleIsEditingFaq, handleToggleIsEditingGlossary, handleToggleIsEditingLeveledText, handleToggleIsEditingOutline,
     handleToggleIsEditingQuiz, handleToggleIsEditingScaffolds, handleToggleIsHelpMode, handleToggleIsPresentationMode, handleToggleIsReviewGame, handleToggleReadingRuler,
     handleToggleShowQuizAnswers, handleToggleShowSocraticChat, handleToggleVisualSupports, hasSelectedMode, hasSelectedRole, hasSourceOrAnalysis,
-    homeworkExpiryDays, initiateSaveStudentProject, inputText, isAccessibilityLabOpen, isAlloHavenOpen, isAlloStudioOpen,
+    history, homeworkExpiryDays, initiateSaveStudentProject, inputText, isAccessibilityLabOpen, isAlloHavenOpen, isAlloStudioOpen,
     isCloudSyncEnabled, isCommunityCatalogOpen, isDynamicAssessmentOpen, isExtracting, isGateOpen, isGeneratingPersona,
     isGeneratingSource, isGlobalMuted, isIndependentMode, isLinguaPracticeOpen, isOpenGrooveOpen, isParentMode,
     isProcessing, isProjectSettingsOpen, isReadingLibraryOpen, isResearchSuiteOpen, isStudentLinkMode, isSymbolStudioOpen,
@@ -881,6 +907,7 @@ function buildAlloCommandContext(deps) {
 
     const ctx = {
       t, addToast, callGemini: __live.callGemini, commandAudience,
+      commandScopeToken: _alloCommandScopeToken(deps),
       openSchoolStoreRecognition: () => {
         if (!isTeacherMode || isStudentLinkMode || isParentMode || isIndependentMode) return false;
         if (!normalizeAlloEvaluationPortalUrl(schoolRewardsPortalUrl)) { handleOpenSchoolRewards(); return false; }
@@ -1118,6 +1145,9 @@ function buildAlloCommandContext(deps) {
       stemLabTool,
       behaviorLensOpen: showBehaviorLens,
       contentLoaded: !!generatedContent,
+      // Safe routing metadata only: never include the source text in the intent brief.
+      hasSourceText: !!String(inputText || '').trim(),
+      generationBusy: !!(isProcessing || isGeneratingSource || isGeneratingPersona || isExtracting),
       zenActive: isZenMode,
       focusActive: focusMode,
       // Slice 2 (2026-06-13): essential ACTION capabilities — thin wrappers on existing host

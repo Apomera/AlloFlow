@@ -273,9 +273,10 @@
       'transformed.z+=reefFinAmp*reefFinEnvelope*sin(reefFinPhase);' +
       'if(reefRigged>0.5){vec4 reefT1=vec4(transformed,1.0);transformed=vec3(dot(reefTo0,reefT1),dot(reefTo1,reefT1),dot(reefTo2,reefT1));}' +
       'vReefUv=uv;vReefRough=reefRough;vReefFlags=reefFlags;');
-    f = inject(f, '#include <common>', 'uniform vec3 reefSheenA;uniform vec3 reefSheenB;uniform float reefSheenK;uniform vec4 reefFeature;varying vec2 vReefUv;varying float vReefRough;varying vec2 vReefFlags;');
+    f = inject(f, '#include <common>', 'uniform vec3 reefSheenA;uniform vec3 reefSheenB;uniform float reefSheenK;uniform vec3 reefIrisColor;uniform vec4 reefFeature;varying vec2 vReefUv;varying float vReefRough;varying vec2 vReefFlags;' +
+      (derivatives ? 'float reefFinRidgeSlope(float phase,float width){float x=(fract(phase)-0.5)/width;return 2.0*x*exp(-1.6*x*x);}' : ''));
     f = inject(f, '#include <color_fragment>',
-      'float reefWeb=0.0;float reefDistal=0.0;float reefRayDetail=0.0;float reefEyeMask=0.0;float reefEyeR=0.0;\n' +
+      'float reefWeb=0.0;float reefDistal=0.0;float reefRayDetail=0.0;float reefEyeMask=0.0;float reefEyeR=0.0;vec2 reefFinSlope=vec2(0.0);\n' +
       // A batch part may switch rays or eyes for itself (a whole triangle at once).
       'float reefRaysOn=vReefFlags.x<-0.5?reefFeature.x:vReefFlags.x;float reefEyeOn=vReefFlags.y<-0.5?reefFeature.y:vReefFlags.y;\n' +
       // Fin rays: each supporting ray forks continuously towards the free edge.
@@ -290,21 +291,46 @@
       'float reefSplit=1.0-smoothstep(0.013,0.013+reefAA,reefSplitD);' +
       'reefRib=mix(reefRib,reefSplit,reefDistal*0.86);reefWeb=1.0-reefRib;' +
       'reefRayDetail=1.0-smoothstep(0.35,0.9,reefAA);' +
+      // Supporting ribs catch directional light while the softer web rolls
+      // between them. Their shallow relief fades before it becomes subpixel.
+      (derivatives ? 'float reefReliefWidth=max(0.11,reefAA*0.65);' +
+        'float reefRootRelief=reefFinRidgeSlope(reefRayU,reefReliefWidth);' +
+        'float reefSplitRelief=0.5*(reefFinRidgeSlope(reefRayU+reefFork,reefReliefWidth)+reefFinRidgeSlope(reefRayU-reefFork,reefReliefWidth));' +
+        'float reefReliefFade=smoothstep(0.04,0.20,vReefUv.y)*(1.0-smoothstep(0.94,1.0,vReefUv.y))*reefRayDetail*reefFeature.z;' +
+        'reefFinSlope.x=(mix(reefRootRelief,reefSplitRelief,reefDistal*0.86)+sin(reefRayU*6.2831853)*reefWeb*0.08)*reefReliefFade;' +
+        'reefFinSlope.y=cos(vReefUv.y*3.1415927)*reefWeb*0.065*reefReliefFade;' : '') +
       'diffuseColor.rgb*=0.965+reefRayDetail*(reefRib*0.095-0.045);' +
       'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.97,1.01,1.02),reefWeb*reefDistal*0.32);}\n' +
       // Eyes: vertices with u above 2 carry a wet cornea inside the detail mesh.
       'if(reefEyeOn>0.5){' +
       'reefEyeMask=step(1.8,vReefUv.x);vec2 reefEyeUV=(vReefUv-vec2(2.5,0.5))*2.0;' +
-      'reefEyeR=length(reefEyeUV);float reefIris=smoothstep(0.44,0.55,reefEyeR)*(1.0-smoothstep(0.86,1.02,reefEyeR))*reefEyeMask;' +
-      'float reefIrisAngle=atan(reefEyeUV.y,reefEyeUV.x+0.00001);float reefEyeDetail=1.0;\n' +
-      (derivatives ? DERIV + 'reefEyeDetail=1.0-smoothstep(0.012,0.065,length(fwidth(reefEyeUV)));\n#endif\n' : '') +
-      'float reefIrisFiber=sin(reefIrisAngle*29.0+reefEyeR*5.0)*sin(reefIrisAngle*43.0-reefEyeR*9.0);' +
-      'float reefIrisCollarette=exp(-pow((reefEyeR-0.56)/0.045,2.0));' +
-      'diffuseColor.rgb*=1.0+(reefIrisFiber*0.10+reefIrisCollarette*0.06)*reefIris*reefEyeDetail;}');
+      'reefEyeR=length(reefEyeUV);float reefIrisAngle=atan(reefEyeUV.y,reefEyeUV.x+0.00001);float reefEyeDetail=1.0;float reefPupilAA=0.012;\n' +
+      (derivatives ? DERIV + 'float reefEyeFootprint=length(fwidth(reefEyeUV));reefEyeDetail=1.0-smoothstep(0.012,0.065,reefEyeFootprint);reefPupilAA=max(reefPupilAA,reefEyeFootprint*0.55);\n#endif\n' : '') +
+      // Pigment sits behind the smooth corneal finish. A circular boundary
+      // avoids polygonal pupils on school meshes; irregular, tapered streaks
+      // break up the wheel-like iris without adding a fixed white glint.
+      'float reefPupil=smoothstep(0.475-reefPupilAA,0.475+reefPupilAA,reefEyeR);' +
+      'float reefIrisGrain=sin(reefIrisAngle*31.0+sin(reefIrisAngle*7.0)*0.8+reefEyeR*12.0)*sin(reefIrisAngle*47.0-reefEyeR*15.0);' +
+      'float reefIrisStreak=smoothstep(0.48,0.62,reefEyeR)*(1.0-smoothstep(0.86,1.0,reefEyeR));' +
+      'float reefIrisPigment=0.94+reefEyeDetail*(reefIrisGrain*0.11*reefIrisStreak+sin(reefIrisAngle*5.0+reefEyeR*16.0)*0.035);' +
+      'float reefIrisRim=(0.76+0.24*smoothstep(0.48,0.61,reefEyeR))*(1.0-0.68*smoothstep(0.78,1.06,reefEyeR));' +
+      'vec3 reefEyePigment=mix(vec3(0.0006966,0.0012384,0.0016254),reefIrisColor*reefIrisPigment*reefIrisRim,reefPupil);' +
+      'diffuseColor.rgb=mix(diffuseColor.rgb,reefEyePigment*diffuse,reefEyeMask);}');
     f = inject(f, '#include <roughnessmap_fragment>',
       'if(vReefRough>=0.0)roughnessFactor=vReefRough;' +
       'roughnessFactor=mix(roughnessFactor,0.48,reefWeb*reefDistal*reefRayDetail);' +
       'roughnessFactor=mix(roughnessFactor,0.14+0.22*smoothstep(0.77,1.05,reefEyeR),reefEyeMask);');
+    if (derivatives) f = inject(f, '#include <normal_fragment_maps>', DERIV +
+      // The deformed view-space surface supplies the same cotangent basis as
+      // Three's normal-map chunk, including the reverse face of thin fins.
+      // Guard collapsed UVs at fin roots; no tangent buffers or maps are added.
+      'if(reefFeature.z>0.0&&reefRaysOn>0.5){' +
+      'vec3 reefDx=dFdx(-vViewPosition),reefDy=dFdy(-vViewPosition);vec2 reefUvDx=dFdx(vReefUv),reefUvDy=dFdy(vReefUv);' +
+      'vec3 reefPerpY=cross(reefDy,normal),reefPerpX=cross(normal,reefDx);' +
+      'vec3 reefTangent=reefPerpY*reefUvDx.x+reefPerpX*reefUvDy.x,reefBitangent=reefPerpY*reefUvDx.y+reefPerpX*reefUvDy.y;' +
+      'float reefBasis=max(dot(reefTangent,reefTangent),dot(reefBitangent,reefBitangent));' +
+      'if(reefBasis>1e-20){float reefReliefScale=faceDirection*inversesqrt(reefBasis);' +
+      'normal=normalize(normal+(reefTangent*reefFinSlope.x+reefBitangent*reefFinSlope.y)*reefReliefScale);}}\n#endif');
     // A restrained transmission lobe makes the fin web read thinner than its
     // rays; the iridescent sheen shifts hue at grazing angles.
     f = inject(f, '#include <emissivemap_fragment>', 'float reefFr=1.0-abs(dot(normalize(normal),normalize(vViewPosition)));' +
@@ -321,7 +347,8 @@
       reefSwimShape: cfg.swimShape || { value: new T.Vector4(0, 0, 0, 0) },
       reefFinFlex: cfg.flex || { value: new T.Vector4(0, 0, 1, 0) },
       reefSheenA: { value: sheen ? sheen[0] : new T.Color(0, 0, 0) }, reefSheenB: { value: sheen ? sheen[1] : new T.Color(0, 0, 0) }, reefSheenK: { value: sheen ? sheen[2] : 0 },
-      reefFeature: { value: new T.Vector4(cfg.rays ? 1 : 0, cfg.eye ? 1 : 0, 0, 0) },
+      reefIrisColor: { value: new T.Color().fromArray(cfg.iris || [0.75, 0.6, 0.2]).convertSRGBToLinear() },
+      reefFeature: { value: new T.Vector4(cfg.rays ? 1 : 0, cfg.eye ? 1 : 0, derivatives ? (cfg.finRelief || 0) : 0, 0) },
       reefBatch: { value: cfg.batch ? 1 : 0 }
     };
     // Only a batch uploads a rig; the others never read theirs (reefBatch 0).
@@ -331,7 +358,7 @@
       for (var k in U) shader.uniforms[k] = U[k];
       patchSource(shader, derivatives);
     };
-    m.customProgramCacheKey = function () { return 'reef3d-species-v5|' + (derivatives ? 'd' : 'n'); };
+    m.customProgramCacheKey = function () { return 'reef3d-species-v7|' + (derivatives ? 'd' : 'n'); };
   }
   function sheenOf(T, a, b, k) { return [new T.Color(a).convertSRGBToLinear(), new T.Color(b).convertSRGBToLinear(), k]; }
 
@@ -730,6 +757,21 @@
       (pores - 0.5) * 0.022 * poreDetail - (P.lateral || 0) * 0.028 - (P.gill || 0) * 0.05;
   }
 
+  // Give the cheek a quiet volume change into the opercular edge, using the
+  // existing rings. The same surface seats the eyes, mouth and pectoral roots;
+  // field-mark coordinates and the top/bottom silhouette remain unchanged.
+  // Rigid box forms, smooth-skinned fish and curved spines keep their own form.
+  function fishProfile(def) {
+    var base = profile(def.rows);
+    if (!def.eye || def.spine || def.smoothSkin || (def.square || 2) > 2.5) return base;
+    var cheekX = def.eye[0] - 0.055, rimX = def.eye[0] - 0.118;
+    return function (x, out) {
+      var p = base(x, out), cheek = (x - cheekX) / 0.065, rim = (x - rimX) / 0.018;
+      p[2] *= 1 + 0.06 * Math.exp(-cheek * cheek) - 0.025 * Math.exp(-rim * rim);
+      return p;
+    };
+  }
+
   // Every fish part as unit-space Geo plus the body pixels. They depend only on
   // the species and tier, so a reef's repeated species bake them once per page.
   function fishParts(T, id, def, high, school) {
@@ -751,7 +793,7 @@
       kit.share(key + '|relief', function () { return dataTexture(kit.T, parts.surface, parts.W, parts.H, false, true, true); })];
   }
   function fishBake(T, def, high, school) {
-    var rows = def.rows, x0 = rows[0][0], xP = rows[rows.length - 1][0], sq = def.square || 2, prof = profile(rows);
+    var rows = def.rows, x0 = rows[0][0], xP = rows[rows.length - 1][0], sq = def.square || 2, prof = fishProfile(def);
     var nx = school ? (high ? 18 : 10) : (high ? 44 : 20), na = school ? (high ? 14 : 9) : (high ? 32 : 14);
     var nseg = school ? 5 : (high ? 22 : 7), nv = school ? 1 : (high ? 4 : 2);
     var body = new Geo(), fins = new Geo(), detail = new Geo(), sec = [0, 0, 0], e = 2 / sq, white = [1, 1, 1], r, a;
@@ -830,7 +872,10 @@
     function billow(geo, first, amount, rays) {
       for (var k = first; k < geo.count(); k++) {
         var u = geo.t[k * 2], v = geo.t[k * 2 + 1];
-        geo.p[k * 3 + 2] += amount * Math.sin(PI * v) * (0.68 + 0.32 * Math.cos(u * PI * rays));
+        // The soft web cups farther behind its leading support; both attached
+        // and free edges retain the species' outline and the root cannot drift.
+        var camber = Math.sin(PI * v) * (0.6 + 0.4 * v);
+        geo.p[k * 3 + 2] += amount * camber * (0.68 + 0.32 * Math.cos(u * PI * rays));
       }
     }
     function median(spec, sign, kind) {
@@ -843,7 +888,7 @@
         roots.push([x, y0, off2[1]]); edges.push([x - (spec.rake === undefined ? 0.35 : spec.rake) * hgt, y0 + sign * hgt, off2[1] + 0.035 * hgt * Math.sin(u * PI * 2)]);
       }
       var start = fins.membrane(roots, edges, spec.nv || nv, function (u, v, out) { finCol(kind, u, v, out); });
-      billow(fins, start, spec.h * 0.055, Math.min(n, 12));
+      billow(fins, start, spec.h * 0.075, Math.min(n, 12));
     }
     dorsal.forEach(function (spec, k) { median(spec, 1, 'dorsal' + k); });
     anal.forEach(function (spec, k) { median(spec, -1, 'anal' + k); });
@@ -865,7 +910,7 @@
         troots.push([0.02, tyc + vv * thh * 0.85, 0]); tedges.push([te[0], tyc + te[1], 0.006 * Math.sin(vv * PI)]);
       }
       tail.membrane(troots, tedges, school ? 2 : (high ? 6 : 3), function (u, v, out) { finCol('tail', u, v, out); });
-      billow(tail, 0, def.tail.len * 0.045, Math.min(tn, 12));
+      billow(tail, 0, def.tail.len * 0.065, Math.min(tn, 12));
     }
     var pecs = [];
     if (def.pectoral) {
@@ -876,7 +921,7 @@
         proots.push([0, lerp(-pc.width, pc.width, u2) * 0.5, 0]); pedges.push([-Math.cos(th) * Lq, Math.sin(th) * Lq * 0.9, Lq * 0.09 * Math.sin(PI * u2)]);
       }
       pg.membrane(proots, pedges, pc.nv || (school ? 1 : high ? 5 : 2), function (u, v, out) { finCol('pectoral', u, v, out); });
-      billow(pg, 0, pc.len * 0.032, Math.min(pn, 12));
+      billow(pg, 0, pc.len * 0.045, Math.min(pn, 12));
       var pz = surfZ(prof, sq, pc.x, pc.y);
       pecs.push({ geo: pg, pos: [pc.x, pc.y, pz + 0.004], side: 1 }, { geo: pg, pos: [pc.x, pc.y, -pz - 0.004], side: -1 });
     }
@@ -917,7 +962,7 @@
     }
     function membrane(bending, flexKind, rig) {
       var flex = flexKind ? { value: flexOf(flexKind) } : null;
-      return kit.std({ vertexColors: true, side: T.DoubleSide, roughness: 0.59, metalness: 0 }, { swim: swim.u, swimShape: bending ? swim.shape : still, flex: flex, rays: true, batch: rig });
+      return kit.std({ vertexColors: true, side: T.DoubleSide, roughness: 0.59, metalness: 0 }, { swim: swim.u, swimShape: bending ? swim.shape : still, flex: flex, rays: true, iris: def.iris, finRelief: def.smoothSkin ? 0 : 0.22, batch: rig });
     }
     var free = null, finsRig = new Float32Array(80), detailRig = null, detail = null;
     var out = {
@@ -932,7 +977,7 @@
       out.pectoralFlex = def.pectoral ? membrane(false, 'pectoral') : null;
     }
     // Details draw in the fins' batch; a separate detail mesh only if the batch has no slot left.
-    out.detail = function () { return detail || (detail = kit.std({ vertexColors: true, roughness: 0.57, metalness: 0 }, { swim: swim.u, swimShape: swim.shape, eye: true, batch: detailRig = new Float32Array(80) })); };
+    out.detail = function () { return detail || (detail = kit.std({ vertexColors: true, roughness: 0.57, metalness: 0 }, { swim: swim.u, swimShape: swim.shape, eye: true, iris: def.iris, batch: detailRig = new Float32Array(80) })); };
     out.detailRig = function () { return detailRig; };
     return out;
   }
@@ -966,6 +1011,16 @@
       for (var j = 0; j < p.count; j++) { v.fromBufferAttribute(p, j).applyMatrix4(m); r = Math.max(r, v.length()); }
     });
     return r;
+  }
+
+  // A broad stroke recovers edge-first instead of paddling the same flat
+  // membrane in both directions. Only the existing pivot rotates: there are
+  // no frame-dependent integrators, allocations or extra geometry uploads.
+  function featherPectoral(rotation, side, spread, droop, fan, beat, steering, posing) {
+    var stroke = 0.5 + 0.42 * Math.sin(beat) + 0.08 * Math.sin(beat * 2 - 0.35);
+    var recovery = smooth(0.22, -0.48, Math.cos(beat));
+    var feather = fan * (0.16 * Math.cos(beat - 0.7) + 0.72 * recovery);
+    rotation.set(side * feather, side * (spread + fan * stroke + steering + 0.75 * posing), droop + fan * 0.2 * Math.sin(beat - 0.8) - 0.12 * posing);
   }
 
   function makeFish(T, id, info, def, o) {
@@ -1031,10 +1086,9 @@
       for (var i = 0; i < pecs.length; i++) {
         var fin = pecs[i], beat = ph * (def.pecRate || 1.3) + i * 0.14 - 0.82, steering = turn * fin.side * 0.1 + localFlow.z * fin.side * 0.018;
         var fan = pa * (0.38 + 0.62 * (1 - Math.min(1, drive) * 0.58)) * (0.82 + 0.18 * (1 - glide)) * (1 - 0.75 * posing);
-        var stroke = 0.5 + 0.42 * Math.sin(beat) + 0.08 * Math.sin(beat * 2 - 0.35);
         // A broad power stroke feathers into a narrower recovery. Slow fish
         // scull more actively; fast swimmers fold the fins closer to the body.
-        fin.node.rotation.set(fin.side * fan * 0.19 * Math.cos(beat - 0.7), fin.side * (spread + fan * stroke + steering + 0.75 * posing), droop + fan * 0.2 * Math.sin(beat - 0.8) - 0.12 * posing);
+        featherPectoral(fin.node.rotation, fin.side, spread, droop, fan, beat, steering, posing);
       }
       if (def.anim) def.anim(actx, t, ph);
       batchPose(batches[0]); batchPose(batches[1]);
@@ -1054,25 +1108,31 @@
     var amp = 0.032 * L * (def.wiggle === undefined ? 1 : def.wiggle), kWave = TAU / (1.15 * L);
     var swim = { u: { value: new T.Vector4(0, 0, kWave, 0) }, shape: { value: new T.Vector4(0.22 * unit, parts.xP * unit, 1, 0) }, school: true };
     var mats = fishMaterials(kit, def, maps[0], maps[1], swim), spacing = L * (def.spacing || 1.7);
-    var slots = [], candidates = [], far = 0, extent = Math.ceil(Math.pow(n, 1 / 3)), i, ix, iy, iz;
-    for (ix = -extent; ix <= extent; ix++) for (iy = -extent; iy <= extent; iy++) for (iz = -extent; iz <= extent; iz++) {
-      var x = (ix + (iy % 2) * 0.5 + (rng() - 0.5) * 0.14) * spacing * 0.88;
-      var y = (iy + (rng() - 0.5) * 0.12) * spacing * 0.36;
-      var z = (iz + (ix % 2) * 0.5 + (rng() - 0.5) * 0.14) * spacing * 0.58;
-      candidates.push({ x: x, y: y, z: z, rank: x * x / 2.1 + y * y / 0.36 + z * z });
-    }
-    candidates.sort(function (a, b) { return a.rank - b.rank; });
-    // Break the rows into a loose cloud, then relax only close neighbours.
-    // This preserves personal space without a visible crystal-like lattice.
-    var selected = candidates.slice(0, n), minGap = L * 0.71;
+    var slots = [], selected = [], far = 0, extent = Math.pow(n, 1 / 3), layout = stream(o.seed, 67), i;
+    // Best-candidate points fill an ellipsoid instead of inheriting rows from
+    // a lattice. Layout has its own stream: changing packing cannot retime
+    // members' strokes or change their individual colour and size variation.
     for (i = 0; i < n; i++) {
-      selected[i].x += (rng() - 0.5) * spacing * 0.32;
-      selected[i].y += (rng() - 0.5) * spacing * 0.27;
-      selected[i].z += (rng() - 0.5) * spacing * 0.32;
+      var best = null, bestGap = -1;
+      for (var attempt = 0; attempt < (i ? 16 : 1); attempt++) {
+        var x, y, z, r;
+        do { x = layout() * 2 - 1; y = layout() * 2 - 1; z = layout() * 2 - 1; r = x * x + y * y + z * z; } while (r > 1);
+        var candidate = i ? { x: x * spacing * extent * 0.52, y: y * spacing * extent * 0.22, z: z * spacing * extent * 0.40 } : { x: 0, y: 0, z: 0 };
+        var gap = Infinity;
+        for (var k = 0; k < selected.length; k++) {
+          var dx = candidate.x - selected[k].x, dy = (candidate.y - selected[k].y) * 0.55, dz = candidate.z - selected[k].z;
+          gap = Math.min(gap, dx * dx + dy * dy + dz * dz);
+        }
+        if (gap > bestGap) { bestGap = gap; best = candidate; }
+      }
+      selected.push(best);
     }
-    for (var pass = 0; pass < 14; pass++) for (i = 0; i < n; i++) for (var j = i + 1; j < n; j++) {
+    var minGap = L * 0.82;
+    // Reserve vertical room for the existing grazing flattening as well as
+    // cruising. Setup-only relaxation is bounded; frames never search pairs.
+    for (var pass = 0; pass < 10; pass++) for (i = 0; i < n; i++) for (var j = i + 1; j < n; j++) {
       var ax = selected[j].x - selected[i].x, ay = selected[j].y - selected[i].y, az = selected[j].z - selected[i].z;
-      var distance = Math.sqrt(ax * ax + ay * ay + az * az);
+      var distance = Math.sqrt(ax * ax + ay * ay * 0.3025 + az * az);
       if (distance < minGap && distance > 0.000001) {
         var push = (minGap - distance) / distance * 0.51;
         selected[i].x -= ax * push; selected[i].y -= ay * push; selected[i].z -= az * push;
@@ -1086,7 +1146,7 @@
       slots.push({ x: sx, y: sy, z: sz, s: 0.86 + 0.22 * rng(), ph: rng() * TAU, yaw: (rng() - 0.5) * 0.08, w: 0.92 + 0.16 * rng(), tint: rng() });
       far = Math.max(far, Math.sqrt(sx * sx + sy * sy + sz * sz));
     }
-    var R = Math.max(L, far), reach = far * 1.16 + L * 1.3, meshes = [], beatData = new Float32Array(n * 4);
+    var R = Math.max(L, far), reach = far * 1.2 + L * 1.5, meshes = [], beatData = new Float32Array(n * 4);
     // Rate, stroke phase, glide phase and strength share one instanced
     // attribute, with no extra random draws or per-frame buffer uploads.
     for (i = 0; i < n; i++) { beatData[i * 4] = slots[i].w; beatData[i * 4 + 1] = slots[i].ph * 3; beatData[i * 4 + 2] = slots[i].ph; beatData[i * 4 + 3] = 0.9 + slots[i].tint * 0.2; }
@@ -1126,11 +1186,18 @@
       var phase = t * hz * TAU + 0.16 * Math.sin(t * 0.44), amplitude = amp * (0.34 + 0.66 * Math.min(1.3, drive)) * flow;
       swim.u.value.set(phase, amplitude, kWave, t);
       currentAt(root, motion, t, 0, localFlow);
-      var breathe = 1 + flow * 0.04 * Math.sin(t * 0.32), stretch = 1 + flow * 0.055 * Math.sin(t * 0.24 + 1.2), cruise = Math.max(L * 0.6, num(motion && motion.speed, L * 1.3));
-      var breatheRate = flow * 0.04 * 0.32 * Math.cos(t * 0.32), stretchRate = flow * 0.055 * 0.24 * Math.cos(t * 0.24 + 1.2);
+      // A cruising school lengthens gently along its route and draws its
+      // cross-section in. Relax it before grazing so the published feeding
+      // stations and their bite timing stay independent of swimming effort.
+      var paceStretch = 1 + flow * (1 - graze) * 0.09 * smooth(0.35, 1.35, drive), paceWidth = 1 / Math.sqrt(paceStretch);
+      var breathe = (1 + flow * 0.04 * Math.sin(t * 0.32)) * paceWidth, stretch = (1 + flow * 0.055 * Math.sin(t * 0.24 + 1.2)) * paceStretch, cruise = Math.max(L * 0.6, num(motion && motion.speed, L * 1.3));
+      var breatheRate = flow * 0.04 * 0.32 * Math.cos(t * 0.32) * paceWidth, stretchRate = flow * 0.055 * 0.24 * Math.cos(t * 0.24 + 1.2) * paceStretch;
       var curve = flow * clamp(turn * R / Math.max(cruise, L * 1.3) * 0.22, -0.18, 0.18);
       var yaw = flow * (0.095 * Math.sin(t * 0.24) + 0.035 * Math.sin(t * 0.41));
       var yawRate = flow * (0.095 * 0.24 * Math.cos(t * 0.24) + 0.035 * 0.41 * Math.cos(t * 0.41));
+      // A slight travelling tilt redistributes a cross-section without
+      // revolving the whole school. It settles out before grazing contact.
+      var reshape = flow * (1 - graze), rollPhase = t * 0.19;
       groupQ.setFromAxisAngle(up, yaw);
       for (var i = 0; i < n; i++) {
         var s = slots[i], a = t * 0.68 - s.x / R * 0.9, b = t * 0.43 - s.x / R * 0.65 + s.z / R * 0.4;
@@ -1139,16 +1206,31 @@
         var rise = L * (0.11 * Math.sin(b) + 0.022 * Math.cos(individual * 0.8));
         var cyc = fract(t / GRAZE.period + i * GRAZE.stagger), nod = graze * (cyc < GRAZE.window ? Math.sin(PI * cyc / GRAZE.window) : 0);
         var close = 1 - GRAZE.squeeze * graze;
-        p.set(s.x * stretch * close + flow * 0.075 * L * Math.cos(individual * 0.73), s.y * breathe * (1 - 0.5 * graze) + flow * rise - nod * 0.05 * L, s.z * breathe * close + flow * lateral - curve * s.x * s.x / (2 * R));
+        p.set(s.x * stretch * close + flow * 0.075 * L * Math.cos(individual * 0.73), s.y * breathe * (1 - 0.5 * graze) + flow * rise - nod * 0.05 * L, s.z * breathe * close + flow * lateral);
         // Derivatives of this same flow field orient each fish along its path.
         // The small independent drift is bounded, so neighbours keep room.
-        var vx = s.x * stretchRate - flow * 0.075 * L * 0.73 * 0.48 * s.w * Math.sin(individual * 0.73) + yawRate * p.z;
-        var vz = s.z * breatheRate + flow * L * (0.34 * 0.68 * Math.cos(a) + 0.045 * 0.48 * s.w * Math.cos(individual)) - yawRate * p.x;
-        var vy = s.y * breatheRate + flow * L * (0.11 * 0.43 * Math.cos(b) - 0.022 * 0.8 * 0.48 * s.w * Math.sin(individual * 0.8));
+        var vx = s.x * stretchRate * close - flow * 0.075 * L * 0.73 * 0.48 * s.w * Math.sin(individual * 0.73);
+        var vz = s.z * breatheRate * close + flow * L * (0.34 * 0.68 * Math.cos(a) + 0.045 * 0.48 * s.w * Math.cos(individual));
+        var vy = s.y * breatheRate * (1 - 0.5 * graze) + flow * L * (0.11 * 0.43 * Math.cos(b) - 0.022 * 0.8 * 0.48 * s.w * Math.sin(individual * 0.8));
+        var roll = reshape * 0.065 * Math.sin(rollPhase - s.x / R * 0.65), rollRate = reshape * 0.065 * 0.19 * Math.cos(rollPhase - s.x / R * 0.65);
+        var rc = Math.cos(roll), rs = Math.sin(roll), py = p.y, pz = p.z, localVy = vy, localVz = vz;
+        p.y = py * rc - pz * rs; p.z = py * rs + pz * rc;
+        vy = localVy * rc - localVz * rs - rollRate * p.z;
+        vz = localVy * rs + localVz * rc + rollRate * p.y;
+        // Bend the whole cross-section around a smooth streamline. Simply
+        // subtracting x squared from z sheared the outside members sideways.
+        // The small-angle limits make straight swimming continuous through zero.
+        var bend = curve * p.x / R, bs = Math.sin(bend), bc = Math.cos(bend), bend2 = bend * bend;
+        var along = Math.abs(bend) > 0.0001 ? bs / bend : 1 - bend2 / 6;
+        var inward = Math.abs(bend) > 0.0001 ? (1 - bc) / bend : bend * (0.5 - bend2 / 24);
+        var beforeX = p.x, beforeZ = p.z, beforeVx = vx, beforeVz = vz, arcSpeed = 1 + curve * beforeZ / R;
+        p.x = beforeX * along + beforeZ * bs; p.z = beforeZ * bc - beforeX * inward;
+        vx = bc * arcSpeed * beforeVx + bs * beforeVz + yawRate * p.z;
+        vz = -bs * arcSpeed * beforeVx + bc * beforeVz - yawRate * p.x;
         // Members align with their local velocity; a turn travels backward
         // through the school instead of every fish swivelling on one frame.
         var lag = clamp(-turn * (0.12 + 0.12 * (1 - s.x / R)), -0.25, 0.25);
-        e.set(flow * (0.024 * Math.sin(a) + 0.065 * turn + localFlow.z * localFlow.pulse * 0.012), s.yaw + flow * (-Math.atan2(vz, cruise + vx) + lag + curve * s.x / R), flow * Math.atan2(vy, cruise + vx) - graze * 0.5 - nod * 0.25);
+        e.set(flow * (0.024 * Math.sin(a) + 0.065 * turn + localFlow.z * localFlow.pulse * 0.012), s.yaw + flow * (-Math.atan2(vz, cruise + vx) + lag + bend), flow * Math.atan2(vy, cruise + vx) - graze * 0.5 - nod * 0.25);
         q.setFromEuler(e).premultiply(groupQ); p.applyQuaternion(groupQ); sc.setScalar(s.s);
         m4.compose(p, q, sc); body.setMatrixAt(i, m4); if (finM) finM.setMatrixAt(i, m4);
         if (tail) {
@@ -1163,8 +1245,8 @@
         for (var pi = 0; pi < pectorals.length; pi++) {
           var pc = pectorals[pi], beat = (phase * s.w + s.ph * 3) * (def.pecRate || 1.3) - 0.82 + pi * 0.14;
           var pa = def.pecBeat === undefined ? 0.35 : def.pecBeat, fan = pa * (0.38 + 0.62 * (1 - Math.min(1, drive) * 0.58)) * (0.82 + 0.18 * (1 - memberGlide)) * flow;
-          var stroke = 0.5 + 0.42 * Math.sin(beat) + 0.08 * Math.sin(beat * 2 - 0.35), steering = turn * pc.side * 0.1 * flow;
-          e.set(pc.side * fan * 0.19 * Math.cos(beat - 0.7), pc.side * ((def.pectoral.spread || 0.35) + fan * stroke + steering), (def.pectoral.droop || 0.1) + fan * 0.2 * Math.sin(beat - 0.8));
+          var steering = turn * pc.side * 0.1 * flow;
+          featherPectoral(e, pc.side, def.pectoral.spread || 0.35, def.pectoral.droop || 0.1, fan, beat, steering, 0);
           tq.setFromEuler(e); tp.set(pc.pos[0] * unit, pc.pos[1] * unit, pc.pos[2] * unit);
           lm.compose(tp, tq, one); tm.multiplyMatrices(m4, lm); pc.mesh.setMatrixAt(i, tm);
         }
@@ -1219,7 +1301,71 @@
   var NAPO = { g: hex(0x2d8f86), l: hex(0x4cb0a2), d: hex(0x1b5a51), head: hex(0x4f8fb0), wave: hex(0xc2c46a), lip: hex(0xa8c48a) };
   var CLEANER = { k: hex(0x0b0b14), b: hex(0x2c68f0), pale: hex(0xdde8f2), w: hex(0xf3f6f8) };
 
+  var FIRE = { w: hex(0xf7eee7), pink: hex(0xf5b5b7), yellow: hex(0xf5ce6b), orange: hex(0xef6632), red: hex(0xbc302e), dark: hex(0x39202d), violet: hex(0x9b4c92) };
+  var COPPER = { w: hex(0xf3f2df), silver: hex(0xd5e3df), orange: hex(0xf2a136), deep: hex(0xb96a24), ink: hex(0x303333), blue: hex(0x8bb7c9) };
+
   var FISH = {
+    firefish: {
+      lengthM: 0.09, tex: [160, 64], scaleSize: 0.014, eye: [0.365, 0.022, 0.038], iris: hex(0xbb8849), sheen: [0xf5cbd1, 0xffe9c5, 0.12],
+      beat: 0.72, wiggle: 0.48, pecBeat: 0.48, pecRate: 1.05,
+      rows: [[0.5, 0.006, -0.018, 0.007], [0.47, 0.039, -0.038, 0.022], [0.41, 0.067, -0.054, 0.035], [0.33, 0.083, -0.066, 0.043], [0.23, 0.088, -0.073, 0.047], [0.1, 0.082, -0.073, 0.046], [-0.04, 0.071, -0.062, 0.039], [-0.16, 0.052, -0.045, 0.029], [-0.26, 0.033, -0.027, 0.019], [-0.31, 0.022, -0.019, 0.014]],
+      tail: { type: 'round', span: 0.1, len: 0.19 },
+      dorsal: [{ from: 0.26, to: 0.025, n: 22, h: 0.43, shape: function (u) { return 2 * Math.pow(Math.sin(PI * u), 0.22) * Math.exp(-8 * u); }, rake: 0.035 }, { from: 0.0, to: -0.285, h: 0.082, shape: 'plateau', rake: 0.2 }],
+      anal: [{ from: 0.005, to: -0.285, h: 0.065, shape: 'plateau', rake: 0.28 }],
+      pelvic: { x: 0.18, len: 0.07 }, pectoral: { x: 0.245, y: -0.025, len: 0.13, width: 0.054, spread: 0.48, droop: 0.05, shape: pointed },
+      paint: function (P, out) {
+        var rear = smooth(0.045, -0.225, P.x);
+        mixc(FIRE.w, FIRE.orange, rear, out); mixc(out, FIRE.red, rear * smooth(-0.08, -0.3, P.x) * 0.72, out);
+        mixc(out, FIRE.pink, (1 - rear) * smooth(0.15, 0.95, P.up) * 0.22, out);
+        mixc(out, FIRE.yellow, smooth(0.3, 0.47, P.x) * smooth(0.15, 0.9, P.up) * 0.28, out);
+        mixc(out, FIRE.violet, band(P.y - P.top + 0.01, 0.006, P.aay) * smooth(0.25, 0.43, P.x) * 0.6, out);
+      },
+      fin: function (kind, u, v, out) {
+        if (kind === 'dorsal0') { setc(out, FIRE.w); mixc(out, FIRE.orange, (1 - smooth(0.18, 0.32, u)) * (1 - smooth(0.28, 0.55, v)), out); return; }
+        if (kind === 'pelvic' || kind === 'pectoral') { mixc(FIRE.w, FIRE.pink, 0.18 * v, out); return; }
+        mixc(FIRE.orange, FIRE.red, 0.35 + 0.45 * u, out);
+        mixc(out, FIRE.dark, smooth(0.7, 0.96, v) * (kind === 'tail' ? 0.88 : 0.72), out);
+        if (kind === 'tail') mixc(out, FIRE.dark, band(Math.abs(u - 0.5) - (0.36 - 0.13 * v), 0.025, 0.025) * smooth(0.2, 0.6, v) * 0.75, out);
+      }
+    },
+    copperband_butterflyfish: {
+      lengthM: 0.2, tex: [160, 96], scaleSize: 0.018, eye: [0.28, 0.065, 0.026], iris: hex(0xc28a3d), sheen: [0xd7e6e6, 0xffedc6, 0.14],
+      beat: 0.78, wiggle: 0.5, pecBeat: 0.52, pecRate: 1.0,
+      rows: [[0.5, -0.002, -0.026, 0.006], [0.46, 0.006, -0.031, 0.009], [0.4, 0.025, -0.049, 0.014], [0.345, 0.069, -0.082, 0.023], [0.29, 0.126, -0.132, 0.029], [0.2, 0.21, -0.202, 0.037], [0.085, 0.258, -0.233, 0.043], [-0.045, 0.25, -0.224, 0.043], [-0.15, 0.198, -0.181, 0.036], [-0.225, 0.12, -0.104, 0.026], [-0.28, 0.052, -0.042, 0.018], [-0.3, 0.043, -0.036, 0.016]],
+      tail: { type: 'truncate', span: 0.115, len: 0.18 },
+      dorsal: [{ from: 0.21, to: -0.277, h: 0.165, shape: 'rear', rake: 0.14 }], anal: [{ from: 0.12, to: -0.267, h: 0.135, shape: 'rear', rake: 0.16 }],
+      pelvic: { x: 0.15, len: 0.1 }, pectoral: { x: 0.21, y: -0.033, len: 0.125, width: 0.061, spread: 0.42, droop: 0.07, shape: pointed },
+      paint: function (P, out) {
+        mixc(COPPER.w, COPPER.silver, smooth(0.25, 0.95, P.up) * 0.12, out);
+        var bands = [[0.278 - 0.035 * P.y, 0.026], [0.117 - 0.05 * P.y, 0.032], [-0.075 - 0.11 * P.y, 0.038], [-0.227 - 0.03 * P.y, 0.034]];
+        for (var i = 0; i < bands.length; i++) {
+          var d = P.x - bands[i][0], w = bands[i][1];
+          mixc(out, i === 3 ? COPPER.blue : COPPER.ink, band(d, w + 0.006, P.aa) * (i === 3 ? 0.8 : 0.72), out);
+          mixc(out, COPPER.orange, band(d, w, P.aa), out);
+          mixc(out, COPPER.deep, band(d - w * 0.55, w * 0.18, P.aa) * 0.26, out);
+        }
+      },
+      fin: function (kind, u, v, out) {
+        setc(out, COPPER.w);
+        if (kind === 'pectoral') { mixc(out, COPPER.silver, v * 0.25, out); return; }
+        if (kind === 'tail') { mixc(out, COPPER.orange, band(v - 0.3, 0.07, 0.03) * 0.88, out); mixc(out, COPPER.blue, band(v - 0.42, 0.018, 0.025) * 0.8, out); return; }
+        if (kind === 'pelvic') { mixc(out, COPPER.orange, 0.72 * (1 - v), out); return; }
+        var from = kind === 'dorsal0' ? 0.21 : 0.12, to = kind === 'dorsal0' ? -0.277 : -0.267, x = lerp(from, to, u);
+        for (var i = 0; i < 3; i++) {
+          var center = [0.108, -0.108, -0.23][i], width = [0.035, 0.047, 0.038][i];
+          mixc(out, COPPER.ink, band(x - center, width + 0.005, 0.012) * 0.62, out);
+          mixc(out, COPPER.orange, band(x - center, width, 0.012), out);
+        }
+        mixc(out, COPPER.orange, smooth(0.85, 0.98, v) * 0.6, out); mixc(out, COPPER.blue, band(v - 0.96, 0.016, 0.016) * 0.6, out);
+      },
+      extra: function (c) {
+        // The soft dorsal's false eye is a pale ring around a dark centre.
+        // Flattened geometry keeps the field mark legible on both flanks.
+        blob(c.T, c.detail, -0.166, 0.267, 0, 0.031, 0.031, 0.006, lin(COPPER.w), c.high ? 16 : 8, c.high ? 8 : 4);
+        blob(c.T, c.detail, -0.166, 0.267, 0, 0.023, 0.023, 0.008, lin(COPPER.ink), c.high ? 16 : 8, c.high ? 8 : 4);
+      }
+    },
+
     clownfish: {
       lengthM: 0.09, tex: [128, 64], eye: [0.37, 0.045, 0.042], iris: hex(0xe48a2a),
       rows: [[0.5, -0.005, -0.035, 0.012], [0.47, 0.045, -0.075, 0.04], [0.42, 0.1, -0.11, 0.065], [0.34, 0.15, -0.145, 0.085], [0.24, 0.178, -0.162, 0.095], [0.12, 0.184, -0.165, 0.096], [0.0, 0.172, -0.155, 0.09], [-0.1, 0.14, -0.125, 0.074], [-0.18, 0.1, -0.085, 0.054], [-0.24, 0.07, -0.058, 0.04], [-0.28, 0.058, -0.048, 0.032]],
@@ -1699,6 +1845,10 @@
     },
     fin: function (kind, u, v, out) { mixc(MORAY.b, MORAY.k, 0.35 + 0.3 * smooth(0.5, 1, v), out); },
     extra: function (c) {
+      // The detail prefix here contains only the two eyes built by fishParts.
+      // Seat their limbus on the same curved spine as the head before appending
+      // the separately positioned jaw and teeth; otherwise the eyes are buried.
+      c.detail.map(0, function (p) { var offset = c.def.spine(p[0]); p[1] += offset[0]; p[2] += offset[1]; });
       // Open lower jaw on a hinge, with fang rows along both jaws.
       var jaw = new Geo(), hinge = [0.355, c.prof(0.355)[1] + c.def.spine(0.355)[0] + 0.006, c.def.spine(0.355)[1]];
       jaw.loft([[0.155, 0.006, -0.008, 0.008], [0.13, 0.012, -0.02, 0.022], [0.09, 0.014, -0.03, 0.034], [0.04, 0.014, -0.036, 0.042], [0.0, 0.016, -0.036, 0.046]], c.high ? 10 : 6, c.high ? 12 : 8,
@@ -1819,6 +1969,27 @@
   };
 
   // ---- Rays: a planform grid with top and bottom skins --------------------------
+  // Five paired ventral openings follow the curve of the chest. Keep the
+  // opening, rounded lip and skin fold in one field so pigment and relief
+  // agree at both texture tiers. This is shallow skin detail, not extra meshes.
+  function rayVentralField(Q, manta, out) {
+    var x = Q.x / Q.k, az = Math.abs(Q.z / Q.k), aa = Q.aa / Q.k * 0.7;
+    var across = (az - (manta ? 0.29 : 0.039)) / (manta ? 0.105 : 0.015);
+    var span = 1 - smooth(0.72, 1.03, Math.abs(across)), width = manta ? 0.006 : 0.001;
+    var opening = 0, lip = 0, fold = 0;
+    for (var g = 0; g < 5; g++) {
+      var centre = (manta ? 0.34 : 0.046) - g * (manta ? 0.085 : 0.014);
+      var d = x - centre + (manta ? 0.026 : 0.0038) * (across * across - 0.3);
+      opening = Math.max(opening, band(d, width, aa) * span);
+      lip = Math.max(lip, band(d + width * 2.1, width * 0.6, aa) * span);
+      fold = Math.max(fold, band(d + width * 4.1, width * 1.5, aa * 1.4) * span);
+    }
+    // The stingray's small underside mouth sits ahead of the gill rows.
+    // Mantas retain their terminal mouth in the existing head geometry.
+    var mouth = manta ? 0 : band(x - 0.079 + 0.006 * Math.pow(az / 0.02, 2), 0.0015, aa) * (1 - smooth(0.015, 0.021, az));
+    out[0] = opening; out[1] = lip; out[2] = fold; out[3] = mouth;
+    return out;
+  }
   function makeRay(T, id, info, def, o) {
     var kit = new Kit(T, id, info.group, o.high, o.derivatives), rng = stream(o.seed, 31), high = o.high, rm = !!o.reducedMotion;
     var k = 0.93 + 0.14 * rng(), S = def.span * k, ph0 = rng() * TAU, res = high ? def.res[1] : def.res[0], NZ = res[0], NC = res[1];
@@ -1839,17 +2010,25 @@
     // Skins are painted on the unit-size disc (marks scale with the animal),
     // so every ray of a species and tier shares them.
     var tw = high ? def.tex[0] * 2 : def.tex[0], th2 = high ? def.tex[1] * 2 : def.tex[1], manta = id === 'reef_manta', tier = high ? 'h' : 'l';
-    var x0 = xmin / k, x1 = xmax / k, S0 = def.span, Q = { S: S0, k: 1 };
+    var x0 = xmin / k, x1 = xmax / k, S0 = def.span, Q = { S: S0, k: 1, ventral: [0, 0, 0, 0] };
     var topTex = kit.baked('ray|' + id + '|top|' + tier, tw, th2, function (u, v, out) {
       Q.x = lerp(x0, x1, u); Q.z = lerp(-S0, S0, v); Q.f = Math.abs(Q.z) / S0; Q.aa = 0.75 * (x1 - x0) / tw; def.paintTop(Q, out);
       // Broad skin variation survives at swimming distance; tiny denticles are
       // reserved for the relief map so dark wings do not become glittery.
       mulc(out, 0.94 + 0.08 * noise2(u * 11 + 4, v * 9) - 0.055 * Math.pow(Q.f, 5));
     });
-    var botTex = def.paintBottom ? kit.baked('ray|' + id + '|bottom|' + tier, tw, th2, function (u, v, out) {
-      Q.x = lerp(x0, x1, u); Q.z = lerp(-S0, S0, v); Q.f = Math.abs(Q.z) / S0; Q.aa = 0.75 * (x1 - x0) / tw; def.paintBottom(Q, out);
-      mulc(out, 0.94 + 0.055 * noise2(u * 8, v * 10));
-    }) : null;
+    var bottomMaps = bakedPair(kit, 'ray|' + id + '|bottom|' + tier, tw, th2, function (u, v, out, rel) {
+      Q.x = lerp(x0, x1, u); Q.z = lerp(-S0, S0, v); Q.f = Math.abs(Q.z) / S0; Q.aa = 0.75 * (x1 - x0) / tw;
+      var detail = rayVentralField(Q, manta, Q.ventral);
+      def.paintBottom(Q, out);
+      mulc(out, (0.94 + 0.055 * noise2(u * 8, v * 10)) * (1 + 0.035 * detail[1] - 0.025 * detail[2]));
+      // Red stores subtle relief; green varies wet-skin roughness. Sharing
+      // this map keeps the underside in the existing skin shader program.
+      rel[0] = 0.5 - 0.18 * detail[0] + 0.075 * detail[1] - 0.028 * detail[2] - 0.16 * detail[3];
+      rel[1] = 0.86 + 0.06 * noise2(u * 17 + 2, v * 15) + 0.07 * detail[0] - 0.045 * detail[1];
+      rel[2] = 0.5;
+    }, false, [false, true]);
+    var botTex = bottomMaps[0], bottomSurface = bottomMaps[1];
     var root = kit.root(), pose = kit.node('pose', root), holder = kit.node('holder', pose);
     if (info.origin === 'base') holder.position.y = lift;
     var topGeo = kit.geo(top, 1), botGeo = kit.geo(bot, 1);
@@ -1863,8 +2042,7 @@
       out[0] = out[1] = out[2] = 0.83 + 0.15 * noise2(u * 15 + 7, v * 18);
     }, false, false, true);
     var topMat = kit.std({ map: topTex, bumpMap: rayRelief, bumpScale: Math.min(0.00055, S * 0.0025), roughnessMap: rayRoughness, roughness: (def.rough || 0.55) + 0.09, metalness: 0 }, def.sheen ? { sheen: sheenOf(T, def.sheen[0], def.sheen[1], def.sheen[2]) } : null);
-    // Flat relief and roughness maps keep the underside in the skin program.
-    var botMat = kit.std({ map: botTex || kit.flat('map'), color: botTex ? 0xffffff : 0xe5e3d9, bumpMap: kit.flat('bump'), roughnessMap: kit.flat('rough'), roughness: 0.57 });
+    var botMat = kit.std({ map: botTex, bumpMap: bottomSurface, bumpScale: Math.min(0.0016, S * 0.0035), roughnessMap: bottomSurface, roughness: 0.64 });
     kit.mesh(topGeo, topMat, 'disc-top', holder); kit.mesh(botGeo, botMat, 'disc-bottom', holder);
     var det = new Geo(), parts = {}, live = [], detMat = kit.std({ vertexColors: true, roughness: manta ? 0.48 : 0.35, side: T.DoubleSide });
     var ctx = { T: T, kit: kit, k: k, S: S, high: high, detail: det, thick: def.thick, lead: def.lead, trail: def.trail, upper: def.upper,
@@ -1990,6 +2168,13 @@
         var edge = 1 - Math.sqrt(Math.pow(x / (x > 0 ? 0.15 : 0.13), 2) + Math.pow(z / 0.125, 2));
         mixc(out, LYMMA.e, band(edge - 0.03, 0.015, 0.012), out);
       },
+      // White underside with small paired gill slits and a short curved mouth.
+      // Taeniura lymma: Cabebe-Barnuevo et al. (2025), doi:10.3897/aiep.55.139721.
+      paintBottom: function (Q, out) {
+        setc(out, LYMMA.w);
+        mixc(out, hex(0x6e706b), Q.ventral[0] * 0.74, out);
+        mixc(out, hex(0x626963), Q.ventral[3] * 0.82, out);
+      },
       extra: function (c) {
         var k = c.k, eye = lin(hex(0xd8b040)), dark = lin(hex(0x101418)), skin = lin(LYMMA.b);
         [-1, 1].forEach(function (side) {
@@ -2036,7 +2221,7 @@
         setc(out, MANTA.w);
         var te = -0.62 + 0.62 * Math.pow(Math.min(1, az / 1.75), 0.8);
         mixc(out, MANTA.g, smooth(te + 0.25, te + 0.05, x) * smooth(0.4, 0.9, az / 1.75), out);
-        for (var g = 0; g < 5; g++) mixc(out, MANTA.g, band(x - (0.34 - g * 0.085), 0.008, 0.008) * band(az - 0.3, 0.06, 0.02), out);
+        mixc(out, MANTA.g, Q.ventral[0], out);
         cells(x / 0.09, z / 0.09, 21, cc);
         mixc(out, MANTA.sp, (1 - smooth(0.12, 0.2, cc[0])) * (az < 0.3 ? 1 : 0) * (x < 0.3 && x > -0.4 ? 1 : 0) * (cc[2] > 0.45 ? 1 : 0), out);
         mixc(out, MANTA.m, smooth(0.5, 0.56, x) * (1 - smooth(0.24, 0.3, az)), out);
@@ -2173,7 +2358,14 @@
         var x = (u - 0.5) * 2 * xm, z = (v - 0.5) * 2 * zm, len = Math.sqrt(x * x + z * z) || 1e-9, phi = Math.atan2(z, x), rho = len / outline1(phi, x / len, z / len), CL = CL1;
         scuteAt(x / a1, z / b1, rho, phi, P);
         var growth = Math.sqrt(P[2] * P[2] + P[3] * P[3]);
-        rel[0] = rel[1] = rel[2] = 0.25 + 0.55 * smooth(0.002, 0.035, P[1]) + 0.025 * Math.cos(growth * 145) + noise2(u * 180, v * 180) * 0.025;
+        // Low, rounded scutes catch the light without turning adjoining green
+        // turtle plates into deep grooves. Only the hawksbill has a shallow
+        // posterior overlap lip; the shell silhouette and pigment stay shared.
+        var inset = smooth(0.002, 0.038, P[1]), crown = smooth(0.012, 0.15, P[1]);
+        var grain = noise2(u * 56 + P[0] * 0.7, v * 56), growthWarp = noise2(P[2] * 19 + P[0], P[3] * 19);
+        var rings = Math.cos(growth * 145 + growthWarp * 2.6) * (0.008 + 0.006 * grain);
+        var overlap = def.imb && P[0] < 100 ? smooth(0.01, -0.08, P[2]) * smooth(0.002, 0.012, P[1]) * (1 - smooth(0.022, 0.06, P[1])) : 0;
+        rel[0] = rel[1] = rel[2] = 0.29 + (def.imb ? 0.38 : 0.30) * inset + (def.imb ? 0.055 : 0.035) * crown + rings * inset + 0.018 * grain * inset + 0.075 * overlap;
         if (rho > 1.02) { setc(out, def.plastron); return; }
         var id2 = P[0], h1 = scuteTone[id2] !== undefined ? scuteTone[id2] : (scuteTone[id2] = hash2(id2 * 7 + 3, 11)), ang = Math.atan2(P[3], P[2] + 0.05);
         var streak = 0.65 * noise2(x / CL * 18 + id2 * 1.5, z / CL * 18) + 0.35 * noise2(ang * 6.2 + id2 * 5.3, rho * 14);
@@ -2191,9 +2383,12 @@
       var shellRoughness = kit.baked('turtle|' + c.id + '|roughness', high ? 128 : 64, high ? 128 : 64, function (u, v, out) {
         var x = (u - 0.5) * 2 * xm, z = (v - 0.5) * 2 * zm, phi = Math.atan2(z, x), rho = Math.sqrt(x * x + z * z) / outline1(phi);
         scuteAt(x / a1, z / b1, rho, phi, P);
-        out[0] = out[1] = out[2] = 0.84 + 0.12 * noise2(u * 20, v * 20) + 0.04 * (1 - smooth(0.005, 0.04, P[1]));
+        // Worn scute crowns have a soft sheen; boundaries scatter the light.
+        // Cell-locked grain breaks up broad highlights rather than adding gloss.
+        var edge = 1 - smooth(0.008, 0.065, P[1]), grain = noise2(P[2] * 32 + P[0] * 3.1, P[3] * 32);
+        out[0] = out[1] = out[2] = 0.82 + 0.065 * noise2(u * 18, v * 18) + 0.035 * grain + 0.075 * edge;
       }, false, false, true);
-      var shellMat = kit.std({ map: tex, bumpMap: shellRelief, bumpScale: CL * (def.imb ? 0.004 : 0.003), roughnessMap: shellRoughness, roughness: def.imb ? 0.51 : 0.59, metalness: 0 });
+      var shellMat = kit.std({ map: tex, bumpMap: shellRelief, bumpScale: CL * (def.imb ? 0.004 : 0.003), roughnessMap: shellRoughness, roughness: def.imb ? 0.57 : 0.64, metalness: 0 });
       kit.mesh(kit.geo(cara, 1), shellMat, 'carapace', holder);
       var plas = new Geo();
       plas.polar(high ? 6 : 2, ns / 2, function (r, phi, col) {
@@ -2254,9 +2449,15 @@
         mixc(def.skin, def.edge, 0.12 + 0.48 * smooth(0.05, -0.8, up), out);
         mulc(out, 0.8 + 0.24 * cc[2]);
         mixc(out, def.edge, (1 - smooth(0.015, 0.06, cc[1] - cc[0])) * 0.68, out);
-        rel[0] = rel[1] = rel[2] = 0.32 + 0.55 * smooth(0.012, 0.07, cc[1] - cc[0]);
+        rel[0] = rel[2] = 0.32 + 0.55 * smooth(0.012, 0.07, cc[1] - cc[0]);
+        // R remains the original scale relief. G shares this linear texture as
+        // roughness, with softer scale margins and a restrained worn crown.
+        var margin = 1 - smooth(0.015, 0.075, cc[1] - cc[0]);
+        rel[1] = 0.77 + 0.09 * cc[2] + 0.035 * noise2(u * 80, v * 64) + 0.095 * margin;
       }, true, [false, true]);
-      var flipperMat = kit.std({ map: flipperMaps[0], bumpMap: flipperMaps[1], bumpScale: CL * 0.00055, roughnessMap: kit.flat('rough'), roughness: 0.57 });
+      // Reuse the map only where relief is already uploaded. The lightweight
+      // derivative-free path keeps its original shared flat-roughness texture.
+      var flipperMat = kit.std({ map: flipperMaps[0], bumpMap: flipperMaps[1], bumpScale: CL * 0.00055, roughnessMap: kit.derivatives ? flipperMaps[1] : kit.flat('rough'), roughness: kit.derivatives ? 0.68 : 0.57 });
       function flipper(len, rear) {
         var g = new Geo();
         g.loft([[1, 0.008, -0.008, 0.05], [0.9, 0.022, -0.018, 0.12], [0.6, 0.036, -0.028, 0.16], [0.3, 0.05, -0.04, 0.15], [0.0, 0.06, -0.05, 0.1]], high ? 10 : 5, high ? 12 : 8,
@@ -2383,11 +2584,16 @@
     });
     var body = kit.mesh(kit.geo(geo, 1), kit.std({ vertexColors: true, roughness: 0.42, metalness: 0.02 }, { sheen: sheenOf(T, pal[1], 0xffffff, 0.15) }), 'column', c.root);
     // Tentacles: one finger geometry instanced over the oral disc.
-    var tg = new Geo(), tip = lin(hex(tips[1])), base = lin(hex(tips[0])), segs = high ? 3 : 2, sides = high ? 5 : 4, pts = [];
+    var tg = new Geo(), tip = lin(hex(tips[1])), base = lin(hex(tips[0])), segs = high ? 3 : 2, sides = high ? 6 : 5, pts = [];
     // Bleached fingers: a cool, see-through-looking white base and pastel tips.
     if (bleached) { tip = lin(hex(pastel[0])); base = lin(mixc(BLEACH, BLEACH_SH, 0.5, [0, 0, 0])); }
     for (i = 0; i <= segs; i++) { var tt = i / segs; pts.push([0.2 * Math.sin(tt * PI * 0.8), tt, 0.08 * tt * tt]); }
-    tg.tube(pts, function (t) { return 0.1 * (0.82 + 0.15 * Math.sin(t * PI) - 0.22 * Math.pow(t, 5)); }, sides, function (t) { return mixc(base, tip, smooth(0.48, 1, t), [0, 0, 0]); });
+    // A small terminal ring rounds the blunt end instead of closing the whole
+    // finger with one shallow polygon. Keep the original centreline stations,
+    // pigment progression and final tip position; only the cap is softened.
+    pts.push([pts[segs][0], 1.026, pts[segs][2]]);
+    tg.tube(pts, function (t, ring) { var u = Math.min(ring / segs, 1); return ring > segs ? 0.038 : 0.1 * (0.82 + 0.15 * Math.sin(u * PI) - 0.22 * Math.pow(u, 5)); }, sides,
+      function (t) { return mixc(base, tip, smooth(0.48, 1, Math.min(t * (segs + 1) / segs, 1)), [0, 0, 0]); });
     // The instanced finger has different length/radius scales. Keep its cap
     // short in this unit space so it remains a rounded tentacle, not a spike.
     var capIndex = tg.p.length - 3; tg.p[capIndex] = pts[segs][0]; tg.p[capIndex + 1] = 1.045; tg.p[capIndex + 2] = pts[segs][2];
@@ -2468,12 +2674,17 @@
       out[0] = out[1] = out[2] = 0.4 + growth * 0.26 + noise2(u * 160, v * 120) * 0.1 + 0.3 * clamScale(u, v);
     }, false, false, true);
     kit.mesh(kit.geo(shell, 1), kit.std({ vertexColors: true, map: kit.flat('map'), bumpMap: shellRelief, bumpScale: 0.0035 * k, roughness: 0.72, side: T.DoubleSide }), 'shell', c.root);
-    // Mantle spans the gape and folds over the scalloped rim.
-    var mantle = new Geo(), nm = high ? 12 : 5, white = [1, 1, 1];
+    // Mantle spans the gape and folds over the scalloped rim. Extra samples
+    // around the centre form a recessed inhalant opening with soft tissue lips;
+    // its floor stays inside the valve instead of exposing the background.
+    var mantle = new Geo(), mantleRows = high ? [0, 1 / 12, 2 / 12, 3 / 12, 4 / 12, 0.435, 0.465, 0.5, 0.535, 0.565, 8 / 12, 9 / 12, 10 / 12, 11 / 12, 1] : [0, 0.2, 0.4, 0.465, 0.5, 0.535, 0.6, 0.8, 1];
+    var nm = mantleRows.length - 1;
     for (i = 0; i <= nu; i++) for (j = 0; j <= nm; j++) {
-      var u2 = i / nu, s = j / nm, l = valve(u2, 1, -1), r = valve(u2, 1, 1), over = 0.018 * k * Math.cos(PI * s) * Math.pow(Math.sin(PI * u2), 0.3);
+      var u2 = i / nu, s = mantleRows[j], l = valve(u2, 1, -1), r = valve(u2, 1, 1), over = 0.018 * k * Math.cos(PI * s) * Math.pow(Math.sin(PI * u2), 0.3);
       var bulge = (0.028 + 0.004 * Math.sin(u2 * folds * TAU + s * PI)) * k * Math.sin(PI * s) * Math.pow(Math.sin(PI * u2), 0.6), drop = 0.012 * k * Math.pow(Math.abs(Math.cos(PI * s)), 3);
-      mantle.v(lerp(l[0], r[0], s), lerp(l[1], r[1], s) + bulge - drop, lerp(l[2], r[2], s) - over * 1.6, white, u2, s);
+      var inlet = smooth(0.29, 0.36, u2) * smooth(0.79, 0.72, u2), inset = 1 - smooth(0.015, 0.065, Math.abs(s - 0.5));
+      var lip = band(Math.abs(s - 0.5) - 0.068, 0.009, 0.018), shade = 1 - 0.64 * inlet * inset;
+      mantle.v(lerp(l[0], r[0], s), lerp(l[1], r[1], s) + bulge - drop + inlet * k * (0.003 * lip - 0.022 * inset), lerp(l[2], r[2], s) - over * 1.6, [shade, shade, shade], u2, s);
     }
     for (i = 0; i < nu; i++) for (j = 0; j < nm; j++) { var m0 = i * (nm + 1) + j, m1 = m0 + nm + 1; mantle.i.push(m0, m0 + 1, m1, m0 + 1, m1 + 1, m1); }
     var pals = [[0x1f5fe0, 0x40c8f0, 0x0c2a80], [0x14a07a, 0x60f0c0, 0x0a5040], [0x6a3ab8, 0xf0c040, 0x2a1460], [0x2a8ad8, 0x9af060, 0x123a70]];
@@ -2538,12 +2749,32 @@
       mixc(body, alt, 0.5 * noise2(Math.cos(a) * r * 9 + 4, Math.sin(a) * r * 9), out); setc(out, lin(out));
       return [Math.cos(a) * rd * r, cfg.thick * k * (1.1 - 0.6 * r * r), Math.sin(a) * rd * r];
     });
-    var segs = high ? 10 : 4, sides = high ? 8 : 5;
+    var segs = high ? 10 : 4, sides = high ? 8 : 5, armCaps = [];
     for (i = 0; i < n; i++) {
       var a = i / n * TAU + 0.3, pts = [];
       // Arms start at the centre so their open start rings stay buried under the disc.
       for (j = 0; j <= segs; j++) { var t = j / segs, r = lerp(rd * 0.08, R, t); pts.push([Math.cos(a) * r, cfg.thick * k * (0.75 - 0.35 * t) + cfg.curl * k * t * t, Math.sin(a) * r]); }
-      geo.tube(pts, function (t) { return cfg.armR * k * (1 - cfg.taper * t); }, sides, function (t, s) { mixc(body, alt, 0.45 * noise2(t * 9 + i * 3, s * 5), col); if (cfg.dots && noise2(t * 30 + i, s * 12) > 0.72) mixc(col, dark, 0.6, col); return lin(col); });
+      var armFirst = geo.tube(pts, function (t) { return cfg.armR * k * (1 - cfg.taper * t); }, sides, function (t, s) { mixc(body, alt, 0.45 * noise2(t * 9 + i * 3, s * 5), col); if (cfg.dots && noise2(t * 30 + i, s * 12) > 0.72) mixc(col, dark, 0.6, col); return lin(col); });
+      if (c.id === 'blue_sea_star') armCaps.push({ last: armFirst + segs * sides, tip: armFirst + (segs + 1) * sides, index: geo.i.length - sides * 3, centre: pts[segs] });
+    }
+    // Linckia has blunt, rounded arm ends. Add a shoulder inside the existing
+    // terminal envelope, leaving every original shaft station and apex intact.
+    // Append after all arms so their original positions and pigment samples keep
+    // their indices; the shared crown-of-thorns builder takes no new geometry.
+    for (i = 0; i < armCaps.length; i++) {
+      var cap = armCaps[i], ring = geo.count(), tip = cap.tip * 3, centre = cap.centre;
+      for (j = 0; j < sides; j++) {
+        var last = (cap.last + j) * 3;
+        geo.v(centre[0] + (geo.p[tip] - centre[0]) * 0.25 + (geo.p[last] - centre[0]) * 0.85,
+          centre[1] + (geo.p[tip + 1] - centre[1]) * 0.25 + (geo.p[last + 1] - centre[1]) * 0.85,
+          centre[2] + (geo.p[tip + 2] - centre[2]) * 0.25 + (geo.p[last + 2] - centre[2]) * 0.85,
+          [lerp(geo.c[last], geo.c[tip], 0.25), lerp(geo.c[last + 1], geo.c[tip + 1], 0.25), lerp(geo.c[last + 2], geo.c[tip + 2], 0.25)], 0, 0);
+      }
+      for (j = 0; j < sides; j++) {
+        var next = (j + 1) % sides, ci = cap.index + j * 3;
+        geo.i[ci] = ring + j; geo.i[ci + 1] = ring + next;
+        geo.i.push(cap.last + j, cap.last + next, ring + next, cap.last + j, ring + next, ring + j);
+      }
     }
     if (cfg.spines) {
       var sb = lin(hex(cfg.spines[0])), st = lin(hex(cfg.spines[1])), per = high ? cfg.spinesPerArm[1] : cfg.spinesPerArm[0];
@@ -2577,7 +2808,7 @@
     for (var i = 0; i < 5; i++) { var a = i / 5 * TAU + 0.3; blob(T, test, Math.cos(a) * R * 0.44, cy + R * 0.6, Math.sin(a) * R * 0.44, R * 0.11, R * 0.06, R * 0.11, white, 6, 4); }
     test.absorb(T, new T.TorusGeometry(R * 0.2, R * 0.06, 5, high ? 16 : 8), new T.Matrix4().makeRotationX(PI / 2).setPosition(0, cy + R * 0.66, 0), orange);
     kit.mesh(kit.geo(test, 1), kit.std({ vertexColors: true, roughness: 0.25 }, { sheen: sheenOf(T, 0x2040ff, 0x40c0ff, 0.6) }), 'test', c.root);
-    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x2a2a30));
+    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x2a2a30)), spineMotion = [];
     for (i = 0; i < n; i++) {
       var f = (i + 0.5) / n, yy = 1 - f * 1.75, rr = Math.sqrt(Math.max(0, 1 - yy * yy)), aa = i * 2.39996;
       // The anal cone and its orange ring stay visible among the spines.
@@ -2585,16 +2816,31 @@
       var d = [Math.cos(aa) * rr, yy * 0.9 + 0.25, Math.sin(aa) * rr], dl = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
       d = [d[0] / dl, d[1] / dl, d[2] / dl];
       var len = (0.1 + 0.08 * smooth(-0.3, 0.9, yy) + 0.03 * rng()) * k;
-      sp2.spike([d[0] * R * 0.9, cy + d[1] * R * 0.6, d[2] * R * 0.9], d, len, 0.0026 * k, black, tipc);
+      var bx = d[0] * R * 0.9, by = cy + d[1] * R * 0.6, bz = d[2] * R * 0.9;
+      sp2.spike([bx, by, bz], d, len, 0.0026 * k, black, tipc);
+      spineMotion.push(bx, by, bz, aa, 0.42 + 0.17 * f, 0.31 + 0.13 * (1 - f));
     }
     var g = kit.geo(sp2, 1);
     kit.mesh(g, kit.std({ vertexColors: true, roughness: 0.3 }), 'spines', c.root);
-    deform(c, g, function (base, out, t) {
-      for (var q = 0; q < base.length; q += 3) {
-        var x = base[q], y = base[q + 1] - cy, z = base[q + 2], d = Math.sqrt(x * x + y * y + z * z), w = Math.max(0, d - R) / 0.15;
-        var ph = (x * 61 + z * 43) / R; out[q] = x + 0.012 * w * Math.sin(t * 0.8 + ph); out[q + 1] = base[q + 1]; out[q + 2] = z + 0.012 * w * Math.cos(t * 0.7 + ph * 1.3);
+    // Each rigid spine turns about its attachment to the test. A quiet shared
+    // drift sits under independent, slower probing; the skin never stretches.
+    var spineRig = new Float32Array(spineMotion), base = new Float32Array(g.attributes.position.array), normal = new Float32Array(g.attributes.normal.array);
+    g.boundingBox.expandByScalar(0.023 * k); g.boundingSphere.radius += 0.023 * k;
+    c.anim(function (t) {
+      var out = g.attributes.position.array, norm = g.attributes.normal.array, drift = 0.018 * Math.sin(t * 0.23);
+      for (var s = 0, q = 0; s < spineRig.length; s += 6) {
+        var ax = 0.04 * Math.sin(t * spineRig[s + 4] + spineRig[s + 3]) + drift;
+        var az = 0.035 * Math.sin(t * spineRig[s + 5] + spineRig[s + 3] * 1.37);
+        var sx = Math.sin(ax), cx = Math.cos(ax), sz = Math.sin(az), cz = Math.cos(az);
+        for (var v = 0; v < 4; v++, q += 3) {
+          var x = base[q] - spineRig[s], y = base[q + 1] - spineRig[s + 1], z = base[q + 2] - spineRig[s + 2], ry = cx * y - sx * z;
+          out[q] = spineRig[s] + cz * x - sz * ry; out[q + 1] = spineRig[s + 1] + sz * x + cz * ry; out[q + 2] = spineRig[s + 2] + sx * y + cx * z;
+          x = normal[q]; y = normal[q + 1]; z = normal[q + 2]; ry = cx * y - sx * z;
+          norm[q] = cz * x - sz * ry; norm[q + 1] = sz * x + cz * ry; norm[q + 2] = sx * y + cx * z;
+        }
       }
-    }, false);
+      g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true;
+    });
   }
   function buildNudibranch(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(59), L = 0.05 * (0.9 + 0.2 * rng()), g = new Geo(), white = [1, 1, 1];
@@ -2614,14 +2860,48 @@
       mixc(out, wht, smooth(0.36, 0.3, up), out);
       mixc(out, orng, smooth(0.17, 0.1, up), out);
     }, false, true);
+    // The narrow fleshy mantle margin has shallow, irregular folds rather than
+    // a rigid straight rim. Keep the head, tail, back and sole exactly in place;
+    // UVs carry the same identifying bands over the gently folded tissue.
+    var mantlePhase = hash2(c.seed, 59) * 11;
+    for (var mv = 0; mv < g.count(); mv++) {
+      var mu = g.t[mv * 2], ma = -PI / 2 + g.t[mv * 2 + 1] * TAU, mup = Math.sin(ma), side = Math.cos(ma);
+      var margin = smooth(-0.08, 0.08, mup) * (1 - smooth(0.32, 0.58, mup));
+      var ends = smooth(0.06, 0.22, mu) * (1 - smooth(0.78, 0.94, mu));
+      var fold = 1.3 * (noise2(mu * 4.7 + mantlePhase, side * 0.8 + 4.1) - 0.5) + 0.7 * (noise2(mu * 9.3 - mantlePhase, side * 1.3 + 7.4) - 0.5);
+      g.p[mv * 3 + 1] += 0.008 * margin * ends * fold;
+    }
     scaleGeo(g, L); g.map(0, function (p) { p[1] += 0.004 * L / 0.05; });
     kit.mesh(kit.geo(g, 1), kit.std({ map: tex, bumpMap: kit.flat('bump'), roughnessMap: kit.flat('rough'), roughness: 0.35 }, { sheen: sheenOf(T, 0x6090ff, 0xffffff, 0.2) }), 'body', c.root);
     var org = lin(orng), wh = lin(wht), rh = new Geo(), gills = new Geo();
-    [-1, 1].forEach(function (s) { rh.tube(lineTo([0.36 * L, 0.12 * L, s * 0.08 * L], [0.4 * L, 0.36 * L, s * 0.11 * L], high ? 5 : 2, 0), function (t) { return 0.03 * L * (0.7 + 0.5 * Math.sin(PI * t)); }, high ? 6 : 4, function (t) { return mixc(org, wh, t > 0.85 ? 0.15 : 0, [0, 0, 0]); }); });
+    [-1, 1].forEach(function (s) {
+      // The sensory clubs have stacked lamellae around a narrow stalk, with a
+      // smooth tip. Build the collars into the existing batched crown.
+      rh.tube(lineTo([0.36 * L, 0.12 * L, s * 0.08 * L], [0.4 * L, 0.36 * L, s * 0.11 * L], high ? 5 : 3, 0), function (t) { return 0.021 * L * (0.7 + 0.5 * Math.sin(PI * t)); }, high ? 6 : 4, function (t) { return mixc(org, wh, 0.15 * smooth(0.82, 1, t), [0, 0, 0]); });
+      var collars = high ? 10 : 6, sides = high ? 8 : 5;
+      for (var r = 0; r < collars; r++) {
+        var u = 0.27 + r / collars * 0.62, radius = L * (0.023 + 0.014 * Math.sin(PI * u));
+        var centre = [L * (0.36 + u * 0.04), L * (0.12 + u * 0.24), s * L * (0.08 + u * 0.03)], first = rh.count();
+        for (var j = 0; j < sides; j++) {
+          var a = j / sides * TAU, ca = Math.cos(a), sa = Math.sin(a);
+          rh.v(centre[0] + radius * ca, centre[1] - radius * (ca * 0.04 + sa * s * 0.03) / 0.24, centre[2] + radius * sa, mixc(org, wh, 0.16 + 0.06 * u, [0, 0, 0]), u, j / sides);
+          rh.v(centre[0] + radius * 0.62 * ca, centre[1] + 0.005 * L - radius * 0.62 * (ca * 0.04 + sa * s * 0.03) / 0.24, centre[2] + radius * 0.62 * sa, org, u, j / sides);
+        }
+        for (j = 0; j < sides; j++) { var a0 = first + j * 2, a1 = first + ((j + 1) % sides) * 2; rh.i.push(a0, a0 + 1, a1, a1, a0 + 1, a1 + 1); }
+      }
+    });
     var gn = high ? 9 : 6;
     for (var i = 0; i < gn; i++) {
       var a = i / gn * TAU;
-      gills.tube(lineTo([0, 0, 0], [Math.cos(a) * 0.1 * L, 0.18 * L, Math.sin(a) * 0.1 * L], high ? 4 : 2, 0.02 * L), function (t) { return 0.022 * L * (1 - 0.7 * t); }, high ? 5 : 3, function (t) { return mixc(org, wh, 0.2 * smooth(0.6, 1, t), [0, 0, 0]); });
+      var gx = Math.cos(a), gz = Math.sin(a);
+      gills.tube(lineTo([0, 0, 0], [gx * 0.1 * L, 0.18 * L, gz * 0.1 * L], high ? 4 : 2, 0.02 * L), function (t) { return 0.013 * L * (1 - 0.7 * t); }, high ? 5 : 3, function (t) { return mixc(org, wh, 0.2 * smooth(0.6, 1, t), [0, 0, 0]); });
+      var feathers = high ? 5 : 3;
+      for (var f = 0; f < feathers; f++) {
+        var u = 0.22 + f / feathers * 0.63, length = L * (0.045 * (1 - u) + 0.01), y = 0.18 * L * u + 0.02 * L * Math.sin(PI * u);
+        [-1, 1].forEach(function (s) {
+          gills.tube([[gx * 0.1 * L * u, y, gz * 0.1 * L * u], [gx * 0.1 * L * u - gz * length * s, y + length * 0.38, gz * 0.1 * L * u + gx * length * s]], function (t) { return L * 0.0045 * (1 - t * 0.76); }, 3, function (t) { return mixc(org, wh, 0.12 + 0.18 * t, [0, 0, 0]); });
+        });
+      }
     }
     // The rhinophores and the gill crown draw as one batch, each on its pivot.
     var rig = new Float32Array(80), mat = kit.std({ vertexColors: true, roughness: 0.4 }, { batch: rig });
@@ -2651,6 +2931,13 @@
       var x = (0.26 - i * 0.085) * L;
       [-1, 1].forEach(function (s) { leg.tube([[x, lift * L - 0.04 * L, s * 0.05 * L], [x + 0.02 * L, lift * L * 0.5, s * 0.17 * L], [x + 0.03 * L, 0.0, s * 0.22 * L]], 0.006 * L, 3, function (t) { return t > 0.5 ? wl : rl; }); });
     }
+    // Paired stalked compound eyes sit beside the rostrum. Their dark rounded
+    // surfaces catch the existing light; the supports share the amber shell.
+    var stalk = lin(yel), eye = lin(hex(0x111b1d));
+    [-1, 1].forEach(function (s) {
+      leg.tube([[0.36 * L, (lift + 0.04) * L, s * 0.052 * L], [0.43 * L, (lift + 0.08) * L, s * 0.092 * L]], function (t) { return L * (0.014 - 0.003 * t); }, high ? 6 : 4, function () { return stalk; });
+      blob(T, leg, 0.43 * L, (lift + 0.08) * L, s * 0.092 * L, 0.024 * L, 0.022 * L, 0.024 * L, eye, high ? 10 : 8, high ? 6 : 5);
+    });
     var tail = new Geo();
     for (i = 0; i < 5; i++) {
       var a = (i - 2) * 0.32;
@@ -2658,16 +2945,52 @@
     }
     // The legs, tail fan and antennae draw as one batch; the antennae keep their pivot.
     var rig = new Float32Array(80), mat = kit.std({ vertexColors: true, roughness: 0.4, side: T.DoubleSide }, { batch: rig }), limbs = [{ geo: leg.build(T, 1), part: 'legs' }, { geo: tail.build(T, 1), part: 'tail-fan' }];
-    var ant = new Geo(), sides = 3;
+    var ant = new Geo(), sides = 3, shafts = [];
     [[0.0, 2.2, 0.06], [0.25, 2.0, -0.05], [-0.2, 1.3, 0.1]].forEach(function (cfg) {
       [-1, 1].forEach(function (s) {
         var pts = [], n = high ? 10 : 5;
         for (var j = 0; j <= n; j++) { var t = j / n, ang = cfg[0] * s + 0.25 * s * t; pts.push([Math.cos(ang) * t * cfg[1] * L * 0.5 + t * t * -0.3 * L, (cfg[2] + 0.4 * t - 0.6 * t * t) * L * 0.5, Math.sin(ang) * t * cfg[1] * L * 0.5]); }
+        shafts.push({ first: ant.count(), pts: pts });
         ant.tube(pts, function (t) { return 0.0016 * (1 - 0.6 * t); }, sides, function () { return wl; });
       });
     });
     var ap = kit.node('antennae-pivot', c.root); ap.position.set(0.46 * L, lift * L + 0.02 * L, 0);
-    var antGeo = ant.build(T, 1), reach = [{ center: ap.position.clone(), reach: batchExtent(antGeo), margin: 0.01 * L }];
+    var antGeo = ant.build(T, 1), originalAnt = antGeo.attributes.position.array.slice(), originalNormals = antGeo.attributes.normal.array.slice();
+    // Keep a few original envelope samples, never indexed or rendered, so
+    // narrowing the filaments cannot move scene placement or culling bounds.
+    // The merged sphere uses Float32 root-space positions, while placement's
+    // radius measures the antenna's own frame through its pivot.
+    var mergedBox = new T.Box3(), point = new T.Vector3(), offset = ap.position;
+    limbs.forEach(function (part) {
+      var pos = part.geo.attributes.position;
+      for (var v = 0; v < pos.count; v++) mergedBox.expandByPoint(point.fromBufferAttribute(pos, v));
+    });
+    for (var v = 0; v < originalAnt.length; v += 3) {
+      point.set(Math.fround(originalAnt[v] + offset.x), Math.fround(originalAnt[v + 1] + offset.y), Math.fround(originalAnt[v + 2] + offset.z)); mergedBox.expandByPoint(point);
+    }
+    var mergedCenter = mergedBox.getCenter(new T.Vector3()), best = [], chosen = [], anchors = [];
+    for (v = 0; v < originalAnt.length; v += 3) {
+      var x = originalAnt[v], y = originalAnt[v + 1], z = originalAnt[v + 2], rx = x + offset.x, ry = y + offset.y, rz = z + offset.z;
+      var fx = Math.fround(rx), fy = Math.fround(ry), fz = Math.fround(rz), dx = fx - mergedCenter.x, dy = fy - mergedCenter.y, dz = fz - mergedCenter.z;
+      var scores = [x, -x, y, -y, z, -z, x * x + y * y + z * z, rx * rx + ry * ry + rz * rz, fx * fx + fy * fy + fz * fz, dx * dx + dy * dy + dz * dz];
+      for (var k = 0; k < scores.length; k++) if (best[k] === undefined || scores[k] > best[k]) { best[k] = scores[k]; chosen[k] = v / 3; }
+    }
+    chosen.forEach(function (index) { if (anchors.indexOf(index) < 0) anchors.push(index); });
+    shafts.forEach(function (shaft) {
+      // Fine, tapering white filaments; preserve every centreline station and
+      // the existing terminal point instead of shortening the antenna.
+      tubeWrite(antGeo.attributes.position.array, shaft.first, shaft.pts, function (t) { return L * 0.0064 * (1 - 0.8 * t); }, sides, 1);
+      var tip = (shaft.first + shaft.pts.length * sides) * 3;
+      for (var k = 0; k < 3; k++) antGeo.attributes.position.array[tip + k] = originalAnt[tip + k];
+    });
+    antGeo.computeVertexNormals();
+    Object.keys(antGeo.attributes).forEach(function (name) {
+      var attr = antGeo.attributes[name], size = attr.itemSize, old = name === 'position' ? originalAnt : name === 'normal' ? originalNormals : attr.array;
+      var data = new Float32Array(attr.array.length + anchors.length * size); data.set(attr.array);
+      for (var a = 0; a < anchors.length; a++) for (var k = 0; k < size; k++) data[attr.array.length + a * size + k] = old[anchors[a] * size + k];
+      antGeo.setAttribute(name, new T.BufferAttribute(data, size));
+    });
+    var reach = [{ center: ap.position.clone(), reach: batchExtent(antGeo), margin: 0.01 * L }];
     limbs.push({ geo: antGeo, part: 'antennae', node: ap });
     var batch = batchMesh(kit, limbs, mat, rig, 'legs', c.root);
     batchReach(batch, reach);
@@ -2706,7 +3029,19 @@
       // Bands of radioles: alternating bright and darker filaments along the spiral.
       plume.v(cx * (r + w), y - w * 0.8, cz * (r + w), i % 2 ? dim : rim, t, 1);
     }
-    for (i = 0; i < segs; i++) { var b = first + i * 2; plume.i.push(b, b + 2, b + 1, b + 1, b + 2, b + 3); }
+    // Separate the radiolar tips instead of closing the whole crown into a ribbon.
+    // Keep the original spiral stations and terminal segment: only points inside
+    // each old quad are added, preserving the exact placement and culling envelope.
+    function plumeBetween(a, b, f) {
+      var ap = a * 3, bp = b * 3, at = a * 2, bt = b * 2;
+      return plume.v(lerp(plume.p[ap], plume.p[bp], f), lerp(plume.p[ap + 1], plume.p[bp + 1], f), lerp(plume.p[ap + 2], plume.p[bp + 2], f),
+        [lerp(plume.c[ap], plume.c[bp], f), lerp(plume.c[ap + 1], plume.c[bp + 1], f), lerp(plume.c[ap + 2], plume.c[bp + 2], f)],
+        lerp(plume.t[at], plume.t[bt], f), lerp(plume.t[at + 1], plume.t[bt + 1], f));
+    }
+    for (i = 0; i < segs; i++) {
+      var b = first + i * 2, inner = i === segs - 1 ? b + 2 : plumeBetween(b, b + 2, 0.82), outer = i === segs - 1 ? b + 3 : plumeBetween(b + 1, b + 3, 0.34);
+      plume.i.push(b, inner, b + 1, b + 1, inner, outer);
+    }
     var nWorms = high ? 14 : 8, n = nWorms * 2, pGeo = kit.geo(plume, 1);
     var mesh = kit.tag(new T.InstancedMesh(pGeo, kit.std({ vertexColors: true, roughness: 0.45, side: T.DoubleSide }), n), 'worms'); c.root.add(mesh);
     var palette = [0xe8281e, 0xf08a1a, 0xffd21e, 0x2a6ae8, 0xf4f4f4, 0x9a3ad8, 0x20b0a0], tc = new T.Color(), worms = [];
@@ -2729,7 +3064,10 @@
         var w = worms[i], ext = 1;
         if (forced) ext = 0.04;
         else if (moving) { var x = fract((t + w.phase) / w.period); ext = x < 0.015 ? 1 - 0.96 * x / 0.015 : x < 0.07 ? 0.04 : Math.min(1, 0.04 + (x - 0.07) / 0.16); }
-        qs.setFromAxisAngle(up, w.spin + (moving ? t * 0.15 : 0)); q.copy(w.q).multiply(qs);
+        // Anchored crowns gently twist around their resting pose; never accumulate a full turn.
+        // Existing worm phases keep each pair together and neighbouring worms independent.
+        var twist = moving ? 0.06 * (Math.sin(t * TAU / w.period + w.phase) - Math.sin(w.phase)) : 0;
+        qs.setFromAxisAngle(up, w.spin + twist); q.copy(w.q).multiply(qs);
         s.set(ext, ext, ext); m4.compose(w.pos, q, s); mesh.setMatrixAt(i, m4);
       }
       mesh.instanceMatrix.needsUpdate = true;
@@ -2756,6 +3094,22 @@
       blob(T, eyes, 0.058, 0.093, s * 0.045, 0.008, 0.0028, 0.003, black, 6, 4);
       body.spike([0.05, 0.1, s * 0.03], [0.1, 0.95, s * 0.2], 0.018, 0.005, white, white);
     });
+    // A single muscular funnel emerges beneath the head, forward of the
+    // mantle. Its rolled lip opens into a recessed lumen, not a painted spot.
+    // It shares the skin batch and both colour states of the surrounding tissue.
+    var funnelSides = high ? 10 : 6, funnelFirst = body.count();
+    var funnelAxis = new T.Vector3(0.044, -0.007, 0.027).normalize(), funnelSide = new T.Vector3().crossVectors(funnelAxis, new T.Vector3(0, 1, 0)).normalize(), funnelUp = new T.Vector3().crossVectors(funnelAxis, funnelSide);
+    var funnelRings = [[0.008, 0.045, 0.034, 0.012], [0.025, 0.042, 0.047, 0.0105], [0.052, 0.038, 0.061, 0.0085], [0.052, 0.038, 0.061, 0.0065], [0.052 - funnelAxis.x * 0.012, 0.038 - funnelAxis.y * 0.012, 0.061 - funnelAxis.z * 0.012, 0.0045]];
+    for (var fr = 0; fr < funnelRings.length; fr++) {
+      var ring = funnelRings[fr];
+      for (var fs = 0; fs < funnelSides; fs++) {
+        var fa = fs / funnelSides * TAU, fx = Math.cos(fa) * ring[3], fy = Math.sin(fa) * ring[3];
+        body.v(ring[0] + funnelSide.x * fx + funnelUp.x * fy, ring[1] + funnelSide.y * fx + funnelUp.y * fy, ring[2] + funnelSide.z * fx + funnelUp.z * fy, white, fr / 4, fs / funnelSides);
+        if (fr) { var fi = funnelFirst + (fr - 1) * funnelSides + fs, fj = funnelFirst + (fr - 1) * funnelSides + (fs + 1) % funnelSides; body.i.push(fi, fj, fi + funnelSides, fj, fj + funnelSides, fi + funnelSides); }
+      }
+    }
+    var funnelEnd = body.count(); body.v(0.052 - funnelAxis.x * 0.014, 0.038 - funnelAxis.y * 0.014, 0.061 - funnelAxis.z * 0.014, white, 1, 0.5);
+    for (var fs = 0; fs < funnelSides; fs++) body.i.push(funnelFirst + 4 * funnelSides + fs, funnelFirst + 4 * funnelSides + (fs + 1) % funnelSides, funnelEnd);
     var nb = body.count();
     scaleGeo(body, k); scaleGeo(eyes, k);
     // Arms: eight tapered tubes rebuilt each frame (reach, meander and curl).
@@ -2811,7 +3165,10 @@
       out.push(lin(A), lin(B), m2);
     }
     var bodyCols = [], armCols = [];
-    for (i = 0; i < nb; i++) paint([body.p[i * 3], body.p[i * 3 + 1], body.p[i * 3 + 2]], i, bodyCols);
+    for (i = 0; i < nb; i++) {
+      paint([body.p[i * 3], body.p[i * 3 + 1], body.p[i * 3 + 2]], i, bodyCols);
+      if (i >= funnelFirst + 3 * funnelSides) { var shade = i < funnelFirst + 4 * funnelSides ? 0.65 : i < funnelEnd ? 0.18 : 0.08; mulc(bodyCols[i * 3], shade); mulc(bodyCols[i * 3 + 1], shade); }
+    }
     for (i = 0; i < na; i++) paint([armGeo.p[i * 3], armGeo.p[i * 3 + 1], armGeo.p[i * 3 + 2]], i, armCols);
     var bg = body.build(T, 1), ag = armGeo.build(T, 1);
     // Fine chromatophore stippling adds scale-independent skin detail while
@@ -2908,7 +3265,18 @@
     var bend = (rng() - 0.5) * 0.16;
     scaleGeo(g, L); g.map(0, function (p) { var t = p[0] / L; p[2] += bend * L * (0.25 - t * t) * 2; p[1] += 0.087 * L; });
     var geo = kit.geo(g, 1);
-    kit.mesh(geo, kit.std({ vertexColors: true, roughness: 0.6 }), 'body', c.root);
+    // Smooth, pliable skin has a fine surface grain, not raised spines. Pack
+    // tiny relief and roughness into one linear map; the dark/pink pigment
+    // stays in the original vertex colours. Circular sampling closes the seam.
+    var skin = kit.baked('cucumber|skin', high ? 256 : 128, high ? 128 : 64, function (u, v, out) {
+      var a = v * TAU, ca = Math.cos(a), sa = Math.sin(a), edge = smooth(0.02, 0.1, u) * (1 - smooth(0.9, 0.98, u));
+      var grain = noise3(u * 82, ca * 16, sa * 16), tissue = noise3(u * 26 + 7, ca * 7, sa * 7);
+      var crease = Math.sin(u * 210 + 2 * noise3(u * 10, ca * 4, sa * 4));
+      out[0] = 0.5 + edge * ((grain - 0.5) * 0.13 + (tissue - 0.5) * 0.045 + crease * 0.012);
+      out[1] = 0.91 + edge * ((tissue - 0.5) * 0.17 + (grain - 0.5) * 0.06);
+      out[2] = 0.5;
+    }, false, true, true);
+    kit.mesh(geo, kit.std({ vertexColors: true, bumpMap: skin, bumpScale: L * 0.0014, roughnessMap: skin, roughness: 0.66 }), 'body', c.root);
     var ph = rng() * TAU;
     deform(c, geo, function (base, out, t) {
       for (var q = 0; q < base.length; q += 3) {
@@ -3005,7 +3373,9 @@
   }
   function buildBarrel(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(79), k = 0.85 + 0.3 * rng(), Hh = 1.0 * k, g = new Geo(), col = [0, 0, 0], i, j;
-    var ns = high ? 96 : 40, nh = high ? 17 : 8, ni = high ? 5 : 3, ridges = 13 + Math.floor(rng() * 4), ph = rng() * TAU;
+    // Midpoint stations smooth the deep cavity while retaining every original
+    // inner ring; the outer wall, rolled lip and cavity floor stay in place.
+    var ns = high ? 96 : 40, nh = high ? 17 : 8, ni = high ? 10 : 6, ridges = 13 + Math.floor(rng() * 4), ph = rng() * TAU;
     // Brownish red, pinkish brown or purple-brown; ridge crests paler, grooves deep.
     var pal = [[0x9b5b43, 0xc08a68, 0x5e3628], [0x9a6a6a, 0xc49c90, 0x5a3c3e], [0x80566e, 0xae8aa0, 0x4a3044]][Math.floor(rng() * 3)];
     var red = hex(pal[0]), ridge = hex(pal[1]), deep = hex(pal[2]), inner = mixc(red, hex(0xc8a890), 0.25, [0, 0, 0]), dark = hex(0x1a1711);
@@ -3840,7 +4210,9 @@
     foliose_coral: I('coral', 'sessile', 0.85, [2, 20], null, 'base'),
     reef_star: I('structure', 'sessile', 1.1, [2, 12], null, 'base'),
     reef_ball: I('structure', 'sessile', 1.0, [3, 20], null, 'base'),
-    coral_tree_nursery: I('structure', 'sessile', 2.6, [5, 15], null, 'base')
+    coral_tree_nursery: I('structure', 'sessile', 2.6, [5, 15], null, 'base'),
+    firefish: I('fish', 'hover', 0.09, [6, 60], null, 'centre'),
+    copperband_butterflyfish: I('fish', 'pair', 0.2, [1, 25], null, 'centre')
   };
   var BUILDERS = {
     magnificent_anemone: buildAnemone, giant_clam: buildClam, long_spined_urchin: buildUrchin, nudibranch: buildNudibranch, cleaner_shrimp: buildShrimp,
@@ -3887,6 +4259,7 @@
   // and look-at height (lookY) in model radii, for a 360 x 240 picture.
   function V(x, y, z, lookY) { return { dir: [x, y, z], lookY: lookY }; }
   var PORTRAIT = {
+    firefish: V(0.2, 0.22, 2.65, 0.13), copperband_butterflyfish: V(0.24, 0.2, 2.65, 0),
     cleaner_wrasse: V(0, 0.22, 2.55, 0), whitetip_reef_shark: V(0.25, 0.4, 2.5, 0), giant_moray: V(1.5, 0.55, 1.75, 0.05),
     bluespotted_stingray: V(0.95, 1.65, 1.05, 0), reef_manta: V(2.25, 2.0, 0.85, 0),
     green_turtle: V(1.35, 1.2, 2.45, 0), hawksbill_turtle: V(1.35, 1.2, 2.45, 0),
