@@ -1,4 +1,5 @@
 import { renderBugInbox } from './bug_inbox.js';
+import { BUG_RECEIPT_PATTERN, handleBugReview, readBugReview } from './bug_review.js';
 
 /**
  * AlloFlow Catalog Submission Worker
@@ -24,6 +25,7 @@ import { renderBugInbox } from './bug_inbox.js';
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
  *   GET  /bug-inbox         developer inbox shell (report data requires a bearer token)
+ *   GET, POST /bug-review  private append-only report status and notes
  *   GET  /pdSubmissions     token-gated PD-submission reader
  *   GET  /pluginSubmissions token-gated plugin-submission reader (?source=1 to include code)
  *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
@@ -825,7 +827,7 @@ const BUG_RESPONSE_HEADERS = {
   'Referrer-Policy': 'no-referrer',
   'X-Content-Type-Options': 'nosniff',
 };
-const BUG_KEY_PATTERN = /^bug:\d{13}:[a-z0-9]{1,32}$/;
+const BUG_KEY_PATTERN = BUG_RECEIPT_PATTERN;
 
 function bugResponse(body, status = 200) {
   return jsonResponse(body, status, BUG_RESPONSE_HEADERS);
@@ -884,7 +886,7 @@ async function handleBugSubmit(request, env) {
   return bugResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
 }
 
-async function handleBugList(request, env, url) {
+async function authorizeBugAdmin(request, env) {
   // A dedicated bug token never enables the unrelated PD/plugin readers.
   const expectedToken = env.BUG_REPORTS_ADMIN_TOKEN || env.ADMIN_TOKEN;
   if (!expectedToken) return bugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
@@ -893,6 +895,12 @@ async function handleBugList(request, env, url) {
     return bugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
   if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
+  return null;
+}
+
+async function handleBugList(request, env, url) {
+  const refusal = await authorizeBugAdmin(request, env);
+  if (refusal) return refusal;
 
   const before = url.searchParams.get('cursor') || '';
   if (before && !BUG_KEY_PATTERN.test(before)) return bugResponse({ ok: false, error: 'Invalid report cursor.' }, 400);
@@ -927,7 +935,7 @@ async function handleBugList(request, env, url) {
       const record = raw && JSON.parse(raw);
       // A stale or unreadable record must not make the inbox silently omit data.
       if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('Unavailable report');
-      reports.push({ ...record, id: key });
+      reports.push({ ...record, id: key, review: await readBugReview(env.BUG_REPORTS, key, false) });
     }
     return bugResponse({ ok: true, count: reports.length, reports, cursor: selected.length > limit ? reports[reports.length - 1].id : null });
   } catch (_) {
@@ -2166,7 +2174,7 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(url.pathname === '/bug-review' ? BUG_RESPONSE_HEADERS : {}) } });
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
@@ -2206,6 +2214,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/bug-inbox') {
       return handleBugInbox();
+    }
+
+    if (url.pathname === '/bug-review') {
+      return handleBugReview(request, env, { respond: bugResponse, authorize: authorizeBugAdmin });
     }
 
     if (request.method === 'GET' && url.pathname === '/pdSubmissions') {
