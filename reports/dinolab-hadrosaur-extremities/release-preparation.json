@@ -1,5 +1,5 @@
 {
-  "generatedAtUTC": "2026-10-22T03:05:36.196Z",
+  "generatedAtUTC": "2026-10-22T03:37:21.0684388Z",
   "deploymentHeld": true,
   "source": {
     "canonical": "stem_lab/stem_tool_dinolab.js",
@@ -86,8 +86,7 @@
     "mirrorDrift": 0
   },
   "remaining": [
-    "Finish fresh local readiness builds.",
-    "Reconcile the reporting-only remote commit and prepare local release commits; deployment remains held."
+    "Release pushes and full deployment remain held."
   ],
   "knownCoverageDebt": {
     "uiMissing": 3916190,
@@ -96,5 +95,54 @@
     "runtimePlaceholderMismatches": 0,
     "mirrorDrift": 0,
     "baselinesChanged": false
+  },
+  "localCommits": {
+    "sourcePreparation": "d13d75438a8a00ebddcb233eb556cee605d46eda",
+    "reportingMerge": "6820dfaef7d39c3dcc58632badd4be80deb73dcf",
+    "previouslyDeliveredReportingParent": "8b857d90cac5ee10cbcc878002f24b9a70a097f6",
+    "preparationAndMergePushed": false
+  },
+  "localBuild": {
+    "attempt": 3,
+    "success": true,
+    "combinedSourceHEAD": "6820dfaef7d39c3dcc58632badd4be80deb73dcf",
+    "startedAtUTC": "2026-10-22T03:26:56.9820056Z",
+    "finishedAtUTC": "2026-10-22T03:37:21.0684388Z",
+    "receipt": "prepared-build-only-receipt.json",
+    "before": "prepared-build-only-before.json",
+    "after": "prepared-build-only-after.json",
+    "authoredSourcesGuarded": 189,
+    "authoredSourcesUnchanged": true,
+    "headAndIndexUnchanged": true,
+    "dinoSourceSHA256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585",
+    "phases": [
+      {
+        "name": "01-root-prod",
+        "exitCode": 0
+      },
+      {
+        "name": "02-hosted-build",
+        "exitCode": 0
+      },
+      {
+        "name": "03-desktop-space",
+        "exitCode": 0
+      },
+      {
+        "name": "04-desktop-isolated",
+        "exitCode": 0
+      },
+      {
+        "name": "05-desktop-verify",
+        "exitCode": 0
+      },
+      {
+        "name": "06-mirror-verify",
+        "exitCode": 0
+      }
+    ],
+    "scope": "Completed local production, hosted and isolated desktop builds with required artifact/mirror verification. Release-wide CI and deployment remain separate.",
+    "releasePushExecuted": false,
+    "fullDeploymentExecuted": false
   }
 }

@@ -4,10 +4,10 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const RELEASE_ID = '2aeb0f303808e2c6dcefaac6b2ca685c99f3f25015a64b936b28b9e501c796a4';
-const RELEASE_BUILT_AT = 1792631990664;
-const CACHE_NAME = 'alloflow-student-shell-v2aeb0f303808e2c6dcefaac6b2ca685c99f3f25015a64b936b28b9e501c796a4-1792631990664';
-const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./alloflow_update.js","./static/js/main.f7db76c8.js","./static/css/main.ec11f4ef.css"];
+const RELEASE_ID = 'ea5cab53d09c050c61dc799ea5086deb212134a4de5aaa80774e8b401e8a555a';
+const RELEASE_BUILT_AT = 1792639918423;
+const CACHE_NAME = 'alloflow-student-shell-vea5cab53d09c050c61dc799ea5086deb212134a4de5aaa80774e8b401e8a555a-1792639918423';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./alloflow_update.js","./static/js/main.78271912.js","./static/css/main.ec11f4ef.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 const CLASSROOM_NETWORK_PATHS = new Set([
