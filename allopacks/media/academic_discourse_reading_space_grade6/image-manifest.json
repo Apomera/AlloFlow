@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-10-22T19:20:51.088Z",
+  "credit": "Original AI-generated illustrations created for this fictional lesson with the built-in image_gen tool. No real students or classrooms are depicted.",
+  "assets": [
+    {
+      "id": "reading-corner",
+      "file": "reading-corner.webp",
+      "alt": "An empty reading corner has low bookshelves along two walls. A large fixed table sits directly in front of the shelves, limiting access; the foreground is open.",
+      "altSource": "vision",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 223140,
+      "sha256": "88ad63f7b8cc25672bbb0d092cc1cdcb2bf7a86f2932bbb63b61213922ca1eab",
+      "originalPngSha256": "9777c85e26c90e3ac9d1b5fd41fa307a75888ea294511c18751bdfbd54635f88",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.86; original dimensions and composition retained",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending"
+    },
+    {
+      "id": "equipment-options",
+      "file": "equipment-options.webp",
+      "alt": "Five equipment choices: a freestanding divider, task lamp, wheeled table, book basket, and one stack of seat pads. Prices are in the caption and Evidence E.",
+      "altSource": "vision",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 145334,
+      "sha256": "5449fc04689ec111ed8839c4a6beebbac50c6da8dad2b4f2a749c4ccc0348105",
+      "originalPngSha256": "f214bd0d8360e759f7bf86492da44d51f636556f1459b69be9f51f8985603de6",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.86; original dimensions and composition retained",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending",
+      "displayNote": "Use the editable caption for equipment names and costs; no overlaid labels obscure the image on narrow screens."
+    },
+    {
+      "id": "reasoning-together",
+      "file": "reasoning-together.webp",
+      "alt": "Four students gather around two different room-layout sketches. One points at a plan; others hold pencils or a tablet. Their contributions and decisions cannot be determined from this picture alone.",
+      "altSource": "vision",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 203430,
+      "sha256": "354c97644f12e913075745827918f6070efaba424acf2b66d7c2f8b71bade3a8",
+      "originalPngSha256": "98e0324db7afb6939d3cdb508fd17334f1d6532e7fab309929f5ae90b9f2d1c5",
+      "imageGeneration": "built-in image_gen",
+      "encoding": "WebP quality 0.86; original dimensions and composition retained",
+      "reviewStatus": "Actual generated image inspected by agent; educator review pending"
+    }
+  ]
+}

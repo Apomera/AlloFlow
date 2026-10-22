@@ -572,7 +572,7 @@
   {
     "path": "allopacks/academic_discourse_reading_space_grade6.allopack.json",
     "slug": "academic-discourse-reading-space-grade6",
-    "title": "A Reading Space We Can Share: Academic Discourse Lesson Draft",
+    "title": "A Reading Space We Can Share: Illustrated Discussion Lesson Draft",
     "subject": "English Language Arts",
     "grade_level": "6",
     "tags": [
@@ -581,9 +581,9 @@
       "udl",
       "evidence-and-reasoning",
       "teacher-review-draft",
-      "text-only"
+      "illustrated"
     ],
-    "credit": "Original AI-authored example inspired by Katie Novak's article; educator review pending; not reviewed or endorsed by Katie Novak.",
+    "credit": "Original AI-authored lesson and illustrations inspired by Katie Novak's article; educator review pending; not reviewed or endorsed by Katie Novak.",
     "license": "Teacher review required",
     "submitted_at": "2026-10-21T18:24:44.058Z"
   }
