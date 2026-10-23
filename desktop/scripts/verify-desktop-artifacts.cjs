@@ -283,7 +283,7 @@ function verifyMac() {
     requireFile(zip, 1024 * 1024);
     requireFile(zip + '.blockmap', 1024);
   }
-  requireMetadata(channel + '-mac.yml', zips);
+  requireMetadata(channel + '-mac.yml', [...zips, ...dmgs]);
 }
 
 console.log('[AlloFlow Desktop] Artifact check');
