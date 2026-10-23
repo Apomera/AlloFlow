@@ -1,0 +1,44 @@
+name: Security safeguards
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Security safeguards
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/
+            /dev-tools/check_security_safeguards.cjs
+            /dev-tools/security/
+            /desktop/package.json
+            /desktop/package-lock.json
+            /desktop/web-app/package.json
+            /desktop/web-app/package-lock.json
+            /tts-server/
+            /tests/test_piper_request_safety.py
+            /tests/test_edge_tts_language_review.py
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Install the workflow policy parser without lifecycle scripts
+        run: npm ci --prefix dev-tools/security --ignore-scripts --no-audit --no-fund
+      - name: Test security guard behavior
+        run: node --test dev-tools/security/test-policy.cjs
+      - name: Verify workflow policy and changed dependency scopes
+        env:
+          SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node dev-tools/check_security_safeguards.cjs
