@@ -36,7 +36,7 @@ deployment, release tag, or public release was created.
 - The updated desktop dependency scope and remote Worker scope passed their
   audit gates with no findings. The full repository audit remains failing in
   other scopes, including the web app, local MCP runtime, accessibility audit
-  tooling, and trailer. The web-app lockfile still includes critical advisories
+  tooling, and trailer. At that validation snapshot, the web-app lockfile included critical advisories
   for [proxy-addr](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) and
   [shell-quote](https://github.com/advisories/GHSA-pqg4-j6r4-53mv). An audit
   finding alone does not establish exploitability or a compromised machine.
@@ -54,6 +54,41 @@ dependency review. Signing credentials were absent from the validation jobs;
 configure the secrets below and validate signed Windows and notarized macOS
 artifacts before publication. Unsigned beta builds do not validate signing,
 notarization, physical ARM64 installation, or live auto-update delivery.
+
+## Security follow-up — 2026-10-23
+
+The follow-up is separated into [repository safeguards](https://github.com/Apomera/AlloFlow/pull/13),
+[desktop/web dependencies](https://github.com/Apomera/AlloFlow/pull/14), and
+[local speech input validation](https://github.com/Apomera/AlloFlow/pull/15).
+MCP code, dependency manifests, generated types, and dedicated workflows are
+excluded while that development is active.
+
+Electron 43.8.3 is now installed in the local desktop dependency tree and passed
+the release runtime, security-boundary, and Electron UI checks. Compatible web
+dependency patches, including patched gRPC and Underscore versions, are also
+installed. The complete lockfile audits report zero desktop findings and reduce
+the web app from 2 critical / 29 high to 0 critical / 15 high. The remaining high
+findings run through the legacy React Scripts build toolchain (SVGO, PostCSS,
+webpack development server, certificate tooling, and serialization). They require
+a separately validated migration; no forced downgrade or audit suppression was used.
+
+The additional Security safeguards workflow checks pinned action commits,
+read-only default tokens, checkout credential cleanup, and signing-secret scope.
+It audits changed desktop and policy-parser dependencies at high severity and
+changed web-app dependencies at critical severity. The existing full audit still
+reports all maintained scopes and remains failing on outstanding findings.
+Dependabot configuration explicitly pauses automatic MCP updates. CodeQL scans
+are being established for Actions, Python, and JavaScript/TypeScript; successful
+analysis does not mean all findings are fixed.
+
+The speech-server patch validates Piper catalog model IDs before filesystem or
+process use and rejects control characters before browser-origin validation.
+Twenty local tests cover request rejection, voice fallback, language selection,
+and allowed origins. CodeQL alert closure requires a rescan.
+
+[Fresh Windows validation](https://github.com/Apomera/AlloFlow/actions/runs/39989121261)
+uses the patched web lockfile. Its web build, desktop runtime checks, and Electron
+UI checks passed; installer validation is still running at this record's snapshot.
 
 ## Build Artifacts
 
@@ -97,13 +132,18 @@ The combined `AlloFlow-Desktop-<version>-setup.exe` is the recommended Windows d
 
 Do not commit certificates, passwords, provisioning files, API keys, or Apple credentials.
 
-Lowest-cost Windows signing path:
+Signing enrollment is outstanding: the maintainer has neither a Windows signing
+service/certificate nor an Apple Developer membership as of 2026-10-23.
 
-1. Apply to SignPath Foundation as an open-source project. This is an application/review process, but it may avoid the usual commercial code-signing certificate cost if AlloFlow is accepted.
-2. If that does not fit, use Azure Artifact Signing. It is the preferred managed paid fallback because Microsoft manages the signing certificate lifecycle.
+Windows enrollment options:
+
+1. [Apply to SignPath Foundation](https://signpath.org/apply) as an open-source project. Free signing is subject to [their conditions and approval](https://signpath.org/terms.html), including project reputation, open-source components, MFA, a published signing policy, and release approval. AlloFlow's AGPL license alone does not guarantee acceptance.
+2. If that does not fit, review [Azure Artifact Signing enrollment and identity validation](https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart).
 3. Use a traditional OV/EV certificate only if the managed options do not work for the project.
 
-The `desktop-release` workflow expects these GitHub Actions secrets:
+For macOS, the maintainer must [enroll in the Apple Developer Program](https://developer.apple.com/programs/enroll/) and obtain a Developer ID Application certificate for signing and notarization. Apple lists US$99 per membership year, with regional pricing and possible fee waivers for qualifying institutions. Identity verification, legal agreements, and any purchase must be completed by the account holder.
+
+The current `desktop-release` workflow supports the certificate-based path and expects these GitHub Actions secrets:
 
 - `WINDOWS_CSC_LINK`: base64 certificate content or a secure URL for the Windows signing certificate
 - `WINDOWS_CSC_KEY_PASSWORD`: Windows certificate password
@@ -113,7 +153,12 @@ The `desktop-release` workflow expects these GitHub Actions secrets:
 - `APPLE_APP_SPECIFIC_PASSWORD`: app-specific password for notarization
 - `APPLE_TEAM_ID`: Apple Developer team ID
 
-Electron Builder reads those values through the standard `CSC_LINK` and `CSC_KEY_PASSWORD` environment variables inside each job.
+Electron Builder receives those values only in signing/package steps for tagged
+releases. They are not exposed to dependency installation, web builds, or tests.
+Manual validation runs remain unsigned and cannot publish a release. A managed
+service such as SignPath or Azure needs its own signing integration after approval;
+do not assume it supplies an exportable PFX for `WINDOWS_CSC_LINK`. Credentials
+belong in GitHub Actions secrets, never source control or chat.
 
 ## Updates
 

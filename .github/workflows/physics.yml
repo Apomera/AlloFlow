@@ -20,6 +20,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
+      - name: Enable long Windows paths before checkout
+        run: git config --global core.longpaths true
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
