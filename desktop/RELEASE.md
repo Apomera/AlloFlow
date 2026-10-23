@@ -77,9 +77,12 @@ read-only default tokens, checkout credential cleanup, and signing-secret scope.
 It audits changed desktop and policy-parser dependencies at high severity and
 changed web-app dependencies at critical severity. The existing full audit still
 reports all maintained scopes and remains failing on outstanding findings.
-Dependabot configuration explicitly pauses automatic MCP updates. CodeQL scans
-are being established for Actions, Python, and JavaScript/TypeScript; successful
-analysis does not mean all findings are fixed.
+Dependabot alerts and security updates are enabled, with automatic MCP updates
+explicitly paused. The passing Security safeguards check is required on `main`;
+the existing administrator bypass and other protection settings are preserved.
+The first CodeQL Actions and Python analyses completed; its initial
+JavaScript/TypeScript analysis is still running at this record's snapshot.
+Successful analysis does not mean all findings are fixed.
 
 The speech-server patch validates Piper catalog model IDs before filesystem or
 process use and rejects control characters before browser-origin validation.
@@ -87,8 +90,12 @@ Twenty local tests cover request rejection, voice fallback, language selection,
 and allowed origins. CodeQL alert closure requires a rescan.
 
 [Fresh Windows validation](https://github.com/Apomera/AlloFlow/actions/runs/39989121261)
-uses the patched web lockfile. Its web build, desktop runtime checks, and Electron
-UI checks passed; installer validation is still running at this record's snapshot.
+passed on `59e4851ec6563925562cbcb81ae98808c20ae551` with the patched web lockfile:
+web build, runtime and Electron UI checks, x64/ARM64 packaging, artifact hashes,
+ARM64-only rejection on x64 Windows, and clean install/uninstall. Validation
+artifacts uploaded successfully. Subsequent integration commits bring in the
+separately tested repository safeguards and speech-server fixes plus this record;
+they do not change the tested desktop or web dependency versions.
 
 ## Build Artifacts
 
