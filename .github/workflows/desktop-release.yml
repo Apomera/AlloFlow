@@ -21,6 +21,15 @@ on:
         options:
           - latest
           - beta
+      platform:
+        description: 'Platforms to validate (tagged releases always build both)'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - windows
+          - mac
   push:
     tags:
       - 'desktop-v*'
@@ -31,6 +40,7 @@ permissions:
 jobs:
   windows:
     name: Windows installers
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'mac'
     runs-on: windows-latest
     env:
       ALLOFLOW_UPDATE_CHANNEL: ${{ inputs.channel || 'latest' }}
@@ -63,6 +73,11 @@ jobs:
         run: |
           $base = node -p "require('./package.json').version.replace(/-.*/, '')"
           npm version --no-git-tag-version "$base-beta.$env:GITHUB_RUN_NUMBER"
+      - name: Build desktop web assets for the UI smoke test
+        working-directory: desktop
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release
@@ -137,6 +152,7 @@ jobs:
 
   mac:
     name: macOS packages
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'windows'
     runs-on: macos-latest
     env:
       ALLOFLOW_UPDATE_CHANNEL: ${{ inputs.channel || 'latest' }}
@@ -166,6 +182,12 @@ jobs:
         run: |
           BASE="$(node -p "require('./package.json').version.replace(/-.*/, '')")"
           npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
+      - name: Build desktop web assets for the UI smoke test
+        working-directory: desktop
+        env:
+          # Leave memory for macOS on the standard 7 GB Apple Silicon runner.
+          NODE_OPTIONS: --max-old-space-size=5120
+        run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release

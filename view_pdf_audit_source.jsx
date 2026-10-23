@@ -3706,16 +3706,29 @@ function _buildTagOutline(html) {
 // Lists AI-reconstructed-from-image tables (data-allo-reconstructed) in the remediated HTML, for the
 // human accept/reject gate. Pure + jsdom-testable. The reconstruction (doc_pipeline) is additive —
 // the original image is kept beside each table — so rejecting one just removes the table.
-function _listReconstructedTables(html) {
+function _listReconstructedTables(html, pipeline) {
   const out = [];
   try {
     const doc = new DOMParser().parseFromString(html || '', 'text/html');
     doc.querySelectorAll('table[data-allo-reconstructed]').forEach((t) => {
       const cap = t.querySelector('caption');
+      let previewHtml = '';
+      try {
+        // A project import or model response can forge the reconstruction marker.
+        // Sanitize at the live-DOM boundary; leave the source document untouched.
+        const clean = _viewSanitizeMarkupForExport(t.outerHTML, pipeline);
+        const preview = new DOMParser().parseFromString(clean, 'text/html');
+        const table = preview.querySelector('table[data-allo-reconstructed]');
+        if (table) {
+          // Document CSS must not restyle the surrounding application.
+          table.querySelectorAll('style').forEach((node) => node.remove());
+          previewHtml = table.outerHTML;
+        }
+      } catch (_) { /* Keep review/reject controls available without unsafe markup. */ }
       out.push({
         caption: cap ? cap.textContent.replace(/\s+/g, ' ').trim().slice(0, 100) : '',
         rows: t.querySelectorAll('tbody tr').length,
-        html: t.outerHTML, // mini-preview (2026-06-12): show the table right here
+        html: previewHtml,
       });
     });
   } catch (_) {}
@@ -15341,18 +15354,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             confirms (default = keep) or rejects it here; the original image is kept
                             beside each, so rejecting just removes the table. (Avoids a fragment-IIFE;
                             _listReconstructedTables is cheap + only called when the marker is present.) */}
-                        {pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf('data-allo-reconstructed') >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && (
+                        {pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf('data-allo-reconstructed') >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).length > 0 && (
                           <div className="w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs">
                             <div className="font-bold text-purple-800">✨ AI-reconstructed structure — please verify</div>
-                            <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
+                            <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
                             <ul className="mt-1 space-y-1" role="list">
-                              {_listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => (
+                              {_listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).map((r, i) => (
                                 <li key={i} className="flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
                                   <span className="flex-1 min-w-0 truncate text-slate-700">{r.caption || ('Reconstructed table ' + (i + 1))} <span className="text-slate-500">({r.rows} row{r.rows === 1 ? '' : 's'})</span></span>
                                   {/* Inline mini-preview (2026-06-12, maintainer ask):
                                       verify the table right here — no preview pane
-                                      needed. The html is OUR generated table. */}
+                                      needed. The html is sanitized at the preview boundary. */}
                                   {r.html && (
                                     <button onClick={() => setReconPreviewIdx((prev) => prev === i ? null : i)} aria-expanded={reconPreviewIdx === i} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">
                                       {reconPreviewIdx === i ? ('▾ ' + (t('pdf_audit.recon.hide_preview') || 'Hide')) : ('🔍 ' + (t('pdf_audit.recon.preview') || 'Preview here'))}
