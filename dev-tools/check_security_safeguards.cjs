@@ -49,6 +49,7 @@ function auditPlan(changed, full = false) {
     { directory: 'desktop', level: 'high' },
     { directory: 'trailer', level: 'high' },
     { directory: 'desktop/web-app', level: 'low' },
+    { directory: 'a11y-audit', level: 'low' },
   ].filter(({ directory }) => full || changed.some((file) => file === directory + '/package.json' || file === directory + '/package-lock.json'));
 }
 
