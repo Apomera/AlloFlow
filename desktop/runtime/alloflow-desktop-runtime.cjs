@@ -11,7 +11,7 @@ const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
 const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
 const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { execFile, spawn, spawnSync } = require('child_process');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
@@ -2959,38 +2959,38 @@ function prepareSchoolBoxEnv(config) {
 }
 
 function getToolVersion(command, args) {
-  try {
-    const result = spawnSync(command, args, {
-      encoding: 'utf8',
-      timeout: 5000,
-      windowsHide: true,
+  return new Promise((resolve) => {
+    execFile(command, args, { encoding: 'utf8', timeout: 5000, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) resolve({ available: false, error: String(stderr || stdout || error.message).trim() });
+      else resolve({ available: true, version: String(stdout || stderr || '').trim() });
     });
-    if (result.error) {
-      return { available: false, error: result.error.message };
-    }
-    if (result.status !== 0) {
-      return {
-        available: false,
-        error: (result.stderr || result.stdout || `${command} exited with ${result.status}`).trim(),
-      };
-    }
-    return { available: true, version: (result.stdout || result.stderr || '').trim() };
-  } catch (error) {
-    return { available: false, error: error.message };
-  }
+  });
 }
 
-function getDockerStatus() {
-  const docker = getToolVersion('docker', ['--version']);
-  const compose = docker.available ? getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
-  return {
-    available: Boolean(docker.available && compose.available),
-    dockerAvailable: Boolean(docker.available),
-    composeAvailable: Boolean(compose.available),
-    dockerVersion: docker.version || null,
-    composeVersion: compose.version || null,
-    error: docker.error || compose.error || null,
-  };
+let dockerStatusCache = null;
+let dockerStatusExpiresAt = 0;
+let dockerStatusPending = null;
+async function getDockerStatus(force = false) {
+  if (dockerStatusPending) return dockerStatusPending;
+  if (!force && dockerStatusCache && Date.now() < dockerStatusExpiresAt) return dockerStatusCache;
+  // Health, readiness, and the command center request the same tool versions
+  // concurrently. Share the probe and avoid blocking Electron's main thread.
+  dockerStatusPending = (async () => {
+    const docker = await getToolVersion('docker', ['--version']);
+    const compose = docker.available ? await getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
+    dockerStatusCache = {
+      available: Boolean(docker.available && compose.available),
+      dockerAvailable: Boolean(docker.available),
+      composeAvailable: Boolean(compose.available),
+      dockerVersion: docker.version || null,
+      composeVersion: compose.version || null,
+      error: docker.error || compose.error || null,
+    };
+    dockerStatusExpiresAt = Date.now() + 15000;
+    return dockerStatusCache;
+  })();
+  try { return await dockerStatusPending; }
+  finally { dockerStatusPending = null; }
 }
 
 function probeTcp(host, port, timeoutMs = 1000) {
@@ -3050,7 +3050,7 @@ async function getSchoolBoxStatus(config = readConfig()) {
         composeVersion: null,
         error: 'District Server mode does not start local Docker services yet.',
       }
-    : getDockerStatus();
+    : await getDockerStatus();
   const services = isDistrictMode
     ? []
     : await Promise.all(SCHOOLBOX_SERVICE_DEFS.map((service) => (
@@ -3174,7 +3174,7 @@ function schoolBoxComposeArgs(action, config) {
 }
 
 async function runSchoolBoxCompose(action, config) {
-  const docker = getDockerStatus();
+  const docker = await getDockerStatus(true);
   if (!docker.available) {
     throw new Error(docker.error || 'Docker with Compose is not available.');
   }

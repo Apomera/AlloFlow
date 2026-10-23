@@ -28,8 +28,18 @@ function assert(condition, message) {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-electron-smoke-'));
   const port = await reserveFreePort();
   let electronApp;
+  let electronProcess;
+  let mainLogPath = path.join(tempHome, 'user-data', 'desktop-main.log');
+  let processOutput = '';
+  const captureOutput = (chunk) => {
+    processOutput = (processOutput + String(chunk)).slice(-16000);
+  };
   try {
+    // Electron downloads its development executable lazily. Complete that
+    // setup before starting Playwright's application-launch timeout.
+    const executablePath = require('electron');
     electronApp = await electron.launch({
+      executablePath,
       args: [
         path.join(desktopRoot, 'electron', 'main.cjs'),
         '--user-data-dir=' + path.join(tempHome, 'user-data'),
@@ -43,6 +53,11 @@ function assert(condition, message) {
       },
       timeout: 45000,
     });
+    electronProcess = electronApp.process();
+    electronProcess.stdout?.on('data', captureOutput);
+    electronProcess.stderr?.on('data', captureOutput);
+    const userData = await electronApp.evaluate(({ app }) => app.getPath('userData')).catch(() => '');
+    if (userData) mainLogPath = path.join(userData, 'desktop-main.log');
 
     const page = await electronApp.firstWindow({ timeout: 45000 });
     const consoleErrors = [];
@@ -139,6 +154,16 @@ function assert(condition, message) {
     assert(pageErrors.length === 0, 'Command center raised a page error: ' + pageErrors.join(' | '));
 
     console.log('[AlloFlow Desktop] Electron UI smoke passed (distinct app origin, narrow bridge, privileged API denial, tabs, keyboard, compact layout, no page errors)');
+  } catch (error) {
+    // Capture only this fresh smoke run, including failures before a window
+    // exists. Do not print a pre-existing user's log outside the temp profile.
+    const relativeLog = path.relative(tempHome, mainLogPath);
+    if (!relativeLog.startsWith('..') && !path.isAbsolute(relativeLog) && fs.existsSync(mainLogPath)) {
+      console.error('[AlloFlow Desktop] Smoke main-process log:\n' + fs.readFileSync(mainLogPath, 'utf8').slice(-16000));
+    }
+    if (processOutput) console.error('[AlloFlow Desktop] Smoke process output:\n' + processOutput);
+    if (electronProcess) console.error('[AlloFlow Desktop] Smoke process exit:', electronProcess.exitCode, electronProcess.signalCode);
+    throw error;
   } finally {
     if (electronApp) await electronApp.close().catch(() => {});
     fs.rmSync(tempHome, { recursive: true, force: true });
