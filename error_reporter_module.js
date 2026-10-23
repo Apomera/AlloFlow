@@ -49,6 +49,7 @@
   // (private responses Sheet) and make clear that it still requires submission.
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
   var SUBMIT_TIMEOUT_MS = 20000;
+  var DESCRIPTION_MAX_LENGTH = 2000;
 
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
@@ -382,6 +383,7 @@
   }
 
   function buildReportPayload() {
+    captureDescriptionDraft();
     var ua = navigator.userAgent;
     var browserDevice = ua + ' · ' + (window.screen ? (window.screen.width + 'x' + window.screen.height) : '?') +
       ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
@@ -399,6 +401,8 @@
     else what = 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '. Others below are labelled.\n\n' + what;
     try { what = buildReportExtras().slice(0, 4000) + '\n\n' + what; } catch (_) {}
     what = redactSecrets(what);
+    var description = redactSecrets(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
+    if (description) what = '== What happened? ==\n' + description + '\n\n' + what;
 
     var steps = 'URL: ' + redactSecrets(window.location.href);
     if (window.location.hash) steps += '\nHash: ' + redactSecrets(window.location.hash);
@@ -433,6 +437,18 @@
   // dialog cannot lose a pending submission or enable a duplicate send.
   var submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
   var activeSubmission = null;
+  // Free text stays only in this page's memory, never in the persisted error log.
+  var descriptionDraft = '';
+  var descriptionComposing = false;
+  var descriptionRefreshPending = false;
+
+  function captureDescriptionDraft() {
+    var field = panel && panel.querySelector('#aer-description');
+    if (field && submission.status !== 'sending' && submission.status !== 'saved') {
+      descriptionDraft = field.value.slice(0, DESCRIPTION_MAX_LENGTH);
+      if (field.value !== descriptionDraft) field.value = descriptionDraft;
+    }
+  }
 
   // Translator. The badge is built with raw DOM, so its accessible name never
   // passed through React and stayed English in every language.
@@ -770,6 +786,19 @@
       '</footer>';
   }
 
+  function descriptionHtml() {
+    var locked = submission.status === 'sending' || submission.status === 'saved';
+    return '<div style="margin:0 0 16px;">' +
+      '<label for="aer-description" style="display:block;margin-bottom:6px;font:700 14px/1.4 system-ui,sans-serif;color:#1e293b;">' +
+        escapeHtml(_errT('error_reporter_description_label', 'What happened? (optional)')) + '</label>' +
+      '<textarea id="aer-description" rows="3" maxlength="' + DESCRIPTION_MAX_LENGTH + '" aria-describedby="aer-description-help"' + (locked ? ' readonly' : '') +
+        ' placeholder="' + escapeHtml(_errT('error_reporter_description_placeholder', 'What were you doing? What did you expect, and what happened instead?')) + '"' +
+        ' style="display:block;box-sizing:border-box;width:100%;min-height:84px;max-height:220px;resize:vertical;padding:9px 10px;border:1px solid #94a3b8;border-radius:8px;background:#fff;color:#0f172a;font:16px/1.45 system-ui,sans-serif;">' + escapeHtml(descriptionDraft) + '</textarea>' +
+      '<p id="aer-description-help" style="margin:6px 0 0;font:12px/1.5 system-ui,sans-serif;color:#475569;">' +
+        escapeHtml(_errT('error_reporter_description_help', 'Do not include student details or other private information. Up to 2,000 characters.')) + '</p>' +
+      '</div>';
+  }
+
   function submissionFooterHtml() {
     var busy = submission.status === 'sending';
     var saved = submission.status === 'saved';
@@ -875,7 +904,8 @@
         '<button id="aer-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy log</button>' +
       '</div>' +
       // Log scroll
-      '<div role="region" aria-label="Captured error entries" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
+      '<div id="aer-error-content" role="region" aria-label="Captured error entries" style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
+        descriptionHtml() +
         entriesHtml +
       '</div>' +
       // Footer / submit
@@ -952,6 +982,9 @@
   }
 
   function closePanel() {
+    captureDescriptionDraft();
+    descriptionComposing = false;
+    descriptionRefreshPending = false;
     if (panel) { panel.remove(); panel = null; }
     var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
     panelTrigger = null;
@@ -960,13 +993,35 @@
 
   function refreshPanelIfOpen() {
     if (!panel) return;
+    // Replacing an active IME composition would lose unfinished input.
+    if (descriptionComposing) { descriptionRefreshPending = true; return; }
+    captureDescriptionDraft();
+    var description = panel.querySelector('#aer-description');
+    var selection = description ? { start: description.selectionStart, end: description.selectionEnd, direction: description.selectionDirection, top: description.scrollTop, left: description.scrollLeft } : null;
+    var content = panel.querySelector('#aer-error-content');
+    var contentTop = content ? content.scrollTop : 0;
     var focusedId = panel.contains(document.activeElement) ? document.activeElement.id : '';
     panel.innerHTML = panelHtml();
+    var replacement = panel.querySelector('#aer-description');
+    if (description && replacement) {
+      // Retain the field itself across incoming logs, including its editing state.
+      description.readOnly = replacement.readOnly;
+      description.placeholder = replacement.placeholder;
+      if (description.value !== descriptionDraft) description.value = descriptionDraft;
+      replacement.parentNode.replaceChild(description, replacement);
+      description.setSelectionRange(selection.start, selection.end, selection.direction);
+    }
     wirePanelHandlers();
     if (focusedId) {
-      var target = document.getElementById(focusedId) || document.getElementById('aer-close');
-      if (target) target.focus();
+      var target = document.getElementById(focusedId);
+      if (!target || target.disabled || target.tabIndex < 0 || target.hidden || target.closest('[hidden]')) target = document.getElementById('aer-close');
+      if (target) {
+        try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
+      }
     }
+    if (description && replacement) { description.scrollTop = selection.top; description.scrollLeft = selection.left; }
+    content = panel.querySelector('#aer-error-content');
+    if (content) content.scrollTop = contentTop;
   }
 
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
@@ -1159,6 +1214,24 @@
         copyFallback(text);
       }
     };
+    if ($('aer-description')) {
+      $('aer-description').oninput = function () {
+        if (this !== $('aer-description') || submission.status === 'sending' || submission.status === 'saved') {
+          this.value = descriptionDraft;
+          return;
+        }
+        captureDescriptionDraft();
+      };
+      $('aer-description').oncompositionstart = function () {
+        if (this === $('aer-description') && !this.readOnly) descriptionComposing = true;
+      };
+      $('aer-description').oncompositionend = function () {
+        if (this !== $('aer-description')) return;
+        descriptionComposing = false;
+        captureDescriptionDraft();
+        if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+      };
+    }
     if ($('aer-send')) $('aer-send').onclick = submitReport;
     if ($('aer-copy-receipt')) $('aer-copy-receipt').onclick = function () {
       if (submission.status !== 'saved' || !submission.id) return;
@@ -1167,8 +1240,10 @@
     if ($('aer-new-report')) $('aer-new-report').onclick = function () {
       if (submission.status !== 'saved') return;
       submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
+      descriptionDraft = '';
+      if ($('aer-description')) $('aer-description').value = '';
       refreshPanelIfOpen();
-      if ($('aer-send')) $('aer-send').focus();
+      if ($('aer-description')) $('aer-description').focus();
     };
     if ($('aer-report-form')) $('aer-report-form').onclick = function () {
       if (submission.formOpened) return;
