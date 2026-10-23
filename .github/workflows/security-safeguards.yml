@@ -19,7 +19,7 @@ jobs:
   security:
     name: Security safeguards
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -35,6 +35,10 @@ jobs:
             /desktop/package-lock.json
             /desktop/web-app/package.json
             /desktop/web-app/package-lock.json
+            /desktop/web-app/src/
+            /desktop/web-app/public/index.html
+            /desktop/web-app/tailwind.config.js
+            /trailer/
             /tts-server/
             /tests/test_piper_request_safety.py
             /tests/test_edge_tts_language_review.py
@@ -73,3 +77,21 @@ jobs:
         env:
           SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node dev-tools/check_security_safeguards.cjs
+      - name: Install build tooling without lifecycle scripts
+        run: |
+          npm ci --prefix trailer --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/web-app --ignore-scripts --no-audit --no-fund
+      - name: Test production loader and minifier compatibility
+        run: node --test dev-tools/security/test-build-tooling.cjs
+      - name: Build and type-check the trailer
+        working-directory: trailer
+        run: |
+          npm run build
+          node node_modules/typescript/bin/tsc --noEmit --pretty false
+      - name: Compile the web application without copying unchanged static assets
+        working-directory: desktop/web-app
+        env:
+          GENERATE_SOURCEMAP: 'false'
+          DISABLE_ESLINT_PLUGIN: 'true'
+          CI: 'false'
+        run: node --max-old-space-size=8192 node_modules/react-scripts/scripts/build.js

@@ -66,17 +66,40 @@ excluded while that development is active.
 Electron 43.8.3 is now installed in the local desktop dependency tree and passed
 the release runtime, security-boundary, and Electron UI checks. Compatible web
 dependency patches, including patched gRPC and Underscore versions, are also
-installed. The complete lockfile audits report zero desktop findings and reduce
-the web app from 2 critical / 29 high to 0 critical / 15 high. The remaining high
-findings run through the legacy React Scripts build toolchain (SVGO, PostCSS,
-webpack development server, certificate tooling, and serialization). They require
-a separately validated migration; no forced downgrade or audit suppression was used.
+installed. The complete lockfile audits report zero desktop findings. The web
+app's subsequent loader and serialization updates reduce its earlier 15 high
+findings to 4 high, with no critical findings (30 moderate and 9 low remain).
+Scoped overrides update SVGR to 8.1.0 and resolve-url-loader to 5.0.0, and
+serialize-javascript to 7.0.5; React Scripts stays at 5.0.1. Node 20 or newer is
+required for the patched serializer. Real SVG URL/component imports, accessible
+titles and refs, CSS source-map asset resolution, and the production minifier
+worker pass compatibility tests. The application compiles in production mode
+without recopying its unchanged static payload; postbuild packaging is not part
+of that compilation check.
+
+The four remaining high findings are webpack-dev-server, webpack-dev-middleware,
+selfsigned, and node-forge. The published node-forge release is still affected;
+replacing the development-server chain needs a separately validated migration.
+No forced React Scripts downgrade or audit suppression was used.
+
+Trailer dependencies now use matching Remotion 4.0.538 packages and ESLint 9.39.5,
+with compatible transitive patches. Its complete lockfile audit has zero findings,
+down from 1 critical, 15 high, 2 moderate, and 2 low. The production bundle,
+TypeScript check, and a rendered frame passed in an isolated installation. The
+existing two lint errors and one warning reproduce with the old dependency set;
+this update does not claim a clean lint run. After isolated validation, both local
+build-tool installations were refreshed with npm ci and lifecycle scripts disabled.
+Other checkouts should use npm ci when adopting the updated locks.
 
 The additional Security safeguards workflow checks pinned action commits,
 read-only default tokens, checkout credential cleanup, and signing-secret scope.
-It audits changed desktop and policy-parser dependencies at high severity and
+It audits changed desktop, trailer, and policy-parser dependencies at high severity and
 changed web-app dependencies at critical severity. The existing full audit still
 reports all maintained scopes and remains failing on outstanding findings.
+Scheduled and manual safeguard runs audit all four scopes regardless of file
+changes. The required check also tests the updated loaders/minifier, builds and
+type-checks the trailer, and compiles the web application; lint and the large
+unchanged public asset payload are outside that production compilation check.
 Dependabot alerts and security updates are enabled, with automatic MCP updates
 explicitly paused. The passing Security safeguards check is required on `main`;
 the existing administrator bypass and other protection settings are preserved.

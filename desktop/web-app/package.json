@@ -50,6 +50,14 @@
     "overrides": {
         "undici": "^6.28.0",
         "@grpc/grpc-js": "^1.13.6",
-        "underscore": "^1.13.8"
+        "underscore": "^1.13.8",
+        "react-scripts": {
+            "@svgr/webpack": "8.1.0",
+            "resolve-url-loader": "5.0.0"
+        },
+        "serialize-javascript": "7.0.5"
+    },
+    "engines": {
+        "node": ">=20.0.0"
     }
 }
