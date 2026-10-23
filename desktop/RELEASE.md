@@ -109,6 +109,14 @@ documented in the web development and Docker guides. Full container builds and
 GPU/NPU inference remain outside this validation; endpoint tests use synthetic
 provider results and do not establish hardware/model compatibility.
 
+The first completed GitHub security run also exposed a Python-version-specific
+lock omission: CycloneDX requires typing-extensions below Python 3.13, while the
+lock had been generated on 3.14. The tool lock now includes typing-extensions
+4.16.0 with its verified wheel hash. A new dependency-metadata checker evaluates
+Python 3.11–3.14 on Linux/Windows, follows requested extras, and catches the
+previous lock's omission even on a 3.14 host. CI runs the checker and its three
+regression tests after the hash-enforced install; hash enforcement stays enabled.
+
 Trailer dependencies now use matching Remotion 4.0.538 packages and ESLint 9.39.5,
 with compatible transitive patches. Its complete lockfile audit has zero findings,
 down from 1 critical, 15 high, 2 moderate, and 2 low. The production bundle,

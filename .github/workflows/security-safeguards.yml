@@ -67,6 +67,8 @@ jobs:
         run: |
           python3 -m venv /tmp/alloflow-security-tests
           /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r dev-tools/security/requirements.txt
+          /tmp/alloflow-security-tests/bin/python -m unittest discover -s dev-tools/security -p test_python_lock_compatibility.py
+          /tmp/alloflow-security-tests/bin/python dev-tools/security/check_python_lock_compatibility.py
           /tmp/alloflow-security-tests/bin/python -m unittest discover -s tests -p test_optional_service_security.py
       - name: Audit locked Python dependencies without executing package build scripts
         run: |
