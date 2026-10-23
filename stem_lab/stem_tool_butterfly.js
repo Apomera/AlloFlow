@@ -2114,6 +2114,16 @@ function butterflyEyeMaterial(T,colour,low){
   material.customProgramCacheKey=function(){return 'butterfly-corneal-eye-v1-'+(low?'low':'high');};
   return material;
 }
+function contourButterflyAbdomen(point,normal){
+  // Existing abdomen components share one smooth taper and relaxed centreline.
+  // The thoracic join is pinned; no head, leg or drinking-tube vertices move.
+  if(point.z<=.20)return;
+  var u=Math.max(0,Math.min(1,(point.z-.20)/2.65)),blend=u*u*(3-2*u),slope=6*u*(1-u)/2.65;
+  var scale=1-.16*blend,scaleSlope=-.16*slope,x=point.x,y=point.y+.025;
+  var nx=normal.x/scale,ny=normal.y/scale;
+  normal.set(nx,ny,normal.z-scaleSlope*x*nx-(scaleSlope*y-.11*slope)*ny).normalize();
+  point.set(x*scale,-.025+y*scale-.11*blend,point.z);
+}
 function butterflyClubGeometry(T,sphere){
   // Same sphere vertices and triangles, with a narrower base and rounded club.
   var geometry=sphere.clone(),p=geometry.attributes.position,n=geometry.attributes.normal;
@@ -2237,7 +2247,7 @@ function createMonarch(T, kit, feeding, lowDetail) {
       '}',
       '#pragma unroll_loop_end',
       '#endif',
-      'reflectedLight.directDiffuse+=clamp(diffuseColor.rgb,vec3(0.),vec3(1.))*bfThroughLight*vec3(1.,.84,.64)*bfWing*bfAmber*(1.-clamp(bfVeinDepth.x,0.,1.));'
+      'reflectedLight.directDiffuse+=clamp(diffuseColor.rgb,vec3(0.),vec3(1.))*bfThroughLight*(1.-.22*bfClusterAmount)*vec3(1.,.84,.64)*bfWing*bfAmber*(1.-clamp(bfVeinDepth.x,0.,1.));'
     ].join('\n'));
     // Wing attachment depth occludes only nearby indirect illumination.
     shader.fragmentShader=shader.fragmentShader.replace('#include <aomap_fragment>',[
@@ -2247,7 +2257,7 @@ function createMonarch(T, kit, feeding, lowDetail) {
       'reflectedLight.indirectDiffuse*=1.-.12*bfRootMask;'
     ].join('\n'));
   };
-  surface.customProgramCacheKey=function(){return 'butterfly-monarch-wing-root-depth-v9';};
+  surface.customProgramCacheKey=function(){return 'butterfly-monarch-wing-root-depth-v10';};
   refineButterflyAnatomySurface(surface,'bfMonarchPoint','bfWing');
   var eyeMaterial = butterflyEyeMaterial(T,color(0x302b22),low);
 
@@ -2409,7 +2419,7 @@ function createMonarch(T, kit, feeding, lowDetail) {
   var bodyPositions=[],bodyNormals=[],bodyColors=[],sphere=low?new T.SphereGeometry(1,7,5):new T.SphereGeometry(1,14,10);
   var clubGeometry=butterflyClubGeometry(T,sphere);
   var transform=new T.Object3D(),normalMatrix=new T.Matrix3(),point=new T.Vector3(),normal=new T.Vector3();
-  function bake(geometry,hex,x,y,z,sx,sy,sz,rx,ry,rz) {
+  function bake(geometry,hex,x,y,z,sx,sy,sz,rx,ry,rz,abdomen) {
     transform.position.set(x||0,y||0,z||0);transform.scale.set(sx||1,sy||1,sz||1);transform.rotation.set(rx||0,ry||0,rz||0);transform.updateMatrix();
     normalMatrix.getNormalMatrix(transform.matrix);
     var p=geometry.attributes.position,n=geometry.attributes.normal,index=geometry.index,c=color(hex),count=index?index.count:p.count;
@@ -2417,10 +2427,11 @@ function createMonarch(T, kit, feeding, lowDetail) {
       var v=index?index.getX(i):i;
       point.fromBufferAttribute(p,v).applyMatrix4(transform.matrix);
       normal.fromBufferAttribute(n,v).applyMatrix3(normalMatrix).normalize();
+      if(abdomen)contourButterflyAbdomen(point,normal);
       bodyPositions.push(point.x,point.y,point.z);bodyNormals.push(normal.x,normal.y,normal.z);bodyColors.push(c.r,c.g,c.b);
     }
   }
-  function blob(hex,x,y,z,sx,sy,sz,ry) {bake(sphere,hex,x,y,z,sx,sy,sz,0,ry||0,0);}
+  function blob(hex,x,y,z,sx,sy,sz,ry,abdomen) {bake(sphere,hex,x,y,z,sx,sy,sz,0,ry||0,0,abdomen);}
   function tube(points,radius,hex,segments) {
     var path=new T.CatmullRomCurve3(points.map(function(p){return new T.Vector3(p[0],p[1],p[2]);}));
     var geometry=new T.TubeGeometry(path,Math.max(3,Math.round((segments||12)*(low?.4:1))),radius,low?3:5,false);
@@ -2428,11 +2439,11 @@ function createMonarch(T, kit, feeding, lowDetail) {
     bake(geometry,hex);geometry.dispose();
   }
   blob(ink,0,-.02,-.43,.43,.39,.88);
-  blob(0x252923,0,-.025,1.24,.32,.30,1.61);
+  blob(0x252923,0,-.025,1.24,.32,.30,1.61,0,true);
   for(var segment=0;segment<8;segment++) {
     var z=.13+segment*.33,radius=.31*(1-segment*.065);
-    blob(segment%2?0x272c24:0x34362b,0,-.025,z,radius,.27*(1-segment*.055),.25);
-    [-1,1].forEach(function(side){blob(0xd7cda7,side*radius*.91,.015,z,.045,.055,.115);});
+    blob(segment%2?0x272c24:0x34362b,0,-.025,z,radius,.27*(1-segment*.055),.25,0,true);
+    [-1,1].forEach(function(side){blob(0xd7cda7,side*radius*.91,.015,z,.045,.055,.115,0,true);});
   }
   blob(ink,0,.01,-1.43,.35,.33,.36);
   [-1,1].forEach(function(side) {
@@ -2657,7 +2668,7 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
       '}',
       '#pragma unroll_loop_end',
       '#endif',
-      'reflectedLight.directDiffuse+=clamp(diffuseColor.rgb,vec3(0.),vec3(1.))*bfThroughLight*bfWingMask*bfLightPigment*(1.-clamp(bfVeinDepth,0.,1.));'
+      'reflectedLight.directDiffuse+=clamp(diffuseColor.rgb,vec3(0.),vec3(1.))*bfThroughLight*(1.-.22*bfClusterAmount)*bfWingMask*bfLightPigment*(1.-clamp(bfVeinDepth,0.,1.));'
     ].join('\n'));
     // The same local attachment pocket leaves direct and transmitted light intact.
     shader.fragmentShader=shader.fragmentShader.replace('#include <aomap_fragment>',[
@@ -2667,7 +2678,7 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
       'reflectedLight.indirectDiffuse*=1.-.12*bfRootMask;'
     ].join('\n'));
   };
-  material.customProgramCacheKey=function(){return 'meadow-butterfly-'+speciesId+'-wing-root-depth-v7';};
+  material.customProgramCacheKey=function(){return 'meadow-butterfly-'+speciesId+'-wing-root-depth-v8';};
   refineButterflyAnatomySurface(material,'bfWingPoint','step(.5,bfKind)');
   var outlines=tiger?[
     [[.25,-.55],[1.2,-2.45],[3.45,-4.15],[5.95,-5.15],[7.05,-4.75],[6.7,-3.6],[5.8,-2.0],[4.55,-.35],[2.65,.75],[.27,.7]],
@@ -2702,14 +2713,14 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
   var foreGeometry=wingGeometry(0),hindGeometry=wingGeometry(1);
   [-1,1].forEach(function(side){var label=side<0?'left':'right',pivot=new T.Group(),trailing=new T.Group();pivot.name='butterfly-wing-'+label;trailing.name='butterfly-hindwing-pivot-'+label;pivot.position.x=side*.12;root.add(pivot);pivot.add(trailing);wings.push(pivot);hindWings.push(trailing);var fore=new T.Mesh(foreGeometry,material),hind=new T.Mesh(hindGeometry,material);fore.name='butterfly-forewing-'+label;hind.name='butterfly-hindwing-'+label;fore.scale.x=side;hind.scale.x=side;pivot.add(fore);trailing.add(hind);});
   var bodyPositions=[],bodyNormals=[],bodyColors=[],sphere=new T.SphereGeometry(1,low?7:14,low?5:10),transform=new T.Object3D(),normalMatrix=new T.Matrix3(),point=new T.Vector3(),normal=new T.Vector3();
-  function bake(geometry,hex,x,y,z,sx,sy,sz,ry){transform.position.set(x||0,y||0,z||0);transform.scale.set(sx||1,sy||1,sz||1);transform.rotation.set(0,ry||0,0);transform.updateMatrix();normalMatrix.getNormalMatrix(transform.matrix);var p=geometry.attributes.position,n=geometry.attributes.normal,index=geometry.index,c=color(hex),count=index?index.count:p.count;for(var i=0;i<count;i++){var v=index?index.getX(i):i;point.fromBufferAttribute(p,v).applyMatrix4(transform.matrix);normal.fromBufferAttribute(n,v).applyMatrix3(normalMatrix).normalize();bodyPositions.push(point.x,point.y,point.z);bodyNormals.push(normal.x,normal.y,normal.z);var tone=1;if(z>0&&sz>1)tone=.88+.12*Math.sin(point.z*16.);bodyColors.push(c.r*tone,c.g*tone,c.b*tone);}}
+  function bake(geometry,hex,x,y,z,sx,sy,sz,ry,abdomen){transform.position.set(x||0,y||0,z||0);transform.scale.set(sx||1,sy||1,sz||1);transform.rotation.set(0,ry||0,0);transform.updateMatrix();normalMatrix.getNormalMatrix(transform.matrix);var p=geometry.attributes.position,n=geometry.attributes.normal,index=geometry.index,c=color(hex),count=index?index.count:p.count;for(var i=0;i<count;i++){var v=index?index.getX(i):i;point.fromBufferAttribute(p,v).applyMatrix4(transform.matrix);normal.fromBufferAttribute(n,v).applyMatrix3(normalMatrix).normalize();if(abdomen)contourButterflyAbdomen(point,normal);bodyPositions.push(point.x,point.y,point.z);bodyNormals.push(normal.x,normal.y,normal.z);var tone=1;if(z>0&&sz>1)tone=.88+.12*Math.sin(point.z*16.);bodyColors.push(c.r*tone,c.g*tone,c.b*tone);}}
   var clubGeometry=butterflyClubGeometry(T,sphere);
-  function blob(hex,x,y,z,sx,sy,sz,ry){bake(sphere,hex,x,y,z,sx,sy,sz,ry);}
-  function tube(points,radius,hex,segments){var path=new T.CatmullRomCurve3(points.map(function(p){return new T.Vector3(p[0],p[1],p[2]);})),geometry=new T.TubeGeometry(path,low?Math.max(3,Math.round(segments*.4)):segments,radius,low?3:5,false);if(points.length===4)taperButterflyLimb(geometry,path);bake(geometry,hex);geometry.dispose();}
+  function blob(hex,x,y,z,sx,sy,sz,ry,abdomen){bake(sphere,hex,x,y,z,sx,sy,sz,ry,abdomen);}
+  function tube(points,radius,hex,segments,abdomen){var path=new T.CatmullRomCurve3(points.map(function(p){return new T.Vector3(p[0],p[1],p[2]);})),geometry=new T.TubeGeometry(path,low?Math.max(3,Math.round(segments*.4)):segments,radius,low?3:5,false);if(points.length===4)taperButterflyLimb(geometry,path);bake(geometry,hex,0,0,0,1,1,1,0,abdomen);geometry.dispose();}
   var bodyTone=tiger?0x383a2a:lady?0x655446:0x9d9e84,limbTone=tiger?0x3a3b2c:lady?0x55483a:0x8c9075;
-  blob(bodyTone,0,-.02,-.43,white?.32:.40,white?.32:.37,.88);blob(bodyTone,0,-.025,1.22,white?.25:.30,.27,1.58);blob(bodyTone,0,.01,-1.43,.33,.31,.36);
+  blob(bodyTone,0,-.02,-.43,white?.32:.40,white?.32:.37,.88);blob(bodyTone,0,-.025,1.22,white?.25:.30,.27,1.58,0,true);blob(bodyTone,0,.01,-1.43,.33,.31,.36);
   [-1,1].forEach(function(side){
-    if(tiger){tube([[side*.24,.12,-1.06],[side*.32,.15,-.3],[side*.23,.08,1.4],[side*.14,.04,2.5]],.045,0xc8b55d,12);}
+    if(tiger){tube([[side*.24,.12,-1.06],[side*.32,.15,-.3],[side*.23,.08,1.4],[side*.14,.04,2.5]],.045,0xc8b55d,12,true);}
     tube([[side*.16,.19,-1.62],[side*.29,.44,-2.05],[side*.48,.61,-2.57],[side*.64,.64,-2.95]],white?.03:.034,limbTone,12);bake(clubGeometry,limbTone,side*.64,.64,-2.95,.062,.066,.19,side*-.25);
     if(lady)tube([[side*.24,-.17,-.94],[side*.36,-.33,-1.1],[side*.25,-.43,-.75]],.03,limbTone,8);
     else tube([[side*.24,-.17,-.94],[side*.51,-.46,-1.18],[side*.76,-.83,-1.14],[side*.82,-.88,-1.33]],.026,limbTone,10);
@@ -2813,7 +2824,10 @@ function buildWorld(T,kit) {
         'vec2 irregular=vec2(shadeHash(vShadeSeed),shadeHash(vShadeSeed+7.))-.5;',
         'vec2 a=q-vec2(.25,.04)-irregular*.16,b=q+vec2(.22,.13)-irregular*.13;',
         'float lobes=exp(-4.5*dot(q,q))*.6+exp(-8.*dot(a,a))*.24+exp(-7.*dot(b,b))*.24;',
-        'float dapple=.72+.28*shadeNoise(q*5.2+vShadeSeed+vec2(vShadeRustle,-vShadeRustle*.5));',
+        'float dappleNoise=shadeNoise(q*5.2+vShadeSeed+vec2(vShadeRustle,-vShadeRustle*.5));',
+        'float canopyResolve=1.-smoothstep(.025,.16,length(fwidth(q)));',
+        'float canopyDapple=mix(.86,.43+.86*smoothstep(.25,.75,dappleNoise),canopyResolve);',
+        'float dapple=mix(.72+.28*dappleNoise,canopyDapple,vShadeCanopy);',
         'float root=exp(-58.*dot(p,p))*.17;',
         'float crown=lobes*dapple*mix(.16,.25,vShadeCanopy)*(1.-smoothstep(.82,1.,length(q)));',
         'float alpha=(root+crown)*bfShadowStrength;',
@@ -2824,6 +2838,8 @@ function buildWorld(T,kit) {
         '}'
       ].join('\n')
     });
+    // Filtered woodland dapple opens soft light gaps and settles to its mean in the distance.
+    shadeMaterial.extensions={derivatives:true};
     shadeMaterial.name='meadow-soft-shadows';
     function contactShade(x,z,width,depth,parent,height){var shade=mesh(plane,shadeMaterial,x,.031,z,width*1.28,depth*1.28,height||.5,parent);shade.rotation.x=-Math.PI/2;return shade;}
     // A texture-free sky retains a soft horizon at every camera angle.
@@ -2849,7 +2865,11 @@ function buildWorld(T,kit) {
     setLight('daylight');
     function groundColor(x,z){var t=.5+.23*Math.sin(x*.045+z*.024)+.16*Math.cos(z*.083-x*.019)+.1*Math.sin(x*.3)*Math.cos(z*.29);return linear(0x354d2b).lerp(linear(0x61713b),Math.max(0,Math.min(1,t)));}
     var ground=new T.PlaneGeometry(620,620,40,40),groundColors=[],gp=ground.attributes.position;
-    for(var gi=0;gi<gp.count;gi++){var gc=groundColor(gp.getX(gi),-gp.getY(gi));groundColors.push(gc.r,gc.g,gc.b);}
+    // Stretch only the outer ground rows beneath the distant hills. The central
+    // meadow retains its exact grid, while buried hill bases remain occluded.
+    function groundEdge(value){var distance=Math.abs(value);return distance<=248?value:Math.sign(value)*(248+(distance-248)*6);}
+    for(var gi=0;gi<gp.count;gi++){var gx=groundEdge(gp.getX(gi)),gy=groundEdge(gp.getY(gi));gp.setXY(gi,gx,gy);var gc=groundColor(gx,-gy);groundColors.push(gc.r,gc.g,gc.b);}
+    ground.name='meadow-ground-surface';
     ground.setAttribute('color',new T.Float32BufferAttribute(groundColors,3));
     // Ground detail stays in one material: soft clumps and tiny grass strokes
     // make the space between the 3D blades read as turf without more geometry.
@@ -2896,6 +2916,17 @@ function buildWorld(T,kit) {
       }
       joined.forEach(function(normal){normal.normalize();});
       for(var vertex=0;vertex<positions.count;vertex++){var normal=joined.get(keys[vertex]);normals.setXYZ(vertex,normal.x,normal.y,normal.z);}
+      // Only the hill faces buried beneath the meadow are omitted. Keep every
+      // upper slope, its authored normals and the existing horizon unchanged.
+      // At the maximum height scale of 42, local Y below .44 is below -.52
+      // in the world; these faces remain covered by the wide ground surface.
+      var ridgeIndices=ridge.index.array,visibleSlopeIndices=[];
+      for(var face=0;face<ridgeIndices.length;face+=3){
+        var a=ridgeIndices[face],b=ridgeIndices[face+1],c=ridgeIndices[face+2];
+        if(positions.getY(a)<.44&&positions.getY(b)<.44&&positions.getY(c)<.44)continue;
+        visibleSlopeIndices.push(a,b,c);
+      }
+      ridge.setIndex(visibleSlopeIndices);
       return ridge;
     }
     var rollingHills=[rollingRidge(0),rollingRidge(1),rollingRidge(2)];
@@ -2910,9 +2941,12 @@ function buildWorld(T,kit) {
       m.customProgramCacheKey=function(){return 'butterfly-textured-rolling-hills-v1';};return m;
     }
     var hillMaterials=[hillMaterial(0x708453),hillMaterial(0x7e8e5f)];
+    // Keep rising slopes beyond the rooted woodland and its soft ground shade.
+    // Shared meshes retain their height and horizontal proportions farther away.
+    var hillDistanceScale=1.5;
     for(var hill=0;hill<11;hill++){
-      var ha=hill*2.39996,range=268+(hash(hill+531)-.5)*18;
-      var ridge=mesh(rollingHills[hill%3],hillMaterials[hill%2],Math.cos(ha)*range,-19,Math.sin(ha)*range,91+hash(hill+532)*27,25+hash(hill+8)*17,69+hash(hill+533)*15);
+      var ha=hill*2.39996,range=(268+(hash(hill+531)-.5)*18)*hillDistanceScale;
+      var ridge=mesh(rollingHills[hill%3],hillMaterials[hill%2],Math.cos(ha)*range,-19,Math.sin(ha)*range,(91+hash(hill+532)*27)*hillDistanceScale,25+hash(hill+8)*17,(69+hash(hill+533)*15)*hillDistanceScale);
       ridge.rotation.y=ha*.7+hash(hill+534)*.8;
     }
     function pathX(z){return meadowPathX(z);}
@@ -2930,9 +2964,11 @@ function buildWorld(T,kit) {
       shader.vertexShader='attribute float bfTrailAcross;varying vec2 bfTrailPoint;varying float bfTrailSide;\n'+shader.vertexShader;
       shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbfTrailPoint=position.xz;bfTrailSide=bfTrailAcross;');
       shader.fragmentShader='varying vec2 bfTrailPoint;varying float bfTrailSide;float bfTrailHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float bfTrailNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(bfTrailHash(i),bfTrailHash(i+vec2(1.,0.)),f.x),mix(bfTrailHash(i+vec2(0.,1.)),bfTrailHash(i+vec2(1.,1.)),f.x),f.y);}\n'+shader.fragmentShader;
-      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat bfAcross=abs(bfTrailSide);float bfBorder=bfTrailNoise(bfTrailPoint*vec2(.73,.41));float bfEarth=bfTrailNoise(bfTrailPoint*1.3);float bfGrainResolve=1.-smoothstep(.02,.14,length(fwidth(bfTrailPoint)));float bfGrain=mix(.5,bfTrailNoise(bfTrailPoint*24.),bfGrainResolve);float bfEdge=.96+(bfBorder-.5)*.14;float bfFeather=.095+max(.015,fwidth(bfTrailSide)*.7);diffuseColor.a*=1.-smoothstep(bfEdge-bfFeather,bfEdge+bfFeather,bfAcross);float bfWear=1.-smoothstep(.18,.82,bfAcross);diffuseColor.rgb*=.79+.23*bfEarth+.095*bfGrain+.045*bfWear;');
+      // Wear gives way to turf before the terminal mesh edges, with the same
+      // stable ground noise that breaks up the sides of the walking route.
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat bfAcross=abs(bfTrailSide);float bfBorder=bfTrailNoise(bfTrailPoint*vec2(.73,.41));float bfEarth=bfTrailNoise(bfTrailPoint*1.3);float bfGrainResolve=1.-smoothstep(.02,.14,length(fwidth(bfTrailPoint)));float bfGrain=mix(.5,bfTrailNoise(bfTrailPoint*24.),bfGrainResolve);float bfEdge=.96+(bfBorder-.5)*.14;float bfFeather=.095+max(.015,fwidth(bfTrailSide)*.7);float bfTrailEnd=1.-smoothstep(184.,216.,abs(bfTrailPoint.y)+(bfBorder-.5)*6.);diffuseColor.a*=(1.-smoothstep(bfEdge-bfFeather,bfEdge+bfFeather,bfAcross))*bfTrailEnd;float bfWear=1.-smoothstep(.18,.82,bfAcross);diffuseColor.rgb*=.79+.23*bfEarth+.095*bfGrain+.045*bfWear;');
     };
-    trailMaterial.customProgramCacheKey=function(){return 'butterfly-soft-earth-trail-v2';};
+    trailMaterial.customProgramCacheKey=function(){return 'butterfly-soft-earth-trail-v3';};
     var pathMesh=mesh(pathGeometry,trailMaterial,0,0,0);pathMesh.name='meadow-footpath';
 
     // Leaf sprays contain actual gaps, with a procedural leaf mask on curved
@@ -2940,7 +2976,7 @@ function buildWorld(T,kit) {
     // Woodland surface refinement v1: folded foliage, soft transmission, irregular bark.
     // Canopy depth refinement v1: independent leaf normals and crown exposure.
     // Foliage silhouette refinement v1: forked shoots and three coherent leaf forms.
-    // Four independently oriented tree shoots share each existing canopy card.
+    // Inner limb cards carry nine finer shoots; outer and leader cards retain four.
     // Only the selected shoot is evaluated at a fragment: the eleven-leaf
     // loop, geometry, canopy wind and branch positions remain unchanged.
     // Thin leaf surfaces retain independent tilts without rounded pad shading.
@@ -3090,6 +3126,19 @@ function buildWorld(T,kit) {
         // Exposed outer shoots receive more skylight than their crown interior.
         // Coordinates are local to the same node that anchors their branches.
         var exposure=Math.max(.22,Math.min(1,.51+r*.28+(shrub?(cy-.51)*.36:(cy-node.y)/(.18*node.spanY)*.13)+(hash(sprayKey+14)-.5)*.07));
+        // Outer shoots settle below their branch centers; the leader remains upright.
+        // Translate each whole card so its coverage, color and exposure stay exact.
+        if(!shrub){
+          var nodeReach=Math.max(.001,Math.hypot(node.x,node.z)),outward=(Math.cos(a)*node.x+Math.sin(a)*node.z)/nodeReach;
+          cy-=outward*radial*(cluster%nodes.length===5?.035:.10)*node.spanY;
+        }
+        // Inner shoots continue down the outer limbs, softening the gap
+        // beneath each crown lobe. The leader and outer sprays stay exact.
+        // Translate complete cards after computing their color and exposure.
+        if(!shrub&&r<.66&&cluster%nodes.length!==5){
+          var foliageReach=.75+.10*hash(key+17);
+          cx-=node.x*(1-foliageReach);cy-=(node.y-node.attach)*(1-foliageReach);cz-=node.z*(1-foliageReach);
+        }
         for(var row=0;row<2;row++){
           var y=row;
           for(var side=0;side<2;side++){
@@ -3098,7 +3147,7 @@ function buildWorld(T,kit) {
             // retaining a smooth shared edge and avoiding a sharp paper fold.
             var fold=width*(.022*(side===row?1:-1)+.012*(y-.5)*(hash(sprayKey+13)-.5));
             positions.push(cx+across.x*lx+along.x*ly+normal.x*fold,cy+across.y*lx+along.y*ly+normal.y*fold,cz+across.z*lx+along.z*ly+normal.z*fold);
-            var shade=tone*(.96+y*.04);colors.push(shade*.97,shade,shade*.89);uv.push(side,y);seeds.push(seed);densities.push(shrub?1:2);exposures.push(Math.max(.2,Math.min(1,exposure+(y-.5)*.055)));
+            var shade=tone*(.96+y*.04);colors.push(shade*.97,shade,shade*.89);uv.push(side,y);seeds.push(seed);densities.push(shrub?1:(r<.66&&cluster%nodes.length!==5?3:2));exposures.push(Math.max(.2,Math.min(1,exposure+(y-.5)*.055)));
           }
         }
         indices.push(start,start+2,start+1,start+1,start+2,start+3);
@@ -3109,13 +3158,13 @@ function buildWorld(T,kit) {
     // Open branch ends leave more of the wood budget for smooth bends.
     // End points remain exact so branches and leaf sprays share the same wind.
     function woodShaftGeometry(sides,rows,radii,bend,caps,name){
-      var positions=[],uv=[],colors=[],indices=[],centers=[];
+      var positions=[],uv=[],colors=[],indices=[],centers=[],rootFlare=caps||name==='woodland-curved-trunk';
       for(var row=0;row<rows.length;row++){
         var t=rows[row],inside=row>0&&row<rows.length-1;
         var cx=inside?bend*Math.sin(Math.PI*t)*(1+.18*Math.sin(Math.PI*2*t)):0,cz=inside?bend*.27*Math.sin(Math.PI*2*t):0;
         centers.push([cx,t-.5,cz]);
         for(var side=0;side<=sides;side++){
-          var angle=side*Math.PI*2/sides,radius=radii[row]*(row===0&&caps?1+.09*Math.cos(angle*3):1),tone=.85+t*.15+.025*Math.cos(angle*3+.7);
+          var angle=side*Math.PI*2/sides,radius=radii[row]*(row===0&&rootFlare?1+.09*Math.cos(angle*3):1),tone=.85+t*.15+.025*Math.cos(angle*3+.7);
           positions.push(cx+Math.cos(angle)*radius,t-.5,cz+Math.sin(angle)*radius);uv.push(side/sides,t);colors.push(tone,tone*.99,tone*.94);
           if(row<rows.length-1&&side<sides){var a=row*(sides+1)+side,b=a+1,c=a+sides+1,d=c+1;indices.push(a,c,b,b,c,d);}
         }
@@ -3142,7 +3191,9 @@ function buildWorld(T,kit) {
     // One continuous trunk replaces the former two disconnected cylinders.
     // Main branches and twigs taper almost to a point inside their leaf sprays;
     // open ends keep the bend samples within the meadow's shared budget.
-    var trunkGeometry=woodShaftGeometry(8,[0,.30,.64,1],[1.18,.8,.43,.105],1.15,true,'woodland-curved-trunk');
+    // Reassign hidden trunk caps to a fifth bend sample.
+    // Root spread, existing rings and branch tips retain their exact positions.
+    var trunkGeometry=woodShaftGeometry(8,[0,.30,.47,.64,1],[1.18,.8,.615,.43,.105],1.15,false,'woodland-curved-trunk');
     // Supple main limbs sample three-dimensional bends with four shared rings.
     var woodGeometry=woodShaftGeometry(5,[0,1/3,2/3,1],[1,.7,.39666666666666667,.09],2.05,false,'woodland-curved-branch');
     var twigGeometry=woodShaftGeometry(4,[0,.5,1],[1,.38,.045],2.1,false,'woodland-fine-twig');
@@ -3208,6 +3259,21 @@ function buildWorld(T,kit) {
       var crown=mesh(crowns[variant],canopyMaterial([0x4d6b42,0x667b4b,0x4e704b,0x738451][tree%4]),tx+leanX,0,tz+leanZ,width,height,width);
       crown.rotation.y=turn;
     }
+    // Leaf mold warms the floor only beneath the actual outer woodland groves.
+    // Broad overlapping color washes keep the open meadow and footpath green.
+    function woodlandBlend(near,far,value){var blend=Math.max(0,Math.min(1,(value-near)/(far-near)));return blend*blend*(3-2*blend);}
+    var woodlandLitterColor=linear(0x60563f),woodlandGroundColor=new T.Color(),woodlandGroundColors=ground.attributes.color;
+    for(var woodlandVertex=0;woodlandVertex<gp.count;woodlandVertex++){
+      var woodlandX=gp.getX(woodlandVertex),woodlandZ=-gp.getY(woodlandVertex),woodlandCoverage=0;
+      for(var woodlandRoot=0;woodlandRoot<woodlandRoots.length;woodlandRoot++){
+        var floorRoot=woodlandRoots[woodlandRoot];woodlandCoverage=Math.max(woodlandCoverage,1-woodlandBlend(6,28,Math.hypot(woodlandX-floorRoot.x,woodlandZ-floorRoot.z)));
+      }
+      woodlandCoverage*=.68*woodlandBlend(120,145,Math.hypot(woodlandX,woodlandZ))*woodlandBlend(7,15,Math.abs(woodlandX-pathX(woodlandZ)));
+      if(woodlandCoverage<=0)continue;
+      woodlandGroundColor.fromBufferAttribute(woodlandGroundColors,woodlandVertex).lerp(woodlandLitterColor,woodlandCoverage);
+      woodlandGroundColors.setXYZ(woodlandVertex,woodlandGroundColor.r,woodlandGroundColor.g,woodlandGroundColor.b);
+    }
+    woodlandGroundColors.needsUpdate=true;
     // The hedge uses the same open leaf structure at a smaller scale. Broken
     // clusters bridge the grass and trees without introducing nectar flowers.
     var shrubs=new T.Group();shrubs.name='meadow-hedgerow';scene.add(shrubs);
@@ -3283,6 +3349,7 @@ function buildWorld(T,kit) {
     for(var i=0;i<18000;i++){
       // Small, overlapping tussocks leave natural openings. Some growth is
       // concentrated around the flower beds without increasing the tuft count.
+      var understoryShade=0;
       var cluster=Math.floor(i/4),ga=hash(i+6101)*Math.PI*2,gr=.4+Math.sqrt(hash(i+6201))*3.4;
       var gx=(hash(cluster*2+401)-.5)*232+Math.cos(ga)*gr,gz=(hash(cluster*2+402)-.5)*232+Math.sin(ga)*gr;
       if(i%8===0){var bed=grassBeds[Math.floor(i/8)%3],br=Math.sqrt(hash(i+6301))*23;gx=bed[0]+Math.cos(ga)*br;gz=bed[1]+Math.sin(ga)*br;}
@@ -3292,7 +3359,7 @@ function buildWorld(T,kit) {
       if(Math.hypot(gx,gz)>90&&i%8!==0&&i%5===3){
         var understoryRoot=woodlandRoots[Math.floor(i/5)%woodlandRoots.length],understoryAngle=hash(i+8421)*Math.PI*2,understoryRadius=2.6+Math.sqrt(hash(i+8422))*7.4;
         var understoryX=understoryRoot.x+Math.cos(understoryAngle)*understoryRadius,understoryZ=understoryRoot.z+Math.sin(understoryAngle)*understoryRadius;
-        if(Math.abs(understoryX-pathX(understoryZ))>=5.2){gx=understoryX;gz=understoryZ;}
+        if(Math.abs(understoryX-pathX(understoryZ))>=5.2){gx=understoryX;gz=understoryZ;understoryShade=1-woodlandBlend(2.6,10,understoryRadius);}
       }
       var marginNoise=.85*Math.sin(gx*.34+Math.sin(gz*.29))+.45*Math.cos(gz*.57-gx*.13);
       var lawn=grassMargin(Math.min(Math.hypot(gx-38,gz-38),Math.hypot(gx+42,gz-38))+marginNoise,19);
@@ -3301,20 +3368,72 @@ function buildWorld(T,kit) {
       var edge=Math.abs(gx-pathX(gz)),fieldHeight=(.58+hash(i+712)*1.3)*clump*(.63+.37*Math.min(1,Math.max(0,(edge-3.2)/4)));
       var grassHeight=fieldHeight*(1-bedBlend)+(.38+hash(i+711)*.59)*bedBlend;
       grassHeight=grassHeight*(1-lawn)+(.06+hash(i+710)*.08)*lawn;
+      // Woodland tufts form a lower, cooler understory beneath their own trees.
+      // Full-sun meadow, dedicated beds, rejected relocations and the path stay exact.
+      grassHeight*=1-understoryShade*.12;
       transform.position.set(gx,0,gz);transform.rotation.set((hash(i+714)-.5)*.16,i*2.3999,(hash(i+715)-.5)*.16);transform.scale.set(1.2+hash(i+713)*.7,grassHeight,1.2+hash(i+713)*.7);transform.updateMatrix();grassTransforms.push(transform.matrix.clone());
       var tone=.48+.22*Math.sin(gx*.075+Math.sin(gz*.058))+.17*Math.cos(gz*.093-gx*.027)+(hash(i+977)-.5)*.16;
-      grassColors.push(linear(0x4d6c3c).lerp(linear(0x7b8951),Math.max(0,Math.min(1,tone))));
+      var grassTint=linear(0x4d6c3c).lerp(linear(0x7b8951),Math.max(0,Math.min(1,tone)));
+      grassTint.r*=1-understoryShade*.22;grassTint.g*=1-understoryShade*.17;grassTint.b*=1-understoryShade*.10;grassColors.push(grassTint);
     }
     var grassBatch=new T.InstancedMesh(grass,grassMaterial,grassTransforms.length);
     grassTransforms.forEach(function(matrix,i){grassBatch.setMatrixAt(i,matrix);grassBatch.setColorAt(i,grassColors[i]);});
     grassBatch.name='shared-meadow-grass';grassBatch.instanceMatrix.needsUpdate=true;scene.add(grassBatch);
 
     // A few dry seed heads give depth without implying additional nectar resources.
-    var seed=dataGeometry(kit.vegetation('seed'));
+    function drySeedHead(){
+      var positions=[],colors=[];
+      function tri(a,b,c){
+        var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+        if(Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx)<1e-9)return;
+        [a,b,c].forEach(function(p){positions.push(p[0],p[1],p[2]);colors.push(p[3],p[3],p[3]);});
+      }
+      // The stalk axis passes through the original stem junction, with its bend
+      // confined above that point. Its two upper segments carry every grain base.
+      function axis(y){var bend=y<=0?0:y<=.5?y*.04:.02+(y-.5)*.28;return [bend,y,-bend*.3];}
+      var ys=[-1,0,.5,1],radii=[0,.035,.026,0];
+      function stalkPoint(row,lon){var p=axis(ys[row]),a=lon*Math.PI*2/5;return [p[0]+Math.cos(a)*radii[row],p[1],p[2]+Math.sin(a)*radii[row],.71+row*.045];}
+      for(var row=0;row<3;row++)for(var lon=0;lon<5;lon++){
+        var a=stalkPoint(row,lon),b=stalkPoint(row+1,lon),c=stalkPoint(row,lon+1),d=stalkPoint(row+1,lon+1);tri(a,b,c);tri(b,d,c);
+      }
+      // Slender pointed grains replace the spherical beads. Shorter upper grains
+      // make a tapered spike, while the spiral keeps its profile open on all sides.
+      for(var grain=0;grain<9;grain++){
+        var base=axis(-.7+grain*.17),angle=grain*2.399963,ca=Math.cos(angle),sa=Math.sin(angle);
+        var reach=.34*(1-grain*.065),rise=.15+grain*.0075,length=Math.hypot(reach,rise),dx=ca*reach/length,dy=rise/length,dz=sa*reach/length;
+        var u=[-sa,0,ca],v=[dy*ca,-reach/length,dy*sa],along=[0,.23,.68,1],width=[0,1,.58,0],radius=.078-grain*.0025,tone=.79+(grain%3)*.055;
+        function grainPoint(row,lon){var t=along[row],a=lon*Math.PI*2/5,r=width[row]*radius;return [base[0]+ca*reach*t+(u[0]*Math.cos(a)+v[0]*Math.sin(a))*r,base[1]+rise*t+v[1]*Math.sin(a)*r,base[2]+sa*reach*t+(u[2]*Math.cos(a)+v[2]*Math.sin(a))*r,tone*(.88+row*.045)];}
+        for(var row=0;row<3;row++)for(var lon=0;lon<5;lon++){
+          var a=grainPoint(row,lon),b=grainPoint(row+1,lon),c=grainPoint(row,lon+1),d=grainPoint(row+1,lon+1);tri(a,c,b);tri(b,c,d);
+        }
+      }
+      return {positions:positions,colors:colors};
+    }
+    function smoothDrySeedNormals(geometry){
+      var p=geometry.attributes.position,n=geometry.attributes.normal;
+      // Each twenty-face component owns its seam and pointed ends. Joining only
+      // its coincident corners rounds the light response without blending grains
+      // into the stalk or moving the existing silhouette and stem junction.
+      for(var start=0;start<p.count;start+=60){
+        var joined=new Map(),keys=[];
+        for(var vertex=start;vertex<start+60;vertex++){
+          var x=p.getX(vertex),y=p.getY(vertex),z=p.getZ(vertex),key=[x,y,z].map(function(value){return Math.round(value*1e6);}).join(':');keys.push(key);
+          var face=vertex-vertex%3,corner=vertex%3,b=face+(corner+1)%3,c=face+(corner+2)%3;
+          var ux=p.getX(b)-x,uy=p.getY(b)-y,uz=p.getZ(b)-z,vx=p.getX(c)-x,vy=p.getY(c)-y,vz=p.getZ(c)-z;
+          var angle=Math.atan2(Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx),ux*vx+uy*vy+uz*vz);
+          if(!joined.has(key))joined.set(key,[0,0,0]);var sum=joined.get(key);
+          sum[0]+=n.getX(vertex)*angle;sum[1]+=n.getY(vertex)*angle;sum[2]+=n.getZ(vertex)*angle;
+        }
+        joined.forEach(function(sum){var length=Math.hypot(sum[0],sum[1],sum[2]);sum[0]/=length;sum[1]/=length;sum[2]/=length;});
+        for(var vertex=start;vertex<start+60;vertex++){var normal=joined.get(keys[vertex-start]);n.setXYZ(vertex,normal[0],normal[1],normal[2]);}
+      }
+      n.needsUpdate=true;
+    }
+    var seed=dataGeometry(drySeedHead());smoothDrySeedNormals(seed);seed.name='meadow-grass-seed-spike';
     for(var si=0;si<150;si++){
       var sx=(hash(si+1901)-.5)*210,sz=(hash(si+2901)-.5)*210;
       if(Math.abs(sx-pathX(sz))<5||Math.hypot(sx-38,sz-38)<21||Math.hypot(sx+42,sz-38)<21||Math.hypot(sx+42,sz+28)<20||Math.hypot(sx-38,sz+54)<20)continue;
-      var sh=1.6+hash(si+3901)*1.4;mesh(cylinder,vegetationWind(mat(0x7c8050),'plant'),sx,sh*.5,sz,.018,sh,.018);mesh(seed,vegetationWind(mat(0xb0a175,{vertexColors:true}),'plant'),sx,sh,sz,.32,.32,.32);
+      var sh=1.6+hash(si+3901)*1.4;mesh(cylinder,vegetationWind(mat(0x7c8050),'plant'),sx,sh*.5,sz,.018,sh,.018);var seedMesh=mesh(seed,vegetationWind(mat(0xb0a175,{vertexColors:true}),'plant'),sx,sh,sz,.32,.32,.32);seedMesh.rotation.y=si*2.399963;
     }
     var pebble=new T.IcosahedronGeometry(1,0);
     for(var stone=0;stone<125;stone++){var stoneZ=(hash(stone+4001)-.5)*300,stoneX=pathX(stoneZ)+(hash(stone+4101)-.5)*4.8;mesh(pebble,mat(stone%2?0x9d957b:0xc2b79a),stoneX,.03,stoneZ,.09+hash(stone+4201)*.15,.035,.08+hash(stone+4301)*.1);}
@@ -3403,7 +3522,10 @@ function buildWorld(T,kit) {
           }
         }
       }
-      var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setIndex(idx);g.computeVertexNormals();g.name='habitat-leaf-blade';return g;
+      var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));g.setAttribute('bfLeafFlex',new T.Float32BufferAttribute(new Float32Array(pos.length/3).fill(natural?1/(1-base):0),1));g.setIndex(idx);g.computeVertexNormals();g.name='habitat-leaf-blade';
+      // Only the natural blade can flutter; these bounds also enclose its small shader bend.
+      if(natural){g.computeBoundingBox();g.boundingBox.min.y-=.055;g.boundingBox.max.y+=.055;g.computeBoundingSphere();g.boundingSphere.radius+=.055;}
+      return g;
     }
     var leaves=leafGeometry(false),bergamotLeaves=leafGeometry(true),meadowMilkweedLeaves=[0,1,2].map(function(profile){return leafGeometry(false,true,profile);}),meadowBergamotLeaves=[0,1,2].map(function(profile){return leafGeometry(true,true,profile);});
     // Fine, branching venation lives on the blade itself, preserving the exact
@@ -3412,9 +3534,36 @@ function buildWorld(T,kit) {
     var leafMaterials=[0x688a4f,0x537346].map(function(color){
       var material=mat(color,{side:T.DoubleSide,vertexColors:true,roughness:.88});material.extensions={derivatives:true};
       material.onBeforeCompile=function(shader){
-        shader.vertexShader='varying vec2 bfLeafUv;varying float bfBladeSkyExposure;\n'+shader.vertexShader;
+        // A small blade flex starts beyond the fixed petiole. The inverse
+        // blade length is zero on teaching leaves, preserving every contact.
+        shader.vertexShader=[
+          'attribute float bfLeafFlex;varying vec2 bfLeafUv;varying float bfBladeSkyExposure;',
+          'vec3 bfLeafFlutterWarp(vec3 p){',
+          'float bfLeafSpan=clamp((uv.x-.16)/.84,0.,1.);',
+          'float bfLeafEnvelope=bfLeafSpan*bfLeafSpan*(3.-2.*bfLeafSpan);',
+          'float bfLeafSlope=6.*bfLeafSpan*(1.-bfLeafSpan)*bfLeafFlex/.84;',
+          'vec4 bfLeafRoot=vec4(0.,0.,0.,1.);',
+          '#ifdef USE_INSTANCING',
+          'bfLeafRoot=instanceMatrix*bfLeafRoot;',
+          '#endif',
+          'bfLeafRoot=modelMatrix*bfLeafRoot;',
+          'float bfLeafPhase=bfBreeze*3.1+dot(bfLeafRoot.xyz,vec3(1.17,2.03,.83));',
+          'float bfLeafLoad=.045*bfMeadowGust(bfLeafRoot.xz)*bfPlantWind*bfLeafFlex*sin(bfLeafPhase);',
+          'float bfLeafTwist=1.+p.z*.45;',
+          'return vec3(bfLeafEnvelope*bfLeafLoad*bfLeafTwist,bfLeafSlope*bfLeafLoad*bfLeafTwist,bfLeafEnvelope*bfLeafLoad*.45);',
+          '}'
+        ].join('\n')+'\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>',[
+          '#include <beginnormal_vertex>',
+          'vec3 bfBladeFlex=vec3(0.);',
+          'if(bfLeafFlex>0.&&bfPlantWind>0.&&bfWindStrength>0.){',
+          'bfBladeFlex=bfLeafFlutterWarp(position);',
+          'objectNormal=normalize(vec3(objectNormal.x-bfBladeFlex.y*objectNormal.y,objectNormal.y,objectNormal.z-bfBladeFlex.z*objectNormal.y));',
+          '}'
+        ].join('\n'));
         shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',[
           '#include <begin_vertex>',
+          'if(bfLeafFlex>0.&&bfPlantWind>0.&&bfWindStrength>0.)transformed.y+=bfBladeFlex.x;',
           'bfLeafUv=uv;vec4 bfBladeRoot=vec4(0.,0.,0.,1.);',
           '#ifdef USE_INSTANCING',
           'bfBladeRoot=instanceMatrix*bfBladeRoot;',
@@ -3463,7 +3612,7 @@ function buildWorld(T,kit) {
           '#endif'
         ].join('\n'));
       };
-      material.customProgramCacheKey=function(){return 'butterfly-layered-leaf-skylight-v7';};return vegetationWind(material,'plant');
+      material.customProgramCacheKey=function(){return 'butterfly-layered-leaf-skylight-flutter-v8';};return vegetationWind(material,'plant');
     });
     // A tapered, gently bowed stem uses one shared geometry. Its root and
     // flower tip stay fixed, as do the established opposite leaf pairs.
@@ -3489,20 +3638,37 @@ function buildWorld(T,kit) {
           frames[group]={origin:origin,along:along.divideScalar(along.lengthSq()),across:across.divideScalar(across.lengthSq()),pigmented:pigmented!==false,throat:pigmented==='throat',minX:Infinity,maxX:-Infinity,minY:Infinity,maxY:-Infinity};
         }
       },tri:function(a,b,c,color){[a,b,c].forEach(function(p,vertex){positions.push(p[0],p[1],p[2]);tones.push(Array.isArray(color)?color[vertex]:color);groups.push(group);bloomAnchors.push.apply(bloomAnchors,bloomAnchor);bloomAxes.push.apply(bloomAxes,bloomAxis);});},geometry:function(){
-        var g=dataGeometry({positions:positions,tones:tones}),p=g.attributes.position,n=g.attributes.normal,c=g.attributes.color,joined={},partColors={},keys=[],coords=new Float32Array(p.count*3),point=new T.Vector3();
+        var g=dataGeometry({positions:positions,tones:tones}),p=g.attributes.position,n=g.attributes.normal,c=g.attributes.color,joined={},partColors={},keys=[],coords=new Float32Array(p.count*3),point=new T.Vector3(),normalEdgeA=new T.Vector3(),normalEdgeB=new T.Vector3();
         // Smooth only vertices belonging to the same botanical part. This
         // rounds the tube/petal lighting without welding neighboring florets
         // or softening the separate corona, pollen and bract surfaces.
         for(var i=0;i<p.count;i++){
           var partColor=partColors[groups[i]]||(partColors[groups[i]]={r:0,g:0,b:0,count:0});partColor.r+=c.getX(i);partColor.g+=c.getY(i);partColor.b+=c.getZ(i);partColor.count++;
           var key=groups[i]+':'+Math.round(p.getX(i)*100000)+':'+Math.round(p.getY(i)*100000)+':'+Math.round(p.getZ(i)*100000);keys.push(key);
-          if(!joined[key])joined[key]={normal:new T.Vector3(),color:new T.Vector3(),count:0};
-          var item=joined[key];item.normal.add(new T.Vector3(n.getX(i),n.getY(i),n.getZ(i)));item.color.add(new T.Vector3(c.getX(i),c.getY(i),c.getZ(i)));item.count++;
+          if(!joined[key])joined[key]={normal:new T.Vector3(),equalNormal:new T.Vector3(),faces:[],color:new T.Vector3(),count:0};
+          // Corner-angle weighting softens joins on the surrounding florets.
+          // Reserved feeding caps and neutral parts retain their exact normals.
+          var normalWeight=1;
+          if(bloomAnchors[i*4+3]>.5){
+            var face=i-i%3,corner=i%3;point.fromBufferAttribute(p,i);
+            normalEdgeA.fromBufferAttribute(p,face+(corner+1)%3).sub(point).normalize();
+            normalEdgeB.fromBufferAttribute(p,face+(corner+2)%3).sub(point).normalize();
+            normalWeight=Math.acos(Math.max(-1,Math.min(1,normalEdgeA.dot(normalEdgeB))));
+          }
+          var item=joined[key],faceNormal=new T.Vector3(n.getX(i),n.getY(i),n.getZ(i));item.normal.addScaledVector(faceNormal,normalWeight);item.equalNormal.add(faceNormal);item.faces.push(faceNormal);item.color.add(new T.Vector3(c.getX(i),c.getY(i),c.getZ(i)));item.count++;
           var frame=frames[groups[i]];
           if(frame){point.fromBufferAttribute(p,i).sub(frame.origin);var x=point.dot(frame.along),y=point.dot(frame.across);coords[i*3]=x;coords[i*3+1]=y;coords[i*3+2]=frame.throat?-2:frame.pigmented?1:-1;frame.minX=Math.min(frame.minX,x);frame.maxX=Math.max(frame.maxX,x);frame.minY=Math.min(frame.minY,y);frame.maxY=Math.max(frame.maxY,y);}
         }
         for(var i=0;i<p.count;i++){
-          var item=joined[keys[i]],normal=item.normal.clone().normalize();n.setXYZ(i,normal.x,normal.y,normal.z);var partColor=partColors[groups[i]];c.setXYZ(i,.82*item.color.x/item.count+.18*partColor.r/partColor.count,.82*item.color.y/item.count+.18*partColor.g/partColor.count,.82*item.color.z/item.count+.18*partColor.b/partColor.count);
+          var item=joined[keys[i]],normal=item.surfaceNormal;
+          if(!normal){
+            normal=item.normal.clone().normalize();
+            // Tight clipped folds keep their original shared normal if the
+            // weighted candidate would turn behind any incident triangle.
+            for(var face=0;face<item.faces.length;face++)if(normal.dot(item.faces[face])<=.000001){normal.copy(item.equalNormal).normalize();break;}
+            item.surfaceNormal=normal;
+          }
+          n.setXYZ(i,normal.x,normal.y,normal.z);var partColor=partColors[groups[i]];c.setXYZ(i,.82*item.color.x/item.count+.18*partColor.r/partColor.count,.82*item.color.y/item.count+.18*partColor.g/partColor.count,.82*item.color.z/item.count+.18*partColor.b/partColor.count);
           var frame=frames[groups[i]];
           if(frame){
             if(frame.throat){
@@ -3624,7 +3790,7 @@ function buildWorld(T,kit) {
             // in the unchanged opening plane shared by the lip and dark throat.
             var path=new T.QuadraticBezierCurve3(new T.Vector3(x,.025,z),new T.Vector3(middle.x*2-(x+mx)*.5,middle.y*2-(.025+height)*.5,middle.z*2-(z+mz)*.5),new T.Vector3(mx,height,mz)),rings=[],tubeSides=f===0?16:12;
             for(var row=1;row<=3;row++){
-              var t=f===0?row/3:row===1?.15:row===2?.70:1,c=path.getPoint(t),ringAxis=new T.Vector3(axis.x*t,1-(1-axis.y)*t,axis.z*t).normalize(),rf=new T.Vector3(ux,0,uz).addScaledVector(ringAxis,-(ux*ringAxis.x+uz*ringAxis.z)).normalize(),rs=new T.Vector3().crossVectors(rf,ringAxis).normalize(),r=radius*(f===0?(.27+.73*Math.pow(t,.7)):(row===1?.30:row===2?.44:1)),ring=[];
+              var t=f===0?row/3:row===1?.15:row===2?.82:1,c=path.getPoint(t),ringAxis=new T.Vector3(axis.x*t,1-(1-axis.y)*t,axis.z*t).normalize(),rf=new T.Vector3(ux,0,uz).addScaledVector(ringAxis,-(ux*ringAxis.x+uz*ringAxis.z)).normalize(),rs=new T.Vector3().crossVectors(rf,ringAxis).normalize(),r=radius*(f===0?(.27+.73*Math.pow(t,.7)):(row===1?.30:row===2?.58:1)),ring=[];
               for(var side=0;side<tubeSides;side++){var a=.17+side*Math.PI/(tubeSides*.5);ring.push(c.clone().addScaledVector(rf,Math.cos(a)*r).addScaledVector(rs,Math.sin(a)*r).toArray());}rings.push(ring);
             }
             // Keep the short basal fan at its root tone; subsequent rings
@@ -3645,13 +3811,19 @@ function buildWorld(T,kit) {
               if(f>0){var originalSide=side,t=Math.max(0,Math.min(1,(along-.008)/(.15*reach-.008))),turn=Math.sin(f*1.31+.6)*opening*t*t*(3-2*t);side+=.018*turn;lift+=.16*originalSide*turn;}
               return softHdLip(along,side,lift);
             }
+            // The upper hood tapers separately from the broader lower lip.
+            // Its rooted margin and the reserved feeding floret remain exact.
+            function softHdHoodLip(along,side,lift){
+              if(f>0){var t=Math.max(0,Math.min(1,(along+.023)/(.088*reach+.023)));side*=1-.45*t*t*(3-2*t);}
+              return softHdLip(along,side,lift);
+            }
             function softHdLip(along,side,lift){
               // Rolled margins and a lightly hollow center soften the sheet
               // across its width while preserving the tube and pollen frame.
               if(f>0){var bowl=Math.sin(Math.PI*Math.max(0,Math.min(1,(along+.023)/.2)));lift+=bowl*(.017*Math.pow(Math.abs(side)/.08,2)-.004)*opening;}
               return hdLip(along,side,lift);
             }
-            ribbon([[-.023,-.044*wide,0],[.024*reach,-.053*wide,hoodLift*.75],[.078*reach,-.023*wide,hoodLift],[.088*reach,-.006*wide,hoodLift*.94]],[[-.023,.041*wide,0],[.029*reach,.048*wide,hoodLift*.77],[.088*reach,.016*wide,hoodLift*.92],[.088*reach,.006*wide,hoodLift*.94]],softHdLip,.012,[0xbe9ec9,0xd0b6d7,0xcbb0d2],false);
+            ribbon([[-.023,-.044*wide,0],[.024*reach,-.053*wide,hoodLift*.75],[.078*reach,-.023*wide,hoodLift],[.088*reach,-.006*wide,hoodLift*.94]],[[-.023,.041*wide,0],[.029*reach,.048*wide,hoodLift*.77],[.088*reach,.016*wide,hoodLift*.92],[.088*reach,.006*wide,hoodLift*.94]],softHdHoodLip,.012,[0xbe9ec9,0xd0b6d7,0xcbb0d2],false);
             var lowerLeft=f===0?[[.008,-.04*wide,-.005],[.077*reach,-.076*wide,-.014*opening],[.143*reach,-.034*wide,-.058*opening],[.15*reach,-.005*wide,-.069*opening]]:[[.008,-.04*wide,-.005],[.082*reach,-.078*wide,-.017*opening],[.14*reach,-.042*wide,-.055*opening],[.158*reach,-.014*wide,-.067*opening]];
             var lowerRight=f===0?[[.008,.037*wide,-.005],[.091*reach,.069*wide,-.018*opening],[.148*reach,.024*wide,-.061*opening],[.15*reach,.005*wide,-.069*opening]]:[[.008,.037*wide,-.005],[.094*reach,.073*wide,-.021*opening],[.147*reach,.036*wide,-.058*opening],[.158*reach,.014*wide,-.067*opening]];
             ribbon(lowerLeft,lowerRight,softHdLowerLip,-.019*opening,[rose?0xc3a0c1:0xc5a6d0,0xc9acd2,0xc5a6d0],false);
@@ -3721,7 +3893,10 @@ function buildWorld(T,kit) {
           function tp(along,side,lift){return [mx+forward.x*along+across.x*side*softness+axis.x*lift,height+forward.y*along+across.y*side*softness+axis.y*lift,mz+forward.z*along+across.z*side*softness+axis.z*lift];}
           // Ring planes follow the tube's bend, so the opening and petals face
           // along the corolla. The slim basal neck keeps the same triangle cost.
-          var rings=[{x:x,y:.025,z:z,r:.023},middle,{x:mx,y:height,z:mz,r:radius}];
+          // Outer corollas keep a longer slender neck before their late trumpet flare.
+          // Tube-only rings move; lip, throat and pollen frames stay authored.
+          var tubeMiddle=f===0?middle:{x:middle.x+(mx-middle.x)*.35,y:middle.y+(height-middle.y)*.35,z:middle.z+(mz-middle.z)*.35,r:radius*.50};
+          var rings=[{x:x,y:.025,z:z,r:.023},tubeMiddle,{x:mx,y:height,z:mz,r:radius}];
           function rp(ring,angle,top){
             if(f===0)return [ring.x+Math.cos(angle)*ring.r,ring.y,ring.z+Math.sin(angle)*ring.r];
             var tilt=top?1:.5,ringAxis=new T.Vector3(axis.x*tilt,1-(1-axis.y)*tilt,axis.z*tilt).normalize();
@@ -3729,13 +3904,37 @@ function buildWorld(T,kit) {
             return [ring.x+ring.r*(ringForward.x*Math.cos(angle-fa)+ringSide.x*Math.sin(angle-fa)),ring.y+ring.r*(ringForward.y*Math.cos(angle-fa)+ringSide.y*Math.sin(angle-fa)),ring.z+ring.r*(ringForward.z*Math.cos(angle-fa)+ringSide.z*Math.sin(angle-fa))];
           }
           out.part();
-          var corollaSides=f===0?5:6;
-          for(var band=0;band<2;band++)for(var side=0;side<corollaSides;side++){
-            var aa=f===0?fa+.17+side*Math.PI*.4:fa+.17+side*Math.PI/3,bb=f===0?fa+.17+(side+1)*Math.PI*.4:fa+.17+(side+1)*Math.PI/3,low=rings[band],high=rings[band+1];
-            var a=rp(low,aa,false),b=rp(low,bb,false),c=rp(high,aa,band===1),d=rp(high,bb,band===1);
-            var rootTone=rose?0xa581a9:lilac?0x9c7aa8:0xa385b1,tipTone=opening<.5?0xad8ab5:rose?0xc2a0bf:lilac?0xc0a1cd:0xc4a7d0;
-            if(band){out.tri(a,c,b,f===0?0xb193be:[0xb193be,tipTone,0xb193be]);out.tri(b,c,d,f===0?tipTone:[0xb193be,tipTone,tipTone]);}
-            else out.tri([low.x,low.y,low.z],c,d,f===0?rootTone:[rootTone,0xb193be,0xb193be]);
+          var rootTone=rose?0xa581a9:lilac?0x9c7aa8:0xa385b1,tipTone=opening<.5?0xad8ab5:rose?0xc2a0bf:lilac?0xc0a1cd:0xc4a7d0;
+          if(f===0){
+            // The teaching flower keeps its exact authored contact geometry.
+            for(var band=0;band<2;band++)for(var side=0;side<5;side++){
+              var aa=fa+.17+side*Math.PI*.4,bb=fa+.17+(side+1)*Math.PI*.4,low=rings[band],high=rings[band+1];
+              var a=rp(low,aa,false),b=rp(low,bb,false),c=rp(high,aa,band===1),d=rp(high,bb,band===1);
+              if(band){out.tri(a,c,b,0xb193be);out.tri(b,c,d,tipTone);}
+              else out.tri([low.x,low.y,low.z],c,d,rootTone);
+            }
+          }else{
+            // A narrow basal ring replaces the old pointed cone. Four-sided
+            // neck rings meet the unchanged six-sided mouth in eighteen faces.
+            var rootRing=[],neckRing=[],mouthRing=[];
+            for(var side=0;side<4;side++){
+              var angle=fa+.17+side*Math.PI*.5;
+              rootRing.push(rp(rings[0],angle,false));neckRing.push(rp(rings[1],angle,false));
+            }
+            for(var side=0;side<6;side++)mouthRing.push(rp(rings[2],fa+.17+side*Math.PI/3,true));
+            for(var side=0;side<4;side++){
+              var next=(side+1)%4;
+              out.tri(rootRing[side],neckRing[side],rootRing[next],[rootTone,0xb193be,rootTone]);
+              out.tri(rootRing[next],neckRing[side],neckRing[next],[rootTone,0xb193be,0xb193be]);
+            }
+            var neckSide=0,mouthSide=0;
+            while(neckSide<4||mouthSide<6){
+              if(neckSide<4&&(mouthSide===6||(neckSide+1)/4<=(mouthSide+1)/6)){
+                out.tri(neckRing[neckSide%4],mouthRing[mouthSide%6],neckRing[(neckSide+1)%4],[0xb193be,tipTone,0xb193be]);neckSide++;
+              }else{
+                out.tri(neckRing[neckSide%4],mouthRing[mouthSide%6],mouthRing[(mouthSide+1)%6],[0xb193be,tipTone,tipTone]);mouthSide++;
+              }
+            }
           }
           // The recessed throat shares the opening's local frame.
           var throat=[];
@@ -3750,13 +3949,32 @@ function buildWorld(T,kit) {
             if(f>0){var originalSide=side,t=Math.max(0,Math.min(1,(along-.008)/(.15*reach-.008))),turn=Math.sin(f*1.31+.6)*opening*t*t*(3-2*t);side+=.018*turn;lift+=.16*originalSide*turn;}
             return softLip(along,side,lift);
           }
+          // Match the close hood taper without changing its rooted edge.
+          function softHoodLip(along,side,lift){
+            if(f>0){var t=Math.max(0,Math.min(1,(along+.023)/(.088*reach+.023)));side*=1-.45*t*t*(3-2*t);}
+            return softLip(along,side,lift);
+          }
           function softLip(along,side,lift){if(f>0){var bowl=Math.sin(Math.PI*Math.max(0,Math.min(1,(along+.023)/.2)));lift+=bowl*(.017*Math.pow(Math.abs(side)/.08,2)-.004)*opening;}return tp(along,side,lift);}
-          var upperLeft=softLip(-.023,-.044*wide,0),upperShoulderLeft=softLip(.024*reach,-.053*wide,hoodLift*.75),upperTipLeft=softLip(.078*reach,-.023*wide,hoodLift),upperTipRight=softLip(.088*reach,.016*wide,hoodLift*.92),upperShoulderRight=softLip(.029*reach,.048*wide,hoodLift*.77),upperRight=softLip(-.023,.041*wide,0);
-          out.part(softLip);out.tri(upperLeft,upperShoulderLeft,upperRight,0xbe9ec9);out.tri(upperRight,upperShoulderLeft,upperShoulderRight,0xc9add2);out.tri(upperShoulderLeft,upperTipLeft,upperShoulderRight,0xd0b6d7);out.tri(upperShoulderRight,upperTipLeft,upperTipRight,0xcbb0d2);
+          var upperLeft=softHoodLip(-.023,-.044*wide,0),upperShoulderLeft=softHoodLip(.024*reach,-.053*wide,hoodLift*.75),upperTipLeft=softHoodLip(.078*reach,-.023*wide,hoodLift),upperTipRight=softHoodLip(.088*reach,.016*wide,hoodLift*.92),upperShoulderRight=softHoodLip(.029*reach,.048*wide,hoodLift*.77),upperRight=softHoodLip(-.023,.041*wide,0);
+          out.part(softHoodLip);out.tri(upperLeft,upperShoulderLeft,upperRight,0xbe9ec9);out.tri(upperRight,upperShoulderLeft,upperShoulderRight,0xc9add2);out.tri(upperShoulderLeft,upperTipLeft,upperShoulderRight,0xd0b6d7);out.tri(upperShoulderRight,upperTipLeft,upperTipRight,0xcbb0d2);
           // A lifted rim and a darker center form a shallow cup. The offset
           // rounded tip rolls down and sideways rather than ending in a shelf.
           var lip=f===0?[tp(.008,-.04*wide,-.005),tp(.077*reach,-.076*wide,-.014*opening),tp(.143*reach,-.034*wide,-.058*opening),tp(.15*reach,.019*wide,-.069*opening),tp(.091*reach,.069*wide,-.018*opening),tp(.008,.037*wide,-.005)]:[softLowerLip(.008,-.04*wide,-.005),softLowerLip(.082*reach,-.078*wide,-.017*opening),softLowerLip(.14*reach,-.042*wide,-.055*opening),softLowerLip(.158*reach,.026*wide,-.067*opening),softLowerLip(.094*reach,.073*wide,-.021*opening),softLowerLip(.008,.037*wide,-.005)],cup=f===0?tp(.071*reach,-.006*wide,-.043*opening):softLowerLip(.079*reach,-.005*wide,-.036*opening);
-          out.part(softLowerLip);for(var edge=0;edge<lip.length;edge++)out.tri(cup,lip[edge],lip[(edge+1)%lip.length],edge===2?0xc9acd2:rose?0xc3a0c1:0xc5a6d0);
+          // butterfly-rounded-open-bergamot-lips-v1: the open outer flowers borrow the
+          // same curved margins as the close-detail ribbon. The feeding flower
+          // and two tightly furled buds keep their original six-sided lips.
+          if(f>0&&opening>.5){
+            var roundedLeft=[[.008,-.04*wide,-.005],[.082*reach,-.078*wide,-.017*opening],[.14*reach,-.042*wide,-.055*opening],[.158*reach,-.014*wide,-.067*opening]];
+            var roundedRight=[[.008,.037*wide,-.005],[.094*reach,.073*wide,-.021*opening],[.147*reach,.036*wide,-.058*opening],[.158*reach,.014*wide,-.067*opening]];
+            function lipMargin(points){return new T.CatmullRomCurve3(points.map(function(p){return new T.Vector3(p[0],p[1],p[2]);}),false,'catmullrom',.34);}
+            var leftMargin=lipMargin(roundedLeft),rightMargin=lipMargin(roundedRight),leftEnd=roundedLeft[3],rightEnd=roundedRight[3],endAlong=(leftEnd[0]+rightEnd[0])*.5,endLift=(leftEnd[2]+rightEnd[2])*.5;
+            function roundedLipPoint(curve,t){var point=curve.getPoint(t);return softLowerLip(point.x,point.y,point.z);}
+            lip=[roundedLipPoint(leftMargin,0),roundedLipPoint(leftMargin,.5),roundedLipPoint(leftMargin,1),softLowerLip(endAlong+.004,leftEnd[1]*.65,endLift-.002),softLowerLip(endAlong+.004,rightEnd[1]*.65,endLift-.002),roundedLipPoint(rightMargin,1),roundedLipPoint(rightMargin,.5),roundedLipPoint(rightMargin,0)];
+          }
+          // One continuous cup-to-rim pigment avoids a brighter triangular sector.
+          // The reserved feeding lip keeps its original vertex colors exactly.
+          var lipTone=rose?0xc3a0c1:0xc5a6d0,lipCupTone=f>0?linear(lipTone).multiplyScalar(.92).convertLinearToSRGB():null;
+          out.part(softLowerLip);for(var edge=0;edge<lip.length;edge++)out.tri(cup,lip[edge],lip[(edge+1)%lip.length],f===0?(edge===2?0xc9acd2:lipTone):[lipCupTone,lipTone,lipTone]);
           // The central stamen retains the exact old top/contact position.
           var stamenLift=f===0?.128:.096+.025*opening;
           out.part();out.tri(tp(.006,-.003,.015),tp(.006,.003,.015),tp(.103*reach,.006,stamenLift),0xdcc1d1);
@@ -3811,7 +4029,7 @@ function buildWorld(T,kit) {
         // Inverse-transpose shading follows the same affine petal deformation.
         // The reserved floret bypasses both operations, retaining exact contact.
         shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nmat3 bfBloomShape;mat3 bfBloomNormalShape;float bfHeadPigment;bfPrepareBloom(bfBloomShape,bfBloomNormalShape,bfHeadPigment);if(bfBloomAnchor.w>.5)objectNormal=bfBloomNormalShape*objectNormal;');
-        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nif(bfBloomAnchor.w>.5)transformed=bfBloomAnchor.xyz+bfBloomShape*(transformed-bfBloomAnchor.xyz);bfPetalPosition=position;bfPetalSurface=bfPetalCoords;float bfBloomSkyExposure=bfBloomAnchor.w<.5?1.:mix(.82+.18*smoothstep(.12,.42,position.y),.76+.24*smoothstep(-.65,.8,bfBloomAxis.y),bfBloomAxis.w);bfCorollaTissue=vec4(step(.001,length(bfBloomAnchor.xz))*(1.-bfBloomAxis.w),sin(dot(bfBloomAxis.xyz,vec3(2.7,4.3,1.9))+bfBloomAnchor.w*.89),bfHeadPigment,bfBloomSkyExposure);');
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nif(bfBloomAnchor.w>.5)transformed=bfBloomAnchor.xyz+bfBloomShape*(transformed-bfBloomAnchor.xyz);bfPetalPosition=position;bfPetalSurface=bfPetalCoords;float bfBloomSkyExposure=bfBloomAnchor.w<.5?1.:mix(.82+.18*smoothstep(.12,.42,position.y),.76+.24*smoothstep(-.65,.8,bfBloomAxis.y),bfBloomAxis.w);bfCorollaTissue=vec4(step(.001,length(bfBloomAnchor.xz))*(1.-bfBloomAxis.w)-step(.5,bfBloomAnchor.w)*bfBloomAxis.w*(1.-step(.5,abs(bfPetalCoords.z+1.))),sin(dot(bfBloomAxis.xyz,vec3(2.7,4.3,1.9))+bfBloomAnchor.w*.89),bfHeadPigment,bfBloomSkyExposure);');
         shader.fragmentShader='varying vec3 bfPetalSurface;varying vec3 bfPetalPosition;varying vec4 bfCorollaTissue;\n'+shader.fragmentShader;
         shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
           '#include <color_fragment>',
@@ -3831,13 +4049,16 @@ function buildWorld(T,kit) {
           'diffuseColor.rgb*=1.+bfPetalMask*(.025*bfPetalEdge-.022*(1.-bfPetalAlong));',
           'float bfPetalBack=gl_FrontFacing?0.:1.;diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.025,1.035,1.045),bfPetalBack*bfPetalMask);',
           'float bfPetalRelief=.000075*bfPetalRibs*bfPetalFold;',
-          'float bfThinPetal=max(bfPetalMask,bfCorollaTissue.x);float bfFloretTint=bfCorollaTissue.y*bfThinPetal;diffuseColor.rgb*=vec3(1.+bfFloretTint*.025,1.+bfFloretTint*.012,1.-bfFloretTint*.02);',
+          // The existing tissue channel is negative only on outer milkweed hoods.
+          // Their waxy cups keep a softer sheen than the thin rose corolla.
+          'float bfCoronaWax=max(0.,-bfCorollaTissue.x);float bfCoronaCenter=1.-smoothstep(.12,.78,length(vec2((bfPetalAlong-.46)*2.,bfPetalAcross*2.)));',
+          'float bfThinPetal=max(bfPetalMask,bfCorollaTissue.x)*(1.-.72*bfCoronaWax);float bfFloretTint=bfCorollaTissue.y*bfThinPetal;diffuseColor.rgb*=vec3(1.+bfFloretTint*.025,1.+bfFloretTint*.012,1.-bfFloretTint*.02);',
           // Rose/lilac pigment varies coherently across a head, while pale
           // hoods, pollen, bracts and the reserved contact flower stay authored.
           'float bfHeadTint=bfCorollaTissue.z*step(.5,bfPetalSurface.z);diffuseColor.rgb*=vec3(1.+bfHeadTint*.09,1.-abs(bfHeadTint)*.018,1.-bfHeadTint*.07);',
           // The centered cavity darkens smoothly; its polygonal rim and the
           // protected feeding throat retain their authored response exactly.
-          'float bfThroatRadius=length((bfPetalSurface.xy-.5)*2.);float bfThroatShade=bfThroatMask*(1.-smoothstep(.15,.78,bfThroatRadius));diffuseColor.rgb*=1.-.25*bfThroatShade;'
+          'float bfThroatRadius=length((bfPetalSurface.xy-.5)*2.);float bfThroatShade=bfThroatMask*(1.-smoothstep(.15,.78,bfThroatRadius));diffuseColor.rgb*=1.-.25*bfThroatShade;diffuseColor.rgb*=1.-bfCoronaWax*bfCoronaCenter*vec3(.06,.10,.12);'
         ].join('\n'));
         shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
           '#include <normal_fragment_maps>',
@@ -3846,7 +4067,7 @@ function buildWorld(T,kit) {
           'vec3 bfPetalBump=abs(bfPetalDet)*normal-sign(bfPetalDet)*(dFdx(bfPetalRelief)*bfPetalBx+dFdy(bfPetalRelief)*bfPetalBy);',
           'normal=normalize(mix(normal,normalize(bfPetalBump+normal*1.e-12),.42));'
         ].join('\n'));
-        shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+bfPetalRibs*.025-bfPetalMask*.045*(1.-bfPetalEdge),.75,.91);');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+bfPetalRibs*.025-bfPetalMask*.045*(1.-bfPetalEdge),.75,.91);roughnessFactor=mix(roughnessFactor,.66+.10*bfCoronaCenter,bfCoronaWax);');
         shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>',[
           '#include <lights_fragment_end>',
           // Neighboring florets soften broad sky fill inside the head. The
@@ -3859,7 +4080,7 @@ function buildWorld(T,kit) {
           '#endif'
         ].join('\n'));
       };
-      material.customProgramCacheKey=function(){return 'butterfly-flower-throat-depth-v9';};
+      material.customProgramCacheKey=function(){return 'butterfly-flower-corona-wax-v10';};
       return material;
     }
     var flowerHeads=[flowerHead(true),flowerHead(false)],flowerMaterial=mat(0xffffff,{vertexColors:true,side:T.DoubleSide,roughness:.82}),larvalSupports=[],flowerSlots=new Map();
@@ -3876,12 +4097,26 @@ function buildWorld(T,kit) {
           }else{
             // Rotate opposite leaves rather than using a negative instance scale.
             // All local +X tips now point outwards, with the narrow petiole inwards.
-            var leafSide=leaf%2?1:-1;
-            blade.rotation.set(0,lp.yaw+(leafSide<0?Math.PI:0),.12);
+            var leafSide=leaf%2?1:-1,leafPitch=.12;
+            // Lower pairs reach and droop individually. Rotate about the
+            // existing petiole contact; upper lens and life-cycle leaves stay exact.
+            if(leaf<2){
+              leafPitch=-.015+(hash(stem*97+leaf*23+pi*277)-.5)*.28;
+              var petioleReach=.7/Math.cos(.12),leafReach=petioleReach*Math.cos(leafPitch)-.7;
+              blade.position.x+=leafSide*Math.cos(lp.yaw)*leafReach;
+              blade.position.y+=petioleReach*(Math.sin(leafPitch)-Math.sin(.12));
+              blade.position.z-=leafSide*Math.sin(lp.yaw)*leafReach;
+            }
+            blade.rotation.set(0,lp.yaw+(leafSide<0?Math.PI:0),leafPitch);
             blade.rotateX((hash(stem*43+leaf*71+pi*907)-.5)*.62);
             blade.scale.z*=.9+.2*hash(stem*29+leaf*61+pi*389);
           }
-          if(!teachingLeaf){var leafTint=hash(stem*47+leaf*19+pi*701);blade.userData.meadowTint=new T.Color(.94+leafTint*.06,.97+leafTint*.03,.89+leafTint*.08);}
+          if(!teachingLeaf){
+            // Some older lower blades soften toward olive. The upper pair
+            // and every teaching leaf retain their established healthy green.
+            var leafTint=hash(stem*47+leaf*19+pi*701),leafAge=leaf<2?Math.max(0,(leafTint-.38)/.62):0;
+            blade.userData.meadowTint=new T.Color(.94+leafTint*.06+leafAge*.12,.97+leafTint*.03-leafAge*.035,.89+leafTint*.08-leafAge*.17);
+          }
           if(pi===0&&stem===0&&leaf===3){blade.userData.larvalFeedingSupport=true;blade.userData.patch=parent===scene?'milkweed':'restoration';blade.name='larval-feeding-support-'+blade.userData.patch;larvalSupports.push(blade);}
         }
         var breadth=stem===0?1:.87+.23*hash(stem*31+pi*701);var head=mesh(flowerHeads[pi],flowerMaterial,x,height,z,breadth,1,breadth,parent);head.rotation.y=stem*2.39996+pose.yaw*.18;
@@ -4045,15 +4280,31 @@ function buildWorld(T,kit) {
     }
     // Bumble bees work the flowering patches, as they do on real bergamot and
     // milkweed. Scenery only: nothing in the investigation counts them.
-    var beeBody=new T.SphereGeometry(1,12,9),beeTones=[],bp=beeBody.attributes.position;
-    for(var bi=0;bi<bp.count;bi++){var bz=bp.getZ(bi),tone=linear(bz>.58?0x221c16:bz>.12?0xf1c43c:bz>-.3?0x221c16:0xf1c43c);beeTones.push(tone.r,tone.g,tone.b);}
+    // Reuse the abdomen's saved ring for rounded, slightly cambered wings.
+    // The five meshes and complete triangle budget stay unchanged per bee.
+    var beeBody=new T.SphereGeometry(1,12,8),beeTones=[],bp=beeBody.attributes.position,bn=beeBody.attributes.normal;
+    for(var bi=0;bi<bp.count;bi++){
+      var bx=bp.getX(bi),by=bp.getY(bi),bz=bp.getZ(bi),girth=.97-.11*bz-.08*bz*bz,girthSlope=-.11-.16*bz;
+      bp.setXYZ(bi,bx*girth,by*.9+.055*(1-bz*bz),bz);
+      var nx=bx/girth,ny=by/.9,nz=bz-bx*girthSlope*nx+.11*bz*ny,nl=Math.hypot(nx,ny,nz);
+      bn.setXYZ(bi,nx/nl,ny/nl,nz/nl);
+      var tone=linear(bz>.58?0x27251e:bz>.12?0xcaa74d:bz>-.3?0x27251e:0xcaa74d);
+      tone.multiplyScalar(.80+.18*Math.max(0,by)+.02*Math.cos(bz*9+bx*6));beeTones.push(tone.r,tone.g,tone.b);
+    }
     beeBody.setAttribute('color',new T.Float32BufferAttribute(beeTones,3));beeBody.name='bumblebee-abdomen';
-    var beeWing=new T.MeshBasicMaterial({color:0xe9f2ff,transparent:true,opacity:.55,side:T.DoubleSide,depthWrite:false});
+    var beeWingOutline=[[-.5,-.04],[-.41,-.28],[-.18,-.46],[.10,-.5],[.32,-.42],[.47,-.21],[.5,.03],[.45,.25],[.28,.44],[.04,.5],[-.20,.44],[-.38,.28],[-.46,.13],[-.5,.035]];
+    var beeWingShapes=[-1,1].map(function(side){
+      var positions=[0,0,.012],colors=[],indices=[],center=linear(0xe0e4d7),edge=linear(0xb9c5ba);colors.push(center.r,center.g,center.b);
+      beeWingOutline.forEach(function(p){positions.push(p[0]*side,p[1],0);colors.push(edge.r,edge.g,edge.b);});
+      for(var n=0;n<beeWingOutline.length;n++){var a=n+1,b=(n+1)%beeWingOutline.length+1;indices.push(0,side>0?a:b,side>0?b:a);}
+      var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.name='bumblebee-rounded-wing';return geometry;
+    });
+    var beeWing=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,transparent:true,opacity:.48,roughness:.72,side:T.DoubleSide,depthWrite:false});
     function bumblebee(i){
       var root=new T.Group();root.name='meadow-bumblebee';root.userData.index=i;
       mesh(beeBody,mat(0xffffff,{vertexColors:true}),0,0,.3,.3,.27,.38,root);
-      mesh(sphere,mat(0xcf9f2c),0,.04,-.08,.26,.25,.25,root);mesh(sphere,mat(0x221c16),0,0,-.34,.16,.16,.15,root);
-      var wings=[-1,1].map(function(side){var pivot=new T.Group();pivot.position.set(side*.1,.22,-.06);root.add(pivot);var w=mesh(plane,beeWing,side*.22,0,.06,.42,.18,1,pivot);w.rotation.x=-Math.PI/2;return pivot;});
+      mesh(sphere,mat(0xc1a24a),0,.035,-.08,.27,.245,.245,root);mesh(sphere,mat(0x27251e),0,-.012,-.34,.145,.155,.125,root);
+      var wings=[-1,1].map(function(side){var pivot=new T.Group();pivot.position.set(side*.1,.22,-.06);root.add(pivot);var w=mesh(beeWingShapes[side<0?0:1],beeWing,side*.22,0,.06,.42,.18,1,pivot);w.rotation.x=-Math.PI/2;return pivot;});
       root.scale.setScalar(.42);scene.add(root);return {root:root,wings:wings};
     }
     // Flower heads each bee can visit, from the same stem poses the plants use.
@@ -4746,7 +4997,7 @@ function buildWorld(T,kit) {
         }else{world.watchVisitor(null);tracking.id='';node.dataset.bfWatchingPhase='';node.dataset.bfWatchingSpecies='';node.dataset.bfWatchingVisitor='';}
         camera.position.fromArray(cameraView.position);camera.lookAt.apply(camera,cameraView.target);
         if(camera.fov!==cameraView.fov){camera.fov=cameraView.fov;camera.updateProjectionMatrix();}
-        var overview=!feeding&&!watched&&!detail&&viewRef.current==='meadow';world.scene.fog.near=overview?270:125;world.scene.fog.far=overview?680:360;
+        var overview=!feeding&&!watched&&!detail&&viewRef.current==='meadow';world.scene.fog.near=overview?270:125;world.scene.fog.far=overview?560:360;
         if(detail){var point=detail.point;world.focusHalo.position.set(point.x,point.y,point.z);world.focusHalo.quaternion.copy(camera.quaternion);}
         try{gl.render(world.scene,camera);}catch(e){fallback();return;}
         wayfinding(T,overview,observing||watchingVisitor);

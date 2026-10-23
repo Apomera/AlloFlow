@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 test.describe.configure({ retries: 0, timeout: 180_000 });
-const report = join(process.cwd(), 'reports/migration-deep-review-round8-2026-10-18');
+const report = process.env.MIGRATION_REPORT_DIR || join(process.cwd(), 'reports/migration-deep-review-round8-2026-10-18');
 const axeSource = readFileSync(join(process.cwd(), 'node_modules/axe-core/axe.min.js'), 'utf8');
 const harness = new GlHarness({
   toolFile: process.env.MIG_TOOL_FILE || 'stem_lab/stem_tool_migration.js', toolId: 'migration',
@@ -152,8 +152,10 @@ async function openComparison(page: Page) {
 
 async function matched(page: Page, source: 'first' | 'second', viewpoint: 'profile' | 'above', touch = false) {
   await openComparison(page);
-  await page.getByRole('combobox', { name: 'Matched comparison view', exact: true }).selectOption(viewpoint);
-  const button = page.locator(`[data-study-matched="${source}"]`);
+  const saved = page.locator('[data-study-matched-comparison="saved"]');
+  const panel = await saved.count() ? saved : page.locator('[data-study-matched-comparison="selected"]');
+  await panel.getByRole('combobox', { name: 'Matched comparison view', exact: true }).selectOption(viewpoint);
+  const button = panel.locator(`[data-study-matched="${source}"]`);
   if (touch) await button.tap(); else { await button.focus(); await page.keyboard.press('Enter'); }
   await frames(page);
   const state = await study(page);
@@ -259,7 +261,7 @@ test('Migration matched comparison standardizes actual views and wing phase whil
   expect(previewSecond.data.flightStudyObservations.comparison.saved).toBeNull();
   await openComparison(page);
   await page.getByRole('button', { name: 'Record comparison', exact: true }).click();
-  await expect(page.locator('[data-study-matched-source]')).toHaveAttribute('data-study-matched-source', 'saved');
+  await expect(page.locator('[data-study-matched-comparison="saved"] [data-study-matched-source]')).toHaveAttribute('data-study-matched-source', 'saved');
   await page.getByRole('textbox', { name: 'My observation comparison', exact: true }).fill('Unsaved claim edits after recording.');
   const before = await study(page);
   expect(before.data.flightStudyObservations.comparison.saved.first).toEqual(beforeClaim.data.flightStudyObservations.records['canada_goose:primaries']);

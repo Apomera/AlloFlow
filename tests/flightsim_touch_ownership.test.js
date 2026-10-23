@@ -65,7 +65,7 @@ async function mount({ assisted = true } = {}) {
   await act(async () => root.render(React.createElement(App)));
   await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
   cockpit = host.querySelector('canvas[role="application"]');
-  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600 });
+  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600, right: 1100, bottom: 650 });
   cockpit.focus();
   const current = cruise(), trim = cruiseTrim(current);
   Object.assign(hooks().flightRef.current, current); Object.assign(controls(), trim);

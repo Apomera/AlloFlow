@@ -54388,6 +54388,15 @@
       "sr_critique_ready": "Faalladu waa diyaar."
     },
     "flightsim": {
+      "guided_inspect_angle": "Eeg isbarbardhigga xaglaha",
+      "guided_inspect_speed": "Eeg isbarbardhigga xawaaraha",
+      "guided_export_scope": "Dhoofintu waxay ka kooban tahay qabyo-qoraalkaaga hadda iyo isku dayadii hore. Dhoofintu ma dhammaystirto baaritaanka.",
+      "hint_t_stall_negative": "🚨 STALL! Xagasha weerarku waa taban: si tartiib ah KOR uga jiid bartamaha si ay ugu dhowaato eber. Geeska midig u isticmaal awoodda matoorka marka loo baahdo.",
+      "hint_k_stall_negative": "🚨 STALL! Xagasha weerarku waa taban: si tartiib ah u riix W si ay ugu dhowaato eber. Awood ku dar Shift marka loo baahdo.",
+      "hint_stall_direction_unknown": "🚨 STALL! Xagasha weerarka u soo dhowee eber. Jihadeeda lama hayo; eeg cabbirka AoA ka hor intaadan dooran dhaqdhaqaaqa sanka diyaaradda.",
+      "announce_stall_warning_negative": "Digniin stall! Xagasha weerarku waa taban. Si tartiib ah kor ugu qaad sanka si ay ugu dhowaato eber; awood ku dar marka loo baahdo.",
+      "announce_stall_warning_unknown": "Digniin stall! Xagasha weerarka u soo dhowee eber. Jihadeeda lama hayo; eeg cabbirka AoA ka hor intaadan dooran dhaqdhaqaaqa sanka diyaaradda.",
+      "hud_stall_warning": "⚠️ STALL — AoA U SOO DHOWEE EBER",
       "debrief_unavailable_title": "Dib-u-eegistii duulimaadka ee la kaydiyey lama heli karo",
       "debrief_unavailable_body": "Dib-u-eegistii duulimaadka ugu dambaysay way maqan tahay ama lama akhrin karo. Ku noqo liiska si aad duulimaad cusub u bilowdo.",
       "guided_idea_before_trials": "La diiwaangeliyey ka hor tijaabooyinka",

@@ -76,6 +76,7 @@
     { name: 'resource_pack_validate', title: 'Validate a resource pack', kind: 'read-only' },
     { name: 'resource_pack_preview', title: 'Preview a resource pack', kind: 'read-only' },
     { name: 'resource_pack_export', title: 'Export a resource pack', kind: 'external-effect' },
+    { name: 'resource_pack_attach_image', title: 'Attach artwork to a resource pack', kind: 'external-effect' },
     { name: 'artifact_preview', title: 'Preview an artifact', kind: 'read-only' },
     { name: 'artifact_export_allopack', title: 'Export an AlloPack', kind: 'external-effect' },
     { name: 'asset_generate_image', title: 'Generate an image asset', kind: 'external-effect' },

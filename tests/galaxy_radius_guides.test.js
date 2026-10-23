@@ -96,7 +96,8 @@ describe('Galaxy scene radius guide runtime',()=>{
     await React.act(async()=>canvas._galaxySetViewAngle('edge'));
     for(const radius of [3,15,.6,8.2])await update({rotationProbeRadius:radius,rotationSamples:samples(6,9,12)});
     expect(scenes).toHaveLength(sceneCount);expect(group.children).toEqual(objects);expect(group.children.map(o=>o.geometry)).toEqual(geometries);
-    expect(host.querySelector('[data-galaxy-orientation]').textContent).toContain('Edge-on');
+    expect(canvas._galaxyGetOrientationState()).toMatchObject({ preset: 'edge', roundedElevation: 0 });
+    expect(host.querySelector('[data-galaxy-orientation] [data-galaxy-orientation-elevation]').textContent).toBe('0°');
     expect(canvas._galaxyGetRadiusGuideState().probeScale).toBeCloseTo(8.2/15,12);
     expect(new Set(geometries).size).toBe(3);
   });

@@ -123,7 +123,19 @@
     cauliflower_coral: ['coral', 'sessile', 0.45, 1, 20], foliose_coral: ['coral', 'sessile', 0.85, 2, 20],
     reef_star: ['structure', 'sessile', 1.0, 1, 20], reef_ball: ['structure', 'sessile', 1.2, 1, 30],
     coral_tree_nursery: ['structure', 'sessile', 2.6, 3, 20],
-    firefish: ['fish', 'hover', 0.09, 6, 60], copperband_butterflyfish: ['fish', 'pair', 0.2, 1, 25]
+    firefish: ['fish', 'hover', 0.09, 6, 60], copperband_butterflyfish: ['fish', 'pair', 0.2, 1, 25],
+    spotted_garden_eel: ['fish', 'crevice', 0.4, 5, 50],
+    banded_pipefish: ['fish', 'hover', 0.17, 5, 56],
+    yellow_longnose_butterflyfish: ['fish', 'pair', 0.18, 2, 145], pajama_cardinalfish: ['fish', 'hover', 0.07, 1, 14],
+    banggai_cardinalfish: ['fish', 'hover', 0.075, 0, 16], giant_triton: ['invertebrate', 'bottom', 0.30, 1, 40],
+    blue_velvet_headshield_slug: ['invertebrate', 'bottom', 0.05, 5, 30],
+    regal_angelfish: ['fish', 'solitary', 0.20, 1, 80],
+    mandarin_dragonet: ['fish', 'bottom', 0.06, 1, 18],
+    harlequin_shrimp: ['invertebrate', 'bottom', 0.045, 1, 20],
+    spotted_seahorse: ['fish', 'bottom', 0.12, 0, 55],
+    bennetts_feather_star: ['invertebrate', 'bottom', 0.32, 0, 50],
+    peacock_mantis_shrimp: ['invertebrate', 'bottom', 0.14, 0, 100],
+    ribbon_eel: ['fish', 'crevice', 1.0, 1, 57]
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
@@ -145,7 +157,7 @@
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
-    firefish: 'bommieAbove', copperband_butterflyfish: 'garden'
+    firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand'
   };
   function speciesInfo(Species, id) {
     var raw = null, fb = INFO[id] || null;

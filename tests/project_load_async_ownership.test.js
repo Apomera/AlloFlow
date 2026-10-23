@@ -93,7 +93,7 @@ describe('general project-load asynchronous ownership', () => {
       { target: { files: [{ contents: makeProject('A') }] } },
       a.deps
     );
-    expect(state.history[0].id).toBe('A');
+    expect(state.history).toBeUndefined();
     expect(ownershipA).toBeTruthy();
 
     const ownerB = handleLoadProject(

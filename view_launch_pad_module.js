@@ -59,6 +59,9 @@
   var _aiSettingsLoad = useState('idle');
   var aiSettingsLoadStatus = _aiSettingsLoad[0];
   var setAiSettingsLoadStatus = _aiSettingsLoad[1];
+  var _reportLoad = useState('idle');
+  var reportLoadStatus = _reportLoad[0];
+  var setReportLoadStatus = _reportLoad[1];
   var runLaunchTransition = function (work, event) {
     // Keep the pre-rendered workspace concealed for this input frame. The host
     // effect reveals it when the transition commits.
@@ -73,20 +76,25 @@
     }, 40);
   };
   var launchPadRef = React.useRef(null);
-  function ensureAIBackendModalModule() {
-    if (window.AlloModules && window.AlloModules.AIBackendModal) {
-      return Promise.resolve(window.AlloModules.AIBackendModal);
+  function ensureLaunchPadUtilityModule(moduleName, filename, exportName, promiseKey, scriptAttribute) {
+    function registered() {
+      return window.AlloModules && window.AlloModules[exportName];
     }
-    var pendingLoad = window.__alloLaunchPadAIBackendModalPromise;
+    if (registered()) {
+      return Promise.resolve(registered());
+    }
+    var pendingLoad = window[promiseKey];
     if (pendingLoad && typeof pendingLoad.then === 'function') return pendingLoad;
     var loadPromise = new Promise(function (resolve, reject) {
       var script = null;
+      var hostManaged = false;
       var settled = false;
       var checkTimer = null;
       var timeoutTimer = null;
       function cleanUp() {
         if (checkTimer !== null) window.clearInterval(checkTimer);
         if (timeoutTimer !== null) window.clearTimeout(timeoutTimer);
+        window.removeEventListener('alloflow:module-registry-changed', checkRegistration);
         if (script) {
           script.removeEventListener('load', verifyRegistration);
           script.removeEventListener('error', handleLoadError);
@@ -97,62 +105,108 @@
         settled = true;
         cleanUp();
         if (error) {
-          if (script && script.getAttribute('data-alloflow-launchpad-ai-settings') === 'true') script.remove();
+          if (script) script.remove();
           reject(error);
           return;
         }
-        resolve(window.AlloModules.AIBackendModal);
+        resolve(registered());
       }
       function verifyRegistration() {
-        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);else finish(new Error('The AI settings module loaded but did not register.'));
+        if (registered()) finish(null);else finish(new Error('The ' + moduleName + ' module loaded but did not register.'));
       }
       function handleLoadError() {
-        finish(new Error('The AI settings module could not be loaded.'));
+        if (registered()) finish(null);else finish(new Error('The ' + moduleName + ' module could not be loaded.'));
       }
-      var scripts = Array.prototype.slice.call(document.scripts || []);
-      script = scripts.find(function (candidate) {
-        try {
-          return new URL(candidate.src, document.baseURI).pathname.endsWith('/view_misc_modals_module.js');
-        } catch (_) {
-          return false;
+      function checkRegistration() {
+        if (registered()) {
+          finish(null);
+          return;
         }
-      }) || null;
-      if (!script) {
-        var moduleUrl = new URL('view_misc_modals_module.js', document.baseURI || window.location.href);
+        var entry = hostManaged && window.__alloModuleRegistry && window.__alloModuleRegistry[moduleName];
+        if (entry && entry.status === 'failed') finish(new Error('The ' + moduleName + ' module could not be loaded.'));else if (entry && entry.status === 'loaded') finish(new Error('The ' + moduleName + ' module loaded but did not register.'));
+      }
+
+      // The host owns CDN/local resolution, deferred priority, retries, and its
+      // fallback download. A primary script error is not a failure of that chain.
+      try {
+        hostManaged = typeof window.__alloPromoteModule === 'function' && !!window.__alloPromoteModule(moduleName);
+      } catch (_) {}
+      if (registered()) {
+        finish(null);
+        return;
+      }
+      if (hostManaged) {
+        window.addEventListener('alloflow:module-registry-changed', checkRegistration);
+      } else {
+        // Older/standalone hosts may not expose promotion. Resolve beside the
+        // actual Launch Pad module (including raw/file URLs), never the hosted
+        // /app/ page. Without that script, follow the host's explicit local policy.
+        var scripts = Array.prototype.slice.call(document.scripts || []);
+        var launchScript = scripts.find(function (candidate) {
+          try {
+            var url = new URL(candidate.src, document.baseURI);
+            return /^(https?:|file:)$/.test(url.protocol) && url.pathname.endsWith('/view_launch_pad_module.js');
+          } catch (_) {
+            return false;
+          }
+        });
+        var localAssets = /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '') && ((window.location.pathname || '').startsWith('/app/') || String(window.location.port || '') === '3000');
+        var base = launchScript ? launchScript.src : localAssets ? document.baseURI || window.location.href : 'https://alloflow-cdn.pages.dev/';
+        var moduleUrl = new URL(filename, base);
         var buildHash = window.__alloBuildStamp && window.__alloBuildStamp.hash;
         if (buildHash) moduleUrl.searchParams.set('v', String(buildHash));
+        // Arbitrary old scripts may have already failed: their events do not
+        // replay. Our shared promise deduplicates live requests; retries get a
+        // fresh script without removing scripts owned by the host.
         script = document.createElement('script');
         script.src = moduleUrl.href;
         script.async = true;
-        script.setAttribute('data-alloflow-launchpad-ai-settings', 'true');
+        script.setAttribute(scriptAttribute, 'true');
+        script.addEventListener('load', verifyRegistration, {
+          once: true
+        });
+        script.addEventListener('error', handleLoadError, {
+          once: true
+        });
       }
-      script.addEventListener('load', verifyRegistration, {
-        once: true
-      });
-      script.addEventListener('error', handleLoadError, {
-        once: true
-      });
-      checkTimer = window.setInterval(function () {
-        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);
-      }, 50);
+      checkTimer = window.setInterval(checkRegistration, 50);
       timeoutTimer = window.setTimeout(function () {
-        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);else finish(new Error('The AI settings module timed out.'));
-      }, 15000);
-      if (!script.isConnected) document.head.appendChild(script);
-      if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);
+        if (registered()) finish(null);else finish(new Error('The ' + moduleName + ' module timed out.'));
+      }, hostManaged ? 60000 : 15000);
+      if (script) document.head.appendChild(script);
+      checkRegistration();
     });
-    window.__alloLaunchPadAIBackendModalPromise = loadPromise;
+    window[promiseKey] = loadPromise;
     var clearPendingLoad = function () {
-      if (window.__alloLaunchPadAIBackendModalPromise === loadPromise) {
+      if (window[promiseKey] === loadPromise) {
         try {
-          delete window.__alloLaunchPadAIBackendModalPromise;
+          delete window[promiseKey];
         } catch (_) {
-          window.__alloLaunchPadAIBackendModalPromise = null;
+          window[promiseKey] = null;
         }
       }
     };
     loadPromise.then(clearPendingLoad, clearPendingLoad);
     return loadPromise;
+  }
+  function ensureAIBackendModalModule() {
+    return ensureLaunchPadUtilityModule('MiscModals', 'view_misc_modals_module.js', 'AIBackendModal', '__alloLaunchPadAIBackendModalPromise', 'data-alloflow-launchpad-ai-settings');
+  }
+  function openProblemReporter(event) {
+    if (event) event.stopPropagation();
+    if (reportLoadStatus === 'loading') return;
+    setReportLoadStatus('loading');
+    ensureLaunchPadUtilityModule('ErrorReporter', 'error_reporter_module.js', 'ErrorReporter', '__alloLaunchPadErrorReporterPromise', 'data-alloflow-launchpad-error-reporter').then(function (reporter) {
+      if (!launchPadRef.current || !launchPadRef.current.isConnected) return;
+      if (typeof reporter.openManualReport === 'function') reporter.openManualReport();else if (typeof reporter.openPanel === 'function') {
+        reporter.openPanel('errors');
+        var description = document.getElementById('aer-description');
+        if (description) description.focus();
+      } else throw new Error('The report form is unavailable.');
+      setReportLoadStatus('idle');
+    }).catch(function () {
+      if (launchPadRef.current && launchPadRef.current.isConnected) setReportLoadStatus('error');
+    });
   }
   function openAIBackendSettings(event) {
     if (event) event.stopPropagation();
@@ -940,6 +994,8 @@
             .lp-brand-mark { width: 64px; height: 64px; margin: 0 auto 15px; display: block; padding: 3px; border: 0; border-radius: 19px; object-fit: cover; background: linear-gradient(145deg, rgba(253,230,138,.9), rgba(129,140,248,.78) 58%, rgba(56,189,248,.7)); box-shadow: 0 0 0 1px rgba(255,255,255,.16), 0 18px 38px rgba(2,6,23,.42); }
             .lp-voice-setup { width: 100%; }
             .lp-launch-footer { padding-top: 2px; }
+            .lp-report-problem { display: block; min-height: 44px; margin: 6px auto 0; padding: 10px 14px; border: 0; border-radius: 8px; background: transparent; color: #cbd5e1; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.5; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+            .lp-report-problem:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
             .lp-section-intro { display: grid; gap: 7px; margin-bottom: 14px; }
             .lp-eyebrow { margin: 0; color: #a5b4fc; font-size: 10px; font-weight: 850; letter-spacing: 1.45px; text-transform: uppercase; }
             .lp-section-title { margin: 0; color: #f8fafc; font-size: clamp(20px, 3vw, 25px); line-height: 1.2; font-weight: 820; letter-spacing: -.45px; }
@@ -1669,7 +1725,25 @@
       color: '#94a3b8',
       fontWeight: 550
     }
-  }, switchHint))), companion && /*#__PURE__*/React.createElement("div", {
+  }, switchHint), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-report-problem",
+    onClick: openProblemReporter,
+    "aria-busy": reportLoadStatus === 'loading',
+    "aria-disabled": reportLoadStatus === 'loading',
+    "aria-describedby": "launch-pad-report-status"
+  }, reportLoadStatus === 'loading' ? copy('launch_pad.report_loading', 'Opening report…') : reportLoadStatus === 'error' ? copy('launch_pad.report_retry', 'Try opening report again') : copy('launch_pad.report_problem', 'Report a problem')), /*#__PURE__*/React.createElement("p", {
+    id: "launch-pad-report-status",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    style: {
+      margin: 0,
+      textAlign: 'center',
+      fontSize: '12px',
+      color: '#cbd5e1'
+    }
+  }, reportLoadStatus === 'error' ? copy('launch_pad.report_error', 'The report form could not open. Try again when your connection is ready.') : reportLoadStatus === 'loading' ? copy('launch_pad.report_loading', 'Opening report…') : ''))), companion && /*#__PURE__*/React.createElement("div", {
     "data-launch-pad-companion": "",
     style: {
       position: 'relative',

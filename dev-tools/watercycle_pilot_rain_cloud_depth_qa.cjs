@@ -13,8 +13,8 @@ const arg = key => process.argv.find(value => value.startsWith('--' + key + '=')
 const report = arg('report') || 'final';
 assert(/^[a-z0-9-]+$/.test(report), 'Plain report folder name');
 const suite = arg('suite') || 'rain-cloud-depth';
-assert(['rain-cloud-depth','relief-optics','spatial-weather','cloud-evolution','rain-emission','rain-collection','rain-onset','cloud-exit','cloud-shadow-memory','rain-contact-memory','cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower'].includes(suite), 'Known isolated native QA suite');
-const ownedProfileSuite = ['rain-onset', 'cloud-exit', 'cloud-shadow-memory', 'rain-contact-memory', 'cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower'].includes(suite);
+assert(['rain-cloud-depth','relief-optics','spatial-weather','cloud-evolution','rain-emission','rain-collection','rain-onset','cloud-exit','cloud-shadow-memory','rain-contact-memory','cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower','cloud-interior-density','cloud-shadow-retirement','phase-motion-continuity'].includes(suite), 'Known isolated native QA suite');
+const ownedProfileSuite = ['rain-onset', 'cloud-exit', 'cloud-shadow-memory', 'rain-contact-memory', 'cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower','cloud-interior-density','cloud-shadow-retirement','phase-motion-continuity'].includes(suite);
 const earlyClean = suite === 'cloud-evolution' && arg('early-clean') === 'true';
 const reportRoot = path.join(root, 'reports/watercycle-pilot-' + suite);
 const out = path.join(reportRoot, report);
@@ -44,6 +44,18 @@ if (process.argv.includes('--analyze')) {
   }
   if(suite==='rain-evaporation'){
     require('./watercycle_pilot_rain_evaporation_checks.cjs').analyze({d,checks,ok,root,out,reportRoot,fs,path,assert});
+    process.exit(0);
+  }
+  if(suite==='phase-motion-continuity'){
+    require('./watercycle_pilot_phase_motion_continuity_checks.cjs').analyze({d,checks,ok,root,out,reportRoot,fs,path,assert});
+    process.exit(0);
+  }
+  if(suite==='cloud-shadow-retirement'){
+    require('./watercycle_pilot_cloud_shadow_retirement_checks.cjs').analyze({d,checks,ok,root,out,reportRoot,fs,path,assert});
+    process.exit(0);
+  }
+  if(suite==='cloud-interior-density'){
+    require('./watercycle_pilot_cloud_interior_density_checks.cjs').analyze({d,checks,ok,root,out,reportRoot,fs,path,assert});
     process.exit(0);
   }
   if(suite==='cloud-immersion'){
@@ -429,7 +441,7 @@ function assertPaused(actual, expected, label) {
   const canvas = page.locator('#wcPilotCanvas');
   const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const resume = async () => {
-    if (!['cloud-exit', 'cloud-shadow-memory', 'rain-contact-memory', 'cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower'].includes(suite)) return page.getByRole('button', { name: 'Resume the simulation', exact: true }).click();
+    if (!['cloud-exit', 'cloud-shadow-memory', 'rain-contact-memory', 'cloud-snow-onset','snow-melt-preview','cloud-assembly-source','cloud-assembly-flow','rain-landing-motion','splash-motion','cloud-formation-settle','cloud-immersion','rain-evaporation','cloud-source-thinning','refreezing-continuity','rain-landing-shower','cloud-interior-density','cloud-shadow-retirement','phase-motion-continuity'].includes(suite)) return page.getByRole('button', { name: 'Resume the simulation', exact: true }).click();
     const action = { before: await page.evaluate(() => ({ paused: waterReviewData.pilot.paused, scene: window.cloudShadowSnapshot ? cloudShadowSnapshot() : window.cloudExitSnapshot ? cloudExitSnapshot() : null })) };
     (result.resumeActions ||= []).push(action);
     await page.evaluate(() => {
@@ -716,7 +728,7 @@ function assertPaused(actual, expected, label) {
       for(const[name,t]of Object.entries(transitions))states['before-'+name]=t.before;
       window.rainCloudDepthStates=states;window.rainCloudDepthTransitions=transitions;window.rainCloudDepthLiveSteps=[];window.rainCloudDepthTotalSteps=0;
       k.step=function(state,input){window.rainCloudDepthTotalSteps++;const drive=window.rainCloudDepthDriveInput;if(drive)window.rainCloudDepthDriveInput=null;const actualInput={...input,...(window.rainCloudDepthSteadyInput||{}),...(drive||{})},next=original(state,actualInput);if(window.cloudEvolutionReleaseProbe&&state.form==='cloud'&&(next.form==='rain'||next.form==='snow'))window.cloudEvolutionReleaseProof=window.cloudEvolutionReleaseProbe(state,next);if(window.snowOnsetSourceProbe&&state.form==='cloud'&&next.form==='snow')window.snowOnsetSourceProof=window.snowOnsetSourceProbe(state,next,actualInput);if(window.rainEmissionSourceProbe&&state.form==='cloud'&&next.form==='rain')window.rainEmissionSourceProof=window.rainEmissionSourceProbe(state,next);if(window.rainCollectionSourceProbe&&state.form==='rain'&&next.form==='liquid')window.rainCollectionSourceProof=window.rainCollectionSourceProbe(state,next);if(drive||next.form!==state.form)rainCloudDepthLiveSteps.push({from:state.form,to:next.form,elapsed:next.elapsed,input:actualInput});return next;};
-    }, { rainEmissionFixtureRequested: suite === 'rain-emission' || suite === 'rain-onset', rainCollectionFixtureRequested: suite === 'rain-collection', shadowMemoryFixtureRequested: suite === 'cloud-shadow-memory'||suite==='cloud-source-thinning', rainContactFixtureRequested: suite === 'rain-contact-memory'||suite==='rain-landing-motion'||suite==='splash-motion', cloudSnowFixtureRequested: suite === 'cloud-snow-onset'||suite==='snow-melt-preview'||suite==='cloud-source-thinning', snowMeltFixtureRequested:suite==='snow-melt-preview',cloudAssemblyFixtureRequested:suite==='cloud-assembly-source'||suite==='cloud-assembly-flow'||suite==='cloud-formation-settle' });
+    }, { rainEmissionFixtureRequested: suite === 'rain-emission' || suite === 'rain-onset', rainCollectionFixtureRequested: suite === 'rain-collection', shadowMemoryFixtureRequested: suite === 'cloud-shadow-memory'||suite==='cloud-source-thinning'||suite==='cloud-shadow-retirement', rainContactFixtureRequested: suite === 'rain-contact-memory'||suite==='rain-landing-motion'||suite==='splash-motion', cloudSnowFixtureRequested: suite === 'cloud-snow-onset'||suite==='snow-melt-preview'||suite==='cloud-source-thinning'||suite==='cloud-shadow-retirement', snowMeltFixtureRequested:suite==='snow-melt-preview',cloudAssemblyFixtureRequested:suite==='cloud-assembly-source'||suite==='cloud-assembly-flow'||suite==='cloud-formation-settle' });
     pass('Condensation, cloud-droplet re-evaporation, ice melting and cloud-to-snow fixtures come from genuine unchanged kernel integration');
     if(suite==='splash-motion'&&enabled('splash-motion'))await require('./watercycle_pilot_splash_motion_checks.cjs').run({page,result,assert,pass,maxDelta,restore,resume,pause,settle,capture});
     if(suite==='rain-landing-motion'&&enabled('rain-landing-motion'))await require('./watercycle_pilot_rain_landing_motion_checks.cjs').run({page,result,assert,pass,maxDelta,restore,resume,pause,settle,capture});
@@ -724,6 +736,9 @@ function assertPaused(actual, expected, label) {
     if(suite==='refreezing-continuity'&&enabled('refreezing-continuity'))await require('./watercycle_pilot_refreezing_continuity_checks.cjs').run({page,result,assert,pass,maxDelta,restore,driveTransition,resume,pause,settle,capture});
     if(suite==='cloud-source-thinning'&&enabled('cloud-source-thinning'))await require('./watercycle_pilot_cloud_source_thinning_checks.cjs').run({page,result,assert,pass,maxDelta,restore,driveTransition,resume,pause,settle,capture});
     if(suite==='rain-evaporation'&&enabled('rain-evaporation'))await require('./watercycle_pilot_rain_evaporation_checks.cjs').run({page,result,assert,pass,maxDelta,restore,driveTransition,resume,pause,settle,capture});
+    if(suite==='phase-motion-continuity'&&enabled('phase-motion-continuity'))await require('./watercycle_pilot_phase_motion_continuity_checks.cjs').run({page,result,assert,pass,maxDelta,restore,driveTransition,resume,pause,settle,capture});
+    if(suite==='cloud-shadow-retirement'&&enabled('cloud-shadow-retirement'))await require('./watercycle_pilot_cloud_shadow_retirement_checks.cjs').run({page,result,assert,pass,maxDelta,restore,driveTransition,resume,pause,settle,capture});
+    if(suite==='cloud-interior-density'&&enabled('cloud-interior-density'))await require('./watercycle_pilot_cloud_interior_density_checks.cjs').run({page,result,assert,pass,maxDelta,restore,trigger,driveTransition,resume,pause,settle,capture});
     if(suite==='cloud-immersion'&&enabled('cloud-immersion'))await require('./watercycle_pilot_cloud_immersion_checks.cjs').run({page,result,assert,pass,maxDelta,restore,trigger,driveTransition,resume,pause,settle,capture});
     if(suite==='cloud-formation-settle'&&enabled('cloud-formation-settle'))await require('./watercycle_pilot_cloud_formation_settle_checks.cjs').run({page,result,assert,pass,maxDelta,restore,trigger,driveTransition,resume,pause,settle,capture});
     if(suite==='cloud-assembly-flow'&&enabled('cloud-assembly-flow'))await require('./watercycle_pilot_cloud_assembly_flow_checks.cjs').run({page,result,assert,pass,maxDelta,restore,trigger,driveTransition,resume,pause,settle,capture});
@@ -2041,6 +2056,9 @@ function assertPaused(actual, expected, label) {
     if(suite==='refreezing-continuity')assert(result.refreezingContinuity&&result.captures.length===3&&result.captures.every(n=>n.startsWith('refreezing-continuity-')),'Requested refreezing continuity section and all three captures must execute');
     if(suite==='cloud-source-thinning')assert(result.cloudSourceThinning&&result.captures.length===3&&result.captures.every(n=>n.startsWith('cloud-source-thinning-')),'Requested cloud source thinning section and all three native captures must execute before success');
     if(suite==='rain-evaporation')assert(result.rainEvaporation&&result.captures.length===3&&result.captures.every(n=>n.startsWith('rain-evaporation-')),'Requested rain-evaporation section and all three native captures must execute before success');
+    if(suite==='phase-motion-continuity')assert(result.phaseMotionContinuity&&result.captures.length===3&&result.captures.every(n=>n.startsWith('phase-motion-continuity-')),'Requested phase-motion continuity section and all3source-bound captures must execute');
+    if(suite==='cloud-shadow-retirement')assert(result.cloudShadowRetirement&&result.captures.length===3&&result.captures.every(n=>n.startsWith('cloud-shadow-retirement-')),'Requested shadow retirement section and all3source-bound captures must execute');
+    if(suite==='cloud-interior-density')assert(result.cloudInteriorDensity&&result.captures.length===3&&result.captures.every(n=>n.startsWith('cloud-interior-density-')),'Requested interior density section and all three source-bound captures must execute');
     if(suite==='cloud-immersion')assert(result.cloudImmersion&&result.captures.length===3&&result.captures.every(n=>n.startsWith('cloud-immersion-')),'Requested cloud-immersion section and all three native captures must execute before success');
     if(suite==='cloud-formation-settle')assert(result.cloudFormationSettle&&result.captures.length===3&&result.captures.every(n=>n.startsWith('cloud-formation-settle-')),'Requested cloud-formation-settle section and all three native captures must execute before success');
     if(suite==='snow-melt-preview')assert(result.snowMeltPreview&&result.captures.length===3,'The requested snow-melt-preview section and three captures must execute before success');
@@ -2054,7 +2072,7 @@ function assertPaused(actual, expected, label) {
     fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify(result, null, 2));
     fs.writeFileSync(path.join(reportRoot, earlyClean ? 'qa-summary-early-clean.json' : 'qa-summary.json'), JSON.stringify({ success: result.success, sourceSha256: result.sourceSha256, checks: result.checks, captures: result.captures, transitions: result.transitions.map(({ name, cameraMode }) => ({ name, cameraMode })), errors: result.errors, harnessError: result.harnessError, report: path.relative(root, path.join(out, 'results.json')) }, null, 2));
     await browser.close();
-    await new Promise(resolve => { server.close(resolve); if(suite==='rain-landing-shower'&&server.closeAllConnections)server.closeAllConnections(); });
+    await new Promise(resolve => { server.close(resolve); if(['rain-landing-shower','cloud-interior-density','cloud-shadow-retirement','phase-motion-continuity'].includes(suite)&&server.closeAllConnections)server.closeAllConnections(); });
     if (ownedProfileSuite) {
       const ownedTemp = fs.realpathSync(temp), reportFolder = fs.realpathSync(out);
       assert(ownedTemp.startsWith(reportFolder + path.sep) && path.basename(ownedTemp).startsWith('browser-temp-'), 'Only this run\'s resolved owned browser temporary folder may be removed');
@@ -2064,7 +2082,7 @@ function assertPaused(actual, expected, label) {
     if (suite === 'cloud-evolution' || suite === 'rain-emission' || suite === 'rain-collection' || ownedProfileSuite) {
       const summaryPath = path.join(reportRoot, earlyClean ? 'qa-summary-early-clean.json' : 'qa-summary.json'), summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
       summary.browsersClosed = true;
-      summary.numericalEvidence = result.cloudEvolution?.evidence || result.rainEmission?.evidence || result.rainCollection?.evidence || result.rainOnset?.evidence || result.cloudExit?.evidence || result.cloudShadowMemory?.evidence || result.rainContactMemory?.evidence || result.rainLandingShower?.evidence || result.rainLandingMotion?.evidence || result.cloudAssemblySource?.evidence;
+      summary.numericalEvidence = result.cloudEvolution?.evidence || result.rainEmission?.evidence || result.rainCollection?.evidence || result.rainOnset?.evidence || result.cloudExit?.evidence || result.cloudShadowMemory?.evidence || result.rainContactMemory?.evidence || result.rainLandingShower?.evidence || result.cloudInteriorDensity?.evidence || result.cloudShadowRetirement?.evidence || result.phaseMotionContinuity?.evidence || result.rainLandingMotion?.evidence || result.cloudAssemblySource?.evidence;
       summary.captureFiles = result.captures.map(name => ({ name, path: path.relative(root, path.join(out, name + '.png')), sourceSha256: result.sourceSha256 }));
       fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
     }

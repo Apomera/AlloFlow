@@ -130,10 +130,16 @@ function actualJejunum(W, H) {
   return result;
 }
 function actualLaterPaths(W, H) {
-  const anchors = actualAnchors(W, H), pancreasContext = new Context();
-  production('tracePigPancreas', { ctx: pancreasContext, W, H, ...anchors })();
+  const pancreaticGeometry = production('pigPancreaticGeometry'), pancreaticTrace = production('tracePigPancreaticRegion');
+  const pancreaticDraw = production('drawPigPancreaticSurface', { pigPancreaticGeometry: pancreaticGeometry, tracePigPancreaticRegion: pancreaticTrace });
+  const pancreaticFills = [true, false].map(detailed => {
+    const ctx = new Context(); pancreaticDraw(ctx, { width: W, height: H, detailed });
+    const fill = ctx.events.find(e => e.operation === 'fill');
+    if (!fill || fill.path.at(-1)[0] !== 'closePath') throw Error('Missing actual closed pancreatic fill');
+    return { name: detailed ? 'pancreas-detailed' : 'pancreas-fallback', paths: samplePath(fill.path) };
+  });
   const membrane = executeSection('// Jejunal loops sit ventrally while the porcine spiral colon forms a watch-spring coil.', 'ctx.fillStyle', W, H);
-  const filled = [{ name: 'pancreas', paths: samplePath(pancreasContext.path) },
+  const filled = [...pancreaticFills,
     { name: 'mesentery', paths: samplePath(membrane.ctx.path) }];
   let bladderVariables;
   for (const sceneDetail of [true, false]) {
@@ -145,10 +151,9 @@ function actualLaterPaths(W, H) {
     bladder.ctx.restore();
     bladderVariables = bladder.variables;
   }
-  const pancreasFallback = executeSection('ctx.beginPath();ctx.moveTo(pigStomachX-W*0.008', 'ctx.stroke();', W, H, {}, true, true);
   const lineEvents = (ctx, name) => ctx.events.filter(e => e.operation === 'stroke').map((e, i) => ({
     name: name + (i ? '-' + i : ''), paths: samplePath(e.path), width: e.width }));
-  const strokes = [...lineEvents(pancreasFallback.ctx, 'pancreas-fallback'), actualJejunum(W, H)];
+  const strokes = [actualJejunum(W, H)];
   const colonStart = source.indexOf('var colonCx ='), tubeStart = source.indexOf('strokeAnatomicalTube(', colonStart), colonEnd = source.indexOf(');', tubeStart) + 2;
   if (colonStart < 0 || tubeStart < colonStart || colonEnd <= tubeStart) throw Error('Missing actual spiral colon');
   const colon = new Context();
@@ -228,8 +233,8 @@ describe('registered elongated fetal pig spleen', () => {
 
   it.each(dimensions)('keeps its target clear of later viscera and fetal vessels at %s by %s', (W, H) => {
     const g = geometry(W, H), p = { x: g.target.x * W, y: g.target.y * H }, later = actualLaterPaths(W, H);
-    expect(later.filled.map(e => e.name)).toEqual(['pancreas', 'mesentery', 'bladder-detailed', 'bladder-fallback']);
-    expect(later.strokes.map(e => e.name)).toEqual(['pancreas-fallback', 'jejunum', 'spiral-colon', 'urachus',
+    expect(later.filled.map(e => e.name)).toEqual(['pancreas-detailed', 'pancreas-fallback', 'mesentery', 'bladder-detailed', 'bladder-fallback']);
+    expect(later.strokes.map(e => e.name)).toEqual(['jejunum', 'spiral-colon', 'urachus',
       'umbilical-vein', 'umbilical-artery', 'umbilical-artery-1']);
     for (const { paths } of later.filled) {
       expect(paths[0].length).toBeGreaterThan(100); expect(contains(p, paths[0])).toBe(false);
@@ -244,7 +249,7 @@ describe('registered elongated fetal pig spleen', () => {
       queryDissectionNode: () => ({ _logicalW: W, _logicalH: H }) });
     for (const id of ['stomach_p', 'pancreas_p']) {
       const point = production('paintedSmallStructurePoint', { spec: { bodyShape: 'pig' },
-        pigGastricGeometry: production('pigGastricGeometry') })({ id });
+        pigGastricGeometry: production('pigGastricGeometry'), pigPancreaticGeometry: production('pigPancreaticGeometry') })({ id });
       expect(contains({ x: point.x * W, y: point.y * H }, profile)).toBe(false);
       expect(distance({ x: point.x * W, y: point.y * H }, [profile])).toBeGreaterThan(2);
     }

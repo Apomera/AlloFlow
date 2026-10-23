@@ -49,6 +49,70 @@ describe('Butterfly meadow native geometry',()=>{
     }
   });
 
+  it('keeps distant hill surfaces below tree roots, woodland grass and projected canopy shadows',()=>{
+    world.scene.updateMatrixWorld(true);
+    const hills=[],samples=[],shadows=[],material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
+    let groundBounds;
+    const matrix=new THREE.Matrix4(),point=new THREE.Vector3(),counts={trees:0,grass:0};
+    function eachMatrix(object,visit){
+      for(let i=0;i<(object.isInstancedMesh?object.count:1);i++){
+        if(object.isInstancedMesh){object.getMatrixAt(i,matrix);matrix.premultiply(object.matrixWorld);}
+        else matrix.copy(object.matrixWorld);
+        visit(matrix);
+      }
+    }
+    world.scene.traverse(object=>{
+      if(!object.isMesh)return;
+      if(object.geometry.name==='meadow-ground-surface')groundBounds=new THREE.Box3().setFromObject(object);
+      if(object.geometry.name==='rolling-meadow-hill')eachMatrix(object,transform=>{
+        const hill=new THREE.Mesh(object.geometry,material);hill.matrixAutoUpdate=false;hill.matrixWorld.copy(transform);
+        hill.userData.bounds=new THREE.Box3().setFromBufferAttribute(object.geometry.attributes.position).applyMatrix4(transform);
+        hills.push(hill);
+      });
+      if(object.geometry.name==='woodland-curved-trunk')eachMatrix(object,transform=>{
+        samples.push({kind:'tree foot',point:new THREE.Vector3(0,-.5,0).applyMatrix4(transform)});counts.trees++;
+      });
+      if(object.name==='shared-meadow-grass')eachMatrix(object,transform=>{
+        point.setFromMatrixPosition(transform);
+        if(Math.hypot(point.x,point.z)>150){samples.push({kind:'woodland grass',point:point.clone()});counts.grass++;}
+      });
+      if(object.material?.name==='meadow-soft-shadows')eachMatrix(object,transform=>{
+        const e=transform.elements;
+        if(Math.hypot(e[0],e[1],e[2])>12)shadows.push({matrix:transform.clone(),uniforms:object.material.uniforms});
+      });
+    });
+    expect(hills).toHaveLength(11);expect(counts.trees).toBe(57);expect(counts.grass).toBeGreaterThan(1000);expect(shadows).toHaveLength(57);
+    expect(groundBounds,'ground covers the buried lower portions of the hills').toBeDefined();
+    for(const hill of hills){
+      const box=hill.userData.bounds;
+      expect(box.min.x).toBeGreaterThanOrEqual(groundBounds.min.x);expect(box.max.x).toBeLessThanOrEqual(groundBounds.max.x);
+      expect(box.min.z).toBeGreaterThanOrEqual(groundBounds.min.z);expect(box.max.z).toBeLessThanOrEqual(groundBounds.max.z);
+    }
+    const ray=new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,-1,0),0,1000),buried=[];
+    try{
+      // Freeze shared wind so the actual shadow matrices and sun uniform give
+      // stable crown centers under both real lighting presets.
+      world.animate(0,true);
+      for(const mode of ['daylight','golden']){
+        world.setLight(mode);
+        for(const shadow of shadows){
+          const e=shadow.matrix.elements,height=Math.hypot(e[8],e[9],e[10]),cast=shadow.uniforms.bfShadowCast.value;
+          samples.push({kind:mode+' canopy shadow',point:new THREE.Vector3(e[12]+cast.x*height*.78,.031,e[14]+cast.y*height*.78)});
+        }
+      }
+      for(const sample of samples){
+        const p=sample.point;ray.ray.origin.set(p.x,100,p.z);
+        for(const hill of hills){
+          const box=hill.userData.bounds;
+          if(p.x<box.min.x||p.x>box.max.x||p.z<box.min.z||p.z>box.max.z)continue;
+          const hit=ray.intersectObject(hill,false)[0];
+          if(hit&&hit.point.y>p.y+.00001)buried.push({kind:sample.kind,x:p.x,z:p.z,hillHeight:hit.point.y,rootHeight:p.y});
+        }
+      }
+      expect(buried,'distant hills must not bury rooted vegetation or canopy shadows').toEqual([]);
+    }finally{world.setLight('daylight');world.animate(0,false);material.dispose();}
+  });
+
   it('pins the feeding cap in ordinary and promoted flowers while allowing surrounding florets to vary',()=>{
     const geometries=new Map();
     world.scene.traverse(object=>{

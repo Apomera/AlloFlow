@@ -41,19 +41,19 @@ describe('learner-selected recognition contrasts', () => {
     expect(query(t, '[data-practice-guess-detail]')).toBeNull(); expect(reminder(t)).toBeNull();
     await click(result === 'correct' ? query(t, '[data-practice-choice="clownfish"]') : query(t, '[data-practice-skip]'));
     expect(query(t, '[data-practice-guess-detail]')).toBeNull(); expect(reminder(t)).toBeNull();
-    expect(t.host.querySelectorAll('[data-practice-detail]')).toHaveLength(3);
+    expect(t.host.querySelectorAll('[data-practice-detail]')).toHaveLength(TX.clownfish.marks.length);
     expect(query(t, '[data-practice-reflection]')).toBeTruthy();
   });
 
   it('synchronizes the existing shown detail, builds only a complete pair, and restores reflection on close', async () => {
     const t = await mount(), guessed = await wrong(t);
     await click(query(t, '[data-practice-detail="1"]')); await click(toggle(t));
-    expect(t.host.querySelectorAll('[data-practice-detail]')).toHaveLength(3);
+    expect(t.host.querySelectorAll('[data-practice-detail]')).toHaveLength(TX.clownfish.marks.length);
     expect(query(t, '[data-practice-detail="1"]').getAttribute('aria-pressed')).toBe('true');
     expect(query(t, '.cr-dxp-detail')).toBeNull(); expect(reminder(t)).toBeNull();
     expect(query(t, '[data-practice-contrast-help]').textContent).toContain('ungraded');
     for (const card of t.host.querySelectorAll('[data-practice-candidate]')) {
-      expect([...card.querySelectorAll('.cr-dxp-detail-options button')].map(button => button.textContent)).toEqual(TX[card.dataset.practiceCandidate].marks.slice(0, 3));
+      expect([...card.querySelectorAll('.cr-dxp-detail-options button')].map(button => button.textContent)).toEqual(TX[card.dataset.practiceCandidate].marks);
       expect(card.querySelector('fieldset').getAttribute('aria-label')).toContain(TX[card.dataset.practiceCandidate].name);
     }
     const guessDetail = query(t, '[data-practice-guess-detail="2"]'); await click(guessDetail);

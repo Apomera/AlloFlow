@@ -17,7 +17,8 @@ function cloudInteriorPresentation(source, { form = 'cloud', cameraMode = 'water
   const end = source.indexOf('function updateCloudInteriorLighting()', start);
   if (start < 0 || end < start) throw new Error('Cloud presentation helper missing');
   const children = Array.from({ length: 18 }, (_, index) => ({
-    material: { opacity: 0 }, userData: { baseOpacity: 0.075 + index * 0.005 },
+    material: { opacity: 0, userData: { cloudLighting: { density: { value: 1 } } } },
+    userData: { baseOpacity: 0.075 + index * 0.005 },
   }));
   const capturedOpacities = children.map((_, index) => 0.04 + index * 0.003);
   const active = exitProgress !== undefined;
@@ -29,10 +30,11 @@ function cloudInteriorPresentation(source, { form = 'cloud', cameraMode = 'water
     phaseHandoffDuration: 1.7, phaseHandoffElapsed: 0.38,
     cloudVeilEntry: { active: false, coverage: 1, startedAt: 0, duration: 0,
       sourceFogNear: 620, sourceFogFar: 2300 },
-    cloudVeilExit: { active, coverage: 0, startedAt: 10, duration: 1.32,
+    cloudVeilExit: { active, coverage: 0, progress: 0, startedAt: 10, duration: 1.32,
       sourceFogNear: 37.25, sourceFogFar: 311.5,
       sourcePosition: {}, sourceQuaternion: {}, sourceScale: {} },
     cloudVeilExitOpacities: capturedOpacities,
+    cloudVeilExitDensities: children.map(() => 1),
     cloudVeil: { children, userData: {}, visible: false,
       position: { copy() {} }, quaternion: { copy() {} }, scale: { copy() {} } },
     scene: { fog: { near: 37.25, far: 311.5 } }, canvasEl: { dataset: {} },

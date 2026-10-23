@@ -463,6 +463,54 @@
         ].join('\n'));
       };
       details.customProgramCacheKey = function () { return 'avian-woodland-cardinal-details-v1'; };
+    } else if (goldfinch || bluebird || sparrow) {
+      // Close observation should reveal a closed upper/lower mandible, rather
+      // than a featureless cone. Bill-local masks follow each authored size
+      // and taper; they add no geometry, texture, draw call or animated state.
+      // The fine grain and paired nares are illustrative surface detail, not
+      // measured bill microanatomy. Adult bill hues remain in the vertex color.
+      details.extensions = { derivatives: true };
+      details.onBeforeCompile = function (shader) {
+        shader.uniforms.awResidentBillProfile = { value: new THREE.Vector4(p.head[2] * .76, p.billLength, billDroop, tune.billTaper) };
+        shader.uniforms.awResidentBillSection = { value: new THREE.Vector2(tune.billWidth, tune.billHeight) };
+        shader.vertexShader = 'attribute vec2 featherInfo;\nvarying float awResidentBillSurface;\nvarying vec3 awResidentFaceLocal;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nawResidentBillSurface = featherInfo.x;\nawResidentFaceLocal = position;');
+        shader.fragmentShader = 'uniform vec4 awResidentBillProfile;\nuniform vec2 awResidentBillSection;\nvarying float awResidentBillSurface;\nvarying vec3 awResidentFaceLocal;\n' + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+          '#include <color_fragment>',
+          'float awResidentBillMask = step(.5, awResidentBillSurface);',
+          'float awResidentAlong = clamp((awResidentFaceLocal.z - awResidentBillProfile.x) / awResidentBillProfile.y, 0.0, 1.0);',
+          'float awResidentTaper = .04 + .96 * pow(1.0 - awResidentAlong, awResidentBillProfile.w);',
+          'float awResidentCenter = -.0035 - awResidentAlong * awResidentAlong * awResidentBillProfile.z;',
+          // Project in physical local coordinates, avoiding the cone's UV seam.
+          'float awResidentGape = awResidentFaceLocal.y - awResidentCenter + (1.0 - awResidentAlong) * awResidentBillSection.y * .035;',
+          'float awResidentPixel = max(.00001, fwidth(awResidentGape));',
+          'float awResidentResolve = 1.0 - smoothstep(.00012, .00048, awResidentPixel);',
+          'float awResidentSeam = (1.0 - smoothstep(.000025, .000065 + awResidentPixel, abs(awResidentGape))) * awResidentResolve;',
+          'awResidentSeam *= smoothstep(.28, .46, awResidentAlong) * (1.0 - smoothstep(.91, 1.0, awResidentAlong)) * awResidentBillMask;',
+          'float awResidentLower = (1.0 - smoothstep(-.0002, .0002, awResidentGape)) * awResidentBillMask;',
+          // Mirrored lateral masks cannot become an extra eye or a raised bump.
+          // They lie above the commissure on the exposed, proximal bill surface.
+          'float awResidentSide = abs(awResidentFaceLocal.x) / max(.0001, awResidentBillSection.x * awResidentTaper);',
+          'float awResidentUp = (awResidentFaceLocal.y - awResidentCenter) / max(.0001, awResidentBillSection.y * awResidentTaper);',
+          'vec2 awResidentNareLocal = vec2((awResidentAlong - .52) / .052, (awResidentUp - .34) / .16);',
+          'float awResidentNareDistance = length(awResidentNareLocal);',
+          'float awResidentNareAA = max(.035, fwidth(awResidentNareDistance));',
+          'float awResidentNareResolve = 1.0 - smoothstep(.9, 2.2, awResidentNareAA);',
+          'float awResidentNare = (1.0 - smoothstep(.64 - awResidentNareAA, 1.0 + awResidentNareAA, awResidentNareDistance)) * awResidentNareResolve;',
+          'awResidentNare *= smoothstep(.66, .87, awResidentSide) * awResidentBillMask;',
+          'float awResidentGrainPhase = awResidentFaceLocal.x / max(.0002, awResidentBillSection.x * awResidentTaper) * 31.0 + awResidentAlong * 2.5;',
+          'float awResidentGrain = sin(awResidentGrainPhase) * (1.0 - smoothstep(.65, 2.2, fwidth(awResidentGrainPhase)));',
+          'awResidentGrain *= smoothstep(.40, .58, awResidentAlong) * (1.0 - smoothstep(.84, .98, awResidentAlong)) * awResidentBillMask;',
+          'diffuseColor.rgb *= 1.0 - awResidentSeam * .48 - awResidentNare * .64 - awResidentLower * .07 + awResidentGrain * .014;'
+        ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', [
+          '#include <roughnessmap_fragment>',
+          'roughnessFactor = mix(roughnessFactor, .46 - smoothstep(.58, 1.0, awResidentAlong) * .07 + awResidentLower * .025 + awResidentGrain * .018 + awResidentNare * .10, awResidentBillMask);'
+        ].join('\n'));
+      };
+      // All three species share one program; their physical scales are uniforms.
+      details.customProgramCacheKey = function () { return 'avian-woodland-resident-bill-v1'; };
     }
     var feetMaterial = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .79 }));
     feetMaterial.extensions = { derivatives: true };
@@ -1018,7 +1066,7 @@
     // The seed-cracking cardinal bill has a deep, short cone. Other bills
     // retain their slender, slightly drooped tip and historical dimensions.
     var billOffset = face.p.length / 3, billRings = high ? 9 : 6, billSegments = high ? 12 : 8;
-    face.kind = cardinal ? 1 : 0;
+    face.kind = cardinal || goldfinch || bluebird || sparrow ? 1 : 0;
     for (var br = 0; br <= billRings; br++) {
       var bv = br / billRings, taper = .04 + .96 * Math.pow(1 - bv, tune ? tune.billTaper : cardinal ? 1.04 : .8);
       for (var bs = 0; bs < billSegments; bs++) {

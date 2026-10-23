@@ -39,7 +39,8 @@ describe('Migration articulated anatomy and explanatory airflow', () => {
       expect(bird.userData.wrists).toHaveLength(2);
       expect(bird.userData.primaries[0].geometry).toBe(bird.userData.primaries[1].geometry);
       expect(bird.userData.primaries.map(p => p.scale.x)).toEqual([-1, 1]);
-      expect(bird.userData.primaries[0].geometry.attributes.position.count).toBe(25);
+      // Five primary rims, each with two interior relief vertices.
+      expect(bird.userData.primaries[0].geometry.attributes.position.count).toBe(35);
       bird.traverse(part => {
         if (!part.geometry) return;
         for (const attribute of Object.values(part.geometry.attributes)) {

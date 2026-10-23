@@ -1,0 +1,184 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional living fish for the species guide, optional identification activity and illustrative reef encounters. The model represents a typical patterned adult male mandarin dragonet. New copy is paraphrased from museum, aquarium and primary-research accounts; illustrated marks support learning rather than guaranteed wild identification.",
+  "iucnYearConvention": "Use assessment year 2018, not publication year 2019. The current FishBase IUCN 2025-2 export reports LC, assessed 12 October 2018. IUCN-owned Crossref metadata gives that date, while Oregon Coast Aquarium cites the 2019 publication. Direct IUCN-page access returned 403. Dallas World Aquarium's older Not assessed wording is not used for conservation metadata.",
+  "specimens": [
+    {
+      "id": "mandarin_dragonet",
+      "name": "Mandarin dragonet",
+      "scientific": "Synchiropus splendidus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2018,
+      "iucnPublishedYear": 2019,
+      "iucnDateAssessed": "2018-10-12",
+      "lookalikes": [],
+      "marks": [
+        "Winding blue-green and orange bands cover the body",
+        "A broad head leads into a smooth, elongated body",
+        "The first dorsal fin has an extended spine in this adult male",
+        "A fan-shaped orange-red tail has a bright blue edge"
+      ],
+      "role": "Small predator of bottom-dwelling invertebrates among reef rubble and coral crevices.",
+      "fact": "Its blue colour comes from pigment-containing cells called cyanophores, an unusual way for a fish to produce blue.",
+      "habitat": "Sheltered reefs and lagoons around the western Pacific, from southern Japan through Southeast Asia to northern Australia and nearby island groups. Often close to coral rubble and other shelter.",
+      "diet": "Tiny bottom-dwelling invertebrates, including copepods and other small crustaceans picked from sediment and reef crevices.",
+      "behavior": "Usually stays close to the bottom, sometimes in pairs or loose local groups. At dusk, courting pairs may rise together into the water to spawn.",
+      "observe": "Trace the winding colour bands, then inspect the broad head and fan-shaped tail. The long first dorsal spine belongs to the adult male shown here; females have a shorter first dorsal fin.",
+      "sources": [
+        "dx-georgia-mandarin_dragonet",
+        "dx-dallas-mandarin_dragonet",
+        "dx-field-mandarin_dragonet",
+        "dx-smithsonian-mandarin_dragonet",
+        "dx-oregon-mandarin_dragonet",
+        "dx-iucn-mandarin_dragonet"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-cas-mandarin_dragonet accepts Synchiropus splendidus (Herre, 1927), while noting that authors differ between Synchiropus and Pterosynchiropus. The latter remains in dx-foa-mandarin_dragonet; this is documented as alternate nomenclature, not a second specimen.",
+        "marks": "dx-georgia-mandarin_dragonet supports broad head, elongated scaleless body and longer male dorsal fin. dx-dallas-mandarin_dragonet supports winding colours and fan-shaped red tail with blue edging. dx-field-mandarin_dragonet distinguishes adult sexes by dorsal-fin morphology.",
+        "roleDiet": "dx-georgia-mandarin_dragonet: small benthic invertebrates; dx-dallas-mandarin_dragonet: small crustaceans taken from sediment and crevices. dx-oregon-mandarin_dragonet specifically identifies copepods.",
+        "fact": "dx-smithsonian-mandarin_dragonet identifies true blue pigment; dx-pigment-mandarin_dragonet is the original cyanophore study. No claim of fluorescence, self-produced light or exclusive possession among all animals is made.",
+        "habitatRange": "dx-georgia-mandarin_dragonet and dx-field-mandarin_dragonet support sheltered, shallow, substrate-associated encounters. dx-cas-mandarin_dragonet and dx-nus-mandarin_dragonet support the wider native regional range. The Singapore report discusses a likely introduction and is not used to expand native range.",
+        "behavior": "dx-dallas-mandarin_dragonet and dx-georgia-mandarin_dragonet support pairs or dispersed groups. dx-field-mandarin_dragonet documents close substrate association and dusk pair spawning in Palau.",
+        "sexAndStage": "The model is an adult male. The primary field study reports the same colour pattern in both sexes, with sex differences in anterior dorsal-fin morphology and size. A long male spine is not treated as a mark present in every individual.",
+        "sizeDepth": "dx-foa-mandarin_dragonet gives 7 cm total length and 1–18 m. Georgia Aquarium gives about 7.6 cm and 1–18 m; Oregon Coast Aquarium and the primary field paper report up to 9 cm. Nominal 6 cm is an illustrative adult, not a species maximum. The documented size discrepancy is retained.",
+        "iucn": "dx-iucn-mandarin_dragonet is the IUCN assessment DOI. IUCN-owned Crossref metadata and dx-fishbase-mandarin_dragonet corroborate 2018-10-12; Oregon Coast Aquarium's bibliography identifies Carpenter & Robertson (2019)."
+      },
+      "caution": "Individual patterns and fin posture vary. The illustrative typical adult male is not a rare red-ground-colour variant or a juvenile. No species-wide claim that males have an entirely different colour pattern is made. The closest patterned dragonets are absent from this guide, so no unrelated catalog fish is forced into the lookalike list. Common names such as mandarin goby do not make this a member of the goby family. LC is a global assessment, not proof that local habitats or populations are secure. Older aquarium status, lifespan, toxin, predator-deterrence and husbandry claims are not imported."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-georgia-mandarin_dragonet",
+      "text": "Georgia Aquarium. Mandarinfish, Synchiropus splendidus: animal guide. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/mandarinfish/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": [
+        "Body shape, male dorsal-fin difference, benthic diet, local groups and 1–18 m habitat"
+      ],
+      "access": "Full aquarium account opened successfully. Species-specific size is approximately 7.6 cm. Toxin and warning-colour claims are omitted."
+    },
+    {
+      "id": "dx-dallas-mandarin_dragonet",
+      "text": "Dallas World Aquarium. Mandarin dragonet, Synchiropus splendidus: animal account. Accessed October 2026.",
+      "url": "https://dwazoo.com/animal/mandarin-dragonet/",
+      "urlLabel": "dwazoo.com",
+      "supports": [
+        "Winding body colours, smooth scaleless skin, fan-shaped tail, sediment/crevice feeding and local social encounters"
+      ],
+      "access": "Full aquarium account opened successfully. Its older Not assessed conservation wording is superseded by the current IUCN export and is not imported."
+    },
+    {
+      "id": "dx-field-mandarin_dragonet",
+      "text": "Sadovy de Mitcheson, Y.J., Mitcheson, G.R. & Rasotto, M.B. (2022). Mating system in a small pelagic spawner: field case study of the mandarinfish, Synchiropus splendidus. Environmental Biology of Fishes 105: 699–716. DOI: 10.1007/s10641-022-01281-1.",
+      "url": "https://link.springer.com/article/10.1007/s10641-022-01281-1",
+      "urlLabel": "link.springer.com",
+      "supports": [
+        "Primary Palau field observations, adult sex differences, substrate association and dusk spawning"
+      ],
+      "access": "Full open-access primary article opened successfully. Figure 1 shows displaying males and females. Local movements and spawning observations are not generalized into an obligatory daily animation for every specimen."
+    },
+    {
+      "id": "dx-smithsonian-mandarin_dragonet",
+      "text": "Smithsonian National Museum of Natural History. What Makes Things Blue? Synchiropus splendidus, Division of Fishes image FIN27420. Accessed October 2026.",
+      "url": "https://naturalhistory.si.edu/education/teaching-resources/featured-collections/what-makes-things-blue?object_url=edanmdm%3Anmnheducation_11016396",
+      "urlLabel": "naturalhistory.si.edu",
+      "supports": [
+        "Blue pigment rather than a purely structural explanation of blue colour"
+      ],
+      "access": "Detailed current indexed museum record read; direct page returned 403. The guide avoids the exhibit's stronger numerical exclusivity claim."
+    },
+    {
+      "id": "dx-iucn-mandarin_dragonet",
+      "text": "Carpenter, K.E. & Robertson, R. (2019). Synchiropus splendidus. The IUCN Red List of Threatened Species 2019: e.T141481104A141781313. Assessed 12 October 2018. DOI: 10.2305/IUCN.UK.2019-2.RLTS.T141481104A141781313.en.",
+      "url": "https://doi.org/10.2305/IUCN.UK.2019-2.RLTS.T141481104A141781313.en",
+      "urlLabel": "doi.org (IUCN Red List)",
+      "supports": [
+        "Global Least Concern assessment identity, assessment date and publication year"
+      ],
+      "access": "Direct IUCN record returned 403. IUCN-owned Crossref metadata retrieved successfully through its API gives 2018-10-12 and the same author/title identity. FishBase's current IUCN 2025-2 export retains LC. Oregon Coast Aquarium cites the 2019 publication; an IUCN SSC 2021 bulletin also labels this species LC. No newer assessment located."
+    },
+    {
+      "id": "dx-foa-mandarin_dragonet",
+      "text": "Bray, D.J. (2018). Pterosynchiropus splendidus in Fishes of Australia. Museums Victoria / OzFishNet, species 4112. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/Home/species/4112",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "Museum size/depth interval and alternate genus usage"
+      ],
+      "access": "Detailed current indexed account read; direct page was unavailable. Gives 7 cm total length and 1–18 m, with a photographed Yap animal at 2 m."
+    },
+    {
+      "id": "dx-cas-mandarin_dragonet",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds). Eschmeyer's Catalog of Fishes: Synchiropus splendidus. California Academy of Sciences, current online catalog. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Synchiropus&species=splendidus&tbl=species",
+      "urlLabel": "researcharchive.calacademy.org",
+      "supports": [
+        "Accepted scientific name, authorship, alternative genus history and regional distribution"
+      ],
+      "access": "Detailed current indexed catalog record read; direct page returned 403. Current status explicitly valid as Synchiropus splendidus (Herre, 1927), while noting authors differ in genus treatment."
+    },
+    {
+      "id": "dx-fishbase-mandarin_dragonet",
+      "text": "Froese, R. & Pauly, D. (eds). FishBase: Synchiropus splendidus, species 12644; IUCN 2025-2 export. Accessed October 2026.",
+      "url": "https://www.fishbase.se/summary/12644",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "Current IUCN category/date, 1–18 m interval and documented colour variation"
+      ],
+      "access": "Full current summary opened successfully. Direct IUCN link identifies assessment 141481104/141781313. Modelled demographic/nutrient estimates are not imported."
+    },
+    {
+      "id": "dx-nus-mandarin_dragonet",
+      "text": "Tan, V. & Jaafar, Z. (2022). Biodiversity Record: New Singapore record of the mandarin dragonet, Synchiropus splendidus. Nature in Singapore 15: e2022054. DOI: 10.26107/NIS-2022-0054. Lee Kong Chian Natural History Museum, National University of Singapore.",
+      "url": "https://lkcnhm.nus.edu.sg/wp-content/uploads/sites/10/2022/05/NIS-2022-0054.pdf",
+      "urlLabel": "lkcnhm.nus.edu.sg",
+      "supports": [
+        "Primary photographed individuals, native regional range and introduced-range caution"
+      ],
+      "access": "Full museum-hosted primary observation opened successfully. Its two approximately 6 cm fish sheltered among rocks at about 4 m. Authors consider aquarium release likely; Singapore is not added as a confirmed native locality."
+    },
+    {
+      "id": "dx-pigment-mandarin_dragonet",
+      "text": "Goda, M. & Fujii, R. (1995). Blue chromatophores in two species of callionymid fish. Zoological Science 12(6): 811–813. DOI: 10.2108/zsj.12.811.",
+      "url": "https://doi.org/10.2108/zsj.12.811",
+      "urlLabel": "doi.org (Zoological Science)",
+      "supports": [
+        "Original cyanophore research underlying the museum's blue-pigment explanation"
+      ],
+      "access": "Primary article identity and indexed publisher material located; full text unavailable through the tool. Its finding is corroborated by the Smithsonian species exhibit and later primary research; no claim to successful full-paper access."
+    },
+    {
+      "id": "dx-oregon-mandarin_dragonet",
+      "text": "Oregon Coast Aquarium. Mandarin Goby, Synchiropus splendidus: species account and bibliography. Accessed October 2026.",
+      "url": "https://aquarium.org/animals/mandarin-goby/",
+      "urlLabel": "aquarium.org",
+      "supports": [
+        "Male first dorsal-ray difference, copepod prey, 9 cm size report and IUCN publication bibliography"
+      ],
+      "access": "Full aquarium account opened successfully. Its 1–20 m interval differs slightly from the museum/FishBase 1–18 m interval used in metadata; no upper depth is treated as a physiological boundary. Lifespan and predator-deterrence claims are omitted."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.06,
+    "maximumLengthM": 0.09,
+    "depth": [
+      1,
+      18
+    ],
+    "origin": "centre",
+    "habit": "bottom",
+    "zone": "rubbleEdge",
+    "representative": "Typical patterned 6 cm adult male from the western Pacific, with an extended first dorsal spine. Females have a shorter first dorsal fin; both sexes share the general colour pattern.",
+    "basis": "The nominal adult is below all source maxima. Museum/FishBase maximum is 7 cm; Georgia gives about 7.6 cm, Dallas about 8 cm, and Oregon/primary research report 9 cm. The 1–18 m encounter interval follows Museums Victoria, Georgia and FishBase; Oregon gives 1–20 m. These reported bounds are not physiological limits.",
+    "anatomy": "Broad low head, high eyes, smooth scaleless elongated body, separate dorsal fins with a taller male first dorsal, large pectoral fans and rounded fan-shaped caudal fin. Winding blue-green/orange bands and a blue-edged orange-red tail. Do not add a goby-like fused pelvic suction disc or ornamental angelfish scales.",
+    "anatomyLimits": "Fine ray counts, individual pattern variation and colour-cell biology are simplified. Cyanophores explain pigment production, not bioluminescence or demonstrated fluorescence. The displayed individual does not represent every sex, stage or colour variant.",
+    "motion": "The engine's bottom habit and rubble-edge placement provide a conservative substrate encounter with gentle fin movement. This does not imply that wild fish are motionless: they forage locally and may display or rise to spawn. No new locomotion algorithm is required."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Study and identification must not award a dive discovery or save session-only labels and answers.",
+    "lookalikeNote": "No close dragonet counterpart currently exists in the 57-entry guide. Keep lookalikes empty rather than implying a taxonomic or visual match to an unrelated colourful fish.",
+    "identificationLimit": "Use body shape, fin arrangement and pattern together. The simplified model supports learning, not definitive real-world species identification."
+  }
+}

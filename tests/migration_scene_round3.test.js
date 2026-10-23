@@ -65,7 +65,7 @@ describe('Migration Study orbit, anatomical landmarks, and manual wingbeat', () 
     const positions = overlay.geometry.attributes.position.array;
     const snapshot = Array.from(positions);
     expect(overlay.visible).toBe(true);
-    expect(overlay.geometry.drawRange.count).toBe(90);
+    expect(overlay.geometry.drawRange.count).toBe(130);
     expect(engine.flyers[8].userData.anatomyAnchors.map(a => a.id)).toEqual(['head', 'inner-wing', 'primaries', 'tail']);
     expect(engine.flyers[8].userData.anatomyAnchors[2].node).toBe(engine.flyers[8].userData.primaries[1]);
     engine.updateAnatomy(true, 8);

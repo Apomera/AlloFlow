@@ -56347,6 +56347,15 @@
       "sr_critique_ready": "La kritiko pretas."
     },
     "flightsim": {
+      "guided_inspect_angle": "Ekzameni la komparon de anguloj",
+      "guided_inspect_speed": "Ekzameni la komparon de rapidoj",
+      "guided_export_scope": "La eksporto inkluzivas vian nunan malneton kaj antaŭajn provojn. Eksportado ne kompletigas la esploron.",
+      "hint_t_stall_negative": "🚨 STALO! La atakangulo estas negativa: milde trenu SUPREN de la mezo por proksimigi ĝin al nulo. Uzu la dekstran randon por potenco laŭbezone.",
+      "hint_k_stall_negative": "🚨 STALO! La atakangulo estas negativa: milde premu W por proksimigi ĝin al nulo. Aldonu potencon per Shift laŭbezone.",
+      "hint_stall_direction_unknown": "🚨 STALO! Proksimigu la atakangulon al nulo. La direkto ne haveblas; kontrolu la AoA-indikilon antaŭ ol elekti movon de la nazo.",
+      "announce_stall_warning_negative": "Averto pri stalo! La atakangulo estas negativa. Milde levu la nazon por proksimigi ĝin al nulo; aldonu potencon laŭbezone.",
+      "announce_stall_warning_unknown": "Averto pri stalo! Proksimigu la atakangulon al nulo. Ĝia direkto ne haveblas; kontrolu la AoA-indikilon antaŭ ol elekti movon de la nazo.",
+      "hud_stall_warning": "⚠️ STALO — PROKSIMIGU AoA AL NULO",
       "debrief_unavailable_title": "Konservita flugorevizio ne disponeblas",
       "debrief_unavailable_body": "La plej nova flugorevizio mankas aŭ ne legeblas. Reiru al la menuo por komenci novan flugon.",
       "guided_idea_before_trials": "Registrita antaŭ la provoj",

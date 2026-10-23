@@ -5,24 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Library | AlloFlow</title>
-    <meta name="description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
+    <meta name="description" content="Explore AlloPacks by topic, subject, and grade. Preview, share, or download each base and illustrated edition for educator review.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://apomera.github.io/AlloFlow/library.html">
+    <link rel="canonical" href="https://alloflow.dev/packs">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AlloFlow">
-    <meta property="og:url" content="https://apomera.github.io/AlloFlow/library.html">
+    <meta property="og:url" content="https://alloflow.dev/packs">
     <meta property="og:title" content="AlloFlow Lesson Library">
-    <meta property="og:description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
-    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:description" content="Explore AlloPacks by topic, subject, and grade. Preview, share, or download each base and illustrated edition for educator review.">
+    <meta property="og:image" content="https://alloflow.dev/assets/alloflow-social-preview.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/library.html">
+    <meta name="twitter:url" content="https://alloflow.dev/packs">
     <meta name="twitter:title" content="AlloFlow Lesson Library">
-    <meta name="twitter:description" content="Explore AlloFlow sample projects on the water cycle, the American Civil War, and photosynthesis. Download a JSON pack, inspect its resources, and adapt it for your class.">
-    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:description" content="Explore AlloPacks by topic, subject, and grade. Preview, share, or download each base and illustrated edition for educator review.">
+    <meta name="twitter:image" content="https://alloflow.dev/assets/alloflow-social-preview.png">
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
@@ -30,6 +30,8 @@
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
+    <link rel="stylesheet" href="allopack-library.css">
+    <script src="allopack-library.js" defer></script>
     <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@1.31.0"></script>
     <style>
@@ -189,31 +191,1241 @@
         style="background:linear-gradient(135deg,#eff6ff,#eef2ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #dbeafe">
         <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">📚 Lesson <span
                 class="gradient-text">Library</span></h1>
-        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Explore three downloadable sample projects. Open a pack with <strong>Load Project</strong>, inspect the saved resources, and adapt it to your learning goal.</p>
+        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Find a topic, explore its pack versions, and share a direct link. Preview the resources before adapting them to your learning goal.</p>
         <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#475569">
             <i data-lucide="info" style="width:14px;height:14px;color:var(--indigo)"></i>
-            <span>Download a <strong>.json</strong> file → Open AlloFlow → Click <strong>"Load Project"</strong> →
-                Select the file</span>
+            <span><strong>Open pack</strong> to preview · <strong>Copy link</strong> to share · <strong>Download JSON</strong> for Gemini Canvas</span>
         </div>
-        <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:20px auto 0">These packs contain AI-generated examples. Grade labels and alignment reports inside a pack are planning suggestions; verify content, answer keys, accessibility, and standards before teaching. <a href="guide/saving-and-storage.html">How to save and load a project</a>.</p>
+        <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:20px auto 0"><a href="guide/saving-and-storage.html">How to save and load a project</a></p>
     </header>
+
+    <!-- ALLOPACK_DIRECTORY_BEGIN -->
+<section class="section pack-directory" aria-labelledby="pack-directory-title" id="allopacks">
+ <div class="section-inner">
+  <h2 id="pack-directory-title">Explore the AlloPack library</h2>
+  <p>63 topics · 125 pack versions. Open a pack to preview it, then choose <strong>Load in AlloFlow</strong>.</p>
+  <p class="pack-review-note">These AI-authored resources need educator review before teaching. Base and illustrated editions can contain different activities. Check the content, answer keys, accessibility, and source credits in the version you choose.</p>
+  <details class="pack-gemini-help"><summary>Using these packs in Gemini Canvas</summary><p>Open the <a href="launch.html">current AlloFlow Canvas</a> and find the pack in its Community Catalog, or download the JSON file here and use <strong>Load Project</strong>. Pack links open the browser app; they do not automatically open a particular pack inside Google's shared Canvas.</p></details>
+  <form class="pack-filters" id="pack-filters" role="search" hidden>
+   <label>Search topics or activities<input id="pack-search" type="search" placeholder="Water cycle, collaboration, memory aid…"></label>
+   <label>Subject<select id="pack-subject"><option value="">All subjects</option><option>English Language Arts</option><option>Math</option><option>SEL / Character</option><option>Science</option><option>Social Studies</option></select></label>
+   <label>Grade<select id="pack-grade"><option value="">All grades</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></label>
+   <button type="reset">Clear filters</button>
+  </form>
+  <p id="pack-results" role="status" aria-live="polite" aria-atomic="true">63 topics · 125 pack versions</p>
+  <p id="pack-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <div class="pack-grid" id="pack-grid"><article class="pack-topic" data-pack-search="A Reading Space We Can Share: Discourse and Collaboration Learning Lab English Language Arts academic-discourse collaboration udl evidence-and-reasoning teacher-review-draft illustrated applied-challenge" data-pack-subject="English Language Arts" data-pack-grade="6">
+      <p class="pack-topic-meta">English Language Arts · Grades 6</p><h3>A Reading Space We Can Share: Discourse and Collaboration Learning Lab</h3>
+      <div class="pack-version" data-pack-id="academic-discourse-reading-space-grade6">
+    <h4>Illustrated pack</h4><p>Includes images · <span class="pack-license">Teacher review required</span></p>
+    <p class="pack-credit">Original AI-authored lesson and illustrations inspired by Katie Novak&#39;s article; educator review pending; not reviewed or endorsed by Katie Novak.</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/reading-space" data-pack-alias="reading-space" aria-label="Open A Reading Space We Can Share: Discourse and Collaboration Learning Lab — Illustrated pack">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/reading-space" hidden aria-label="Copy link to A Reading Space We Can Share: Discourse and Collaboration Learning Lab — Illustrated pack">Copy link</button>
+    <a href="./allopacks/academic_discourse_reading_space_grade6.allopack.json" data-pack-download="allopacks/academic_discourse_reading_space_grade6.allopack.json" download="academic_discourse_reading_space_grade6.allopack.json" aria-label="Download A Reading Space We Can Share: Discourse and Collaboration Learning Lab — Illustrated pack">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/reading-space"></label>
+  </div>
+
+    </article>
+<article class="pack-topic" data-pack-search="Area and Perimeter — The Fence and the Floor Math area-perimeter memory-aid applied-challenge ccss illustrated area-perimeter ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="3-4">
+      <p class="pack-topic-meta">Math · Grades 3-4</p><h3>Area and Perimeter — The Fence and the Floor</h3>
+      <div class="pack-version" data-pack-id="area_perimeter_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/area-perimeter-grade4-illustrated" data-pack-alias="area-perimeter-grade4-illustrated" aria-label="Open Area and Perimeter — The Fence and the Floor — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/area-perimeter-grade4-illustrated" hidden aria-label="Copy link to Area and Perimeter — The Fence and the Floor — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/area_perimeter_grade4.allopack.json" data-pack-download="allopacks/illustrated/area_perimeter_grade4.allopack.json" download="area_perimeter_grade4.allopack.json" aria-label="Download Area and Perimeter — The Fence and the Floor — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/area-perimeter-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="area_perimeter_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/area-perimeter-grade4" data-pack-alias="area-perimeter-grade4" aria-label="Open Area and Perimeter — The Fence and the Floor — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/area-perimeter-grade4" hidden aria-label="Copy link to Area and Perimeter — The Fence and the Floor — Base edition">Copy link</button>
+    <a href="./allopacks/area_perimeter_grade4.allopack.json" data-pack-download="allopacks/area_perimeter_grade4.allopack.json" download="area_perimeter_grade4.allopack.json" aria-label="Download Area and Perimeter — The Fence and the Floor — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/area-perimeter-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Body Systems — The Team That Keeps You Alive Science body-systems memory-aid applied-challenge ngss ccss illustrated body-systems ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="6">
+      <p class="pack-topic-meta">Science · Grades 6</p><h3>Body Systems — The Team That Keeps You Alive</h3>
+      <div class="pack-version" data-pack-id="body_systems_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/body-systems-grade6-illustrated" data-pack-alias="body-systems-grade6-illustrated" aria-label="Open Body Systems — The Team That Keeps You Alive — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/body-systems-grade6-illustrated" hidden aria-label="Copy link to Body Systems — The Team That Keeps You Alive — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/body_systems_grade6.allopack.json" data-pack-download="allopacks/illustrated/body_systems_grade6.allopack.json" download="body_systems_grade6.allopack.json" aria-label="Download Body Systems — The Team That Keeps You Alive — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/body-systems-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="body_systems_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/body-systems-grade6" data-pack-alias="body-systems-grade6" aria-label="Open Body Systems — The Team That Keeps You Alive — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/body-systems-grade6" hidden aria-label="Copy link to Body Systems — The Team That Keeps You Alive — Base edition">Copy link</button>
+    <a href="./allopacks/body_systems_grade6.allopack.json" data-pack-download="allopacks/body_systems_grade6.allopack.json" download="body_systems_grade6.allopack.json" aria-label="Download Body Systems — The Team That Keeps You Alive — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/body-systems-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Break, Move, Settle — Changing Land Science weathering-erosion memory-aid applied-challenge ngss illustrated weathering-erosion ngss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="4">
+      <p class="pack-topic-meta">Science · Grades 4</p><h3>Break, Move, Settle — Changing Land</h3>
+      <div class="pack-version" data-pack-id="weathering_erosion_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/weathering-erosion-grade4-illustrated" data-pack-alias="weathering-erosion-grade4-illustrated" aria-label="Open Break, Move, Settle — Changing Land — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/weathering-erosion-grade4-illustrated" hidden aria-label="Copy link to Break, Move, Settle — Changing Land — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/weathering_erosion_grade4.allopack.json" data-pack-download="allopacks/illustrated/weathering_erosion_grade4.allopack.json" download="weathering_erosion_grade4.allopack.json" aria-label="Download Break, Move, Settle — Changing Land — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/weathering-erosion-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="weathering_erosion_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/weathering-erosion-grade4" data-pack-alias="weathering-erosion-grade4" aria-label="Open Break, Move, Settle — Changing Land — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/weathering-erosion-grade4" hidden aria-label="Copy link to Break, Move, Settle — Changing Land — Base edition">Copy link</button>
+    <a href="./allopacks/weathering_erosion_grade4.allopack.json" data-pack-download="allopacks/weathering_erosion_grade4.allopack.json" download="weathering_erosion_grade4.allopack.json" aria-label="Download Break, Move, Settle — Changing Land — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/weathering-erosion-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Causes of the American Revolution — How a Fight Becomes a War Social Studies american-revolution-causes ccss c3 memory-aid applied-challenge illustrated american-revolution-causes ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="5">
+      <p class="pack-topic-meta">Social Studies · Grades 5</p><h3>Causes of the American Revolution — How a Fight Becomes a War</h3>
+      <div class="pack-version" data-pack-id="american_revolution_causes_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/american-revolution-causes-grade5-illustrated" data-pack-alias="american-revolution-causes-grade5-illustrated" aria-label="Open Causes of the American Revolution — How a Fight Becomes a War — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/american-revolution-causes-grade5-illustrated" hidden aria-label="Copy link to Causes of the American Revolution — How a Fight Becomes a War — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/american_revolution_causes_grade5.allopack.json" data-pack-download="allopacks/illustrated/american_revolution_causes_grade5.allopack.json" download="american_revolution_causes_grade5.allopack.json" aria-label="Download Causes of the American Revolution — How a Fight Becomes a War — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/american-revolution-causes-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="american_revolution_causes_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/american-revolution-causes-grade5" data-pack-alias="american-revolution-causes-grade5" aria-label="Open Causes of the American Revolution — How a Fight Becomes a War — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/american-revolution-causes-grade5" hidden aria-label="Copy link to Causes of the American Revolution — How a Fight Becomes a War — Base edition">Copy link</button>
+    <a href="./allopacks/american_revolution_causes_grade5.allopack.json" data-pack-download="allopacks/american_revolution_causes_grade5.allopack.json" download="american_revolution_causes_grade5.allopack.json" aria-label="Download Causes of the American Revolution — How a Fight Becomes a War — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/american-revolution-causes-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Central Idea and Evidence — Reading Like a Detective English Language Arts central-idea memory-aid applied-challenge ccss illustrated central-idea ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="7">
+      <p class="pack-topic-meta">English Language Arts · Grades 7</p><h3>Central Idea and Evidence — Reading Like a Detective</h3>
+      <div class="pack-version" data-pack-id="central_idea_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/central-idea-grade7-illustrated" data-pack-alias="central-idea-grade7-illustrated" aria-label="Open Central Idea and Evidence — Reading Like a Detective — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/central-idea-grade7-illustrated" hidden aria-label="Copy link to Central Idea and Evidence — Reading Like a Detective — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/central_idea_grade7.allopack.json" data-pack-download="allopacks/illustrated/central_idea_grade7.allopack.json" download="central_idea_grade7.allopack.json" aria-label="Download Central Idea and Evidence — Reading Like a Detective — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/central-idea-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="central_idea_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/central-idea-grade7" data-pack-alias="central-idea-grade7" aria-label="Open Central Idea and Evidence — Reading Like a Detective — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/central-idea-grade7" hidden aria-label="Copy link to Central Idea and Evidence — Reading Like a Detective — Base edition">Copy link</button>
+    <a href="./allopacks/central_idea_grade7.allopack.json" data-pack-download="allopacks/central_idea_grade7.allopack.json" download="central_idea_grade7.allopack.json" aria-label="Download Central Idea and Evidence — Reading Like a Detective — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/central-idea-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 1: Norms We Can Name and Keep SEL / Character crew-norms sel howl crew memory-aid applied-challenge illustrated crew-norms sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 1: Norms We Can Name and Keep</h3>
+      <div class="pack-version" data-pack-id="crew_norms_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-norms-grade6-8-illustrated" data-pack-alias="crew-norms-grade6-8-illustrated" aria-label="Open Crew Launch Week 1: Norms We Can Name and Keep — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-norms-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 1: Norms We Can Name and Keep — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_norms_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_norms_grade6_8.allopack.json" download="crew_norms_grade6_8.allopack.json" aria-label="Download Crew Launch Week 1: Norms We Can Name and Keep — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-norms-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_norms_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-norms-grade6-8" data-pack-alias="crew-norms-grade6-8" aria-label="Open Crew Launch Week 1: Norms We Can Name and Keep — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-norms-grade6-8" hidden aria-label="Copy link to Crew Launch Week 1: Norms We Can Name and Keep — Base edition">Copy link</button>
+    <a href="./allopacks/crew_norms_grade6_8.allopack.json" data-pack-download="allopacks/crew_norms_grade6_8.allopack.json" download="crew_norms_grade6_8.allopack.json" aria-label="Download Crew Launch Week 1: Norms We Can Name and Keep — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-norms-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 2: Repair When Something Goes Wrong SEL / Character crew-repair sel howl crew memory-aid applied-challenge illustrated crew-repair sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 2: Repair When Something Goes Wrong</h3>
+      <div class="pack-version" data-pack-id="crew_repair_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-repair-grade6-8-illustrated" data-pack-alias="crew-repair-grade6-8-illustrated" aria-label="Open Crew Launch Week 2: Repair When Something Goes Wrong — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-repair-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 2: Repair When Something Goes Wrong — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_repair_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_repair_grade6_8.allopack.json" download="crew_repair_grade6_8.allopack.json" aria-label="Download Crew Launch Week 2: Repair When Something Goes Wrong — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-repair-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_repair_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-repair-grade6-8" data-pack-alias="crew-repair-grade6-8" aria-label="Open Crew Launch Week 2: Repair When Something Goes Wrong — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-repair-grade6-8" hidden aria-label="Copy link to Crew Launch Week 2: Repair When Something Goes Wrong — Base edition">Copy link</button>
+    <a href="./allopacks/crew_repair_grade6_8.allopack.json" data-pack-download="allopacks/crew_repair_grade6_8.allopack.json" download="crew_repair_grade6_8.allopack.json" aria-label="Download Crew Launch Week 2: Repair When Something Goes Wrong — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-repair-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 3: Where Am I Right Now? SEL / Character crew-zones sel howl crew memory-aid applied-challenge illustrated crew-zones sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 3: Where Am I Right Now?</h3>
+      <div class="pack-version" data-pack-id="crew_zones_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-zones-grade6-8-illustrated" data-pack-alias="crew-zones-grade6-8-illustrated" aria-label="Open Crew Launch Week 3: Where Am I Right Now? — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-zones-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 3: Where Am I Right Now? — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_zones_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_zones_grade6_8.allopack.json" download="crew_zones_grade6_8.allopack.json" aria-label="Download Crew Launch Week 3: Where Am I Right Now? — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-zones-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_zones_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-zones-grade6-8" data-pack-alias="crew-zones-grade6-8" aria-label="Open Crew Launch Week 3: Where Am I Right Now? — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-zones-grade6-8" hidden aria-label="Copy link to Crew Launch Week 3: Where Am I Right Now? — Base edition">Copy link</button>
+    <a href="./allopacks/crew_zones_grade6_8.allopack.json" data-pack-download="allopacks/crew_zones_grade6_8.allopack.json" download="crew_zones_grade6_8.allopack.json" aria-label="Download Crew Launch Week 3: Where Am I Right Now? — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-zones-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 4: One System for the Week SEL / Character crew-system sel howl crew memory-aid applied-challenge illustrated crew-system sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 4: One System for the Week</h3>
+      <div class="pack-version" data-pack-id="crew_system_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-system-grade6-8-illustrated" data-pack-alias="crew-system-grade6-8-illustrated" aria-label="Open Crew Launch Week 4: One System for the Week — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-system-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 4: One System for the Week — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_system_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_system_grade6_8.allopack.json" download="crew_system_grade6_8.allopack.json" aria-label="Download Crew Launch Week 4: One System for the Week — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-system-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_system_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-system-grade6-8" data-pack-alias="crew-system-grade6-8" aria-label="Open Crew Launch Week 4: One System for the Week — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-system-grade6-8" hidden aria-label="Copy link to Crew Launch Week 4: One System for the Week — Base edition">Copy link</button>
+    <a href="./allopacks/crew_system_grade6_8.allopack.json" data-pack-download="allopacks/crew_system_grade6_8.allopack.json" download="crew_system_grade6_8.allopack.json" aria-label="Download Crew Launch Week 4: One System for the Week — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-system-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 5: Asking for What You Need SEL / Character crew-ask sel howl crew memory-aid applied-challenge illustrated crew-ask sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 5: Asking for What You Need</h3>
+      <div class="pack-version" data-pack-id="crew_ask_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-ask-grade6-8-illustrated" data-pack-alias="crew-ask-grade6-8-illustrated" aria-label="Open Crew Launch Week 5: Asking for What You Need — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-ask-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 5: Asking for What You Need — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_ask_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_ask_grade6_8.allopack.json" download="crew_ask_grade6_8.allopack.json" aria-label="Download Crew Launch Week 5: Asking for What You Need — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-ask-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_ask_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-ask-grade6-8" data-pack-alias="crew-ask-grade6-8" aria-label="Open Crew Launch Week 5: Asking for What You Need — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-ask-grade6-8" hidden aria-label="Copy link to Crew Launch Week 5: Asking for What You Need — Base edition">Copy link</button>
+    <a href="./allopacks/crew_ask_grade6_8.allopack.json" data-pack-download="allopacks/crew_ask_grade6_8.allopack.json" download="crew_ask_grade6_8.allopack.json" aria-label="Download Crew Launch Week 5: Asking for What You Need — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-ask-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 6: Feedback Is Information, Not a Verdict SEL / Character crew-feedback sel howl crew memory-aid applied-challenge illustrated crew-feedback sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 6: Feedback Is Information, Not a Verdict</h3>
+      <div class="pack-version" data-pack-id="crew_feedback_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-feedback-grade6-8-illustrated" data-pack-alias="crew-feedback-grade6-8-illustrated" aria-label="Open Crew Launch Week 6: Feedback Is Information, Not a Verdict — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-feedback-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 6: Feedback Is Information, Not a Verdict — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_feedback_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_feedback_grade6_8.allopack.json" download="crew_feedback_grade6_8.allopack.json" aria-label="Download Crew Launch Week 6: Feedback Is Information, Not a Verdict — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-feedback-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_feedback_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-feedback-grade6-8" data-pack-alias="crew-feedback-grade6-8" aria-label="Open Crew Launch Week 6: Feedback Is Information, Not a Verdict — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-feedback-grade6-8" hidden aria-label="Copy link to Crew Launch Week 6: Feedback Is Information, Not a Verdict — Base edition">Copy link</button>
+    <a href="./allopacks/crew_feedback_grade6_8.allopack.json" data-pack-download="allopacks/crew_feedback_grade6_8.allopack.json" download="crew_feedback_grade6_8.allopack.json" aria-label="Download Crew Launch Week 6: Feedback Is Information, Not a Verdict — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-feedback-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 7: Two Sides of One Story SEL / Character crew-perspective sel howl crew memory-aid applied-challenge illustrated crew-perspective sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 7: Two Sides of One Story</h3>
+      <div class="pack-version" data-pack-id="crew_perspective_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-perspective-grade6-8-illustrated" data-pack-alias="crew-perspective-grade6-8-illustrated" aria-label="Open Crew Launch Week 7: Two Sides of One Story — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-perspective-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 7: Two Sides of One Story — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_perspective_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_perspective_grade6_8.allopack.json" download="crew_perspective_grade6_8.allopack.json" aria-label="Download Crew Launch Week 7: Two Sides of One Story — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-perspective-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_perspective_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-perspective-grade6-8" data-pack-alias="crew-perspective-grade6-8" aria-label="Open Crew Launch Week 7: Two Sides of One Story — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-perspective-grade6-8" hidden aria-label="Copy link to Crew Launch Week 7: Two Sides of One Story — Base edition">Copy link</button>
+    <a href="./allopacks/crew_perspective_grade6_8.allopack.json" data-pack-download="allopacks/crew_perspective_grade6_8.allopack.json" download="crew_perspective_grade6_8.allopack.json" aria-label="Download Crew Launch Week 7: Two Sides of One Story — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-perspective-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 8: Small Moves, Not Big Speeches SEL / Character crew-upstander sel howl crew memory-aid applied-challenge illustrated crew-upstander sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 8: Small Moves, Not Big Speeches</h3>
+      <div class="pack-version" data-pack-id="crew_upstander_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-upstander-grade6-8-illustrated" data-pack-alias="crew-upstander-grade6-8-illustrated" aria-label="Open Crew Launch Week 8: Small Moves, Not Big Speeches — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-upstander-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 8: Small Moves, Not Big Speeches — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_upstander_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_upstander_grade6_8.allopack.json" download="crew_upstander_grade6_8.allopack.json" aria-label="Download Crew Launch Week 8: Small Moves, Not Big Speeches — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-upstander-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_upstander_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-upstander-grade6-8" data-pack-alias="crew-upstander-grade6-8" aria-label="Open Crew Launch Week 8: Small Moves, Not Big Speeches — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-upstander-grade6-8" hidden aria-label="Copy link to Crew Launch Week 8: Small Moves, Not Big Speeches — Base edition">Copy link</button>
+    <a href="./allopacks/crew_upstander_grade6_8.allopack.json" data-pack-download="allopacks/crew_upstander_grade6_8.allopack.json" download="crew_upstander_grade6_8.allopack.json" aria-label="Download Crew Launch Week 8: Small Moves, Not Big Speeches — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-upstander-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 9: Where Your Attention Goes SEL / Character crew-attention sel howl crew memory-aid applied-challenge illustrated crew-attention sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 9: Where Your Attention Goes</h3>
+      <div class="pack-version" data-pack-id="crew_attention_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-attention-grade6-8-illustrated" data-pack-alias="crew-attention-grade6-8-illustrated" aria-label="Open Crew Launch Week 9: Where Your Attention Goes — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-attention-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 9: Where Your Attention Goes — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_attention_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_attention_grade6_8.allopack.json" download="crew_attention_grade6_8.allopack.json" aria-label="Download Crew Launch Week 9: Where Your Attention Goes — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-attention-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_attention_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-attention-grade6-8" data-pack-alias="crew-attention-grade6-8" aria-label="Open Crew Launch Week 9: Where Your Attention Goes — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-attention-grade6-8" hidden aria-label="Copy link to Crew Launch Week 9: Where Your Attention Goes — Base edition">Copy link</button>
+    <a href="./allopacks/crew_attention_grade6_8.allopack.json" data-pack-download="allopacks/crew_attention_grade6_8.allopack.json" download="crew_attention_grade6_8.allopack.json" aria-label="Download Crew Launch Week 9: Where Your Attention Goes — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-attention-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 10: The Six-Week Check SEL / Character crew-halfway sel howl crew memory-aid applied-challenge illustrated crew-halfway sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 10: The Six-Week Check</h3>
+      <div class="pack-version" data-pack-id="crew_halfway_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-halfway-grade6-8-illustrated" data-pack-alias="crew-halfway-grade6-8-illustrated" aria-label="Open Crew Launch Week 10: The Six-Week Check — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-halfway-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 10: The Six-Week Check — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_halfway_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_halfway_grade6_8.allopack.json" download="crew_halfway_grade6_8.allopack.json" aria-label="Download Crew Launch Week 10: The Six-Week Check — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-halfway-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_halfway_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-halfway-grade6-8" data-pack-alias="crew-halfway-grade6-8" aria-label="Open Crew Launch Week 10: The Six-Week Check — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-halfway-grade6-8" hidden aria-label="Copy link to Crew Launch Week 10: The Six-Week Check — Base edition">Copy link</button>
+    <a href="./allopacks/crew_halfway_grade6_8.allopack.json" data-pack-download="allopacks/crew_halfway_grade6_8.allopack.json" download="crew_halfway_grade6_8.allopack.json" aria-label="Download Crew Launch Week 10: The Six-Week Check — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-halfway-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 11: Your Part of the Whole SEL / Character crew-teamwork sel howl crew memory-aid applied-challenge illustrated crew-teamwork sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 11: Your Part of the Whole</h3>
+      <div class="pack-version" data-pack-id="crew_teamwork_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-teamwork-grade6-8-illustrated" data-pack-alias="crew-teamwork-grade6-8-illustrated" aria-label="Open Crew Launch Week 11: Your Part of the Whole — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-teamwork-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 11: Your Part of the Whole — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_teamwork_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_teamwork_grade6_8.allopack.json" download="crew_teamwork_grade6_8.allopack.json" aria-label="Download Crew Launch Week 11: Your Part of the Whole — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-teamwork-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_teamwork_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-teamwork-grade6-8" data-pack-alias="crew-teamwork-grade6-8" aria-label="Open Crew Launch Week 11: Your Part of the Whole — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-teamwork-grade6-8" hidden aria-label="Copy link to Crew Launch Week 11: Your Part of the Whole — Base edition">Copy link</button>
+    <a href="./allopacks/crew_teamwork_grade6_8.allopack.json" data-pack-download="allopacks/crew_teamwork_grade6_8.allopack.json" download="crew_teamwork_grade6_8.allopack.json" aria-label="Download Crew Launch Week 11: Your Part of the Whole — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-teamwork-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Crew Launch Week 12: The Story of Your Trimester SEL / Character crew-story sel howl crew memory-aid applied-challenge illustrated crew-story sel howl crew memory-aid applied-challenge text-only" data-pack-subject="SEL / Character" data-pack-grade="6-8">
+      <p class="pack-topic-meta">SEL / Character · Grades 6-8</p><h3>Crew Launch Week 12: The Story of Your Trimester</h3>
+      <div class="pack-version" data-pack-id="crew_story_grade6_8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-story-grade6-8-illustrated" data-pack-alias="crew-story-grade6-8-illustrated" aria-label="Open Crew Launch Week 12: The Story of Your Trimester — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-story-grade6-8-illustrated" hidden aria-label="Copy link to Crew Launch Week 12: The Story of Your Trimester — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/crew_story_grade6_8.allopack.json" data-pack-download="allopacks/illustrated/crew_story_grade6_8.allopack.json" download="crew_story_grade6_8.allopack.json" aria-label="Download Crew Launch Week 12: The Story of Your Trimester — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-story-grade6-8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="crew_story_grade6_8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/crew-story-grade6-8" data-pack-alias="crew-story-grade6-8" aria-label="Open Crew Launch Week 12: The Story of Your Trimester — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/crew-story-grade6-8" hidden aria-label="Copy link to Crew Launch Week 12: The Story of Your Trimester — Base edition">Copy link</button>
+    <a href="./allopacks/crew_story_grade6_8.allopack.json" data-pack-download="allopacks/crew_story_grade6_8.allopack.json" download="crew_story_grade6_8.allopack.json" aria-label="Download Crew Launch Week 12: The Story of Your Trimester — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/crew-story-grade6-8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Day Sky, Night Sky — Why the Sky Changes Science day-night-sky memory-aid applied-challenge ngss ccss illustrated day-night-sky ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="1">
+      <p class="pack-topic-meta">Science · Grades 1</p><h3>Day Sky, Night Sky — Why the Sky Changes</h3>
+      <div class="pack-version" data-pack-id="day_night_sky_grade1_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/day-night-sky-grade1-illustrated" data-pack-alias="day-night-sky-grade1-illustrated" aria-label="Open Day Sky, Night Sky — Why the Sky Changes — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/day-night-sky-grade1-illustrated" hidden aria-label="Copy link to Day Sky, Night Sky — Why the Sky Changes — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/day_night_sky_grade1.allopack.json" data-pack-download="allopacks/illustrated/day_night_sky_grade1.allopack.json" download="day_night_sky_grade1.allopack.json" aria-label="Download Day Sky, Night Sky — Why the Sky Changes — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/day-night-sky-grade1-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="day_night_sky_grade1">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/day-night-sky-grade1" data-pack-alias="day-night-sky-grade1" aria-label="Open Day Sky, Night Sky — Why the Sky Changes — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/day-night-sky-grade1" hidden aria-label="Copy link to Day Sky, Night Sky — Why the Sky Changes — Base edition">Copy link</button>
+    <a href="./allopacks/day_night_sky_grade1.allopack.json" data-pack-download="allopacks/day_night_sky_grade1.allopack.json" download="day_night_sky_grade1.allopack.json" aria-label="Download Day Sky, Night Sky — Why the Sky Changes — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/day-night-sky-grade1"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Did Anything New Actually Form? — Reactions and Conservation of Mass Science chemical-reactions memory-aid applied-challenge ngss ccss illustrated chemical-reactions ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="8">
+      <p class="pack-topic-meta">Science · Grades 8</p><h3>Did Anything New Actually Form? — Reactions and Conservation of Mass</h3>
+      <div class="pack-version" data-pack-id="chemical_reactions_grade8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/chemical-reactions-grade8-illustrated" data-pack-alias="chemical-reactions-grade8-illustrated" aria-label="Open Did Anything New Actually Form? — Reactions and Conservation of Mass — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/chemical-reactions-grade8-illustrated" hidden aria-label="Copy link to Did Anything New Actually Form? — Reactions and Conservation of Mass — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/chemical_reactions_grade8.allopack.json" data-pack-download="allopacks/illustrated/chemical_reactions_grade8.allopack.json" download="chemical_reactions_grade8.allopack.json" aria-label="Download Did Anything New Actually Form? — Reactions and Conservation of Mass — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/chemical-reactions-grade8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="chemical_reactions_grade8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/chemical-reactions-grade8" data-pack-alias="chemical-reactions-grade8" aria-label="Open Did Anything New Actually Form? — Reactions and Conservation of Mass — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/chemical-reactions-grade8" hidden aria-label="Copy link to Did Anything New Actually Form? — Reactions and Conservation of Mass — Base edition">Copy link</button>
+    <a href="./allopacks/chemical_reactions_grade8.allopack.json" data-pack-download="allopacks/chemical_reactions_grade8.allopack.json" download="chemical_reactions_grade8.allopack.json" aria-label="Download Did Anything New Actually Form? — Reactions and Conservation of Mass — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/chemical-reactions-grade8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Energy Moves — How Things Make Other Things Happen Science energy-transfer memory-aid applied-challenge ngss illustrated energy-transfer ngss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="4">
+      <p class="pack-topic-meta">Science · Grades 4</p><h3>Energy Moves — How Things Make Other Things Happen</h3>
+      <div class="pack-version" data-pack-id="energy_transfer_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/energy-transfer-grade4-illustrated" data-pack-alias="energy-transfer-grade4-illustrated" aria-label="Open Energy Moves — How Things Make Other Things Happen — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/energy-transfer-grade4-illustrated" hidden aria-label="Copy link to Energy Moves — How Things Make Other Things Happen — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/energy_transfer_grade4.allopack.json" data-pack-download="allopacks/illustrated/energy_transfer_grade4.allopack.json" download="energy_transfer_grade4.allopack.json" aria-label="Download Energy Moves — How Things Make Other Things Happen — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/energy-transfer-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="energy_transfer_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/energy-transfer-grade4" data-pack-alias="energy-transfer-grade4" aria-label="Open Energy Moves — How Things Make Other Things Happen — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/energy-transfer-grade4" hidden aria-label="Copy link to Energy Moves — How Things Make Other Things Happen — Base edition">Copy link</button>
+    <a href="./allopacks/energy_transfer_grade4.allopack.json" data-pack-download="allopacks/energy_transfer_grade4.allopack.json" download="energy_transfer_grade4.allopack.json" aria-label="Download Energy Moves — How Things Make Other Things Happen — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/energy-transfer-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Equal Groups — What Multiplication Really Means Math equal-groups memory-aid applied-challenge ccss illustrated equal-groups ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="3">
+      <p class="pack-topic-meta">Math · Grades 3</p><h3>Equal Groups — What Multiplication Really Means</h3>
+      <div class="pack-version" data-pack-id="equal_groups_grade3_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/equal-groups-grade3-illustrated" data-pack-alias="equal-groups-grade3-illustrated" aria-label="Open Equal Groups — What Multiplication Really Means — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/equal-groups-grade3-illustrated" hidden aria-label="Copy link to Equal Groups — What Multiplication Really Means — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/equal_groups_grade3.allopack.json" data-pack-download="allopacks/illustrated/equal_groups_grade3.allopack.json" download="equal_groups_grade3.allopack.json" aria-label="Download Equal Groups — What Multiplication Really Means — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/equal-groups-grade3-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="equal_groups_grade3">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/equal-groups-grade3" data-pack-alias="equal-groups-grade3" aria-label="Open Equal Groups — What Multiplication Really Means — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/equal-groups-grade3" hidden aria-label="Copy link to Equal Groups — What Multiplication Really Means — Base edition">Copy link</button>
+    <a href="./allopacks/equal_groups_grade3.allopack.json" data-pack-download="allopacks/equal_groups_grade3.allopack.json" download="equal_groups_grade3.allopack.json" aria-label="Download Equal Groups — What Multiplication Really Means — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/equal-groups-grade3"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Everything Has a Cost — Scarcity, Choice, and What You Gave Up Social Studies scarcity-choice memory-aid applied-challenge ccss c3 illustrated scarcity-choice ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="7">
+      <p class="pack-topic-meta">Social Studies · Grades 7</p><h3>Everything Has a Cost — Scarcity, Choice, and What You Gave Up</h3>
+      <div class="pack-version" data-pack-id="scarcity_choice_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/scarcity-choice-grade7-illustrated" data-pack-alias="scarcity-choice-grade7-illustrated" aria-label="Open Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/scarcity-choice-grade7-illustrated" hidden aria-label="Copy link to Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/scarcity_choice_grade7.allopack.json" data-pack-download="allopacks/illustrated/scarcity_choice_grade7.allopack.json" download="scarcity_choice_grade7.allopack.json" aria-label="Download Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/scarcity-choice-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="scarcity_choice_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/scarcity-choice-grade7" data-pack-alias="scarcity-choice-grade7" aria-label="Open Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/scarcity-choice-grade7" hidden aria-label="Copy link to Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Base edition">Copy link</button>
+    <a href="./allopacks/scarcity_choice_grade7.allopack.json" data-pack-download="allopacks/scarcity_choice_grade7.allopack.json" download="scarcity_choice_grade7.allopack.json" aria-label="Download Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/scarcity-choice-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Feel the Buzz — Sound and Vibration Science sound-vibration memory-aid applied-challenge ngss illustrated sound-vibration ngss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="1">
+      <p class="pack-topic-meta">Science · Grades 1</p><h3>Feel the Buzz — Sound and Vibration</h3>
+      <div class="pack-version" data-pack-id="sound_vibration_grade1_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/sound-vibration-grade1-illustrated" data-pack-alias="sound-vibration-grade1-illustrated" aria-label="Open Feel the Buzz — Sound and Vibration — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/sound-vibration-grade1-illustrated" hidden aria-label="Copy link to Feel the Buzz — Sound and Vibration — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/sound_vibration_grade1.allopack.json" data-pack-download="allopacks/illustrated/sound_vibration_grade1.allopack.json" download="sound_vibration_grade1.allopack.json" aria-label="Download Feel the Buzz — Sound and Vibration — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/sound-vibration-grade1-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="sound_vibration_grade1">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/sound-vibration-grade1" data-pack-alias="sound-vibration-grade1" aria-label="Open Feel the Buzz — Sound and Vibration — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/sound-vibration-grade1" hidden aria-label="Copy link to Feel the Buzz — Sound and Vibration — Base edition">Copy link</button>
+    <a href="./allopacks/sound_vibration_grade1.allopack.json" data-pack-download="allopacks/sound_vibration_grade1.allopack.json" download="sound_vibration_grade1.allopack.json" aria-label="Download Feel the Buzz — Sound and Vibration — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/sound-vibration-grade1"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Figurative Language — Say It Sideways English Language Arts figurative-language memory-aid applied-challenge ccss illustrated figurative-language ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="5">
+      <p class="pack-topic-meta">English Language Arts · Grades 5</p><h3>Figurative Language — Say It Sideways</h3>
+      <div class="pack-version" data-pack-id="figurative_language_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/figurative-language-grade5-illustrated" data-pack-alias="figurative-language-grade5-illustrated" aria-label="Open Figurative Language — Say It Sideways — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/figurative-language-grade5-illustrated" hidden aria-label="Copy link to Figurative Language — Say It Sideways — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/figurative_language_grade5.allopack.json" data-pack-download="allopacks/illustrated/figurative_language_grade5.allopack.json" download="figurative_language_grade5.allopack.json" aria-label="Download Figurative Language — Say It Sideways — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/figurative-language-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="figurative_language_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/figurative-language-grade5" data-pack-alias="figurative-language-grade5" aria-label="Open Figurative Language — Say It Sideways — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/figurative-language-grade5" hidden aria-label="Copy link to Figurative Language — Say It Sideways — Base edition">Copy link</button>
+    <a href="./allopacks/figurative_language_grade5.allopack.json" data-pack-download="allopacks/figurative_language_grade5.allopack.json" download="figurative_language_grade5.allopack.json" aria-label="Download Figurative Language — Say It Sideways — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/figurative-language-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Filling Space — Volume and Why You Multiply Three Numbers Math volume memory-aid applied-challenge ccss illustrated volume ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="5">
+      <p class="pack-topic-meta">Math · Grades 5</p><h3>Filling Space — Volume and Why You Multiply Three Numbers</h3>
+      <div class="pack-version" data-pack-id="volume_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/volume-grade5-illustrated" data-pack-alias="volume-grade5-illustrated" aria-label="Open Filling Space — Volume and Why You Multiply Three Numbers — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/volume-grade5-illustrated" hidden aria-label="Copy link to Filling Space — Volume and Why You Multiply Three Numbers — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/volume_grade5.allopack.json" data-pack-download="allopacks/illustrated/volume_grade5.allopack.json" download="volume_grade5.allopack.json" aria-label="Download Filling Space — Volume and Why You Multiply Three Numbers — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/volume-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="volume_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/volume-grade5" data-pack-alias="volume-grade5" aria-label="Open Filling Space — Volume and Why You Multiply Three Numbers — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/volume-grade5" hidden aria-label="Copy link to Filling Space — Volume and Why You Multiply Three Numbers — Base edition">Copy link</button>
+    <a href="./allopacks/volume_grade5.allopack.json" data-pack-download="allopacks/volume_grade5.allopack.json" download="volume_grade5.allopack.json" aria-label="Download Filling Space — Volume and Why You Multiply Three Numbers — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/volume-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Food Webs — Who Eats Whom, and What Happens Next Science ecosystems-food-webs memory-aid applied-challenge ngss ccss illustrated ecosystems-food-webs ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="5">
+      <p class="pack-topic-meta">Science · Grades 5</p><h3>Food Webs — Who Eats Whom, and What Happens Next</h3>
+      <div class="pack-version" data-pack-id="ecosystems_food_webs_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ecosystems-food-webs-grade5-illustrated" data-pack-alias="ecosystems-food-webs-grade5-illustrated" aria-label="Open Food Webs — Who Eats Whom, and What Happens Next — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ecosystems-food-webs-grade5-illustrated" hidden aria-label="Copy link to Food Webs — Who Eats Whom, and What Happens Next — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/ecosystems_food_webs_grade5.allopack.json" data-pack-download="allopacks/illustrated/ecosystems_food_webs_grade5.allopack.json" download="ecosystems_food_webs_grade5.allopack.json" aria-label="Download Food Webs — Who Eats Whom, and What Happens Next — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ecosystems-food-webs-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="ecosystems_food_webs_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ecosystems-food-webs-grade5" data-pack-alias="ecosystems-food-webs-grade5" aria-label="Open Food Webs — Who Eats Whom, and What Happens Next — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ecosystems-food-webs-grade5" hidden aria-label="Copy link to Food Webs — Who Eats Whom, and What Happens Next — Base edition">Copy link</button>
+    <a href="./allopacks/ecosystems_food_webs_grade5.allopack.json" data-pack-download="allopacks/ecosystems_food_webs_grade5.allopack.json" download="ecosystems_food_webs_grade5.allopack.json" aria-label="Download Food Webs — Who Eats Whom, and What Happens Next — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ecosystems-food-webs-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Forces and Motion — Pushes, Pulls, and Why Things Stop Science forces-motion illustrated ngss ccss memory-aid applied-challenge forces-motion ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="3">
+      <p class="pack-topic-meta">Science · Grades 3</p><h3>Forces and Motion — Pushes, Pulls, and Why Things Stop</h3>
+      <div class="pack-version" data-pack-id="forces_motion_grade3_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/forces-motion-grade3-illustrated" data-pack-alias="forces-motion-grade3-illustrated" aria-label="Open Forces and Motion — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/forces-motion-grade3-illustrated" hidden aria-label="Copy link to Forces and Motion — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/forces_motion_grade3.allopack.json" data-pack-download="allopacks/illustrated/forces_motion_grade3.allopack.json" download="forces_motion_grade3.allopack.json" aria-label="Download Forces and Motion — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/forces-motion-grade3-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="forces_motion_grade3">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/forces-motion-grade3" data-pack-alias="forces-motion-grade3" aria-label="Open Forces and Motion — Pushes, Pulls, and Why Things Stop — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/forces-motion-grade3" hidden aria-label="Copy link to Forces and Motion — Pushes, Pulls, and Why Things Stop — Base edition">Copy link</button>
+    <a href="./allopacks/forces_motion_grade3.allopack.json" data-pack-download="allopacks/forces_motion_grade3.allopack.json" download="forces_motion_grade3.allopack.json" aria-label="Download Forces and Motion — Pushes, Pulls, and Why Things Stop — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/forces-motion-grade3"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Fractions on the Number Line — Finding the Space Between Math fractions-number-line memory-aid applied-challenge ccss illustrated fractions-number-line ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="3-4">
+      <p class="pack-topic-meta">Math · Grades 3-4</p><h3>Fractions on the Number Line — Finding the Space Between</h3>
+      <div class="pack-version" data-pack-id="fractions_number_line_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/fractions-number-line-grade4-illustrated" data-pack-alias="fractions-number-line-grade4-illustrated" aria-label="Open Fractions on the Number Line — Finding the Space Between — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/fractions-number-line-grade4-illustrated" hidden aria-label="Copy link to Fractions on the Number Line — Finding the Space Between — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/fractions_number_line_grade4.allopack.json" data-pack-download="allopacks/illustrated/fractions_number_line_grade4.allopack.json" download="fractions_number_line_grade4.allopack.json" aria-label="Download Fractions on the Number Line — Finding the Space Between — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/fractions-number-line-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="fractions_number_line_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/fractions-number-line-grade4" data-pack-alias="fractions-number-line-grade4" aria-label="Open Fractions on the Number Line — Finding the Space Between — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/fractions-number-line-grade4" hidden aria-label="Copy link to Fractions on the Number Line — Finding the Space Between — Base edition">Copy link</button>
+    <a href="./allopacks/fractions_number_line_grade4.allopack.json" data-pack-download="allopacks/fractions_number_line_grade4.allopack.json" download="fractions_number_line_grade4.allopack.json" aria-label="Download Fractions on the Number Line — Finding the Space Between — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/fractions-number-line-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Learn One, Read Many — Word Families English Language Arts word-families memory-aid applied-challenge ccss illustrated word-families ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="1">
+      <p class="pack-topic-meta">English Language Arts · Grades 1</p><h3>Learn One, Read Many — Word Families</h3>
+      <div class="pack-version" data-pack-id="word_families_grade1_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/word-families-grade1-illustrated" data-pack-alias="word-families-grade1-illustrated" aria-label="Open Learn One, Read Many — Word Families — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/word-families-grade1-illustrated" hidden aria-label="Copy link to Learn One, Read Many — Word Families — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/word_families_grade1.allopack.json" data-pack-download="allopacks/illustrated/word_families_grade1.allopack.json" download="word_families_grade1.allopack.json" aria-label="Download Learn One, Read Many — Word Families — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/word-families-grade1-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="word_families_grade1">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/word-families-grade1" data-pack-alias="word-families-grade1" aria-label="Open Learn One, Read Many — Word Families — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/word-families-grade1" hidden aria-label="Copy link to Learn One, Read Many — Word Families — Base edition">Copy link</button>
+    <a href="./allopacks/word_families_grade1.allopack.json" data-pack-download="allopacks/word_families_grade1.allopack.json" download="word_families_grade1.allopack.json" aria-label="Download Learn One, Read Many — Word Families — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/word-families-grade1"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Likely Is Not Certain — Probability Models Math probability-models memory-aid applied-challenge ccss illustrated probability-models ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="7">
+      <p class="pack-topic-meta">Math · Grades 7</p><h3>Likely Is Not Certain — Probability Models</h3>
+      <div class="pack-version" data-pack-id="probability_models_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/probability-models-grade7-illustrated" data-pack-alias="probability-models-grade7-illustrated" aria-label="Open Likely Is Not Certain — Probability Models — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/probability-models-grade7-illustrated" hidden aria-label="Copy link to Likely Is Not Certain — Probability Models — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/probability_models_grade7.allopack.json" data-pack-download="allopacks/illustrated/probability_models_grade7.allopack.json" download="probability_models_grade7.allopack.json" aria-label="Download Likely Is Not Certain — Probability Models — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/probability-models-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="probability_models_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/probability-models-grade7" data-pack-alias="probability-models-grade7" aria-label="Open Likely Is Not Certain — Probability Models — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/probability-models-grade7" hidden aria-label="Copy link to Likely Is Not Certain — Probability Models — Base edition">Copy link</button>
+    <a href="./allopacks/probability_models_grade7.allopack.json" data-pack-download="allopacks/probability_models_grade7.allopack.json" download="probability_models_grade7.allopack.json" aria-label="Download Likely Is Not Certain — Probability Models — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/probability-models-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Linear Equations — Slope, Start, and the Story a Line Tells Math linear-equations memory-aid applied-challenge ccss illustrated linear-equations ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="8">
+      <p class="pack-topic-meta">Math · Grades 8</p><h3>Linear Equations — Slope, Start, and the Story a Line Tells</h3>
+      <div class="pack-version" data-pack-id="linear_equations_grade8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/linear-equations-grade8-illustrated" data-pack-alias="linear-equations-grade8-illustrated" aria-label="Open Linear Equations — Slope, Start, and the Story a Line Tells — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/linear-equations-grade8-illustrated" hidden aria-label="Copy link to Linear Equations — Slope, Start, and the Story a Line Tells — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/linear_equations_grade8.allopack.json" data-pack-download="allopacks/illustrated/linear_equations_grade8.allopack.json" download="linear_equations_grade8.allopack.json" aria-label="Download Linear Equations — Slope, Start, and the Story a Line Tells — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/linear-equations-grade8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="linear_equations_grade8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/linear-equations-grade8" data-pack-alias="linear-equations-grade8" aria-label="Open Linear Equations — Slope, Start, and the Story a Line Tells — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/linear-equations-grade8" hidden aria-label="Copy link to Linear Equations — Slope, Start, and the Story a Line Tells — Base edition">Copy link</button>
+    <a href="./allopacks/linear_equations_grade8.allopack.json" data-pack-download="allopacks/linear_equations_grade8.allopack.json" download="linear_equations_grade8.allopack.json" aria-label="Download Linear Equations — Slope, Start, and the Story a Line Tells — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/linear-equations-grade8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Magnetism — Invisible Push and Pull Science magnetism memory-aid applied-challenge ngss ccss illustrated magnetism ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="6-7">
+      <p class="pack-topic-meta">Science · Grades 6-7</p><h3>Magnetism — Invisible Push and Pull</h3>
+      <div class="pack-version" data-pack-id="magnetism_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/magnetism-grade6-illustrated" data-pack-alias="magnetism-grade6-illustrated" aria-label="Open Magnetism — Invisible Push and Pull — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/magnetism-grade6-illustrated" hidden aria-label="Copy link to Magnetism — Invisible Push and Pull — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/magnetism_grade6.allopack.json" data-pack-download="allopacks/illustrated/magnetism_grade6.allopack.json" download="magnetism_grade6.allopack.json" aria-label="Download Magnetism — Invisible Push and Pull — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/magnetism-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="magnetism_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/magnetism-grade6" data-pack-alias="magnetism-grade6" aria-label="Open Magnetism — Invisible Push and Pull — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/magnetism-grade6" hidden aria-label="Copy link to Magnetism — Invisible Push and Pull — Base edition">Copy link</button>
+    <a href="./allopacks/magnetism_grade6.allopack.json" data-pack-download="allopacks/magnetism_grade6.allopack.json" download="magnetism_grade6.allopack.json" aria-label="Download Magnetism — Invisible Push and Pull — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/magnetism-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Main Idea — What Is This Really About? English Language Arts main-idea memory-aid applied-challenge ccss illustrated main-idea ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="4-5">
+      <p class="pack-topic-meta">English Language Arts · Grades 4-5</p><h3>Main Idea — What Is This Really About?</h3>
+      <div class="pack-version" data-pack-id="main_idea_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/main-idea-grade4-illustrated" data-pack-alias="main-idea-grade4-illustrated" aria-label="Open Main Idea — What Is This Really About? — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/main-idea-grade4-illustrated" hidden aria-label="Copy link to Main Idea — What Is This Really About? — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/main_idea_grade4.allopack.json" data-pack-download="allopacks/illustrated/main_idea_grade4.allopack.json" download="main_idea_grade4.allopack.json" aria-label="Download Main Idea — What Is This Really About? — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/main-idea-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="main_idea_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/main-idea-grade4" data-pack-alias="main-idea-grade4" aria-label="Open Main Idea — What Is This Really About? — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/main-idea-grade4" hidden aria-label="Copy link to Main Idea — What Is This Really About? — Base edition">Copy link</button>
+    <a href="./allopacks/main_idea_grade4.allopack.json" data-pack-download="allopacks/main_idea_grade4.allopack.json" download="main_idea_grade4.allopack.json" aria-label="Download Main Idea — What Is This Really About? — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/main-idea-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Moon Phases and Eclipses — Why the Moon Changes Shape Science moon-phases memory-aid applied-challenge ngss ccss illustrated moon-phases ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="6">
+      <p class="pack-topic-meta">Science · Grades 6</p><h3>Moon Phases and Eclipses — Why the Moon Changes Shape</h3>
+      <div class="pack-version" data-pack-id="moon_phases_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/moon-phases-grade6-illustrated" data-pack-alias="moon-phases-grade6-illustrated" aria-label="Open Moon Phases and Eclipses — Why the Moon Changes Shape — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/moon-phases-grade6-illustrated" hidden aria-label="Copy link to Moon Phases and Eclipses — Why the Moon Changes Shape — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/moon_phases_grade6.allopack.json" data-pack-download="allopacks/illustrated/moon_phases_grade6.allopack.json" download="moon_phases_grade6.allopack.json" aria-label="Download Moon Phases and Eclipses — Why the Moon Changes Shape — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/moon-phases-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="moon_phases_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/moon-phases-grade6" data-pack-alias="moon-phases-grade6" aria-label="Open Moon Phases and Eclipses — Why the Moon Changes Shape — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/moon-phases-grade6" hidden aria-label="Copy link to Moon Phases and Eclipses — Why the Moon Changes Shape — Base edition">Copy link</button>
+    <a href="./allopacks/moon_phases_grade6.allopack.json" data-pack-download="allopacks/moon_phases_grade6.allopack.json" download="moon_phases_grade6.allopack.json" aria-label="Download Moon Phases and Eclipses — Why the Moon Changes Shape — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/moon-phases-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Nothing Is Trying — How Natural Selection Actually Works Science natural-selection memory-aid applied-challenge ngss illustrated natural-selection ngss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="8">
+      <p class="pack-topic-meta">Science · Grades 8</p><h3>Nothing Is Trying — How Natural Selection Actually Works</h3>
+      <div class="pack-version" data-pack-id="natural_selection_grade8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/natural-selection-grade8-illustrated" data-pack-alias="natural-selection-grade8-illustrated" aria-label="Open Nothing Is Trying — How Natural Selection Actually Works — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/natural-selection-grade8-illustrated" hidden aria-label="Copy link to Nothing Is Trying — How Natural Selection Actually Works — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/natural_selection_grade8.allopack.json" data-pack-download="allopacks/illustrated/natural_selection_grade8.allopack.json" download="natural_selection_grade8.allopack.json" aria-label="Download Nothing Is Trying — How Natural Selection Actually Works — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/natural-selection-grade8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="natural_selection_grade8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/natural-selection-grade8" data-pack-alias="natural-selection-grade8" aria-label="Open Nothing Is Trying — How Natural Selection Actually Works — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/natural-selection-grade8" hidden aria-label="Copy link to Nothing Is Trying — How Natural Selection Actually Works — Base edition">Copy link</button>
+    <a href="./allopacks/natural_selection_grade8.allopack.json" data-pack-download="allopacks/natural_selection_grade8.allopack.json" download="natural_selection_grade8.allopack.json" aria-label="Download Nothing Is Trying — How Natural Selection Actually Works — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/natural-selection-grade8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Photosynthesis — How Plants Eat Sunlight Science photosynthesis memory-aid applied-challenge ngss ccss illustrated photosynthesis ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="7">
+      <p class="pack-topic-meta">Science · Grades 7</p><h3>Photosynthesis — How Plants Eat Sunlight</h3>
+      <div class="pack-version" data-pack-id="photosynthesis_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/photosynthesis-grade7-illustrated" data-pack-alias="photosynthesis-grade7-illustrated" aria-label="Open Photosynthesis — How Plants Eat Sunlight — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/photosynthesis-grade7-illustrated" hidden aria-label="Copy link to Photosynthesis — How Plants Eat Sunlight — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/photosynthesis_grade7.allopack.json" data-pack-download="allopacks/illustrated/photosynthesis_grade7.allopack.json" download="photosynthesis_grade7.allopack.json" aria-label="Download Photosynthesis — How Plants Eat Sunlight — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/photosynthesis-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="photosynthesis_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/photosynthesis-grade7" data-pack-alias="photosynthesis-grade7" aria-label="Open Photosynthesis — How Plants Eat Sunlight — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/photosynthesis-grade7" hidden aria-label="Copy link to Photosynthesis — How Plants Eat Sunlight — Base edition">Copy link</button>
+    <a href="./allopacks/photosynthesis_grade7.allopack.json" data-pack-download="allopacks/photosynthesis_grade7.allopack.json" download="photosynthesis_grade7.allopack.json" aria-label="Download Photosynthesis — How Plants Eat Sunlight — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/photosynthesis-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Plate Tectonics — The Earth Puzzle Science plate-tectonics memory-aid applied-challenge ngss ccss illustrated plate-tectonics ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="6">
+      <p class="pack-topic-meta">Science · Grades 6</p><h3>Plate Tectonics — The Earth Puzzle</h3>
+      <div class="pack-version" data-pack-id="plate_tectonics_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/plate-tectonics-grade6-illustrated" data-pack-alias="plate-tectonics-grade6-illustrated" aria-label="Open Plate Tectonics — The Earth Puzzle — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/plate-tectonics-grade6-illustrated" hidden aria-label="Copy link to Plate Tectonics — The Earth Puzzle — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/plate_tectonics_grade6.allopack.json" data-pack-download="allopacks/illustrated/plate_tectonics_grade6.allopack.json" download="plate_tectonics_grade6.allopack.json" aria-label="Download Plate Tectonics — The Earth Puzzle — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/plate-tectonics-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="plate_tectonics_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/plate-tectonics-grade6" data-pack-alias="plate-tectonics-grade6" aria-label="Open Plate Tectonics — The Earth Puzzle — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/plate-tectonics-grade6" hidden aria-label="Copy link to Plate Tectonics — The Earth Puzzle — Base edition">Copy link</button>
+    <a href="./allopacks/plate_tectonics_grade6.allopack.json" data-pack-download="allopacks/plate_tectonics_grade6.allopack.json" download="plate_tectonics_grade6.allopack.json" aria-label="Download Plate Tectonics — The Earth Puzzle — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/plate-tectonics-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Point of View — Who Is Telling This Story? English Language Arts point-of-view memory-aid applied-challenge ccss illustrated point-of-view ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="4">
+      <p class="pack-topic-meta">English Language Arts · Grades 4</p><h3>Point of View — Who Is Telling This Story?</h3>
+      <div class="pack-version" data-pack-id="point_of_view_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/point-of-view-grade4-illustrated" data-pack-alias="point-of-view-grade4-illustrated" aria-label="Open Point of View — Who Is Telling This Story? — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/point-of-view-grade4-illustrated" hidden aria-label="Copy link to Point of View — Who Is Telling This Story? — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/point_of_view_grade4.allopack.json" data-pack-download="allopacks/illustrated/point_of_view_grade4.allopack.json" download="point_of_view_grade4.allopack.json" aria-label="Download Point of View — Who Is Telling This Story? — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/point-of-view-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="point_of_view_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/point-of-view-grade4" data-pack-alias="point-of-view-grade4" aria-label="Open Point of View — Who Is Telling This Story? — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/point-of-view-grade4" hidden aria-label="Copy link to Point of View — Who Is Telling This Story? — Base edition">Copy link</button>
+    <a href="./allopacks/point_of_view_grade4.allopack.json" data-pack-download="allopacks/point_of_view_grade4.allopack.json" download="point_of_view_grade4.allopack.json" aria-label="Download Point of View — Who Is Telling This Story? — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/point-of-view-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Proportional Relationships — When Doubling One Doubles the Other Math proportional-relationships memory-aid applied-challenge ccss illustrated proportional-relationships ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="7">
+      <p class="pack-topic-meta">Math · Grades 7</p><h3>Proportional Relationships — When Doubling One Doubles the Other</h3>
+      <div class="pack-version" data-pack-id="proportional_relationships_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/proportional-relationships-grade7-illustrated" data-pack-alias="proportional-relationships-grade7-illustrated" aria-label="Open Proportional Relationships — When Doubling One Doubles the Other — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/proportional-relationships-grade7-illustrated" hidden aria-label="Copy link to Proportional Relationships — When Doubling One Doubles the Other — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/proportional_relationships_grade7.allopack.json" data-pack-download="allopacks/illustrated/proportional_relationships_grade7.allopack.json" download="proportional_relationships_grade7.allopack.json" aria-label="Download Proportional Relationships — When Doubling One Doubles the Other — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/proportional-relationships-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="proportional_relationships_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/proportional-relationships-grade7" data-pack-alias="proportional-relationships-grade7" aria-label="Open Proportional Relationships — When Doubling One Doubles the Other — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/proportional-relationships-grade7" hidden aria-label="Copy link to Proportional Relationships — When Doubling One Doubles the Other — Base edition">Copy link</button>
+    <a href="./allopacks/proportional_relationships_grade7.allopack.json" data-pack-download="allopacks/proportional_relationships_grade7.allopack.json" download="proportional_relationships_grade7.allopack.json" aria-label="Download Proportional Relationships — When Doubling One Doubles the Other — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/proportional-relationships-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Ratios in Real Life — Recipes, Maps, and Best Buys Math ratios-real-life memory-aid applied-challenge ccss illustrated ratios-real-life ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="6">
+      <p class="pack-topic-meta">Math · Grades 6</p><h3>Ratios in Real Life — Recipes, Maps, and Best Buys</h3>
+      <div class="pack-version" data-pack-id="ratios_real_life_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ratios-real-life-grade6-illustrated" data-pack-alias="ratios-real-life-grade6-illustrated" aria-label="Open Ratios in Real Life — Recipes, Maps, and Best Buys — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ratios-real-life-grade6-illustrated" hidden aria-label="Copy link to Ratios in Real Life — Recipes, Maps, and Best Buys — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/ratios_real_life_grade6.allopack.json" data-pack-download="allopacks/illustrated/ratios_real_life_grade6.allopack.json" download="ratios_real_life_grade6.allopack.json" aria-label="Download Ratios in Real Life — Recipes, Maps, and Best Buys — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ratios-real-life-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="ratios_real_life_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ratios-real-life-grade6" data-pack-alias="ratios-real-life-grade6" aria-label="Open Ratios in Real Life — Recipes, Maps, and Best Buys — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ratios-real-life-grade6" hidden aria-label="Copy link to Ratios in Real Life — Recipes, Maps, and Best Buys — Base edition">Copy link</button>
+    <a href="./allopacks/ratios_real_life_grade6.allopack.json" data-pack-download="allopacks/ratios_real_life_grade6.allopack.json" download="ratios_real_life_grade6.allopack.json" aria-label="Download Ratios in Real Life — Recipes, Maps, and Best Buys — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ratios-real-life-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Reading a Map — Every Map Leaves Something Out Social Studies map-skills ccss c3 memory-aid applied-challenge illustrated map-skills ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="3">
+      <p class="pack-topic-meta">Social Studies · Grades 3</p><h3>Reading a Map — Every Map Leaves Something Out</h3>
+      <div class="pack-version" data-pack-id="map_skills_grade3_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/map-skills-grade3-illustrated" data-pack-alias="map-skills-grade3-illustrated" aria-label="Open Reading a Map — Every Map Leaves Something Out — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/map-skills-grade3-illustrated" hidden aria-label="Copy link to Reading a Map — Every Map Leaves Something Out — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/map_skills_grade3.allopack.json" data-pack-download="allopacks/illustrated/map_skills_grade3.allopack.json" download="map_skills_grade3.allopack.json" aria-label="Download Reading a Map — Every Map Leaves Something Out — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/map-skills-grade3-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="map_skills_grade3">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/map-skills-grade3" data-pack-alias="map-skills-grade3" aria-label="Open Reading a Map — Every Map Leaves Something Out — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/map-skills-grade3" hidden aria-label="Copy link to Reading a Map — Every Map Leaves Something Out — Base edition">Copy link</button>
+    <a href="./allopacks/map_skills_grade3.allopack.json" data-pack-download="allopacks/map_skills_grade3.allopack.json" download="map_skills_grade3.allopack.json" aria-label="Download Reading a Map — Every Map Leaves Something Out — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/map-skills-grade3"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Same Digits, Different Values — Decimals Math decimal-place-value memory-aid applied-challenge ccss illustrated decimal-place-value ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="5">
+      <p class="pack-topic-meta">Math · Grades 5</p><h3>Same Digits, Different Values — Decimals</h3>
+      <div class="pack-version" data-pack-id="decimal_place_value_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/decimal-place-value-grade5-illustrated" data-pack-alias="decimal-place-value-grade5-illustrated" aria-label="Open Same Digits, Different Values — Decimals — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/decimal-place-value-grade5-illustrated" hidden aria-label="Copy link to Same Digits, Different Values — Decimals — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/decimal_place_value_grade5.allopack.json" data-pack-download="allopacks/illustrated/decimal_place_value_grade5.allopack.json" download="decimal_place_value_grade5.allopack.json" aria-label="Download Same Digits, Different Values — Decimals — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/decimal-place-value-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="decimal_place_value_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/decimal-place-value-grade5" data-pack-alias="decimal-place-value-grade5" aria-label="Open Same Digits, Different Values — Decimals — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/decimal-place-value-grade5" hidden aria-label="Copy link to Same Digits, Different Values — Decimals — Base edition">Copy link</button>
+    <a href="./allopacks/decimal_place_value_grade5.allopack.json" data-pack-download="allopacks/decimal_place_value_grade5.allopack.json" download="decimal_place_value_grade5.allopack.json" aria-label="Download Same Digits, Different Values — Decimals — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/decimal-place-value-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Says Who? — Claims, Evidence, and the Reasoning in Between English Language Arts argument-evidence memory-aid applied-challenge ccss illustrated argument-evidence ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="6">
+      <p class="pack-topic-meta">English Language Arts · Grades 6</p><h3>Says Who? — Claims, Evidence, and the Reasoning in Between</h3>
+      <div class="pack-version" data-pack-id="argument_evidence_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/argument-evidence-grade6-illustrated" data-pack-alias="argument-evidence-grade6-illustrated" aria-label="Open Says Who? — Claims, Evidence, and the Reasoning in Between — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/argument-evidence-grade6-illustrated" hidden aria-label="Copy link to Says Who? — Claims, Evidence, and the Reasoning in Between — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/argument_evidence_grade6.allopack.json" data-pack-download="allopacks/illustrated/argument_evidence_grade6.allopack.json" download="argument_evidence_grade6.allopack.json" aria-label="Download Says Who? — Claims, Evidence, and the Reasoning in Between — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/argument-evidence-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="argument_evidence_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/argument-evidence-grade6" data-pack-alias="argument-evidence-grade6" aria-label="Open Says Who? — Claims, Evidence, and the Reasoning in Between — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/argument-evidence-grade6" hidden aria-label="Copy link to Says Who? — Claims, Evidence, and the Reasoning in Between — Base edition">Copy link</button>
+    <a href="./allopacks/argument_evidence_grade6.allopack.json" data-pack-download="allopacks/argument_evidence_grade6.allopack.json" download="argument_evidence_grade6.allopack.json" aria-label="Download Says Who? — Claims, Evidence, and the Reasoning in Between — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/argument-evidence-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Simple Machines — Trading Distance for Strength Science simple-machines memory-aid applied-challenge ngss ccss illustrated simple-machines ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="5-6">
+      <p class="pack-topic-meta">Science · Grades 5-6</p><h3>Simple Machines — Trading Distance for Strength</h3>
+      <div class="pack-version" data-pack-id="simple_machines_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/simple-machines-grade5-illustrated" data-pack-alias="simple-machines-grade5-illustrated" aria-label="Open Simple Machines — Trading Distance for Strength — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/simple-machines-grade5-illustrated" hidden aria-label="Copy link to Simple Machines — Trading Distance for Strength — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/simple_machines_grade5.allopack.json" data-pack-download="allopacks/illustrated/simple_machines_grade5.allopack.json" download="simple_machines_grade5.allopack.json" aria-label="Download Simple Machines — Trading Distance for Strength — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/simple-machines-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="simple_machines_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/simple-machines-grade5" data-pack-alias="simple-machines-grade5" aria-label="Open Simple Machines — Trading Distance for Strength — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/simple-machines-grade5" hidden aria-label="Copy link to Simple Machines — Trading Distance for Strength — Base edition">Copy link</button>
+    <a href="./allopacks/simple_machines_grade5.allopack.json" data-pack-download="allopacks/simple_machines_grade5.allopack.json" download="simple_machines_grade5.allopack.json" aria-label="Download Simple Machines — Trading Distance for Strength — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/simple-machines-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="States of Matter — Same Stuff, Different Behavior Science states-of-matter illustrated ngss ccss memory-aid applied-challenge states-of-matter ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="4-5">
+      <p class="pack-topic-meta">Science · Grades 4-5</p><h3>States of Matter — Same Stuff, Different Behavior</h3>
+      <div class="pack-version" data-pack-id="states_of_matter_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/states-of-matter-grade4-illustrated" data-pack-alias="states-of-matter-grade4-illustrated" aria-label="Open States of Matter — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/states-of-matter-grade4-illustrated" hidden aria-label="Copy link to States of Matter — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/states_of_matter_grade4.allopack.json" data-pack-download="allopacks/illustrated/states_of_matter_grade4.allopack.json" download="states_of_matter_grade4.allopack.json" aria-label="Download States of Matter — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/states-of-matter-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="states_of_matter_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/states-of-matter-grade4" data-pack-alias="states-of-matter-grade4" aria-label="Open States of Matter — Same Stuff, Different Behavior — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/states-of-matter-grade4" hidden aria-label="Copy link to States of Matter — Same Stuff, Different Behavior — Base edition">Copy link</button>
+    <a href="./allopacks/states_of_matter_grade4.allopack.json" data-pack-download="allopacks/states_of_matter_grade4.allopack.json" download="states_of_matter_grade4.allopack.json" aria-label="Download States of Matter — Same Stuff, Different Behavior — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/states-of-matter-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Tell It Back — Beginning, Middle, and End English Language Arts story-retell memory-aid applied-challenge ccss illustrated story-retell ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="2">
+      <p class="pack-topic-meta">English Language Arts · Grades 2</p><h3>Tell It Back — Beginning, Middle, and End</h3>
+      <div class="pack-version" data-pack-id="story_retell_grade2_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/story-retell-grade2-illustrated" data-pack-alias="story-retell-grade2-illustrated" aria-label="Open Tell It Back — Beginning, Middle, and End — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/story-retell-grade2-illustrated" hidden aria-label="Copy link to Tell It Back — Beginning, Middle, and End — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/story_retell_grade2.allopack.json" data-pack-download="allopacks/illustrated/story_retell_grade2.allopack.json" download="story_retell_grade2.allopack.json" aria-label="Download Tell It Back — Beginning, Middle, and End — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/story-retell-grade2-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="story_retell_grade2">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/story-retell-grade2" data-pack-alias="story-retell-grade2" aria-label="Open Tell It Back — Beginning, Middle, and End — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/story-retell-grade2" hidden aria-label="Copy link to Tell It Back — Beginning, Middle, and End — Base edition">Copy link</button>
+    <a href="./allopacks/story_retell_grade2.allopack.json" data-pack-download="allopacks/story_retell_grade2.allopack.json" download="story_retell_grade2.allopack.json" aria-label="Download Tell It Back — Beginning, Middle, and End — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/story-retell-grade2"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Ten Is a Bundle — Place Value to 1000 Math place-value memory-aid applied-challenge ccss illustrated place-value ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="2">
+      <p class="pack-topic-meta">Math · Grades 2</p><h3>Ten Is a Bundle — Place Value to 1000</h3>
+      <div class="pack-version" data-pack-id="place_value_grade2_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/place-value-grade2-illustrated" data-pack-alias="place-value-grade2-illustrated" aria-label="Open Ten Is a Bundle — Place Value to 1000 — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/place-value-grade2-illustrated" hidden aria-label="Copy link to Ten Is a Bundle — Place Value to 1000 — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/place_value_grade2.allopack.json" data-pack-download="allopacks/illustrated/place_value_grade2.allopack.json" download="place_value_grade2.allopack.json" aria-label="Download Ten Is a Bundle — Place Value to 1000 — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/place-value-grade2-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="place_value_grade2">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/place-value-grade2" data-pack-alias="place-value-grade2" aria-label="Open Ten Is a Bundle — Place Value to 1000 — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/place-value-grade2" hidden aria-label="Copy link to Ten Is a Bundle — Place Value to 1000 — Base edition">Copy link</button>
+    <a href="./allopacks/place_value_grade2.allopack.json" data-pack-download="allopacks/place_value_grade2.allopack.json" download="place_value_grade2.allopack.json" aria-label="Download Ten Is a Bundle — Place Value to 1000 — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/place-value-grade2"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Ten Is a Friendly Number — Making Ten to Add Math making-ten memory-aid applied-challenge ccss illustrated making-ten ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="1">
+      <p class="pack-topic-meta">Math · Grades 1</p><h3>Ten Is a Friendly Number — Making Ten to Add</h3>
+      <div class="pack-version" data-pack-id="making_ten_grade1_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/making-ten-grade1-illustrated" data-pack-alias="making-ten-grade1-illustrated" aria-label="Open Ten Is a Friendly Number — Making Ten to Add — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/making-ten-grade1-illustrated" hidden aria-label="Copy link to Ten Is a Friendly Number — Making Ten to Add — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/making_ten_grade1.allopack.json" data-pack-download="allopacks/illustrated/making_ten_grade1.allopack.json" download="making_ten_grade1.allopack.json" aria-label="Download Ten Is a Friendly Number — Making Ten to Add — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/making-ten-grade1-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="making_ten_grade1">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/making-ten-grade1" data-pack-alias="making-ten-grade1" aria-label="Open Ten Is a Friendly Number — Making Ten to Add — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/making-ten-grade1" hidden aria-label="Copy link to Ten Is a Friendly Number — Making Ten to Add — Base edition">Copy link</button>
+    <a href="./allopacks/making_ten_grade1.allopack.json" data-pack-download="allopacks/making_ten_grade1.allopack.json" download="making_ten_grade1.allopack.json" aria-label="Download Ten Is a Friendly Number — Making Ten to Add — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/making-ten-grade1"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="The Cell — The Smallest Living Factory Science cell-structure memory-aid applied-challenge ngss ccss illustrated cell-structure ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="7">
+      <p class="pack-topic-meta">Science · Grades 7</p><h3>The Cell — The Smallest Living Factory</h3>
+      <div class="pack-version" data-pack-id="cell_structure_grade7_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/cell-structure-grade7-illustrated" data-pack-alias="cell-structure-grade7-illustrated" aria-label="Open The Cell — The Smallest Living Factory — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/cell-structure-grade7-illustrated" hidden aria-label="Copy link to The Cell — The Smallest Living Factory — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/cell_structure_grade7.allopack.json" data-pack-download="allopacks/illustrated/cell_structure_grade7.allopack.json" download="cell_structure_grade7.allopack.json" aria-label="Download The Cell — The Smallest Living Factory — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/cell-structure-grade7-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="cell_structure_grade7">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/cell-structure-grade7" data-pack-alias="cell-structure-grade7" aria-label="Open The Cell — The Smallest Living Factory — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/cell-structure-grade7" hidden aria-label="Copy link to The Cell — The Smallest Living Factory — Base edition">Copy link</button>
+    <a href="./allopacks/cell_structure_grade7.allopack.json" data-pack-download="allopacks/cell_structure_grade7.allopack.json" download="cell_structure_grade7.allopack.json" aria-label="Download The Cell — The Smallest Living Factory — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/cell-structure-grade7"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="The Constitution — Rules for the Rule-Makers Social Studies constitution ccss c3 memory-aid applied-challenge illustrated constitution ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="8">
+      <p class="pack-topic-meta">Social Studies · Grades 8</p><h3>The Constitution — Rules for the Rule-Makers</h3>
+      <div class="pack-version" data-pack-id="constitution_grade8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/constitution-grade8-illustrated" data-pack-alias="constitution-grade8-illustrated" aria-label="Open The Constitution — Rules for the Rule-Makers — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/constitution-grade8-illustrated" hidden aria-label="Copy link to The Constitution — Rules for the Rule-Makers — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/constitution_grade8.allopack.json" data-pack-download="allopacks/illustrated/constitution_grade8.allopack.json" download="constitution_grade8.allopack.json" aria-label="Download The Constitution — Rules for the Rule-Makers — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/constitution-grade8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="constitution_grade8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/constitution-grade8" data-pack-alias="constitution-grade8" aria-label="Open The Constitution — Rules for the Rule-Makers — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/constitution-grade8" hidden aria-label="Copy link to The Constitution — Rules for the Rule-Makers — Base edition">Copy link</button>
+    <a href="./allopacks/constitution_grade8.allopack.json" data-pack-download="allopacks/constitution_grade8.allopack.json" download="constitution_grade8.allopack.json" aria-label="Download The Constitution — Rules for the Rule-Makers — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/constitution-grade8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="The Water Cycle — Earth&#39;s Recycling System Science water-cycle illustrated pilot ngss memory-aid applied-challenge water-cycle ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="6">
+      <p class="pack-topic-meta">Science · Grades 6</p><h3>The Water Cycle — Earth&#39;s Recycling System</h3>
+      <div class="pack-version" data-pack-id="water_cycle_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/water-cycle-grade6-illustrated" data-pack-alias="water-cycle-grade6-illustrated" aria-label="Open The Water Cycle — Illustrated Grade 6 Pilot — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/water-cycle-grade6-illustrated" hidden aria-label="Copy link to The Water Cycle — Illustrated Grade 6 Pilot — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/water_cycle_grade6.allopack.json" data-pack-download="allopacks/illustrated/water_cycle_grade6.allopack.json" download="water_cycle_grade6.allopack.json" aria-label="Download The Water Cycle — Illustrated Grade 6 Pilot — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/water-cycle-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="water_cycle_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/water-cycle-grade6" data-pack-alias="water-cycle-grade6" aria-label="Open The Water Cycle — Earth&#39;s Recycling System — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/water-cycle-grade6" hidden aria-label="Copy link to The Water Cycle — Earth&#39;s Recycling System — Base edition">Copy link</button>
+    <a href="./allopacks/water_cycle_grade6.allopack.json" data-pack-download="allopacks/water_cycle_grade6.allopack.json" download="water_cycle_grade6.allopack.json" aria-label="Download The Water Cycle — Earth&#39;s Recycling System — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/water-cycle-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="The Words Around the Word — Working Out What It Means English Language Arts context-clues memory-aid applied-challenge ccss illustrated context-clues ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="3">
+      <p class="pack-topic-meta">English Language Arts · Grades 3</p><h3>The Words Around the Word — Working Out What It Means</h3>
+      <div class="pack-version" data-pack-id="context_clues_grade3_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/context-clues-grade3-illustrated" data-pack-alias="context-clues-grade3-illustrated" aria-label="Open The Words Around the Word — Working Out What It Means — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/context-clues-grade3-illustrated" hidden aria-label="Copy link to The Words Around the Word — Working Out What It Means — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/context_clues_grade3.allopack.json" data-pack-download="allopacks/illustrated/context_clues_grade3.allopack.json" download="context_clues_grade3.allopack.json" aria-label="Download The Words Around the Word — Working Out What It Means — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/context-clues-grade3-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="context_clues_grade3">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/context-clues-grade3" data-pack-alias="context-clues-grade3" aria-label="Open The Words Around the Word — Working Out What It Means — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/context-clues-grade3" hidden aria-label="Copy link to The Words Around the Word — Working Out What It Means — Base edition">Copy link</button>
+    <a href="./allopacks/context_clues_grade3.allopack.json" data-pack-download="allopacks/context_clues_grade3.allopack.json" download="context_clues_grade3.allopack.json" aria-label="Download The Words Around the Word — Working Out What It Means — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/context-clues-grade3"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Then and Now — How Life Changes Over Time Social Studies then-and-now c3 memory-aid applied-challenge illustrated then-and-now c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="2">
+      <p class="pack-topic-meta">Social Studies · Grades 2</p><h3>Then and Now — How Life Changes Over Time</h3>
+      <div class="pack-version" data-pack-id="then_and_now_grade2_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/then-and-now-grade2-illustrated" data-pack-alias="then-and-now-grade2-illustrated" aria-label="Open Then and Now — How Life Changes Over Time — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/then-and-now-grade2-illustrated" hidden aria-label="Copy link to Then and Now — How Life Changes Over Time — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/then_and_now_grade2.allopack.json" data-pack-download="allopacks/illustrated/then_and_now_grade2.allopack.json" download="then_and_now_grade2.allopack.json" aria-label="Download Then and Now — How Life Changes Over Time — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/then-and-now-grade2-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="then_and_now_grade2">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/then-and-now-grade2" data-pack-alias="then-and-now-grade2" aria-label="Open Then and Now — How Life Changes Over Time — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/then-and-now-grade2" hidden aria-label="Copy link to Then and Now — How Life Changes Over Time — Base edition">Copy link</button>
+    <a href="./allopacks/then_and_now_grade2.allopack.json" data-pack-download="allopacks/then_and_now_grade2.allopack.json" download="then_and_now_grade2.allopack.json" aria-label="Download Then and Now — How Life Changes Over Time — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/then-and-now-grade2"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Weather vs. Climate — Today&#39;s Mood, Decades of Personality Science weather-vs-climate illustrated ngss ccss memory-aid applied-challenge weather-vs-climate ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="5-6">
+      <p class="pack-topic-meta">Science · Grades 5-6</p><h3>Weather vs. Climate — Today&#39;s Mood, Decades of Personality</h3>
+      <div class="pack-version" data-pack-id="weather_vs_climate_grade5_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/weather-vs-climate-grade5-illustrated" data-pack-alias="weather-vs-climate-grade5-illustrated" aria-label="Open Weather vs. Climate — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/weather-vs-climate-grade5-illustrated" hidden aria-label="Copy link to Weather vs. Climate — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/weather_vs_climate_grade5.allopack.json" data-pack-download="allopacks/illustrated/weather_vs_climate_grade5.allopack.json" download="weather_vs_climate_grade5.allopack.json" aria-label="Download Weather vs. Climate — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/weather-vs-climate-grade5-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="weather_vs_climate_grade5">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/weather-vs-climate-grade5" data-pack-alias="weather-vs-climate-grade5" aria-label="Open Weather vs. Climate — Today&#39;s Mood, Decades of Personality — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/weather-vs-climate-grade5" hidden aria-label="Copy link to Weather vs. Climate — Today&#39;s Mood, Decades of Personality — Base edition">Copy link</button>
+    <a href="./allopacks/weather_vs_climate_grade5.allopack.json" data-pack-download="allopacks/weather_vs_climate_grade5.allopack.json" download="weather_vs_climate_grade5.allopack.json" aria-label="Download Weather vs. Climate — Today&#39;s Mood, Decades of Personality — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/weather-vs-climate-grade5"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="What Counts as Typical — Reading Data Honestly Math data-and-typical memory-aid applied-challenge ccss illustrated data-and-typical ccss memory-aid applied-challenge text-only" data-pack-subject="Math" data-pack-grade="6">
+      <p class="pack-topic-meta">Math · Grades 6</p><h3>What Counts as Typical — Reading Data Honestly</h3>
+      <div class="pack-version" data-pack-id="data_and_typical_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/data-and-typical-grade6-illustrated" data-pack-alias="data-and-typical-grade6-illustrated" aria-label="Open What Counts as Typical — Reading Data Honestly — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/data-and-typical-grade6-illustrated" hidden aria-label="Copy link to What Counts as Typical — Reading Data Honestly — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/data_and_typical_grade6.allopack.json" data-pack-download="allopacks/illustrated/data_and_typical_grade6.allopack.json" download="data_and_typical_grade6.allopack.json" aria-label="Download What Counts as Typical — Reading Data Honestly — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/data-and-typical-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="data_and_typical_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/data-and-typical-grade6" data-pack-alias="data-and-typical-grade6" aria-label="Open What Counts as Typical — Reading Data Honestly — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/data-and-typical-grade6" hidden aria-label="Copy link to What Counts as Typical — Reading Data Honestly — Base edition">Copy link</button>
+    <a href="./allopacks/data_and_typical_grade6.allopack.json" data-pack-download="allopacks/data_and_typical_grade6.allopack.json" download="data_and_typical_grade6.allopack.json" aria-label="Download What Counts as Typical — Reading Data Honestly — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/data-and-typical-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="What Plants Need — The Quiet Life of a Seed Science plant-needs illustrated ngss ccss memory-aid applied-challenge plant-needs ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="3">
+      <p class="pack-topic-meta">Science · Grades 3</p><h3>What Plants Need — The Quiet Life of a Seed</h3>
+      <div class="pack-version" data-pack-id="plant_needs_grade3_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/plant-needs-grade3-illustrated" data-pack-alias="plant-needs-grade3-illustrated" aria-label="Open What Plants Need — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/plant-needs-grade3-illustrated" hidden aria-label="Copy link to What Plants Need — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/plant_needs_grade3.allopack.json" data-pack-download="allopacks/illustrated/plant_needs_grade3.allopack.json" download="plant_needs_grade3.allopack.json" aria-label="Download What Plants Need — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/plant-needs-grade3-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="plant_needs_grade3">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/plant-needs-grade3" data-pack-alias="plant-needs-grade3" aria-label="Open What Plants Need — The Quiet Life of a Seed — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/plant-needs-grade3" hidden aria-label="Copy link to What Plants Need — The Quiet Life of a Seed — Base edition">Copy link</button>
+    <a href="./allopacks/plant_needs_grade3.allopack.json" data-pack-download="allopacks/plant_needs_grade3.allopack.json" download="plant_needs_grade3.allopack.json" aria-label="Download What Plants Need — The Quiet Life of a Seed — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/plant-needs-grade3"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="What the Story Is Really Saying — Tracing Theme English Language Arts theme-development memory-aid applied-challenge ccss illustrated theme-development ccss memory-aid applied-challenge text-only" data-pack-subject="English Language Arts" data-pack-grade="8">
+      <p class="pack-topic-meta">English Language Arts · Grades 8</p><h3>What the Story Is Really Saying — Tracing Theme</h3>
+      <div class="pack-version" data-pack-id="theme_development_grade8_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/theme-development-grade8-illustrated" data-pack-alias="theme-development-grade8-illustrated" aria-label="Open What the Story Is Really Saying — Tracing Theme — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/theme-development-grade8-illustrated" hidden aria-label="Copy link to What the Story Is Really Saying — Tracing Theme — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/theme_development_grade8.allopack.json" data-pack-download="allopacks/illustrated/theme_development_grade8.allopack.json" download="theme_development_grade8.allopack.json" aria-label="Download What the Story Is Really Saying — Tracing Theme — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/theme-development-grade8-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="theme_development_grade8">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/theme-development-grade8" data-pack-alias="theme-development-grade8" aria-label="Open What the Story Is Really Saying — Tracing Theme — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/theme-development-grade8" hidden aria-label="Copy link to What the Story Is Really Saying — Tracing Theme — Base edition">Copy link</button>
+    <a href="./allopacks/theme_development_grade8.allopack.json" data-pack-download="allopacks/theme_development_grade8.allopack.json" download="theme_development_grade8.allopack.json" aria-label="Download What the Story Is Really Saying — Tracing Theme — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/theme-development-grade8"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Who Decided That? — Local Government and How Rules Change Social Studies local-government ccss c3 memory-aid applied-challenge illustrated local-government ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="4">
+      <p class="pack-topic-meta">Social Studies · Grades 4</p><h3>Who Decided That? — Local Government and How Rules Change</h3>
+      <div class="pack-version" data-pack-id="local_government_grade4_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/local-government-grade4-illustrated" data-pack-alias="local-government-grade4-illustrated" aria-label="Open Who Decided That? — Local Government and How Rules Change — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/local-government-grade4-illustrated" hidden aria-label="Copy link to Who Decided That? — Local Government and How Rules Change — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/local_government_grade4.allopack.json" data-pack-download="allopacks/illustrated/local_government_grade4.allopack.json" download="local_government_grade4.allopack.json" aria-label="Download Who Decided That? — Local Government and How Rules Change — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/local-government-grade4-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="local_government_grade4">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/local-government-grade4" data-pack-alias="local-government-grade4" aria-label="Open Who Decided That? — Local Government and How Rules Change — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/local-government-grade4" hidden aria-label="Copy link to Who Decided That? — Local Government and How Rules Change — Base edition">Copy link</button>
+    <a href="./allopacks/local_government_grade4.allopack.json" data-pack-download="allopacks/local_government_grade4.allopack.json" download="local_government_grade4.allopack.json" aria-label="Download Who Decided That? — Local Government and How Rules Change — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/local-government-grade4"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Who Lives Here? — Comparing Habitats Science habitats-diversity memory-aid applied-challenge ngss illustrated habitats-diversity ngss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="2">
+      <p class="pack-topic-meta">Science · Grades 2</p><h3>Who Lives Here? — Comparing Habitats</h3>
+      <div class="pack-version" data-pack-id="habitats_diversity_grade2_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/habitats-diversity-grade2-illustrated" data-pack-alias="habitats-diversity-grade2-illustrated" aria-label="Open Who Lives Here? — Comparing Habitats — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/habitats-diversity-grade2-illustrated" hidden aria-label="Copy link to Who Lives Here? — Comparing Habitats — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/habitats_diversity_grade2.allopack.json" data-pack-download="allopacks/illustrated/habitats_diversity_grade2.allopack.json" download="habitats_diversity_grade2.allopack.json" aria-label="Download Who Lives Here? — Comparing Habitats — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/habitats-diversity-grade2-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="habitats_diversity_grade2">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/habitats-diversity-grade2" data-pack-alias="habitats-diversity-grade2" aria-label="Open Who Lives Here? — Comparing Habitats — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/habitats-diversity-grade2" hidden aria-label="Copy link to Who Lives Here? — Comparing Habitats — Base edition">Copy link</button>
+    <a href="./allopacks/habitats_diversity_grade2.allopack.json" data-pack-download="allopacks/habitats_diversity_grade2.allopack.json" download="habitats_diversity_grade2.allopack.json" aria-label="Download Who Lives Here? — Comparing Habitats — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/habitats-diversity-grade2"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Why Cities Grew on the Nile — Surplus, Specialists, and Writing Social Studies ancient-egypt ccss c3 memory-aid applied-challenge illustrated ancient-egypt ccss c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="6">
+      <p class="pack-topic-meta">Social Studies · Grades 6</p><h3>Why Cities Grew on the Nile — Surplus, Specialists, and Writing</h3>
+      <div class="pack-version" data-pack-id="ancient_egypt_grade6_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ancient-egypt-grade6-illustrated" data-pack-alias="ancient-egypt-grade6-illustrated" aria-label="Open Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ancient-egypt-grade6-illustrated" hidden aria-label="Copy link to Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/ancient_egypt_grade6.allopack.json" data-pack-download="allopacks/illustrated/ancient_egypt_grade6.allopack.json" download="ancient_egypt_grade6.allopack.json" aria-label="Download Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ancient-egypt-grade6-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="ancient_egypt_grade6">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/ancient-egypt-grade6" data-pack-alias="ancient-egypt-grade6" aria-label="Open Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/ancient-egypt-grade6" hidden aria-label="Copy link to Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Base edition">Copy link</button>
+    <a href="./allopacks/ancient_egypt_grade6.allopack.json" data-pack-download="allopacks/ancient_egypt_grade6.allopack.json" download="ancient_egypt_grade6.allopack.json" aria-label="Download Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/ancient-egypt-grade6"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Why We Have Rules — Fair, Safe, and Together Social Studies rules-and-fairness c3 memory-aid applied-challenge illustrated rules-and-fairness c3 memory-aid applied-challenge text-only" data-pack-subject="Social Studies" data-pack-grade="1">
+      <p class="pack-topic-meta">Social Studies · Grades 1</p><h3>Why We Have Rules — Fair, Safe, and Together</h3>
+      <div class="pack-version" data-pack-id="rules_and_fairness_grade1_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/rules-and-fairness-grade1-illustrated" data-pack-alias="rules-and-fairness-grade1-illustrated" aria-label="Open Why We Have Rules — Fair, Safe, and Together — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/rules-and-fairness-grade1-illustrated" hidden aria-label="Copy link to Why We Have Rules — Fair, Safe, and Together — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/rules_and_fairness_grade1.allopack.json" data-pack-download="allopacks/illustrated/rules_and_fairness_grade1.allopack.json" download="rules_and_fairness_grade1.allopack.json" aria-label="Download Why We Have Rules — Fair, Safe, and Together — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/rules-and-fairness-grade1-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="rules_and_fairness_grade1">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/rules-and-fairness-grade1" data-pack-alias="rules-and-fairness-grade1" aria-label="Open Why We Have Rules — Fair, Safe, and Together — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/rules-and-fairness-grade1" hidden aria-label="Copy link to Why We Have Rules — Fair, Safe, and Together — Base edition">Copy link</button>
+    <a href="./allopacks/rules_and_fairness_grade1.allopack.json" data-pack-download="allopacks/rules_and_fairness_grade1.allopack.json" download="rules_and_fairness_grade1.allopack.json" aria-label="Download Why We Have Rules — Fair, Safe, and Together — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/rules-and-fairness-grade1"></label>
+  </div></details>
+    </article>
+<article class="pack-topic" data-pack-search="Why Windows Are Not Wool — Matching Materials to Jobs Science materials illustrated ngss ccss memory-aid applied-challenge materials ngss ccss memory-aid applied-challenge text-only" data-pack-subject="Science" data-pack-grade="2">
+      <p class="pack-topic-meta">Science · Grades 2</p><h3>Why Windows Are Not Wool — Matching Materials to Jobs</h3>
+      <div class="pack-version" data-pack-id="materials_grade2_illustrated">
+    <h4>Illustrated edition</h4><p>Includes images · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-generated illustrations, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/materials-grade2-illustrated" data-pack-alias="materials-grade2-illustrated" aria-label="Open Why Windows Are Not Wool — Illustrated Edition — Illustrated edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/materials-grade2-illustrated" hidden aria-label="Copy link to Why Windows Are Not Wool — Illustrated Edition — Illustrated edition">Copy link</button>
+    <a href="./allopacks/illustrated/materials_grade2.allopack.json" data-pack-download="allopacks/illustrated/materials_grade2.allopack.json" download="materials_grade2.allopack.json" aria-label="Download Why Windows Are Not Wool — Illustrated Edition — Illustrated edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/materials-grade2-illustrated"></label>
+  </div>
+      <details class="pack-other-versions"><summary>Other version (1)</summary><div class="pack-version" data-pack-id="materials_grade2">
+    <h4>Base edition</h4><p>Text resources · <span class="pack-license">CC-BY-4.0</span></p>
+    <p class="pack-credit">AlloFlow flagship; AI-authored, educator review pending</p>
+    <div class="pack-actions"><a class="pack-open" href="https://alloflow.dev/p/materials-grade2" data-pack-alias="materials-grade2" aria-label="Open Why Windows Are Not Wool — Matching Materials to Jobs — Base edition">Open pack</a>
+    <button type="button" data-copy-pack="https://alloflow.dev/p/materials-grade2" hidden aria-label="Copy link to Why Windows Are Not Wool — Matching Materials to Jobs — Base edition">Copy link</button>
+    <a href="./allopacks/materials_grade2.allopack.json" data-pack-download="allopacks/materials_grade2.allopack.json" download="materials_grade2.allopack.json" aria-label="Download Why Windows Are Not Wool — Matching Materials to Jobs — Base edition">Download JSON</a></div>
+    <label class="pack-copy-fallback" hidden>Copy this link<input readonly value="https://alloflow.dev/p/materials-grade2"></label>
+  </div></details>
+    </article></div>
+  <p id="pack-empty" hidden>No topics match. Try a different search or clear the filters.</p>
+ </div>
+</section>
+<!-- ALLOPACK_DIRECTORY_END -->
 
     <!-- Filters -->
     <section class="section" style="padding-top:32px;padding-bottom:0">
         <div class="section-inner" style="text-align:center">
-            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters" role="group" aria-label="Filter lesson packs by subject" hidden>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters" role="group" aria-label="Filter legacy sample projects by subject" hidden>
 <button type="button" class="filter-btn active" data-category="all" aria-pressed="true">All</button>
 <button type="button" class="filter-btn" data-category="ela" aria-pressed="false">ELA</button>
 <button type="button" class="filter-btn" data-category="stem" aria-pressed="false">STEM</button>
 <button type="button" class="filter-btn" data-category="social" aria-pressed="false">Social Studies</button>
 </div>
-<p id="library-results" role="status" aria-live="polite" aria-atomic="true" style="color:#475569;margin:16px 0 0">Showing all 3 lesson packs.</p>
+<p id="library-results" role="status" aria-live="polite" aria-atomic="true" style="color:#475569;margin:16px 0 0">Showing all 3 legacy sample projects.</p>
         </div>
     </section>
 
     <!-- Lesson Grid -->
     <section class="section" style="padding-top:32px" id="lesson-grid">
         <div class="section-inner">
+            <h2 style="font-size:1.5rem;margin-bottom:16px">Legacy sample projects</h2>
             <div class="grid-3" id="cards-container">
 
                 <!-- ELA Lessons -->
@@ -306,8 +1518,8 @@
                 if (!card.hidden) shown++;
             });
             document.getElementById('library-results').textContent = category === 'all'
-                ? 'Showing all ' + shown + ' lesson packs.'
-                : 'Showing ' + shown + ' of ' + lessonCards.length + ' lesson packs for ' + button.textContent.trim() + '.';
+                ? 'Showing all ' + shown + ' legacy sample projects.'
+                : 'Showing ' + shown + ' of ' + lessonCards.length + ' legacy sample projects for ' + button.textContent.trim() + '.';
         });
         const backBtn = document.querySelector('.back-to-top');
         window.addEventListener('scroll', function () {

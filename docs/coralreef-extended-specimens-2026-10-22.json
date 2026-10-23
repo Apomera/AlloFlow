@@ -1,0 +1,233 @@
+{
+  "checked": "2026-10-22",
+  "scope": "Two additional living marine specimens for the existing species guide, identification practice and reef encounters. Biology copy is newly paraphrased from museum, aquarium and FAO accounts. Observation prompts describe features to inspect; they do not claim that feeding or reproduction is simulated.",
+  "iucnYearConvention": "iucnYear records assessment year, not publication year. Current indexed IUCN primary assessment records were read for both species; direct species-page requests failed. Longnose: assessed 2009-10-09, published 2010, marked Needs updating by IUCN. Pajama: assessed 2021-02-05, published 2022. Do not infer present security from Least Concern or from an old assessment.",
+  "specimens": [
+    {
+      "id": "yellow_longnose_butterflyfish",
+      "name": "Yellow longnose butterflyfish (forceps fish)",
+      "scientific": "Forcipiger flavissimus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2009,
+      "iucnPublishedYear": 2010,
+      "iucnDateAssessed": "2009-10-09",
+      "iucnCitation": "Myers, R.F. & Pratchett, M. 2010. Forcipiger flavissimus. The IUCN Red List of Threatened Species 2010: e.T165716A6099950.",
+      "lookalikes": [
+        "copperband_butterflyfish"
+      ],
+      "marks": [
+        "Deep, flattened body with a bright yellow colour",
+        "A very long, narrow snout projects ahead of the face",
+        "Upper head black; lower head and chest silvery white",
+        "A small black spot sits on the rear anal fin, just below the tail base"
+      ],
+      "role": "Probes reef crevices for small animals and nips pieces from larger invertebrates.",
+      "fact": "Its genus name, Forcipiger, means forceps-bearing, a reference to the elongated jaws.",
+      "habitat": "Reef flats, crests, slopes and sheltered ledges across the tropical Indo-Pacific and into the eastern Pacific.",
+      "diet": "Small crustaceans, hydroids, worm tentacles and echinoderm tube feet; also fish eggs.",
+      "behavior": "Often encountered in pairs, with single fish and small groups also reported.",
+      "observe": "Follow the narrow snout to the two-tone head. Compare its yellow body with the copperband butterflyfish’s bars, then locate the spot below the tail.",
+      "sources": [
+        "dx-am-yellow_longnose_butterflyfish",
+        "dx-foa-yellow_longnose_butterflyfish",
+        "dx-wa-yellow_longnose_butterflyfish",
+        "dx-iucn-yellow_longnose_butterflyfish"
+      ],
+      "claimSupport": {
+        "nameScientific": "dx-am-yellow_longnose_butterflyfish; dx-foa-yellow_longnose_butterflyfish",
+        "marks": "dx-am-yellow_longnose_butterflyfish; dx-stri-yellow_longnose_butterflyfish",
+        "roleDietFact": "dx-wa-yellow_longnose_butterflyfish; dx-am-yellow_longnose_butterflyfish",
+        "habitatBehavior": "dx-foa-yellow_longnose_butterflyfish; dx-am-yellow_longnose_butterflyfish",
+        "iucn": "dx-iucn-yellow_longnose_butterflyfish",
+        "depthSize": "dx-foa-yellow_longnose_butterflyfish"
+      },
+      "caution": "F. longirostris is a different species with a longer snout and usually chest dots. Compare multiple features. The added lookalike link is to an existing guide fish, not a claim that they are congeners. Do not call this an obligate coral eater or a tightly schooling fish."
+    },
+    {
+      "id": "pajama_cardinalfish",
+      "name": "Pajama cardinalfish",
+      "scientific": "Sphaeramia nematoptera",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2021,
+      "iucnPublishedYear": 2022,
+      "iucnDateAssessed": "2021-02-05",
+      "iucnCitation": "Allen, G.R., Myers, R.F., Santos, M., Mutia, M.T.M., Muyot, F.B., Arceo, H. & Nañola, C.L. 2022. Sphaeramia nematoptera. The IUCN Red List of Threatened Species 2022: e.T193290A2215929.",
+      "lookalikes": [],
+      "marks": [
+        "Yellowish head with a conspicuous red-to-orange eye",
+        "A broad, dark vertical bar crosses the middle of the body",
+        "Rounded purple-to-brown spots scatter across the pale rear body",
+        "Two separate dorsal fins, with the front dorsal fin and pelvic fins dark"
+      ],
+      "role": "Feeds on small crustaceans and zooplankton around sheltered coral reefs.",
+      "fact": "The male protects developing eggs by carrying them inside his mouth until they hatch.",
+      "habitat": "Sheltered bays, lagoons and coastal reefs in the eastern Indian Ocean and western Pacific, near branching live corals.",
+      "diet": "Small shrimps, crabs and other crustaceans; also zooplankton.",
+      "behavior": "Groups hover close to branching corals by day; fish leave that shelter at night to feed near the bottom.",
+      "observe": "Compare the yellow head, single broad bar and spotted rear body. Turn the specimen to see the two separate dorsal fins.",
+      "sources": [
+        "dx-foa-pajama_cardinalfish",
+        "dx-oregon-pajama_cardinalfish",
+        "dx-ga-pajama_cardinalfish",
+        "dx-fao-pajama_cardinalfish",
+        "dx-iucn-pajama_cardinalfish"
+      ],
+      "claimSupport": {
+        "nameScientific": "dx-cas-pajama_cardinalfish; dx-foa-pajama_cardinalfish",
+        "marks": "dx-foa-pajama_cardinalfish for colour and dark fin placement; dx-oregon-pajama_cardinalfish for separate dorsal fins and brown spots; dx-ga-pajama_cardinalfish for red eyes",
+        "roleDiet": "dx-fao-pajama_cardinalfish; dx-oregon-pajama_cardinalfish",
+        "factBehavior": "dx-ga-pajama_cardinalfish; dx-oregon-pajama_cardinalfish",
+        "habitatRange": "dx-cas-pajama_cardinalfish; dx-foa-pajama_cardinalfish",
+        "iucn": "dx-iucn-pajama_cardinalfish",
+        "depthSize": "dx-foa-pajama_cardinalfish"
+      },
+      "caution": "The Georgia Aquarium account still labels this species Not Evaluated; its status is superseded here by the IUCN 2021 assessment published in 2022. That aquarium account is used for biology only. Do not import Banggai cardinalfish markings, restricted range, endangered status or direct development into this species. Colours and spots can vary with lighting and time of day."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-yellow_longnose_butterflyfish",
+      "text": "McGrouther, M. (2021). Australian Museum: Forceps Fish, Forcipiger flavissimus. Accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/forceps-fish-forcipiger-flavissimus/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "Identification, food, social groups, range, maximum length"
+      ],
+      "access": "Full account opened successfully; updated 15 March 2021."
+    },
+    {
+      "id": "dx-foa-yellow_longnose_butterflyfish",
+      "text": "Bray, D.J. (2020). Fishes of Australia: Forceps Fish, Forcipiger flavissimus. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/2410",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "Reef habitats, size, depth, comparison with F. longirostris"
+      ],
+      "access": "Full account and quick facts opened successfully."
+    },
+    {
+      "id": "dx-wa-yellow_longnose_butterflyfish",
+      "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Forceps Butterflyfish. Accessed October 2026.",
+      "url": "https://www.waikikiaquarium.org/experience/animal-guide/fishes/butterflyfishes/forceps-butterflyfish/",
+      "urlLabel": "waikikiaquarium.org",
+      "supports": [
+        "Jaw-name meaning and prey capture"
+      ],
+      "access": "Detailed current search-index account read."
+    },
+    {
+      "id": "dx-stri-yellow_longnose_butterflyfish",
+      "text": "Robertson, D.R. & Allen, G.R. Smithsonian Tropical Research Institute: Shorefishes of the Eastern Pacific, Forcipiger flavissimus. Accessed October 2026.",
+      "url": "https://biogeodb.stri.si.edu/sftep/en/thefishes/species/1550",
+      "urlLabel": "stri.si.edu",
+      "supports": [
+        "Disc-shaped body, fin anatomy, transparent tail, anal spot"
+      ],
+      "access": "Detailed current search-index species account read."
+    },
+    {
+      "id": "dx-iucn-yellow_longnose_butterflyfish",
+      "text": "Myers, R.F. & Pratchett, M. (2010). Forcipiger flavissimus. The IUCN Red List e.T165716A6099950. Assessed 2009.",
+      "url": "https://www.iucnredlist.org/species/165716/6099950",
+      "urlLabel": "iucnredlist.org",
+      "supports": [
+        "LC; assessment 9 October 2009; publication 2010; needs updating"
+      ],
+      "indexedRecord": "https://doi.org/10.2305/IUCN.UK.2010-4.RLTS.T165716A6099950.en",
+      "access": "Detailed current primary IUCN search-index record read. Direct species-page open failed; no direct-page access claimed."
+    },
+    {
+      "id": "dx-foa-pajama_cardinalfish",
+      "text": "Bray, D.J. (2019). Fishes of Australia: Pajama Cardinalfish, Sphaeramia nematoptera. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/4237",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "Diagnostic colours, dark fins, coral hovering, size and depth"
+      ],
+      "access": "Full account and quick facts opened successfully."
+    },
+    {
+      "id": "dx-oregon-pajama_cardinalfish",
+      "text": "Oregon Coast Aquarium. Animal Guide: Pajama Cardinalfish. Accessed October 2026.",
+      "url": "https://aquarium.org/animals/pajama-cardinalfish/",
+      "urlLabel": "aquarium.org",
+      "supports": [
+        "Two dorsal fins, brown spots, diet, nocturnal foraging"
+      ],
+      "access": "Full account opened successfully."
+    },
+    {
+      "id": "dx-ga-pajama_cardinalfish",
+      "text": "Georgia Aquarium. Animal Guide: Pajama Cardinalfish. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/pajama-cardinalfish/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": [
+        "Red eyes, paternal mouthbrooding, daytime coral aggregations"
+      ],
+      "caution": "Biology only. Its Not Evaluated label conflicts with the newer IUCN assessment and must not be copied.",
+      "access": "Detailed current search-index account read; direct page request timed out."
+    },
+    {
+      "id": "dx-fao-pajama_cardinalfish",
+      "text": "Allen, G.R. (1999). Apogonidae, in The Living Marine Resources of the Western Central Pacific, Vol. 4. FAO species guide, p. 2610. Pajama cardinalfish account.",
+      "url": "https://www.fao.org/4/x2400e/x2400e47.pdf#page=9",
+      "urlLabel": "fao.org",
+      "supports": [
+        "Species-specific crustacean and zooplankton diet"
+      ],
+      "access": "Institutional PDF opened successfully; printed page 2610 is PDF page 9. Older size/depth/range values are not used over current museum metadata."
+    },
+    {
+      "id": "dx-cas-pajama_cardinalfish",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds). Eschmeyer’s Catalog of Fishes: Sphaeramia nematoptera. California Academy of Sciences, online version updated 13 August 2026. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=21902",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "Accepted name and current range"
+      ],
+      "access": "Full catalog record opened successfully."
+    },
+    {
+      "id": "dx-iucn-pajama_cardinalfish",
+      "text": "Allen, G.R. et al. (2022). Sphaeramia nematoptera. The IUCN Red List e.T193290A2215929. Assessed 2021.",
+      "url": "https://www.iucnredlist.org/species/193290/2215929",
+      "urlLabel": "iucnredlist.org",
+      "supports": [
+        "LC; assessment 5 February 2021; publication 2022"
+      ],
+      "indexedRecord": "https://doi.org/10.2305/IUCN.UK.2022-2.RLTS.T193290A2215929.en",
+      "access": "Detailed current primary IUCN search-index record read. Direct species request returned 403 and DOI open failed; no direct-page access claimed."
+    }
+  ],
+  "modelProvenance": {
+    "yellow_longnose_butterflyfish": {
+      "nominalAdultLengthM": 0.18,
+      "maximumLengthM": 0.22,
+      "depth": [
+        2,
+        145
+      ],
+      "basis": "FoA species2410; illustrative adult and metadata interval, not a measured model size distribution.",
+      "anatomy": "dx-stri-yellow_longnose_butterflyfish: compressed oval disc; yellow dorsal and anal fins; clear caudal fin; rear anal spot. Snout proportions should fit F. flavissimus rather than F. longirostris.",
+      "motion": "Gentle pair-associated reef swimming is an illustration. Feeding kinematics are not measured or simulated."
+    },
+    "pajama_cardinalfish": {
+      "nominalAdultLengthM": 0.07,
+      "maximumLengthM": 0.09,
+      "depth": [
+        1,
+        14
+      ],
+      "basis": "FoA species4237; illustrative adult below its stated maximum. Other aquarium accounts give 8.5 cm.",
+      "anatomy": "dx-foa-pajama_cardinalfish and dx-oregon-pajama_cardinalfish: dark first dorsal and pelvic fins; broad midbar; two dorsal fins; spotted posterior body.",
+      "motion": "Loose hovering near branching coral is supported. Avoid treating the aggregation as a fast, rigidly synchronized school or depicting incubation as every individual’s state."
+    }
+  },
+  "integration": {
+    "maintainedSource": "Append only these species and their used references to existing guide data. Preserve all prior records and their order.",
+    "practice": "Guide reading, practice and specimen inspection must not award reef discovery, change existing answers, or modify unrelated saved notes or progress.",
+    "lookalikeNote": "Longnose links to the existing copperband butterflyfish because the elongated snout can confuse a learner; its unbarred yellow body and lower fin spot separate it. No existing guide organism provides a genuine close pajama cardinalfish lookalike."
+  }
+}

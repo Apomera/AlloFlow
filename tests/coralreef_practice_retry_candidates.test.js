@@ -29,7 +29,7 @@ async function mount(extra = {}, collection = 'saved') {
 describe('focused second-look candidate continuity', () => {
   it('retains the known confusion outside the saved target collection while leaving ordinary seeded choices unchanged', () => {
     const normal = build(SEED + 2, ['clownfish'], ['clownfish']);
-    expect(normal).toEqual([{ id: 'clownfish', choices: ['clownfish', 'threadfin_butterflyfish', 'moorish_idol'] }]);
+    expect(normal).toEqual([{ id: 'clownfish', choices: ['firefish', 'moorish_idol', 'clownfish'] }]);
     const focused = build(SEED + 2, ['clownfish'], ['clownfish'], [wrong('clownfish', 'lionfish')]);
     expect(focused.map(q => q.id)).toEqual(['clownfish']);
     expect(focused[0].choices).toContain('lionfish');

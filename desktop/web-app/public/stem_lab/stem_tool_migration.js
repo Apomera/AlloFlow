@@ -104,6 +104,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '@media (prefers-reduced-motion:reduce){.migration-route-tab{transition:none!important;}}',
       ".migration-missions{margin:20px 0;border:1px solid var(--mg-border);border-radius:16px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}\n.migration-missions>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:16px 20px;cursor:pointer;background:var(--mg-panel);list-style:none;}\n.migration-missions>summary::-webkit-details-marker{display:none;}\n.migration-missions>summary:after{content:'+';font-size:24px;font-weight:600;color:var(--mg-accent);}\n.migration-missions[open]>summary:after{content:'\\2212';}\n.migration-missions summary:focus-visible{outline:3px solid #38bdf8;outline-offset:-4px;}\n.migration-missions-summary-title{font-size:16px;font-weight:800;letter-spacing:-.02em;}\n.migration-missions-summary-count{margin-inline-start:auto;color:var(--mg-muted);font-size:12px;}\n.migration-missions-body{padding:18px 20px 20px;}\n.migration-missions-intro{margin:0 0 16px;color:var(--mg-muted);font-size:13px;line-height:1.65;}\n.migration-mission-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}\n.migration-mission-goals>button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 9px;min-width:0;min-height:78px;padding:12px;text-align:start;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-canvas);color:var(--mg-text);font-family:inherit;font-size:13px;font-weight:750;cursor:pointer;}\n.migration-mission-goals>button[aria-pressed=\"true\"]{border-color:var(--mg-accent);box-shadow:inset 0 0 0 1px var(--mg-accent);background:var(--mg-panel);}\n.migration-mission-number{grid-row:1/3;display:grid;place-items:center;width:30px;height:36px;border-inline-end:1px solid var(--mg-border);color:var(--mg-accent);font-size:17px;}\n.migration-mission-goals small{grid-column:2;font-size:11px;color:var(--mg-muted);font-weight:500;}\n.migration-mission-active{margin-top:17px;border:1px solid var(--mg-border);border-radius:12px;overflow:hidden;}\n.migration-mission-brief{padding:17px 18px 13px;background:var(--mg-panel);}\n.migration-mission-brief h3{margin:4px 0 9px;font-size:20px;line-height:1.25;letter-spacing:-.025em;color:var(--mg-text);}\n.migration-mission-brief p{margin:6px 0;font-size:13px;line-height:1.65;}\n.migration-mission-brief .migration-mission-hint{color:var(--mg-muted);font-size:12px;}\n.migration-mission-writing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:17px 18px 10px;}\n.migration-mission-writing label{display:flex;flex-direction:column;gap:7px;min-width:0;color:var(--mg-text);font-size:12px;font-weight:700;}\n.migration-mission-writing textarea{width:100%;min-height:88px;padding:10px 11px;resize:vertical;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);color:var(--mg-text);font-family:inherit;font-size:13px;font-weight:400;line-height:1.5;}\n.migration-mission-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 18px;}\n.migration-mission-actions button,.migration-mission-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);padding:9px 13px;font-family:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer;}\n.migration-mission-actions button:last-child{background:#075c70;border-color:#075c70;color:#fff;}\n.migration-mission-actions button:disabled{opacity:.55;cursor:default;}\n.migration-mission-load-note{margin:5px 18px 14px;font-size:11px;line-height:1.6;color:var(--mg-muted);}\n.migration-mission-feedback{margin:0 18px 16px;padding:13px 14px;border:1px solid var(--mg-border);border-inline-start:4px solid var(--mg-accent);border-radius:9px;background:var(--mg-panel);}\n.migration-mission-feedback>strong{font-size:13px;color:var(--mg-text);}\n.migration-mission-feedback p{margin:5px 0;font-size:12px;line-height:1.65;}\n.migration-mission-measurements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0;}\n.migration-mission-measurements>div{padding:9px 11px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);}\n.migration-mission-measurements span{display:block;color:var(--mg-muted);font-size:10px;}\n.migration-mission-measurements strong{display:block;margin-top:3px;color:var(--mg-text);font-size:16px;}\n.migration-mission-conditions{color:var(--mg-muted);overflow-wrap:anywhere;}\n.migration-mission-route{border-top:1px solid var(--mg-border);padding-top:7px;overflow-wrap:anywhere;}\n.migration-mission-history{margin:0 18px 16px;border:1px solid var(--mg-border);border-radius:9px;overflow:hidden;}\n.migration-mission-history>summary{min-height:44px;padding:11px 13px;cursor:pointer;font-size:12px;font-weight:750;background:var(--mg-panel);}\n.migration-mission-attempt{padding:13px;border-top:1px solid var(--mg-border);overflow-wrap:anywhere;}\n.migration-mission-attempt-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;}\n.migration-mission-attempt h4{margin:0;font-size:14px;}\n.migration-mission-attempt-heading strong{font-size:11px;color:var(--mg-accent);}\n.migration-mission-attempt p{margin:7px 0;font-size:12px;line-height:1.6;white-space:pre-wrap;}\n.migration-mission-explanation{color:var(--mg-muted);}\n.migration-mission-remove{min-height:38px;margin-top:3px;border:1px solid var(--mg-border);border-radius:7px;background:var(--mg-panel);padding:7px 11px;color:var(--mg-text);font-family:inherit;font-size:11px;cursor:pointer;}\n.migration-mission-model-note{margin:0;padding:0 18px 16px;color:var(--mg-muted);font-size:11px;line-height:1.65;}\n.migration-mission-active>.migration-experiment-help{margin:0 18px 14px;}\n.migration-tool-shell[data-migration-theme=\"contrast\"] .migration-mission-actions button:last-child{border-color:#fff;background:#000;color:#fff;}\n@media(max-width:700px){.migration-mission-goals{grid-template-columns:1fr;}.migration-mission-goals>button{min-height:59px;grid-template-columns:auto 1fr auto;}.migration-mission-number{grid-row:1;}.migration-mission-goals small{grid-column:3;}.migration-mission-writing{grid-template-columns:1fr;}.migration-missions-summary-count{font-size:11px;}}\n@media(max-width:420px){.migration-missions>summary{padding:14px;gap:8px;}.migration-missions-summary-title{font-size:15px;}.migration-missions-summary-count{max-width:110px;text-align:end;}.migration-missions-body{padding:14px 12px;}.migration-mission-brief{padding:14px;}.migration-mission-writing{padding:14px 12px 8px;}.migration-mission-actions{padding:6px 12px;}.migration-mission-actions button,.migration-mission-actions a{flex:1 0 100%;}.migration-mission-feedback{margin:0 12px 13px;padding:11px;}.migration-mission-history{margin:0 12px 13px;}.migration-mission-load-note{margin:5px 12px 13px;}.migration-mission-model-note{padding:0 12px 14px;}.migration-mission-measurements{gap:6px;}.migration-mission-measurements>div{padding:8px;}.migration-mission-measurements strong{font-size:15px;}.migration-mission-goals>button{grid-template-columns:auto 1fr;}.migration-mission-goals small{grid-column:2;}.migration-mission-number{grid-row:1/3;}}\n",
       ".migration-mission-progress-block{padding:15px 18px 0;}\n.migration-mission-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0;}\n.migration-mission-progress li{display:flex;align-items:flex-start;gap:8px;padding:10px 9px;min-width:0;border:1px solid var(--mg-border);border-radius:9px;color:var(--mg-text);background:var(--mg-canvas);font-size:11px;font-weight:750;line-height:1.4;}\n.migration-mission-progress-mark{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border:1px solid var(--mg-border);border-radius:50%;font-size:12px;color:var(--mg-muted);}\n.migration-mission-progress li[data-recorded=\"true\"]{border-color:var(--mg-accent);background:var(--mg-panel);}\n.migration-mission-progress li[data-recorded=\"true\"] .migration-mission-progress-mark{color:var(--mg-accent);border-color:var(--mg-accent);}\n.migration-mission-progress small{display:block;margin-top:3px;color:var(--mg-muted);font-size:10px;font-weight:500;}\n.migration-mission-progress-help{margin:8px 0 0;color:var(--mg-muted);font-size:11px;line-height:1.6;}\n.migration-mission-review-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-color:var(--mg-accent) var(--mg-panel);}\n.migration-mission-review-scroll:focus-visible{outline:3px solid var(--mg-accent);outline-offset:-3px;}\n.migration-mission-review{width:100%;min-width:650px;border-collapse:collapse;text-align:start;font-size:11px;line-height:1.5;color:var(--mg-text);}\n.migration-mission-review caption{text-align:start;padding:13px;background:var(--mg-canvas);font-weight:800;font-size:13px;}\n.migration-mission-review caption span{display:block;margin-top:4px;color:var(--mg-muted);font-weight:400;font-size:11px;}\n.migration-mission-review th,.migration-mission-review td{padding:10px 12px;border-top:1px solid var(--mg-border);vertical-align:top;text-align:start;}\n.migration-mission-review thead{background:var(--mg-panel);}\n.migration-mission-review tbody th{min-width:110px;}\n.migration-mission-review td:nth-child(2){max-width:250px;min-width:155px;overflow-wrap:anywhere;}\n.migration-mission-review td:nth-child(3),.migration-mission-review td:nth-child(4){white-space:nowrap;font-variant-numeric:tabular-nums;}\n.migration-mission-review small{display:block;margin-top:4px;color:var(--mg-muted);font-size:10px;font-weight:500;}\n.migration-mission-review .migration-mission-review-match{font-weight:750;color:var(--mg-accent);}\n.migration-mission-review tr[data-latest-model-match=\"true\"]{background:var(--mg-panel);}\n.migration-mission-review tr[data-latest-model-match=\"true\"]>th{box-shadow:inset 3px 0 0 var(--mg-accent);}\n@media(max-width:700px){.migration-mission-progress{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-mission-goals small{white-space:normal;max-width:180px;}}\n@media(max-width:420px){.migration-mission-progress-block{padding:13px 12px 0;}.migration-mission-progress li{padding:9px 7px;gap:6px;}.migration-mission-review caption{padding:12px;}}\n",
+      ".migration-recorded-view-check{margin-top:8px;padding-top:10px;border-top:1px solid #426174;min-width:0;}.migration-workspace .migration-recorded-view-check button{min-height:44px;max-width:100%;padding:10px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;white-space:normal;cursor:pointer;}.migration-recorded-view-check button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-recorded-view-check p{font-size:11px;line-height:1.6;margin:9px 0;overflow-wrap:anywhere;color:#c4dde9;}.migration-recorded-view-check-summary:empty{display:none;}.migration-recorded-view-check dl{margin:8px 0;}.migration-recorded-view-check dl>div{padding:8px 0;border-top:1px solid #426174;}.migration-recorded-view-check dt{font-size:12px;font-weight:750;line-height:1.5;color:#effaff;}.migration-recorded-view-check dd{margin:3px 0 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 10px;font-size:11px;line-height:1.5;color:#c4dde9;}.migration-recorded-view-check dd strong{font-size:11px;color:#effaff;}",
+      ".migration-challenge-inspection{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid #426174;background:#09283a;color:#effaff;}.migration-challenge-inspection strong{display:block;font-size:12px;line-height:1.5;}.migration-challenge-inspection p{margin:4px 0 0;font-size:12px;line-height:1.6;color:#c4dde9;}.migration-workspace .migration-challenge-inspection button{flex-shrink:0;min-height:44px;padding:10px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;cursor:pointer;}.migration-challenge-inspection button:focus-visible,.migration-mission-inspect-actions button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-mission-inspect-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}.migration-workspace .migration-mission-inspect-actions button{min-height:44px;padding:10px 12px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);font:inherit;font-size:12px;font-weight:750;cursor:pointer;}@media(max-width:760px){.migration-challenge-inspection{align-items:stretch;flex-direction:column;}.migration-challenge-inspection button{align-self:flex-start;}}",
+      ".migration-mission-reflection{margin:12px 0;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-canvas);}.migration-mission-reflection>summary{min-height:44px;padding:12px;cursor:pointer;font-size:12px;font-weight:750;background:var(--mg-panel);}.migration-mission-reflection-body{padding:0 12px 12px;}.migration-mission-reflection [data-flight-reflection-saved]{white-space:pre-wrap;overflow-wrap:anywhere;}.migration-mission-reflection label,.migration-mission-reflection-stale label{display:block;margin:12px 0 7px;font-size:12px;font-weight:700;}.migration-mission-reflection textarea,.migration-mission-reflection-stale textarea{display:block;width:100%;min-height:100px;box-sizing:border-box;resize:vertical;padding:10px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);color:var(--mg-text);font:inherit;font-size:13px;line-height:1.6;}.migration-workspace .migration-mission-reflection button,.migration-workspace .migration-mission-reflection-stale button{min-height:44px;padding:10px 13px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}.migration-mission-reflection button:disabled{opacity:.55;cursor:default;}.migration-mission-reflection button[hidden]{display:none;}.migration-mission-reflection-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}.migration-mission-reflection summary:focus-visible,.migration-mission-reflection button:focus-visible,.migration-mission-reflection textarea:focus-visible,.migration-mission-reflection-stale button:focus-visible,.migration-mission-reflection-stale textarea:focus-visible{outline:3px solid var(--mg-accent);outline-offset:2px;}.migration-mission-reflection-draft-note{color:var(--mg-muted);}.migration-mission-reflection-stale{margin:0 18px 16px;padding:12px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-panel);}.migration-mission-reflection-stale p{font-size:12px;line-height:1.6;}.migration-mission-reflection-stale button{margin-top:10px;}",
       // Field-station surfaces share explicit theme tokens, including light mode.
       '.migration-tool-shell{max-width:1280px;--mg-text:#162d40;--mg-muted:#4b6475;--mg-panel:#f5f9fb;--mg-canvas:#fff;--mg-border:#ccdde5;--mg-accent:#036875;font-family:inherit;}',
       '.migration-tool-shell[data-migration-theme="dark"]{--mg-text:#e8f3f8;--mg-muted:#a7bdcd;--mg-panel:#122536;--mg-canvas:#0b1a29;--mg-border:#2c465a;--mg-accent:#6ed5d7;}',
@@ -160,6 +163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '.migration-flight-stage[data-study-view="true"][data-flight-ready="true"]{cursor:grab;touch-action:none;user-select:none;}.migration-flight-stage[data-study-dragging="true"]{cursor:grabbing;}.migration-flight-stage .migration-scene-tools{cursor:default;}',
       ".migration-pair-review-comparison{margin:12px 0;padding:10px 12px;border:1px solid #547b8c;border-radius:9px;background:#0b2a3d;}.migration-pair-review-comparison p{margin:0;color:#c4dde9;font-size:11px;line-height:1.6;overflow-wrap:anywhere;}.migration-pair-review-comparison strong{color:#f1f9fc;}.migration-pair-review-comparison-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 10px;}.migration-pair-review-comparison-deltas{display:flex;flex-wrap:wrap;gap:3px 16px;margin-top:5px!important;}.migration-pair-review-comparison-scope{margin-top:4px!important;}",
       ".migration-study-scene-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px;flex-shrink:0;min-width:0;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-study-scene-context{display:flex;flex:1 1 190px;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere;}.migration-study-scene-context strong{font-size:12px;line-height:1.5;}.migration-study-scene-context>[data-scene-study-species]{font-size:13px;color:#f1f9fc;}.migration-flight-stage[data-study-view=true] .migration-flight-overlay{justify-content:flex-end;}.migration-study-scene-context span{font-size:11px;line-height:1.5;color:#c4dde9;}.migration-study-scene-buttons{display:flex;flex:1 1 240px;flex-wrap:wrap;gap:8px;min-width:0;}.migration-study-scene-buttons button{flex:1 1 140px;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}.migration-study-scene-buttons button:disabled{opacity:.55;cursor:not-allowed;}@media(min-width:761px){.migration-flight-deck[data-study-strip=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-study-strip=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}",
+      '@media(min-width:761px){.migration-flight-deck[data-challenge-inspection-open="true"]{height:auto;align-items:start;}.migration-flight-deck[data-challenge-inspection-open="true"] .migration-flight-controls{height:678px;max-height:678px;}}',
       ".migration-flight-view{display:flex;flex-direction:column;min-width:0;min-height:0;}.migration-flight-view>.migration-flight-stage{flex:1 0 auto;}.migration-pair-review{flex-shrink:0;min-width:0;padding:16px;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-pair-review h3{margin:0 0 5px;font-size:17px;font-weight:800;color:#f1f9fc;}.migration-pair-review-state{margin:0 0 10px;font-size:12px;line-height:1.5;color:#c4dde9;}.migration-pair-review-actions{display:flex;flex-wrap:wrap;gap:8px;}.migration-pair-review button{min-height:44px;min-width:0;padding:8px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;cursor:pointer;}.migration-pair-review-actions button[aria-pressed=\"true\"]{background:#156773;border-color:#8ee5df;}.migration-pair-review-prediction{margin:12px 0;border-top:1px solid #426174;padding-top:8px;}.migration-pair-review-prediction summary{min-height:36px;cursor:pointer;font-size:12px;font-weight:750;}.migration-pair-review summary:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-pair-review-prediction p{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.6;}.migration-pair-review-flights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card{min-width:0;padding:12px;border:1px solid #426174;border-radius:9px;background:#0b2a3d;}.migration-pair-review-card h4{font-size:13px;font-weight:800;margin:0 0 5px;}.migration-pair-review-card p{font-size:11px;line-height:1.5;color:#c4dde9;overflow-wrap:anywhere;margin:0 0 10px;}.migration-pair-review-card dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card dt{font-size:10px;line-height:1.45;color:#c4dde9;}.migration-pair-review-card dd{font-size:12px;font-weight:750;margin:3px 0 0;line-height:1.5;overflow-wrap:anywhere;}.migration-pair-review-help{margin:10px 0 0;color:#c4dde9;font-size:11px;line-height:1.6;}@media(min-width:761px){.migration-flight-view>.migration-flight-stage{height:678px;min-height:0;flex:0 0 678px;}.migration-flight-deck[data-pair-review-open=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-pair-review-open=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}.migration-flight-deck:fullscreen,.migration-flight-deck:-webkit-full-screen,.migration-flight-deck[data-allo-fullscreen-active=\"true\"]{height:100vh;align-items:stretch;}.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:100vh;overflow:auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:100vh;min-height:0;flex:0 0 100vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:100vh;max-height:none;}@media(max-width:760px){.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:auto;overflow:visible;flex:0 0 auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:58vh;min-height:58vh;flex:0 0 58vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:auto;max-height:none;}}@media(max-width:520px){.migration-pair-review{padding:14px;}.migration-pair-review-card{padding:10px;}.migration-pair-review-card dl{grid-template-columns:1fr;gap:7px;}}.migration-pair-review-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.migration-pair-review-heading h3{padding-top:8px;}.migration-pair-review-heading button{max-width:58%;font-size:11px;line-height:1.4;}",
       // Touch sizing. Measured on an iPhone 12 viewport, this tool's buttons
       // came out at 25-28px and its range sliders at 16px tall. 16px is below
@@ -784,6 +788,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     return props.renderContext(context);
   }
 
+  // An isolated readout waits for actual frames; render never publishes owners.
+  function MigrationChallengeInspectionReadout(props) {
+    var React = props.React, context = props.readContext();
+    var committed = React.useRef(null), signature = React.useRef('');
+    var revision = React.useState(0);
+    React.useEffect(function() {
+      committed.current = props;
+      signature.current = JSON.stringify(context);
+      var next = JSON.stringify(props.readContext());
+      if (next !== signature.current) { signature.current = next; revision[1](function(value) { return (value + 1) % 1000001; }); }
+    });
+    React.useEffect(function() {
+      var host = props.getHost();
+      if (!host || !host.isConnected || typeof MutationObserver !== 'function') return;
+      var active = true;
+      function refresh() {
+        var current = committed.current;
+        if (!active || !current || current.getHost() !== host || !host.isConnected) return;
+        var next = JSON.stringify(current.readContext());
+        if (next === signature.current) return;
+        signature.current = next;
+        revision[1](function(value) { return (value + 1) % 1000001; });
+      }
+      var observer = new MutationObserver(refresh);
+      observer.observe(host, { attributes: true, attributeFilter: ['data-flight-ready', 'data-flight-error', 'data-flight-source-uuid', 'data-flight-challenge-frame'] });
+      refresh();
+      return function() { active = false; observer.disconnect(); };
+    }, []);
+    return props.renderContext(context);
+  }
+
+  // A local inspection aid. Its key is the exact captured pair, so a changed
+  // record discards this check without touching any learner draft or evidence.
+  function MigrationRecordedViewCheck(props) {
+    var React = props.React, h = React.createElement, t = props.t;
+    var checked = React.useState(false), ownerRef = React.useRef(null);
+    var first = props.first, second = props.second;
+    var fields = [
+      { id: 'yaw', label: t('stem.migration.recorded_check_yaw', 'Horizontal angle'), value: function(row) { return row.yaw + '°'; } },
+      { id: 'pitch', label: t('stem.migration.recorded_check_pitch', 'Vertical angle'), value: function(row) { return row.pitch + '°'; } },
+      { id: 'zoom', label: t('stem.migration.recorded_check_zoom', 'Zoom multiplier'), value: function(row) { return String(row.zoom) + '×'; } },
+      { id: 'bird', label: t('stem.migration.recorded_check_individual', 'Individual number'), value: function(row) { return String(row.bird + 1); } },
+      { id: 'wingStep', label: t('stem.migration.recorded_check_step', 'Recorded step counter'), value: function(row) { return String(row.wingStep); } },
+      { id: 'paused', label: t('stem.migration.recorded_check_pause', 'Pause control'), value: function(row) { return row.paused ? t('stem.migration.recorded_check_on', 'On') : t('stem.migration.recorded_check_off', 'Off'); } },
+      { id: 'motionReduced', label: t('stem.migration.recorded_check_motion', 'Reduce motion'), value: function(row) { return row.motionReduced ? t('stem.migration.recorded_check_on', 'On') : t('stem.migration.recorded_check_off', 'Off'); } }
+    ];
+    var changed = fields.filter(function(field) { return first[field.id] !== second[field.id]; }).length;
+    var sourceLabel = props.source === 'saved' ? t('stem.migration.recorded_check_saved_source', 'Saved comparison captures') : t('stem.migration.recorded_check_selected_source', 'Selected recorded observations');
+    var summary = sourceLabel + ': ' + (changed ? changed + ' ' + t('stem.migration.recorded_check_different', 'of 7 recorded settings differ.') : t('stem.migration.recorded_check_same', 'All seven recorded settings match.'));
+    var owner = { panel: null, source: props.source, signature: props.signature };
+    return h('div', { className: 'migration-recorded-view-check', 'data-study-view-check': props.source,
+      ref: function(node) {
+        if (node) { owner.panel = node; ownerRef.current = owner; }
+        else if (ownerRef.current === owner) ownerRef.current = null;
+      } },
+      h('button', { type: 'button', 'data-study-view-check-action': 'check', 'aria-describedby': props.helpId,
+        'aria-label': t('stem.migration.recorded_check_action', 'Check recorded view conditions') + ' · ' + sourceLabel,
+        onClick: function(event) {
+          var action = event && event.currentTarget, current = ownerRef.current;
+          var group = current && current.panel && current.panel.closest('[data-study-matched-comparison]');
+          if (current !== owner || !current.panel || !current.panel.isConnected || !action || !action.isConnected ||
+              current.panel.querySelector('[data-study-view-check-action="check"]') !== action ||
+              !group || group.getAttribute('data-study-matched-comparison') !== current.source ||
+              current.panel.getAttribute('data-study-view-check') !== current.source) return;
+          checked[1](true);
+          if (props.announce) props.announce(summary);
+        }
+      }, t('stem.migration.recorded_check_action', 'Check recorded view conditions')),
+      h('p', { className: 'migration-recorded-view-check-summary', role: 'status', 'aria-live': 'polite', 'data-study-view-check-status': props.source }, checked[0] ? summary : ''),
+      checked[0] && h('div', { 'data-study-view-check-result': props.source },
+        h('p', null, t('stem.migration.recorded_check_order', 'First and Second refer to the recorded sources named above. This check uses their captured settings, even after you try a different matched view.')),
+        h('dl', null, fields.map(function(field) {
+          var same = first[field.id] === second[field.id];
+          return h('div', { key: field.id, 'data-view-condition': field.id, 'data-view-condition-match': same ? 'true' : 'false' },
+            h('dt', null, field.label),
+            h('dd', null,
+              h('span', null, t('stem.migration.recorded_check_first', 'First') + ': ' + field.value(first) + '; ' + t('stem.migration.recorded_check_second', 'Second') + ': ' + field.value(second)),
+              h('strong', null, same ? t('stem.migration.recorded_check_matches', 'Matches') : t('stem.migration.recorded_check_differs', 'Differs'))
+            )
+          );
+        })),
+        h('p', { className: 'migration-recorded-view-check-limit' }, t('stem.migration.recorded_check_limits', 'Matching recorded settings does not establish equal physical size, the same individual across species, or the same wing pose. The step counter is not a recorded animation frame. Pause and Reduce motion are separate captured controls.')),
+        h('p', null, t('stem.migration.recorded_check_reasoning', 'Try a matched view to hold angle, fitted zoom, and the illustrative still baseline fixed. Explain how remaining differences, species, or parts limit your comparison, using a detail from each source. This check does not grade your explanation.'))
+      )
+    );
+  }
+
   function migrNum(value, fallback, lo, hi) {
     var n = typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
     if (!isFinite(n)) return fallback;
@@ -993,11 +1084,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var baseline = migrReadFlightInvestigationSnapshot(row.baseline);
         var snapshot = migrReadFlightInvestigationSnapshot(row.snapshot);
         if (!migrIsFlightGoalStart(goal, baseline) || !snapshot || attempts.length >= 4) { repaired = true; return; }
-        attempts.push({ baseline: baseline, snapshot: snapshot, prediction: migrStr(row.prediction, '').slice(0, 1000), notes: migrStr(row.notes, '').slice(0, 2000) });
+        var attempt = { baseline: baseline, snapshot: snapshot, prediction: migrStr(row.prediction, '').slice(0, 1000), notes: migrStr(row.notes, '').slice(0, 2000) };
+        var reflection = migrStr(row.reflection, '').slice(0, 2000);
+        if (reflection.trim()) attempt.reflection = reflection;
+        attempts.push(attempt);
       });
       work[goal.id] = { prediction: migrStr(item.prediction, '').slice(0, 1000), notes: migrStr(item.notes, '').slice(0, 2000), setup: setup, attempts: attempts };
     });
     return { selectedId: MIGR_FLIGHT_GOALS.some(function(goal) { return goal.id === source.selectedId; }) ? source.selectedId : 'wind', work: work, repaired: repaired };
+  }
+  function migrFlightChallengeAttemptIdentity(attempt) {
+    return JSON.stringify([attempt.baseline, attempt.snapshot, attempt.prediction, attempt.notes]);
   }
   function migrCheckFlightGoal(goal, baseline, snapshot) {
     var result = migrCompareFlightInvestigation(baseline, snapshot, goal.variable);
@@ -2468,6 +2565,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var flightTrialRevisitStatus = useState(null);
       // A committed navigation owner; never part of saved learner work.
       var _flightTrialEvidenceReviewRef = useRef({ selected: null, panel: null });
+      // Saved challenge inspection is a transient, explicitly selected view.
+      var flightChallengeInspectionState = useState(null);
+      var _flightChallengeInspectionSerialRef = useRef(0);
+      var _flightChallengeInspectionReturnRef = useRef(null);
+      useEffect(function() {
+        var request = flightChallengeInspectionState[0];
+        if (request && !currentFlightChallengeInspection(request)) flightChallengeInspectionState[1](null);
+      });
+      // Later reflections have explicit saves; drafts and ownership stay local.
+      var flightChallengeReflectionState = useState(null);
+      var _flightChallengeReflectionOwnerRef = useRef(null);
+      var _flightChallengeReflectionFocusRef = useRef(null);
+      useEffect(function() {
+        var request = _flightChallengeReflectionFocusRef.current;
+        if (!request) return;
+        _flightChallengeReflectionFocusRef.current = null;
+        var owner = _flightChallengeReflectionOwnerRef.current;
+        if (!owner || owner.draft || owner.panel !== request.panel || !owner.panel.isConnected || owner.goalId !== request.goalId) return;
+        var attempt = owner.attempts[request.index];
+        var target = attempt && migrFlightChallengeAttemptIdentity(attempt) === request.attemptSignature
+          ? owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"] [data-flight-reflection-action="edit"]') : null;
+        if (!target && request.fallback) target = owner.panel.querySelector('[data-flight-challenge="' + owner.goalId + '"]');
+        if (target && target.isConnected && !target.disabled && target.focus) target.focus();
+      });
       // Tab 2: Wind Currents refs
       var _wcCanvasRef = useRef(null);
       var _wcAnimRef = useRef(null);
@@ -2755,13 +2876,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var geometry = new THREE.BufferGeometry();
         var vertices;
         var indices;
+        var colors;
         if (section === 'inner') {
-          // The shoulder ends at the wrist. It does not overlap a second full
-          // wing, so folding the hand cannot leave a rigid silhouette behind.
+          // Keep the shoulder's four-edge rim and wrist join exact. A single
+          // inset surface gives the broad inner wing shallow vane relief;
+          // these six visual ridges are not a measured feather count or anatomy.
           vertices = [0.04 * s, 0, -0.46 * k, 0.04 * s, 0, 0.44 * k,
-            0.50 * reach * s, 0.055, -0.40 * k, 0.50 * reach * s, 0.055, 0.28 * k,
-            0.25 * reach * s, 0.07, -0.04 * k];
-          indices = [0, 2, 4, 2, 3, 4, 3, 1, 4, 1, 0, 4];
+            0.50 * reach * s, 0.055, -0.40 * k, 0.50 * reach * s, 0.055, 0.28 * k];
+          colors = [0.86, 0.86, 0.86, 0.82, 0.82, 0.82,
+            0.86, 0.86, 0.86, 0.82, 0.82, 0.82];
+          indices = [];
+          var chordStations = [0.13, 0.35, 0.65, 0.88];
+          for (var row = 0; row < 4; row++) {
+            var v = chordStations[row];
+            var chordLift = Math.sin(Math.PI * v);
+            for (var column = 0; column < 13; column++) {
+              var u = 0.06 + 0.88 * column / 12;
+              // Ease the relief into the rim so narrow transition facets do
+              // not flip their lighting in the overhead Study view.
+              var ridge = row === 0 || row === 3 ? 0 : column % 2;
+              var leading = (-0.46 + 0.06 * u) * k;
+              var trailing = (0.44 - 0.16 * u) * k;
+              vertices.push((0.04 + (0.50 * reach - 0.04) * u) * s,
+                0.055 * u + (0.045 * Math.sin(Math.PI * u) + 0.032 * ridge) * chordLift,
+                leading + (trailing - leading) * v);
+              var shade = 0.82 + (0.11 + 0.07 * ridge) * chordLift;
+              colors.push(shade, shade, shade);
+            }
+          }
+          // One manifold grid, surrounded by an annulus that meets only the
+          // original four rim vertices. Marked-pose outlines stay on that rim.
+          for (var gridRow = 0; gridRow < 3; gridRow++) {
+            for (var gridColumn = 0; gridColumn < 12; gridColumn++) {
+              var cell = 4 + gridRow * 13 + gridColumn;
+              indices.push(cell, cell + 1, cell + 13, cell + 1, cell + 14, cell + 13);
+            }
+          }
+          indices.push(0, 2, 16, 1, 55, 3, 0, 43, 1, 2, 3, 55);
+          for (var span = 0; span < 12; span++) {
+            indices.push(0, 16 - span, 15 - span, 1, 43 + span, 44 + span);
+          }
+          for (var chord = 0; chord < 3; chord++) {
+            indices.push(0, 4 + chord * 13, 17 + chord * 13,
+              2, 55 - chord * 13, 42 - chord * 13);
+          }
         } else if (section === 'outer') {
           // Wrist-local hand panel: keep the original five-point rim while
           // shallow interior camber lets Study light reveal the broad surface.
@@ -2784,6 +2942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           indices = [0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 6, 3, 4, 5, 6];
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        if (colors) geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
         geometry.setIndex(indices);
         geometry.computeVertexNormals();
         return geometry;
@@ -3069,6 +3228,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return geometry;
       }
 
+      function createMigrationPeregrineHeadGeometry(THREE) {
+        // A smooth, colored head surface carries the helmet, pale cheeks and
+        // dark malar stripe without floating decals or extra draw calls.
+        // These adult-style identification cues are stylized, not measured anatomy.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position;
+        var colors = new Float32Array(position.count * 3);
+        var dark = new THREE.Color(0x1e293b), pale = new THREE.Color(0xe9e5da);
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var x = Math.abs(position.getX(vertex)) / 0.2;
+          var y = position.getY(vertex) / 0.2;
+          var z = position.getZ(vertex) / 0.2;
+          var cheek = ramp(0.18, 0.48, x) * ramp(-0.90, -0.68, y) * (1 - ramp(0.02, 0.24, y))
+            * ramp(-0.94, -0.72, z) * (1 - ramp(0.66, 0.91, z));
+          // The stripe narrows toward the lower cheek; both sides are mirrored.
+          var stripeWidth = 0.15 + 0.05 * ramp(-0.75, 0.15, y);
+          var stripe = 1 - ramp(stripeWidth, stripeWidth + 0.10, Math.abs(z + 0.32));
+          var amount = cheek * (1 - stripe);
+          colors[vertex * 3] = dark.r + (pale.r - dark.r) * amount;
+          colors[vertex * 3 + 1] = dark.g + (pale.g - dark.g) * amount;
+          colors[vertex * 3 + 2] = dark.b + (pale.b - dark.b) * amount;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+      }
+
+      function createMigrationPeregrineBillGeometry(THREE) {
+        // Elliptical sections turn downward with the bill's centerline. The
+        // yellow cere and dark hooked tip share the existing bill mesh/material.
+        var sections = [[-0.16, 0, 0.070, 0.060], [-0.205, 0.012, 0.070, 0.062],
+          [-0.245, 0.006, 0.058, 0.052], [-0.282, -0.008, 0.045, 0.041],
+          [-0.312, -0.034, 0.029, 0.028], [-0.323, -0.073, 0.014, 0.015],
+          [-0.314, -0.110, 0, 0]];
+        var vertices = [], colors = [], indices = [], sides = 12;
+        var gold = new THREE.Color(0xf5bb43), horn = new THREE.Color(0x475569), tip = new THREE.Color(0x111820);
+        for (var ring = 0; ring < sections.length - 1; ring++) {
+          var section = sections[ring], before = sections[Math.max(0, ring - 1)], after = sections[ring + 1];
+          var dz = after[0] - before[0], dy = after[1] - before[1], length = Math.sqrt(dz * dz + dy * dy);
+          var upY = -dz / length, upZ = dy / length;
+          var shade = ring < 2 ? gold : ring === 2 ? horn : tip;
+          for (var side = 0; side < sides; side++) {
+            var angle = side / sides * Math.PI * 2;
+            vertices.push(Math.cos(angle) * section[2], section[1] + Math.sin(angle) * section[3] * upY,
+              section[0] + Math.sin(angle) * section[3] * upZ);
+            colors.push(shade.r, shade.g, shade.b);
+            if (ring > 0) {
+              var a = (ring - 1) * sides + side, b = (ring - 1) * sides + (side + 1) % sides;
+              var c = ring * sides + side, d = ring * sides + (side + 1) % sides;
+              indices.push(a, c, b, b, c, d);
+            }
+          }
+        }
+        var base = vertices.length / 3;
+        vertices.push(0, sections[0][1], sections[0][0]); colors.push(gold.r, gold.g, gold.b);
+        var point = vertices.length / 3, last = sections[sections.length - 1];
+        vertices.push(0, last[1], last[0]); colors.push(tip.r, tip.g, tip.b);
+        for (var cap = 0; cap < sides; cap++) {
+          indices.push(base, cap, (cap + 1) % sides);
+          var end = (sections.length - 2) * sides;
+          indices.push(end + cap, point, end + (cap + 1) % sides);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationPeregrineEyeRingGeometry(THREE) {
+        // Both orbital rings share one small buffer and the bill's colored
+        // material. Project onto a shell just outside the actual head surface.
+        var vertices = [], colors = [], indices = [], segments = 16;
+        var gold = new THREE.Color(0xf5bb43);
+        var normal = new THREE.Vector3(), across = new THREE.Vector3(), up = new THREE.Vector3(), point = new THREE.Vector3();
+        for (var side = -1; side <= 1; side += 2) {
+          normal.set(side * 0.184, 0.065, -0.055).normalize();
+          across.set(0, 1, 0).cross(normal).normalize(); up.copy(normal).cross(across).normalize();
+          var start = vertices.length / 3;
+          for (var arc = 0; arc < segments; arc++) {
+            var angle = arc / segments * Math.PI * 2;
+            for (var rim = 0; rim < 2; rim++) {
+              var radius = rim === 0 ? 0.026 : 0.039;
+              point.copy(normal).multiplyScalar(0.204)
+                .addScaledVector(across, Math.cos(angle) * radius).addScaledVector(up, Math.sin(angle) * radius)
+                .normalize().multiplyScalar(0.204);
+              vertices.push(point.x, point.y, point.z); colors.push(gold.r, gold.g, gold.b);
+            }
+            var a = start + arc * 2, b = start + ((arc + 1) % segments) * 2;
+            indices.push(a, a + 1, b, a + 1, b + 1, b);
+          }
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationHummingbirdHeadGeometry(THREE) {
+        // Adult male identification cues live on one continuous head surface.
+        // Ruby belongs below the dark face, not on detached cheek spheres.
+        // Fixed vertex colors are stylized plumage, not an iridescence model.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position, colors = new Float32Array(position.count * 3);
+        var green = new THREE.Color(0x226843), dark = new THREE.Color(0x142522);
+        var pale = new THREE.Color(0xd9ddd1), ruby = new THREE.Color(0xc51c39), wine = new THREE.Color(0x780f25);
+        var shade = new THREE.Color(), throat = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var x = Math.abs(position.getX(vertex)) / 0.2;
+          var y = position.getY(vertex) / 0.2, z = position.getZ(vertex) / 0.2;
+          shade.copy(dark).lerp(green, 0.62 + 0.38 * ramp(-0.2, 0.8, y));
+          // A dark face extends from the bill under both eyes; the rear lower
+          // edge meets the pale underside instead of painting the cheeks red.
+          var face = (1 - ramp(0.24, 0.52, z)) * ramp(-0.55, -0.20, y) * (1 - ramp(0.38, 0.62, y));
+          shade.lerp(dark, face);
+          var lowerRear = ramp(0.24, 0.60, z) * (1 - ramp(-0.42, -0.10, y));
+          shade.lerp(pale, lowerRear);
+          var gorget = (1 - ramp(-0.32, -0.12, y)) * ramp(-0.98, -0.76, z) * (1 - ramp(0.22, 0.52, z));
+          throat.copy(wine).lerp(ruby, 0.55 + 0.45 * (1 - x) * ramp(-0.95, -0.40, z));
+          shade.lerp(throat, gorget);
+          colors[vertex * 3] = shade.r; colors[vertex * 3 + 1] = shade.g; colors[vertex * 3 + 2] = shade.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+      }
+
       function createMigrationFlyer(THREE, species, index) {
         var flyer = new THREE.Group();
         var isMonarch = species.id === 'monarch';
@@ -3079,7 +3372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           canada_goose:     { body: 0x776c60, belly: 0xd6cfc2, head: 0x111a24, cheek: 0xf8fafc, wing: 0x685f56, tip: 0x373632, bill: 0x1f2937 },
           snow_goose:       { body: 0xf3f6fa, belly: 0xffffff, head: 0xf3f6fa, cheek: null,     wing: 0xe8edf3, tip: 0x1f2937, bill: 0xf472b6 },
           arctic_tern:      { body: 0xeef2f7, belly: 0xffffff, head: 0xf3f5f8, cheek: null,     wing: 0xd7dee7, tip: 0x475569, bill: 0xdc2626 },
-          ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: 0xb91c1c, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
+          ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: null, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
           peregrine:        { body: 0x3f4a5a, belly: 0xe4e0d6, head: 0x1e293b, cheek: null,     wing: 0x36404e, tip: 0x1e293b, bill: 0xfbbf24 },
           sandhill_crane:   { body: 0x9aa0a6, belly: 0xb9b2a4, head: 0x9aa0a6, cheek: 0xb91c1c, wing: 0x8d939a, tip: 0x4b5563, bill: 0x44403c },
           bartailed_godwit: { body: 0xa9793f, belly: 0xe8dcc6, head: 0x8b5e2f, cheek: null,     wing: 0x96682f, tip: 0x57432a, bill: 0x1f2937 }
@@ -3123,9 +3416,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           flyer.add(neck);
         }
 
+        var coloredHead = species.id === 'peregrine' || species.id === 'ruby_hummingbird';
         var head = new THREE.Mesh(
-          new THREE.SphereGeometry(isMonarch ? 0.105 : 0.2, 12, 8),
-          isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.66 })
+          species.id === 'peregrine' ? createMigrationPeregrineHeadGeometry(THREE) : species.id === 'ruby_hummingbird'
+            ? createMigrationHummingbirdHeadGeometry(THREE) : new THREE.SphereGeometry(isMonarch ? 0.105 : 0.2, 12, 8),
+          isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: coloredHead ? 0xffffff : sp3d.head,
+            roughness: species.id === 'ruby_hummingbird' ? 0.46 : 0.66,
+            metalness: species.id === 'ruby_hummingbird' ? 0.12 : 0, vertexColors: coloredHead })
         );
         var headZ = isMonarch ? -0.39 : -0.72 - (species.id === 'sandhill_crane' ? 0.78 : (species.id === 'canada_goose' || species.id === 'snow_goose' ? 0.52 : 0.22));
         head.position.set(0, headY, headZ);
@@ -3245,13 +3542,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
           var billLength = species.id === 'bartailed_godwit' ? 0.62 : (species.id === 'ruby_hummingbird' ? 0.54 : (isCrane ? 0.46 : (isGoose || species.id === 'arctic_tern' ? 0.30 : 0.32)));
           var billRadius = species.id === 'ruby_hummingbird' ? 0.035 : (isCrane ? 0.055 : (species.id === 'arctic_tern' ? 0.045 : 0.085));
-          var beak = new THREE.Mesh(new THREE.ConeGeometry(billRadius, billLength, 10),
-            new THREE.MeshStandardMaterial({ color: sp3d.bill, roughness: 0.65 }));
+          var beak = new THREE.Mesh(species.id === 'peregrine' ? createMigrationPeregrineBillGeometry(THREE) : new THREE.ConeGeometry(billRadius, billLength, 10),
+            new THREE.MeshStandardMaterial({ color: species.id === 'peregrine' ? 0xffffff : sp3d.bill, roughness: 0.65, vertexColors: species.id === 'peregrine' }));
           beak.name = 'migration-bird-bill';
-          beak.rotation.x = -Math.PI / 2;
-          if (isGoose) beak.scale.set(1.18, 1, 0.58);
-          beak.position.set(0, headY - (isGoose ? 0.015 : 0), headZ - 0.12 - billLength * 0.5);
+          if (species.id === 'peregrine') beak.position.copy(head.position);
+          else {
+            beak.rotation.x = -Math.PI / 2;
+            if (isGoose) beak.scale.set(1.18, 1, 0.58);
+            beak.position.set(0, headY - (isGoose ? 0.015 : 0), headZ - 0.12 - billLength * 0.5);
+          }
           flyer.add(beak);
+          if (species.id === 'peregrine') {
+            var eyeRings = new THREE.Mesh(createMigrationPeregrineEyeRingGeometry(THREE), beak.material);
+            eyeRings.name = 'migration-peregrine-eye-rings';
+            eyeRings.position.copy(head.position);
+            flyer.add(eyeRings);
+          }
 
           var eyeMat = new THREE.MeshBasicMaterial({ color: 0x060b13 });
           var eyeGeometry = new THREE.SphereGeometry(0.026, 6, 4);
@@ -3304,8 +3610,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             roughness: 0.72,
             side: THREE.DoubleSide
           });
-          var leftOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach, sweep, isMonarch ? '' : 'inner'), outerMat);
-          var rightOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach, sweep, isMonarch ? '' : 'inner'), outerMat);
+          // The two inner panels share one lit material. Their surface replaces
+          // the former floating shaft lines without adding a draw call.
+          var innerMat = new THREE.MeshStandardMaterial({ color: sp3d.wing,
+            roughness: 0.72, vertexColors: true, side: THREE.DoubleSide });
+          var leftOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach, sweep, 'inner'), innerMat);
+          var rightOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach, sweep, 'inner'), innerMat);
           leftOuter.castShadow = true;
           rightOuter.castShadow = true;
           leftPivot.add(leftOuter);
@@ -3318,7 +3628,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         if (!isMonarch) {
           var tipMat = new THREE.MeshStandardMaterial({ color: sp3d.tip, roughness: 0.8, vertexColors: true, side: THREE.DoubleSide });
           var primaryGeometry = createMigrationPrimaryGeometry(THREE, reach, sweep);
-          var featherMat = new THREE.LineBasicMaterial({ color: sp3d.belly, transparent: true, opacity: 0.25 });
           for (var tipSide = -1; tipSide <= 1; tipSide += 2) {
             var shoulder = tipSide < 0 ? leftPivot : rightPivot;
             var wrist = new THREE.Group();
@@ -3337,16 +3646,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             flyer.userData.primaries.push(primaries);
             flyer.userData.wakeAnchors.push({ node: wrist, point: new THREE.Vector3(tipSide * reach * 0.50, 0.06, 0.05 * sweep), side: tipSide });
 
-            // Secondary-feather shafts describe the broad inner wing without
-            // adding one mesh per feather or a texture download.
-            var shafts = [];
-            for (var shaft = 0; shaft < 6; shaft++) {
-              var shaftX = (0.09 + shaft * 0.067) * reach * tipSide;
-              shafts.push(shaftX, 0.075, -0.17 * sweep, shaftX * 0.97, 0.07, (0.36 - shaft * 0.013) * sweep);
-            }
-            var shaftGeometry = new THREE.BufferGeometry();
-            shaftGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(shafts), 3));
-            shoulder.add(new THREE.LineSegments(shaftGeometry, featherMat));
           }
         }
 
@@ -3388,15 +3687,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }
             }
           }
+          // Follow the actual feather rims, rather than floating center shafts.
+          // Count indexed edges once while constructing this flyer; shared
+          // interior relief edges disappear, leaving the five closed contours.
+          // Both anatomical sides reuse this buffer through their mesh scale.
           var primaryOutline = [];
-          for (var featherPin = 0; featherPin < 5; featherPin++) {
-            var pinX = (0.10 + featherPin * 0.072) * reach;
-            var pinZ = (0.08 + featherPin * 0.013) * sweep;
-            var pinLength = (0.47 - featherPin * 0.041) * sweep;
-            var pinSpread = (0.06 + featherPin * 0.038) * reach;
-            primaryOutline.push(pinX, 0.075, pinZ,
-              pinX + pinSpread, 0.083, pinZ + pinLength);
+          var primaryPosition = primaryGeometry.attributes.position;
+          var primaryIndices = primaryGeometry.index.array;
+          var primaryEdges = Object.create(null);
+          for (var primaryFace = 0; primaryFace < primaryIndices.length; primaryFace += 3) {
+            for (var primaryEdge = 0; primaryEdge < 3; primaryEdge++) {
+              var from = primaryIndices[primaryFace + primaryEdge];
+              var to = primaryIndices[primaryFace + (primaryEdge + 1) % 3];
+              var edgeKey = Math.min(from, to) + ':' + Math.max(from, to);
+              if (primaryEdges[edgeKey]) primaryEdges[edgeKey].count++;
+              else primaryEdges[edgeKey] = { from: from, to: to, count: 1 };
+            }
           }
+          Object.keys(primaryEdges).forEach(function(edgeKey) {
+            var edge = primaryEdges[edgeKey];
+            if (edge.count !== 1) return;
+            primaryOutline.push(primaryPosition.getX(edge.from), primaryPosition.getY(edge.from), primaryPosition.getZ(edge.from),
+              primaryPosition.getX(edge.to), primaryPosition.getY(edge.to), primaryPosition.getZ(edge.to));
+          });
           var wingOutline = [0.04, 0.02, -0.46 * sweep, 0.50 * reach, 0.075, -0.40 * sweep,
             0.50 * reach, 0.075, -0.40 * sweep, 0.50 * reach, 0.075, 0.28 * sweep,
             0.50 * reach, 0.075, 0.28 * sweep, 0.04, 0.02, 0.44 * sweep,
@@ -5877,6 +6190,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             engineNow.time * engineNow.flyers[studyBirdIndex].userData.flapRate +
               engineNow.flyers[studyBirdIndex].userData.phase + engineNow.wingStepPhase, live.flightStudyCyclePosition, followedTipSide, engineNow.viewWidth);
           engineNow.renderer.render(engineNow.scene, engineNow.camera);
+          // Publish only after the selected recorded controls reached a frame.
+          var inspectionOwner = _flightChallengeReflectionOwnerRef.current;
+          var inspection = inspectionOwner && inspectionOwner.inspection;
+          var frame = engineNow.challengeInspectionFrame;
+          if (frame && (frame !== inspection || live.flightSpecies !== frame.snapshot.speciesId || live.flightSeason !== frame.snapshot.season ||
+              live.flightWind !== frame.snapshot.wind || live.flightFormation !== frame.snapshot.formationMode ||
+              !live.flightPaused || !live.flightShowSpeedVectors || live.flightCamera !== 'chase')) {
+            engineNow.challengeInspectionFrame = null;
+            host.removeAttribute('data-flight-challenge-frame');
+          }
+          var inspectionContext = inspection && engineNow.challengeInspectionFrame !== inspection && currentFlightChallengeInspection(inspection);
+          if (inspectionContext && inspectionContext.state !== 'changed' && inspectionContext.engine === engineNow) {
+            engineNow.challengeInspectionFrame = inspection;
+            host.setAttribute('data-flight-challenge-frame', String(inspection.serial));
+          }
           engineNow.raf = requestAnimationFrame(engineNow.animate);
         };
 
@@ -6337,7 +6665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var flightPaused = _liveVals.current.flightPaused;
         var followedAnatomySide = migrationStudyFollowedAnatomySide(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection);
         var studyRegions = [
-          { id: 'head', color: '#fbbf24', label: t('stem.migration.anatomy_head', 'Head & bill'), prompt: t('stem.migration.observe_head_prompt', 'Use Profile and step the wings. Describe the bill shape and the head position relative to the body. Separate what you can see from what you infer about feeding.') },
+          { id: 'head', color: '#fbbf24', label: t('stem.migration.anatomy_head', 'Head & bill'), prompt: species.id === 'ruby_hummingbird' ? t('stem.migration.observe_hummingbird_head_prompt', 'Adult male head markings are shown. Use Profile, then orbit toward the bill to locate the red throat patch below the dark face. Describe what changes with your view. Colors are stylized; females and young birds can have pale throats.') : t('stem.migration.observe_head_prompt', 'Use Profile and step the wings. Describe the bill shape and the head position relative to the body. Separate what you can see from what you infer about feeding.') },
           { id: 'inner-wing', color: '#67e8f9', label: t('stem.migration.anatomy_inner_wing', 'Inner wing'), prompt: t('stem.migration.observe_inner_wing_prompt', 'Pause and step the wings twice. Describe how the inner and outer wing sections change angle at their joint. What stays connected?') },
           { id: 'primaries', color: '#86efac', label: t('stem.migration.anatomy_primaries', 'Primary feathers'), prompt: t('stem.migration.observe_primaries_prompt', 'Use From above and step the wings. Describe the outer feather spacing and wingtip shape. Choose another bird species and compare what you can see.') },
           { id: 'tail', color: '#f9a8d4', label: t('stem.migration.anatomy_tail', 'Tail'), prompt: t('stem.migration.observe_tail_prompt', 'Compare Profile with From above. Describe the tail shape and its position relative to the body as the wings change. Can you see any tail motion in this stylized model?') }
@@ -6571,15 +6899,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
         function renderMatchedStudyComparison(pair, saved) {
           var matchedView = studyMatchedViewState[0] === 'above' ? 'above' : 'profile';
-          return h('div', { className: 'migration-study-saved', 'data-study-matched-comparison': '' },
+          var helpId = 'migration-study-matched-help-' + (saved ? 'saved' : 'selected');
+          return h('div', { className: 'migration-study-saved', 'data-study-matched-comparison': saved ? 'saved' : 'selected',
+            role: 'group', 'aria-label': saved
+              ? t('stem.migration.study_matched_saved_group', 'Matched view for saved comparison')
+              : t('stem.migration.study_matched_selected_group', 'Matched view for selected observations') },
             h('strong', null, t('stem.migration.study_matched_title', 'Try a matched view')),
             h('small', { 'data-study-matched-source': saved ? 'saved' : 'selected' }, saved
               ? t('stem.migration.study_matched_saved_sources', 'Using the two notes captured in Saved comparison. Changing the observation selectors above does not change this saved pair.')
               : t('stem.migration.study_matched_selected_sources', 'Using the two selected recorded observations. Try both views before recording your comparison.')),
             h('small', null, studyRecordTitle(pair.firstKey) + ' / ' + studyRecordTitle(pair.secondKey)),
-            h('p', { id: 'migration-study-matched-help' }, t('stem.migration.study_matched_help', 'Switch between the two captured sources using one angle and the same still wing-cycle baseline, then revise My observation comparison. Each model is fitted to the scene separately; this does not compare physical size. The still pose is illustrative. Matching these view settings does not establish a biological cause.')),
+            h('p', { id: helpId }, t('stem.migration.study_matched_help', 'Switch between the two captured sources using one angle and the same still wing-cycle baseline, then revise My observation comparison. Each model is fitted to the scene separately; this does not compare physical size. The still pose is illustrative. Matching these view settings does not establish a biological cause.')),
             h('label', null, t('stem.migration.study_matched_view', 'Matched comparison view'), h('select', {
-              'aria-label': t('stem.migration.study_matched_view', 'Matched comparison view'), 'aria-describedby': 'migration-study-matched-help', value: matchedView,
+              'aria-label': t('stem.migration.study_matched_view', 'Matched comparison view'), 'aria-describedby': helpId, value: matchedView,
               onChange: function(event) {
                 var nextView = event.target.value;
                 if (nextView !== 'profile' && nextView !== 'above') return;
@@ -6588,9 +6920,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }
             }, h('option', { value: 'profile' }, t('stem.migration.study_profile', 'Profile')), h('option', { value: 'above' }, t('stem.migration.study_above', 'From above')))),
             h('div', { className: 'migration-study-record-actions' },
-              h('button', { type: 'button', 'data-study-matched': 'first', 'aria-describedby': 'migration-study-matched-help', onClick: function() { revisitStudyRecord(pair.first, saved ? 'matched-first' : 'matched-selected-first', matchedView); } }, t('stem.migration.study_matched_first', 'Compare first in matched view')),
-              h('button', { type: 'button', 'data-study-matched': 'second', 'aria-describedby': 'migration-study-matched-help', onClick: function() { revisitStudyRecord(pair.second, saved ? 'matched-second' : 'matched-selected-second', matchedView); } }, t('stem.migration.study_matched_second', 'Compare second in matched view'))
-            )
+              h('button', { type: 'button', 'data-study-matched': 'first', 'aria-describedby': helpId, onClick: function() { revisitStudyRecord(pair.first, saved ? 'matched-first' : 'matched-selected-first', matchedView); } }, t('stem.migration.study_matched_first', 'Compare first in matched view')),
+              h('button', { type: 'button', 'data-study-matched': 'second', 'aria-describedby': helpId, onClick: function() { revisitStudyRecord(pair.second, saved ? 'matched-second' : 'matched-selected-second', matchedView); } }, t('stem.migration.study_matched_second', 'Compare second in matched view'))
+            ),
+            h(MigrationRecordedViewCheck, { key: JSON.stringify([saved ? 'saved' : 'selected', pair.firstKey, pair.secondKey, pair.first, pair.second]),
+              React: React, t: t, announce: announceToSR, source: saved ? 'saved' : 'selected', helpId: helpId,
+              signature: JSON.stringify([pair.firstKey, pair.secondKey, pair.first, pair.second]), first: pair.first, second: pair.second })
           );
         }
         function renderStudyComparison() {
@@ -6619,6 +6954,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('tbody', { role: 'rowgroup' }, recordRow(comparison.firstKey, first), recordRow(comparison.secondKey, second))
               )),
               enough && !comparison.saved && renderMatchedStudyComparison({ firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: first, second: second }, false),
+              enough && comparison.saved && h('details', { 'data-study-selected-comparison-activity': '' },
+                h('summary', null, t('stem.migration.study_selected_matched_activity', 'Try the selected pair in a matched view')),
+                (comparison.firstKey !== comparison.saved.firstKey || comparison.secondKey !== comparison.saved.secondKey ||
+                  JSON.stringify(first) !== JSON.stringify(comparison.saved.first) || JSON.stringify(second) !== JSON.stringify(comparison.saved.second)) &&
+                  h('p', { 'data-study-selected-source-state': 'different' }, t('stem.migration.study_selected_sources_differ', 'These selected records differ from Saved comparison. Try both selected records, then use a detail from each in My observation comparison. Saved comparison keeps its original notes and claim until you choose Record comparison.')),
+                renderMatchedStudyComparison({ firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: first, second: second }, false)
+              ),
               h('p', { id: 'migration-study-comparison-prompt' }, t('stem.migration.study_compare_prompt', 'Name one visible similarity or difference. Use a detail from each recorded note, then explain how the views limit your comparison.')),
               enough && h('small', null, differentViews ? t('stem.migration.study_compare_views_differ', 'The captured views differ. Check angle, zoom, individual, and wing step before attributing a difference to species or anatomy.') : t('stem.migration.study_compare_views_same', 'The captured view settings match. These stylized models still do not establish a biological cause.')),
               h('label', null, t('stem.migration.study_compare_claim', 'My observation comparison'), h('textarea', { 'aria-label': t('stem.migration.study_compare_claim', 'My observation comparison'), 'aria-describedby': 'migration-study-comparison-prompt', rows: 3, maxLength: 1500, value: comparison.draft, onChange: function(event) {
@@ -7435,6 +7777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           'data-migration-3d-flight': 'true',
           'data-monarch-simulation': species.id === 'monarch' ? 'active' : 'available',
           'data-pair-review-open': currentFlightTrialReview() ? 'true' : 'false',
+          'data-challenge-inspection-open': selectedFlightChallengeInspection() ? 'true' : 'false',
           'data-study-strip': studySceneActionsVisible() ? 'true' : 'false'
         },
           h('div', { className: 'migration-flight-view' },
@@ -7527,6 +7870,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             )
           ),
           renderStudySceneActions(),
+          renderFlightChallengeInspection(),
           renderFlightTrialReview()
           ),
           h('aside', { className: 'migration-flight-controls', 'aria-label': t('stem.migration.aria_flight_controls', '3D migration flight controls') },
@@ -7733,6 +8077,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           )
         );
       }
+      function currentFlightChallengeInspection(request) {
+        var owner = _flightChallengeReflectionOwnerRef.current;
+        var host = _f3dHostRef.current, live = _liveVals.current, engine = _f3dEngineRef.current;
+        if (!request || !owner || owner.inspection !== request || owner.tab !== 'flight3d' || live.tab !== 'flight3d' ||
+            owner.panel !== request.panel || !owner.panel || !owner.panel.isConnected || owner.goalId !== request.goalId ||
+            owner.sequence !== request.sequence || !owner.attempts[request.index] ||
+            migrFlightChallengeAttemptIdentity(owner.attempts[request.index]) !== request.attemptSignature ||
+            !host || !host.isConnected || host !== request.host) return null;
+        var deck = host.closest('.migration-flight-deck'), workspace = deck && deck.closest('.migration-flight-workspace');
+        if (!workspace || owner.panel.closest('.migration-flight-workspace') !== workspace) return null;
+        var snapshot = request.snapshot, values = owner.flightValues;
+        var same = values.speciesId === snapshot.speciesId && values.season === snapshot.season &&
+          values.wind === snapshot.wind && values.formationMode === snapshot.formationMode &&
+          live.flightSpecies === snapshot.speciesId && live.flightSeason === snapshot.season &&
+          live.flightWind === snapshot.wind && live.flightFormation === snapshot.formationMode &&
+          owner.view.flightPaused && live.flightPaused && owner.view.flightShowSpeedVectors && live.flightShowSpeedVectors &&
+          owner.view.flightCamera === 'chase' && live.flightCamera === 'chase';
+        var ready = same && engine && engine.host === host && !engine.disposed && !engine.contextLost &&
+          host.getAttribute('data-flight-ready') === 'true' && host.getAttribute('data-flight-error') !== 'true' &&
+          engine.speciesId === snapshot.speciesId && engine.formationMode === snapshot.formationMode && engine.season === snapshot.season;
+        return { owner: owner, host: host, deck: deck, engine: ready ? engine : null,
+          state: !same ? 'changed' : ready && engine.challengeInspectionFrame === request ? 'ready' : 'pending' };
+      }
+
+      function selectedFlightChallengeInspection() {
+        var request = flightChallengeInspectionState[0];
+        if (!request) return null;
+        var saved = migrReadFlightChallenges(d.flightChallenges), work = saved.work[request.goalId];
+        if (saved.selectedId !== request.goalId || !work || JSON.stringify(work.attempts) !== request.sequence ||
+            !work.attempts[request.index] || migrFlightChallengeAttemptIdentity(work.attempts[request.index]) !== request.attemptSignature) return null;
+        return request;
+      }
+
+      function renderFlightChallengeInspection() {
+        var request = selectedFlightChallengeInspection();
+        if (!request) return null;
+        var title = request.goalId === 'wind' ? t('stem.migration.mission_wind_title', 'Recover forward progress') : request.goalId === 'formation'
+          ? t('stem.migration.mission_formation_title', 'Find a drafting advantage') : t('stem.migration.mission_season_title', 'Reverse the seasonal journey');
+        var label = title + ' · ' + t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (request.index + 1) + ' · ' +
+          (request.source === 'baseline' ? t('stem.migration.mission_inspection_start', 'Starting flight') : t('stem.migration.mission_inspection_saved', 'Saved attempt'));
+        return h(MigrationChallengeInspectionReadout, { React: React,
+          getHost: function() { return _f3dHostRef.current; },
+          readContext: function() { var context = currentFlightChallengeInspection(request); return context ? context.state : null; },
+          renderContext: function(state) {
+            if (!state) return null;
+            var navigation = { node: null, request: request };
+            return h('div', { className: 'migration-challenge-inspection', 'data-flight-challenge-inspection': '',
+              'data-inspection-state': state, 'data-inspection-goal': request.goalId,
+              'data-inspection-attempt': request.index + 1, 'data-inspection-source': request.source },
+              h('div', { role: 'status', 'aria-live': 'polite' },
+                h('strong', null, label),
+                h('p', null, state === 'ready'
+                  ? t('stem.migration.mission_inspection_ready', 'Recorded conditions restored in a paused illustrative view with speed vectors. The original animation frame was not recorded.')
+                  : state === 'changed' ? t('stem.migration.mission_inspection_changed', 'Flight controls changed. This scene no longer matches the selected inspection. Inspect the saved flight again to restore its recorded conditions.')
+                  : t('stem.migration.mission_inspection_pending', 'Waiting for the recorded conditions to appear in the 3D scene. Your saved work is unchanged.'))
+              ),
+              h('button', { type: 'button', 'data-flight-challenge-return': '',
+                ref: function(node) {
+                  if (node) { navigation.node = node; _flightChallengeInspectionReturnRef.current = navigation; }
+                  else if (_flightChallengeInspectionReturnRef.current === navigation) _flightChallengeInspectionReturnRef.current = null;
+                },
+                onClick: function(event) {
+                  var action = event && event.currentTarget;
+                  function returnToReflection() {
+                    var context = currentFlightChallengeInspection(request);
+                    if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action ||
+                        !action || !action.isConnected || action.closest('.migration-flight-deck') !== context.deck ||
+                        context.deck.querySelector('[data-flight-challenge-return]') !== action) return;
+                    var owner = context.owner, row = owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"]');
+                    var disclosure = row && row.querySelector('[data-flight-challenge-reflection]');
+                    var target = owner.editor && owner.editor.index === request.index ? row.querySelector('[data-flight-reflection-input]') :
+                      row && row.querySelector('[data-flight-reflection-action="edit"]');
+                    if (target && (target.disabled || target.hidden)) target = disclosure && disclosure.querySelector('summary');
+                    if (!target || !target.isConnected || !disclosure) return;
+                    owner.panel.open = true;
+                    var history = owner.panel.querySelector('[data-flight-challenge-history]');
+                    if (history) history.open = true;
+                    disclosure.open = true;
+                    target.focus({ preventScroll: true });
+                    if (document.activeElement === target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+                  }
+                  var context = currentFlightChallengeInspection(request);
+                  if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action || !action || !action.isConnected) return;
+                  var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+                  if (fullscreen && fullscreen === context.deck && !fullscreen.contains(context.owner.panel)) {
+                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                    if (exit) { try { var pending = exit.call(document); if (pending && pending.then) pending.then(returnToReflection, function() {}); else window.setTimeout(returnToReflection, 0); } catch (ignore) {} }
+                    return;
+                  }
+                  if (context.deck.getAttribute('data-allo-fullscreen-active') === 'true' && typeof window.__alloStemFS === 'function') window.__alloStemFS(context.deck);
+                  returnToReflection();
+                }
+              }, t('stem.migration.mission_inspection_return', 'Return to this reflection'))
+            );
+          }
+        });
+      }
+
       function renderFlightChallenges() {
         var challenges = migrReadFlightChallenges(d.flightChallenges);
         var goal = MIGR_FLIGHT_GOALS.filter(function(item) { return item.id === challenges.selectedId; })[0];
@@ -7747,7 +8189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           saved.attempts.forEach(function(attempt, index) {
             if (migrCheckFlightGoal(item, attempt.baseline, attempt.snapshot).met) {
               latestMatch = index;
-              if (attempt.notes.trim()) evidence = true;
+              if (attempt.notes.trim() || (attempt.reflection || '').trim()) evidence = true;
             }
           });
           var steps = [
@@ -7759,6 +8201,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return { steps: steps, count: steps.filter(function(step) { return step.recorded; }).length, latestMatch: latestMatch };
         }
         var progress = evidenceProgress(goal, work);
+        var reflectionSequence = JSON.stringify(work.attempts);
+        var reflectionDraft = flightChallengeReflectionState[0];
+        var reflectionEditing = reflectionDraft && reflectionDraft.goalId === goal.id && reflectionDraft.sequence === reflectionSequence &&
+          work.attempts[reflectionDraft.index] && migrFlightChallengeAttemptIdentity(work.attempts[reflectionDraft.index]) === reflectionDraft.attemptSignature ? reflectionDraft : null;
+        // Only the callback ref publishes this render. Abandoned renders and
+        // detached handlers cannot acquire authority to write learner work.
+        var reflectionCommit = { panel: null, goalId: goal.id, sequence: reflectionSequence, attempts: work.attempts,
+          challenges: challenges, draft: reflectionDraft, editor: reflectionEditing, locked: false,
+          inspection: flightChallengeInspectionState[0], flightValues: flightValues,
+          view: { flightCamera: _liveVals.current.flightCamera, flightPaused: !!d.flightPaused,
+            flightShowSpeedVectors: d.flightShowSpeedVectors === true }, tab: tab };
+        function reflectionOwner(event, index, action, editor) {
+          var owner = _flightChallengeReflectionOwnerRef.current;
+          var node = event && event.currentTarget;
+          if (owner !== reflectionCommit || owner.locked || !owner.panel || !owner.panel.isConnected || !node || !node.isConnected || !owner.panel.contains(node)) return null;
+          var selector = index < 0 ? '[data-flight-reflection-action="cancel-stale"]' :
+            '[data-flight-challenge-attempt="' + (index + 1) + '"] ' + (action === 'input' ? '[data-flight-reflection-input]' : '[data-flight-reflection-action="' + action + '"]');
+          if (owner.panel.querySelector(selector) !== node) return null;
+          if (editor && (owner.editor !== editor || editor.goalId !== owner.goalId || editor.sequence !== owner.sequence ||
+              !owner.attempts[index] || editor.attemptSignature !== migrFlightChallengeAttemptIdentity(owner.attempts[index]))) return null;
+          return owner;
+        }
+        function reflectionFocus(owner, index, attemptSignature, fallback) {
+          _flightChallengeReflectionFocusRef.current = { panel: owner.panel, goalId: owner.goalId, index: index, attemptSignature: attemptSignature, fallback: !!fallback };
+        }
+        function beginReflection(event, index) {
+          var owner = reflectionOwner(event, index, 'edit');
+          if (!owner || owner.draft || !owner.attempts[index]) return;
+          var attempt = owner.attempts[index];
+          flightChallengeReflectionState[1]({ goalId: owner.goalId, index: index, sequence: owner.sequence,
+            attemptSignature: migrFlightChallengeAttemptIdentity(attempt), token: {}, text: attempt.reflection || '' });
+        }
+        function saveReflection(event, index) {
+          var owner = reflectionOwner(event, index, 'save', reflectionEditing);
+          if (!owner || !reflectionEditing || owner.editor !== reflectionEditing) return;
+          var attempt = owner.attempts[index];
+          var value = reflectionEditing.text.slice(0, 2000);
+          if (value.trim() ? value === (attempt.reflection || '') : !attempt.reflection) return;
+          var rows = owner.attempts.slice();
+          rows[index] = Object.assign({}, attempt);
+          if (value.trim()) rows[index].reflection = value;
+          else delete rows[index].reflection;
+          var nextGoals = Object.assign({}, owner.challenges.work);
+          nextGoals[owner.goalId] = Object.assign({}, owner.challenges.work[owner.goalId], { attempts: rows });
+          var next = Object.assign({}, owner.challenges, { work: nextGoals });
+          delete next.repaired;
+          owner.locked = true;
+          reflectionFocus(owner, index, reflectionEditing.attemptSignature);
+          flightChallengeReflectionState[1](null);
+          upd('flightChallenges', next);
+          announce(t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1) + '. ' +
+            (value.trim() ? t('stem.migration.mission_reflection_saved_announcement', 'Later reflection saved. Original flight and explanation remain as recorded. Your reflection is ungraded.') :
+              t('stem.migration.mission_reflection_cleared_announcement', 'Later reflection cleared. Original flight and explanation remain as recorded.')));
+        }
+        function cancelReflection(event, index, stale) {
+          var owner = reflectionOwner(event, stale ? -1 : index, stale ? 'cancel-stale' : 'cancel', stale ? null : reflectionEditing);
+          if (!owner || !owner.draft || (stale ? owner.editor : owner.editor !== reflectionEditing)) return;
+          owner.locked = true;
+          reflectionFocus(owner, index, owner.draft.attemptSignature, stale);
+          flightChallengeReflectionState[1](null);
+          announce(t('stem.migration.mission_reflection_cancelled', 'Unsaved reflection closed. Saved work is unchanged.'));
+        }
+        function renderReflection(attempt, index) {
+          var editing = reflectionEditing && reflectionEditing.index === index ? reflectionEditing : null;
+          var inputId = 'migration-mission-reflection-' + goal.id + '-' + (index + 1);
+          var helpId = inputId + '-help';
+          var canSave = editing && (editing.text.trim() ? editing.text !== (attempt.reflection || '') : !!attempt.reflection);
+          return h('details', { className: 'migration-mission-reflection', 'data-flight-challenge-reflection': index + 1 },
+            h('summary', null, t('stem.migration.mission_reflection_title', 'Later reflection')),
+            h('div', { className: 'migration-mission-reflection-body' },
+              h('p', { id: helpId }, t('stem.migration.mission_reflection_help', 'Use this attempt’s saved measurements or route changes to explain what you notice and a limitation of the model. A later reflection keeps your original prediction and explanation as recorded; it is ungraded.')),
+              h('p', { 'data-flight-reflection-saved': index + 1 }, attempt.reflection || t('stem.migration.mission_reflection_empty', 'No later reflection is saved yet.')),
+              h('button', { type: 'button', 'data-flight-reflection-action': 'edit', hidden: !!editing, disabled: !!reflectionDraft,
+                'aria-describedby': helpId, onClick: function(event) { beginReflection(event, index); } },
+                attempt.reflection ? t('stem.migration.mission_reflection_edit', 'Edit reflection') : t('stem.migration.mission_reflection_add', 'Add reflection')),
+              editing && h('div', { className: 'migration-mission-reflection-editor' },
+                h('label', { htmlFor: inputId }, t('stem.migration.mission_reflection_label', 'My later reflection')),
+                h('textarea', { id: inputId, rows: 4, maxLength: 2000, autoFocus: true, value: editing.text,
+                  'data-flight-reflection-input': index + 1, 'aria-label': t('stem.migration.mission_reflection_label', 'My later reflection') + ' · ' + t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1), 'aria-describedby': helpId,
+                  placeholder: t('stem.migration.mission_reflection_placeholder', 'What does this saved flight support, and what can this model not tell me?'),
+                  onChange: function(event) {
+                    if (!reflectionOwner(event, index, 'input', editing)) return;
+                    flightChallengeReflectionState[1](Object.assign({}, editing, { text: event.target.value.slice(0, 2000) }));
+                  }
+                }),
+                h('div', { className: 'migration-mission-reflection-actions' },
+                  h('button', { type: 'button', 'data-flight-reflection-action': 'save', disabled: !canSave, onClick: function(event) { saveReflection(event, index); } }, t('stem.migration.mission_reflection_save', 'Save reflection')),
+                  h('button', { type: 'button', 'data-flight-reflection-action': 'cancel', onClick: function(event) { cancelReflection(event, index, false); } }, t('stem.migration.mission_reflection_cancel', 'Cancel'))
+                ),
+                h('p', { className: 'migration-mission-reflection-draft-note' }, t('stem.migration.mission_reflection_draft_note', 'This draft is not saved yet. Finish or cancel it before editing another attempt.'))
+              )
+            )
+          );
+        }
         function title(id) {
           if (id === 'wind') return t('stem.migration.mission_wind_title', 'Recover forward progress');
           if (id === 'formation') return t('stem.migration.mission_formation_title', 'Find a drafting advantage');
@@ -7830,7 +8366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('td', null, changeText(attempt.baseline, attempt.snapshot, checked)),
                   h('td', null, attempt.baseline.groundSpeed + ' → ' + attempt.snapshot.groundSpeed),
                   h('td', null, attempt.baseline.benefit + ' → ' + attempt.snapshot.benefit),
-                  h('td', null, h('strong', null, checked.status === 'confounded' ? t('stem.migration.experiment_confounded_badge', 'Other conditions changed') : checked.status === 'unchanged' ? t('stem.migration.experiment_unchanged_badge', 'Unchanged conditions') : outcome(checked)), h('small', null, attempt.notes.trim() ? t('stem.migration.mission_review_explanation_saved', 'Explanation recorded · ungraded') : t('stem.migration.mission_review_explanation_missing', 'Explanation not recorded')))
+                  h('td', null, h('strong', null, checked.status === 'confounded' ? t('stem.migration.experiment_confounded_badge', 'Other conditions changed') : checked.status === 'unchanged' ? t('stem.migration.experiment_unchanged_badge', 'Unchanged conditions') : outcome(checked)), h('small', null, attempt.notes.trim() ? t('stem.migration.mission_review_explanation_saved', 'Explanation recorded · ungraded') : (attempt.reflection || '').trim() ? t('stem.migration.mission_review_reflection_saved', 'Reflection recorded · ungraded') : t('stem.migration.mission_review_explanation_missing', 'Explanation not recorded')))
                 );
               }))
             )
@@ -7842,7 +8378,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', null, h('span', null, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit')), h('strong', null, baseline.benefit + '% \u2192 ' + snapshot.benefit + '%'))
           );
         }
-        return h('details', { id: 'migration-flight-challenges', className: 'migration-missions', 'data-migration-flight-challenges': 'true' },
+        return h('details', { id: 'migration-flight-challenges', className: 'migration-missions', 'data-migration-flight-challenges': 'true',
+          ref: function(node) {
+            if (node) { reflectionCommit.panel = node; _flightChallengeReflectionOwnerRef.current = reflectionCommit; }
+            else if (_flightChallengeReflectionOwnerRef.current === reflectionCommit) _flightChallengeReflectionOwnerRef.current = null;
+          } },
           h('summary', null,
             h('span', { className: 'migration-missions-summary-title' }, t('stem.migration.mission_summary', 'Flight challenges')),
             h('span', { className: 'migration-missions-summary-count' }, t('stem.migration.mission_three_goals', '3 goals to investigate'))
@@ -7872,7 +8412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', null, step.label, h('small', null, step.recorded ? t('stem.migration.mission_progress_recorded', 'Recorded') : t('stem.migration.mission_progress_needed', 'Not yet recorded')))
                   );
                 })),
-                h('p', { className: 'migration-mission-progress-help' }, t('stem.migration.mission_progress_help', 'Prediction includes saved attempts. Evidence is explanation text saved with a model-matching attempt; its quality is not graded.'))
+                h('p', { className: 'migration-mission-progress-help' }, t('stem.migration.mission_progress_reflection_help', 'Prediction includes saved attempts. Evidence is an explanation or later reflection saved with a model-matching attempt; its quality is not graded.'))
               ),
               h('div', { className: 'migration-mission-writing' },
                 h('label', { htmlFor: 'migration-mission-prediction' },
@@ -7909,7 +8449,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('p', null, h('b', null, t('stem.migration.mission_current_route', 'Current route') + ': '), route(live))
                 )
               ),
-              work.attempts.length >= 4 && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_history_full', 'Four attempts are saved for this goal. Remove an attempt to make room; nothing is replaced automatically.')),
+              work.attempts.length >= 4 && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_history_reflection_full', 'Four attempts are saved for this goal. You can still add a later reflection to any saved attempt. Remove an attempt only to make room for another flight; nothing is replaced automatically.')),
+              reflectionDraft && !reflectionEditing && h('div', { className: 'migration-mission-reflection-stale', 'data-flight-reflection-stale': '', role: 'group', 'aria-label': t('stem.migration.mission_reflection_stale_label', 'Unsaved reflection from another saved context') },
+                h('p', { role: 'status' }, t('stem.migration.mission_reflection_stale_help', 'The saved attempts or selected challenge changed. Your unsaved reflection is kept below. Return to the same saved context to continue, or copy your words and close this draft before editing another attempt.')),
+                h('label', { htmlFor: 'migration-mission-reflection-stale' }, t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection')),
+                h('textarea', { id: 'migration-mission-reflection-stale', rows: 4, readOnly: true, value: reflectionDraft.text, 'aria-label': t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection') }),
+                h('button', { type: 'button', 'data-flight-reflection-action': 'cancel-stale', onClick: function(event) { cancelReflection(event, reflectionDraft.index, true); } }, t('stem.migration.mission_reflection_stale_close', 'Close unsaved draft'))
+              ),
               work.attempts.length > 0 && h('details', { className: 'migration-mission-history', 'data-flight-challenge-history': 'true' },
                 h('summary', null, t('stem.migration.mission_saved_attempts', 'Saved attempts') + ' ' + work.attempts.length + '/4'),
                 comparisonTable(),
@@ -7923,7 +8469,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('p', null, t('stem.migration.mission_recorded_conditions', 'Recorded conditions') + ': ' + conditions(attempt.snapshot)),
                     goal.id === 'season' && h('p', null, route(attempt.baseline) + ' / ' + route(attempt.snapshot)),
                     h('p', null, h('b', null, t('stem.migration.mission_recorded_prediction', 'Prediction when checked') + ': '), attempt.prediction),
-                    h('p', { className: 'migration-mission-explanation' }, h('b', null, t('stem.migration.mission_recorded_explanation', 'Explanation when checked') + ': '), attempt.notes.trim() ? attempt.notes : t('stem.migration.mission_no_explanation', 'No explanation was recorded. Add your reasoning above and save another attempt.')),
+                    h('p', { className: 'migration-mission-explanation' }, h('b', null, t('stem.migration.mission_recorded_explanation', 'Explanation when checked') + ': '), attempt.notes.trim() ? attempt.notes : t('stem.migration.mission_no_explanation_reflect', 'No explanation was recorded when checked. Use Later reflection below to add your reasoning to this saved flight.')),
+                    h('div', { className: 'migration-mission-inspect-actions' },
+                      ['baseline', 'snapshot'].map(function(source) {
+                        return h('button', { key: source, type: 'button', 'data-flight-challenge-inspect': source,
+                          'aria-label': (source === 'baseline' ? t('stem.migration.mission_inspect_start', 'Inspect starting flight') : t('stem.migration.mission_inspect_saved', 'Inspect saved attempt')) + ' · ' + attemptLabel,
+                          onClick: function(event) {
+                            var owner = _flightChallengeReflectionOwnerRef.current, action = event && event.currentTarget;
+                            var host = _f3dHostRef.current, deck = host && host.isConnected && host.closest('.migration-flight-deck');
+                            var workspace = deck && deck.closest('.migration-flight-workspace');
+                            if (owner !== reflectionCommit || owner.locked || !action || !action.isConnected || !owner.panel || !owner.panel.isConnected ||
+                                !workspace || owner.panel.closest('.migration-flight-workspace') !== workspace || _liveVals.current.tab !== 'flight3d' ||
+                                owner.panel.querySelector('[data-flight-challenge-attempt="' + (index + 1) + '"] [data-flight-challenge-inspect="' + source + '"]') !== action ||
+                                owner.goalId !== goal.id || owner.sequence !== reflectionSequence || !owner.attempts[index] ||
+                                migrFlightChallengeAttemptIdentity(owner.attempts[index]) !== migrFlightChallengeAttemptIdentity(attempt)) return;
+                            var snapshot = migrReadFlightInvestigationSnapshot(owner.attempts[index][source]);
+                            if (!snapshot) return;
+                            var request = { panel: owner.panel, host: host, goalId: owner.goalId, sequence: owner.sequence, index: index,
+                              attemptSignature: migrFlightChallengeAttemptIdentity(owner.attempts[index]), source: source, snapshot: snapshot,
+                              serial: ++_flightChallengeInspectionSerialRef.current };
+                            cancelMigrationStudyPreview(); clearMigrationMarkedReturnIntent();
+                            _f3dStudyRevisitRef.current = null;
+                            flightTrialRevisitStatus[1](null);
+                            flightChallengeInspectionState[1](request);
+                            var values = { flightSpecies: snapshot.speciesId, flightSeason: snapshot.season, flightWind: snapshot.wind,
+                              flightFormation: snapshot.formationMode, flightCamera: 'chase', flightPaused: true, flightShowSpeedVectors: true };
+                            Object.keys(values).forEach(function(key) { _liveVals.current[key] = values[key]; });
+                            _liveVals.current.flightSpeedValues = migrFlightSpeedValues(snapshot.speciesId, snapshot.wind);
+                            updMulti(values);
+                            announce(attemptLabel + '. ' + t('stem.migration.mission_inspection_requested', 'Inspection requested. Saved predictions, explanations, and reflection drafts are unchanged.'));
+                            if (host.isConnected && host.focus) { host.focus({ preventScroll: true }); if (host.scrollIntoView) host.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+                          }
+                        }, source === 'baseline' ? t('stem.migration.mission_inspect_start', 'Inspect starting flight') : t('stem.migration.mission_inspect_saved', 'Inspect saved attempt'));
+                      })
+                    ),
+                    renderReflection(attempt, index),
                     h('button', { type: 'button', className: 'migration-mission-remove', 'aria-label': t('stem.migration.mission_remove_attempt', 'Remove challenge attempt') + ' ' + (index + 1), onClick: function() {
                       saveWork({ attempts: work.attempts.filter(function(row, rowIndex) { return rowIndex !== index; }) });
                       announce(attemptLabel + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
@@ -7951,6 +8531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // again at this explicit restore boundary before writing controls.
         var snapshot = trial && migrReadFlightInvestigationSnapshot(baseline ? trial.baseline : trial.snapshot);
         if (!snapshot || flightInvestigation.trials[index] !== trial) return;
+        flightChallengeInspectionState[1](null);
         cancelMigrationStudyPreview();
         clearMigrationMarkedReturnIntent();
         _f3dStudyRevisitRef.current = null;

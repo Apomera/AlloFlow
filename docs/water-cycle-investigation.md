@@ -470,3 +470,21 @@ When the tagged raindrop reaches surface water, the surrounding shower now keeps
 The existing water contacts finish independently: retained rings expand and splashes settle while the shower fades. Retired streaks are clipped to receiving water and cannot reappear after submerging. The exit creates no new drops, contacts, water mass or landing receipts. These are bounded visual memories of the preceding shower.
 
 The captured exit is tied to its destination form. A further phase change clears it, and reset or restored checkpoints start without an invented former shower. Pause and hidden-page time hold the water clock; reduced motion holds the current exit stage. The existing 0.65-second simulation-time bound still applies. Geometry, materials and GPU buffers are reused, and rain-to-vapor retirement retains its existing behavior. Phase rules, mass, movement and notebook credit are unchanged. Run **node dev-tools/watercycle_pilot_rain_landing_shower_qa.cjs** for genuine wet landing, retained shower and contact GPU uploads, world anchors, pause/views/reduced-motion, expiry/reset/restore and evaporation regression checks. Evidence is stored under **reports/watercycle-pilot-rain-landing-shower/**.
+
+### Be the Water: cloud interiors form and clear through optical depth
+
+The existing18 pooled interior billows now use their shared optical-depth shader during entry and exit. Dense cores form before thin fringes; the edges dissolve first as the learner leaves. The original fully formed cloud appearance, world placement, fog envelope and sunlight remain intact. An interrupted entry or a rapid cloud-base recross retains each actual displayed density together with its opacity.
+
+Enabling reduced motion during a cue holds its current haze, density and fog instead of moving back to a midpoint. A fresh reduced-motion cue uses the representative midpoint; a retained recross starts from its captured source. Returning to normal motion advances monotonically, and the original model-time expiry still clears the cue. These are visual changes only: no parcel water, phase thresholds, collision receipts or notebook credit are added.
+
+### Be the Water: cloud shadows thin with their releasing source
+
+When an actual cloud releases rain or snow, the existing receiving-surface shadow now follows the captured26-billow source retirement, including an interrupted assembly. Its world source, footprint and captured strength remain anchored. A shared optical-depth uniform clears the thin penumbra before the denser centre, rather than only dimming the entire patch uniformly. Full-density formed-cloud shading is unchanged.
+
+The effect reuses the existing receiver shader, textures and geometry with no added render pass. Pause, reduced-motion source retirement, expiry, reset and restore retain their existing ownership rules. The separate Water-view haze keeps its own presentation curve. These changes add no modeled water, collision receipts or notebook credit.
+
+### Be the Water: motion preferences preserve the current transition
+
+Switching reduced motion on during a phase handoff now holds its current visual progress. Evaporation and crystal fronts, incoming water size, collection flattening, condensation beads, cloud assembly, rain onset opacity and cloud-release camera framing use the same stored presentation progress. Captured cloud-source retirement holds its own current coverage too, keeping its source billows and receiving shadow together.
+
+A newly started reduced-motion cue keeps the existing representative midpoint. Returning to normal motion advances from the held progress without reversing the front or brightening the outgoing source. Existing elapsed-time expiry, pause, reset and restore still own cue lifetime; water mass, phase rules, collision receipts and notebook credit remain model-controlled.

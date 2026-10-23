@@ -56,7 +56,10 @@ describe('dissection authored assessment cues', () => {
     expect(structureCue(opticNerve, 'observation')).toContain('nerve bundle');
     expect(structureCue(opticNerve, 'explanation')).toContain('no photoreceptors');
     expect(structureCue(stomach, 'function')).toContain('acid and pepsin');
-    expect(structureCue(stomach, 'observation')).toContain('esophagus to the intestine');
+    expect(structureCue(stomach, 'observation')).toContain('gastric sac');
+    expect(structureCue(stomach, 'observation')).toContain('pyloric outlet');
+    expect(structureCue(stomach, 'observation')).toContain('three pyloric caeca');
+    expect(structureCue(stomach, 'explanation')).toContain('between the esophagus and intestine');
     expect(structureCue(stomach, 'function')).not.toBe('J-shaped.');
   });
 

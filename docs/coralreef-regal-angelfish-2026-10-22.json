@@ -1,0 +1,143 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional adult angelfish for the existing species guide, optional identification activity and illustrative reef encounters. The model represents a Pacific individual; regional colour forms are explained rather than blended. New copy is paraphrased from museum accounts and primary research. Model-based field marks support learning, not guaranteed field identification.",
+  "iucnYearConvention": "Use assessment year 2009, not publication year 2010. The current indexed FishBase IUCN 2025-2 export reports Least Concern with assessment date 8 October 2009. IUCN-owned Crossref metadata gives the same date; Museums Victoria cites the 2010 Red List publication. Direct IUCN access returned 403, so no successful direct Red List-page access is claimed.",
+  "specimens": [
+    {
+      "id": "regal_angelfish",
+      "name": "Regal angelfish",
+      "scientific": "Pygoplites diacanthus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2009,
+      "iucnPublishedYear": 2010,
+      "iucnDateAssessed": "2009-10-08",
+      "lookalikes": [
+        "emperor_angelfish"
+      ],
+      "marks": [
+        "Pale, dark-edged vertical bars cross a yellow-orange body",
+        "The soft rear dorsal fin is blue with fine dark scribbles",
+        "The anal fin carries curved yellow and blue stripes",
+        "A yellow tail contrasts with the blue-grey chest of this Pacific adult"
+      ],
+      "role": "Predator of sponges and tunicates, linking these reef invertebrates to the fish food web.",
+      "fact": "Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest.",
+      "habitat": "Coral-rich lagoons and seaward reefs, often around caves and ledges. The species ranges from East Africa and the Red Sea across the tropical Indo-Pacific to the Tuamotu region.",
+      "diet": "Feeds on sponges and tunicates, including sea squirts.",
+      "behavior": "Usually encountered alone or in pairs, occasionally in small groups. Young fish shelter in coral cracks and crevices.",
+      "observe": "Follow the bars down this adult’s sides, then compare the emperor angelfish’s finer, mostly horizontal stripes. Check the tail, fin patterns and chest colour together; juveniles and regional forms differ.",
+      "sources": [
+        "dx-am-regal_angelfish",
+        "dx-foa-regal_angelfish",
+        "dx-phylogeography-regal_angelfish",
+        "dx-iucn-regal_angelfish",
+        "dx-usgs-emperor-regal_angelfish"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-cas-regal_angelfish: current accepted name is Pygoplites diacanthus (Boddaert, 1772).",
+        "marks": "dx-am-regal_angelfish supports alternating pale, black-edged bars, blue dorsal with dark scribbles, striped anal fin and yellow tail; dx-foa-regal_angelfish supports the orange-yellow ground colour and head/side bars; dx-phylogeography-regal_angelfish supports the Pacific grey chest and head.",
+        "roleDiet": "dx-foa-regal_angelfish and dx-am-regal_angelfish identify sponges and tunicates as food. The food-web wording is a conservative interpretation of feeding, not a claim of measured ecosystem control.",
+        "fact": "dx-phylogeography-regal_angelfish: introduction and Figure 1 explicitly contrast yellow-chested Indian Ocean/Red Sea fish with grey-chested Pacific fish, illustrated by Djibouti and Great Barrier Reef individuals.",
+        "habitatRange": "dx-am-regal_angelfish and dx-foa-regal_angelfish: coral-rich lagoons and seaward reefs, caves and ledges; broad Indo-West-Central Pacific distribution.",
+        "behavior": "dx-am-regal_angelfish and dx-foa-regal_angelfish: solitary, paired or occasionally small-group encounters; juveniles shelter in crevices.",
+        "compare": "dx-usgs-emperor-regal_angelfish describes adult emperor angelfish flank striping and explicitly identifies it as horizontal in its comparison section. The existing emperor record is linked one-way without changing its copy.",
+        "iucn": "dx-iucn-regal_angelfish gives the IUCN assessment DOI and 2010 publication; IUCN-owned Crossref metadata and dx-fb-regal_angelfish corroborate 8 October 2009 as the assessment date; the current FishBase IUCN 2025-2 export retains LC.",
+        "sizeDepth": "dx-foa-regal_angelfish gives maximum 25 cm total length and depths 1–80 m. dx-am-regal_angelfish gives 25 cm and 1–48 m. The broader museum interval is used for encounter metadata, with source differences retained in provenance."
+      },
+      "caution": "The geographic chest colours describe adult regional forms, not an infallible geographic or taxonomic identification rule. Coleman et al. (2016) documented genetic partitions and discussed subspecies; the current 2026 Eschmeyer catalog retains P. diacanthus as valid and notes that the Indian/Red Sea name flavescens was misapplied. No subspecies name is assigned here. Juveniles have a dorsal eyespot and different proportions/colouring; that eyespot is not added to this adult. Fin rays, exact bar counts and natural colour variation are simplified. LC is a global assessment, not a statement that every local population or reef habitat is secure. No aquarium hardiness, reef-safety, camouflage mechanism or ecosystem-control claim is imported."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-regal_angelfish",
+      "text": "McGrouther, M. (2021). Regal Angelfish, Pygoplites diacanthus (Boddaert, 1772). Australian Museum species account, updated 20 April 2021. Accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/regal-angelfish-pygoplites-diacanthus-boddaert-1772/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "Adult body and fin patterns, juvenile dorsal eyespot, size, habitat, behaviour, distribution and diet"
+      ],
+      "access": "Full museum account opened successfully. Gives size 25 cm and depth 1–48 m; these are not presented as physiological limits."
+    },
+    {
+      "id": "dx-foa-regal_angelfish",
+      "text": "Bray, D.J. Pygoplites diacanthus in Fishes of Australia. Museums Victoria / OzFishNet, species 658. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/Home/species/658",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "Adult markings, maximum 25 cm total length, depth 1–80 m, distribution, feeding and behaviour"
+      ],
+      "access": "Full museum-hosted account opened successfully. Quick facts give 1–80 m, broader than the Australian Museum account. Its research discussion is not treated as a current formal species split."
+    },
+    {
+      "id": "dx-phylogeography-regal_angelfish",
+      "text": "Coleman, R.R., Eble, J.A., DiBattista, J.D., Rocha, L.A., Randall, J.E., Berumen, M.L. & Bowen, B.W. (2016). Regal phylogeography: Range-wide survey of the marine angelfish Pygoplites diacanthus reveals evolutionary partitions between the Red Sea, Indian Ocean, and Pacific Ocean. Molecular Phylogenetics and Evolution 100: 243–253. DOI: 10.1016/j.ympev.2016.04.005. Accepted manuscript in the NOAA Central Library.",
+      "url": "https://repository.library.noaa.gov/view/noaa/33093",
+      "urlLabel": "repository.library.noaa.gov",
+      "supports": [
+        "Primary regional colour-form comparison and genetic population research"
+      ],
+      "access": "Full NOAA-hosted accepted manuscript PDF opened successfully: https://repository.library.noaa.gov/view/noaa/33093/noaa_33093_DS1.pdf. Introduction, Figure 1 caption and discussion support the yellow versus grey chest comparison. Nomenclature is checked against the newer Eschmeyer catalog."
+    },
+    {
+      "id": "dx-iucn-regal_angelfish",
+      "text": "Pyle, R., Myers, R., Rocha, L.A. & Craig, M.T. (2010). Pygoplites diacanthus. The IUCN Red List of Threatened Species 2010: e.T165885A6157224. Assessed 8 October 2009. DOI: 10.2305/IUCN.UK.2010-4.RLTS.T165885A6157224.en.",
+      "url": "https://doi.org/10.2305/IUCN.UK.2010-4.RLTS.T165885A6157224.en",
+      "urlLabel": "doi.org (IUCN Red List)",
+      "supports": [
+        "Global Least Concern assessment, assessment date and publication identity"
+      ],
+      "access": "Direct IUCN page returned 403. The museum's bibliography identifies this DOI and 2010 publication. IUCN-owned Crossref metadata was retrieved successfully through its API and gives date 2009-10-08; this matches the assessment date in FishBase's current IUCN 2025-2 export. No newer assessment was located."
+    },
+    {
+      "id": "dx-usgs-emperor-regal_angelfish",
+      "text": "U.S. Geological Survey. Emperor angelfish (Pomacanthus imperator), Nonindigenous Aquatic Species Database, species 2294. Identification and similar-species sections. Accessed October 2026.",
+      "url": "https://nas.er.usgs.gov/queries/factsheet.aspx?SpeciesID=2294",
+      "urlLabel": "nas.er.usgs.gov",
+      "supports": [
+        "Adult emperor angelfish flank stripes as a teaching contrast with regal angelfish vertical bars"
+      ],
+      "access": "Detailed current indexed government account read; direct access returned 403. Used only for the existing-species adult marking comparison, not to import non-native distribution into the regal profile."
+    },
+    {
+      "id": "dx-cas-regal_angelfish",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds). Eschmeyer's Catalog of Fishes: Pygoplites diacanthus. California Academy of Sciences, online version updated 13 August 2026. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Pygoplites&species=diacanthus&tbl=species",
+      "urlLabel": "researcharchive.calacademy.org",
+      "supports": [
+        "Current accepted name and explicit caution about the misapplied flavescens subspecies name"
+      ],
+      "access": "Full current catalog record opened successfully. The record retains Pygoplites diacanthus (Boddaert, 1772) as valid and cites Golani & Fricke (2026) for the Indian/Red Sea nomenclatural caution."
+    },
+    {
+      "id": "dx-fb-regal_angelfish",
+      "text": "Froese, R. & Pauly, D. (eds). FishBase: Pygoplites diacanthus, IUCN 2025-2 export. Accessed October 2026.",
+      "url": "https://www.fishbase.org/summary/pygoplites-diacanthus",
+      "urlLabel": "fishbase.org",
+      "supports": [
+        "Current indexed IUCN Least Concern category and assessment date 8 October 2009"
+      ],
+      "access": "Detailed current indexed record read; direct summary returned 403. Used to corroborate the current IUCN export, not as a substitute for the museum and primary-research biology."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.2,
+    "maximumLengthM": 0.25,
+    "depth": [
+      1,
+      80
+    ],
+    "origin": "centre",
+    "representative": "Pacific / Great Barrier Reef adult with a blue-grey chest and reduced yellow on the head. Do not blend the yellow-chested Indian Ocean/Red Sea form into this individual.",
+    "basis": "Illustrative 20 cm adult below the museum-reported 25 cm maximum. The 1–80 m encounter interval follows Fishes of Australia; the Australian Museum gives 1–48 m. Neither interval is treated as a physiological limit or a promise of encounter frequency at every depth.",
+    "anatomy": "Laterally compressed adult angelfish silhouette with a small mouth and preopercular spine. Yellow-orange body crossed by pale, dark-edged bars; grey-blue lower head and chest; blue soft dorsal with dark scribbles; curved yellow/blue anal-fin stripes; yellow caudal fin. Adult only, without a juvenile dorsal ocellus.",
+    "anatomyLimits": "Exact ray and bar counts, individual variation and fine scale detail are simplified. The chosen regional colour form is explicit; neither colour nor the simplified model alone establishes definitive wild identification or a formal subspecies.",
+    "motion": "Gentle pectoral-fin adjustments and restrained body/tail movement for reef manoeuvring. Solitary or paired illustrative encounters fit the museum account better than a dense coordinated school; timings are artistic, not measured swimming data."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Identification, study and optional inspection must not award a dive discovery or persist session-only answers and labels.",
+    "lookalikeNote": "Link one-way to the existing adult emperor angelfish to teach mostly vertical bars versus finer horizontal striping. Preserve the emperor record exactly. Both are adult-model comparisons; juveniles differ.",
+    "identificationLimit": "Use several illustrated marks together. Geographic colour variation, life stage and simplified models prevent a promise of definitive real-world species identification."
+  }
+}

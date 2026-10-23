@@ -54699,6 +54699,15 @@
       "sr_critique_ready": "Cov lus tshuaj xyuas npaj tau lawm."
     },
     "flightsim": {
+      "guided_inspect_angle": "Saib kev sib piv cov kaum",
+      "guided_inspect_speed": "Saib kev sib piv kev ceev",
+      "guided_export_scope": "Cov ntaub ntawv xa tawm muaj koj daim qauv tam sim no thiab cov kev sim yav dhau los. Kev xa tawm tsis ua kom qhov kev tshawb nrhiav tiav.",
+      "hint_t_stall_negative": "🚨 STALL! AoA nyob qis dua xoom: maj mam rub NCE los ntawm nruab nrab kom nws ze xoom. Siv ntug sab xis kho zog cav thaum xav tau.",
+      "hint_k_stall_negative": "🚨 STALL! AoA nyob qis dua xoom: maj mam nias W kom nws ze xoom. Siv Shift ntxiv zog cav thaum xav tau.",
+      "hint_stall_direction_unknown": "🚨 STALL! Coj lub kaum AoA kom ze xoom. Tsis muaj nws txoj kev taw qhia; saib tus lej AoA ua ntej xaiv tsa lossis txo lub taub hau dav hlau.",
+      "announce_stall_warning_negative": "Ceeb toom stall! Lub kaum AoA nyob qis dua xoom. Maj mam tsa lub taub hau dav hlau kom nws ze xoom; ntxiv zog cav thaum xav tau.",
+      "announce_stall_warning_unknown": "Ceeb toom stall! Coj lub kaum AoA kom ze xoom. Tsis muaj nws txoj kev taw qhia; saib tus lej AoA ua ntej xaiv tsa lossis txo lub taub hau dav hlau.",
+      "hud_stall_warning": "⚠️ STALL — COJ AoA KOM ZE XOOM",
       "debrief_unavailable_title": "Qhov tshuaj xyuas kev ya uas khaws cia tsis muaj",
       "debrief_unavailable_body": "Qhov tshuaj xyuas kev ya zaum kawg ploj lawm lossis nyeem tsis tau. Rov qab mus rau daim ntawv xaiv kom pib ya tshiab.",
       "guided_idea_before_trials": "Sau tseg ua ntej cov kev sim",

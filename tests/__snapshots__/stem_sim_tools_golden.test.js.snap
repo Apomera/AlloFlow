@@ -200,10 +200,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for galax
   "buttons": 78,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 380,
+  "lengthBucket": 381,
   "paths": 11,
   "selects": 0,
-  "sha": "bf59d4663c9557b0",
+  "sha": "6a06c6c7fbd861c9",
   "svgs": 17,
 }
 `;

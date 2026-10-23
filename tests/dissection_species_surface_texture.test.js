@@ -305,7 +305,7 @@ describe('dissection crayfish digestive-gland material', () => {
 
     // A different lobular organ keeps raised groups and their shallow grooves;
     // the diffuse gland treatment must not silently flatten every lobular finish.
-    const ordinary = gland({}, 'pig-thymus');
+    const ordinary = gland({}, 'lobular-control');
     expect(groups(ordinary)).toHaveLength(count);
     expect(outlinedGroups(ordinary)).toHaveLength(count);
     expect(outlinedGroups(ordinary).every(event => event.clipped)).toBe(true);
@@ -313,14 +313,14 @@ describe('dissection crayfish digestive-gland material', () => {
     expect(ordinary.ctx.stack).toEqual([]);
   });
 
-  it.each([['realistic', 12], ['guided', 8]])('keeps %s pancreatic and fat-body surfaces softly mottled without raised follicular rings', (visualRealism, count) => {
+  it.each([['realistic', 12], ['guided', 8]])('keeps %s pancreatic, thymic and fat-body surfaces softly mottled without raised follicular rings', (visualRealism, count) => {
     const gland = (salt, overrides = {}) => {
       const fixture = tissueFixture({ d: { visualRealism, variationSeed: 7 }, ...overrides });
       fixture.finish(120, 150, 35, 8, 'lobular', salt);
       return fixture;
     };
     const patterns = [];
-    for (const salt of ['frog-pancreas', 'pig-pancreas', 'frog-fat-body--1', 'frog-fat-body-1']) {
+    for (const salt of ['frog-pancreas', 'pig-pancreas', 'frog-fat-body--1', 'frog-fat-body-1', 'pig-thymus']) {
       const first = gland(salt), same = gland(salt);
       const relit = gland(salt, { lightDirection: 'right', liveTissueState: { moisture: 2 } });
       const mottles = groups(first);
@@ -340,6 +340,24 @@ describe('dissection crayfish digestive-gland material', () => {
     // registered ribbon footprint when the lamp or saline state changes.
     expect(patterns[0]).not.toEqual(patterns[1]);
     expect(patterns[2]).not.toEqual(patterns[3]);
+  });
+
+  it.each([['realistic', 12], ['guided', 8]])('scopes the %s thymic surface treatment to its exact material salt', (visualRealism, count) => {
+    const make = salt => {
+      const fixture = tissueFixture({ d: { visualRealism, variationSeed: 7 } });
+      fixture.finish(120, 150, 35, 22, 'lobular', salt);
+      return fixture;
+    };
+    const thymus = make('pig-thymus');
+    expect(groups(thymus)).toHaveLength(count); expect(outlinedGroups(thymus)).toEqual([]);
+    for (const salt of ['pig-thymus-extra', 'other-pig-thymus', 'lobular-control']) {
+      const other = make(salt);
+      expect(groups(other)).toHaveLength(count); expect(outlinedGroups(other)).toHaveLength(count);
+      expect(groups(other).every(event => alpha(event.fill.stops[0][1]) > 0.2)).toBe(true);
+      expect(paintEvents(other.ctx).every(event => event.clipped)).toBe(true);
+      expect(other.ctx.stack).toEqual([]); expect(other.ctx.clipDepth).toBe(0);
+    }
+    expect(thymus.ctx.stack).toEqual([]); expect(thymus.ctx.clipDepth).toBe(0);
   });
 });
 
@@ -774,4 +792,6 @@ describe('dissection organ contact, cavity, and membrane finishes', () => {
       }
     }
   });
+
+
 });

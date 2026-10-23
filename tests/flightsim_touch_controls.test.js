@@ -12,7 +12,7 @@ const flightButton = label => host.querySelector(`button[aria-label="${label}"]`
 const yawButton = direction => host.querySelector(`button[data-flight-yaw="${direction}"]`);
 function focusCockpit() {
   cockpit = host.querySelector('canvas[role="application"]');
-  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600 });
+  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600, right: 1100, bottom: 650 });
   cockpit.focus();
 }
 async function launchAircraft(aircraft, railCollapsed) {

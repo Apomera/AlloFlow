@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Àríwísí ti ṣetán."
     },
     "flightsim": {
+      "guided_inspect_angle": "Ṣàyẹ̀wò àfiwé àwọn igun",
+      "guided_inspect_speed": "Ṣàyẹ̀wò àfiwé ìyára",
+      "guided_export_scope": "Ìkójáde ní àkọsílẹ̀ àkọ́kọ́ rẹ tó wà báyìí àti àwọn ìgbìyànjú tẹ́lẹ̀. Ìkójáde kò parí ìwádìí náà.",
+      "hint_t_stall_negative": "🚨 STALL! Igun AoA wà ní ìsàlẹ̀ òdo: fa sókè díẹ̀díẹ̀ láti àárín kí ó sún mọ́ òdo. Lo etí ọ̀tún fún agbára ẹ́ńjìnnì bí ó bá yẹ.",
+      "hint_k_stall_negative": "🚨 STALL! Igun AoA wà ní ìsàlẹ̀ òdo: tẹ W díẹ̀díẹ̀ kí ó sún mọ́ òdo. Fi Shift kún agbára bí ó bá yẹ.",
+      "hint_stall_direction_unknown": "🚨 STALL! Mú igun AoA sún mọ́ òdo. Ìtọ́sọ́nà rẹ kò sí; wo àmì AoA kí o tó yan ìṣípo imú ọkọ̀ òfurufú.",
+      "announce_stall_warning_negative": "Ìkìlọ̀ stall! Igun AoA wà ní ìsàlẹ̀ òdo. Gbé imú ọkọ̀ òfurufú sókè díẹ̀díẹ̀ kí ó sún mọ́ òdo; fi agbára kún un bí ó bá yẹ.",
+      "announce_stall_warning_unknown": "Ìkìlọ̀ stall! Mú igun AoA sún mọ́ òdo. Ìtọ́sọ́nà rẹ kò sí; wo àmì AoA kí o tó yan ìṣípo imú ọkọ̀ òfurufú.",
+      "hud_stall_warning": "⚠️ STALL — MÚ AoA SÚN MỌ́ ÒDO",
       "debrief_unavailable_title": "Àtúnyẹ̀wò ìrìn ọkọ̀ òfurufú tí a fipamọ́ kò sí",
       "debrief_unavailable_body": "Àtúnyẹ̀wò ìrìn ọkọ̀ òfurufú tuntun jù lọ kò sí tàbí a kò lè kà á. Padà sí àkójọ aṣàyàn láti bẹ̀rẹ̀ ìrìn tuntun.",
       "guided_idea_before_trials": "A kọ ọ́ sílẹ̀ ṣáájú àwọn ìdánwò",

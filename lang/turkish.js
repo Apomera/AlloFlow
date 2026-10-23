@@ -55168,6 +55168,15 @@
       "sr_critique_ready": "Değerlendirme hazır."
     },
     "flightsim": {
+      "guided_inspect_angle": "Açı karşılaştırmasını incele",
+      "guided_inspect_speed": "Hız karşılaştırmasını incele",
+      "guided_export_scope": "Dışa aktarma, mevcut taslağını ve önceki denemeleri içerir. Dışa aktarmak araştırmayı tamamlamaz.",
+      "hint_t_stall_negative": "🚨 PERDÖVİTES! Hücum açısı negatif: sıfıra yaklaştırmak için ortadan hafifçe YUKARI sürükle. Gerektiğinde güç için sağ kenarı kullan.",
+      "hint_k_stall_negative": "🚨 PERDÖVİTES! Hücum açısı negatif: sıfıra yaklaştırmak için hafifçe W'ye bas. Gerektiğinde Shift ile güç ekle.",
+      "hint_stall_direction_unknown": "🚨 PERDÖVİTES! Hücum açısını sıfıra yaklaştır. Yön bilgisi yok; bir yunuslama komutu seçmeden önce AoA göstergesini kontrol et.",
+      "announce_stall_warning_negative": "Perdövites uyarısı! Hücum açısı negatif. Sıfıra yaklaştırmak için burnu hafifçe kaldır; gerektiğinde güç ekle.",
+      "announce_stall_warning_unknown": "Perdövites uyarısı! Hücum açısını sıfıra yaklaştır. Yön bilgisi yok; bir yunuslama komutu seçmeden önce AoA göstergesini kontrol et.",
+      "hud_stall_warning": "⚠️ PERDÖVİTES — AoA'YI SIFIRA YAKLAŞTIR",
       "debrief_unavailable_title": "Kaydedilen uçuş incelemesi kullanılamıyor",
       "debrief_unavailable_body": "En son uçuş incelemesi eksik veya okunamıyor. Yeni bir uçuş başlatmak için menüye dönün.",
       "guided_idea_before_trials": "Denemelerden önce kaydedildi",

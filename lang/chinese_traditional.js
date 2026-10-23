@@ -56521,6 +56521,15 @@
       "sr_critique_ready": "點評已就緒。"
     },
     "flightsim": {
+      "guided_inspect_angle": "查看攻角比較",
+      "guided_inspect_speed": "查看空速比較",
+      "guided_export_scope": "匯出內容包含目前的草稿和先前的嘗試。匯出不會將本次探究標記為已完成。",
+      "hint_t_stall_negative": "🚨 失速！攻角為負：從畫面中間輕輕向上拖曳，使其趨近於零。視需要使用右側邊緣調整動力。",
+      "hint_k_stall_negative": "🚨 失速！攻角為負：輕按 W，使其趨近於零。視需要使用 Shift 增加動力。",
+      "hint_stall_direction_unknown": "🚨 失速！使攻角趨近於零。目前無法確定其方向；選擇俯仰操縱方向前，請觀察 AoA 讀值。",
+      "announce_stall_warning_negative": "失速警告！攻角為負。輕輕抬高機頭，使其趨近於零；視需要增加動力。",
+      "announce_stall_warning_unknown": "失速警告！使攻角趨近於零。目前無法確定其方向；選擇俯仰操縱方向前，請檢查 AoA 讀值。",
+      "hud_stall_warning": "⚠️ 失速 — 使攻角趨近於零",
       "debrief_unavailable_title": "已儲存的飛行回顧無法使用",
       "debrief_unavailable_body": "最新的飛行回顧遺失或無法讀取。請返回選單，開始新的飛行。",
       "guided_idea_before_trials": "試驗前已記錄",

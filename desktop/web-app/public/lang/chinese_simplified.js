@@ -56708,6 +56708,15 @@
       "sr_critique_ready": "点评已就绪。"
     },
     "flightsim": {
+      "guided_inspect_angle": "查看迎角比较",
+      "guided_inspect_speed": "查看空速比较",
+      "guided_export_scope": "导出内容包括当前草稿和之前的尝试。导出不会使本次探究变为已完成。",
+      "hint_t_stall_negative": "🚨 失速！迎角为负：从屏幕中间轻轻向上拖动，使其趋近于零。按需使用右侧边缘调节动力。",
+      "hint_k_stall_negative": "🚨 失速！迎角为负：轻按 W，使其趋近于零。按需使用 Shift 增加动力。",
+      "hint_stall_direction_unknown": "🚨 失速！使迎角趋近于零。当前无法确定其方向；选择俯仰操纵方向前，请观察 AoA 读数。",
+      "announce_stall_warning_negative": "失速警告！迎角为负。轻轻抬高机头，使其趋近于零；按需增加动力。",
+      "announce_stall_warning_unknown": "失速警告！使迎角趋近于零。当前无法确定其方向；选择俯仰操纵方向前，请检查 AoA 读数。",
+      "hud_stall_warning": "⚠️ 失速 — 使迎角趋近于零",
       "debrief_unavailable_title": "已保存的飞行回顾不可用",
       "debrief_unavailable_body": "最新的飞行回顾丢失或无法读取。请返回菜单，开始新的飞行。",
       "guided_idea_before_trials": "试验前已记录",

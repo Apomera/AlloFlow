@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (root && root.window) root = root.window;
   var existing = root && root.AlloModules && root.AlloModules.WordSoundsReadiness;
-  var api = existing && existing.VERSION === 8 && typeof existing.portable === 'function' ? existing : factory(root || {});
+  var api = existing && existing.VERSION === 9 && typeof existing.portable === 'function' ? existing : factory(root || {});
   if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.WordSoundsReadiness = api; }
   if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (host) {
@@ -1440,7 +1440,7 @@ function createWordSoundsCore(options = {}) {
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
-  var VERSION = 8, MAX_TARGETS = 1024, MAX_WORDS = 200, MAX_CLIP_CHARS = 512 * 1024;
+  var VERSION = 9, MAX_TARGETS = 1024, MAX_WORDS = 200, MAX_CLIP_CHARS = 512 * 1024;
   var INST = { decoding: 'decoding', orthography: 'inst_orthography', spelling_bee: 'inst_spelling_bee', word_scramble: 'inst_word_scramble', missing_letter: 'inst_missing_letter', counting: 'inst_counting', blending: 'inst_blending', segmentation: 'inst_segmentation', mapping: 'mapping', syllable_blending: 'inst_syllable_blending', syllable_counting: 'inst_syllable_counting' };
   var FEEDBACK = ['fb_try_again_listen', 'fb_almost', 'fb_amazing', 'fb_on_fire', 'fb_excellent', 'fb_wow', 'fb_you_got_it', 'fb_great_job', 'fb_nice', 'fb_keep_going', 'fb_way_to_go', 'fb_perfect', 'fb_correct'];
   var BANKS = { phoneme: '__ALLO_PHONEME_AUDIO_BANK', instruction: '__ALLO_INSTRUCTION_AUDIO', feedback: '__ALLO_INSTRUCTION_AUDIO', isolation: '__ALLO_ISOLATION_AUDIO', 'letter-name': '__ALLO_LETTER_NAME_AUDIO_BANK' };
@@ -1770,7 +1770,7 @@ function sanitizeWordSoundsAudioProvenance(value) {
       if (target.category === 'speech') { asset = assets[target.key] || { status: omittedLabels.indexOf(target.key) !== -1 ? 'route-omitted' : 'missing' }; source = 'resource'; }
       else if (target.category === 'phoneme' && !englishPhonemes) {
         var profile = WS_CORE.packAudioProfileStatus(rawAssets[target.key], config.selectedVoice || deliveredResource.selectedVoice, language);
-        asset = profile.languageMismatch ? { status: 'missing' } : assets[target.key] || { status: 'missing' };
+        asset = !profile.present || profile.unknownLanguage || profile.languageMismatch ? { status: 'missing' } : assets[target.key] || { status: 'missing' };
         source = 'resource';
       }
       else {

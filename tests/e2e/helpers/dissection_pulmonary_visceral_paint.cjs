@@ -1,7 +1,7 @@
 function pulmonaryVisceralTargets(specimen) {
   return ({
     frog: [{ id: 'pancreas', x: .528, y: .5405 }, { id: 'spleen', x: .408, y: .565 }],
-    pig: [{ id: 'lungs_p', x: .385, y: .425 }, { id: 'pancreas_p', x: .610, y: .536 }],
+    pig: [{ id: 'lungs_p', x: .385, y: .425 }, { id: 'pancreas_p', x: .63175, y: .533 }],
     perch: [{ id: 'swim_bladder', x: .515, y: .407 }, { id: 'gonads_f', x: .595, y: .471 }]
   })[specimen] || [];
 }
@@ -19,9 +19,11 @@ async function observePulmonaryVisceralPaint(canvas, specimen) {
       const stack = new Error().stack || '';
       bodyPath = !measuredBody && stack.includes(bodyFunction);
       if (bodyPath) matrix = this.getTransform();
-      owner = stack.includes('traceFrogPancreas') ? 'pancreas'
-        : stack.includes('tracePigPancreas') ? 'pancreas_p'
+      owner = stack.includes('traceFrogPancreaticRegion') ? 'pancreas'
+        : stack.includes('traceFrogSplenicRegion') ? 'spleen'
+        : stack.includes('tracePigPancreaticRegion') ? 'pancreas_p'
         : stack.includes('tracePigPleuralSurface') ? 'lungs_p'
+        : stack.includes('tracePigCardiacRegion') ? 'pig-heart'
         : stack.includes('tracePerchThinSac') ? 'perch-sac' : null;
       return originals.beginPath.call(this);
     };
@@ -30,12 +32,8 @@ async function observePulmonaryVisceralPaint(canvas, specimen) {
       if (specimen === 'frog' && Math.abs(x / canvas._logicalW - .408) < .00001 && Math.abs(y / canvas._logicalH - .565) < .00001) owner = 'spleen';
       return originals.ellipse.call(this, x, y, rx, ry, ...args);
     };
-    ctx.moveTo = function (x, y) {
-      // Recognize the closed pig-heart path at its actual upper notch. This
-      // ensures the lung target is on pleura, outside the overlying heart.
-      if (specimen === 'pig' && !owner && Math.abs(x / canvas._logicalW - .442) < .00001 && Math.abs(y / canvas._logicalH - .396) < .00001) owner = 'pig-heart';
-      return originals.moveTo.call(this, x, y);
-    };
+    ctx.moveTo = function (x, y) { return originals.moveTo.call(this, x, y); };
+
     ctx.fill = function (...args) {
       if (matrix) for (const target of candidates) {
         const point = mapped(target), inside = this.isPointInPath(point.x, point.y);

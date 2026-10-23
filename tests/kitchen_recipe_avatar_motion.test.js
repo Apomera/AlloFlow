@@ -596,3 +596,199 @@ describe('Chef station spacing, arm contours and anticipatory attention',()=>{
   expect(changed.length).toBeGreaterThan(20);expect(M.reach(from,to,0,{contactAware:true,anticipatoryAttention:true,reducedMotion:true})).toEqual(to);expect(M.reach(from,to,50,{anticipatoryAttention:true})).toEqual(M.reach(from,to,50));
  });
 });
+
+describe('Chef station contained rinsing and articulated approaches',()=>{
+ const phases=['pickup','carry','lower','rinse','lift','drain','return','tip','ready'];
+ const rinse=(phase,nextPhase,progress=0,reducedMotion=false)=>M.pose({kind:'rinseProduce',phase,nextPhase,progress,reducedMotion});
+ const geometry=p=>{const {stage,...d}=p.rinseProduce;return d;};
+ it('places the rinsing cloth on all eight compact food targets while preserving the original drying grid',()=>{
+  for(let area=0;area<8;area++){
+   const expected={x:415+40*(area%4),y:335+23*Math.floor(area/4)},opts={kind:'blot',area,activity:'rinse-and-dry-produce'};
+   for(const progress of [0,25,50,75,100]){const p=M.pose({...opts,phase:'position',nextPhase:'contact',progress});expect(p.contact.x).toBe(expected.x);expect(p.contact.y).toBe(expected.y);expect(p.tool.x).toBe(expected.x);}
+   const touch=M.pose({...opts,phase:'contact'});expect(touch.tool).toMatchObject(expected);expect(touch.grip).toMatchObject(expected);expect(touch.contact.amount).toBe(1);
+   const previous=M.pose({kind:'blot',area,phase:'contact'});expect(previous).toEqual(M.pose({...opts,activity:'surface-drying',phase:'contact'}));expect(previous.tool.x).toBe(355+70*(area%4));
+  }
+ });
+ it('keeps both bare hands on basket handles and all eight whole caps contained throughout rinsing',()=>{
+  for(let i=0;i<phases.length;i++)for(const progress of [0,25,50,75,100]){
+   const p=rinse(phases[i],phases[i+1],progress),d=p.rinseProduce,a=p.tool.angle*Math.PI/180;
+   expect(p.grip).toEqual(M.grip(p.tool,'rinseProduce'));expect(p.supportHand.x).toBeCloseTo(p.tool.x-76*Math.cos(a)+8*Math.sin(a),10);expect(p.supportHand.y).toBeCloseTo(p.tool.y-76*Math.sin(a)-8*Math.cos(a),10);
+   expect(d.foodRetained).toBe(true);expect(d.food).toHaveLength(8);expect(d).not.toHaveProperty('transferred');expect(d.waterSurface.angle).toBe(0);
+   for(const cap of d.food){const dx=cap.x-p.tool.x,dy=cap.y-p.tool.y;expect(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))).toBeLessThan(50);expect(Math.abs(-dx*Math.sin(a)+dy*Math.cos(a))).toBeLessThan(10);}
+   for(const side of ['left','right'])expect(M.handPresentation(p,side)).toMatchObject({gesture:'handle',contact:1,gear:'bare',rotation:p.tool.angle+90});
+  }
+ });
+ it('lifts vertically before carrying and drains above the basin before returning level',()=>{
+  for(const progress of [0,10,20,35]){const p=rinse('pickup','carry',progress);expect(p.tool.x).toBe(450);expect(p.tool.angle).toBe(0);}
+  for(const progress of [35,50,75,100])expect(rinse('pickup','carry',progress).tool.y).toBeLessThanOrEqual(278);
+  for(const progress of [0,25,50,75,100]){const lift=rinse('rinse','lift',progress),drain=rinse('lift','drain',progress),carry=rinse('drain','return',progress);expect(lift.tool.x).toBe(300);expect(drain.tool).toMatchObject({x:300,y:278,angle:0});expect(drain.rinseProduce.drain).toBeCloseTo(1-M.ease(progress/100),10);expect(carry.tool.y).toBeLessThanOrEqual(278);expect(carry.rinseProduce.drain).toBe(0);expect(carry.tool.angle).toBe(0);}
+ });
+ it('confines running-water cues to the basin and keeps the ready tip contained until application Release',()=>{
+  const middle=rinse('lower','rinse',50);expect(middle.rinseProduce.waterFlow).toBe(1);expect(middle.tool.x).toBeCloseTo(300,10);expect(middle.tool.y).toBeCloseTo(330,10);
+  for(const phase of phases.filter(p=>p!=='lower'))expect(rinse(phase,phases[phases.indexOf(phase)+1],50).rinseProduce.waterFlow).toBe(0);
+  const ready=rinse('ready');expect(ready).toMatchObject({held:true,tool:{x:450,y:314,angle:32},rinseProduce:{contact:1,foodRetained:true,waterFlow:0,drain:0}});expect(ready.rinseProduce.food).toHaveLength(8);
+ });
+ it('joins all rinse phases exactly and retains connected rigid arms with reduced motion',()=>{
+  for(const reducedMotion of [false,true])for(let i=0;i<phases.length;i++){
+   for(const progress of [0,25,50,75,100]){const p=rinse(phases[i],phases[i+1],progress,reducedMotion);for(const side of ['left','right']){const hand=side==='right'?p.grip:p.supportHand,a=M.arm({side,hand,shoulder:p.shoulders[side]});expect(a.reachable).toBe(true);expect(distance(a.hand,hand)).toBeLessThan(1e-8);expect(worldDistance(p.shoulders[side],a.elbow)).toBeCloseTo(108,8);expect(worldDistance(a.elbow,a.hand)).toBeCloseTo(126,8);}if(reducedMotion)expect(p.body).toMatchObject({x:0,y:0,angle:0});}
+   if(phases[i+1]){const end=rinse(phases[i],phases[i+1],100,reducedMotion),next=rinse(phases[i+1],phases[i+2],0,reducedMotion);for(const key of ['tool','grip','supportHand','body','head','gaze'])expect(end[key]).toEqual(next[key]);expect(geometry(end)).toEqual(geometry(next));for(const side of ['left','right'])expect(M.handPresentation(end,side)).toEqual(M.handPresentation(next,side));}
+  }
+ });
+ it('cancels a tipped rinse by leveling contained produce before lifting and returning it to the source',()=>{
+  const source=rinse('ready'),saved=JSON.stringify(source),seen=new Set();
+  for(let progress=0;progress<=100;progress++){const p=M.park(source,undefined,progress);seen.add(p.parkStage);expect(p.rinseProduce.foodRetained).toBe(true);expect(p.rinseProduce.food).toHaveLength(8);if(p.parkStage==='basket-level'){expect(p.tool.x).toBe(source.tool.x);expect(p.tool.y).toBe(source.tool.y);}if(p.parkStage==='basket-carry'){expect(p.tool.angle).toBe(0);expect(p.tool.y).toBeLessThanOrEqual(278);}if(p.parkStage==='basket-release')expect(p.tool).toMatchObject({x:450,y:340,angle:0});}
+  const done=M.park(source,undefined,100);expect(done).toMatchObject({kind:null,held:false,rinseProduce:{preview:false,contact:0,foodRetained:true,waterFlow:0,drain:0,position:{x:450,y:340,angle:0}}});expect(seen.has('basket-level')&&seen.has('basket-lift')&&seen.has('basket-release')).toBe(true);expect(M.park(source,undefined,0,{reducedMotion:true})).toEqual(done);expect(JSON.stringify(source)).toBe(saved);
+ });
+ it('returns an explicitly committed empty basket to its separate rest without inventing a second transfer',()=>{
+  const source=rinse('ready');source.rinseProduce.foodRetained=false;source.rinseProduce.food=[];
+  for(const progress of [0,25,50,75,100]){const p=M.park(source,undefined,progress);expect(p.rinseProduce.foodRetained).toBe(false);expect(p.rinseProduce.food).toEqual([]);if(p.parkStage==='basket-carry')expect(p.tool.y).toBeLessThanOrEqual(278);}
+  expect(M.park(source,undefined,100)).toMatchObject({held:false,rinseProduce:{preview:false,foodRetained:false,position:{x:650,y:340,angle:0}}});
+ });
+ it('restarts canceled rinsing from the exact current basket, caps, wrists and attention without mutating its inputs',()=>{
+  for(const phase of ['lower','rinse','lift','return','ready']){const source=rinse(phase,phases[phases.indexOf(phase)+1],55),snapshot=JSON.stringify(source);
+   for(const progress of [0,15,40,70,95]){const p=M.park(source,undefined,progress),restart=M.park(p,undefined,0);for(const key of ['tool','grip','supportHand','body','head','gaze','shoulders','rinseProduce'])expect(restart[key]).toEqual(p[key]);for(const side of ['left','right'])expect(M.handPresentation(restart,side)).toEqual(M.handPresentation(p,side));}
+   expect(JSON.stringify(source)).toBe(snapshot);
+  }
+ });
+ it('lets the nearer hand settle earlier and aligns wrists before the farther hand arrives',()=>{
+  const from=M.pose({kind:'reserveWater',phase:'ready'}),to=M.pose({kind:'samplePasta',phase:'pickup'}),options={contactAware:true,articulatedApproach:true},p=M.reach(from,to,80,options);
+  // Left travels roughly 98 px; right travels roughly 115 px.
+  expect(distance(M.handPresentation(p,'left').anchor,M.handPresentation(to,'left').anchor)).toBeLessThan(1e-8);expect(distance(M.handPresentation(p,'right').anchor,M.handPresentation(to,'right').anchor)).toBeGreaterThan(.01);
+  for(const side of ['left','right'])expect(M.handPresentation(p,side).rotation).toBeCloseTo(M.handPresentation(to,side).rotation,10);
+ });
+ it('keeps articulated hands planted during release and never closes a moving grip',()=>{
+  const from=M.pose({kind:'reserveWater',phase:'ready'}),to=M.pose({kind:'samplePasta',phase:'pickup'}),options={contactAware:true,anticipatoryAttention:true,articulatedApproach:true},saved=JSON.stringify({from,to});
+  for(let progress=0;progress<100;progress++){const p=M.reach(from,to,progress,options);for(const side of ['left','right']){const h=M.handPresentation(p,side),a=M.handPresentation(from,side),b=M.handPresentation(to,side);if(p.handoff.stage==='release')expect(h.anchor).toEqual(a.anchor);else if(p.handoff.stage==='travel')expect(h.contact).toBe(0);else if(h.contact>0)expect(distance(h.anchor,b.anchor)).toBeLessThan(1e-8);if([30,60,90].includes(progress)){const restart=M.reach(p,to,0,options);expect(M.handPresentation(restart,side)).toEqual(h);}}
+  }
+  expect(M.reach(from,to,100,options)).toEqual(to);expect(M.reach(from,to,0,{...options,reducedMotion:true})).toEqual(to);expect(JSON.stringify({from,to})).toBe(saved);
+ });
+ it('retains held tools and stabilizing contacts and leaves legacy reaches exact when articulation is omitted',()=>{
+  const from=M.pose({kind:'mince',clove:0,phase:'ready'}),to=M.pose({kind:'mince',clove:1,phase:'pickup'});
+  for(const progress of [0,10,25,50,75,99]){const p=M.reach(from,to,progress,{contactAware:true,articulatedApproach:true});expect(p.tool).toEqual(from.tool);expect(p.grip).toEqual(from.grip);expect(M.handPresentation(p,'right').contact).toBe(1);expect(M.reach(from,to,progress,{contactAware:true,articulatedApproach:false})).toEqual(M.reach(from,to,progress,{contactAware:true}));expect(M.reach(from,to,progress,{articulatedApproach:true})).toEqual(M.reach(from,to,progress));}
+ });
+});
+
+describe('Chef station smooth elbow depth, produce trays and released hands',()=>{
+ const steps=['pickup','grip','lift','carry','lower','tilt','ready'];
+ const load=(phase,nextPhase,progress=0,reducedMotion=false)=>M.pose({kind:'loadMushrooms',phase,nextPhase,progress,reducedMotion});
+ const data=p=>{const {stage,...d}=p.loadMushrooms;return d;};
+ it('softens the elbow depth limit while retaining exact wrists, bone lengths and default output',()=>{
+  for(const side of ['left','right'])for(const hand of [{x:220,y:320},{x:450,y:280},{x:692,y:289},{x:705,y:349}]){
+   const old=M.arm({side,hand}),smooth=M.arm({side,hand,smoothDepth:true}),shoulder={x:side==='left'?373:526,y:229};
+   expect(M.arm({side,hand,smoothDepth:false})).toEqual(old);expect(smooth.hand.x).toBe(old.hand.x);expect(smooth.hand.y).toBe(old.hand.y);expect(smooth.reachable).toBe(old.reachable);expect(worldDistance(shoulder,smooth.elbow)).toBeCloseTo(108,8);expect(worldDistance(smooth.elbow,smooth.hand)).toBeCloseTo(126,8);expect(Object.values(M.armContours(smooth).bounds).every(Number.isFinite)).toBe(true);
+  }
+ });
+ it('removes the projected elbow velocity kink at the old cap and joins both smoothing boundaries',()=>{
+  const h=.0001,angle=20*Math.PI/180,jump=(raw,smoothDepth)=>{const d=Math.sqrt((234-.001)**2-(raw/.65)**2),elbow=offset=>M.arm({side:'right',hand:{x:526+Math.cos(angle)*(d+offset),y:229+Math.sin(angle)*(d+offset)},smoothDepth}).elbow,a=elbow(-h),b=elbow(0),c=elbow(h);return Math.hypot((c.x-2*b.x+a.x)/h,(c.y-2*b.y+a.y)/h);};
+  expect(jump(100,false)).toBeGreaterThan(.3);for(const raw of [80,100,120])expect(jump(raw,true)).toBeLessThan(.00001);
+ });
+ it('joins both hands before lifting the tray and contains all fourteen pieces even at the ready tilt',()=>{
+  for(const progress of [0,25,50,75,85,95,100]){const p=load('pickup','grip',progress);expect(p.tool).toMatchObject({x:270,y:340,angle:0});if(p.loadMushrooms.contact>0){expect(p.grip).toEqual(M.grip(p.tool,'loadMushrooms'));expect(p.supportHand).toEqual({x:205,y:332,angle:0});}}
+  for(let i=0;i<steps.length;i++)for(const progress of [0,25,50,75,100]){const p=load(steps[i],steps[i+1],progress),a=p.tool.angle*Math.PI/180;expect(p.loadMushrooms.foodRetained).toBe(true);expect(p.loadMushrooms.food).toHaveLength(14);expect(p.loadMushrooms).not.toHaveProperty('transferred');for(const cap of p.loadMushrooms.food){const dx=cap.x-p.tool.x,dy=cap.y-p.tool.y;expect(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))).toBeLessThanOrEqual(55+1e-8);expect(Math.abs(-dx*Math.sin(a)+dy*Math.cos(a))).toBeLessThanOrEqual(7+1e-8);}}
+  expect(load('ready')).toMatchObject({held:true,tool:{x:450,y:292,angle:25},loadMushrooms:{contact:1,foodRetained:true}});
+ });
+ it('raises the tray vertically before a level carry and keeps the bottom clear of the hot pan',()=>{
+  for(const progress of [0,25,50,75,100]){const lift=load('grip','lift',progress),carry=load('lift','carry',progress),lower=load('carry','lower',progress);expect(lift.tool.x).toBe(270);expect(carry.tool.y).toBeLessThanOrEqual(275);expect(carry.tool.angle).toBe(0);expect(lower.tool.x).toBe(450);expect(lower.tool.y+18).toBeLessThanOrEqual(310);}
+ });
+ it('joins every tray phase with exact hands, food and attention in both motion settings',()=>{
+  for(const reducedMotion of [false,true])for(let i=0;i<steps.length-1;i++){const a=load(steps[i],steps[i+1],100,reducedMotion),b=load(steps[i+1],steps[i+2],0,reducedMotion);for(const key of ['tool','grip','supportHand','body','head','gaze','shoulders','trayJoining'])expect(a[key]).toEqual(b[key]);expect(data(a)).toEqual(data(b));for(const side of ['left','right'])expect(M.handPresentation(a,side)).toEqual(M.handPresentation(b,side));}
+ });
+ it('levels a canceled full tray and returns committed empty trays without recreating food',()=>{
+  for(const empty of [false,true]){const source=load('ready');if(empty){source.loadMushrooms.foodRetained=false;source.loadMushrooms.food=[];}const saved=JSON.stringify(source);
+   for(const progress of [0,10,30,50,70,80,90,100]){const p=M.park(source,undefined,progress);expect(p.loadMushrooms.food).toHaveLength(empty?0:14);expect(p.loadMushrooms.foodRetained).toBe(!empty);if(p.parkStage==='tray-level')expect(p.tool).toMatchObject({x:450,y:292});if(p.parkStage==='tray-carry'){expect(p.tool.angle).toBe(0);expect(p.tool.y).toBeLessThanOrEqual(275);}if(p.parkStage==='hands-withdraw'){expect(p.tool).toMatchObject({x:270,y:340,angle:0});expect(p.loadMushrooms.contact).toBe(0);}}
+   const done=M.park(source,undefined,100);expect(done).toMatchObject({kind:null,held:false,grip:{x:363,y:280},supportHand:{x:177,y:280},loadMushrooms:{preview:false,position:{x:270,y:340,angle:0}}});expect(M.park(source,undefined,0,{reducedMotion:true})).toEqual(done);expect(JSON.stringify(source)).toBe(saved);
+  }
+ });
+ it('opts rinsing into supported release followed by empty hand withdrawal while preserving the old default',()=>{
+  for(const empty of [false,true]){const source=M.pose({kind:'rinseProduce',phase:'ready'});if(empty){source.rinseProduce.foodRetained=false;source.rinseProduce.food=[];}const homeX=empty?650:450;
+   for(const progress of [0,25,50,75,85,95,100]){expect(M.park(source,undefined,progress,{relaxedRest:false})).toEqual(M.park(source,undefined,progress));const p=M.park(source,undefined,progress,{relaxedRest:true});if(progress>=78){expect(p.tool).toMatchObject({x:homeX,y:340,angle:0});for(const side of ['left','right'])expect(M.handPresentation(p,side)).toMatchObject({contact:0,closure:.18,role:'free'});}}
+   const done=M.park(source,undefined,100,{relaxedRest:true});expect(done.grip).toMatchObject({x:homeX+104,y:280});expect(done.supportHand).toMatchObject({x:homeX-104,y:280});expect(M.parkDuration(source,undefined,{relaxedRest:true})).toBeGreaterThan(M.parkDuration(source));expect(M.park(source,undefined,0,{relaxedRest:true,reducedMotion:true})).toEqual(done);
+  }
+ });
+ it('restarts withdrawal without a basket regrip or any wrist, tool, attention or food jump',()=>{
+  for(const kind of ['rinseProduce','loadMushrooms']){const source=M.pose({kind,phase:'ready'}),options={relaxedRest:true};for(const progress of [81,90,97]){const p=M.park(source,undefined,progress,options),restart=M.park(p,undefined,0,options);for(const key of ['tool','grip','supportHand','body','head','gaze','shoulders',kind])expect(restart[key]).toEqual(p[key]);for(const side of ['left','right'])expect(M.handPresentation(restart,side)).toEqual(M.handPresentation(p,side));expect(M.park(p,undefined,50,options).parkStage).toBe('hands-withdraw');}}
+ });
+});
+
+describe('Chef station contained pasta combining and spoon clearance',()=>{
+ const steps=['pickup','grip','lift','carry','lower','tilt','ready'];
+ const combine=(phase,nextPhase,progress=0,reducedMotion=false)=>M.pose({kind:'combinePasta',phase,nextPhase,progress,reducedMotion});
+ const bottom=tool=>{const a=tool.angle*Math.PI/180;return tool.y+7*Math.cos(a)+Math.hypot(13*Math.sin(a),20*Math.cos(a));};
+ it('closes both mitts only at the handles and keeps decorative pasta contained until Release',()=>{
+  for(const progress of [0,25,50,75,85,95,100]){const p=combine('pickup','grip',progress);expect(p.tool).toMatchObject({x:270,y:340,angle:0});if(p.combinePasta.contact>0){expect(p.grip).toEqual(M.grip(p.tool,'combinePasta'));expect(p.supportHand).toEqual({x:200,y:332,angle:0});}}
+  for(let i=0;i<steps.length;i++)for(const progress of [0,25,50,75,100]){const p=combine(steps[i],steps[i+1],progress),a=p.tool.angle*Math.PI/180;expect(p.combinePasta.foodRetained).toBe(true);expect(p.combinePasta.food).toHaveLength(12);expect(p.combinePasta).not.toHaveProperty('transferred');for(const food of p.combinePasta.food){const dx=food.x-p.tool.x,dy=food.y-p.tool.y;expect(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))).toBeLessThanOrEqual(46+1e-8);expect(-dx*Math.sin(a)+dy*Math.cos(a)).toBeGreaterThanOrEqual(-9-1e-8);expect(-dx*Math.sin(a)+dy*Math.cos(a)).toBeLessThanOrEqual(11+1e-8);}for(const side of ['left','right'])expect(M.handPresentation(p,side).gear).toBe('mitt');}
+  expect(combine('ready')).toMatchObject({held:true,tool:{x:480,y:280,angle:28},combinePasta:{contact:1,foodRetained:true}});
+ });
+ it('joins all colander phases exactly and raises it before carrying level over the pan',()=>{
+  for(const reducedMotion of [false,true])for(let i=0;i<steps.length;i++){for(const progress of [0,25,50,75,100]){const p=combine(steps[i],steps[i+1],progress,reducedMotion);for(const side of ['left','right']){const h=M.handPresentation(p,side),a=M.arm({side,hand:h.anchor,shoulder:p.shoulders[side],smoothDepth:true});expect(a.reachable).toBe(true);expect(distance(a.hand,h.anchor)).toBeLessThan(1e-8);}if(steps[i]==='grip')expect(p.tool.x).toBe(270);if(steps[i]==='lift'){expect(p.tool.y).toBeLessThanOrEqual(260);expect(p.tool.angle).toBe(0);}}
+   if(steps[i+1]){const a=combine(steps[i],steps[i+1],100,reducedMotion),b=combine(steps[i+1],steps[i+2],0,reducedMotion);for(const key of ['tool','grip','supportHand','body','head','gaze','shoulders','trayJoining'])expect(a[key]).toEqual(b[key]);expect(a.combinePasta.food).toEqual(b.combinePasta.food);for(const side of ['left','right'])expect(M.handPresentation(a,side)).toEqual(M.handPresentation(b,side));}
+  }
+ });
+ it('returns full cancellations or empty committed colanders before opening and withdrawing the mitts',()=>{
+  for(const empty of [false,true]){const source=combine('ready');if(empty){source.combinePasta.foodRetained=false;source.combinePasta.food=[];}const saved=JSON.stringify(source);
+   for(const progress of [0,10,30,50,70,80,90,100]){const p=M.park(source,undefined,progress);expect(p.combinePasta.food).toHaveLength(empty?0:12);expect(p.combinePasta.foodRetained).toBe(!empty);if(p.parkStage==='colander-level')expect(p.tool).toMatchObject({x:480,y:280});if(p.parkStage==='colander-carry'){expect(p.tool.angle).toBe(0);expect(p.tool.y).toBeLessThanOrEqual(260);}if(p.parkStage==='hands-withdraw'){expect(p.tool).toMatchObject({x:270,y:340,angle:0});expect(p.combinePasta.contact).toBe(0);}for(const side of ['left','right'])expect(M.handPresentation(p,side).gear).toBe('mitt');}
+   const done=M.park(source,undefined,100);expect(done).toMatchObject({kind:null,held:false,grip:{x:368,y:280},supportHand:{x:172,y:280},combinePasta:{preview:false,position:{x:270,y:340,angle:0}}});expect(M.park(source,undefined,0,{reducedMotion:true})).toEqual(done);expect(JSON.stringify(source)).toBe(saved);
+   for(const progress of [15,45,75,85,95]){const p=M.park(source,undefined,progress),restart=M.park(p,undefined,0);for(const key of ['tool','grip','supportHand','body','head','gaze','shoulders','combinePasta'])expect(restart[key]).toEqual(p[key]);for(const side of ['left','right'])expect(M.handPresentation(restart,side)).toEqual(M.handPresentation(p,side));}
+  }
+ });
+ it('lifts the whole spoon clear before crossing a pan rim and lowers only at the destination',()=>{
+  for(const kind of ['fold','inspect'])for(const [phase,nextPhase] of kind==='fold'?[['pickup','immerse'],['turn','ready']]:[['pickup','dip'],['dip','lift'],['lift','ready']])for(const reducedMotion of [false,true]){
+   const options={kind,phase,nextPhase,reducedMotion},start=M.keyframe(kind,phase),end=M.keyframe(kind,nextPhase);
+   for(let progress=0;progress<=100;progress++){const p=M.pose({...options,progress,clearanceAware:true});expect(p.grip).toEqual(M.grip(p.tool,kind));if(progress<=25)expect(p.tool.x).toBe(start.x);if(progress>=25&&progress<=75)expect(bottom(p.tool)).toBeLessThan(307);if(progress>=75)expect(p.tool.x).toBe(end.x);if(progress===0||progress===100)expect(p).toEqual(M.pose({...options,progress}));}
+  }
+ });
+ it('keeps canceled spoon carries high, opens only after rest, and preserves disabled and thermal output',()=>{
+  for(const kind of ['fold','inspect']){const source=M.pose({kind,phase:kind==='fold'?'turn':'dip'}),home=M.pose({kind,phase:'ready'}),saved=JSON.stringify({source,home});
+   for(let progress=0;progress<=100;progress++){expect(M.park(source,home,progress,{clearanceAware:false})).toEqual(M.park(source,home,progress));const p=M.park(source,home,progress,{clearanceAware:true});if(p.parkStage==='carry')expect(bottom(p.tool)).toBeLessThan(307);if(p.parkStage==='release')expect(p.tool).toEqual({...home.tool,visible:true});if([10,40,80,95].includes(progress)){const restart=M.park(p,home,0,{clearanceAware:true});for(const key of ['tool','grip','supportHand','body','head','gaze'])expect(restart[key]).toEqual(p[key]);}}
+   expect(M.park(source,home,0,{clearanceAware:true,reducedMotion:true})).toEqual(M.park(source,home,100,{clearanceAware:true}));expect(M.parkDuration(source,home,{clearanceAware:true})).toBe(1700);expect(JSON.stringify({source,home})).toBe(saved);
+   const thermal={kind,activity:'cool-and-fold-sauce',phase:'pickup',nextPhase:kind==='fold'?'immerse':'dip',progress:60};expect(M.pose({...thermal,clearanceAware:true})).toEqual(M.pose(thermal));
+  }
+ });
+ it('gives the finishing water jug a reachable rest clear of the colander without moving other jug rests',()=>{
+  for(const phase of ['pickup','ready']){const p=M.pose({kind:'pour',activity:'finish-pasta-in-sauce',phase});expect(p.tool).toMatchObject({x:110,y:290,angle:0});expect(p.grip).toMatchObject({x:153,y:295});expect(M.arm({side:'left',hand:p.grip,shoulder:p.shoulders.left}).reachable).toBe(true);expect(M.pose({kind:'pour',phase}).tool).toMatchObject({x:230,y:318,angle:0});}
+ });
+});
+
+describe('Chef station retained serving spoon and reversible portion handling',()=>{
+ const steps=['pickup','scoop','lift','carry','tip','level','ready'];
+ const pose=(kind,plate,index,progress=0,reducedMotion=false)=>M.pose({kind,plate,phase:steps[index],nextPhase:steps[index+1],progress,reducedMotion,portionAware:true});
+ const keys=['tool','grip','supportHand','body','head','gaze','shoulders'];
+ const bottom=tool=>{const a=tool.angle*Math.PI/180;return tool.y+7*Math.cos(a)+Math.hypot(19*Math.sin(a),23*Math.cos(a))+1;};
+ it('loads only after the completed scoop and holds the opaque spoonful through destination readiness',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1])for(let index=0;index<steps.length;index++)for(const progress of [0,25,50,75,99,100]){
+   const p=pose(kind,plate,index,progress),loaded=index>0||progress===100;
+   expect(p.servingTransfer.loaded).toBe(loaded?1:0);expect(p.servingTransfer.foodRetained).toBe(loaded);expect(p.servingTransfer.preview).toBe(true);expect(p.servingTransfer.committed).toBe(false);expect(p.servingTransfer.position).toEqual({x:p.tool.x,y:p.tool.y,angle:p.tool.angle});expect(p.servingTransfer.source.kind).toBe(kind==='serve'?'pan':'plate');expect(p.servingTransfer.destination.kind).toBe(kind==='serve'?'plate':'pan');
+  }
+  for(const kind of ['serve','return'])for(const plate of [0,1]){const ready=pose(kind,plate,6);expect(ready.tool.x).toBe(kind==='serve'?(plate?720:285):514);expect(ready.servingTransfer.loaded).toBe(1);expect(ready.tool.angle).toBe(0);expect(ready.grip).toEqual(M.grip(ready.tool,kind));}
+ });
+ it('joins every phase exactly with both hands and stays reachable in both motion settings',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1])for(const reducedMotion of [false,true])for(let index=0;index<steps.length;index++){
+   for(const progress of [0,10,25,50,75,90,100]){const p=pose(kind,plate,index,progress,reducedMotion);for(const side of ['left','right']){const hand=M.handPresentation(p,side),a=M.arm({side,shoulder:p.shoulders[side],hand:hand.anchor,smoothDepth:true});expect(a.reachable).toBe(true);expect(distance(a.hand,hand.anchor)).toBeLessThan(1e-8);expect(worldDistance(p.shoulders[side],a.elbow)).toBeCloseTo(108,8);expect(worldDistance(a.elbow,a.hand)).toBeCloseTo(126,8);}}
+   if(steps[index+1]){const a=pose(kind,plate,index,100,reducedMotion),b=pose(kind,plate,index+1,0,reducedMotion);for(const key of keys)expect(a[key]).toEqual(b[key]);const {stage:sa,...da}=a.servingTransfer,{stage:sb,...db}=b.servingTransfer;expect(da).toEqual(db);for(const side of ['left','right'])expect(M.handPresentation(a,side)).toEqual(M.handPresentation(b,side));}
+  }
+ });
+ it('raises the entire ladle clear before any loaded lateral carry and lowers only above the destination',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1])for(let progress=0;progress<=100;progress++){
+   const lift=pose(kind,plate,1,progress),carry=pose(kind,plate,2,progress),lower=pose(kind,plate,3,progress);expect(lift.tool.x).toBe(lift.servingTransfer.source.x);expect(carry.tool.angle).toBe(0);expect(bottom(carry.tool)).toBeLessThan(307);expect(lower.tool.x-7*Math.sin(lower.tool.angle*Math.PI/180)).toBeCloseTo(lower.servingTransfer.destination.x,10);const approach=pose(kind,plate,0,progress);if(progress>=28&&progress<=72)expect(bottom(approach.tool)).toBeLessThan(307);
+  }
+ });
+ it('returns a canceled retained spoonful to its exact original source before any empty return',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1]){const source=pose(kind,plate,6),saved=JSON.stringify(source);let sawRelease=false,sawEmpty=false;
+   for(let progress=0;progress<=100;progress++){const p=M.park(source,undefined,progress,{portionAware:true});if(p.parkStage==='food-release'){expect(p.tool).toMatchObject({x:source.servingTransfer.source.x,y:source.servingTransfer.source.y-7,angle:0});expect(p.servingTransfer.loaded).toBe(1);sawRelease=true;}if(p.parkStage?.startsWith('empty-')){expect(p.servingTransfer.loaded).toBe(0);sawEmpty=true;}if(p.parkStage==='food-carry'||p.parkStage==='empty-carry')expect(bottom(p.tool)).toBeLessThan(307);}
+   expect(sawRelease&&sawEmpty).toBe(true);const done=M.park(source,undefined,100,{portionAware:true});expect(done).toMatchObject({kind:null,held:false,parkStage:'parked',tool:{x:514,y:350,angle:-35,visible:false},servingTransfer:{loaded:0,foodRetained:false,preview:false,committed:false}});for(const side of ['left','right'])expect(M.handPresentation(done,side)).toMatchObject({gesture:'relaxed',contact:0,closure:.18,role:'free'});expect(JSON.stringify(source)).toBe(saved);
+  }
+ });
+ it('returns committed spoons empty directly from the actual destination without recreating a portion',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1]){const source=pose(kind,plate,6);for(let progress=0;progress<=100;progress++){const p=M.park(source,undefined,progress,{portionAware:true,servingCommitted:true});expect(p.servingTransfer).toMatchObject({loaded:0,foodRetained:false,committed:true});expect(p.parkStage).not.toMatch(/^food-/);if(progress===0){for(const key of keys)expect(p[key]).toEqual(source[key]);for(const side of ['left','right'])expect(M.handPresentation(p,side)).toEqual(M.handPresentation(source,side));}}}
+ });
+ it('preserves exact cancellation starts, restart hand semantics, immutability and reduced-motion endings',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1])for(const committed of [false,true])for(const index of [0,1,2,3,4,5,6]){
+   const source=pose(kind,plate,index,50),options={portionAware:true,servingCommitted:committed},saved=JSON.stringify(source);for(const progress of [0,10,25,50,70,85,95]){const p=M.park(source,undefined,progress,options),restart=M.park(p,undefined,0,options);for(const key of keys)expect(restart[key]).toEqual(p[key]);expect(restart.servingTransfer).toEqual(p.servingTransfer);for(const side of ['left','right'])expect(M.handPresentation(restart,side)).toEqual(M.handPresentation(p,side));}
+   expect(M.park(source,undefined,0,{...options,reducedMotion:true})).toEqual(M.park(source,undefined,100,options));expect(M.parkDuration(source,undefined,options)).toBeGreaterThan(0);expect(JSON.stringify(source)).toBe(saved);
+  }
+ });
+ it('leaves disabled serving options and unrelated choreography exactly unchanged',()=>{
+  for(const kind of ['serve','return'])for(const plate of [0,1])for(let index=0;index<steps.length;index++)for(const progress of [0,25,50,75,100]){const o={kind,plate,phase:steps[index],nextPhase:steps[index+1],progress,clearanceAware:true},p=M.pose(o);expect(M.pose({...o,portionAware:false})).toEqual(p);expect(M.keyframe(kind,steps[index],{plate,portionAware:false})).toEqual(M.keyframe(kind,steps[index],{plate}));expect(M.park(p,undefined,progress,{portionAware:false})).toEqual(M.park(p,undefined,progress));expect(M.parkDuration(p,undefined,{portionAware:false})).toBe(M.parkDuration(p));}
+  for(const kind of ['inspect','fold','pour','combinePasta','loadMushrooms'])for(const progress of [0,50,100]){const o={kind,phase:'pickup',nextPhase:kind==='combinePasta'||kind==='loadMushrooms'?'grip':kind==='fold'?'immerse':'dip',progress,clearanceAware:true};expect(M.pose({...o,portionAware:true})).toEqual(M.pose(o));}
+ });
+});

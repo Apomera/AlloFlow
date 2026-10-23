@@ -58412,6 +58412,15 @@
       "sr_critique_ready": "講評ができました。"
     },
     "flightsim": {
+      "guided_inspect_angle": "迎え角の比較を確認",
+      "guided_inspect_speed": "対気速度の比較を確認",
+      "guided_export_scope": "エクスポートには現在の下書きと以前の試行が含まれます。エクスポートしても探究は完了しません。",
+      "hint_t_stall_negative": "🚨 失速！迎え角が負です。中央から上へそっとドラッグして、ゼロに近づけてください。必要に応じて右端で出力を調整してください。",
+      "hint_k_stall_negative": "🚨 失速！迎え角が負です。Wをそっと押して、ゼロに近づけてください。必要に応じてShiftで出力を増やしてください。",
+      "hint_stall_direction_unknown": "🚨 失速！迎え角をゼロに近づけてください。方向を確認できません。ピッチ操作を選ぶ前にAoA表示を観察してください。",
+      "announce_stall_warning_negative": "失速警報！迎え角が負です。機首をゆっくり上げて、ゼロに近づけてください。必要に応じて出力を増やしてください。",
+      "announce_stall_warning_unknown": "失速警報！迎え角をゼロに近づけてください。方向を確認できません。ピッチ操作を選ぶ前にAoA表示を確認してください。",
+      "hud_stall_warning": "⚠️ 失速 — 迎え角をゼロに近づける",
       "debrief_unavailable_title": "保存済みのフライトレビューを利用できません",
       "debrief_unavailable_body": "最新のフライトレビューが見つからないか、読み取れません。メニューに戻り、新しいフライトを開始してください。",
       "guided_idea_before_trials": "試行前に記録",

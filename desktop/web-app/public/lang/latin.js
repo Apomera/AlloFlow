@@ -54652,6 +54652,15 @@
       "sr_critique_ready": "Iudicium paratum est."
     },
     "flightsim": {
+      "guided_inspect_angle": "Comparationem angulorum inspice",
+      "guided_inspect_speed": "Comparationem velocitatum inspice",
+      "guided_export_scope": "Exportatio adumbrationem praesentem et conatus priores continet. Exportare investigationem non perficit.",
+      "hint_t_stall_negative": "🚨 STALL! Angulus impetus negativus est: leniter SURSUM e medio trahe ut ad zerum accedat. Margine dextro utere ad potentiam, si opus est.",
+      "hint_k_stall_negative": "🚨 STALL! Angulus impetus negativus est: leniter W preme ut ad zerum accedat. Potentiam per Shift auge, si opus est.",
+      "hint_stall_direction_unknown": "🚨 STALL! Angulum impetus ad zerum adduc. Directio eius ignota est; indicium AoA inspice antequam motum rostri eligas.",
+      "announce_stall_warning_negative": "Monitum de stall! Angulus impetus negativus est. Rostrum leniter tolle ut angulus ad zerum accedat; potentiam auge, si opus est.",
+      "announce_stall_warning_unknown": "Monitum de stall! Angulum impetus ad zerum adduc. Directio eius ignota est; indicium AoA inspice antequam motum rostri eligas.",
+      "hud_stall_warning": "⚠️ STALL — AoA AD ZERUM ADDUC",
       "debrief_unavailable_title": "Recensio volatus servata praesto non est",
       "debrief_unavailable_body": "Recensio volatus novissima deest aut legi non potest. Ad indicem redi ut novum volatum incipias.",
       "guided_idea_before_trials": "Ante experimenta notata",

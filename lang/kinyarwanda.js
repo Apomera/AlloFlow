@@ -54699,6 +54699,15 @@
       "sr_critique_ready": "Isesengura ririteguye."
     },
     "flightsim": {
+      "guided_inspect_angle": "Reba igereranya ry'inguni",
+      "guided_inspect_speed": "Reba igereranya ry'umuvuduko",
+      "guided_export_scope": "Ibyoherezwa birimo inyandiko uri gutegura n'igerageza ryabanje. Kohereza ntibirangiza iperereza.",
+      "hint_t_stall_negative": "🚨 STALL! Inguni AoA iri munsi ya zeru: kurura buhoro UZAMURA uhereye hagati kugira ngo uyegereze kuri zeru. Koresha inkombe y'iburyo ku mbaraga za moteri igihe bikenewe.",
+      "hint_k_stall_negative": "🚨 STALL! Inguni AoA iri munsi ya zeru: kanda W buhoro kugira ngo uyegereze kuri zeru. Ongera imbaraga za moteri ukoresheje Shift igihe bikenewe.",
+      "hint_stall_direction_unknown": "🚨 STALL! Egereza inguni AoA kuri zeru. Icyerekezo cyayo ntikiboneka; reba igipimo cya AoA mbere yo guhitamo kuzamura cyangwa kumanura izuru ry'indege.",
+      "announce_stall_warning_negative": "Iburira rya stall! Inguni AoA iri munsi ya zeru. Zamura izuru ry'indege buhoro kugira ngo uyegereze kuri zeru; ongera imbaraga za moteri igihe bikenewe.",
+      "announce_stall_warning_unknown": "Iburira rya stall! Egereza inguni AoA kuri zeru. Icyerekezo cyayo ntikiboneka; reba igipimo cya AoA mbere yo guhitamo kuzamura cyangwa kumanura izuru ry'indege.",
+      "hud_stall_warning": "⚠️ STALL — EGEREZA AoA KURI ZERU",
       "debrief_unavailable_title": "Isuzuma ry’urugendo rw’indege ryabitswe ntiriboneka",
       "debrief_unavailable_body": "Isuzuma riheruka ry’urugendo rw’indege ntirihari cyangwa ntirishobora gusomwa. Subira kuri meni utangire urugendo rushya.",
       "guided_idea_before_trials": "Cyanditswe mbere y’amagerageza",

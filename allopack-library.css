@@ -1,0 +1,26 @@
+.pack-directory { padding-top:32px; }
+.pack-directory h2 { font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:12px; }
+.pack-directory p { line-height:1.65; }
+.pack-review-note, .pack-gemini-help { max-width:900px; color:#475569; margin:14px 0; }
+.pack-gemini-help { padding:14px 18px; border:1px solid #cbd5e1; border-radius:12px; background:#f8fafc; }
+.pack-gemini-help summary, .pack-other-versions summary { cursor:pointer; font-weight:650; padding:8px 0; }
+.pack-directory a { color:#3730a3; text-decoration:underline; text-underline-offset:3px; }
+.pack-filters { display:grid; grid-template-columns:minmax(200px,2fr) 1fr 110px auto; gap:14px; align-items:end; padding:20px; margin:24px 0 12px; background:#eef2ff; border-radius:14px; }
+.pack-filters label { display:flex; flex-direction:column; gap:6px; font-weight:650; font-size:14px; }
+.pack-filters input, .pack-filters select, .pack-copy-fallback input { min-height:44px; width:100%; padding:9px; border:1px solid #94a3b8; border-radius:7px; font:inherit; background:#fff; color:#0f172a; }
+.pack-filters button, .pack-actions button, .pack-actions a { min-height:44px; padding:10px 12px; border:1px solid #a5b4fc; border-radius:8px; font:inherit; font-size:14px; font-weight:650; cursor:pointer; background:#fff; color:#3730a3; }
+.pack-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; margin-top:18px; }
+.pack-topic { border:1px solid #cbd5e1; border-radius:16px; padding:22px; background:#fff; min-width:0; }
+.pack-topic h3 { font-size:1.15rem; line-height:1.4; margin:6px 0 18px; overflow-wrap:anywhere; }
+.pack-topic-meta { color:#475569; font-size:13px; }
+.pack-version h4 { font-size:14px; margin:10px 0 4px; }
+.pack-version p { font-size:13px; margin:5px 0; }
+.pack-credit { color:#475569; }
+.pack-actions { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; align-items:center; }
+.pack-actions .pack-open { background:#4338ca; border-color:#4338ca; color:#fff; }
+.pack-other-versions { border-top:1px solid #e2e8f0; margin-top:16px; }
+.pack-copy-fallback { display:block; font-size:13px; margin-top:12px; }
+.pack-directory [hidden] { display:none !important; }
+.pack-directory :focus-visible { outline:3px solid #2563eb; outline-offset:3px; }
+@media(max-width:1000px) { .pack-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .pack-filters { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .pack-grid, .pack-filters { grid-template-columns:1fr; } .pack-topic { padding:18px; } }

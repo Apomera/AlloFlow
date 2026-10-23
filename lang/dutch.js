@@ -56354,6 +56354,15 @@
       "sr_critique_ready": "Kritiek klaar."
     },
     "flightsim": {
+      "guided_inspect_angle": "Hoekvergelijking bekijken",
+      "guided_inspect_speed": "Snelheidsvergelijking bekijken",
+      "guided_export_scope": "De export bevat je huidige concept en eerdere pogingen. Exporteren voltooit het onderzoek niet.",
+      "hint_t_stall_negative": "🚨 OVERTREK! De AoA is negatief: sleep voorzichtig OMHOOG vanuit het midden om deze naar nul te brengen. Gebruik zo nodig de rechterrand voor vermogen.",
+      "hint_k_stall_negative": "🚨 OVERTREK! De AoA is negatief: druk voorzichtig op W om deze naar nul te brengen. Voeg zo nodig vermogen toe met Shift.",
+      "hint_stall_direction_unknown": "🚨 OVERTREK! Breng de invalshoek naar nul. De richting is niet beschikbaar; bekijk de AoA-meter voordat je een neusstandcorrectie kiest.",
+      "announce_stall_warning_negative": "Overtrekwaarschuwing! De invalshoek is negatief. Breng de neus voorzichtig omhoog om deze naar nul te brengen; voeg zo nodig vermogen toe.",
+      "announce_stall_warning_unknown": "Overtrekwaarschuwing! Breng de invalshoek naar nul. De richting is niet beschikbaar; bekijk de AoA-meter voordat je een neusstandcorrectie kiest.",
+      "hud_stall_warning": "⚠️ OVERTREK — BRENG AoA NAAR NUL",
       "debrief_unavailable_title": "Opgeslagen vluchtbespreking niet beschikbaar",
       "debrief_unavailable_body": "De nieuwste vluchtbespreking ontbreekt of kan niet worden gelezen. Ga terug naar het menu om een nieuwe vlucht te starten.",
       "guided_idea_before_trials": "Vastgelegd vóór de proeven",

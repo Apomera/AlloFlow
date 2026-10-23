@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Nkatọ adịla njikere."
     },
     "flightsim": {
+      "guided_inspect_angle": "Lelee ntụnyere akụkụ",
+      "guided_inspect_speed": "Lelee ntụnyere ọsọ",
+      "guided_export_scope": "Mbupụ gụnyere ihe odide gị ugbu a na mbọ ndị gara aga. Mbupụ anaghị emechaa nyocha ahụ.",
+      "hint_t_stall_negative": "🚨 STALL! Akụkụ AoA dị n'okpuru efu: jiri nwayọọ dọrọ ELU site n'etiti ka ọ bịaruo efu nso. Jiri nsọtụ aka nri maka ike injin ma ọ dị mkpa.",
+      "hint_k_stall_negative": "🚨 STALL! Akụkụ AoA dị n'okpuru efu: jiri nwayọọ pịa W ka ọ bịaruo efu nso. Tinye ike injin na Shift ma ọ dị mkpa.",
+      "hint_stall_direction_unknown": "🚨 STALL! Mee ka akụkụ AoA bịaruo efu nso. A maghị ntụziaka ya; lelee ihe ngosi AoA tupu ịhọrọ mmegharị imi ụgbọelu.",
+      "announce_stall_warning_negative": "Ịdọ aka ná ntị stall! Akụkụ AoA dị n'okpuru efu. Welie imi ụgbọelu nwayọọ ka ọ bịaruo efu nso; tinye ike injin ma ọ dị mkpa.",
+      "announce_stall_warning_unknown": "Ịdọ aka ná ntị stall! Mee ka akụkụ AoA bịaruo efu nso. A maghị ntụziaka ya; lelee ihe ngosi AoA tupu ịhọrọ mmegharị imi ụgbọelu.",
+      "hud_stall_warning": "⚠️ STALL — MEE KA AoA BỊARUO EFU NSO",
       "debrief_unavailable_title": "Ntụle njem ụgbọelu echekwara adịghị",
       "debrief_unavailable_body": "Ntụle njem ụgbọelu kacha ọhụrụ adịghị ma ọ bụ enweghị ike ịgụ ya. Laghachi na menu ka ịmalite njem ụgbọelu ọhụrụ.",
       "guided_idea_before_trials": "Edere tupu nnwale ndị ahụ",

@@ -1,0 +1,147 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional Indo-Pacific guide, identification-practice and dive specimen. Copy is newly paraphrased. Observation instructions are prompts, not claims that each behavior is simulated.",
+  "iucnYearConvention": "Assessment year, matching existing fish metadata; publication year is recorded separately. Direct IUCN page returned403, so institutional species accounts and the current FishBase assessment export corroborate the values. This is not a successful direct IUCN check.",
+  "specimens": [
+    {
+      "id": "spotted_garden_eel",
+      "name": "Spotted garden eel",
+      "scientific": "Heteroconger hassi",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2016,
+      "iucnPublishedYear": 2019,
+      "iucnDateAssessed": "2016-11-28",
+      "iucnCitation": "Tighe, K., Smith, D.G. & McCosker, J. 2019. Heteroconger hassi. The IUCN Red List of Threatened Species 2019: e.T198985A2546860.",
+      "lookalikes": [],
+      "marks": [
+        "Extremely slender, straw-like body rather than a broad fish silhouette",
+        "Pale adult body densely sprinkled with small dark spots",
+        "Larger dark patches interrupt the fine spots, including one around the gill opening",
+        "Only part of the upright, curved body emerges from its sandy burrow"
+      ],
+      "role": "Takes drifting zooplankton from the current while remaining anchored in a sand burrow.",
+      "fact": "Its tail digs the burrow, and mucus helps bind the sand walls. The eel can withdraw tail-first when alarmed.",
+      "habitat": "Sandy flats and slopes bordering tropical Indo-Pacific coral reefs, often in colonies.",
+      "diet": "Zooplankton carried past its burrow by the current.",
+      "behavior": "Rises partway from its burrow to feed, generally facing into the current with neighboring eels. It retreats rapidly when threatened.",
+      "observe": "Follow the thin, spotted body from its sandy opening to the head. Look for the larger dark patch behind the head among the tiny spots.",
+      "sources": [
+        "dx-am-spotted_garden_eel",
+        "dx-cas-spotted_garden_eel",
+        "dx-foa-spotted_garden_eel",
+        "dx-ga-spotted_garden_eel"
+      ],
+      "claimSupport": {
+        "nameScientific": "dx-am-spotted_garden_eel; dx-foa-spotted_garden_eel",
+        "marks": "dx-am-spotted_garden_eel; dx-cas-spotted_garden_eel; dx-foa-spotted_garden_eel",
+        "roleDiet": "dx-am-spotted_garden_eel; dx-ga-spotted_garden_eel",
+        "fact": "dx-cas-spotted_garden_eel",
+        "habitat": "dx-cas-spotted_garden_eel; dx-foa-spotted_garden_eel",
+        "behavior": "dx-ga-spotted_garden_eel; dx-foa-spotted_garden_eel",
+        "iucnCategoryPublishedYear": "dx-foa-spotted_garden_eel",
+        "iucnDateAssessmentYear": "dx-fishbase-spotted_garden_eel",
+        "iucnCitation": "dx-foa-spotted_garden_eel"
+      },
+      "caution": "Adult pattern only: juveniles are nearly entirely black. The Australian Museum and FoA locate the three larger patches at the gill/pectoral region, midbody and anus; some may remain buried. Georgia Aquarium describes their positions differently, so use museum anatomy for the model. Reported maximum lengths differ among institutional accounts. Do not imply that every eel exposes the same fraction of its body or that burrows are never relocated."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-spotted_garden_eel",
+      "text": "McGrouther, M. (2019). Australian Museum: Spotted Garden Eel, Heteroconger hassi. Accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/spotted-garden-eel-heteroconger-hassi-klausewitz-eibl-eibesfeldt-1959/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "accepted name",
+        "pale body and fine black spots",
+        "three larger patches at gill/pectoral region, midbody and anus",
+        "black juveniles",
+        "sandy burrows near coral reefs",
+        "typically15–45m",
+        "partial emergence, zooplankton, tail-first retreat"
+      ],
+      "access": "Full account surfaced in the current search index; opening the page directly subsequently returned503."
+    },
+    {
+      "id": "dx-cas-spotted_garden_eel",
+      "text": "California Academy of Sciences. Creature Closeups: Spotted Garden Eel. Accessed October 2026.",
+      "url": "https://www.calacademy.org/learn-explore/creature-closeups/spotted-garden-eel",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "straw-like slender fish",
+        "colonies that sway in currents",
+        "tail digs burrow",
+        "mucus reinforces sand walls",
+        "tail-first retreat",
+        "sandy reef-adjacent flats and slopes"
+      ]
+    },
+    {
+      "id": "dx-foa-spotted_garden_eel",
+      "text": "Bray, D.J. (2024). Fishes of Australia: Spotted Garden Eel, Heteroconger hassi. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/3913",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "accepted name",
+        "adult fine spots and larger blotches",
+        "burrows in sandy lagoon/rubble and slope areas",
+        "daytime partial emergence to take zooplankton",
+        "maximum40cmTL",
+        "depth5–50m",
+        "LC",
+        "published2019 IUCN citation"
+      ]
+    },
+    {
+      "id": "dx-ga-spotted_garden_eel",
+      "text": "Georgia Aquarium. Spotted Garden Eel species account. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/spotted-garden-eel/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": [
+        "colony feeding orientation into current",
+        "sandy slopes",
+        "tail-first retreat",
+        "common full length36–41cm",
+        "partial emergence varies",
+        "LC"
+      ],
+      "caution": "Use the Diet/Feeding paragraph for zooplankton; the summary Diet widget appears to describe broader prey and conflicts with the detailed account. Do not copy its larger-spot positions where they conflict with both museum sources."
+    },
+    {
+      "id": "dx-fishbase-spotted_garden_eel",
+      "text": "FishBase. Heteroconger hassi: IUCN assessment export (Red List version 2025-2), assessed 28 November 2016. Accessed October 2026.",
+      "url": "https://fishbase.se/summary/12619",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "LC",
+        "assessmentdate2016-11-28"
+      ],
+      "integration": "Maintained provenance for assessment date only; all biological copy comes from museum/aquarium sources."
+    },
+    {
+      "id": "dx-iucn-spotted_garden_eel",
+      "text": "Tighe, K., Smith, D.G. & McCosker, J. (2019). Heteroconger hassi. IUCN Red List e.T198985A2546860.",
+      "url": "https://dx.doi.org/10.2305/IUCN.UK.2019-1.RLTS.T198985A2546860.en",
+      "urlLabel": "doi.org",
+      "supports": [
+        "primary citation linked by FoA"
+      ],
+      "access": "Direct IUCN species page https://www.iucnredlist.org/species/198985/2546860 returned403. Citation and publication year corroborated by FoA."
+    }
+  ],
+  "modelProvenance": {
+    "fullBodyLengthM": 0.4,
+    "fullBodyLengthBasis": "FoA reports maximum about40cmTL; Georgia Aquarium gives36–41cm as common. A representative adult teaching scale, not a universal size.",
+    "illustrativeExposedLengthM": 0.21,
+    "exposureBasis": "An artistic representative feeding pose. Institutional accounts describe variable partial emergence: Australian Museum up to two-thirds, Georgia commonly one-quarter. The model does not claim a universal exposed fraction.",
+    "depthChoice": "FoA quick facts5–50m; Australian Museum usually15–45m. Prefer metadata depth:[5,50] if metadata denotes species range, while profile prose avoids a precise depth claim.",
+    "anatomy": "Use three major dark patches at gill/pectoral region, midbody and anus per both museum accounts. Any lowest patch may remain buried. Keep a fine-spotted pale adult, slender body, tiny pectoral fins, and a terminal head; never use moray jaws or an unattached swimming posture.",
+    "anchoring": "Individual emerges from an anchored sandy opening. Local body current deformation is appropriate; root placement must not wander. This is a visual teaching model and not an exhaustive ethogram."
+  },
+  "integration": {
+    "maintainedSource": "Root will add this record to docs and make exact insertions into SPECIES_META, speciesText, marineProfiles and marineProfileSources; do not regenerate older records from stale scratch data.",
+    "practice": "New matching metadata/text/profile/model IDs can enter guide and existing practice choices. Adding a specimen must not mark it seen or modify notes, bookmarks, saved progress or achievements.",
+    "lookalikeNote": "No existing guide species is a close enough visual counterpart to call a lookalike. Giant moray shares eel ancestry but differs greatly in size, form and habitat, so leave lookalikes empty."
+  }
+}

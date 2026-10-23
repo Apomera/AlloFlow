@@ -135,11 +135,18 @@ function actualIleum(W, H) {
   return result;
 }
 function actualLaterPaths(W, H) {
-  const ctx = new Context(); production('traceFrogPancreas', { ctx, W, H, cx: W * .5, cy: H * .45 })();
-  const pancreas = samplePath(ctx.path);
-  const spleen = pathFragment('var frogSpleenX =', 'var frogSpleenVolume', W, H);
+  const pancreaticGeometry = production('frogPancreaticGeometry'), pancreaticTrace = production('traceFrogPancreaticRegion');
+  const pancreaticDraw = production('drawFrogPancreaticSurface', { frogPancreaticGeometry: pancreaticGeometry, traceFrogPancreaticRegion: pancreaticTrace });
+  const splenicGeometry = production('frogSplenicGeometry'), splenicTrace = production('traceFrogSplenicRegion');
+  const splenicDraw = production('drawFrogSplenicSurface', { frogSplenicGeometry: splenicGeometry, traceFrogSplenicRegion: splenicTrace });
+  const actualFills = draw => [true, false].map(detailed => {
+    const ctx = new Context(); draw(ctx, { width: W, height: H, detailed });
+    const fills = ctx.events.filter(e => e.operation === 'fill');
+    if (fills.length !== 1 || fills[0].path.at(-1)[0] !== 'closePath') throw Error('Missing actual closed accessory-organ fill');
+    return samplePath(fills[0].path);
+  });
   const membrane = pathFragment('// Translucent mesentery sits beneath the coiled gut;', 'ctx.fillStyle', W, H);
-  return { pancreas, spleen: samplePath(spleen), membrane: samplePath(membrane), ileum: actualIleum(W, H) };
+  return { pancreaticFills: actualFills(pancreaticDraw), splenicFills: actualFills(splenicDraw), membrane: samplePath(membrane), ileum: actualIleum(W, H) };
 }
 
 describe('continuous frog gastric and duodenal anatomy', () => {
@@ -187,7 +194,8 @@ describe('continuous frog gastric and duodenal anatomy', () => {
 
   it.each(dimensions)('keeps the stomach target exposed after actual pancreas, spleen, membrane and ileum paint at %s by %s', (W, H) => {
     const g = geometry(W, H), p = { x: g.target.x * W, y: g.target.y * H }, later = actualLaterPaths(W, H);
-    for (const paths of [later.pancreas, later.spleen, later.membrane]) {
+    expect(later.pancreaticFills).toHaveLength(2); expect(later.splenicFills).toHaveLength(2);
+    for (const paths of [...later.pancreaticFills, ...later.splenicFills, later.membrane]) {
       expect(paths.length).toBeGreaterThan(0); expect(paths[0].length).toBeGreaterThan(100);
       expect(contains(p, paths[0])).toBe(false); expect(distance(p, paths)).toBeGreaterThan(2);
     }

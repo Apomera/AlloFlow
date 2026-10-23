@@ -18,6 +18,27 @@ const STEM_SHARED_PATHS = [
   'desktop/web-app/public/stem_lab_module.js',
 ];
 
+// Exercise the current shared anatomy helpers without coupling these legacy
+// contracts to former inline comments or an optional tracing parameter list.
+const contractFunctionBodies = new Map();
+function contractFunction(source, name, bindings = {}) {
+  const key = name + '|' + source.length;
+  if (!contractFunctionBodies.has(key)) {
+    const matches = [...source.matchAll(new RegExp('^([ \\t]*)(?:var ' + name + ' = )?function ' + name + '\\(', 'gm'))];
+    if (matches.length !== 1) throw Error('Expected one anatomy helper: ' + name);
+    const m = matches[0], start = source.indexOf('function ' + name + '(', m.index), ending = new RegExp('^' + m[1] + '}[; \\t]*\\r?$', 'gm');
+    ending.lastIndex = start; const end = ending.exec(source);
+    if (!end) throw Error('Missing anatomy helper ending: ' + name);
+    contractFunctionBodies.set(key, source.slice(start, end.index + m[1].length + 1));
+  }
+  return new Function(...Object.keys(bindings), 'return (' + contractFunctionBodies.get(key) + ');')(...Object.values(bindings));
+}
+function contractSpecimens(source) {
+  const start = source.indexOf('var SPECIMENS = {'), end = source.indexOf('\n          };', start);
+  if (start < 0 || end < start) throw Error('Missing specimen reference data');
+  return new Function(source.slice(start, end + 14) + ';return SPECIMENS;')();
+}
+
 describe('dissection improvement contracts', { timeout: 60000 }, () => {
   it('keeps the desktop runtime mirror byte-identical to the source tool', () => {
     const source = readFileSync(DISSECTION_PATHS[0]);
@@ -520,7 +541,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("'ON PATH'");
       expect(source).toContain("'EDGE'");
       expect(source).toContain("'DRIFT'");
-      expect(source).toContain("resistanceStatus.textContent = ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors'");
+      expect(source).toContain("setDissectionLiveText(resistanceStatus, ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors'");
       expect(source).toContain("'TRAY SURFACE'");
       expect(source).toContain('no tissue response');
       expect(source).toContain("activeDepthLabel + ' / PROTECT '");
@@ -616,7 +637,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry');
       expect(source).toContain("'; localized technique evidence: incision edge, grip, anchor, probe, and pooling consequences encoded'");
       expect(source).toContain('Non-cutting previews pair sequence and calibration readiness with a visible nearest anatomical target.');
-      expect(source).toContain("previewStatus.textContent = previewMessage");
+      expect(source).toContain("setDissectionLiveText(previewStatus, previewMessage)");
       expect(source).toContain("['forceps', 'pin', 'probe', 'dropper'].indexOf(responseTool) >= 0");
       expect(source).toContain('sceneDetail: sceneDetail');
       expect(source).toContain('relationshipMotion: relationshipMotion');
@@ -636,7 +657,14 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility, callout)');
       expect(source).toContain('var chambered = /heart|stomach|bladder|crop|gizzard|atrium|ventricle|cloaca|lens|humor/');
       expect(source).toContain('var layered = /skin|integument|cuticle|scale|carapace|membrane|muscle|myomere|retina|cornea|sclera|choroid|conjunctiva|diaphragm|septum|pericardium|valve/');
-      expect(source).toContain("morphologyLabel: morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase()");
+      const footprint = contractFunction(source, 'structureInspectionFootprint', { structureOpticalDepth: () => 'deep', W: 500, H: 600,
+        organs: Array.from({ length: 12 }), spec: { bodyShape: 'fish' }, specimen: 'perch' });
+      expect(footprint({ id: 'artery', name: 'Artery' }).morphologyLabel).toBe('TUBE');
+      expect(footprint({ id: 'liver_f', name: 'Liver' }).morphologyLabel).toBe('LOBED');
+      expect(footprint({ id: 'stomach_f', name: 'Stomach' }).morphologyLabel).toBe('CHAMBERED');
+      expect(footprint({ id: 'pyloric_ceca', name: 'Pyloric Ceca' })).toEqual({
+        ...footprint({ id: 'spleen_f', name: 'Spleen' }), morphologyLabel: 'POUCHES',
+      });
       expect(source).toContain('function traceStructureMorphologyContour(profile, yOffset, inflate)');
       expect(source).toContain('function drawStructureMorphologyTexture(profile)');
       expect(source).toContain('Morphology contours and internal marks distinguish structure classes without claiming an exact organ boundary.');
@@ -734,7 +762,8 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("var canvasLabelsVisible = d.labelMode !== 'hidden' && !d.quizMode;");
       expect(source).toContain('var denseHotspotView = canvasLabelsVisible && organs.length >= 8 && zoom < 1.22;');
       expect(source).toContain('function resolveAdaptiveLabelColumn(items, minY, maxY)');
-      expect(source).toContain('canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map');
+      expect(source.includes('canvas._hotspotLabelBoxes = adaptiveHotspotLayout.filter(function (item) { return item.showCallout; }).map'),
+        'only painted callouts are published as clickable label targets').toBe(true);
       expect(source).toContain('Reticle marks make selected state readable without color alone.');
       expect(source).toContain("canvasCoarsePointer ? 'select to expand' : 'hover to expand'");
       expect(source).toContain('var hit = closestVisibleOrganAt(mx, my, clickHitRadius, canvas);');
@@ -1256,11 +1285,28 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('function earthwormFrame(t)');
       expect(source).toContain('function traceEarthwormBody()');
       expect(source).toContain('function traceEarthwormLine(offsetRatio, startT, endT)');
-      expect(source).toContain('function traceEarthwormBand(startT, endT, widthScale)');
+      const centerline = contractFunction(source, 'earthwormCenterlinePoint');
+      const anatomyFrame = contractFunction(source, 'earthwormAnatomyFrame', { earthwormCenterlinePoint: centerline });
+      const bodyPoint = contractFunction(source, 'earthwormPoint', { W: 500, H: 600, earthwormCenterlinePoint: centerline });
+      const bodyWidth = contractFunction(source, 'earthwormWidth', { wormBaseWidth: 500 * .047 });
+      const frame = contractFunction(source, 'earthwormFrame', { earthwormPoint: bodyPoint, earthwormWidth: bodyWidth });
+      for (const t of [.16, .265, .8]) {
+        const f = frame(t), p = centerline(t), shared = anatomyFrame(t, 500, 600);
+        expect(f.point).toEqual(shared.point); expect(f.width).toBeCloseTo(shared.width, 10);
+        for (const axis of ['tx', 'ty', 'nx', 'ny']) expect(f[axis]).toBeCloseTo(shared[axis], 10);
+        expect(f.point.x).toBeCloseTo(p.x * 500, 10); expect(f.point.y).toBeCloseTo(p.y * 600, 10);
+        expect(Math.hypot(f.nx, f.ny)).toBeCloseTo(1, 10);
+      }
+      const points = [], path = { beginPath: vi.fn(), moveTo: (x, y) => points.push({ x, y }), lineTo: (x, y) => points.push({ x, y }), closePath: vi.fn() };
+      contractFunction(source, 'traceEarthwormBand', { earthwormFrame: frame })(.05, .93, .84, path);
+      expect(points).toHaveLength(26); expect(path.closePath).toHaveBeenCalledOnce();
+      expect(points.every(p => Number.isFinite(p.x) && Number.isFinite(p.y))).toBe(true);
       expect(source).toContain('var wormSurfaceGradient = ctx.createLinearGradient');
       expect(source).toContain('The clitellum is a gently expanded glandular saddle');
       expect(source).toContain('Four paired setal positions are suggested');
-      expect(source).toContain('Five paired aortic arches encircle the anterior digestive tract');
+      const arches = contractFunction(source, 'earthwormAorticGeometry', { earthwormAnatomyFrame: anatomyFrame })(500, 600);
+      expect(arches.pairs).toHaveLength(5); expect(arches.pairs.every(pair => pair.arms.length === 2)).toBe(true);
+      expect(source.includes("stage: 'rear'") && source.includes("wormArchOptions.stage = 'front';"), 'paired vascular arms render behind and in front of the gut').toBe(true);
       expect(source).toContain('Ventral cord sits slightly off the digestive midline');
       expect(source).toContain("{ id: 'setae', name: 'Setae', x: 0.46, y: 0.55");
       expect(source).toContain("{ id: 'clitellum', name: 'Clitellum', x: 0.51, y: 0.33");
@@ -1297,20 +1343,29 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       // 2026-09-05: the caption now routes through fillPanelText so the ventral mirror does
       // not reverse it, and the bay anchor mirrors with it to hold the bottom-right corner.
       expect(source).toContain("fillPanelText('INSTRUMENT BAY', instrumentBayX, instrumentBayW, 9,");
-      expect(source).toContain('background: linear-gradient(135deg, #eaf2f1, #d8e5e5 55%, #c8d9da)');
-      expect(source).not.toContain('Math.random() * 2 + 0.5');      expect(source).toContain('var fishBodyGradient = ctx.createLinearGradient');
+      const trayFrameRule = /\.diss-canvas-frame \{([^}]+)\}/.exec(source)?.[1];
+      expect(trayFrameRule).toMatch(/background:\s*#[\da-f]+/i); expect(trayFrameRule).toContain('box-shadow: inset');
+      expect(source).not.toContain('Math.random() * 2 + 0.5');
+      expect(source).toContain('var fishBodyGradient = ctx.createLinearGradient');
       expect(source).toContain('var fishIridescence = ctx.createLinearGradient');
       expect(source).toContain('var fishEyeGradient = ctx.createRadialGradient');
       expect(source).toContain("{ id: 'operculum', name: 'Operculum', x: 0.31, y: 0.44");
       expect(source).toContain('Perch internal cutaway: dorsal buoyancy/excretory organs and ventral viscera share one coelomic cavity.');
-      expect(source).toContain('function tracePerchCoelom()');
+      const cavityPath = { beginPath: vi.fn(), moveTo: vi.fn(), bezierCurveTo: vi.fn(), closePath: vi.fn() };
+      contractFunction(source, 'tracePerchCoelom', { W: 500, H: 600, cx: 250, cy: 270 })(cavityPath);
+      expect(cavityPath.bezierCurveTo).toHaveBeenCalledTimes(4); expect(cavityPath.closePath).toHaveBeenCalledOnce();
       expect(source).toContain('function drawPerchGillArch(archIndex)');
-      expect(source).toContain('The kidney is a dark, elongated organ fixed against the dorsal body wall.');
+      const renal = contractFunction(source, 'perchRenalGeometry')(500, 600);
+      expect(renal.detailed.curves.length).toBeGreaterThan(2); expect(renal.detailed.curves.at(-1)[2]).toEqual(renal.detailed.start);
+      expect(source.includes('drawPerchRenalTissue(ctx, {'), 'dorsal renal tissue uses its registered ribbon').toBe(true);
       expect(source).toContain('Swim bladder: a thin-walled dorsal sac with a vascular rete mirabile patch.');
       expect(source).toContain('Rete mirabile is represented as a compact vascular network along the anterior bladder wall.');
       expect(source).toContain('Three overlapping liver lobes occupy the anterior ventral cavity.');
-      expect(source).toContain('Pyloric ceca are distinct blind fingers, not a single generic line.');
-      expect(source).toContain('Two functional chambers are shown with the sinus venosus and bulbus arteriosus in series.');
+      const caeca = contractFunction(source, 'perchCaecalGeometry')(500, 600);
+      expect(caeca.caeca).toHaveLength(3); expect(caeca.caeca.every(pouch => JSON.stringify(pouch.curves.at(-1)[2]) === JSON.stringify(pouch.start))).toBe(true);
+      const cardiac = contractFunction(source, 'perchCardiacGeometry')(500, 600);
+      for (const part of ['sinus', 'atrium', 'ventricle', 'bulbus']) expect(cardiac[part].curves.at(-1)[2]).toEqual(cardiac[part].start);
+      expect(cardiac.outflow.curves.length).toBeGreaterThan(0);
       expect(source).toContain("{ id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51");
       expect(source).toContain("{ id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46");
       const perchCutaway = sliceBetween(source, '// Perch internal cutaway:', "if (activeLayer === 'skeleton')", {
@@ -1336,7 +1391,20 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
   it('uses species-appropriate sheep-eye layers and an anatomical sheep-heart silhouette', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
-      expect(source).toContain('function traceSheepEyeGlobe(scaleX, scaleY)');
+      const eyeTrace = contractFunction(source, 'traceSheepEyeGlobe').toString();
+      expect(eyeTrace).toMatch(/traceContext\s*=\s*traceContext\s*\|\|\s*ctx/);
+      const eyeContext = { beginPath: vi.fn(), ellipse: vi.fn() }, openingPath = { ellipse: vi.fn() };
+      const traceEye = contractFunction(source, 'traceSheepEyeGlobe', { ctx: eyeContext, eyeCx: 250, eyeCy: 270, eyeRx: 120, eyeRy: 90 });
+      traceEye(); traceEye(.8, .7, openingPath);
+      // A complete ellipse returns to its start without requiring closePath.
+      expect(eyeContext.ellipse.mock.calls).toEqual([[250, 270, 120, 90, -.015, 0, Math.PI * 2]]);
+      expect(openingPath.ellipse).toHaveBeenCalledTimes(1);
+      const openingEllipse = openingPath.ellipse.mock.calls[0];
+      expect(openingEllipse.slice(0, 3)).toEqual([250, 270, 96]);
+      expect(openingEllipse[3]).toBeCloseTo(63, 10);
+      expect(openingEllipse.slice(4)).toEqual([-.015, 0, Math.PI * 2]);
+      expect(eyeContext.beginPath).toHaveBeenCalledTimes(1);
+      expect(source.includes('traceSheepEyeGlobe(1, 1, path)'), 'the exposed eye opening uses the same globe contour').toBe(true);
       expect(source).toContain('Tapetum lucidum occupies the dorsal posterior fundus in sheep');
       expect(source).toContain('Corneal dome and anterior chamber form a true bulge');
       expect(source).toContain('The iris is shown as two pigmented leaflets');
@@ -1348,7 +1416,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       });
       expect(eyeRenderer).not.toContain('Fovea centralis');
       expect(eyeRenderer).not.toContain('Macula lutea region');
-      expect(source).toContain('function traceSheepHeartBody()');
+      const heartTrace = contractFunction(source, 'traceSheepHeartBody').toString();
+      expect(heartTrace).toMatch(/traceContext\s*=\s*traceContext\s*\|\|\s*ctx/); expect(heartTrace).toContain('bezierCurveTo'); expect(heartTrace).toContain('closePath()');
+      expect(source.includes('registerAnatomyOpening(traceSheepHeartBody)'), 'cutaway and outer body share the registered heart silhouette').toBe(true);
       expect(source).toContain('var heartMotionActive = livingFunctionEnabled && !dissMotionReduced;');
       expect(source).toContain('var heartScale = heartMotionActive ? 1 + livingWave * 0.018 : 1;');
       expect(source).toContain('Atrial auricles break the silhouette at the base');
@@ -1376,7 +1446,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('Layered muscle masses replace generic animated stripes.');
       expect(source).toContain('Organs are drawn posterior-to-anterior so overlap conveys their position in the coelom.');
       expect(source).toContain('Three-chambered heart: paired atria over one muscular ventricle and conus.');
-      expect(source).toContain('J-shaped stomach with a duodenal turn.');
+      const gastric = contractFunction(source, 'frogGastricGeometry')(500, 600);
+      expect(gastric.stomach.curves.at(-1)[2]).toEqual(gastric.stomach.start); expect(gastric.duodenum.curves.length).toBeGreaterThan(0);
+      expect(source.includes('drawFrogGastricComplex(ctx, {'), 'gastric body and duodenal turn use the connected complex').toBe(true);
       expect(source).toContain('Bilobed urinary bladder and shared cloacal outlet.');
       expect(source).toContain("{ id: 'tympanum', name: 'Tympanic Membrane', x: 0.65, y: 0.24");
       expect(source).toContain("{ id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.24, y: 0.69");
@@ -1403,10 +1475,16 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("{ id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43");
       expect(source).toContain("{ id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53");
       expect(source).toContain('Side-lying visceral cavity with thoracic and abdominal organs registered to the torso.');
-      expect(source).toContain('function drawPigLungLobe(x, y, rx, ry, rotation, alpha)');
-      expect(source).toContain('Large fetal thymus extends from the neck into the anterior mediastinum.');
+      const lungTrace = contractFunction(source, 'drawPigLungLobe').toString();
+      expect(lungTrace).toContain('form'); expect(lungTrace).toContain('closePath()');
+      const thymus = contractFunction(source, 'pigThymicGeometry')(500, 600);
+      expect(thymus.region.curves.length).toBeGreaterThan(3); expect(thymus.region.curves.at(-1)[2]).toEqual(thymus.region.start);
+      expect(source.includes('drawPigThymicSurface(ctx, {'), 'connected fetal thymic tissue is rendered by its shared contour').toBe(true);
       expect(source).toContain('The diaphragm forms a curved muscular boundary between thorax and abdomen.');
-      expect(source).toContain('Five liver lobes overlap near the cranial abdomen.');
+      const lobeStart = source.indexOf('var pigLiverLobes = ['), lobeEnd = source.indexOf('];', lobeStart);
+      expect(lobeStart).toBeGreaterThan(0); expect(lobeEnd).toBeGreaterThan(lobeStart);
+      const visibleLobes = new Function(source.slice(lobeStart, lobeEnd + 2) + ';return pigLiverLobes;')();
+      expect(visibleLobes).toHaveLength(5); expect(visibleLobes.every(lobe => lobe.length === 5 && lobe[2] > 0 && lobe[3] > 0)).toBe(true);
       expect(source).toContain('porcine spiral colon forms a watch-spring coil.');
       expect(source).toContain('Urinary bladder and urachus connect directly toward the umbilical stump.');
       expect(source).toContain('Umbilical vein courses to the liver; paired arteries return alongside the bladder.');
@@ -4291,9 +4369,18 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("spec.bodyShape === 'fish' ? 20");
       expect(source).toContain("spec.bodyShape === 'crayfish' ? 12");
       expect(source).toContain("spec.bodyShape === 'frog' ? 8 : 3");
-      expect(source).toContain("var horizontalAxis = spec.bodyShape === 'pig' || spec.bodyShape === 'fish' || spec.bodyShape === 'crayfish' || spec.bodyShape === 'eye'");
-      expect(source).toContain("var axisStart = cardiacAxis ? 'BASE' : 'A'");
-      expect(source).toContain("var axisEnd = cardiacAxis ? 'APEX' : 'P'");
+      for (const [shape, axis, start, end] of [
+        ['frog', 'vertical', 'ANTERIOR', 'POSTERIOR'], ['worm', 'vertical', 'ANTERIOR', 'POSTERIOR'],
+        ['pig', 'horizontal', 'CRANIAL', 'CAUDAL'], ['fish', 'horizontal', 'ANTERIOR', 'POSTERIOR'],
+        ['crayfish', 'horizontal', 'ANTERIOR', 'POSTERIOR'], ['eye', 'horizontal', 'CORNEA', 'OPTIC NERVE'], ['heart', 'vertical', 'BASE', 'APEX'],
+      ]) for (const view of ['dorsal', 'ventral']) {
+        const orientation = contractFunction(source, 'anatomicalOrientationData', { spec: { bodyShape: shape }, d: { anatomicalView: view },
+          procedureProtocol: { recommendedView: 'ventral' } })();
+        expect(orientation).toMatchObject({ axis, start, end, mirrored: axis === 'horizontal' && view === 'ventral', aligned: view === 'ventral' });
+      }
+      expect(source.includes('var scaleOrientation = anatomicalOrientationData();'), 'scale and compass use the same anatomical axis').toBe(true);
+      expect(source.includes('scaleFirstLandmark = horizontalAxis && scaleOrientation.mirrored ? scaleOrientation.end : scaleOrientation.start'),
+        'mirrored horizontal specimens reverse the scale endpoints').toBe(true);
       expect(source).toContain("(scaleCm / specimenSpanCm) * W * zoom");
       expect(source).toContain("var scaleLabel = scaleCm + ' cm  /  ' + zoom.toFixed(1) + 'x'");
       expect(source).not.toContain("ctx.fillText('Anterior', W / 2 - 20, 14)");
@@ -4865,7 +4952,16 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     const describedIds = directoryDocument.querySelector('[aria-controls="diss-directory-results"]').getAttribute('aria-describedby').split(/\s+/);
     expect(describedIds).toEqual(['diss-directory-count', 'diss-directory-keyboard-help']);
     for (const id of describedIds) expect(directoryDocument.getElementById(id)?.textContent.trim()).toBeTruthy();
-    expect(html).toContain('2 matching structures in Organs');
+    const dataSource = readFileSync(DISSECTION_PATHS[0], 'utf8'), specimens = contractSpecimens(dataSource);
+    const normalizeSearch = contractFunction(dataSource, 'normalizeDissectionSearch');
+    const searchMatches = contractFunction(dataSource, 'matchesStructureSearch', { normalizeDissectionSearch: normalizeSearch,
+      organSearchTokens: normalizeSearch('kidney').split(/\s+/).filter(Boolean) });
+    const expectedNames = specimens.frog.organs.organs.filter(searchMatches).map(organ => organ.name);
+    expect(expectedNames).toContain('Kidneys');
+    const results = directoryDocument.querySelector('#diss-directory-results');
+    expect([...results.querySelectorAll('.diss-directory-item__name')].map(node => node.textContent.trim())).toEqual(expectedNames);
+    expect(directoryDocument.getElementById('diss-directory-count').textContent).toContain(expectedNames.length + ' matching '
+      + (expectedNames.length === 1 ? 'structure' : 'structures') + ' in Organs');
     expect(html).toContain('aria-atomic="true"');
   });
 

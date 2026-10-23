@@ -15,7 +15,8 @@ async function observePigGastricPaint(canvas, anchor = { x: .562, y: .503 }) {
       const stack = new Error().stack || '';
       if (!matrix && stack.includes('tracePigBody')) matrix = this.getTransform();
       owner = stack.includes('tracePigCoelom') ? 'cavity' : stack.includes('tracePigGastricRegion') && stack.includes('drawPigGastricComplex') ? 'gastric'
-        : stack.includes('tracePigPancreas') ? 'pancreas' : null;
+        : stack.includes('tracePigPancreaticRegion') ? 'pancreas'
+        : stack.includes('tracePigSplenicRegion') ? 'spleen' : null;
       starts = []; curves = []; closed = false;
       recordedPath = new Path2D(); pathMatrix = this.getTransform(); rectangles = 0;
       return originals.beginPath.call(this);
@@ -75,7 +76,7 @@ async function observePigGastricPaint(canvas, anchor = { x: .562, y: .503 }) {
         }
         if (owner === 'umbilical' && String(this.strokeStyle) === '#a855f7') overpaints.push({ owner, paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
         if (owner === 'pancreas') overpaints.push({ owner, paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
-        if (curves.length === 3 && (new Error().stack || '').includes('drawEntericBowel')) overpaints.push({ owner: 'jejunum', paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
+        if ((new Error().stack || '').includes('drawEntericBowel')) overpaints.push({ owner: 'jejunum', paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
       }
       return originals.stroke.apply(this, args);
     };

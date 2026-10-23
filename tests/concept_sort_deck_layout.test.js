@@ -9,7 +9,7 @@
 //      way. A collapse toggle hides the CARD ROW only: the heading, the
 //      remaining count and the drop target all survive, so a collapsed deck
 //      still tells you how much is left and still accepts a dropped card.
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -111,11 +111,65 @@ describe('Concept Sort unsorted deck', () => {
     expect(deck.hasAttribute('hidden')).toBe(false);
   });
 
+  it('keeps collapsed cards hidden when the app flex utility overrides the hidden attribute', () => {
+    // Author CSS takes precedence over the browser's default [hidden] rule.
+    // Checking only the attribute missed a visible, focusable collapsed deck.
+    const style = document.createElement('style');
+    style.textContent = '.flex { display: flex; }';
+    document.head.appendChild(style);
+    try {
+      const host = mount();
+      const row = host.querySelector('#concept-sort-deck-cards');
+      expect(window.getComputedStyle(row).display).toBe('flex');
+      click(toggleOf(host));
+      expect(window.getComputedStyle(row).display).toBe('none');
+      click(toggleOf(host));
+      expect(window.getComputedStyle(row).display).toBe('flex');
+    } finally {
+      style.remove();
+    }
+  });
+
   it('expanding restores the cards', () => {
     const host = mount();
     click(toggleOf(host));
     click(toggleOf(host));
     expect(host.querySelector('#concept-sort-deck-cards').hasAttribute('hidden')).toBe(false);
     expect(toggleOf(host).getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('retains meaningful focus through placement, feedback and retry so Escape stays in the game', () => {
+    const onClose = vi.fn();
+    const host = mount({
+      onClose,
+      data: { categories: DATA.categories, items: DATA.items.slice(0, 2) },
+    });
+    const card = id => host.querySelector(`[data-concept-sort-item-id="${id}"]`);
+    const place = (id, bucketIndex) => {
+      card(id).focus();
+      act(() => card(id).dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+      const move = host.querySelectorAll('[data-move-here]')[bucketIndex];
+      move.focus();
+      click(move);
+      expect(document.activeElement).toBe(card(id));
+    };
+    // i0 belongs in c1; make one deliberate mistake before practicing again.
+    place('i0', 1);
+    place('i1', 1);
+    const check = host.querySelector('[data-help-key="concept_sort_check_answers"]');
+    check.focus();
+    click(check);
+    const retry = host.querySelector('[data-help-key="concept_sort_retry_incorrect"]');
+    expect(document.activeElement).toBe(retry);
+    click(retry);
+    expect(document.activeElement).toBe(card('i0'));
+    place('i0', 0);
+    check.focus();
+    click(check);
+    expect(document.activeElement).toBe(host.querySelector('[role="region"] h3'));
+    const escape = new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    act(() => document.activeElement.dispatchEvent(escape));
+    expect(escape.defaultPrevented).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

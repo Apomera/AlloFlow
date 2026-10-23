@@ -54727,6 +54727,15 @@
       "sr_critique_ready": "평이 준비되었습니다."
     },
     "flightsim": {
+      "guided_inspect_angle": "받음각 비교 살펴보기",
+      "guided_inspect_speed": "대기속도 비교 살펴보기",
+      "guided_export_scope": "내보내기에는 현재 초안과 이전 시도가 포함됩니다. 내보내기로 탐구가 완료되지는 않습니다.",
+      "hint_t_stall_negative": "🚨 실속! 받음각이 음수입니다. 가운데에서 위로 부드럽게 드래그하여 0에 가까워지게 하세요. 필요에 따라 오른쪽 가장자리로 출력을 조절하세요.",
+      "hint_k_stall_negative": "🚨 실속! 받음각이 음수입니다. W를 부드럽게 눌러 0에 가까워지게 하세요. 필요에 따라 Shift로 출력을 높이세요.",
+      "hint_stall_direction_unknown": "🚨 실속! 받음각을 0에 가까워지게 하세요. 현재 방향을 알 수 없습니다. 기수의 상하 조작을 선택하기 전에 AoA 표시값을 살펴보세요.",
+      "announce_stall_warning_negative": "실속 경고! 받음각이 음수입니다. 기수를 부드럽게 올려 0에 가까워지게 하세요. 필요에 따라 출력을 높이세요.",
+      "announce_stall_warning_unknown": "실속 경고! 받음각을 0에 가까워지게 하세요. 현재 방향을 알 수 없습니다. 기수의 상하 조작을 선택하기 전에 AoA 표시값을 확인하세요.",
+      "hud_stall_warning": "⚠️ 실속 — 받음각을 0에 가깝게",
       "debrief_unavailable_title": "저장된 비행 복기를 불러올 수 없음",
       "debrief_unavailable_body": "가장 최근 비행 복기가 없거나 읽을 수 없습니다. 메뉴로 돌아가 새 비행을 시작하세요.",
       "guided_idea_before_trials": "실험 전에 기록됨",

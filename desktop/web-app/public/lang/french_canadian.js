@@ -58289,6 +58289,15 @@
       "sr_critique_ready": "Critique prête."
     },
     "flightsim": {
+      "guided_inspect_angle": "Examiner la comparaison des angles",
+      "guided_inspect_speed": "Examiner la comparaison des vitesses",
+      "guided_export_scope": "L’exportation comprend votre brouillon actuel et les essais précédents. L’exportation ne termine pas l’investigation.",
+      "hint_t_stall_negative": "🚨 DÉCROCHAGE ! L’angle d’attaque est négatif : glissez doucement vers le HAUT à partir du centre pour le rapprocher de zéro. Utilisez le bord droit pour la puissance au besoin.",
+      "hint_k_stall_negative": "🚨 DÉCROCHAGE ! L’angle d’attaque est négatif : appuyez doucement sur W pour le rapprocher de zéro. Ajoutez de la puissance avec Shift au besoin.",
+      "hint_stall_direction_unknown": "🚨 DÉCROCHAGE ! Rapprochez l’angle d’attaque de zéro. Son sens n’est pas disponible ; consultez l’indicateur AoA avant de choisir une commande de tangage.",
+      "announce_stall_warning_negative": "Avertissement de décrochage ! L’angle d’attaque est négatif. Relevez doucement le nez pour le rapprocher de zéro ; ajoutez de la puissance au besoin.",
+      "announce_stall_warning_unknown": "Avertissement de décrochage ! Rapprochez l’angle d’attaque de zéro. Son sens n’est pas disponible ; consultez l’indicateur AoA avant de choisir une commande de tangage.",
+      "hud_stall_warning": "⚠️ DÉCROCHAGE — RAMENEZ AoA VERS ZÉRO",
       "debrief_unavailable_title": "Bilan de vol enregistré non disponible",
       "debrief_unavailable_body": "Le dernier bilan de vol est absent ou illisible. Retournez au menu pour commencer un nouveau vol.",
       "guided_idea_before_trials": "Notée avant les essais",

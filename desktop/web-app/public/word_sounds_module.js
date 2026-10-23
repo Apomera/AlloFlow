@@ -8987,8 +8987,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           if (!englishPhonemeAudio && isPhoneme) {
             const asset = WS_CORE.packAudioAssets(preloadedWords)[WS_CORE.packAudioKey(text)];
             const profile = WS_CORE.packAudioProfileStatus(asset, voiceForTts, wordSoundsLanguage);
-            const portable = profile.present || typeof asset === "string" && /^data:audio\//i.test(asset);
-            const nativeSource = portable && !profile.languageMismatch ? portableTtsSrcFor(text) : null;
+            const nativeSource = profile.present && !profile.unknownLanguage && !profile.languageMismatch ? portableTtsSrcFor(text) : null;
             if (nativeSource) return loadAndPlay(nativeSource, { prepared: true });
             // Unscoped caches, English bank aliases, and letter TTS cannot
             // establish pronunciation of an isolated sound in this language.

@@ -101,7 +101,7 @@ describe('accessible current-flight assistance', () => {
     await act(async () => { cockpit().focus(); key('keydown', 'ArrowUp'); }); await frame(); key('keyup', 'ArrowUp');
     expect(hold().getAttribute('aria-pressed')).toBe('false');
     await click(hold());
-    vi.spyOn(cockpit(), 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 1000, height: 600 });
+    vi.spyOn(cockpit(), 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 1000, height: 600, right: 1000, bottom: 600 });
     await act(async () => {
       for (const [type, y] of [['touchstart', 300], ['touchmove', 260]]) {
         const point = { identifier: 1, clientX: 300, clientY: y };

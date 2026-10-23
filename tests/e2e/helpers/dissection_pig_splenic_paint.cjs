@@ -2,7 +2,7 @@ async function observePigSplenicPaint(canvas, anchor = { x: .517, y: .506 }) {
   return canvas.evaluate((node, anchor) => {
     const ctx = node.getContext('2d'), originals = {};
     for (const name of ['beginPath', 'moveTo', 'bezierCurveTo', 'closePath', 'fill', 'stroke', 'clip', 'arc']) originals[name] = ctx[name];
-    const candidates = [{ id: 'stomach_p', x: .562, y: .503 }, { id: 'pancreas_p', x: .610, y: .536 }];
+    const candidates = [{ id: 'stomach_p', x: .562, y: .503 }, { id: 'pancreas_p', x: .63175, y: .533 }];
     let matrix = null, owner = null, cubics = 0, closed = false, reticle = null, cavityContainsTarget = false;
     const regions = [], clips = [], overpaints = [], ownPaint = new Set(), covered = new Set();
     const near = (a, b) => Math.abs(a - b) < .00001;
@@ -14,7 +14,7 @@ async function observePigSplenicPaint(canvas, anchor = { x: .517, y: .506 }) {
       if (!matrix && stack.includes('tracePigBody')) matrix = this.getTransform();
       owner = stack.includes('tracePigSplenicRegion') ? 'spleen_p'
         : stack.includes('tracePigGastricRegion') ? 'stomach_p'
-        : stack.includes('tracePigPancreas') ? 'pancreas_p'
+        : stack.includes('tracePigPancreaticRegion') ? 'pancreas_p'
         : stack.includes('tracePigCoelom') ? 'cavity' : null;
       cubics = 0; closed = false; return originals.beginPath.call(this);
     };

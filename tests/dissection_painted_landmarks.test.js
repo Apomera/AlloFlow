@@ -2,14 +2,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync('stem_lab/stem_tool_dissection.js', 'utf8');
+const productionBodies = new Map();
 function loadProductionFunction(name, bindings = {}) {
-  const matches = [...source.matchAll(new RegExp('^([ \\t]*)function ' + name + '\\(', 'gm'))];
-  if (matches.length !== 1) throw Error('Expected one production function: ' + name);
-  const match = matches[0], start = match.index + match[1].length;
-  const ending = '\n' + match[1] + '}';
-  const end = source.indexOf(ending, start);
-  if (end < start) throw Error('Missing function ending: ' + name);
-  return new Function(...Object.keys(bindings), '"use strict"; return (' + source.slice(start, end + ending.length) + ');')(...Object.values(bindings));
+  let body = productionBodies.get(name);
+  if (!body) {
+    const matches = [...source.matchAll(new RegExp('^([ \\t]*)function ' + name + '\\(', 'gm'))];
+    if (matches.length !== 1) throw Error('Expected one production function: ' + name);
+    const match = matches[0], start = match.index + match[1].length;
+    const ending = '\n' + match[1] + '}';
+    const end = source.indexOf(ending, start);
+    if (end < start) throw Error('Missing function ending: ' + name);
+    body = source.slice(start, end + ending.length);
+    productionBodies.set(name, body);
+  }
+  return new Function(...Object.keys(bindings), '"use strict"; return (' + body + ');')(...Object.values(bindings));
 }
 
 const targets = [
@@ -20,18 +26,28 @@ const targets = [
   { shape: 'eye', id: 'tapetum', region: [.65, .69, .28, .32] },
   { shape: 'eye', id: 'lens', region: [.38, .41, .44, .46] },
   { shape: 'eye', id: 'choroid', region: [.70, .73, .55, .58] },
+  { shape: 'eye', id: 'retina', region: [.704, .724, .539, .556] },
   { shape: 'frog', id: 'liver', region: [.48, .52, .45, .49] },
+  { shape: 'frog', id: 'brain', region: [.49, .51, .16, .18] },
+  { shape: 'frog', id: 'optic_lobe', region: [.512, .532, .16, .18] },
+  { shape: 'frog', id: 'spinal_cord', region: [.492, .508, .432, .448] },
+  { shape: 'frog', id: 'cranial_n', region: [.558, .575, .162, .178] },
+  { shape: 'frog', id: 'sciatic_n', region: [.303, .32, .669, .686] },
+  { shape: 'frog', id: 'brachial_n', region: [.364, .38, .376, .392] },
   { shape: 'frog', id: 'stomach', region: [.42, .46, .51, .55] },
   { shape: 'frog', id: 'fat_bodies', region: [.575, .587, .500, .516] },
   { shape: 'frog', id: 'sm_intestine', region: [.463, .479, .601, .618] },
   { shape: 'frog', id: 'pancreas', region: [.52, .54, .53, .55] },
   { shape: 'frog', id: 'spleen', region: [.400, .416, .557, .573] },
+  { shape: 'frog', id: 'kidneys', region: [.537, .549, .631, .643] },
   { shape: 'pig', id: 'heart_p', region: [.424, .440, .442, .458] },
   { shape: 'pig', id: 'liver_p', region: [.51, .54, .44, .47] },
   { shape: 'pig', id: 'stomach_p', region: [.54, .58, .49, .52] },
   { shape: 'pig', id: 'spleen_p', region: [.509, .525, .498, .514] },
   { shape: 'pig', id: 'lungs_p', region: [.378, .392, .417, .433] },
-  { shape: 'pig', id: 'pancreas_p', region: [.60, .62, .528, .544] },
+  { shape: 'pig', id: 'kidneys_p', region: [.645, .661, .382, .398] },
+  { shape: 'pig', id: 'thymus_p', region: [.362, .373, .365, .377] },
+  { shape: 'pig', id: 'pancreas_p', region: [.625, .639, .525, .541] },
   { shape: 'pig', id: 'sm_int_p', region: [.552, .567, .533, .548] },
   { shape: 'fish', id: 'liver_f', region: [.37, .40, .46, .49] },
   { shape: 'fish', id: 'heart_f', region: [.325, .335, .500, .510] },
@@ -40,6 +56,9 @@ const targets = [
   { shape: 'fish', id: 'pyloric_ceca', region: [.527, .535, .536, .544] },
   { shape: 'fish', id: 'swim_bladder', region: [.505, .525, .397, .417] },
   { shape: 'fish', id: 'gonads_f', region: [.585, .605, .461, .481] },
+  { shape: 'worm', id: 'cerebral_g', region: [.523, .535, .112, .125] },
+  { shape: 'worm', id: 'ventral_cord', region: [.449, .466, .548, .564] },
+  { shape: 'worm', id: 'segmental_g', region: [.474, .490, .422, .437] },
   { shape: 'worm', id: 'pharynx', region: [.52, .535, .145, .155] },
   { shape: 'worm', id: 'crop', region: [.51, .53, .30, .32] },
   { shape: 'worm', id: 'gizzard', region: [.505, .525, .34, .36] },
@@ -58,22 +77,47 @@ function painted(shape, query = () => ({ _logicalW: 500, _logicalH: 600 })) {
   const frame = loadProductionFunction('earthwormAnatomyFrame', { earthwormCenterlinePoint: centerline });
   const nephridia = loadProductionFunction('earthwormNephridialGeometry', { earthwormAnatomyFrame: frame });
   const aortic = loadProductionFunction('earthwormAorticGeometry', { earthwormAnatomyFrame: frame });
+  const wormNeural = loadProductionFunction('earthwormNeuralGeometry', { earthwormAnatomyFrame: frame });
   const cardiac = loadProductionFunction('perchCardiacGeometry');
   const renal = loadProductionFunction('perchRenalGeometry');
   const caecal = loadProductionFunction('perchCaecalGeometry');
+  const gastric = loadProductionFunction('perchGastricGeometry', { perchCaecalGeometry: caecal });
+  const antennal = loadProductionFunction('crayfishAntennalGeometry');
+  const crayDigestive = loadProductionFunction('crayfishHepatopancreaticGeometry');
   const pigCardiac = loadProductionFunction('pigCardiacGeometry');
+  const frogNeural = loadProductionFunction('frogNeuralGeometry');
   const frogGastric = loadProductionFunction('frogGastricGeometry');
+  const frogPancreatic = loadProductionFunction('frogPancreaticGeometry');
+  const frogSplenic = loadProductionFunction('frogSplenicGeometry');
+  const frogRenal = loadProductionFunction('frogRenalGeometry');
   const pigGastric = loadProductionFunction('pigGastricGeometry');
   const pigSplenic = loadProductionFunction('pigSplenicGeometry');
+  const pigPancreatic = loadProductionFunction('pigPancreaticGeometry');
+  const pigThymic = loadProductionFunction('pigThymicGeometry');
+  const pigRenal = loadProductionFunction('pigRenalGeometry');
+  const sheepRetinal = loadProductionFunction('sheepRetinalGeometry');
+  const sheepSemilunar = loadProductionFunction('sheepSemilunarGeometry');
   return loadProductionFunction('paintedSmallStructurePoint', {
     spec: { bodyShape: shape }, queryDissectionNode: query,
     earthwormCenterlinePoint: centerline, earthwormAnatomyFrame: frame, earthwormNephridialGeometry: nephridia,
     earthwormAorticGeometry: aortic,
-    perchCardiacGeometry: cardiac, perchRenalGeometry: renal, perchCaecalGeometry: caecal,
+    earthwormNeuralGeometry: wormNeural,
+    perchCardiacGeometry: cardiac, perchRenalGeometry: renal, perchCaecalGeometry: caecal, perchGastricGeometry: gastric,
+    crayfishAntennalGeometry: antennal,
+    crayfishHepatopancreaticGeometry: crayDigestive,
     pigCardiacGeometry: pigCardiac,
+    frogNeuralGeometry: frogNeural,
     frogGastricGeometry: frogGastric,
+    frogPancreaticGeometry: frogPancreatic,
+    frogSplenicGeometry: frogSplenic,
+    frogRenalGeometry: frogRenal,
     pigGastricGeometry: pigGastric,
     pigSplenicGeometry: pigSplenic,
+    pigPancreaticGeometry: pigPancreatic,
+    pigThymicGeometry: pigThymic,
+    pigRenalGeometry: pigRenal,
+    sheepRetinalGeometry: sheepRetinal,
+    sheepSemilunarGeometry: sheepSemilunar,
   });
 }
 
@@ -97,16 +141,23 @@ describe('small painted anatomical landmarks', () => {
       Object.assign(canvas, { width: 1500, height: 1800, clientWidth: 320, clientHeight: 384, _dpr: 3 });
       expect(targetPoint({ id: target.id })).toEqual(original);
       Object.assign(canvas, { _logicalW: 1000, _logicalH: 1200 });
-      expect(targetPoint({ id: target.id })).toEqual(original);
+      const resized = targetPoint({ id: target.id });
+      if (target.shape === 'heart' && ['aortic_v', 'pulm_v'].includes(target.id)) {
+        // The same .25 logical-pixel inset from the physical arc occupies half
+        // the normalized margin when both logical dimensions double.
+        expect(resized.x).toBeCloseTo(original.x, 12);
+        expect(resized.y).toBeCloseTo(original.y + .25 / 1200, 12);
+      } else expect(resized).toEqual(original);
       Object.assign(canvas, { _logicalW: 500, _logicalH: 600 });
     }
     expect(query.mock.calls.every(([selector]) => selector === '[data-diss-canvas]')).toBe(true);
   });
 
   it('uses the default logical anatomy before a canvas is available', () => {
-    const missingQuery = loadProductionFunction('paintedSmallStructurePoint', { spec: { bodyShape: 'eye' } });
+    const missingQuery = loadProductionFunction('paintedSmallStructurePoint', { spec: { bodyShape: 'eye' },
+      sheepRetinalGeometry: loadProductionFunction('sheepRetinalGeometry') });
     const nullCanvas = painted('eye', () => null);
-    for (const id of ['ciliary_body', 'tapetum', 'lens', 'choroid']) {
+    for (const id of ['ciliary_body', 'tapetum', 'lens', 'choroid', 'retina']) {
       expect(missingQuery({ id })).toEqual(painted('eye')({ id }));
       expect(nullCanvas({ id })).toEqual(painted('eye')({ id }));
     }
@@ -142,7 +193,7 @@ describe('small painted anatomical landmarks', () => {
   });
 
   it.each([
-    ['heart', 'lens'], ['eye', 'aortic_v'], ['eye', 'retina'], ['frog', 'heart'], ['pig', 'brain_p'],
+    ['heart', 'lens'], ['eye', 'aortic_v'], ['eye', 'aqueous'], ['frog', 'heart'], ['pig', 'brain_p'],
   ])('leaves unrelated %s/%s anatomy in the normal model', (shape, id) => {
     const query = vi.fn(() => { throw Error('Unrelated organs must not query eye geometry'); });
     expect(painted(shape, query)({ id })).toBeNull();
@@ -198,7 +249,7 @@ describe('painted landmarks in the normal interaction pipeline', () => {
   });
 
   it.each([['guided', .007], ['realistic', .016], ['accessible', 0]])('retains %s variation and view transformation for other organs', (mode, amplitude) => {
-    const organ = { id: 'kidneys', x: .54, y: .46 };
+    const organ = { id: 'lungs', x: .54, y: .46 };
     const transform = vi.fn((_organ, point) => ({ ...point, transformed: true }));
     const variation = vi.fn(salt => salt.endsWith('|x') ? 1 : 0);
     const point = loadProductionFunction('variedOrganPoint', {
@@ -208,7 +259,7 @@ describe('painted landmarks in the normal interaction pipeline', () => {
     const result = point(organ);
     expect(transform).toHaveBeenCalledExactlyOnceWith(organ, { x: organ.x + amplitude, y: organ.y - amplitude });
     expect(result).toEqual({ x: organ.x + amplitude, y: organ.y - amplitude, transformed: true });
-    expect(variation).toHaveBeenCalledWith('kidneys|x'); expect(variation).toHaveBeenCalledWith('kidneys|y');
+    expect(variation).toHaveBeenCalledWith('lungs|x'); expect(variation).toHaveBeenCalledWith('lungs|y');
   });
 
   it.each(targets)('resolves the painted $id point to that structure for pointer inspection', ({ shape, id }) => {

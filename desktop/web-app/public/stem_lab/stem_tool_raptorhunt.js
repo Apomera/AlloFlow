@@ -407,7 +407,20 @@
 .rh-journal-reflection summary{cursor:pointer;font-size:16px;font-weight:700;min-height:44px;line-height:44px;color:#e5f0ed;}
 .rh-study-header,.rh-study-panel{display:none;}
 [data-raptor-flight-stage][data-raptor-study=true]{height:76vh;min-height:620px;max-height:860px;}
-[data-raptor-study=true]>:not(canvas):not(.rh-study-header):not(.rh-study-panel):not(.rh-study-focus-frame){display:none!important;}
+[data-raptor-study=true]>:not(canvas):not(.rh-study-header):not(.rh-study-panel):not(.rh-study-focus-frame):not(.rh-study-parts){display:none!important;}
+.rh-study-parts{position:absolute;inset:0;z-index:23;pointer-events:none;overflow:hidden;}
+.rh-study-parts[hidden],.rh-study-part-callout[hidden]{display:none!important;}
+.rh-study-parts svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.rh-study-parts line{stroke:#bceee0;stroke-width:1.5;vector-effect:non-scaling-stroke;}
+.rh-study-parts circle{fill:#d3f7e6;stroke:#123d43;stroke-width:2;vector-effect:non-scaling-stroke;}
+.rh-study-part-callout{position:absolute;display:flex;align-items:center;gap:6px;min-height:44px;padding:7px 10px;border:1px solid #a6cbbf;border-radius:10px;background:#153940f5;color:#eef8e8;font:650 12px/1.2 ui-sans-serif,system-ui;box-shadow:0 3px 14px #07182055;pointer-events:auto;white-space:nowrap;}
+.rh-study-part-callout span{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#d4e4c0;color:#244338;font:750 11px/1 ui-monospace,monospace;}
+.rh-study-part-callout:hover{background:#27534f;border-color:#e8f3ce;}
+.rh-study-part-callout:focus-visible{outline:3px solid #f1d49a;outline-offset:3px;}
+.rh-study-explore{display:flex;align-items:center;gap:9px;min-height:44px;margin-top:8px;cursor:pointer;color:#e7f2de;font-weight:650;}
+.rh-study-explore input{width:18px;height:18px;accent-color:#b9dab8;flex:0 0 auto;}
+.rh-study-explore:has(input:disabled){opacity:.65;cursor:default;}
+@media(forced-colors:active){.rh-study-part-callout{background:ButtonFace;color:ButtonText;border-color:ButtonText;}.rh-study-part-callout span{background:Highlight;color:HighlightText;}.rh-study-parts line,.rh-study-parts circle{stroke:CanvasText;}.rh-study-parts circle{fill:Canvas;}}
 .rh-study-focus-frame{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:22;pointer-events:none;overflow:hidden;}
 .rh-study-focus-frame path{fill:none;stroke:#f4dc9c;stroke-width:2;vector-effect:non-scaling-stroke;}
 .rh-study-focus-frame path:first-child{stroke:#183d40;stroke-width:5;}
@@ -442,6 +455,7 @@
 .rh-study-zoom{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin:10px 0;font-weight:650;}
 .rh-study-zoom input{width:100%;min-width:0;min-height:30px;accent-color:#bfe1ce;}
 .rh-study-resume{display:block;width:100%;background:#ebd39a;color:#23352d;border-color:#ebd39a;}
+.rh-study-fine{margin:10px 0;border:1px solid #789996;border-radius:9px;background:#102b36}.rh-study-fine summary{min-height:44px;padding:12px;cursor:pointer;font-weight:700;color:#f4dfb0}.rh-study-fine summary:focus-visible{outline:3px solid #f1d49a;outline-offset:2px}.rh-study-fine-body{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:center;padding:0 10px}.rh-study-fine svg{width:110px;height:auto;display:block}.rh-study-fine svg text{display:inline!important;fill:#e7f5ec;font:650 13px ui-sans-serif,system-ui}.rh-study-angle{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 5px;font-size:11px;color:#e7f5ec}.rh-study-angle output{color:#f6d68d;font-variant-numeric:tabular-nums}.rh-study-angle input{grid-column:1/-1;min-width:0;width:100%;min-height:44px;accent-color:#f6d68d}.rh-study-fine .rh-study-help{padding:0 10px}.rh-study-panel:has(.rh-study-fine[open]){max-height:calc(100% - 280px);overflow:auto;overscroll-behavior:contain;box-sizing:border-box}.rh-study-fine svg{forced-color-adjust:none}
 .rh-study-panel .rh-study-help{font-size:11px;color:#b9cccf;}
 .rh-study-save-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
 .rh-study-save-actions button{min-height:44px;padding:8px 12px;border:1px solid #8daaa7;border-radius:8px;background:#244b4b;color:#edf8f0;font:650 12px/1.3 ui-sans-serif,system-ui;}
@@ -10016,6 +10030,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
   // Exact visual-angle geometry paired with a fixed-field perspective display.
   // No species threshold, retinal simulation, or display calibration is implied.
+  function loadDistanceCompanion(file, key, check) {
+    if (check()) return Promise.resolve();
+    if (!window.StemLab || typeof window.StemLab.loadScriptResilient !== 'function') return Promise.reject(new Error('The observation loader is unavailable.'));
+    return window.StemLab.loadScriptResilient([new URL(file, RAPTOR_MODULE_BASE).href], {
+      cacheKey: key, check: check, timeoutMs: 8000, failMessage: 'The distance investigation could not load.'
+    });
+  }
+  function loadDistanceResources() {
+    return Promise.all([
+      window.THREE && String(window.THREE.REVISION) === '128' ? Promise.resolve() : window.StemLab.ensureThree({ orbit: false }),
+      loadDistanceCompanion('avian_woodland_birds.js', 'distance-woodland-v1', function () { var birds = window.AvianWoodlandBirds; return !!(birds && birds.version === '1.0.0' && typeof birds.create === 'function' && typeof birds.supports === 'function' && birds.supports('mourningDove')); }),
+      loadDistanceCompanion('stem_sim_assets.js', 'stem-sim-assets-v1', function () { var catalog = window.StemSimAssets; return !!(catalog && catalog.version === '1.0.0' && typeof catalog.available === 'function' && typeof catalog.create === 'function'); }),
+      loadDistanceCompanion('stem_sim_meadow.js', 'distance-meadow-v1', function () { return !!(window.StemMeadow && typeof window.StemMeadow.vegetation === 'function'); }).catch(function () { /* Optional shared scenery: the scene retains its original fallback. */ })
+    ]);
+  }
+  function RaptorDistanceInvitation(props) {
+    var React = props.React, h = React.createElement, opener = React.useRef(null);
+    var openPair = React.useState(false), open = openPair[0], setOpen = openPair[1];
+    var statePair = React.useState('idle'), state = statePair[0], setState = statePair[1];
+    var retryPair = React.useState(0), retry = retryPair[0], setRetry = retryPair[1];
+    React.useEffect(function () {
+      if (!open) return;
+      var cancelled = false; setState('loading');
+      Promise.all([
+        loadDistanceCompanion('raptor_distance_model.js', 'raptor-distance-model-v1', function () { var m = window.RaptorDistanceModel; return !!(m && m.version === 1 && typeof m.normalize === 'function' && typeof m.metrics === 'function' && typeof m.gaussianSigmaPixels === 'function'); }),
+        loadDistanceCompanion('raptor_distance_evidence.js', 'raptor-distance-evidence-v1', function () { var e = window.RaptorDistanceEvidence; return !!(e && e.version === 1 && typeof e.snapshot === 'function' && typeof e.compare === 'function' && typeof e.experiment === 'function' && typeof e.readRecords === 'function' && typeof e.makeRecord === 'function'); }),
+        loadDistanceCompanion('raptor_distance_investigations.js', 'raptor-distance-investigations-v1', function () { var i = window.RaptorDistanceInvestigations; return !!(i && i.version === 1 && typeof i.get === 'function' && typeof i.match === 'function' && typeof i.explain === 'function' && typeof i.check === 'function'); }),
+        loadDistanceCompanion('raptor_distance_fieldwork.js', 'raptor-distance-fieldwork-v1', function () { var f = window.RaptorDistanceFieldwork; return !!(f && f.version === 1 && typeof f.plan === 'function' && typeof f.trial === 'function' && typeof f.summarize === 'function'); }),
+        loadDistanceCompanion('raptor_distance_results.js', 'raptor-distance-results-v1', function () { var r = window.RaptorDistanceResults; return !!(r && r.version === 1 && typeof r.capture === 'function' && typeof r.read === 'function' && typeof r.compare === 'function'); }),
+        loadDistanceCompanion('raptor_distance_match.js', 'raptor-distance-match-v1', function () { var m = window.RaptorDistanceMatch; return !!(m && m.version === 1 && typeof m.plan === 'function' && typeof m.isReference === 'function' && typeof m.compare === 'function'); }),
+        loadDistanceCompanion('raptor_distance_scene.js', 'raptor-distance-scene-v1', function () { return !!(window.RaptorDistanceScene && window.RaptorDistanceScene.version === '1.0.0' && typeof window.RaptorDistanceScene.create === 'function'); }),
+        loadDistanceCompanion('raptor_distance_study.js', 'raptor-distance-study-v1', function () { return !!(window.RaptorDistanceStudy && window.RaptorDistanceStudy.version === '1.0.0' && typeof window.RaptorDistanceStudy.Component === 'function'); })
+      ]).then(function () { if (!cancelled) setState('ready'); }, function () { if (!cancelled) setState('error'); });
+      return function () { cancelled = true; };
+    }, [open, retry]);
+    function close() { setOpen(false); if (opener.current) opener.current.focus(); }
+    return h('div', null,
+      h('section', { style: { marginTop: '20px', padding: '22px', border: '1px solid #849a7c', borderRadius: '14px', background: '#203b32', color: '#e5ecdc' }, 'aria-label': 'Distance detail investigation invitation' },
+        h('h3', { style: { margin: '0 0 8px', color: '#f1ddb1', fontSize: '21px' } }, 'Try a distant-detail investigation'),
+        h('p', { style: { margin: '0 0 14px', fontSize: '13px' } }, 'Compare equally magnified views of one meadow. Predict how distance and stripe spacing change the detail, then keep your observations.'),
+        h('button', { ref: opener, type: 'button', 'data-raptor-distance-launch': 'true', 'aria-expanded': open, onClick: function () { setOpen(!open); },
+          style: { minHeight: '44px', padding: '10px 15px', borderRadius: '9px', border: '1px solid #efdbac', background: '#efdbac', color: '#23372b', fontWeight: 700 } }, open ? 'Close distance investigation' : 'Open distance investigation')),
+      open && state === 'loading' && h('p', { role: 'status' }, 'Loading the distance investigation…'),
+      open && state === 'error' && h('div', { role: 'status' }, 'The distance investigation could not load. ', h('button', { type: 'button', 'data-distance-retry-module': 'true', onClick: function () { setRetry(retry + 1); } }, 'Retry investigation')),
+      open && state === 'ready' && h(window.RaptorDistanceStudy.Component, { React: React, settings: props.settings, onChange: props.onChange, onClose: close, loadResources: loadDistanceResources }));
+  }
   function RaptorVisualAngleStudy(props) {
     var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React = props.React, h = React.createElement;
@@ -10110,7 +10170,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('path', { d: 'M80 150 L560 ' + (150 - rayHeight) + ' L560 ' + (150 + rayHeight) + ' Z', fill: '#e1c580', fillOpacity: .13 }),
             [-1, 1].map(function(side) { return h('line', { key: side, 'data-angle-ray': side, x1: 80, y1: 150, x2: 560, y2: 150 + side * rayHeight, stroke: '#aee2cf', strokeWidth: 2 }); }),
             guides && h('line', { 'data-angle-centerline': 'true', x1: 80, y1: 150, x2: 560, y2: 150, stroke: '#9aaf9f', strokeWidth: 1, strokeDasharray: '5 5' }),
-            h('path', { 'data-angle-arc': 'true', d: arcPath, fill: 'none', stroke: '#f5d8a1', strokeWidth: 4 }),
+            // A global reduced-motion duration can still transition SVG d for
+            // one frame. Keep the measurement arc synchronized with its rays.
+            h('path', { 'data-angle-arc': 'true', d: arcPath, style: { transitionProperty: 'none' }, fill: 'none', stroke: '#f5d8a1', strokeWidth: 4 }),
             h('line', { 'data-angle-span': 'true', x1: 560, x2: 560, y1: 150 - rayHeight, y2: 150 + rayHeight, stroke: '#f2d7a5', strokeWidth: 5 }),
             [-1, 1].map(function(side) { return h('circle', { key: side, cx: 560, cy: 150 + side * rayHeight, r: 3.5, fill: '#f2e4c0' }); }),
             h('circle', { cx: 80, cy: 150, r: 20, fill: '#325546', stroke: '#b9d1bc', strokeWidth: 1.5 }),
@@ -11319,6 +11381,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   }
 
   // One individual can contribute at most one C, L and R in this exercise.
+  function raptorWingDesignGeometry(configuration) {
+    var mass = Number(configuration.mass), span = Number(configuration.wingspan), area = Number(configuration.wingArea);
+    if (![mass,span,area].every(function(value){return Number.isFinite(value)&&value>0;})) return null;
+    // Two adjoining trapezoids; tip chord is one fifth of root chord.
+    // Their combined area is span * (rootChord + tipChord) / 2.
+    var chord = area / (.6 * span), tip = chord * .2;
+    return {mass:mass,span:span,area:area,rootChord:chord,tipChord:tip,loading:mass/area,aspect:span*span/area,
+      left:[[0,-chord/2],[-span/2,-tip/2],[-span/2,tip/2],[0,chord/2]],
+      right:[[0,-chord/2],[span/2,-tip/2],[span/2,tip/2],[0,chord/2]]};
+  }
+  function raptorWingDesignFits(configuration) {
+    return configuration.mass>=.1&&configuration.mass<=10&&configuration.wingspan>=.5&&configuration.wingspan<=3&&configuration.wingArea>=.02&&configuration.wingArea<=1;
+  }
+  function raptorWingDesignEdit(configuration, field, value) {
+    var result = {mass:configuration.mass,wingspan:configuration.wingspan,wingArea:configuration.wingArea};
+    var limits = {mass:[.1,10,.01],wingspan:[.5,3,.01],wingArea:[.02,1,.001]}[field];
+    if (!limits || !Number.isFinite(value)) return result;
+    result[field] = Number(Math.max(limits[0],Math.min(limits[1],Math.round(value/limits[2])*limits[2])).toFixed(6));
+    return result;
+  }
+  function raptorWingDesignExperiment(configuration, kind) {
+    if (!configuration || !raptorWingDesignFits(configuration)) return null;
+    var result = {mass:configuration.mass,wingspan:configuration.wingspan,wingArea:configuration.wingArea};
+    if (kind==='span') result.wingspan = Number((result.wingspan+.25).toFixed(6));
+    else if (kind==='mass') result.mass = Number((result.mass+.5).toFixed(6));
+    else return null;
+    return raptorWingDesignFits(result) ? result : null;
+  }
+  function raptorSeasonalProfile(day,peak){return Math.exp(-Math.pow(day-peak,2)/128);}
+  function RaptorSeasonalTimingStudy(props){
+    var React=props.React,h=React.createElement,dayState=React.useState(0),day=dayState[0],setDay=dayState[1];
+    var modeState=React.useState('day'),mode=modeState[0],setMode=modeState[1],pinState=React.useState(null),pin=pinState[0],setPin=pinState[1];
+    var drag=React.useRef(null),contacts=React.useRef(new Set()),live=React.useRef(null),pinButton=React.useRef(null);
+    live.current={prey:props.prey,demand:props.demand,day:day,mode:mode,onChange:props.onChange};
+    function px(value){return 76+(value+42)*608/84;}
+    function py(value,peak){return 320-240*raptorSeasonalProfile(value,peak);}
+    function curve(peak){var d='';for(var i=-42;i<=42;i++)d+=(i===-42?'M':'L')+px(i)+' '+py(i,peak)+' ';return d;}
+    function finish(restore){var active=drag.current;if(!active)return;drag.current=null;if(restore){live.current.onChange({preyShift:active.start.prey,demandShift:active.start.demand});setDay(active.start.day);}try{active.node.releasePointerCapture(active.id);}catch(ignore){}}
+    React.useEffect(function(){
+      function down(event){contacts.current.add(event.pointerId);if(contacts.current.size>1)finish(true);}
+      function up(event){contacts.current.delete(event.pointerId);var active=drag.current;if(active&&active.id===event.pointerId&&(event.type==='pointercancel'||!active.node.hasPointerCapture(active.id)))finish(true);}
+      function blur(){contacts.current.clear();finish(true);}
+      function hidden(){if(document.hidden)blur();}
+      window.addEventListener('pointerdown',down,true);window.addEventListener('pointerup',up,true);window.addEventListener('pointercancel',up,true);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',hidden);
+      return function(){window.removeEventListener('pointerdown',down,true);window.removeEventListener('pointerup',up,true);window.removeEventListener('pointercancel',up,true);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',hidden);finish(false);contacts.current.clear();};
+    },[]);
+    function edit(value){var current=live.current,limit=current.mode==='day'?42:21;value=Math.max(-limit,Math.min(limit,Math.round(value)));if(current.mode==='day')setDay(value);else{var patch={};patch[current.mode==='prey'?'preyShift':'demandShift']=value;current.onChange(patch);}}
+    function pointer(event){var node=event.currentTarget,matrix=node.getScreenCTM();if(!matrix)return;var point=node.createSVGPoint();point.x=event.clientX;point.y=event.clientY;var local=point.matrixTransform(matrix.inverse());edit((local.x-76)*84/608-42);}
+    function start(event){if(event.button!==0||event.isPrimary===false||contacts.current.size>1)return;event.preventDefault();event.currentTarget.focus({preventScroll:true});drag.current={id:event.pointerId,node:event.currentTarget,start:Object.assign({},live.current)};try{event.currentTarget.setPointerCapture(event.pointerId);}catch(ignore){}pointer(event);}
+    function key(event){var value=live.current[live.current.mode],limit=live.current.mode==='day'?42:21,step=event.shiftKey?7:1;
+      if(event.key==='Escape'){finish(true);event.preventDefault();return;}
+      if(event.key==='ArrowLeft'||event.key==='ArrowDown')value-=step;else if(event.key==='ArrowRight'||event.key==='ArrowUp')value+=step;else if(event.key==='Home')value=-limit;else if(event.key==='End')value=limit;else return;
+      event.preventDefault();edit(value);
+    }
+    var buttonStyle={minHeight:44,padding:'10px 12px',border:'1px solid #78918a',borderRadius:8,fontSize:13,lineHeight:1.4,background:'#f4f2e5',color:'#153d37',fontWeight:700};
+    var modes=[['day','Probe a day'],['prey','Move prey peak'],['demand','Move demand peak']];
+    var value=mode==='day'?day:props[mode],limit=mode==='day'?42:21;
+    var overlap='M76 320 ';for(var d=-42;d<=42;d++)overlap+='L'+px(d)+' '+Math.max(py(d,props.prey),py(d,props.demand))+' ';overlap+='L684 320Z';
+    function levels(prey,demand,label){return h('article',{'data-seasonal-reading':label,'data-seasonal-prey':prey,'data-seasonal-demand':demand,'data-seasonal-day':day,style:{padding:12,border:'1px solid #6d9186',borderRadius:9,background:'#123c37',color:'#f0f6e7',minWidth:0}},
+      h('strong',{style:{fontSize:13}},label==='current'?'Current curves':'Saved curves'),
+      h('p',{style:{fontSize:12,lineHeight:1.6,margin:'5px 0'}},'Peaks: prey '+prey+' d · demand '+demand+' d'),
+      h('div',{style:{fontSize:13,lineHeight:1.8}},'At day '+day+': ',h('span',{'data-seasonal-level':'prey'},'prey '+raptorSeasonalProfile(day,prey).toFixed(3)),h('br'),h('span',{'data-seasonal-level':'demand'},'demand '+raptorSeasonalProfile(day,demand).toFixed(3))));}
+    return h('section',{className:'rh-climate-chart-panel','data-raptor-seasonal-study':'true','aria-labelledby':'rh-seasonal-study-title',style:{padding:14,background:'#173e39',color:'#f0f6e7',borderRadius:12,minWidth:0}},
+      h('h4',{id:'rh-seasonal-study-title',style:{fontSize:20,lineHeight:1.4,margin:'0 0 8px',color:'#f0f6e7'}},'Follow the season'),
+      h('p',{style:{fontSize:13,lineHeight:1.7,margin:'0 0 12px'}},'Choose what to move, then drag across the chart. Compare both curves on one day, or move a peak to explore the timing.'),
+      h('div',{role:'group','aria-label':'Chart interaction',style:{display:'flex',flexWrap:'wrap',gap:8}},modes.map(function(item){return h('button',{key:item[0],type:'button','data-seasonal-mode':item[0],'aria-pressed':String(mode===item[0]),style:Object.assign({},buttonStyle,mode===item[0]?{background:'#ffe0a2',borderColor:'#ffe0a2'}:{}),onClick:function(){finish(true);setMode(item[0]);}},item[1]);})),
+      h('svg',{viewBox:'0 0 760 440',role:'slider',tabIndex:0,'aria-label':mode==='day'?'Day probe':mode==='prey'?'Prey peak on chart':'Food-demand peak on chart','aria-valuemin':-limit,'aria-valuemax':limit,'aria-valuenow':value,'aria-valuetext':value+' days relative to the reference peak','aria-describedby':'rh-seasonal-chart-help','data-climate-timing-chart':'true',style:{display:'block',width:'100%',height:'auto',touchAction:'none',userSelect:'none',cursor:'ew-resize',borderRadius:8,marginTop:10},onPointerDown:start,onPointerMove:function(event){if(drag.current&&event.pointerId===drag.current.id)pointer(event);},onPointerUp:function(event){if(drag.current&&event.pointerId===drag.current.id)finish(!drag.current.node.hasPointerCapture(drag.current.id));},onPointerCancel:function(){finish(true);},onLostPointerCapture:function(){finish(true);},onKeyDown:key},
+        h('defs',null,h('pattern',{id:'rh-seasonal-hatch',width:12,height:12,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},h('line',{x1:0,x2:0,y1:0,y2:12,stroke:'#b0d0af',strokeWidth:3,opacity:.3}))),
+        [0,.5,1].map(function(tick){return h('g',{key:tick},h('line',{x1:76,x2:684,y1:320-240*tick,y2:320-240*tick,stroke:'#568074',strokeDasharray:'4 7'}),h('text',{x:56,y:330-240*tick,textAnchor:'end',fill:'#e1edde',style:{fontSize:32}},tick));}),
+        [-42,-28,-14,0,14,28,42].map(function(tick){return h('g',{key:tick},h('line',{x1:px(tick),x2:px(tick),y1:65,y2:332,stroke:'#568074',strokeDasharray:tick===0?'6 5':'2 8'}),h('text',{x:px(tick),y:375,textAnchor:'middle',fill:'#e1edde',style:{fontSize:32}},tick>0?'+'+tick:tick));}),
+        h('path',{d:overlap,fill:'url(#rh-seasonal-hatch)','data-climate-overlap':'illustrative'}),
+        pin?['prey','demand'].map(function(id){return h('path',{key:id,'data-seasonal-saved-curve':id,d:curve(pin[id]),fill:'none',stroke:'#edf3e6',strokeWidth:3,strokeDasharray:id==='prey'?'3 7':'14 7',opacity:.65});}):null,
+        ['prey','demand'].map(function(id){return h('path',{key:id,'data-climate-curve':id,d:curve(props[id]),fill:'none',stroke:id==='prey'?'#9cd8c5':'#ffe0a2',strokeWidth:5,strokeDasharray:id==='demand'?'12 7':undefined});}),
+        h('line',{'data-seasonal-probe':'true',x1:px(day),x2:px(day),y1:48,y2:336,stroke:'#f0f6e7',strokeWidth:2}),
+        h('circle',{'data-seasonal-probe-point':'prey',cx:px(day),cy:py(day,props.prey),r:9,fill:'#9cd8c5',stroke:'#123c37',strokeWidth:3}),
+        h('path',{'data-seasonal-probe-point':'demand',d:'M'+px(day)+' '+(py(day,props.demand)-10)+'l10 10-10 10-10-10Z',fill:'#ffe0a2',stroke:'#123c37',strokeWidth:3}),
+        mode!=='day'?h('circle',{'data-seasonal-peak-handle':mode,cx:px(props[mode]),cy:80,r:14,fill:'none',stroke:'#fff7df',strokeWidth:3}):null,
+        h('text',{'data-seasonal-axis-label':'true',x:380,y:425,textAnchor:'middle',fill:'#e1edde',style:{fontSize:32,display:'inline'}},'Days from the reference peak')),
+      h('p',{id:'rh-seasonal-chart-help',style:{fontSize:12,lineHeight:1.7,margin:'4px 0'}},'Arrow keys move 1 day; Shift + arrow moves 7. Home / End reach the limits. Escape cancels a drag.'),
+      h('div',{className:'rh-climate-legend',style:{fontSize:13,lineHeight:1.7}},h('span',null,'● Mint / solid: prey'),h('span',null,'◆ Gold / dashed: demand'),pin?h('span',{style:{fontSize:12}},'White traces: saved curves'):null),
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,180px),1fr))',gap:8,margin:'12px 0'}},levels(props.prey,props.demand,'current'),pin?levels(pin.prey,pin.demand,'saved'):null),
+      h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+        h('button',{type:'button',ref:pinButton,'data-seasonal-pin':'true',style:buttonStyle,onClick:function(){setPin({prey:props.prey,demand:props.demand,day:day});}},pin?'Replace saved curves':'Save these curves'),
+        h('button',{type:'button','data-seasonal-restore':'true',disabled:!pin,style:buttonStyle,onClick:function(){if(pin){props.onChange({preyShift:pin.prey,demandShift:pin.demand});setDay(pin.day);}}},'Restore saved timing'),
+        h('button',{type:'button','data-seasonal-clear':'true',disabled:!pin,style:buttonStyle,onClick:function(){setPin(null);if(pinButton.current)pinButton.current.focus();}},'Clear saved curves')),
+      h('div',{role:'group','aria-label':'Move both peaks together',style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:10}},[-7,7].map(function(shift){return h('button',{key:shift,type:'button','data-seasonal-shift':shift,disabled:Math.abs(props.prey+shift)>21||Math.abs(props.demand+shift)>21,style:buttonStyle,onClick:function(){props.onChange({preyShift:props.prey+shift,demandShift:props.demand+shift});}},'Both '+(shift<0?'7 days earlier':'7 days later'));})),
+      h('p',{style:{fontSize:12,lineHeight:1.7,margin:'12px 0 0'}},'Moving both peaks together preserves their separation. Heights are normalized from 0 to 1; hatching shows shared timing. These authored curves do not measure food supply, population, or survival.'));
+  }
+
+  function RaptorWingProfileStudy(props){
+    var React=props.React,h=React.createElement,current=props.lengths,focus=props.focus;
+    var savedState=React.useState(null),saved=savedState[0],setSaved=savedState[1],keepRef=React.useRef(null);
+    var prior=saved&&saved.lengths,delta=prior?current.map(function(n,i){return n-prior[i];}):null;
+    var spread=Math.max.apply(null,current)-Math.min.apply(null,current);
+    var mean=delta?delta.reduce(function(sum,n){return sum+Math.abs(n);},0)/10:0;
+    function signed(n){return (n>0?'+':'')+n;}
+    function ranks(values){
+      var groups=[];values.map(function(v,i){return {v:v,i:i};}).sort(function(a,b){return b.v-a.v||a.i-b.i;}).forEach(function(item){var last=groups[groups.length-1];if(last&&last.value===item.v)last.names.push('P'+(item.i+1));else groups.push({value:item.v,names:['P'+(item.i+1)]});});
+      return groups.map(function(g){return g.names.join(' = ');}).join(' > ');
+    }
+    function change(index,value){var next=current.slice();next[index]=Math.max(50,Math.min(100,Math.round(value)));props.onChange(next,index);}
+    function shift(amount){if(current.some(function(n){return n+amount<50||n+amount>100;}))return;props.onChange(current.map(function(n){return n+amount;}),focus);}
+    function button(label,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),label);}
+    function x(i){return 80+i*62;}function y(v){return 220-(v-50)*3;}
+    function line(values){return values.map(function(v,i){return (i?'L':'M')+x(i)+' '+y(v);}).join(' ');}
+    return h('section',{className:'rh-profile-study','data-wing-profile-study':true,'data-profile-values':JSON.stringify(current),'data-profile-focus':focus,'aria-label':'Wing profile change explorer'},
+      h('style',null,'.rh-profile-study{container-type:inline-size;padding:22px;margin:18px 0;border:1px solid #6e9395;border-radius:18px;background:radial-gradient(ellipse at 15% 0%,#28505a,#102b38 70%);color:#edf6ee}.rh-profile-study *{box-sizing:border-box}.rh-profile-study .rh-profile-kicker{color:#f7d595;font:750 11px/1.5 system-ui;letter-spacing:.12em}.rh-profile-study h3{font:750 26px/1.2 system-ui;color:#fff;margin:6px 0 10px}.rh-profile-study p{font:13px/1.65 system-ui;color:#d6e8e3;margin:8px 0}.rh-profile-study .rh-profile-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}.rh-profile-study svg{width:100%;height:auto;display:block;border:1px solid #547a83;border-radius:12px;background:#0a2330}.rh-profile-study svg text{display:inline!important;fill:#e5f1ed;font:650 24px system-ui}.rh-profile-study button{min-height:44px;padding:8px 12px;border:1px solid #91b1aa;border-radius:8px;background:#254751;color:#f3f9ef;font:650 12px/1.4 system-ui}.rh-profile-study button:disabled{opacity:.55;cursor:not-allowed}.rh-profile-study :is(button,input):focus-visible{outline:3px solid #ffdf9c;outline-offset:3px}.rh-profile-study .rh-profile-actions{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.rh-profile-study input{width:100%;min-height:44px;accent-color:#f8d590}.rh-profile-study label{display:block;color:#f4f8ef;font:700 14px/1.6 system-ui;margin:12px 0 0}.rh-profile-study .rh-profile-rank{padding:12px;border:1px solid #527e85;border-radius:10px;background:#0c2430;overflow-wrap:anywhere}.rh-profile-study .rh-profile-rank strong{display:block;color:#a1efda;font:700 14px/1.6 system-ui}.rh-profile-study .rh-profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.rh-profile-study .rh-profile-stat{padding:12px;border-radius:10px;border:1px solid #5e8588;background:#102b37}.rh-profile-study .rh-profile-stat span{display:block;font:12px/1.5 system-ui;color:#d6e8e3}.rh-profile-study .rh-profile-stat b{display:block;font:750 22px/1.5 system-ui;color:#f6d89f}.rh-profile-study .rh-profile-row{display:grid;grid-template-columns:32px minmax(0,1fr) 62px;gap:8px;align-items:center;width:100%;min-height:48px;margin:5px 0;padding:7px 9px;text-align:left}.rh-profile-study .rh-profile-row[aria-pressed=true]{border-color:#f8d38a;background:#3b4b4a;box-shadow:inset 3px 0 #f8d38a}.rh-profile-study .rh-profile-row b{font:650 12px/1.4 ui-monospace,monospace;text-align:right;color:#edf6ee}.rh-profile-study .rh-profile-track{display:block;position:relative;height:16px;border-top:1px solid #6c8b90;border-bottom:1px solid #6c8b90}.rh-profile-study .rh-profile-track:before{content:"";position:absolute;left:50%;top:-4px;width:1px;height:24px;background:#b7cbc7}.rh-profile-study .rh-profile-change{position:absolute;top:2px;height:10px;border-radius:2px;background:#f8d38a}.rh-profile-study .rh-profile-dot{position:absolute;top:2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#e9f6ee;border:2px solid #0b2833}.rh-profile-study .rh-profile-scale{display:flex;justify-content:space-between;padding:0 79px 0 49px;font:11px/1.5 system-ui;color:#c9e0dc}.rh-profile-study .rh-profile-saved{padding:12px;border:1px dashed #f4e1bd;border-radius:10px;background:#0b2531}.rh-profile-study .rh-profile-note{font-size:12px}@container(max-width:650px){.rh-profile-study .rh-profile-grid{grid-template-columns:1fr}.rh-profile-study h3{font-size:23px}.rh-profile-study .rh-profile-row{min-height:48px}}@media(forced-colors:active){.rh-profile-study svg{forced-color-adjust:none}.rh-profile-study button[aria-pressed=true]{outline:2px solid Highlight}.rh-profile-study .rh-profile-change{background:Highlight}.rh-profile-study .rh-profile-dot{background:CanvasText}}'),
+      h('div',{className:'rh-profile-kicker'},'KEEP / CHANGE / EXPLAIN'),h('h3',null,'Which feather changed the pattern?'),
+      h('p',null,'Keep all ten primary indices, then change one feather or shift the whole profile. Mint shows the current profile; dashed gold keeps your earlier pattern in view.'),
+      h('div',{className:'rh-profile-grid'},h('div',null,
+        h('svg',{viewBox:'0 0 720 290',role:'img','aria-label':'Primary indices on a shared 50 to 100 scale'},
+          [50,75,100].map(function(v){return h('g',{key:v},h('line',{x1:70,y1:y(v),x2:660,y2:y(v),stroke:'#73959a',strokeOpacity:.45,strokeDasharray:'4 5'}),h('text',{x:15,y:y(v)+8},v));}),
+          h('line',{x1:x(focus),x2:x(focus),y1:54,y2:235,stroke:'#f6d38b',strokeWidth:2,strokeDasharray:'3 5'}),
+          prior&&h('path',{'data-profile-curve':'saved',d:line(prior),fill:'none',stroke:'#f6d38b',strokeWidth:4,strokeDasharray:'10 7'}),
+          h('path',{'data-profile-curve':'current',d:line(current),fill:'none',stroke:'#91ead3',strokeWidth:4}),
+          current.map(function(v,i){return h('g',{key:i},h('circle',{'data-profile-tip':i,cx:x(i),cy:y(v),r:i===focus?8:5,fill:i===focus?'#fff0c4':'#91ead3',stroke:'#0b2531',strokeWidth:2}),h('text',{x:x(i),y:265,textAnchor:'middle'},'P'+(i+1)));})),
+        h('p',{className:'rh-profile-note'},'P1 is the inner primary; P10 is the outer primary. These are schematic indices, not measured feather lengths.'),
+        h('label',null,'Adjust P'+(focus+1)+' · '+current[focus]+' points',h('input',{'data-profile-length':true,type:'range',min:50,max:100,step:1,value:current[focus],'aria-label':'Selected primary index',onChange:function(e){change(focus,Number(e.target.value));}})),
+        h('div',{className:'rh-profile-actions'},button('P'+(focus+1)+' −5',function(){change(focus,current[focus]-5);},{disabled:current[focus]<55,'data-profile-step':-5}),button('P'+(focus+1)+' +5',function(){change(focus,current[focus]+5);},{disabled:current[focus]>95,'data-profile-step':5}),prior&&button('Restore this feather',function(){change(focus,prior[focus]);},{'data-profile-restore-one':true})),
+        h('div',{className:'rh-profile-actions'},[-5,5].map(function(n){return button('All feathers '+signed(n),function(){shift(n);},{key:n,'data-profile-shift':n,disabled:current.some(function(v){return v+n<50||v+n>100;})});})),
+        h('div',{className:'rh-profile-rank'},h('span',null,'Current order · equal indices share a rank'),h('strong',{'data-profile-rank':true},ranks(current))),
+        h('div',{className:'rh-profile-stats'},h('div',{className:'rh-profile-stat'},h('span',null,'Current spread'),h('b',{'data-profile-spread':true},spread+' pts')),h('div',{className:'rh-profile-stat'},h('span',null,'Mean absolute change'),h('b',{'data-profile-mean':true},prior?mean.toFixed(1)+' pts':'Keep a profile'))),
+        h('p',{className:'rh-profile-note'},'An equal shift preserves the order and spread. Changing one primary can alter both. Whole-profile shifts stop at the 50–100 limits so every feather changes by exactly the same amount.')),
+        h('div',null,
+          h('div',{className:'rh-profile-actions'},button(saved?'Replace kept profile':'Keep this profile',function(){setSaved({species:props.species,name:props.name,lengths:current.slice(),focus:focus,compare:props.compare});},{ref:keepRef,'data-profile-keep':true})),
+          saved?h('div',{className:'rh-profile-saved','data-profile-saved':JSON.stringify(saved)},h('strong',null,'Kept · '+saved.name),h('p',null,'Gold holds all ten saved values. Restore returns the species, indices, selected feather and comparison reference.'),h('div',{className:'rh-profile-actions'},button('Restore kept profile',function(){props.onRestore(saved);},{'data-profile-restore':true}),button('Clear comparison',function(){setSaved(null);if(keepRef.current)keepRef.current.focus();},{'data-profile-clear':true}))):h('p',null,'Select any row to inspect its primary. Keep a profile to reveal signed changes for every feather.'),
+          h('p',null,prior?'Current minus kept · left is shorter, right is longer':'Current primary indices'),
+          prior&&h('div',{className:'rh-profile-scale','aria-hidden':true},h('span',null,'−50'),h('span',null,'0'),h('span',null,'+50')),
+          current.map(function(v,i){var difference=delta?delta[i]:0;return button(h(React.Fragment,null,h('span',null,'P'+(i+1)),h('span',{className:'rh-profile-track','aria-hidden':true},h('span',{className:'rh-profile-change','data-profile-bar':i,style:{left:(delta?Math.min(50,50+difference):0)+'%',width:(delta?Math.abs(difference):(v-50)*2)+'%',background:difference<0?'#91cde5':'#f8d38a'}}),h('span',{className:'rh-profile-dot',style:{left:(delta?50+difference:(v-50)*2)+'%'}})),h('b',null,prior?signed(difference)+' pts':v+' pts')),function(){props.onChange(current.slice(),i);},{key:i,className:'rh-profile-row','data-profile-row':i,'aria-pressed':focus===i,'aria-label':'Inspect primary P'+(i+1)+', current '+v+(prior?', kept '+prior[i]+', change '+signed(difference):'')});}))),
+      h('p',{className:'rh-profile-note'},'A controlled comparison of the existing teaching profiles. Differences describe this schematic pattern; they do not predict flight performance or identify an individual bird.'));
+  }
+
+  function RaptorWingDesignStudy(props) {
+    var React = props.React, h = React.createElement, model = raptorWingDesignGeometry(props.configuration);
+    var saved = React.useState(null), pinned = saved[0], setPinned = saved[1];
+    var svgRef = React.useRef(null), pinRef = React.useRef(null), dragRef = React.useRef(null), cancelRef = React.useRef(null), contactsRef = React.useRef(new Set()), interruptedRef = React.useRef(false);
+    var pinModel = pinned ? raptorWingDesignGeometry(pinned) : null, editable = props.mode==='design';
+    var scale = 200, maxChord = Math.max(model.rootChord,pinModel?pinModel.rootChord:0), height = Math.max(360,maxChord*scale+160), centerY = height/2-20;
+    function snapshot() { return {mass:model.mass,wingspan:model.span,wingArea:model.area,mode:props.mode,parts:Object.assign({},props.parts),sourceLabel:props.sourceLabel}; }
+    function release(gesture) { if(gesture&&gesture.node.hasPointerCapture(gesture.id))gesture.node.releasePointerCapture(gesture.id); }
+    function cancel() { var gesture=dragRef.current;dragRef.current=null;if(gesture){props.onDesign(gesture.initial);release(gesture);} }
+    cancelRef.current = cancel;
+    React.useEffect(function(){
+      function down(event){var contacts=contactsRef.current;if(contacts.size||(event.target.closest&&event.target.closest('[data-wing-design-handle]'))){contacts.add(event.pointerId);if(contacts.size>1){interruptedRef.current=true;cancelRef.current();}}}
+      function up(event){contactsRef.current.delete(event.pointerId);if(!contactsRef.current.size)interruptedRef.current=false;}
+      function blur(){cancelRef.current();contactsRef.current.clear();interruptedRef.current=false;}
+      function hidden(){if(document.hidden)blur();}
+      window.addEventListener('pointerdown',down,true);window.addEventListener('pointerup',up,true);window.addEventListener('pointercancel',up,true);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',hidden);
+      return function(){dragRef.current=null;window.removeEventListener('pointerdown',down,true);window.removeEventListener('pointerup',up,true);window.removeEventListener('pointercancel',up,true);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',hidden);};
+    },[]);
+    function local(event){var matrix=svgRef.current.getScreenCTM();return new DOMPoint(event.clientX,event.clientY).matrixTransform(matrix.inverse());}
+    function down(field,event){if(!editable||event.button!==0||event.isPrimary===false||interruptedRef.current)return;event.preventDefault();var point=local(event),node=event.currentTarget;dragRef.current={id:event.pointerId,node:node,field:field,initial:snapshot(),x:point.x,y:point.y};node.setPointerCapture(event.pointerId);node.focus({preventScroll:true});}
+    function move(event){var gesture=dragRef.current;if(!gesture||gesture.id!==event.pointerId)return;var point=local(event),initial=gesture.initial;var value=gesture.field==='wingspan'?initial.wingspan+2*(point.x-gesture.x)/scale:initial.wingArea+2*(point.y-gesture.y)/scale*.6*initial.wingspan;props.onDesign(raptorWingDesignEdit(initial,gesture.field,value));}
+    function up(event){var gesture=dragRef.current;if(!gesture||gesture.id!==event.pointerId)return;if(!gesture.node.hasPointerCapture(gesture.id)||interruptedRef.current){cancel();return;}move(event);dragRef.current=null;release(gesture);}
+    function key(field,event){if(!editable)return;var limits=field==='wingspan'?[.5,3,.01]:[.02,1,.001],value=field==='wingspan'?model.span:model.area,step=limits[2]*(event.shiftKey?10:1);
+      if(event.key==='Home')value=limits[0];else if(event.key==='End')value=limits[1];else if(event.key==='ArrowLeft'||event.key==='ArrowDown')value-=step;else if(event.key==='ArrowRight'||event.key==='ArrowUp')value+=step;else if(event.key==='Escape'){event.preventDefault();cancel();return;}else return;event.preventDefault();cancel();props.onDesign(raptorWingDesignEdit(snapshot(),field,value));}
+    var buttonStyle={minHeight:44,minWidth:44,padding:'10px 13px',border:'1px solid #8da9ac',borderRadius:9,background:'#1f414c',color:'#f1f6e5',fontSize:14,fontWeight:700,lineHeight:1.45};
+    function button(label,attrs,handler,disabled){return h('button',Object.assign({type:'button',onClick:handler,disabled:!!disabled,style:Object.assign({},buttonStyle,disabled?{opacity:.6}:{})},attrs),label);}
+    function polygons(value,id){return h('g',{'data-wing-design-outline':id},['left','right'].map(function(side){return h('polygon',{key:side,'data-wing-design-polygon':id,'data-wing-design-side':side,points:value[side].map(function(p){return(380+p[0]*scale)+','+(centerY+p[1]*scale);}).join(' '),fill:id==='current'?'#e4b963':'none',fillOpacity:.3,stroke:id==='current'?'#ffe1a2':'#72e2da',strokeWidth:id==='current'?2.5:3,strokeDasharray:id==='current'?undefined:'9 6',strokeLinejoin:'round'});}));}
+    function handle(field,x,y){var span=field==='wingspan';return h('button',{type:'button',role:'slider','data-wing-design-handle':span?'span':'area','aria-label':span?'Wingspan ruler handle':'Wing area ruler handle','aria-orientation':span?'horizontal':'vertical','aria-valuemin':span?.5:.02,'aria-valuemax':span?Math.max(3,model.span):Math.max(1,model.area),'aria-valuenow':span?model.span:model.area,'aria-valuetext':span?model.span.toFixed(2)+' metres':model.area.toFixed(3)+' square metres',disabled:!editable,onPointerDown:function(e){down(field,e);},onPointerMove:move,onPointerUp:up,onPointerCancel:cancel,onLostPointerCapture:function(e){if(dragRef.current&&dragRef.current.id===e.pointerId)cancel();},onKeyDown:function(e){key(field,e);},title:span?'Drag horizontally to change span while keeping area':'Drag vertically to change area while keeping span',style:{position:'absolute',left:(x/760*100)+'%',top:(y/height*100)+'%',transform:'translate(-50%,-50%)',width:44,height:44,minWidth:44,minHeight:44,padding:0,border:'2px solid #ffe1a2',borderRadius:'50%',background:'#24444e',color:'#fff1c9',fontSize:24,lineHeight:1,opacity:editable?1:.55,touchAction:'none',userSelect:'none',cursor:span?'ew-resize':'ns-resize'}},span?'↔':'↕');}
+    function card(value,id){var geometry=raptorWingDesignGeometry(value);return h('article',{'data-wing-design-condition':id,'data-wing-design-mass':value.mass,'data-wing-design-span':value.wingspan,'data-wing-design-area':value.wingArea,'data-wing-design-loading':geometry.loading,'data-wing-design-aspect':geometry.aspect,'data-wing-design-mode':value.mode,'data-wing-design-parts':JSON.stringify(value.parts),style:{minWidth:0,padding:12,border:'1px solid '+(id==='current'?'#e4bb73':'#72c6c4'),borderRadius:10,background:'#102c36'}},
+      h('strong',{style:{color:id==='current'?'#ffe1a2':'#9cf0e6'}},id==='current'?'Current design':'Frozen design'),
+      h('p',{style:{margin:'6px 0',fontSize:13}},value.sourceLabel),
+      h('p',{style:{margin:'6px 0',fontSize:15}},value.mass.toFixed(2)+' kg · '+value.wingspan.toFixed(2)+' m span · '+value.wingArea.toFixed(3)+' m²'),
+      h('p',{style:{margin:'6px 0',fontSize:14}},'Mass / area: '+geometry.loading.toFixed(2)+' kg/m² · Aspect ratio: '+geometry.aspect.toFixed(2)));
+    }
+    var spanExperiment=raptorWingDesignExperiment(pinned,'span'),massExperiment=raptorWingDesignExperiment(pinned,'mass');
+    var rows=[];for(var gy=80;gy<height-85;gy+=100)rows.push(gy);
+    return h('section',{'data-raptor-wing-design':'','aria-labelledby':'raptor-wing-design-title',style:{padding:12,border:'1px solid #537b89',borderRadius:16,background:'linear-gradient(145deg,#153746,#09232f)',color:'#edf3df'}},
+      h('p',{style:{margin:'2px 0 8px',fontSize:12,fontWeight:800,letterSpacing:'.12em',color:'#a2d5d5'}},'DESIGN BOARD / SPAN × AREA'),
+      h('h3',{id:'raptor-wing-design-title',style:{fontSize:24,lineHeight:1.2,color:'#fff0c6',margin:'0 0 8px'}},'Same area. A different outline.'),
+      h('p',{style:{fontSize:14,lineHeight:1.6,margin:'0 0 12px'}},'Stretch the span ruler to make these wings longer and narrower without changing their area. Move the area ruler to change their chord while keeping the span. The sliders above stay linked to the board.'),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 18px',fontSize:13,marginBottom:8}},h('span',{style:{color:'#ffe1a2'}},'Gold · current outline'),h('span',{style:{color:'#9cf0e6'}},'Mint dashed · frozen outline'),h('span',null,'Every grid spacing is 0.5 m on both axes')),
+      h('div',{style:{position:'relative',margin:'0 0 12px',borderRadius:10,background:'#0a222e'}},
+        h('svg',{ref:svgRef,'data-wing-design-board':'',viewBox:'0 0 760 '+height,role:'img','aria-label':'Two generic tapered wings shown from above on an equal-scale grid. Together their polygon area equals the selected wing area. Ruler controls are below and beside the wings.',style:{display:'block',width:'100%',height:'auto',borderRadius:10}},
+          [80,180,280,380,480,580,680].map(function(x){return h('line',{key:'x'+x,x1:x,x2:x,y1:45,y2:height-90,stroke:'#3a5964',strokeWidth:x===380?2:1,strokeDasharray:x===380?undefined:'3 6'});}),
+          rows.map(function(y){return h('line',{key:'y'+y,x1:80,x2:680,y1:y,y2:y,stroke:'#3a5964',strokeDasharray:'3 6'});}),
+          pinModel?polygons(pinModel,'pinned'):null,polygons(model,'current'),
+          [-1,1].map(function(side){return h('g',{key:side},[.25,.5,.75].map(function(f){var chord=model.rootChord*(1-.8*f),x=380+side*f*model.span/2*scale;return h('line',{key:f,x1:x,x2:x,y1:centerY-chord/2*scale,y2:centerY+chord/2*scale,stroke:'#ffe1a2',strokeOpacity:.3,strokeWidth:1.5});}));}),
+          h('line',{'data-wing-design-span-ruler':'',x1:380-model.span/2*scale,x2:380+model.span/2*scale,y1:height-55,y2:height-55,stroke:'#ffe1a2',strokeWidth:2}),
+          [-1,1].map(function(side){var x=380+side*model.span/2*scale;return h('path',{key:side,d:'M'+x+' '+(height-65)+'v20M'+x+' '+(centerY+model.tipChord/2*scale)+'V'+(height-70),fill:'none',stroke:'#b49764',strokeWidth:1.5,strokeDasharray:'4 5'});}),
+          h('path',{'data-wing-design-area-ruler':'',d:'M88 '+(centerY-model.rootChord/2*scale)+'H64M76 '+(centerY-model.rootChord/2*scale)+'V'+(centerY+model.rootChord/2*scale)+'M64 '+(centerY+model.rootChord/2*scale)+'H88',stroke:'#ffe1a2',strokeWidth:2,fill:'none'})),
+        handle('wingspan',380+model.span/2*scale,height-55),handle('wingArea',76,centerY+model.rootChord/2*scale)),
+      h('p',{style:{fontSize:13,lineHeight:1.6,margin:'0 0 12px'}},editable?'Drag ↔ for span or ↕ for area. Focus a ruler and use arrow keys; Shift takes a larger step. Home and End reach the bounds. Escape cancels a drag.':'Frankenraptor supplies the dimensions above. Freeze this combination or copy it into Design to edit its rulers.'),
+      !editable?button('Copy these dimensions into Design',{'data-wing-design-copy':''},function(){props.onDesign(snapshot());},!raptorWingDesignFits(snapshot())):null,
+      !editable&&!raptorWingDesignFits(snapshot())?h('p',{style:{fontSize:13,lineHeight:1.6}},'This combination is outside the Design slider range. Its exact dimensions remain available for viewing, freezing and restoration.'):null,
+      h('div',{style:{margin:'16px 0',padding:12,border:'1px solid #587581',borderRadius:10}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',gap:10,fontSize:14,fontWeight:700}},h('span',null,'Mass is separate from the outline'),h('span',null,model.mass.toFixed(2)+' kg')),
+        h('div',{'data-wing-design-mass-meter':'',role:'img','aria-label':'Mass '+model.mass.toFixed(2)+' kilograms on a zero to ten kilogram scale',style:{position:'relative',height:14,marginTop:12,background:'#304c56',borderRadius:7}},h('div',{style:{height:'100%',width:(model.mass/10*100)+'%',maxWidth:'100%',background:'#e8bf79',borderRadius:7}}),pinned?h('span',{'data-wing-design-mass-marker':'',style:{position:'absolute',left:(pinned.mass/10*100)+'%',top:-4,width:3,height:22,background:'#85e9df'}}):null),
+        h('p',{style:{fontSize:12,margin:'8px 0 0'}},'0–10 kg · changing mass alone leaves both wing polygons unchanged.')),
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,260px),1fr))',gap:10}},card(snapshot(),'current'),pinned?card(pinned,'pinned'):null),
+      pinned?h('p',{'data-wing-design-delta':'',style:{fontSize:14,lineHeight:1.7}},'Current − frozen: '+(model.loading-pinModel.loading).toFixed(2)+' kg/m² in mass / area; '+(model.aspect-pinModel.aspect).toFixed(2)+' in aspect ratio.'):null,
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}},button(pinned?'Replace frozen design':'Freeze design',{'data-wing-design-pin':'',ref:pinRef},function(){cancel();setPinned(snapshot());}),button('Restore frozen design',{'data-wing-design-restore':''},function(){cancel();props.onRestore(pinned);},!pinned),button('Clear frozen design',{'data-wing-design-clear':''},function(){cancel();setPinned(null);if(pinRef.current)pinRef.current.focus({preventScroll:true});},!pinned)),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:10}},button('From frozen: +0.25 m span',{'data-wing-design-experiment':'span'},function(){cancel();props.onDesign(spanExperiment);},!spanExperiment),button('From frozen: +0.5 kg mass',{'data-wing-design-experiment':'mass'},function(){cancel();props.onDesign(massExperiment);},!massExperiment)),
+      h('p',{style:{fontSize:13,lineHeight:1.6,margin:'12px 0 2px'}},'A generic geometric design, not a species silhouette or flight forecast. The two trapezoids share the exact selected total area, with tip chord fixed at one fifth of root chord. Mass / area uses kg/m² here. The frozen design retains its dimensions and source mode; exact experiments start from those saved dimensions and open Design only when they fit its ranges.'));
+  }
+
   function RaptorSkeletalStudy(props) {
     var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React = props.React, h = React.createElement, keys = ['crania', 'left', 'right'], labels = ['Crania · C', 'Left mandibles · L', 'Right mandibles · R'];
@@ -12121,7 +12380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       function flightStudyView(view) {
         if (!view || ![view.azimuthOffset, view.elevation, view.distance].every(function(value) { return typeof value === 'number' && isFinite(value); }) ||
             view.elevation < (view.focus && view.focus !== 'whole' ? -0.80 : 0.08) || view.elevation > 1.40 || view.distance < 0.75 || view.distance > 1.7 ||
-            (view.focus != null && ['whole', 'wing', 'tail', 'head', 'body', 'feet'].indexOf(view.focus) === -1) ||
+            (view.focus != null && ['whole', 'wing', 'rightWing', 'tail', 'head', 'body', 'feet'].indexOf(view.focus) === -1) ||
             (view.presentation != null && ['studio', 'habitat'].indexOf(view.presentation) === -1) ||
             (view.lighting != null && ['soft', 'side', 'rim'].indexOf(view.lighting) === -1)) return null;
         return { azimuthOffset: Math.atan2(Math.sin(view.azimuthOffset), Math.cos(view.azimuthOffset)), elevation: view.elevation, distance: view.distance,
@@ -21847,16 +22106,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function onWindowBlur() {
           clearHeldInputs();
+          if (studyActive) cancelStudyPartContacts();
           // Leaving the window must not spend energy or fly into terrain unattended.
           // Focus returning leaves the existing pause card in control of resuming.
           if (!simPaused) setPaused(true, false);
         }
         function onVisibilityChange() {
           clearHeldInputs();
+          if (document.hidden && studyActive) cancelStudyPartContacts();
           if (document.hidden && !simPaused) setPaused(true, false);
         }
         function onPointerDown(event) {
           // Keep steering with the pointer that began the gesture; other fingers may use flight controls.
+          if (dragState.active && event.pointerId !== dragState.pointerId) { tapGesture = null; return; }
+          if (studyActive && studyPartInterrupted) return;
           if ((simPaused && !studyActive) || dragState.active || event.button !== 0) return;
           canvasEl.focus({ preventScroll: true });
           dragState.active = true;
@@ -21864,13 +22127,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           dragState.lastY = event.clientY;
           dragState.pointerId = event.pointerId;
           canvasEl.style.cursor = 'grabbing';
-          tapGesture = studyActive ? null : { at: performance.now(), travel: 0, pointerId: event.pointerId };
+          tapGesture = { at: performance.now(), travel: 0, pointerId: event.pointerId, study: !!studyActive,
+            explore: !!(studyActive && studyPartExplore && studyPresentation === 'studio') };
           if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(event.pointerId);
           event.preventDefault();
         }
         function onPointerMove(event) {
           if (!dragState.active) {
             if (event.pointerType === 'mouse' && !simPaused && !studyActive) updatePreyHover(event.clientX, event.clientY);
+            if (event.pointerType === 'mouse' && studyActive) updateStudyPartHover(event.clientX, event.clientY);
             return;
           }
           if (event.pointerId !== dragState.pointerId || (simPaused && !studyActive)) return;
@@ -21895,6 +22160,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function onPointerUp(event) {
           if (!dragState.active || event.pointerId !== dragState.pointerId) return;
+          var gesture = tapGesture;
+          // Capture can be released while it is still pending, before a browser
+          // emits lostpointercapture. Check ownership before our own release.
+          var ownsCapture = typeof canvasEl.setPointerCapture !== 'function' || typeof canvasEl.hasPointerCapture !== 'function' || canvasEl.hasPointerCapture(event.pointerId);
           var tap = event.type === 'pointerup' && tapGesture && tapGesture.pointerId === event.pointerId &&
             tapGesture.travel < 10 && performance.now() - tapGesture.at < 450;
           tapGesture = null;
@@ -21907,7 +22176,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(pointerId)) {
             canvasEl.releasePointerCapture(pointerId);
           }
-          if (tap) strikeAtScreenPoint(event.clientX, event.clientY);
+          if (tap && gesture.study) {
+            if (gesture.explore && ownsCapture && !studyPartInterrupted && studyActive && studyPartExplore && studyPresentation === 'studio') {
+              var pickedPart = pickStudyPart(event.clientX, event.clientY);
+              if (pickedPart && pickedPart.region !== 'whole') selectStudyRegion(pickedPart.region);
+            }
+          } else if (tap) strikeAtScreenPoint(event.clientX, event.clientY);
         }
         // Click or tap an animal to strike at it; the Strike key and button do the same. A
         // press that barely moves is a tap, anything longer stays a steering drag.
@@ -22000,6 +22274,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // The study camera borrows the live bird while the existing pause gate
         // freezes physics, wildlife, mission time, and animation. No auto-orbit.
         var studyActive = false, studySavedCamera = null, studyAzimuth = 0, studyElevation = 0.24, studyDistance = 1, studyPreset = 'side', studyFocus = 'whole', studyPresentation = 'studio', studyLighting = 'soft';
+        var studyPartExplore = false, studyPartHoverAt = -Infinity;
+        var studyPartContacts = {}, studyPartContactCount = 0, studyPartInterrupted = false, studyPartCalloutDown = null, studyPartCalloutReady = null;
         var studyRunId = Date.now().toString(36) + '-' + (++studyRunSequence.current);
         var studyRecordedIds = flightStudyMoments().map(function(moment) { return moment.id; });
         var studyReferenceView = flightStudyRecordState().referenceView;
@@ -22101,6 +22377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var studyRegions = [
           { id: 'whole', label: __alloT('stem.raptorhunt.study_region_whole', 'Whole bird'), object: raptorGroup, preset: 'side', angle: Math.PI / 2, elevation: 0.20 },
           { id: 'wing', label: __alloT('stem.raptorhunt.study_region_wing', 'Wing feathers'), object: leftWingGroup, preset: isOspreyWing?'':'above', angle: Math.PI, elevation: isOspreyWing?-0.72:1.24 },
+          { id: 'rightWing', label: __alloT('stem.raptorhunt.study_region_right_wing', 'Right wing feathers'), object: rightWingGroup, preset: isOspreyWing?'':'above', angle: Math.PI, elevation: isOspreyWing?-0.72:1.24 },
           { id: 'tail', label: __alloT('stem.raptorhunt.study_region_tail', 'Tail feathers'), object: tail, preset: 'above', angle: Math.PI, elevation: 1.24 },
           { id: 'head', label: __alloT('stem.raptorhunt.study_region_head', 'Head and beak'), object: headGroup, preset: '', angle: Math.PI / 4, elevation: 0.14 },
           { id: 'body', label: __alloT('stem.raptorhunt.study_region_body', 'Breast feathers'), object: body, preset: '', angle: Math.PI / 3, elevation: -0.55 },
@@ -22110,18 +22387,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         studyElement('span', '', __alloT('stem.raptorhunt.study_inspect', 'Inspect'), studyInspectLabel);
         var studyInspect = studyElement('select', '', '', studyInspectLabel); studyInspect.setAttribute('aria-describedby', studyCopy.id);
         studyRegions.forEach(function(region) { var option = studyElement('option', '', region.label, studyInspect); option.value = region.id; });
-        studyInspect.onchange = function() {
-          if (!studyActive) return;
-          studyFocus = studyInspect.value; studyBoundsDirty = true;
+        function selectStudyRegion(id) {
+          if (!studyActive || !studyRegions.some(function(region) { return region.id === id; })) return;
+          studyFocus = id; studyInspect.value = id; studyBoundsDirty = true;
           var region = currentStudyRegion();
           studyAzimuth = raptor.yaw + region.angle; studyElevation = region.elevation; studyPreset = region.preset; studyDistance = 1; studyZoom.value = '1';
           if (raptor.landed || raptor.crashed) {
-            if (studyFocus === 'wing') { studyAzimuth = raptor.yaw + Math.PI / 2; studyElevation = 0.20; studyPreset = 'side'; }
+            if (studyFocus === 'wing' || studyFocus === 'rightWing') { studyAzimuth = raptor.yaw + (studyFocus === 'rightWing' ? -1 : 1) * Math.PI / 2; studyElevation = 0.20; studyPreset = 'side'; }
             if (studyFocus === 'feet') studyElevation = 0.25;
           }
           updateStudyObservation(); repaintPausedFlight(false);
           rhAnnounce(__alloFill(__alloT('stem.raptorhunt.study_region_announced', 'Inspecting {region}. Flight remains frozen.'), { region: region.label }) + ' ' + studyPrompt.textContent);
-        };
+        }
+        studyInspect.onchange = function() { selectStudyRegion(studyInspect.value); };
         var studyLightLabel = studyElement('label', 'rh-study-light', '', studyActions);
         studyElement('span', '', __alloT('stem.raptorhunt.study_light', 'Studio light'), studyLightLabel);
         var studyLightSelect = studyElement('select', '', '', studyLightLabel);
@@ -22133,6 +22411,218 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           studyLighting = studyLightSelect.value; repaintPausedFlight(false);
           rhAnnounce(__alloFill(__alloT('stem.raptorhunt.study_presentation_announced', '{presentation}. The bird’s pose and flight readings are unchanged.'), { presentation: currentStudyLight().savedLabel }));
         };
+        var studyExploreLabel = studyElement('label', 'rh-study-explore', '', studyActions);
+        var studyExploreToggle = studyElement('input', '', '', studyExploreLabel); studyExploreToggle.type = 'checkbox';
+        studyExploreToggle.setAttribute('data-raptor-part-explore', '');
+        studyElement('span', '', __alloT('stem.raptorhunt.study_explore_visible', 'Explore visible parts'), studyExploreLabel);
+        var studyExploreStatus = studyElement('p', 'rh-study-help', '', studyActions);
+        studyExploreStatus.setAttribute('data-raptor-part-explore-status', ''); studyExploreStatus.id = 'rh-study-part-explore-status';
+        var studyExploreMeasure = studyExploreStatus.cloneNode(false), studyExploreMeasureKey = '';
+        studyExploreMeasure.removeAttribute('id'); studyExploreMeasure.removeAttribute('data-raptor-part-explore-status');
+        studyExploreMeasure.setAttribute('aria-hidden', 'true');
+        studyExploreMeasure.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;left:0;top:0;height:auto;min-height:0;max-height:none;margin:0;';
+        studyActions.appendChild(studyExploreMeasure);
+        studyExploreToggle.setAttribute('aria-describedby', studyExploreStatus.id);
+        studyExploreToggle.onchange = function() {
+          if (!studyActive || studyPresentation !== 'studio') return;
+          studyPartExplore = studyExploreToggle.checked; tapGesture = null; studyPartHoverAt = -Infinity; canvasEl.style.cursor = 'grab'; repaintPausedFlight(false);
+        };
+        var studyPartLayer = studyElement('div', 'rh-study-parts', '', hudParent2); studyPartLayer.hidden = true;
+        var studyPartLines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        studyPartLines.setAttribute('aria-hidden', 'true'); studyPartLines.setAttribute('focusable', 'false'); studyPartLayer.appendChild(studyPartLines);
+        var studyPartNames = { head:'Head', wing:'Left wing', rightWing:'Right wing', body:'Breast', tail:'Tail', feet:'Feet' };
+        var studyPartCallouts = ['head', 'wing', 'rightWing', 'body', 'tail', 'feet'].map(function(id, index) {
+          var region = studyRegions.find(function(item) { return item.id === id; });
+          var button = studyElement('button', 'rh-study-part-callout', '', studyPartLayer); button.type = 'button'; button.hidden = true;
+          button.setAttribute('data-raptor-part-callout', id); button.setAttribute('aria-label', __alloFill(__alloT('stem.raptorhunt.study_explore_part', 'Inspect {region}'), { region: region.label.toLowerCase() }));
+          studyElement('span', '', String(index + 1), button); studyElement('strong', '', studyPartNames[id], button);
+          button.onclick = function(event) {
+            var keyboard = !event || (event.detail === 0 && (!event.pointerType || event.pointerId === -1));
+            var ready = studyPartCalloutReady;
+            var validPointer = !studyPartInterrupted && ready && ready.button === button && (!event || event.pointerId == null || event.pointerId === ready.pointerId);
+            if (!keyboard && !validPointer) return;
+            studyPartCalloutReady = null;
+            if (studyActive && studyPartExplore && studyPresentation === 'studio') { canvasEl.focus({preventScroll:true}); selectStudyRegion(id); }
+          };
+          var line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('data-raptor-part-leader', id); studyPartLines.appendChild(line);
+          var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); dot.setAttribute('r', '4'); studyPartLines.appendChild(dot);
+          return { id:id, button:button, line:line, dot:dot };
+        });
+        var studyPartRaycaster = new THREE.Raycaster(), studyPartNdc = new THREE.Vector2();
+        var studyPartBase = new THREE.Vector3(), studyPartVertex = new THREE.Vector3(), studyPartMorph = new THREE.Vector3();
+        var studyPartA = new THREE.Vector3(), studyPartB = new THREE.Vector3(), studyPartC = new THREE.Vector3(), studyPartHit = new THREE.Vector3();
+        function cancelStudyPartContacts() {
+          studyPartContacts = {}; studyPartContactCount = 0; studyPartInterrupted = true;
+          studyPartCalloutDown = studyPartCalloutReady = null; tapGesture = null;
+        }
+        // Observe the full gesture before target handlers: a second finger can
+        // begin on a label or control while the first still owns the canvas.
+        // Interruption survives pointerup, including any later synthetic click.
+        function onStudyPartContactDown(event) {
+          if (!studyActive || (!hudParent2.contains(event.target) && !studyPartContactCount)) return;
+          var known = !!studyPartContacts[event.pointerId];
+          if (!known && !studyPartContactCount && !dragState.active && event.isPrimary !== false) {
+            studyPartInterrupted = false; studyPartCalloutDown = studyPartCalloutReady = null;
+          } else if (event.isPrimary === false || (!known && (studyPartContactCount || (dragState.active && event.pointerId !== dragState.pointerId)))) {
+            studyPartInterrupted = true; studyPartCalloutDown = studyPartCalloutReady = null; tapGesture = null;
+          }
+          if (!known) { studyPartContacts[event.pointerId] = true; studyPartContactCount++; }
+          var target = event.target.closest && event.target.closest('[data-raptor-part-callout]');
+          if (!studyPartInterrupted && event.isPrimary !== false && target && studyPartLayer.contains(target)) studyPartCalloutDown = {button:target,pointerId:event.pointerId};
+        }
+        function onStudyPartContactEnd(event) {
+          if (!studyActive || !studyPartContacts[event.pointerId]) return;
+          var down = studyPartCalloutDown, target = event.target.closest && event.target.closest('[data-raptor-part-callout]');
+          if (event.type === 'pointercancel') {
+            studyPartInterrupted = true; studyPartCalloutDown = studyPartCalloutReady = null; tapGesture = null;
+          } else if (!studyPartInterrupted && studyPartContactCount === 1 && event.isPrimary !== false && down && down.pointerId === event.pointerId && down.button === target) {
+            studyPartCalloutReady = down; studyPartCalloutDown = null;
+          }
+          delete studyPartContacts[event.pointerId]; studyPartContactCount--;
+        }
+        function studyMeshRegion(mesh) {
+          for (var node = mesh; node && node !== raptorGroup; node = node.parent) {
+            for (var i = 1; i < studyRegions.length; i++) if (node === studyRegions[i].object) return studyRegions[i].id;
+          }
+          return 'whole';
+        }
+        // Only explicit exploration reads the live CPU surface. No proxy meshes,
+        // model writes or GPU resources are needed. Texture alpha and arbitrary
+        // shader discards are not sampled; current raptor surfaces are opaque.
+        function studyPartSurfaces() {
+          var surfaces = [], bounds = {};
+          raptorGroup.updateMatrixWorld(true);
+          raptorGroup.traverseVisible(function(mesh) {
+            if (!mesh.isMesh || !mesh.geometry || !mesh.geometry.attributes.position) return;
+            var geometry = mesh.geometry, positions = geometry.attributes.position, index = geometry.index;
+            var count = index ? index.count : positions.count, range = geometry.drawRange || {start:0,count:Infinity};
+            var start = Math.max(0, range.start), end = Math.min(count, range.start + range.count);
+            var region = studyMeshRegion(mesh), mirrored = mesh.matrixWorld.determinant() < 0;
+            var draws = Array.isArray(mesh.material) ? geometry.groups.map(function(group) { return {start:group.start,end:group.start+group.count,material:mesh.material[group.materialIndex]}; }) : [{start:0,end:count,material:mesh.material}];
+            draws.forEach(function(draw) {
+              var material = draw.material;
+              if (!material || material.visible === false || (material.transparent && material.opacity <= 0)) return;
+              var points = [], surfaceBounds = new THREE.Box3(), morphs = material.morphTargets ? geometry.morphAttributes.position || [] : [];
+              var drawStart = Math.max(start, draw.start), drawEnd = Math.min(end, draw.end);
+              for (var offset = drawStart; offset + 2 < drawEnd; offset += 3) {
+                for (var corner = 0; corner < 3; corner++) {
+                  var vertexIndex = index ? index.getX(offset + corner) : offset + corner;
+                  studyPartBase.fromBufferAttribute(positions, vertexIndex); studyPartVertex.copy(studyPartBase);
+                  for (var morphIndex = 0; morphIndex < morphs.length; morphIndex++) {
+                    var weight = mesh.morphTargetInfluences && mesh.morphTargetInfluences[morphIndex];
+                    if (!weight) continue;
+                    studyPartMorph.fromBufferAttribute(morphs[morphIndex], vertexIndex);
+                    if (!geometry.morphTargetsRelative) studyPartMorph.sub(studyPartBase);
+                    studyPartVertex.addScaledVector(studyPartMorph, weight);
+                  }
+                  studyPartVertex.applyMatrix4(mesh.matrixWorld);
+                  points.push(studyPartVertex.x, studyPartVertex.y, studyPartVertex.z);
+                  surfaceBounds.expandByPoint(studyPartVertex);
+                  if (!bounds[region]) bounds[region] = new THREE.Box3();
+                  bounds[region].expandByPoint(studyPartVertex);
+                }
+              }
+              if (points.length) surfaces.push({region:region,points:points,side:material.side,mirrored:mirrored,bounds:surfaceBounds});
+            });
+          });
+          return {surfaces:surfaces,bounds:bounds};
+        }
+        function studySurfaceAt(x, y, data) {
+          studyPartNdc.set(x / W * 2 - 1, 1 - y / H * 2); studyPartRaycaster.setFromCamera(studyPartNdc, camera);
+          var ray = studyPartRaycaster.ray, nearest = null, distance = Infinity;
+          data.surfaces.forEach(function(surface) {
+            if (!ray.intersectsBox(surface.bounds)) return;
+            var p = surface.points, reverse = (surface.side === THREE.BackSide) !== surface.mirrored;
+            for (var i = 0; i < p.length; i += 9) {
+              studyPartA.fromArray(p,i); studyPartB.fromArray(p,i+3); studyPartC.fromArray(p,i+6);
+              var point = reverse ? ray.intersectTriangle(studyPartC,studyPartB,studyPartA,surface.side !== THREE.DoubleSide,studyPartHit) : ray.intersectTriangle(studyPartA,studyPartB,studyPartC,surface.side !== THREE.DoubleSide,studyPartHit);
+              if (!point) continue;
+              var along = point.distanceToSquared(ray.origin);
+              if (along >= distance) continue;
+              studyPartVertex.copy(point).project(camera);
+              if (studyPartVertex.z >= -1 && studyPartVertex.z <= 1) { distance = along; nearest = {region:surface.region,point:point.clone()}; }
+            }
+          });
+          return nearest;
+        }
+        function pickStudyPart(clientX, clientY) {
+          if (!studyActive || !studyPartExplore || studyPresentation !== 'studio') return null;
+          var rect = canvasEl.getBoundingClientRect();
+          if (!rect.width || !rect.height || clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
+          return studySurfaceAt((clientX-rect.left)*W/rect.width, (clientY-rect.top)*H/rect.height, studyPartSurfaces());
+        }
+        function updateStudyPartHover(clientX, clientY) {
+          if (performance.now() - studyPartHoverAt < 65) return;
+          studyPartHoverAt = performance.now();
+          var hit = pickStudyPart(clientX, clientY);
+          canvasEl.style.cursor = hit && hit.region !== 'whole' ? 'pointer' : 'grab';
+        }
+        function updateStudyExploreControls() {
+          studyExploreToggle.checked = studyPartExplore; studyExploreToggle.disabled = studyPresentation !== 'studio';
+          var variants = [
+            __alloT('stem.raptorhunt.study_explore_habitat', 'Choose Studio to explore visible parts. The habitat view keeps its usual controls.'),
+            __alloT('stem.raptorhunt.study_explore_help', 'Turn on to tap a visible part of the bird. Drag to orbit; Inspect also selects parts by keyboard.'),
+            __alloT('stem.raptorhunt.study_explore_active', 'Tap a visible surface or a numbered label to look closer. Labels hide behind other parts. Drag to orbit; Inspect reaches every part.'),
+            __alloT('stem.raptorhunt.study_explore_close', 'Explore this surface by orbiting. Choose Whole bird to see the part labels again, or use Inspect to choose another part.')
+          ];
+          studyExploreStatus.textContent = variants[studyPresentation !== 'studio' ? 0 : !studyPartExplore ? 1 : studyFocus === 'whole' ? 2 : 3];
+          // Reserve the tallest translated variant at the current width, so a
+          // presentation switch never moves an otherwise matched study camera.
+          // A second pass handles a newly introduced panel scrollbar.
+          for (var pass = 0; pass < 2; pass++) {
+            var width = studyExploreStatus.getBoundingClientRect().width;
+            var font = window.getComputedStyle(studyExploreStatus);
+            var key = [width,font.font,font.letterSpacing,font.lineHeight].concat(variants).join('|');
+            if (!width || key === studyExploreMeasureKey) break;
+            studyExploreMeasure.style.width = width + 'px';
+            var height = 0;
+            variants.forEach(function(copy) { studyExploreMeasure.textContent = copy; height = Math.max(height, studyExploreMeasure.getBoundingClientRect().height); });
+            studyExploreStatus.style.minHeight = Math.ceil(height) + 'px';
+            studyExploreMeasureKey = key;
+          }
+        }
+        function updateStudyParts(panelHeight, headerHeight) {
+          var active = studyActive && studyPartExplore && studyPresentation === 'studio';
+          studyPartLayer.hidden = !active || studyFocus !== 'whole';
+          studyPartCallouts.forEach(function(callout) { callout.button.hidden = true; callout.line.style.display = callout.dot.style.display = 'none'; });
+          if (studyPartLayer.hidden) return;
+          studyPartLines.setAttribute('viewBox','0 0 '+W+' '+H);
+          var data = studyPartSurfaces(), occupied = [], safeTop = headerHeight + 24, safeBottom = H - panelHeight - 24;
+          studyPartCallouts.forEach(function(callout) {
+            var box = data.bounds[callout.id]; if (!box || box.isEmpty()) return;
+            var left=Infinity,right=-Infinity,top=Infinity,bottom=-Infinity;
+            [box.min.x,box.max.x].forEach(function(x) { [box.min.y,box.max.y].forEach(function(y) { [box.min.z,box.max.z].forEach(function(z) {
+              studyPartVertex.set(x,y,z).project(camera);
+              left=Math.min(left,(studyPartVertex.x+1)*W/2); right=Math.max(right,(studyPartVertex.x+1)*W/2);
+              top=Math.min(top,(1-studyPartVertex.y)*H/2); bottom=Math.max(bottom,(1-studyPartVertex.y)*H/2);
+            }); }); });
+            var samples=[[.5,.5],[.25,.5],[.75,.5],[.5,.25],[.5,.75]], anchor=null;
+            for (var i=0;i<samples.length;i++) {
+              var px=left+(right-left)*samples[i][0],py=top+(bottom-top)*samples[i][1];
+              if (px<8 || px>W-8 || py<safeTop || py>safeBottom) continue;
+              var hit=studySurfaceAt(px,py,data);
+              if (hit && hit.region===callout.id) { anchor={x:px,y:py}; break; }
+            }
+            if (!anchor) return;
+            var button=callout.button; button.hidden=false;
+            var width=button.offsetWidth,height=button.offsetHeight;
+            var candidates=[[anchor.x+16,anchor.y-height/2],[anchor.x-width-16,anchor.y-height/2],[anchor.x-width/2,anchor.y-height-16],[anchor.x-width/2,anchor.y+16]], placement=null;
+            for (var i=0;i<candidates.length;i++) {
+              var x=Math.max(8,Math.min(W-width-8,candidates[i][0])), y=Math.max(safeTop,Math.min(safeBottom-height,candidates[i][1]));
+              var rect={left:x,right:x+width,top:y,bottom:y+height};
+              if (anchor.x>rect.left-8 && anchor.x<rect.right+8 && anchor.y>rect.top-8 && anchor.y<rect.bottom+8) continue;
+              if (rect.bottom>safeBottom || rect.right>W-8 || rect.top<safeTop || occupied.some(function(other) { return rect.left<other.right+6 && rect.right>other.left-6 && rect.top<other.bottom+6 && rect.bottom>other.top-6; })) continue;
+              placement=rect; break;
+            }
+            if (!placement) { button.hidden=true; return; }
+            occupied.push(placement); button.style.left=placement.left+'px'; button.style.top=placement.top+'px';
+            callout.line.setAttribute('x1',String(anchor.x)); callout.line.setAttribute('y1',String(anchor.y));
+            callout.line.setAttribute('x2',String(Math.max(placement.left,Math.min(placement.right,anchor.x)))); callout.line.setAttribute('y2',String(Math.max(placement.top,Math.min(placement.bottom,anchor.y))));
+            callout.dot.setAttribute('cx',String(anchor.x)); callout.dot.setAttribute('cy',String(anchor.y));
+            callout.line.style.display=callout.dot.style.display='';
+          });
+          if (studyPartCallouts.some(function(item) { return item.button.hidden && document.activeElement===item.button; })) canvasEl.focus({preventScroll:true});
+        }
         var studyPresets = studyElement('div', 'rh-study-presets', '', studyActions);
         var studyViews = [
           { id: 'side', label: __alloT('stem.raptorhunt.study_side', 'Side'), angle: Math.PI / 2, elevation: 0.20 },
@@ -22163,6 +22653,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var studyZoom = studyElement('input', '', '', studyZoomLabel);
         studyZoom.type = 'range'; studyZoom.min = '0.75'; studyZoom.max = '1.7'; studyZoom.step = '0.05'; studyZoom.value = '1';
         studyZoom.oninput = function() { studyDistance = Number(studyZoom.value); repaintPausedFlight(false); };
+        // Fine camera controls stay tied to the real camera after terrain clearance.
+        var studyFine = studyElement('details', 'rh-study-fine', '', studyActions);
+        studyFine.setAttribute('data-study-fine', '');
+        var studyFineSummary = studyElement('summary', '', __alloT('stem.raptorhunt.study_fine_view', 'Fine view · camera compass'), studyFine);
+        var studyFineBody = studyElement('div', 'rh-study-fine-body', '', studyFine);
+        var studyCompass = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        studyCompass.setAttribute('viewBox', '0 0 180 190'); studyCompass.setAttribute('role', 'img'); studyCompass.setAttribute('data-study-compass', '');
+        studyFineBody.appendChild(studyCompass);
+        function studyCompassNode(tag, attrs, text) {
+          var node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+          Object.keys(attrs).forEach(function(key) { node.setAttribute(key, String(attrs[key])); });
+          if (text) node.textContent = text; studyCompass.appendChild(node); return node;
+        }
+        studyCompassNode('circle', { cx:90, cy:90, r:60, fill:'#102b36', stroke:'#7da29c', 'stroke-width':1.5 });
+        studyCompassNode('circle', { cx:90, cy:90, r:30, fill:'none', stroke:'#7da29c', 'stroke-dasharray':'3 5' });
+        studyCompassNode('path', { d:'M30 90H150 M90 30V150', fill:'none', stroke:'#7da29c', 'stroke-opacity':.4 });
+        // Arrow marks horizontal flight heading, not the banked/pitched body axes.
+        studyCompassNode('path', { d:'M90 73 L98 99 L90 94 L82 99 Z', fill:'#c4e8d5', stroke:'#e7f7ec' });
+        studyCompassNode('text', { x:90, y:17, 'text-anchor':'middle' }, __alloT('stem.raptorhunt.study_compass_forward', 'Forward'));
+        studyCompassNode('text', { x:90, y:172, 'text-anchor':'middle' }, __alloT('stem.raptorhunt.study_compass_aft', 'Aft'));
+        studyCompassNode('text', { x:12, y:95, 'text-anchor':'middle' }, '−');
+        studyCompassNode('text', { x:168, y:95, 'text-anchor':'middle' }, '+');
+        var studyCompassRay = studyCompassNode('path', { d:'', fill:'none', stroke:'#f6d68d', 'stroke-width':2 });
+        var studyCompassDot = studyCompassNode('circle', { cx:90, cy:90, r:7, fill:'#f6d68d', stroke:'#fff1c6', 'stroke-width':2, 'data-study-compass-camera':'' });
+        var studyFineRanges = studyElement('div', '', '', studyFineBody);
+        function studyAngleControl(key, label, min, max) {
+          var wrap = studyElement('label', 'rh-study-angle', '', studyFineRanges);
+          studyElement('span', '', label, wrap);
+          var value = studyElement('output', '', '', wrap);
+          var input = studyElement('input', '', '', wrap);
+          input.type = 'range'; input.min = String(min); input.max = String(max); input.step = '0.1';
+          input.setAttribute('data-study-angle', key); input.setAttribute('aria-label', label);
+          return { input:input, value:value };
+        }
+        var studyBearing = studyAngleControl('bearing', __alloT('stem.raptorhunt.study_camera_bearing', 'Bearing from heading'), -180, 180);
+        var studyTilt = studyAngleControl('elevation', __alloT('stem.raptorhunt.study_camera_elevation', 'Requested elevation'), 0.08*180/Math.PI, 1.40*180/Math.PI);
+        var studyActualAngle = studyElement('p', 'rh-study-help', '', studyFine);
+        studyActualAngle.setAttribute('data-study-actual-angle', '');
+        studyElement('p', 'rh-study-help', __alloT('stem.raptorhunt.study_compass_help', 'Top-down compass: the arrow follows horizontal flight heading; the gold dot shows the camera. Elevation is measured above the horizon. Terrain may lift the camera above the requested angle.'), studyFine);
+        studyBearing.input.oninput = function() {
+          var value = Number(studyBearing.input.value); if (!studyActive || !Number.isFinite(value)) return;
+          studyAzimuth = raptor.yaw + Math.max(-180, Math.min(180, value))*Math.PI/180; studyPreset = ''; repaintPausedFlight(false);
+        };
+        studyTilt.input.oninput = function() {
+          var value = Number(studyTilt.input.value); if (!studyActive || !Number.isFinite(value)) return;
+          studyElevation = Math.max(studyFocus === 'whole' ? 0.08 : -0.80, Math.min(1.40, value*Math.PI/180)); studyPreset = ''; repaintPausedFlight(false);
+        };
+        studyFine.ontoggle = function() { if (studyActive && !disposed) repaintPausedFlight(false); };
+        var studyCompassOffset = new THREE.Vector3();
+        function updateStudyCompass() {
+          var bearing = Math.atan2(Math.sin(studyAzimuth-raptor.yaw), Math.cos(studyAzimuth-raptor.yaw));
+          studyBearing.input.value = String(bearing*180/Math.PI);
+          studyTilt.input.min = String((studyFocus === 'whole' ? 0.08 : -0.80)*180/Math.PI);
+          studyTilt.input.value = String(studyElevation*180/Math.PI);
+          function degrees(value) { return (value*180/Math.PI).toFixed(1)+'°'; }
+          studyBearing.value.textContent = degrees(bearing); studyTilt.value.textContent = degrees(studyElevation);
+          studyBearing.input.setAttribute('aria-valuetext', degrees(bearing)); studyTilt.input.setAttribute('aria-valuetext', degrees(studyElevation));
+          studyCompassOffset.copy(camera.position).sub(studyCenter).normalize();
+          var actualElevation = Math.asin(Math.max(-1, Math.min(1, studyCompassOffset.y)));
+          var actualBearing = Math.atan2(studyCompassOffset.x, -studyCompassOffset.z)-raptor.yaw;
+          actualBearing = Math.atan2(Math.sin(actualBearing), Math.cos(actualBearing));
+          var x = 90+60*Math.sin(actualBearing)*Math.cos(actualElevation), y = 90-60*Math.cos(actualBearing)*Math.cos(actualElevation);
+          studyCompassDot.setAttribute('cx', String(x)); studyCompassDot.setAttribute('cy', String(y));
+          studyCompassRay.setAttribute('d', 'M90 90L'+x+' '+y);
+          studyCompass.setAttribute('data-bearing', String(actualBearing)); studyCompass.setAttribute('data-elevation', String(actualElevation));
+          studyCompass.setAttribute('data-target', studyCenter.toArray().join(','));
+          var actual = __alloFill(__alloT('stem.raptorhunt.study_camera_actual', 'Actual camera: {bearing} bearing · {elevation} elevation'), {bearing:degrees(actualBearing), elevation:degrees(actualElevation)});
+          studyActualAngle.textContent = actual;
+          studyCompass.setAttribute('aria-label', actual);
+        }
+
         var studyResume = studyElement('button', 'rh-study-resume', __alloT('stem.raptorhunt.study_resume', 'Resume from this moment'), studyActions); studyResume.type = 'button';
         var studyHelp = studyElement('p', 'rh-study-help', __alloT('stem.raptorhunt.study_help', 'Drag the bird view or focus it and use arrow keys to orbit. The mission clock and animals stay frozen.'), studyActions); studyHelp.id = 'rh-study-help';
         studyClose.onclick = function() { leaveStudy(); publishControlState(); repaintPausedFlight(false); pauseResume.focus(); };
@@ -22241,7 +22802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function updateStudyObservation() {
           var grounded = raptor.landed || raptor.crashed, region = currentStudyRegion();
           studyRegion.hidden = studyFocus === 'whole'; studyRegion.textContent = region.label;
-          if (studyFocus === 'wing') {
+          if (studyFocus === 'wing' || studyFocus === 'rightWing') {
             studyPrompt.textContent = grounded ? __alloT('stem.raptorhunt.study_wing_rest_question', 'How does a wing fold away?') : __alloT('stem.raptorhunt.study_wing_question', 'How do the feathers form a wing?');
             studyCopy.textContent = grounded ? __alloT('stem.raptorhunt.study_wing_rest_copy', 'Trace the folded wing against the body. Resume and take off, then compare the same region with the wing extended.') : __alloT('stem.raptorhunt.study_wing_copy', 'Overlapping flight feathers form an aerodynamic surface. Follow the feather tips, then compare this wing during a glide and a dive. What changes in its outline?');
             if(!grounded&&isFalconWing) studyCopy.textContent=__alloT('stem.raptorhunt.study_falcon_wing_shape', 'Trace the pointed wing tip. Notice how the shorter feathers overlap the long flight feathers. Keep this view, then compare it with the broader, rounded wing of an owl.');
@@ -22323,6 +22884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           studyPresentations.forEach(function(presentation) { presentation.button.setAttribute('aria-pressed', String(studyPresentation === presentation.id)); });
           studyLightSelect.value = studyLighting; studyLightSelect.disabled = studyPresentation !== 'studio';
           studyKicker.textContent = studyPresentation === 'studio' ? __alloT('stem.raptorhunt.study_studio_frozen', 'Frozen moment · studio lighting') : __alloT('stem.raptorhunt.study_frozen', 'Frozen moment · study lighting');
+          updateStudyExploreControls();
           var panelHeight = studyPanel.getBoundingClientRect().height || 200;
           var headerHeight = studyHeader.getBoundingClientRect().height || 60;
           var availableHeight = Math.max(110, H - panelHeight - headerHeight - 58);
@@ -22371,8 +22933,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           studyStudioKey.position.copy(studyCenter).addScaledVector(studyLightForward, lightDistance * lightMode.key[0]).addScaledVector(studyLightRight, lightDistance * lightMode.key[1]).addScaledVector(studyLightUp, lightDistance * lightMode.key[2]);
           studyStudioRim.position.copy(studyCenter).addScaledVector(studyLightForward, lightDistance * lightMode.rim[0]).addScaledVector(studyLightRight, lightDistance * lightMode.rim[1]).addScaledVector(studyLightUp, lightDistance * lightMode.rim[2]);
           studyStudioKey.target.position.copy(studyCenter); studyStudioRim.target.position.copy(studyCenter);
+          updateStudyCompass();
           studyViews.forEach(function(view) { view.button.setAttribute('aria-pressed', String(studyPreset === view.id)); });
           updateStudyFrame(panelHeight);
+          updateStudyParts(panelHeight, headerHeight);
         }
         function enterStudy() {
           if (disposed || missionOutcome !== 'active') return;
@@ -22395,6 +22959,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function leaveStudy() {
           if (!studyActive) return;
           studyActive = false; studyFill.visible = false; clearHeldInputs();
+          cancelStudyPartContacts();
+          tapGesture = null; studyPartLayer.hidden = true;
           renderer.shadowMap.needsUpdate = true;
           studyFrame.style.display = 'none';
           delete hudParent2.dataset.raptorStudy; canvasEl.style.cursor = 'crosshair';
@@ -22775,6 +23341,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         canvasEl.addEventListener('keyup', onKeyUp);
         canvasEl.addEventListener('blur', onCanvasBlur);
         canvasEl.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointerdown', onStudyPartContactDown, true);
+        window.addEventListener('pointerup', onStudyPartContactEnd, true);
+        window.addEventListener('pointercancel', onStudyPartContactEnd, true);
         canvasEl.addEventListener('pointermove', onPointerMove);
         canvasEl.addEventListener('pointerup', onPointerUp);
         canvasEl.addEventListener('pointercancel', onPointerUp);
@@ -23070,6 +23639,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             studyFocus: studyFocus,
             studyPresentation: studyPresentation,
             studyLighting: studyLighting,
+            studyPartExplore: studyPartExplore,
+            studyPartExploreActive: !!(studyActive && studyPartExplore && studyPresentation === 'studio'),
             studyFillVisible: studyFill.visible,
             cameraQuaternion: camera.quaternion.toArray(),
             cameraAssistOffset: cameraAssistOffset.toArray(),
@@ -26000,6 +26571,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           canvasEl.removeEventListener('keyup', onKeyUp);
           canvasEl.removeEventListener('blur', onCanvasBlur);
           canvasEl.removeEventListener('pointerdown', onPointerDown);
+          window.removeEventListener('pointerdown', onStudyPartContactDown, true);
+          window.removeEventListener('pointerup', onStudyPartContactEnd, true);
+          window.removeEventListener('pointercancel', onStudyPartContactEnd, true);
           canvasEl.removeEventListener('pointermove', onPointerMove);
           canvasEl.removeEventListener('pointerup', onPointerUp);
           canvasEl.removeEventListener('pointercancel', onPointerUp);
@@ -26019,7 +26593,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           hudParent.style.removeProperty('--rh-cue-bottom');
           studyClose.onclick = studyResume.onclick = pauseStudy.onclick = studyZoom.oninput = null;
           studyKeep.onclick = studyReview.onclick = studyMatch.onclick = null;
+          studyBearing.input.oninput = studyTilt.input.oninput = studyFine.ontoggle = null;
           studyInspect.onchange = studyLightSelect.onchange = null;
+          studyExploreToggle.onchange = null;
+          studyPartCallouts.forEach(function(callout) { callout.button.onclick = null; });
           if (studyReviewFocusTimer) window.clearTimeout(studyReviewFocusTimer);
           document.removeEventListener('fullscreenchange', onStudyFullscreenExit);
           document.removeEventListener('webkitfullscreenchange', onStudyFullscreenExit);
@@ -26037,7 +26614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if(perchButton)perchButton.onclick=null;
 
           [
-            studyHeader, studyPanel, studyFrame,
+            studyHeader, studyPanel, studyFrame, studyPartLayer,
             pauseOverlay,
             flightMarker,
             missionPanel,
@@ -29721,8 +30298,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // Visual angle and a fixed-field display, with no species acuity threshold.
       function renderAcuity() {
-        return h(RaptorVisualAngleStudy, { translateStudy: __alloT, React: React, settings: rh.acuity,
-          onChange: function(settings) { setRH(function(current) { return Object.assign({}, current, { acuity: settings }); }); } });
+        return h(React.Fragment, null,
+          h(RaptorVisualAngleStudy, { translateStudy: __alloT, React: React, settings: rh.acuity,
+            onChange: function(settings) { setRH(function(current) { return Object.assign({}, current, { acuity: settings }); }); } }),
+          h(RaptorDistanceInvitation, { React: React, settings: rh.distantDetailStudy,
+            onChange: function(settings) { setRH(function(current) { return Object.assign({}, current, { distantDetailStudy: settings }); }); } }));
       }
       // ────────────────────────────────────────────────────────
       // RENDER: RECOVERY CASE STUDIES
@@ -30096,7 +30676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('span', null, __alloT('stem.raptorhunt.body_mass_2', 'Body mass')),
                   h('span', { className: 'font-mono text-amber-300' }, pr.mass.toFixed(2) + ' kg')
                 ),
-                h('input', { type: 'range', min: 0.1, max: 10, step: 0.1, value: pr.mass,
+                h('input', { type: 'range', min: 0.1, max: 10, step: 0.01, value: pr.mass,
                   onInput: function(e) { setPR({ mass: parseFloat(e.target.value) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.body_mass_kg', 'Body mass kg') }),
                 h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_1_peregrine_0_9_golden_4_2_h', 'Kestrel 0.1 · peregrine 0.9 · golden 4.2 · harpy 7.5'))
@@ -30106,7 +30686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('span', null, __alloT('stem.raptorhunt.wingspan', 'Wingspan')),
                   h('span', { className: 'font-mono text-amber-300' }, pr.wingspan.toFixed(2) + ' m')
                 ),
-                h('input', { type: 'range', min: 0.5, max: 3.0, step: 0.05, value: pr.wingspan,
+                h('input', { type: 'range', min: 0.5, max: 3.0, step: 0.01, value: pr.wingspan,
                   onInput: function(e) { setPR({ wingspan: parseFloat(e.target.value) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.wingspan_m_2', 'Wingspan m') }),
                 h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.kestrel_0_6_peregrine_1_05_golden_2_1_', 'Kestrel 0.6 · peregrine 1.05 · golden 2.1 · harpy 2.05'))
@@ -30114,15 +30694,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', null,
                 h('label', { className: 'text-xs text-cyan-300 flex justify-between' },
                   h('span', null, __alloT('stem.raptorhunt.wing_area', 'Wing area')),
-                  h('span', { className: 'font-mono text-amber-300' }, pr.wingArea.toFixed(2) + ' m²')
+                  h('span', { className: 'font-mono text-amber-300' }, pr.wingArea.toFixed(3) + ' m²')
                 ),
-                h('input', { type: 'range', min: 0.02, max: 1.0, step: 0.01, value: pr.wingArea,
+                h('input', { type: 'range', min: 0.02, max: 1.0, step: 0.001, value: pr.wingArea,
                   onInput: function(e) { setPR({ wingArea: parseFloat(e.target.value) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.wing_area_m', 'Wing area m²') }),
                 h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.wing_area_examples_hint', 'Kestrel 0.04 · peregrine 0.11 · golden 0.65 · harpy 0.75'))
               )
             )
           ),
+
+          h(RaptorWingDesignStudy,{React:React,configuration:pr,mode:predictorMode,parts:fr,sourceLabel:predictorMode==='franken'?findSpecies(fr.wingsFrom).name+' wings + '+findSpecies(fr.bodyFrom).name+' mass':'Design dimensions',onDesign:function(next){setRH({predictor:{mass:next.mass,wingspan:next.wingspan,wingArea:next.wingArea},predictorMode:'design'});},onRestore:function(saved){setRH(saved.mode==='franken'?{predictorMode:'franken',frankenRaptor:Object.assign({},saved.parts)}:{predictorMode:'design',predictor:{mass:saved.mass,wingspan:saved.wingspan,wingArea:saved.wingArea}});}}),
 
           // Derived values + prediction
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -30174,7 +30756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 { label: __alloT('stem.raptorhunt.red_tailed_hawk_4', 'Red-tailed Hawk'), mass: 1.15, wingspan: 1.3, wingArea: 0.31 },
                 { label: __alloT('stem.raptorhunt.bald_eagle_4', 'Bald Eagle'), mass: 4.5, wingspan: 2.0, wingArea: 0.62 },
                 { label: __alloT('stem.raptorhunt.goshawk', 'Goshawk'), mass: 1.0, wingspan: 1.1, wingArea: 0.20 },
-                { label: __alloT('stem.raptorhunt.harpy_eagle_2', 'Harpy Eagle'), mass: 7.5, wingspan: 2.05, wingArea: 0.50 },
+                { label: __alloT('stem.raptorhunt.harpy_eagle_2', 'Harpy Eagle'), mass: 7.5, wingspan: 2.05, wingArea: 0.75 },
                 { label: 'Owl', mass: 1.45, wingspan: 1.4, wingArea: 0.40 }
               ].map(function(p) {
                 return h('button', { key: p.label,
@@ -31920,12 +32502,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           { label: __alloT('stem.raptorhunt.climate_prey_first', 'Prey shifts first'), prey: -14, demand: 0 },
           { label: __alloT('stem.raptorhunt.climate_both_advance', 'Both peaks advance'), prey: -14, demand: -10 }
         ];
-        function px(day) { return 48 + (day + 42) / 84 * 552; }
-        function py(day, peak) { return 214 - Math.exp(-Math.pow(day - peak, 2) / 128) * 145; }
-        function curve(peak) { var path = ''; for (var day = -42; day <= 42; day++) path += (day === -42 ? 'M' : 'L') + px(day).toFixed(2) + ' ' + py(day, peak).toFixed(2) + ' '; return path; }
-        var preyPath = curve(prey), demandPath = curve(demand), overlap = 'M48 214 ';
-        for (var day = -42; day <= 42; day++) overlap += 'L' + px(day).toFixed(2) + ' ' + Math.max(py(day, prey), py(day, demand)).toFixed(2) + ' ';
-        overlap += 'L600 214Z';
         var lenses = [
           { id: 'timing', label: __alloT('stem.raptorhunt.climate_timing_records', 'Timing records'), text: __alloT('stem.raptorhunt.climate_timing_evidence', 'Compare repeated dates of prey availability, laying, hatching, and peak food demand. Look for variation among years and populations before inferring a mismatch.') },
           { id: 'habitat', label: __alloT('stem.raptorhunt.climate_habitat_records', 'Habitat records'), text: __alloT('stem.raptorhunt.climate_habitat_evidence', 'Record vegetation, prey access, water conditions, and nesting habitat alongside bird observations. A range change can have several causes; temperature alone does not establish one.') },
@@ -31935,22 +32511,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('section', { className: 'rh-quant-explorer rh-climate-workbench', 'data-raptor-climate-workbench': 'true', 'data-climate-gap': gap, 'data-climate-prey': prey, 'data-climate-demand': demand, 'aria-labelledby': 'rh-climate-title' },
             h('div', { className: 'rh-quant-heading' }, h('span', { className: 'rh-quant-kicker' }, __alloT('stem.raptorhunt.climate_kicker', 'SEASONAL TIMING / EXPLORE AN IDEA')), h('h3', { id: 'rh-climate-title' }, __alloT('stem.raptorhunt.climate_title', 'When the seasons fall out of step.')), h('p', null, __alloT('stem.raptorhunt.climate_intro', 'Move two hypothetical seasonal peaks independently. Explore why a shift in food availability may matter when the timing of food demand changes differently.'))),
             h('div', { className: 'rh-compare-traits rh-climate-presets', role: 'group', 'aria-label': __alloT('stem.raptorhunt.climate_scenarios', 'Illustrative timing scenarios') }, presets.map(function(preset) { return h('button', { key: preset.label, type: 'button', 'aria-pressed': prey === preset.prey && demand === preset.demand, onClick: function() { patchExperiment({ preyShift: preset.prey, demandShift: preset.demand }); } }, preset.label); })),
-            h('div', { className: 'rh-climate-bench' },
-              h('div', { className: 'rh-climate-chart-panel' },
-                h('div', { className: 'rh-climate-chart-head' }, h('strong', null, __alloT('stem.raptorhunt.climate_profile_title', 'Illustrative seasonal profiles')), h('span', null, __alloT('stem.raptorhunt.climate_profile_units', 'Normalized shapes · not population counts'))),
-                h('svg', { viewBox: '0 0 640 285', role: 'img', 'aria-labelledby': 'rh-climate-chart-title rh-climate-chart-desc', focusable: 'false', 'data-climate-timing-chart': 'true' },
-                  h('title', { id: 'rh-climate-chart-title' }, __alloT('stem.raptorhunt.climate_chart_title', 'Relative timing of prey availability and food demand')),
-                  h('desc', { id: 'rh-climate-chart-desc' }, __alloT('stem.raptorhunt.climate_chart_desc', 'The horizontal axis shows days relative to a shared reference peak. The vertical shapes are normalized illustrations, not measured abundance, food supply, or survival probability.')),
-                  h('defs', null, h('pattern', { id: 'rh-climate-overlap-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('line', { x1: 0, x2: 0, y1: 0, y2: 8, stroke: '#d9e4bf', strokeWidth: 2, opacity: .5 }))),
-                  [-42, -28, -14, 0, 14, 28, 42].map(function(tick) { return h('g', { key: tick }, h('line', { x1: px(tick), x2: px(tick), y1: 35, y2: 219, stroke: '#577579', strokeDasharray: tick === 0 ? '5 4' : '2 6', strokeWidth: tick === 0 ? 2 : 1 }), h('text', { x: px(tick), y: 240, textAnchor: 'middle', fill: '#bed1ce', fontSize: 12, fontFamily: 'ui-monospace,monospace' }, tick > 0 ? '+' + tick : tick)); }),
-                  h('path', { d: preyPath + 'L600 214L48 214Z', fill: '#82c4b2', opacity: .17 }), h('path', { d: demandPath + 'L600 214L48 214Z', fill: '#e2c37e', opacity: .12 }),
-                  h('path', { d: overlap, fill: 'url(#rh-climate-overlap-hatch)', 'data-climate-overlap': 'illustrative' }),
-                  h('path', { d: preyPath, fill: 'none', stroke: '#9cd8c5', strokeWidth: 4, 'data-climate-curve': 'prey' }), h('path', { d: demandPath, fill: 'none', stroke: '#edd291', strokeWidth: 4, strokeDasharray: '9 5', 'data-climate-curve': 'demand' }),
-                  h('circle', { cx: px(prey), cy: 69, r: 6, fill: '#c4e7d2', stroke: '#1a4443', strokeWidth: 2 }), h('rect', { x: px(demand) - 5, y: 64, width: 10, height: 10, fill: '#f1d59a', stroke: '#594c2d', strokeWidth: 2 }),
-                  h('line', { x1: 48, x2: 600, y1: 214, y2: 214, stroke: '#93aaa6', strokeWidth: 1.5 }),
-                  h('text', { x: 324, y: 271, textAnchor: 'middle', fill: '#ccd9cc', fontSize: 12 }, __alloT('stem.raptorhunt.climate_axis', 'Days relative to the shared reference peak'))),
-                h('p', { className: 'rh-climate-axis-note' }, __alloT('stem.raptorhunt.climate_axis', 'Days relative to the shared reference peak')),
-                h('div', { className: 'rh-climate-legend' }, h('span', null, h('i', { className: 'rh-climate-key-prey', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.climate_legend_prey', 'Prey availability')), h('span', null, h('i', { className: 'rh-climate-key-demand', 'aria-hidden': 'true' }), __alloT('stem.raptorhunt.climate_legend_demand', 'Food demand')), h('span', null, __alloT('stem.raptorhunt.climate_legend_overlap', 'Hatched area: shared timing, not a survival estimate')))),
+            h('div', { className: 'rh-climate-bench', style: { alignItems: 'start' } },
+              h(RaptorSeasonalTimingStudy, { React: React, prey: prey, demand: demand, onChange: patchExperiment }),
               h('div', { className: 'rh-climate-controls' },
                 [[__alloT('stem.raptorhunt.climate_prey_shift', 'Prey peak shift (days)'), prey, 'preyShift'], [__alloT('stem.raptorhunt.climate_demand_shift', 'Food-demand peak shift (days)'), demand, 'demandShift']].map(function(control) { return h('div', { key: control[2], className: 'rh-climate-slider' }, h('label', { htmlFor: 'rh-climate-' + control[2] }, control[0]), h('output', { htmlFor: 'rh-climate-' + control[2] }, control[1] > 0 ? '+' + control[1] : control[1]), h('input', { id: 'rh-climate-' + control[2], type: 'range', min: -21, max: 21, step: 1, value: control[1], onChange: function(event) { var patch = {}; patch[control[2]] = Number(event.target.value); patchExperiment(patch); } }), h('div', { className: 'rh-climate-range-labels', 'aria-hidden': 'true' }, h('span', null, __alloT('stem.raptorhunt.climate_earlier', 'Earlier')), h('span', null, __alloT('stem.raptorhunt.climate_later', 'Later')))); }),
                 h('div', { className: 'rh-climate-gap', role: 'status' }, h('span', null, __alloT('stem.raptorhunt.climate_gap', 'Peak separation')), h('strong', null, gap + ' ' + (gap === 1 ? __alloT('stem.raptorhunt.climate_day', 'day') : __alloT('stem.raptorhunt.climate_days', 'days'))), h('p', null, prey === demand ? __alloT('stem.raptorhunt.climate_same', 'The illustrative peaks coincide.') : prey < demand ? __alloT('stem.raptorhunt.climate_prey_leads', 'Prey availability peaks before food demand in this example.') : __alloT('stem.raptorhunt.climate_demand_leads', 'Food demand peaks before prey availability in this example.'))))),
@@ -38090,6 +38652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               )
             )
           ),
+          h(RaptorWingProfileStudy, { React: React, species: speciesIdx, name: record.species, lengths: currentLengths, focus: focusIdx, compare: compareIdx, onChange: function(values, focus) { setRH({ wingFormulaOwner: speciesIdx, wingFormulaLengths: values.slice(), wingFormulaFocus: focus }); }, onRestore: function(saved) { setRH({ wingFormulaSpeciesIdx: saved.species, wingFormulaOwner: saved.species, wingFormulaLengths: saved.lengths.slice(), wingFormulaFocus: saved.focus, wingFormulaCompareIdx: saved.compare }); } }),
           h('section', { className: 'rh-wing-formula-compare', 'aria-labelledby': 'rh-wing-formula-compare-title' },
             h('div', { className: 'rh-wing-formula-section-head' }, h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, 'Diagnostic comparison'), h('h3', { id: 'rh-wing-formula-compare-title' }, 'Separate similar wing profiles')), h('span', null, profile.code + ' vs ' + compareProfile.code)),
             h('div', { className: 'rh-wing-formula-compare-grid' },

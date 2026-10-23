@@ -54,7 +54,7 @@ describe('optional comparison of a locked guess with the organism shown', () => 
     expect(cards.map(card => card.dataset.candidateResult)).toEqual(['chosen', 'shown']);
     for (const card of cards) {
       const id = card.dataset.practiceCandidate;
-      expect([...card.querySelectorAll('.cr-dxp-detail-options button')].map(item => item.textContent)).toEqual(TX[id].marks.slice(0, 3));
+      expect([...card.querySelectorAll('.cr-dxp-detail-options button')].map(item => item.textContent)).toEqual(TX[id].marks);
       expect(card.querySelector('[data-practice-guess-observe] p').textContent).toBe(profiles[id].observe);
       expect(card.querySelector('img').getAttribute('src')).toContain('/' + id + '.webp');
       expect(card.querySelector('img').getAttribute('alt')).toContain(TX[id].name);

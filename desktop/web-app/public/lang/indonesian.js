@@ -54735,6 +54735,15 @@
       "sr_critique_ready": "Kritik siap."
     },
     "flightsim": {
+      "guided_inspect_angle": "Periksa perbandingan sudut",
+      "guided_inspect_speed": "Periksa perbandingan kecepatan",
+      "guided_export_scope": "Ekspor mencakup draf saat ini dan percobaan sebelumnya. Mengekspor tidak menyelesaikan penyelidikan.",
+      "hint_t_stall_negative": "🚨 STALL! AoA negatif: geser perlahan ke ATAS dari tengah agar mendekati nol. Gunakan tepi kanan untuk tenaga sesuai kebutuhan.",
+      "hint_k_stall_negative": "🚨 STALL! AoA negatif: tekan W perlahan agar mendekati nol. Tambahkan tenaga dengan Shift sesuai kebutuhan.",
+      "hint_stall_direction_unknown": "🚨 STALL! Dekatkan sudut serang ke nol. Arahnya tidak tersedia; periksa indikator AoA sebelum memilih gerakan pitch.",
+      "announce_stall_warning_negative": "Peringatan stall! Sudut serang negatif. Naikkan hidung perlahan agar mendekati nol; tambahkan tenaga sesuai kebutuhan.",
+      "announce_stall_warning_unknown": "Peringatan stall! Dekatkan sudut serang ke nol. Arahnya tidak tersedia; periksa indikator AoA sebelum memilih gerakan pitch.",
+      "hud_stall_warning": "⚠️ STALL — DEKATKAN AoA KE NOL",
       "debrief_unavailable_title": "Tinjauan penerbangan tersimpan tidak tersedia",
       "debrief_unavailable_body": "Tinjauan penerbangan terbaru hilang atau tidak dapat dibaca. Kembali ke menu untuk memulai penerbangan baru.",
       "guided_idea_before_trials": "Tercatat sebelum uji coba",

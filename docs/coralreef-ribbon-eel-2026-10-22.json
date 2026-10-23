@@ -1,0 +1,147 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional Indo-West Pacific fish for the guide, illustrative reef encounters and optional identification/recall. Illustrate a blue-and-yellow ribbon eel partly exposed from a fixed burrow. Do not assign sex from colour or show the exposed model as the complete one-metre animal.",
+  "iucnYearConvention": "Use LC with assessment year 2009, assessed 2009-02-04, original publication 2010 and an errata version published in 2017. The assessment date comes from the current FishBase IUCN 2025-2 export; Museums Victoria independently reports LC. Direct IUCN page, DOI and PDF access failed during this review, so do not describe the entire primary assessment as personally read or treat the 2017 errata as a new assessment.",
+  "specimens": [
+    {
+      "id": "ribbon_eel",
+      "name": "Ribbon eel",
+      "scientific": "Rhinomuraena quaesita",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2009,
+      "iucnPublishedYear": 2010,
+      "iucnErrataYear": 2017,
+      "iucnDateAssessed": "2009-02-04",
+      "lookalikes": ["giant_moray"],
+      "marks": [
+        "Two tubular nostrils widen into conspicuous fan-shaped flaps",
+        "The exposed body is extremely slender and flattened from side to side",
+        "A ribbon-like back fin begins near the head and follows the body",
+        "Small fleshy projections extend from the snout tip and the front of the lower jaw"
+      ],
+      "role": "Small-fish predator associated with reef burrows.",
+      "fact": "Colour alone is an unreliable sex label: a captive breeding study found that body colour did not consistently match sex or sexual maturity.",
+      "habitat": "Tropical Indo-West Pacific lagoon and seaward reefs, using burrows in sand or rubble beside coral reefs.",
+      "diet": "Small fishes. It is a predator rather than a plankton-feeding garden eel.",
+      "behavior": "Usually shelters with its head or part of its slender body protruding from a burrow. This resting view shows an exposed forebody; much of the animal remains concealed.",
+      "observe": "Find the flared nostrils and little jaw projections first, then compare its narrow ribbon-shaped body with the giant moray’s heavier head and mottled body. Black, blue-and-yellow and largely yellow appearances are reported, so combine shape and colour rather than relying on one hue.",
+      "sources": [
+        "dx-am-ribbon_eel",
+        "dx-foa-ribbon_eel",
+        "dx-shen-ribbon_eel",
+        "dx-preininger-ribbon_eel",
+        "dx-fishbase-ribbon_eel",
+        "dx-iucn-ribbon_eel",
+        "dx-eschmeyer-ribbon_eel"
+      ],
+      "claimSupport": {
+        "acceptedName": "Eschmeyer's current catalog accepts Rhinomuraena quaesita Garman, 1888; Smith's primary 2012 global checklist agrees and treats Rhinomuraena ambonensis as its synonym.",
+        "marks": "Shen and colleagues' primary redescription documents the very slender eel, expanded anterior nasal flaps, a snout-tip projection and three lower-jaw appendages. Current museum accounts and identified photographs corroborate the conspicuous nostrils and colour phases. The fin and fine mouth anatomy remain simplified learning characters, not a complete taxonomic key.",
+        "roleDiet": "The Australian Museum identifies a predator. FishBase's species account explicitly reports small fishes, citing Chen and colleagues' primary Taiwan revision and reef-fish literature. The garden-eel contrast is a feeding-strategy distinction, not a proposed close relationship.",
+        "habitatBehavior": "Australian Museum and Museums Victoria describe sandy or rubble burrows beside reefs. FishBase supports lagoon/seaward reefs and partial emergence. The fixed illustrated burrow does not assert that the eel never leaves its shelter.",
+        "colourSex": "Shen et al. (1979) interpreted aquarium colour changes and gonadal histology as protandry. Sadovy de Mitcheson and Liu's 2008 review considered protandry unconfirmed; FishBase carries that qualification. Preininger et al. (2015) directly report that captive colour variation did not reflect sex or maturity. Museum summaries still associate phases with sexes. Public copy therefore reports appearances and the later study's limit, without assigning the model sex, a universal transition sequence or a size threshold for changing sex.",
+        "sizeDepth": "Museums Victoria gives 130 cm total length and 1–57 m; Australian Museum independently gives 1.3 m. Current FishBase gives 1–67 m, so 57 m is the selected museum metadata interval, not a biological hard limit. Nominal one-metre total length and approximately 0.45 m exposed forebody are illustrative choices within this scale, not specimen measurements or equal suitability throughout the depth interval.",
+        "iucn": "LC is independently reported by Museums Victoria and FishBase. FishBase's current indexed IUCN 2025-2 export specifies 4 February 2009. The published citation is McCosker (2010), errata 2017; those dates are kept separate.",
+        "comparison": "A one-way giant_moray link contrasts an extremely narrow ribbon eel with the existing larger-headed moray record. Preserve that older record exactly. This comparison does not claim that the two are each other's nearest species-level lookalike."
+      },
+      "caution": "No sex, maturity or reproductive-state diagnosis from the blue/yellow palette. No universal black-to-blue-to-yellow timeline, lifespan, lifelong burrow occupancy, aggression, venom, aquarium-care or enhanced-colour-vision claim. The hidden posterior body is deliberately omitted rather than shrunk into the exposed section. Keep nasal fans distinct from eyes and jaw appendages; do not add snake tongues, horns or ordinary fish pectoral/pelvic fins."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-ribbon_eel",
+      "text": "McGrouther, M. (2021). Ribbon Eel, Rhinomuraena quaesita Garman, 1888. Australian Museum animal account. Updated 20 April 2021; accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/ribbon-eel-rhinomuraena-quaesita/",
+      "urlLabel": "australian.museum",
+      "supports": ["Expanded nasal flaps, living appearances, burrow habitat, predator role, distribution and maximum length"],
+      "access": "Full museum account and identified photograph captions read. Its sex-labelled colour shorthand is qualified using later primary captive-breeding research."
+    },
+    {
+      "id": "dx-foa-ribbon_eel",
+      "text": "Bray, D.J. (2026). Rhinomuraena quaesita, Ribbon Eel. Fishes of Australia, Museums Victoria / OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/3568",
+      "urlLabel": "fishesofaustralia.net.au (Museums Victoria)",
+      "supports": ["Museum depth 1–57 m, 130 cm total length, Indo-West Pacific range, burrows, phases and LC"],
+      "access": "Full museum account read. Its phase/sex summary is not used as a definitive sex key. The site's Feeding: Aquarium fish label is a use label and is not interpreted as diet."
+    },
+    {
+      "id": "dx-shen-ribbon_eel",
+      "text": "Shen, S.-C., Lin, R.-P. & Liu, F.C.-C. (1979). Redescription of a protandrous hermaphroditic moray eel (Rhinomuaena quaesita Garman). Bulletin of the Institute of Zoology, Academia Sinica 18(2): 79–87.",
+      "url": "https://zoolstud.sinica.edu.tw/Journals/18.2/79.pdf",
+      "urlLabel": "zoolstud.sinica.edu.tw (primary anatomy)",
+      "supports": ["Slender body, paired expanded nostrils, snout and lower-jaw appendages; historical colour/sex interpretation"],
+      "access": "Detailed indexed primary text, including methods, read. Direct PDF extraction was unsupported. Historical reproductive conclusions are disclosed alongside later disagreement, not adopted as a universal model label."
+    },
+    {
+      "id": "dx-preininger-ribbon_eel",
+      "text": "Preininger, D., Halbauer, R., Bartsch, V. & Weissenbacher, A. (2015). First observations of fertilized eggs and preleptocephalus larvae of Rhinomuraena quaesita in the Vienna Zoo. Zoo Biology 34(1): 85–88. DOI: 10.1002/zoo.21184.",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1002/zoo.21184",
+      "urlLabel": "onlinelibrary.wiley.com (primary breeding study)",
+      "supports": ["Explicit finding that captive body colour did not reflect sex or maturity"],
+      "access": "Primary publisher abstract read; first online November 2014, journal issue January/February 2015. The guide uses this stated conclusion, not unaccessed husbandry details."
+    },
+    {
+      "id": "dx-fishbase-ribbon_eel",
+      "text": "FishBase (2026). Rhinomuraena quaesita species summary, including IUCN Version 2025-2 (Global) export and linked primary references. Accessed October 2026.",
+      "url": "https://www.fishbase.org/summary/8594",
+      "urlLabel": "fishbase.org",
+      "supports": ["Small-fish diet, head/body anatomy, partial emergence, current assessment date and explicitly qualified protandry"],
+      "access": "Detailed current indexed account read. Its 1–67 m depth interval differs from the museum metadata selected here. Modelled longevity, vulnerability and trophic estimates are not imported."
+    },
+    {
+      "id": "dx-iucn-ribbon_eel",
+      "text": "McCosker, J.E. (2010). Rhinomuraena quaesita (errata version published in 2017). The IUCN Red List of Threatened Species 2010: e.T155301A115297865. Assessed 4 February 2009. DOI: 10.2305/IUCN.UK.2010-4.RLTS.T155301A115297865.en.",
+      "url": "https://www.iucnredlist.org/species/155301/115297865",
+      "urlLabel": "iucnredlist.org",
+      "supports": ["LC assessment citation; assessment versus publication and errata dates"],
+      "access": "Primary page, DOI and PDF attempts failed. LC and exact assessment date are verified through the current indexed FishBase IUCN export; LC is independently corroborated by Museums Victoria. Publication/errata citation is independently reproduced by conservation accounts. No unaccessed primary population rationale is asserted."
+    },
+    {
+      "id": "dx-eschmeyer-ribbon_eel",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds) (2026). Eschmeyer's Catalog of Fishes: Rhinomuraena quaesita Garman, 1888, species record 57917. California Academy of Sciences. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=57917",
+      "urlLabel": "calacademy.org",
+      "supports": ["Currently valid name, synonymy, family and Indo-West Pacific distribution"],
+      "access": "Full catalog record read. Search index was updated August 2026; direct extracted page retained an October 2025 header. Both agree on the accepted name, and the primary 2012 checklist independently corroborates it."
+    },
+    {
+      "id": "dx-review-ribbon_eel",
+      "text": "Sadovy de Mitcheson, Y. & Liu, M. (2008). Functional hermaphroditism in teleosts. Fish and Fisheries 9: 1–43. DOI: 10.1111/j.1467-2979.2007.00266.x.",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1467-2979.2007.00266.x",
+      "urlLabel": "onlinelibrary.wiley.com (review)",
+      "supports": ["Conservative reproductive diagnosis and later qualification of colour-inferred protandry"],
+      "access": "Publisher abstract and bibliographic record read; species-specific passage independently available in the indexed author manuscript and reflected explicitly in FishBase reference 103751. The public fact is based on the later direct breeding report."
+    },
+    {
+      "id": "dx-smith-ribbon_eel",
+      "text": "Smith, D.G. (2012). A checklist of the moray eels of the world (Teleostei: Anguilliformes: Muraenidae). Zootaxa 3474: 1–64; Rhinomuraena quaesita account, p. 33.",
+      "url": "https://www.mapress.com/zootaxa/2012/f/zt03474p064.pdf",
+      "urlLabel": "mapress.com (primary taxonomy)",
+      "supports": ["Accepted name, synonymy, type specimen and Indo-West Pacific range"],
+      "access": "Full primary PDF and species account read. Historical names are not represented as separate living species in the catalog."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 1.0,
+    "nominalDimension": "Approximate COMPLETE total body length including the concealed posterior body, not the visible model height or the burrow-base footprint",
+    "maximumLengthM": 1.3,
+    "illustrativeExposedForebodyLengthM": 0.45,
+    "exposedSpanIsMeasuredSpecimen": false,
+    "depth": [1, 57],
+    "origin": "base",
+    "habit": "crevice",
+    "zone": "sand",
+    "representative": "One unsexed blue-bodied appearance with a yellow back fin, snout and lower jaw. No gonadal anatomy, eggs or phase-to-sex key. Other documented appearances remain described in the guide.",
+    "basis": "A one-metre total-length individual is illustrative within the published 1.3 m size scale. About 0.4–0.5 m of curving forebody is exposed; the remaining length is concealed. Use a fixed subdued burrow lip at substrate level, and fit the viewer to actual visible geometry. The selected museum depth range is not a claim that this pose occurs uniformly from 1 to 57 m.",
+    "anatomy": "Laterally compressed, very thin continuous forebody rising in a relaxed curve; a slender tapered head with separate jaws and recessed mouth; small lateral eyes; paired tubular anterior nostrils with outward flared fan margins; a single slender snout-tip projection and three distinct lower-jaw projections at the front join, with lateral projections angled forward/downward; back fin beginning anterior to the small gill opening and continuing along the exposed body. Omit the hidden tail rather than inventing a visible complete tail. No pectoral or pelvic fins.",
+    "anatomyLimits": "Small teeth, pores and fin rays can be simplified. Keep nasal fans separate from the mouth and eyes. Forebody dimensions and curvature are illustrative, not a diagnostic measurement. No oversized dragon head, horns, snake tongue, facial whisker forest, external ears or ordinary tail paddle.",
+    "motion": "Keep the substrate/burrow root fixed. Use subtle localized head/jaw or nasal movement and restrained upper-body sway if supported without vertex uploads. Reduced-motion and inspection poses remain static; no whole-body burrow relocation or new swimming simulation is required."
+  },
+  "integration": {
+    "maintainedSource": "Append the specimen and used references without regenerating old guide records.",
+    "practice": "Inspection and recall remain optional and do not award discoveries or persist current card state, reflections or ordering.",
+    "lookalikeNote": "One-way giant_moray teaching contrast; preserve that prior record exactly.",
+    "identificationLimit": "Combine structural features, multiple appearances and locality with specialist resources. This model does not establish wild identity, sex or maturity by itself."
+  }
+}

@@ -330,24 +330,32 @@ describe('Mounted cockpit information priority and retained evidence', () => {
     expect(notes.textContent).toContain('14 CFR 91.211');
   });
 
-  it('shows the longer milestone explanations only when more information is selected', async () => {
+  it('keeps one brief milestone title and retains full explanations when more information is selected', async () => {
     await mountQuiet({ railCollapsed: false });
     await paintFrame(cruise, levelControls);
     expect(paintedText().some(text => text.includes('required minimum flight crew'))).toBe(false);
     await click(buttons().find(element => /More information/i.test(element.textContent)));
     await paintFrame(cruise, levelControls);
-    expect(paintedText().some(text => text.includes('Lift just exceeded weight'))).toBe(true);
-    expect(paintedText().some(text => text.includes('required minimum flight crew'))).toBe(true);
-    expect(paintedText().filter(text => milestoneTitles.includes(text))).toEqual([]);
+    expect(paintedText().some(text => text.includes('Lift just exceeded weight'))).toBe(false);
+    expect(paintedText().some(text => text.includes('required minimum flight crew'))).toBe(false);
+    expect(paintedText().filter(text => milestoneTitles.includes(text))).toEqual(['Flight Level 180']);
+    const notes = host.querySelector('[data-flight-notes]');
+    expect(notes).toBeTruthy();
+    expect(notes.open).toBe(false);
+    expect([...notes.querySelectorAll('strong')].map(element => element.textContent)).toEqual(milestoneTitles);
+    expect(notes.textContent).toContain('Lift just exceeded weight');
+    expect(notes.textContent).toContain('A knot = 1 nautical mile per hour');
+    expect(notes.textContent).toContain('required minimum flight crew');
+    expect(notes.textContent).toContain('14 CFR 91.211');
   });
 
   it('keeps the stall warning and recovery action visible while suppressing noncritical notices', async () => {
     await mountQuiet();
     await paintFrame(cruise, levelControls);
     expect(paintedText()).toContain('Flight Level 180');
-    await paintFrame({ ...cruise, stalling: true }, { ...levelControls, pitch: 20 });
+    await paintFrame({ ...cruise, stalling: true, aoa: helpers().Physics.CRITICAL_AOA + 2 }, { ...levelControls, pitch: 20 });
     const texts = paintedText();
-    expect(texts).toContain('⚠️ STALL — REDUCE ANGLE OF ATTACK');
+    expect(texts).toContain('⚠️ STALL — BRING AoA TOWARD ZERO');
     expect(texts.join(' ')).toContain('Push S to lower nose');
     expect(texts.some(text => milestoneTitles.includes(text))).toBe(false);
     expect(texts.some(text => /Lift just exceeded weight|Discovered:/.test(text))).toBe(false);

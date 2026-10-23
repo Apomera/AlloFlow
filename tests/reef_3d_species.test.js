@@ -12,9 +12,9 @@ const SOURCE = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_
 
 const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
-    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish'],
+    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel'],
   reptile: ['green_turtle', 'hawksbill_turtle'],
-  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral'],
+  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp'],
   coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
@@ -151,7 +151,10 @@ describe('Reef3DSpecies contract', () => {
       expect(i.depthM).toHaveLength(2);
       expect(i.depthM[0], id).toBeGreaterThanOrEqual(0);
       expect(i.depthM[1], id).toBeGreaterThan(i.depthM[0]);
-      expect(i.depthM[1], id).toBeLessThanOrEqual(60);
+      // Published ecological ranges can extend beyond the simulation's dive
+      // depths (Fishes of Australia: forceps fish 145 m, regal angelfish 80 m).
+      const depthCap = { yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100 }[id] || 60;
+      expect(i.depthM[1], id).toBeLessThanOrEqual(depthCap);
       if (i.habit === 'school') { expect(i.schoolSize[0], id).toBeGreaterThanOrEqual(2); expect(i.schoolSize[1], id).toBeGreaterThan(i.schoolSize[0]); }
       else expect(i.schoolSize, id).toBeNull();
       expect(['centre', 'base', 'crevice'], id).toContain(i.origin);
@@ -323,16 +326,32 @@ describe('Reef3DSpecies motion', () => {
   });
 
   it('animates every living organism locally, and holds still under reduced motion', () => {
+    // Compile once before the first update and retain the actual shared
+    // uniforms. Only enabled bends with vertices inside their envelope count;
+    // amplitude-weighted phase ignores unused time and appearance uniforms.
+    function observeMotion(root) {
+      const bends = [];
+      for (const mesh of meshes(root)) for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+        const shader = { uniforms: {}, vertexShader: '#include <common>\n#include <beginnormal_vertex>\n#include <begin_vertex>', fragmentShader: '#include <common>\n#include <emissivemap_fragment>' };
+        material.onBeforeCompile(shader);
+        const u = shader.uniforms, shape = u.reefSwimShape && u.reefSwimShape.value;
+        if (shape && shape.z > 0 && u.reefSwim) {
+          const p = mesh.geometry.attributes.position;
+          for (let i = 0; i < p.count; i++) if (p.getX(i) < shape.x) { bends.push(u.reefSwim); break; }
+        }
+      }
+      return () => snapshot(root).concat(bends.map(({ value: v }) => [v.y * Math.sin(v.x), v.y * Math.cos(v.x), v.y * v.z]));
+    }
     const still = [];
     for (const id of ALL) {
-      const h = S.create(THREE, id, { seed: 6, quality: 'low' }), rootM = h.root.matrix.clone();
-      h.update(0.016, 0.05); const a = snapshot(h.root); h.update(0.016, 1.9); const b = snapshot(h.root);
+      const h = S.create(THREE, id, { seed: 6, quality: 'low' }), rootM = h.root.matrix.clone(), observe = observeMotion(h.root);
+      h.update(0.016, 0.05); const a = observe(); h.update(0.016, 1.9); const b = observe();
       if (maxChange(a, b) < 1e-5) still.push(id);
       h.root.updateMatrix(); expect(h.root.matrix.equals(rootM), id + ' never moves its root').toBe(true);
       h.dispose();
-      const r = S.create(THREE, id, { seed: 6, quality: 'low', reducedMotion: true }), s0 = snapshot(r.root);
+      const r = S.create(THREE, id, { seed: 6, quality: 'low', reducedMotion: true }), observeReduced = observeMotion(r.root), s0 = observeReduced();
       for (const t of [0.3, 1.1, 4.7]) r.update(0.05, t);
-      expect(maxChange(s0, snapshot(r.root)), id + ' reduced motion').toBeLessThan(1e-9);
+      expect(maxChange(s0, observeReduced()), id + ' reduced motion').toBeLessThan(1e-9);
       r.dispose();
     }
     expect(still.sort()).toEqual([...STATIC].sort());

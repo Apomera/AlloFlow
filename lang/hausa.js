@@ -54712,6 +54712,15 @@
       "sr_critique_ready": "Sharhin ya shirya."
     },
     "flightsim": {
+      "guided_inspect_angle": "Duba kwatancen kusurwoyi",
+      "guided_inspect_speed": "Duba kwatancen sauri",
+      "guided_export_scope": "Fitarwar ta ƙunshi daftarin yanzu da yunƙurin baya. Fitarwa ba ta kammala binciken ba.",
+      "hint_t_stall_negative": "🚨 STALL! Kusurwar hari tana ƙasa da sifili: ja a hankali ZUWA SAMA daga tsakiya don kusantar da ita zuwa sifili. Yi amfani da gefen dama don ƙarfin injin idan ana buƙata.",
+      "hint_k_stall_negative": "🚨 STALL! Kusurwar hari tana ƙasa da sifili: latsa W a hankali don kusantar da ita zuwa sifili. Ƙara ƙarfin injin da Shift idan ana buƙata.",
+      "hint_stall_direction_unknown": "🚨 STALL! Kusantar da kusurwar hari zuwa sifili. Ba a san alkiblarta ba; duba ma'aunin AoA kafin zaɓar motsin hancin jirgin.",
+      "announce_stall_warning_negative": "Gargaɗin stall! Kusurwar hari tana ƙasa da sifili. Ɗaga hancin jirgin a hankali don kusantar da ita zuwa sifili; ƙara ƙarfin injin idan ana buƙata.",
+      "announce_stall_warning_unknown": "Gargaɗin stall! Kusantar da kusurwar hari zuwa sifili. Ba a san alkiblarta ba; duba ma'aunin AoA kafin zaɓar motsin hancin jirgin.",
+      "hud_stall_warning": "⚠️ STALL — KUSANTAR DA AoA ZUWA SIFILI",
       "debrief_unavailable_title": "Bitar tafiyar jirgin da aka ajiye ba ta samuwa",
       "debrief_unavailable_body": "Bitar tafiyar jirgi ta baya-bayan nan ta ɓace ko ba za a iya karanta ta ba. Koma menu don fara sabuwar tafiya.",
       "guided_idea_before_trials": "An rubuta kafin gwaje-gwajen",

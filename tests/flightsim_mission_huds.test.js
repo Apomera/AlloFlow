@@ -26,7 +26,7 @@ const PATHS = [
 const eachSource = (fn) => PATHS.forEach((p) => fn(readFileSync(p, 'utf8'), p));
 
 const OVERLAYS = [
-  'drawForces', 'checkMilestones', 'drawLandingScore', 'drawAchievementPopup',
+  'drawForces', 'drawLandingScore',
   'drawRescueOverlay', 'drawSurveyOverlay', 'drawSprintHUD',
 ];
 

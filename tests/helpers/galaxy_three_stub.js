@@ -323,10 +323,17 @@ export function installLoopStubs() {
   const prevRAF = window.requestAnimationFrame;
   const prevCAF = window.cancelAnimationFrame;
 
-  const intersectionObservers = [];
+  const intersectionObservers = [], resizeObservers = [];
 
   window.ResizeObserver = function (cb) {
-    return { __cb: cb, observe() {}, unobserve() {}, disconnect() {} };
+    const ro = {
+      __cb: cb, __targets: new Set(), __disconnected: false,
+      observe(el) { ro.__disconnected = false; ro.__targets.add(el); },
+      unobserve(el) { ro.__targets.delete(el); },
+      disconnect() { ro.__disconnected = true; ro.__targets.clear(); },
+    };
+    resizeObservers.push(ro);
+    return ro;
   };
   window.IntersectionObserver = function (cb) {
     const io = {
@@ -371,6 +378,14 @@ export function installLoopStubs() {
   };
   /** Every IntersectionObserver created since install, newest last. */
   api.intersectionObservers = intersectionObservers;
+  /** Notifies every active resize observer, or only those watching `el`. */
+  api.resize = function resize(el) {
+    resizeObservers.filter(ro => !ro.__disconnected && ro.__targets.size && (!el || ro.__targets.has(el))).forEach(ro => {
+      const targets = el ? [el] : Array.from(ro.__targets);
+      ro.__cb(targets.map(target => ({ target, contentRect: target.getBoundingClientRect() })), ro);
+    });
+  };
+  api.resizeObservers = resizeObservers;
   /** Drives the observer watching `el` to the given intersecting state. */
   api.setIntersecting = function setIntersecting(el, isIntersecting) {
     const io = intersectionObservers.filter((o) => o.__targets.includes(el)).pop();

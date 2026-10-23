@@ -9,6 +9,29 @@ AlloFlow is built with the fundamental belief that student privacy is a non-nego
 | Current `main` branch and latest local Desktop package work | :white_check_mark: |
 | Older local snapshots or pre-Desktop builds | Best effort only |
 
+## Dependency checks before release
+
+Run `npm run verify:audit` before releasing. The check covers the root, desktop,
+web app, Firebase functions, local MCP runtime, remote MCP service and runner,
+accessibility audit tools, and trailer lockfiles. It does not install packages
+or execute package lifecycle scripts, and it does not require `node_modules`.
+Missing lockfiles, registry failures, invalid responses, and timeouts produce
+exit code 2 (incomplete); high or critical findings produce exit code 1.
+Exit code 0 means every selected audit completed below the threshold.
+
+Use `node dev-tools/check_npm_audit.cjs --scope=desktop/web-app/functions` for a
+targeted check, `--include-moderate` for a stricter threshold, or `--json` for a
+machine-readable report. `--production` explicitly omits development dependencies;
+it is not sufficient for desktop release review because Electron is declared as
+a development dependency but ships in the application.
+
+Audit findings identify vulnerable package versions, not confirmed exploitation.
+Review the affected code paths, update within supported version ranges where
+possible, and test affected functionality before packaging or deployment. A
+lockfile update takes effect only after dependencies are installed and the
+affected application is rebuilt or redeployed. Never use a failed or skipped
+audit as evidence that a release is safe.
+
 ## Architecture & Data Safety (FERPA-Aligned Design)
 
 AlloFlow is designed to support school-controlled, FERPA-aligned deployments. The everyday local-first path is **AlloFlow Desktop**, which can keep the bundled app, local settings, local engine options, and same-room LAN classroom sessions on the teacher machine without Docker. The **School Box Server** Docker stack remains optional infrastructure for schools that need a server/appliance path. Compliance still depends on district policy, contracts, access controls, retention, consent, and actual use.

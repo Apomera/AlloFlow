@@ -1132,7 +1132,6 @@ const handleLoadProject = (e, deps) => {
                 const hydratedHistory = typeof normalizeArtifactInstanceIds === 'function'
                     ? normalizeArtifactInstanceIds(hydrated)
                     : hydrated;
-                setHistory(hydratedHistory);
                 // Restore only after the loaded resource list is known. The
                 // host validates the draft envelope against this exact history,
                 // sanitizes imported HTML, and clears any previous-project draft.
@@ -1143,6 +1142,7 @@ const handleLoadProject = (e, deps) => {
                     });
                 }
                 if (!projectLoadIsCurrent()) return;
+                setHistory(hydratedHistory);
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);

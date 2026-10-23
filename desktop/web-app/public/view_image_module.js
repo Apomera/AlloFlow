@@ -180,9 +180,11 @@ function ImageView(props) {
   // upload, but keep their description and carry their credit (drawn into the
   // image too, since downloads copy only the picture).
   const [findOpen, setFindOpen] = React.useState(false);
-  // The panel belongs to the picture it was opened for: another item closes it,
-  // and a multi-panel visual (which never shows a replaced picture) has none.
-  const multiPanel = !!(generatedContent && generatedContent.data && generatedContent.data.visualPlan && generatedContent.data.visualPlan.panels && generatedContent.data.visualPlan.panels.length > 1);
+  // A populated single panel owns its picture, labels and caption just like a
+  // larger plan. Prompt-only single plans still use the legacy top-level image.
+  const visualPanels = generatedContent?.data?.visualPlan?.panels;
+  const usesVisualPanelGrid = Array.isArray(visualPanels) && (visualPanels.length > 1 || visualPanels.length === 1 && typeof visualPanels[0]?.imageUrl === 'string' && visualPanels[0].imageUrl.trim().length > 0);
+  // The picture picker belongs to the top-level image, never to panel artwork.
   React.useEffect(() => {
     setFindOpen(false);
   }, [generatedContent && generatedContent.id]);
@@ -297,7 +299,7 @@ function ImageView(props) {
     className: "flex flex-col items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden"
-  }, generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1 ? /*#__PURE__*/React.createElement(VisualPanelGrid, {
+  }, usesVisualPanelGrid ? /*#__PURE__*/React.createElement(VisualPanelGrid, {
     key: (generatedContent?.id || "default") + (isTeacherMode ? ':teacher' : ':learner'),
     visualPlan: generatedContent?.data.visualPlan,
     onRefinePanel: handleRefinePanel,
@@ -490,7 +492,7 @@ function ImageView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
-  }), t('visuals.regenerate_prompt')))), isTeacherMode && findOpen && !multiPanel && /*#__PURE__*/React.createElement("section", {
+  }), t('visuals.regenerate_prompt')))), isTeacherMode && findOpen && !usesVisualPanelGrid && /*#__PURE__*/React.createElement("section", {
     className: "w-full max-w-2xl mb-4",
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo'
   }, window.AlloModules && window.AlloModules.ClassroomImagePicker ? React.createElement(window.AlloModules.ClassroomImagePicker, {
@@ -579,7 +581,7 @@ function ImageView(props) {
     style: {
       fontSize: '1.125rem'
     }
-  }, "📷")), !(generatedContent?.data?.visualPlan?.panels?.length > 1) && /*#__PURE__*/React.createElement("button", {
+  }, "📷")), !usesVisualPanelGrid && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,

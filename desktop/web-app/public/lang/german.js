@@ -55987,6 +55987,15 @@
       "sr_critique_ready": "Kritik bereit."
     },
     "flightsim": {
+      "guided_inspect_angle": "Anstellwinkelvergleich ansehen",
+      "guided_inspect_speed": "Geschwindigkeitsvergleich ansehen",
+      "guided_export_scope": "Der Export enthält deinen aktuellen Entwurf und frühere Versuche. Der Export schließt die Untersuchung nicht ab.",
+      "hint_t_stall_negative": "🚨 STRÖMUNGSABRISS! Der Anstellwinkel ist negativ: Ziehe sanft von der Mitte nach OBEN, um ihn gegen null zu bringen. Nutze bei Bedarf den rechten Rand für die Leistung.",
+      "hint_k_stall_negative": "🚨 STRÖMUNGSABRISS! Der Anstellwinkel ist negativ: Drücke sanft W, um ihn gegen null zu bringen. Erhöhe bei Bedarf die Leistung mit Shift.",
+      "hint_stall_direction_unknown": "🚨 STRÖMUNGSABRISS! Bringe den Anstellwinkel gegen null. Seine Richtung ist unbekannt; prüfe die AoA-Anzeige, bevor du eine Nickbewegung wählst.",
+      "announce_stall_warning_negative": "Warnung vor Strömungsabriss! Der Anstellwinkel ist negativ. Hebe die Nase sanft, um ihn gegen null zu bringen; erhöhe bei Bedarf die Leistung.",
+      "announce_stall_warning_unknown": "Warnung vor Strömungsabriss! Bringe den Anstellwinkel gegen null. Seine Richtung ist unbekannt; prüfe die AoA-Anzeige, bevor du eine Nickbewegung wählst.",
+      "hud_stall_warning": "⚠️ STRÖMUNGSABRISS — AoA GEGEN NULL",
       "debrief_unavailable_title": "Gespeicherte Flugauswertung nicht verfügbar",
       "debrief_unavailable_body": "Die letzte Flugauswertung fehlt oder kann nicht gelesen werden. Kehre zum Menü zurück, um einen neuen Flug zu starten.",
       "guided_idea_before_trials": "Vor den Versuchen festgehalten",

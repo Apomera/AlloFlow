@@ -3,7 +3,8 @@
   "scripts": {
     "build:performance": "node dev-tools/build_performance_release.cjs",
     "verify:performance-artifacts": "node dev-tools/build_performance_release.cjs --check",
-    "test": "vitest run",
+    "test": "npm run test:native && vitest run",
+    "test:native": "node dev-tools/run_native_tests.cjs",
     "test:reader:prepared": "node dev-tools/reader-prepared-help/run.cjs",
     "cdn:cache-bust": "node dev-tools/cache_bust_module_urls.cjs",
     "build:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs",
@@ -28,7 +29,7 @@
     "verify:educator-evaluation": "node _build_educator_evaluation_apps_script.js --check && vitest run tests/educator_evaluation --maxWorkers=1 --pool=forks --testTimeout=60000",
     "capture:evaluation-manual": "node dev-tools/capture_educator_evaluation_manual.cjs",
     "test:ci:shard": "node dev-tools/run_unit_shard.cjs",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "npm run test:native && vitest run --coverage",
     "build:adventure": "node _build_adventure_module.js",
     "verify:adventure-build": "node _build_adventure_module.js --check",
     "build:eppp-library": "node dev-tools/build_eppp_learning_library.cjs",

@@ -44,6 +44,9 @@ describe('Individual mushroom spacing preserves actual cooking state',()=>{
  it('accepts other uncrowded layouts instead of requiring the suggested destination assignments',()=>{
   let s=fresh('independent');for(const d of A.spacing(s).destinations)s=act(s,{piece:d.index,x:-d.x,z:-d.z});expect(A.spacing(s)).toMatchObject({fullContactCount:14,crowdedCount:0,targetMet:true});expect(s.guide.complete).toBe(true);expect(s.state.pan.pieces[0].x).toBe(-.54);expect(s.state.plated).toBe(false);replay(s);
  });
+ it('normalizes signed-zero positions and piece indices before saving or replaying a move',()=>{
+  for(const position of [{x:-0,z:60},{x:60,z:-0},{x:-0,z:-0}]){const p=stage(fresh('independent'),{piece:-0,...position});for(const value of [p.pending.piece,p.pending.targetX,p.pending.targetZ])expect(Object.is(value,-0)).toBe(false);const s=A.commit(p,p.pending.token);for(const value of [s.record.intents[0].piece,s.record.intents[0].x,s.record.intents[0].z])expect(Object.is(value,-0)).toBe(false);expect(clone(A.createRecord(s))).toEqual(s.record);replay(s);}
+ });
  it('does not confuse no crowded pieces with full contact for every piece',()=>{
   let s=fresh('watch');for(let i=0;i<13;i++)s=A.demonstrateNext(s);expect(A.spacing(s)).toMatchObject({crowdedCount:0,fullContactCount:12,targetMet:false});expect(s.guide.complete).toBe(false);const reduced=A.spacing(s).pieces.filter(p=>p.contact<1);expect(reduced).toHaveLength(2);expect(reduced.every(p=>p.neighbors===1&&!p.crowded)).toBe(true);s=A.demonstrateNext(s);expect(A.spacing(s).targetMet).toBe(true);
  });

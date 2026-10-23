@@ -44,6 +44,344 @@ window.StemLab = window.StemLab || {
   }
   // END GALAXY SUPERNOVA PROGENITORS
 
+  // BEGIN GALAXY ORIENTATION MODEL
+  // Orthographic reference glyph, oriented by the real camera's look direction.
+  // The +Y normal belongs to the host model plane, never to an inspected nebula.
+  function galaxyOrientationProjection(position, target) {
+    if (!position || !target || !['x', 'y', 'z'].every(function (key) { return Number.isFinite(position[key]) && Number.isFinite(target[key]); })) return null;
+    var x = position.x - target.x, y = position.y - target.y, z = position.z - target.z;
+    var length = Math.hypot(x, y, z);
+    if (!(length > 0.000001)) return null;
+    x /= length; y /= length; z /= length;
+    var horizontal = Math.hypot(x, z);
+    // THREE's camera keeps +Y up. At a pole choose a stable horizontal basis.
+    var rightX = horizontal > 0.000001 ? z / horizontal : 1;
+    var rightZ = horizontal > 0.000001 ? -x / horizontal : 0;
+    var upX = -y * -rightZ, upZ = -y * rightX;
+    var elevation = Math.atan2(y, horizontal) * 180 / Math.PI;
+    var phi = Math.acos(Math.max(-1, Math.min(1, y)));
+    var preset = Math.abs(phi - 0.1) < 0.015 ? 'face' : Math.abs(phi - Math.PI * 0.35) < 0.015 ? 'angled' : Math.abs(phi - Math.PI * 0.5) < 0.015 ? 'edge' : 'free';
+    function number(value) { return Math.round(value * 1000) / 1000; }
+    function arc(start) {
+      var points = [];
+      for (var index = 0; index <= 20; index++) {
+        var angle = start + index * Math.PI / 20;
+        points.push((index ? 'L' : 'M') + number(50 + 32 * Math.cos(angle)) + ' ' + number(50 + 32 * y * Math.sin(angle)));
+      }
+      return points.join(' ');
+    }
+    return {
+      elevation: elevation, roundedElevation: Math.round(elevation), preset: preset,
+      next: preset === 'face' ? 'angled' : preset === 'angled' ? 'edge' : 'face',
+      minorRatio: Math.abs(y), front: arc(0), back: arc(Math.PI),
+      normal: { x1: 50, y1: 50, x2: 50, y2: number(50 - 36 * horizontal) },
+      axes: [
+        { x1: 50, y1: 50, x2: number(50 + 25 * rightX), y2: number(50 - 25 * upX) },
+        { x1: 50, y1: 50, x2: number(50 + 25 * rightZ), y2: number(50 - 25 * upZ) }
+      ]
+    };
+  }
+  function renderGalaxyOrientationDiagram(React, size) {
+    return React.createElement('svg', { viewBox: '0 0 100 88', width: size, height: size, 'aria-hidden': true, focusable: 'false', style: { flexShrink: 0 } },
+      React.createElement('path', { 'data-galaxy-orientation-back': 'true', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeDasharray: '4 4', opacity: 0.6 }),
+      React.createElement('path', { 'data-galaxy-orientation-front': 'true', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 }),
+      [0, 1].map(function (index) { return React.createElement('line', { key: index, 'data-galaxy-orientation-axis': index, stroke: 'currentColor', strokeWidth: 1.5, opacity: index ? 0.35 : 0.65 }); }),
+      React.createElement('line', { 'data-galaxy-orientation-normal': 'true', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round' }),
+      React.createElement('circle', { 'data-galaxy-orientation-normal-tip': 'true', r: 2.5, fill: 'currentColor' }),
+      React.createElement('circle', { cx: 50, cy: 50, r: 3, fill: 'currentColor' })
+    );
+  }
+  function galaxyApplyOrientationDisplay(node, projection, reference, t) {
+    if (!node || !projection) return;
+    var __alloT = typeof t === 'function' ? t : function (key, fallback) { return fallback; };
+    function setLine(selector, values) {
+      var line = node.querySelector(selector);
+      if (line) Object.keys(values).forEach(function (key) { line.setAttribute(key, values[key]); });
+    }
+    var front = node.querySelector('[data-galaxy-orientation-front]'), back = node.querySelector('[data-galaxy-orientation-back]');
+    if (front) front.setAttribute('d', projection.front);
+    if (back) back.setAttribute('d', projection.back);
+    setLine('[data-galaxy-orientation-normal]', projection.normal);
+    setLine('[data-galaxy-orientation-normal-tip]', { cx: projection.normal.x2, cy: projection.normal.y2 });
+    projection.axes.forEach(function (axis, index) { setLine('[data-galaxy-orientation-axis="' + index + '"]', axis); });
+    var rounded = projection.roundedElevation === 0 ? 0 : projection.roundedElevation;
+    var degreeLabel = (rounded > 0 ? '+' : '') + rounded + '°';
+    var referenceNode = node.querySelector('[data-galaxy-orientation-reference]'), elevationNode = node.querySelector('[data-galaxy-orientation-elevation]');
+    if (referenceNode) referenceNode.textContent = reference;
+    if (elevationNode) elevationNode.textContent = degreeLabel;
+    node.setAttribute('data-elevation', rounded);
+    node.setAttribute('data-next-view', projection.next);
+    var description = __alloT('stem.galaxy.orientation_description', '{reference}: {angle}° from the reference plane. Positive is above; negative is below.').replace('{reference}', reference).replace('{angle}', String(rounded));
+    if (node.tagName.toLowerCase() === 'button') {
+      var nextLabel = projection.next === 'face' ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : projection.next === 'angled' ? __alloT('stem.galaxy.orient_angled', 'Angled view') : __alloT('stem.galaxy.orient_edge_on', 'Edge-on view');
+      var action = __alloT('stem.galaxy.orientation_switch', 'Switch to {view}.').replace('{view}', nextLabel);
+      node.setAttribute('aria-label', description + ' ' + action);
+      node.setAttribute('title', description + ' ' + action);
+    } else node.setAttribute('aria-label', description);
+  }
+  function renderGalaxyOrientationDisplay(React, o) {
+    var __alloT = typeof o.t === 'function' ? o.t : function (key, fallback) { return fallback; };
+    var compact = o.compact === true;
+    var reference = o.spiral ? __alloT('stem.galaxy.orientation_disk', 'Galaxy disk') : __alloT('stem.galaxy.orientation_model_plane', 'Model plane');
+    return React.createElement(compact ? 'button' : 'div', {
+      type: compact ? 'button' : undefined, role: compact ? undefined : 'img',
+      'data-galaxy-orientation-display': 'true', 'data-galaxy-orientation': compact ? 'true' : undefined, 'data-galaxy-orientation-panel': compact ? undefined : 'true',
+      'aria-label': compact ? __alloT('stem.galaxy.orientation_cycle', 'Change viewing angle') : __alloT('stem.galaxy.view_angles_title', 'Viewing angle'),
+      onClick: compact ? o.onCycle : undefined,
+      className: compact ? 'absolute left-1/2 top-1 z-[7] hidden -translate-x-1/2 items-center gap-1.5 rounded-full border border-cyan-200/20 bg-slate-950/85 px-2 text-cyan-100 shadow-lg backdrop-blur-md hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 lg:flex' : 'mt-3 min-w-0 rounded-lg border border-indigo-100 bg-indigo-50/60 p-2 text-indigo-700',
+      style: compact ? { minHeight: '44px', height: '44px' } : undefined
+    },
+      React.createElement('span', { className: 'flex min-w-0 items-center gap-2' },
+        renderGalaxyOrientationDiagram(React, compact ? 32 : 80),
+        React.createElement('span', { className: 'min-w-0' },
+          React.createElement('span', { 'data-galaxy-orientation-reference': 'true', className: 'block text-[11px] font-bold leading-tight' }, reference),
+          React.createElement('span', { 'data-galaxy-orientation-elevation': 'true', className: compact ? 'block text-xs font-black tabular-nums' : 'mt-1 block text-lg font-black tabular-nums' }, '—')
+        )
+      ),
+      !compact && React.createElement('span', { className: 'mt-1 block text-[11px] leading-relaxed text-slate-600' }, __alloT('stem.galaxy.orientation_plane_help', 'The line is perpendicular to the galaxy’s reference plane. The angle is above (+) or below (−) that plane, even when inspecting a nebula.'))
+    );
+  }
+  // END GALAXY ORIENTATION MODEL
+
+  // BEGIN GALAXY PLANETARY PROJECTION
+  // The inspected primary gas shell is built around local +Z. Its fixed XYZ
+  // Euler transform belongs to this schematic object, not the host galaxy plane.
+  function galaxyPlanetaryViewDirection(rotation, mode, current) {
+    if (!rotation || !current || (mode !== 'along' && mode !== 'across' && mode !== 'oblique')) return null;
+    if (rotation.order && rotation.order !== 'XYZ') return null;
+    if (!['x', 'y', 'z'].every(function (key) { return Number.isFinite(rotation[key]) && Number.isFinite(current[key]); })) return null;
+    var currentLength = Math.hypot(current.x, current.y, current.z);
+    if (!(currentLength > 0.000001)) return null;
+    var sx = Math.sin(rotation.x), cx = Math.cos(rotation.x), sy = Math.sin(rotation.y), cy = Math.cos(rotation.y), sz = Math.sin(rotation.z), cz = Math.cos(rotation.z);
+    // Third column of THREE's XYZ Euler matrix, with unit scale.
+    var axis = { x: sy, y: -sx * cy, z: cx * cy };
+    var view = { x: current.x / currentLength, y: current.y / currentLength, z: current.z / currentLength };
+    var dot = view.x * axis.x + view.y * axis.y + view.z * axis.z;
+    var direction;
+    if (mode === 'along') {
+      var side = dot < 0 ? -1 : 1;
+      direction = { x: side * axis.x, y: side * axis.y, z: side * axis.z };
+    } else {
+      direction = { x: view.x - dot * axis.x, y: view.y - dot * axis.y, z: view.z - dot * axis.z };
+      var transverseLength = Math.hypot(direction.x, direction.y, direction.z);
+      if (transverseLength < 0.000001) {
+        // First matrix column is a stable perpendicular when looking along +Z.
+        direction = { x: cy * cz, y: cx * sz + sx * cz * sy, z: sx * sz - cx * cz * sy };
+        transverseLength = Math.hypot(direction.x, direction.y, direction.z);
+      }
+      direction.x /= transverseLength; direction.y /= transverseLength; direction.z /= transverseLength;
+      if (mode === 'oblique') {
+        var nearestSide = dot < 0 ? -1 : 1, diagonal = Math.SQRT1_2;
+        direction.x = (direction.x + nearestSide * axis.x) * diagonal;
+        direction.y = (direction.y + nearestSide * axis.y) * diagonal;
+        direction.z = (direction.z + nearestSide * axis.z) * diagonal;
+      }
+    }
+    return { mode: mode, axis: axis, direction: direction, theta: Math.atan2(direction.x, direction.z), phi: Math.acos(Math.max(-1, Math.min(1, direction.y))) };
+  }
+  function galaxyPlanetaryProjectionState(rotation, current) {
+    var projected = galaxyPlanetaryViewDirection(rotation, 'along', current);
+    if (!projected) return null;
+    var length = Math.hypot(current.x, current.y, current.z);
+    var axisDot = (current.x * projected.axis.x + current.y * projected.axis.y + current.z * projected.axis.z) / length;
+    var angle = Math.acos(Math.max(0, Math.min(1, Math.abs(axisDot)))) * 180 / Math.PI;
+    return { axis: projected.axis, axisSide: axisDot < 0 ? -1 : 1, angleDegrees: angle,
+      projection: angle <= 1.5 ? 'along' : angle >= 88.5 ? 'across' : Math.abs(angle - 45) <= 1.5 ? 'oblique' : 'free' };
+  }
+  function galaxyPlanetaryComponentLabel(component, t) {
+    if (component === 'thick-disk') return t('stem.galaxy.shell_component_main_ring', 'Main ring');
+    if (component === 'inclined-disk') return t('stem.galaxy.shell_component_tilted_ring', 'Tilted outer ring');
+    if (component === 'equatorial-shell') return t('stem.galaxy.shell_component_equatorial_ring', 'Equatorial ring');
+    if (component === 'polar-envelope') return t('stem.galaxy.shell_component_polar_envelope', 'Polar envelope');
+    return t('stem.galaxy.shell_component_both', 'Both');
+  }
+  function galaxyPlanetaryAngleText(state, t) {
+    var angle = state && Number.isFinite(state.angleDegrees) ? String(Math.round(state.angleDegrees)) : '—';
+    return state && state.referenceComponent
+      ? t('stem.galaxy.shell_component_axis_angle', '{part}: {angle}° from its axis').replace('{part}', galaxyPlanetaryComponentLabel(state.referenceComponent, t)).replace('{angle}', angle)
+      : t('stem.galaxy.shell_axis_angle', 'Viewing angle: {angle}° from shell axis').replace('{angle}', angle);
+  }
+  function renderGalaxyPlanetaryComponents(o) {
+    if (!o || !o.state || !o.state.available || typeof o.onChange !== 'function') return null;
+    var React = o.React, state = o.state;
+    var t = typeof o.t === 'function' ? o.t : function (key, fallback) { return fallback; };
+    var helix = state.primaryComponent === 'thick-disk', colors = helix ? ['#36b9c6', '#458c9e'] : ['#b37fda', '#85a6dc'];
+    return React.createElement('div', { 'data-galaxy-shell-components': 'true', className: 'mb-3' },
+      React.createElement('p', { id: 'galaxy-shell-components-label', className: 'mb-2 text-xs font-bold text-indigo-900' }, t('stem.galaxy.shell_components_title', 'Study the shell components')),
+      React.createElement('div', { role: 'group', 'aria-labelledby': 'galaxy-shell-components-label', 'aria-describedby': 'galaxy-shell-components-help', className: 'grid grid-cols-3 gap-2' },
+        ['both', 'primary', 'secondary'].map(function (mode) {
+          var component = mode === 'primary' ? state.primaryComponent : mode === 'secondary' ? state.secondaryComponent : '', active = state.mode === mode;
+          return React.createElement('button', { key: mode, type: 'button', 'data-galaxy-shell-component-mode': mode, 'aria-pressed': active, onClick: function () { o.onChange(mode); }, className: 'flex min-h-[44px] min-w-0 flex-col items-center justify-center gap-1 break-words rounded-lg border px-1 py-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 ' + (active ? 'border-indigo-600 bg-indigo-700 text-white' : 'border-indigo-300 bg-white text-indigo-900'), style: { minHeight: '44px' } },
+            React.createElement('span', { 'aria-hidden': true, className: 'flex items-center gap-1' }, (mode === 'both' ? colors : [colors[mode === 'primary' ? 0 : 1]]).map(function (color) { return React.createElement('span', { key: color, 'data-galaxy-component-swatch': color, className: 'inline-block h-2.5 w-2.5 rounded-full border border-black/20', style: { backgroundColor: color } }); })),
+            galaxyPlanetaryComponentLabel(component, t));
+        })),
+      React.createElement('p', { 'data-galaxy-shell-component-shape': 'true', className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, helix
+        ? t('stem.galaxy.shell_components_helix_shape', 'This schematic combines a thick main ring with a tilted outer ring. Isolate one, then orbit to compare their orientations.')
+        : t('stem.galaxy.shell_components_ring_shape', 'This schematic combines an equatorial ring with an extended polar envelope. Isolate one, then orbit to see its shape.')),
+      React.createElement('p', { id: 'galaxy-shell-components-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, t('stem.galaxy.shell_components_help', 'Both uses the main component’s axis. Isolating a component changes the axis reference while keeping your view and zoom.')));
+  }
+  function galaxyApplyShellViewDisplay(node, state, t) {
+    if (!node || !state) return;
+    var __alloT = typeof t === 'function' ? t : function (key, fallback) { return fallback; };
+    var angle = Math.round(state.angleDegrees);
+    var readout = node.querySelector('[data-galaxy-shell-angle]');
+    if (readout) readout.textContent = galaxyPlanetaryAngleText(state, __alloT);
+    Array.prototype.forEach.call(node.querySelectorAll('[data-galaxy-shell-view]'), function (button) {
+      var active = button.getAttribute('data-galaxy-shell-view') === state.projection;
+      button.setAttribute('aria-pressed', String(active));
+      button.style.backgroundColor = active ? '#4338ca' : ''; button.style.color = active ? '#ffffff' : ''; button.style.borderColor = active ? '#4338ca' : '';
+    });
+    var toggle = node.querySelector('[data-galaxy-shell-axis-toggle]');
+    if (toggle) { toggle.setAttribute('aria-pressed', String(state.axisVisible)); toggle.style.backgroundColor = state.axisVisible ? '#a5f3fc' : ''; toggle.style.borderColor = state.axisVisible ? '#0891b2' : ''; }
+    node.setAttribute('data-shell-projection', state.projection);
+    node.setAttribute('data-shell-angle', String(angle));
+    if (state.referenceComponent) node.setAttribute('data-shell-reference-component', state.referenceComponent);
+    else node.removeAttribute('data-shell-reference-component');
+  }
+  function renderGalaxyShellViews(o) {
+    if (!o || typeof o.onView !== 'function') return null;
+    var React = o.React;
+    var __alloT = typeof o.t === 'function' ? o.t : function (key, fallback) { return fallback; };
+    var polarEnvelope = !!(o.state && o.state.referenceComponent === 'polar-envelope');
+    return React.createElement('fieldset', { 'data-galaxy-shell-views': 'true', className: 'rounded-lg border border-indigo-200 bg-indigo-50/60 p-2' },
+      React.createElement('legend', { className: 'px-1 text-xs font-black text-indigo-900' }, __alloT('stem.galaxy.shell_view_title', 'Change the shell projection')),
+      renderGalaxyPlanetaryComponents({ React: React, t: __alloT, state: o.components, onChange: o.onComponent }),
+      React.createElement('p', { 'data-galaxy-shell-angle': 'true', className: 'mb-2 text-xs font-bold tabular-nums text-indigo-900' }, galaxyPlanetaryAngleText(o.state, __alloT)),
+      React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+        ['along', 'oblique', 'across'].map(function (mode) {
+          return React.createElement('button', { key: mode, type: 'button', 'data-galaxy-shell-view': mode, 'aria-pressed': !!(o.state && o.state.projection === mode), 'aria-describedby': 'galaxy-shell-axis-help', onClick: function () { o.onView(mode); }, className: 'flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white px-1 py-2 text-[11px] font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } },
+            React.createElement('svg', { viewBox: '0 0 64 36', width: 64, height: 36, 'aria-hidden': true, focusable: 'false', style: { maxWidth: '100%' } },
+              React.createElement('ellipse', { cx: 32, cy: 18, rx: polarEnvelope ? mode === 'along' ? 13 : mode === 'oblique' ? 11 : 9 : mode === 'along' ? 14 : mode === 'oblique' ? 20 : 23, ry: polarEnvelope ? mode === 'along' ? 13 : mode === 'oblique' ? 15 : 16 : mode === 'along' ? 14 : mode === 'oblique' ? 10 : 5, fill: '#e0e7ff', fillOpacity: polarEnvelope ? 0.7 : 1, stroke: '#6366f1', strokeWidth: 2 }),
+              !polarEnvelope && React.createElement('ellipse', { cx: 32, cy: 18, rx: mode === 'along' ? 8 : mode === 'oblique' ? 13 : 17, ry: mode === 'along' ? 8 : mode === 'oblique' ? 6 : 2, fill: 'white', stroke: '#818cf8', strokeWidth: 1 }),
+              React.createElement('circle', { cx: 32, cy: 18, r: 2, fill: '#312e81' })
+            ),
+            mode === 'along' ? __alloT('stem.galaxy.shell_view_along', 'Along shell axis') : mode === 'oblique' ? __alloT('stem.galaxy.shell_view_oblique', 'Oblique · 45°') : __alloT('stem.galaxy.shell_view_across', 'Across shell axis')
+          );
+        })
+      ),
+      typeof o.onAxis === 'function' && React.createElement('button', { type: 'button', 'data-galaxy-shell-axis-toggle': 'true', 'aria-pressed': !!(o.state && o.state.axisVisible), 'aria-describedby': 'galaxy-shell-axis-help', onClick: o.onAxis, className: 'mt-2 min-h-[44px] w-full rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-2 text-[11px] font-bold text-cyan-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } }, __alloT('stem.galaxy.shell_axis_show', 'Show shell axis')),
+      React.createElement('p', { id: 'galaxy-shell-axis-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, o.components
+        ? __alloT('stem.galaxy.shell_component_axis_help', '0° looks along the component named above; 90° looks across its axis. The schematic guide is solid on the nearer half and dashed on the farther half.')
+        : __alloT('stem.galaxy.shell_axis_help', '0° looks along the main shell axis; 90° looks across it. The schematic guide is solid on the nearer half and dashed on the farther half.')),
+      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, __alloT('stem.galaxy.shell_projection_help', 'Compare the same schematic shell from three directions. The orientation dial still refers to the host galaxy’s plane.'))
+    );
+  }
+  function renderGalaxyCrabComponents(o) {
+    if (!o || !o.state || !o.state.available || typeof o.onToggle !== 'function') return null;
+    var React = o.React;
+    var __alloT = typeof o.t === 'function' ? o.t : function (key, fallback) { return fallback; };
+    return React.createElement('fieldset', { 'data-galaxy-crab-components': 'true', className: 'rounded-lg border border-indigo-200 bg-indigo-50/60 p-2' },
+      React.createElement('legend', { className: 'px-1 text-xs font-black text-indigo-900' }, __alloT('stem.galaxy.crab_components_title', 'Separate the model components')),
+      React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+        ['filaments', 'wind'].map(function (kind) {
+          var active = o.state[kind] === true;
+          return React.createElement('button', { key: kind, type: 'button', 'data-galaxy-crab-component': kind, 'aria-pressed': active, onClick: function () { o.onToggle(kind, !active); }, className: 'min-h-[44px] rounded-lg border px-2 py-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 ' + (active ? 'border-indigo-600 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700'), style: { minHeight: '44px' } },
+            kind === 'filaments' ? __alloT('stem.galaxy.crab_component_filaments', 'Filaments') : __alloT('stem.galaxy.crab_component_wind', 'Pulsar wind')
+          );
+        })
+      ),
+      o.cutaway && typeof o.onCutaway === 'function' && React.createElement('button', { type: 'button', 'data-galaxy-crab-cutaway': 'true', 'aria-pressed': !!o.cutaway.enabled, 'aria-describedby': 'galaxy-crab-cutaway-help', disabled: !o.cutaway.available, onClick: function () { o.onCutaway(!o.cutaway.enabled); }, className: 'mt-2 min-h-[44px] w-full rounded-lg border px-2 py-2 text-[11px] font-bold text-cyan-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (o.cutaway.enabled ? 'border-cyan-600 bg-cyan-200' : 'border-cyan-300 bg-cyan-50'), style: { minHeight: '44px' } }, __alloT('stem.galaxy.crab_cutaway_action', 'Open foreground filaments')),
+      o.cutaway && React.createElement('p', { id: 'galaxy-crab-cutaway-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, __alloT('stem.galaxy.crab_cutaway_help', 'Fade the nearer filaments to see inside this schematic remnant. The opening follows your view as you orbit; it is not a gap in the real nebula.')),
+      !o.state.filaments && !o.state.wind && React.createElement('div', { 'data-galaxy-crab-empty': 'true', className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2' },
+        React.createElement('p', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] leading-relaxed text-amber-950' }, __alloT('stem.galaxy.crab_components_empty', 'Both components are hidden. Only the central source marker remains.')),
+        React.createElement('button', { type: 'button', 'data-galaxy-crab-show-both': 'true', onClick: function () { o.onToggle('filaments', true); o.onToggle('wind', true); }, className: 'mt-2 min-h-[44px] w-full rounded-lg border border-amber-300 bg-white px-2 py-2 text-[11px] font-bold text-amber-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } }, __alloT('stem.galaxy.crab_components_show_both', 'Show both components'))
+      ),
+      React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, __alloT('stem.galaxy.crab_components_help', 'Isolate illustrative ejecta and the pulsar-powered interior. These are model components, not measured emission maps.'))
+    );
+  }
+  // END GALAXY PLANETARY PROJECTION
+
+  // BEGIN GALAXY OBJECT CONTEXT
+  // Interpret the selected model object without treating renderer intensity as data.
+  function galaxyObjectContext(selection, band, t) {
+    if (!selection || typeof selection !== 'object' || Array.isArray(selection)) return null;
+    if (['visible', 'infrared', 'radio', 'xray', 'gravity'].indexOf(band) === -1) return null;
+    var family = '';
+    if (selection.kind === 'star' && ['O', 'B', 'A', 'F', 'G', 'K', 'M'].indexOf(selection.spectralClass) !== -1) family = 'star';
+    if (selection.kind === 'nebula') family = ({ Emission: 'emission', Dark: 'dark', Planetary: 'planetary', 'Supernova Remnant': 'remnant' })[selection.nebulaType] || '';
+    if (['star', 'emission', 'dark', 'planetary', 'remnant'].indexOf(family) === -1) return null;
+    var __alloT = typeof t === 'function' ? t : function (key, fallback) { return fallback; };
+    var object = family === 'star' ? __alloT('stem.galaxy.context_object_star', '{class}-type star: spectral class describes its light and surface temperature.').replace('{class}', selection.spectralClass)
+      : family === 'emission' ? __alloT('stem.galaxy.context_object_emission', 'These emission nebulae are stellar nurseries: nearby hot stars energize the glowing gas.')
+      : family === 'dark' ? __alloT('stem.galaxy.context_object_dark', 'Dust blocks background light in a dark nebula. Its silhouette does not mean the region is empty.')
+      : family === 'planetary' ? __alloT('stem.galaxy.context_object_planetary', 'A planetary nebula is material shed by a dying star, not a birthplace of planets.')
+      : __alloT('stem.galaxy.context_object_remnant', 'A supernova remnant contains debris and energized material left after a stellar explosion.');
+    var signal, prompt;
+    var sourceUrl = 'https://imagine.gsfc.nasa.gov/science/objects/milkyway2.html';
+    if (band === 'visible') {
+      signal = __alloT('stem.galaxy.context_visible_signal', 'Visible light traces starlight, glowing gas and dust silhouettes. Point sizes and spikes do not resolve stellar surfaces.');
+      prompt = __alloT('stem.galaxy.context_visible_prompt', 'Keep this object selected and compare infrared: what becomes easier to see?');
+      if (family === 'star') sourceUrl = 'https://science.nasa.gov/universe/stars/';
+      if (family === 'dark') sourceUrl = 'https://science.nasa.gov/asset/hubble/horsehead-nebula-infrared/';
+      if (family === 'planetary') sourceUrl = 'https://science.nasa.gov/missions/webb/nasas-webb-captures-dying-stars-final-performance-in-fine-detail/';
+      if (family === 'remnant') sourceUrl = 'https://science.nasa.gov/missions/webb/the-crab-nebula-seen-in-new-light-by-nasas-webb/';
+    } else if (band === 'infrared') {
+      signal = __alloT('stem.galaxy.context_infrared_signal', 'Infrared can reveal obscured starlight and dust warmed by stars. Different infrared wavelengths trace different material.');
+      prompt = __alloT('stem.galaxy.context_infrared_prompt', 'Compare visible light: did the object change, or the signal you can see?');
+      if (family === 'dark') {
+        signal = __alloT('stem.galaxy.context_dark_infrared_signal', 'Infrared can pass through dust more readily, changing the silhouette and revealing background structure. Some infrared light is still absorbed.');
+        sourceUrl = 'https://science.nasa.gov/asset/hubble/horsehead-nebula-infrared/';
+      }
+      if (family === 'planetary') sourceUrl = 'https://science.nasa.gov/missions/webb/nasas-webb-captures-dying-stars-final-performance-in-fine-detail/';
+      if (family === 'remnant') {
+        signal = __alloT('stem.galaxy.context_remnant_infrared_signal', 'The real Crab has infrared emission from energetic particles as well as gas. Infrared brightness need not mean newly forming stars.');
+        sourceUrl = 'https://science.nasa.gov/missions/webb/the-crab-nebula-seen-in-new-light-by-nasas-webb/';
+      }
+    } else if (band === 'radio') {
+      signal = __alloT('stem.galaxy.context_radio_signal', 'This map emphasizes 21 cm light from neutral atomic hydrogen, with a separate magnetic-field overlay. It does not map all molecular gas or measure this object’s own radio emission.');
+      prompt = __alloT('stem.galaxy.context_radio_prompt', 'Which material does this radio signal trace? What would need a different measurement?');
+      if (family === 'remnant') {
+        signal = __alloT('stem.galaxy.context_remnant_radio_signal', 'Real remnants emit synchrotron radio light from energetic particles in magnetic fields. That differs from this map’s 21 cm atomic-hydrogen signal; this is not a measured radio image of the Crab.');
+        sourceUrl = 'https://heasarc.gsfc.nasa.gov/docs/xte/learning_center/universe/crabneb.html';
+      }
+    } else if (band === 'xray') {
+      signal = __alloT('stem.galaxy.context_xray_signal', 'X-rays can reveal hot gas, stellar activity and compact sources. A model highlight does not establish an X-ray detection in this selected nebula.');
+      prompt = __alloT('stem.galaxy.context_xray_prompt', 'What could X-ray data reveal that visible color alone cannot?');
+      if (family === 'star') {
+        signal = __alloT('stem.galaxy.context_star_xray_signal', 'Stars can emit X-rays from hot outer atmospheres (coronae) and activity. Surface temperature alone does not determine X-ray brightness.');
+        sourceUrl = 'https://imagine.gsfc.nasa.gov/science/objects/stars2.html';
+      }
+      if (family === 'remnant') sourceUrl = 'https://imagine.gsfc.nasa.gov/science/objects/supernova_remnants.html';
+    } else {
+      signal = __alloT('stem.galaxy.context_gravity_signal', 'This halo represents the host galaxy’s inferred mass distribution, not light from this object or dark matter detected inside it.');
+      prompt = __alloT('stem.galaxy.context_gravity_prompt', 'What motion measurements would test this galaxy’s inferred mass?');
+      sourceUrl = 'https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-dark-matter/';
+    }
+    return {
+      family: family, band: band, object: object, signal: signal, prompt: prompt,
+      scope: __alloT('stem.galaxy.context_model_scope', 'Model colors and brightness are illustrative, not measurements. Object sizes and positions are schematic.'),
+      source: { label: __alloT('stem.galaxy.context_source', 'NASA: Science background'), url: sourceUrl }
+    };
+  }
+  function renderGalaxyObjectContext(o) {
+    if (!o || !o.context) return null;
+    var React = o.React, context = o.context;
+    var __alloT = typeof o.t === 'function' ? o.t : function (key, fallback) { return fallback; };
+    return React.createElement('details', { 'data-galaxy-object-context': 'true', 'data-family': context.family, 'data-band': context.band, className: 'mb-3 rounded-xl border border-cyan-200 bg-white text-slate-700 shadow-sm' },
+      React.createElement('summary', { 'data-galaxy-object-context-summary': 'true', className: 'cursor-pointer rounded-xl px-3 py-3 text-xs font-black text-cyan-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } },
+        o.shellViews ? __alloT('stem.galaxy.shell_view_summary', 'Explore shell shape') : o.crabComponents && o.crabComponents.available ? __alloT('stem.galaxy.crab_components_summary', 'Explore remnant components') : __alloT('stem.galaxy.context_summary', 'Read this object in this view'),
+        React.createElement('span', { 'data-galaxy-object-context-name': 'true', className: 'mt-1 block break-words text-xs font-medium text-slate-600' }, o.name + ' · ' + o.bandLabel)
+      ),
+      React.createElement('div', { className: 'space-y-2 border-t border-cyan-100 px-3 pb-2 pt-3 text-xs leading-relaxed' },
+        React.createElement('p', { 'data-galaxy-object-context-object': 'true', className: 'font-semibold text-slate-800' }, context.object),
+        o.objectFraming && o.objectFraming.available && React.createElement('button', { type: 'button', 'data-galaxy-frame-object': 'context', onClick: o.onFrameObject, className: 'flex min-h-[44px] w-full items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } }, __alloT('stem.galaxy.object_frame_action', 'Frame whole object')),
+        o.inspectionBackdrop && o.inspectionBackdrop.available && React.createElement('div', { 'data-galaxy-backdrop-controls': 'true' },
+          React.createElement('button', { type: 'button', 'data-galaxy-inspection-backdrop': 'true', 'aria-pressed': o.inspectionBackdrop.showContext, 'aria-describedby': 'galaxy-object-backdrop-help', onClick: function () { if (typeof o.onBackdropChange === 'function') o.onBackdropChange(!o.inspectionBackdrop.showContext); }, className: 'flex min-h-[44px] w-full items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-950 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } }, __alloT('stem.galaxy.object_show_context', 'Show galaxy context')),
+          React.createElement('p', { id: 'galaxy-object-backdrop-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, __alloT('stem.galaxy.object_backdrop_help', 'Isolate the shape while keeping your layers, signal and camera.'))
+        ),
+        o.shellViews && renderGalaxyShellViews({ React: React, t: __alloT, state: o.shellViews.state, components: o.shellViews.components, onComponent: o.shellViews.onComponent, onView: o.shellViews.onView, onAxis: o.shellViews.onAxis }),
+        o.crabComponents && o.crabComponents.available && renderGalaxyCrabComponents({ React: React, t: __alloT, state: o.crabComponents, cutaway: o.crabCutaway, onToggle: o.onCrabToggle, onCutaway: o.onCrabCutaway }),
+        React.createElement('p', { 'data-galaxy-object-context-signal': 'true' }, context.signal),
+        React.createElement('p', { 'data-galaxy-object-context-scope': 'true', className: 'rounded-lg bg-slate-50 p-2 text-slate-600' }, context.scope),
+        React.createElement('p', { 'data-galaxy-object-context-prompt': 'true', className: 'font-semibold text-cyan-900' }, context.prompt),
+        React.createElement('a', { 'data-galaxy-object-context-source': 'true', href: context.source.url, target: '_blank', rel: 'noopener noreferrer', className: 'flex items-center rounded-lg px-1 font-bold text-indigo-700 underline decoration-indigo-300 underline-offset-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300', style: { minHeight: '44px' } },
+          context.source.label, React.createElement('span', { className: 'sr-only' }, ' ' + __alloT('stem.galaxy.evidence_new_tab', '(opens in a new tab)'))
+        )
+      )
+    );
+  }
+  // END GALAXY OBJECT CONTEXT
+
   // BEGIN GALAXY EVIDENCE WORKBENCH MODEL
   // Saved work records the learner's choices and model walkthrough, never measurements.
   var GALAXY_EVIDENCE_MISSION_IDS = ['dust', 'fuel', 'mass'];
@@ -1114,6 +1452,7 @@ function renderGalaxyEvidenceWorkbench(o) {
       [data-galaxy-controls] [role=tablist] { background: #dde5f1; padding: 4px; gap: 4px; }
       [data-galaxy-controls] [data-galaxy-control-tab][aria-selected=true] { background: #304775; box-shadow: 0 2px 5px #233b6426; }
       [data-galaxy-controls] [role=tabpanel] > .border { border-color: #dce3ef; border-radius: 12px; box-shadow: 0 2px 4px #192c4d04; }
+      [data-galaxy-camera-controls] { display: grid; grid-template-columns: repeat(2, 44px); gap: 6px; top: auto; bottom: 12px; transform: none; }
       [data-galaxy-camera-controls] button { flex-direction: column; gap: 1px; line-height: 19px; }
       [data-galaxy-camera-controls] button::after { content: attr(data-control-caption); font-size: 11px; font-weight: 600; line-height: 12px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
       [data-galaxy-observation-guide][open] summary { margin-bottom: 12px; border-bottom: 1px solid #dce3ef; }
@@ -1191,22 +1530,42 @@ function renderGalaxyEvidenceWorkbench(o) {
       [data-galaxy-selection-dock] button { min-height: 44px; border: 1px solid #64748b; border-radius: 9px; padding: 8px 10px; font-size: 12px; font-weight: 800; color: #f8fafc; background: #172c46; }
       [data-galaxy-selection-dock] [data-galaxy-inspect-object] { flex: 1; border-color: #67e8f9; background: #155e75; }
       [data-galaxy-selection-dock] [data-galaxy-clear-object] { min-width: 44px; }
+      [data-galaxy-selection-dock] [data-galaxy-object-band-label] { display: block; margin-top: 7px; font-size: 11px; line-height: 1.4; color: #cffafe; }
+      [data-galaxy-selection-dock] [data-galaxy-object-band] { display: block; width: 100%; min-height: 44px; margin-top: 3px; padding: 8px; border: 1px solid #64748b; border-radius: 8px; background: #172c46; color: #f8fafc; font-size: 12px; }
+      [data-galaxy-selection-dock] [data-galaxy-object-band]:focus-visible { outline: 3px solid #67e8f9; outline-offset: 2px; }
       [data-galaxy-selection-dock] button:focus-visible { outline: 3px solid #67e8f9; outline-offset: 2px; }
       [data-galaxy-selection-dock] [data-galaxy-inspection-hint] { margin-top: 6px; color: #cbd5e1; font-size: 11px; }
       [data-galaxy-focus=true] [data-galaxy-selection-dock] { display: none !important; }
       [data-galaxy-stage][data-object-selected=true] [data-galaxy-radio-velocity-legend], [data-galaxy-stage][data-object-selected=true] [data-galaxy-xray-legend], [data-galaxy-stage][data-object-selected=true] [data-galaxy-infrared-legend], [data-galaxy-stage][data-object-selected=true] [data-galaxy-gravity-legend], [data-galaxy-stage][data-object-selected=true] [data-galaxy-science-overlay] { display: none !important; }
+      [data-galaxy-nearby-controls] { margin-top: 8px; padding-top: 8px; border-top: 1px solid #475569; }
+      [data-galaxy-nearby-controls] [data-galaxy-nearby-title] { font-size: 11px; font-weight: 800; color: #cffafe; }
+      [data-galaxy-nearby-controls] [data-galaxy-nearby-status] { margin-top: 3px; color: #e2e8f0; font-size: 11px; line-height: 1.4; }
+      [data-galaxy-nearby-controls] .galaxy-nearby-actions { display: flex; gap: 6px; margin-top: 6px; }
+      [data-galaxy-nearby-controls] button { flex: 1; min-width: 44px; padding: 8px 4px; font-size: 11px; }
+      [data-galaxy-workspace]:not([data-galaxy-fullscreen=true]):not([data-galaxy-focus=true]) > [data-galaxy-stage][data-object-controls-visible=true] { min-height: calc(var(--galaxy-object-dock-height, 240px) + var(--galaxy-object-dock-height, 240px) + 96px); }
+      [data-galaxy-measurement] { max-height: calc(100% - var(--galaxy-object-dock-height, 180px) - 105px); overflow-y: auto; pointer-events: auto; }
+      [data-galaxy-measurement]:focus-visible { outline: 3px solid #67e8f9; outline-offset: -3px; }
       [data-galaxy-measurement-mobile] { display: none; }
-      @media (max-width: 640px) {
+      @media (max-width: 1023px) {
         [data-galaxy-measurement] { display: none !important; }
-        [data-galaxy-measurement-mobile] { display: block; position: absolute; bottom: 110px; left: 12px; z-index: 11; width: min(15rem, calc(100% - 7.5rem)); max-height: calc(100% - 130px); overflow-y: auto; border: 1px solid rgba(103,232,249,.35); border-radius: 12px; background: rgba(2,6,23,.94); color: #f8fafc; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
+        [data-galaxy-measurement-mobile] { display: block; position: absolute; bottom: calc(var(--galaxy-object-dock-height, 156px) + 24px); left: 12px; z-index: 11; width: min(15rem, calc(100% - 7.5rem)); max-height: calc(100% - var(--galaxy-object-dock-height, 156px) - 100px); overflow-y: auto; border: 1px solid rgba(103,232,249,.35); border-radius: 12px; background: rgba(2,6,23,.94); color: #f8fafc; box-shadow: 0 10px 24px rgba(0,0,0,.3); }
         [data-galaxy-measurement-mobile] summary { min-height: 52px; padding: 8px; cursor: pointer; font-size: 11px; font-weight: 800; line-height: 1.45; color: #cffafe; }
         [data-galaxy-measurement-mobile] summary:focus-visible { outline: 3px solid #67e8f9; outline-offset: -3px; }
         [data-galaxy-measurement-mobile] dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; padding: 0 8px 8px; font-size: 11px; line-height: 1.5; }
         [data-galaxy-measurement-mobile] dt { color: #cbd5e1; }
         [data-galaxy-measurement-mobile] dd { margin: 0; font-weight: 800; }
+        [data-galaxy-stage][data-object-controls-visible=true] [data-galaxy-measurement-mobile] { top: 84px; bottom: auto; max-height: calc(50% - 126px); }
       }
-      @media (max-width: 640px) { [data-galaxy-selection-dock] { width: min(25rem, calc(100% - 7.5rem)); padding: 8px; } [data-galaxy-selection-dock] [data-galaxy-inspection-hint] { display: none; } }
+      @media (max-width: 1023px) { [data-galaxy-selection-dock] { width: min(25rem, calc(100% - 7.5rem)); padding: 8px; } [data-galaxy-selection-dock] [data-galaxy-inspection-hint] { display: none; } }
       @media (forced-colors: active) { [data-galaxy-selection-dock], [data-galaxy-selection-dock] button { border: 2px solid ButtonText; } }
+      [data-galaxy-hover-preview], [data-galaxy-hover-marker] { position: absolute; z-index: 14; pointer-events: none; }
+      [data-galaxy-hover-preview][hidden], [data-galaxy-hover-marker][hidden] { display: none !important; }
+      [data-galaxy-hover-preview] { max-width: min(15rem, calc(100% - 24px)); padding: 8px 10px; border: 1px solid rgba(103,232,249,.65); border-radius: 10px; background: rgba(2,6,23,.94); color: #f8fafc; box-shadow: 0 8px 24px rgba(0,0,0,.35); font: 12px/1.4 system-ui, sans-serif; }
+      [data-galaxy-hover-label] { display: block; color: #cffafe; font-weight: 800; }
+      [data-galaxy-hover-hint] { display: block; margin-top: 3px; color: #cbd5e1; font-size: 11px; }
+      [data-galaxy-hover-marker] { width: 26px; height: 26px; transform: translate(-50%, -50%); border: 1.5px dashed #a5f3fc; border-radius: 50%; box-shadow: 0 0 0 1px rgba(2,6,23,.6), 0 0 12px rgba(103,232,249,.25); }
+      [data-galaxy-focus=true] [data-galaxy-hover-preview], [data-galaxy-focus=true] [data-galaxy-hover-marker] { display: none !important; }
+      @media (forced-colors: active) { [data-galaxy-hover-marker], [data-galaxy-hover-preview] { border-color: Highlight; } }
       @media (forced-colors: active) { [data-galaxy-view-angle][aria-pressed=true] { outline: 2px solid Highlight; outline-offset: -3px; } }
       [data-galaxy-zoom-slider] { appearance: none; -webkit-appearance: none; background: transparent; margin: 0; padding: 0; }
       [data-galaxy-zoom-slider]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, #466798 0%, #466798 var(--galaxy-zoom-fill), #cbd5e1 var(--galaxy-zoom-fill), #cbd5e1 100%); }
@@ -1227,7 +1586,6 @@ function renderGalaxyEvidenceWorkbench(o) {
       [data-galaxy-header] button:focus-visible { outline-color: #a5d8ff; }
       [data-galaxy-root][data-galaxy-contrast=true] { background: #020617; border-color: #94a3b8; }
       @media (max-width: 767px) {
-        [data-galaxy-camera-controls] { display: grid; grid-template-columns: repeat(2, 44px); gap: 6px; }
         [data-galaxy-radio-velocity-legend], [data-galaxy-xray-legend], [data-galaxy-infrared-legend], [data-galaxy-gravity-legend], [data-galaxy-status] { max-width: calc(100% - 7.5rem); }
       }
       @media (max-width: 639px) {
@@ -3378,9 +3736,53 @@ if (!window._galaxyHasLoadedOnce) {
           var _galaxyCameraFeedback = React.useState({ angle: 'angled', zoom: 100, zoomPosition: 0, fieldHeight: 0, regime: 'structure' });
           var galaxyCameraFeedback = _galaxyCameraFeedback[0];
           var setGalaxyCameraFeedback = _galaxyCameraFeedback[1];
-          var _galaxyInspection = React.useState({ active: false, kind: '', label: '', canInspect: false });
+          // New native SVG nodes need one sample after a tab or HUD mount. Camera
+          // motion updates their children directly, without React frame updates.
+          React.useEffect(function () {
+            var cv = galaxyCanvasActive.current;
+            if (cv && cv._galaxyRefreshOrientation) cv._galaxyRefreshOrientation();
+          }, [galaxyControlPanel, galaxyHudHidden, galaxySceneReady]);
+          var _galaxyInspection = React.useState({ active: false, kind: '', label: '', canInspect: false, nearbyIndex: -1, nearbyCount: 0, nearbyTotal: 0 });
           var galaxyInspection = _galaxyInspection[0], setGalaxyInspection = _galaxyInspection[1];
-          var galaxyFieldHeightLabel = galaxySceneReady ? __alloT('stem.galaxy.view_scale_value', '~{value} kpc high').replace('{value}', String(galaxyCameraFeedback.fieldHeight)) : '—';
+          var _galaxyCrabComponents = React.useState({ available: false, filaments: true, wind: true });
+          var galaxyCrabComponents = _galaxyCrabComponents[0], setGalaxyCrabComponents = _galaxyCrabComponents[1];
+          var _galaxyCrabCutaway = React.useState({ available: false, enabled: false });
+          var galaxyCrabCutaway = _galaxyCrabCutaway[0], setGalaxyCrabCutaway = _galaxyCrabCutaway[1];
+          var _galaxyPlanetaryComponents = React.useState({ available: false, name: '', mode: 'both', primaryComponent: '', secondaryComponent: '', referenceComponent: '' });
+          var galaxyPlanetaryComponents = _galaxyPlanetaryComponents[0], setGalaxyPlanetaryComponents = _galaxyPlanetaryComponents[1];
+          var _galaxyObjectFraming = React.useState({ available: false, contextual: false, zoomPercent: 100 });
+          var galaxyObjectFraming = _galaxyObjectFraming[0], setGalaxyObjectFraming = _galaxyObjectFraming[1];
+          var _galaxyInspectionBackdrop = React.useState({ available: false, showContext: true });
+          var galaxyInspectionBackdrop = _galaxyInspectionBackdrop[0], setGalaxyInspectionBackdrop = _galaxyInspectionBackdrop[1];
+          React.useEffect(function () {
+            var cv = galaxyCanvasActive.current;
+            if (cv && cv._galaxyRefreshPlanetaryView) cv._galaxyRefreshPlanetaryView();
+          }, [galaxyControlPanel, galaxyHudHidden, galaxySceneReady, galaxyInspection.active, galaxyInspection.label, observeMode, galaxyPlanetaryComponents.mode, galaxyPlanetaryComponents.referenceComponent]);
+          var galaxyObjectZoom = galaxyObjectFraming.contextual ? galaxyObjectFraming.zoomPercent : galaxyCameraFeedback.zoom;
+          var galaxyZoomStatus = (galaxyObjectFraming.contextual ? __alloT('stem.galaxy.object_zoom_status', 'Object zoom {percent}%') : __alloT('stem.galaxy.status_zoom', 'Zoom {percent}%')).replace('{percent}', String(galaxyObjectZoom));
+          var galaxyZoomHelp = galaxyObjectFraming.contextual ? __alloT('stem.galaxy.object_zoom_help', '100% fits the schematic object in Visible or Infrared. Zoom in for detail.') : __alloT('stem.galaxy.view_zoom_hint', 'Zoom relative to the overview');
+          var galaxyZoomResetHint = galaxyObjectFraming.contextual ? galaxyObjectFraming.available ? __alloT('stem.galaxy.object_frame_hint', 'Frame the whole schematic object, keeping the viewing angle and selected target') : __alloT('stem.galaxy.object_frame_unavailable', 'Switch to Visible or Infrared to frame this object') : __alloT('stem.galaxy.view_zoom_overview_hint', 'Restore overview zoom, keeping the viewing angle and selected object');
+          React.useEffect(function () {
+            var cv = galaxyCanvasActive.current, stage = cv && cv.parentElement;
+            var dock = stage && stage.querySelector('[data-galaxy-selection-dock]');
+            if (!dock || !galaxyInspection.canInspect || galaxyHudHidden) return;
+            function reserveObjectControls() {
+              var height = Math.ceil(dock.getBoundingClientRect().height);
+              if (height > 0) stage.style.setProperty('--galaxy-object-dock-height', height + 'px');
+            }
+            reserveObjectControls();
+            var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(reserveObjectControls) : null;
+            if (observer) observer.observe(dock);
+            window.addEventListener('resize', reserveObjectControls);
+            return function () {
+              if (observer) observer.disconnect();
+              window.removeEventListener('resize', reserveObjectControls);
+              stage.style.removeProperty('--galaxy-object-dock-height');
+            };
+          }, [galaxyInspection.canInspect, galaxyInspection.nearbyCount, galaxyHudHidden, galaxySceneReady, simMode]);
+          var galaxySchematicInspection = galaxyInspection.active && galaxyInspection.kind === 'nebula';
+          var galaxyCloseupScaleHint = __alloT('stem.galaxy.view_scale_schematic_hint', 'Nebula sizes are schematic; this close-up has no physical size scale.');
+          var galaxyFieldHeightLabel = !galaxySceneReady ? '—' : galaxySchematicInspection ? __alloT('stem.galaxy.view_scale_schematic', 'Schematic close-up') : __alloT('stem.galaxy.view_scale_value', '~{value} kpc high').replace('{value}', String(galaxyCameraFeedback.fieldHeight));
           var galaxyScaleLabel = galaxyCameraFeedback.regime === 'close' ? __alloT('stem.galaxy.view_zoom_close', 'Close detail') : galaxyCameraFeedback.regime === 'local' ? __alloT('stem.galaxy.regime_local', 'Local structure') : galaxyCameraFeedback.regime === 'wide' ? __alloT('stem.galaxy.regime_wide', 'Wide context') : __alloT('stem.galaxy.regime_structure', 'Galactic structure');
           var _galaxyResetUndo = React.useState(false);
           var galaxyResetUndo = _galaxyResetUndo[0], setGalaxyResetUndo = _galaxyResetUndo[1];
@@ -7505,9 +7907,11 @@ if (!window._galaxyHasLoadedOnce) {
             NEBULAE.forEach(function (neb) {
               if (galaxyType === 'elliptical') return;
 
-              var nebCanvas = document.createElement('canvas'); nebCanvas.setAttribute('aria-hidden', 'true'); nebCanvas.width = 96; nebCanvas.height = 96;
+              var nebCanvas = document.createElement('canvas'); nebCanvas.setAttribute('aria-hidden', 'true'); nebCanvas.width = 192; nebCanvas.height = 192;
 
               var nCtx = upscaleGalaxyCanvas(nebCanvas, nebCanvas.getContext('2d'));
+              // Retain the logical coordinates while resolving structure at close range.
+              nCtx.scale(2, 2);
 
               var grad = nCtx.createRadialGradient(48, 48, 0, 48, 48, 48);
 
@@ -7530,19 +7934,46 @@ if (!window._galaxyHasLoadedOnce) {
 
               // Dark nebulae absorb rather than emit, so they read as a silhouette.
               if (neb.type === 'Dark') {
-                nCtx.globalCompositeOperation = 'multiply';
-                var darkGrad = nCtx.createRadialGradient(48, 48, 0, 48, 48, 40);
-                darkGrad.addColorStop(0, 'rgba(8,6,14,0.86)'); darkGrad.addColorStop(1, 'rgba(8,6,14,0)');
+                // Multiplying RGB into the old luminous gradient left its low
+                // alpha unchanged. Use a real absorbing mask with its own edge.
+                nCtx.clearRect(0, 0, 96, 96);
+                var darkGrad = nCtx.createRadialGradient(48, 52, 3, 48, 52, 43);
+                darkGrad.addColorStop(0, 'rgba(116,46,69,0.46)'); darkGrad.addColorStop(0.48, 'rgba(116,46,69,0.33)');
+                darkGrad.addColorStop(0.76, 'rgba(82,29,52,0.12)'); darkGrad.addColorStop(1, 'rgba(16,9,21,0)');
                 nCtx.fillStyle = darkGrad; nCtx.fillRect(0, 0, 96, 96);
-                nCtx.globalCompositeOperation = 'source-over';
+                nCtx.save(); nCtx.fillStyle = 'rgba(3,2,7,0.98)'; nCtx.shadowColor = 'rgba(3,2,7,0.8)'; nCtx.shadowBlur = 5;
+                nCtx.beginPath(); nCtx.moveTo(27, 88); nCtx.bezierCurveTo(29, 69, 39, 64, 42, 48);
+                nCtx.bezierCurveTo(35, 41, 37, 34, 47, 30); nCtx.bezierCurveTo(46, 20, 57, 20, 60, 29);
+                nCtx.bezierCurveTo(66, 32, 72, 32, 72, 38); nCtx.bezierCurveTo(67, 45, 55, 44, 54, 54);
+                nCtx.bezierCurveTo(61, 69, 68, 77, 67, 88); nCtx.closePath(); nCtx.fill(); nCtx.restore();
+              } else if (neb.type === 'Emission') {
+                // Small translucent fronts and channels preserve the gas cloud's
+                // structure without replacing it with an optical flare texture.
+                nCtx.save(); nCtx.globalCompositeOperation = 'source-atop';
+                for (var cloudChannel = 0; cloudChannel < 18; cloudChannel++) {
+                  var channelAngle = cloudChannel * 2.39996, channelRadius = 8 + cloudChannel % 7 * 3.4;
+                  var channelX = 48 + Math.cos(channelAngle) * channelRadius, channelY = 48 + Math.sin(channelAngle) * channelRadius * 0.8;
+                  nCtx.strokeStyle = cloudChannel % 3 ? neb.color + '48' : 'rgba(21,7,27,0.28)';
+                  nCtx.lineWidth = cloudChannel % 3 ? 0.8 : 2.2;
+                  nCtx.beginPath(); nCtx.moveTo(channelX - 8, channelY + 2); nCtx.bezierCurveTo(channelX - 2, channelY - 9, channelX + 9, channelY - 4, channelX + 13, channelY + 3); nCtx.stroke();
+                }
+                nCtx.restore();
               }
 
               if (neb.type === 'Planetary') {
                 nCtx.clearRect(0, 0, 96, 96);
-                for (var shell = 0; shell < 5; shell++) {
-                  galaxyShellPath(nCtx, 48, 48, 20 + shell * 4, shell * 0.7, 0.82);
-                  nCtx.strokeStyle = neb.color + (shell < 2 ? 'a0' : '58'); nCtx.lineWidth = 5 - shell * 0.65; nCtx.stroke();
+                nCtx.save(); nCtx.translate(48, 48); nCtx.scale(1, 0.86);
+                var planetaryGlow = nCtx.createRadialGradient(0, 0, 12, 0, 0, 45);
+                planetaryGlow.addColorStop(0, neb.color + '00'); planetaryGlow.addColorStop(0.23, neb.color + '08');
+                planetaryGlow.addColorStop(0.44, neb.color + '8c'); planetaryGlow.addColorStop(0.58, neb.color + 'c8');
+                planetaryGlow.addColorStop(0.72, neb.color + '68'); planetaryGlow.addColorStop(1, neb.color + '00');
+                nCtx.fillStyle = planetaryGlow; nCtx.fillRect(-48, -48, 96, 96);
+                for (var shell = 0; shell < 34; shell++) {
+                  var shellAngle = shell * 2.39996, shellRadius = 25 + shell % 5 * 2.5;
+                  nCtx.beginPath(); nCtx.arc(0, 0, shellRadius, shellAngle, shellAngle + 0.14 + shell % 3 * 0.035);
+                  nCtx.strokeStyle = neb.color + (shell % 3 ? '60' : 'a0'); nCtx.lineWidth = 0.8 + shell % 3 * 0.25; nCtx.stroke();
                 }
+                nCtx.restore();
                 nCtx.fillStyle = '#e9f5ff'; nCtx.beginPath(); nCtx.arc(48, 48, 1.3, 0, Math.PI * 2); nCtx.fill();
               } else if (neb.type === 'Supernova Remnant') {
                 nCtx.save(); nCtx.globalCompositeOperation = 'source-atop';
@@ -7554,11 +7985,12 @@ if (!window._galaxyHasLoadedOnce) {
                 }
                 nCtx.restore();
               }
-              galaxyCloudGrain(nCtx, nebCanvas, Math.round((neb.x + 2) * 1000), neb.type === 'Planetary' ? 0.35 : 0.75);
+              galaxyCloudGrain(nCtx, nebCanvas, Math.round((neb.x + 2) * 1000), neb.type === 'Dark' ? 0.18 : neb.type === 'Planetary' ? 0.35 : 0.6);
               galaxyFeatherCloud(nCtx, nebCanvas, 0.7);
               var tex = tuneGalaxyTexture(new THREE.CanvasTexture(nebCanvas)); tex.name = 'galaxyNamedNebula';
 
-              var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.5, depthWrite: false, blending: neb.type === 'Dark' ? THREE.NormalBlending : THREE.AdditiveBlending }));
+              var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: neb.type === 'Dark' ? 0.9 : 0.5, depthWrite: false, blending: neb.type === 'Dark' ? THREE.NormalBlending : THREE.AdditiveBlending }));
+              sprite.renderOrder = neb.type === 'Dark' ? 9 : 6;
 
               sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
 
@@ -7572,9 +8004,9 @@ if (!window._galaxyHasLoadedOnce) {
                 wCtx.rotate((wi + 1) * 0.58);
                 wCtx.scale(1.4, 0.72);
                 var wGrad = wCtx.createRadialGradient(0, 0, 0, 0, 0, 42);
-                wGrad.addColorStop(0, neb.type === 'Dark' ? 'rgba(12,8,19,0.72)' : 'rgba(255,255,255,0.24)');
-                wGrad.addColorStop(0.18, neb.color + '88');
-                wGrad.addColorStop(0.58, neb.color + '28');
+                wGrad.addColorStop(0, neb.type === 'Dark' ? 'rgba(7,4,12,0.86)' : 'rgba(255,255,255,0.24)');
+                wGrad.addColorStop(0.18, neb.type === 'Dark' ? 'rgba(12,7,19,0.66)' : neb.color + '88');
+                wGrad.addColorStop(0.58, neb.type === 'Dark' ? 'rgba(12,7,19,0.18)' : neb.color + '28');
                 wGrad.addColorStop(1, neb.color + '00');
                 wCtx.fillStyle = wGrad;
                 wCtx.beginPath(); wCtx.arc(0, 0, 42, 0, Math.PI * 2); wCtx.fill();
@@ -7589,13 +8021,258 @@ if (!window._galaxyHasLoadedOnce) {
                 var wSprite = new THREE.Sprite(wMat);
                 wSprite.position.set(neb.x + (Math.random() - 0.5) * neb.r * 0.75, neb.y + (Math.random() - 0.5) * neb.r * 0.34, neb.z + (Math.random() - 0.5) * neb.r * 0.75);
                 wSprite.scale.set(neb.r * (3.1 + wi * 0.55), neb.r * (1.7 + wi * 0.42), 1);
-                wSprite.userData = { baseOpacity: wMat.opacity, baseScaleX: wSprite.scale.x, baseScaleY: wSprite.scale.y, phase: Math.random() * Math.PI * 2 };
+                wSprite.userData = { baseOpacity: wMat.opacity, baseScaleX: wSprite.scale.x, baseScaleY: wSprite.scale.y, phase: Math.random() * Math.PI * 2, nebulaName: neb.name, nebulaType: neb.type, localIndex: wi };
+                wSprite.renderOrder = neb.type === 'Dark' ? 8 : 5;
                 nebGroup.add(wSprite);
                 nebulaWispSprites.push(wSprite);
               }
 
             });
 
+
+            // These two named planetary nebulae gain fixed spatial shell surfaces
+            // only while inspected. The geometry illustrates gaseous structure;
+            // it is not a measured reconstruction of either object. Their original
+            // sprites remain the overview symbols and the picking targets.
+            var planetaryInspectionMeshes = [];
+            var planetaryGasVertexShader = [
+              'varying vec3 vGasPosition; varying vec3 vGasNormal; varying vec3 vGasView; varying vec2 vGasUv;',
+              'void main(){ vec4 mv=modelViewMatrix*vec4(position,1.0); vGasPosition=position; vGasUv=uv;',
+              'vGasNormal=normalize(normalMatrix*normal); vGasView=-mv.xyz; gl_Position=projectionMatrix*mv; }'
+            ].join('\n');
+            var planetaryGasFragmentShader = [
+              'uniform vec3 uColor; uniform float uOpacity; uniform float uSeed;',
+              'varying vec3 vGasPosition; varying vec3 vGasNormal; varying vec3 vGasView; varying vec2 vGasUv;',
+              'float gasHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+              'float gasNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);',
+              'return mix(mix(mix(gasHash(i),gasHash(i+vec3(1,0,0)),f.x),mix(gasHash(i+vec3(0,1,0)),gasHash(i+vec3(1,1,0)),f.x),f.y),',
+              'mix(mix(gasHash(i+vec3(0,0,1)),gasHash(i+vec3(1,0,1)),f.x),mix(gasHash(i+vec3(0,1,1)),gasHash(i+vec3(1,1,1)),f.x),f.y),f.z);}',
+              'void main(){float coarse=gasNoise(vGasPosition*8.0+uSeed), middle=gasNoise(vGasPosition*15.0+uSeed*1.8), fine=gasNoise(vGasPosition*27.0+uSeed*2.7);',
+              'float density=smoothstep(0.20,0.80,coarse*0.54+middle*0.28+fine*0.18);',
+              'float filament=pow(0.5+0.5*sin(vGasUv.x*282.743+sin(vGasUv.y*31.416)*1.2+coarse*3.0),8.0);',
+              'float path=pow(1.0-abs(dot(normalize(vGasNormal),normalize(vGasView))),0.75);',
+              'float brokenRim=mix(0.42,1.0,smoothstep(0.18,0.62,density+0.15*filament));',
+              'float depthLayer=gl_FrontFacing?1.0:0.66;',
+              'float alpha=uOpacity*(0.10+0.90*path)*(0.06+0.94*density)*(0.78+0.22*filament)*brokenRim*depthLayer;',
+              'vec3 gasColor=uColor*mix(vec3(0.66,0.79,0.98),vec3(1.05,1.02,0.94),density);',
+              'if(alpha<0.004)discard; gl_FragColor=vec4(gasColor*(0.78+0.30*density+0.12*filament),alpha);',
+              // Gas stays in bounded linear radiance for the image pipeline.
+              // Mapping this translucent emission inside the material caused
+              // the bloom compositor to spread a pale wash across the view.
+              '}'
+            ].join('\n');
+            function makePlanetaryInspectionGeometry(kind, segments, bands, phase) {
+              var positions = [], normals = [], uvs = [];
+              function sample(u, v) {
+                var a = u * Math.PI * 2, b = v * Math.PI * 2;
+                var ripple = 1 + 0.025 * Math.sin(a * 3 + phase) + 0.01 * Math.sin(a * 7 - b * 2);
+                if (kind === 'polar-envelope') {
+                  var latitude = (v - 0.5) * Math.PI, latitudeRadius = Math.cos(latitude);
+                  return [Math.cos(a) * latitudeRadius * 0.43 * ripple, Math.sin(a) * latitudeRadius * 0.4 * ripple, Math.sin(latitude) * 0.84 * (1 + 0.035 * Math.sin(a * 5))];
+                }
+                var outer = kind === 'inclined-disk', major = outer ? 0.67 : 0.51;
+                var tube = (outer ? 0.09 : 0.19) * (1 + 0.07 * Math.sin(a * 5 + phase) + 0.035 * Math.cos(a * 9 - b));
+                var radius = major * ripple + Math.cos(b) * tube;
+                return [Math.cos(a) * radius, Math.sin(a) * radius * 0.93, Math.sin(b) * tube * (outer ? 1.3 : kind === 'equatorial-shell' ? 1.45 : 1.05)];
+              }
+              function vertex(u, v) {
+                var p = sample(u, v), pu = sample(u + 0.0001, v), pv = sample(u, v + 0.0001);
+                var ax = pu[0] - p[0], ay = pu[1] - p[1], az = pu[2] - p[2], bx = pv[0] - p[0], by = pv[1] - p[1], bz = pv[2] - p[2];
+                var nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx, length = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+                positions.push(p[0], p[1], p[2]); normals.push(nx / length, ny / length, nz / length); uvs.push(u, v);
+              }
+              for (var shellU = 0; shellU < segments; shellU++) for (var shellV = 0; shellV < bands; shellV++) {
+                var u0 = shellU / segments, u1 = (shellU + 1) / segments, v0 = shellV / bands, v1 = (shellV + 1) / bands;
+                vertex(u0, v0); vertex(u1, v0); vertex(u1, v1); vertex(u0, v0); vertex(u1, v1); vertex(u0, v1);
+              }
+              var geometry = new THREE.BufferGeometry();
+              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+              geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+              geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2));
+              return geometry;
+            }
+            NEBULAE.forEach(function (neb) {
+              if (galaxyType === 'elliptical' || neb.type !== 'Planetary') return;
+              var helix = neb.name === t('stem.galaxy.helix_nebula');
+              var shellSegments = resolvedQuality === 'cinematic' ? 80 : resolvedQuality === 'high' ? 64 : 48;
+              // More cross-section samples keep close-up gas silhouettes smooth;
+              // only the selected object's two small meshes are drawn at a time.
+              var shellBands = resolvedQuality === 'cinematic' ? 28 : resolvedQuality === 'high' ? 22 : 18;
+              for (var component = 0; component < 2; component++) {
+                var componentKind = component ? helix ? 'inclined-disk' : 'polar-envelope' : helix ? 'thick-disk' : 'equatorial-shell';
+                var componentSegments = component ? resolvedQuality === 'cinematic' ? 56 : resolvedQuality === 'high' ? 44 : 32 : shellSegments;
+                var componentBands = component ? helix ? resolvedQuality === 'cinematic' ? 22 : resolvedQuality === 'high' ? 18 : 16 : resolvedQuality === 'cinematic' ? 18 : 16 : shellBands;
+                var shellGeometry = makePlanetaryInspectionGeometry(componentKind, componentSegments, componentBands, helix ? 0.6 : 2.1);
+                var shellMaterial = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color(component ? helix ? 0x458c9e : 0x85a6dc : helix ? 0x36b9c6 : 0xb37fda).convertSRGBToLinear() }, uOpacity: { value: 0 }, uSeed: { value: helix ? 1.7 + component * 3.1 : 6.2 + component * 2.4 } }, vertexShader: planetaryGasVertexShader, fragmentShader: planetaryGasFragmentShader, transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false, depthTest: true, toneMapped: false });
+                var shell = new THREE.Mesh(shellGeometry, shellMaterial); shell.name = 'inspectedPlanetaryGasShell'; shell.visible = false;
+                shell.position.set(neb.x, neb.y, neb.z); shell.scale.set(neb.r, neb.r, neb.r);
+                shell.rotation.set(helix ? component ? 0.87 : -0.44 : -0.35, helix ? component ? 0.65 : 0.28 : 0.45, component && helix ? 0.4 : 0.12);
+                shell.userData = { nebulaName: neb.name, component: componentKind, baseOpacity: component ? helix ? 0.2 : 0.21 : 0.62, triangles: shellGeometry.attributes.position.count / 3, illustrative: true };
+                shell.renderOrder = 7; nebGroup.add(shell); planetaryInspectionMeshes.push({ object: shell, source: neb });
+              }
+            });
+
+            // Keep one study choice per object across scene-quality rebuilds.
+            // The meshes remain fixed; component visibility changes for one draw.
+            if (!canvasEl._galaxyPlanetaryComponentModes || typeof canvasEl._galaxyPlanetaryComponentModes !== 'object' || Array.isArray(canvasEl._galaxyPlanetaryComponentModes)) canvasEl._galaxyPlanetaryComponentModes = {};
+            function selectedPlanetaryComponentRecords() {
+              return selectionTarget && selectionTarget.kind === 'nebula' ? planetaryInspectionMeshes.filter(function (record) { return record.source === selectionTarget.data; }) : [];
+            }
+            function planetaryComponentSelection() {
+              var records = selectedPlanetaryComponentRecords();
+              var primary = records.find(function (record) { return record.object.userData.component === 'thick-disk' || record.object.userData.component === 'equatorial-shell'; });
+              if (!primary) return null;
+              var secondary = records.find(function (record) { return record !== primary; });
+              if (!secondary) return null;
+              var key = primary.object.userData.component === 'thick-disk' ? 'helix' : 'ring', mode = canvasEl._galaxyPlanetaryComponentModes[key];
+              if (mode !== 'primary' && mode !== 'secondary') mode = 'both';
+              return { key: key, mode: mode, primary: primary, secondary: secondary, reference: mode === 'secondary' ? secondary : primary };
+            }
+            canvasEl._galaxyGetPlanetaryComponentState = function () {
+              var study = planetaryComponentSelection();
+              return { available: !!(!galaxyCleanedUp && inspectionActive && nebGroup.visible && study && (currentObserveMode === 'visible' || currentObserveMode === 'infrared')),
+                name: study ? study.primary.source.name : '', mode: study ? study.mode : 'both', primaryComponent: study ? study.primary.object.userData.component : '',
+                secondaryComponent: study ? study.secondary.object.userData.component : '', referenceComponent: study ? study.reference.object.userData.component : '' };
+            };
+            function notifyPlanetaryComponents() {
+              if (!galaxyCleanedUp && canvasEl._onPlanetaryComponentsChange && canvasEl._galaxyGetPlanetaryComponentState) canvasEl._onPlanetaryComponentsChange(canvasEl._galaxyGetPlanetaryComponentState());
+            }
+            canvasEl._galaxySetPlanetaryComponentMode = function (mode) {
+              if (galaxyCleanedUp || (mode !== 'both' && mode !== 'primary' && mode !== 'secondary') || !canvasEl._galaxyGetPlanetaryComponentState().available) return false;
+              var study = planetaryComponentSelection();
+              canvasEl._galaxyPlanetaryComponentModes[study.key] = mode;
+              // Do not cancel or rebase camera motion: this is a controlled
+              // comparison at exactly the same angle, scale and framing.
+              notifyPlanetaryComponents(); updatePlanetaryViewDisplays(true);
+              var component = mode === 'primary' ? study.primary.object.userData.component : mode === 'secondary' ? study.secondary.object.userData.component : '';
+              setCanvasStatus(__alloT('stem.galaxy.shell_component_status', 'Showing {part}. Camera and zoom are unchanged.').replace('{part}', galaxyPlanetaryComponentLabel(component, __alloT)));
+              return true;
+            };
+
+            // A small illustrative Crab model separates filamentary ejecta from
+            // its diffuse pulsar-powered interior. The strands are procedural,
+            // fixed in space, and do not claim measured filament trajectories.
+            if (typeof canvasEl._galaxyCrabFilamentsVisible !== 'boolean') canvasEl._galaxyCrabFilamentsVisible = true;
+            if (typeof canvasEl._galaxyCrabWindVisible !== 'boolean') canvasEl._galaxyCrabWindVisible = true;
+            if (typeof canvasEl._galaxyCrabCutawayEnabled !== 'boolean') canvasEl._galaxyCrabCutawayEnabled = false;
+            var crabInspectionMeshes = [], crabInspectionComponents = { filaments: canvasEl._galaxyCrabFilamentsVisible, wind: canvasEl._galaxyCrabWindVisible };
+            function makeCrabFilamentGeometry() {
+              var positions = [], normals = [], uvs = [];
+              var count = resolvedQuality === 'cinematic' ? 64 : resolvedQuality === 'high' ? 52 : 36;
+              var trunks = resolvedQuality === 'cinematic' ? 14 : resolvedQuality === 'high' ? 12 : 10;
+              var segments = resolvedQuality === 'cinematic' ? 18 : resolvedQuality === 'high' ? 14 : 10;
+              function trunkFrame(index, t) {
+                var phase = index * 2.399963, start = -0.95 + ((index * 0.618034) % 1) * 0.65;
+                return { latitude: start + t * (1.22 + 0.38 * Math.sin(phase * 1.7)) + Math.sin(t * 15 + phase) * Math.sin(t * Math.PI) * 0.055, angle: phase + t * (index % 2 ? -0.34 : 0.27) + Math.sin(t * 13 - phase) * Math.sin(t * Math.PI) * 0.07 };
+              }
+              function point(index, t) {
+                var phase = index * 2.399963, frame, radialScale = 1;
+                if (index < trunks) frame = trunkFrame(index, t);
+                else {
+                  // Each shorter strand starts on a trunk, then diverges across
+                  // the envelope. Match an actual tessellated trunk vertex so a
+                  // coarse quality setting cannot leave a floating attachment.
+                  var branch = index - trunks, attachmentStep = Math.max(1, Math.min(segments - 1, Math.round((0.16 + ((index * 0.731) % 1) * 0.68) * segments)));
+                  frame = trunkFrame(branch % trunks, attachmentStep / segments);
+                  frame.angle += t * (0.34 + ((index * 0.417) % 1) * 0.58) * (index % 2 ? -1 : 1) + Math.sin(t * 16 + phase) * Math.sin(t * Math.PI) * 0.075;
+                  frame.latitude += t * (0.2 + ((index * 0.539) % 1) * 0.58) * (index % 3 ? 1 : -1) + Math.sin(t * 19 - phase) * Math.sin(t * Math.PI) * 0.05;
+                  // Most strands keep the outer silhouette. A minority smoothly
+                  // enters the remnant, exposing real internal parallax on orbit;
+                  // the zero slope at the attachment preserves its shared root.
+                  if (branch % 3 === 0) radialScale -= (0.22 + ((index * 0.413) % 1) * 0.18) * t * t * (3 - 2 * t);
+                }
+                var latitude = frame.latitude, angle = frame.angle;
+                var radius = (1 + Math.sin(angle * 3 + latitude * 7) * 0.065 + Math.cos(angle * 8 - latitude * 11) * 0.035) * radialScale;
+                return [Math.cos(latitude) * Math.cos(angle) * 0.76 * radius, Math.sin(latitude) * 0.96 * radius, Math.cos(latitude) * Math.sin(angle) * 0.62 * radius];
+              }
+              function ribbonVertex(index, t, side, plane) {
+                var p = point(index, t), a = point(index, Math.max(0, t - 0.001)), b = point(index, Math.min(1, t + 0.001));
+                var tx = b[0] - a[0], ty = b[1] - a[1], tz = b[2] - a[2], tl = Math.hypot(tx, ty, tz) || 1; tx /= tl; ty /= tl; tz /= tl;
+                var nx = Math.abs(ty) < 0.94 ? -tz : 0, ny = Math.abs(ty) < 0.94 ? 0 : tz, nz = Math.abs(ty) < 0.94 ? tx : -ty;
+                var nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+                if (plane) { var sx = ty * nz - tz * ny, sy = tz * nx - tx * nz, sz = tx * ny - ty * nx; nx = sx; ny = sy; nz = sz; }
+                var width = (index < trunks ? 0.026 + ((index * 0.347) % 1) * 0.014 : 0.016 + ((index * 0.281) % 1) * 0.012) * (0.58 + 0.42 * Math.pow(0.5 + 0.5 * Math.sin(t * 31 + index * 1.3), 2));
+                positions.push(p[0] + nx * side * width, p[1] + ny * side * width, p[2] + nz * side * width);
+                normals.push(ty * nz - tz * ny, tz * nx - tx * nz, tx * ny - ty * nx); uvs.push(t, (side + 1) * 0.5);
+              }
+              for (var strand = 0; strand < count; strand++) for (var step = 0; step < segments; step++) for (var plane = 0; plane < 2; plane++) {
+                var t0 = step / segments, t1 = (step + 1) / segments;
+                ribbonVertex(strand, t0, -1, plane); ribbonVertex(strand, t1, -1, plane); ribbonVertex(strand, t1, 1, plane);
+                ribbonVertex(strand, t0, -1, plane); ribbonVertex(strand, t1, 1, plane); ribbonVertex(strand, t0, 1, plane);
+              }
+              var geometry = new THREE.BufferGeometry();
+              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3)); geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3)); geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2));
+              return geometry;
+            }
+            var crabFilamentFragmentShader = [
+              'uniform vec3 uColor; uniform float uOpacity; uniform float uCutawayStrength; uniform float uCutawayCenterDepth; uniform float uCutawaySoftness; varying vec3 vGasPosition; varying vec2 vGasUv; varying vec3 vGasView;',
+              'void main(){float crossFade=exp(-pow((vGasUv.y-0.5)*3.4,2.0))*smoothstep(0.0,0.15,vGasUv.y)*(1.0-smoothstep(0.85,1.0,vGasUv.y));',
+              'float endFade=smoothstep(0.0,0.06,vGasUv.x)*(1.0-smoothstep(0.88,1.0,vGasUv.x));',
+              'float grain=0.5+0.5*sin(vGasPosition.x*169.0+sin(vGasPosition.z*73.0))*sin(vGasPosition.y*143.0+vGasPosition.x*31.0);',
+              'float knots=pow(0.5+0.5*sin(vGasUv.x*61.0+sin(vGasPosition.y*19.0)*4.0),4.0);',
+              'float foregroundOpening=smoothstep(uCutawayCenterDepth-uCutawaySoftness,uCutawayCenterDepth+uCutawaySoftness,vGasView.z);',
+              'float alpha=uOpacity*crossFade*endFade*(0.22+0.55*grain+0.23*knots)*mix(1.0,foregroundOpening,uCutawayStrength);if(alpha<0.004)discard;',
+              'gl_FragColor=vec4(uColor*(0.55+0.35*grain+0.2*knots),alpha);}'
+            ].join('\n');
+            var crabWindFragmentShader = [
+              'uniform vec3 uColor; uniform float uOpacity; varying vec3 vGasPosition; varying vec3 vGasNormal; varying vec3 vGasView;',
+              'float windHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+              'float windNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);',
+              'return mix(mix(mix(windHash(i),windHash(i+vec3(1,0,0)),f.x),mix(windHash(i+vec3(0,1,0)),windHash(i+vec3(1,1,0)),f.x),f.y),',
+              'mix(mix(windHash(i+vec3(0,0,1)),windHash(i+vec3(1,0,1)),f.x),mix(windHash(i+vec3(0,1,1)),windHash(i+vec3(1,1,1)),f.x),f.y),f.z);}',
+              'void main(){float facing=abs(dot(normalize(vGasNormal),normalize(vGasView)));',
+              'float coarse=windNoise(vGasPosition*5.0+1.7), middle=windNoise(vGasPosition*12.0+6.3), fine=windNoise(vGasPosition*24.0+9.1);',
+              'float density=smoothstep(0.23,0.78,coarse*0.53+middle*0.31+fine*0.16);',
+              'float edgeFade=smoothstep(0.0,0.48,facing), depthLayer=gl_FrontFacing?1.0:0.62;',
+              'float alpha=uOpacity*pow(facing,1.15)*edgeFade*(0.12+0.88*density)*depthLayer;if(alpha<0.003)discard;',
+              'vec3 windColor=uColor*mix(vec3(0.62,0.84,1.04),vec3(1.10,1.04,0.94),density);',
+              'gl_FragColor=vec4(windColor*(0.76+0.24*density),alpha);}'
+            ].join('\n');
+            NEBULAE.forEach(function (neb) {
+              if (galaxyType === 'elliptical' || neb.type !== 'Supernova Remnant') return;
+              ['filaments', 'wind'].forEach(function (component) {
+                var filament = component === 'filaments';
+                var geometry = filament ? makeCrabFilamentGeometry() : makePlanetaryInspectionGeometry('polar-envelope', resolvedQuality === 'cinematic' ? 48 : 36, 18, 1.2);
+                var material = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color(filament ? 0xe89a83 : 0x72b2d3).convertSRGBToLinear() }, uOpacity: { value: 0 }, uCutawayStrength: { value: 0 }, uCutawayCenterDepth: { value: 0 }, uCutawaySoftness: { value: Math.max(0.00001, neb.r * 0.06) } }, vertexShader: planetaryGasVertexShader, fragmentShader: filament ? crabFilamentFragmentShader : crabWindFragmentShader, transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false, depthTest: true, toneMapped: false });
+                var mesh = new THREE.Mesh(geometry, material); mesh.name = 'inspectedCrabStructure'; mesh.visible = false; mesh.position.set(neb.x, neb.y, neb.z);
+                mesh.scale.set(neb.r * (filament ? 1 : 1.3), neb.r * (filament ? 1 : 1.65), neb.r * (filament ? 1 : 0.52)); mesh.rotation.set(0.2, -0.3, 0.15);
+                mesh.userData = { nebulaName: neb.name, component: component, baseOpacity: filament ? 0.72 : 0.3, triangles: geometry.attributes.position.count / 3, illustrative: true };
+                mesh.renderOrder = filament ? 8 : 7; nebGroup.add(mesh); crabInspectionMeshes.push({ object: mesh, source: neb });
+              });
+            });
+            canvasEl._galaxyGetCrabComponentState = function () {
+              return { available: !!(!galaxyCleanedUp && inspectionActive && selectionTarget && selectionTarget.kind === 'nebula' && nebGroup.visible && (currentObserveMode === 'visible' || currentObserveMode === 'infrared') && crabInspectionMeshes.some(function (record) { return record.source === selectionTarget.data; })), filaments: crabInspectionComponents.filaments, wind: crabInspectionComponents.wind };
+            };
+            canvasEl._galaxyGetCrabCutawayState = function () {
+              return { available: !!(!galaxyCleanedUp && canvasEl._galaxyGetCrabComponentState && canvasEl._galaxyGetCrabComponentState().available && crabInspectionComponents.filaments), enabled: canvasEl._galaxyCrabCutawayEnabled };
+            };
+            function notifyCrabCutaway() { if (!galaxyCleanedUp && canvasEl._onCrabCutawayChange) canvasEl._onCrabCutawayChange(canvasEl._galaxyGetCrabCutawayState()); }
+            function notifyCrabComponents() {
+              if (!galaxyCleanedUp && canvasEl._onCrabComponentsChange) canvasEl._onCrabComponentsChange(canvasEl._galaxyGetCrabComponentState());
+              notifyCrabCutaway();
+            }
+            canvasEl._galaxySetCrabComponent = function (kind, visible) {
+              if (galaxyCleanedUp || (kind !== 'filaments' && kind !== 'wind') || typeof visible !== 'boolean' || !canvasEl._galaxyGetCrabComponentState().available) return false;
+              crabInspectionComponents[kind] = visible;
+              canvasEl[kind === 'filaments' ? '_galaxyCrabFilamentsVisible' : '_galaxyCrabWindVisible'] = visible;
+              notifyCrabComponents(); scheduleObjectFramingRefresh(); return true;
+            };
+            canvasEl._galaxySetCrabCutaway = function (enabled) {
+              if (galaxyCleanedUp || typeof enabled !== 'boolean' || !canvasEl._galaxyGetCrabCutawayState().available) return false;
+              canvasEl._galaxyCrabCutawayEnabled = enabled; notifyCrabCutaway(); return true;
+            };
+
+            // Preserve this preference when a quality rebuild reuses the canvas.
+            if (typeof canvasEl._galaxyInspectionShowContext !== 'boolean') canvasEl._galaxyInspectionShowContext = true;
+            function inspectionBackdropAvailable() {
+              return !!(!galaxyCleanedUp && inspectionActive && selectionTarget && selectionTarget.kind === 'nebula' && selectionTarget.data && selectionTarget.data.name && nebGroup.visible && (currentObserveMode === 'visible' || currentObserveMode === 'infrared'));
+            }
+            canvasEl._galaxyGetInspectionBackdrop = function () { return { available: inspectionBackdropAvailable(), showContext: canvasEl._galaxyInspectionShowContext }; };
+            function notifyInspectionBackdrop() { if (!galaxyCleanedUp && canvasEl._onInspectionBackdropChange) canvasEl._onInspectionBackdropChange(canvasEl._galaxyGetInspectionBackdrop()); }
+            canvasEl._galaxySetInspectionBackdrop = function (showContext) {
+              if (typeof showContext !== 'boolean' || !inspectionBackdropAvailable()) return false;
+              canvasEl._galaxyInspectionShowContext = showContext; notifyInspectionBackdrop(); return true;
+            };
 
             // Close-range stellar feedback: ionization fronts, dust pillars, and compact
             // Bok globules add the small-scale structure visible in resolved nurseries.
@@ -7629,19 +8306,19 @@ if (!window._galaxyHasLoadedOnce) {
                   var rimMat = new THREE.MeshBasicMaterial({ map: bowShockTex, color: rimIndex % 2 ? 0x67e8f9 : 0xfda4af, transparent: true, opacity: 0.13 + rimIndex * 0.018, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
                   var rim = new THREE.Mesh(new THREE.RingGeometry(0.76, 1, resolvedQuality === 'cinematic' ? 96 : 56, 1, rimIndex * 1.37 + nebIndex * 0.42, 1.1 + rimIndex * 0.24), rimMat);
                   galaxyShapeNebulaShell(rim.geometry, nebIndex * 1.1 + rimIndex * 0.9);
-                  rim.position.set(neb.x, neb.y + 0.006 + rimIndex * 0.001, neb.z); rim.rotation.x = Math.PI * 0.5; rim.rotation.z = nebIndex * 0.58; var rimScale = neb.r * (1.45 + rimIndex * 0.27); rim.scale.set(rimScale, rimScale * (0.7 + rimIndex * 0.05), rimScale); rim.userData = { baseOpacity: rimMat.opacity, baseScale: rimScale, phase: nebIndex * 1.1 + rimIndex * 0.9 }; rim.renderOrder = 8; stellarFeedbackGroup.add(rim); feedbackIonizationRims.push(rim);
+                  rim.position.set(neb.x, neb.y + 0.006 + rimIndex * 0.001, neb.z); rim.rotation.x = Math.PI * 0.5; rim.rotation.z = nebIndex * 0.58; var rimScale = neb.r * (1.45 + rimIndex * 0.27); rim.scale.set(rimScale, rimScale * (0.7 + rimIndex * 0.05), rimScale); rim.userData = { baseOpacity: rimMat.opacity, baseScale: rimScale, phase: nebIndex * 1.1 + rimIndex * 0.9, nebulaName: neb.name }; rim.renderOrder = 8; stellarFeedbackGroup.add(rim); feedbackIonizationRims.push(rim);
                 }
                 var pillarCount = resolvedQuality === 'cinematic' ? 4 : resolvedQuality === 'high' ? 3 : 2;
                 for (var pillarIndex = 0; pillarIndex < pillarCount; pillarIndex++) {
                   var pillarMat = new THREE.SpriteMaterial({ map: pillarTex, color: pillarIndex % 2 ? 0x312039 : 0x1e172c, transparent: true, opacity: 0.56, depthWrite: false, blending: THREE.NormalBlending, rotation: -0.42 + pillarIndex * 0.31 + nebIndex * 0.08 });
                   var pillar = new THREE.Sprite(pillarMat), pillarAngle = pillarIndex * 2.05 + nebIndex * 0.74, pillarOffset = neb.r * (0.34 + pillarIndex * 0.12);
-                  pillar.position.set(neb.x + Math.cos(pillarAngle) * pillarOffset, neb.y + 0.012, neb.z + Math.sin(pillarAngle) * pillarOffset); var pillarWidth = neb.r * (0.22 + pillarIndex * 0.025), pillarHeight = neb.r * (0.82 + pillarIndex * 0.16); pillar.scale.set(pillarWidth, pillarHeight, 1); pillar.userData = { baseOpacity: pillarMat.opacity, baseScaleX: pillarWidth, baseScaleY: pillarHeight, phase: nebIndex * 0.8 + pillarIndex * 1.3, drift: (pillarIndex % 2 ? -1 : 1) * 0.00016 }; pillar.renderOrder = 9; stellarFeedbackGroup.add(pillar); feedbackPillarSprites.push(pillar);
+                  pillar.position.set(neb.x + Math.cos(pillarAngle) * pillarOffset, neb.y + 0.012, neb.z + Math.sin(pillarAngle) * pillarOffset); var pillarWidth = neb.r * (0.22 + pillarIndex * 0.025), pillarHeight = neb.r * (0.82 + pillarIndex * 0.16); pillar.scale.set(pillarWidth, pillarHeight, 1); pillar.userData = { baseOpacity: pillarMat.opacity, baseScaleX: pillarWidth, baseScaleY: pillarHeight, phase: nebIndex * 0.8 + pillarIndex * 1.3, drift: (pillarIndex % 2 ? -1 : 1) * 0.00016, nebulaName: neb.name }; pillar.renderOrder = 9; stellarFeedbackGroup.add(pillar); feedbackPillarSprites.push(pillar);
                 }
                 var globuleCount = resolvedQuality === 'cinematic' ? 7 : resolvedQuality === 'high' ? 5 : 3;
                 for (var globuleIndex = 0; globuleIndex < globuleCount; globuleIndex++) {
                   var globuleMat = new THREE.SpriteMaterial({ map: globuleTex, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.NormalBlending, rotation: Math.random() * Math.PI });
                   var globule = new THREE.Sprite(globuleMat), globuleAngle = Math.random() * Math.PI * 2, globuleOffset = neb.r * (0.2 + Math.random() * 0.72);
-                  globule.position.set(neb.x + Math.cos(globuleAngle) * globuleOffset, neb.y + 0.014 + Math.random() * 0.008, neb.z + Math.sin(globuleAngle) * globuleOffset); var globuleScale = neb.r * (0.11 + Math.random() * 0.12); globule.scale.set(globuleScale * (0.8 + Math.random() * 0.5), globuleScale, 1); globule.userData = { baseOpacity: globuleMat.opacity, baseScaleX: globule.scale.x, baseScaleY: globule.scale.y, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.00012 }; globule.renderOrder = 10; stellarFeedbackGroup.add(globule); bokGlobuleSprites.push(globule);
+                  globule.position.set(neb.x + Math.cos(globuleAngle) * globuleOffset, neb.y + 0.014 + Math.random() * 0.008, neb.z + Math.sin(globuleAngle) * globuleOffset); var globuleScale = neb.r * (0.11 + Math.random() * 0.12); globule.scale.set(globuleScale * (0.8 + Math.random() * 0.5), globuleScale, 1); globule.userData = { baseOpacity: globuleMat.opacity, baseScaleX: globule.scale.x, baseScaleY: globule.scale.y, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.00012, nebulaName: neb.name }; globule.renderOrder = 10; stellarFeedbackGroup.add(globule); bokGlobuleSprites.push(globule);
                 }
               });
             })();
@@ -7711,6 +8388,8 @@ if (!window._galaxyHasLoadedOnce) {
               if (layerKey === 'gas') starBirthSprites.forEach(function (sprite) { sprite.visible = detailVisible; });
             };
             canvasEl._setLayerVisibility = function (layerKey, visible) {
+              clearGalaxyHover();
+              clearGalaxyNearby(true);
               var layerVisible = visible && canvasEl._isLayerAllowed(layerKey);
               if (canvasEl._layers[layerKey]) canvasEl._layers[layerKey].visible = layerVisible;
               canvasEl._setDetailLayer(layerKey, layerVisible);
@@ -7792,7 +8471,9 @@ if (!window._galaxyHasLoadedOnce) {
             var bloomModeStrength = 1.35 * morphologyVisual.bloomStrength, bloomModeThreshold = Math.min(0.98, (resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9) + morphologyVisual.bloomThreshold);
             var observeTransitionReady = false, observeTransitionRevision = 0;
             function setObserveMode(mode) {
+              clearGalaxyHover();
               var nextObserveMode = mode || 'visible';
+              if (nextObserveMode !== currentObserveMode) clearGalaxyNearby(true);
               if (observeTransitionReady && nextObserveMode !== currentObserveMode) {
                 var transitionEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-observe-transition]');
                 if (transitionEl) {
@@ -7895,6 +8576,10 @@ if (!window._galaxyHasLoadedOnce) {
               bloomModeStrength = (currentObserveMode === 'xray' ? 1.85 : currentObserveMode === 'infrared' ? 1.12 : currentObserveMode === 'radio' ? 1.05 : currentObserveMode === 'gravity' ? 1.24 : 1.35) * morphologyVisual.bloomStrength;
               bloomModeThreshold = Math.min(0.98, (currentObserveMode === 'xray' ? 0.9 : currentObserveMode === 'infrared' ? 0.88 : currentObserveMode === 'radio' ? 0.87 : currentObserveMode === 'gravity' ? 0.88 : resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9) + morphologyVisual.bloomThreshold);
               if (composer && canvasEl._bloomPass) { canvasEl._bloomPass.strength = bloomModeStrength * galaxyRuntimeRef.current.galaxyGlow; canvasEl._bloomPass.threshold = bloomModeThreshold; }
+              notifyCrabComponents();
+              notifyPlanetaryComponents();
+              notifyInspectionBackdrop();
+              if (objectFramingState) { objectFramingHoldRoi = true; refreshObjectFraming(); updateCamera(); scheduleObjectFramingRefresh(); }
             }
             canvasEl._setObserveMode = setObserveMode;
             setObserveMode(currentObserveMode);
@@ -7917,7 +8602,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             canvasEl._triggerSupernova = function () {
 
-              if (galaxyCleanedUp) return null;
+              // The elliptical preset represents an old population. A rare blue
+              // catalogue tracer does not establish a young massive progenitor.
+              if (galaxyCleanedUp || galaxyType === 'elliptical') return null;
               var progenitors = galaxySupernovaProgenitors(starData);
               if (!progenitors.length || !armGroup.visible) return null;
 
@@ -8088,7 +8775,7 @@ if (!window._galaxyHasLoadedOnce) {
             var tourActive = canvasEl.getAttribute('data-tour-active') === 'true' && !prefersReducedMotion;
             var tourStart = Date.now(), tourLastStage = -1, tourFrames = null;
             var hudHidden = canvasEl.getAttribute('data-hud-hidden') === 'true';
-            var orientationEl = null, lastOrientationLabel = '';
+            var orientationDisplays = null, lastOrientationProjectionKey = '';
             var lastCameraFeedbackKey = '';
 
             // r = 1.2 was a fixed number, and at fov 60 it put the camera 1.2 units
@@ -8117,13 +8804,153 @@ if (!window._galaxyHasLoadedOnce) {
               // learner has zoomed or a tour has moved it, leave their view alone.
               var atHome = Math.abs(spherical.r - galaxyOverviewRadius) < 0.0005 && !inspectionActive && !galaxyFocusActive && !(Date.now() < galaxyFocusResizeUntil);
               galaxyOverviewRadius = next;
-              if (atHome) { spherical.r = next; updateCamera(); }
+              var homeRatio = warpTween && (warpTween.targetHome ? 1 : warpTween.targetHomeRatio);
+              if (Number.isFinite(homeRatio)) {
+                // A dock or viewport resize can change the overview during a
+                // reset. Continue from this frame toward the new destination,
+                // keeping the original arrival time and final viewing angle.
+                var remaining = Math.max(1, warpTween.start + warpTween.dur - Date.now());
+                warpTween.dt = warpTween.t0 + warpTween.dt - spherical.theta;
+                warpTween.dp = warpTween.p0 + warpTween.dp - spherical.phi;
+                warpTween.t0 = spherical.theta; warpTween.p0 = spherical.phi; warpTween.r0 = spherical.r;
+                warpTween.dr = Math.max(0.2, Math.min(3, next * homeRatio)) - spherical.r;
+                warpTween.start = Date.now(); warpTween.dur = remaining;
+              } else if (atHome) { spherical.r = next; updateCamera(); }
             }
             var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: galaxyOverviewRadius };
             var cameraLookTarget = new THREE.Vector3(0, 0, 0);
             var cameraLookGoal = new THREE.Vector3(0, 0, 0);
             var inspectionActive = false, inspectionFrame = null, inspectionTransition = null;
             var inspectionOrbitCenter = new THREE.Vector3(0, 0, 0);
+            var objectFramingActive = false, objectFramingOffset = false, objectFramingRefreshId = null, objectFramingKey = '';
+            var objectFramingOffsetCurrent = { x: 0, y: 0 }, objectFramingOffsetTarget = { x: 0, y: 0 }, objectFramingOffsetTween = null;
+            var objectFramingOffsetRetained = false, objectFramingRestoreActive = null;
+            var objectFramingHoldRoi = false, objectFramingForceLayout = false;
+            var objectFramingState = { available: false, contextual: false, minRadius: 0.2, fitRadius: 0.3, boundsRadius: 0, roi: null };
+            var objectFramingObserved = new Set();
+            var objectFramingObserver = new ResizeObserver(function () { scheduleObjectFramingRefresh(); });
+            function objectFramingRecords() {
+              if (!inspectionActive || !selectionTarget || selectionTarget.kind !== 'nebula' || !nebGroup.visible) return [];
+              return planetaryInspectionMeshes.concat(crabInspectionMeshes).filter(function (record) { return record.source === selectionTarget.data; });
+            }
+            function objectGeometryRadius(object) {
+              if (Number.isFinite(object.userData.framingRadius)) return object.userData.framingRadius;
+              var positions = object.geometry && object.geometry.attributes.position, radius = 0;
+              if (positions && positions.array) for (var index = 0; index < positions.array.length; index += 3) radius = Math.max(radius, Math.hypot(positions.array[index] * object.scale.x, positions.array[index + 1] * object.scale.y, positions.array[index + 2] * object.scale.z));
+              object.userData.framingRadius = radius;
+              return radius;
+            }
+            function objectFramingRoi() {
+              var width = Math.max(1, W), height = Math.max(1, H), margin = 16, top = margin;
+              var stage = canvasEl.parentElement, rect = canvasEl.getBoundingClientRect(), blockers = [];
+              objectFramingObserved.forEach(function (node) {
+                if (!node.isConnected || !stage || !stage.contains(node)) { if (objectFramingObserver.unobserve) objectFramingObserver.unobserve(node); objectFramingObserved.delete(node); }
+              });
+              if (stage && !hudHidden) {
+                var nodes = stage.querySelectorAll('[data-galaxy-selection-dock],[data-galaxy-camera-controls],[data-galaxy-orientation-display],[data-galaxy-live-scale],[data-galaxy-spectral-legend],[data-galaxy-instrument-readout]');
+                Array.prototype.forEach.call(nodes, function (node) {
+                  if (!objectFramingObserved.has(node)) { objectFramingObserved.add(node); objectFramingObserver.observe(node); }
+                  var box = node.getBoundingClientRect();
+                  var style = window.getComputedStyle(node);
+                  if (!box.width || !box.height || style.display === 'none' || style.visibility === 'hidden') return;
+                  var local = { left: box.left - rect.left, right: box.right - rect.left, top: box.top - rect.top, bottom: box.bottom - rect.top };
+                  if (node.hasAttribute('data-galaxy-selection-dock') || node.hasAttribute('data-galaxy-camera-controls')) blockers.push(local);
+                  else if (local.top < height * 0.35) top = Math.max(top, local.bottom + margin);
+                });
+              }
+              top = Math.min(top, height * 0.4);
+              var above = { x: margin, y: top, width: Math.max(1, width - margin * 2), height: Math.max(1, (blockers.length ? Math.min.apply(Math, blockers.map(function (box) { return box.top; })) : height) - margin - top) };
+              var left = margin, right = width - margin;
+              blockers.forEach(function (box) { if ((box.left + box.right) / 2 < width / 2) left = Math.max(left, box.right + margin); else right = Math.min(right, box.left - margin); });
+              var between = { x: left, y: top, width: Math.max(0, right - left), height: Math.max(1, height - margin - top) };
+              return Math.min(between.width, between.height) > Math.min(above.width, above.height) ? between : above;
+            }
+            function applyObjectFramingOffset() {
+              var roi = objectFramingState.roi;
+              if (((objectFramingActive && objectFramingState.contextual && roi) || objectFramingOffsetTween || objectFramingOffsetRetained) && camera.setViewOffset) {
+                if (objectFramingOffsetTween) {
+                  var progress = Math.min(1, Math.max(0, (Date.now() - objectFramingOffsetTween.start) / objectFramingOffsetTween.dur));
+                  var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                  objectFramingOffsetCurrent.x = objectFramingOffsetTween.from.x + (objectFramingOffsetTarget.x - objectFramingOffsetTween.from.x) * ease;
+                  objectFramingOffsetCurrent.y = objectFramingOffsetTween.from.y + (objectFramingOffsetTarget.y - objectFramingOffsetTween.from.y) * ease;
+                  if (progress >= 1) {
+                    objectFramingOffsetTween = null;
+                    if (objectFramingRestoreActive !== null) { objectFramingActive = objectFramingRestoreActive; objectFramingRestoreActive = null; objectFramingOffsetRetained = false; }
+                  }
+                }
+                if (!objectFramingActive && !objectFramingOffsetTween && !objectFramingOffsetRetained) {
+                  if (camera.clearViewOffset) camera.clearViewOffset(); objectFramingOffset = false; return;
+                }
+                camera.setViewOffset(W, H, W * objectFramingOffsetCurrent.x, H * objectFramingOffsetCurrent.y, W, H); objectFramingOffset = true;
+              } else {
+                if (objectFramingOffset && camera.clearViewOffset) camera.clearViewOffset();
+                objectFramingOffset = false; objectFramingOffsetTween = null; objectFramingOffsetCurrent = { x: 0, y: 0 }; objectFramingOffsetTarget = { x: 0, y: 0 };
+              }
+            }
+            function targetObjectFramingOffset(duration, offset, finalActive) {
+              var roi = objectFramingState.roi;
+              objectFramingOffsetTarget = offset ? Object.assign({}, offset) : { x: 0.5 - (roi.x + roi.width / 2) / W, y: 0.5 - (roi.y + roi.height / 2) / H };
+              objectFramingRestoreActive = typeof finalActive === 'boolean' ? finalActive : null; objectFramingOffsetRetained = false;
+              if (prefersReducedMotion) { objectFramingOffsetCurrent = Object.assign({}, objectFramingOffsetTarget); objectFramingOffsetTween = null; if (objectFramingRestoreActive !== null) { objectFramingActive = objectFramingRestoreActive; objectFramingRestoreActive = null; } }
+              else objectFramingOffsetTween = { from: Object.assign({}, objectFramingOffsetCurrent), start: Date.now(), dur: duration || 720 };
+            }
+            function galaxyCameraMinRadius() { return objectFramingState && objectFramingState.contextual ? objectFramingState.minRadius : 0.2; }
+            function clampGalaxyCameraRadius(radius) { return Math.max(galaxyCameraMinRadius(), Math.min(3, radius)); }
+            function galaxyZoomReferenceRadius() { return objectFramingState && objectFramingState.contextual ? objectFramingState.fitRadius : galaxyOverviewRadius; }
+            function notifyObjectFraming() {
+              if (!objectFramingState) return;
+              var state = canvasEl._galaxyGetObjectFramingState(), key = [state.available, state.contextual, state.framed, state.minRadius.toFixed(6), state.fitRadius.toFixed(6), state.zoomPercent, state.roi && JSON.stringify(state.roi)].join(':');
+              if (key !== objectFramingKey && !galaxyCleanedUp && canvasEl._onObjectFramingChange) { objectFramingKey = key; canvasEl._onObjectFramingChange(state); }
+            }
+            canvasEl._galaxyGetObjectFramingState = function () {
+              return { available: !!objectFramingState.available, contextual: !!objectFramingState.contextual, framed: !!objectFramingActive, minRadius: objectFramingState.minRadius, maxRadius: 3, fitRadius: objectFramingState.fitRadius, boundsRadius: objectFramingState.boundsRadius,
+                zoomPercent: Math.round(100 * galaxyZoomReferenceRadius() / spherical.r), roi: objectFramingState.roi ? Object.assign({}, objectFramingState.roi) : null };
+            };
+            function refreshObjectFraming(forceLayout) {
+              if (!objectFramingState || galaxyCleanedUp) return;
+              var records = objectFramingRecords(), previousFit = objectFramingState.fitRadius, relativeZoom = spherical.r / previousFit;
+              var previousRoi = objectFramingState.roi, sameObject = selectionTarget && objectFramingState.object === selectionTarget.data;
+              if (forceLayout || !sameObject) objectFramingHoldRoi = false;
+              var bounds = records.reduce(function (radius, record) { return Math.max(radius, objectGeometryRadius(record.object)); }, 0);
+              if (!bounds) {
+                objectFramingActive = false; objectFramingState = { available: false, contextual: false, minRadius: 0.2, fitRadius: 0.3, boundsRadius: 0, roi: null };
+              } else {
+                var roi = objectFramingHoldRoi && previousRoi ? previousRoi : objectFramingRoi(), near = camera.near || 0.01;
+                var minRadius = Math.max(near * 3, bounds + near * 2);
+                var tangent = Math.tan(camera.fov * Math.PI / 360) * Math.min(roi.height / Math.max(1, H), roi.width / Math.max(1, W) * camera.aspect);
+                var fitRadius = Math.max(minRadius, Math.min(3, bounds / Math.sin(Math.atan(Math.max(0.001, tangent))) * 1.12));
+                objectFramingState = { available: currentObserveMode === 'visible' || currentObserveMode === 'infrared', contextual: true, minRadius: minRadius, fitRadius: fitRadius, boundsRadius: bounds, roi: roi, object: selectionTarget.data };
+                if (!sameObject && inspectionTransition && spherical.r < minRadius && !prefersReducedMotion) warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: minRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true, inspectionSafetyTransition: true };
+                var roiChanged = !previousRoi || JSON.stringify(previousRoi) !== JSON.stringify(roi);
+                if (objectFramingActive && sameObject && roiChanged) {
+                  if (warpTween && (warpTween.targetObjectFit || Number.isFinite(warpTween.targetObjectRatio))) {
+                    var remaining = Math.max(1, warpTween.start + warpTween.dur - Date.now());
+                    warpTween.dt = warpTween.t0 + warpTween.dt - spherical.theta; warpTween.dp = warpTween.p0 + warpTween.dp - spherical.phi;
+                    warpTween.t0 = spherical.theta; warpTween.p0 = spherical.phi; warpTween.r0 = spherical.r;
+                    warpTween.dr = fitRadius * (warpTween.targetObjectFit ? 1 : warpTween.targetObjectRatio) - spherical.r; warpTween.start = Date.now(); warpTween.dur = remaining;
+                  }
+                  else spherical.r = fitRadius * relativeZoom;
+                }
+                if (objectFramingActive && roiChanged) targetObjectFramingOffset(objectFramingOffsetTween ? Math.max(1, objectFramingOffsetTween.start + objectFramingOffsetTween.dur - Date.now()) : 180);
+              }
+              if (!(warpTween && warpTween.inspectionSafetyTransition)) spherical.r = clampGalaxyCameraRadius(spherical.r);
+              applyObjectFramingOffset(); notifyObjectFraming();
+            }
+            function scheduleObjectFramingRefresh(forceLayout) {
+              if (forceLayout) objectFramingForceLayout = true;
+              if (objectFramingRefreshId != null || galaxyCleanedUp) return;
+              objectFramingRefreshId = requestAnimationFrame(function () { var force = objectFramingForceLayout; objectFramingForceLayout = false; objectFramingRefreshId = null; if (canvasEl.isConnected && !galaxyCleanedUp) { refreshObjectFraming(force); updateCamera(); } });
+            }
+            canvasEl._galaxyFrameObject = function () {
+              if (galaxyCleanedUp || galaxyFocusActive || (currentObserveMode !== 'visible' && currentObserveMode !== 'infrared')) return false;
+              refreshObjectFraming(true); if (!objectFramingState.available) return false;
+              cancelGalaxyCameraMotion(); objectFramingActive = true; targetObjectFramingOffset(720); applyObjectFramingOffset();
+              if (prefersReducedMotion) spherical.r = objectFramingState.fitRadius;
+              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: objectFramingState.fitRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true, targetObjectFit: true };
+              updateCamera(); notifyObjectFraming();
+              setCanvasStatus(__alloT('stem.galaxy.object_frame_status', 'Whole illustrative object framed. Viewing angle and components are unchanged.'));
+              return true;
+            };
 
 
             // The tour used to carry one hardcoded script for every galaxy: it captioned
@@ -8160,6 +8987,13 @@ if (!window._galaxyHasLoadedOnce) {
               prefersReducedMotion = !!(event && event.matches);
               if (prefersReducedMotion) {
                 autoRotate = false; tourActive = false; warpTween = null;
+                // Freeze both the projection pan and the current fly-in origin.
+                // Rebasing onto the final object here would change the viewing
+                // direction even if the camera's XYZ position stayed unchanged.
+                objectFramingOffsetTween = null; objectFramingRestoreActive = null;
+                objectFramingOffsetTarget = Object.assign({}, objectFramingOffsetCurrent);
+                objectFramingOffsetRetained = objectFramingOffset && (Math.abs(objectFramingOffsetCurrent.x) + Math.abs(objectFramingOffsetCurrent.y) > 0.000001);
+                if (inspectionActive && inspectionTransition) inspectionTransition.pausedOrigin = { x: cameraLookTarget.x, y: cameraLookTarget.y, z: cameraLookTarget.z };
                 cinematicMotion.warp = 0; cinematicMotion.shock = 0; cinematicMotion.aperture = 0;
                 if (canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true);
                 setCanvasStatus(__alloT('stem.galaxy.status_motion_paused', 'Motion paused to honor your reduced-motion preference'));
@@ -8172,6 +9006,21 @@ if (!window._galaxyHasLoadedOnce) {
               else if (reducedMotionQuery.addListener) reducedMotionQuery.addListener(onGalaxyReducedMotionChange);
             }
 
+            function updateOrientationDisplays(force) {
+              var projection = galaxyOrientationProjection(camera.position, cameraLookTarget);
+              if (!projection) return null;
+              var key = Math.round(projection.elevation * 20) + ':' + projection.axes.map(function (axis) { return axis.x2 + ',' + axis.y2; }).join(':');
+              var missing = !orientationDisplays || orientationDisplays.some(function (node) { return !node.isConnected; });
+              if (!force && !missing && key === lastOrientationProjectionKey) return projection;
+              if (force || missing) {
+                var workspace = canvasEl.closest('[data-galaxy-workspace]');
+                orientationDisplays = workspace ? Array.prototype.slice.call(workspace.querySelectorAll('[data-galaxy-orientation-display]')) : [];
+              }
+              var reference = galaxyType === 'barredSpiral' || galaxyType === 'grandDesign' ? __alloT('stem.galaxy.orientation_disk', 'Galaxy disk') : __alloT('stem.galaxy.orientation_model_plane', 'Model plane');
+              orientationDisplays.forEach(function (node) { galaxyApplyOrientationDisplay(node, projection, reference, __alloT); });
+              lastOrientationProjectionKey = key;
+              return projection;
+            }
             function updateCamera() {
               if (inspectionActive) updateInspectionOrbitCenter();
               var origin = inspectionActive ? inspectionOrbitCenter : { x: 0, y: 0, z: 0 };
@@ -8182,6 +9031,7 @@ if (!window._galaxyHasLoadedOnce) {
               camera.position.z = origin.z + spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
 
               camera.lookAt(cameraLookTarget.x, cameraLookTarget.y, cameraLookTarget.z);
+              applyObjectFramingOffset();
               updateSelectionReticleSize();
               updateMeasurementRulerProjection();
               if (starShaderMat && starShaderMat.uniforms && starShaderMat.uniforms.uCameraDir) starShaderMat.uniforms.uCameraDir.value.copy(camera.position).normalize();
@@ -8195,8 +9045,8 @@ if (!window._galaxyHasLoadedOnce) {
 
               // Report only discrete UI changes; azimuth animation needs no React updates.
               var viewAngle = Math.abs(spherical.phi - 0.1) < 0.015 ? 'face' : Math.abs(spherical.phi - Math.PI * 0.35) < 0.015 ? 'angled' : Math.abs(spherical.phi - Math.PI * 0.5) < 0.015 ? 'edge' : 'free';
-              var viewZoom = Math.round(100 * galaxyOverviewRadius / spherical.r);
-              var viewZoomPosition = Math.round(100 * Math.log(3 / Math.max(0.2, Math.min(3, spherical.r))) / Math.log(15));
+              var viewZoom = Math.round(100 * galaxyZoomReferenceRadius() / spherical.r);
+              var viewZoomPosition = Math.round(100 * Math.log(3 / clampGalaxyCameraRadius(spherical.r)) / Math.log(3 / galaxyCameraMinRadius()));
               // Vertical perspective span at the current look target, using the model's 15 kpc/world-unit scale.
               var focusDistance = Math.hypot(camera.position.x - cameraLookTarget.x, camera.position.y - cameraLookTarget.y, camera.position.z - cameraLookTarget.z);
               var fieldSpanKpc = 2 * focusDistance * Math.tan(camera.fov * Math.PI / 360) * 15;
@@ -8216,12 +9066,9 @@ if (!window._galaxyHasLoadedOnce) {
               edgeOnSilhouetteSprites.forEach(function (silhouetteSprite) { silhouetteSprite.material.opacity = (silhouetteSprite.material.userData.baseOpacity || 0.22) * edgeOnFactor * edgeOnModeOpacity; });
               edgeOnRimSprites.forEach(function (rimSprite) { rimSprite.material.opacity = (rimSprite.material.userData.baseOpacity || 0.2) * edgeOnFactor * (currentObserveMode === 'infrared' ? 1.24 : currentObserveMode === 'visible' ? 1 : 0.44); });
 
-              if (!hudHidden) {
-                if (!orientationEl || !orientationEl.isConnected) orientationEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-orientation]');
-                var tilt = cameraTilt;
-                var orientationLabel = tilt > 0.72 ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : tilt < 0.22 ? __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') : __alloT('stem.galaxy.orient_angled', 'Angled view');
-                if (orientationEl && orientationLabel !== lastOrientationLabel) { orientationEl.textContent = orientationLabel; lastOrientationLabel = orientationLabel; }
-              }
+              updateOrientationDisplays(false);
+              updatePlanetaryViewDisplays(false);
+              notifyObjectFraming();
 
             }
 
@@ -8230,6 +9077,8 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl._galaxyOrbit = spherical;
 
             canvasEl._galaxyUpdateCam = updateCamera;
+            canvasEl._galaxyGetOrientationState = function () { return galaxyOrientationProjection(camera.position, cameraLookTarget); };
+            canvasEl._galaxyRefreshOrientation = function () { return updateOrientationDisplays(true); };
 
             function getPinchDistance() {
               var pointerKeys = Object.keys(activeGalaxyPointers);
@@ -8239,24 +9088,29 @@ if (!window._galaxyHasLoadedOnce) {
             }
 
             function onGalDown(e) {
+              clearGalaxyHover();
               if (e.button !== undefined && e.button !== 0) return;
+              cancelGalaxyCameraMotion();
+              if (!Object.keys(activeGalaxyPointers).length) { dragDistance = 0; suppressGalaxyClick = false; }
               activeGalaxyPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-              if (tourActive) { tourActive = false; if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); }
-              isDragging = true; dragDistance = 0; suppressGalaxyClick = false; warpTween = null;
+              isDragging = true;
               prevX = e.clientX; prevY = e.clientY;
-              if (inspectionActive) inspectionTransition = null;
-              if (Object.keys(activeGalaxyPointers).length === 2) { pinchStartDistance = getPinchDistance(); pinchStartRadius = spherical.r; }
+              if (Object.keys(activeGalaxyPointers).length >= 2) { pinchStartDistance = getPinchDistance(); pinchStartRadius = spherical.r; suppressGalaxyClick = true; }
               canvasEl.style.cursor = 'grabbing';
-              if (canvasEl.setPointerCapture && e.pointerId !== undefined) canvasEl.setPointerCapture(e.pointerId);
+              try { if (canvasEl.setPointerCapture && e.pointerId !== undefined) canvasEl.setPointerCapture(e.pointerId); } catch (captureError) {}
             }
 
             function onGalMove(e) {
-
-              if (!isDragging || !activeGalaxyPointers[e.pointerId]) return;
+              if (!isDragging || !activeGalaxyPointers[e.pointerId]) {
+                if ((e.pointerType === 'mouse' || e.pointerType === 'pen' || !e.pointerType) && !e.buttons) scheduleGalaxyHover(e.clientX, e.clientY);
+                else clearGalaxyHover();
+                return;
+              }
+              clearGalaxyHover();
               activeGalaxyPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
               if (Object.keys(activeGalaxyPointers).length > 1) {
                 var pinchDistance = getPinchDistance();
-                if (pinchStartDistance > 0 && pinchDistance > 0) spherical.r = Math.max(0.2, Math.min(3, pinchStartRadius * pinchStartDistance / pinchDistance));
+                if (pinchStartDistance > 0 && pinchDistance > 0) spherical.r = clampGalaxyCameraRadius(pinchStartRadius * pinchStartDistance / pinchDistance);
                 dragDistance += 6; suppressGalaxyClick = true; updateCamera(); return;
               }
 
@@ -8271,16 +9125,46 @@ if (!window._galaxyHasLoadedOnce) {
             }
 
             function onGalUp(e) {
+              if (e && (e.type === 'pointercancel' || e.type === 'lostpointercapture')) { clearGalaxyHover(); suppressGalaxyClick = true; }
               if (e && e.pointerId !== undefined) delete activeGalaxyPointers[e.pointerId];
               isDragging = Object.keys(activeGalaxyPointers).length > 0;
               suppressGalaxyClick = suppressGalaxyClick || dragDistance > 5;
               canvasEl.style.cursor = isDragging ? 'grabbing' : 'grab';
-              if (canvasEl.releasePointerCapture && e && e.pointerId !== undefined && canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(e.pointerId)) canvasEl.releasePointerCapture(e.pointerId);
+              try { if (canvasEl.releasePointerCapture && e && e.pointerId !== undefined && canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(e.pointerId)) canvasEl.releasePointerCapture(e.pointerId); } catch (captureError) {}
               var remainingKeys = Object.keys(activeGalaxyPointers);
               if (remainingKeys.length === 1) { var remaining = activeGalaxyPointers[remainingKeys[0]]; prevX = remaining.x; prevY = remaining.y; }
+              pinchStartDistance = remainingKeys.length >= 2 ? getPinchDistance() : 0; pinchStartRadius = spherical.r;
             }
 
-            function onGalWheel(e) { e.preventDefault(); cancelGalaxyCameraMotion(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r)))); }
+            function onGalLostCapture(e) {
+              // A normal pointerup already removed its pointer before releasing
+              // capture. Only an unexpected loss should cancel the gesture.
+              if (activeGalaxyPointers[e.pointerId]) onGalUp(e);
+            }
+            function cancelGalaxyPointerGesture() {
+              var pointerKeys = Object.keys(activeGalaxyPointers);
+              if (!pointerKeys.length) return;
+              activeGalaxyPointers = {}; isDragging = false; pinchStartDistance = 0; suppressGalaxyClick = true;
+              canvasEl.style.cursor = 'grab'; clearGalaxyHover();
+              pointerKeys.forEach(function (key) {
+                var id = Number(key);
+                try { if (Number.isFinite(id) && canvasEl.releasePointerCapture && canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(id)) canvasEl.releasePointerCapture(id); } catch (captureError) {}
+              });
+            }
+            function onGalWheel(e) {
+              var wheelY = e.deltaY, wheelX = e.deltaX === undefined ? 0 : e.deltaX;
+              if (!Number.isFinite(wheelY) || !Number.isFinite(wheelX) || wheelY === 0 || Math.abs(wheelX) > Math.abs(wheelY)) return;
+              var wheelUnit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? Math.max(1, canvasEl.clientHeight || canvasEl.offsetHeight || H) : 1;
+              var wheelPixels = Math.max(-480, Math.min(480, wheelY * wheelUnit));
+              var wheelScale = Math.exp(wheelPixels * 0.001);
+              e.preventDefault();
+              if (clampGalaxyCameraRadius(spherical.r * wheelScale) === spherical.r) return;
+              // Settling an interrupted inspection can change the radius while
+              // preserving the camera position, so apply the factor afterwards.
+              cancelGalaxyCameraMotion();
+              spherical.r = clampGalaxyCameraRadius(spherical.r * wheelScale);
+              updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyZoomReferenceRadius() / spherical.r))));
+            }
 
             canvasEl.addEventListener('pointerdown', onGalDown);
 
@@ -8289,16 +9173,73 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl.addEventListener('pointerup', onGalUp);
 
             canvasEl.addEventListener('pointercancel', onGalUp);
+            canvasEl.addEventListener('lostpointercapture', onGalLostCapture);
+            window.addEventListener('blur', cancelGalaxyPointerGesture);
 
             canvasEl.addEventListener('wheel', onGalWheel, { passive: false });
 
 
 
-            // Raycaster and a camera-facing focus reticle make selections easy to follow.
-
-            var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
-
-            var mouse = new THREE.Vector2();
+            // Pointer preview and selection share the same projected target finder.
+            var hoverPointer = null, hoverTimer = null, hoverState = null, lastHoverAt = -Infinity;
+            function hideGalaxyHoverPreview() {
+              hoverState = null;
+              var stage = canvasEl.parentElement;
+              if (stage) {
+                var preview = stage.querySelector('[data-galaxy-hover-preview]'), marker = stage.querySelector('[data-galaxy-hover-marker]');
+                if (preview) preview.hidden = true;
+                if (marker) marker.hidden = true;
+              }
+              if (!isDragging) canvasEl.style.cursor = 'grab';
+            }
+            function clearGalaxyHover() {
+              if (!hoverState && !hoverPointer && hoverTimer == null) return;
+              if (hoverTimer != null) clearTimeout(hoverTimer);
+              hoverTimer = null; hoverPointer = null;
+              hideGalaxyHoverPreview();
+            }
+            function hoverAllowed() { return !galaxyCleanedUp && canvasEl.isConnected && !isDragging && !inspectionActive && !galaxyFocusActive && !hudHidden; }
+            canvasEl._galaxyGetHoverState = function () {
+              if (!hoverState) return { kind: null, label: '', index: -1, position: null, x: 0, y: 0, visible: false };
+              return { kind: hoverState.kind, label: hoverState.label, index: hoverState.index, position: { x: hoverState.position.x, y: hoverState.position.y, z: hoverState.position.z }, x: hoverState.x, y: hoverState.y, visible: true };
+            };
+            function renderGalaxyHover(target) {
+              hideGalaxyHoverPreview();
+              if (!target || !hoverAllowed()) return;
+              var stage = canvasEl.parentElement;
+              var preview = stage && stage.querySelector('[data-galaxy-hover-preview]'), marker = stage && stage.querySelector('[data-galaxy-hover-marker]');
+              var label = preview && preview.querySelector('[data-galaxy-hover-label]');
+              if (!preview || !marker || !label) return;
+              hoverState = target; label.textContent = target.label; preview.hidden = false; marker.hidden = false;
+              preview.setAttribute('data-kind', target.kind); marker.setAttribute('data-kind', target.kind);
+              var rect = canvasEl.getBoundingClientRect(), stageRect = stage.getBoundingClientRect();
+              var left = rect.left - stageRect.left + target.x, top = rect.top - stageRect.top + target.y;
+              marker.style.left = left + 'px'; marker.style.top = top + 'px';
+              var previewWidth = preview.offsetWidth, previewHeight = preview.offsetHeight;
+              var previewLeft = left + 16;
+              if (previewLeft + previewWidth > stage.clientWidth - 8) previewLeft = left - previewWidth - 16;
+              preview.style.left = Math.max(8, Math.min(previewLeft, stage.clientWidth - previewWidth - 8)) + 'px';
+              preview.style.top = Math.max(8, Math.min(top + 16, stage.clientHeight - previewHeight - 8)) + 'px';
+              canvasEl.style.cursor = 'pointer';
+            }
+            function scheduleGalaxyHover(clientX, clientY) {
+              if (!hoverAllowed()) { clearGalaxyHover(); return; }
+              hoverPointer = { clientX: clientX, clientY: clientY };
+              if (hoverTimer != null) return;
+              hoverTimer = setTimeout(function () {
+                hoverTimer = null;
+                var pointer = hoverPointer;
+                if (!pointer || !hoverAllowed()) { clearGalaxyHover(); return; }
+                lastHoverAt = Date.now();
+                renderGalaxyHover(pickGalaxyTarget(pointer.clientX, pointer.clientY));
+                // Keep a resting pointer accurate as the scene turns, without
+                // scanning the catalogue on every animation frame.
+                if (hoverPointer && hoverAllowed()) scheduleGalaxyHover(hoverPointer.clientX, hoverPointer.clientY);
+              }, Math.max(0, 100 - (Date.now() - lastHoverAt)));
+            }
+            canvasEl.addEventListener('pointerleave', clearGalaxyHover);
+            window.addEventListener('scroll', clearGalaxyHover, true);
+            window.addEventListener('blur', clearGalaxyHover);
             var selectionCanvas = document.createElement('canvas'); selectionCanvas.setAttribute('aria-hidden', 'true'); selectionCanvas.width = 128; selectionCanvas.height = 128;
             var selectionCtx = selectionCanvas.getContext('2d');
               selectionCtx = upscaleGalaxyCanvas(selectionCanvas, selectionCtx);
@@ -8316,6 +9257,28 @@ if (!window._galaxyHasLoadedOnce) {
             var selectionTexture = tuneGalaxyTexture(new THREE.CanvasTexture(selectionCanvas));
             var selectionMaterial = new THREE.SpriteMaterial({ sizeAttenuation: false, map: selectionTexture, transparent: true, opacity: 0.96, blending: THREE.NormalBlending, depthWrite: false, depthTest: false });
             var selectionMarker = new THREE.Sprite(selectionMaterial); selectionMarker.name = 'selectionFocusReticle'; selectionMarker.visible = false; selectionMarker.renderOrder = 20; scene.add(selectionMarker);
+            // An unresolved point-spread function identifies the inspected source;
+            // its fixed screen footprint is an optical symbol, not a stellar radius.
+            var inspectionPsfCanvas = document.createElement('canvas'); inspectionPsfCanvas.setAttribute('aria-hidden', 'true'); inspectionPsfCanvas.width = inspectionPsfCanvas.height = 128;
+            var inspectionPsfCtx = inspectionPsfCanvas.getContext('2d');
+            var inspectionPsfGradient = inspectionPsfCtx.createRadialGradient(64, 64, 0, 64, 64, 60);
+            inspectionPsfGradient.addColorStop(0, 'rgba(255,255,255,1)'); inspectionPsfGradient.addColorStop(0.13, 'rgba(255,255,255,1)');
+            inspectionPsfGradient.addColorStop(0.24, 'rgba(255,255,255,0.68)'); inspectionPsfGradient.addColorStop(0.44, 'rgba(255,255,255,0.13)');
+            inspectionPsfGradient.addColorStop(0.7, 'rgba(255,255,255,0.025)'); inspectionPsfGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            inspectionPsfCtx.fillStyle = inspectionPsfGradient; inspectionPsfCtx.fillRect(0, 0, 128, 128);
+            var inspectionPsfMaterial = new THREE.SpriteMaterial({ map: tuneGalaxyTexture(new THREE.CanvasTexture(inspectionPsfCanvas)), sizeAttenuation: false, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, toneMapped: false });
+            var inspectionStarPsf = new THREE.Sprite(inspectionPsfMaterial); inspectionStarPsf.name = 'inspectedStellarPointSpread'; inspectionStarPsf.visible = false; inspectionStarPsf.renderOrder = 18; scene.add(inspectionStarPsf);
+            var inspectionMaterialState = { starPsfRendered: false, starPsfPixels: 0, nebulaDepth: null, planetaryShell: null, crabStructure: null };
+            canvasEl._galaxyGetInspectionVisualState = function () {
+              var visible = !!(inspectionActive && selectionTarget && selectionTarget.kind === 'star' && armGroup.visible && currentObserveMode === 'visible');
+              return { starPsfVisible: visible && inspectionMaterialState.starPsfRendered, starPsfPixels: inspectionMaterialState.starPsfPixels,
+                starPsfPosition: { x: inspectionStarPsf.position.x, y: inspectionStarPsf.position.y, z: inspectionStarPsf.position.z },
+                starPsfColor: inspectionPsfMaterial.color.getHex(),
+                nebulaMaterials: nebulaSprites.map(function (sprite) { return { name: sprite.userData.name, type: sprite.userData.type, blending: sprite.material.blending, opacity: sprite.material.opacity, renderOrder: sprite.renderOrder }; }),
+                nebulaDepth: inspectionActive && selectionTarget && selectionTarget.kind === 'nebula' ? inspectionMaterialState.nebulaDepth : null,
+                planetaryShell: inspectionActive && selectionTarget && selectionTarget.kind === 'nebula' ? inspectionMaterialState.planetaryShell : null,
+                crabStructure: inspectionActive && selectionTarget && selectionTarget.kind === 'nebula' ? inspectionMaterialState.crabStructure : null };
+            };
             var depthReticleCanvas = document.createElement('canvas'); depthReticleCanvas.setAttribute('aria-hidden', 'true'); depthReticleCanvas.width = 192; depthReticleCanvas.height = 192;
             var depthReticleCtx = upscaleGalaxyCanvas(depthReticleCanvas, depthReticleCanvas.getContext('2d')); depthReticleCtx.translate(96, 96);
             depthReticleCtx.strokeStyle = 'rgba(255,255,255,0.86)'; depthReticleCtx.lineWidth = 3; depthReticleCtx.lineCap = 'round'; depthReticleCtx.shadowColor = '#a5f3fc'; depthReticleCtx.shadowBlur = 9;
@@ -8477,7 +9440,19 @@ if (!window._galaxyHasLoadedOnce) {
               var velocityTipScale = 0.88 + guidePulse * 0.18, gravityTipScale = 0.88 + (1 - guidePulse) * 0.18; velocityVector.tip.scale.set(velocityTipScale, velocityTipScale, velocityTipScale); gravityVector.tip.scale.set(gravityTipScale, gravityTipScale, gravityTipScale);
             }
 
-            var keyboardStarIndex = -1;
+            var keyboardStarIndex = -1, nearbySelection = null;
+            function clearGalaxyNearby(notify) {
+              if (!nearbySelection) return;
+              nearbySelection = null;
+              if (notify) notifyInspectionChange();
+            }
+            function validNearbyIndices() {
+              if (!nearbySelection || !selectionTarget || nearbySelection.kind !== selectionTarget.kind) return [];
+              if (nearbySelection.kind === 'star' ? !armGroup.visible : !nebGroup.visible) return [];
+              return nearbySelection.indices.filter(function (index) {
+                return nearbySelection.kind === 'star' ? !!starData[index] : !!(nebulaSprites[index] && nebulaSprites[index].visible !== false);
+              });
+            }
             function getAnimatedStarState(star, elapsedOverride, target) {
               var renderedElapsed = Number.isFinite(elapsedOverride) ? elapsedOverride : starShaderMat.uniforms.uTime.value;
               return evaluateGalaxyStarPosition(star, renderedElapsed, starShaderMat.uniforms.uRotMode.value, galaxyType, !prefersReducedMotion, target || {});
@@ -8503,6 +9478,12 @@ if (!window._galaxyHasLoadedOnce) {
               return selectionTarget.kind === 'star' ? getAnimatedStarVector(selectionTarget.data) : selectionTarget.position;
             }
             function updateInspectionOrbitCenter() {
+              if (inspectionTransition && inspectionTransition.pausedOrigin) {
+                var paused = inspectionTransition.pausedOrigin;
+                inspectionOrbitCenter.set(paused.x, paused.y, paused.z);
+                cameraLookTarget.copy(inspectionOrbitCenter); cameraLookGoal.copy(inspectionOrbitCenter);
+                return;
+              }
               var target = selectionPosition();
               if (!target) return;
               var progress = inspectionTransition ? Math.min(1, Math.max(0, (Date.now() - inspectionTransition.start) / 720)) : 1;
@@ -8513,19 +9494,29 @@ if (!window._galaxyHasLoadedOnce) {
               if (progress >= 1) inspectionTransition = null;
             }
             canvasEl._galaxyGetInspectionState = function () {
+              var nearby = validNearbyIndices();
+              var selectedIndex = selectionTarget ? (selectionTarget.kind === 'star' ? selectionTarget.data.idx : nebulaSprites.findIndex(function (sprite) { return sprite.userData === selectionTarget.data; })) : -1;
               return { active: inspectionActive, kind: selectionTarget ? selectionTarget.kind : null, label: selectionLabel(), canInspect: selectionCanInspect(),
+                nearbyIndex: nearby.indexOf(selectedIndex), nearbyCount: nearby.length, nearbyTotal: nearby.length && nearbySelection ? nearbySelection.total : 0,
                 orbitCenter: { x: inspectionOrbitCenter.x, y: inspectionOrbitCenter.y, z: inspectionOrbitCenter.z },
                 camera: { x: camera.position.x, y: camera.position.y, z: camera.position.z } };
             };
             function notifyInspectionChange() {
+              refreshObjectFraming(); updateCamera(); scheduleObjectFramingRefresh();
               if (!galaxyCleanedUp && canvasEl._onInspectionChange && typeof canvasEl._galaxyGetInspectionState === 'function') canvasEl._onInspectionChange(canvasEl._galaxyGetInspectionState());
+              notifyCrabComponents();
+              notifyPlanetaryComponents();
+              notifyInspectionBackdrop();
             }
             function exitGalaxyInspection() {
               if (!inspectionActive) return false;
               inspectionActive = false; inspectionTransition = null; warpTween = null;
+              objectFramingOffsetTween = null; objectFramingOffsetRetained = false; objectFramingRestoreActive = null;
+              objectFramingActive = false; refreshObjectFraming();
               inspectionOrbitCenter.set(0, 0, 0);
               if (inspectionFrame) {
-                spherical.theta = inspectionFrame.theta; spherical.phi = inspectionFrame.phi; spherical.r = inspectionFrame.r;
+                spherical.theta = inspectionFrame.theta; spherical.phi = inspectionFrame.phi;
+                spherical.r = Math.abs(inspectionFrame.overviewRadius - galaxyOverviewRadius) < 0.0005 ? inspectionFrame.r : Math.max(0.2, Math.min(3, inspectionFrame.radiusRatio * galaxyOverviewRadius));
                 cameraLookTarget.copy(inspectionFrame.target); cameraLookGoal.copy(inspectionFrame.goal);
               }
               inspectionFrame = null; updateCamera(); notifyInspectionChange();
@@ -8533,11 +9524,91 @@ if (!window._galaxyHasLoadedOnce) {
               return true;
             }
             canvasEl._galaxyExitInspection = exitGalaxyInspection;
+            // BEGIN GALAXY PLANETARY PROJECTION RUNTIME
+            // A tiny spatial reference through the selected shell's own local Z
+            // axis. Solid/dashed halves distinguish near/far without implying a
+            // measured celestial direction. It is enabled for one draw only.
+            if (typeof canvasEl._galaxyPlanetaryAxisVisible !== 'boolean') canvasEl._galaxyPlanetaryAxisVisible = false;
+            var planetaryAxisGuide = new THREE.Group(); planetaryAxisGuide.name = 'planetaryShellAxisGuide'; planetaryAxisGuide.visible = false; scene.add(planetaryAxisGuide);
+            function makePlanetaryAxisGeometry(dashed) {
+              var vertices = [];
+              if (dashed) for (var dash = 0; dash < 7; dash++) vertices.push(0, 0, dash / 7, 0, 0, (dash + 0.55) / 7);
+              else vertices.push(0, 0, 0, 0, 0, 1);
+              vertices.push(-0.045, 0, 1, 0.045, 0, 1, 0, -0.045, 1, 0, 0.045, 1);
+              var geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3)); return geometry;
+            }
+            var planetaryAxisNear = new THREE.LineSegments(makePlanetaryAxisGeometry(false), new THREE.LineBasicMaterial({ color: 0xa5f3fc, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, blending: THREE.NormalBlending, toneMapped: false }));
+            var planetaryAxisFar = new THREE.LineSegments(makePlanetaryAxisGeometry(true), new THREE.LineBasicMaterial({ color: 0xa5f3fc, transparent: true, opacity: 0.55, depthWrite: false, depthTest: false, blending: THREE.NormalBlending, toneMapped: false }));
+            planetaryAxisNear.name = 'planetaryAxisNear'; planetaryAxisFar.name = 'planetaryAxisFar';
+            planetaryAxisNear.renderOrder = 21; planetaryAxisFar.renderOrder = 21; planetaryAxisGuide.add(planetaryAxisNear, planetaryAxisFar);
+            var planetaryAxisRendered = false, planetaryViewDisplays = null, planetaryViewDisplayKey = '';
+            function getPlanetaryProjectionRecord() {
+              if (!inspectionActive || !selectionCanInspect() || selectionTarget.kind !== 'nebula' || selectionTarget.data.type !== 'Planetary' || (currentObserveMode !== 'visible' && currentObserveMode !== 'infrared')) return null;
+              var study = planetaryComponentSelection();
+              return study ? study.reference : null;
+            }
+            canvasEl._galaxyGetPlanetaryViewState = function () {
+              var record = getPlanetaryProjectionRecord();
+              if (!record) return null;
+              // During a paused fly-in the look target can still be between the
+              // galaxy and this shell. Angle and near/far must use the shell itself.
+              var current = { x: camera.position.x - record.object.position.x, y: camera.position.y - record.object.position.y, z: camera.position.z - record.object.position.z };
+              var projection = galaxyPlanetaryProjectionState(record.object.rotation, current);
+              if (!projection) return null;
+              var center = { x: record.object.position.x, y: record.object.position.y, z: record.object.position.z }, extent = objectGeometryRadius(record.object) * 0.9;
+              function end(side) { return { x: center.x + projection.axis.x * extent * side, y: center.y + projection.axis.y * extent * side, z: center.z + projection.axis.z * extent * side }; }
+              var study = planetaryComponentSelection();
+              return { name: selectionTarget.data.name, band: currentObserveMode, primaryComponent: study.primary.object.userData.component, referenceComponent: record.object.userData.component, axis: projection.axis, radius: spherical.r,
+                angleDegrees: projection.angleDegrees, projection: projection.projection, axisVisible: canvasEl._galaxyPlanetaryAxisVisible, axisRendered: planetaryAxisRendered,
+                guide: { center: center, extent: extent, nearEnd: end(projection.axisSide), farEnd: end(-projection.axisSide) } };
+            };
+            function updatePlanetaryViewDisplays(force) {
+              if (typeof canvasEl._galaxyGetPlanetaryViewState !== 'function') return;
+              var state = canvasEl._galaxyGetPlanetaryViewState();
+              var key = state ? [state.name, state.band, state.referenceComponent, Math.round(state.angleDegrees), state.projection, state.axisVisible].join(':') : '';
+              var missing = !planetaryViewDisplays || planetaryViewDisplays.some(function (node) { return !node.isConnected; });
+              if (!force && !missing && key === planetaryViewDisplayKey) return;
+              if (force || missing) { var workspace = canvasEl.closest('[data-galaxy-workspace]'); planetaryViewDisplays = workspace ? Array.prototype.slice.call(workspace.querySelectorAll('[data-galaxy-shell-views]')) : []; }
+              if (state) planetaryViewDisplays.forEach(function (node) { galaxyApplyShellViewDisplay(node, state, __alloT); });
+              planetaryViewDisplayKey = key;
+            }
+            canvasEl._galaxyRefreshPlanetaryView = function () { updatePlanetaryViewDisplays(true); };
+            canvasEl._galaxySetPlanetaryAxisVisible = function (visible) {
+              if (typeof visible !== 'boolean' || !getPlanetaryProjectionRecord() || galaxyFocusActive) return false;
+              canvasEl._galaxyPlanetaryAxisVisible = visible; updatePlanetaryViewDisplays(true); return true;
+            };
+            function preparePlanetaryAxisGuide() {
+              var record = getPlanetaryProjectionRecord(), state = record && canvasEl._galaxyGetPlanetaryViewState();
+              planetaryAxisRendered = !!(state && state.axisVisible && !galaxyFocusActive && !hudHidden);
+              if (!planetaryAxisRendered) return;
+              var side = (state.guide.nearEnd.x - state.guide.center.x) * state.axis.x + (state.guide.nearEnd.y - state.guide.center.y) * state.axis.y + (state.guide.nearEnd.z - state.guide.center.z) * state.axis.z < 0 ? -1 : 1;
+              planetaryAxisGuide.position.set(state.guide.center.x, state.guide.center.y, state.guide.center.z);
+              planetaryAxisGuide.rotation.set(record.object.rotation.x, record.object.rotation.y, record.object.rotation.z);
+              planetaryAxisNear.scale.set(state.guide.extent, state.guide.extent, state.guide.extent * side);
+              planetaryAxisFar.scale.set(state.guide.extent, state.guide.extent, -state.guide.extent * side);
+              planetaryAxisGuide.visible = true;
+            }
+            canvasEl._galaxySetPlanetaryView = function (mode) {
+              var record = getPlanetaryProjectionRecord();
+              if (!record || (mode !== 'along' && mode !== 'across' && mode !== 'oblique') || galaxyFocusActive) return false;
+              cancelGalaxyCameraMotion();
+              var current = { x: camera.position.x - cameraLookTarget.x, y: camera.position.y - cameraLookTarget.y, z: camera.position.z - cameraLookTarget.z };
+              var projection = galaxyPlanetaryViewDirection(record.object.rotation, mode, current);
+              if (!projection) return false;
+              var dTheta = projection.theta - spherical.theta;
+              while (dTheta > Math.PI) dTheta -= Math.PI * 2;
+              while (dTheta < -Math.PI) dTheta += Math.PI * 2;
+              if (prefersReducedMotion) { spherical.theta = projection.theta; spherical.phi = projection.phi; updateCamera(); }
+              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: projection.phi - spherical.phi, dr: 0, start: Date.now(), dur: 720, suppressShock: true };
+              setCanvasStatus(mode === 'along' ? __alloT('stem.galaxy.shell_view_along_status', 'Looking along the schematic shell’s axis. The object and zoom are unchanged.') : mode === 'oblique' ? __alloT('stem.galaxy.shell_view_oblique_status', 'Looking 45° from the schematic shell’s axis. The object and zoom are unchanged.') : __alloT('stem.galaxy.shell_view_across_status', 'Looking across the schematic shell’s axis. The object and zoom are unchanged.'));
+              return true;
+            };
+            // END GALAXY PLANETARY PROJECTION RUNTIME
             canvasEl._galaxyInspectSelection = function () {
               if (!selectionCanInspect() || galaxyFocusActive) return false;
               if (inspectionActive) return true;
               cancelGalaxyCameraMotion();
-              inspectionFrame = { theta: spherical.theta, phi: spherical.phi, r: spherical.r,
+              inspectionFrame = { theta: spherical.theta, phi: spherical.phi, r: spherical.r, overviewRadius: galaxyOverviewRadius, radiusRatio: spherical.r / galaxyOverviewRadius,
                 target: { x: cameraLookTarget.x, y: cameraLookTarget.y, z: cameraLookTarget.z },
                 goal: { x: cameraLookGoal.x, y: cameraLookGoal.y, z: cameraLookGoal.z } };
               autoRotate = false; tourActive = false;
@@ -8559,18 +9630,38 @@ if (!window._galaxyHasLoadedOnce) {
               return true;
             };
 
-            function focusSelection(kind, data, position) {
-              if (inspectionActive) exitGalaxyInspection();
+            function focusSelection(kind, data, position, options) {
+              options = options || {};
+              clearGalaxyHover();
+              var keepInspection = inspectionActive && options.preserveInspection;
+              var previousCenter = keepInspection ? { x: inspectionOrbitCenter.x, y: inspectionOrbitCenter.y, z: inspectionOrbitCenter.z } : null;
+              if (inspectionActive && !keepInspection) exitGalaxyInspection();
+              if (!options.keepNearby) clearGalaxyNearby(false);
               var focusedPosition = kind === 'star' ? getAnimatedStarVector(data) : position;
               selectionTarget = { kind: kind, data: data, position: kind === 'nebula' ? new THREE.Vector3(position.x, position.y, position.z) : null };
+              if (options.nearby) nearbySelection = options.nearby;
+              if (kind === 'star') keyboardStarIndex = data.idx;
+              else keyboardNebulaIndex = nebulaSprites.findIndex(function (sprite) { return sprite.userData === data; });
               position = focusedPosition;
               selectionMarker.position.copy(position); selectionMarker.visible = true;
               selectionHalo.position.copy(position); selectionHalo.visible = true; updateSelectionReticleSize(0.5);
               var selectionColor = kind === 'star' && data.type && data.type.color ? data.type.color : data.color || '#a5b4fc';
               if (selectionMarker.material && selectionMarker.material.color) selectionMarker.material.color.set('#ffffff');
               if (selectionHalo.material && selectionHalo.material.color) selectionHalo.material.color.set(selectionColor);
-              cameraLookGoal.set(position.x * 0.55, position.y * 0.5, position.z * 0.55);
-              if (prefersReducedMotion) { cameraLookTarget.copy(cameraLookGoal); updateCamera(); }
+              if (keepInspection) {
+                // Browse at the same physical scale and inclination. Only the
+                // orbit origin moves; the original galaxy return frame survives.
+                warpTween = null;
+                inspectionTransition = prefersReducedMotion ? null : { start: Date.now(), from: previousCenter };
+                if (!objectFramingRecords().length && (objectFramingOffset || spherical.r < 0.2)) {
+                  objectFramingActive = false; targetObjectFramingOffset(720, { x: 0, y: 0 }, false);
+                  if (!prefersReducedMotion) warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: Math.max(0.2, spherical.r) - spherical.r, start: Date.now(), dur: 720, suppressShock: true, inspectionSafetyTransition: true };
+                }
+                updateCamera();
+              } else {
+                cameraLookGoal.set(position.x * 0.55, position.y * 0.5, position.z * 0.55);
+                if (prefersReducedMotion) { cameraLookTarget.copy(cameraLookGoal); updateCamera(); }
+              }
               measurementRulerGroup.visible = kind === 'star'; orbitalMechanicsGroup.visible = kind === 'star' && isSpiralMorphology; if (measurementRulerGroup.visible) { updateMeasurementRuler(position); if (orbitalMechanicsGroup.visible) updateOrbitalMechanics(position, 0.02, 0); }
               var label = kind === 'star' ? ((data.type && data.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')) : (data.name || __alloT('stem.galaxy.status_nebula_generic', 'Nebula'));
               setCanvasStatus(__alloT('stem.galaxy.status_selected_object', 'Selected {name} · inspect for a close-up orbit').replace('{name}', label));
@@ -8579,6 +9670,8 @@ if (!window._galaxyHasLoadedOnce) {
 
             function clearGalaxySelection() {
               if (galaxyCleanedUp) return false;
+              clearGalaxyHover();
+              clearGalaxyNearby(false);
               if (inspectionActive) exitGalaxyInspection();
               selectionTarget = null; selectionMarker.visible = false; selectionHalo.visible = false; measurementRulerGroup.visible = false; orbitalMechanicsGroup.visible = false;
               cameraLookGoal.set(0, 0, 0);
@@ -8595,7 +9688,7 @@ if (!window._galaxyHasLoadedOnce) {
               keyboardStarIndex = (keyboardStarIndex + (direction < 0 ? -stride : stride) + starData.length) % starData.length;
               var keyboardStar = starData[keyboardStarIndex];
               var keyboardStarPosition = getAnimatedStarVector(keyboardStar);
-              focusSelection('star', keyboardStar, keyboardStarPosition);
+              focusSelection('star', keyboardStar, keyboardStarPosition, { preserveInspection: true });
               if (canvasEl._onSelectStar) canvasEl._onSelectStar(keyboardStar, keyboardStarPosition);
               setCanvasStatus(__alloT('stem.galaxy.status_keyboard_focus', 'Keyboard focus: {name} · [ and ] choose another star · Escape clears').replace('{name}', (keyboardStar.type && keyboardStar.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')));
               return true;
@@ -8606,7 +9699,7 @@ if (!window._galaxyHasLoadedOnce) {
               var sprite = nebulaSprites.find(function (item) { return item.visible !== false && item.userData && item.userData.name === name; });
               if (!sprite) return false;
               keyboardNebulaIndex = nebulaSprites.indexOf(sprite);
-              focusSelection('nebula', sprite.userData, sprite.position);
+              focusSelection('nebula', sprite.userData, sprite.position, { preserveInspection: true });
               if (canvasEl._onSelectNebula) canvasEl._onSelectNebula(sprite.userData);
               return true;
             };
@@ -8618,24 +9711,56 @@ if (!window._galaxyHasLoadedOnce) {
               }
               return false;
             };
+            canvasEl._galaxyCycleNearby = function (direction) {
+              if (galaxyCleanedUp || galaxyFocusActive || !selectionCanInspect()) return false;
+              var indices = validNearbyIndices();
+              if (indices.length < 2) return false;
+              var kind = nearbySelection.kind;
+              var current = kind === 'star' ? selectionTarget.data.idx : nebulaSprites.findIndex(function (sprite) { return sprite.userData === selectionTarget.data; });
+              var at = indices.indexOf(current);
+              var index = indices[at < 0 ? (direction < 0 ? indices.length - 1 : 0) : (at + (direction < 0 ? -1 : 1) + indices.length) % indices.length];
+              if (kind === 'star') {
+                var star = starData[index], position = getAnimatedStarVector(star);
+                focusSelection('star', star, position, { preserveInspection: true, keepNearby: true });
+                if (canvasEl._onSelectStar) canvasEl._onSelectStar(star, position);
+              } else {
+                var sprite = nebulaSprites[index];
+                focusSelection('nebula', sprite.userData, sprite.position, { preserveInspection: true, keepNearby: true });
+                if (canvasEl._onSelectNebula) canvasEl._onSelectNebula(sprite.userData);
+              }
+              return true;
+            };
             notifyInspectionChange();
 
-            var lastGalaxyClick = null;
-            function onGalClick(e) {
-              if (galaxyFocusActive) return;
-
-              if (suppressGalaxyClick) { suppressGalaxyClick = false; lastGalaxyClick = null; return; }
-              // The first click selects. Re-picking after its camera shift could
-              // select a different star before the native double-click arrives.
-              if (e.detail > 1) return;
-              lastGalaxyClick = null;
+            function pickGalaxyTarget(clientX, clientY, captureNearby) {
+              if (galaxyCleanedUp || !canvasEl.isConnected) return null;
               var rect = canvasEl.getBoundingClientRect();
-
-              mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-
-              mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-              raycaster.setFromCamera(mouse, camera);
+              if (!rect.width || !rect.height || clientX < rect.left || clientX > rect.left + rect.width || clientY < rect.top || clientY > rect.top + rect.height) return null;
+              var mouseX = ((clientX - rect.left) / rect.width) * 2 - 1, mouseY = -((clientY - rect.top) / rect.height) * 2 + 1;
+              if (camera.updateMatrixWorld) camera.updateMatrixWorld(true);
+              function candidate(kind, data, position, projected, index) {
+                return { kind: kind, data: data, index: index, label: kind === 'star' ? ((data.type && data.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')) : (data.name || __alloT('stem.galaxy.status_nebula_generic', 'Nebula')),
+                  position: new THREE.Vector3(position.x, position.y, position.z), x: (projected.x + 1) * rect.width * 0.5, y: (1 - projected.y) * rect.height * 0.5 };
+              }
+              function onScreen(projected) { return Number.isFinite(projected.x) && Number.isFinite(projected.y) && Number.isFinite(projected.z) && projected.z >= -1 && projected.z <= 1 && projected.x >= -1 && projected.x <= 1 && projected.y >= -1 && projected.y <= 1; }
+              var nearbyHits = [], nearbyTotal = 0;
+              function recordNearby(index, distance, depth) {
+                if (!captureNearby) return;
+                nearbyTotal++;
+                var at = 0;
+                while (at < nearbyHits.length && (nearbyHits[at].distance < distance || (nearbyHits[at].distance === distance && nearbyHits[at].depth <= depth))) at++;
+                if (at < 12) {
+                  nearbyHits.splice(at, 0, { index: index, distance: distance, depth: depth });
+                  if (nearbyHits.length > 12) nearbyHits.pop();
+                }
+              }
+              function withNearby(hit) {
+                if (captureNearby && hit) {
+                  hit.nearbyIndices = [hit.index].concat(nearbyHits.filter(function (row) { return row.index !== hit.index; }).map(function (row) { return row.index; })).slice(0, 12);
+                  hit.nearbyTotal = nearbyTotal;
+                }
+                return hit;
+              }
 
               var centeredNebula = null, nebulaCenterDistance = 8, nebulaProjection = new THREE.Vector3();
               if (nebGroup.visible) nebulaSprites.forEach(function (sprite) {
@@ -8644,16 +9769,12 @@ if (!window._galaxyHasLoadedOnce) {
                 nebulaProjection.copy(sprite.position);
                 if (sprite.parent && sprite.parent.matrixWorld && nebulaProjection.applyMatrix4) nebulaProjection.applyMatrix4(sprite.parent.matrixWorld);
                 nebulaProjection.project(camera);
-                if (!Number.isFinite(nebulaProjection.x) || !Number.isFinite(nebulaProjection.y) || nebulaProjection.z < -1 || nebulaProjection.z > 1) return;
-                var distance = Math.hypot((nebulaProjection.x - mouse.x) * rect.width * 0.5, (nebulaProjection.y - mouse.y) * rect.height * 0.5);
-                if (distance < nebulaCenterDistance) { centeredNebula = sprite; nebulaCenterDistance = distance; }
+                if (!onScreen(nebulaProjection)) return;
+                var distance = Math.hypot((nebulaProjection.x - mouseX) * rect.width * 0.5, (nebulaProjection.y - mouseY) * rect.height * 0.5);
+                if (distance < 8) recordNearby(nebulaSprites.indexOf(sprite), distance, nebulaProjection.z);
+                if (distance < nebulaCenterDistance) { centeredNebula = candidate('nebula', sprite.userData, sprite.position, nebulaProjection, nebulaSprites.indexOf(sprite)); nebulaCenterDistance = distance; }
               });
-              if (centeredNebula) {
-                focusSelection('nebula', centeredNebula.userData, centeredNebula.position);
-                if (canvasEl._onSelectNebula) canvasEl._onSelectNebula(centeredNebula.userData);
-                lastGalaxyClick = { x: e.clientX, y: e.clientY, time: Date.now() };
-                return;
-              }
+              if (centeredNebula) return withNearby(centeredNebula);
 
               var nearestStarIndex = -1, nearestStarDistance = 12, nearestStarDepth = Infinity;
               var projectedStar = new THREE.Vector3(), projectedStateScratch = {};
@@ -8664,11 +9785,12 @@ if (!window._galaxyHasLoadedOnce) {
                 if (starPoints.matrixWorld && projectedStar.applyMatrix4) projectedStar.applyMatrix4(starPoints.matrixWorld);
                 else if (starPoints.localToWorld) starPoints.localToWorld(projectedStar);
                 projectedStar.project(camera);
-                if (!Number.isFinite(projectedStar.x) || !Number.isFinite(projectedStar.y) || projectedStar.z < -1 || projectedStar.z > 1) continue;
-                var projectedDx = (projectedStar.x - mouse.x) * rect.width * 0.5;
-                var projectedDy = (projectedStar.y - mouse.y) * rect.height * 0.5;
+                if (!onScreen(projectedStar)) continue;
+                var projectedDx = (projectedStar.x - mouseX) * rect.width * 0.5;
+                var projectedDy = (projectedStar.y - mouseY) * rect.height * 0.5;
                 var projectedDistance = Math.hypot(projectedDx, projectedDy);
-                if (projectedDistance < nearestStarDistance || (Math.abs(projectedDistance - nearestStarDistance) < 0.25 && projectedStar.z < nearestStarDepth)) {
+                if (projectedDistance < 12) recordNearby(projectedIndex, projectedDistance, projectedStar.z);
+                if (projectedDistance < 12 && (projectedDistance < nearestStarDistance || (Math.abs(projectedDistance - nearestStarDistance) < 0.25 && projectedStar.z < nearestStarDepth))) {
                   nearestStarIndex = projectedIndex; nearestStarDistance = projectedDistance; nearestStarDepth = projectedStar.z;
                 }
               }
@@ -8676,22 +9798,31 @@ if (!window._galaxyHasLoadedOnce) {
               if (nearestStarIndex >= 0) {
                 var starHit = starData[nearestStarIndex];
                 var starHitPosition = getAnimatedStarVector(starHit);
-                focusSelection('star', starHit, starHitPosition);
-                if (canvasEl._onSelectStar) canvasEl._onSelectStar(starHit, starHitPosition);
-                lastGalaxyClick = { x: e.clientX, y: e.clientY, time: Date.now() };
-                return;
+                projectedStar.copy(starHitPosition);
+                if (starPoints.matrixWorld && projectedStar.applyMatrix4) projectedStar.applyMatrix4(starPoints.matrixWorld);
+                else if (starPoints.localToWorld) starPoints.localToWorld(projectedStar);
+                projectedStar.project(camera);
+                return withNearby(candidate('star', starHit, starHitPosition, projectedStar, nearestStarIndex));
               }
-
-              var nebHits = nebGroup.visible ? raycaster.intersectObjects(nebulaSprites) : [];
-
-              if (nebHits.length > 0) {
-                focusSelection('nebula', nebHits[0].object.userData, nebHits[0].object.position);
-                if (canvasEl._onSelectNebula) canvasEl._onSelectNebula(nebHits[0].object.userData);
+              return null;
+            }
+            var lastGalaxyClick = null;
+            function onGalClick(e) {
+              clearGalaxyHover();
+              if (galaxyFocusActive) return;
+              if (suppressGalaxyClick) { suppressGalaxyClick = false; lastGalaxyClick = null; return; }
+              // Keep the first pick while its camera shift precedes a double-click.
+              if (e.detail > 1) return;
+              lastGalaxyClick = null;
+              var hit = pickGalaxyTarget(e.clientX, e.clientY, true);
+              if (hit) {
+                focusSelection(hit.kind, hit.data, hit.position, { nearby: { kind: hit.kind, indices: hit.nearbyIndices, total: hit.nearbyTotal } });
+                if (hit.kind === 'star' && canvasEl._onSelectStar) canvasEl._onSelectStar(hit.data, hit.position);
+                if (hit.kind === 'nebula' && canvasEl._onSelectNebula) canvasEl._onSelectNebula(hit.data);
                 lastGalaxyClick = { x: e.clientX, y: e.clientY, time: Date.now() };
               } else {
                 clearGalaxySelection();
               }
-
             }
 
             canvasEl.addEventListener('click', onGalClick);
@@ -8733,16 +9864,35 @@ if (!window._galaxyHasLoadedOnce) {
             };
 
             // Manual camera input always takes over from a tour or a pending transition.
+            function settleInspectionCameraOrigin() {
+              if (!inspectionActive || !inspectionTransition) return;
+              var target = selectionPosition();
+              if (!target) return;
+              // The fly-in interpolates its orbit origin as well as its radius.
+              // Rebase the current camera onto the actual object before stopping
+              // that interpolation, so even a zero-distance drag cannot jump.
+              var dx = camera.position.x - target.x, dy = camera.position.y - target.y, dz = camera.position.z - target.z;
+              var radius = Math.max(0.000001, Math.hypot(dx, dy, dz));
+              spherical.theta = Math.atan2(dx, dz); spherical.phi = Math.acos(Math.max(-1, Math.min(1, dy / radius))); spherical.r = radius;
+              inspectionTransition = null;
+              inspectionOrbitCenter.copy(target); cameraLookTarget.copy(target); cameraLookGoal.copy(target);
+              updateCamera();
+            }
             function cancelGalaxyCameraMotion() {
+              clearGalaxyHover();
               warpTween = null;
-              if (inspectionActive) inspectionTransition = null;
+              objectFramingOffsetTween = null; objectFramingRestoreActive = null; objectFramingOffsetTarget = Object.assign({}, objectFramingOffsetCurrent);
+              objectFramingOffsetRetained = objectFramingOffset && (Math.abs(objectFramingOffsetCurrent.x) + Math.abs(objectFramingOffsetCurrent.y) > 0.000001);
+              settleInspectionCameraOrigin();
               if (tourActive) { tourActive = false; if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); }
             }
             // A reset remembers one camera framing, local to this scene.
             var resetViewSnapshot = null;
             if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(false);
             function rememberCameraBeforeReset() {
-              resetViewSnapshot = { theta: spherical.theta, phi: spherical.phi, radiusRatio: spherical.r / galaxyOverviewRadius };
+              resetViewSnapshot = { theta: spherical.theta, phi: spherical.phi, radiusRatio: spherical.r / galaxyOverviewRadius,
+                object: objectFramingState.contextual && selectionTarget ? selectionTarget.data : null, objectRatio: spherical.r / objectFramingState.fitRadius,
+                objectFramed: objectFramingActive, objectOffset: Object.assign({}, objectFramingOffsetCurrent) };
               if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(true);
             }
             canvasEl._galaxyUndoReset = function () {
@@ -8752,13 +9902,16 @@ if (!window._galaxyHasLoadedOnce) {
               if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(false);
               cancelGalaxyCameraMotion();
               // Preserve the relative framing if the viewport changed since the reset.
-              var radius = Math.max(0.2, Math.min(3, previous.radiusRatio * galaxyOverviewRadius));
+              var objectUndo = objectFramingState.contextual && selectionTarget && previous.object === selectionTarget.data;
+              var radius = clampGalaxyCameraRadius(objectUndo ? previous.objectRatio * objectFramingState.fitRadius : previous.radiusRatio * galaxyOverviewRadius);
+              if (objectUndo) { objectFramingActive = true; targetObjectFramingOffset(720, previous.objectOffset, previous.objectFramed); }
               if (prefersReducedMotion) { spherical.theta = previous.theta; spherical.phi = previous.phi; spherical.r = radius; updateCamera(); }
               else {
                 var dTheta = previous.theta - spherical.theta;
                 while (dTheta > Math.PI) dTheta -= Math.PI * 2;
                 while (dTheta < -Math.PI) dTheta += Math.PI * 2;
-                warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: previous.phi - spherical.phi, dr: radius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
+                warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: previous.phi - spherical.phi, dr: radius - spherical.r, start: Date.now(), dur: 720, suppressShock: true, targetHomeRatio: previous.radiusRatio };
+                if (objectUndo) { delete warpTween.targetHomeRatio; warpTween.targetObjectRatio = previous.objectRatio; }
               }
               setCanvasStatus(__alloT('stem.galaxy.view_undo_status', 'Previous angle and zoom'));
             };
@@ -8784,14 +9937,17 @@ if (!window._galaxyHasLoadedOnce) {
               var dTheta = Math.PI * 0.1 - spherical.theta;
               while (dTheta > Math.PI) dTheta -= Math.PI * 2;
               while (dTheta < -Math.PI) dTheta += Math.PI * 2;
-              warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: Math.PI * 0.35 - spherical.phi, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
+              warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: Math.PI * 0.35 - spherical.phi, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true, targetHome: true };
               cinematicMotion.aperture = 0.45; setCanvasStatus(__alloT('stem.galaxy.status_returning_overview', 'Returning to the overview'));
             };
             canvasEl._galaxyResetZoom = function () {
+              if (objectFramingState.contextual && !objectFramingState.available) return false;
+              if (objectFramingState.contextual) refreshObjectFraming(true);
               rememberCameraBeforeReset();
+              if (objectFramingState.available && canvasEl._galaxyFrameObject()) return;
               cancelGalaxyCameraMotion();
               if (prefersReducedMotion) { spherical.r = galaxyOverviewRadius; updateCamera(); }
-              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
+              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true, targetHome: true };
               setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', '100'));
             };
             canvasEl._galaxySetZoomPosition = function (position) {
@@ -8799,14 +9955,14 @@ if (!window._galaxyHasLoadedOnce) {
               cancelGalaxyCameraMotion();
               // Equal slider steps change distance by the same ratio, giving fine control at every scale.
               var progress = Math.max(0, Math.min(100, position)) / 100;
-              spherical.r = Math.max(0.2, Math.min(3, 3 * Math.pow(1 / 15, progress)));
+              spherical.r = clampGalaxyCameraRadius(3 * Math.pow(galaxyCameraMinRadius() / 3, progress));
               updateCamera();
-              setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r))));
+              setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyZoomReferenceRadius() / spherical.r))));
             };
             canvasEl._galaxyZoom = function (direction) {
               cancelGalaxyCameraMotion();
-              spherical.r = Math.max(0.2, Math.min(3, spherical.r * (direction === 'in' ? 0.82 : 1.22)));
-              updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r))));
+              spherical.r = clampGalaxyCameraRadius(spherical.r * (direction === 'in' ? 0.82 : 1.22));
+              updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyZoomReferenceRadius() / spherical.r))));
             };
             canvasEl._galaxyGetStarVisualState = function (index, elapsedOverride, motionEnabled) {
               var safeIndex = Math.max(0, Math.min(starData.length - 1, Number.isFinite(index) ? Math.floor(index) : 0));
@@ -8972,14 +10128,15 @@ if (!window._galaxyHasLoadedOnce) {
                 xrayPointOpacity: xrayPointMaterial ? xrayPointMaterial.opacity : 0
               };
             };
-            canvasEl._galaxySetAutoRotate = function (enabled) { autoRotate = enabled !== false && !prefersReducedMotion && !inspectionActive; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? __alloT('stem.galaxy.status_autorotate_on', 'Gentle auto-rotation on') : prefersReducedMotion ? __alloT('stem.galaxy.status_autorotate_blocked', 'Auto-rotation remains off because reduced motion is enabled') : __alloT('stem.galaxy.status_autorotate_paused', 'Auto-rotation paused')); };
+            canvasEl._galaxySetAutoRotate = function (enabled) { clearGalaxyHover(); autoRotate = enabled !== false && !prefersReducedMotion && !inspectionActive; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? __alloT('stem.galaxy.status_autorotate_on', 'Gentle auto-rotation on') : prefersReducedMotion ? __alloT('stem.galaxy.status_autorotate_blocked', 'Auto-rotation remains off because reduced motion is enabled') : __alloT('stem.galaxy.status_autorotate_paused', 'Auto-rotation paused')); };
             canvasEl._galaxySetTour = function (enabled) {
+              clearGalaxyHover();
               if (inspectionActive && enabled) { tourActive = false; if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
               if (prefersReducedMotion && enabled) { tourActive = false; setCanvasStatus(__alloT('stem.galaxy.status_tour_reduced_motion', 'Cinematic tour is paused by reduced-motion settings')); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
               tourActive = enabled === true; tourStart = Date.now(); tourLastStage = -1; warpTween = null; tourFrames = tourActive ? buildTourFrames() : null;
               setCanvasStatus(tourActive ? tourStageStatus(tourFrames[0].label) : __alloT('stem.galaxy.status_tour_stopped', 'Cinematic tour stopped'));
             };
-            canvasEl._galaxySetHudHidden = function (hidden) { hudHidden = hidden === true; if (!hudHidden) { orientationEl = null; lastOrientationLabel = ''; requestAnimationFrame(function () { if (canvasEl.isConnected) updateCamera(); }); } };
+            canvasEl._galaxySetHudHidden = function (hidden) { clearGalaxyHover(); hudHidden = hidden === true; scheduleObjectFramingRefresh(true); if (!hudHidden) { orientationDisplays = null; lastOrientationProjectionKey = ''; requestAnimationFrame(function () { if (canvasEl.isConnected) updateCamera(); }); } };
             // ── Fullscreen ────────────────────────────────────────────────────
             // The old implementation was native-only: it returned silently when
             // requestFullscreen was missing and merely undid its own styling when the
@@ -9014,6 +10171,7 @@ if (!window._galaxyHasLoadedOnce) {
               }
             }
             canvasEl._galaxySetFocusView = function (active, teardown) {
+              clearGalaxyHover();
               active = active === true;
               if (!galaxyFocusFrame || active === galaxyFocusActive) return;
               galaxyFocusResizeUntil = Date.now() + 350;
@@ -9423,7 +10581,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (armGlowMat) { if (ageTintOn) armGlowMat.color.setRGB(ageTintR, ageTintG, ageTintB); else armGlowMat.color.setRGB(1, 1, 1); }
               if (diskSheenMat) { if (ageTintOn) diskSheenMat.color.setRGB(ageTintR, ageTintG, ageTintB); else diskSheenMat.color.setRGB(1, 1, 1); }
               if (coreFlare && coreFlare.material) { if (ageTintOn) coreFlare.material.color.setRGB(1 - ageWarmth * 0.04, 1 - ageWarmth * 0.12, 1 - ageWarmth * 0.3); else coreFlare.material.color.setRGB(1, 1, 1); }
-              var targetFov = 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
+              var targetFov = prefersReducedMotion || inspectionActive ? 60 : 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
               if (Math.abs(camera.fov - targetFov) > 0.02) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
               if (cinematicMotion.aperture > 0.01) cinematicMotion.aperture *= 0.94;
               var apertureMode = 0; // Camera-attached sweeps are transition cues, not a permanent wavelength overlay.
@@ -9735,7 +10893,10 @@ if (!window._galaxyHasLoadedOnce) {
               nebulaSprites.forEach(function (s, i) {
                 var nebBase = currentObserveMode === 'gravity' ? 0.012 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'infrared' ? 0.18 : 0.25;
                 var nebPulse = currentObserveMode === 'gravity' ? 0.004 : currentObserveMode === 'radio' ? 0.06 : currentObserveMode === 'xray' ? 0.03 : 0.15;
-                s.material.opacity = (nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8)) * extendedInstrumentDetail * nebAgeLevel;
+                if (s.userData.type === 'Dark') {
+                  var absorptionMode = currentObserveMode === 'visible' ? 0.88 : currentObserveMode === 'infrared' ? 0.19 : 0.025;
+                  s.material.opacity = absorptionMode * extendedInstrumentDetail;
+                } else s.material.opacity = (nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8)) * extendedInstrumentDetail * nebAgeLevel;
               });
               nebulaWispSprites.forEach(function (w, i) {
                 var wMode = currentObserveMode === 'infrared' ? 1.45 : currentObserveMode === 'radio' ? 0.62 : currentObserveMode === 'xray' ? 0.38 : currentObserveMode === 'gravity' ? 0.06 : 1;
@@ -9913,28 +11074,131 @@ if (!window._galaxyHasLoadedOnce) {
               // cover it with a foreground sphere or fill the frame with arcs.
               // Suppress that context for this draw only, preserving every layer
               // choice and restoring the overview as soon as inspection ends.
-              var inspectionVisibility = null, inspectionMaterialOpacities = null;
+              var inspectionVisibility = null, inspectionMaterialOpacities = null, inspectionWispTransforms = null, inspectionBackdropVisibility = null;
               var inspectionStellarOpacity = starShaderMat.uniforms.uZoomOpacity.value;
+              planetaryAxisGuide.visible = false;
+              inspectionStarPsf.visible = false; inspectionMaterialState.starPsfRendered = false; inspectionMaterialState.nebulaDepth = null; inspectionMaterialState.planetaryShell = null; inspectionMaterialState.crabStructure = null;
+              planetaryInspectionMeshes.forEach(function (record) { record.object.visible = false; });
+              crabInspectionMeshes.forEach(function (record) { record.object.visible = false; record.object.material.uniforms.uCutawayStrength.value = 0; });
               if (inspectionActive) {
                 inspectionVisibility = [bhGroup, bulgeGroup, streamlineGroup, spiralRidgeGroup, morphologySignatureGroup, stellarHaloShellGroup, weakLensingGroup, layeredHaloScatteringGroup, orbitalMechanicsGroup, labelGroup, edgeOnDustSilhouette].map(function (object) {
                   var previous = object.visible; object.visible = false;
                   return { object: object, visible: previous };
                 });
                 if (selectionTarget && selectionTarget.kind === 'nebula') {
+                  // Orbit distance is now measured around this object, not the
+                  // galactic center. Generic resolved symbols elsewhere must not
+                  // become foreground detail just because that radius is small.
+                  var unrelatedInspectionDetails = [resolvedClusterGroup, resolvedPlanetaryNebulaGroup, resolvedSupernovaEjectaGroup, circumstellarNurseryGroup, emissionLineGroup, stellarWindBowShockGroup].concat(ionizedShells, supernovaRemnantArcs);
+                  unrelatedInspectionDetails.forEach(function (object) { inspectionVisibility.push({ object: object, visible: object.visible }); object.visible = false; });
+                  var localFeedbackCount = 0;
+                  stellarFeedbackGroup.children.forEach(function (object) {
+                    if (object.userData.nebulaName === selectionTarget.data.name) { if (object.visible && stellarFeedbackGroup.visible && nebGroup.visible) localFeedbackCount++; }
+                    else { inspectionVisibility.push({ object: object, visible: object.visible }); object.visible = false; }
+                  });
+                  var inspectedPlanetaryShell = nebGroup.visible && (currentObserveMode === 'visible' || currentObserveMode === 'infrared') ? planetaryInspectionMeshes.filter(function (record) { return record.source === selectionTarget.data; }) : [];
+                  if (inspectedPlanetaryShell.length) {
+                    var shellSignal = currentObserveMode === 'infrared' ? 0.55 : 1, shellStudy = planetaryComponentSelection();
+                    inspectedPlanetaryShell.forEach(function (record) { record.object.visible = shellStudy.mode === 'both' || record === shellStudy.reference; record.object.material.uniforms.uOpacity.value = record.object.userData.baseOpacity * shellSignal; });
+                    var planetarySourcePixels = 6, planetarySourceScale = planetarySourcePixels * 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, H);
+                    inspectionStarPsf.position.set(selectionTarget.data.x, selectionTarget.data.y, selectionTarget.data.z); inspectionPsfMaterial.color.set(0xffffff);
+                    inspectionStarPsf.scale.set(planetarySourceScale, planetarySourceScale, 1); inspectionStarPsf.visible = true;
+                    inspectionMaterialState.planetaryShell = { name: selectionTarget.data.name, illustrative: true, mode: currentObserveMode, componentMode: shellStudy.mode, referenceComponent: shellStudy.reference.object.userData.component, centralSourcePixels: planetarySourcePixels, components: inspectedPlanetaryShell.map(function (record) { return { kind: record.object.userData.component, visible: record.object.visible, triangles: record.object.userData.triangles, opacity: record.object.material.uniforms.uOpacity.value }; }), source: { x: selectionTarget.data.x, y: selectionTarget.data.y, z: selectionTarget.data.z } };
+                  }
+                  var inspectedCrab = canvasEl._galaxyGetCrabComponentState().available ? crabInspectionMeshes.filter(function (record) { return record.source === selectionTarget.data; }) : [];
+                  if (inspectedCrab.length) {
+                    var crabSignal = currentObserveMode === 'infrared' ? 0.65 : 1;
+                    // View-space depth opens the foreground half without moving
+                    // the procedural strands. Recompute the plane while orbiting.
+                    var crabViewX = cameraLookTarget.x - camera.position.x, crabViewY = cameraLookTarget.y - camera.position.y, crabViewZ = cameraLookTarget.z - camera.position.z;
+                    var crabViewLength = Math.hypot(crabViewX, crabViewY, crabViewZ) || 1;
+                    var crabCenterDepth = ((selectionTarget.data.x - camera.position.x) * crabViewX + (selectionTarget.data.y - camera.position.y) * crabViewY + (selectionTarget.data.z - camera.position.z) * crabViewZ) / crabViewLength;
+                    var crabCutawaySoftness = Math.max(0.00001, selectionTarget.data.r * 0.06);
+                    var crabCutawayApplied = canvasEl._galaxyCrabCutawayEnabled && crabInspectionComponents.filaments;
+                    inspectedCrab.forEach(function (record) {
+                      record.object.visible = crabInspectionComponents[record.object.userData.component];
+                      var uniforms = record.object.material.uniforms;
+                      uniforms.uOpacity.value = record.object.userData.baseOpacity * crabSignal;
+                      uniforms.uCutawayStrength.value = crabCutawayApplied && record.object.userData.component === 'filaments' ? 1 : 0;
+                      uniforms.uCutawayCenterDepth.value = crabCenterDepth; uniforms.uCutawaySoftness.value = crabCutawaySoftness;
+                    });
+                    var crabSourcePixels = 6, crabSourceScale = crabSourcePixels * 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, H);
+                    inspectionStarPsf.position.set(selectionTarget.data.x, selectionTarget.data.y, selectionTarget.data.z); inspectionPsfMaterial.color.set(0xffffff); inspectionStarPsf.scale.set(crabSourceScale, crabSourceScale, 1); inspectionStarPsf.visible = true;
+                    inspectionMaterialState.crabStructure = { name: selectionTarget.data.name, illustrative: true, mode: currentObserveMode, centralSourcePixels: crabSourcePixels, components: inspectedCrab.map(function (record) { return { kind: record.object.userData.component, visible: record.object.visible, triangles: record.object.userData.triangles, opacity: record.object.material.uniforms.uOpacity.value }; }), cutaway: { enabled: canvasEl._galaxyCrabCutawayEnabled, applied: crabCutawayApplied, centerDepth: crabCenterDepth, softness: crabCutawaySoftness }, source: { x: selectionTarget.data.x, y: selectionTarget.data.y, z: selectionTarget.data.z } };
+                  }
+                  var inspectedSpatialNebula = inspectedPlanetaryShell.length || inspectedCrab.length;
+                  var inspectionDepth = { name: selectionTarget.data.name, hiddenContextCount: unrelatedInspectionDetails.length, localFeedbackCount: localFeedbackCount, nonlocalFeedbackCount: 0, wisps: [] };
+                  inspectionWispTransforms = [];
                   starShaderMat.uniforms.uZoomOpacity.value *= 0.35;
                   inspectionMaterialOpacities = adaptiveDensePointMaterials.map(function (material) {
                     var previous = material.opacity; material.opacity *= 0.35;
                     return { material: material, opacity: previous };
                   });
+                  nebulaSprites.forEach(function (sprite) {
+                    var previous = sprite.material.opacity, selected = sprite.userData === selectionTarget.data;
+                    if (selected) {
+                      var inspectionSignal = currentObserveMode === 'visible' ? 1 : currentObserveMode === 'infrared' ? 0.55 : 0;
+                      sprite.material.opacity = Math.max(previous, (sprite.userData.type === 'Dark' ? 0.96 : 0.78) * inspectionSignal);
+                      if (inspectedSpatialNebula) { inspectionVisibility.push({ object: sprite, visible: sprite.visible }); sprite.visible = false; }
+                    } else sprite.material.opacity *= 0.35;
+                    inspectionMaterialOpacities.push({ material: sprite.material, opacity: previous });
+                  });
+                  nebulaWispSprites.forEach(function (sprite) {
+                    var previous = sprite.material.opacity;
+                    var localWisp = sprite.userData.nebulaName === selectionTarget.data.name;
+                    sprite.material.opacity *= localWisp ? 0.48 : 0.2;
+                    if (localWisp && inspectedSpatialNebula) { inspectionVisibility.push({ object: sprite, visible: sprite.visible }); sprite.visible = false; }
+                    else if (localWisp && nebGroup.visible) {
+                      // Reuse the three textured wisps as spatial gas clumps.
+                      // These offsets are fixed in the galaxy frame, so near and
+                      // far clumps shift relative to the source during an orbit.
+                      inspectionWispTransforms.push({ object: sprite, position: { x: sprite.position.x, y: sprite.position.y, z: sprite.position.z }, scale: { x: sprite.scale.x, y: sprite.scale.y, z: sprite.scale.z } });
+                      var localOffsets = [[-0.48, 0.16, 0.31], [0.34, -0.22, -0.46], [0.15, 0.39, 0.27]], localIndex = sprite.userData.localIndex || 0, offset = localOffsets[localIndex];
+                      var localNebula = selectionTarget.data;
+                      sprite.position.set(localNebula.x + offset[0] * localNebula.r, localNebula.y + offset[1] * localNebula.r, localNebula.z + offset[2] * localNebula.r);
+                      sprite.scale.set(localNebula.r * (1.32 + localIndex * 0.14), localNebula.r * (0.88 + localIndex * 0.1), 1);
+                      inspectionDepth.wisps.push({ index: localIndex, position: { x: sprite.position.x, y: sprite.position.y, z: sprite.position.z }, scale: { x: sprite.scale.x, y: sprite.scale.y } });
+                    }
+                    inspectionMaterialOpacities.push({ material: sprite.material, opacity: previous });
+                  });
+                  inspectionMaterialState.nebulaDepth = inspectionDepth;
+                } else if (selectionTarget && selectionTarget.kind === 'star' && armGroup.visible && currentObserveMode === 'visible') {
+                  var inspectionSource = getAnimatedStarState(selectionTarget.data, elapsed, {});
+                  inspectionStarPsf.position.set(inspectionSource.x, inspectionSource.y, inspectionSource.z);
+                  inspectionPsfMaterial.color.set(selectionTarget.data.type.color);
+                  var inspectionPsfPixelSize = 34, inspectionPsfScale = inspectionPsfPixelSize * 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, H);
+                  inspectionStarPsf.scale.set(inspectionPsfScale, inspectionPsfScale, 1); inspectionStarPsf.visible = true;
+                  inspectionMaterialState.starPsfRendered = true; inspectionMaterialState.starPsfPixels = inspectionPsfPixelSize;
                 }
+              }
+              preparePlanetaryAxisGuide();
+              if (!canvasEl._galaxyInspectionShowContext && inspectionBackdropAvailable()) {
+                // Isolate for this draw only. Save the already-suppressed
+                // inspection state, then restore it before its older list.
+                inspectionBackdropVisibility = [];
+                function hideInspectionBackdropNode(object) { inspectionBackdropVisibility.push({ object: object, visible: object.visible }); object.visible = false; }
+                scene.children.forEach(function (object) {
+                  if (object !== camera && object !== nebGroup && object !== stellarFeedbackGroup && object !== selectionMarker && object !== selectionHalo && object !== inspectionStarPsf && object !== planetaryAxisGuide) hideInspectionBackdropNode(object);
+                });
+                var backdropOwner = selectionTarget.data, backdropName = backdropOwner.name;
+                nebGroup.children.forEach(function (object) {
+                  if (object !== stellarFeedbackGroup && object.userData !== backdropOwner && (!object.userData || object.userData.nebulaName !== backdropName)) hideInspectionBackdropNode(object);
+                });
+                stellarFeedbackGroup.children.forEach(function (object) { if (!object.userData || object.userData.nebulaName !== backdropName) hideInspectionBackdropNode(object); });
               }
               try {
                 if (composer) composer.render();
                 else renderer.render(scene, camera);
               } finally {
+                if (inspectionBackdropVisibility) inspectionBackdropVisibility.forEach(function (saved) { saved.object.visible = saved.visible; });
                 if (inspectionVisibility) inspectionVisibility.forEach(function (saved) { saved.object.visible = saved.visible; });
                 if (inspectionMaterialOpacities) inspectionMaterialOpacities.forEach(function (saved) { saved.material.opacity = saved.opacity; });
+                if (inspectionWispTransforms) inspectionWispTransforms.forEach(function (saved) { saved.object.position.set(saved.position.x, saved.position.y, saved.position.z); saved.object.scale.set(saved.scale.x, saved.scale.y, saved.scale.z); });
                 starShaderMat.uniforms.uZoomOpacity.value = inspectionStellarOpacity;
+                inspectionStarPsf.visible = false;
+                planetaryAxisGuide.visible = false;
+                planetaryInspectionMeshes.forEach(function (record) { record.object.visible = false; });
+                crabInspectionMeshes.forEach(function (record) { record.object.visible = false; });
               }
 
             }
@@ -9980,6 +11244,7 @@ if (!window._galaxyHasLoadedOnce) {
               // allows, squeezing the scene to nothing. Covers native fullscreen too,
               // which galaxyFsFitViewport does not run for.
               if ((galaxyCssFullscreen || galaxyFsElement()) && !galaxyFsSidebarHidden) galaxyFsApplyPanelWidth();
+              var framingSizeChanged = W !== canvasEl.offsetWidth || H !== canvasEl.offsetHeight;
               W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
               var nextPixelRatio = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
               if (Math.abs(renderer.getPixelRatio() - nextPixelRatio) > 0.01) renderer.setPixelRatio(nextPixelRatio);
@@ -9987,6 +11252,7 @@ if (!window._galaxyHasLoadedOnce) {
               updateSelectionReticleSize();
               updateMeasurementRulerProjection();
               refreshGalaxyOverviewRadius();
+              refreshObjectFraming(framingSizeChanged); updateCamera();
               canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;
               if (composer) { if (composer.setPixelRatio) composer.setPixelRatio(nextPixelRatio); if (composer.setSize) composer.setSize(W, H); }
               if (starShaderMat && starShaderMat.uniforms.uPR) starShaderMat.uniforms.uPR.value = renderer.getPixelRatio();
@@ -9999,6 +11265,7 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl._galaxyCleanup = function (preserveContext) {
 
               if (galaxyCleanedUp) return;
+              clearGalaxyHover();
               galaxyCleanedUp = true;
 
               try { if (window._galaxyVR && window._galaxyVR.destroy) window._galaxyVR.destroy(); window._galaxyVR = null; } catch(e){}
@@ -10011,10 +11278,15 @@ if (!window._galaxyHasLoadedOnce) {
               canvasEl.removeEventListener('pointerdown', onGalDown);
 
               canvasEl.removeEventListener('pointermove', onGalMove);
+              canvasEl.removeEventListener('pointerleave', clearGalaxyHover);
+              window.removeEventListener('scroll', clearGalaxyHover, true);
+              window.removeEventListener('blur', clearGalaxyHover);
 
               canvasEl.removeEventListener('pointerup', onGalUp);
 
               canvasEl.removeEventListener('pointercancel', onGalUp);
+              canvasEl.removeEventListener('lostpointercapture', onGalLostCapture);
+              window.removeEventListener('blur', cancelGalaxyPointerGesture);
 
               canvasEl.removeEventListener('wheel', onGalWheel);
 
@@ -10022,6 +11294,8 @@ if (!window._galaxyHasLoadedOnce) {
               canvasEl.removeEventListener('dblclick', onGalDoubleClick);
 
               ro.disconnect();
+              objectFramingObserver.disconnect(); objectFramingObserved.clear();
+              if (objectFramingRefreshId != null) { cancelAnimationFrame(objectFramingRefreshId); objectFramingRefreshId = null; }
               if (galaxyViewObserver) { galaxyViewObserver.disconnect(); galaxyViewObserver = null; }
               // Drops the native listeners, the immersive-view key handler and the
               // exit pill, and puts the frame's inline styles back — leaving the tool
@@ -10049,6 +11323,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               supernovae.forEach(function (sn) { disposeSNPart(sn.sprite); disposeSNPart(sn.ring); disposeSNPart(sn.label); if (sn.light) scene.remove(sn.light); });
               canvasEl._galaxyGetSupernovaVisualState = null;
+              canvasEl._galaxyGetInspectionVisualState = null;
               var disposedGalaxyTextures = new Set(), disposedGalaxyMaterials = new Set(), disposedGalaxyGeometries = new Set();
               scene.traverse(function (obj) {
                 if (obj.geometry && obj.geometry.dispose && !disposedGalaxyGeometries.has(obj.geometry)) { disposedGalaxyGeometries.add(obj.geometry); obj.geometry.dispose(); }
@@ -10065,9 +11340,19 @@ if (!window._galaxyHasLoadedOnce) {
               renderer.dispose();
               if (!preserveContext && renderer.forceContextLoss) renderer.forceContextLoss();
               canvasEl._galaxySetRadiusGuides = null; canvasEl._galaxyGetRadiusGuideState = null; radiusGuideSpec = null;
-              inspectionActive = false; inspectionFrame = null; inspectionTransition = null; selectionTarget = null; lastGalaxyClick = null;
+              inspectionActive = false; inspectionFrame = null; inspectionTransition = null; selectionTarget = null; nearbySelection = null; lastGalaxyClick = null;
               canvasEl._galaxyInspectSelection = null; canvasEl._galaxyExitInspection = null; canvasEl._galaxyGetInspectionState = null;
-              canvasEl._galaxyFocusNebula = null; canvasEl._galaxyCycleNebula = null;
+              canvasEl._galaxyFocusNebula = null; canvasEl._galaxyCycleNebula = null; canvasEl._galaxyCycleNearby = null;
+              canvasEl._galaxySetCrabComponent = null; canvasEl._galaxyGetCrabComponentState = null;
+              canvasEl._galaxySetCrabCutaway = null; canvasEl._galaxyGetCrabCutawayState = null;
+              canvasEl._galaxySetInspectionBackdrop = null; canvasEl._galaxyGetInspectionBackdrop = null;
+              canvasEl._galaxySetPlanetaryView = null; canvasEl._galaxyGetPlanetaryViewState = null;
+              canvasEl._galaxyGetPlanetaryComponentState = null; canvasEl._galaxySetPlanetaryComponentMode = null;
+              if (!preserveContext) canvasEl._onPlanetaryComponentsChange = null;
+              canvasEl._galaxySetPlanetaryAxisVisible = null; canvasEl._galaxyRefreshPlanetaryView = null; planetaryViewDisplays = null;
+              canvasEl._galaxyGetHoverState = null;
+              canvasEl._galaxyFrameObject = null; canvasEl._galaxyGetObjectFramingState = null;
+              canvasEl._galaxyGetOrientationState = null; canvasEl._galaxyRefreshOrientation = null; orientationDisplays = null;
               canvasEl._galaxyCleanup = null;
 
             };
@@ -10203,20 +11488,27 @@ if (!window._galaxyHasLoadedOnce) {
           };
           // The ordinary filters and guided observations share the same scene action.
           // Only explicit workbench actions record a guided view as opened.
-          function galaxyObservationPatch(mode) {
+          function galaxyObservationPatch(mode, preserveSelection) {
             var nextLog = addInspectKey('observe:' + mode.key);
             nextLog[mode.target] = true;
             var history = observeHistory.slice();
             if (history[history.length - 1] !== mode.key) history.push(mode.key);
-            return { observeMode: mode.key, previousObserveMode: mode.key !== observeMode ? observeMode : d.previousObserveMode,
-              observeHistory: history.slice(-8), selectedStar: null, selectedStarMeasurement: null, selectedNebula: null,
-              inspectTarget: mode.target, inspectLog: nextLog };
+            var patch = { observeMode: mode.key, previousObserveMode: mode.key !== observeMode ? observeMode : d.previousObserveMode,
+              observeHistory: history.slice(-8), inspectLog: nextLog };
+            if (!preserveSelection) Object.assign(patch, { selectedStar: null, selectedStarMeasurement: null, selectedNebula: null, inspectTarget: mode.target });
+            return patch;
           }
-          function applyGalaxyObservation(mode, extra) {
+          function applyGalaxyObservation(mode, extra, options) {
+            if (!mode) return;
             var cv = galaxyCanvasActive.current;
-            if (cv && cv._galaxyClearSelection) cv._galaxyClearSelection();
+            var nativeSelection = cv && cv._galaxyGetInspectionState ? cv._galaxyGetInspectionState() : null;
+            var nativeStar = cv && cv._galaxyGetSelectionVisualState ? cv._galaxyGetSelectionVisualState() : null;
+            var matchingStar = nativeSelection && nativeSelection.kind === 'star' && selStar && selectedStarMeasurement && nativeStar && nativeStar.selectedIndex >= 0 && selectedStarMeasurement.index === nativeStar.selectedIndex;
+            var matchingNebula = nativeSelection && nativeSelection.kind === 'nebula' && selNeb && selNeb.name === nativeSelection.label;
+            var preserveSelection = !!(options && options.preserveSelection === true && nativeSelection && nativeSelection.canInspect && (matchingStar || matchingNebula));
+            if (!preserveSelection && cv && cv._galaxyClearSelection) cv._galaxyClearSelection();
             if (cv && cv._setObserveMode) cv._setObserveMode(mode.key);
-            patchGalaxy(Object.assign(galaxyObservationPatch(mode), extra || {}));
+            patchGalaxy(Object.assign(galaxyObservationPatch(mode, preserveSelection), extra || {}));
             if (!inspectLog['observe:' + mode.key] && typeof awardStemXP === 'function') awardStemXP('galaxy_observe', 1, 'Used ' + mode.label + ' filter');
             if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'observeMode', {
               first: mode.label + __alloT('stem.galaxy.aria_observing_mode', ' observing mode. ') + mode.desc,
@@ -10293,11 +11585,36 @@ if (!window._galaxyHasLoadedOnce) {
             el._onClearSelection = function () { galaxyRuntimeRef.current.patchGalaxy({ selectedNebula: null, selectedStar: null, selectedStarMeasurement: null, inspectTarget: 'galaxyType' }); };
             el._onCameraFeedback = setGalaxyCameraFeedback;
             el._onInspectionChange = function (state) {
-              var next = { active: !!(state && state.active), kind: state && state.kind === 'nebula' ? 'nebula' : state && state.kind === 'star' ? 'star' : '', label: state && typeof state.label === 'string' ? state.label : '', canInspect: !!(state && state.canInspect) };
-              setGalaxyInspection(function (previous) { return previous.active === next.active && previous.kind === next.kind && previous.label === next.label && previous.canInspect === next.canInspect ? previous : next; });
+              var next = { active: !!(state && state.active), kind: state && state.kind === 'nebula' ? 'nebula' : state && state.kind === 'star' ? 'star' : '', label: state && typeof state.label === 'string' ? state.label : '', canInspect: !!(state && state.canInspect), nearbyIndex: state && Number.isInteger(state.nearbyIndex) ? state.nearbyIndex : -1, nearbyCount: state && Number.isInteger(state.nearbyCount) ? state.nearbyCount : 0, nearbyTotal: state && Number.isInteger(state.nearbyTotal) ? state.nearbyTotal : 0 };
+              setGalaxyInspection(function (previous) { return previous.active === next.active && previous.kind === next.kind && previous.label === next.label && previous.canInspect === next.canInspect && previous.nearbyIndex === next.nearbyIndex && previous.nearbyCount === next.nearbyCount && previous.nearbyTotal === next.nearbyTotal ? previous : next; });
               if (next.active) galaxyRuntimeRef.current.patchGalaxy({ galaxyAutoRotate: false, galaxyTourActive: false });
             };
             el._onCameraResetUndoChange = setGalaxyResetUndo;
+            el._onCrabComponentsChange = function (state) {
+              var next = { available: !!(state && state.available), filaments: !state || state.filaments !== false, wind: !state || state.wind !== false };
+              setGalaxyCrabComponents(function (previous) { return previous.available === next.available && previous.filaments === next.filaments && previous.wind === next.wind ? previous : next; });
+            };
+            if (typeof el._galaxyGetCrabComponentState === 'function') el._onCrabComponentsChange(el._galaxyGetCrabComponentState());
+            el._onCrabCutawayChange = function (state) {
+              var next = { available: !!(state && state.available), enabled: !!(state && state.enabled) };
+              setGalaxyCrabCutaway(function (previous) { return previous.available === next.available && previous.enabled === next.enabled ? previous : next; });
+            };
+            if (typeof el._galaxyGetCrabCutawayState === 'function') el._onCrabCutawayChange(el._galaxyGetCrabCutawayState());
+            el._onPlanetaryComponentsChange = function (state) {
+              var next = { available: !!(state && state.available), name: state && state.name || '', mode: state && state.mode || 'both', primaryComponent: state && state.primaryComponent || '', secondaryComponent: state && state.secondaryComponent || '', referenceComponent: state && state.referenceComponent || '' };
+              setGalaxyPlanetaryComponents(function (previous) { return previous.available === next.available && previous.name === next.name && previous.mode === next.mode && previous.primaryComponent === next.primaryComponent && previous.secondaryComponent === next.secondaryComponent && previous.referenceComponent === next.referenceComponent ? previous : next; });
+            };
+            if (typeof el._galaxyGetPlanetaryComponentState === 'function') el._onPlanetaryComponentsChange(el._galaxyGetPlanetaryComponentState());
+            el._onObjectFramingChange = function (state) {
+              var next = { available: !!(state && state.available), contextual: !!(state && state.contextual), zoomPercent: state && Number.isFinite(state.zoomPercent) ? Math.round(state.zoomPercent) : 100 };
+              setGalaxyObjectFraming(function (previous) { return previous.available === next.available && previous.contextual === next.contextual && previous.zoomPercent === next.zoomPercent ? previous : next; });
+            };
+            if (typeof el._galaxyGetObjectFramingState === 'function') el._onObjectFramingChange(el._galaxyGetObjectFramingState());
+            el._onInspectionBackdropChange = function (state) {
+              var next = { available: !!(state && state.available), showContext: !state || state.showContext !== false };
+              setGalaxyInspectionBackdrop(function (previous) { return previous.available === next.available && previous.showContext === next.showContext ? previous : next; });
+            };
+            if (typeof el._galaxyGetInspectionBackdrop === 'function') el._onInspectionBackdropChange(el._galaxyGetInspectionBackdrop());
             el._onTourStateChange = function (active) { galaxyRuntimeRef.current.patchGalaxy({ galaxyTourActive: !!active }); };
             el._onMotionPreferenceChange = function (reduced) { if (reduced) galaxyRuntimeRef.current.patchGalaxy({ galaxyAutoRotate: false, galaxyTourActive: false }); };
             canvasRefCb(el);
@@ -10401,6 +11718,17 @@ if (!window._galaxyHasLoadedOnce) {
             return INSPECT_TARGETS[inspectTarget] || INSPECT_TARGETS.galaxyType;
           };
           var currentInspector = getInspector();
+          // Only a live native selection can explain an object in the current view.
+          // Saved Inspector metadata alone must not present a stale scene target.
+          var selectedObjectContext = galaxyInspection.canInspect && (galaxyInspection.kind === 'star' && selStar && selectedStarMeasurement
+            ? galaxyObjectContext({ kind: 'star', spectralClass: selStar.id }, observeMode, __alloT)
+            : galaxyInspection.kind === 'nebula' && selNeb ? galaxyObjectContext({ kind: 'nebula', nebulaType: selNeb.type }, observeMode, __alloT) : null);
+          var nativePlanetaryView = selectedObjectContext && galaxyInspection.active && galaxyCanvasActive.current && typeof galaxyCanvasActive.current._galaxyGetPlanetaryViewState === 'function' ? galaxyCanvasActive.current._galaxyGetPlanetaryViewState() : null;
+          var shellViewControls = nativePlanetaryView && selNeb && nativePlanetaryView.name === selNeb.name && nativePlanetaryView.band === observeMode ? { state: nativePlanetaryView,
+            components: galaxyPlanetaryComponents.available && galaxyPlanetaryComponents.name === selNeb.name ? galaxyPlanetaryComponents : null,
+            onComponent: function (mode) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetPlanetaryComponentMode) cv._galaxySetPlanetaryComponentMode(mode); },
+            onView: function (mode) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetPlanetaryView) cv._galaxySetPlanetaryView(mode); },
+            onAxis: function () { var cv = galaxyCanvasActive.current, state = cv && cv._galaxyGetPlanetaryViewState && cv._galaxyGetPlanetaryViewState(); if (state && cv._galaxySetPlanetaryAxisVisible) cv._galaxySetPlanetaryAxisVisible(!state.axisVisible); } } : null;
           var currentInspectorInk = (function(hex) {
             var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
             if (!match) return '#334155';
@@ -11685,7 +13013,7 @@ if (!window._galaxyHasLoadedOnce) {
               // ── Canvas-first workspace ──
               React.createElement("div", { "data-galaxy-workspace": "true", className: "grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start" },              // ── 3D Canvas ──
 
-              React.createElement("div", { "data-galaxy-stage": "true", "data-object-selected": galaxyInspection.canInspect ? "true" : "false", className: "relative rounded-2xl overflow-hidden border xl:sticky xl:top-4", style: { height: 'clamp(360px, 58vw, 620px)', background: 'radial-gradient(circle at 50% 44%, rgba(79,70,229,0.26), rgba(15,23,42,0.78) 42%, #020208 86%)', borderColor: 'rgba(129,140,248,0.42)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -46px 90px rgba(2,6,23,0.76), 0 22px 48px rgba(15,23,42,0.24)' } },
+              React.createElement("div", { "data-galaxy-stage": "true", "data-object-selected": galaxyInspection.canInspect ? "true" : "false", "data-object-controls-visible": galaxySceneReady && !galaxyHudHidden && galaxyInspection.canInspect ? "true" : undefined, "data-galaxy-nearby": galaxyInspection.nearbyCount > 1 ? "true" : "false", className: "relative rounded-2xl overflow-hidden border xl:sticky xl:top-4", style: { height: 'clamp(360px, 58vw, 620px)', background: 'radial-gradient(circle at 50% 44%, rgba(79,70,229,0.26), rgba(15,23,42,0.78) 42%, #020208 86%)', borderColor: 'rgba(129,140,248,0.42)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -46px 90px rgba(2,6,23,0.76), 0 22px 48px rgba(15,23,42,0.24)' } },
 
                 React.createElement("p", { id: "galaxy-canvas-description", className: "sr-only" }, __alloT('stem.galaxy.canvas_description', 'Interactive three-dimensional galaxy model.') + " " + gType.label + ", " + __alloT('stem.galaxy.canvas_description_age', 'seen {age} billion years after the Big Bang.').replace('{age}', cosmicAge.toFixed(1)) + " " + activeObserve.label + __alloT('stem.galaxy.canvas_description_mode', ' observing mode. ') + __alloT('stem.galaxy.canvas_description_layers', 'Visible structures can include stars, dust lanes, gas, nebulae, the galactic core, and the dark-matter halo.')),
                 React.createElement("p", { id: "galaxy-canvas-instructions", className: "sr-only" }, __alloT('stem.galaxy.canvas_object_keyboard_instructions', 'When the galaxy canvas has focus, use arrows to orbit, plus and minus to zoom, brackets or Page Up and Page Down to select stars, and I to inspect the selected object. Escape first returns from inspection, then clears selection. R resets the view. Double-click a visible object to inspect it. Stars and named nebulae can also be selected with buttons in Discover.')),
@@ -11780,9 +13108,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); if (cv._galaxyResetView) cv._galaxyResetView(); else { orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = cv._galaxyOverviewRadius || orb.r; upCam(); } }
 
-                    else if (e.key === ']' || e.key === 'PageDown') { e.preventDefault(); if (cv._galaxyCycleStar) cv._galaxyCycleStar(1); }
+                    else if (e.key === ']' || e.key === 'PageDown') { e.preventDefault(); if (!(cv._galaxyCycleNearby && cv._galaxyCycleNearby(1)) && cv._galaxyCycleStar) cv._galaxyCycleStar(1); }
 
-                    else if (e.key === '[' || e.key === 'PageUp') { e.preventDefault(); if (cv._galaxyCycleStar) cv._galaxyCycleStar(-1); }
+                    else if (e.key === '[' || e.key === 'PageUp') { e.preventDefault(); if (!(cv._galaxyCycleNearby && cv._galaxyCycleNearby(-1)) && cv._galaxyCycleStar) cv._galaxyCycleStar(-1); }
 
                     else if (e.key === 'Escape') { e.preventDefault(); var inspection = cv._galaxyGetInspectionState && cv._galaxyGetInspectionState(); if (inspection && inspection.active && cv._galaxyExitInspection) cv._galaxyExitInspection(); else if (cv._galaxyClearSelection) cv._galaxyClearSelection(); }
 
@@ -11790,6 +13118,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
+                React.createElement("span", { "data-galaxy-hover-marker": "true", "aria-hidden": "true", hidden: true }),
+                React.createElement("div", { "data-galaxy-hover-preview": "true", "aria-hidden": "true", hidden: true },
+                  React.createElement("span", { "data-galaxy-hover-label": "true" }),
+                  React.createElement("span", { "data-galaxy-hover-hint": "true" }, __alloT('stem.galaxy.object_hover_hint', 'Click to select · double-click to inspect'))
+                ),
                 React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 50% 46%, transparent 56%, rgba(2,6,23,0.32) 100%)', opacity: 0.24 } }),
                 React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.42) 0%, transparent 17%, transparent 84%, rgba(2,6,23,0.46) 100%)', opacity: 0.5 } }),
                 React.createElement("div", { "data-galaxy-observe-transition": "true", "aria-hidden": true, style: { position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: 0, mixBlendMode: 'screen' } }),
@@ -11800,7 +13133,7 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("span", { className: "absolute bottom-0 right-0 h-8 w-8 border-b border-r", style: { borderColor: activeObserve.accent + '99', filter: 'drop-shadow(0 0 5px ' + activeObserve.accent + '66)' } }),
                   React.createElement("span", { className: "absolute left-1/2 top-0 h-2 w-px -translate-x-1/2", style: { background: activeObserve.accent + '88' } }),
                   React.createElement("span", { className: "absolute bottom-0 left-1/2 h-2 w-px -translate-x-1/2", style: { background: activeObserve.accent + '88' } }),
-                  React.createElement("div", { className: "absolute left-1/2 top-1/2 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed opacity-40 sm:block", style: { borderColor: activeObserve.accent, boxShadow: '0 0 18px ' + activeObserve.accent + '33' } },
+                  !galaxyInspection.active && React.createElement("div", { "data-galaxy-center-crosshair": "true", className: "absolute left-1/2 top-1/2 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed opacity-40 sm:block", style: { borderColor: activeObserve.accent, boxShadow: '0 0 18px ' + activeObserve.accent + '33' } },
                     React.createElement("span", { className: "absolute left-1/2 top-1/2 h-px w-12 -translate-x-1/2 -translate-y-1/2", style: { background: 'linear-gradient(90deg,transparent,' + activeObserve.accent + ',transparent)' } }),
                     React.createElement("span", { className: "absolute left-1/2 top-1/2 h-12 w-px -translate-x-1/2 -translate-y-1/2", style: { background: 'linear-gradient(180deg,transparent,' + activeObserve.accent + ',transparent)' } }),
                     React.createElement("span", { className: "absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full", style: { background: activeObserve.accent, boxShadow: '0 0 8px ' + activeObserve.accent } })
@@ -11844,7 +13177,7 @@ if (!window._galaxyHasLoadedOnce) {
                 // on their own to a learner seeing a field of coloured stars. Showing
                 // the actual STAR_TYPES colour beside each class makes the canvas
                 // readable, and it now survives on phones instead of being hidden.
-                !galaxyHudHidden && React.createElement("div", { className: "absolute top-3 left-3 rounded-2xl border border-indigo-200/15 bg-slate-950/75 px-2.5 py-1.5 text-white/90 shadow-lg backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.aria_spectral_legend', 'Star colour key, hottest to coolest: O B A F G K M — blue is hottest, red is coolest.') },
+                !galaxyHudHidden && React.createElement("div", { "data-galaxy-spectral-legend": "true", className: "absolute top-3 left-3 rounded-2xl border border-indigo-200/15 bg-slate-950/75 px-2.5 py-1.5 text-white/90 shadow-lg backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.aria_spectral_legend', 'Star colour key, hottest to coolest: O B A F G K M — blue is hottest, red is coolest.') },
                   React.createElement("div", { className: "flex items-end gap-[3px]", "aria-hidden": true },
                     STAR_TYPES.map(function (st) {
                       return React.createElement("div", { key: st.id, className: "flex flex-col items-center gap-0.5", title: st.label + " · " + st.temp + " K" },
@@ -11926,6 +13259,8 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 isSpiralMorphology && !galaxyHudHidden && selectedStarMeasurement && selStar && activeRotationMeasurement && React.createElement("div", {
                   "data-galaxy-measurement": "true",
+                  tabIndex: 0,
+                  "aria-label": __alloT('stem.galaxy.measurement_title', 'Galactocentric measurement'),
                   className: "pointer-events-none absolute left-3 top-20 z-10 w-[min(15rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/25 bg-slate-950/80 p-3 text-white shadow-2xl backdrop-blur-md",
                   role: "status",
                   "aria-live": "polite"
@@ -11990,8 +13325,8 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("p", { className: "mt-0.5 text-[11px] leading-tight text-slate-300" }, mark.detail)
                   ); })
                 ),
-                !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, __alloT('stem.galaxy.orient_angled_initial', "Angled view")),
-                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "group", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
+                !galaxyHudHidden && galaxySceneReady && renderGalaxyOrientationDisplay(React, { compact: true, spiral: isSpiralMorphology, t: __alloT, onCycle: function () { var cv = galaxyCanvasActive.current; var direction = cv && cv._galaxyGetOrientationState ? cv._galaxyGetOrientationState() : null; if (direction && cv._galaxySetViewAngle) cv._galaxySetViewAngle(direction.next); } }),
+                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "group", "aria-label": galaxySchematicInspection ? galaxyCloseupScaleHint : __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-r from-transparent to-violet-300", "aria-hidden": true }),
                   React.createElement("span", { "data-galaxy-live-scale-value": "true" }, galaxyFieldHeightLabel),
                   React.createElement("span", { className: "text-violet-300", "aria-hidden": true }, "·"),
@@ -12006,7 +13341,22 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("button", { type: "button", "data-galaxy-inspect-object": "true", "aria-keyshortcuts": galaxyInspection.active ? "Escape" : "I", "aria-describedby": "galaxy-object-inspection-help", onClick: function () { var cv = galaxyCanvasActive.current; if (!cv) return; if (galaxyInspection.active && cv._galaxyExitInspection) cv._galaxyExitInspection(); else if (cv._galaxyInspectSelection) cv._galaxyInspectSelection(); cv.focus({ preventScroll: true }); } }, galaxyInspection.active ? __alloT('stem.galaxy.object_return', 'Return to galaxy') : __alloT('stem.galaxy.object_inspect', 'Inspect object')),
                     React.createElement("button", { type: "button", "data-galaxy-clear-object": "true", "aria-label": __alloT('stem.galaxy.object_clear', 'Clear selected object'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyClearSelection) cv._galaxyClearSelection(); if (cv) cv.focus({ preventScroll: true }); } }, "×")
                   ),
-                  React.createElement("p", { id: "galaxy-object-inspection-help", "data-galaxy-inspection-hint": "true" }, galaxyInspection.active ? __alloT('stem.galaxy.object_inspection_active', 'Orbit around this object. Escape returns to the galaxy view.') : __alloT('stem.galaxy.object_inspection_hint', 'I or double-click to inspect · Escape clears selection'))
+                  React.createElement("label", { htmlFor: "galaxy-object-band", "data-galaxy-object-band-label": "true" }, __alloT('stem.galaxy.object_compare_band', 'Compare this object')),
+                  React.createElement("select", { id: "galaxy-object-band", "data-galaxy-object-band": "true", value: observeMode, "aria-describedby": "galaxy-object-band-help", onChange: function (event) { var nextMode = OBSERVE_MODES.find(function (mode) { return mode.key === event.target.value; }); applyGalaxyObservation(nextMode, null, { preserveSelection: true }); } },
+                    OBSERVE_MODES.map(function (mode) { return React.createElement("option", { key: mode.key, value: mode.key }, mode.key === 'gravity' ? __alloT('stem.galaxy.object_gravity_inference', 'Gravity inference') : mode.label); })
+                  ),
+                  React.createElement("p", { id: "galaxy-object-band-help", className: "sr-only" }, __alloT('stem.galaxy.object_compare_help', 'Switch model signals while keeping this object and camera. Colors and brightness are illustrative; gravity is an inference.')),
+                  galaxyInspection.nearbyCount > 1 && React.createElement("div", { "data-galaxy-nearby-controls": "true", role: "group", "aria-labelledby": "galaxy-nearby-title", "aria-describedby": "galaxy-nearby-help" },
+                    React.createElement("p", { id: "galaxy-nearby-title", "data-galaxy-nearby-title": "true" }, __alloT('stem.galaxy.nearby_title', 'Objects at this point')),
+                    React.createElement("p", { "data-galaxy-nearby-status": "true", role: "status", "aria-live": "polite", "aria-atomic": "true" }, __alloT('stem.galaxy.nearby_position', '{index} of {count} · {total} overlap').replace('{index}', String(galaxyInspection.nearbyIndex + 1)).replace('{count}', String(galaxyInspection.nearbyCount)).replace('{total}', String(galaxyInspection.nearbyTotal))),
+                    React.createElement("div", { className: "galaxy-nearby-actions" },
+                      React.createElement("button", { type: "button", "data-galaxy-nearby-previous": "true", "aria-label": __alloT('stem.galaxy.nearby_previous_aria', 'Select previous overlapping object'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCycleNearby) cv._galaxyCycleNearby(-1); } }, __alloT('stem.galaxy.nearby_previous', 'Previous')),
+                      React.createElement("button", { type: "button", "data-galaxy-nearby-next": "true", "aria-label": __alloT('stem.galaxy.nearby_next_aria', 'Select next overlapping object'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCycleNearby) cv._galaxyCycleNearby(1); } }, __alloT('stem.galaxy.nearby_next', 'Next'))
+                    ),
+                    React.createElement("p", { style: { marginTop: '4px', fontSize: '10px', color: '#cbd5e1' } }, __alloT('stem.galaxy.nearby_keyboard', '[ ] browse these objects')),
+                    React.createElement("p", { id: "galaxy-nearby-help", className: "sr-only" }, __alloT('stem.galaxy.nearby_depth_help', 'These objects overlap on screen but can lie at different depths in space. Inspect, then browse to compare them.'))
+                  ),
+                  React.createElement("p", { id: "galaxy-object-inspection-help", "data-galaxy-inspection-hint": "true" }, galaxyInspection.active && galaxyCrabComponents.available ? __alloT('stem.galaxy.object_inspection_crab', 'Illustrative 3D remnant: orbit to compare filamentary debris with the pulsar-powered interior. Colors and dimensions are schematic. Escape returns to the galaxy.') : galaxyInspection.active ? galaxyInspection.kind === 'nebula' && (galaxyInspection.label === t('stem.galaxy.helix_nebula') || galaxyInspection.label === t('stem.galaxy.ring_nebula')) && ((d.observeMode || 'visible') === 'visible' || d.observeMode === 'infrared') ? __alloT('stem.galaxy.object_inspection_planetary_shell', 'Illustrative 3D gas shell. Orbit to compare its shape; colors and dimensions are schematic. Escape returns to the galaxy.') : __alloT('stem.galaxy.object_inspection_active', 'Orbit around this object. Escape returns to the galaxy view.') : __alloT('stem.galaxy.object_inspection_hint', 'I or double-click to inspect · Escape clears selection'))
                 ),
                 galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden || galaxyInspection.canInspect ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, rotationGuideSpec.visible && !selStar && !selNeb ? __alloT('stem.galaxy.radius_guides_probe', 'Probe ring') + ': ' + rotationGuideSpec.radiusKpc.toFixed(1) + ' kpc · ' + __alloT('stem.galaxy.radius_guides_saved', '{count} saved radii').replace('{count}', rotationGuideSpec.savedRadii.length) + ' '  : selStar ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selNeb.name) : __alloT('stem.galaxy.status_chip_help', 'Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars')),
                 // Scale info overlay
@@ -12077,6 +13427,12 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.controls_sub', 'Adjust the view without losing sight of the simulation.'))
                     )
                   ),
+                  renderGalaxyObjectContext({ React: React, t: __alloT, context: selectedObjectContext, name: galaxyInspection.label, bandLabel: observeMode === 'gravity' ? __alloT('stem.galaxy.object_gravity_inference', 'Gravity inference') : activeObserve.label, shellViews: shellViewControls, crabComponents: galaxyCrabComponents, crabCutaway: galaxyCrabCutaway,
+                    objectFraming: galaxyObjectFraming, inspectionBackdrop: galaxyInspectionBackdrop,
+                    onFrameObject: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyFrameObject && cv._galaxyFrameObject()) { if (typeof cv.focus === 'function') cv.focus({ preventScroll: true }); if (typeof cv.scrollIntoView === 'function') cv.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); } },
+                    onBackdropChange: function (showContext) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetInspectionBackdrop) cv._galaxySetInspectionBackdrop(showContext); },
+                    onCrabCutaway: function (enabled) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetCrabCutaway) cv._galaxySetCrabCutaway(enabled); },
+                    onCrabToggle: function (kind, visible) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetCrabComponent) cv._galaxySetCrabComponent(kind, visible); } }),
                   React.createElement("div", { className: "mb-3 grid grid-cols-4 gap-1 rounded-xl bg-slate-200/70 p-1", role: "tablist", "aria-orientation": "horizontal", "aria-label": __alloT('stem.galaxy.aria_control_groups', 'Galaxy control groups') },
                     [{ key: 'view', icon: '◉', label: __alloT('stem.galaxy.control_group_view', 'View') }, { key: 'motion', icon: '↻', label: __alloT('stem.galaxy.control_group_motion', 'Motion') }, { key: 'time', icon: '◷', label: __alloT('stem.galaxy.control_group_time', 'Time') }, { key: 'discover', icon: '⌖', label: __alloT('stem.galaxy.control_group_discover', 'Discover') }].map(function (panel) {
                       var active = galaxyControlPanel === panel.key;
@@ -12130,6 +13486,7 @@ if (!window._galaxyHasLoadedOnce) {
                   )
                 ),
                 React.createElement("p", { id: "galaxy-view-angles-help", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.view_angles_help', 'Explore the shape from above or across its edge. Your zoom and selected object stay in place.')),
+                galaxySceneReady && renderGalaxyOrientationDisplay(React, { compact: false, spiral: isSpiralMorphology, t: __alloT }),
                 React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-1.5" },
                   [{ key: 'face', ry: 13, label: __alloT('stem.galaxy.orient_face_on', 'Face-on view') }, { key: 'angled', ry: 8, label: __alloT('stem.galaxy.orient_angled', 'Angled view') }, { key: 'edge', ry: 2, label: __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') }].map(function (view) {
                     return React.createElement("button", { key: view.key, type: "button", "data-galaxy-view-angle": view.key, "aria-pressed": galaxySceneReady && galaxyCameraFeedback.angle === view.key, disabled: !galaxySceneReady, "aria-describedby": "galaxy-view-angles-help", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetViewAngle) cv._galaxySetViewAngle(view.key); }, className: "flex min-h-[44px] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40" },
@@ -12143,13 +13500,14 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 React.createElement("div", { "data-galaxy-camera-feedback": "true", "aria-live": "off", className: "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-100 px-2.5 py-2 text-[11px] font-semibold text-slate-600" },
                   React.createElement("span", { "data-galaxy-current-angle": "true" }, !galaxySceneReady ? '—' : galaxyCameraFeedback.angle === 'face' ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : galaxyCameraFeedback.angle === 'angled' ? __alloT('stem.galaxy.orient_angled', 'Angled view') : galaxyCameraFeedback.angle === 'edge' ? __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') : __alloT('stem.galaxy.view_free_orbit', 'Free orbit')),
-                  React.createElement("span", { "data-galaxy-current-zoom": "true", className: "tabular-nums", title: __alloT('stem.galaxy.view_zoom_hint', 'Zoom relative to the overview') }, galaxySceneReady ? __alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(galaxyCameraFeedback.zoom)) : '—')
+                  React.createElement("span", { "data-galaxy-current-zoom": "true", className: "tabular-nums", title: galaxyZoomHelp }, galaxySceneReady ? galaxyZoomStatus : '—')
                 ),
                 React.createElement("div", { className: "mt-1" },
-                  React.createElement("input", { type: "range", id: "galaxy-camera-zoom", "data-galaxy-zoom-slider": "true", min: 0, max: 100, step: 1, value: galaxyCameraFeedback.zoomPosition, style: { "--galaxy-zoom-fill": galaxyCameraFeedback.zoomPosition + "%" }, disabled: !galaxySceneReady, "aria-label": __alloT('stem.galaxy.view_zoom_label', 'Zoom'), "aria-valuetext": __alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(galaxyCameraFeedback.zoom)), "aria-describedby": "galaxy-camera-zoom-help", onChange: function (event) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetZoomPosition) cv._galaxySetZoomPosition(Number(event.target.value)); }, className: "block min-h-[44px] w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40" }),
-                  React.createElement("div", { id: "galaxy-camera-zoom-help", className: "flex items-center justify-between gap-2 text-[11px] text-slate-500" }, React.createElement("span", null, __alloT('stem.galaxy.view_zoom_wide', 'Wide field')),
-                    React.createElement("button", { type: "button", "data-galaxy-zoom-overview": "true", disabled: !galaxySceneReady, "aria-label": __alloT('stem.galaxy.view_zoom_overview_hint', 'Restore overview zoom, keeping the viewing angle and selected object'), title: __alloT('stem.galaxy.view_zoom_overview_hint', 'Restore overview zoom, keeping the viewing angle and selected object'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyResetZoom) cv._galaxyResetZoom(); }, className: "min-h-[44px] rounded-lg px-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-40" }, __alloT('stem.galaxy.view_zoom_overview', '100% · Overview')),
-                    React.createElement("span", null, __alloT('stem.galaxy.view_zoom_close', 'Close detail')))
+                  React.createElement("input", { type: "range", id: "galaxy-camera-zoom", "data-galaxy-zoom-slider": "true", min: 0, max: 100, step: 1, value: galaxyCameraFeedback.zoomPosition, style: { "--galaxy-zoom-fill": galaxyCameraFeedback.zoomPosition + "%" }, disabled: !galaxySceneReady, "aria-label": galaxyObjectFraming.contextual ? __alloT('stem.galaxy.object_zoom_label', 'Object zoom') : __alloT('stem.galaxy.view_zoom_label', 'Zoom'), "aria-valuetext": galaxyZoomStatus, "aria-describedby": "galaxy-camera-zoom-help", onChange: function (event) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetZoomPosition) cv._galaxySetZoomPosition(Number(event.target.value)); }, className: "block min-h-[44px] w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40" }),
+                  React.createElement("div", { id: "galaxy-camera-zoom-help", className: "flex flex-wrap items-center justify-between gap-x-2 text-[11px] text-slate-500" }, React.createElement("span", null, __alloT('stem.galaxy.view_zoom_wide', 'Wide field')),
+                    React.createElement("button", { type: "button", "data-galaxy-zoom-overview": "true", "data-galaxy-frame-object": galaxyObjectFraming.contextual ? 'view' : undefined, disabled: !galaxySceneReady || (galaxyObjectFraming.contextual && !galaxyObjectFraming.available), "aria-label": galaxyZoomResetHint, title: galaxyZoomResetHint, onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyResetZoom) cv._galaxyResetZoom(); }, className: "min-h-[44px] rounded-lg px-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-40" }, galaxyObjectFraming.contextual ? __alloT('stem.galaxy.object_zoom_fit', '100% · Fit object') : __alloT('stem.galaxy.view_zoom_overview', '100% · Overview')),
+                    React.createElement("span", null, __alloT('stem.galaxy.view_zoom_close', 'Close detail')),
+                    galaxyObjectFraming.contextual && React.createElement("p", { "data-galaxy-zoom-context-help": "true", className: "w-full leading-relaxed" }, galaxyObjectFraming.available ? galaxyZoomHelp : galaxyZoomResetHint))
                 ),
                 React.createElement("div", { "data-galaxy-view-scale": "true", className: "mt-2 flex items-start gap-2.5 border-t border-slate-200 pt-3", "aria-live": "off" },
                   React.createElement("svg", { viewBox: "0 0 32 32", width: 32, height: 32, className: "shrink-0", "aria-hidden": true, focusable: "false" },
@@ -12163,7 +13521,7 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("span", { "data-galaxy-panel-field-height": "true", className: "text-xs font-bold tabular-nums text-indigo-800" }, galaxyFieldHeightLabel)
                     ),
                     React.createElement("p", { "data-galaxy-panel-scale-regime": "true", className: "mt-0.5 text-[11px] font-semibold text-slate-700" }, galaxySceneReady ? galaxyScaleLabel : '—'),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-500" }, __alloT('stem.galaxy.view_scale_hint', 'Approximate field height at the center of the view.'))
+                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-500" }, galaxySchematicInspection ? galaxyCloseupScaleHint : __alloT('stem.galaxy.view_scale_hint', 'Approximate field height at the center of the view.'))
                   )
                 )
               ),

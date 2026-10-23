@@ -55307,6 +55307,15 @@
       "sr_critique_ready": "Đã có nhận xét."
     },
     "flightsim": {
+      "guided_inspect_angle": "Xem so sánh góc",
+      "guided_inspect_speed": "Xem so sánh tốc độ",
+      "guided_export_scope": "Tệp xuất bao gồm bản nháp hiện tại và các lần thử trước. Việc xuất không hoàn tất cuộc khảo sát.",
+      "hint_t_stall_negative": "🚨 THẤT TỐC! Góc tấn âm: nhẹ nhàng kéo LÊN từ giữa để đưa nó về gần không. Dùng mép phải để điều chỉnh công suất khi cần.",
+      "hint_k_stall_negative": "🚨 THẤT TỐC! Góc tấn âm: nhẹ nhàng nhấn W để đưa nó về gần không. Tăng công suất bằng Shift khi cần.",
+      "hint_stall_direction_unknown": "🚨 THẤT TỐC! Đưa góc tấn về gần không. Chưa có thông tin về chiều của góc; kiểm tra chỉ báo AoA trước khi chọn thao tác ngóc hoặc chúi.",
+      "announce_stall_warning_negative": "Cảnh báo thất tốc! Góc tấn âm. Nhẹ nhàng nâng mũi để đưa góc về gần không; tăng công suất khi cần.",
+      "announce_stall_warning_unknown": "Cảnh báo thất tốc! Đưa góc tấn về gần không. Chưa có thông tin về chiều của góc; kiểm tra chỉ báo AoA trước khi chọn thao tác ngóc hoặc chúi.",
+      "hud_stall_warning": "⚠️ THẤT TỐC — ĐƯA AoA VỀ GẦN KHÔNG",
       "debrief_unavailable_title": "Bản tổng kết chuyến bay đã lưu không khả dụng",
       "debrief_unavailable_body": "Bản tổng kết chuyến bay mới nhất bị thiếu hoặc không thể đọc được. Hãy quay lại trình đơn để bắt đầu chuyến bay mới.",
       "guided_idea_before_trials": "Đã ghi lại trước các lần thử",

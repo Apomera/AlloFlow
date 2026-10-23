@@ -1,0 +1,162 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional living headshield slug for the existing species guide, optional identification activity and illustrative reef encounters. New copy is paraphrased from museum accounts and research. Field marks support learning from the model, not guaranteed field identification.",
+  "iucnYearConvention": "No reliable current global IUCN assessment was located. SeaLifeBase’s IUCN2025-2 export reports Not Evaluated, so use NE with a null assessment year. This is not a statement that the species is secure.",
+  "specimens": [
+    {
+      "id": "blue_velvet_headshield_slug",
+      "name": "Blue velvet headshield slug",
+      "scientific": "Chelidonura varians",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnPublishedYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [
+        "nudibranch"
+      ],
+      "marks": [
+        "Deep black body outlined by thin, vivid blue lines",
+        "A broad headshield with a blue line along its centre",
+        "Raised side flaps, called parapodia, partly wrap around the body",
+        "Two tapering, tail-like lobes extend behind the body and are unequal in length"
+      ],
+      "role": "Small predator that specializes in free-living flatworms around reef-associated sediment.",
+      "fact": "Although sometimes called a blue velvet nudibranch, it is a headshield slug in a different sea-slug group.",
+      "habitat": "Sand around reefs and sandy reef slopes across the tropical Indo-West Pacific.",
+      "diet": "Small flatworms, including acoels documented in feeding records. It is a specialist predator, rather than an algae grazer.",
+      "behavior": "Crawls across the bottom. Individuals may follow another slug’s mucus trail, sometimes before mating.",
+      "observe": "Trace the blue outlines, folded side flaps and unequal tail lobes. Compare these with the exposed gill plume and rhinophores on Anna’s chromodoris.",
+      "sources": [
+        "dx-am-blue_velvet_headshield_slug",
+        "dx-lifg-blue_velvet_headshield_slug",
+        "dx-wam-blue_velvet_headshield_slug",
+        "dx-diet-blue_velvet_headshield_slug",
+        "dx-yonow-blue_velvet_headshield_slug"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-csiro-blue_velvet_headshield_slug; dx-worms-blue_velvet_headshield_slug",
+        "marks": "dx-wam-blue_velvet_headshield_slug supports black body, blue parapodial/dorsal lines and elongated posterior lobes; dx-lifg-blue_velvet_headshield_slug supports head/body blue lines and unequal tapering tails; museum photographs and dx-am-blue_velvet_headshield_slug support the folded side-flap presentation",
+        "roleDiet": "dx-diet-blue_velvet_headshield_slug table2 records acoel prey for this species from Yonow1992/1994; dx-am-blue_velvet_headshield_slug includes aquarium feeding observations discussed by museum specialist Bill Rudman",
+        "fact": "dx-am-blue_velvet_headshield_slug: Rudman’s explicit classification correction, 2 April2001 and30 November1998",
+        "habitat": "dx-yonow-blue_velvet_headshield_slug sandy-slope specimens; dx-am-blue_velvet_headshield_slug tropical Indo-West Pacific distribution and museum-reviewed field records",
+        "behavior": "dx-am-blue_velvet_headshield_slug: museum discussion of observed trailing behavior19 May2003",
+        "iucn": "dx-slb-blue_velvet_headshield_slug current IUCN export",
+        "size": "dx-am-blue_velvet_headshield_slug species account gives about7cm;5cm field observations support nominal adult example",
+        "depth": "dx-am-blue_velvet_headshield_slug museum-reviewed5m Queensland and30m Bali field observations; dx-yonow-blue_velvet_headshield_slug collected specimens7–17m; dx-jamstec-blue_velvet_headshield_slug current occurrence summary5–16m"
+      },
+      "caution": "NE does not mean secure. The 3cm maximum in SeaLifeBase is explicitly assumed from a field guide and is not used over the museum’s approximately7cm account and larger documented photographs. Tail length and colour lines may vary or be altered by damage. The left posterior lobe is modeled longer, consistent with the usual morphology, but the learner-facing mark says unequal rather than always left-longer. The closest similarly coloured headshield species are not already in this guide; the nudibranch comparison is a teaching contrast, not a claim of taxonomic closeness or reliable identification from a simplified model. No aquarium pest-eradication, toxicity, obligatory nocturnality or complete wild prey-list claim is made."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-blue_velvet_headshield_slug",
+      "text": "Rudman, W.B. (1998–2010). Australian Museum Sea Slug Forum: Chelidonura varians species account and museum-moderated observations. Accessed October 2026.",
+      "url": "https://www.seaslugforum.net/showall/chelvar",
+      "urlLabel": "seaslugforum.net",
+      "supports": [
+        "Distribution, size, classification, feeding and trailing observations"
+      ],
+      "access": "Full archived museum account and related messages opened successfully. Distinguish field observations, aquarium observations and specialist commentary; no old husbandry or trade guidance is imported."
+    },
+    {
+      "id": "dx-lifg-blue_velvet_headshield_slug",
+      "text": "Australian Museum / Lizard Island Research Station. Lizard Island Field Guide: Chelidonura varians. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=DNR89VPU&hierarchyId=PVWrQCLG",
+      "urlLabel": "lifg.australian.museum",
+      "supports": [
+        "Black body, blue head and body margins, unequal long tapering tails"
+      ],
+      "access": "Detailed current indexed museum account read. Its equal-tail sentence refers to a similar taxon, not C.varians."
+    },
+    {
+      "id": "dx-wam-blue_velvet_headshield_slug",
+      "text": "Gosliner, T.M. (2006). Marine Gastropoda collected by the Steamer Albatross from the Philippines in 1908. Records of the Western Australian Museum Supplement 69: 83–93; C. varians, p. 86.",
+      "url": "https://museum.wa.gov.au/sites/default/files/7.%20Gosliner.pdf#page=4",
+      "urlLabel": "museum.wa.gov.au",
+      "supports": [
+        "Primary anatomical identification: black body, blue lines and elongated posterior lobes"
+      ],
+      "access": "Museum-hosted primary research PDF opened successfully."
+    },
+    {
+      "id": "dx-diet-blue_velvet_headshield_slug",
+      "text": "Zamora-Silva, A. & Malaquias, M.A.E. (2016). Diet preferences of the Aglajidae: a family of cephalaspidean gastropod predators on tropical and temperate shores. Journal of the Marine Biological Association of the United Kingdom 96: 1101–1112. DOI: 10.1017/S0025315415000739.",
+      "url": "https://doi.org/10.1017/S0025315415000739",
+      "urlLabel": "doi.org (Cambridge University Press)",
+      "supports": [
+        "Species-specific published acoel prey records, Table2"
+      ],
+      "access": "Full publisher PDF opened successfully. Table2 cites Yonow1992/1994 for C.varians; do not misrepresent this as a new gut-content finding for C.varians or infer all Chelidonura eat identical prey."
+    },
+    {
+      "id": "dx-yonow-blue_velvet_headshield_slug",
+      "text": "Yonow, N. (2012). Opisthobranchs from the western Indian Ocean, with descriptions of two new species and ten new records. ZooKeys 197: 1–129. Chelidonura varians material and Plate 8.",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3376724/",
+      "urlLabel": "pmc.ncbi.nlm.nih.gov",
+      "supports": [
+        "Primary Maldives specimens on sandy slope at7–17m; photographed30mm animal"
+      ],
+      "access": "Full primary research account opened successfully."
+    },
+    {
+      "id": "dx-csiro-blue_velvet_headshield_slug",
+      "text": "CSIRO. Codes for Australian Aquatic Biota: Chelidonura varians, code 24324022. Accessed October 2026.",
+      "url": "https://www.cmar.csiro.au/data/caab/taxon_report.cfm?caab_code=24324022",
+      "urlLabel": "cmar.csiro.au",
+      "supports": [
+        "Accepted name, Aglajidae, WoRMS599344 identifier"
+      ],
+      "access": "Detailed current indexed record read; references2018 molecular classification."
+    },
+    {
+      "id": "dx-worms-blue_velvet_headshield_slug",
+      "text": "MolluscaBase / World Register of Marine Species. Chelidonura varians Eliot, 1903, AphiaID 599344. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=599344",
+      "urlLabel": "marinespecies.org",
+      "supports": [
+        "Accepted taxon identifier"
+      ],
+      "access": "Direct record returned403. Accepted name corroborated by current CSIRO record, NOAA Copepedia and OBIS indexing; no successful direct WoRMS access claimed."
+    },
+    {
+      "id": "dx-slb-blue_velvet_headshield_slug",
+      "text": "SeaLifeBase. Chelidonura varians, species 87100: IUCN 2025-2 export. Accessed October 2026.",
+      "url": "https://www.sealifebase.org/summary/SpeciesSummary.php?id=87100&lang=English",
+      "urlLabel": "sealifebase.org",
+      "supports": [
+        "Current indexed IUCN field: Not Evaluated"
+      ],
+      "caution": "Used for IUCN provenance only. Its assumed3cm maximum and order-level life-history generalization are not used for species copy."
+    },
+    {
+      "id": "dx-jamstec-blue_velvet_headshield_slug",
+      "text": "JAMSTEC BISMaL. Chelidonura varians taxon 9061823 occurrence summary. Accessed October 2026.",
+      "url": "https://www.godac.jamstec.go.jp/bismal/e/view/9061823",
+      "urlLabel": "godac.jamstec.go.jp",
+      "supports": [
+        "Occurrence records with5–16m depths"
+      ],
+      "access": "Full account opened successfully. This is a dataset’s observed interval, not the full species depth range."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.05,
+    "maximumLengthM": 0.07,
+    "depth": [
+      5,
+      30
+    ],
+    "origin": "base",
+    "basis": "An illustrative5cm adult, consistent with museum-reviewed photographs. About7cm is the museum species-account maximum. The5–30m metadata interval brackets documented museum-reviewed encounters; it is not a physiological or exhaustive distributional boundary.",
+    "anatomy": "Broad headshield with small anterior lobes, dark smooth body, thin blue marginal lines and median head line, raised folded parapodia, and two tapering posterior mantle lobes. The left lobe can be longer in this illustrative individual. No exposed dorid-style dorsal gill plume or paired rhinophores.",
+    "anatomyLimits": "Museum sources explicitly support unequal lobes. Left-longer is consistent with published genus morphology and species photographs, but not treated as an invariant identification rule. Fine internal anatomy and full wild colour variation are not represented.",
+    "motion": "Low-amplitude side-flap and tail-lobe flex while the foot remains grounded. Crawling and current movement are artistic teaching choices, not measured gait data; avoid continuous free swimming or a pulsing jellyfish shape."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Identification, study and optional inspection must not award a dive discovery or persist session-only answers and labels.",
+    "lookalikeNote": "The existing nudibranch is Chromodoris annae. Its blue-black body may prompt a useful novice comparison, while its orange border, exposed gill plume and rhinophores differ. Keep the new link one-way; do not modify the existing nudibranch record.",
+    "identificationLimit": "The illustrated field marks support learning and comparison. They are not a promise of definitive real-world species identification."
+  }
+}

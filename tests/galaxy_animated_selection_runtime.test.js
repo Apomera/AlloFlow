@@ -261,6 +261,13 @@ describe('galaxy animated selection runtime', () => {
   }, SCENE_TIMEOUT);
 
   it('places every part of a core-collapse event at the rendered massive-star location', async () => {
+    // A small random catalogue can legitimately contain no O/B tracers. Seed
+    // this geometry fixture so it consistently exercises an available event.
+    let catalogueSeed = 12345;
+    vi.spyOn(Math, 'random').mockImplementation(() => {
+      catalogueSeed = (1664525 * catalogueSeed + 1013904223) >>> 0;
+      return catalogueSeed / 4294967296;
+    });
     await mountGalaxy({ ...LIGHT, galaxyType: 'barredSpiral' });
     const canvas = host.querySelector('[data-galaxy-canvas]');
     clockMs += 180_000;

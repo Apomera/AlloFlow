@@ -57485,6 +57485,15 @@
       "sr_critique_ready": "Crítica pronta."
     },
     "flightsim": {
+      "guided_inspect_angle": "Ver comparação de ângulos",
+      "guided_inspect_speed": "Ver comparação de velocidades",
+      "guided_export_scope": "A exportação inclui seu rascunho atual e as tentativas anteriores. Exportar não conclui a investigação.",
+      "hint_t_stall_negative": "🚨 ESTOL! O ângulo de ataque é negativo: arraste suavemente para CIMA a partir do centro para aproximá-lo de zero. Use a borda direita para a potência, conforme necessário.",
+      "hint_k_stall_negative": "🚨 ESTOL! O ângulo de ataque é negativo: pressione W suavemente para aproximá-lo de zero. Aumente a potência com Shift, conforme necessário.",
+      "hint_stall_direction_unknown": "🚨 ESTOL! Aproxime o ângulo de ataque de zero. A direção não está disponível; consulte o indicador AoA antes de escolher um movimento de arfagem.",
+      "announce_stall_warning_negative": "Aviso de estol! O ângulo de ataque é negativo. Levante suavemente o nariz para aproximá-lo de zero; aumente a potência conforme necessário.",
+      "announce_stall_warning_unknown": "Aviso de estol! Aproxime o ângulo de ataque de zero. A direção não está disponível; consulte o indicador AoA antes de escolher um movimento de arfagem.",
+      "hud_stall_warning": "⚠️ ESTOL — APROXIME AoA DE ZERO",
       "debrief_unavailable_title": "Revisão de voo salva indisponível",
       "debrief_unavailable_body": "A revisão de voo mais recente está ausente ou não pode ser lida. Volte ao menu para iniciar um novo voo.",
       "guided_idea_before_trials": "Registrada antes dos testes",

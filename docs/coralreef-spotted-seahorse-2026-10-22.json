@@ -1,0 +1,153 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional fish for the species guide, illustrative reef encounters and optional identification activity. The model represents one yellow-to-ochre adult appearance documented in Singapore, not a fixed colour phase or a composite of several seahorse species. New copy is paraphrased from museum, government, specialist and primary-research accounts.",
+  "iucnYearConvention": "Use the actual assessment year, 2012, reported as 16 August 2012 by FishBase's current IUCN 2025-2 export. The IUCN specialist group's current table independently lists Vulnerable and a latest publication year of 2014. Its adjacent 2019 entry means next scheduled reassessment, not a later assessment. The direct IUCN page/PDF was inaccessible, so no successful direct full-assessment access is claimed. Retain the publication year separately.",
+  "specimens": [
+    {
+      "id": "spotted_seahorse",
+      "name": "Spotted seahorse",
+      "scientific": "Hippocampus kuda",
+      "group": "fish",
+      "iucn": "VU",
+      "iucnYear": 2012,
+      "iucnPublishedYear": 2014,
+      "iucnDateAssessed": "2012-08-16",
+      "lookalikes": ["banded_pipefish"],
+      "marks": [
+        "Deep, upright body with a horse-like head and thick tubular snout",
+        "A low, rounded crown bends toward the back of the head",
+        "Armoured body rings bear low rounded bumps rather than long sharp spines",
+        "A long gripping tail can coil around a holdfast and has no tail fin"
+      ],
+      "role": "Small predator of planktonic crustaceans in coastal food webs.",
+      "fact": "The male carries developing young in a brood pouch and releases them as tiny seahorses.",
+      "habitat": "Indo-West Pacific coastal habitats, including Singapore estuaries with seagrass and macroalgae over silty sand. It also occurs around sheltered sandy and reef habitats.",
+      "diet": "Tiny crustaceans and other zooplankton, drawn through the tubular snout by suction.",
+      "behavior": "Often grips vegetation or another support with its prehensile tail. Small dorsal and pectoral fins help it move and steer; it can leave its holdfast to swim.",
+      "observe": "Compare the upright trunk and curled gripping tail with the banded pipefish’s slender body and distinct tail fin. Then inspect the rounded crown and thick snout. Yellow is only one appearance: Singapore adults also occur in greenish brown with dark dots.",
+      "sources": [
+        "dx-nus-spotted_seahorse",
+        "dx-guide-spotted_seahorse",
+        "dx-waikikiguide-spotted_seahorse",
+        "dx-iucnsg-spotted_seahorse",
+        "dx-fishbase-spotted_seahorse",
+        "dx-cas-spotted_seahorse",
+        "dx-camins-spotted_seahorse"
+      ],
+      "claimSupport": {
+        "acceptedName": "The current indexed California Academy of Sciences catalog accepts Hippocampus kuda Bleeker, 1852. Its Singapore type locality and the NUS Singapore observation anchor the chosen representation. The same current catalog accepts H. taeniopterus separately; older broad synonymies and Australian common-seahorse accounts are not merged into this model.",
+        "marks": "The NUS field record supports the rear-turned coronet, thick snout and absence of sharp nose/body spines. The Project Seahorse identification guide supports the low rounded crown, bony rings and prehensile tail without a caudal fin. These are combined teaching marks, not a sufficient field diagnosis among all seahorses.",
+        "roleDiet": "The CMFRI account supports zooplankton suction feeding. The Waikīkī aquarium's primary husbandry observations independently identify crustacean plankton as food; captive prey examples are not treated as a complete wild diet.",
+        "factBehavior": "CMFRI describes the adult male brood pouch. The Waikīkī general seahorse account supports tail attachment, dorsal/pectoral propulsion and miniature young. The illustrated holdfast posture is not a claim of permanent immobility or lifelong exclusive pairing.",
+        "colourStage": "NUS identified adult photographs support yellow through green-brown Singapore appearances, including dark dots. The representative is an unsexed, non-pregnant adult. Neither yellow colour nor dark spots imply a particular sex or life stage, and no juvenile-to-adult colour rule is invented.",
+        "sizeDepth": "The 12 cm nominal display height is an illustrative adult scale. Project Seahorse gives a recorded adult height of 17 cm and CMFRI gives 7–17 cm using a tail-tip-to-coronet convention. FAO separately reports 30 cm stretched total length. Camins et al. Table 5 gives an IUCN interval of 0–55 m and newer iSeahorse observations of 0–45 m; FishBase's broader 0–68 m entry is retained as an explicit disagreement, not silently capped.",
+        "iucn": "The current IUCN specialist-group table lists VU, latest published assessment 2014, next reassessment due 2019. FishBase's current IUCN export reports an assessment date of 16 August 2012. A missed reassessment target is not evidence of a new assessment.",
+        "comparison": "The one-way banded_pipefish link contrasts body orientation, tail function and presence of a caudal fin. Its existing record and references remain unchanged. Both fishes are syngnathids; the teaching comparison does not imply that a pipefish is the nearest seahorse lookalike."
+      },
+      "caution": "Hippocampus kuda has a complicated species-complex history. Older accounts apply the name more broadly than some current museum taxonomies, so the public habitat avoids a disputed country-by-country global list. Colour varies and is not a reliable species key. Do not import Australian H. taeniopterus photographs, long spines of other seahorses, a dorsal mane, ordinary fish scales or a tail fin. The generic seahorse silhouette alone cannot establish H. kuda in the wild. Regional Singapore Red List categories are not the global IUCN category. Posed height and straightened length are different measurements. The 0–55 m source interval is not an experimentally established physiological limit."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-nus-spotted_seahorse",
+      "text": "Yeo, R.K.H. (2013). Spotted seahorses at Changi Beach. Singapore Biodiversity Records 2013: 71–73. National University of Singapore. Published 22 November 2013.",
+      "url": "https://lkcnhm.nus.edu.sg/app/uploads/2017/04/sbr2013-071-073.pdf",
+      "urlLabel": "lkcnhm.nus.edu.sg",
+      "supports": ["Identified Singapore adults, variable colour, snout/coronet/spine characters and local estuarine habitat"],
+      "access": "Full primary museum PDF opened successfully. The contributor and Kelvin K.P. Lim identified the animals. The paper's 4–5 cm measurement is vent-to-coronet body height, not total adult height or stretched length; it is not used as the model's nominal size. Its historical local status is not imported as current global status."
+    },
+    {
+      "id": "dx-guide-spotted_seahorse",
+      "text": "Lourie, S.A., Foster, S.J., Cooper, E.W.T. & Vincent, A.C.J. (2004). A Guide to the Identification of Seahorses. Project Seahorse and TRAFFIC North America. University of British Columbia and World Wildlife Fund. Species account: pp. 64–65; external morphology and biology sections.",
+      "url": "https://projectseahorse.org/wp-content/uploads/2021/06/Seahorse_ID_Guide_2004.pdf",
+      "urlLabel": "projectseahorse.org",
+      "supports": ["Species morphology and adult-height convention; seahorse tail and fin anatomy; limits of simplified identification"],
+      "access": "Full specialist identification guide opened successfully. Morphology remains useful, but its 2004 synonymies, status and broad distribution are not treated as the latest taxonomy or conservation assessment."
+    },
+    {
+      "id": "dx-cmfri-spotted_seahorse",
+      "text": "Ignatius, B. & Joseph, S. (2017). Hippocampus kuda Bleeker, 1852. In: Prioritized Species for Mariculture in India. ICAR–Central Marine Fisheries Research Institute, Kochi, pp. 261–265. ISBN 978-93-82263-14-2.",
+      "url": "https://eprints.cmfri.org.in/14955/",
+      "urlLabel": "eprints.cmfri.org.in",
+      "supports": ["Thick snout and low rounded bumps, zooplankton suction feeding, adult male brood pouch and stated adult-size measurement"],
+      "access": "Official government research repository account and full chapter PDF opened successfully. Captive culture timings, broad older range lists and economic recommendations are not imported into the guide."
+    },
+    {
+      "id": "dx-iucnsg-spotted_seahorse",
+      "text": "IUCN SSC Seahorse, Pipefish & Seadragon Specialist Group. Global IUCN Red List Assessments, copy dated 11 August 2025. Hippocampus kuda: Vulnerable; latest published assessment 2014. Accessed October 2026.",
+      "url": "https://www.iucn-seahorse.org/iucn-global-assessments-1",
+      "urlLabel": "iucn-seahorse.org",
+      "supports": ["Current specialist authority's global Vulnerable category and publication year"],
+      "access": "Full current specialist table and column headings opened successfully. Its 2019 column is next reassessment due, not a completed assessment. The linked direct IUCN account returned an access failure."
+    },
+    {
+      "id": "dx-fishbase-spotted_seahorse",
+      "text": "FishBase. Hippocampus kuda Bleeker, 1852: species 5955 summary and IUCN 2025-2 export. Assessment date: 16 August 2012. Accessed October 2026.",
+      "url": "https://www.fishbase.se/summary/Hippocampus-kuda.html",
+      "urlLabel": "fishbase.se",
+      "supports": ["Actual assessment date, current exported Vulnerable category and broader reported depth interval"],
+      "access": "Detailed current indexed summary read, explicitly labelled IUCN Version 2025-2 (Global), reference 130435. Some full-page variants return only a cookie banner. The reported 0–68 m interval differs from the 0–55 m IUCN interval in primary literature; neither is presented as proof of complete physiological tolerance."
+    },
+    {
+      "id": "dx-cas-spotted_seahorse",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds.). Eschmeyer’s Catalog of Fishes: Hippocampus kuda Bleeker, 1852 and Hippocampus taeniopterus Bleeker, 1852. California Academy of Sciences. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Hippocampus&tbl=species",
+      "urlLabel": "calacademy.org",
+      "supports": ["Current accepted name, Singapore type locality and separate accepted H. taeniopterus treatment"],
+      "access": "Detailed current indexed museum catalog entries read; direct listing returned 403. Current valid status is explicit for both names. Historical citations that synonymize them are retained only as context for the caution."
+    },
+    {
+      "id": "dx-camins-spotted_seahorse",
+      "text": "Camins, E., Stanton, L.M., Correia, M., Foster, S.J., Koldewey, H.J. & Vincent, A.C.J. (2024). Advances in life-history knowledge for 35 seahorse species from community science. Journal of Fish Biology 104(5): 1548–1565. DOI: 10.1111/jfb.15699. Table 5.",
+      "url": "https://onlinelibrary.wiley.com/doi/full/10.1111/jfb.15699",
+      "urlLabel": "onlinelibrary.wiley.com",
+      "supports": ["Explicit comparison of H. kuda IUCN and newer observational depth intervals"],
+      "access": "Full open-access primary article and Table 5 opened successfully. Use its tabulated H. kuda values: IUCN 0–55 m, 293 iSeahorse observations spanning 0–45 m. These observations are not a complete abundance survey or proof of the deepest possible occurrence."
+    },
+    {
+      "id": "dx-fao-spotted_seahorse",
+      "text": "Paulus, T. (1999). Syngnathidae: Pipefishes and seahorses. In: Carpenter, K.E. & Niem, V.H. (eds.), The Living Marine Resources of the Western Central Pacific, Volume 4. FAO, Rome. Hippocampus kuda account, p. 2272.",
+      "url": "https://www.fao.org/4/x2400e/x2400e18.pdf",
+      "urlLabel": "fao.org",
+      "supports": ["Explicit stretched-length convention and older regional depth account"],
+      "access": "Full FAO chapter opened successfully. Its 30 cm maximum is explicitly stretched total length, distinct from posed height. The older approximately 30 m depth statement is recorded as a source difference; its broad species concept is not used to merge Australian forms."
+    },
+    {
+      "id": "dx-waikikiguide-spotted_seahorse",
+      "text": "Waikīkī Aquarium, University of Hawai‘i. Seahorse: animal guide. Accessed October 2026.",
+      "url": "https://www.waikikiaquarium.org/experience/animal-guide/fishes/seahorses-seadragons-and-pipefishes/seahorse/",
+      "urlLabel": "waikikiaquarium.org",
+      "supports": ["General seahorse tail attachment, bony armour, fin movement, crustacean-plankton suction feeding and male brooding"],
+      "access": "Full official aquarium account read. Its general anatomical explanation supports shared seahorse structures and movement; it is not used as a species-level key or a source of exact brood timing."
+    },
+    {
+      "id": "dx-waikiki-spotted_seahorse",
+      "text": "Waikīkī Aquarium, University of Hawai‘i (2008). Seahorse Nursery. Kilo i‘a 167, Autumn 2008, pp. 4–5.",
+      "url": "https://www.waikikiaquarium.org/wp-content/uploads/pdf/kiloia/kiloia_2008_autumn.pdf",
+      "urlLabel": "waikikiaquarium.org",
+      "supports": ["Primary aquarium observations of colour change, male brooding and crustacean-plankton diet"],
+      "access": "Full official aquarium newsletter opened successfully. Its Hawaiian photographs and average length entry are background corroboration, not a substituted Singapore morphology or a posed-height measurement."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.12,
+    "nominalDimension": "Approximate displayed upright height, with the tail curled naturally; not straightened total length",
+    "maximumLengthM": 0.30,
+    "maximumRecordedAdultHeightM": 0.17,
+    "depth": [0, 55],
+    "origin": "base",
+    "habit": "bottom",
+    "zone": "rubbleEdge",
+    "representative": "An unsexed, non-pregnant yellow-to-ochre Singapore adult with restrained dark mottling. This is one documented variable appearance rather than a fixed regional phase, sex marker or colour-based species diagnosis.",
+    "basis": "Nominal 12 cm is an illustrative posed model dimension chosen within the published adult size scale. It is not equated with extended tail-to-coronet height, NUS vent-to-coronet body height, or FAO stretched total length. Registry depth 0–55 m follows the IUCN interval tabulated in primary 2024 research; a broader FishBase 0–68 m record and older FAO approximately 30 m account remain disclosed. Typical sheltered shallow-water placement does not assert that every depth or reef substrate is equally suitable.",
+    "anatomy": "Deep upright ring-armoured trunk; bent neck; thick tubular snout ending in a tiny mouth; mobile eyes; low rounded rear-overhanging coronet; low blunt ring tubercles; small dorsal fin on the back and paired pectoral fins behind the head; long prehensile tail without a caudal fin. A small subordinate illustrative holdfast stem makes the tail's actual fixed contact legible.",
+    "anatomyLimits": "No long body thorns, leaflike appendages, mane, ordinary fish scales or tail fin. Fine ray/ring counts may be simplified and are not a field-identification key. No male pouch or pregnancy state is assigned. Warm colour is pigmentation, not fluorescence or a special spectral-vision claim.",
+    "motion": "Conservative bottom/base placement beside rubble with a rooted holdfast and fixed gripping tail. Gentle dorsal/pectoral fin movement and subtle upper-body motion may suggest water movement while keeping the grip stationary. This illustrative encounter does not imply the species never releases its tail, swims or changes location."
+  },
+  "integration": {
+    "maintainedSource": "Append the specimen and used references without regenerating existing guide records.",
+    "practice": "Identification, inspection and the already-answered recap must not award dive discoveries or persist session-only answers and reflections.",
+    "lookalikeNote": "One-way banded_pipefish link offers a novice comparison of two syngnathid body plans; preserve its existing record exactly.",
+    "identificationLimit": "The model teaches structures and observation. Wild H. kuda identification requires several anatomical characters and locality context, especially given the complex taxonomy and variable colour."
+  }
+}

@@ -52662,6 +52662,15 @@
       "sr_critique_ready": "እቲ ገምጋም ድሉው እዩ።"
     },
     "flightsim": {
+      "guided_inspect_angle": "ናይ ኩርናዕ ንጽጽር መርምር",
+      "guided_inspect_speed": "ናይ ፍጥነት ንጽጽር መርምር",
+      "guided_export_scope": "እቲ ዝለኣኽ ፋይል ናይ ሕጂ ረቂቕካን ቀዳሞት ፈተነታትን የጠቓልል። ምልኣኽ ነቲ ምርምር ኣይዛዝሞን።",
+      "hint_t_stall_negative": "🚨 STALL! ኩርናዕ AoA ኣሉታዊ እዩ፦ ናብ ዜሮ ንምቕራብ ካብ ማእከል ቀስ ኢልካ ንላዕሊ ጎትት። እንተ ኣድልዩ ንሓይሊ ሞተር የማናይ ወሰን ተጠቐም።",
+      "hint_k_stall_negative": "🚨 STALL! ኩርናዕ AoA ኣሉታዊ እዩ፦ ናብ ዜሮ ንምቕራብ W ቀስ ኢልካ ጽቐጥ። እንተ ኣድልዩ ብ Shift ሓይሊ ወስኽ።",
+      "hint_stall_direction_unknown": "🚨 STALL! ኩርናዕ AoA ናብ ዜሮ ኣቕርቦ። ኣንፈቱ ኣይተረኽበን፤ ናይ ዓቐብን ቁልቁልን ትእዛዝ ቅድሚ ምምራጽ መርኣዪ AoA ተዓዘብ።",
+      "announce_stall_warning_negative": "መጠንቀቕታ stall! ኩርናዕ AoA ኣሉታዊ እዩ። ናብ ዜሮ ንምቕራብ ኣፍንጫ ነፋሪት ቀስ ኢልካ ኣልዕል፤ እንተ ኣድልዩ ሓይሊ ወስኽ።",
+      "announce_stall_warning_unknown": "መጠንቀቕታ stall! ኩርናዕ AoA ናብ ዜሮ ኣቕርቦ። ኣንፈቱ ኣይተረኽበን፤ ናይ ዓቐብን ቁልቁልን ትእዛዝ ቅድሚ ምምራጽ መርኣዪ AoA ተዓዘብ።",
+      "hud_stall_warning": "⚠️ STALL — AoA ናብ ዜሮ ኣቕርቦ",
       "debrief_unavailable_title": "ዝተቐመጠ ግምገማ በረራ ኣይርከብን",
       "debrief_unavailable_body": "እቲ ናይ መወዳእታ ግምገማ በረራ የለን ወይ ክንበብ ኣይክእልን። ሓድሽ በረራ ንምጅማር ናብ ዝርዝር ተመለስ።",
       "guided_idea_before_trials": "ቅድሚ እቶም ፈተነታት ዝተመዝገበ",

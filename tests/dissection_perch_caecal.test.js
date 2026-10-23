@@ -124,7 +124,9 @@ describe('registered perch pyloric caeca', () => {
   });
 
   it.each(dimensions)('joins the stomach to the corrected intestinal origin without exposing a fourth pouch at %s by %s', (W, H) => {
-    const g = production('perchCaecalGeometry')(W, H), stomach = actualPath('// J-shaped stomach passes', 'var perchStomachGradient', W, H), cavity = new Context();
+    const caecal = production('perchCaecalGeometry'), g = caecal(W, H), stomach = new Context(), cavity = new Context();
+    const gastric = production('perchGastricGeometry', { perchCaecalGeometry: caecal })(W, H);
+    production('tracePerchGastricRegion')(stomach, gastric.region, W, H);
     production('tracePerchCoelom', { ctx: cavity, W, H, cx: .5 * W, cy: .45 * H })(cavity);
     expect(contains({ x: g.inlet.start.x * W, y: g.inlet.start.y * H }, stomach.shape)).toBe(true);
     expect(g.inlet.curves.at(-1)[2]).toEqual(g.caeca[0].centerline.start);

@@ -13,7 +13,8 @@ async function observeFrogGastricPaint(canvas, anchor = { x: .441, y: .530 }) {
       const stack = new Error().stack || '';
       if (!matrix && stack.includes('traceFrogTorso')) matrix = this.getTransform();
       owner = stack.includes('traceFrogGastricRegion') && stack.includes('drawFrogGastricComplex') ? 'gastric'
-        : stack.includes('traceFrogPancreas') ? 'pancreas' : null;
+        : stack.includes('traceFrogPancreaticRegion') ? 'pancreas'
+        : stack.includes('traceFrogSplenicRegion') ? 'spleen' : null;
       starts = []; curves = []; closed = false;
       return originals.beginPath.call(this);
     };
@@ -61,7 +62,7 @@ async function observeFrogGastricPaint(canvas, anchor = { x: .441, y: .530 }) {
           borders.push({ cubics: curves.length, subpaths: starts.length, closesOutlet: this.isPointInStroke(neck.x, neck.y) });
         }
         if (owner === 'pancreas') overpaints.push({ owner, paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
-        if (curves.length === 3 && (new Error().stack || '').includes('drawEntericBowel')) overpaints.push({ owner: 'ileum', paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
+        if ((new Error().stack || '').includes('drawEntericBowel')) overpaints.push({ owner: 'ileum', paint: 'stroke', containsTarget: this.isPointInStroke(p.x, p.y) });
       }
       return originals.stroke.apply(this, args);
     };

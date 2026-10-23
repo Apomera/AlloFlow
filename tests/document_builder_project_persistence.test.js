@@ -55,7 +55,9 @@ describe('Document Builder project draft loading', () => {
       builderDraft
     });
 
-    MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
+    const owner = MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
+    expect(deps.setHistory).not.toHaveBeenCalled();
+    expect((await owner.completion).success).toBe(true);
 
     expect(deps.setHistory).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'lesson-1', hydrated: true })

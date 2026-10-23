@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "alloflow-bug-digest",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [{ "name": "BUG_DIGEST", "class_name": "BugDigest" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BugDigest"] }],
+  "kv_namespaces": [{ "binding": "BUG_REPORTS", "id": "b8dddf6fa1404c088ab63376255e2620" }],
+  "send_email": [{ "name": "EMAIL", "allowed_sender_addresses": ["alerts@alloflow.dev"] }],
+  "triggers": { "crons": ["0 * * * *"] },
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  // Secrets configured separately: ADMIN_TOKEN, DIGEST_RECIPIENT.
+  // Deploying does not enable sending. POST /admin/setup is required.
+  // No remote bindings: local tests must never send real email.
+}

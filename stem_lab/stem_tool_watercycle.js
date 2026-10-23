@@ -17322,13 +17322,15 @@ const d = labToolData.waterCycle || {};
               source: { value: new THREE.Vector3() },
               sun: skyUniforms.sunDirection,
               footprint: { value: new THREE.Vector2(1, 1) },
-              opacity: { value: 0 }
+              opacity: { value: 0 }, density: { value: 1 }
             };
             cloudShadow.userData.model = 'sun-projected-receiver-shader';
             cloudShadow.userData.sourcePosition = pilotCloudShadowUniforms.source.value;
             cloudShadow.userData.sunDirection = pilotCloudShadowUniforms.sun.value;
             cloudShadow.userData.footprint = pilotCloudShadowUniforms.footprint.value;
             cloudShadow.userData.opacity = pilotCloudShadowUniforms.opacity;
+            cloudShadow.userData.density = pilotCloudShadowUniforms.density;
+            cloudShadow.userData.retirementModel = 'source-optical-depth';
             cloudShadow.userData.sourceForm = 'none';
             cloudShadow.userData.maxProjectionTravel = 560;
             var pilotCloudShadowSource = {active:false,opacity:0,source:new THREE.Vector3(),footprint:new THREE.Vector2(1,1)};
@@ -17351,10 +17353,11 @@ const d = labToolData.waterCycle || {};
                 shader.uniforms.pilotCloudShadowSun = pilotCloudShadowUniforms.sun;
                 shader.uniforms.pilotCloudShadowFootprint = pilotCloudShadowUniforms.footprint;
                 shader.uniforms.pilotCloudShadowOpacity = pilotCloudShadowUniforms.opacity;
+                shader.uniforms.pilotCloudShadowDensity = pilotCloudShadowUniforms.density;
                 shader.vertexShader = 'varying vec3 vPilotCloudShadowWorld;\n' + shader.vertexShader;
                 shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>',
                   '#include <project_vertex>\nvPilotCloudShadowWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-                shader.fragmentShader = 'varying vec3 vPilotCloudShadowWorld;\nuniform vec3 pilotCloudShadowSource;\nuniform vec3 pilotCloudShadowSun;\nuniform vec2 pilotCloudShadowFootprint;\nuniform float pilotCloudShadowOpacity;\n' + shader.fragmentShader;
+                shader.fragmentShader = 'varying vec3 vPilotCloudShadowWorld;\nuniform vec3 pilotCloudShadowSource;\nuniform vec3 pilotCloudShadowSun;\nuniform vec2 pilotCloudShadowFootprint;\nuniform float pilotCloudShadowOpacity;\nuniform float pilotCloudShadowDensity;\n' + shader.fragmentShader;
                 shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
                   'float cloudReceiverDepth = pilotCloudShadowSource.y - vPilotCloudShadowWorld.y;',
                   // The direction points toward the Sun: the footprint travels
@@ -17367,12 +17370,20 @@ const d = labToolData.waterCycle || {};
                   'float cloudShadowShape = 1.0 + 0.06 * sin(cloudShadowAngle * 3.0 + 0.5) + 0.04 * sin(cloudShadowAngle * 5.0 - 1.0);',
                   'float cloudShadowRadius = length(cloudShadowUV) / cloudShadowShape;',
                   'float cloudShadowMask = (1.0 - smoothstep(0.36, 1.10 + cloudPenumbra, cloudShadowRadius)) * (0.87 + 0.13 * sin(cloudShadowUV.x * 2.7 + 0.4) * cos(cloudShadowUV.y * 3.1));',
+                  // As the source cloud thins, its broad penumbra clears before
+                  // its denser centre. Normalize at full density to retain the
+                  // existing formed-cloud shadow without a new texture or pass.
+                  'float cloudShadowDensity = clamp(pilotCloudShadowDensity, 0.0, 1.0);',
+                  'if(cloudShadowDensity < 1.0){',
+                  ' float cloudShadowTransmission = max(1.0 - cloudShadowMask, 0.01);',
+                  ' cloudShadowMask *= (1.0 - pow(cloudShadowTransmission, cloudShadowDensity)) / max(1.0 - cloudShadowTransmission, 0.0001);',
+                  '}',
                   'cloudShadowMask *= step(0.001, cloudReceiverDepth) * step(0.001, pilotCloudShadowSun.y);',
                   'gl_FragColor.rgb *= mix(vec3(1.0), vec3(0.42, 0.52, 0.62), cloudShadowMask * pilotCloudShadowOpacity);',
                   '#include <tonemapping_fragment>'
                 ].join('\n'));
               };
-              material.customProgramCacheKey = function() { return previousShadowCacheKey + '-receiving-cloud-shadow-v1'; };
+              material.customProgramCacheKey = function() { return previousShadowCacheKey + '-receiving-cloud-shadow-v2'; };
               material.needsUpdate = true;
             });
             function clearPilotCloudShadowSource() {
@@ -17390,6 +17401,7 @@ const d = labToolData.waterCycle || {};
             function clearPilotCloudShadow() {
               clearPilotCloudShadowSource();
               pilotCloudShadowUniforms.opacity.value = 0;
+              pilotCloudShadowUniforms.density.value = 1;
               pilotCloudShadowUniforms.source.value.set(0, 0, 0);
               pilotCloudShadowUniforms.footprint.value.set(1, 1);
               cloudShadow.visible = false; cloudShadow.userData.sourceForm = 'none';
@@ -17403,8 +17415,12 @@ const d = labToolData.waterCycle || {};
               if(sourceCloud){
                 pilotCloudShadowUniforms.source.value.copy(pilotCloudShadowSource.source);
                 pilotCloudShadowUniforms.footprint.value.copy(pilotCloudShadowSource.footprint);
-                pilotCloudShadowUniforms.opacity.value=pilotCloudShadowSource.opacity*cloudVeilExit.coverage;
+                // Follow the visible source billows, including an interrupted
+                // assembly, rather than the separate first-person haze envelope.
+                pilotCloudShadowUniforms.opacity.value=pilotCloudShadowSource.opacity*phaseCloudRetirement.coverage;
+                pilotCloudShadowUniforms.density.value=phaseCloudRetirement.coverage;
               }else{
+                pilotCloudShadowUniforms.density.value=1;
                 pilotCloudShadowUniforms.source.value.copy(parcel.position);
                 var shadowStage = selfCloud.userData.assemblyProgress;
                 var shadowHeight = Math.max(0, Math.min(1,
@@ -17852,8 +17868,7 @@ const d = labToolData.waterCycle || {};
               var continuityRain = sim.form === 'rain';
               var onsetFactor = continuityRain ? 1 : 0;
               if (continuityRain && phaseHandoffKind === 'precipitation-release') {
-                var releaseProgress = motionReduced ? 0.5
-                  : Math.max(0, Math.min(1, phaseHandoffElapsed / phaseHandoffDuration));
+                var releaseProgress = phasePresentationProgress(phaseHandoffDuration);
                 var releaseEase = releaseProgress * releaseProgress * (3 - 2 * releaseProgress);
                 onsetFactor = 0.18 + 0.82 * releaseEase;
               }
@@ -19344,14 +19359,16 @@ const d = labToolData.waterCycle || {};
             cloudVeil.userData.lightingModel = 'cool-base-diffuse-top';
             var cloudVeilVisualTime = 0;
             var cloudVeilEntry={active:false,coverage:1,progress:1,fromCoverage:0,retained:false,startedAt:0,duration:0,
-              sourceFogNear:620,sourceFogFar:2300,sourceOpacities:new Float64Array(18),
+              sourceFogNear:620,sourceFogFar:2300,sourceOpacities:new Float64Array(18),sourceDensities:new Float64Array(18),
               sourcePosition:new THREE.Vector3(),targetPosition:new THREE.Vector3()};
             cloudVeil.userData.entry=cloudVeilEntry;
-            var cloudVeilExit = {active:false,coverage:0,startedAt:0,duration:0,sourceFogNear:0,sourceFogFar:0,
+            var cloudVeilExit = {active:false,coverage:0,progress:0,startedAt:0,duration:0,sourceFogNear:0,sourceFogFar:0,
               sourcePosition:new THREE.Vector3(),sourceQuaternion:new THREE.Quaternion(),sourceScale:new THREE.Vector3(1,1,1)};
             var cloudVeilExitOpacities = new Float64Array(18);
+            var cloudVeilExitDensities = new Float64Array(18);
             cloudVeil.userData.exit = cloudVeilExit;
             cloudVeil.userData.exitModel = 'captured-cloud-interior';
+            cloudVeil.userData.transitionDensityModel = 'captured-optical-depth';
             for (var veilIndex = 0; veilIndex < 18; veilIndex++) {
               var veilLayer = veilIndex % 3;
               var veilAngle = Math.floor(veilIndex / 3) * Math.PI / 3 + veilLayer * 0.41;
@@ -19387,7 +19404,8 @@ const d = labToolData.waterCycle || {};
             function clearCloudInteriorEntry(){
               cloudVeilEntry.active=false;cloudVeilEntry.coverage=1;
               cloudVeilEntry.progress=1;cloudVeilEntry.fromCoverage=0;cloudVeilEntry.retained=false;
-              cloudVeilEntry.sourceOpacities.fill(0);cloudVeilEntry.sourcePosition.set(0,0,0);cloudVeilEntry.targetPosition.set(0,0,0);
+              cloudVeilEntry.sourceOpacities.fill(0);cloudVeilEntry.sourceDensities.fill(0);
+              cloudVeilEntry.sourcePosition.set(0,0,0);cloudVeilEntry.targetPosition.set(0,0,0);
               cloudVeilEntry.startedAt=0;cloudVeilEntry.duration=0;
               cloudVeilEntry.sourceFogNear=620;cloudVeilEntry.sourceFogFar=2300;
             }
@@ -19399,10 +19417,12 @@ const d = labToolData.waterCycle || {};
               for(var entryLobe=0;entryLobe<cloudVeil.children.length;entryLobe++){
                 var entrySprite=cloudVeil.children[entryLobe];
                 cloudVeilEntry.sourceOpacities[entryLobe]=cloudVeilEntry.retained?entrySprite.material.opacity:0;
+                cloudVeilEntry.sourceDensities[entryLobe]=cloudVeilEntry.retained?entrySprite.material.userData.cloudLighting.density.value:0;
                 entrySourceTotal+=cloudVeilEntry.sourceOpacities[entryLobe];entryBaseTotal+=entrySprite.userData.baseOpacity;
               }
               cloudVeilEntry.fromCoverage=Math.max(0,Math.min(1,entrySourceTotal/Math.max(.0001,entryBaseTotal)));
-              cloudVeilEntry.active=true;cloudVeilEntry.coverage=cloudVeilEntry.fromCoverage;cloudVeilEntry.progress=0;
+              cloudVeilEntry.active=true;cloudVeilEntry.coverage=cloudVeilEntry.fromCoverage;
+              cloudVeilEntry.progress=motionReduced&&!cloudVeilEntry.retained?.5:0;
               cloudVeil.getWorldPosition(cloudVeilEntry.sourcePosition);
               cloudVeilEntry.startedAt=sim.elapsed;cloudVeilEntry.duration=Math.max(.001,phaseHandoffDuration-.38);
               cloudVeilEntry.sourceFogNear=input.cameraMode==='water'?scene.fog.near:cloudVeilEntry.retained
@@ -19421,20 +19441,25 @@ const d = labToolData.waterCycle || {};
                 cloudVeilEntry.sourceFogNear*(1-exitEntryCoverage)+12*exitEntryCoverage;
               cloudVeilExit.sourceFogFar=input.cameraMode==='water'?scene.fog.far:
                 cloudVeilEntry.sourceFogFar*(1-exitEntryCoverage)+185*exitEntryCoverage;
-              for(var exitLobe=0;exitLobe<cloudVeil.children.length;exitLobe++)
+              for(var exitLobe=0;exitLobe<cloudVeil.children.length;exitLobe++){
                 cloudVeilExitOpacities[exitLobe]=cloudVeil.children[exitLobe].material.opacity;
+                cloudVeilExitDensities[exitLobe]=cloudVeil.children[exitLobe].material.userData.cloudLighting.density.value;
+              }
               cloudVeilExit.active=true;cloudVeilExit.coverage=1;
+              cloudVeilExit.progress=motionReduced?.5:0;
               cloudVeilExit.startedAt=sim.elapsed;cloudVeilExit.duration=0;
             }
             function clearCloudInteriorExit() {
-              cloudVeilExit.active=false;cloudVeilExit.coverage=0;
+              cloudVeilExit.active=false;cloudVeilExit.coverage=0;cloudVeilExit.progress=0;
               cloudVeilExit.startedAt=0;cloudVeilExit.duration=0;
               cloudVeilExit.sourceFogNear=0;cloudVeilExit.sourceFogFar=0;
               cloudVeilExit.sourcePosition.set(0,0,0);cloudVeilExit.sourceQuaternion.set(0,0,0,1);
               cloudVeilExit.sourceScale.setScalar(1);cloudVeil.visible=false;
               for(var clearExitLobe=0;clearExitLobe<cloudVeil.children.length;clearExitLobe++){
                 cloudVeil.children[clearExitLobe].material.opacity=cloudVeil.children[clearExitLobe].userData.baseOpacity;
+                cloudVeil.children[clearExitLobe].material.userData.cloudLighting.density.value=1;
                 cloudVeilExitOpacities[clearExitLobe]=0;
+                cloudVeilExitDensities[clearExitLobe]=0;
               }
             }
             function updateCloudInteriorPresentation(dt) {
@@ -19448,8 +19473,12 @@ const d = labToolData.waterCycle || {};
                   var entryElapsed=Math.max(0,sim.elapsed-cloudVeilEntry.startedAt);
                   if(entryElapsed>=cloudVeilEntry.duration)clearCloudInteriorEntry();
                   else{
-                    var entryProgress=motionReduced?.5:Math.max(0,Math.min(1,entryElapsed/cloudVeilEntry.duration));
-                    cloudVeilEntry.progress=entryProgress*entryProgress*(3-2*entryProgress);
+                    // Reduced motion holds the actual current haze. Only a cue
+                    // born reduced starts at the representative midpoint above.
+                    if(!motionReduced){
+                      var entryProgress=Math.max(0,Math.min(1,entryElapsed/cloudVeilEntry.duration));
+                      cloudVeilEntry.progress=Math.max(cloudVeilEntry.progress,entryProgress*entryProgress*(3-2*entryProgress));
+                    }
                     cloudVeilEntry.coverage=cloudVeilEntry.fromCoverage+(1-cloudVeilEntry.fromCoverage)*cloudVeilEntry.progress;
                     if(cloudVeilEntry.retained)cloudVeil.position.copy(cloudVeilEntry.sourcePosition)
                       .lerp(cloudVeilEntry.targetPosition,cloudVeilEntry.progress);
@@ -19461,9 +19490,11 @@ const d = labToolData.waterCycle || {};
                 // Start at the last shown pose, even when the first release
                 // frame is a learning pause. Fade over this cue's remaining time.
                 if(cloudVeilExit.duration===0)cloudVeilExit.duration=Math.max(.001,phaseHandoffDuration-phaseHandoffElapsed);
-                var exitProgress=motionReduced?.5:Math.max(0,Math.min(1,
-                  (sim.elapsed-cloudVeilExit.startedAt)/cloudVeilExit.duration));
-                cloudVeilExit.coverage=1-exitProgress*exitProgress*(3-2*exitProgress);
+                if(!motionReduced){
+                  var exitProgress=Math.max(0,Math.min(1,(sim.elapsed-cloudVeilExit.startedAt)/cloudVeilExit.duration));
+                  cloudVeilExit.progress=Math.max(cloudVeilExit.progress,exitProgress*exitProgress*(3-2*exitProgress));
+                }
+                cloudVeilExit.coverage=1-cloudVeilExit.progress;
                 cloudVeil.position.copy(cloudVeilExit.sourcePosition);
                 cloudVeil.quaternion.copy(cloudVeilExit.sourceQuaternion);cloudVeil.scale.copy(cloudVeilExit.sourceScale);
               }
@@ -19475,6 +19506,13 @@ const d = labToolData.waterCycle || {};
                   :interiorForm&&cloudVeilEntry.active?cloudVeilEntry.sourceOpacities[presentExitLobe]
                     +(presentLobe.userData.baseOpacity-cloudVeilEntry.sourceOpacities[presentExitLobe])*cloudVeilEntry.progress
                     :presentLobe.userData.baseOpacity*interiorCoverage;
+                // Thin fringes clear before dense cores. Reuse the existing
+                // optical-depth shader and preserve the actual density through
+                // an interrupted entry, exit, or rapid cloud-base recross.
+                presentLobe.material.userData.cloudLighting.density.value=leavingCloud
+                  ?cloudVeilExitDensities[presentExitLobe]*interiorCoverage
+                  :interiorForm&&cloudVeilEntry.active?cloudVeilEntry.sourceDensities[presentExitLobe]
+                    +(1-cloudVeilEntry.sourceDensities[presentExitLobe])*cloudVeilEntry.progress:1;
               }
               cloudVeil.userData.coverage=interiorCoverage;
               canvasEl.dataset.cloudInterior=cloudVeil.visible?'layered':'hidden';
@@ -20174,6 +20212,12 @@ const d = labToolData.waterCycle || {};
             phaseHandoff.visible=false;scene.add(phaseHandoff);
             var phaseHandoffKind='none',phaseHandoffElapsed=0,phaseHandoffTo='';
             var phaseHandoffDuration=1.7,phaseHandoffTarget=null;
+            function phasePresentationProgress(duration){
+              // Keep the actual shown front when motion preferences change.
+              // Elapsed time still owns expiry; normal motion can only advance.
+              var shownProgress=phaseHandoff.userData.progress;
+              return motionReduced?shownProgress:Math.max(shownProgress,Math.min(1,phaseHandoffElapsed/duration));
+            }
             var phaseGhostScale=new THREE.Vector3(1,1,1);
             var phasePreviousPosition=new THREE.Vector3(),phaseOriginOffset=new THREE.Vector3();
             var phaseWaterSourcePosition=new THREE.Vector3(),phaseWaterSourceScale=new THREE.Vector3(1,1,1);
@@ -20319,10 +20363,12 @@ const d = labToolData.waterCycle || {};
               // the source does not dim at the first learning pause.
               if(phaseCloudRetirement.duration===0)
                 phaseCloudRetirement.duration=Math.max(.001,phaseHandoffDuration-phaseHandoffElapsed);
-              var sourceProgress=motionReduced?.5:Math.max(0,Math.min(1,
-                (sim.elapsed-phaseCloudRetirement.startedAt)/phaseCloudRetirement.duration));
-              phaseCloudRetirement.progress=Math.max(phaseCloudRetirement.progress,
-                sourceProgress*sourceProgress*(3-2*sourceProgress));
+              if(!motionReduced){
+                var sourceProgress=Math.max(0,Math.min(1,
+                  (sim.elapsed-phaseCloudRetirement.startedAt)/phaseCloudRetirement.duration));
+                phaseCloudRetirement.progress=Math.max(phaseCloudRetirement.progress,
+                  sourceProgress*sourceProgress*(3-2*sourceProgress));
+              }
               phaseCloudRetirement.coverage=1-phaseCloudRetirement.progress;
             }
             function beginPhaseHandoff(fromForm,toForm) {
@@ -20364,13 +20410,15 @@ const d = labToolData.waterCycle || {};
               if(phaseHandoffKind==='none')return;
               if(collectingRain)phaseCollectionReceiver.set(px,0,pz);
               phaseHandoffTo=toForm;phaseHandoffElapsed=collectingRain?.08:.38;
+              phaseHandoff.userData.progress=motionReduced?.5:phaseHandoffElapsed/(collectingRain?.85:phaseHandoffDuration);
               phaseWaterGhost.visible=fromForm==='liquid'||fromForm==='transpiring'||fromForm==='rain'||fromForm==='droplet';
               phaseVaporGhost.visible=fromForm==='vapor';phaseIceGhost.visible=fromForm==='ice'||refreezingWater;
               phaseCloudGhost.visible=fromForm==='cloud';
               if(phaseCloudGhost.visible){
                 phaseCloudGhost.userData.sourceSnapshot=true;
                 phaseCloudGhost.quaternion.copy(phaseCloudSourceQuaternion);
-                phaseCloudRetirement.active=true;phaseCloudRetirement.coverage=1;
+                phaseCloudRetirement.active=true;phaseCloudRetirement.progress=motionReduced?.5:0;
+                phaseCloudRetirement.coverage=1-phaseCloudRetirement.progress;
                 phaseCloudRetirement.startedAt=sim.elapsed;
               }
               phaseWaterGhost.geometry=fromForm==='rain'?rainMesh.geometry:fromForm==='droplet'?dropletMesh.geometry:liquidMesh.geometry;
@@ -20417,7 +20465,7 @@ const d = labToolData.waterCycle || {};
               if(!input.paused&&!document.hidden)phaseHandoffElapsed+=dt;
               var phaseDuration=phaseHandoffKind==='collection'?.85:phaseHandoffDuration;
               if(phaseHandoffElapsed>=phaseDuration){clearPhaseHandoff();return;}
-              var phaseProgress=motionReduced ? .5 : Math.min(1,phaseHandoffElapsed/phaseDuration);
+              var phaseProgress=phasePresentationProgress(phaseDuration);
               var phaseEase=phaseProgress*phaseProgress*(3-2*phaseProgress);
               var phaseFade=1-phaseEase;
               var phaseAssembly=phaseHandoffKind==='cloud-assembly';
@@ -22298,7 +22346,10 @@ const d = labToolData.waterCycle || {};
 
               if (f === 'liquid') {
                 liquidMesh.material.color.setHex(0x22d3ee);
-                var pulse = motionReduced ? 1 : 1 + Math.sin(t * 3.4) * 0.05 * sim.energy;
+                // Hold the last liquid pulse, including the incoming collection
+                // target. A fresh reduced-motion liquid still starts unpulsed.
+                var pulse = motionReduced ? (lastForm==='liquid'?phaseLiquidRestScale:1)
+                  : 1 + Math.sin(t * 3.4) * 0.05 * sim.energy;
                 liquidMesh.scale.setScalar(pulse);
                 phaseLiquidRestScale=pulse;
               } else if (f === 'soil' || f === 'groundwater') {
@@ -22846,7 +22897,7 @@ const d = labToolData.waterCycle || {};
                 // otherwise puts the eye inside the outgoing billows.
                 var framingPrecipitationRelease=(f==='rain'||f==='snow')&&(phaseHandoffKind==='precipitation-release'||lastForm==='cloud');
                 if(!userZoom&&framingPrecipitationRelease){
-                  var releaseFramingProgress=motionReduced?.5:lastForm==='cloud'?.38/phaseHandoffDuration:Math.min(1,phaseHandoffElapsed/phaseHandoffDuration);
+                  var releaseFramingProgress=lastForm==='cloud'?(motionReduced?.5:.38/phaseHandoffDuration):phasePresentationProgress(phaseHandoffDuration);
                   var releaseFramingEase=releaseFramingProgress*releaseFramingProgress*(3-2*releaseFramingProgress);
                   wantDist+=(formCamDist('cloud')-wantDist)*(1-releaseFramingEase);
                 }

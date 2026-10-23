@@ -44,10 +44,17 @@ function localOutline(id, index, side, legacy) {
       x*.50*reach,.075,.28*sweep,x*.04,.02,.44*sweep,
       x*.04,.02,.44*sweep,x*.04,.02,-.46*sweep];
   }
+  // Independent five-point perimeter oracle: omit both raised interior stations.
   const result = [];
-  for (let pin = 0; pin < 5; pin++) {
-    const x = (.10+pin*.072)*reach, z = (.08+pin*.013)*sweep;
-    result.push(x,.075,z,x+(.06+pin*.038)*reach,.083,z+(.47-pin*.041)*sweep);
+  for (let feather = 0; feather < 5; feather++) {
+    const x = (.10 + feather * .072) * reach, z = (.08 + feather * .013) * sweep;
+    const length = (.47 - feather * .041) * sweep, spread = (.06 + feather * .038) * reach;
+    const half = .047 * reach;
+    const rim = [[x - half, .048, z], [x + half, .048, z],
+      [x + spread + half * .60, .075, z + length * .82],
+      [x + spread, .065, z + length],
+      [x + spread - half * .60, .075, z + length * .82]];
+    for (let edge = 0; edge < rim.length; edge++) result.push(...rim[edge], ...rim[(edge + 1) % rim.length]);
   }
   return result;
 }
@@ -63,10 +70,31 @@ function assertBuffer(f, id, side) {
   for (let index = 0; index < 4; index++) {
     const node = index === 1 ? f.bird.userData.wings[side] : index === 2 ? f.bird.userData.primaries[side] : f.bird;
     const outline = localOutline(id, index, side, legacy), start = offset;
-    for (let coordinate = 0; coordinate < outline.length; coordinate += 3) {
-      const expected = new THREE.Vector3().fromArray(outline, coordinate).applyMatrix4(node.matrixWorld);
-      const actual = new THREE.Vector3().fromBufferAttribute(output, offset / 3);
-      expect(actual.distanceTo(expected)).toBeLessThan(.000002); offset += 3;
+    if (index === 2) {
+      // Triangle traversal order and edge direction do not change a contour.
+      // Match every independently specified perimeter segment exactly once.
+      const remaining = [];
+      for (let coordinate = 0; coordinate < outline.length; coordinate += 6) {
+        remaining.push([new THREE.Vector3().fromBufferAttribute(output, (offset + coordinate) / 3),
+          new THREE.Vector3().fromBufferAttribute(output, (offset + coordinate) / 3 + 1)]);
+      }
+      for (let coordinate = 0; coordinate < outline.length; coordinate += 6) {
+        const a = new THREE.Vector3().fromArray(outline, coordinate).applyMatrix4(node.matrixWorld);
+        const b = new THREE.Vector3().fromArray(outline, coordinate + 3).applyMatrix4(node.matrixWorld);
+        const match = remaining.findIndex(([x, y]) =>
+          (x.distanceTo(a) < .000002 && y.distanceTo(b) < .000002) ||
+          (x.distanceTo(b) < .000002 && y.distanceTo(a) < .000002));
+        expect(match, 'Independent primary perimeter edge ' + coordinate / 6).toBeGreaterThanOrEqual(0);
+        remaining.splice(match, 1);
+      }
+      expect(remaining).toEqual([]);
+      offset += outline.length;
+    } else {
+      for (let coordinate = 0; coordinate < outline.length; coordinate += 3) {
+        const expected = new THREE.Vector3().fromArray(outline, coordinate).applyMatrix4(node.matrixWorld);
+        const actual = new THREE.Vector3().fromBufferAttribute(output, offset / 3);
+        expect(actual.distanceTo(expected)).toBeLessThan(.000002); offset += 3;
+      }
     }
     const leader = new THREE.Vector3().fromBufferAttribute(output, offset / 3);
     expect(leader.distanceTo(localPoint(id,index,side,legacy).applyMatrix4(node.matrixWorld))).toBeLessThan(.000002);

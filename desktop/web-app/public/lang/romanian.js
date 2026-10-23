@@ -54702,6 +54702,15 @@
       "sr_critique_ready": "Critica este gata."
     },
     "flightsim": {
+      "guided_inspect_angle": "Examinează comparația unghiurilor",
+      "guided_inspect_speed": "Examinează comparația vitezelor",
+      "guided_export_scope": "Exportul include ciorna actuală și încercările anterioare. Exportarea nu încheie investigația.",
+      "hint_t_stall_negative": "🚨 ANGAJARE! Unghiul de atac este negativ: glisează ușor în SUS din centru pentru a-l apropia de zero. Folosește marginea dreaptă pentru putere, după nevoie.",
+      "hint_k_stall_negative": "🚨 ANGAJARE! Unghiul de atac este negativ: apasă ușor W pentru a-l apropia de zero. Adaugă putere cu Shift, după nevoie.",
+      "hint_stall_direction_unknown": "🚨 ANGAJARE! Adu unghiul de atac spre zero. Direcția sa nu este disponibilă; verifică indicatorul AoA înainte de a alege o mișcare de tangaj.",
+      "announce_stall_warning_negative": "Avertizare de angajare! Unghiul de atac este negativ. Ridică ușor botul pentru a-l apropia de zero; adaugă putere după nevoie.",
+      "announce_stall_warning_unknown": "Avertizare de angajare! Adu unghiul de atac spre zero. Direcția sa nu este disponibilă; verifică indicatorul AoA înainte de a alege o mișcare de tangaj.",
+      "hud_stall_warning": "⚠️ ANGAJARE — ADU AoA SPRE ZERO",
       "debrief_unavailable_title": "Analiza de zbor salvată nu este disponibilă",
       "debrief_unavailable_body": "Cea mai recentă analiză de zbor lipsește sau nu poate fi citită. Revino la meniu pentru a începe un zbor nou.",
       "guided_idea_before_trials": "Notată înainte de încercări",

@@ -242,7 +242,7 @@ async function mountCruise() {
   await act(async () => launch.click());
   cockpit = host.querySelector('canvas[role="application"]');
   expect(cockpit).toBeTruthy();
-  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600 });
+  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600, right: 1100, bottom: 650 });
   cockpit.focus();
   const aircraft = configure();
   // An integer indicated speed makes rounded B capture an exact equilibrium.

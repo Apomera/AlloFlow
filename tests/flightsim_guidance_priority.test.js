@@ -116,7 +116,9 @@ describe('production cockpit guidance priority', () => {
     hooks().timeRef.current = cueTime + 2.3;
     await frame();
     expect(texts).not.toContain('POSITIVE RATE');
-    expect(briefTitles()).toEqual(['Liftoff']);
+    // The narrow projected flight cues still own this slot after coaching
+    // expires. The larger clear view can show the original, unqueued title.
+    expect(briefTitles()).toEqual(W < 600 ? [] : ['Liftoff']);
     expect(hooks().flightRef.current._callouts.climb).toBe(cueTime);
 
     await clickLabel('Expand the flight deck controls');
@@ -257,7 +259,7 @@ describe('aircraft-appropriate flare coaching', () => {
   it('lets stall recovery own the guidance instead of also asking for nose-up flare input', async () => {
     await mountFlight(); hooks().timeRef.current = 10;
     await frame(final({ stalling: true, aoa: 20 }), input({ pitch: 20 }));
-    expect(texts).toContain('⚠️ STALL — REDUCE ANGLE OF ATTACK');
+    expect(texts).toContain('⚠️ STALL — BRING AoA TOWARD ZERO');
     expect(texts.join(' ')).toContain('Push S to lower nose');
     expect(flareLabels()).toEqual([]);
   });

@@ -144,7 +144,7 @@ describe('Migration species framing and identified anatomy', () => {
       expect(marker.children.map(part => part.geometry)).toEqual(pooledGeometry[index]);
       expect(marker.quaternion.angleTo(camera.quaternion)).toBeCloseTo(0, 6);
     });
-    expect(engine.anatomyOverlay.geometry.drawRange.count).toBe(90);
+    expect(engine.anatomyOverlay.geometry.drawRange.count).toBe(130);
   });
 
   it('keeps phone marker centers clear of the scene controls and route overlay', () => {
@@ -184,7 +184,7 @@ describe('Migration species framing and identified anatomy', () => {
       expect(engine.anatomyMarkers.children.map(marker => marker.userData.focused)).toEqual(ids.map((_, i) => i === index));
       expect(engine.anatomyMarkers.children.map(marker => marker.children[3].visible)).toEqual(ids.map((_, i) => i === index));
       expect(engine.anatomyMarkers.children.every(marker => marker.visible)).toBe(true);
-      expect(engine.anatomyOverlay.geometry.drawRange.count).toBe(90);
+      expect(engine.anatomyOverlay.geometry.drawRange.count).toBe(130);
       expect(engine.anatomyMarkers.children.map(marker => marker.children[3].geometry)).toEqual(geometry);
     }
     engine.updateAnatomy(false, 0, 'tail');

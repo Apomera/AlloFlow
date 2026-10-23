@@ -58478,6 +58478,15 @@
       "sr_critique_ready": "Kritik la pare."
     },
     "flightsim": {
+      "guided_inspect_angle": "Egzamine konparezon ang yo",
+      "guided_inspect_speed": "Egzamine konparezon vitès yo",
+      "guided_export_scope": "Ekspòtasyon an gen bouyon aktyèl ou ak tantativ anvan yo. Ekspòte pa fini ankèt la.",
+      "hint_t_stall_negative": "🚨 DEKWOCHAJ! Ang atak la negatif: glise dousman ANLÈ depi mitan an pou mennen li pi pre zewo. Sèvi ak bò dwat la pou pouvwa si sa nesesè.",
+      "hint_k_stall_negative": "🚨 DEKWOCHAJ! Ang atak la negatif: peze W dousman pou mennen li pi pre zewo. Ajoute pouvwa ak Shift si sa nesesè.",
+      "hint_stall_direction_unknown": "🚨 DEKWOCHAJ! Mennen ang atak la pi pre zewo. Direksyon li pa disponib; gade endikatè AoA a anvan ou chwazi yon mouvman pou nen avyon an.",
+      "announce_stall_warning_negative": "Avètisman dekwochaj! Ang atak la negatif. Leve nen avyon an dousman pou mennen li pi pre zewo; ajoute pouvwa si sa nesesè.",
+      "announce_stall_warning_unknown": "Avètisman dekwochaj! Mennen ang atak la pi pre zewo. Direksyon li pa disponib; gade endikatè AoA a anvan ou chwazi yon mouvman pou nen avyon an.",
+      "hud_stall_warning": "⚠️ DEKWOCHAJ — MENNEN AoA BÒ ZEWO",
       "debrief_unavailable_title": "Revizyon vòl ki anrejistre a pa disponib",
       "debrief_unavailable_body": "Revizyon vòl ki pi resan an manke oswa li pa ka li. Retounen nan meni an pou kòmanse yon nouvo vòl.",
       "guided_idea_before_trials": "Anrejistre anvan esè yo",

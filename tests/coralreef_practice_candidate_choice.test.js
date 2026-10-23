@@ -20,6 +20,13 @@ afterEach(async () => {
 async function click(el) { expect(el, 'control exists').toBeTruthy(); await React.act(async () => { el.focus(); el.click(); await Promise.resolve(); }); }
 const q = (t, selector) => t.host.querySelector(selector);
 const choose = (t, id) => q(t, '[data-practice-candidate-choose="' + id + '"]');
+async function openComparison(t) {
+  await click(q(t, '[data-practice-compare-toggle]'));
+  const heading = q(t, '[data-practice-comparison-heading]');
+  expect(document.activeElement).toBe(heading);
+  expect(scroll.mock.contexts).toEqual([heading]);
+  scroll.mockClear();
+}
 async function mount(reduceMotion = false, mode = 'picture') {
   let data = { coralReef: { section: 'guide', speciesBookmarks: { clownfish: true }, speciesFieldNotes: { clownfish: 'Keep this note' }, speciesLog: { green_turtle: { firstSeen: 1 } } } };
   const host = document.createElement('div'); document.body.appendChild(host);
@@ -36,7 +43,7 @@ async function mount(reduceMotion = false, mode = 'picture') {
 
 describe('choosing from candidate evidence', () => {
   it('keeps all unanswered alternatives equal and preserves candidate order and marks', async () => {
-    const t = await mount(); await click(q(t, '[data-practice-compare-toggle]'));
+    const t = await mount(); await openComparison(t);
     const ids = [...t.host.querySelectorAll('[data-practice-choice]')].map(el => el.dataset.practiceChoice);
     const cards = [...t.host.querySelectorAll('[data-practice-candidate]')];
     expect(cards.map(el => el.dataset.practiceCandidate)).toEqual(ids);
@@ -54,7 +61,7 @@ describe('choosing from candidate evidence', () => {
 
   it.each([[false, false, 'smooth'], [true, false, 'auto'], [false, true, 'auto']])('reveals existing feedback only after direct choice with host reduce=%s system reduce=%s', async (hostReduce, systemReduce, behavior) => {
     const t = await mount(hostReduce, systemReduce ? 'marks' : 'picture'); window.matchMedia.mockReturnValue({ matches: systemReduce });
-    await click(q(t, '[data-practice-compare-toggle]')); await click(choose(t, 'clownfish'));
+    await openComparison(t); await click(choose(t, 'clownfish'));
     const feedback = q(t, '[data-practice-feedback]');
     expect(feedback.textContent).toContain('Yes, ' + TX.clownfish.name);
     expect(document.activeElement).toBe(feedback);
@@ -67,7 +74,7 @@ describe('choosing from candidate evidence', () => {
   });
 
   it('locks the first decision, keeps contrast learning and profile return, and starts retries without old choice focus', async () => {
-    const t = await mount(); await click(q(t, '[data-practice-compare-toggle]'));
+    const t = await mount(); await openComparison(t);
     const wrong = [...t.host.querySelectorAll('[data-practice-candidate-choose]')].find(el => el.dataset.practiceCandidateChoose !== 'clownfish'), wrongId = wrong.dataset.practiceCandidateChoose;
     const correct = choose(t, 'clownfish');
     await React.act(async () => { wrong.click(); correct.click(); wrong.click(); });
@@ -84,7 +91,7 @@ describe('choosing from candidate evidence', () => {
     await click(q(t, '[data-practice-next]')); await click(q(t, '[data-practice-review-guess]>summary'));
     expect(q(t, '[data-practice-candidate-choose]')).toBeNull();
     expect(t.data.speciesPractice).toMatchObject({ rounds: 1, answered: 1, correct: 0, last: { hinted: 1, missedIds: ['clownfish'] } });
-    await click(q(t, '[data-practice-second-look]')); scroll.mockClear(); await click(q(t, '[data-practice-compare-toggle]'));
+    await click(q(t, '[data-practice-second-look]')); scroll.mockClear(); await openComparison(t);
     expect(choose(t, wrongId)).toBeTruthy(); expect(q(t, '[data-candidate-result]')).toBeNull(); expect(q(t, '[data-practice-contrast-reminder]')).toBeNull();
     await click(choose(t, 'clownfish')); expect(document.activeElement).toBe(q(t, '[data-practice-feedback]'));
     expect(scroll.mock.contexts).toEqual([q(t, '[data-practice-feedback]')]); await click(q(t, '[data-practice-next]'));
@@ -95,11 +102,11 @@ describe('choosing from candidate evidence', () => {
   });
 
   it('does not change ordinary answer-button or reveal focus behavior', async () => {
-    const t = await mount(); await click(q(t, '[data-practice-compare-toggle]'));
+    const t = await mount(); await openComparison(t);
     const main = q(t, '[data-practice-choice="clownfish"]'); await click(main);
     expect(document.activeElement).toBe(main); expect(scroll).not.toHaveBeenCalled(); expect(q(t, '[data-practice-candidate-choose]')).toBeNull();
     await click(q(t, '[data-practice-next]')); await click([...t.host.querySelectorAll('button')].find(el => el.textContent === 'Meet another collection'));
-    scroll.mockClear(); await click(q(t, '[data-practice-compare-toggle]')); await click(q(t, '[data-practice-skip]'));
+    scroll.mockClear(); await openComparison(t); await click(q(t, '[data-practice-skip]'));
     expect(document.activeElement).toBe(q(t, '[data-practice-feedback]')); expect(scroll).not.toHaveBeenCalled(); expect(q(t, '[data-practice-candidate-choose]')).toBeNull();
   });
 });

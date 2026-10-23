@@ -54728,6 +54728,15 @@
       "sr_critique_ready": "Uhakiki uko tayari."
     },
     "flightsim": {
+      "guided_inspect_angle": "Chunguza ulinganisho wa pembe",
+      "guided_inspect_speed": "Chunguza ulinganisho wa kasi",
+      "guided_export_scope": "Uhamishaji unajumuisha rasimu yako ya sasa na majaribio ya awali. Kuhamisha hakukamilishi uchunguzi.",
+      "hint_t_stall_negative": "🚨 STALL! Pembe ya mashambulizi ni hasi: buruta kwa upole JUU kutoka katikati ili kuisogeza karibu na sifuri. Tumia ukingo wa kulia kwa nguvu ya injini inapohitajika.",
+      "hint_k_stall_negative": "🚨 STALL! Pembe ya mashambulizi ni hasi: bonyeza W kwa upole ili kuisogeza karibu na sifuri. Ongeza nguvu kwa Shift inapohitajika.",
+      "hint_stall_direction_unknown": "🚨 STALL! Sogeza pembe ya mashambulizi karibu na sifuri. Mwelekeo wake haupatikani; angalia kipimo cha AoA kabla ya kuchagua mwendo wa pua ya ndege.",
+      "announce_stall_warning_negative": "Onyo la stall! Pembe ya mashambulizi ni hasi. Inua pua ya ndege kwa upole ili kuisogeza karibu na sifuri; ongeza nguvu inapohitajika.",
+      "announce_stall_warning_unknown": "Onyo la stall! Sogeza pembe ya mashambulizi karibu na sifuri. Mwelekeo wake haupatikani; angalia kipimo cha AoA kabla ya kuchagua mwendo wa pua ya ndege.",
+      "hud_stall_warning": "⚠️ STALL — SOGEZA AoA KARIBU NA SIFURI",
       "debrief_unavailable_title": "Mapitio ya safari ya ndege yaliyohifadhiwa hayapatikani",
       "debrief_unavailable_body": "Mapitio ya hivi karibuni ya safari ya ndege hayapo au hayawezi kusomwa. Rudi kwenye menyu ili kuanza safari mpya.",
       "guided_idea_before_trials": "Liliandikwa kabla ya majaribio",

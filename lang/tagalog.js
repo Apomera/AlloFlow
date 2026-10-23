@@ -54705,6 +54705,15 @@
       "sr_critique_ready": "Handa na ang puna."
     },
     "flightsim": {
+      "guided_inspect_angle": "Suriin ang paghahambing ng mga anggulo",
+      "guided_inspect_speed": "Suriin ang paghahambing ng mga bilis",
+      "guided_export_scope": "Kasama sa pag-export ang kasalukuyan mong draft at mga naunang pagsubok. Hindi tinatapos ng pag-export ang pagsisiyasat.",
+      "hint_t_stall_negative": "🚨 STALL! Negatibo ang AoA: marahang mag-drag PATAAS mula sa gitna upang ilapit ito sa zero. Gamitin ang kanang gilid para sa lakas ng makina kung kailangan.",
+      "hint_k_stall_negative": "🚨 STALL! Negatibo ang AoA: marahang pindutin ang W upang ilapit ito sa zero. Magdagdag ng lakas gamit ang Shift kung kailangan.",
+      "hint_stall_direction_unknown": "🚨 STALL! Ilapit ang anggulo ng atake sa zero. Hindi available ang direksiyon nito; tingnan ang AoA bago pumili ng galaw ng pitch.",
+      "announce_stall_warning_negative": "Babala ng stall! Negatibo ang anggulo ng atake. Marahang itaas ang ilong upang ilapit ito sa zero; magdagdag ng lakas kung kailangan.",
+      "announce_stall_warning_unknown": "Babala ng stall! Ilapit ang anggulo ng atake sa zero. Hindi available ang direksiyon nito; tingnan ang AoA bago pumili ng galaw ng pitch.",
+      "hud_stall_warning": "⚠️ STALL — ILAPIT ANG AoA SA ZERO",
       "debrief_unavailable_title": "Hindi magamit ang naka-save na pagsusuri ng paglipad",
       "debrief_unavailable_body": "Nawawala o hindi mabasa ang pinakabagong pagsusuri ng paglipad. Bumalik sa menu upang magsimula ng bagong paglipad.",
       "guided_idea_before_trials": "Naitala bago ang mga pagsubok",

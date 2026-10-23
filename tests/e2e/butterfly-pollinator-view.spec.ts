@@ -145,6 +145,17 @@ test('watching brings a real flower visitor close without flying, and pause free
  expect(milkweed.detailedFlowers.reduce((count,head)=>count+head.count,0)).toBe(3);
  await expect(stage).toHaveAttribute('data-bf-motion-paused','true');
  await stage.screenshot({path:shots+'/golden-hour-milkweed.png'});
+ const corona=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  let flower:any;scene.traverseVisible((object:any)=>{if(!flower&&object.parent?.name==='watched-flower-detail'&&object.geometry?.name==='milkweed-flower-umbel-close-detail')flower=object;});
+  if(!flower)throw new Error('No promoted milkweed flower to inspect');
+  const matrix=new T.Matrix4();flower.getMatrixAt(0,matrix);matrix.premultiply(flower.matrixWorld);
+  const box=new T.Box3().setFromBufferAttribute(flower.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600);
+  camera.position.copy(center).add(new T.Vector3(.75,.65,1.1).multiplyScalar(span*2.2));camera.lookAt(center);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ });
+ writeFileSync(shots+'/milkweed-corona-detail.png',Buffer.from(corona,'base64'));
  const speciesButtons=page.getByRole('group',{name:'Butterfly species',exact:true});
  const speciesCoverage:Record<string,Awaited<ReturnType<typeof coverageSample>>>={};
  for(const species of [
@@ -207,12 +218,15 @@ test('watching brings a real flower visitor close without flying, and pause free
  await expect(stage).toHaveAttribute('data-bf-motion-paused','true');
  expect(await stage.getAttribute('data-bf-meadow-clock')).toBe(stoppedClock);
  await stage.screenshot({path:shots+'/daylight-wide-meadow.png'});
+ expect(await page.evaluate(()=>{
+  const w=window as any;return w.__pollinatorScene.fog.far<w.__pollinatorCamera.far;
+ })).toBe(true);
  const coverage={goldenHour:goldenCoverage,species:speciesCoverage,daylightWide:await coverageSample(page)};
  writeFileSync(shots+'/webgl-sampling.json',JSON.stringify(coverage,null,2));
  await test.info().attach('webgl-sampling',{body:JSON.stringify(coverage,null,2),contentType:'application/json'});
  // Inspect the existing woodland shader at a useful scale without allocating
  // another WebGL context or changing any application/learner state.
- const captureWoodlandImage=()=>page.evaluate(()=>{
+ const captureWoodlandImage=(floor=false)=>page.evaluate((floor)=>{
   const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,originalCamera=w.__pollinatorCamera;
   let crown:any;scene.traverseVisible((object:any)=>{if(!crown&&object.geometry?.name==='woodland-branch-leaf-sprays')crown=object;});
   if(!crown)throw new Error('No rendered woodland crown to inspect');
@@ -221,7 +235,12 @@ test('watching brings a real flower visitor close without flying, and pause free
   matrix.premultiply(crown.matrixWorld);
   const box=new T.Box3().setFromBufferAttribute(crown.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
   const camera=new T.PerspectiveCamera(36,originalCamera.aspect,.1,600);
-  camera.position.copy(center).add(new T.Vector3(span*.8,span*.12,span*1.25));camera.lookAt(center);camera.updateMatrixWorld(true);
+  if(floor){
+   const sun=scene.getObjectByName('meadow-sun'),target=new T.Vector3().setFromMatrixPosition(matrix);
+   target.y=.04;target.x-=sun.position.x/sun.position.y*box.max.y*.38;target.z-=sun.position.z/sun.position.y*box.max.y*.38;
+   camera.position.copy(target).add(new T.Vector3(span*.55,span*.9,span*.85));camera.lookAt(target);
+  }else{camera.position.copy(center).add(new T.Vector3(span*.8,span*.12,span*1.25));camera.lookAt(center);}
+  camera.updateMatrixWorld(true);
   renderer.render(scene,camera);
   // An off-center woodland view used to cut the sky at the far plane,
   // exposing the plain background as a large pale polygon above the trees.
@@ -231,10 +250,67 @@ test('watching brings a real flower visitor close without flying, and pause free
   const png=renderer.domElement.toDataURL('image/png').split(',')[1];
   renderer.render(scene,originalCamera);
   return png;
- });
+ },floor);
  writeFileSync(shots+'/woodland-surface-detail.png',Buffer.from(await captureWoodlandImage(),'base64'));
+ writeFileSync(shots+'/woodland-floor-daylight.png',Buffer.from(await captureWoodlandImage(true),'base64'));
+ const captureBeeImage=()=>page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,originalCamera=w.__pollinatorCamera;
+  const bee=scene.getObjectByName('meadow-bumblebee');
+  if(!bee?.visible)throw new Error('No meadow bee to inspect');
+  const box=new T.Box3().setFromObject(bee),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,originalCamera.aspect,.01,600),offset=new T.Vector3(.65,.45,-.7).multiplyScalar(span*2.4).applyQuaternion(bee.getWorldQuaternion(new T.Quaternion()));
+  camera.position.copy(center).add(offset);camera.lookAt(center);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);
+  const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,originalCamera);return png;
+ });
+ writeFileSync(shots+'/meadow-bee-daylight-detail.png',Buffer.from(await captureBeeImage(),'base64'));
+ const seedhead=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  let seed:any;scene.traverseVisible((object:any)=>{if(!seed&&object.geometry?.name==='meadow-grass-seed-spike')seed=object;});
+  if(!seed)throw new Error('No rendered meadow seed head to inspect');
+  const matrix=new T.Matrix4();if(seed.isInstancedMesh)seed.getMatrixAt(0,matrix);matrix.premultiply(seed.matrixWorld);
+  const box=new T.Box3().setFromBufferAttribute(seed.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600);
+  camera.position.copy(center).add(new T.Vector3(1.,.35,1.1).multiplyScalar(span*2.4));camera.lookAt(center);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ });
+ writeFileSync(shots+'/meadow-seedhead-detail.png',Buffer.from(seedhead,'base64'));
+ const corollas=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  let flower:any,matrix:any,distance=Infinity;const candidate=new T.Matrix4(),point=new T.Vector3();
+  scene.traverseVisible((object:any)=>{
+   if(object.geometry?.name!=='bergamot-tubular-flower-head')return;
+   for(let i=0;i<(object.isInstancedMesh?object.count:1);i++){
+    if(object.isInstancedMesh)object.getMatrixAt(i,candidate);else candidate.identity();candidate.premultiply(object.matrixWorld);
+    if(candidate.elements[0]**2+candidate.elements[1]**2+candidate.elements[2]**2<.01)continue;
+    const d=point.setFromMatrixPosition(candidate).distanceTo(original.position);if(d<distance){distance=d;flower=object;matrix=candidate.clone();}
+   }
+  });
+  if(!flower)throw new Error('No rendered bergamot flower to inspect');
+  const box=new T.Box3().setFromBufferAttribute(flower.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600);
+  camera.position.copy(center).add(new T.Vector3(.75,.45,1.1).multiplyScalar(span*1.8));camera.lookAt(center);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ });
+ writeFileSync(shots+'/bergamot-tube-detail.png',Buffer.from(corollas,'base64'));
+ const leaf=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  let blade:any,matrix:any;const candidate=new T.Matrix4(),color=new T.Color();
+  scene.traverseVisible((object:any)=>{
+   if(blade||object.geometry?.name!=='habitat-leaf-blade'||!object.isInstancedMesh||!object.instanceColor)return;
+   for(let i=0;i<object.count;i++){object.getColorAt(i,color);if(color.r>1.06){object.getMatrixAt(i,candidate);matrix=candidate.clone().premultiply(object.matrixWorld);blade=object;break;}}
+  });
+  if(!blade)throw new Error('No rendered mature lower leaf to inspect');
+  const box=new T.Box3().setFromBufferAttribute(blade.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600),offset=new T.Vector3(.15,1.1,.95).transformDirection(matrix).multiplyScalar(span*2.);
+  camera.position.copy(center).add(offset);camera.lookAt(center);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ });
+ writeFileSync(shots+'/meadow-leaf-detail.png',Buffer.from(leaf,'base64'));
  await lighting.getByRole('button',{name:'Golden hour',exact:true}).click();
  writeFileSync(shots+'/woodland-golden-hour-detail.png',Buffer.from(await captureWoodlandImage(),'base64'));
+ writeFileSync(shots+'/woodland-floor-golden-hour.png',Buffer.from(await captureWoodlandImage(true),'base64'));
+ writeFileSync(shots+'/meadow-bee-golden-hour-detail.png',Buffer.from(await captureBeeImage(),'base64'));
  await lighting.getByRole('button',{name:'Soft daylight',exact:true}).click();
  expect(errors).toEqual([]);
 });

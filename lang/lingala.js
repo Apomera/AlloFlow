@@ -53405,6 +53405,15 @@
       "sr_critique_ready": "Botali esili kobongisama."
     },
     "flightsim": {
+      "guided_inspect_angle": "Tala bokokanisi ya ba-angle",
+      "guided_inspect_speed": "Tala bokokanisi ya mbangu",
+      "guided_export_scope": "Données oyo ozali kobimisa ezali na mokanda na yo ya sikoyo mpe mimekano ya liboso. Kobimisa yango esilisaka bolukiluki te.",
+      "hint_t_stall_negative": "🚨 STALL! Angle AoA ezali na nse ya zéro: benda na boboto LIKOLÓ kobanda na katikati mpo epusana pene ya zéro. Salelá pembeni ya lobɔkɔ ya mobali mpo na nguya ya motɛ́rɛ soki esengeli.",
+      "hint_k_stall_negative": "🚨 STALL! Angle AoA ezali na nse ya zéro: finá W na boboto mpo epusana pene ya zéro. Bakisá nguya ya motɛ́rɛ na Shift soki esengeli.",
+      "hint_stall_direction_unknown": "🚨 STALL! Pusanisá angle AoA pene ya zéro. Direction na yango eyebani te; talá elembo ya AoA liboso ya kopona kotombola to kokitisa zolo ya mpɛpɔ.",
+      "announce_stall_warning_negative": "Likebisi ya stall! Angle AoA ezali na nse ya zéro. Tombolá zolo ya mpɛpɔ na boboto mpo epusana pene ya zéro; bakisá nguya ya motɛ́rɛ soki esengeli.",
+      "announce_stall_warning_unknown": "Likebisi ya stall! Pusanisá angle AoA pene ya zéro. Direction na yango eyebani te; talá elembo ya AoA liboso ya kopona kotombola to kokitisa zolo ya mpɛpɔ.",
+      "hud_stall_warning": "⚠️ STALL — PUSANISÁ AoA PENE YA ZÉRO",
       "debrief_unavailable_title": "Botali ya vol oyo ebombami ezali te",
       "debrief_unavailable_body": "Botali ya vol ya sika ezangi to ekoki kotángama te. Zongá na menu mpo na kobanda vol ya sika.",
       "guided_idea_before_trials": "Ekomamaki liboso ya mimekano",

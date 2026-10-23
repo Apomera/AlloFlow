@@ -28,7 +28,7 @@
   (function (root, factory) {
   if (root && root.window) root = root.window;
   var existing = root && root.AlloModules && root.AlloModules.WordSoundsReadiness;
-  var api = existing && existing.VERSION === 8 && typeof existing.portable === 'function' ? existing : factory(root || {});
+  var api = existing && existing.VERSION === 9 && typeof existing.portable === 'function' ? existing : factory(root || {});
   if (root) {
     root.AlloModules = root.AlloModules || {};
     root.AlloModules.WordSoundsReadiness = api;
@@ -2330,7 +2330,7 @@
   }
   const WS_CORE = createWordSoundsCore();
   // END GENERATED WORD SOUNDS CORE
-  var VERSION = 8,
+  var VERSION = 9,
     MAX_TARGETS = 1024,
     MAX_WORDS = 200,
     MAX_CLIP_CHARS = 512 * 1024;
@@ -2880,7 +2880,7 @@
         source = 'resource';
       } else if (target.category === 'phoneme' && !englishPhonemes) {
         var profile = WS_CORE.packAudioProfileStatus(rawAssets[target.key], config.selectedVoice || deliveredResource.selectedVoice, language);
-        asset = profile.languageMismatch ? {
+        asset = !profile.present || profile.unknownLanguage || profile.languageMismatch ? {
           status: 'missing'
         } : assets[target.key] || {
           status: 'missing'

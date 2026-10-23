@@ -213,6 +213,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   // Module scope keeps the renderer and its GPU resources alive when the
   // host persists toolData. Only leaving this view tears the scene down.
+  function BirdlabResidentStudio(props){
+    var h=props.React.createElement,s=props.value||{presentation:'woodland',backdrop:'teal',light:'soft',active:false};
+    function group(label,items,key,attribute,disabled){return h('div',{role:'group','aria-label':label,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8,margin:'8px 0 14px'}},items.map(function(item){
+      var selected=s[key]===item[0],p={key:item[0],type:'button',disabled:props.disabled||disabled,'aria-pressed':String(selected),style:{minHeight:44,padding:'10px 8px',fontSize:13,background:selected?'#e6dbc0':'#214650',color:selected?'#203932':'#f3faf3',border:'1px solid #9abcb3',borderRadius:8},onClick:function(){var next={};next[key]=item[0];props.onChange(next);}};p[attribute]=item[0];return h('button',p,item[1]);
+    }));}
+    return h('section',{'data-resident-studio-controls':true,'aria-label':'Resident studio presentation',style:{margin:'14px 0 18px',padding:14,border:'1px solid #7ca89e',borderRadius:12,background:'linear-gradient(145deg,#214b52,#102d39)',color:'#f0f8ef'}},
+      h('div',{style:{fontSize:11,fontWeight:750,letterSpacing:'.08em',color:'#f3dcab'}},'SCENE / FIELD-MARK LIGHT'),
+      h('h3',{style:{fontSize:18,lineHeight:1.4,margin:'6px 0 10px',color:'#f0f8ef'}},'Give the details room to stand out'),
+      group('Resident presentation',[['woodland','Woodland'],['studio','Studio']],'presentation','data-resident-presentation',false),
+      s.active?h('div',null,
+        h('strong',{style:{fontSize:12}},'Backdrop'),group('Studio backdrop',[['teal','Deep teal'],['paper','Light paper']],'backdrop','data-resident-backdrop',false),
+        h('strong',{style:{fontSize:12}},'Light direction'),group('Studio light',[['soft','Soft detail'],['side','Side relief']],'light','data-resident-studio-light',false),
+        h('p',{'data-resident-studio-status':true,role:'status',style:{fontSize:12,lineHeight:1.65,color:'#e0eee5',margin:0}},'The same frozen bird, with a neutral backdrop and camera-relative light. Switch lighting to examine feather overlap; colors are an illustrated model, not a calibrated color reference.')):
+        h('p',{'data-resident-studio-status':true,style:{fontSize:12,lineHeight:1.65,color:'#e0eee5',margin:0}},'Studio pauses this resident and clears the woodland from the view. Play returns to the habitat. Saved pose overlays remain available in either presentation.'));
+  }
+
+  function BirdlabResidentCompass(props) {
+    var h=props.React.createElement,o=props.orientation||{azimuth:90,elevation:0};
+    var azimuth=o.azimuth*Math.PI/180,elevation=o.elevation*Math.PI/180;
+    var x=180+85*Math.sin(azimuth)*Math.cos(elevation),y=140-85*Math.cos(azimuth)*Math.cos(elevation);
+    function angle(field,value){var next={azimuth:o.azimuth,elevation:o.elevation};next[field]=Number(value);props.onAngle(next);}
+    return h('section',{'data-resident-compass':'true','aria-labelledby':'birdlab-resident-compass-title',style:{margin:'14px 0',padding:12,border:'1px solid #6c9f91',borderRadius:12,background:'#153d37',color:'#f2f8e8'}},
+      h('h3',{id:'birdlab-resident-compass-title',style:{margin:'0 0 5px',fontSize:17,color:'#f2f8e8'}},'Find another angle'),
+      h('p',{style:{margin:'4px 0',fontSize:12,lineHeight:1.6,color:'#f2f8e8'}},'The bird stays still. Move your viewpoint around its body.'),
+      h('svg',{viewBox:'0 0 360 280',role:'img','aria-label':'Viewpoint around the bird: '+Math.round(o.azimuth)+' degrees around, '+Math.round(o.elevation)+' degrees above its body plane.',style:{display:'block',width:'100%',height:'auto'}},
+        h('circle',{cx:180,cy:140,r:85,fill:'#204d43',stroke:'#719f8f',strokeWidth:1.5}),
+        h('path',{d:'M180 55V225M95 140H265',fill:'none',stroke:'#719f8f',strokeDasharray:'3 6'}),
+        h('path',{d:'M180 72L190 90L187 116Q215 128 227 164L190 149L188 183L197 207L180 201L163 207L172 183L170 149L133 164Q145 128 173 116L170 90Z',fill:'#b5cbb4',stroke:'#0f2e2b',strokeWidth:2}),
+        h('line',{'data-resident-compass-ray':'true',x1:180,y1:140,x2:x,y2:y,stroke:'#ffe0a2',strokeWidth:3,strokeDasharray:'5 4'}),
+        h('circle',{'data-resident-compass-camera':'true',cx:x,cy:y,r:11,fill:'#ffe0a2',stroke:'#153d37',strokeWidth:3}),
+        [['Front',180,29,'middle'],['Rear',180,266,'middle'],['B',25,146,'middle'],['A',335,146,'middle']].map(function(label){return h('text',{key:label[0],x:label[1],y:label[2],textAnchor:label[3],fill:'#f2f8e8',fontSize:20,fontFamily:'system-ui'},label[0]);})),
+      h('p',{style:{margin:'0 0 8px',fontSize:12,lineHeight:1.6,color:'#f2f8e8'}},'Top view · gold dot = camera. A and B are the two sides. Looking straight above or below puts the dot at the center.'),
+      [['azimuth','Angle around the bird',-180,180],['elevation','Height of view',-90,90]].map(function(row){return h('label',{key:row[0],htmlFor:'birdlab-resident-'+row[0],style:{display:'block',fontSize:13,lineHeight:1.6,marginTop:8}},row[1]+' · ',
+        h('output',{'data-resident-angle-value':row[0],htmlFor:'birdlab-resident-'+row[0]},Math.round(o[row[0]])+'°'),
+        h('input',{id:'birdlab-resident-'+row[0],'data-resident-angle':row[0],type:'range',min:row[2],max:row[3],step:1,value:Math.round(o[row[0]]),disabled:props.disabled,style:{display:'block',width:'100%',minHeight:44,accentColor:'#ffe0a2',touchAction:'pan-y'},onChange:function(event){angle(row[0],event.target.value);}}));}));
+  }
+
   function Birdlab3DObservatory(props) {
     var React = props.React, h = React.createElement; var t = typeof props.t === 'function' ? props.t : function(k, fb) { return fb; };
     var canvasRef = React.useRef(null), controllerRef = React.useRef(null), titleRef = React.useRef(null), wingInspectRef = React.useRef(null);
@@ -304,6 +341,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       state.camera === 'tuftedTitmouse' ? {name:'Tufted titmouse', scientific:'Baeolophus bicolor', note:'Look for the soft gray crest, the black patch above the bill, large dark eyes, and peach-colored flanks. Compare its crest with the blue jay and cardinal.'} :
       state.camera === 'easternTowhee' ? {name:'Eastern towhee', scientific:'Pipilo erythrophthalmus', note:'This adult male has a black hood and back, rufous sides, a white belly, and red eyes. Watch it hop to rake the leaf litter, and look for white tail corners in flight.'} :
       {name:'Red-tailed hawk', scientific:'Buteo jamaicensis', note:'Watch the separated outer feathers, the bend at the wrist, and the spreading tail as the bird slows to land.'});
+    // Focus prompts reuse the field marks already described in this observatory.
+    // Part framing follows native model surfaces; these are not measurements of a bird.
+    var residentFieldNotes = {
+      robin:['Compare the pale eye markings with the gray head.','Compare the folded wing with the gray back and warm orange breast.','Orbit behind the robin and compare the tail silhouette with the gray back.'],
+      chickadee:['Find the white cheek between the black cap and bib.','Compare the layered wing with the buff flank below it.','Orbit behind the chickadee and follow the tail feathers back toward the buff flanks.'],
+      mourningDove:['Compare the small head with the warm buff breast.','Look for the black spots on the folded wing.','Follow the long, pointed tail from the body to its tip.'],
+      grouse:['Look closely at the small crest and mottled head.','Compare the mottled feather layers on the folded wing.','Look for the dark band across the broad tail; its outline changes with the authored pose.'],
+      blueJay:['Compare the blue crest with the black necklace below the face.','Inspect the bars and white wingbar from the side, then from above.','Orbit behind the jay and compare its tail with the barred wings.'],
+      northernCardinal:['Find the black face, stout orange-red bill, and upright crest.','Compare the overlapping red wing feathers with the red body.','Orbit behind the cardinal and follow the red feather layers toward the tail.'],
+      darkEyedJunco:['Compare the pale pink bill with the plain slate-gray hood.','Look at where the slate-gray wing meets the clean white belly.','Find the white outer tail feathers; try a flight moment to see the tail open.'],
+      tuftedTitmouse:['Compare the gray crest, black forehead patch, and large dark eye.','Look at where the gray wing overlaps the peach-colored flank.','Orbit behind the titmouse and compare the tail silhouette with the gray crest.'],
+      easternTowhee:['Find the red eye against the black hood.','Look for the white wing patch above the rufous side.','Find the white tail corners; a flight moment can make them easier to see.'],
+      americanGoldfinch:['Compare the short conical bill, yellow head, and black forehead.','Trace the white markings across the dark wing next to the yellow body.','Look closely at the short, notched tail from behind and above.'],
+      easternBluebird:['Compare the rounded blue head and short, straight bill with the rusty throat.','Compare the blue wing and back with the rusty breast and pale belly.','Orbit behind the bluebird and compare its tail with the blue upperparts.'],
+      whiteThroatedSparrow:['Find the yellow eye-to-bill patch, black-and-white head stripes, and white throat.','Compare the wing feather layers with the streaked brown back.','Orbit behind the sparrow and compare its tail with the patterned brown back.']
+    };
+    function renderResidentInspection(){
+      if(free||!watchingNeighbor)return null;
+      var inspection=state.residentInspection||{part:'whole',view:'free',active:false};
+      var parts=[['whole','Whole bird'],['head','Head and bill'],['wing','Wing feathers'],['tail','Tail fan']];
+      var views=[['free','Free orbit'],['side','Side'],['opposite','Opposite side'],['front','Front'],['rear','Rear'],['above','Above']];
+      var part=parts.filter(function(item){return item[0]===inspection.part;})[0]||parts[0];
+      var view=views.filter(function(item){return item[0]===inspection.view;})[0]||(inspection.view==='custom'?['custom','Custom angle']:views[0]);
+      var notes=residentFieldNotes[state.camera],noteIndex={head:0,wing:1,tail:2}[part[0]];
+      var comparison=inspection.comparison||{pinned:null,matching:false,enabled:false,opacity:.25,visible:false};
+      var pin=comparison.pinned,pinnedBird=pin&&residentChoices.filter(function(item){return item.id===pin.species;})[0];
+      var pinnedPart=pin&&parts.filter(function(item){return item[0]===pin.part;})[0];
+      var savedLabel=pin?(pinnedBird?pinnedBird.label:pin.species)+' · '+(pinnedPart?pinnedPart[1]:pin.part)+' · '+pin.time.toFixed(1)+' s':'';
+      var comparisonStatus=!pin?'Save a pose, move to another time, then show the saved shape to compare.':!comparison.matching?'Saved '+savedLabel+'. Return to this bird and part to compare.':!inspection.active?'Saved '+savedLabel+'. Choose Return to saved part to pause and compare.':comparison.visible?'Saved '+savedLabel+'. Cyan holds the saved pose; the illustrated bird shows the current pose.':'Saved '+savedLabel+'. The saved shape is hidden.';
+      function choices(items,method,attribute,value,label){return h('div',{role:'group','aria-label':label,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8,margin:'10px 0 16px'}},items.map(function(item){
+        var properties={key:item[0],type:'button',disabled:disabled,'aria-pressed':String(value===item[0]),style:{minHeight:44,padding:'10px 8px',fontSize:13,lineHeight:1.4,background:value===item[0]?'#173f35':'#fffdf3',color:value===item[0]?'#f4ffed':'#26392e',borderColor:value===item[0]?'#173f35':'#9eb29d'},onClick:function(){command(method,item[0]);}};
+        properties[attribute]=item[0];return h('button',properties,item[1]);
+      }));}
+      return h('section',{className:'birdlab-3d-card','aria-labelledby':'birdlab-resident-inspection-title','data-birdlab-resident-inspection':state.camera,'data-resident-inspection-part':part[0],'data-resident-inspection-view':view[0],'data-resident-inspection-active':String(!!inspection.active),style:{borderColor:'#6b9583',background:'#edf4e7'}},
+        h('div',{className:'birdlab-3d-eyebrow'},'LOOK CLOSER / FIELD MARKS'),
+        h('h2',{id:'birdlab-resident-inspection-title'},'Field-mark studio'),
+        h('p',{style:{fontSize:13,lineHeight:1.7,margin:'8px 0 12px'}},'Frame one part, then compare the same pose from different directions.'),
+        h(BirdlabResidentStudio,{React:React,value:inspection.studio,disabled:disabled,onChange:function(value){command('setResidentStudio',value);}}),
+        h('strong',{style:{fontSize:13}},'Choose a part'),choices(parts,'setResidentPart','data-resident-part-choice',part[0],'Resident model part'),
+        h('strong',{style:{fontSize:13}},'Choose a view'),choices(views,'setResidentView','data-resident-view-choice',view[0],'Resident model view'),
+        inspection.active?h(BirdlabResidentCompass,{React:React,orientation:inspection.orientation,disabled:disabled,onAngle:function(value){command('setResidentAngle',value);}}):null,
+        h('p',{role:'status','aria-live':'polite','aria-atomic':'true','data-resident-inspection-status':'true',style:{fontSize:12,lineHeight:1.7,fontWeight:650,margin:'8px 0'}},part[1]+' · '+view[1]+' · '+(state.paused?'Paused on this pose':'Playing the authored movement')),
+        h('article',{'aria-labelledby':'birdlab-resident-mark-title',style:{padding:'12px 14px',borderLeft:'3px solid #618b71',borderRadius:6,background:'#fffdf3'}},
+          h('h3',{id:'birdlab-resident-mark-title',style:{fontSize:15,margin:'0 0 6px',lineHeight:1.5}},species.name+' · '+part[1]),
+          h('p',{'data-resident-field-mark':part[0],style:{fontSize:13,lineHeight:1.75,margin:0}},part[0]==='whole'?species.note:notes[noteIndex])),
+        h('section',{'data-resident-comparison-panel':'true','aria-labelledby':'birdlab-resident-comparison-title',style:{padding:14,marginTop:16,border:'1px solid #8ebdc0',borderRadius:10,background:'#153d3c',color:'#eff8ee'}},
+          h('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'.08em',color:'#b9f8ff'}},'POSE / COMPARE'),
+          h('h3',{id:'birdlab-resident-comparison-title',style:{fontSize:18,lineHeight:1.4,margin:'6px 0 10px',color:'#eff8ee'}},'Keep a shape in view'),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},
+            h('button',{type:'button','data-resident-comparison-pin':'true',disabled:disabled,style:{minHeight:44,fontSize:13,padding:'10px 12px'},onClick:function(){command('pinResidentShape');}},pin?'Replace saved shape':'Save this shape'),
+            h('button',{type:'button','data-resident-comparison-clear':'true',disabled:disabled||!pin,style:{minHeight:44,fontSize:13,padding:'10px 12px'},onClick:function(event){var target=event.currentTarget.closest('[data-resident-comparison-panel]').querySelector('[data-resident-comparison-pin]');command('clearResidentShape');if(target)target.focus();}},'Clear saved shape'),
+            pin&&(!comparison.matching||!inspection.active)?h('button',{type:'button','data-resident-comparison-return':'true',disabled:disabled,style:{minHeight:44,fontSize:13,padding:'10px 12px'},onClick:function(event){var target=event.currentTarget.closest('[data-resident-comparison-panel]').querySelector('[data-resident-comparison-pin]');command('setCamera',pin.species,{camera:pin.species});command('setResidentPart',pin.part);if(target)target.focus();}},'Return to saved part'):null),
+          h('label',{htmlFor:'birdlab-resident-ghost-show',style:{display:'flex',alignItems:'center',gap:10,minHeight:44,marginTop:10,fontSize:13}},h('input',{id:'birdlab-resident-ghost-show','data-resident-comparison-toggle':'true',type:'checkbox',disabled:disabled||!pin,checked:!!comparison.enabled,style:{width:20,height:20,flex:'0 0 20px',accentColor:'#b9f8ff'},onChange:function(event){command('setResidentFrozenSurface',event.target.checked);}}),h('span',null,'Show saved shape')),
+          h('label',{htmlFor:'birdlab-resident-ghost-opacity',style:{display:'block',fontSize:13,lineHeight:1.7,marginTop:4}},'Saved shape opacity · ',h('output',{'data-resident-comparison-opacity-value':'true',htmlFor:'birdlab-resident-ghost-opacity'},Math.round(comparison.opacity*100)+'%'),h('input',{id:'birdlab-resident-ghost-opacity','data-resident-comparison-opacity':'true',type:'range',min:0,max:70,step:1,disabled:disabled||!pin,value:Math.round(comparison.opacity*100),style:{display:'block',width:'100%',minHeight:44,accentColor:'#b9f8ff',touchAction:'pan-y'},onChange:function(event){command('setResidentFrozenOpacity',Number(event.target.value)/100);}})),
+          h('p',{'data-resident-comparison-status':'true',role:'status','aria-live':'polite','aria-atomic':'true',style:{fontSize:13,lineHeight:1.7,margin:'8px 0',color:'#eff8ee'}},comparisonStatus),
+          h('p',{style:{fontSize:12,lineHeight:1.7,margin:'8px 0 0',color:'#d5ece1'}},'Cyan marks the saved pose, aligned with this bird. Choose another behavior moment to compare. The overlay follows the bird through the woodland; covered surfaces remain hidden.')),
+        h('p',{style:{fontSize:12,lineHeight:1.7,margin:'12px 0 0'}},'Choose a part or view to pause. Drag or use arrow keys to orbit; + / − zoom. Play resumes the current pose. These field marks describe this illustrated model; lighting and pose affect what you can see.'));
+    }
     var observation = neighbor ? neighbor.behavior : state.label;
     var phase = String(state.phase || '').toLowerCase();
     var cycleTime = ((Number(state.time) || 0) % 44 + 44) % 44;
@@ -569,7 +664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               renderAnatomyGuide(),
               free&&state.binoculars?h('svg',{className:'birdlab-3d-binocular-mask',viewBox:'0 0 1000 600',preserveAspectRatio:'none','aria-hidden':'true'},h('defs',null,h('mask',{id:'birdlab-binocular-lenses'},h('rect',{width:1000,height:600,fill:'white'}),h('ellipse',{cx:360,cy:290,rx:305,ry:255,fill:'black'}),h('ellipse',{cx:640,cy:290,rx:305,ry:255,fill:'black'}))),h('rect',{width:1000,height:600,fill:'#091a14',mask:'url(#birdlab-binocular-lenses)'})):null,
               free?h('div',{className:'birdlab-3d-reticle','aria-hidden':'true','data-focus':identified?'identified':subject?'steady':'searching'}):null,
-              h('div', {className:'birdlab-3d-scene-caption', 'aria-hidden':'true'}, 'Temperate woodland', h('strong', null, free?(state.binoculars?'Through your binoculars':state.crouching?'Crouched in the clearing':'On foot in the clearing'):state.anatomyInvestigation?anatomyLabels[state.anatomyInvestigation.part]:watchingNeighbor ? species.name : 'A hawk’s flight')),
+              h('div', {className:'birdlab-3d-scene-caption', 'aria-hidden':'true','data-resident-scene-caption':'true'}, state.residentInspection&&state.residentInspection.studio&&state.residentInspection.studio.active?'Resident studio · '+(state.residentInspection.studio.light==='side'?'side relief':'soft detail'):'Temperate woodland', h('strong', null, free?(state.binoculars?'Through your binoculars':state.crouching?'Crouched in the clearing':'On foot in the clearing'):state.anatomyInvestigation?anatomyLabels[state.anatomyInvestigation.part]:watchingNeighbor ? species.name : 'A hawk’s flight')),
               state.ready && !error ? h('div', {className:'birdlab-3d-live'}, h('span', {role:'status', 'aria-live':'polite', 'aria-atomic':'true', 'data-birdlab-3d-behavior':'true'}, free?'Free observation · wildlife chooses its own movements':wingStudy?'Wingbeat study · '+wingStudyName:observation), h('small', null, state.paused ? 'PAUSED' : free?Math.floor(state.time||0)+' s · EXPLORING':'LIVE · ' + state.speed + '×')) : null,
               (!state.ready || error) ? h('div', {className:'birdlab-3d-loading', role:error ? 'alert' : 'status'},
                 h('span', {className:'birdlab-3d-eyebrow', style:{color:'#cfdec2'}}, error ? '3D is unavailable' : 'Entering the woodland'),
@@ -652,6 +747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('p',null,sightings.length?sightings.length+' species recorded':'Your notebook is waiting for its first sighting.'),
               sightings.length?h('ol',{className:'birdlab-3d-notebook'},sightings.map(function(entry){return h('li',{key:entry.id},h('strong',null,entry.name),h('small',{style:{fontStyle:'italic'}},entry.scientificName),h('small',null,entry.behavior),h('small',null,distanceLabel(entry.distance),' · ',visitTime(entry.time),' into your visit'));})):h('p',null,'Identify an animal through your binoculars, then choose Record sighting.'),
               h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.')):null,
+            renderResidentInspection(),
             h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Your viewpoint'), !free?h('div', {className:'birdlab-3d-camera-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_camera_view', 'Camera view')}, ['orbit','follow','wide'].map(function(camera) { return h('button', {key:camera, type:'button', disabled:disabled, 'aria-pressed':String(state.camera === camera), onClick:function() { command('setCamera', camera, {camera:camera}); }}, camera === 'orbit' ? 'Orbit' : camera === 'follow' ? 'Follow' : 'Habitat'); })):null, h('p', null, free?(state.crouching?'You are crouching with slower steps and a lower viewpoint. Stand up for a wider view across the clearing.':'Walk at eye level, or crouch for a lower, quieter approach. Raise binoculars for a closer view and lower them to find your way.'):watchingNeighbor ? 'Move around this bird or zoom closer to study its field marks.' : state.camera === 'follow' ? 'Travel alongside the hawk as it crosses the clearing.' : state.camera === 'wide' ? 'See the flight path in the wider woodland.' : 'Circle the hawk to examine its wings and feather layers.'),
               h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_woodland_lighting', 'Woodland lighting')}, [{value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value&&!state.lightingDirectionCustom), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); })),
               state.lightingDirectionCustom?h('p',{className:'birdlab-3d-hint','data-birdlab-custom-light':'true'},'Custom direction · '+(state.lighting==='golden'?'Golden hour':'Daylight')+' palette. Choose a lighting preset to reset.'):null,
@@ -5225,6 +5321,368 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   // Two ideal sine sources add at one observation point. This is a signal
   // construction, not a dynamical model of a syrinx, vocal tract or bird call.
+  // Authored phrase windows for visual attention practice, in seconds. These
+  // are neither recordings nor measured species rhythms or dawn schedules.
+  var BIRDLAB_CHORUS_VOICES = ['robin', 'chickadee', 'redwingBlackbird', 'bluejay'];
+  var BIRDLAB_CHORUS_SCORE = [
+    [[.4,1.6],[3.2,4.4],[6.8,8],[10,11.2]],
+    [[1,1.5],[2.2,2.8],[5,5.6],[8.4,9]],
+    [[2.8,4],[6,7.3],[9.7,10.7]],
+    [[1.8,2.4],[4.8,5.8],[8.7,9.6],[11.3,11.9]]
+  ];
+  function birdlabChorusWindows(phase, offsets) {
+    var eligible = [[0],[0,1,2],[0,1,2,3],[1,3]][phase] || [], result = [];
+    eligible.forEach(function(voice) {
+      var value = Number(offsets && offsets[BIRDLAB_CHORUS_VOICES[voice]]);
+      var shift = Number.isFinite(value) ? Math.round(Math.max(-2, Math.min(2, value)) * 10) : 0;
+      BIRDLAB_CHORUS_SCORE[voice].forEach(function(pair, index) {
+        // Integer tenths avoid binary-rounding changes at half-open boundaries.
+        var start = Math.max(0, Math.round(pair[0] * 10) + shift) / 10;
+        var end = Math.min(120, Math.round(pair[1] * 10) + shift) / 10;
+        if (end > start) result.push({voice:BIRDLAB_CHORUS_VOICES[voice],index:index,start:start,end:end});
+      });
+    });
+    return result;
+  }
+  function birdlabChorusAt(phase, offsets, time) {
+    var windows = birdlabChorusWindows(phase, offsets);
+    return BIRDLAB_CHORUS_VOICES.filter(function(voice) { return windows.some(function(window) { return window.voice === voice && time >= window.start && time < window.end; }); });
+  }
+  function birdlabChorusBoundaries(phase, offsets) {
+    var values = [0,12]; birdlabChorusWindows(phase, offsets).forEach(function(window) { values.push(window.start, window.end); });
+    return values.filter(function(value, index) { return values.indexOf(value) === index; }).sort(function(a,b) { return a-b; });
+  }
+  function BirdlabChorusTimelineStudy(props) {
+    var React = props.React, h = React.createElement;
+    var clock = React.useState(0), time = clock[0], setTime = clock[1];
+    var shifts = React.useState(function() { return {robin:0,chickadee:0,redwingBlackbird:0,bluejay:0}; }), offsets = shifts[0], setOffsets = shifts[1];
+    var saved = React.useState(null), pinned = saved[0], setPinned = saved[1];
+    var motion = React.useState(false), playing = motion[0], setPlaying = motion[1];
+    var preference = React.useState(function() { return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }), reduced = preference[0], setReduced = preference[1];
+    var svgRef = React.useRef(null), pinRef = React.useRef(null), frameRef = React.useRef(0), runningRef = React.useRef(false), stampRef = React.useRef(null), elapsedRef = React.useRef(0), timeRef = React.useRef(0);
+    var dragRef = React.useRef(null), contactsRef = React.useRef(new Set()), interruptedRef = React.useRef(false), cancelRef = React.useRef(null);
+    var phase = Math.max(0, Math.min(3, Math.round(Number(props.phase) || 0))), singer = BIRDLAB_CHORUS_VOICES.indexOf(props.singer) >= 0 ? props.singer : 'robin';
+    var phases = ['Before sunrise','First light','Around sunrise','Morning'], eligible = [[0],[0,1,2],[0,1,2,3],[1,3]][phase];
+    var current = {phase:phase,singer:singer,time:time,offsets:offsets}, active = birdlabChorusAt(phase, offsets, time), windows = birdlabChorusWindows(phase, offsets);
+    var boundaries = birdlabChorusBoundaries(phase, offsets), selectedOffset = offsets[singer];
+    function writeTime(value) { value = Math.max(0, Math.min(12, Math.round(value * 20) / 20)); timeRef.current = value; setTime(value); }
+    function stop() { runningRef.current = false; if (frameRef.current) cancelAnimationFrame(frameRef.current); frameRef.current = 0; stampRef.current = null; setPlaying(false); }
+    function release(gesture) { if (gesture && gesture.node.hasPointerCapture(gesture.id)) gesture.node.releasePointerCapture(gesture.id); }
+    function cancelDrag() { var gesture = dragRef.current; dragRef.current = null; if (gesture) { writeTime(gesture.initial); release(gesture); } }
+    cancelRef.current = cancelDrag;
+    function manualTime(value) { stop(); cancelDrag(); writeTime(value); }
+    function editOffset(value) { stop(); cancelDrag(); var next = Object.assign({}, offsets); next[singer] = Math.max(-2, Math.min(2, Math.round(Number(value) * 10) / 10)); setOffsets(next); }
+    function selectVoice(voice) { stop(); cancelDrag(); props.onSinger(voice); }
+    function snapshot() { return {phase:phase,singer:singer,time:timeRef.current,offsets:Object.assign({},offsets)}; }
+    function freeze() { stop(); cancelDrag(); setPinned(snapshot()); }
+    function restore() { if (!pinned) return; stop(); cancelDrag(); setOffsets(Object.assign({}, pinned.offsets)); writeTime(pinned.time); props.onPhase(pinned.phase); props.onSinger(pinned.singer); }
+    function play() {
+      if (runningRef.current) { stop(); return; }
+      if (reduced || document.hidden) return;
+      cancelDrag(); writeTime(0); elapsedRef.current = 0; stampRef.current = null; runningRef.current = true; setPlaying(true);
+      function tick(stamp) {
+        frameRef.current = 0; if (!runningRef.current) return;
+        if (stampRef.current !== null) elapsedRef.current += Math.max(0, Math.min(100, stamp - stampRef.current));
+        stampRef.current = stamp; writeTime(elapsedRef.current / 1000);
+        if (elapsedRef.current >= 12000) { stop(); return; }
+        frameRef.current = requestAnimationFrame(tick);
+      }
+      frameRef.current = requestAnimationFrame(tick);
+    }
+    React.useEffect(function() { stop(); cancelDrag(); }, [phase, singer]);
+    React.useEffect(function() {
+      var media = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function changed() { setReduced(!!(media && media.matches)); if (media && media.matches) stop(); }
+      function hidden() { if (document.hidden) { stop(); cancelRef.current(); contactsRef.current.clear(); interruptedRef.current = false; } }
+      function blur() { stop(); cancelRef.current(); contactsRef.current.clear(); interruptedRef.current = false; }
+      function down(event) {
+        var contacts = contactsRef.current;
+        if (contacts.size || (svgRef.current && svgRef.current.contains(event.target))) {
+          contacts.add(event.pointerId);
+          if (contacts.size > 1) { interruptedRef.current = true; cancelRef.current(); }
+        }
+      }
+      function up(event) { contactsRef.current.delete(event.pointerId); if (!contactsRef.current.size) interruptedRef.current = false; }
+      changed(); if (media) media.addEventListener('change', changed);
+      document.addEventListener('visibilitychange', hidden); window.addEventListener('blur', blur);
+      window.addEventListener('pointerdown', down, true); window.addEventListener('pointerup', up, true); window.addEventListener('pointercancel', up, true);
+      return function() { runningRef.current = false; if (frameRef.current) cancelAnimationFrame(frameRef.current); frameRef.current = 0; dragRef.current = null; if (media) media.removeEventListener('change', changed); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('blur', blur); window.removeEventListener('pointerdown', down, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true); };
+    }, []);
+    function pointerTime(event) { var matrix = event.currentTarget.getScreenCTM(); if (!matrix) return timeRef.current; return (new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()).x - 80) / 50; }
+    function pointerDown(event) {
+      if (event.button !== 0 || event.isPrimary === false || interruptedRef.current) return;
+      event.preventDefault(); stop(); var node = event.currentTarget; dragRef.current = {id:event.pointerId,node:node,initial:timeRef.current};
+      node.setPointerCapture(event.pointerId); node.focus({preventScroll:true}); writeTime(pointerTime(event));
+    }
+    function pointerMove(event) { if (dragRef.current && dragRef.current.id === event.pointerId) writeTime(pointerTime(event)); }
+    function pointerUp(event) {
+      var gesture = dragRef.current; if (!gesture || gesture.id !== event.pointerId) return;
+      if (!gesture.node.hasPointerCapture(gesture.id) || interruptedRef.current) { cancelDrag(); return; }
+      dragRef.current = null; writeTime(pointerTime(event)); release(gesture);
+    }
+    function key(event) {
+      var value = timeRef.current, step = event.shiftKey ? 1 : .05;
+      if (event.key === 'Home') value = 0; else if (event.key === 'End') value = 12;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') value -= step;
+      else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') value += step;
+      else if (event.key === 'Escape') { event.preventDefault(); stop(); cancelDrag(); return; } else return;
+      event.preventDefault(); manualTime(value);
+    }
+    function boundary(direction) { var values = boundaries.filter(function(value) { return direction === 'next' ? value > time + 1e-8 : value < time - 1e-8; }); if (values.length) manualTime(direction === 'next' ? values[0] : values[values.length-1]); }
+    var buttonStyle = {minHeight:44,minWidth:44,padding:'10px 13px',border:'1px solid #8caaa4',borderRadius:9,background:'#24464a',color:'#f3f6df',fontSize:14,fontWeight:700,lineHeight:1.4};
+    function button(label, attributes, handler, disabled) { return h('button', Object.assign({type:'button',style:Object.assign({},buttonStyle,disabled?{opacity:.6}:{}),onClick:handler,disabled:!!disabled},attributes), label); }
+    function conditionCard(value, id) {
+      var ids = birdlabChorusAt(value.phase,value.offsets,value.time);
+      return h('article', {'data-chorus-condition':id,'data-chorus-phase':value.phase,'data-chorus-singer':value.singer,'data-chorus-time':value.time,'data-chorus-offsets':JSON.stringify(value.offsets),'data-chorus-active':JSON.stringify(ids),'data-chorus-count':ids.length,style:{minWidth:0,border:'1px solid '+(id==='current'?'#e2bf76':'#72c8c1'),borderRadius:10,padding:12,background:'#102d32'}},
+        h('strong',{style:{color:id==='current'?'#ffe1a0':'#9af0e6'}},id==='current'?'Current arrangement':'Frozen arrangement'),
+        h('p',{style:{margin:'7px 0',fontSize:15}},phases[value.phase]+' · '+value.time.toFixed(2)+' s · '+ids.length+' '+(ids.length===1?'voice':'voices')+' active'),
+        h('p',{style:{margin:'7px 0',fontSize:13}},'Focus: '+BIRDS[value.singer].name),
+        h('p',{style:{margin:0,fontSize:13,lineHeight:1.6}},'Lane shifts: '+BIRDLAB_CHORUS_VOICES.map(function(voice,i){return (i+1)+': '+(value.offsets[voice]>0?'+':'')+value.offsets[voice].toFixed(1)+' s';}).join(' · ')));
+    }
+    function phraseRect(window, id, laneY, clock) { return h('rect',{key:id+window.voice+window.index,'data-chorus-phrase':id,'data-chorus-voice':window.voice,'data-chorus-index':window.index,'data-chorus-start':window.start,'data-chorus-end':window.end,x:80+50*window.start,y:laneY+(id==='current'?-14:12),width:50*(window.end-window.start),height:id==='current'?20:14,rx:5,fill:id==='current'?'#ffcf79':'#79e5dc',opacity:id==='current'?(clock>=window.start&&clock<window.end?1:.56):.75}); }
+    var pinWindows = pinned ? birdlabChorusWindows(pinned.phase,pinned.offsets) : [];
+    return h('section',{'data-birdlab-chorus-study':'','data-chorus-active':JSON.stringify(active),'data-chorus-count':active.length,'data-chorus-playing':String(playing),'aria-labelledby':'birdlab-chorus-title',style:{margin:'18px 0',padding:12,border:'1px solid #5d8b83',borderRadius:16,background:'linear-gradient(135deg,#173b3d,#092329)',color:'#eef3df',overflow:'hidden'}},
+      h('p',{style:{margin:'2px 0 8px',fontSize:12,fontWeight:800,letterSpacing:'.12em',color:'#a9d5c5'}},'PHRASE LAB / VISUAL LISTENING'),
+      h('h3',{id:'birdlab-chorus-title',style:{margin:'0 0 8px',fontSize:24,lineHeight:1.2,color:'#fff0c8'}},'Follow a voice through the gaps.'),
+      h('p',{style:{fontSize:14,lineHeight:1.6,margin:'0 0 14px'}},'The woodland scene shows which voices participate in a morning phase. Here, expand that phase into twelve invented seconds. Slide the cursor to find a phrase, a pause or an overlap; shift one lane to change the arrangement.'),
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,190px),1fr))',gap:8,marginBottom:12},role:'group','aria-label':'Follow a chorus voice'},BIRDLAB_CHORUS_VOICES.map(function(voice,index) {
+        var chosen = voice===singer, now = active.indexOf(voice)>=0, included = eligible.indexOf(index)>=0;
+        return h('button',{key:voice,type:'button','data-chorus-voice-choice':voice,'aria-pressed':String(chosen),onClick:function(){selectVoice(voice);},style:Object.assign({},buttonStyle,{display:'flex',alignItems:'center',gap:10,textAlign:'left',border:chosen?'2px solid #ffe1a0':'1px solid #8caaa4',background:chosen?'#3b4b39':'#17373b'})},
+          h('svg',{viewBox:'0 0 30 30','aria-hidden':'true',style:{width:44,height:44,flexShrink:0,background:'#dce8cb',borderRadius:8}},BIRDS[voice].svg(h)),
+          h('span',null,(index+1)+'. '+BIRDS[voice].name,h('small',{style:{display:'block',fontSize:12,fontWeight:400,marginTop:4}},included?(now?'Phrase at cursor':'Between phrases'):'Outside this phase')));
+      })),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 20px',fontSize:13,margin:'10px 0'}},h('span',{style:{color:'#ffe1a0'}},'Gold · current phrases'),h('span',{style:{color:'#9af0e6'}},'Mint + dashed cursor · frozen'),h('span',null,'Numbers match the voice buttons')),
+      h('svg',{ref:svgRef,'data-chorus-timeline':'',viewBox:'0 0 760 440',role:'slider',tabIndex:0,'aria-label':'Phrase timeline cursor','aria-valuemin':0,'aria-valuemax':12,'aria-valuenow':time,'aria-valuetext':time.toFixed(2)+' seconds; '+active.length+' voices active',onPointerDown:pointerDown,onPointerMove:pointerMove,onPointerUp:pointerUp,onPointerCancel:cancelDrag,onLostPointerCapture:function(event){if(dragRef.current&&dragRef.current.id===event.pointerId)cancelDrag();},onKeyDown:key,style:{display:'block',width:'100%',height:'auto',borderRadius:10,background:'#0a2228',touchAction:'pan-y',userSelect:'none',WebkitUserSelect:'none',cursor:'ew-resize'}},
+        [0,3,6,9,12].map(function(t){return h('g',{key:t},h('line',{x1:80+50*t,x2:80+50*t,y1:40,y2:374,stroke:'#486965',strokeDasharray:'4 6'}),h('text',{x:80+50*t,y:424,textAnchor:'middle',fill:'#e3eee0',fontSize:34,fontFamily:'monospace'},String(t)));}),
+        BIRDLAB_CHORUS_VOICES.map(function(voice,index){var y=76+88*index;return h('g',{key:voice,'data-chorus-lane':voice,'data-chorus-eligible':String(eligible.indexOf(index)>=0),'data-chorus-now':String(active.indexOf(voice)>=0),'data-chorus-selected':String(singer===voice)},
+          h('rect',{x:65,y:y-33,width:630,height:70,rx:8,fill:singer===voice?'#345048':'#17353b',fillOpacity:.65}),
+          h('text',{x:28,y:y+12,textAnchor:'middle',fill:singer===voice?'#ffe1a0':'#d9e9d7',fontSize:34,fontFamily:'monospace'},String(index+1)),
+          windows.filter(function(w){return w.voice===voice;}).map(function(w){return phraseRect(w,'current',y,time);}),
+          pinWindows.filter(function(w){return w.voice===voice;}).map(function(w){return phraseRect(w,'pinned',y,pinned.time);}));}),
+        pinned?h('line',{'data-chorus-cursor':'pinned',x1:80+50*pinned.time,x2:80+50*pinned.time,y1:42,y2:374,stroke:'#9af0e6',strokeWidth:3,strokeDasharray:'8 6'}):null,
+        h('line',{'data-chorus-cursor':'current',x1:80+50*time,x2:80+50*time,y1:42,y2:374,stroke:'#fff0b2',strokeWidth:3}),
+        h('circle',{'data-chorus-handle':'',cx:80+50*time,cy:380,r:9,fill:'#ffe1a0',stroke:'#082229',strokeWidth:2})),
+      h('p',{style:{fontSize:13,lineHeight:1.5,margin:'8px 0 14px'}},'Timeline in seconds. A brighter gold block is active at the cursor. Blocks include their start and stop just before their end; at 12 seconds all voices are quiet.'),
+      h('label',{htmlFor:'birdlab-chorus-time',style:{display:'block',fontWeight:700,fontSize:14}},'Inspect time ',h('output',{htmlFor:'birdlab-chorus-time',style:{float:'right'}},time.toFixed(2)+' s')),
+      h('input',{id:'birdlab-chorus-time',type:'range',min:0,max:12,step:.05,value:time,onChange:function(e){manualTime(Number(e.target.value));},style:{display:'block',width:'100%',minHeight:44,accentColor:'#ffd888'}}),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}},button('Previous boundary',{'data-chorus-boundary':'previous'},function(){boundary('previous');},time<=0),button('Next boundary',{'data-chorus-boundary':'next'},function(){boundary('next');},time>=12),button(playing?'Pause sequence':'Play once · 12 s',{'data-chorus-play':'','aria-pressed':String(playing)},play,reduced)),
+      reduced?h('p',{style:{fontSize:13,margin:'-7px 0 16px'}},'Reduced motion is on. Scrub the timeline or jump between boundaries.'):null,
+      h('label',{htmlFor:'birdlab-chorus-offset',style:{display:'block',fontWeight:700,fontSize:14}},'Shift '+BIRDS[singer].name,h('output',{htmlFor:'birdlab-chorus-offset',style:{display:'block',fontWeight:400,marginTop:5}},(selectedOffset>0?'+':'')+selectedOffset.toFixed(1)+' s · negative is earlier, positive is later')),
+      h('input',{id:'birdlab-chorus-offset',type:'range',min:-2,max:2,step:.1,value:selectedOffset,onChange:function(e){editOffset(e.target.value);},style:{display:'block',width:'100%',minHeight:44,accentColor:'#ffd888'}}),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginBottom:14}},button('1 s earlier',{'data-chorus-experiment':'earlier'},function(){editOffset(selectedOffset-1);},selectedOffset-1 < -2),button('1 s later',{'data-chorus-experiment':'later'},function(){editOffset(selectedOffset+1);},selectedOffset+1 > 2),button('Reset this lane',{'data-chorus-experiment':'recenter'},function(){editOffset(0);},selectedOffset===0)),
+      h('p',{style:{fontSize:13,lineHeight:1.6}},'Shifts preserve phrase length; portions outside the 0–12 s window are clipped. Change the morning phase above to choose participating voices. Every lane keeps its shift when you change focus.'),
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,250px),1fr))',gap:10}},conditionCard(current,'current'),pinned?conditionCard(pinned,'pinned'):null),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}},button(pinned?'Replace frozen arrangement':'Freeze arrangement',{'data-chorus-pin':'',ref:pinRef},freeze),button('Restore frozen arrangement',{'data-chorus-restore':''},restore,!pinned),button('Clear frozen arrangement',{'data-chorus-clear':''},function(){stop();cancelDrag();setPinned(null);if(pinRef.current)pinRef.current.focus({preventScroll:true});},!pinned)),
+      h('p',{style:{fontSize:13,lineHeight:1.6,margin:'12px 0 2px'}},'Invented visual practice only. No audio plays. Phrase lengths, offsets and overlaps are not species measurements, real dawn timing or a count of birds. Freeze retains the phase, focused voice, all four shifts and cursor time.'));
+  }
+
+  function birdlabPupilOverlap(beamRadius, eyeRadius, offset) {
+    if (![beamRadius,eyeRadius,offset].every(Number.isFinite) || beamRadius <= 0 || eyeRadius <= 0) return 0;
+    var d=Math.abs(offset), R=beamRadius, r=eyeRadius, maximum=Math.PI*Math.min(R,r)*Math.min(R,r);
+    if(d>=R+r)return 0;
+    if(d<=Math.abs(R-r))return maximum;
+    var a=Math.max(-1,Math.min(1,(d*d+R*R-r*r)/(2*d*R)));
+    var b=Math.max(-1,Math.min(1,(d*d+r*r-R*R)/(2*d*r)));
+    var product=Math.max(0,(-d+R+r)*(d+R-r)*(d-R+r)*(d+R+r));
+    return Math.max(0,Math.min(maximum,R*R*Math.acos(a)+r*r*Math.acos(b)-Math.sqrt(product)/2));
+  }
+  function birdlabPupilSample(configuration, offset) {
+    var beam=configuration.objective/configuration.magnification/2,eye=configuration.pupil/2;
+    var area=birdlabPupilOverlap(beam,eye,offset);
+    return {beam:beam,eye:eye,area:area,admitted:area/(Math.PI*beam*beam),eyeFill:area/(Math.PI*eye*eye)};
+  }
+  // A geometric interior study of the guide's dimensions, not a construction plan.
+  function birdlabBoxMeasure(d, percent) {
+    var height=d.depth*Math.max(0,Math.min(100,percent))/100;
+    return {height:height,area:d.floor*d.floor,volume:d.floor*d.floor*height,
+      capacity:d.floor*d.floor*d.depth,holeArea:Math.PI*(d.holeW||d.hole)*(d.holeH||d.hole)/4};
+  }
+  function BirdlabNestboxStudy(props) {
+    var React=props.React,h=React.createElement;
+    var _level=React.useState(50),level=_level[0],setLevel=_level[1];
+    var _pin=React.useState(null),pin=_pin[0],setPin=_pin[1];
+    var gesture=React.useRef(null),clearButton=React.useRef(null),keepButton=React.useRef(null);
+    var d=props.dimensions[props.species],m=birdlabBoxMeasure(d,level);
+    var pd=pin&&props.dimensions[pin.species],pm=pd&&birdlabBoxMeasure(pd,pin.level);
+    var scale=Math.min(320/Math.max(d.depth,pd?pd.depth:0),240/Math.max(d.floor,pd?pd.floor:0));
+    function number(n){return n.toLocaleString(undefined,{maximumFractionDigits:2});}
+    function change(n){if(Number.isFinite(n))setLevel(Math.round(Math.max(0,Math.min(100,n))*10)/10);}
+    function release(g){if(g&&g.node.hasPointerCapture&&g.node.hasPointerCapture(g.id))try{g.node.releasePointerCapture(g.id);}catch(_){} }
+    function cancel(){var g=gesture.current;gesture.current=null;release(g);if(g)setLevel(g.original);}
+    React.useEffect(function(){
+      function other(e){if(gesture.current&&e.pointerId!==gesture.current.id)cancel();}
+      function hidden(){if(document.hidden)cancel();}
+      function up(e){var g=gesture.current;if(g&&g.id===e.pointerId){if(!g.node.hasPointerCapture(g.id)){cancel();return;}gesture.current=null;release(g);}}
+      window.addEventListener('pointerdown',other,true);window.addEventListener('pointerup',up);window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',hidden);
+      return function(){var g=gesture.current;gesture.current=null;release(g);window.removeEventListener('pointerdown',other,true);window.removeEventListener('pointerup',up);window.removeEventListener('blur',cancel);document.removeEventListener('visibilitychange',hidden);};
+    },[]);
+    React.useEffect(function(){cancel();},[props.species]);
+    function point(x,z,y){return [360+(x-z)*scale*.82,450+(x+z)*scale*.32-y*scale];}
+    function points(arr){return arr.map(function(p){return point(p[0],p[1],p[2]).join(',');}).join(' ');}
+    function plane(dim,height){var f=dim.floor/2;return [[-f,-f,height],[f,-f,height],[f,f,height],[-f,f,height]];}
+    function poly(key,arr,fill,stroke,extra){return h('polygon',Object.assign({key:key,points:points(arr),fill:fill,stroke:stroke,strokeWidth:2.5,strokeLinejoin:'round'},extra||{}));}
+    var f=d.floor/2,top=d.depth,cut=m.height;
+    var active=plane(d,cut),front=point(f,f,cut),rulerX=65;
+    var boxParts=[
+      poly('back',[[-f,-f,0],[f,-f,0],[f,-f,top],[-f,-f,top]],'#264b51','#87aaa7'),
+      poly('left',[[-f,-f,0],[-f,f,0],[-f,f,top],[-f,-f,top]],'#356064','#87aaa7'),
+      poly('floor',plane(d,0),'#112c35','#b4d3c7'),
+      poly('water-left',[[-f,f,0],[f,f,0],[f,f,cut],[-f,f,cut]],'#75dbc331','#75dbc3',{'data-box-volume-face':'front'}),
+      poly('water-right',[[f,-f,0],[f,f,0],[f,f,cut],[f,-f,cut]],'#75dbc34a','#75dbc3'),
+      poly('plane',active,'#9ae3ce5c','#f6d68d',{'data-box-plane':true,'data-height':cut}),
+      poly('roof',plane(d,top),'none','#b4d3c7',{strokeDasharray:'7 5'}),
+      h('path',{key:'edges',d:'M'+point(f,-f,0).join(',')+' L'+point(f,-f,top).join(',')+' M'+point(f,f,0).join(',')+' L'+point(f,f,top).join(',')+' M'+point(-f,f,0).join(',')+' L'+point(-f,f,top).join(','),fill:'none',stroke:'#b4d3c7',strokeWidth:2,strokeDasharray:'5 5'})
+    ];
+    if(pd){
+      var pf=pd.floor/2;
+      boxParts.push(poly('saved-floor',plane(pd,0),'none','#ffffff',{strokeDasharray:'10 7','data-box-reference-floor':true}));
+      boxParts.push(poly('saved-ceiling',plane(pd,pd.depth),'none','#ffffff',{strokeDasharray:'10 7'}));
+      boxParts.push(poly('saved-plane',plane(pd,pm.height),'none','#ffffff',{strokeWidth:4,strokeDasharray:'3 7','data-box-reference-plane':true}));
+      [[-pf,-pf],[pf,-pf],[pf,pf],[-pf,pf]].forEach(function(p,i){boxParts.push(h('path',{key:'saved-edge'+i,d:'M'+point(p[0],p[1],0).join(',')+' L'+point(p[0],p[1],pd.depth).join(','),fill:'none',stroke:'#fff',strokeWidth:1.7,strokeDasharray:'10 7'}));});
+    }
+    function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),text);}
+    function reading(label,value,unit,attr){return h('div',{'data-box-reading':attr},h('span',null,label),h('strong',null,number(value)+' '+unit));}
+    return h('section',{'data-nestbox-study':true,'data-species':props.species,'data-level':level,'data-scale':scale,'aria-label':'Nest box space explorer',className:'bl-box-study'},
+      h('style',null,'.bl-box-study{margin:18px 0;padding:20px;border:1px solid #628a85;border-radius:20px;background:radial-gradient(ellipse at 20% 10%,#244d54,#102b36 70%);color:#edf7ee;container-type:inline-size}.bl-box-study *{box-sizing:border-box}.bl-box-study h3{font-size:25px;line-height:1.15;margin:5px 0 10px;color:#fff}.bl-box-study p{color:#d3e6df;font-size:14px;line-height:1.55;margin:8px 0}.bl-box-study .bl-box-kicker{font-size:11px;letter-spacing:.15em;font-weight:800;color:#f6d68d}.bl-box-study svg{display:block;width:100%;height:auto;overflow:visible}.bl-box-study svg text{display:inline!important;fill:#edf7ee;font-size:26px;font-family:ui-sans-serif,system-ui;font-weight:650}.bl-box-study .bl-box-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}.bl-box-study figure{margin:0;min-width:0}.bl-box-study figcaption{color:#d3e6df;font-size:12px;line-height:1.5}.bl-box-study .bl-box-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.bl-box-study [data-box-reading]{padding:10px;border:1px solid #5d827e;border-radius:10px;background:#0a232c}.bl-box-study [data-box-reading] span{display:block;font-size:11px;color:#c9e0d9}.bl-box-study [data-box-reading] strong{display:block;font-size:17px;line-height:1.6;color:#f7dfaa}.bl-box-study label{display:block;font-size:14px;font-weight:700}.bl-box-study input[type=range]{width:100%;min-width:0;min-height:44px;accent-color:#f6d68d}.bl-box-study .bl-box-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.bl-box-study button{min-height:44px;padding:9px 12px;border:1px solid #95b9af;border-radius:8px;background:#294e54;color:#f4f8ef;font-size:12px;font-weight:750}.bl-box-study button[aria-pressed=true]{background:#f6d68d;color:#243933;border-color:#ffeabf}.bl-box-study :is(button,input,svg):focus-visible{outline:3px solid #ffe4a6;outline-offset:3px}.bl-box-study .bl-box-saved{margin-top:12px;padding:12px;border:1px dashed #eaf3ef;border-radius:12px}.bl-box-study .bl-box-saved p{font-size:12px}.bl-box-study .bl-box-hole{background:#0a232c;border:1px solid #5d827e;border-radius:12px;margin-top:12px;padding:10px}.bl-box-study .bl-box-hole svg text{font-size:23px}.bl-box-study .bl-box-hole svg{max-height:160px}.bl-box-study [data-box-scene]{touch-action:pan-x}.bl-box-study .bl-box-note{font-size:12px}@container(max-width:650px){.bl-box-study .bl-box-layout{grid-template-columns:1fr}.bl-box-study h3{font-size:23px}.bl-box-study .bl-box-measures strong{font-size:17px}}@media(forced-colors:active){.bl-box-study{background:Canvas;color:CanvasText}.bl-box-study svg{forced-color-adjust:none}.bl-box-study button{background:ButtonFace;color:ButtonText}.bl-box-study [data-box-reading] strong{color:CanvasText}}'),
+      h('div',{className:'bl-box-kicker'},'LOOK INSIDE · MEASURE THE SPACE'),
+      h('h3',null,'How much space is below your plane?'),
+      h('p',null,'Lift the gold plane through '+props.species+'’s model. Keep a box, then switch species above to compare both interiors at one scale.'),
+      h('div',{className:'bl-box-layout'},
+        h('figure',null,
+          h('svg',{'data-box-scene':true,viewBox:'0 0 720 580',role:'slider','aria-orientation':'vertical',tabIndex:0,'aria-label':'Measuring plane height','aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':level,'aria-valuetext':number(m.height)+' inches above floor; '+level+' percent of box height',
+            onKeyDown:function(e){var v=level;if(e.key==='Escape'){cancel();return;}if(e.key==='Home')v=0;else if(e.key==='End')v=100;else if(e.key==='ArrowUp'||e.key==='ArrowRight')v+=e.shiftKey?10:1;else if(e.key==='ArrowDown'||e.key==='ArrowLeft')v-=e.shiftKey?10:1;else return;e.preventDefault();cancel();change(v);},
+            onPointerDown:function(e){if(e.button!==0||!e.isPrimary||gesture.current)return;var node=e.currentTarget;node.focus({preventScroll:true});gesture.current={id:e.pointerId,node:node,y:e.clientY,original:level,unit:node.getBoundingClientRect().height/580*scale*d.depth/100};try{node.setPointerCapture(e.pointerId);}catch(_){cancel();}},
+            onPointerMove:function(e){var g=gesture.current;if(!g||g.id!==e.pointerId)return;if(!g.node.hasPointerCapture(g.id)){cancel();return;}change(g.original-(e.clientY-g.y)/g.unit);},
+            onPointerUp:function(e){var g=gesture.current;if(g&&g.id===e.pointerId){if(!g.node.hasPointerCapture(g.id)){cancel();return;}gesture.current=null;release(g);}},onPointerCancel:cancel,onLostPointerCapture:function(){if(gesture.current)cancel();}},
+            h('title',null,'Cutaway interior. Gold measuring plane; mint space below; dashed white saved box.'),
+            h('ellipse',{cx:360,cy:493,rx:250,ry:58,fill:'#081e2870'}),
+            h('path',{d:'M90,480 L360,555 L630,480 M140,465 L410,540 M190,451 L460,526 M240,437 L510,512 M510,437 L240,512 M560,451 L290,526 M610,465 L340,540',fill:'none',stroke:'#79a098',strokeOpacity:.2,strokeWidth:1}),
+            boxParts,
+            h('path',{d:'M'+rulerX+',450 V'+(450-top*scale)+' M55,450 H75 M55,'+(450-top*scale)+' H75',stroke:'#b4d3c7',fill:'none',strokeWidth:2}),
+            h('path',{d:'M55,'+(450-cut*scale)+' H85',stroke:'#f6d68d',strokeWidth:5}),
+            h('text',{x:95,y:450-cut*scale-12,style:{fill:'#f6d68d',fontSize:27}},number(cut)+' in'),
+            h('text',{x:360,y:566,textAnchor:'middle'},number(d.floor)+' × '+number(d.floor)+' in floor'),
+            h('circle',{cx:front[0],cy:front[1],r:16,fill:'#f6d68d',stroke:'#183b41',strokeWidth:3}),
+            h('path',{d:'M'+(front[0]-5)+','+(front[1]-3)+' l5,-5 l5,5 M'+(front[0]-5)+','+(front[1]+3)+' l5,5 l5,-5',fill:'none',stroke:'#183b41',strokeWidth:2})),
+          h('figcaption',null,'Drag up or down, or use arrow keys. Shift + arrow moves 10%; Home / End reaches floor / ceiling. The scene fits both boxes; their outlines share one scale.')),
+        h('div',null,
+          h('label',null,'Measuring plane · '+level+'%',h('input',{type:'range',min:0,max:100,step:.1,value:level,'data-box-level':true,'aria-label':'Plane height percentage',onChange:function(e){cancel();change(Number(e.target.value));}})),
+          h('div',{className:'bl-box-actions'},[0,50,100].map(function(n){return button(n===0?'Floor':n===50?'Halfway':'Ceiling',function(){cancel();change(n);},{key:n,'aria-pressed':level===n});})),
+          h('div',{className:'bl-box-measures'},reading('Height above floor',m.height,'in','height'),reading('Floor area',m.area,'in²','area'),reading('Space below plane',m.volume,'in³','volume'),reading('Full interior',m.capacity,'in³','capacity')),
+          h('p',{className:'bl-box-note'},number(d.floor)+' × '+number(d.floor)+' × '+number(m.height)+' = '+number(m.volume)+' cubic inches. A square floor makes area grow with the square of its side.'),
+          h('div',{className:'bl-box-actions'},button(pin?'Replace kept box':'Keep this box',function(){cancel();setPin({species:props.species,level:level});},{ref:keepButton,'data-box-keep':true})),
+          pin&&h('div',{className:'bl-box-saved','data-box-saved':pin.species},h('strong',null,'White dashes · '+pin.species),h('p',null,'Kept plane: '+number(pm.height)+' in · '+number(pm.volume)+' in³ below it. Full interior: '+number(pm.capacity)+' in³.'),h('p',null,'Current full interior ÷ kept: '+number(m.capacity/pm.capacity)+'×. Current space below the plane: '+(m.volume-pm.volume>=0?'+':'')+number(m.volume-pm.volume)+' in³.'),h('div',{className:'bl-box-actions'},button('Restore kept box',function(){cancel();props.onSelect(pin.species);setLevel(pin.level);},{'data-box-restore':true}),button('Clear comparison',function(){cancel();setPin(null);if(keepButton.current)keepButton.current.focus();},{ref:clearButton,'data-box-clear':true}))),
+          h('div',{className:'bl-box-hole'},h('strong',null,'Entrance shapes · shared scale'),
+            h('svg',{viewBox:'0 0 420 210',role:'img','aria-label':'Current and kept entrance dimensions'},
+              h('ellipse',{cx:105,cy:90,rx:(d.holeW||d.hole)*20,ry:(d.holeH||d.hole)*20,fill:'#7ddac3',stroke:'#ddf9ee',strokeWidth:2,'data-box-entrance':'current'}),
+              pd&&h('ellipse',{cx:315,cy:90,rx:(pd.holeW||pd.hole)*20,ry:(pd.holeH||pd.hole)*20,fill:'none',stroke:'#fff',strokeWidth:3,strokeDasharray:'5 5','data-box-entrance':'saved'}),
+              h('text',{x:105,y:200,textAnchor:'middle'},number(d.holeW||d.hole)+' × '+number(d.holeH||d.hole)+' in'),
+              pd&&h('text',{x:315,y:200,textAnchor:'middle'},number(pd.holeW||pd.hole)+' × '+number(pd.holeH||pd.hole)+' in')),
+            h('p',{className:'bl-box-note'},'Ideal ellipse area: '+number(m.holeArea)+' in². Entrance shapes are enlarged separately from the box scene.')))),
+      h('p',{className:'bl-box-note'},'Geometry study using the guide’s floor and box-depth values. Walls and the front are removed to reveal a simple rectangular interior; the entrance is shown separately. This measures space, not nesting success or a construction cut list.'));
+  }
+
+  function BirdlabPupilAlignmentStudy(props) {
+    var React=props.React,h=React.createElement,configuration=props.configuration;
+    var _offset=React.useState(0),offset=_offset[0],setOffset=_offset[1];
+    var _pin=React.useState(null),pin=_pin[0],setPin=_pin[1];
+    var _sweep=React.useState(false),sweeping=_sweep[0],setSweeping=_sweep[1];
+    var _reduced=React.useState(function(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}),reduced=_reduced[0],setReduced=_reduced[1];
+    var gesture=React.useRef(null),clock=React.useRef(0);
+    var current=birdlabPupilSample(configuration,offset),targetObjective=configuration.pupil*configuration.magnification;
+    function stop(){setSweeping(false);}
+    function rounded(value){return Math.round(Math.max(-12,Math.min(12,value))*10)/10;}
+    function release(active){if(active&&active.target.hasPointerCapture&&active.target.hasPointerCapture(active.id))try{active.target.releasePointerCapture(active.id);}catch(_){};}
+    function cancel(restore){var active=gesture.current;gesture.current=null;release(active);if(active&&restore)setOffset(active.original);}
+    function inspect(value){stop();cancel(false);setOffset(rounded(value));}
+    function position(event,graph){var node=event.currentTarget,point=node.createSVGPoint();point.x=event.clientX;point.y=event.clientY;var matrix=node.getScreenCTM();if(!matrix)return null;point=point.matrixTransform(matrix.inverse());return graph?(point.x-60)/640*24-12:(point.x-380)/16;}
+    function pointerDown(event,graph){
+      if(gesture.current){if(gesture.current.id!==event.pointerId)cancel(true);return;}
+      if(event.isPrimary===false||event.button!==0)return;
+      stop();gesture.current={id:event.pointerId,original:offset,x:event.clientX,y:event.clientY,moved:false,target:event.currentTarget,graph:graph};
+      if(event.currentTarget.setPointerCapture)event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    function pointerMove(event){var active=gesture.current;if(!active||active.id!==event.pointerId)return;
+      var dx=Math.abs(event.clientX-active.x),dy=Math.abs(event.clientY-active.y);
+      if(event.pointerType==='touch'&&!active.moved&&dy>dx+6){cancel(true);return;}
+      if(dx+dy<3&&!active.moved)return;active.moved=true;
+      var value=position(event,active.graph);if(value!==null)setOffset(rounded(value));
+    }
+    function pointerUp(event){var active=gesture.current;if(!active||active.id!==event.pointerId)return;
+      var value=position(event,active.graph);gesture.current=null;release(active);if(value!==null)setOffset(rounded(value));
+    }
+    function keyboard(event){var value=offset;
+      if(event.key==='Home')value=-12;else if(event.key==='End')value=12;
+      else if(event.key==='ArrowLeft'||event.key==='ArrowDown')value-=event.shiftKey?1:.1;
+      else if(event.key==='ArrowRight'||event.key==='ArrowUp')value+=event.shiftKey?1:.1;else return;
+      event.preventDefault();inspect(value);
+    }
+    function interactive(graph){return {tabIndex:0,role:'slider','aria-label':graph?'Horizontal eye offset on alignment graph':'Horizontal eye offset in alignment diagram','aria-valuemin':-12,'aria-valuemax':12,'aria-valuenow':offset,'aria-valuetext':offset.toFixed(1)+' millimeters','aria-orientation':'horizontal',onKeyDown:keyboard,onPointerDown:function(event){pointerDown(event,graph);},onPointerMove:pointerMove,onPointerUp:pointerUp,onPointerCancel:function(){cancel(true);},onLostPointerCapture:function(){cancel(true);},style:{touchAction:'pan-y',cursor:'ew-resize'}};}
+    React.useEffect(function(){stop();cancel(false);},[configuration.magnification,configuration.objective,configuration.pupil]);
+    React.useEffect(function(){
+      var media=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+      function hidden(){if(document.hidden){stop();cancel(true);}}
+      function changed(event){setReduced(event.matches);if(event.matches)stop();}
+      document.addEventListener('visibilitychange',hidden);if(media&&media.addEventListener)media.addEventListener('change',changed);
+      return function(){gesture.current=null;document.removeEventListener('visibilitychange',hidden);if(media&&media.removeEventListener)media.removeEventListener('change',changed);};
+    },[]);
+    React.useEffect(function(){if(!sweeping||reduced)return;var frame=null,previous=null,alive=true;
+      function tick(now){if(!alive)return;if(previous!==null){clock.current+=Math.max(0,Math.min(100,now-previous));setOffset(rounded(-12+24*Math.min(1,clock.current/6000)));if(clock.current>=6000){setSweeping(false);return;}}previous=now;frame=requestAnimationFrame(tick);}
+      frame=requestAnimationFrame(tick);return function(){alive=false;cancelAnimationFrame(frame);};
+    },[sweeping,reduced]);
+    function freeze(){stop();cancel(false);setPin({magnification:configuration.magnification,objective:configuration.objective,pupil:configuration.pupil,offset:offset});}
+    function experiment(id){stop();cancel(false);if(id==='recenter')setOffset(0);else if(id==='mirror')setOffset(rounded(-offset));else if(id==='match'&&targetObjective>=20&&targetObjective<=50)props.onConfiguration({magnification:configuration.magnification,objective:targetObjective,pupil:configuration.pupil});else if(id==='restore'&&pin){setOffset(pin.offset);props.onConfiguration({magnification:pin.magnification,objective:pin.objective,pupil:pin.pupil});}}
+    function condition(state,selected,label){var sample=birdlabPupilSample(state,selected),eyeX=380+selected*16,id='birdlab-pupil-'+label;
+      var svg={viewBox:'0 0 760 420','data-pupil-disks':label,'aria-label':label==='current'?'Current beam and eye pupil, drawn at one scale':'Frozen beam and eye pupil, drawn at the same scale',role:'img'};if(label==='current')Object.assign(svg,interactive(false));
+      return h('article',{'data-pupil-condition':label,'data-pupil-magnification':state.magnification,'data-pupil-objective':state.objective,'data-pupil-pupil':state.pupil,'data-pupil-offset':selected,'data-pupil-area':sample.area,'data-pupil-admitted':sample.admitted,'data-pupil-eye-fill':sample.eyeFill,className:'birdlab-pupil-condition'},
+        h('header',null,h('strong',null,label==='current'?'Current alignment':'Frozen alignment'),h('span',null,state.magnification+' × '+state.objective+' · eye '+state.pupil+' mm')),
+        h('svg',svg,
+          h('defs',null,h('clipPath',{id:id+'-clip'},h('circle',{cx:eyeX,cy:210,r:sample.eye*16,'data-pupil-eye-clip':'true'})),h('radialGradient',{id:id+'-beam'},h('stop',{offset:0,stopColor:'#ffe9a0'}),h('stop',{offset:1,stopColor:'#bc8b35'}))),
+          h('rect',{width:760,height:420,fill:'#13383f'}),
+          [-20,-10,0,10,20].map(function(mm){return h('g',{key:mm},h('line',{x1:380+mm*16,x2:380+mm*16,y1:40,y2:355,stroke:mm===0?'#6e9396':'#31565e',strokeDasharray:mm===0?undefined:'4 7'}),h('text',{x:380+mm*16,y:391,textAnchor:'middle',fontSize:28,fontFamily:'ui-monospace,monospace',fill:'#e2efdf'},(mm>0?'+':'')+mm));}),
+          h('line',{x1:60,x2:700,y1:210,y2:210,stroke:'#6e9396'}),
+          h('circle',{cx:380,cy:210,r:sample.beam*16,fill:'url(#'+id+'-beam)',stroke:'#ffdc85',strokeWidth:2,'data-pupil-beam':'true'}),
+          h('circle',{cx:eyeX,cy:210,r:sample.eye*16,fill:'#78c7be',fillOpacity:.12}),
+          h('circle',{cx:380,cy:210,r:sample.beam*16,fill:'#9aeddb',clipPath:'url(#'+id+'-clip)','data-pupil-overlap':'true'}),
+          h('line',{x1:380,x2:eyeX,y1:210,y2:210,stroke:'#f7f9e7',strokeWidth:2,strokeDasharray:'5 5'}),
+          h('path',{d:'M374 210h12m-6-6v12',stroke:'#183a40',strokeWidth:2}),
+          h('circle',{cx:eyeX,cy:210,r:sample.eye*16,fill:'none',stroke:'#e0fff2',strokeWidth:3,strokeDasharray:'9 5','data-pupil-eye':'true'}),
+          label==='current'?h('circle',{cx:eyeX,cy:210,r:7,fill:'#eafff3',stroke:'#14393f',strokeWidth:2,'data-pupil-handle':'true'}):null),
+        h('div',{className:'birdlab-pupil-readings'},
+          h('div',null,h('span',null,'Beam area inside eye'),h('strong',null,(100*sample.admitted).toFixed(1)+'%')),
+          h('div',null,h('span',null,'Eye area covered'),h('strong',null,(100*sample.eyeFill).toFixed(1)+'%')),
+          h('div',null,h('span',null,'Shared area'),h('strong',null,sample.area.toFixed(2)+' mm²'))),
+        h('p',null,'Beam '+(2*sample.beam).toFixed(2)+' mm · horizontal eye offset '+selected.toFixed(1)+' mm. The drawing uses one fixed scale: ticks are millimeters.'));
+    }
+    function curve(state,label){var points=[];for(var i=0;i<=240;i++){var sample=birdlabPupilSample(state,-12+i*.1);points.push((60+640*i/240).toFixed(5)+','+(250-200*sample.admitted).toFixed(5));}return h('polyline',{points:points.join(' '),fill:'none',stroke:label==='current'?'#ffd782':'#9de8ef',strokeWidth:label==='current'?4:3,strokeDasharray:label==='pinned'?'9 6':undefined,'data-pupil-curve':label});}
+    function probe(state,selected,label){var sample=birdlabPupilSample(state,selected);return h('circle',{cx:60+(selected+12)/24*640,cy:250-200*sample.admitted,r:label==='current'?7:6,fill:label==='current'?'#fff0bb':'#9de8ef',stroke:'#12353d',strokeWidth:2,'data-pupil-probe':label,'data-pupil-graph-handle':label==='current'?'true':undefined});}
+    return h('section',{className:'birdlab-pupil-study','data-birdlab-pupil-study':'true','data-pupil-sweeping':String(sweeping),'aria-labelledby':'birdlab-pupil-title'},
+      h('style',null,'.birdlab-pupil-study{container-type:inline-size;container-name:pupilBench;background:#f3f2e5;color:#183d3d;border:1px solid #9eb9a5;border-radius:18px;padding:20px;margin:22px 0;font:14px/1.65 system-ui,sans-serif}.birdlab-pupil-study *{box-sizing:border-box}.birdlab-pupil-study h2{font:700 clamp(24px,3vw,34px)/1.2 Georgia,serif;margin:6px 0 12px}.birdlab-pupil-study h3{font-size:17px;margin:0 0 8px}.birdlab-pupil-study p{margin:8px 0 12px}.birdlab-pupil-kicker{font-size:11px;font-weight:800;letter-spacing:.12em}.birdlab-pupil-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr);gap:16px}.birdlab-pupil-layout>*{min-width:0}.birdlab-pupil-condition,.birdlab-pupil-graph{background:#13383f;color:#eff5e5;border:1px solid #6a979a;border-radius:12px;overflow:hidden;margin:0 0 14px}.birdlab-pupil-condition header,.birdlab-pupil-graph figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 12px;padding:12px 14px;border-bottom:1px solid #5c8688}.birdlab-pupil-condition header span{font-size:12px}.birdlab-pupil-study svg{display:block;width:100%;height:auto;overflow:hidden}.birdlab-pupil-study svg[role=slider]:focus-visible{outline:3px solid #eac875;outline-offset:-4px}.birdlab-pupil-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px 12px}.birdlab-pupil-readings>div{border:1px solid #6d9291;border-radius:7px;padding:8px}.birdlab-pupil-readings span{display:block;font-size:11px}.birdlab-pupil-readings strong{display:block;font-size:clamp(15px,1.6vw,20px);font-variant-numeric:tabular-nums}.birdlab-pupil-condition p,.birdlab-pupil-graph p{color:#e1efdf!important;font-size:12px;line-height:1.7;padding:0 14px 12px;margin:0}.birdlab-pupil-controls{padding:14px;border:1px solid #a4bda6;border-radius:12px;background:#e8eee0;align-self:start}.birdlab-pupil-controls label{display:block;font-size:13px;font-weight:700}.birdlab-pupil-controls input[type=range]{display:block;width:100%;min-height:44px;accent-color:#285e54}.birdlab-pupil-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.birdlab-pupil-study button{min-height:44px;padding:10px 12px;background:#fffdf1;color:#173d3d;border:1px solid #8da78d;border-radius:8px;font:700 13px/1.4 system-ui;cursor:pointer}.birdlab-pupil-study button:disabled{opacity:.55;cursor:default}.birdlab-pupil-study button:focus-visible,.birdlab-pupil-study input:focus-visible{outline:3px solid #a14c24;outline-offset:3px}.birdlab-pupil-study button[data-pupil-pin]{background:#23564c;color:#f4ffec;border-color:#23564c}.birdlab-pupil-legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;margin:12px 0}.birdlab-pupil-legend span:before{content:"";display:inline-block;width:11px;height:11px;border:1px solid #567b74;border-radius:50%;margin-right:6px;background:var(--pupil-color)}.birdlab-pupil-limit{font-size:12px;border-top:1px solid #a4bda6;padding-top:12px;margin-top:14px}.birdlab-pupil-limit a{color:#245851;text-decoration:underline}.birdlab-pupil-status{font-size:12px;min-height:40px}@container pupilBench (max-width:760px){.birdlab-pupil-layout{grid-template-columns:minmax(0,1fr)}}@container pupilBench (max-width:430px){.birdlab-pupil-readings{padding:8px;gap:5px}.birdlab-pupil-readings>div{padding:7px 4px}.birdlab-pupil-controls{padding:12px}.birdlab-pupil-readings strong{font-size:14px}.birdlab-pupil-condition header{display:grid}}@media(forced-colors:active){.birdlab-pupil-study svg circle,.birdlab-pupil-study svg line,.birdlab-pupil-study svg polyline{stroke:CanvasText}.birdlab-pupil-study svg text{fill:CanvasText}}'),
+      h('div',{className:'birdlab-pupil-kicker'},'ALIGNMENT / FOLLOW THE SHARED AREA'),h('h2',{id:'birdlab-pupil-title'},'Where does the beam meet the eye?'),
+      h('p',null,'Move the eye across the exit beam. The mint region is their exact shared area; gold outside the eye is unused in this geometric picture. The binocular controls above change the same beam here.'),
+      h('div',{className:'birdlab-pupil-legend'},[['#d8ae52','Gold · full exit beam'],['#9aeddb','Mint · shared area'],['#e9fff0','Dashed ring · example eye pupil']].map(function(item){return h('span',{key:item[1],style:{'--pupil-color':item[0]}},item[1]);})),
+      h('div',{className:'birdlab-pupil-layout'},h('div',null,condition(configuration,offset,'current'),pin?condition(pin,pin.offset,'pinned'):null),
+        h('div',{className:'birdlab-pupil-controls'},h('h3',null,'Move one thing'),
+          h('label',{htmlFor:'birdlab-pupil-offset'},'Horizontal eye offset · ',h('output',{htmlFor:'birdlab-pupil-offset'},offset.toFixed(1)+' mm')),
+          h('input',{id:'birdlab-pupil-offset',type:'range',min:-12,max:12,step:.1,value:offset,'aria-valuetext':offset.toFixed(1)+' millimeters',onChange:function(event){inspect(Number(event.target.value));}}),
+          h('p',null,'Drag the current diagram or graph. Arrow keys move 0.1 mm; Shift + arrows move 1 mm. Home and End reach the limits.'),
+          h('div',{className:'birdlab-pupil-buttons'},h('button',{type:'button','data-pupil-reset':'true',onClick:function(){inspect(0);}},'Reset offset'),h('button',{type:'button','data-pupil-sweep':'true',disabled:reduced,'aria-pressed':sweeping,onClick:function(){cancel(false);if(sweeping)stop();else{clock.current=0;setOffset(-12);setSweeping(true);}}},sweeping?'Stop sweep':'Sweep offset')),
+          h('div',{className:'birdlab-pupil-buttons'},h('button',{type:'button','data-pupil-pin':'true',onClick:freeze},pin?'Replace frozen alignment':'Freeze this alignment'),h('button',{type:'button','data-pupil-clear':'true',disabled:!pin,onClick:function(event){var target=event.currentTarget.closest('[data-birdlab-pupil-study]').querySelector('[data-pupil-pin]');stop();cancel(false);setPin(null);if(target)target.focus();}},'Clear frozen alignment')),
+          h('div',{className:'birdlab-pupil-buttons'},[['recenter','Center eye'],['mirror','Mirror offset'],['match','Match beam to pupil'],['restore','Restore frozen alignment']].map(function(item){return h('button',{key:item[0],type:'button','data-pupil-experiment':item[0],disabled:item[0]==='restore'?!pin:item[0]==='match'&&(targetObjective<20||targetObjective>50),onClick:function(){experiment(item[0]);}},item[1]);})),
+          h('p',{className:'birdlab-pupil-status','data-pupil-status':'true',role:'status','aria-live':sweeping?'off':'polite'},pin?'Frozen '+pin.magnification+' × '+pin.objective+' · eye '+pin.pupil+' mm · offset '+pin.offset.toFixed(1)+' mm. All four settings stay saved.':'Freeze all four settings, then change the beam or offset. Both drawings and curves keep the same scales.'),
+          h('p',null,'Matching sets the front lens to eye diameter × magnification, keeping the eye and offset unchanged. It is unavailable when that exact lens would fall outside the existing 20–50 mm control.'))),
+      h('figure',{className:'birdlab-pupil-graph'},h('figcaption',null,h('strong',null,'How much of the beam is inside the eye?'),h('span',null,'Gold · current / dashed cyan · frozen')),
+        h('svg',Object.assign({viewBox:'0 0 760 320','data-pupil-graph':'true'},interactive(true)),
+          h('rect',{width:760,height:320,fill:'#13383f'}),
+          [0,.5,1].map(function(value){return h('g',{key:value},h('line',{x1:60,x2:700,y1:250-200*value,y2:250-200*value,stroke:'#517479'}),h('text',{x:52,y:258-200*value,textAnchor:'end',fontSize:28,fontFamily:'ui-monospace,monospace',fill:'#e2efdf'},Math.round(value*100)));}),
+          [-12,-6,0,6,12].map(function(value){var x=60+(value+12)/24*640;return h('g',{key:value},h('line',{x1:x,x2:x,y1:50,y2:250,stroke:'#31565e'}),h('text',{x:x,y:294,textAnchor:'middle',fontSize:28,fontFamily:'ui-monospace,monospace',fill:'#e2efdf'},(value>0?'+':'')+value));}),
+          curve(configuration,'current'),pin?curve(pin,'pinned'):null,
+          h('line',{x1:60+(offset+12)/24*640,x2:60+(offset+12)/24*640,y1:40,y2:260,stroke:'#eaf6e4',strokeDasharray:'5 6'}),
+          pin?probe(pin,pin.offset,'pinned'):null,probe(configuration,offset,'current')),
+        h('p',null,'Horizontal axis: signed eye offset in millimeters. Vertical axis: percent of full beam area inside the eye. Each curve holds its own beam and eye sizes fixed. The frozen point retains its saved offset.')),
+      h('p',{className:'birdlab-pupil-limit'},'This is an ideal flat cross-section of two circular openings. It measures overlap area, not perceived brightness, retinal exposure, comfort, eye relief or bird detection. Eye area covered uses the eye area as its denominator; beam area inside eye uses the beam area. The optional six-second sweep is a display aid, with no modeled eye motion. It stops on edits, hiding the page or reduced-motion preference. The woodland preview above keeps its original brightness. ',h('a',{href:'https://imaging.nikon.com/sport-optics/guide/binoculars/basic/basic_05/',target:'_blank',rel:'noopener noreferrer'},'Nikon: exit pupil'),' · ',h('a',{href:'https://mathworld.wolfram.com/Circle-CircleIntersection.html',target:'_blank',rel:'noopener noreferrer'},'Circle overlap geometry')));
+  }
+
   function BirdlabSoundStudy(props) {
     var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React = props.React, h = React.createElement;
@@ -33465,6 +33923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('button', { type: 'button', 'aria-pressed': pupil === 6, onClick: function() { setPupil(6); } }, __alloT('stem.birdlab.optics_lab_lowlight', 'Low light · 6 mm'))),
                 h('p', { className: 'birdlab-equipment-note' }, __alloT('stem.birdlab.optics_lab_pupil_note', 'When the beam is smaller than your eye pupil, less of the pupil receives light. A larger beam can help in dim light; light outside the eye pupil is unused. These are example pupil sizes, which vary with the person and light. Coatings and optical quality also matter.')),
                 h('p', { className: 'birdlab-equipment-note' }, h('a', { href: 'https://imaging.nikon.com/sport-optics/guide/binoculars/basic/basic_05/', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.optics_lab_source_pupil', 'Nikon: exit pupil')), ' · ', h('a', { href: 'https://imaging.nikon.com/sport-optics/guide/binoculars/basic/basic_08/', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.optics_lab_source_field', 'Nikon: field of view')))))),
+          h(BirdlabPupilAlignmentStudy,{React:React,configuration:{magnification:mag,objective:objective,pupil:pupil},onConfiguration:function(next){setMag(next.magnification);setObjective(next.objective);setPupil(next.pupil);}}),
           h('figure', { className: 'm-0 mb-4 p-3 rounded-xl bg-white border border-sky-200 shadow' },
             h('div', { className: 'overflow-x-auto' }, OPTICS_ART.draw(h, OPTICS, { label: __alloT('stem.birdlab.optics_label', 'What the two numbers on a binocular mean'),
               eye: __alloT('stem.birdlab.optics_eye', 'No binoculars'), lens: __alloT('stem.birdlab.optics_lens', '{value1} mm front lens'),
@@ -34447,6 +34906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, n.species);
             })),
+          h(BirdlabNestboxStudy, { React: React, species: cur.species, dimensions: NESTBOX_DIMS, onSelect: function(name) { var next = NESTBOX_GUIDE.findIndex(function(item) { return item.species === name; }); if (next >= 0) setIdx(next); } }),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
             h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, '🪺 ' + cur.species),
             h('div', { className: 'flex flex-wrap gap-3 mb-3 items-start' },
@@ -35850,6 +36310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'birdlab-dawn-observation', role: 'status', 'aria-atomic': 'true' }, h('strong', null, phases[phase]), h('p', null, prompts[phase])),
                 h('p', { className: 'birdlab-equipment-note' }, __alloT('stem.birdlab.dawn_study_variation', 'Real timing and combinations vary with habitat, season, weather and species. Song can continue well beyond dawn. A quiet moment is not a complete bird count.')),
                 h('p', { className: 'birdlab-equipment-note' }, h('a', { href: 'https://academy.allaboutbirds.org/birdsong/', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.dawn_study_source_song', 'Cornell: how and why birds sing')), ' · ', h('a', { href: 'https://news.cornell.edu/stories/2025/06/study-reveals-why-early-bird-sings-early', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.dawn_study_source_timing', 'Cornell: studying dawn timing'))))),
+            h(BirdlabChorusTimelineStudy,{React:React,phase:phase,onPhase:setPhase,singer:singer,onSinger:setSinger}),
             h('div', { className: 'birdlab-dawn-singers', role: 'group', 'aria-label': __alloT('stem.birdlab.dawn_study_choose_voice', 'Inspect a voice') }, birds.map(function(bird) {
               var vocal = active.indexOf(bird.id) !== -1;
               return h('button', { key: bird.id, type: 'button', 'data-dawn-singer': bird.id, 'aria-pressed': singer === bird.id, onClick: function() { setSinger(bird.id); } },

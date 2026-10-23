@@ -59,6 +59,7 @@ for (const compiled of [false, true]) {
     const delivered = h.readers[0].deliver();
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(settled, false);
+    assert.equal(h.state.history[0].id, 'saved-work');
     restoring.resolve(true);
     await delivered;
     assert.equal((await imported).success, true);
@@ -72,7 +73,7 @@ for (const compiled of [false, true]) {
       if (kind === 'read') h.readers[0].onerror();
       else await h.readers[0].deliver(kind === 'parse' ? '{invalid' : kind === 'validation' ? '{}' : undefined);
       assert.equal((await imported).success, false, kind);
-      if (kind !== 'restore') assert.equal(h.state.history[0].id, 'saved-work', kind);
+      assert.equal(h.state.history[0].id, 'saved-work', kind);
     }
   });
   test(label + ': cancellation before validation or during restore settles without late success', async () => {

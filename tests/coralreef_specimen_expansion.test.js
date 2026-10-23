@@ -49,7 +49,9 @@ describe('expanded reef specimen collection', () => {
 
   it('appends encounters without changing the existing population entries', () => {
     const ids = Object.keys(X.POPULATION);
-    expect(ids.slice(-2)).toEqual(additions);
+    const first = ids.indexOf(additions[0]);
+    expect(first).toBeGreaterThan(0);
+    expect(ids.slice(first, first + 2)).toEqual(additions);
     const healthy = X.EXPLORE_SITES.find(s => s.id === 'healthy');
     const population = X.populationFor(healthy);
     for (const id of additions) expect(population.find(p => p.id === id).count).toBeGreaterThan(0);

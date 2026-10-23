@@ -4601,7 +4601,21 @@
     { id: 'reef_ball', group: 'structure', scientific: null, iucn: null, iucnYear: null, lookalikes: [] },
     { id: 'coral_tree_nursery', group: 'structure', scientific: null, iucn: null, iucnYear: null, lookalikes: [] },
     {"id":"firefish","group":"fish","scientific":"Nemateleotris magnifica","iucn":"LC","iucnYear":2023,"lookalikes":[]},
-    {"id":"copperband_butterflyfish","group":"fish","scientific":"Chelmon rostratus","iucn":"LC","iucnYear":2009,"lookalikes":["threadfin_butterflyfish"]}
+    {"id":"copperband_butterflyfish","group":"fish","scientific":"Chelmon rostratus","iucn":"LC","iucnYear":2009,"lookalikes":["threadfin_butterflyfish"]},
+    {"id":"spotted_garden_eel","group":"fish","scientific":"Heteroconger hassi","iucn":"LC","iucnYear":2016,"lookalikes":[]},
+    {"id":"banded_pipefish","group":"fish","scientific":"Dunckerocampus dactyliophorus","iucn":"DD","iucnYear":2016,"lookalikes":[]},
+    {"id":"yellow_longnose_butterflyfish","group":"fish","scientific":"Forcipiger flavissimus","iucn":"LC","iucnYear":2009,"lookalikes":["copperband_butterflyfish"]},
+    {"id":"pajama_cardinalfish","group":"fish","scientific":"Sphaeramia nematoptera","iucn":"LC","iucnYear":2021,"lookalikes":[]},
+    {"id":"banggai_cardinalfish","group":"fish","scientific":"Pterapogon kauderni","iucn":"EN","iucnYear":2007,"lookalikes":["pajama_cardinalfish"]},
+    {"id":"giant_triton","group":"invertebrate","scientific":"Charonia tritonis","iucn":"NE","iucnYear":null,"lookalikes":[]},
+    {"id":"blue_velvet_headshield_slug","group":"invertebrate","scientific":"Chelidonura varians","iucn":"NE","iucnYear":null,"lookalikes":["nudibranch"]},
+    {"id":"regal_angelfish","group":"fish","scientific":"Pygoplites diacanthus","iucn":"LC","iucnYear":2009,"lookalikes":["emperor_angelfish"]},
+    {"id":"mandarin_dragonet","group":"fish","scientific":"Synchiropus splendidus","iucn":"LC","iucnYear":2018,"lookalikes":[]},
+    {"id":"harlequin_shrimp","group":"invertebrate","scientific":"Hymenocera picta","iucn":"NE","iucnYear":null,"lookalikes":["cleaner_shrimp"]},
+    {"id":"spotted_seahorse","group":"fish","scientific":"Hippocampus kuda","iucn":"VU","iucnYear":2012,"lookalikes":["banded_pipefish"]},
+    {"id":"bennetts_feather_star","group":"invertebrate","scientific":"Anneissia bennetti","iucn":"NE","iucnYear":null,"lookalikes":["christmas_tree_worm"]},
+    {"id":"peacock_mantis_shrimp","group":"invertebrate","scientific":"Odontodactylus scyllarus","iucn":"NE","iucnYear":null,"lookalikes":["harlequin_shrimp"]},
+    {"id":"ribbon_eel","group":"fish","scientific":"Rhinomuraena quaesita","iucn":"LC","iucnYear":2009,"lookalikes":["giant_moray"]}
   ];
   function speciesText(__alloT) {
     return {
@@ -4922,7 +4936,105 @@
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark3", "A dark-edged orange bar passes through the real eye"),
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark4", "A black false eyespot sits near the rear of the dorsal fin")],
         role: __alloT("stem.coralreef.sp_copperband_butterflyfish_role", "Picks small bottom-dwelling invertebrates from reef crevices with its narrow snout."),
-        fact: __alloT("stem.coralreef.sp_copperband_butterflyfish_fact", "Its long adult snout develops after the young fish settles on the reef; the earliest stages already have similar markings.") }
+        fact: __alloT("stem.coralreef.sp_copperband_butterflyfish_fact", "Its long adult snout develops after the young fish settles on the reef; the earliest stages already have similar markings.") },
+      spotted_garden_eel: { name: __alloT("stem.coralreef.sp_spotted_garden_eel_name", "Spotted garden eel"),
+        marks: [__alloT("stem.coralreef.sp_spotted_garden_eel_mark1", "Extremely slender, straw-like body rather than a broad fish silhouette"),
+          __alloT("stem.coralreef.sp_spotted_garden_eel_mark2", "Pale adult body densely sprinkled with small dark spots"),
+          __alloT("stem.coralreef.sp_spotted_garden_eel_mark3", "Larger dark patches interrupt the fine spots, including one around the gill opening"),
+          __alloT("stem.coralreef.sp_spotted_garden_eel_mark4", "Only part of the upright, curved body emerges from its sandy burrow")],
+        role: __alloT("stem.coralreef.sp_spotted_garden_eel_role", "Takes drifting zooplankton from the current while remaining anchored in a sand burrow."),
+        fact: __alloT("stem.coralreef.sp_spotted_garden_eel_fact", "Its tail digs the burrow, and mucus helps bind the sand walls. The eel can withdraw tail-first when alarmed.") },
+      banded_pipefish: { name: __alloT("stem.coralreef.sp_banded_pipefish_name", "Banded pipefish (ringed pipefish)"),
+        marks: [__alloT("stem.coralreef.sp_banded_pipefish_mark1", "Very slender, elongated body with a long, narrow tubular snout"),
+          __alloT("stem.coralreef.sp_banded_pipefish_mark2", "Alternating pale and red-to-black bands cross the head and body"),
+          __alloT("stem.coralreef.sp_banded_pipefish_mark3", "A distinct reddish tail fin ends the thin body"),
+          __alloT("stem.coralreef.sp_banded_pipefish_mark4", "White margins line the tail fin above and below, with one or more pale spots near its centre")],
+        role: __alloT("stem.coralreef.sp_banded_pipefish_role", "Thought to prey on tiny crustaceans in sheltered reef habitats; its detailed wild feeding role is poorly documented."),
+        fact: __alloT("stem.coralreef.sp_banded_pipefish_fact", "In this relative of seahorses, the male broods the developing eggs.") },
+      yellow_longnose_butterflyfish: { name: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_name", "Yellow longnose butterflyfish (forceps fish)"),
+        marks: [__alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark1", "Deep, flattened body with a bright yellow colour"),
+          __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark2", "A very long, narrow snout projects ahead of the face"),
+          __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark3", "Upper head black; lower head and chest silvery white"),
+          __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark4", "A small black spot sits on the rear anal fin, just below the tail base")],
+        role: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_role", "Probes reef crevices for small animals and nips pieces from larger invertebrates."),
+        fact: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_fact", "Its genus name, Forcipiger, means forceps-bearing, a reference to the elongated jaws.") },
+      pajama_cardinalfish: { name: __alloT("stem.coralreef.sp_pajama_cardinalfish_name", "Pajama cardinalfish"),
+        marks: [__alloT("stem.coralreef.sp_pajama_cardinalfish_mark1", "Yellowish head with a conspicuous red-to-orange eye"),
+          __alloT("stem.coralreef.sp_pajama_cardinalfish_mark2", "A broad, dark vertical bar crosses the middle of the body"),
+          __alloT("stem.coralreef.sp_pajama_cardinalfish_mark3", "Rounded purple-to-brown spots scatter across the pale rear body"),
+          __alloT("stem.coralreef.sp_pajama_cardinalfish_mark4", "Two separate dorsal fins, with the front dorsal fin and pelvic fins dark")],
+        role: __alloT("stem.coralreef.sp_pajama_cardinalfish_role", "Feeds on small crustaceans and zooplankton around sheltered coral reefs."),
+        fact: __alloT("stem.coralreef.sp_pajama_cardinalfish_fact", "The male protects developing eggs by carrying them inside his mouth until they hatch.") },
+      banggai_cardinalfish: { name: __alloT("stem.coralreef.sp_banggai_cardinalfish_name", "Banggai cardinalfish"),
+        marks: [__alloT("stem.coralreef.sp_banggai_cardinalfish_mark1", "Silvery body crossed by three bold, black vertical bars"),
+          __alloT("stem.coralreef.sp_banggai_cardinalfish_mark2", "Small white spots decorate the body and most fins"),
+          __alloT("stem.coralreef.sp_banggai_cardinalfish_mark3", "Two separate dorsal fins: a tasseled front fin and a long, tapering second fin"),
+          __alloT("stem.coralreef.sp_banggai_cardinalfish_mark4", "A deeply forked tail and elongated lower anal fin create a pointed outline")],
+        role: __alloT("stem.coralreef.sp_banggai_cardinalfish_role", "Feeds on tiny crustaceans and other plankton around shallow reef and seagrass habitats."),
+        fact: __alloT("stem.coralreef.sp_banggai_cardinalfish_fact", "The father broods eggs and developing young in his mouth, then releases fully formed juveniles.") },
+      giant_triton: { name: __alloT("stem.coralreef.sp_giant_triton_name", "Giant triton (Triton’s trumpet)"),
+        marks: [__alloT("stem.coralreef.sp_giant_triton_mark1", "Large spiral shell with a tall, pointed spire and a swollen final whorl"),
+          __alloT("stem.coralreef.sp_giant_triton_mark2", "Cream-coloured shell patterned with brown markings and spiral ridges"),
+          __alloT("stem.coralreef.sp_giant_triton_mark3", "A broad, orange shell opening with a light-and-dark striped inner edge"),
+          __alloT("stem.coralreef.sp_giant_triton_mark4", "The flared outer lip has small teeth along its inner edge")],
+        role: __alloT("stem.coralreef.sp_giant_triton_role", "Predator of sea stars and other echinoderms. Its feeding alone is not enough to control crown-of-thorns outbreaks."),
+        fact: __alloT("stem.coralreef.sp_giant_triton_fact", "Researchers have seen crown-of-thorns starfish move away from water carrying a triton snail’s scent.") },
+      blue_velvet_headshield_slug: { name: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_name", "Blue velvet headshield slug"),
+        marks: [__alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark1", "Deep black body outlined by thin, vivid blue lines"),
+          __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark2", "A broad headshield with a blue line along its centre"),
+          __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark3", "Raised side flaps, called parapodia, partly wrap around the body"),
+          __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark4", "Two tapering, tail-like lobes extend behind the body and are unequal in length")],
+        role: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_role", "Small predator that specializes in free-living flatworms around reef-associated sediment."),
+        fact: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_fact", "Although sometimes called a blue velvet nudibranch, it is a headshield slug in a different sea-slug group.") },
+      regal_angelfish: { name: __alloT("stem.coralreef.sp_regal_angelfish_name", "Regal angelfish"),
+        marks: [__alloT("stem.coralreef.sp_regal_angelfish_mark1", "Pale, dark-edged vertical bars cross a yellow-orange body"),
+          __alloT("stem.coralreef.sp_regal_angelfish_mark2", "The soft rear dorsal fin is blue with fine dark scribbles"),
+          __alloT("stem.coralreef.sp_regal_angelfish_mark3", "The anal fin carries curved yellow and blue stripes"),
+          __alloT("stem.coralreef.sp_regal_angelfish_mark4", "A yellow tail contrasts with the blue-grey chest of this Pacific adult")],
+        role: __alloT("stem.coralreef.sp_regal_angelfish_role", "Predator of sponges and tunicates, linking these reef invertebrates to the fish food web."),
+        fact: __alloT("stem.coralreef.sp_regal_angelfish_fact", "Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest.") },
+      mandarin_dragonet: { name: __alloT("stem.coralreef.sp_mandarin_dragonet_name", "Mandarin dragonet"),
+        marks: [__alloT("stem.coralreef.sp_mandarin_dragonet_mark1", "Winding blue-green and orange bands cover the body"),
+          __alloT("stem.coralreef.sp_mandarin_dragonet_mark2", "A broad head leads into a smooth, elongated body"),
+          __alloT("stem.coralreef.sp_mandarin_dragonet_mark3", "The first dorsal fin has an extended spine in this adult male"),
+          __alloT("stem.coralreef.sp_mandarin_dragonet_mark4", "A fan-shaped orange-red tail has a bright blue edge")],
+        role: __alloT("stem.coralreef.sp_mandarin_dragonet_role", "Small predator of bottom-dwelling invertebrates among reef rubble and coral crevices."),
+        fact: __alloT("stem.coralreef.sp_mandarin_dragonet_fact", "Its blue colour comes from pigment-containing cells called cyanophores, an unusual way for a fish to produce blue.") },
+      harlequin_shrimp: { name: __alloT("stem.coralreef.sp_harlequin_shrimp_name", "Harlequin shrimp"),
+        marks: [__alloT("stem.coralreef.sp_harlequin_shrimp_mark1", "Cream-white body with large wine-purple and blue blotches"),
+          __alloT("stem.coralreef.sp_harlequin_shrimp_mark2", "Two broad, flattened paddle-like claws held in front"),
+          __alloT("stem.coralreef.sp_harlequin_shrimp_mark3", "Petal-like sensory antennules spread above the head"),
+          __alloT("stem.coralreef.sp_harlequin_shrimp_mark4", "A curved, segmented abdomen ends in a small tail fan")],
+        role: __alloT("stem.coralreef.sp_harlequin_shrimp_role", "Specialist predator of sea stars in reef food webs."),
+        fact: __alloT("stem.coralreef.sp_harlequin_shrimp_fact", "Experiments found that males can recognize and prefer the scent of their usual partner.") },
+      spotted_seahorse: { name: __alloT("stem.coralreef.sp_spotted_seahorse_name", "Spotted seahorse"),
+        marks: [__alloT("stem.coralreef.sp_spotted_seahorse_mark1", "Deep, upright body with a horse-like head and thick tubular snout"),
+          __alloT("stem.coralreef.sp_spotted_seahorse_mark2", "A low, rounded crown bends toward the back of the head"),
+          __alloT("stem.coralreef.sp_spotted_seahorse_mark3", "Armoured body rings bear low rounded bumps rather than long sharp spines"),
+          __alloT("stem.coralreef.sp_spotted_seahorse_mark4", "A long gripping tail can coil around a holdfast and has no tail fin")],
+        role: __alloT("stem.coralreef.sp_spotted_seahorse_role", "Small predator of planktonic crustaceans in coastal food webs."),
+        fact: __alloT("stem.coralreef.sp_spotted_seahorse_fact", "The male carries developing young in a brood pouch and releases them as tiny seahorses.") },
+      bennetts_feather_star: { name: __alloT("stem.coralreef.sp_bennetts_feather_star_name", "Bennett’s feather star"),
+        marks: [__alloT("stem.coralreef.sp_bennetts_feather_star_mark1", "Dozens of long arms spread upward and outward into a feeding crown"),
+          __alloT("stem.coralreef.sp_bennetts_feather_star_mark2", "Fine side branches called pinnules give each arm a feather-like outline"),
+          __alloT("stem.coralreef.sp_bennetts_feather_star_mark3", "The small central body has no long adult stalk"),
+          __alloT("stem.coralreef.sp_bennetts_feather_star_mark4", "Strong, jointed gripping appendages called cirri cluster beneath the body")],
+        role: __alloT("stem.coralreef.sp_bennetts_feather_star_role", "Suspension feeder that gathers tiny food particles from flowing reef water."),
+        fact: __alloT("stem.coralreef.sp_bennetts_feather_star_fact", "Its plant-like crown belongs to an animal: a feather star is an echinoderm, related to sea stars and sea urchins.") },
+      peacock_mantis_shrimp: { name: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_name", "Peacock mantis shrimp"),
+        marks: [__alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark1", "Large stalked compound eyes sit high above the head"),
+          __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark2", "Club-bearing striking limbs fold beneath the front of the body"),
+          __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark3", "Pale-edged dark spots mark the front sides of the carapace"),
+          __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark4", "The segmented abdomen ends in a broad fan of telson and paired uropods")],
+        role: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_role", "Predator of hard-shelled invertebrates in reef food webs."),
+        fact: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_fact", "A strike can create cavitation bubbles; their collapse adds another brief force pulse after the club’s impact.") },
+      ribbon_eel: { name: __alloT("stem.coralreef.sp_ribbon_eel_name", "Ribbon eel"),
+        marks: [__alloT("stem.coralreef.sp_ribbon_eel_mark1", "Two tubular nostrils widen into conspicuous fan-shaped flaps"),
+          __alloT("stem.coralreef.sp_ribbon_eel_mark2", "The exposed body is extremely slender and flattened from side to side"),
+          __alloT("stem.coralreef.sp_ribbon_eel_mark3", "A ribbon-like back fin begins near the head and follows the body"),
+          __alloT("stem.coralreef.sp_ribbon_eel_mark4", "Small fleshy projections extend from the snout tip and the front of the lower jaw")],
+        role: __alloT("stem.coralreef.sp_ribbon_eel_role", "Small-fish predator associated with reef burrows."),
+        fact: __alloT("stem.coralreef.sp_ribbon_eel_fact", "Colour alone is an unreliable sex label: a captive breeding study found that body colour did not consistently match sex or sexual maturity.") }
     };
   }
   // @@SPECIES_DATA_END
@@ -4982,7 +5094,21 @@
     magnificent_anemone: [3, 0.4], giant_clam: [3, 0.3], crown_of_thorns: [1, 0], blue_sea_star: [3, 0.2], long_spined_urchin: [4, 0], nudibranch: [4, 0.4],
     cleaner_shrimp: [2, 0.4], christmas_tree_worm: [5, 0.8], day_octopus: [1, 0.4], sea_cucumber: [3, 0], sea_fan: [6, 0.5], barrel_sponge: [5, 0.2], soft_coral: [8, 0.6],
     brain_coral: [10, 1], staghorn_coral: [12, 1], table_coral: [8, 1], mushroom_coral: [10, 1], boulder_coral: [8, 1], cauliflower_coral: [3, 1], foliose_coral: [3, 1],
-    firefish: [3, 0.35], copperband_butterflyfish: [2, 0.45]
+    firefish: [3, 0.35], copperband_butterflyfish: [2, 0.45],
+    spotted_garden_eel: [6, 0.15],
+    banded_pipefish: [3, 0.4],
+    yellow_longnose_butterflyfish: [4, 0.5],
+    pajama_cardinalfish: [6, 0.5],
+    banggai_cardinalfish: [5, 0.3],
+    giant_triton: [2, 0.2],
+    blue_velvet_headshield_slug: [4, 0.3],
+    regal_angelfish: [3, 0.4],
+    mandarin_dragonet: [4, 0.3],
+    harlequin_shrimp: [4, 0.3],
+    spotted_seahorse: [4, 0.3],
+    bennetts_feather_star: [3, 0.25],
+    peacock_mantis_shrimp: [3, 0.25],
+    ribbon_eel: [3, 0.25]
   };
   function populationFor(site) {
     var out = [], cover = site.health.coralCover / 0.55;
@@ -6898,6 +7024,104 @@
         behavior: __alloT("stem.coralreef.dx_copperband_butterflyfish_behavior", "Encountered singly or in pairs; adults form pairs during breeding."),
         observe: __alloT("stem.coralreef.dx_copperband_butterflyfish_observe", "Locate the real eye in its orange bar, then look toward the tail to find the false eyespot. Compare its long snout and broad bars with a threadfin butterflyfish."),
         sources: ["dx-foa-copperband_butterflyfish","dx-am-copperband_butterflyfish","dx-cas-copperband_butterflyfish","dx-ga-copperband_butterflyfish"]
+      },
+      spotted_garden_eel: {
+        habitat: __alloT("stem.coralreef.dx_spotted_garden_eel_habitat", "Sandy flats and slopes bordering tropical Indo-Pacific coral reefs, often in colonies."),
+        diet: __alloT("stem.coralreef.dx_spotted_garden_eel_diet", "Zooplankton carried past its burrow by the current."),
+        behavior: __alloT("stem.coralreef.dx_spotted_garden_eel_behavior", "Rises partway from its burrow to feed, generally facing into the current with neighboring eels. It retreats rapidly when threatened."),
+        observe: __alloT("stem.coralreef.dx_spotted_garden_eel_observe", "Follow the thin, spotted body from its sandy opening to the head. Look for the larger dark patch behind the head among the tiny spots."),
+        sources: ["dx-am-spotted_garden_eel","dx-cas-spotted_garden_eel","dx-foa-spotted_garden_eel","dx-ga-spotted_garden_eel"]
+      },
+      banded_pipefish: {
+        habitat: __alloT("stem.coralreef.dx_banded_pipefish_habitat", "Sheltered tropical western Pacific reefs and lagoons, especially caves, crevices and spaces beneath ledges."),
+        diet: __alloT("stem.coralreef.dx_banded_pipefish_diet", "Its detailed wild diet is poorly documented; it is thought to take tiny crustaceans, like other pipefishes."),
+        behavior: __alloT("stem.coralreef.dx_banded_pipefish_behavior", "Often found as a pair near shelter; it may also occur alone or in small groups. It can hover in recesses beneath reef ledges."),
+        observe: __alloT("stem.coralreef.dx_banded_pipefish_observe", "Trace the long snout, then follow the alternating bands to the tail. Look for the pale tail margins and central spot or spots."),
+        sources: ["dx-am-banded_pipefish","dx-foa-banded_pipefish","dx-lkc-banded_pipefish","dx-ea-banded_pipefish"]
+      },
+      yellow_longnose_butterflyfish: {
+        habitat: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_habitat", "Reef flats, crests, slopes and sheltered ledges across the tropical Indo-Pacific and into the eastern Pacific."),
+        diet: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_diet", "Small crustaceans, hydroids, worm tentacles and echinoderm tube feet; also fish eggs."),
+        behavior: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_behavior", "Often encountered in pairs, with single fish and small groups also reported."),
+        observe: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_observe", "Follow the narrow snout to the two-tone head. Compare its yellow body with the copperband butterflyfish’s bars, then locate the spot below the tail."),
+        sources: ["dx-am-yellow_longnose_butterflyfish","dx-foa-yellow_longnose_butterflyfish","dx-wa-yellow_longnose_butterflyfish","dx-iucn-yellow_longnose_butterflyfish"]
+      },
+      pajama_cardinalfish: {
+        habitat: __alloT("stem.coralreef.dx_pajama_cardinalfish_habitat", "Sheltered bays, lagoons and coastal reefs in the eastern Indian Ocean and western Pacific, near branching live corals."),
+        diet: __alloT("stem.coralreef.dx_pajama_cardinalfish_diet", "Small shrimps, crabs and other crustaceans; also zooplankton."),
+        behavior: __alloT("stem.coralreef.dx_pajama_cardinalfish_behavior", "Groups hover close to branching corals by day; fish leave that shelter at night to feed near the bottom."),
+        observe: __alloT("stem.coralreef.dx_pajama_cardinalfish_observe", "Compare the yellow head, single broad bar and spotted rear body. Turn the specimen to see the two separate dorsal fins."),
+        sources: ["dx-foa-pajama_cardinalfish","dx-oregon-pajama_cardinalfish","dx-ga-pajama_cardinalfish","dx-fao-pajama_cardinalfish","dx-iucn-pajama_cardinalfish"]
+      },
+      banggai_cardinalfish: {
+        habitat: __alloT("stem.coralreef.dx_banggai_cardinalfish_habitat", "Calm, shallow reefs and seagrass beds native to Indonesia’s Banggai Archipelago; introduced populations also occur outside that natural range."),
+        diet: __alloT("stem.coralreef.dx_banggai_cardinalfish_diet", "Mainly copepods, with other small plankton and bottom-dwelling crustaceans also taken."),
+        behavior: __alloT("stem.coralreef.dx_banggai_cardinalfish_behavior", "Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles."),
+        observe: __alloT("stem.coralreef.dx_banggai_cardinalfish_observe", "Compare its three dark bars, white dots and long fin tips with the pajama cardinalfish’s single broad bar and spotted rear body."),
+        sources: ["dx-noaa-banggai_cardinalfish","dx-na-banggai_cardinalfish","dx-ga-banggai_cardinalfish","dx-iucn-banggai_cardinalfish"]
+      },
+      giant_triton: {
+        habitat: __alloT("stem.coralreef.dx_giant_triton_habitat", "Hard and sandy bottoms around coral reefs across the tropical Indo-Pacific."),
+        diet: __alloT("stem.coralreef.dx_giant_triton_diet", "Sea stars, including crown-of-thorns, and other echinoderms such as sea cucumbers."),
+        behavior: __alloT("stem.coralreef.dx_giant_triton_behavior", "Uses scent to locate prey and hunts across the reef, often at night."),
+        observe: __alloT("stem.coralreef.dx_giant_triton_observe", "Follow the spiral ridges toward the pointed tip, then turn the specimen to study the orange opening, striped edge and small lip teeth."),
+        sources: ["dx-aims-giant_triton","dx-wa-giant_triton","dx-fao-giant_triton","dx-noaa-giant_triton","dx-csiro-giant_triton"]
+      },
+      blue_velvet_headshield_slug: {
+        habitat: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_habitat", "Sand around reefs and sandy reef slopes across the tropical Indo-West Pacific."),
+        diet: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_diet", "Small flatworms, including acoels documented in feeding records. It is a specialist predator, rather than an algae grazer."),
+        behavior: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_behavior", "Crawls across the bottom. Individuals may follow another slug’s mucus trail, sometimes before mating."),
+        observe: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_observe", "Trace the blue outlines, folded side flaps and unequal tail lobes. Compare these with the exposed gill plume and rhinophores on Anna’s chromodoris."),
+        sources: ["dx-am-blue_velvet_headshield_slug","dx-lifg-blue_velvet_headshield_slug","dx-wam-blue_velvet_headshield_slug","dx-diet-blue_velvet_headshield_slug","dx-yonow-blue_velvet_headshield_slug"]
+      },
+      regal_angelfish: {
+        habitat: __alloT("stem.coralreef.dx_regal_angelfish_habitat", "Coral-rich lagoons and seaward reefs, often around caves and ledges. The species ranges from East Africa and the Red Sea across the tropical Indo-Pacific to the Tuamotu region."),
+        diet: __alloT("stem.coralreef.dx_regal_angelfish_diet", "Feeds on sponges and tunicates, including sea squirts."),
+        behavior: __alloT("stem.coralreef.dx_regal_angelfish_behavior", "Usually encountered alone or in pairs, occasionally in small groups. Young fish shelter in coral cracks and crevices."),
+        observe: __alloT("stem.coralreef.dx_regal_angelfish_observe", "Follow the bars down this adult’s sides, then compare the emperor angelfish’s finer, mostly horizontal stripes. Check the tail, fin patterns and chest colour together; juveniles and regional forms differ."),
+        sources: ["dx-am-regal_angelfish","dx-foa-regal_angelfish","dx-phylogeography-regal_angelfish","dx-iucn-regal_angelfish","dx-usgs-emperor-regal_angelfish"]
+      },
+      mandarin_dragonet: {
+        habitat: __alloT("stem.coralreef.dx_mandarin_dragonet_habitat", "Sheltered reefs and lagoons around the western Pacific, from southern Japan through Southeast Asia to northern Australia and nearby island groups. Often close to coral rubble and other shelter."),
+        diet: __alloT("stem.coralreef.dx_mandarin_dragonet_diet", "Tiny bottom-dwelling invertebrates, including copepods and other small crustaceans picked from sediment and reef crevices."),
+        behavior: __alloT("stem.coralreef.dx_mandarin_dragonet_behavior", "Usually stays close to the bottom, sometimes in pairs or loose local groups. At dusk, courting pairs may rise together into the water to spawn."),
+        observe: __alloT("stem.coralreef.dx_mandarin_dragonet_observe", "Trace the winding colour bands, then inspect the broad head and fan-shaped tail. The long first dorsal spine belongs to the adult male shown here; females have a shorter first dorsal fin."),
+        sources: ["dx-georgia-mandarin_dragonet","dx-dallas-mandarin_dragonet","dx-field-mandarin_dragonet","dx-smithsonian-mandarin_dragonet","dx-oregon-mandarin_dragonet","dx-iucn-mandarin_dragonet"]
+      },
+      harlequin_shrimp: {
+        habitat: __alloT("stem.coralreef.dx_harlequin_shrimp_habitat", "Sheltered holes and crevices in tropical coral reefs across the Indian and Pacific oceans, including Hawai‘i and documented eastern Pacific reefs."),
+        diet: __alloT("stem.coralreef.dx_harlequin_shrimp_diet", "Specializes in sea stars, including Linckia species. It eats tube feet and other soft tissue using specialised feeding limbs."),
+        behavior: __alloT("stem.coralreef.dx_harlequin_shrimp_behavior", "Often found in pairs near a reef shelter. The petal-like antennules move as the shrimp samples chemical cues from the water."),
+        observe: __alloT("stem.coralreef.dx_harlequin_shrimp_observe", "Compare the broad paddles and large blotches with the cleaner shrimp’s long white antennae and striped back. Trace the separate head structures, jointed limbs and curved abdomen rather than relying on colour alone."),
+        sources: ["dx-waikiki-harlequin_shrimp","dx-field-harlequin_shrimp","dx-seibt-harlequin_shrimp","dx-worms-harlequin_shrimp","dx-sealifebase-harlequin_shrimp"]
+      },
+      spotted_seahorse: {
+        habitat: __alloT("stem.coralreef.dx_spotted_seahorse_habitat", "Indo-West Pacific coastal habitats, including Singapore estuaries with seagrass and macroalgae over silty sand. It also occurs around sheltered sandy and reef habitats."),
+        diet: __alloT("stem.coralreef.dx_spotted_seahorse_diet", "Tiny crustaceans and other zooplankton, drawn through the tubular snout by suction."),
+        behavior: __alloT("stem.coralreef.dx_spotted_seahorse_behavior", "Often grips vegetation or another support with its prehensile tail. Small dorsal and pectoral fins help it move and steer; it can leave its holdfast to swim."),
+        observe: __alloT("stem.coralreef.dx_spotted_seahorse_observe", "Compare the upright trunk and curled gripping tail with the banded pipefish’s slender body and distinct tail fin. Then inspect the rounded crown and thick snout. Yellow is only one appearance: Singapore adults also occur in greenish brown with dark dots."),
+        sources: ["dx-nus-spotted_seahorse","dx-guide-spotted_seahorse","dx-waikikiguide-spotted_seahorse","dx-iucnsg-spotted_seahorse","dx-fishbase-spotted_seahorse","dx-cas-spotted_seahorse","dx-camins-spotted_seahorse"]
+      },
+      bennetts_feather_star: {
+        habitat: __alloT("stem.coralreef.dx_bennetts_feather_star_habitat", "Tropical Indo-West Pacific reefs and sponge gardens, often perched above the surrounding bottom where water flows past exposed coral heads or sponges."),
+        diet: __alloT("stem.coralreef.dx_bennetts_feather_star_diet", "Suspended plankton and fine organic particles. Tiny tube feet along the arms and pinnules capture food and pass it toward the mouth."),
+        behavior: __alloT("stem.coralreef.dx_bennetts_feather_star_behavior", "Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night."),
+        observe: __alloT("stem.coralreef.dx_bennetts_feather_star_observe", "Follow one main arm into its fine pinnules, then look underneath for the thicker gripping cirri. Compare this whole animal with the Christmas tree worm’s paired spiral crowns: they are unrelated forms. Yellow and brown are only one appearance; colour alone does not identify this feather star."),
+        sources: ["dx-wam-bennetts_feather_star","dx-lifg-bennetts_feather_star","dx-kogo-bennetts_feather_star","dx-messing-bennetts_feather_star","dx-morphology-bennetts_feather_star","dx-worms-bennetts_feather_star","dx-sealifebase-bennetts_feather_star","dx-umich-bennetts_feather_star"]
+      },
+      peacock_mantis_shrimp: {
+        habitat: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_habitat", "Indo-West Pacific coral and rocky reefs, with shelters among rubble or adjoining sand and gravel. It often occupies burrows near the base of reefs."),
+        diet: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_diet", "Crabs, snails and other mollusks. Club-like striking limbs help it break hard shells rather than grasp prey with ordinary pincers."),
+        behavior: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_behavior", "Often shelters in a burrow and emerges to forage. Its eyes can move independently while the striking limbs remain folded beneath the body between strikes."),
+        observe: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_observe", "Compare its folded clubs, prominent stalked eyes and broad tail fan with the harlequin shrimp’s flattened paddle-like claws. Look for pale-edged spots on the carapace sides. Green, red and gold are one appearance; body colour varies, so use several structures together."),
+        sources: ["dx-lifg-peacock_mantis_shrimp","dx-ahyong-peacock_mantis_shrimp","dx-brokensha-peacock_mantis_shrimp","dx-eyes-peacock_mantis_shrimp","dx-patek-peacock_mantis_shrimp","dx-georgia-peacock_mantis_shrimp","dx-worms-peacock_mantis_shrimp","dx-sealifebase-peacock_mantis_shrimp"]
+      },
+      ribbon_eel: {
+        habitat: __alloT("stem.coralreef.dx_ribbon_eel_habitat", "Tropical Indo-West Pacific lagoon and seaward reefs, using burrows in sand or rubble beside coral reefs."),
+        diet: __alloT("stem.coralreef.dx_ribbon_eel_diet", "Small fishes. It is a predator rather than a plankton-feeding garden eel."),
+        behavior: __alloT("stem.coralreef.dx_ribbon_eel_behavior", "Usually shelters with its head or part of its slender body protruding from a burrow. This resting view shows an exposed forebody; much of the animal remains concealed."),
+        observe: __alloT("stem.coralreef.dx_ribbon_eel_observe", "Find the flared nostrils and little jaw projections first, then compare its narrow ribbon-shaped body with the giant moray’s heavier head and mottled body. Black, blue-and-yellow and largely yellow appearances are reported, so combine shape and colour rather than relying on one hue."),
+        sources: ["dx-am-ribbon_eel","dx-foa-ribbon_eel","dx-shen-ribbon_eel","dx-preininger-ribbon_eel","dx-fishbase-ribbon_eel","dx-iucn-ribbon_eel","dx-eschmeyer-ribbon_eel"]
       }
     };
   }
@@ -7191,6 +7415,468 @@
         "text": "Georgia Aquarium. Copperband Butterflyfish species account. Accessed October 2026.",
         "url": "https://www.georgiaaquarium.org/animal/copperband-butterflyfish/",
         "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-am-spotted_garden_eel",
+        "text": "McGrouther, M. (2019). Australian Museum: Spotted Garden Eel, Heteroconger hassi. Accessed October 2026.",
+        "url": "https://australian.museum/learn/animals/fishes/spotted-garden-eel-heteroconger-hassi-klausewitz-eibl-eibesfeldt-1959/",
+        "urlLabel": "australian.museum"
+      },
+      {
+        "id": "dx-cas-spotted_garden_eel",
+        "text": "California Academy of Sciences. Creature Closeups: Spotted Garden Eel. Accessed October 2026.",
+        "url": "https://www.calacademy.org/learn-explore/creature-closeups/spotted-garden-eel",
+        "urlLabel": "calacademy.org"
+      },
+      {
+        "id": "dx-foa-spotted_garden_eel",
+        "text": "Bray, D.J. (2024). Fishes of Australia: Spotted Garden Eel, Heteroconger hassi. Museums Victoria and OzFishNet. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/home/species/3913",
+        "urlLabel": "fishesofaustralia.net.au"
+      },
+      {
+        "id": "dx-ga-spotted_garden_eel",
+        "text": "Georgia Aquarium. Spotted Garden Eel species account. Accessed October 2026.",
+        "url": "https://www.georgiaaquarium.org/animal/spotted-garden-eel/",
+        "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-am-banded_pipefish",
+        "text": "McGrouther, M. (2020). Australian Museum: Banded Pipefish, Dunckerocampus dactyliophorus. Accessed October 2026.",
+        "url": "https://australian.museum/learn/animals/fishes/banded-pipefish-doryrhamphus-dactyliophorus/",
+        "urlLabel": "australian.museum"
+      },
+      {
+        "id": "dx-foa-banded_pipefish",
+        "text": "Bray, D.J. & Thompson, V.J. (2025). Fishes of Australia: Banded Pipefish, Dunckerocampus dactyliophorus. Museums Victoria and OzFishNet. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/home/species/3178",
+        "urlLabel": "fishesofaustralia.net.au"
+      },
+      {
+        "id": "dx-lkc-banded_pipefish",
+        "text": "Toh, Y.H. & Koh, K.S. (2015). New record of ringed pipefish in Singapore. Singapore Biodiversity Records 2015: 211. Lee Kong Chian Natural History Museum, National University of Singapore.",
+        "url": "https://lkcnhm.nus.edu.sg/app/uploads/2017/04/sbr2015-211.pdf",
+        "urlLabel": "lkcnhm.nus.edu.sg"
+      },
+      {
+        "id": "dx-ea-banded_pipefish",
+        "text": "Pogonoski, J.J., Pollard, D.A. & Paxton, J.R. (2002). Conservation Overview and Action Plan for Australian Threatened and Potentially Threatened Marine and Estuarine Fishes. Environment Australia, pp. 136–137 (PDF pages 135–136). Banded Pipefish account.",
+        "url": "https://library.dbca.wa.gov.au/FullTextFiles/020861.pdf#page=136",
+        "urlLabel": "library.dbca.wa.gov.au"
+      },
+      {
+        "id": "dx-am-yellow_longnose_butterflyfish",
+        "text": "McGrouther, M. (2021). Australian Museum: Forceps Fish, Forcipiger flavissimus. Accessed October 2026.",
+        "url": "https://australian.museum/learn/animals/fishes/forceps-fish-forcipiger-flavissimus/",
+        "urlLabel": "australian.museum"
+      },
+      {
+        "id": "dx-foa-yellow_longnose_butterflyfish",
+        "text": "Bray, D.J. (2020). Fishes of Australia: Forceps Fish, Forcipiger flavissimus. Museums Victoria and OzFishNet. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/home/species/2410",
+        "urlLabel": "fishesofaustralia.net.au"
+      },
+      {
+        "id": "dx-wa-yellow_longnose_butterflyfish",
+        "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Forceps Butterflyfish. Accessed October 2026.",
+        "url": "https://www.waikikiaquarium.org/experience/animal-guide/fishes/butterflyfishes/forceps-butterflyfish/",
+        "urlLabel": "waikikiaquarium.org"
+      },
+      {
+        "id": "dx-iucn-yellow_longnose_butterflyfish",
+        "text": "Myers, R.F. & Pratchett, M. (2010). Forcipiger flavissimus. The IUCN Red List e.T165716A6099950. Assessed 2009.",
+        "url": "https://www.iucnredlist.org/species/165716/6099950",
+        "urlLabel": "iucnredlist.org"
+      },
+      {
+        "id": "dx-foa-pajama_cardinalfish",
+        "text": "Bray, D.J. (2019). Fishes of Australia: Pajama Cardinalfish, Sphaeramia nematoptera. Museums Victoria and OzFishNet. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/home/species/4237",
+        "urlLabel": "fishesofaustralia.net.au"
+      },
+      {
+        "id": "dx-oregon-pajama_cardinalfish",
+        "text": "Oregon Coast Aquarium. Animal Guide: Pajama Cardinalfish. Accessed October 2026.",
+        "url": "https://aquarium.org/animals/pajama-cardinalfish/",
+        "urlLabel": "aquarium.org"
+      },
+      {
+        "id": "dx-ga-pajama_cardinalfish",
+        "text": "Georgia Aquarium. Animal Guide: Pajama Cardinalfish. Accessed October 2026.",
+        "url": "https://www.georgiaaquarium.org/animal/pajama-cardinalfish/",
+        "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-fao-pajama_cardinalfish",
+        "text": "Allen, G.R. (1999). Apogonidae, in The Living Marine Resources of the Western Central Pacific, Vol. 4. FAO species guide, p. 2610. Pajama cardinalfish account.",
+        "url": "https://www.fao.org/4/x2400e/x2400e47.pdf#page=9",
+        "urlLabel": "fao.org"
+      },
+      {
+        "id": "dx-iucn-pajama_cardinalfish",
+        "text": "Allen, G.R. et al. (2022). Sphaeramia nematoptera. The IUCN Red List e.T193290A2215929. Assessed 2021.",
+        "url": "https://www.iucnredlist.org/species/193290/2215929",
+        "urlLabel": "iucnredlist.org"
+      },
+      {
+        "id": "dx-noaa-banggai_cardinalfish",
+        "text": "NOAA Fisheries (2023). Species profile: Banggai cardinalfish, Pterapogon kauderni. Accessed October 2026.",
+        "url": "https://www.fisheries.noaa.gov/species/banggai-cardinalfish",
+        "urlLabel": "fisheries.noaa.gov"
+      },
+      {
+        "id": "dx-na-banggai_cardinalfish",
+        "text": "National Aquarium. Animal Guide: Banggai cardinalfish. Accessed October 2026.",
+        "url": "https://aqua.org/explore/animals/banggai-cardinalfish",
+        "urlLabel": "aqua.org"
+      },
+      {
+        "id": "dx-ga-banggai_cardinalfish",
+        "text": "Georgia Aquarium. Animal Guide: Banggai cardinalfish. Accessed October 2026.",
+        "url": "https://www.georgiaaquarium.org/animal/banggai-cardinalfish/",
+        "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-iucn-banggai_cardinalfish",
+        "text": "Allen, G.R. & Donaldson, T.J. (2025). Pterapogon kauderni, amended version of the 2007 assessment. IUCN Red List e.T63572A274966962.",
+        "url": "https://www.iucnredlist.org/species/63572/274966962",
+        "urlLabel": "iucnredlist.org"
+      },
+      {
+        "id": "dx-aims-giant_triton",
+        "text": "Australian Institute of Marine Science (2016). Playing on fears: exploring the Pacific triton and crown-of-thorns starfish. Accessed October 2026.",
+        "url": "https://www.aims.gov.au/information-centre/news-and-stories/playing-fears-exploring-use-pacific-triton-mitigating-crown-thorns-starfish-outbreaks",
+        "urlLabel": "aims.gov.au"
+      },
+      {
+        "id": "dx-wa-giant_triton",
+        "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Triton’s Trumpet Snail. Accessed October 2026.",
+        "url": "https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/molluscs/tritons-trumpet-snail/",
+        "urlLabel": "waikikiaquarium.org"
+      },
+      {
+        "id": "dx-fao-giant_triton",
+        "text": "Poutiers, J.M. (1998). Gastropods, in The Living Marine Resources of the Western Central Pacific, Vol. 1. FAO species guide, p.541: Charonia tritonis tritonis.",
+        "url": "https://www.vliz.be/imisdocs/publications/391449.pdf",
+        "urlLabel": "vliz.be (FAO archive)"
+      },
+      {
+        "id": "dx-noaa-giant_triton",
+        "text": "Wagner, D., Barkman, A., Spalding, H.L., Calcinai, B. & Godwin, S.L. (2016). A photographic guide to benthic flora and fauna from mesophotic coral ecosystems in Papahānaumokuākea. NOAA ONMS-16-04, p.83: Charonia tritonis.",
+        "url": "https://repository.library.noaa.gov/view/noaa/14164/noaa_14164_DS1.pdf#page=93",
+        "urlLabel": "repository.library.noaa.gov"
+      },
+      {
+        "id": "dx-csiro-giant_triton",
+        "text": "CSIRO Australian National Fish Collection. Codes for Australian Aquatic Biota: Charonia tritonis, code24176013. Accessed October 2026.",
+        "url": "https://www.cmar.csiro.au/data/caab/taxon_report.cfm?caab_code=24176013",
+        "urlLabel": "cmar.csiro.au"
+      },
+      {
+        "id": "dx-am-blue_velvet_headshield_slug",
+        "text": "Rudman, W.B. (1998–2010). Australian Museum Sea Slug Forum: Chelidonura varians species account and museum-moderated observations. Accessed October 2026.",
+        "url": "https://www.seaslugforum.net/showall/chelvar",
+        "urlLabel": "seaslugforum.net"
+      },
+      {
+        "id": "dx-lifg-blue_velvet_headshield_slug",
+        "text": "Australian Museum / Lizard Island Research Station. Lizard Island Field Guide: Chelidonura varians. Accessed October 2026.",
+        "url": "https://lifg.australian.museum/Group.html?groupId=DNR89VPU&hierarchyId=PVWrQCLG",
+        "urlLabel": "lifg.australian.museum"
+      },
+      {
+        "id": "dx-wam-blue_velvet_headshield_slug",
+        "text": "Gosliner, T.M. (2006). Marine Gastropoda collected by the Steamer Albatross from the Philippines in 1908. Records of the Western Australian Museum Supplement 69: 83–93; C. varians, p. 86.",
+        "url": "https://museum.wa.gov.au/sites/default/files/7.%20Gosliner.pdf#page=4",
+        "urlLabel": "museum.wa.gov.au"
+      },
+      {
+        "id": "dx-diet-blue_velvet_headshield_slug",
+        "text": "Zamora-Silva, A. & Malaquias, M.A.E. (2016). Diet preferences of the Aglajidae: a family of cephalaspidean gastropod predators on tropical and temperate shores. Journal of the Marine Biological Association of the United Kingdom 96: 1101–1112. DOI: 10.1017/S0025315415000739.",
+        "url": "https://doi.org/10.1017/S0025315415000739",
+        "urlLabel": "doi.org (Cambridge University Press)"
+      },
+      {
+        "id": "dx-yonow-blue_velvet_headshield_slug",
+        "text": "Yonow, N. (2012). Opisthobranchs from the western Indian Ocean, with descriptions of two new species and ten new records. ZooKeys 197: 1–129. Chelidonura varians material and Plate 8.",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3376724/",
+        "urlLabel": "pmc.ncbi.nlm.nih.gov"
+      },
+      {
+        "id": "dx-am-regal_angelfish",
+        "text": "McGrouther, M. (2021). Regal Angelfish, Pygoplites diacanthus (Boddaert, 1772). Australian Museum species account, updated 20 April 2021. Accessed October 2026.",
+        "url": "https://australian.museum/learn/animals/fishes/regal-angelfish-pygoplites-diacanthus-boddaert-1772/",
+        "urlLabel": "australian.museum"
+      },
+      {
+        "id": "dx-foa-regal_angelfish",
+        "text": "Bray, D.J. Pygoplites diacanthus in Fishes of Australia. Museums Victoria / OzFishNet, species 658. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/Home/species/658",
+        "urlLabel": "fishesofaustralia.net.au"
+      },
+      {
+        "id": "dx-phylogeography-regal_angelfish",
+        "text": "Coleman, R.R., Eble, J.A., DiBattista, J.D., Rocha, L.A., Randall, J.E., Berumen, M.L. & Bowen, B.W. (2016). Regal phylogeography: Range-wide survey of the marine angelfish Pygoplites diacanthus reveals evolutionary partitions between the Red Sea, Indian Ocean, and Pacific Ocean. Molecular Phylogenetics and Evolution 100: 243–253. DOI: 10.1016/j.ympev.2016.04.005. Accepted manuscript in the NOAA Central Library.",
+        "url": "https://repository.library.noaa.gov/view/noaa/33093",
+        "urlLabel": "repository.library.noaa.gov"
+      },
+      {
+        "id": "dx-iucn-regal_angelfish",
+        "text": "Pyle, R., Myers, R., Rocha, L.A. & Craig, M.T. (2010). Pygoplites diacanthus. The IUCN Red List of Threatened Species 2010: e.T165885A6157224. Assessed 8 October 2009. DOI: 10.2305/IUCN.UK.2010-4.RLTS.T165885A6157224.en.",
+        "url": "https://doi.org/10.2305/IUCN.UK.2010-4.RLTS.T165885A6157224.en",
+        "urlLabel": "doi.org (IUCN Red List)"
+      },
+      {
+        "id": "dx-usgs-emperor-regal_angelfish",
+        "text": "U.S. Geological Survey. Emperor angelfish (Pomacanthus imperator), Nonindigenous Aquatic Species Database, species 2294. Identification and similar-species sections. Accessed October 2026.",
+        "url": "https://nas.er.usgs.gov/queries/factsheet.aspx?SpeciesID=2294",
+        "urlLabel": "nas.er.usgs.gov"
+      },
+      {
+        "id": "dx-georgia-mandarin_dragonet",
+        "text": "Georgia Aquarium. Mandarinfish, Synchiropus splendidus: animal guide. Accessed October 2026.",
+        "url": "https://www.georgiaaquarium.org/animal/mandarinfish/",
+        "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-dallas-mandarin_dragonet",
+        "text": "Dallas World Aquarium. Mandarin dragonet, Synchiropus splendidus: animal account. Accessed October 2026.",
+        "url": "https://dwazoo.com/animal/mandarin-dragonet/",
+        "urlLabel": "dwazoo.com"
+      },
+      {
+        "id": "dx-field-mandarin_dragonet",
+        "text": "Sadovy de Mitcheson, Y.J., Mitcheson, G.R. & Rasotto, M.B. (2022). Mating system in a small pelagic spawner: field case study of the mandarinfish, Synchiropus splendidus. Environmental Biology of Fishes 105: 699–716. DOI: 10.1007/s10641-022-01281-1.",
+        "url": "https://link.springer.com/article/10.1007/s10641-022-01281-1",
+        "urlLabel": "link.springer.com"
+      },
+      {
+        "id": "dx-smithsonian-mandarin_dragonet",
+        "text": "Smithsonian National Museum of Natural History. What Makes Things Blue? Synchiropus splendidus, Division of Fishes image FIN27420. Accessed October 2026.",
+        "url": "https://naturalhistory.si.edu/education/teaching-resources/featured-collections/what-makes-things-blue?object_url=edanmdm%3Anmnheducation_11016396",
+        "urlLabel": "naturalhistory.si.edu"
+      },
+      {
+        "id": "dx-iucn-mandarin_dragonet",
+        "text": "Carpenter, K.E. & Robertson, R. (2019). Synchiropus splendidus. The IUCN Red List of Threatened Species 2019: e.T141481104A141781313. Assessed 12 October 2018. DOI: 10.2305/IUCN.UK.2019-2.RLTS.T141481104A141781313.en.",
+        "url": "https://doi.org/10.2305/IUCN.UK.2019-2.RLTS.T141481104A141781313.en",
+        "urlLabel": "doi.org (IUCN Red List)"
+      },
+      {
+        "id": "dx-oregon-mandarin_dragonet",
+        "text": "Oregon Coast Aquarium. Mandarin Goby, Synchiropus splendidus: species account and bibliography. Accessed October 2026.",
+        "url": "https://aquarium.org/animals/mandarin-goby/",
+        "urlLabel": "aquarium.org"
+      },
+      {
+        "id": "dx-waikiki-harlequin_shrimp",
+        "text": "Waikīkī Aquarium, University of Hawai‘i. Harlequin Shrimp: animal guide. Accessed October 2026.",
+        "url": "https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/crustaceans/harlequin-shrimp/",
+        "urlLabel": "waikikiaquarium.org"
+      },
+      {
+        "id": "dx-field-harlequin_shrimp",
+        "text": "Valencia-Mendez, O., Lopez-Perez, A., Martinez-Guerrero, B., Antonio-Perez, V. & Ramirez-Chavez, E. (2017). A new record of Harlequin Shrimp (Malacostraca: Decapoda: Palaemonidae: Hymenocera picta Dana, 1852) in the southern Mexican Pacific Reefs. Journal of Threatened Taxa 9(8): 10571–10576. DOI: 10.11609/jott.3238.9.8.10571-10576.",
+        "url": "https://www.vliz.be/imisdocs/publications/306090.pdf",
+        "urlLabel": "vliz.be (primary research)"
+      },
+      {
+        "id": "dx-seibt-harlequin_shrimp",
+        "text": "Seibt, U. (1973). Sense of Smell and Pair-Bond in Hymenocera picta Dana. Micronesica 9(2): 231–236. University of Guam.",
+        "url": "https://micronesica.org/volumes/9",
+        "urlLabel": "micronesica.org"
+      },
+      {
+        "id": "dx-worms-harlequin_shrimp",
+        "text": "DecaNet eds. (2026). Hymenocera picta Dana, 1852, AphiaID 210554. World Register of Marine Species. Accessed October 2026.",
+        "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=210554",
+        "urlLabel": "marinespecies.org"
+      },
+      {
+        "id": "dx-sealifebase-harlequin_shrimp",
+        "text": "SeaLifeBase. Hymenocera picta, species 20753: summary and IUCN export. Accessed October 2026.",
+        "url": "https://www.sealifebase.se/summary/Hymenocera-picta.html",
+        "urlLabel": "sealifebase.se"
+      },
+      {
+        "id": "dx-nus-spotted_seahorse",
+        "text": "Yeo, R.K.H. (2013). Spotted seahorses at Changi Beach. Singapore Biodiversity Records 2013: 71–73. National University of Singapore. Published 22 November 2013.",
+        "url": "https://lkcnhm.nus.edu.sg/app/uploads/2017/04/sbr2013-071-073.pdf",
+        "urlLabel": "lkcnhm.nus.edu.sg"
+      },
+      {
+        "id": "dx-guide-spotted_seahorse",
+        "text": "Lourie, S.A., Foster, S.J., Cooper, E.W.T. & Vincent, A.C.J. (2004). A Guide to the Identification of Seahorses. Project Seahorse and TRAFFIC North America. University of British Columbia and World Wildlife Fund. Species account: pp. 64–65; external morphology and biology sections.",
+        "url": "https://projectseahorse.org/wp-content/uploads/2021/06/Seahorse_ID_Guide_2004.pdf",
+        "urlLabel": "projectseahorse.org"
+      },
+      {
+        "id": "dx-iucnsg-spotted_seahorse",
+        "text": "IUCN SSC Seahorse, Pipefish & Seadragon Specialist Group. Global IUCN Red List Assessments, copy dated 11 August 2025. Hippocampus kuda: Vulnerable; latest published assessment 2014. Accessed October 2026.",
+        "url": "https://www.iucn-seahorse.org/iucn-global-assessments-1",
+        "urlLabel": "iucn-seahorse.org"
+      },
+      {
+        "id": "dx-fishbase-spotted_seahorse",
+        "text": "FishBase. Hippocampus kuda Bleeker, 1852: species 5955 summary and IUCN 2025-2 export. Assessment date: 16 August 2012. Accessed October 2026.",
+        "url": "https://www.fishbase.se/summary/Hippocampus-kuda.html",
+        "urlLabel": "fishbase.se"
+      },
+      {
+        "id": "dx-cas-spotted_seahorse",
+        "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds.). Eschmeyer’s Catalog of Fishes: Hippocampus kuda Bleeker, 1852 and Hippocampus taeniopterus Bleeker, 1852. California Academy of Sciences. Accessed October 2026.",
+        "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Hippocampus&tbl=species",
+        "urlLabel": "calacademy.org"
+      },
+      {
+        "id": "dx-camins-spotted_seahorse",
+        "text": "Camins, E., Stanton, L.M., Correia, M., Foster, S.J., Koldewey, H.J. & Vincent, A.C.J. (2024). Advances in life-history knowledge for 35 seahorse species from community science. Journal of Fish Biology 104(5): 1548–1565. DOI: 10.1111/jfb.15699. Table 5.",
+        "url": "https://onlinelibrary.wiley.com/doi/full/10.1111/jfb.15699",
+        "urlLabel": "onlinelibrary.wiley.com"
+      },
+      {
+        "id": "dx-waikikiguide-spotted_seahorse",
+        "text": "Waikīkī Aquarium, University of Hawai‘i. Seahorse: animal guide. Accessed October 2026.",
+        "url": "https://www.waikikiaquarium.org/experience/animal-guide/fishes/seahorses-seadragons-and-pipefishes/seahorse/",
+        "urlLabel": "waikikiaquarium.org"
+      },
+      {
+        "id": "dx-wam-bennetts_feather_star",
+        "text": "Western Australian Museum. Bennett’s multi-armed feather star, Anneissia bennetti: Online Collections species account. Accessed October 2026.",
+        "url": "https://museum.wa.gov.au/online-collections/names/Anneissia-bennetti",
+        "urlLabel": "museum.wa.gov.au"
+      },
+      {
+        "id": "dx-lifg-bennetts_feather_star",
+        "text": "Australian Museum / Lizard Island Research Station. Anneissia bennetti: Lizard Island Field Guide species account, with identified photographs by Anne Hoggett and Lyle Vail. Accessed October 2026.",
+        "url": "https://lifg.australian.museum/Group.html?groupId=pZetwEQT",
+        "urlLabel": "lifg.australian.museum"
+      },
+      {
+        "id": "dx-kogo-bennetts_feather_star",
+        "text": "Kogo, I., Fujita, T. & Kubodera, T. (2019). Shallow-water Comatulids (Echinodermata: Crinoidea) from Ambon and Lombok Islands, Indonesia. Species Diversity 24: 229–246. Anneissia bennetti account, p. 239. DOI: 10.12782/specdiv.24.229.",
+        "url": "https://www.jstage.jst.go.jp/article/specdiv/24/2/24_240215/_pdf",
+        "urlLabel": "jstage.jst.go.jp (museum research)"
+      },
+      {
+        "id": "dx-messing-bennetts_feather_star",
+        "text": "Messing, C.G. Charles Messing’s Crinoid Pages: Crinoid Diets. Nova Southeastern University. Updated 20 June 2025; accessed October 2026.",
+        "url": "https://libguides.nova.edu/crinoids/diets",
+        "urlLabel": "libguides.nova.edu"
+      },
+      {
+        "id": "dx-morphology-bennetts_feather_star",
+        "text": "Messing, C.G. Charles Messing’s Crinoid Pages: Morphology—Introduction. Nova Southeastern University. Accessed October 2026.",
+        "url": "https://libguides.nova.edu/crinoids/morphologyintroduction",
+        "urlLabel": "libguides.nova.edu"
+      },
+      {
+        "id": "dx-worms-bennetts_feather_star",
+        "text": "Messing, C. et al. (2026). World List of Crinoidea: Anneissia bennetti (Müller, 1841), AphiaID 828992. World Register of Marine Species. Accessed October 2026.",
+        "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=828992",
+        "urlLabel": "marinespecies.org"
+      },
+      {
+        "id": "dx-sealifebase-bennetts_feather_star",
+        "text": "SeaLifeBase. Anneissia bennetti, species 86679: summary and IUCN 2025-2 export. Accessed October 2026.",
+        "url": "https://www.sealifebase.ca/summary/SpeciesSummary.php?genusname=Anneissia&id=86679&speciesname=bennetti",
+        "urlLabel": "sealifebase.ca"
+      },
+      {
+        "id": "dx-umich-bennetts_feather_star",
+        "text": "University of Michigan Museum of Paleontology. Phylum Echinodermata: crinoids and feather-star anatomy. University of Michigan Online Repository of Fossils. Accessed October 2026.",
+        "url": "https://umorf.ummp.lsa.umich.edu/wp/invertebrate/phylum-echinodermata/",
+        "urlLabel": "umorf.ummp.lsa.umich.edu"
+      },
+      {
+        "id": "dx-lifg-peacock_mantis_shrimp",
+        "text": "Australian Museum / Lizard Island Research Station. Odontodactylus scyllarus: Lizard Island Field Guide account, with observations and photographs by Roy Caldwell and Sue Churchill. Accessed October 2026.",
+        "url": "https://lifg.australian.museum/Group.html?groupId=a6HkPlCX&hierarchyId=PVWrQCLG",
+        "urlLabel": "lifg.australian.museum"
+      },
+      {
+        "id": "dx-ahyong-peacock_mantis_shrimp",
+        "text": "Ahyong, S.T., Chan, T.-Y. & Liao, Y.-C. (2008). A Catalog of the Mantis Shrimps (Stomatopoda) of Taiwan. National Taiwan Ocean University, Keelung. Odontodactylus scyllarus account, pp. 29–30, Fig. 23.",
+        "url": "https://www.vliz.be/imisdocs/publications/245752.pdf",
+        "urlLabel": "vliz.be (primary taxonomy)"
+      },
+      {
+        "id": "dx-brokensha-peacock_mantis_shrimp",
+        "text": "Brokensha, R., Landschoff, J. & Griffiths, C. (2025). Taxonomic guide to the mantis shrimps (Crustacea: Stomatopoda) of South Africa. Zootaxa 5713(1): 1–93. Odontodactylus scyllarus account, pp. 31–33, Fig. 12. DOI: 10.11646/zootaxa.5713.1.1.",
+        "url": "https://zenodo.org/records/18270187",
+        "urlLabel": "zenodo.org (primary taxonomic treatment)"
+      },
+      {
+        "id": "dx-eyes-peacock_mantis_shrimp",
+        "text": "Kleinlogel, S. & Marshall, N.J. (2009). Ultraviolet polarisation sensitivity in the stomatopod crustacean Odontodactylus scyllarus. Journal of Comparative Physiology A 195: 1153–1162. DOI: 10.1007/s00359-009-0491-y. Fig. 1.",
+        "url": "https://link.springer.com/content/pdf/10.1007/s00359-009-0491-y.pdf",
+        "urlLabel": "link.springer.com (primary research)"
+      },
+      {
+        "id": "dx-patek-peacock_mantis_shrimp",
+        "text": "Patek, S.N. & Caldwell, R.L. (2005). Extreme impact and cavitation forces of a biological hammer: strike forces of the peacock mantis shrimp Odontodactylus scyllarus. Journal of Experimental Biology 208: 3655–3664. DOI: 10.1242/jeb.01831.",
+        "url": "https://escholarship.org/uc/item/9938507n",
+        "urlLabel": "escholarship.org (primary research)"
+      },
+      {
+        "id": "dx-georgia-peacock_mantis_shrimp",
+        "text": "Georgia Aquarium. Peacock Mantis Shrimp, Odontodactylus scyllarus: animal guide. Accessed October 2026.",
+        "url": "https://www.georgiaaquarium.org/animal/peacock-mantis-shrimp/",
+        "urlLabel": "georgiaaquarium.org"
+      },
+      {
+        "id": "dx-worms-peacock_mantis_shrimp",
+        "text": "WoRMS (2026). Odontodactylus scyllarus (Linnaeus, 1758), AphiaID 220297. World Register of Marine Species. Accessed October 2026.",
+        "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=220297",
+        "urlLabel": "marinespecies.org"
+      },
+      {
+        "id": "dx-sealifebase-peacock_mantis_shrimp",
+        "text": "SeaLifeBase. Odontodactylus scyllarus: species summary and IUCN 2025-2 export. Accessed October 2026.",
+        "url": "https://www.sealifebase.org/summary/Odontodactylus-scyllarus",
+        "urlLabel": "sealifebase.org"
+      },
+      {
+        "id": "dx-am-ribbon_eel",
+        "text": "McGrouther, M. (2021). Ribbon Eel, Rhinomuraena quaesita Garman, 1888. Australian Museum animal account. Updated 20 April 2021; accessed October 2026.",
+        "url": "https://australian.museum/learn/animals/fishes/ribbon-eel-rhinomuraena-quaesita/",
+        "urlLabel": "australian.museum"
+      },
+      {
+        "id": "dx-foa-ribbon_eel",
+        "text": "Bray, D.J. (2026). Rhinomuraena quaesita, Ribbon Eel. Fishes of Australia, Museums Victoria / OzFishNet. Accessed October 2026.",
+        "url": "https://fishesofaustralia.net.au/home/species/3568",
+        "urlLabel": "fishesofaustralia.net.au (Museums Victoria)"
+      },
+      {
+        "id": "dx-shen-ribbon_eel",
+        "text": "Shen, S.-C., Lin, R.-P. & Liu, F.C.-C. (1979). Redescription of a protandrous hermaphroditic moray eel (Rhinomuaena quaesita Garman). Bulletin of the Institute of Zoology, Academia Sinica 18(2): 79–87.",
+        "url": "https://zoolstud.sinica.edu.tw/Journals/18.2/79.pdf",
+        "urlLabel": "zoolstud.sinica.edu.tw (primary anatomy)"
+      },
+      {
+        "id": "dx-preininger-ribbon_eel",
+        "text": "Preininger, D., Halbauer, R., Bartsch, V. & Weissenbacher, A. (2015). First observations of fertilized eggs and preleptocephalus larvae of Rhinomuraena quaesita in the Vienna Zoo. Zoo Biology 34(1): 85–88. DOI: 10.1002/zoo.21184.",
+        "url": "https://onlinelibrary.wiley.com/doi/10.1002/zoo.21184",
+        "urlLabel": "onlinelibrary.wiley.com (primary breeding study)"
+      },
+      {
+        "id": "dx-fishbase-ribbon_eel",
+        "text": "FishBase (2026). Rhinomuraena quaesita species summary, including IUCN Version 2025-2 (Global) export and linked primary references. Accessed October 2026.",
+        "url": "https://www.fishbase.org/summary/8594",
+        "urlLabel": "fishbase.org"
+      },
+      {
+        "id": "dx-iucn-ribbon_eel",
+        "text": "McCosker, J.E. (2010). Rhinomuraena quaesita (errata version published in 2017). The IUCN Red List of Threatened Species 2010: e.T155301A115297865. Assessed 4 February 2009. DOI: 10.2305/IUCN.UK.2010-4.RLTS.T155301A115297865.en.",
+        "url": "https://www.iucnredlist.org/species/155301/115297865",
+        "urlLabel": "iucnredlist.org"
+      },
+      {
+        "id": "dx-eschmeyer-ribbon_eel",
+        "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds) (2026). Eschmeyer's Catalog of Fishes: Rhinomuraena quaesita Garman, 1888, species record 57917. California Academy of Sciences. Accessed October 2026.",
+        "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=57917",
+        "urlLabel": "calacademy.org"
       }
     ];
   }
@@ -7202,25 +7888,26 @@
     for (var i = out.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)), v = out[i]; out[i] = out[j]; out[j] = v; }
     return out;
   }
-  function buildMarinePracticeRound(allMeta, seed, scopeIds, priorityIds, previousAnswers) {
+  function buildMarinePracticeRound(allMeta, seed, scopeIds, priorityIds, previousAnswers, roundSize) {
     var seen = {}, all = (Array.isArray(allMeta) ? allMeta : []).filter(function (m) {
       if (!m || typeof m.id !== 'string' || !m.id || m.group === 'structure' || seen[m.id]) return false;
       seen[m.id] = true; return true;
     });
+    var limit = roundSize === 3 || roundSize === 10 ? roundSize : 5;
     var scoped = Array.isArray(scopeIds), pool = all.filter(function (m) { return !scoped || scopeIds.indexOf(m.id) >= 0; });
     var rand = mulberry32(hashString('marine-practice:' + String(seed))), selected = [];
     function take(id) { if (selected.indexOf(id) < 0 && pool.some(function (m) { return m.id === id; })) selected.push(id); }
-    marinePracticeShuffle(Array.isArray(priorityIds) ? priorityIds : [], rand).forEach(function (id) { if (selected.length < 5) take(id); });
+    marinePracticeShuffle(Array.isArray(priorityIds) ? priorityIds : [], rand).forEach(function (id) { if (selected.length < limit) take(id); });
     // A mixed round samples different kinds of life before filling its last
     // space, rather than letting the much larger fish group dominate every round.
     var groups = [];
     pool.forEach(function (m) { if (groups.indexOf(m.group) < 0) groups.push(m.group); });
     marinePracticeShuffle(groups, rand).forEach(function (g) {
-      if (selected.length >= 5 || selected.some(function (id) { return pool.some(function (m) { return m.id === id && m.group === g; }); })) return;
+      if (selected.length >= limit || selected.some(function (id) { return pool.some(function (m) { return m.id === id && m.group === g; }); })) return;
       var candidates = pool.filter(function (m) { return m.group === g && selected.indexOf(m.id) < 0; });
       if (candidates.length) take(candidates[Math.floor(rand() * candidates.length)].id);
     });
-    marinePracticeShuffle(pool, rand).forEach(function (m) { if (selected.length < 5) take(m.id); });
+    marinePracticeShuffle(pool, rand).forEach(function (m) { if (selected.length < limit) take(m.id); });
     return marinePracticeShuffle(selected, rand).map(function (id, index) {
       var truth = all.filter(function (m) { return m.id === id; })[0], alternatives = [];
       var choiceRand = mulberry32(hashString('marine-options:' + seed + ':' + id + ':' + index));
@@ -7241,11 +7928,11 @@
   function marinePracticeProgress(raw) {
     function count(v) { return typeof v === 'number' && isFinite(v) ? Math.max(0, Math.min(1000000, Math.floor(v))) : 0; }
     raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    var last = raw.last && typeof raw.last === 'object' && !Array.isArray(raw.last) ? raw.last : {}, total = Math.min(5, count(last.total)), answered = count(raw.answered);
+    var last = raw.last && typeof raw.last === 'object' && !Array.isArray(raw.last) ? raw.last : {}, total = Math.min(10, count(last.total)), answered = count(raw.answered);
     return { rounds: count(raw.rounds), answered: answered, correct: Math.min(answered, count(raw.correct)),
       last: { total: total, correct: Math.min(total, count(last.correct)), skipped: Math.min(total, count(last.skipped)),
         hinted: Math.min(total, count(last.hinted)), finishedAt: typeof last.finishedAt === 'number' && isFinite(last.finishedAt) ? Math.max(0, last.finishedAt) : 0,
-        missedIds: Array.isArray(last.missedIds) ? last.missedIds.filter(function (id, i, a) { return typeof id === 'string' && a.indexOf(id) === i; }).slice(0, 5) : [] } };
+        missedIds: Array.isArray(last.missedIds) ? last.missedIds.filter(function (id, i, a) { return typeof id === 'string' && a.indexOf(id) === i; }).slice(0, 10) : [] } };
   }
   function marinePracticeClues(tx, meta) {
     var ownName = guideShortName((tx || {}).name || '').toLowerCase(), scientific = String((meta || {}).scientific || '').toLowerCase();
@@ -7264,6 +7951,8 @@
     '[data-coralreef-root] .cr-dxp-heading{scroll-margin-top:28px;font-size:clamp(22px,3vw,30px);line-height:1.2;letter-spacing:-.025em;margin:0 0 10px;outline-offset:6px}',
     '[data-coralreef-root] .cr-dxp-intro{max-width:70ch;line-height:1.65;margin:0 0 18px}',
     '[data-coralreef-root] .cr-dxp-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,1fr);gap:18px;align-items:start}',
+    '[data-coralreef-root] .cr-dxp-recap-portrait{width:64px;height:48px;display:grid;place-items:center;overflow:hidden;border-radius:8px;background:var(--reef-alt)}',
+    '[data-coralreef-root] .cr-dxp-recap-portrait>img,[data-coralreef-root] .cr-dxp-recap-portrait>span{display:block;width:100%;height:100%;object-fit:contain}',
     '[data-coralreef-root] .cr-dxp-portrait{min-width:0;overflow:hidden;border:1px solid var(--reef-border);border-radius:18px;background:#103d48;margin:0}',
     '[data-coralreef-root] .cr-dxp-portrait img{width:100%;height:auto;max-height:330px;object-fit:contain;display:block}',
     '[data-coralreef-root] .cr-dxp-portrait>span{min-height:220px;color:#d4efeb}',
@@ -7293,6 +7982,7 @@
     '[data-coralreef-root] .cr-dxp-dots li[data-done=true]{background:var(--reef-accent)}',
     '[data-coralreef-root] .cr-dxp-dots li[data-current=true]{box-shadow:0 0 0 2px var(--reef-accent)}',
     '[data-coralreef-root] .cr-dxp-scope{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 18px}',
+    '[data-coralreef-root] .cr-dxp-pair-preview{margin:0 0 18px}[data-coralreef-root] .cr-dxp-pair-preview h4{margin:0 0 10px;font-size:15px}[data-coralreef-root] .cr-dxp-pair-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}[data-coralreef-root] .cr-dxp-pair-cards figure{min-width:0;margin:0;border:1px solid var(--reef-border);border-radius:14px;overflow:hidden;background:var(--reef-card)}[data-coralreef-root] .cr-dxp-pair-cards img{display:block;width:100%;height:clamp(100px,14vw,160px);object-fit:contain;background:#103d48}[data-coralreef-root] .cr-dxp-pair-cards figcaption{padding:12px;font-size:14px;font-weight:700;line-height:1.45;overflow-wrap:anywhere}',
     '[data-coralreef-root] .cr-dxp-scope label{font-weight:650}',
     '[data-coralreef-root] .cr-dxp-scope select{font:inherit;padding:10px 12px;min-height:44px;max-width:100%;border-radius:10px;border:1px solid var(--reef-border);background:var(--reef-card);color:var(--reef-text)}',
     '[data-coralreef-root] .cr-dxp-modes{border:0;padding:0;margin:0 0 18px;min-width:0}',
@@ -7400,7 +8090,7 @@
     return !!(answer && !answer.correct && !answer.skipped && answer.choice !== question.id && TX[answer.choice] && question.choices.indexOf(answer.choice) >= 0);
   }
   function marinePracticeDetail(tx, index) {
-    return tx && Array.isArray(tx.marks) && typeof index === 'number' && index === Math.floor(index) && index >= 0 && index < 3 && typeof tx.marks[index] === 'string' && tx.marks[index].trim() ? tx.marks[index] : null;
+    return tx && Array.isArray(tx.marks) && typeof index === 'number' && index === Math.floor(index) && index >= 0 && index < tx.marks.length && typeof tx.marks[index] === 'string' && tx.marks[index].trim() ? tx.marks[index] : null;
   }
   function MarinePracticeContrastReminder(props) {
     var env = props.env, h = env.h, answer = props.answer, TX = props.TX;
@@ -7422,12 +8112,12 @@
     var ids = focused ? [answer.choice, question.id] : question.choices, profiles = focused ? marineProfiles(__alloT) : null;
     return h('section', { id: props.id, className: 'cr-dxp-comparison', 'data-practice-comparison': 'true', 'data-practice-guess-comparison': focused ? 'true' : undefined, 'aria-labelledby': props.id + '-title' },
       h('div', { className: 'cr-dxp-comparison-head' },
-        h('div', null, h('h4', { id: props.id + '-title' }, focused ? __alloT('stem.coralreef.dx_practice_guess_title', 'Your guess and the organism shown') : __alloT('stem.coralreef.dx_practice_workspace_title', 'Compare the field marks')),
+        h('div', null, h('h4', { id: props.id + '-title', ref: props.headingRef, tabIndex: -1, 'data-practice-comparison-heading': 'true', style: { scrollMarginTop: 28, outlineOffset: 6 } }, focused ? __alloT('stem.coralreef.dx_practice_guess_title', 'Your guess and the organism shown') : __alloT('stem.coralreef.dx_practice_workspace_title', 'Compare the field marks')),
           h('p', null, focused ? __alloT('stem.coralreef.dx_practice_guess_help', 'Look at the two organisms together. Which shape, marking, or body part helps you tell them apart?') : __alloT('stem.coralreef.dx_practice_workspace_help', 'Compare shape, markings, and body parts across the candidates. Pictures are illustrative; the written field marks work even when a picture is unavailable.'))),
         h('button', { type: 'button', 'data-practice-comparison-close': 'true', style: btnStyle(P, false), onClick: props.onClose }, __alloT('stem.coralreef.dx_practice_workspace_close', 'Close comparison'))),
       selectable ? h('p', { id: props.id + '-contrast-help', className: 'cr-dxp-assistance', 'data-practice-contrast-help': 'true', style: { margin: '0 0 14px' } }, __alloT('stem.coralreef.dx_practice_contrast_help', 'Choose one field mark for each organism to help you compare them next time. Your choices are ungraded and stay only in this practice session.')) : null,
       h('ol', { className: 'cr-dxp-candidates' + (focused ? ' cr-dxp-guess-pair' : '') }, ids.map(function (id) {
-        var tx = TX[id] || {}, marks = Array.isArray(tx.marks) ? tx.marks.filter(function (mark) { return typeof mark === 'string' && mark; }).slice(0, focused ? 3 : 2) : [];
+        var tx = TX[id] || {}, marks = Array.isArray(tx.marks) ? tx.marks.filter(function (mark) { return typeof mark === 'string' && mark; }).slice(0, focused ? tx.marks.length : 2) : [];
         var shown = !!(answer && question.id === id), chosen = !!(answer && answer.choice === id && !shown), observation = profiles && profiles[id] && profiles[id].observe;
         return h('li', { key: id, 'data-practice-candidate': id, 'data-candidate-result': shown ? 'shown' : chosen ? 'chosen' : undefined, style: shown ? { borderColor: P.good } : undefined },
           h('figure', null, h(SpeciesPortrait, { env: env, id: id, noDraw: true, eager: true, iconSize: 54,
@@ -7438,7 +8128,7 @@
             h('h5', null, tx.name || id),
             selectable && Array.isArray(tx.marks) && tx.marks.length ? h('fieldset', { className: 'cr-dxp-contrast-choices', 'data-practice-reflection': shown ? 'true' : undefined, 'aria-label': fill(__alloT('stem.coralreef.dx_practice_contrast_choose_named', 'Choose a detail for {name} (optional)'), { name: tx.name || id }), 'aria-describedby': props.id + '-contrast-help' },
               h('legend', null, __alloT('stem.coralreef.dx_practice_contrast_choose', 'Choose a detail (optional)')),
-              h('div', { className: 'cr-dxp-detail-options' }, tx.marks.slice(0, 3).map(function (mark, index) {
+              h('div', { className: 'cr-dxp-detail-options' }, tx.marks.map(function (mark, index) {
                 if (!marinePracticeDetail(tx, index)) return null;
                 var selected = (shown ? answer.detailIndex : answer.guessDetailIndex) === index;
                 return h('button', { key: index, type: 'button', 'data-practice-detail': shown ? String(index) : undefined, 'data-practice-guess-detail': chosen ? String(index) : undefined, 'aria-pressed': selected ? 'true' : 'false', style: btnStyle(P, selected), onClick: function () { props.onRemember(id, index); } }, mark);
@@ -7522,6 +8212,97 @@
         h('p',{id:uid+'-help',className:'cr-dxp-picture-help'},__alloT('stem.coralreef.pz_help','Drag the enlarged picture, use its arrow keys, or choose a move button. The page scrolls normally outside the picture.'))) : null);
   }
 
+  // Keep one question's portrait mounted while an optional, unnamed model is open.
+  // Inspection follows portrait zoom: it never writes help or answer records.
+  function MarinePracticeSpecimen(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, t = env.t;
+    var uid = 'cr-practice-specimen-' + React.useId().replace(/:/g, '');
+    var os = React.useState(false), open = os[0], setOpen = os[1], rs = React.useState(false), ready = rs[0], setReady = rs[1];
+    var button = React.useRef(null), portrait = React.useRef(null), model = React.useRef(null), pendingFocus = React.useRef(false), active = React.useRef(props.active !== false); active.current = props.active !== false;
+    var show = open && props.active !== false;
+    function status(state, hadFocus) {
+      if (!active.current) return;
+      if (state === 'ready' && portrait.current && portrait.current.contains(document.activeElement)) hadFocus = true;
+      if (hadFocus) pendingFocus.current = true;
+      setReady(state === 'ready');
+    }
+    React.useEffect(function () {
+      if (props.active === false) { pendingFocus.current = false; setOpen(false); setReady(false); }
+    }, [props.active]);
+    React.useEffect(function () {
+      if (!pendingFocus.current) return;
+      pendingFocus.current = false;
+      if (props.active !== false) guideReveal(button.current, button.current, !!env.ctx.reduceMotion);
+    }, [ready, open, props.active]);
+    function toggle() {
+      if (show && model.current && model.current.contains(document.activeElement)) pendingFocus.current = true;
+      setReady(false); setOpen(function (before) { return !before; });
+    }
+    return h('div', { 'data-practice-specimen': 'true' },
+      h('div', { ref: portrait, 'data-practice-specimen-static': 'true', hidden: show && ready }, h(MarinePracticePortrait, { env: env, id: props.id })),
+      show ? h('style', null, MARINE_STUDY_CSS) : null,
+      h('div', { id: uid + '-model', ref: model }, show ? h(MarineSpecimenView, { env: env, id: props.id, name: t('stem.coralreef.dx_specimen_mystery', 'the mystery organism'), onStatus: status }) : null),
+      h('button', { ref: button, type: 'button', 'data-practice-specimen-toggle': 'true', 'aria-expanded': show ? 'true' : 'false', 'aria-controls': uid + '-model', 'aria-describedby': uid + '-help', style: btnStyle(P, false, { marginTop: 12 }), onClick: toggle }, show ? t('stem.coralreef.sv_back', 'Back to the portrait') : t('stem.coralreef.sv_open', 'Rotate in 3D')),
+      h('p', { id: uid + '-help', className: 'cr-dxp-picture-help' }, t('stem.coralreef.dx_specimen_help', 'Turn the organism to compare its shape and markings. You can return to the picture at any time.')));
+  }
+
+  function MarinePracticeRecall(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
+    var TX = props.TX, roundCards = props.answers.filter(function (a) { return a && TX[a.id]; });
+    var orderState = React.useState(null), order = orderState[0], setOrder = orderState[1];
+    var cards = order ? order.map(function (id) { return roundCards.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean) : roundCards;
+    var indexState = React.useState(0), index = Math.min(indexState[0], Math.max(0, cards.length - 1)), setIndex = indexState[1];
+    var revealState = React.useState(false), revealed = revealState[0], setRevealed = revealState[1];
+    var promptState = React.useState('picture'), prompt = promptState[0], setPrompt = promptState[1];
+    var pictureState = React.useState(false), uncovered = pictureState[0], setUncovered = pictureState[1];
+    var uid = 'cr-recall-' + React.useId().replace(/:/g, '');
+    if (!cards.length) return null;
+    var card = cards[index], text = TX[card.id], reflection = marinePracticeObservation(card.reflection);
+    var clues = marinePracticeClues(text, speciesMeta(card.id)), chosen = marinePracticeDetail(text, card.detailIndex);
+    var recallClue = clues.indexOf(chosen) >= 0 ? chosen : clues[0];
+    var pictureShown = prompt === 'picture' || uncovered || revealed;
+    function changePrompt(value) { setPrompt(value === 'marks' ? 'marks' : 'picture'); setUncovered(false); setRevealed(false); }
+    function move(delta) { var next = index + delta; if (next < 0 || next >= cards.length) return; setIndex(next); setRevealed(false); setUncovered(false); }
+    function toggleOrder() {
+      if (roundCards.length < 2) return;
+      if (order) setOrder(null);
+      else {
+        var ids = roundCards.map(function (a) { return a.id; });
+        var mixed = marinePracticeShuffle(ids, mulberry32(hashString('marine-recall:' + uid + ':' + ids.join(':'))));
+        if (mixed[0] === ids[0]) mixed.push(mixed.shift());
+        setOrder(mixed);
+      }
+      setIndex(0); setRevealed(false); setUncovered(false);
+    }
+    return h('details', { className: 'cr-dxp-earlier', 'data-practice-recall': 'true', 'data-practice-recall-order': order ? 'mixed' : 'round', 'data-practice-recall-prompt': prompt },
+      h('summary', null, __alloT("stem.coralreef.dx_recall_title", "Try recall cards (optional)")),
+      h('p', { id: uid + '-help' }, __alloT("stem.coralreef.dx_recall_help", "Recall a name and one field mark before uncovering each card. These cards use the organisms from your completed round and do not change your result.")),
+      h('div', { className: 'cr-dxp-scope' }, h('label', { htmlFor: uid + '-prompt' }, __alloT("stem.coralreef.dx_recall_prompt_label", "Card prompt")),
+        h('select', { id: uid + '-prompt', 'data-practice-recall-prompt-select': 'true', value: prompt, 'aria-describedby': uid + '-prompt-help', style: { borderColor: P.ctlBorder, background: P.card, color: P.text }, onChange: function (event) { changePrompt(event.target.value); } },
+          h('option', { value: 'picture' }, __alloT("stem.coralreef.dx_recall_prompt_picture", "Picture first")),
+          h('option', { value: 'marks' }, __alloT("stem.coralreef.dx_recall_prompt_marks", "Field mark first")))),
+      h('p', { id: uid + '-prompt-help', style: { fontSize: 13, lineHeight: 1.6, color: P.muted } }, __alloT("stem.coralreef.dx_recall_prompt_help", "Try recalling from one written field mark. Uncover the picture whenever you want; revealing a card shows its portrait too.")),
+      h('p', { 'data-practice-recall-count': 'true', role: 'status', style: { fontWeight: 700 } }, __alloFill(__alloT("stem.coralreef.dx_recall_count", "Card {n} of {total}"), { n: index + 1, total: cards.length })),
+      cards.length > 1 ? h('p', { id: uid + '-order', 'data-practice-recall-order-status': 'true', role: 'status', style: { color: P.muted, fontSize: 13 } }, order ? __alloT("stem.coralreef.dx_recall_order_mixed", "Mixed order. Each organism appears once. Switching order starts at a hidden first card.") : __alloT("stem.coralreef.dx_recall_order_round", "Round order. Mix the cards to practise recalling organisms in a different sequence.")) : null,
+      h('div', { className: 'cr-dxp-body', 'data-practice-recall-card': card.id, style: { marginBottom: 14 } },
+        h('div', null, prompt === 'marks' ? h('div', { className: 'cr-dxp-observe', 'data-practice-recall-clue': 'true' },
+          h('p', { style: { fontWeight: 700 } }, __alloT("stem.coralreef.dx_recall_clue_title", "Recall from one field mark")),
+          h('p', null, recallClue || __alloT('stem.coralreef.dx_practice_observe_fallback', 'Notice the body shape, markings, and arrangement of fins, arms, or branches.'))) : null,
+          h('div', { id: uid + '-recall-picture', hidden: !pictureShown }, pictureShown ? h('figure', { className: 'cr-dxp-portrait' }, h(SpeciesPortrait, { key: card.id, env: env, id: card.id, noDraw: true, alt: __alloT("stem.coralreef.dx_recall_picture", "Marine organism for recall") }), h('figcaption', null, __alloT("stem.coralreef.dx_recall_prompt", "Which organism is this? Recall one feature you would look for on a dive."))) : null),
+          prompt === 'marks' && !revealed ? h('button', { type: 'button', 'data-practice-recall-picture-toggle': 'true', 'aria-expanded': pictureShown, 'aria-controls': uid + '-recall-picture', style: btnStyle(P, false, { marginTop: 10 }), onClick: function () { setUncovered(!uncovered); } }, uncovered ? __alloT("stem.coralreef.dx_recall_hide_picture", "Return to the field mark") : __alloT("stem.coralreef.dx_recall_show_picture", "Uncover the picture")) : null),
+        h('div', null, h('button', { type: 'button', 'data-practice-recall-reveal': 'true', style: btnStyle(P, revealed), 'aria-expanded': revealed, 'aria-controls': uid + '-answer', 'aria-describedby': uid + '-help', onClick: function () { setRevealed(!revealed); } }, revealed ? __alloT("stem.coralreef.dx_recall_hide", "Hide name and field marks") : __alloT("stem.coralreef.dx_recall_reveal", "Reveal name and field marks")),
+          h('div', { id: uid + '-answer', 'data-practice-recall-answer': 'true', hidden: !revealed, role: 'status' }, revealed ? h(React.Fragment, null,
+            h('h4', { style: { margin: '14px 0 8px', fontSize: 20 } }, text.name || card.id),
+            h('ul', { style: { paddingInlineStart: 22, lineHeight: 1.6 } }, (text.marks || []).map(function (mark, i) { return h('li', { key: i }, mark); })),
+            marinePracticeDetail(text, card.detailIndex) ? h('p', { 'data-practice-recall-chosen': 'true', style: { lineHeight: 1.6 } }, h('strong', null, __alloT('stem.coralreef.dx_practice_detail_review', 'The detail you chose this round')), h('br'), marinePracticeDetail(text, card.detailIndex)) : null,
+            reflection.trim() ? h('div', null, h('small', null, __alloT('stem.coralreef.dx_practice_reflection_review', 'Your reflection')), h('p', { 'data-practice-recall-reflection': 'true', style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.6 } }, reflection)) : null,
+            props.onStudy ? h('button', { type: 'button', 'data-practice-recall-study': card.id, style: btnStyle(P, false), onClick: function () { props.onStudy(card.id); } }, __alloT('stem.coralreef.dx_practice_study', 'Study profile')) : null) : null))),
+      h('div', { className: 'cr-dxp-actions', style: { marginBottom: 14 } },
+        h('button', { type: 'button', 'data-practice-recall-previous': 'true', 'aria-disabled': index === 0 ? 'true' : undefined, style: btnStyle(P, false), onClick: function () { move(-1); } }, __alloT("stem.coralreef.dx_recall_previous", "Previous card")),
+        h('button', { type: 'button', 'data-practice-recall-next': 'true', 'aria-disabled': index + 1 === cards.length ? 'true' : undefined, style: btnStyle(P, false), onClick: function () { move(1); } }, __alloT("stem.coralreef.dx_recall_next", "Next card")),
+        cards.length > 1 ? h('button', { type: 'button', 'data-practice-recall-order-toggle': 'true', 'aria-pressed': !!order, 'aria-describedby': uid + '-order', style: btnStyle(P, !!order), onClick: toggleOrder }, order ? __alloT("stem.coralreef.dx_recall_use_round_order", "Use round order") : __alloT("stem.coralreef.dx_recall_mix_order", "Mix card order")) : null));
+  }
+
   function MarinePractice(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d || {}, __alloT = env.t, __alloFill = env.fill;
     var TX = props.TX || speciesText(__alloT), GN = groupNames(__alloT);
@@ -7529,19 +8310,24 @@
     var hasSelection = Array.isArray(props.selectionIds), selectionIds = hasSelection ? SPECIES_META.filter(function (m) {
       return m.group !== 'structure' && props.selectionIds.indexOf(m.id) >= 0;
     }).map(function (m) { return m.id; }) : [];
-    var groupState = React.useState(hasSelection ? 'selection' : 'all'), group = groupState[0], setGroup = groupState[1];
+    var pairIds = hasSelection && selectionIds.length === 2 && Array.isArray(props.pairIds) && props.pairIds.length === 2 && selectionIds.every(function (id) { return props.pairIds.indexOf(id) >= 0; }) ? selectionIds : null;
+    var groupState = React.useState(pairIds ? 'pair' : hasSelection ? 'selection' : 'all'), group = groupState[0], setGroup = groupState[1];
+    var reviewState = React.useState('all'), reviewFilter = reviewState[0], setReviewFilter = reviewState[1];
+    var lengthState = React.useState(5), roundSize = lengthState[0], setRoundSize = lengthState[1];
     var modeState = React.useState('picture'), observationMode = modeState[0], setObservationMode = modeState[1];
-    var sessionState = React.useState({ phase: 'setup', questions: [], answers: [], index: 0, hint: false, hintUsed: false, comparison: false, observation: '', sequence: 0 });
+    var sessionState = React.useState({ phase: 'setup', questions: [], answers: [], index: 0, hint: false, clueCount: 1, hintUsed: false, comparison: false, observation: '', sequence: 0 });
     var session = sessionState[0], setSession = sessionState[1], question = session.questions[session.index];
-    var seed = React.useRef(Date.now()), heading = React.useRef(null), feedback = React.useRef(null), collectionSelect = React.useRef(null), comparisonToggle = React.useRef(null), pendingCollectionFocus = React.useRef(false), pendingChoiceFeedback = React.useRef(null), answerLock = React.useRef(false), lastSaved = React.useRef(null);
+    var seed = React.useRef(Date.now()), heading = React.useRef(null), feedback = React.useRef(null), collectionSelect = React.useRef(null), comparisonToggle = React.useRef(null), comparisonHeading = React.useRef(null), pendingComparison = React.useRef(null), pendingCollectionFocus = React.useRef(false), pendingChoiceFeedback = React.useRef(null), answerLock = React.useRef(false), lastSaved = React.useRef(null);
     var progress = marinePracticeProgress(d.speciesPractice);
     var groups = ['fish', 'reptile', 'invertebrate', 'coral'];
     var bookmarks = marineBookmarks(d);
     var savedIds = marinePracticeCollectionIds(SPECIES_META, 'saved', bookmarks, []);
     var revisitIds = marinePracticeCollectionIds(SPECIES_META, 'revisit', {}, progress.last.missedIds);
-    var scope = group === 'selection' ? selectionIds : marinePracticeCollectionIds(SPECIES_META, group, bookmarks, progress.last.missedIds);
-    var count = Math.min(5, scope.length), answer = session.answers[session.index], text = question && TX[question.id], meta = question && speciesMeta(question.id);
+    var pairMode = group === 'pair' && !!pairIds;
+    var scope = pairMode ? pairIds : group === 'selection' ? selectionIds : marinePracticeCollectionIds(SPECIES_META, group, bookmarks, progress.last.missedIds);
+    var count = Math.min(roundSize, scope.length), answer = session.answers[session.index], text = question && TX[question.id], meta = question && speciesMeta(question.id);
     var clues = question ? marinePracticeClues(text, meta) : [];
+    var clueCount = Math.min(clues.length, Math.max(1, session.clueCount || 1));
     var lastTransition = React.useRef('setup:0:0');
     React.useEffect(function () {
       if (props.active === false || !heading.current) return;
@@ -7571,16 +8357,26 @@
       pendingCollectionFocus.current = false;
       collectionSelect.current.focus();
     }, [group, props.active]);
+    React.useEffect(function () {
+      var pending = pendingComparison.current;
+      if (!pending) return;
+      if (props.active === false || session.phase !== 'active' || !session.comparison || pending.sequence !== session.sequence || pending.index !== session.index || !question || pending.id !== question.id) { pendingComparison.current = null; return; }
+      if (!comparisonHeading.current) return;
+      pendingComparison.current = null;
+      guideReveal(comparisonHeading.current, comparisonHeading.current, !!env.ctx.reduceMotion);
+    }, [session.comparison, session.phase, session.index, session.sequence, props.active]);
     function begin(priority, focused) {
       // A second look asks only about this collection's missed or revealed
       // organisms. Help and confidence never determine who is included.
       var targets = focused ? marinePracticeCollectionIds(SPECIES_META, 'revisit', {}, priority) : scope;
-      var sequence = session.sequence + 1, questions = buildMarinePracticeRound(SPECIES_META, seed.current + sequence, targets, priority, focused ? session.answers : undefined);
+      var candidates = pairMode ? SPECIES_META.filter(function (m) { return pairIds.indexOf(m.id) >= 0; }) : SPECIES_META;
+      var sequence = session.sequence + 1, questions = buildMarinePracticeRound(candidates, seed.current + sequence, targets, priority, focused ? session.answers : undefined, roundSize);
       var earlier = focused ? session.earlierReview || session.answers.map(function (a) { return Object.assign({}, a); }) : null;
       answerLock.current = false;
       pendingChoiceFeedback.current = null;
       if (!questions.length) { setSession(Object.assign({}, session, { phase: 'setup' })); return; }
-      setSession({ phase: 'active', questions: questions, answers: [], index: 0, hint: false, hintUsed: false, comparison: false, observation: '', confidence: '', mode: observationMode, picture: false, sequence: sequence, earlierReview: earlier });
+      setReviewFilter('all');
+      setSession({ phase: 'active', questions: questions, answers: [], index: 0, hint: false, clueCount: 1, hintUsed: false, comparison: false, observation: '', confidence: '', mode: observationMode, picture: false, sequence: sequence, earlierReview: earlier });
     }
     function record(choice) {
       if (!question || answer || answerLock.current) return;
@@ -7615,14 +8411,39 @@
       });
     }
     function toggleComparison() {
+      pendingComparison.current = !session.comparison && question ? { sequence: session.sequence, index: session.index, id: question.id } : null;
       setSession(function (before) { return Object.assign({}, before, { comparison: !before.comparison, hintUsed: before.hintUsed || !before.answers[before.index] }); });
       if (session.comparison && comparisonToggle.current) comparisonToggle.current.focus();
+    }
+    function toggleClues() {
+      if (answerLock.current) return;
+      setSession(function (before) {
+        if (before.phase !== 'active' || before.answers[before.index]) return before;
+        return Object.assign({}, before, { hint: !before.hint, clueCount: Math.min(clues.length, Math.max(2, before.clueCount || 1)), hintUsed: true });
+      });
+    }
+    function anotherClue() {
+      if (answerLock.current) return;
+      setSession(function (before) {
+        if (before.phase !== 'active' || before.answers[before.index] || !before.hint || before.clueCount >= clues.length) return before;
+        return Object.assign({}, before, { clueCount: Math.min(clues.length, (before.clueCount || 1) + 1), hintUsed: true });
+      });
     }
     function togglePicture() {
       if (answerLock.current) return;
       setSession(function (before) {
         if (before.phase !== 'active' || before.mode !== 'marks' || before.answers[before.index]) return before;
         return Object.assign({}, before, { picture: !before.picture, hintUsed: true });
+      });
+    }
+    function updateReflection(value) {
+      if (!answer) return;
+      var index = session.index, sequence = session.sequence;
+      setSession(function (before) {
+        if (before.phase !== 'active' || before.index !== index || before.sequence !== sequence || !before.answers[index]) return before;
+        var answers = before.answers.slice();
+        answers[index] = Object.assign({}, answers[index], { reflection: marinePracticeObservation(value) });
+        return Object.assign({}, before, { answers: answers });
       });
     }
     function rememberDetail(index) {
@@ -7644,7 +8465,7 @@
       pendingChoiceFeedback.current = null;
       answerLock.current = false;
       if (session.index + 1 < session.questions.length) {
-        setSession(Object.assign({}, session, { index: session.index + 1, hint: false, hintUsed: false, comparison: false, observation: '', confidence: '', picture: false })); return;
+        setSession(Object.assign({}, session, { index: session.index + 1, hint: false, clueCount: 1, hintUsed: false, comparison: false, observation: '', confidence: '', picture: false })); return;
       }
       // Persist once, only after a completed round. Old or malformed records
       // cannot manufacture an achievement or modify the dive's discoveries.
@@ -7672,11 +8493,20 @@
       h('p', { style: mutedStyle(P, { margin: '0 0 18px' }) }, __alloT('stem.coralreef.dx_practice_separate', 'Practice stays separate from your dive discoveries. You can study every species without completing a challenge.')),
       h('div', { className: 'cr-dxp-scope' }, h('label', { htmlFor: uid + '-scope' }, __alloT('stem.coralreef.dx_practice_scope', 'Choose your collection')),
         h('select', { id: uid + '-scope', ref: collectionSelect, 'data-practice-collection-select': 'true', value: group, style: { borderColor: P.ctlBorder, background: P.card, color: P.text }, onChange: function (e) { setGroup(e.target.value); } },
-          hasSelection ? h('option', { value: 'selection' }, __alloFill(__alloT('stem.coralreef.dx_practice_selection', 'This guide selection ({n})'), { n: selectionIds.length })) : null,
+          pairIds ? h('option', { value: 'pair' }, __alloT("stem.coralreef.dx_pair_collection", "The two organisms I compared")) : null,
+          hasSelection && !pairIds ? h('option', { value: 'selection' }, __alloFill(__alloT('stem.coralreef.dx_practice_selection', 'This guide selection ({n})'), { n: selectionIds.length })) : null,
           h('option', { value: 'all' }, __alloT('stem.coralreef.dx_practice_all', 'A little of everything')),
           h('option', { value: 'saved' }, __alloFill(__alloT('stem.coralreef.dx_practice_collection_saved', 'Saved species ({n})'), { n: savedIds.length })),
           h('option', { value: 'revisit' }, __alloFill(__alloT('stem.coralreef.dx_practice_collection_revisit', 'Revisit my last round ({n})'), { n: revisitIds.length })),
           groups.map(function (g) { return h('option', { key: g, value: g }, GN[g]); }))),
+      pairMode ? h('section', { className:'cr-dxp-pair-preview', 'data-practice-pair-preview':'true', 'aria-labelledby':uid+'-pair-title' },
+        h('h4', { id:uid+'-pair-title' }, __alloT('stem.coralreef.dx_pair_preview_title', 'Your comparison pair')),
+        h('div', { className:'cr-dxp-pair-cards' }, pairIds.map(function(id){return h('figure', { key:id, 'data-practice-pair-organism':id }, h(SpeciesPortrait, { env:env, id:id, eager:true, noDraw:true, alt:'' }), h('figcaption', null, (TX[id]||{}).name||id));}))) : null,
+      !pairMode ? h('div', { className: 'cr-dxp-scope' }, h('label', { htmlFor: uid + '-length' }, __alloT('stem.coralreef.dx_practice_length', 'Round length')),
+        h('select', { id: uid + '-length', 'data-practice-length': 'true', value: roundSize, style: { borderColor: P.ctlBorder, background: P.card, color: P.text }, onChange: function (e) { var value = Number(e.target.value); setRoundSize(value === 3 || value === 10 ? value : 5); } },
+          h('option', { value: 3 }, __alloT('stem.coralreef.dx_practice_length_quick', '3 organisms · quick round')),
+          h('option', { value: 5 }, __alloT('stem.coralreef.dx_practice_length_standard', '5 organisms · standard round')),
+          h('option', { value: 10 }, __alloT('stem.coralreef.dx_practice_length_extended', '10 organisms · extended round')))) : null,
       h('fieldset', { className: 'cr-dxp-modes' },
         h('legend', null, __alloT('stem.coralreef.dx_practice_mode_title', 'Choose how to observe')),
         h('div', { className: 'cr-dxp-mode-grid' }, ['picture', 'marks'].map(function (mode) {
@@ -7691,75 +8521,97 @@
           : group === 'selection' ? __alloT('stem.coralreef.dx_practice_selection_empty_title', 'No living organisms in this guide selection.')
           : group === 'saved' ? __alloT('stem.coralreef.dx_practice_saved_empty_title', 'Save a few species first.')
           : progress.rounds ? __alloT('stem.coralreef.dx_practice_revisit_clear_title', 'Nothing to revisit from your last round.') : __alloT('stem.coralreef.dx_practice_revisit_empty_title', 'Your review collection starts after a round.')),
-        h('p', { style: { margin: '6px 0 0', color: P.muted } }, group === 'selection' ? count ? __alloT('stem.coralreef.dx_practice_selection_note', 'Your round draws from the living organisms shown when you opened practice. This selection stays the same during this practice visit.')
+        h('p', { style: { margin: '6px 0 0', color: P.muted } }, pairMode ? __alloT("stem.coralreef.dx_pair_note", "Study the two organisms you compared. This round asks about both, with only their names as choices.") : group === 'selection' ? count ? __alloT('stem.coralreef.dx_practice_selection_note', 'Your round draws from the living organisms shown when you opened practice. This selection stays the same during this practice visit.')
           : __alloT('stem.coralreef.dx_practice_selection_empty', 'Go back to adjust your guide filters, or choose a different collection. Restoration structures are not included in identification practice.')
           : group === 'saved' ? count ? __alloT('stem.coralreef.dx_practice_saved_note', 'Your round draws only from the living species you saved in the field guide.')
           : __alloT('stem.coralreef.dx_practice_saved_empty', 'Save living organisms from their species profiles, then return here to practice. Saved restoration structures stay in the guide.')
           : group === 'revisit' ? count ? __alloT('stem.coralreef.dx_practice_revisit_note', 'Revisit the species you missed or revealed in your last completed round. This round uses only that collection.')
           : progress.rounds ? __alloT('stem.coralreef.dx_practice_revisit_clear', 'Try a mixed collection, saved species, or another group to keep practicing.')
           : __alloT('stem.coralreef.dx_practice_revisit_empty', 'Complete a practice round first. Organisms you miss or reveal will be waiting here when you return.')
-          : __alloT('stem.coralreef.dx_practice_group_note', 'Up to five different organisms, with alternatives to compare and field marks to help you.'))),
+          : __alloT('stem.coralreef.dx_practice_group_note', 'Different organisms, with alternatives to compare and field marks to help you. Smaller collections use every available organism.'))),
       h('div', { className: 'cr-dxp-actions' }, count ? h('button', { type: 'button', style: btnStyle(P, true), 'data-practice-begin': 'true', 'data-practice-start': 'true', onClick: function () { begin(group === 'revisit' ? revisitIds : []); } }, __alloFill(__alloT('stem.coralreef.dx_practice_begin', 'Start a {n}-organism round'), { n: count }))
         : h('button', { type: 'button', style: btnStyle(P, true), 'data-practice-mixed': 'true', onClick: function () { pendingCollectionFocus.current = true; setGroup('all'); } }, __alloT('stem.coralreef.dx_practice_choose_mixed', 'Choose a mixed collection')),
         !count && group === 'saved' && props.onClose ? h('button', { type: 'button', style: btnStyle(P, false), onClick: typeof props.onBrowse === 'function' ? props.onBrowse : close }, __alloT('stem.coralreef.dx_practice_browse_saved', 'Browse species to save')) : null));
     if (session.phase === 'complete') {
       var totalCorrect = session.answers.filter(function (a) { return a.correct; }).length;
       var missed = session.answers.filter(function (a) { return !a.correct; }).map(function (a) { return a.id; });
+      var reviewAnswers = reviewFilter === 'missed' ? session.answers.filter(function (a) { return !a.correct; }) : session.answers;
       return h('section', { className: 'cr-dex-practice', 'data-marine-practice': 'complete', style: cardStyle(P) },
         h('style', null, MARINE_PRACTICE_CSS), top,
         h('p', { className: 'cr-dxp-score' }, h('strong', null, __alloFill(__alloT('stem.coralreef.dx_practice_score', '{n} of {total}'), { n: totalCorrect, total: session.answers.length })), h('span', null, __alloT('stem.coralreef.dx_practice_recognized', 'recognized this round'))),
         h('p', { className: 'cr-dxp-intro' }, __alloT('stem.coralreef.dx_practice_review_intro', 'A useful field guide is built one detail at a time. Revisit the organisms below, then look for those same details on your next dive.')),
+        h(MarinePracticeRecall, { key: 'recall:' + session.sequence, env: env, answers: session.answers, TX: TX, onStudy: props.onStudy }),
         session.earlierReview ? h('p', { className: 'cr-dxp-collection-note', 'data-practice-second-look-complete': 'true', style: { borderColor: P.border, background: P.cardAlt } }, __alloT('stem.coralreef.dx_second_look_reflect', 'What became easier to recognize? Compare this round with your first collection below.')) : null,
-        h('ul', { className: 'cr-dxp-review', 'aria-label': __alloT('stem.coralreef.dx_practice_review', 'Your round, with field marks') }, session.answers.map(function (a, i) {
-          var tx = TX[a.id] || {}, marks = tx.marks || [], noted = typeof a.detailIndex === 'number' && a.detailIndex >= 0 && a.detailIndex < 3 && typeof marks[a.detailIndex] === 'string' ? marks[a.detailIndex] : null;
-          return h('li', { key: a.id }, h(SpeciesPortrait, { env: env, id: a.id, eager: true, alt: __alloFill(__alloT('stem.coralreef.g_pic_alt', '3D model of a {name}'), { name: tx.name || a.id }) }),
+        missed.length ? h('div', { className:'cr-dxp-actions', role:'group', 'aria-label':__alloT("stem.coralreef.dx_review_filter_label", "Choose which organisms to review") },
+          h('button', { type:'button', 'data-practice-review-filter':'all', 'aria-pressed':reviewFilter==='all', style:btnStyle(P,reviewFilter==='all'), onClick:function(){setReviewFilter('all');} }, __alloFill(__alloT("stem.coralreef.dx_review_filter_all", "All organisms ({n})"), {n:session.answers.length})),
+          h('button', { type:'button', 'data-practice-review-filter':'missed', 'aria-pressed':reviewFilter==='missed', style:btnStyle(P,reviewFilter==='missed'), onClick:function(){setReviewFilter('missed');} }, __alloFill(__alloT("stem.coralreef.dx_review_filter_missed", "Missed or revealed ({n})"), {n:missed.length}))) : null,
+        missed.length ? h('p', { id:uid+'-review-count', 'data-practice-review-count':'true', role:'status', style:mutedStyle(P,{margin:'10px 0 12px'}) }, __alloFill(__alloT("stem.coralreef.dx_review_filter_count", "Showing {shown} of {total} organisms from this round."), {shown:reviewAnswers.length,total:session.answers.length})) : null,
+        h('ul', { className: 'cr-dxp-review', 'aria-describedby':missed.length?uid+'-review-count':undefined, 'aria-label': __alloT('stem.coralreef.dx_practice_review', 'Your round, with field marks') }, reviewAnswers.map(function (a, i) {
+          var tx = TX[a.id] || {}, marks = tx.marks || [], noted = marinePracticeDetail(tx, a.detailIndex);
+          return h('li', { key: a.id, 'data-practice-review-organism':a.id }, h(SpeciesPortrait, { env: env, id: a.id, eager: true, alt: __alloFill(__alloT('stem.coralreef.g_pic_alt', '3D model of a {name}'), { name: tx.name || a.id }) }),
             h('div', null, h('small', null, a.correct ? __alloT('stem.coralreef.dx_practice_result_right', 'Recognized') : a.skipped ? __alloT('stem.coralreef.dx_practice_result_skip', 'Revealed for study') : __alloT('stem.coralreef.dx_practice_result_learn', 'Keep learning')),
               h('p', { style: { fontWeight: 700 } }, tx.name || a.id),
               a.correct && session.earlierReview && session.earlierReview.some(function (before) { return before.id === a.id && !before.correct; }) ? h('small', { 'data-practice-new-recognition': a.id, style: { color: P.good, fontWeight: 700 } }, __alloT('stem.coralreef.dx_second_look_recognized', 'Recognized after another look')) : null,
               noted ? h('small', null, __alloT('stem.coralreef.dx_practice_detail_review', 'The detail you chose this round')) : null, h('p', { 'data-practice-review-detail': noted ? a.id : undefined }, noted || marks[0] || tx.role),
               marinePracticeConfidence(a.confidence) ? h('p', { 'data-practice-confidence-review': a.id }, h('small', null, __alloT('stem.coralreef.dx_confidence_before', 'Before answering:')), ' ', marineConfidenceName(__alloT, a.confidence)) : null,
               marinePracticeObservation(a.observation).trim() ? h('div', { style: { marginTop: 9 } }, h('small', null, __alloT('stem.coralreef.dx_practice_note_own', 'Your first observation')),
-                h('blockquote', { 'data-practice-review-observation': a.id }, marinePracticeObservation(a.observation))) : null),
+                h('blockquote', { 'data-practice-review-observation': a.id }, marinePracticeObservation(a.observation))) : null,
+              marinePracticeObservation(a.reflection).trim() ? h('div', { style: { marginTop: 9 } }, h('small', null, __alloT("stem.coralreef.dx_practice_reflection_review", "Your reflection")), h('blockquote', { 'data-practice-review-reflection': a.id }, marinePracticeObservation(a.reflection))) : null),
             props.onStudy ? h('button', { type: 'button', style: btnStyle(P, false), 'aria-label': __alloFill(__alloT('stem.coralreef.dx_practice_study_named', 'Study {name}'), { name: tx.name || a.id }), onClick: function () { props.onStudy(a.id); } }, __alloT('stem.coralreef.dx_practice_study', 'Study profile')) : null,
             h(MarinePracticeReviewGuess, { key: session.sequence + ':' + a.id, env: env, answer: a, TX: TX, id: uid + '-review-' + a.id, onStudy: props.onStudy }));
         })),
         missed.length ? h('p', { 'data-practice-second-look-offer': 'true', style: mutedStyle(P, { lineHeight: 1.6 }) }, __alloFill(__alloT('stem.coralreef.dx_second_look_offer', 'Your next round can focus just on these {n} missed or revealed organisms.'), { n: missed.length })) : null,
-        h('div', { className: 'cr-dxp-actions' }, missed.length || count ? h('button', { type: 'button', 'data-practice-second-look': missed.length ? 'true' : undefined, style: btnStyle(P, true), onClick: function () { begin(missed, missed.length > 0); } }, missed.length ? __alloT('stem.coralreef.dx_practice_retry', 'Practice these again') : __alloT('stem.coralreef.dx_practice_another', 'Meet another collection')) : h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { setGroup('all'); setSession(Object.assign({}, session, { phase: 'setup' })); } }, __alloT('stem.coralreef.dx_practice_choose_mixed', 'Choose a mixed collection')),
+        h('div', { className: 'cr-dxp-actions' }, missed.length || count ? h('button', { type: 'button', 'data-practice-second-look': missed.length ? 'true' : undefined, style: btnStyle(P, true), onClick: function () { begin(missed, missed.length > 0); } }, missed.length ? __alloT('stem.coralreef.dx_practice_retry', 'Practice these again') : pairMode ? __alloT("stem.coralreef.dx_pair_again", "Practice this pair again") : __alloT('stem.coralreef.dx_practice_another', 'Meet another collection')) : h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { setGroup('all'); setSession(Object.assign({}, session, { phase: 'setup' })); } }, __alloT('stem.coralreef.dx_practice_choose_mixed', 'Choose a mixed collection')),
           h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { answerLock.current = false; setSession(Object.assign({}, session, { phase: 'setup' })); } }, __alloT('stem.coralreef.dx_practice_change', 'Choose another group'))),
         session.earlierReview ? h('details', { key: session.sequence, className: 'cr-dxp-earlier', 'data-practice-earlier-review': 'true' },
           h('summary', null, __alloT('stem.coralreef.dx_second_look_earlier', 'Your first collection')),
           h('p', null, __alloT('stem.coralreef.dx_second_look_earlier_help', 'Your original answers and observations stay here for comparison during this practice session.')),
           h('ol', null, session.earlierReview.map(function (a) {
-            var tx = TX[a.id] || {}, marks = tx.marks || [], mark = typeof a.detailIndex === 'number' && a.detailIndex >= 0 && a.detailIndex < 3 && typeof marks[a.detailIndex] === 'string' ? marks[a.detailIndex] : marks[0];
+            var tx = TX[a.id] || {}, marks = tx.marks || [], mark = marinePracticeDetail(tx, a.detailIndex) || marks[0];
             return h('li', { key: a.id, 'data-practice-earlier-organism': a.id }, h('strong', null, tx.name || a.id),
               h('p', null, a.correct ? __alloT('stem.coralreef.dx_practice_result_right', 'Recognized') : a.skipped ? __alloT('stem.coralreef.dx_practice_result_skip', 'Revealed for study') : __alloT('stem.coralreef.dx_practice_result_learn', 'Keep learning')),
               mark ? h('p', { 'data-practice-earlier-detail': a.id }, mark) : null,
               marinePracticeConfidence(a.confidence) ? h('p', null, __alloT('stem.coralreef.dx_confidence_before', 'Before answering:'), ' ', marineConfidenceName(__alloT, a.confidence)) : null,
               marinePracticeObservation(a.observation).trim() ? h('blockquote', { 'data-practice-earlier-observation': a.id }, marinePracticeObservation(a.observation)) : null,
+              marinePracticeObservation(a.reflection).trim() ? h('div', null, h('small', null, __alloT('stem.coralreef.dx_practice_reflection_review', 'Your reflection')), h('blockquote', { 'data-practice-earlier-reflection': a.id }, marinePracticeObservation(a.reflection))) : null,
               h(MarinePracticeReviewGuess, { env: env, answer: a, TX: TX, id: uid + '-earlier-' + a.id, onStudy: props.onStudy }));
           }))) : null);
     }
     if (!question || !text) return null;
     var chosenText = answer && answer.choice && TX[answer.choice];
     var pictureHidden = session.mode === 'marks' && !session.picture && !answer && clues.length > 0;
+    var earlierAnswers = session.answers.slice(0, session.index).filter(function (a) { return a && TX[a.id]; });
     return h('section', { className: 'cr-dex-practice', 'data-marine-practice': 'active', 'data-practice-question': session.index, 'data-practice-observation-mode': session.mode || 'picture', 'data-practice-second-look-active': session.earlierReview ? 'true' : undefined, style: cardStyle(P) },
       h('style', null, MARINE_PRACTICE_CSS), top,
       session.earlierReview ? h('p', { className: 'cr-dxp-collection-note', style: { borderColor: P.border, background: P.cardAlt } },
         h('strong', null, __alloT('stem.coralreef.dx_second_look_title', 'A focused second look')), ' ', __alloT('stem.coralreef.dx_second_look_help', 'Only the organisms you missed or revealed return. Take your time, and look for a detail you remember.')) : null,
       h('ol', { className: 'cr-dxp-dots', 'aria-hidden': 'true' }, session.questions.map(function (q, i) { return h('li', { key: q.id, 'data-done': i < session.index ? 'true' : undefined, 'data-current': i === session.index ? 'true' : undefined }); })),
+      earlierAnswers.length ? h('details', { key: session.sequence + ':' + session.index, 'data-practice-recap': 'true', style: { margin: '0 0 16px', padding: '10px 14px', border: '1px solid ' + P.border, borderRadius: 14, background: P.cardAlt } },
+        h('summary', { style: { minHeight: 24, padding: '4px 0', fontWeight: 700, cursor: 'pointer' } }, __alloFill(__alloT("stem.coralreef.dx_practice_recap_title", "Earlier in this round ({n})"), { n: earlierAnswers.length })),
+        h('p', { style: mutedStyle(P, { lineHeight: 1.55, margin: '10px 0' }) }, __alloT("stem.coralreef.dx_practice_recap_help", "Revisit a detail from an organism you have already answered, then continue with your current organism.")),
+        h('ol', { style: { margin: 0, padding: 0, listStyle: 'none' } }, earlierAnswers.map(function (a) {
+          var tx = TX[a.id], reflection = marinePracticeObservation(a.reflection), mark = marinePracticeDetail(tx, a.detailIndex) || marinePracticeDetail(tx, 0) || tx.role;
+          return h('li', { key: a.id, 'data-practice-recap-organism': a.id, style: { display: 'grid', gridTemplateColumns: '64px minmax(0,1fr)', alignItems: 'start', gap: 12, padding: '12px 0', borderTop: '1px solid ' + P.border } },
+            h('div', { className: 'cr-dxp-recap-portrait' }, h(SpeciesPortrait, { env: env, id: a.id, noDraw: true, iconSize: 40, alt: __alloFill(__alloT('stem.coralreef.g_pic_alt', '3D model of a {name}'), { name: tx.name || a.id }) })),
+            h('div', { style: { minWidth: 0 } }, h('strong', null, tx.name || a.id),
+              h('small', { style: { display: 'block', marginTop: 4, color: a.correct ? P.good : P.muted } }, a.correct ? __alloT('stem.coralreef.dx_practice_result_right', 'Recognized') : a.skipped ? __alloT('stem.coralreef.dx_practice_result_skip', 'Revealed for study') : __alloT('stem.coralreef.dx_practice_result_learn', 'Keep learning')),
+              reflection.trim() ? h('div', null, h('small', { style: { display: 'block', marginTop: 7 } }, __alloT('stem.coralreef.dx_practice_reflection_review', 'Your reflection')), h('p', { 'data-practice-recap-reflection': a.id, style: { margin: '4px 0 0', lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, reflection))
+                : h('p', { 'data-practice-recap-detail': a.id, style: { margin: '5px 0 0', lineHeight: 1.55, overflowWrap: 'anywhere' } }, mark),
+              props.onStudy ? h('button', { type: 'button', 'data-practice-recap-study': a.id, style: btnStyle(P, false, { marginTop: 8 }), 'aria-label': __alloFill(__alloT('stem.coralreef.dx_practice_study_named', 'Study {name}'), { name: tx.name || a.id }), onClick: function () { props.onStudy(a.id); } }, __alloT('stem.coralreef.dx_practice_recap_study', 'Revisit profile')) : null));
+        }))) : null,
       h('div', { className: 'cr-dxp-body' },
         h('div', null, h('div', { id: uid + '-portrait' }, pictureHidden ? h('section', { className: 'cr-dxp-mystery', 'data-practice-mystery': 'true', 'aria-labelledby': uid + '-mystery-title' },
           h('p', { className: 'cr-dxp-mystery-label', id: uid + '-mystery-title' }, __alloT('stem.coralreef.dx_practice_mode_marks', 'Field-mark detective')),
           h('div', { id: uid + '-clue' }, h('h4', null, clues[0]),
-            session.hint && clues.length > 1 ? h('ul', { id: uid + '-more-clues' }, clues.slice(1).map(function (clue, i) { return h('li', { key: i }, clue); })) : null),
+            session.hint && clues.length > 1 ? h('ul', { id: uid + '-more-clues' }, clues.slice(1, clueCount).map(function (clue, i) { return h('li', { key: i }, clue); })) : null),
           h('p', { className: 'cr-dxp-mystery-footer' }, __alloT('stem.coralreef.dx_practice_mystery_footer', 'Imagine the shape, markings, and body parts. Which candidate fits this observation?')))
-          : h(MarinePracticePortrait, { key: session.sequence + ':' + session.index, env: env, id: question.id })),
+          : h(MarinePracticeSpecimen, { key: session.sequence + ':' + session.index, env: env, id: question.id, active: props.active })),
           session.mode === 'marks' && !answer && clues.length > 0 ? h('div', { className: 'cr-dxp-picture-reveal' },
             h('button', { type: 'button', 'data-practice-picture-toggle': 'true', style: btnStyle(P, false), 'aria-expanded': pictureHidden ? 'false' : 'true', 'aria-controls': uid + '-portrait', 'aria-describedby': uid + '-picture-help', onClick: togglePicture }, pictureHidden ? __alloT('stem.coralreef.dx_practice_picture_show', 'Uncover the picture') : __alloT('stem.coralreef.dx_practice_picture_hide', 'Return to written clues')),
             h('p', { id: uid + '-picture-help' }, __alloT('stem.coralreef.dx_practice_picture_help', 'Uncovering the picture counts as help for this organism. Your answer is still yours to choose.'))) : null,
           !pictureHidden ? h('div', { className: 'cr-dxp-observe', id: uid + '-clue' }, h('p', { style: { fontWeight: 700 } }, __alloT('stem.coralreef.dx_practice_observe', 'Start with one detail')),
             h('p', null, clues[0] || __alloT('stem.coralreef.dx_practice_observe_fallback', 'Notice the body shape, markings, and arrangement of fins, arms, or branches.')),
-            session.hint && clues.length > 1 ? h('ul', { id: uid + '-more-clues' }, clues.slice(1).map(function (clue, i) { return h('li', { key: i }, clue); })) : null) : null,
+            session.hint && clues.length > 1 ? h('ul', { id: uid + '-more-clues' }, clues.slice(1, clueCount).map(function (clue, i) { return h('li', { key: i }, clue); })) : null) : null,
           !answer ? h('details', { key: question.id, className: 'cr-dxp-first-look', 'data-practice-observation': 'true' },
             h('summary', null, __alloT('stem.coralreef.dx_practice_note_open', 'Describe what you notice (optional)')),
             h('fieldset', { style: { border: 0, padding: 0, margin: '12px 0' }, 'data-practice-confidence': 'true' },
@@ -7784,7 +8636,7 @@
           answer ? h('div', { className: 'cr-dxp-feedback', id: uid + '-feedback', 'data-practice-feedback': 'true', ref: feedback, tabIndex: -1, role: 'status', style: { borderInlineStartColor: answer.correct ? P.good : P.accent } },
             h('p', { style: { fontWeight: 750 } }, answer.correct ? __alloFill(__alloT('stem.coralreef.dx_practice_right', 'Yes, {name}.'), { name: text.name }) : answer.skipped ? __alloFill(__alloT('stem.coralreef.dx_practice_revealed', 'Meet {name}.'), { name: text.name }) : __alloFill(__alloT('stem.coralreef.dx_practice_wrong', 'A useful comparison: this is {name}.'), { name: text.name })),
             h('p', null, __alloT('stem.coralreef.dx_practice_evidence', 'Look for these distinguishing details:')),
-            h('ul', null, (text.marks || []).slice(0, 3).map(function (clue, i) { return h('li', { key: i }, clue); })),
+            h('ul', null, (text.marks || []).map(function (clue, i) { return h('li', { key: i }, clue); })),
             chosenText && !answer.correct && chosenText.marks && chosenText.marks.length ? h('p', { style: { margin: '10px 0 0' } }, __alloFill(__alloT('stem.coralreef.dx_practice_compare', 'Your choice, {name}: {mark}'), { name: chosenText.name, mark: chosenText.marks[0] })) : null) : null,
           answer && marinePracticeConfidence(answer.confidence) ? h('p', { 'data-practice-confidence-feedback': answer.confidence, style: { borderInlineStart: '3px solid ' + P.accent, paddingInlineStart: 12, lineHeight: 1.6, margin: '12px 0' } },
             h('strong', null, __alloT('stem.coralreef.dx_confidence_before', 'Before answering:'), ' ', marineConfidenceName(__alloT, answer.confidence), '. '),
@@ -7798,16 +8650,26 @@
           answer && !(session.comparison && marinePracticeWrongGuess(question, answer, TX)) && Array.isArray(text.marks) && text.marks.length ? h('fieldset', { className: 'cr-dxp-detail', 'data-practice-reflection': 'true' },
             h('legend', null, __alloT('stem.coralreef.dx_practice_detail_title', 'Keep one detail in mind (optional)')),
             h('p', null, __alloT('stem.coralreef.dx_practice_detail_help', 'Choose a field mark for this round’s review. It stays only in this practice session.')),
-            h('div', { className: 'cr-dxp-detail-options' }, text.marks.slice(0, 3).map(function (mark, index) {
+            h('div', { className: 'cr-dxp-detail-options' }, text.marks.map(function (mark, index) {
               return h('button', { key: index, type: 'button', 'data-practice-detail': String(index), 'aria-pressed': answer.detailIndex === index ? 'true' : 'false', style: btnStyle(P, answer.detailIndex === index), onClick: function () { rememberDetail(index); } }, mark);
             }))) : null,
+          answer ? h('details', { key: question.id, className: 'cr-dxp-first-look cr-dxp-written-reflection', 'data-practice-written-reflection': 'true' },
+            h('summary', null, __alloT("stem.coralreef.dx_practice_reflection_open", "What will you look for next time? (optional)")),
+            h('label', { htmlFor: uid + '-reflection' }, __alloT("stem.coralreef.dx_practice_reflection_label", "A detail to remember")),
+            h('textarea', { id: uid + '-reflection', 'data-practice-reflection-input': 'true', rows: 3, maxLength: 240, value: marinePracticeObservation(answer.reflection),
+              style: { borderColor: P.ctlBorder }, 'aria-describedby': uid + '-reflection-count ' + uid + '-reflection-help', onChange: function (event) { updateReflection(event.target.value); } }),
+            h('p', { id: uid + '-reflection-count', className: 'cr-dxp-note-count' }, __alloFill(__alloT('stem.coralreef.dx_practice_note_count', '{n} of 240 characters'), { n: marinePracticeObservation(answer.reflection).length })),
+            h('p', { id: uid + '-reflection-help' }, __alloT('stem.coralreef.dx_practice_note_help', 'Your words stay only in this practice session. They are not graded or added to your profile Field notes.'))) : null,
           !answer ? h('p', { className: 'cr-dxp-assistance', id: uid + '-comparison-help', 'data-practice-assistance': 'true' }, __alloT('stem.coralreef.dx_practice_workspace_assistance', 'Comparing candidates counts as field-mark help for this organism. You can still choose a name without opening it.')) : null,
+          !answer && clues.length > 1 ? h('p', { id: uid + '-clue-help', style: mutedStyle(P, { fontSize: 13, lineHeight: 1.55 }) }, __alloT("stem.coralreef.dx_practice_clue_help", "Extra field marks count as help for this organism. Reveal them at your own pace.")) : null,
+          !answer && session.hint && clues.length > 1 ? h('p', { id: uid + '-clue-count', 'data-practice-clue-count': 'true', role: 'status', style: mutedStyle(P, { fontSize: 13 }) }, __alloFill(__alloT("stem.coralreef.dx_practice_clue_count", "Showing {n} of {total} field marks."), { n: clueCount, total: clues.length })) : null,
           h('div', { className: 'cr-dxp-actions' }, answer ? h('button', { type: 'button', style: btnStyle(P, true), 'data-practice-next': 'true', 'data-practice-finish': session.index + 1 === session.questions.length ? 'true' : undefined, onClick: next }, session.index + 1 === session.questions.length ? __alloT('stem.coralreef.dx_practice_finish', 'See my collection') : __alloT('stem.coralreef.dx_practice_next', 'Next organism')) : h(React.Fragment, null,
-            clues.length > 1 ? h('button', { type: 'button', style: btnStyle(P, false), 'aria-expanded': session.hint ? 'true' : 'false', 'aria-controls': uid + '-more-clues', onClick: function () { setSession(function (before) { return Object.assign({}, before, { hint: !before.hint, hintUsed: true }); }); } }, session.hint ? __alloT('stem.coralreef.dx_practice_hint_hide', 'Hide extra field marks') : __alloT('stem.coralreef.dx_practice_hint', 'More field marks')) : null,
+            clues.length > 1 ? h('button', { type: 'button', 'data-practice-clue-toggle': 'true', style: btnStyle(P, false), 'aria-expanded': session.hint ? 'true' : 'false', 'aria-controls': uid + '-more-clues', 'aria-describedby': uid + '-clue-help', onClick: toggleClues }, session.hint ? __alloT('stem.coralreef.dx_practice_hint_hide', 'Hide extra field marks') : __alloT('stem.coralreef.dx_practice_hint', 'More field marks')) : null,
+            session.hint && clues.length > 1 ? h('button', { type: 'button', 'data-practice-another-clue': 'true', style: btnStyle(P, false), 'aria-disabled': clueCount >= clues.length ? 'true' : undefined, 'aria-controls': uid + '-more-clues', 'aria-describedby': uid + '-clue-count', onClick: anotherClue }, __alloT("stem.coralreef.dx_practice_another_clue", "Another field mark")) : null,
             h('button', { type: 'button', style: btnStyle(P, false), 'data-practice-skip': 'true', onClick: function () { record(null); } }, __alloT('stem.coralreef.dx_practice_skip', 'Reveal and learn'))),
             h('button', { ref: comparisonToggle, type: 'button', 'data-practice-compare-toggle': 'true', 'aria-expanded': session.comparison ? 'true' : 'false', 'aria-controls': uid + '-comparison', 'aria-describedby': !answer ? uid + '-comparison-help' : undefined, style: btnStyle(P, false), onClick: toggleComparison }, session.comparison ? (chosenText && !answer.correct && !answer.skipped ? __alloT('stem.coralreef.dx_practice_guess_hide', 'Hide guess comparison') : __alloT('stem.coralreef.dx_practice_workspace_hide', 'Hide candidate comparison')) : (chosenText && !answer.correct && !answer.skipped ? __alloT('stem.coralreef.dx_practice_guess_open', 'Compare my guess') : __alloT('stem.coralreef.dx_practice_workspace_open', 'Compare field marks'))),
             answer && props.onStudy ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { props.onStudy(question.id); } }, __alloT('stem.coralreef.dx_practice_study', 'Study profile')) : null))),
-      session.comparison ? h(MarinePracticeCandidates, { env: env, question: question, answer: answer, TX: TX, id: uid + '-comparison', onClose: toggleComparison, onStudy: props.onStudy, onRemember: rememberContrast, onChoose: chooseCandidate }) : null);
+      session.comparison ? h(MarinePracticeCandidates, { env: env, question: question, answer: answer, TX: TX, id: uid + '-comparison', headingRef: comparisonHeading, onClose: toggleComparison, onStudy: props.onStudy, onRemember: rememberContrast, onChoose: chooseCandidate }) : null);
   }
 
   // One field guide, with a detailed reading view shared by the collection and dive.
@@ -7906,10 +8768,12 @@
     '[data-coralreef-root] .crst-stage img{display:block;width:100%;height:360px;object-fit:contain;transform-origin:center;max-width:none;user-select:none;pointer-events:none}',
     '[data-coralreef-root] [data-study-specimen-toggle]{scroll-margin-top:28px}',
     '[data-coralreef-root] .crsv-canvas{box-sizing:border-box;display:block;width:100%;height:360px;border:1px solid var(--reef-border);border-radius:17px;touch-action:none;cursor:grab;background:#103d4b}',
-    '[data-coralreef-root] .crsv-angles{margin:0 0 10px}[data-coralreef-root] .crsv-canvas[data-move=true]{cursor:move}',
+    '[data-coralreef-root] .crsv-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}[data-coralreef-root] .crsv-head .crsv-angles{margin:0}[data-coralreef-root] .crsv-canvas[data-move=true]{cursor:move}',
+    '[data-coralreef-root] .crst-body[data-specimen-expanded=true]{grid-template-columns:minmax(0,1fr)}[data-coralreef-root] .crst-body[data-specimen-expanded=true] .crsv-canvas{height:clamp(420px,55vw,620px)}',
     '[data-coralreef-root] .crsv-canvas:active{cursor:grabbing}[data-coralreef-root] .crsv-canvas:focus-visible{outline:3px solid var(--reef-accent);outline-offset:4px}',
+    '[data-coralreef-root] .crsv-memory{margin-top:14px;padding:0 14px;border:1px solid var(--reef-border);border-radius:12px;background:var(--reef-alt)}[data-coralreef-root] .crsv-memory>summary{min-height:44px;box-sizing:border-box;padding:11px 0;cursor:pointer;font-size:14px;font-weight:700;line-height:1.5}[data-coralreef-root] .crsv-memory>p{font-size:13px;line-height:1.6;margin:0 0 12px;color:var(--reef-muted)}[data-coralreef-root] .crsv-memory .crst-tools{margin:0 0 12px}',
     '[data-coralreef-root] .crsv-status{font-size:14px;line-height:1.6;margin:12px 0}[data-coralreef-root] .crsv-ready{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
-    '@media(max-width:650px){[data-coralreef-root] .crsv-canvas{height:260px}}',
+    '@media(max-width:650px){[data-coralreef-root] .crsv-canvas{height:260px}[data-coralreef-root] .crst-body[data-specimen-expanded=true] .crsv-canvas{height:360px}}',
     '[data-coralreef-root] .crst-pan-help{font-size:12px;line-height:1.6;color:var(--reef-muted);margin:8px 0 0}',
     '[data-coralreef-root] .crst-fallback{padding:32px;color:#d7eeeb;font-size:15px;line-height:1.7;text-align:center;max-width:40ch}',
     '[data-coralreef-root] .crst-art figcaption{padding:11px 15px;color:#d7eeeb;border-top:1px solid #ffffff26;font-size:12px;line-height:1.6}',
@@ -7960,7 +8824,8 @@
   // listener. Closing its owner disposes the model through its shared-resource Kit.
   function createMarineSpecimenController(THREE, canvas, id, onFailure) {
     var renderer = null, model = null, look = null, observer = null, dead = false;
-    var camera, scene, bounds, initialTheta, initialPhi, theta, phi, scale = 1, panX = 0, panY = 0, angle = 'portrait', sessile = false;
+    var camera, scene, bounds, initialTheta, initialPhi, theta, phi, scale = 1, panX = 0, panY = 0, angle = 'portrait', lighting = 'reef', sessile = false;
+    var hemisphere, sun, reefBackground, studioBackground;
     var aim = new THREE.Vector3(), direction = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3();
     function dispose() {
       if (dead) return; dead = true;
@@ -7976,8 +8841,14 @@
     }
     function fail() { if (dead) return; dispose(); if (onFailure) onFailure(); }
     function lost(event) { event.preventDefault(); fail(); }
-    function view() { return { scale: scale, turn: theta - initialTheta, tilt: phi - initialPhi, panX: panX, panY: panY, angle: angle }; }
+    function view() { return { scale: scale, turn: theta - initialTheta, tilt: phi - initialPhi, panX: panX, panY: panY, angle: angle, lighting: lighting }; }
     function limitPan() { var limit = (scale - 1) / scale; if (!limit) { panX = panY = 0; return; } panX = clamp(panX, -limit, limit); panY = clamp(panY, -limit, limit); }
+    function applyLighting(name) {
+      lighting = name; var studio = name === 'studio';
+      scene.background = studio ? studioBackground : reefBackground;
+      hemisphere.color.setHex(studio ? 0xf1f3f4 : 0xdff6ff); hemisphere.groundColor.setHex(studio ? 0xcbd1d6 : 0x3a5f6a); hemisphere.intensity = studio ? .85 : 1.1;
+      sun.intensity = studio ? .65 : 1;
+    }
     function fitDistance() {
       var vertical = camera.fov * Math.PI / 180, horizontal = 2 * Math.atan(Math.tan(vertical / 2) * camera.aspect);
       return bounds.radius * 1.12 / Math.sin(Math.min(vertical, horizontal) / 2) / scale;
@@ -8014,8 +8885,9 @@
       model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
       bounds = marineSpecimenBounds(THREE, model); look = thumbLook(THREE);
       scene = new THREE.Scene(); scene.background = look.backdrop || new THREE.Color(0x103e4b); scene.add(model.root);
-      scene.add(new THREE.HemisphereLight(0xdff6ff, 0x3a5f6a, 1.1));
-      var sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(2, 4, 3); scene.add(sun);
+      hemisphere = new THREE.HemisphereLight(0xdff6ff, 0x3a5f6a, 1.1); scene.add(hemisphere);
+      sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(2, 4, 3); scene.add(sun);
+      reefBackground = scene.background; studioBackground = new THREE.Color(0x66737c);
       camera = new THREE.PerspectiveCamera(35, 1, .01, 100);
       var info = window.Reef3DSpecies.info(id) || {}, portrait = info.portrait;
       sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
@@ -8035,11 +8907,40 @@
           panX += x * halfHeight * camera.aspect * 2 / bounds.radius; panY += y * halfHeight * 2 / bounds.radius; limitPan();
           if (beforeX !== panX || beforeY !== panY) render(); return view();
         },
-        zoom: function (amount) { if (!dead) { var nextScale = clamp(scale + amount, 1, 2); if (nextScale !== scale) { scale = nextScale; limitPan(); render(); } } return view(); },
+        zoom: function (amount) { if (!dead) { var nextScale = clamp(scale + amount, 1, 3); if (nextScale !== scale) { scale = nextScale; limitPan(); render(); } } return view(); },
         setAngle: function (name) {
-          if (dead || ['side', 'front', 'above'].indexOf(name) < 0) return view();
-          theta = name === 'above' ? 0 : (name === 'front' ? (sessile ? 0 : Math.PI / 2) : (sessile ? Math.PI / 2 : 0));
-          phi = name === 'above' ? .12 : Math.PI / 2; scale = 1; panX = panY = 0; angle = name; render(); return view();
+          if (dead || ['side', 'opposite', 'front', 'above', 'below'].indexOf(name) < 0) return view();
+          theta = name === 'above' || name === 'below' ? 0 : (name === 'front' ? (sessile ? 0 : Math.PI / 2) : (sessile ? Math.PI / 2 : 0));
+          if (name === 'opposite') theta += Math.PI;
+          phi = name === 'above' ? .12 : name === 'below' ? Math.PI - .12 : Math.PI / 2; scale = 1; panX = panY = 0; angle = name; render(); return view();
+        },
+        setLighting: function (name) {
+          if (dead || (name !== 'reef' && name !== 'studio') || name === lighting) return view();
+          applyLighting(name); render(); return view();
+        },
+        restoreView: function (saved) {
+          if (dead) return view();
+          var next = {}, keys = ['scale', 'turn', 'tilt', 'panX', 'panY', 'angle', 'lighting'];
+          try {
+            if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return view();
+            var proto = Object.getPrototypeOf(saved);
+            if (proto !== null && Object.getPrototypeOf(proto) !== null) return view();
+            for (var i = 0; i < keys.length; i++) {
+              var descriptor = Object.getOwnPropertyDescriptor(saved, keys[i]);
+              if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) return view();
+              next[keys[i]] = descriptor.value;
+            }
+          } catch (error) { return view(); }
+          for (var n = 0; n < 5; n++) if (typeof next[keys[n]] !== 'number' || !isFinite(next[keys[n]])) return view();
+          if (next.scale < 1 || next.scale > 3 || ['portrait', 'custom', 'side', 'opposite', 'front', 'above', 'below'].indexOf(next.angle) < 0 || (next.lighting !== 'reef' && next.lighting !== 'studio')) return view();
+          var nextTheta = initialTheta + next.turn, nextPhi = initialPhi + next.tilt, limit = (next.scale - 1) / next.scale, epsilon = 1e-10;
+          // A saved pole angle can round a fraction below its original clamp.
+          if (!isFinite(nextTheta) || !isFinite(nextPhi) || nextPhi < .08 - epsilon || nextPhi > Math.PI - .08 + epsilon || Math.abs(next.panX) > limit + epsilon || Math.abs(next.panY) > limit + epsilon) return view();
+          var current = view();
+          if (next.scale === current.scale && Math.abs(next.turn - current.turn) <= 1e-12 && Math.abs(next.tilt - current.tilt) <= 1e-12 && next.panX === current.panX && next.panY === current.panY && next.angle === current.angle && next.lighting === current.lighting) return current;
+          theta = nextTheta; phi = clamp(nextPhi, .08, Math.PI - .08); scale = next.scale; panX = clamp(next.panX, -limit, limit); panY = clamp(next.panY, -limit, limit); angle = next.angle;
+          if (next.lighting !== lighting) applyLighting(next.lighting);
+          render(); return view();
         },
         reset: function () { if (!dead) { theta = initialTheta; phi = initialPhi; scale = 1; panX = panY = 0; angle = 'portrait'; render(); } return view(); },
         getView: view, dispose: dispose
@@ -8050,10 +8951,13 @@
   function MarineSpecimenView(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, t = env.t;
     var uid = 'cr-specimen-' + React.useId().replace(/:/g, ''), canvas = React.useRef(null), interactive = React.useRef(null), controller = React.useRef(null), drag = React.useRef(null), latest = React.useRef(props); latest.current = props;
-    var ss = React.useState('loading'), status = ss[0], setStatus = ss[1], vs = React.useState({ scale: 1, turn: 0, tilt: 0, panX: 0, panY: 0, angle: 'portrait' }), view = vs[0], setView = vs[1];
+    var ss = React.useState('loading'), status = ss[0], setStatus = ss[1], vs = React.useState({ scale: 1, turn: 0, tilt: 0, panX: 0, panY: 0, angle: 'portrait', lighting: 'reef' }), view = vs[0], setView = vs[1];
     var ms = React.useState('turn'), mode = ms[0], setMode = ms[1];
+    var fineState = React.useState(false), fine = fineState[0], setFine = fineState[1];
+    var memoryState = React.useState(null), remembered = memoryState[0], setRemembered = memoryState[1], memoryStatus = React.useState('empty'), memoryMessage = memoryStatus[0], setMemoryMessage = memoryStatus[1];
     React.useEffect(function () {
       var alive = true, owned = null, failureReported = false;
+      setRemembered(null); setMemoryMessage('empty'); setFine(false);
       function failed() {
         if (!alive || failureReported) return; failureReported = true; controller.current = null; drag.current = null; setStatus('error');
         latest.current.onStatus('error', !!(interactive.current && interactive.current.contains(document.activeElement)));
@@ -8075,51 +8979,126 @@
     }, [props.id]);
     function turn(x, y) { if (controller.current) setView(controller.current.turn(x, y)); }
     function pan(x, y) { if (controller.current) setView(controller.current.pan(x, y)); }
-    function move(x, y, action) { if (action === 'move') pan(x, y); else turn(x, y); }
+    function move(x, y, action) { var step = fine ? .25 : 1; if (action === 'move') pan(x * step, y * step); else turn(x * step, y * step); }
     function fit(name) { drag.current = null; setMode('turn'); if (controller.current) setView(name ? controller.current.setAngle(name) : controller.current.reset()); }
+    function fitSpecimen() {
+      drag.current = null; setMode('turn');
+      if (controller.current) { var fitted = controller.current.getView(); fitted.scale = 1; fitted.panX = fitted.panY = 0; setView(controller.current.restoreView(fitted)); }
+    }
+    function centerDetail() {
+      var active = drag.current, target = canvas.current; drag.current = null;
+      if (active && target && target.releasePointerCapture) try { if (!target.hasPointerCapture || target.hasPointerCapture(active.id)) target.releasePointerCapture(active.id); } catch (e) {}
+      if (controller.current) { var centered = controller.current.getView(); centered.panX = centered.panY = 0; setView(controller.current.restoreView(centered)); }
+    }
+    function light(name) { drag.current = null; if (controller.current) setView(controller.current.setLighting(name)); }
     function zoom(amount) { drag.current = null; if (controller.current) { var next = controller.current.zoom(amount); setView(next); if (next.scale <= 1) setMode('turn'); } }
+    function sameView(a, b) {
+      try {
+        if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) || Array.isArray(b)) return false;
+        var keys = ['scale', 'turn', 'tilt', 'panX', 'panY', 'angle', 'lighting'];
+        for (var i = 0; i < keys.length; i++) {
+          var left = Object.getOwnPropertyDescriptor(a, keys[i]), right = Object.getOwnPropertyDescriptor(b, keys[i]);
+          if (!left || !right || !Object.prototype.hasOwnProperty.call(left, 'value') || !Object.prototype.hasOwnProperty.call(right, 'value')) return false;
+          if (i < 5) {
+            if (typeof left.value !== 'number' || typeof right.value !== 'number' || !isFinite(left.value) || !isFinite(right.value)) return false;
+            if (i === 1 || i === 2) { if (Math.abs(left.value - right.value) > 1e-12) return false; }
+            else if (left.value !== right.value) return false;
+          } else if (typeof left.value !== 'string' || left.value !== right.value) return false;
+        }
+        return true;
+      } catch (error) { return false; }
+    }
+    function remember() { if (controller.current) { setRemembered(controller.current.getView()); setMemoryMessage('saved'); } }
+    function restore() { if (controller.current && remembered) { drag.current = null; setMode('turn'); setView(controller.current.restoreView(remembered)); setMemoryMessage('restored'); } }
+    function swap() {
+      var owned = controller.current, present, restored;
+      if (!owned || !remembered) return;
+      try {
+        present = owned.getView();
+        if (!sameView(present, present) || !sameView(remembered, remembered) || sameView(present, remembered)) return;
+        restored = owned.restoreView(remembered);
+        if (controller.current !== owned || !sameView(restored, remembered) || !sameView(owned.getView(), remembered)) return;
+      } catch (error) { return; }
+      drag.current = null; setMode('turn'); setRemembered(present); setView(restored); setMemoryMessage('swapped');
+    }
     function pointerStart(event) {
-      if (status !== 'ready' || event.button !== 0 || drag.current || (mode === 'move' && view.scale <= 1)) return;
+      if (status !== 'ready' || event.button !== 0 || drag.current || event.altKey || event.ctrlKey || event.metaKey) return;
+      var action = event.shiftKey ? 'move' : mode;
+      if (action === 'move' && view.scale <= 1) return;
       var rect = event.currentTarget.getBoundingClientRect(); if (!rect.width || !rect.height) return;
-      drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width, height: rect.height, mode: mode };
+      drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width, height: rect.height, mode: action, fine: fine };
       if (event.currentTarget.setPointerCapture) try { event.currentTarget.setPointerCapture(event.pointerId); } catch (e) {}
     }
     function pointerMove(event) {
       var start = drag.current; if (!start || start.id !== event.pointerId) return;
-      if (start.mode === 'move') pan((event.clientX - start.x) / start.width, -(event.clientY - start.y) / start.height);
-      else turn(-(event.clientX - start.x) * Math.PI * 2 / start.width, (event.clientY - start.y) * Math.PI / start.height);
+      var step = start.fine ? .25 : 1;
+      if (start.mode === 'move') pan((event.clientX - start.x) / start.width * step, -(event.clientY - start.y) / start.height * step);
+      else turn(-(event.clientX - start.x) * Math.PI * 2 / start.width * step, (event.clientY - start.y) * Math.PI / start.height * step);
       start.x = event.clientX; start.y = event.clientY;
     }
     function pointerEnd(event) { if (drag.current && drag.current.id === event.pointerId) drag.current = null; }
     var ready = status === 'ready', movable = view.scale > 1, moving = mode === 'move', moves = [['left', -.25, 0, t('stem.coralreef.sv_left', 'Turn left')], ['right', .25, 0, t('stem.coralreef.sv_right', 'Turn right')], ['up', 0, -.18, t('stem.coralreef.sv_up', 'Tilt up')], ['down', 0, .18, t('stem.coralreef.sv_down', 'Tilt down')]];
     var pans = [['left', -.1, 0, t('stem.coralreef.sv_move_left', 'Move left')], ['right', .1, 0, t('stem.coralreef.sv_move_right', 'Move right')], ['up', 0, .1, t('stem.coralreef.sv_move_up', 'Move up')], ['down', 0, -.1, t('stem.coralreef.sv_move_down', 'Move down')]];
-    var angles = [['side', t('stem.coralreef.sv_side', 'Side')], ['front', t('stem.coralreef.sv_front', 'Front')], ['above', t('stem.coralreef.sv_above', 'Above')]];
-    return h('div', { className: 'crsv', 'data-specimen-view': props.id, 'data-specimen-status': status, 'data-specimen-scale': view.scale, 'data-specimen-turn': view.turn, 'data-specimen-tilt': view.tilt, 'data-specimen-pan-x': view.panX, 'data-specimen-pan-y': view.panY, 'data-specimen-angle': view.angle, 'data-specimen-mode': mode },
+    var angles = [['side', t('stem.coralreef.sv_side', 'Side')], ['opposite', t('stem.coralreef.sv_other_side', 'Other side')], ['front', t('stem.coralreef.sv_front', 'Front')], ['above', t('stem.coralreef.sv_above', 'Above')], ['below', t('stem.coralreef.sv_below', 'Below')]];
+    var swappable = !!remembered && sameView(view, view) && sameView(remembered, remembered) && !sameView(view, remembered);
+    return h('div', { className: 'crsv', 'data-specimen-view': props.id, 'data-specimen-status': status, 'data-specimen-scale': view.scale, 'data-specimen-turn': view.turn, 'data-specimen-tilt': view.tilt, 'data-specimen-pan-x': view.panX, 'data-specimen-pan-y': view.panY, 'data-specimen-angle': view.angle, 'data-specimen-lighting': view.lighting, 'data-specimen-mode': mode, 'data-specimen-precision': fine ? 'fine' : 'standard' },
       h('p', { role: 'status', className: ready ? 'crsv-ready' : 'crsv-status' }, ready ? t('stem.coralreef.sv_ready', '3D model ready.') : status === 'error' ? t('stem.coralreef.sv_error', 'The interactive model is unavailable here. You can still study the portrait and field marks.') : t('stem.coralreef.sv_loading', 'Loading the 3D model. The portrait and field marks remain available.')),
       h('div', { ref: interactive, hidden: !ready },
-        h('div', { className: 'crst-tools crsv-angles', role: 'group', 'aria-label': t('stem.coralreef.sv_views', 'View angle') }, angles.map(function (item) { return h('button', { key: item[0], type: 'button', 'data-specimen-angle-button': item[0], 'aria-pressed': view.angle === item[0], style: btnStyle(P, view.angle === item[0]), onClick: function () { fit(item[0]); } }, item[1]); })),
-        h('canvas', { ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details',
+        h('div', { className: 'crsv-head' },
+          h('div', { className: 'crst-tools crsv-angles', role: 'group', 'aria-label': t('stem.coralreef.sv_views', 'View angle') }, angles.map(function (item) { return h('button', { key: item[0], type: 'button', 'data-specimen-angle-button': item[0], 'aria-pressed': view.angle === item[0], style: btnStyle(P, view.angle === item[0]), onClick: function () { fit(item[0]); } }, item[1]); })),
+          typeof props.onExpand === 'function' ? h('button', { type: 'button', 'data-specimen-expand': 'true', 'aria-pressed': !!props.expanded, 'aria-controls': uid + '-canvas', style: btnStyle(P, !!props.expanded), onClick: function () { drag.current = null; props.onExpand(!props.expanded); } }, props.expanded ? t('stem.coralreef.sv_compact', 'Use compact view') : t('stem.coralreef.sv_expand', 'Expand specimen')) : null),
+        h('div', { className: 'crst-tools crsv-lighting', role: 'group', 'aria-label': t('stem.coralreef.sv_lighting', 'Lighting'), 'aria-describedby': uid + '-lighting-help' },
+          [['reef', t('stem.coralreef.sv_light_reef', 'Reef light')], ['studio', t('stem.coralreef.sv_light_studio', 'Studio light')]].map(function (item) { return h('button', { key: item[0], type: 'button', 'data-specimen-light-button': item[0], 'aria-pressed': view.lighting === item[0], style: btnStyle(P, view.lighting === item[0]), onClick: function () { light(item[0]); } }, item[1]); })),
+        h('canvas', { id: uid + '-canvas', ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details',
           onPointerDown: pointerStart, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: pointerEnd, onLostPointerCapture: pointerEnd,
-          onKeyDown: function (event) { var index = { ArrowLeft: 0, ArrowRight: 1, ArrowUp: 2, ArrowDown: 3 }[event.key]; if (ready && index != null && !event.altKey && !event.ctrlKey && !event.metaKey) { var action = moving || event.shiftKey ? 'move' : 'turn'; if (action === 'move' && !movable) return; event.preventDefault(); drag.current = null; var step = (action === 'move' ? pans : moves)[index]; move(step[1], step[2], action); } } }),
+          onKeyDown: function (event) {
+            if (!ready || event.altKey || event.ctrlKey || event.metaKey) return;
+            var key = event.key, amount = key === '+' || key === '=' ? .25 : key === '-' || key === '_' ? -.25 : 0;
+            if (amount) { event.preventDefault(); zoom(amount); return; }
+            if (key === 'Home') { event.preventDefault(); if (event.shiftKey) centerDetail(); else fit(); return; }
+            var index = { ArrowLeft: 0, ArrowRight: 1, ArrowUp: 2, ArrowDown: 3 }[key];
+            if (index != null) { var action = moving || event.shiftKey ? 'move' : 'turn'; if (action === 'move' && !movable) return; event.preventDefault(); drag.current = null; var step = (action === 'move' ? pans : moves)[index]; move(step[1], step[2], action); }
+          } }),
         h('div', { className: 'crst-tools', role: 'group', 'aria-label': t('stem.coralreef.sv_drag_action', 'Drag action') },
           h('button', { type: 'button', 'data-specimen-mode-button': 'turn', 'aria-pressed': !moving, style: btnStyle(P, !moving), onClick: function () { drag.current = null; setMode('turn'); } }, t('stem.coralreef.sv_turn', 'Turn')),
           h('button', { type: 'button', 'data-specimen-mode-button': 'move', 'aria-pressed': moving, 'aria-disabled': !movable ? 'true' : undefined, style: btnStyle(P, moving), onClick: function () { if (movable) { drag.current = null; setMode('move'); } } }, t('stem.coralreef.sv_move', 'Move'))),
         h('div', { className: 'crst-tools', role: 'group', 'aria-label': t('stem.coralreef.sv_controls', 'Model view controls') },
           (moving ? pans : moves).map(function (step) { var attributes = { key: step[0], type: 'button', style: btnStyle(P, false), onClick: function () { drag.current = null; move(step[1], step[2], mode); } }; attributes[moving ? 'data-specimen-pan-button' : 'data-specimen-turn-button'] = step[0]; return h('button', attributes, step[3]); }),
+          moving ? h('button', { key: 'center-detail', type: 'button', 'data-specimen-center': 'true', 'aria-disabled': view.panX === 0 && view.panY === 0 ? 'true' : undefined, 'aria-describedby': uid + '-center-help', style: btnStyle(P, false), onClick: centerDetail }, t('stem.coralreef.sv_center_detail', 'Center detail')) : null,
           h('button', { type: 'button', 'data-specimen-zoom': 'out', 'aria-disabled': view.scale <= 1 ? 'true' : undefined, style: btnStyle(P, false), onClick: function () { zoom(-.25); } }, t('stem.coralreef.st_zoom_out', 'Zoom out')),
           h('output', { 'aria-live': 'polite' }, env.fill(t('stem.coralreef.st_zoom_value', '{n}%'), { n: Math.round(view.scale * 100) })),
-          h('button', { type: 'button', 'data-specimen-zoom': 'in', 'aria-disabled': view.scale >= 2 ? 'true' : undefined, style: btnStyle(P, false), onClick: function () { zoom(.25); } }, t('stem.coralreef.st_zoom_in', 'Zoom in')),
-          h('button', { type: 'button', 'data-specimen-reset': 'true', style: btnStyle(P, false), onClick: function () { fit(); } }, t('stem.coralreef.st_reset', 'Reset view'))),
-        h('p', { id: uid + '-help', className: 'crst-pan-help' }, moving ? t('stem.coralreef.sv_pan_help', 'Drag to move the zoomed specimen, use arrow keys, or choose a move button.') : t('stem.coralreef.sv_help', 'Drag to turn the model, use arrow keys, or choose a turn button. Use the zoom buttons to look closer. The page scrolls normally outside the model.')),
-        h('p', { id: uid + '-details', className: 'crst-pan-help' }, t('stem.coralreef.sv_detail_help', 'Choose a view angle to fit the whole specimen. Zoom in, then choose Move or hold Shift with the arrow keys to reach details. Reset returns to the original view.'))));
+          h('button', { type: 'button', 'data-specimen-zoom': 'in', 'aria-disabled': view.scale >= 3 ? 'true' : undefined, style: btnStyle(P, false), onClick: function () { zoom(.25); } }, t('stem.coralreef.st_zoom_in', 'Zoom in')),
+          h('button', { type: 'button', 'data-specimen-fit': 'true', 'aria-disabled': view.scale <= 1 && view.panX === 0 && view.panY === 0 ? 'true' : undefined, 'aria-describedby': uid + '-fit-help', style: btnStyle(P, false), onClick: fitSpecimen }, t('stem.coralreef.sv_fit', 'Fit specimen')),
+          h('button', { type: 'button', 'data-specimen-reset': 'true', style: btnStyle(P, false), onClick: function () { fit(); } }, t('stem.coralreef.st_reset', 'Reset view')),
+          h('button', { type: 'button', 'data-specimen-fine': 'true', 'aria-pressed': fine, 'aria-describedby': uid + '-fine-help', style: btnStyle(P, fine), onClick: function () { drag.current = null; setFine(function (before) { return !before; }); } }, t('stem.coralreef.sv_fine_control', 'Fine control'))),
+        h('p', { id: uid + '-help', className: 'crst-pan-help' }, moving ? h(React.Fragment, null, t('stem.coralreef.sv_pan_help', 'Drag to move the zoomed specimen, use arrow keys, or choose a move button.'), ' ', h('span', { id: uid + '-center-help' }, t('stem.coralreef.sv_center_help', 'Center detail keeps the current zoom, angle and lighting.'))) : t('stem.coralreef.sv_help', 'Drag to turn the model, use arrow keys, or choose a turn button. Use the zoom buttons to look closer. The page scrolls normally outside the model.')),
+        h('p', { id: uid + '-fine-help', className: 'crsv-ready' }, t('stem.coralreef.sv_fine_help', 'Use Fine control for smaller turns and moves. Zoom steps stay the same.')),
+        h('p', { id: uid + '-fit-help', className: 'crsv-ready' }, t('stem.coralreef.sv_fit_help', 'Fit specimen keeps the current angle and lighting. Reset view returns to the starting angle.')),
+        h('p', { id: uid + '-details', className: 'crsv-ready' }, t('stem.coralreef.sv_detail_help', 'Choose a view angle to fit the whole specimen. Zoom up to 300%, then choose Move, hold Shift when starting a drag, or use Shift with the arrow keys to reach details. With the model focused, + and - zoom, Shift+Home centers the detail at the current zoom, and Home resets the view.')),
+        h('p', { id: uid + '-lighting-help', className: 'crsv-ready' }, t('stem.coralreef.sv_light_help', 'Use neutral Studio light to see details in the shaded sides of the specimen.')),
+        h('details', { className: 'crsv-memory', 'data-specimen-tips': 'true' },
+          h('summary', null, t('stem.coralreef.sv_inspection_tips', 'Inspection tips')),
+          h('p', { className: 'crst-pan-help' }, t('stem.coralreef.sv_fine_help', 'Use Fine control for smaller turns and moves. Zoom steps stay the same.')),
+          h('p', { className: 'crst-pan-help' }, t('stem.coralreef.sv_fit_help', 'Fit specimen keeps the current angle and lighting. Reset view returns to the starting angle.')),
+          h('p', { className: 'crst-pan-help' }, t('stem.coralreef.sv_detail_help', 'Choose a view angle to fit the whole specimen. Zoom up to 300%, then choose Move, hold Shift when starting a drag, or use Shift with the arrow keys to reach details. With the model focused, + and - zoom, Shift+Home centers the detail at the current zoom, and Home resets the view.')),
+          h('p', { className: 'crst-pan-help' }, t('stem.coralreef.sv_light_help', 'Use neutral Studio light to see details in the shaded sides of the specimen.'))),
+        h('details', { className: 'crsv-memory', 'data-specimen-memory': 'true' },
+          h('summary', null, t('stem.coralreef.sv_memory_title', 'Keep a view for comparison')),
+          h('p', { id: uid + '-memory-help' }, t('stem.coralreef.sv_memory_help', 'Remember the angle, zoom, position, and lighting. Explore another view, then return to compare details. This view stays only while this 3D inspection is open.')),
+          h('div', { className: 'crst-tools', role: 'group', 'aria-label': t('stem.coralreef.sv_memory_title', 'Keep a view for comparison'), 'aria-describedby': uid + '-memory-help' },
+            h('button', { type: 'button', 'data-specimen-remember': 'true', style: btnStyle(P, false), onClick: remember }, t('stem.coralreef.sv_memory_save', 'Remember view')),
+            h('button', { type: 'button', 'data-specimen-restore': 'true', 'aria-disabled': !remembered ? 'true' : undefined, style: btnStyle(P, false), onClick: restore }, t('stem.coralreef.sv_memory_return', 'Return to remembered view')),
+            h('button', { type: 'button', 'data-specimen-swap': 'true', 'aria-disabled': !swappable ? 'true' : undefined, style: btnStyle(P, false), onClick: swap }, t('stem.coralreef.sv_memory_swap', 'Swap with remembered view'))),
+          h('p', { role: 'status', 'data-specimen-memory-status': memoryMessage }, memoryMessage === 'saved' ? t('stem.coralreef.sv_memory_saved', 'View remembered. You can explore another angle.') : memoryMessage === 'restored' ? t('stem.coralreef.sv_memory_restored', 'Returned to your remembered view.') : memoryMessage === 'swapped' ? t('stem.coralreef.sv_memory_swapped', 'Views swapped. Swap again to compare the other view.') : t('stem.coralreef.sv_memory_empty', 'No view remembered yet.')))));
   }
 
   function MarineSpeciesStudy(props) {
     var env=props.env, React=env.React, h=env.h, P=env.P, __alloT=env.t, fill=env.fill;
     var uid='cr-study-picture-'+React.useId().replace(/:/g,'');
     var os=React.useState(false), specimenOpen=os[0], setSpecimenOpen=os[1], readyState=React.useState(false), specimenReady=readyState[0], setSpecimenReady=readyState[1], specimenButton=React.useRef(null), staticPortrait=React.useRef(null), pendingSpecimenFocus=React.useRef(false);
-    var showSpecimen=props.allow3D===true&&specimenOpen;
-    function specimenStatus(status,hadFocus){if(status==='ready'&&staticPortrait.current&&staticPortrait.current.contains(document.activeElement))hadFocus=true;if(hadFocus)pendingSpecimenFocus.current=true;setSpecimenReady(status==='ready');}
+    var expandedState=React.useState(false), specimenExpanded=expandedState[0], setSpecimenExpanded=expandedState[1];
+    var showSpecimen=props.allow3D===true&&specimenOpen, expanded=showSpecimen&&specimenReady&&specimenExpanded;
+    function specimenStatus(status,hadFocus){if(status!=='ready')setSpecimenExpanded(false);if(status==='ready'&&staticPortrait.current&&staticPortrait.current.contains(document.activeElement))hadFocus=true;if(hadFocus)pendingSpecimenFocus.current=true;setSpecimenReady(status==='ready');}
     React.useEffect(function(){if(pendingSpecimenFocus.current){pendingSpecimenFocus.current=false;guideReveal(specimenButton.current,specimenButton.current,!!env.ctx.reduceMotion);}},[specimenReady]);
     var meta=speciesMeta(props.id), TX=props.TX||speciesText(__alloT), text=TX[props.id], profile=marineProfiles(__alloT)[props.id]||{};
     var bs=React.useState(false), broken=bs[0], setBroken=bs[1];
@@ -8157,7 +9136,7 @@
         h('div',null,h('h4',{ref:heading,tabIndex:-1},__alloT('stem.coralreef.st_title','Look closer')),
           h('p',null,__alloT('stem.coralreef.st_intro','Slow down and notice one detail at a time. Enlarge the portrait, then explore the field marks.'))),
         h('button',{type:'button','data-close-study':'true',style:btnStyle(P,false),onClick:props.onClose},__alloT('stem.coralreef.st_close','Close closer look'))),
-      h('div',{className:'crst-body'},
+      h('div',{className:'crst-body','data-specimen-expanded':expanded?'true':undefined},
         h('div',null,
           h('div',{ref:staticPortrait,'data-study-static':'true',hidden:showSpecimen&&specimenReady},
           h('figure',{className:'crst-art'},
@@ -8176,8 +9155,8 @@
           enlarged?h(React.Fragment,null,h('div',{className:'crst-pan',role:'group','aria-label':__alloT('stem.coralreef.st_pan_controls','Move the enlarged portrait')},
             [['left',-8,0,__alloT('stem.coralreef.st_pan_left','Pan left')],['right',8,0,__alloT('stem.coralreef.st_pan_right','Pan right')],['up',0,-8,__alloT('stem.coralreef.st_pan_up','Pan up')],['down',0,8,__alloT('stem.coralreef.st_pan_down','Pan down')]].map(function(p){return h('button',{key:p[0],type:'button','data-study-pan':p[0],style:btnStyle(P,false),onClick:function(){pan(p[1],p[2]);}},p[3]);})),
             h('p',{id:uid+'-help',className:'crst-pan-help'},__alloT('stem.coralreef.pz_help','Drag the enlarged picture, use its arrow keys, or choose a move button. The page scrolls normally outside the picture.'))) : null),
-          showSpecimen?h(MarineSpecimenView,{env:env,id:meta.id,name:text.name,onStatus:specimenStatus}):null,
-          props.allow3D===true?h('button',{ref:specimenButton,type:'button','data-study-specimen-toggle':'true','aria-expanded':showSpecimen?'true':'false',style:btnStyle(P,false,{marginTop:12}),onClick:function(){setSpecimenReady(false);setSpecimenOpen(!specimenOpen);}},showSpecimen?__alloT('stem.coralreef.sv_back','Back to the portrait'):__alloT('stem.coralreef.sv_open','Rotate in 3D')):null),
+          showSpecimen?h(MarineSpecimenView,{env:env,id:meta.id,name:text.name,onStatus:specimenStatus,expanded:expanded,onExpand:setSpecimenExpanded}):null,
+          props.allow3D===true?h('button',{ref:specimenButton,type:'button','data-study-specimen-toggle':'true','aria-expanded':showSpecimen?'true':'false',style:btnStyle(P,false,{marginTop:12}),onClick:function(){setSpecimenExpanded(false);setSpecimenReady(false);setSpecimenOpen(!specimenOpen);}},showSpecimen?__alloT('stem.coralreef.sv_back','Back to the portrait'):__alloT('stem.coralreef.sv_open','Rotate in 3D')):null),
         h('aside',{className:'crst-detail','aria-label':__alloT('stem.coralreef.st_detail_panel','Noticing and observation')},
           h('h5',null,__alloT('stem.coralreef.st_notice','Notice one detail')),
           h('div',{role:'status','aria-live':'polite','aria-atomic':'true'},
@@ -8470,7 +9449,9 @@
       h('header', { className:'crcmp-intro' },
         h('p', { className:'crdx-eyebrow' }, __alloT('stem.coralreef.cx_eyebrow', 'Field guide / Compare')),
         h('h3', { ref:heading, tabIndex:-1, className:'crdx-title' }, __alloT('stem.coralreef.cx_title', 'Learn the difference.')),
-        h('p', null, __alloT('stem.coralreef.cx_intro', 'Put two organisms side by side. Start with shape and markings, then compare their lives on the reef.'))),
+        h('p', null, __alloT('stem.coralreef.cx_intro', 'Put two organisms side by side. Start with shape and markings, then compare their lives on the reef.')),
+        props.onPractice && pair.every(function (id) { return speciesMeta(id).group !== 'structure'; }) ? h('div', { className:'crdx-actions', style:{marginTop:16} },
+          h('button', { type:'button', 'data-practice-comparison-pair':'true', style:btnStyle(P,true), onClick:function(){props.onPractice(pair.slice());} }, __alloT("stem.coralreef.cx_practice_pair", "Practice telling these apart"))) : null),
       h('div', { className:'crcmp-pair' }, pair.map(function (id,index) {
         var meta = speciesMeta(id), tx = TX[id];
         return h('article', { key:index, className:'crcmp-specimen', 'data-comparison-organism':id },
@@ -8622,7 +9603,7 @@
     var roleCollections = marineGuideRoleCollections(__alloT), rs = React.useState('all'), role = rs[0], setRole = rs[1];
     var activeRole = roleCollections.filter(function (entry) { return entry.id === role; })[0] || null;
     var selectedMeta = speciesMeta(d.guideSpeciesId), profileId = selectedMeta ? selectedMeta.id : null;
-    var ps = React.useState(false), practice = ps[0], setPractice = ps[1], practiceSelection = React.useRef(null), practiceContainer = React.useRef(null);
+    var ps = React.useState(false), practice = ps[0], setPractice = ps[1], practiceSelection = React.useRef(null), practicePair = React.useRef(null), practiceContainer = React.useRef(null);
     var cs = React.useState(null), comparison = cs[0], setComparison = cs[1];
     var cf = React.useState(null), comparisonFocus = cf[0], setComparisonFocus = cf[1];
     var profileButtons = React.useRef({}), enteredProfile = React.useRef(null), profileSelection = React.useRef(null);
@@ -8652,7 +9633,13 @@
       if (!practice) setTarget({ id: id, button: true, fallback: true });
       else if (revealPractice === true) setTarget({ practice: true });
     }
+    function startPairPractice(ids) {
+      if (practice || !Array.isArray(ids) || ids.length !== 2 || ids[0] === ids[1] || !ids.every(function (id) { var m = speciesMeta(id); return m && m.group !== 'structure'; })) return;
+      practiceSelection.current = ids.slice(); practicePair.current = ids.slice();
+      setComparison(null); setComparisonFocus(null); env.set({ guideSpeciesId: null }); setPractice(true);
+    }
     function startPractice(fromGuide) {
+      practicePair.current = null;
       // Capture the visible collection once; reading or editing a profile must
       // not change the organisms chosen for this practice visit.
       practiceSelection.current = fromGuide === true && !profileId && (q || filter !== 'all' || group !== 'all' || activeRole)
@@ -8729,9 +9716,9 @@
       var all = SPECIES_META.filter(function (m) { return m.group === g; });
       return { id: g, n: all.length, found: all.filter(function (m) { return !!log[m.id]; }).length, visible: list.filter(function (m) { return m.group === g; }).length };
     });
-    var practiceView = practice ? h('div', { ref: practiceContainer, hidden: !!profileId || !!comparison }, h(MarinePractice, { env: env, TX: TX, selectionIds: practiceSelection.current, active: !profileId && !comparison, onStudy: openProfile, onBrowse:function(){env.set({guideFilter:'all',guideGroupFilter:'all'});setQuery('');setRole('all');setPractice(false);setTarget({search:true,fallback:true});}, onClose: function () { setPractice(false); setTarget({ search: true, fallback: true }); } })) : null;
+    var practiceView = practice ? h('div', { ref: practiceContainer, hidden: !!profileId || !!comparison }, h(MarinePractice, { env: env, TX: TX, selectionIds: practiceSelection.current, pairIds: practicePair.current, active: !profileId && !comparison, onStudy: openProfile, onBrowse:function(){env.set({guideFilter:'all',guideGroupFilter:'all'});setQuery('');setRole('all');setPractice(false);setTarget({search:true,fallback:true});}, onClose: function () { setPractice(false); setTarget({ search: true, fallback: true }); } })) : null;
     if (profileId || practice || comparison) return h('div', { className: 'cr-guide' }, practiceView,
-      comparison ? h(MarineSpeciesComparison, {env:env, TX:TX, pair:comparison.pair, onClose:closeComparison, onStudy:openProfile, onChange:function(pair){setComparison(Object.assign({},comparison,{pair:pair}));}})
+      comparison ? h(MarineSpeciesComparison, {env:env, TX:TX, pair:comparison.pair, onClose:closeComparison, onStudy:openProfile, onPractice:practice ? null : startPairPractice, onChange:function(pair){setComparison(Object.assign({},comparison,{pair:pair}));}})
         : profileId ? h(MarineSpeciesProfile, { env: env, id: profileId, TX: TX, onClose: closeProfile, onSelect: openProfile, returnToPractice: practice, allowSpecimen3D: !practice, navigationIds: practice ? null : profileSelection.current, onPractice: practice ? null : startPractice, onCompare:openComparison, focusComparison:comparisonFocus }) : null);
     return h('div', {className:'cr-guide crds-guide','data-guide-compact':compact?'true':undefined},
       h('style',null,LANE_CSS_C + MARINE_DISCOVERY_CSS),

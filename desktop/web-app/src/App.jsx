@@ -15284,7 +15284,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=ddeaf704c0');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=b6c40ac6');
-    loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=30496d3a');
+    loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=36ddc53b');
     loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=06885256');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=ddeaf704c0');
@@ -37623,7 +37623,12 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleImportCatalogLesson = async (lesson) => {
     const result = await loadProjectFromJson(lesson);
     if (communityCatalogLessonSlug && result && result.success === true) {
-      // Reveal the workspace only after the explicit import has completed.
+      // The linked lesson is already prepared. Finish its explicit handoff in
+      // Class & Materials instead of opening a new-resource setup wizard.
+      setShowWizard(false);
+      setWizardInitialMode(null);
+      setGuidedMode(false);
+      setActiveSidebarTab('history');
       setHasSelectedMode(true);
       setHasSelectedRole(true);
     }

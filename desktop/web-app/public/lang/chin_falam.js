@@ -50037,6 +50037,15 @@
       "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
     },
     "flightsim": {
+      "guided_inspect_angle": "Inspect angle comparison",
+      "guided_inspect_speed": "Inspect speed comparison",
+      "guided_export_scope": "Export includes your current draft and earlier attempts. Exporting does not complete the investigation.",
+      "hint_t_stall_negative": "🚨 STALL! AoA is negative: gently drag UP from the middle to bring it toward zero. Use the right edge for power as needed.",
+      "hint_k_stall_negative": "🚨 STALL! AoA is negative: gently press W to bring it toward zero. Add power with Shift as needed.",
+      "hint_stall_direction_unknown": "🚨 STALL! Bring angle of attack toward zero. Direction is unavailable; monitor the AoA readout before choosing a pitch input.",
+      "announce_stall_warning_negative": "Stall warning! Angle of attack is negative. Gently raise the nose to bring it toward zero; add power as needed.",
+      "announce_stall_warning_unknown": "Stall warning! Bring angle of attack toward zero. Its direction is unavailable; check the AoA readout before choosing a pitch input.",
+      "hud_stall_warning": "⚠️ STALL — BRING AoA TOWARD ZERO",
       "debrief_unavailable_title": "Saved flight review unavailable",
       "debrief_unavailable_body": "The latest flight review is missing or cannot be read. Return to the menu to start a fresh flight.",
       "guided_idea_before_trials": "Recorded before the trials",

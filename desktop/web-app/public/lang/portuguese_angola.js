@@ -55966,6 +55966,15 @@
       "sr_critique_ready": "Crítica pronta."
     },
     "flightsim": {
+      "guided_inspect_angle": "Ver comparação de ângulos",
+      "guided_inspect_speed": "Ver comparação de velocidades",
+      "guided_export_scope": "A exportação inclui o rascunho actual e as tentativas anteriores. Exportar não conclui a investigação.",
+      "hint_t_stall_negative": "🚨 PERDA! O ângulo de ataque é negativo: arraste suavemente para CIMA a partir do centro para o aproximar de zero. Use a margem direita para a potência, conforme necessário.",
+      "hint_k_stall_negative": "🚨 PERDA! O ângulo de ataque é negativo: prima W suavemente para o aproximar de zero. Aumente a potência com Shift, conforme necessário.",
+      "hint_stall_direction_unknown": "🚨 PERDA! Aproxime o ângulo de ataque de zero. A direcção não está disponível; consulte o indicador AoA antes de escolher um movimento de arfagem.",
+      "announce_stall_warning_negative": "Aviso de perda! O ângulo de ataque é negativo. Levante suavemente o nariz para o aproximar de zero; aumente a potência conforme necessário.",
+      "announce_stall_warning_unknown": "Aviso de perda! Aproxime o ângulo de ataque de zero. A direcção não está disponível; consulte o indicador AoA antes de escolher um movimento de arfagem.",
+      "hud_stall_warning": "⚠️ PERDA — APROXIME AoA DE ZERO",
       "debrief_unavailable_title": "Revisão de voo guardada indisponível",
       "debrief_unavailable_body": "A revisão de voo mais recente está em falta ou não pode ser lida. Volta ao menu para iniciar um novo voo.",
       "guided_idea_before_trials": "Registada antes dos ensaios",

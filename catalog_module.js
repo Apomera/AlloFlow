@@ -494,8 +494,9 @@
     return data.entries;
   }
 
-  function catalogLessonPermalink(slug) {
+  function catalogLessonPermalink(slug, shareSlug) {
     if (typeof slug !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,127}$/i.test(slug)) throw new Error('This lesson has no valid share link.');
+    if (typeof shareSlug === 'string' && /^[a-z0-9][a-z0-9-]{0,127}$/.test(shareSlug)) return 'https://alloflow.dev/p/' + shareSlug;
     return LESSON_APP_URL + '?lesson=' + encodeURIComponent(slug);
   }
 
@@ -553,13 +554,13 @@
     var linkState = useState(''), manualLink = linkState[0], setManualLink = linkState[1];
     async function copy() {
       try {
-        var link = catalogLessonPermalink(props.entry.slug);
+        var link = catalogLessonPermalink(props.entry.slug, props.entry.share_slug);
         if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(link);
         setManualLink('');
         if (props.addToast) props.addToast('Lesson link copied.', 'success');
       } catch (_) {
-        try { setManualLink(catalogLessonPermalink(props.entry.slug)); } catch (error) { if (props.addToast) props.addToast(error.message, 'error'); }
+        try { setManualLink(catalogLessonPermalink(props.entry.slug, props.entry.share_slug)); } catch (error) { if (props.addToast) props.addToast(error.message, 'error'); }
       }
     }
     return e('div', { className: 'flex flex-col gap-2' },

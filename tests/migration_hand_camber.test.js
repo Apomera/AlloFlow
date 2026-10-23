@@ -155,7 +155,13 @@ describe('Stylized wrist-local hand-panel camber', () => {
       expect(hand.parent).toBe(wrist); expect(hand.children).toHaveLength(0);
       expect(hand.geometry.attributes.position.count).toBe(7);
       expect(wrist.children).toHaveLength(2);
-      expect(hand.material).toBe(bird.userData.wings[side].children.find(node => node.isMesh).material);
+      const inner = bird.userData.wings[side].children.find(node => node.isMesh);
+      const otherInner = bird.userData.wings[1 - side].children.find(node => node.isMesh);
+      expect(hand.material).not.toBe(inner.material);
+      expect(inner.material).toBe(otherInner.material);
+      expect(inner.material.vertexColors).toBe(true);
+      expect(inner.material.color.getHex()).toBe(hand.material.color.getHex());
+      expect(inner.material.roughness).toBe(hand.material.roughness);
       const anchor = bird.userData.wakeAnchors[side];
       expect(anchor.node).toBe(wrist); expect(anchor.side).toBe(side === 0 ? -1 : 1);
       expect(anchor.point.toArray()).toEqual([(side === 0 ? -1 : 1) * reach * .50, .06, .05 * sweep]);

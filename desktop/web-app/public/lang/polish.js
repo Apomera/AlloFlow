@@ -55932,6 +55932,15 @@
       "sr_critique_ready": "Ocena gotowa."
     },
     "flightsim": {
+      "guided_inspect_angle": "Sprawdź porównanie kątów",
+      "guided_inspect_speed": "Sprawdź porównanie prędkości",
+      "guided_export_scope": "Eksport obejmuje bieżący szkic i wcześniejsze próby. Eksportowanie nie kończy badania.",
+      "hint_t_stall_negative": "🚨 PRZECIĄGNIĘCIE! Kąt natarcia jest ujemny: delikatnie przeciągnij W GÓRĘ od środka, aby zbliżyć go do zera. W razie potrzeby reguluj moc przy prawej krawędzi.",
+      "hint_k_stall_negative": "🚨 PRZECIĄGNIĘCIE! Kąt natarcia jest ujemny: delikatnie naciśnij W, aby zbliżyć go do zera. W razie potrzeby dodaj mocy klawiszem Shift.",
+      "hint_stall_direction_unknown": "🚨 PRZECIĄGNIĘCIE! Zbliż kąt natarcia do zera. Jego kierunek jest niedostępny; sprawdź wskaźnik AoA, zanim wybierzesz ruch pochylenia.",
+      "announce_stall_warning_negative": "Ostrzeżenie o przeciągnięciu! Kąt natarcia jest ujemny. Delikatnie unieś nos, aby zbliżyć go do zera; w razie potrzeby dodaj mocy.",
+      "announce_stall_warning_unknown": "Ostrzeżenie o przeciągnięciu! Zbliż kąt natarcia do zera. Jego kierunek jest niedostępny; sprawdź wskaźnik AoA, zanim wybierzesz ruch pochylenia.",
+      "hud_stall_warning": "⚠️ PRZECIĄGNIĘCIE — ZBLIŻ AoA DO ZERA",
       "debrief_unavailable_title": "Zapisane podsumowanie lotu jest niedostępne",
       "debrief_unavailable_body": "Ostatnie podsumowanie lotu nie istnieje lub nie można go odczytać. Wróć do menu, aby rozpocząć nowy lot.",
       "guided_idea_before_trials": "Zapisano przed próbami",

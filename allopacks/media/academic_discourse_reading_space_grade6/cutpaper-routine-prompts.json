@@ -1,0 +1,25 @@
+{
+  "mode": "built-in image_gen",
+  "style": "Cut-paper collage; objects-only process memory cues; no embedded labels",
+  "sourceBasis": {
+    "articleUrl": "https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration",
+    "sourceScope": "Katie Novak’s blog post; the companion guide is not included",
+    "lessonDesign": "Original fictional applications; grade, pacing, routines, and formative criteria are authoring choices"
+  },
+  "assets": [
+    {
+      "id": "routine-receive-cutpaper",
+      "file": "routine-receive-cutpaper.webp",
+      "mode": "generation",
+      "prompt": "Use case: scientific-educational\nAsset type: cut-paper illustration for a middle-school learning activity about designing a group discussion routine.\nPrimary request: An objects-only visual memory cue for a sequential receive, check meaning, respond, and gather ideas routine. A loose path of three large paper speech-bubble cards: a teal contribution card, an ochre reply card gently overlapping it, and a coral response card. Broad navy paper arrows connect the cards in a readable left-to-right sequence ending at one open cream notebook with the three colored paper tabs visible. Include a small pencil beside the notebook. This is a process metaphor, not evidence of actual student learning.\nStyle: refined flat scissor-cut paper collage for ages 11–13. Slightly irregular paper edges, restrained paper grain, tiny layered shadows. Warm cream background, teal, ochre, coral and muted navy. Few large shapes, generous negative space, clear small-screen readability, landscape 3:2 composition.\nConstraints: No people, no readable words, no letters, no numbers, no checkmarks, no winner symbols, no logos, no watermark. Not realistic, not photographic, not 3D; avoid fine details, clutter, or babyish decoration. Keep all meaningful objects comfortably within the frame. Editable captions outside this image will explain every step.",
+      "alt": "Three paper speech bubbles connect in sequence to a notebook with matching colored tabs. Use the caption to trace a contribution, a reply, and a response before gathering ideas."
+    },
+    {
+      "id": "routine-collect-cutpaper",
+      "file": "routine-collect-cutpaper.webp",
+      "mode": "generation",
+      "prompt": "Use case: scientific-educational\nAsset type: cut-paper illustration for a middle-school learning activity about designing a group discussion routine.\nPrimary request: An objects-only visual memory cue for collecting contributions, checking recorded meanings with contributors, and comparing ideas together. Three separate large colored paper contribution cards, one teal, one ochre, one coral, sit in a loose fan on the left. Three broad navy paper paths lead into a large open cream notebook on the right. On its two-page spread, the same three color cards are laid separately side-by-side for comparison, connected by one gentle curved two-way navy arrow above them. One small pencil rests nearby. This is a process metaphor, not evidence of actual student learning.\nStyle: refined flat scissor-cut paper collage for ages 11–13. Slightly irregular paper edges, restrained paper grain, tiny layered shadows. Warm cream background, teal, ochre, coral and muted navy. Few large shapes, generous negative space, clear small-screen readability, landscape 3:2 composition.\nConstraints: No people, no readable words, no letters, no numbers, no checkmarks, no winner symbols, no logos, no watermark. Not realistic, not photographic, not 3D; avoid fine details, clutter, or babyish decoration. Keep all meaningful objects comfortably within the frame. Editable captions outside this image will explain every step. Neither routine should appear better than the other.",
+      "alt": "Three paper cards lead to matching cards arranged across an open notebook, with a two-way arrow above them. Use the caption to trace collecting, checking meanings, and comparing contributions."
+    }
+  ]
+}

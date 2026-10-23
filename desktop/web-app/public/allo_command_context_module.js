@@ -2211,8 +2211,13 @@ function buildAlloCommandContext(deps) {
     // Report a problem — mirror the ErrorReporter public API with a graceful fallback:
     openErrorReporter: () => {
       try {
-        if (window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === 'function') {
-          window.AlloModules.ErrorReporter.openPanel();
+        const reporter = window.AlloModules && window.AlloModules.ErrorReporter;
+        if (reporter && typeof reporter.openManualReport === 'function') {
+          reporter.openManualReport();
+          return;
+        }
+        if (reporter && typeof reporter.openPanel === 'function') {
+          reporter.openPanel('errors');
           return;
         }
       } catch (_) {}

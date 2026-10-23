@@ -41,9 +41,11 @@ function fixture(seed = {}) {
     host, writes, announce,
     get state() { return state; },
     node(predicate) { return find(tree, predicate); },
-    action(which) { return host.querySelector('[data-study-matched="' + which + '"]'); },
+    matchedSource() { return state.flightStudyObservations?.comparison?.saved ? 'saved' : 'selected'; },
+    matchedPanel() { return host.querySelector('[data-study-matched-comparison="' + ui.matchedSource() + '"]'); },
+    action(which) { return ui.matchedPanel()?.querySelector('[data-study-matched="' + which + '"]') || null; },
     click(which) { React.act(() => ui.action(which).click()); },
-    select(value) { React.act(() => { const select = host.querySelector('[aria-label="Matched comparison view"]'); select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); }); },
+    select(value) { React.act(() => { const select = ui.matchedPanel().querySelector('[aria-label="Matched comparison view"]'); select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); }); },
     set(values) { React.act(() => { state = { ...state, ...values }; rerender(); }); },
     status() { return host.querySelector('[data-study-revisit-status]').textContent; }
   };
@@ -64,18 +66,18 @@ describe('Migration matched comparison viewing activity', () => {
   it('offers one native view selector and two native actions for a usable observation pair', () => {
     const empty = fixture(); expect(empty.action('first')).toBeNull();
     const ui = fixture({ flightStudyObservations: notebook() });
-    const section = ui.host.querySelector('[data-study-matched-comparison]');
+    const section = ui.matchedPanel();
     expect(section.closest('details').hasAttribute('data-study-comparison')).toBe(true);
     const select = section.querySelector('select');
     expect(select.getAttribute('aria-label')).toBe('Matched comparison view');
-    expect(select.getAttribute('aria-describedby')).toBe('migration-study-matched-help');
+    expect(select.getAttribute('aria-describedby')).toBe('migration-study-matched-help-saved');
     expect([...select.options].map(option => [option.value, option.textContent])).toEqual([['profile', 'Profile'], ['above', 'From above']]);
     expect(select.value).toBe('profile'); expect(select.hasAttribute('role')).toBe(false);
     expect(ui.node(node => node.type === 'select' && node.props['aria-label'] === 'Matched comparison view').props.onKeyDown).toBeUndefined();
     for (const [which, label] of [['first', 'Compare first in matched view'], ['second', 'Compare second in matched view']]) {
       const action = ui.action(which);
       expect(action.tagName).toBe('BUTTON'); expect(action.type).toBe('button'); expect(action.textContent).toBe(label);
-      expect(action.getAttribute('aria-describedby')).toBe('migration-study-matched-help');
+      expect(action.getAttribute('aria-describedby')).toBe('migration-study-matched-help-saved');
       expect(action.hasAttribute('tabindex')).toBe(false); expect(action.hasAttribute('role')).toBe(false);
       expect(ui.node(node => node.props?.['data-study-matched'] === which).props.onKeyDown).toBeUndefined();
     }
@@ -127,7 +129,7 @@ describe('Migration matched comparison viewing activity', () => {
     }
     expect(ui.writes).toHaveLength(3); expect(ui.state.flightStudyObservations).toBe(book);
     expect(saved.first.note).toBe('A saved shape observation.'); expect(book.records[saved.firstKey].note).toBe('Newer goose evidence.');
-    expect(ui.host.querySelector('[data-study-matched-source]').dataset.studyMatchedSource).toBe('saved');
+    expect(ui.matchedPanel().querySelector('[data-study-matched-source]').dataset.studyMatchedSource).toBe('saved');
   });
 
   it('keeps both matched actions working after both source records have been removed', () => {

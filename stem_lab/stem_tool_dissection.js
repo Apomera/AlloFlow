@@ -4169,13 +4169,13 @@ var d = labToolData.dissection || {};
 
                   { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.66, fn: 'Short wide tube to cloaca. Absorbs water. Opens into cloaca (shared digestive/urinary/reproductive exit).', clinical: 'The cloaca \u2014 shared exit for 3 systems \u2014 is the ancestral vertebrate condition; separate openings evolved later.' },
 
-                  { id: 'spleen', name: 'Spleen', x: 0.41, y: 0.55, fn: 'Small reddish organ near stomach. Filters blood, removes old RBCs, immune function.', clinical: 'Spleen plus antimicrobial skin peptides form a dual immune defense system.' },
+                  { id: 'spleen', name: 'Spleen', x: 0.41, y: 0.55, fn: 'A small, compact dark-red organ in the intestinal mesentery. Filters blood, removes old red blood cells, and supports immune responses.', clinical: 'Compare its compact outline with the long, flat spleen of the fetal pig.' },
 
-                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.62, fn: "Elongated paired organs along the dorsal body wall. Filter blood and help regulate water and salts; urine drains toward the cloaca.", clinical: "Amphibian and mammalian kidneys differ in development and organization. Living species are not steps on a ladder from primitive to advanced." },
+                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.62, fn: 'Elongated, flattened paired organs along the dorsal body wall filter blood and regulate water and salts. Urine drains toward the cloaca. Small yellow-brown adrenal patches adhere to their ventral surfaces.', clinical: 'Locate the exposed lower renal surfaces behind the intestinal loops. Compare the irregular ochre adrenal patches with the darker kidney tissue around them.' },
 
                   { id: 'fat_bodies', name: 'Fat Bodies', x: 0.43, y: 0.42, fn: 'Yellow, finger-like fat stores near the anterior gonads. Provide energy for periods of reduced feeding and reproduction.', clinical: 'Fat reserves vary with feeding, season and reproductive condition; size alone does not establish environmental stress.' },
 
-                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.54, fn: 'Thin pale organ between stomach and duodenum. Produces digestive enzymes and insulin/glucagon.', clinical: 'Frog pancreatic islets used in early insulin research.' },
+                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.54, fn: 'Thin pale tissue between the stomach and duodenum. Produces digestive enzymes and the hormones insulin and glucagon.', clinical: 'Locate its pale irregular surface between the stomach and duodenum, then follow the neighboring gut course.' },
 
                   { id: 'cloaca', name: 'Cloaca', x: 0.50, y: 0.72, fn: 'Common chamber for digestive, urinary, and reproductive output. Present in amphibians, reptiles, birds.', clinical: 'Represents ancestral vertebrate design \u2014 separate openings evolved independently in mammals.' }
 
@@ -4205,7 +4205,7 @@ var d = labToolData.dissection || {};
 
                 nervous: [
 
-                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.17, fn: 'Small brain with prominent optic lobes (largest region). Olfactory lobes, cerebrum, cerebellum (small), medulla.', clinical: 'Vision dominates \u2014 classic Lettvin 1959 study: "What the Frog\'s Eye Tells the Frog\'s Brain."' },
+                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.17, fn: 'Contains olfactory regions, paired smooth cerebral hemispheres, prominent optic lobes, a narrow cerebellum, and a medulla continuous with the spinal cord.', clinical: 'Compare the smooth paired regions and narrow cerebellum, then trace continuity into the spinal cord.' },
 
                   { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.44, fn: '10 spinal nerve pairs. Ends with filum terminale. Classic spinal frog preparation demonstrates reflexes.', clinical: 'A "spinal frog" (brain destroyed) still shows coordinated reflex responses \u2014 foundational neuroscience.' },
 
@@ -4215,7 +4215,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'cranial_n', name: 'Cranial Nerves', x: 0.57, y: 0.20, fn: '10 pairs (mammals have 12). Key: optic (II, large), trigeminal (V), vagus (X, viscera).', clinical: 'Frogs have 10 cranial nerve pairs vs 12 in mammals \u2014 lacking spinal accessory (XI) and hypoglossal (XII).' },
 
-                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.16, fn: 'Largest brain region processing visual "bug detector" neurons \u2014 respond to small moving dark objects.', clinical: 'Optic tectum "bug detectors" inspired early computer vision and AI motion detection algorithms.' }
+                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.16, fn: 'Paired midbrain structures that receive visual input and help guide orienting and prey-catching behavior.', clinical: 'Visual processing begins in the retina and continues through brain circuits, including the optic tectum.' }
 
                 ]
 
@@ -4303,11 +4303,11 @@ var d = labToolData.dissection || {};
 
                 nervous: [
 
-                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12, fn: 'Paired ganglia above pharynx (segment 3). Process sensory input. "Brain."', clinical: 'Very simple \u2014 a headless earthworm can still burrow, eat, and mate.' },
+                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12, fn: 'Paired pale ganglia lie dorsally in the anterior region. Lateral connectives pass around the pharynx to a subpharyngeal ganglion and the ventral nerve cord.', clinical: 'Trace continuity between the paired cerebral ganglia, the surrounding connectives and the ventral cord.' },
 
-                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.58, fn: 'Runs entire ventral length. Giant fibers enable rapid escape contraction (20-45 m/s).', clinical: 'Giant axons transmit signals fast \u2014 enabling rapid withdrawal when disturbed.' },
+                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.58, fn: 'A compact ventral nerve cord links segmental ganglia and carries signals along the body. Closely united longitudinal components appear as one cord.', clinical: 'The slight lateral displacement in this teaching view reveals the ventral course; it does not place the cord on the dorsal surface.' },
 
-                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.51, y: 0.44, fn: 'Paired ganglia per segment. Control local reflexes independently.', clinical: 'Each ganglion controls its segment \u2014 why cut segments still move.' }
+                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.51, y: 0.44, fn: 'Ganglia along the ventral cord coordinate segmental motor activity and local reflexes. The drawing shows representative swellings; anatomical repetition occurs in every segment.', clinical: 'Look for continuity between each swelling and the cord. Local reflex activity does not imply that a separated segment can survive independently.' }
 
                 ]
 
@@ -4382,9 +4382,9 @@ var d = labToolData.dissection || {};
 
                   { id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Pigs and ruminants have different spiral-colon arrangements; compare the overall course of the gut as well as its coils.' },
 
-                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Bean-shaped, retroperitoneal, multipyramidal kidneys that filter blood and regulate fluid and electrolytes. Vascular and collecting-system details are porcine.', clinical: 'Pig kidneys are studied for xenotransplantation, but immune compatibility, infection risk, and physiological fit require dedicated evaluation.' },
+                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Paired, smooth, bean-shaped kidneys lie against the dorsal body wall. They filter blood and help regulate water and salts. Blood vessels and the ureter pass through each medial hilum.', clinical: 'Identify the continuous outer capsule and medial indentation. Internal cortex, medulla, pyramids and collecting calyces are seen after the kidney is opened.' },
 
-                  { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
+                  { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'A prominent, lobulated immune organ in fetal and young pigs. Thymic tissue extends through the neck toward the cranial thorax and supports T-cell maturation.', clinical: 'Observe its exposed lobulated surface near the cranial heart and lungs. Its size and organization change with age.' },
 
                   { id: 'pancreas_p', name: 'Pancreas', x: 0.60, y: 0.53, fn: 'Produces exocrine digestive enzymes and the endocrine hormones insulin and glucagon. Gross form, ducts, and tissue properties are porcine.', clinical: 'Porcine insulin treated human diabetes before recombinant human insulin; shared hormone function does not make the organs anatomically identical.' },
 
@@ -4491,7 +4491,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'liver_f', name: 'Liver', x: 0.40, y: 0.47, fn: 'Large lobed organ. Bile production, glycogen/lipid storage.', clinical: 'Fish liver oil is a concentrated energy reserve \u2014 cod liver oil rich in vitamins A and D.' },
 
-                  { id: 'stomach_f', name: 'Stomach', x: 0.46, y: 0.50, fn: 'J-shaped. HCl + pepsin. Expandable for large prey.', functionClue: 'Secretes acid and pepsin to digest food in an expandable muscular sac.', observationCue: 'An expanded J-shaped muscular sac connects the esophagus to the intestine.', assessmentExplanation: 'The stomach is an expandable muscular sac between the esophagus and intestine. Its acid and pepsin help digest food.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
+                  { id: 'stomach_f', name: 'Stomach', x: 0.46, y: 0.50, fn: 'An expandable muscular stomach. Acid and pepsin help digest food before it passes through the pyloric outlet to the intestine.', functionClue: 'Secretes acid and pepsin to digest food in an expandable muscular sac.', observationCue: 'A broad gastric sac narrows into a short pyloric outlet near the three pyloric caeca.', assessmentExplanation: 'The stomach is an expandable muscular sac between the esophagus and intestine. Its acid and pepsin help digest food.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
 
                   { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.50, y: 0.53, fn: 'Three blind-ended pouches open from the proximal intestine near the stomach outlet. They add surface for digestion and nutrient absorption.', clinical: 'Count the separate pouches and trace their attachment near the stomach outlet. Each ends blindly; the main intestine continues toward the anus.' },
 
@@ -4576,9 +4576,9 @@ var d = labToolData.dissection || {};
 
                   { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
 
-                  { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Excretory organs at antenna base. Filter hemolymph, produce urine. Equivalent of kidneys.', clinical: 'Excrete ammonia directly \u2014 possible because aquatic environments flush waste.' },
+                  { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Paired antennal excretory organs near the bases of the antennae. They filter hemolymph and form urine, helping regulate water and salts.', clinical: 'Freshwater crayfish conserve salts while removing excess water in dilute urine. The gills also help excrete ammonia.' },
 
-                  { id: 'hepato', name: 'Hepatopancreas', x: 0.48, y: 0.47, fn: 'Combined liver + pancreas. Digestive enzymes, nutrient absorption, energy storage. Largest internal organ.', clinical: 'Called "tomalley" in lobster cuisine. Accumulates toxins in polluted waters.' },
+                  { id: 'hepato', name: 'Hepatopancreas', x: 0.48, y: 0.47, fn: 'Paired digestive-gland masses near the stomach and anterior intestine secrete digestive enzymes, absorb nutrients, and store energy reserves.', clinical: 'Look for soft yellow-brown lobular tissue beside the stomach. A thin bordering membrane holds the fine digestive tubules compact beneath the surface.' },
 
                   { id: 'gonads_c', name: 'Gonads', x: 0.57, y: 0.44, fn: 'Reproductive organs lie between the digestive glands, below and behind the dorsal heart. Their size and appearance vary with sex and maturity. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
 
@@ -4649,7 +4649,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'ciliary_body', name: 'Ciliary Body', x: 0.35, y: 0.31, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
 
-                  { id: 'retina', name: 'Retina', x: 0.69, y: 0.35, fn: 'Neural sensory tissue containing rods and cones. In the sheep specimen, observe the retina as a delicate layer against the choroid; avoid applying human fovea and macula measurements directly to sheep anatomy.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
+                  { id: 'retina', name: 'Retina', x: 0.69, y: 0.35, fn: 'Neural sensory tissue containing rods and cones. Follow the delicate, pale lining between the vitreous and darker choroid toward the optic disc. The shallow sheen represents a continuous membrane; human fovea and macula measurements do not directly describe sheep anatomy.', clinical: 'Specimen observation: the retina lies loosely against the choroid and attaches at the optic disc. Handling can lift or bunch this fragile lining; a detached fold is not its normal attached shape.' },
 
                   { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.67, y: 0.27, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
 
@@ -4724,9 +4724,9 @@ var d = labToolData.dissection || {};
 
                   { id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43, fn: 'AV valve with 2 cusps between LA and LV. Most commonly affected valve in rheumatic heart disease. "Bicuspid" = 2 leaflets.', clinical: 'Mitral stenosis from rheumatic fever. Mitral valve prolapse (MVP) in 2-3% of population. "Lub" = AV valves closing.' },
 
-                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.48, y: 0.29, fn: '3 semilunar cusps at LV-aorta junction. Opens during systole for ejection. Coronary ostia just above valve.', clinical: 'Aortic stenosis: calcified valve \u2192 syncope, angina, HF. "Dub" = semilunar valves closing. Bicuspid aortic valve (1-2% prevalence).' },
+                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.48, y: 0.29, fn: 'Three thin semilunar cusps guard the left ventricular outflow into the aorta and limit backflow during ventricular relaxation. The intact valve has cusps arranged around one opening; this view spreads them out for inspection.', clinical: 'Specimen observation: compare the curved wall attachments with the delicate free edges. Semilunar cusps have no chordae tendineae; their support differs from the atrioventricular valves.' },
 
-                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.57, y: 0.30, fn: '3 semilunar cusps at RV-pulmonary trunk junction. Prevents backflow into RV during diastole.', clinical: 'Pulmonary stenosis: congenital narrowing (part of Tetralogy of Fallot). Least commonly affected valve.' },
+                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.57, y: 0.30, fn: 'Three thin semilunar cusps guard the right ventricular outflow into the pulmonary trunk and limit backflow during ventricular relaxation. The intact valve has cusps arranged around one opening; this view spreads them out for inspection.', clinical: 'Specimen observation: trace the thin leaflet attachments into the outflow wall. The pulmonary valve has no chordae or papillary-muscle connections.' },
 
                   { id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53, fn: 'Muscular wall separating L and R ventricles. Thick muscular portion + thin membranous portion. LAD supplies anterior septum.', clinical: 'VSD (ventricular septal defect): most common congenital heart defect. Septal MI from LAD occlusion.' },
 
@@ -5835,6 +5835,205 @@ var d = labToolData.dissection || {};
               segmentPitch: logicalHeight * 0.76 / 40 };
           }
 
+          function earthwormNeuralGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var original = [], stepCount = 44, joinT = 0.10;
+            function point(x, y) { return { x: x / width, y: y / height }; }
+            for (var index = 0; index <= stepCount; index++) {
+              var t = 0.06 + (0.97 - 0.06) * index / stepCount, frame = earthwormAnatomyFrame(t, width, height);
+              if (!frame) return null;
+              original.push({ t: t, point: point(frame.point.x + frame.nx * frame.width * 0.28,
+                frame.point.y + frame.ny * frame.width * 0.28) });
+            }
+            function onCord(t) {
+              var position = Math.max(0, Math.min(stepCount, (t - 0.06) / (0.97 - 0.06) * stepCount));
+              var lower = Math.min(stepCount - 1, Math.floor(position)), blend = position - lower;
+              return { x: original[lower].point.x + (original[lower + 1].point.x - original[lower].point.x) * blend,
+                y: original[lower].point.y + (original[lower + 1].point.y - original[lower].point.y) * blend };
+            }
+            function capsule(center, frame, across, along, paired) {
+              function local(a, b) { return { x: center.x + (frame.nx * a * across + frame.tx * b * along) / width,
+                y: center.y + (frame.ny * a * across + frame.ty * b * along) / height }; }
+              // Four smooth gross contours describe intact neural tissue, without exposed
+              // cell bodies, axons, or microscopic fascicles.
+              var start = local(0, paired ? -0.72 : -1), curves = paired ? [
+                [local(0.45, -1.14), local(0.98, -0.88), local(1, 0)],
+                [local(0.98, 0.88), local(0.45, 1.14), local(0, 0.72)],
+                [local(-0.45, 1.14), local(-0.98, 0.88), local(-1, 0)],
+                [local(-0.98, -0.88), local(-0.45, -1.14), start]
+              ] : [
+                [local(0.45, -1), local(0.80, -0.60), local(0.92, -0.15)],
+                [local(1.10, 0.65), local(0.70, 1), local(0, 1)],
+                [local(-0.70, 1), local(-1.10, 0.65), local(-0.92, -0.15)],
+                [local(-0.80, -0.60), local(-0.45, -1), start]
+              ];
+              var all = [start].concat.apply([start], curves), xs = all.map(function (p) { return p.x; }), ys = all.map(function (p) { return p.y; });
+              var bounds = { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) };
+              return { start: start, curves: curves, center: center, across: across, along: along, frame: frame, bounds: bounds,
+                extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 } };
+            }
+            var brainFrame = earthwormAnatomyFrame(0.065, width, height), brain = [], connectives = [];
+            var join = onCord(joinT), cord = [join];
+            original.forEach(function (sample) { if (sample.t > joinT) cord.push(sample.point); });
+            [-1, 1].forEach(function (side) {
+              var center = point(brainFrame.point.x + brainFrame.nx * side * width * 0.0068,
+                brainFrame.point.y + brainFrame.ny * side * width * 0.0068);
+              var region = capsule(center, brainFrame, width * 0.0065, height * 0.006);
+              brain.push({ side: side, region: region });
+              var bendFrame = earthwormAnatomyFrame(0.085, width, height), endFrame = earthwormAnatomyFrame(joinT, width, height);
+              function lateral(frame, across, along) { return point(frame.point.x + frame.nx * frame.width * across + frame.tx * height * along,
+                frame.point.y + frame.ny * frame.width * across + frame.ty * height * along); }
+              var start = { x: center.x + brainFrame.tx * height * 0.0025 / width,
+                y: center.y + brainFrame.ty * 0.0025 };
+              var bend = lateral(bendFrame, side * 0.66, 0);
+              connectives.push({ side: side, start: start, curves: [
+                [lateral(brainFrame, side * 0.48, 0.008), lateral(bendFrame, side * 0.66, -0.008), bend],
+                [lateral(bendFrame, side * 0.66, 0.010), lateral(endFrame, side * 0.48, -0.001), join]
+              ] });
+            });
+            var ganglia = [];
+            // Representative segmental swellings retain the existing every-third-segment
+            // teaching budget. Their centers lie on the painted cord, not a parallel axis.
+            for (var segment = 7; segment < 39; segment += 3) {
+              var nodeT = segment / 40, nodeFrame = earthwormAnatomyFrame(nodeT, width, height);
+              ganglia.push({ segment: segment, t: nodeT, region: capsule(onCord(nodeT), nodeFrame, 1.65, 2.05, true) });
+            }
+            // This anterior joining swelling projects beneath the pharynx at the existing
+            // fourth-segment level; the nervous layer omits the overlying foregut.
+            ganglia.unshift({ segment: 4, t: joinT, region: capsule(join, earthwormAnatomyFrame(joinT, width, height), 1.65, 2.05, true) });
+            var bx = [], by = [];
+            brain.forEach(function (part) { bx.push(part.region.bounds.minX, part.region.bounds.maxX); by.push(part.region.bounds.minY, part.region.bounds.maxY); });
+            var bounds = { minX: Math.min.apply(Math, bx), maxX: Math.max.apply(Math, bx), minY: Math.min.apply(Math, by), maxY: Math.max.apply(Math, by) };
+            var anteriorX = bx.concat([ganglia[0].region.bounds.minX, ganglia[0].region.bounds.maxX]);
+            var anteriorY = by.concat([ganglia[0].region.bounds.minY, ganglia[0].region.bounds.maxY]);
+            connectives.forEach(function (route) {
+              [route.start].concat.apply([route.start], route.curves).forEach(function (p) { anteriorX.push(p.x); anteriorY.push(p.y); });
+            });
+            var anteriorBounds = { minX: Math.min.apply(Math, anteriorX), maxX: Math.max.apply(Math, anteriorX),
+              minY: Math.min.apply(Math, anteriorY), maxY: Math.max.apply(Math, anteriorY) };
+            var fieldX = anteriorX.slice(), fieldY = anteriorY.slice();
+            cord.forEach(function (p) { fieldX.push(p.x); fieldY.push(p.y); });
+            ganglia.forEach(function (node) {
+              fieldX.push(node.region.bounds.minX, node.region.bounds.maxX);
+              fieldY.push(node.region.bounds.minY, node.region.bounds.maxY);
+            });
+            var fieldBounds = { minX: Math.min.apply(Math, fieldX), maxX: Math.max.apply(Math, fieldX),
+              minY: Math.min.apply(Math, fieldY), maxY: Math.max.apply(Math, fieldY) };
+            // Midshaft interpolation lies exactly on a retained native line segment.
+            return { width: width, height: height, brain: brain, connectives: connectives, cord: cord, ganglia: ganglia,
+              originalCord: original, joinT: joinT, join: join, brainBounds: bounds, anteriorBounds: anteriorBounds, bounds: fieldBounds,
+              brainCenter: { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
+              brainExtent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              commissure: [brain[0].region.center, brain[1].region.center],
+              targets: { cerebral_g: brain[0].region.center, ventral_cord: onCord(0.64), segmental_g: ganglia[5].region.center } };
+          }
+
+          function traceEarthwormNeuralRegion(context, region, width, height, append) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            if (!append) context.beginPath();
+            context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+
+          function traceEarthwormNeuralRoute(context, route, width, height, append) {
+            if (!context || !route) return false;
+            if (!append) context.beginPath();
+            if (Array.isArray(route)) {
+              route.forEach(function (point, index) { if (!index) context.moveTo(point.x * width, point.y * height); else context.lineTo(point.x * width, point.y * height); });
+            } else {
+              context.moveTo(route.start.x * width, route.start.y * height);
+              route.curves.forEach(function (curve) { context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height); });
+            }
+            return true;
+          }
+
+          function drawEarthwormNeuralComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = earthwormNeuralGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), lampValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              // Connective and cord caliber describe one gross continuous neural route.
+              // The thin highlight models surface sheen, not an exposed giant fiber.
+              context.beginPath();
+              geometry.connectives.forEach(function (route) { traceEarthwormNeuralRoute(context, route, width, height, true); });
+              traceEarthwormNeuralRoute(context, geometry.cord, width, height, true);
+              traceEarthwormNeuralRoute(context, geometry.commissure, width, height, true);
+              if (detailed) {
+                context.strokeStyle = 'rgba(99,102,83,0.72)'; context.lineWidth = 1.95; context.stroke();
+                context.strokeStyle = '#d8d6b7'; context.lineWidth = 1.35; context.stroke();
+                context.strokeStyle = 'rgba(255,248,218,' + (0.38 * gloss).toFixed(3) + ')'; context.lineWidth = 0.30; context.stroke();
+              } else {
+                context.strokeStyle = '#fbbf24'; context.lineWidth = options.accessible ? 2 : 1.35; context.stroke();
+              }
+              function paint(region, node) {
+                var x = region.center.x * width, y = region.center.y * height;
+                var radius = Math.max(region.across, region.along), fill = node ? '#f59e0b' : '#fde047';
+                traceEarthwormNeuralRegion(context, region, width, height);
+                if (detailed) {
+                  fill = context.createRadialGradient(x + lx * radius * 0.34, y + ly * radius * 0.34, radius * 0.05, x, y, radius * 1.14);
+                  fill.addColorStop(0, '#f0ead0'); fill.addColorStop(0.42, '#ded9bb'); fill.addColorStop(0.82, '#babca1'); fill.addColorStop(1, '#8f9e8d');
+                }
+                context.fillStyle = fill; context.fill();
+                context.strokeStyle = detailed ? 'rgba(111,126,105,0.48)' : '#b77909';
+                context.lineWidth = detailed ? 0.32 : 0.45; context.stroke();
+                if (detailed && node) {
+                  context.save();
+                  try {
+                    traceEarthwormNeuralRegion(context, region, width, height); context.clip();
+                    // Three very small material marks, without per-node general tissue
+                    // passes or cell-like rings that would turn these swellings into beads.
+                    for (var grain = 0; grain < 3; grain++) {
+                      var across = (grain - 1) * region.across * 0.32, along = (grain % 2 ? 0.20 : -0.24) * region.along;
+                      var px = x + region.frame.nx * across + region.frame.tx * along;
+                      var py = y + region.frame.ny * across + region.frame.ty * along;
+                      context.beginPath(); context.moveTo(px, py);
+                      context.lineTo(px + region.frame.tx * 0.28, py + region.frame.ty * 0.28);
+                      context.strokeStyle = grain === 1 ? 'rgba(93,112,88,0.13)' : 'rgba(255,246,217,' + (0.14 * gloss).toFixed(3) + ')';
+                      context.lineWidth = 0.18; context.stroke();
+                    }
+                  } finally { context.restore(); }
+                }
+              }
+              context.beginPath();
+              geometry.brain.forEach(function (part) { traceEarthwormNeuralRegion(context, part.region, width, height, true); });
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(geometry.brainExtent.x * width, geometry.brainExtent.y * height); } finally { context.restore(); }
+              }
+              geometry.brain.forEach(function (part) { paint(part.region, false); });
+              if (detailed && typeof options.finish === 'function') {
+                context.save();
+                try {
+                  context.beginPath();
+                  geometry.brain.forEach(function (part) { traceEarthwormNeuralRegion(context, part.region, width, height, true); });
+                  context.clip();
+                  options.finish(geometry.brainCenter.x * width, geometry.brainCenter.y * height,
+                    geometry.brainExtent.x * width, geometry.brainExtent.y * height, 'capsule', 'earthworm-cerebral-ganglia');
+                } finally { context.restore(); }
+              }
+              geometry.ganglia.forEach(function (node) { paint(node.region, true); });
+              return true;
+            } finally { context.restore(); }
+          }
+
           function earthwormNephridialGeometry(segment, side, logicalWidth, logicalHeight) {
             if (typeof segment !== 'number' || segment % 1 !== 0 || segment < 5 || segment > 35 || segment % 2 !== 1 ||
                 (side !== -1 && side !== 1)) return null;
@@ -5902,6 +6101,445 @@ var d = labToolData.dissection || {};
                 curve[2].x * geometry.width, curve[2].y * geometry.height);
             });
             return true;
+          }
+
+          function sheepSemilunarGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var radius = width * 0.011, strokeMargin = 1.15 / 2;
+            var valves = [
+              { id: 'aortic_v', center: { x: 0.5 - 0.022, y: 0.45 - 0.095 }, color: '#fde68a' },
+              { id: 'pulm_v', center: { x: 0.5 + 0.052, y: 0.45 - 0.085 }, color: '#bfdbfe' }
+            ];
+            var targets = {};
+            valves.forEach(function (valve) {
+              valve.radius = radius;
+              // The original side-by-side cusp layout is an illustrative teaching
+              // projection, not a plan view or named coronary-cusp orientation.
+              valve.cusps = [-1, 0, 1].map(function (offset) {
+                var center = { x: valve.center.x + offset * 0.009, y: valve.center.y };
+                var control = { x: center.x, y: center.y + radius * 0.16 / height };
+                var bounds = { minX: center.x - radius / width, maxX: center.x + radius / width,
+                  minY: center.y, maxY: center.y + radius / height };
+                return { offset: offset, center: center, radius: radius, bounds: bounds,
+                  pocket: { type: 'pocket', center: center, radius: radius, control: control },
+                  arc: { type: 'arc', center: center, radius: radius },
+                  freeEdge: { type: 'free-edge', center: center, radius: radius, control: control } };
+              });
+              // A small physical inset lies inside the leaflet surface and inside the
+              // unchanged native arc stroke in every display mode. The cutaway remains
+              // fixed after the external myocardial pulse transform is restored.
+              valve.target = { x: valve.center.x, y: valve.center.y + (radius - Math.min(0.25, radius * 0.08)) / height };
+              targets[valve.id] = valve.target;
+              valve.bounds = { minX: valve.center.x - 0.009 - (radius + strokeMargin) / width,
+                maxX: valve.center.x + 0.009 + (radius + strokeMargin) / width,
+                minY: valve.center.y - strokeMargin / height, maxY: valve.center.y + (radius + strokeMargin) / height };
+            });
+            return { width: width, height: height, radius: radius, valves: valves, targets: targets,
+              scaleCenter: { x: 0.5, y: 0.45 },
+              bounds: { minX: Math.min(valves[0].bounds.minX, valves[1].bounds.minX), maxX: Math.max(valves[0].bounds.maxX, valves[1].bounds.maxX),
+                minY: Math.min(valves[0].bounds.minY, valves[1].bounds.minY), maxY: Math.max(valves[0].bounds.maxY, valves[1].bounds.maxY) } };
+          }
+
+          function traceSheepSemilunarRegion(context, region, width, height, append) {
+            if (!context || !region || !region.center || !isFinite(region.radius) || region.radius <= 0) return false;
+            if (!append) context.beginPath();
+            var x = region.center.x * width, y = region.center.y * height, radius = region.radius;
+            if (region.type === 'free-edge') {
+              context.moveTo(x - radius, y);
+              context.quadraticCurveTo(region.control.x * width, region.control.y * height, x + radius, y);
+            } else {
+              if (append) context.moveTo(x + radius, y);
+              // Keep the actual native half-circle. Its lower curve attaches the
+              // pocket-like cusp to the outflow wall; the shallow top is the free edge.
+              context.arc(x, y, radius, 0, Math.PI);
+              if (region.type === 'pocket') {
+                context.quadraticCurveTo(region.control.x * width, region.control.y * height, x + radius, y);
+                context.closePath();
+              }
+            }
+            return true;
+          }
+
+          function drawSheepSemilunarValves(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = sheepSemilunarGeometry(width, height);
+            if (!context || !geometry) return false;
+            var accessible = options.accessible === true, detailed = options.detailed === true && !accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.78;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.35 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.valves.forEach(function (valve) {
+                if (detailed) {
+                  valve.cusps.forEach(function (cusp) {
+                    var x = cusp.center.x * width, y = cusp.center.y * height, radius = cusp.radius;
+                    traceSheepSemilunarRegion(context, cusp.pocket, width, height);
+                    var volume = context.createLinearGradient(x + lx * radius, y + radius * 0.45 + ly * radius * 0.55,
+                      x - lx * radius, y + radius * 0.45 - ly * radius * 0.55);
+                    // Muted ivory and translucency are restrained rendering choices,
+                    // not a calibrated sheep tissue color or magnified collagen fibers.
+                    volume.addColorStop(0, 'rgba(238,231,215,0.92)'); volume.addColorStop(0.34, 'rgba(215,204,182,0.92)');
+                    volume.addColorStop(0.76, 'rgba(183,170,148,0.92)'); volume.addColorStop(1, 'rgba(143,132,113,0.92)');
+                    context.fillStyle = volume; context.fill();
+                  });
+                  context.save();
+                  try {
+                    context.beginPath();
+                    valve.cusps.forEach(function (cusp) { traceSheepSemilunarRegion(context, cusp.pocket, width, height, true); });
+                    context.clip();
+                    var cx = valve.center.x * width, cy = valve.center.y * height;
+                    var rim = context.createLinearGradient(cx + lx * width * 0.020, cy + ly * geometry.radius,
+                      cx - lx * width * 0.020, cy - ly * geometry.radius);
+                    rim.addColorStop(0, 'rgba(255,249,231,' + (0.23 * gloss).toFixed(3) + ')');
+                    rim.addColorStop(0.52, 'rgba(255,249,231,' + (0.05 * gloss).toFixed(3) + ')'); rim.addColorStop(1, 'rgba(255,249,231,0)');
+                    valve.cusps.forEach(function (cusp) {
+                      traceSheepSemilunarRegion(context, cusp.freeEdge, width, height);
+                      context.strokeStyle = rim; context.lineWidth = 0.25; context.stroke();
+                    });
+                  } finally { context.restore(); }
+                }
+                valve.cusps.forEach(function (cusp) {
+                  traceSheepSemilunarRegion(context, cusp.arc, width, height);
+                  context.strokeStyle = detailed ? 'rgba(125,112,92,0.78)' : valve.color;
+                  context.lineWidth = accessible ? 1.15 : 0.75; context.stroke();
+                });
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function sheepRetinalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var radius = Math.min(width * 0.285, height * 0.36), eyeRy = radius * 0.83;
+            var center = { x: 0.515, y: 0.45 }, angle = -0.015, co = Math.cos(angle), si = Math.sin(angle);
+            function point(theta, position) {
+              var rx = radius * (0.845 + 0.045 * position), ry = eyeRy * (0.81 + 0.055 * position);
+              var x = rx * Math.cos(theta), y = ry * Math.sin(theta);
+              return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+            }
+            function ellipse(scaleX, scaleY) {
+              var rx = radius * scaleX, ry = eyeRy * scaleY;
+              var ex = Math.hypot(rx * co, ry * si) / width, ey = Math.hypot(rx * si, ry * co) / height;
+              return { ellipse: true, center: center, rx: rx, ry: ry, angle: angle,
+                bounds: { minX: center.x - ex, maxX: center.x + ex, minY: center.y - ey, maxY: center.y + ey } };
+            }
+            var outer = ellipse(0.89, 0.865), inner = ellipse(0.845, 0.81), targetAngle = 0.65;
+            var glints = [[-1.12, 0.14], [0.94, 0.11], [2.30, 0.10]].map(function (entry) {
+              var start = point(entry[0], 0.46), curves = [[point(entry[0] + entry[1] * 0.33, 0.61),
+                point(entry[0] + entry[1] * 0.68, 0.39), point(entry[0] + entry[1], 0.54)]];
+              var ps = [start].concat.apply([start], curves), xs = ps.map(function (p) { return p.x; }), ys = ps.map(function (p) { return p.y; });
+              return { start: start, curves: curves, closed: false,
+                bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+            });
+            // Thin peripheral sector boxes reserve the exposed membrane while leaving
+            // central vitreous space available for labels. Full ellipse bounds are for geometry validation.
+            function arcBounds(arcStart, arcEnd) {
+              var arcPoints = [];
+              [0, 1].forEach(function (position) {
+                arcPoints.push(point(arcStart, position), point(arcEnd, position));
+                var rx = radius * (0.845 + 0.045 * position), ry = eyeRy * (0.81 + 0.055 * position);
+                [Math.atan2(-si * ry, co * rx), Math.atan2(co * ry, si * rx)].forEach(function (critical) {
+                  for (var turn = -2; turn <= 2; turn++) {
+                    var theta = critical + turn * Math.PI;
+                    if (theta > arcStart && theta < arcEnd) arcPoints.push(point(theta, position));
+                  }
+                });
+              });
+              var xs = arcPoints.map(function (p) { return p.x; }), ys = arcPoints.map(function (p) { return p.y; });
+              return { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) };
+            }
+            var bandSectors = [];
+            for (var sector = 0; sector < 16; sector++) bandSectors.push(arcBounds(sector * Math.PI / 8, (sector + 1) * Math.PI / 8));
+            return { width: width, height: height, radius: radius, eyeRy: eyeRy, center: center, angle: angle,
+              outer: outer, inner: inner, glints: glints, bounds: outer.bounds, bandSectors: bandSectors,
+              targetAngle: targetAngle, target: point(targetAngle, 0.5), targetArcBounds: arcBounds(targetAngle - 0.14, targetAngle + 0.14) };
+          }
+
+          function traceSheepRetinalRegion(context, region, width, height, append) {
+            if (!context || !region) return false;
+            if (!append) context.beginPath();
+            if (region.ellipse) {
+              var x = region.center.x * width, y = region.center.y * height;
+              if (append) context.moveTo(x + Math.cos(region.angle) * region.rx, y + Math.sin(region.angle) * region.rx);
+              context.ellipse(x, y, region.rx, region.ry, region.angle, 0, Math.PI * 2);
+              if (append) context.closePath();
+            } else {
+              context.moveTo(region.start.x * width, region.start.y * height);
+              region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+                c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+              if (region.closed) context.closePath();
+            }
+            return true;
+          }
+
+          function drawSheepRetinalMembrane(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = sheepRetinalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var accessible = options.accessible === true, detailed = options.detailed === true && !accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.82;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.35 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.45 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              traceSheepRetinalRegion(context, geometry.outer, width, height);
+              // Keep the original full retinal lining and semantic outline. The
+              // unchanged vitreous and connected vessel ribbons are painted later.
+              context.fillStyle = accessible ? 'rgba(254,249,195,0.92)' : 'rgba(244,230,183,0.72)'; context.fill();
+              context.strokeStyle = 'rgba(253,230,138,0.65)'; context.lineWidth = accessible ? 1.5 : 0.85; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  context.beginPath();
+                  traceSheepRetinalRegion(context, geometry.outer, width, height, true);
+                  traceSheepRetinalRegion(context, geometry.inner, width, height, true);
+                  context.clip('evenodd');
+                  var x = geometry.center.x * width, y = geometry.center.y * height;
+                  var pearl = context.createLinearGradient(x + lx * geometry.outer.rx, y + ly * geometry.outer.ry,
+                    x - lx * geometry.outer.rx, y - ly * geometry.outer.ry);
+                  pearl.addColorStop(0, 'rgba(255,249,225,' + (0.055 * gloss).toFixed(3) + ')');
+                  pearl.addColorStop(0.40, 'rgba(235,229,208,0.008)');
+                  pearl.addColorStop(0.78, 'rgba(125,118,103,0.012)');
+                  pearl.addColorStop(1, 'rgba(118,112,98,0.024)');
+                  context.fillStyle = pearl;
+                  context.fillRect(geometry.bounds.minX * width, geometry.bounds.minY * height,
+                    (geometry.bounds.maxX - geometry.bounds.minX) * width, (geometry.bounds.maxY - geometry.bounds.minY) * height);
+                  // Unequal, faint open highlights describe shallow optical undulation
+                  // of a delicate membrane, without detached flaps or histological layers.
+                  geometry.glints.forEach(function (glint) {
+                    traceSheepRetinalRegion(context, glint, width, height);
+                    context.strokeStyle = 'rgba(255,249,226,' + (0.10 * gloss).toFixed(3) + ')'; context.lineWidth = 0.28; context.stroke();
+                  });
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishHepatopancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var masses = [];
+            [-1, 1].forEach(function (side) {
+              var center = { x: 0.5 - 0.015, y: 0.45 + side * 0.034 }, rx = width * 0.057, ry = height * 0.036;
+              var angle = side * 0.12, co = Math.cos(angle), si = Math.sin(angle);
+              function local(u, v, simple) {
+                var x = rx * u, y = ry * v * (simple ? 1 : side);
+                return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+              }
+              function region(start, values, simple, closed) {
+                var first = local(start[0], start[1], simple), curves = values.map(function (c) { return [local(c[0], c[1], simple), local(c[2], c[3], simple), local(c[4], c[5], simple)]; });
+                if (closed !== false) curves[curves.length - 1][2] = first;
+                var ps = [first].concat.apply([first], curves), xs = ps.map(function (p) { return p.x; }), ys = ps.map(function (p) { return p.y; });
+                return { start: first, curves: curves, closed: closed !== false,
+                  bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+              }
+              // Keep the original broad, soft seven-cubic envelope and its signed
+              // physical rotation. The surface cues do not prescribe a biological lobe count.
+              var body = region([-0.94, -0.08], [
+                [-0.97, -0.42, -0.73, -0.69, -0.48, -0.70],
+                [-0.30, -0.94, 0.05, -0.91, 0.23, -0.75],
+                [0.50, -0.83, 0.78, -0.57, 0.75, -0.33],
+                [1.00, -0.17, 0.96, 0.20, 0.76, 0.32],
+                [0.78, 0.57, 0.45, 0.83, 0.22, 0.73],
+                [0.00, 0.98, -0.35, 0.85, -0.47, 0.64],
+                [-0.77, 0.68, -0.97, 0.34, -0.94, -0.08]
+              ]);
+              // The established traceVisceralLobe fallback is four cubics with no
+              // signed Y mirror. Retain that authored distinction in clarity modes.
+              var simple = region([-0.87, -0.22], [
+                [-0.98, -0.80, -0.25, -1.08, 0.40, -0.83],
+                [0.96, -0.66, 1.10, 0.10, 0.60, 0.74],
+                [0.23, 1.05, -0.14, 0.91, -0.52, 0.48],
+                [-0.79, 0.28, -0.91, 0.10, -0.87, -0.22]
+              ], true);
+              var creases = [
+                region([-0.47, -0.60], [[-0.36, -0.50, -0.34, -0.30, -0.40, -0.17]], false, false),
+                region([0.66, 0.28], [[0.49, 0.24, 0.40, 0.30, 0.28, 0.42]], false, false)
+              ];
+              var bounds = { minX: Math.min(body.bounds.minX, simple.bounds.minX), maxX: Math.max(body.bounds.maxX, simple.bounds.maxX),
+                minY: Math.min(body.bounds.minY, simple.bounds.minY), maxY: Math.max(body.bounds.maxY, simple.bounds.maxY) };
+              masses.push({ side: side, center: center, rx: rx, ry: ry, angle: angle, body: body, simple: simple, bounds: bounds, creases: creases,
+                relief: [local(-0.47, -0.24), local(0.22, -0.30), local(0.22, 0.35)] });
+            });
+            return { width: width, height: height, masses: masses, target: masses[1].center,
+              bounds: { minX: Math.min(masses[0].bounds.minX, masses[1].bounds.minX), maxX: Math.max(masses[0].bounds.maxX, masses[1].bounds.maxX),
+                minY: Math.min(masses[0].bounds.minY, masses[1].bounds.minY), maxY: Math.max(masses[0].bounds.maxY, masses[1].bounds.maxY) } };
+          }
+
+          function traceCrayfishHepatopancreaticRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+              c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+            if (region.closed !== false) context.closePath();
+            return true;
+          }
+
+          function drawCrayfishHepatopancreas(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishHepatopancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.masses.forEach(function (mass) {
+                var region = detailed ? mass.body : mass.simple, x = mass.center.x * width, y = mass.center.y * height;
+                traceCrayfishHepatopancreaticRegion(context, region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(mass.rx, mass.ry); } finally { context.restore(); }
+                }
+                traceCrayfishHepatopancreaticRegion(context, region, width, height);
+                var fill = options.accessible ? '#d97706' : '#b38a4c';
+                if (detailed) {
+                  fill = context.createLinearGradient(x + lx * mass.rx, y + ly * mass.ry, x - lx * mass.rx, y - ly * mass.ry);
+                  fill.addColorStop(0, '#d8bf89'); fill.addColorStop(0.34, '#bb9b62');
+                  fill.addColorStop(0.76, '#947741'); fill.addColorStop(1, '#63573b');
+                }
+                context.fillStyle = fill; context.fill(); context.strokeStyle = '#765332'; context.lineWidth = 0.7; context.stroke();
+                if (detailed) {
+                  context.save();
+                  try {
+                    traceCrayfishHepatopancreaticRegion(context, mass.body, width, height); context.clip();
+                    mass.relief.forEach(function (p, index) {
+                      var radius = Math.max(mass.rx * 0.52, mass.ry * 0.42);
+                      var relief = context.createRadialGradient(p.x * width + lx * radius * 0.16, p.y * height + ly * radius * 0.16, 0,
+                        p.x * width, p.y * height, radius);
+                      relief.addColorStop(0, index === 1 ? 'rgba(105,100,53,0.09)' : 'rgba(255,234,185,' + (0.09 + 0.07 * gloss).toFixed(3) + ')');
+                      relief.addColorStop(0.56, index === 1 ? 'rgba(105,100,53,0.025)' : 'rgba(237,204,144,' + (0.022 + 0.018 * gloss).toFixed(3) + ')');
+                      relief.addColorStop(1, 'rgba(146,122,69,0)');
+                      context.fillStyle = relief; context.fillRect(x - mass.rx * 1.5, y - mass.ry * 1.5, mass.rx * 3, mass.ry * 3);
+                    });
+                    // Short faint curves suggest shallow changes of surface relief;
+                    // they do not partition the mass into tubules or sealed compartments.
+                    mass.creases.forEach(function (crease) {
+                      traceCrayfishHepatopancreaticRegion(context, crease, width, height);
+                      context.strokeStyle = 'rgba(101,78,40,0.15)'; context.lineWidth = 0.33; context.stroke();
+                      context.save();
+                      try {
+                        context.translate(lx * 0.25, ly * 0.25);
+                        traceCrayfishHepatopancreaticRegion(context, crease, width, height);
+                        context.strokeStyle = 'rgba(255,236,188,' + (0.10 * gloss).toFixed(3) + ')'; context.lineWidth = 0.22; context.stroke();
+                      } finally { context.restore(); }
+                    });
+                    if (typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        traceCrayfishHepatopancreaticRegion(context, mass.body, width, height);
+                        options.finish(x, y, mass.rx, mass.ry, 'lobular', 'cray-digestive-' + mass.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishAntennalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var rx = width * 0.012, ry = Math.min(rx, height * 0.0095);
+            // Whole closed antennal complexes keep their original paired centers. The
+            // shallow fullness remains one external surface, without exposed internal coils.
+            // A shorter cranial margin and aspect-limited height fit the anterior opening.
+            var courses = [
+              [0.62,0.86,0.90,0.54,0.92,0.18],
+              [0.99,-0.13,0.85,-0.53,0.60,-0.72],
+              [0.38,-0.90,0.03,-0.90,-0.18,-0.73],
+              [-0.40,-0.57,-0.46,-0.25,-0.43,-0.02],
+              [-0.42,0.18,-0.30,0.36,-0.17,0.48],
+              [-0.08,0.68,0.12,0.88,0.32,0.90]
+            ];
+            var glands = [-1, 1].map(function (side) {
+              var center = { x: 0.295, y: side < 0 ? 0.412 : 0.488 };
+              function point(x, y) { return { x: center.x + x * rx / width, y: center.y + side * y * ry / height }; }
+              var region = { start: point(0.32, 0.90), curves: courses.map(function (c) {
+                return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+              }) };
+              var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+              region.curves.forEach(function (curve) { curve.forEach(function (p) {
+                bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+                bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+              }); });
+              return { side: side, region: region, center: center, bounds: bounds,
+                extent: { x: Math.max(center.x - bounds.minX, bounds.maxX - center.x),
+                  y: Math.max(center.y - bounds.minY, bounds.maxY - center.y) },
+                frame: { radiusX: rx, radiusY: ry } };
+            });
+            return { target: { x: 0.295, y: 0.412 }, glands: glands };
+          }
+          function traceCrayfishAntennalRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawCrayfishAntennalGlands(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishAntennalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              geometry.glands.forEach(function (gland) {
+                var x = gland.center.x * width, y = gland.center.y * height, gx = gland.extent.x * width, gy = gland.extent.y * height;
+                traceCrayfishAntennalRegion(context, gland.region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(gx, gy); } finally { context.restore(); }
+                }
+                traceCrayfishAntennalRegion(context, gland.region, width, height);
+                var base = '#b6c2a2';
+                if (detailed) {
+                  base = context.createLinearGradient(x + lightX * gx, y + lightY * gy, x - lightX * gx, y - lightY * gy);
+                  base.addColorStop(0, '#d9dfc2'); base.addColorStop(0.35, '#b7c2a0');
+                  base.addColorStop(0.75, '#92a487'); base.addColorStop(1, '#667c69');
+                }
+                context.fillStyle = base; context.fill(); context.strokeStyle = '#71836d'; context.lineWidth = 0.40; context.stroke();
+                if (detailed && typeof options.finish === 'function') {
+                  context.save();
+                  try {
+                    traceCrayfishAntennalRegion(context, gland.region, width, height); context.clip();
+                    traceCrayfishAntennalRegion(context, gland.region, width, height);
+                    options.finish(x, y, gx, gy, 'capsule', 'cray-antennal-' + gland.side);
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
           }
 
           function crayfishGillGeometry(index, side, logicalWidth, logicalHeight) {
@@ -6009,6 +6647,294 @@ var d = labToolData.dissection || {};
                   context.strokeStyle = 'rgba(255,242,214,' + ((0.10 + moisture * 0.26) * intensity * conditionSheen).toFixed(3) + ')';
                   context.lineWidth = Math.max(0.18, tubeUnit * 0.34); context.stroke();
                 }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigThymicGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // One connected visible portion retains the existing cervical/thoracic projection.
+            // Shallow unequal scallops describe soft tissue, not separate follicles or acini.
+            var region = { start: { x: 0.347, y: 0.385 }, curves: [
+              [{x:0.350,y:0.378},{x:0.353,y:0.374},{x:0.358,y:0.372}],
+              [{x:0.361,y:0.367},{x:0.367,y:0.365},{x:0.372,y:0.367}],
+              [{x:0.377,y:0.363},{x:0.383,y:0.365},{x:0.387,y:0.370}],
+              [{x:0.393,y:0.370},{x:0.398,y:0.374},{x:0.400,y:0.382}],
+              [{x:0.406,y:0.385},{x:0.409,y:0.392},{x:0.410,y:0.400}],
+              [{x:0.414,y:0.404},{x:0.414,y:0.412},{x:0.412,y:0.418}],
+              [{x:0.414,y:0.426},{x:0.408,y:0.436},{x:0.402,y:0.439}],
+              [{x:0.397,y:0.445},{x:0.387,y:0.446},{x:0.380,y:0.443}],
+              [{x:0.372,y:0.444},{x:0.361,y:0.441},{x:0.355,y:0.438}],
+              [{x:0.353,y:0.429},{x:0.352,y:0.421},{x:0.353,y:0.414}],
+              [{x:0.351,y:0.408},{x:0.350,y:0.401},{x:0.351,y:0.395}],
+              [{x:0.349,y:0.392},{x:0.348,y:0.388},{x:0.347,y:0.385}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.3675, y: 0.37075 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.359,y:0.379}, curves: [[{x:0.360,y:0.382},{x:0.364,y:0.384},{x:0.367,y:0.385}]] },
+                { start: {x:0.377,y:0.374}, curves: [[{x:0.376,y:0.378},{x:0.380,y:0.381},{x:0.383,y:0.384}]] },
+                { start: {x:0.359,y:0.400}, curves: [[{x:0.361,y:0.403},{x:0.365,y:0.405},{x:0.369,y:0.405}]] },
+                { start: {x:0.362,y:0.423}, curves: [[{x:0.365,y:0.426},{x:0.369,y:0.427},{x:0.373,y:0.428}]] }
+              ] };
+          }
+          function tracePigThymicRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+          function drawPigThymicSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigThymicGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              tracePigThymicRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              tracePigThymicRegion(context, geometry.region, width, height);
+              var base = '#d9a0a7';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#efd0c8'); base.addColorStop(0.35, '#d5a9a5');
+                base.addColorStop(0.75, '#b27f84'); base.addColorStop(1, '#80545f');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#9f5e68'; context.lineWidth = 0.45; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePigThymicRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePigThymicRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(113,72,76,0.14)'; context.lineWidth = 0.42; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.28, lightY * 0.28);
+                      tracePigThymicRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(250,225,210,0.17)'; context.lineWidth = 0.26; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    tracePigThymicRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'pig-thymus');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigPancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // A single flattened gland follows the existing gastric/duodenal interval.
+            // Unequal shallow scallops describe the external tissue, not named lobes or acini.
+            var region = { start: { x: 0.554, y: 0.536 }, curves: [
+              [{x:0.559,y:0.534},{x:0.566,y:0.532},{x:0.573,y:0.533}],
+              [{x:0.579,y:0.533},{x:0.583,y:0.535},{x:0.589,y:0.534}],
+              [{x:0.596,y:0.534},{x:0.600,y:0.530},{x:0.607,y:0.530}],
+              [{x:0.613,y:0.528},{x:0.619,y:0.529},{x:0.624,y:0.530}],
+              [{x:0.630,y:0.529},{x:0.634,y:0.531},{x:0.639,y:0.533}],
+              [{x:0.645,y:0.534},{x:0.652,y:0.536},{x:0.655,y:0.539}],
+              [{x:0.657,y:0.541},{x:0.652,y:0.545},{x:0.647,y:0.544}],
+              [{x:0.641,y:0.544},{x:0.637,y:0.540},{x:0.631,y:0.540}],
+              [{x:0.625,y:0.538},{x:0.620,y:0.539},{x:0.614,y:0.541}],
+              [{x:0.608,y:0.541},{x:0.604,y:0.545},{x:0.597,y:0.545}],
+              [{x:0.591,y:0.546},{x:0.586,y:0.543},{x:0.580,y:0.542}],
+              [{x:0.570,y:0.540},{x:0.560,y:0.539},{x:0.554,y:0.536}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.63175, y: 0.533 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.580,y:0.535}, curves: [[{x:0.579,y:0.537},{x:0.581,y:0.539},{x:0.583,y:0.541}]] },
+                { start: {x:0.599,y:0.533}, curves: [[{x:0.597,y:0.535},{x:0.598,y:0.539},{x:0.600,y:0.542}]] },
+                { start: {x:0.620,y:0.531}, curves: [[{x:0.618,y:0.533},{x:0.619,y:0.536},{x:0.621,y:0.538}]] },
+                { start: {x:0.640,y:0.535}, curves: [[{x:0.638,y:0.536},{x:0.640,y:0.539},{x:0.642,y:0.541}]] }
+              ] };
+          }
+
+          function tracePigPancreaticRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+
+          function drawPigPancreaticSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigPancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              tracePigPancreaticRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              tracePigPancreaticRegion(context, geometry.region, width, height);
+              var base = '#c8b28e';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e6d6b7'); base.addColorStop(0.35, '#cbb893');
+                base.addColorStop(0.75, '#aa906d'); base.addColorStop(1, '#796346');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#826b4e'; context.lineWidth = 0.35; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePigPancreaticRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePigPancreaticRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(99,75,47,0.17)'; context.lineWidth = 0.42; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.28, lightY * 0.28);
+                      tracePigPancreaticRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,232,200,0.19)'; context.lineWidth = 0.26; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    // Material finishing may replace the current path. Give it the same
+                    // complete gland outline inside this exact external surface clip.
+                    tracePigPancreaticRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'pig-pancreas');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigRenalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var co = Math.cos(0.12), si = Math.sin(0.12);
+            var kidneys = [-1, 1].map(function (side) {
+              var center = { x: 0.5 + 0.115 + side * 0.028, y: 0.45 - (0.06 - side * 0.008) };
+              var hilumDirection = -side, rx = width * 0.028, ry = height * 0.045;
+              // Rotate in specimen pixels, as in the existing side-lying projection.
+              function point(x, y) {
+                var u = x * rx * hilumDirection, v = y * ry;
+                return { x: center.x + (u * co - v * si) / width, y: center.y + (u * si + v * co) / height };
+              }
+              function region(start, courses) {
+                var result = { start: point(start[0], start[1]), curves: courses.map(function (c) {
+                  return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+                }) };
+                var points = [result.start]; result.curves.forEach(function (c) { points = points.concat(c); });
+                result.bounds = { minX: Math.min.apply(null, points.map(function (p) { return p.x; })),
+                  maxX: Math.max.apply(null, points.map(function (p) { return p.x; })),
+                  minY: Math.min.apply(null, points.map(function (p) { return p.y; })),
+                  maxY: Math.max.apply(null, points.map(function (p) { return p.y; })) };
+                result.center = { x: (result.bounds.minX + result.bounds.maxX) / 2, y: (result.bounds.minY + result.bounds.maxY) / 2 };
+                result.extent = { x: (result.bounds.maxX - result.bounds.minX) / 2, y: (result.bounds.maxY - result.bounds.minY) / 2 };
+                return result;
+              }
+              // The retained six-cubic capsule is intact. The small contained crescent
+              // models medial surface relief, without exposing collecting anatomy.
+              var body = region([-0.10, -1], [
+                [0.60,-1.02,1,-0.70,0.82,-0.36],
+                [0.68,-0.19,0.30,-0.24,0.27,0],
+                [0.29,0.25,0.70,0.17,0.84,0.43],
+                [0.97,0.78,0.48,1.04,-0.12,1],
+                [-0.80,0.98,-1.04,0.50,-1,0],
+                [-1,-0.65,-0.70,-1.04,-0.10,-1]
+              ]);
+              var hilum = region([0.38,-0.42], [
+                [0.18,-0.42,0.04,-0.19,0.07,0],
+                [0.04,0.18,0.21,0.38,0.42,0.43],
+                [0.27,0.35,0.19,0.16,0.19,0],
+                [0.17,-0.16,0.29,-0.31,0.38,-0.42]
+              ]);
+              return { side: side, center: center, radii: { x: 0.028, y: 0.045 }, rotation: 0.12,
+                hilumDirection: hilumDirection, opacity: side < 0 ? 0.52 : 0.84,
+                body: body, hilum: hilum, bounds: body.bounds, extent: body.extent,
+                surfaceTarget: point(-0.48, -0.12) };
+            });
+            return { target: { x: 0.653, y: 0.390 }, kidneys: kidneys };
+          }
+          function tracePigRenalRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawPigRenalComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigRenalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              var inheritedAlpha = context.globalAlpha;
+              geometry.kidneys.forEach(function (kidney) {
+                context.save();
+                try {
+                  context.globalAlpha = inheritedAlpha * kidney.opacity;
+                  var x = kidney.body.center.x * width, y = kidney.body.center.y * height;
+                  var rx = kidney.extent.x * width, ry = kidney.extent.y * height;
+                  tracePigRenalRegion(context, kidney.body, width, height);
+                  if (detailed && typeof options.contact === 'function') {
+                    context.save();
+                    try { options.contact(rx, ry); } finally { context.restore(); }
+                  }
+                  tracePigRenalRegion(context, kidney.body, width, height);
+                  var base = '#78463a';
+                  if (detailed) {
+                    base = context.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                    base.addColorStop(0, '#b1826c'); base.addColorStop(0.34, '#95634f');
+                    base.addColorStop(0.74, '#704334'); base.addColorStop(1, '#432a2a');
+                  }
+                  context.fillStyle = base; context.fill(); context.strokeStyle = detailed ? 'rgba(69,39,34,0.74)' : '#4c2c26';
+                  context.lineWidth = detailed ? 0.55 : 0.7; context.stroke();
+                  context.save();
+                  try {
+                    tracePigRenalRegion(context, kidney.body, width, height); context.clip();
+                    tracePigRenalRegion(context, kidney.hilum, width, height);
+                    context.fillStyle = detailed ? 'rgba(72,41,33,0.19)' : 'rgba(249,199,159,0.22)'; context.fill();
+                    if (detailed && typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        tracePigRenalRegion(context, kidney.body, width, height);
+                        options.finish(x, y, rx, ry, 'capsule', 'pig-kidney-' + kidney.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                } finally { context.restore(); }
               });
               return true;
             } finally { context.restore(); }
@@ -6204,6 +7130,428 @@ var d = labToolData.dissection || {};
                 tracePigGastricRegion(context, stomach, width, height);
                 options.finish(x, y, rx, ry, 'serosa', 'pig-stomach');
               }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogRenalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var kidneys = [];
+            [-1, 1].forEach(function (side) {
+              var center = { x: 0.5 + side * 0.052, y: 0.45 + 0.115 }, rx = width * 0.025, ry = height * 0.088;
+              var angle = side * 0.08, co = Math.cos(angle), si = Math.sin(angle);
+              function local(u, v) {
+                var x = side * rx * u, y = ry * v;
+                return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+              }
+              function region(start, controls) {
+                var first = local(start[0], start[1]), curves = controls.map(function (c) {
+                  return [local(c[0], c[1]), local(c[2], c[3]), local(c[4], c[5])];
+                });
+                // Reuse the exact first point to close without a fractional seam.
+                curves[curves.length - 1][2] = first;
+                var points = [first].concat.apply([first], curves), xs = points.map(function (p) { return p.x; }), ys = points.map(function (p) { return p.y; });
+                return { start: first, curves: curves, bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                  minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+              }
+              // Preserve the authored five-cubic, gently flattened amphibian silhouette.
+              var body = region([-0.08, -1], [
+                [-0.62, -1.02, -0.78, -0.55, -0.75, -0.12],
+                [-0.68, 0.32, -0.79, 0.75, -0.34, 0.97],
+                [0.15, 1.06, 0.72, 0.73, 0.87, 0.25],
+                [1.02, -0.24, 0.81, -0.78, 0.35, -0.96],
+                [0.22, -1, 0.06, -1, -0.08, -1]
+              ]);
+              var ellipseExtentX = Math.hypot(rx * co, ry * si) / width, ellipseExtentY = Math.hypot(rx * si, ry * co) / height;
+              var simple = { ellipse: true, center: center, radius: { x: 0.025, y: 0.088 }, angle: angle,
+                bounds: { minX: center.x - ellipseExtentX, maxX: center.x + ellipseExtentX,
+                  minY: center.y - ellipseExtentY, maxY: center.y + ellipseExtentY } };
+              // Small adherent yellow-brown patches suggest the adrenal tissue on the
+              // ventral renal surface. Their shallow irregular edges are not a duct.
+              var adrenal = [
+                region([0.28, -0.76], [
+                  [0.37, -0.75, 0.48, -0.65, 0.47, -0.55],
+                  [0.44, -0.45, 0.40, -0.40, 0.32, -0.38],
+                  [0.23, -0.43, 0.30, -0.55, 0.25, -0.62],
+                  [0.22, -0.68, 0.25, -0.74, 0.28, -0.76]
+                ]),
+                region([0.34, -0.28], [
+                  [0.45, -0.23, 0.48, -0.10, 0.43, 0.02],
+                  [0.40, 0.14, 0.46, 0.22, 0.35, 0.29],
+                  [0.27, 0.22, 0.32, 0.11, 0.28, 0.04],
+                  [0.21, -0.06, 0.28, -0.20, 0.34, -0.28]
+                ]),
+                region([0.36, 0.36], [
+                  [0.45, 0.37, 0.46, 0.43, 0.40, 0.47],
+                  [0.36, 0.51, 0.39, 0.55, 0.31, 0.60],
+                  [0.23, 0.56, 0.30, 0.49, 0.25, 0.46],
+                  [0.22, 0.42, 0.29, 0.38, 0.36, 0.36]
+                ])
+              ];
+              var bounds = { minX: Math.min(body.bounds.minX, simple.bounds.minX), maxX: Math.max(body.bounds.maxX, simple.bounds.maxX),
+                minY: Math.min(body.bounds.minY, simple.bounds.minY), maxY: Math.max(body.bounds.maxY, simple.bounds.maxY) };
+              kidneys.push({ side: side, center: center, rx: rx, ry: ry, angle: angle, body: body, simple: simple,
+                adrenal: adrenal, bounds: bounds, target: local(-0.08, 0.82),
+                mottles: [local(-0.25, -0.48), local(0.17, 0.06), local(-0.12, 0.59)] });
+            });
+            return { width: width, height: height, kidneys: kidneys, target: kidneys[1].target,
+              bounds: { minX: Math.min(kidneys[0].bounds.minX, kidneys[1].bounds.minX), maxX: Math.max(kidneys[0].bounds.maxX, kidneys[1].bounds.maxX),
+                minY: Math.min(kidneys[0].bounds.minY, kidneys[1].bounds.minY), maxY: Math.max(kidneys[0].bounds.maxY, kidneys[1].bounds.maxY) } };
+          }
+
+          function traceFrogRenalRegion(context, region, width, height) {
+            if (!context || !region) return false;
+            context.beginPath();
+            if (region.ellipse) {
+              context.ellipse(region.center.x * width, region.center.y * height,
+                region.radius.x * width, region.radius.y * height, region.angle, 0, Math.PI * 2);
+            } else {
+              context.moveTo(region.start.x * width, region.start.y * height);
+              region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+                c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+              context.closePath();
+            }
+            return true;
+          }
+
+          function drawFrogRenalComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogRenalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var simple = options.accessible === true || options.highContrast === true;
+            var detailed = options.detailed === true && !simple;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.kidneys.forEach(function (kidney) {
+                var region = simple ? kidney.simple : kidney.body, x = kidney.center.x * width, y = kidney.center.y * height;
+                traceFrogRenalRegion(context, region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(kidney.rx, kidney.ry); } finally { context.restore(); }
+                }
+                traceFrogRenalRegion(context, region, width, height);
+                var fill = '#5b3429';
+                if (detailed) {
+                  fill = context.createLinearGradient(x + lx * kidney.rx, y + ly * kidney.ry,
+                    x - lx * kidney.rx, y - ly * kidney.ry);
+                  fill.addColorStop(0, '#a37c68'); fill.addColorStop(0.34, '#80594d');
+                  fill.addColorStop(0.76, '#603d3c'); fill.addColorStop(1, '#3c2c32');
+                }
+                context.fillStyle = fill; context.fill(); context.strokeStyle = '#3f241d'; context.lineWidth = 0.65; context.stroke();
+                if (detailed) {
+                  context.save();
+                  try {
+                    traceFrogRenalRegion(context, kidney.body, width, height); context.clip();
+                    kidney.mottles.forEach(function (p, index) {
+                      var mottle = context.createRadialGradient(p.x * width, p.y * height, 0, p.x * width, p.y * height, kidney.rx * (1.1 + index * 0.12));
+                      mottle.addColorStop(0, index % 2 ? 'rgba(56,31,39,0.10)' : 'rgba(214,178,140,0.10)');
+                      mottle.addColorStop(0.58, index % 2 ? 'rgba(56,31,39,0.035)' : 'rgba(214,178,140,0.035)');
+                      mottle.addColorStop(1, 'rgba(140,110,94,0)');
+                      context.fillStyle = mottle; context.fillRect(x - kidney.rx * 1.5, y - kidney.ry * 1.5, kidney.rx * 3, kidney.ry * 3);
+                    });
+                    var adrenalVolume = context.createLinearGradient(x + lx * kidney.rx, y + ly * kidney.ry,
+                      x - lx * kidney.rx, y - ly * kidney.ry);
+                    adrenalVolume.addColorStop(0, '#d7bd79'); adrenalVolume.addColorStop(0.38, '#b89a57');
+                    adrenalVolume.addColorStop(0.80, '#94763e'); adrenalVolume.addColorStop(1, '#79613a');
+                    kidney.adrenal.forEach(function (patch) { traceFrogRenalRegion(context, patch, width, height); context.fillStyle = adrenalVolume; context.fill(); });
+                    if (typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        traceFrogRenalRegion(context, kidney.body, width, height);
+                        options.finish(x, y, kidney.rx, kidney.ry, 'capsule', 'frog-kidney-' + kidney.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogPancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // A narrow rising portion follows the existing frog stomach/duodenal interval.
+            // Unequal shallow scallops describe gross tissue without acini or duct diagrams.
+            var region = { start: { x: 0.488, y: 0.550 }, curves: [
+              [{x:0.492,y:0.548},{x:0.498,y:0.546},{x:0.504,y:0.546}],
+              [{x:0.509,y:0.544},{x:0.513,y:0.542},{x:0.519,y:0.542}],
+              [{x:0.525,y:0.5385},{x:0.528,y:0.5377},{x:0.534,y:0.5375}],
+              [{x:0.539,y:0.535},{x:0.545,y:0.534},{x:0.550,y:0.533}],
+              [{x:0.555,y:0.530},{x:0.562,y:0.529},{x:0.567,y:0.528}],
+              [{x:0.571,y:0.529},{x:0.571,y:0.532},{x:0.567,y:0.534}],
+              [{x:0.563,y:0.536},{x:0.558,y:0.535},{x:0.553,y:0.537}],
+              [{x:0.547,y:0.539},{x:0.541,y:0.540},{x:0.536,y:0.542}],
+              [{x:0.530,y:0.545},{x:0.524,y:0.545},{x:0.519,y:0.547}],
+              [{x:0.513,y:0.549},{x:0.508,y:0.549},{x:0.503,y:0.551}],
+              [{x:0.497,y:0.552},{x:0.491,y:0.552},{x:0.488,y:0.550}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.528, y: 0.5405 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.501,y:0.547}, curves: [[{x:0.502,y:0.548},{x:0.502,y:0.549},{x:0.503,y:0.550}]] },
+                { start: {x:0.519,y:0.5428}, curves: [[{x:0.520,y:0.5435},{x:0.521,y:0.5447},{x:0.521,y:0.5457}]] },
+                { start: {x:0.538,y:0.5374}, curves: [[{x:0.539,y:0.538},{x:0.540,y:0.5386},{x:0.540,y:0.5395}]] },
+                { start: {x:0.556,y:0.532}, curves: [[{x:0.557,y:0.5325},{x:0.558,y:0.533},{x:0.558,y:0.534}]] }
+              ] };
+          }
+
+          function traceFrogPancreaticRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+
+          function drawFrogPancreaticSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogPancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              traceFrogPancreaticRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              traceFrogPancreaticRegion(context, geometry.region, width, height);
+              var base = '#cfbd96';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e6ddbd'); base.addColorStop(0.35, '#cbbd98');
+                base.addColorStop(0.75, '#ad9874'); base.addColorStop(1, '#7e6a4f');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = 'rgba(115,92,62,0.70)'; context.lineWidth = 0.35; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  traceFrogPancreaticRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    traceFrogPancreaticRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(102,85,57,0.15)'; context.lineWidth = 0.40; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.25, lightY * 0.25);
+                      traceFrogPancreaticRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,238,208,0.17)'; context.lineWidth = 0.25; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    // Material finishing may replace the current path. Give it the same
+                    // complete gland outline inside this exact external surface clip.
+                    traceFrogPancreaticRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'frog-pancreas');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogSplenicGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var cx = width * 0.408, cy = height * 0.565, rx = width * 0.012, ry = height * 0.009;
+            var rotation = -0.2, cosine = Math.cos(rotation), sine = Math.sin(rotation);
+            function point(x, y) {
+              return { x: (cx + x * rx * cosine - y * ry * sine) / width,
+                y: (cy + x * rx * sine + y * ry * cosine) / height };
+            }
+            // The compact whole spleen keeps a smooth external surface. Small differences
+            // between its rounded ends do not imply lobules, a renal notch, or exposed pulp.
+            var courses = [
+              [0.42,-1.00,0.85,-0.65,0.91,-0.20],
+              [1.00,-0.01,0.94,0.41,0.67,0.68],
+              [0.42,0.97,-0.06,1.00,-0.40,0.84],
+              [-0.74,0.69,-0.98,0.33,-0.94,-0.08],
+              [-0.97,-0.43,-0.66,-0.80,-0.36,-0.91],
+              [-0.25,-0.97,-0.16,-1.01,-0.03,-0.97]
+            ];
+            var region = { start: point(-0.03, -0.97), curves: courses.map(function (c) {
+              return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+            }) };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            return { target: { x: 0.408, y: 0.565 }, region: region, bounds: bounds,
+              center: { x: cx / width, y: cy / height },
+              extent: { x: Math.max(cx / width - bounds.minX, bounds.maxX - cx / width),
+                y: Math.max(cy / height - bounds.minY, bounds.maxY - cy / height) },
+              frame: { rotation: rotation, radiusX: rx, radiusY: ry } };
+          }
+
+          function traceFrogSplenicRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+
+          function drawFrogSplenicSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogSplenicGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            context.save();
+            try {
+              traceFrogSplenicRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(rx, ry); } finally { context.restore(); }
+              }
+              traceFrogSplenicRegion(context, geometry.region, width, height);
+              var base = '#74363e';
+              if (detailed) {
+                var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+                var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#ad6f68'); base.addColorStop(0.35, '#82484b');
+                base.addColorStop(0.75, '#532d37'); base.addColorStop(1, '#2e202a');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#4b2b36'; context.lineWidth = 0.45; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                context.save();
+                try {
+                  traceFrogSplenicRegion(context, geometry.region, width, height); context.clip();
+                  traceFrogSplenicRegion(context, geometry.region, width, height);
+                  options.finish(x, y, rx, ry, 'capsule', 'frog-spleen');
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogNeuralGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            function region(start, courses) {
+              var result = { start: { x: start[0], y: start[1] }, curves: courses.map(function (c) {
+                return [{ x: c[0], y: c[1] }, { x: c[2], y: c[3] }, { x: c[4], y: c[5] }];
+              }) };
+              var points = [result.start]; result.curves.forEach(function (c) { points = points.concat(c); });
+              result.bounds = { minX: Math.min.apply(null, points.map(function (p) { return p.x; })),
+                maxX: Math.max.apply(null, points.map(function (p) { return p.x; })),
+                minY: Math.min.apply(null, points.map(function (p) { return p.y; })),
+                maxY: Math.max.apply(null, points.map(function (p) { return p.y; })) };
+              result.center = { x: (result.bounds.minX + result.bounds.maxX) / 2, y: (result.bounds.minY + result.bounds.maxY) / 2 };
+              result.extent = { x: (result.bounds.maxX - result.bounds.minX) / 2, y: (result.bounds.maxY - result.bounds.minY) / 2 };
+              return result;
+            }
+            // One continuous dorsal surface carries the regional relief. The covered
+            // medulla narrows into the existing cord, without exposed ventricular anatomy.
+            var body = region([0.500,0.136], [
+              [0.505,0.134,0.511,0.132,0.514,0.135],
+              [0.518,0.137,0.520,0.141,0.519,0.145],
+              [0.526,0.145,0.530,0.151,0.528,0.157],
+              [0.536,0.157,0.544,0.161,0.544,0.168],
+              [0.545,0.175,0.537,0.180,0.525,0.181],
+              [0.520,0.182,0.519,0.186,0.515,0.188],
+              [0.512,0.191,0.507,0.193,0.505,0.198],
+              [0.503,0.199,0.497,0.199,0.495,0.198],
+              [0.493,0.193,0.488,0.191,0.485,0.188],
+              [0.481,0.186,0.480,0.182,0.475,0.181],
+              [0.463,0.180,0.455,0.175,0.456,0.168],
+              [0.456,0.161,0.464,0.157,0.472,0.157],
+              [0.470,0.151,0.474,0.145,0.481,0.145],
+              [0.480,0.141,0.482,0.137,0.486,0.135],
+              [0.489,0.132,0.495,0.134,0.500,0.136]
+            ]);
+            function oval(id, cx, cy, rx, ry, tilt) {
+              function p(x, y) { return [cx + x * rx + y * tilt, cy + y * ry]; }
+              var start = p(0,-1), k = 0.55228475;
+              var courses = [[k,-1,1,-k,1,0],[1,k,k,1,0,1],[-k,1,-1,k,-1,0],[-1,-k,-k,-1,0,-1]];
+              var shape = region(start, courses.map(function (c) { return p(c[0],c[1]).concat(p(c[2],c[3]),p(c[4],c[5])); }));
+              return { id: id, region: shape, center: shape.center, extent: shape.extent, bounds: shape.bounds };
+            }
+            var regions = [
+              oval('olfactory-left',0.490,0.1395,0.0068,0.0051,-0.0006),
+              oval('olfactory-right',0.510,0.1395,0.0068,0.0051,0.0006),
+              oval('cerebral-left',0.486,0.1525,0.0096,0.0090,-0.0008),
+              oval('cerebral-right',0.514,0.1525,0.0096,0.0090,0.0008),
+              oval('optic-left',0.478,0.1694,0.0190,0.0100,-0.0003),
+              oval('optic-right',0.522,0.1694,0.0190,0.0100,0.0003),
+              oval('cerebellum',0.500,0.1837,0.0170,0.0029,0)
+            ];
+            return { target: { x: 0.500, y: 0.170 }, opticTarget: { x: 0.522, y: 0.170 },
+              nerveTargets: { spinal_cord: { x: 0.500, y: 0.440 }, cranial_n: { x: 0.56665, y: 0.16975 },
+                brachial_n: { x: 0.371775, y: 0.3837875 }, sciatic_n: { x: 0.311199375, y: 0.6774775 } },
+              cordJunction: { x: 0.500, y: 0.195 }, body: body, regions: regions,
+              center: body.center, extent: body.extent, bounds: body.bounds };
+          }
+          function traceFrogNeuralRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawFrogNeuralComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogNeuralGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              traceFrogNeuralRegion(context, geometry.body, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(geometry.extent.x * width, geometry.extent.y * height); } finally { context.restore(); }
+              }
+              function paint(region, id) {
+                var x = region.center.x * width, y = region.center.y * height, rx = region.extent.x * width, ry = region.extent.y * height;
+                traceFrogNeuralRegion(context, region, width, height);
+                var base = id === 'base' ? '#c4b5fd' : (id.indexOf('optic') === 0 ? '#a78bfa' : '#d4c7f5');
+                if (detailed) {
+                  base = context.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                  base.addColorStop(0, '#eeeade'); base.addColorStop(0.36, '#d8d5c8');
+                  base.addColorStop(0.76, '#bcbfb6'); base.addColorStop(1, '#8e9b94');
+                }
+                context.fillStyle = base; context.fill();
+                context.strokeStyle = detailed ? (id === 'base' ? 'rgba(100,117,109,0.76)' : (id.indexOf('cerebral-') === 0 ? 'rgba(126,139,128,0.22)' : 'rgba(126,139,128,0.38)')) : '#7c3aed';
+                context.lineWidth = detailed ? (id === 'base' ? 0.50 : 0.30) : 0.55; context.stroke();
+              }
+              paint(geometry.body, 'base');
+              context.save();
+              try {
+                traceFrogNeuralRegion(context, geometry.body, width, height); context.clip();
+                geometry.regions.forEach(function (part) { paint(part.region, part.id); });
+                if (detailed && typeof options.finish === 'function') {
+                  context.save();
+                  try {
+                    traceFrogNeuralRegion(context, geometry.body, width, height);
+                    options.finish(geometry.center.x * width, geometry.center.y * height,
+                      geometry.extent.x * width, geometry.extent.y * height, 'capsule', 'frog-brain');
+                  } finally { context.restore(); }
+                }
+              } finally { context.restore(); }
               return true;
             } finally { context.restore(); }
           }
@@ -6781,6 +8129,101 @@ var d = labToolData.dissection || {};
             } finally { context.restore(); }
           }
 
+          function perchGastricGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var caecal = perchCaecalGeometry(width, height);
+            if (!caecal || !caecal.inlet || !caecal.inlet.start) return null;
+            var root = { x: caecal.inlet.start.x, y: caecal.inlet.start.y };
+            var tubeWidth = width * 0.009;
+            var halfY = Math.max(0.0045, Math.min(0.0105, (tubeWidth + Math.min(0.65, tubeWidth * 0.12)) * 0.60 / height));
+            var top = root.y - halfY, bottom = root.y + halfY;
+            // A broad distensible sac retains a blunt caudal fullness beside its short
+            // pyloric branch. The outline does not imply a mammalian curled return limb.
+            var region = { start: { x: 0.432, y: 0.478 }, curves: [
+              [{x:0.451,y:0.474},{x:0.472,y:0.477},{x:0.483,y:0.486}],
+              [{x:0.491,y:0.490},{x:0.492,y:0.499},{x:0.496,y:0.506}],
+              [{x:root.x-0.004,y:top},{x:root.x+0.004,y:top},{x:root.x+0.006,y:top+0.001}],
+              [{x:root.x+0.010,y:root.y},{x:root.x+0.006,y:bottom},{x:root.x,y:bottom}],
+              [{x:root.x-0.005,y:bottom+0.001},{x:0.496,y:0.521},{x:0.493,y:0.522}],
+              [{x:0.494,y:0.528},{x:0.488,y:0.533},{x:0.481,y:0.534}],
+              [{x:0.470,y:0.537},{x:0.459,y:0.530},{x:0.457,y:0.522}],
+              [{x:0.453,y:0.515},{x:0.454,y:0.507},{x:0.449,y:0.501}],
+              [{x:0.446,y:0.492},{x:0.440,y:0.483},{x:0.432,y:0.478}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            return { target: { x: 0.472, y: 0.501 }, region: region, bounds: bounds,
+              center: { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              pyloricRoot: root, pyloricHalfY: halfY, inletWidth: tubeWidth,
+              surfaceCreases: [
+                { start: {x:0.455,y:0.495}, curves: [[{x:0.456,y:0.500},{x:0.458,y:0.503},{x:0.460,y:0.505}]] },
+                { start: {x:0.477,y:0.523}, curves: [[{x:0.481,y:0.525},{x:0.484,y:0.524},{x:0.486,y:0.522}]] }
+              ] };
+          }
+          function tracePerchGastricRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+          function drawPerchGastricSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = perchGastricGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              tracePerchGastricRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(rx, ry); } finally { context.restore(); }
+              }
+              tracePerchGastricRegion(context, geometry.region, width, height);
+              var base = '#cba98d';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e2c2ab'); base.addColorStop(0.35, '#c59d84');
+                base.addColorStop(0.75, '#a77765'); base.addColorStop(1, '#765047');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#79564d'; context.lineWidth = 0.45; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePerchGastricRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round';
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePerchGastricRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(116,77,66,0.11)'; context.lineWidth = 0.32; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.22, lightY * 0.22);
+                      tracePerchGastricRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,229,210,0.12)'; context.lineWidth = 0.20; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    tracePerchGastricRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'serosa', 'perch-stomach');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
           function perchCaecalGeometry(W, H) {
             if (typeof W !== 'number' || typeof H !== 'number' || !Number.isFinite(W) || !Number.isFinite(H) || W <= 0 || H <= 0) return null;
             // Three gross blind pouches share the proximal intestinal course. All path
@@ -7016,10 +8459,14 @@ var d = labToolData.dissection || {};
               if (org.id === 'pharynx') return earthwormCenterlinePoint(0.105);
               if (org.id === 'crop') return earthwormCenterlinePoint(0.315);
               if (org.id === 'gizzard') return earthwormCenterlinePoint(0.37);
-              if (org.id === 'nephridia' || org.id === 'seminal_v' || org.id === 'aortic_arches') {
+              if (org.id === 'nephridia' || org.id === 'seminal_v' || org.id === 'aortic_arches' || org.id === 'cerebral_g' || org.id === 'ventral_cord' || org.id === 'segmental_g') {
                 var wormTargetCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
                 var wormTargetWidth = wormTargetCanvas && Number(wormTargetCanvas._logicalW) || 500;
                 var wormTargetHeight = wormTargetCanvas && Number(wormTargetCanvas._logicalH) || 600;
+                if (org.id === 'cerebral_g' || org.id === 'ventral_cord' || org.id === 'segmental_g') {
+                  var wormNeuralGeometry = earthwormNeuralGeometry(wormTargetWidth, wormTargetHeight);
+                  return wormNeuralGeometry ? wormNeuralGeometry.targets[org.id] : null;
+                }
                 if (org.id === 'aortic_arches') {
                   var wormArchGeometry = earthwormAorticGeometry(wormTargetWidth, wormTargetHeight);
                   return wormArchGeometry ? wormArchGeometry.target : null;
@@ -7040,14 +8487,30 @@ var d = labToolData.dissection || {};
               if (org.id === 'heart_c') return { x: 0.535, y: 0.415 };
               if (org.id === 'gills_c') return { x: 0.557, y: 0.358 };
               if (org.id === 'gastric_mill') return { x: 0.380, y: 0.450 };
-              if (org.id === 'green_gland') return { x: 0.295, y: 0.412 };
-              if (org.id === 'hepato') return { x: 0.485, y: 0.484 };
+              if (org.id === 'green_gland') return crayfishAntennalGeometry().target;
+              if (org.id === 'hepato') {
+                var crayDigestiveCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var crayDigestiveWidth = crayDigestiveCanvas && Number(crayDigestiveCanvas._logicalW) || 500;
+                var crayDigestiveHeight = crayDigestiveCanvas && Number(crayDigestiveCanvas._logicalH) || 600;
+                var crayDigestiveGeometry = crayfishHepatopancreaticGeometry(crayDigestiveWidth, crayDigestiveHeight);
+                return crayDigestiveGeometry ? crayDigestiveGeometry.target : null;
+              }
               if (org.id === 'gonads_c') return { x: 0.575, y: 0.450 };
               return null;
             }
             if (spec.bodyShape === 'frog') {
-              if (org.id === 'pancreas') return { x: 0.528, y: 0.5405 };
-              if (org.id === 'spleen') return { x: 0.408, y: 0.565 };
+              if (org.id === 'kidneys') {
+                var frogTargetCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var frogTargetWidth = frogTargetCanvas && Number(frogTargetCanvas._logicalW) || 500;
+                var frogTargetHeight = frogTargetCanvas && Number(frogTargetCanvas._logicalH) || 600;
+                var frogTargetRenalGeometry = frogRenalGeometry(frogTargetWidth, frogTargetHeight);
+                return frogTargetRenalGeometry ? frogTargetRenalGeometry.target : null;
+              }
+              if (org.id === 'brain') return frogNeuralGeometry().target;
+              if (org.id === 'optic_lobe') return frogNeuralGeometry().opticTarget;
+              if (org.id === 'spinal_cord' || org.id === 'cranial_n' || org.id === 'brachial_n' || org.id === 'sciatic_n') return frogNeuralGeometry().nerveTargets[org.id];
+              if (org.id === 'pancreas') return frogPancreaticGeometry().target;
+              if (org.id === 'spleen') return frogSplenicGeometry().target;
               if (org.id === 'liver') return { x: 0.500, y: 0.468 };
               if (org.id === 'stomach') return frogGastricGeometry().target;
               // Sample the longest visible right-hand fat finger after the liver overlap.
@@ -7057,9 +8520,11 @@ var d = labToolData.dissection || {};
               return null;
             }
             if (spec.bodyShape === 'pig') {
+              if (org.id === 'thymus_p') return pigThymicGeometry().target;
               if (org.id === 'heart_p') return pigCardiacGeometry().target;
               if (org.id === 'lungs_p') return { x: 0.385, y: 0.425 };
-              if (org.id === 'pancreas_p') return { x: 0.610, y: 0.536 };
+              if (org.id === 'kidneys_p') return pigRenalGeometry().target;
+              if (org.id === 'pancreas_p') return pigPancreaticGeometry().target;
               if (org.id === 'sm_int_p') return { x: 0.559375, y: 0.540625 };
               if (org.id === 'liver_p') return { x: 0.526, y: 0.455 };
               if (org.id === 'stomach_p') return pigGastricGeometry().target;
@@ -7085,19 +8550,30 @@ var d = labToolData.dissection || {};
               if (org.id === 'swim_bladder') return { x: 0.515, y: 0.407 };
               if (org.id === 'gonads_f') return { x: 0.595, y: 0.471 };
               if (org.id === 'liver_f') return { x: 0.385, y: 0.476 };
-              if (org.id === 'stomach_f') return { x: 0.472, y: 0.501 };
+              if (org.id === 'stomach_f') return perchGastricGeometry().target;
               return null;
             }
             if (spec.bodyShape === 'heart') {
               if (org.id === 'mitral') return { x: 0.427, y: 0.441 };
-              if (org.id === 'aortic_v') return { x: 0.478, y: 0.355 };
-              if (org.id === 'pulm_v') return { x: 0.552, y: 0.365 };
+              if (org.id === 'aortic_v' || org.id === 'pulm_v') {
+                var semilunarCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var semilunarWidth = semilunarCanvas && Number(semilunarCanvas._logicalW) || 500;
+                var semilunarHeight = semilunarCanvas && Number(semilunarCanvas._logicalH) || 600;
+                var semilunarGeometry = sheepSemilunarGeometry(semilunarWidth, semilunarHeight);
+                if (!semilunarGeometry) return null;
+                // The cutaway is painted after the outer myocardial pulse transform is restored.
+                return semilunarGeometry.targets[org.id];
+              }
               return null;
             }
-            if (spec.bodyShape !== 'eye' || ['ciliary_body', 'tapetum', 'lens', 'choroid'].indexOf(org.id) < 0) return null;
+            if (spec.bodyShape !== 'eye' || ['ciliary_body', 'tapetum', 'lens', 'choroid', 'retina'].indexOf(org.id) < 0) return null;
             var eyeCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
             var eyeWidth = (eyeCanvas && Number(eyeCanvas._logicalW)) || 500;
             var eyeHeight = (eyeCanvas && Number(eyeCanvas._logicalH)) || 600;
+            if (org.id === 'retina') {
+              var retinalTargetGeometry = sheepRetinalGeometry(eyeWidth, eyeHeight);
+              return retinalTargetGeometry ? retinalTargetGeometry.target : null;
+            }
             var radius = Math.min(eyeWidth * 0.285, eyeHeight * 0.36);
             var globeX = eyeWidth * 0.515, globeY = eyeHeight * 0.45;
             var globeRX = radius, globeRY = radius * 0.83;
@@ -7158,6 +8634,8 @@ var d = labToolData.dissection || {};
           function structureOpticalDepth(organ) {
             if (!organ) return 'surface';
             if (viewOrganVisibility(organ) === 'occluded') return 'deep';
+            // Segmental ganglia are internal neural tissue, despite their segmental name.
+            if (organ.id === 'segmental_g') return 'deep';
             var layerId = String(activeLayer || '').toLowerCase();
             var organText = String((organ.id || '') + ' ' + (organ.name || '')).toLowerCase();
             if (/skin|surface|external|cornea|iris|scale|segment|setae|tympan|membrane|follicle/.test(layerId + ' ' + organText)) return 'surface';
@@ -9054,6 +10532,24 @@ var d = labToolData.dissection || {};
             upd('_procedureDemo', demo);
             setProcedureFeedback('Safe-technique demonstration playing. Watch the moving marker follow the generalized teaching corridor.');
           }
+          function setDissectionLiveText(node, message) {
+            if (!node) return false;
+            var text = String(message == null ? '' : message), first = node.firstChild;
+            // React owns the selection announcement beside this message. Preserve
+            // its nodes when pointer feedback changes the existing text leaf.
+            if (first && first.nodeType === 3) {
+              if (first.nodeValue === text) return false;
+              first.nodeValue = text; return true;
+            }
+            if (!first) {
+              if (node.textContent === text) return false;
+              node.textContent = text; return true;
+            }
+            var owner = node.ownerDocument;
+            if (!owner || !owner.createTextNode || !node.insertBefore) return false;
+            node.insertBefore(owner.createTextNode(text), first); return true;
+          }
+
           function setProcedureFeedback(message, tone) {
             upd('procedureFeedback', { message: message, tone: tone || 'success', at: Date.now() });
             if (typeof announceToSR === 'function') announceToSR(message);
@@ -9627,7 +11123,7 @@ var d = labToolData.dissection || {};
             var liveStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
             if (liveStatus) {
               liveStatus.setAttribute('data-tone', 'working');
-              liveStatus.textContent = (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ' engaged. Keep dragging through the teaching corridor, then release to check the stroke.';
+              setDissectionLiveText(liveStatus, (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ' engaged. Keep dragging through the teaching corridor, then release to check the stroke.');
             }
             if (canvas.setPointerCapture && e.pointerId != null) canvas.setPointerCapture(e.pointerId); e.preventDefault();
           }
@@ -9653,9 +11149,9 @@ var d = labToolData.dissection || {};
               var resistanceStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
               if (resistanceStatus) {
                 resistanceStatus.setAttribute('data-tone', resistanceLevel === 'high' ? 'caution' : 'working');
-                resistanceStatus.textContent = ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors' ? 'Scissors' : 'Scalpel') + ': '
+                setDissectionLiveText(resistanceStatus, ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors' ? 'Scissors' : 'Scalpel') + ': '
                   + (resistanceLevel === 'low' ? 'on the teaching path' : (resistanceLevel === 'moderate' ? 'near the corridor edge' : 'drifting outside the safe corridor'))
-                  + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.';
+                  + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.');
               }
             }
             var strokeSafety = cuttingTrajectorySafety(point, canvas._toolVector, canvas);
@@ -9667,7 +11163,7 @@ var d = labToolData.dissection || {};
                 var strokeSafetyStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
                 if (strokeSafetyStatus) {
                   strokeSafetyStatus.setAttribute('data-tone', 'caution');
-                  strokeSafetyStatus.textContent = (strokeSafety.critical ? 'Stop trajectory: protect ' : 'Landmark ahead: ') + strokeSafety.organ.name + '. Redirect before continuing.';
+                  setDissectionLiveText(strokeSafetyStatus, (strokeSafety.critical ? 'Stop trajectory: protect ' : 'Landmark ahead: ') + strokeSafety.organ.name + '. Redirect before continuing.');
                 }
               }
             }
@@ -9742,7 +11238,7 @@ var d = labToolData.dissection || {};
             var message = finalMessage || (assessment.key === 'position' ? 'Forceps are outside the opened edge. Release, then grasp the highlighted corridor.' : (assessment.key === 'grasp' ? 'Forceps engaged. Drag away from the opening to lift the tissue, then release.' : (assessment.label + ': lift ' + assessment.liftPercent + ' percent; projected tension ' + assessment.projectedTension + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'controlled' ? 'Release to retract.' : 'Ease back into the solid safe envelope before releasing.'))));
             var stateChanged = canvas._forcepsDragStatusKey !== assessment.key;
             // Keep the canvas metrics visually live, but update the polite live region only at meaningful state changes so assistive technology is not flooded during pointer movement.
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'forceps', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: '', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._forcepsDragStatusKey = assessment.key; }
           }
@@ -9834,7 +11330,7 @@ var d = labToolData.dissection || {};
                 ? 'Pin engaged. Drag inward along the shaft direction, then release when the anchor reads stable.'
                 : (assessment.label + ': insertion ' + assessment.insertionPercent + ' percent; angle ' + assessment.angle + ' degrees; spacing ' + Math.round(assessment.spacing * 100) + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'stable' ? 'Release to place the anchor.' : 'Adjust the drag before releasing.'))));
             var stateChanged = canvas._pinDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'pin', valid: assessment.key === 'stable', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: '', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._pinDragStatusKey = assessment.key; }
           }
@@ -9944,7 +11440,7 @@ var d = labToolData.dissection || {};
                 ? 'Probe engaged on ' + targetName + '. Trace a short path while keeping the tip on the structure.'
                 : (assessment.label + ': pressure ' + assessment.pressure + ' percent; resistance ' + assessment.resistance + '; alignment ' + assessment.alignment + ' percent; contact ' + assessment.contactPercent + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'controlled' ? 'Release to record the trace.' : 'Adjust the path before releasing.')));
             var stateChanged = canvas._probeDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', assessment.key === 'controlled' ? 'working' : 'caution'); status.textContent = finalMessage || message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', assessment.key === 'controlled' ? 'working' : 'caution'); setDissectionLiveText(status, finalMessage || message); }
             canvas._toolIntentState = { tool: 'probe', valid: assessment.key === 'controlled', label: assessment.label, tone: assessment.key === 'controlled' ? 'working' : 'caution', target: assessment.targetPoint || null, targetLabel: targetName, at: Date.now() };
             if (stateChanged) { procedureTactile(assessment.key === 'controlled' ? 'tick' : 'warning'); canvas._probeDragStatusKey = assessment.key; }
           }
@@ -10040,7 +11536,7 @@ var d = labToolData.dissection || {};
             var caution = ['position', 'drift', 'saturated', 'broad', 'pooling', 'flow', 'spread'].indexOf(assessment.key) >= 0;
             var message = finalMessage || (assessment.key === 'position' ? 'Dropper is outside the specimen. Move to the highlighted surface.' : (assessment.key === 'grasp' ? 'Dropper engaged. Drag a short path with the specimen flow, then release.' : (assessment.label + ': dose ' + assessment.dose + '; contact ' + assessment.contactPercent + '%; flow ' + assessment.flowAlignment + '%; moisture ' + assessment.moisture + '%; pooling ' + assessment.poolingRisk + '/100; control ' + assessment.control + '%. ' + assessment.detail + '.')));
             var stateChanged = canvas._dropperDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'dropper', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: 'Specimen surface', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._dropperDragStatusKey = assessment.key; }
           }
@@ -10124,7 +11620,7 @@ var d = labToolData.dissection || {};
             var caution = ['position', 'drift', 'center', 'light', 'overreach', 'rough'].indexOf(assessment.key) >= 0;
             var message = finalMessage || (assessment.key === 'position' ? 'Wick is away from the pool edge. Follow the arrow to the saline footprint.' : (assessment.key === 'grasp' ? 'Wick engaged. Drag outward across the pool edge, then release when recovery reads controlled.' : (assessment.label + ': edge alignment ' + assessment.edgeAlignment + '%; recovery ' + assessment.recoveryPercent + '%; contact ' + assessment.contactPercent + '%; control ' + assessment.control + '%. ' + assessment.detail + '.')));
             var stateChanged = canvas._wickDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'wick', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: canvas._wickDrag && canvas._wickDrag.poolPoint ? canvas._wickDrag.poolPoint : null, targetLabel: 'Pool edge', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._wickDragStatusKey = assessment.key; }
           }
@@ -10872,9 +12368,13 @@ var d = labToolData.dissection || {};
                   width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
                   height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top };
               }
-              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
+              function rememberCanvasGuidanceBox(x, y, width, height, priority, keepClear) {
                 var box = canvasScreenBox(x, y, width, height);
-                if (box) { box.priority = priority || 1; canvas._guidanceBoxes.push(box); }
+                if (box) {
+                  box.priority = priority || 1;
+                  if (keepClear) box.keepClear = true;
+                  canvas._guidanceBoxes.push(box);
+                }
               }
               function rememberCanvasHudBox(id, x, y, width, height) {
                 var box = { id: id, x: x, y: y, width: width, height: height, priority: 9 };
@@ -11620,7 +13120,7 @@ var d = labToolData.dissection || {};
                   } else if (lobular) {
                     // Low rounded groups share soft grooves; they are lobules in the material
                     // finish, not individual fat cells or new anatomical organ boundaries.
-                    var diffuseGland = /cray-digestive|pancreas|frog-fat-body/.test(key);
+                    var diffuseGland = /cray-digestive|pancreas|frog-fat-body|^pig-thymus$/.test(key);
                     var groups = realistic ? 12 : 8;
                     for (var group = 0; group < groups; group++) {
                       var groupX = tissueRandom() * 2.0 - 1.0, groupY = tissueRandom() * 2.0 - 1.0;
@@ -12310,31 +13810,11 @@ var d = labToolData.dissection || {};
                   ctx.fillStyle = frogCavity; ctx.fill(); ctx.strokeStyle = 'rgba(236,197,161,0.48)'; ctx.lineWidth = 1.1; ctx.stroke();
                   finishCurrentCavityPath(cx, cy + H * 0.015, W * 0.132, H * 0.215);
                   registerAnatomyOpening(function (path) { path.ellipse(cx, cy + H * 0.015, W * 0.132, H * 0.215, 0, 0, Math.PI * 2); });
-                  // Dorsal kidneys remain partially visible behind the gut.
-                  [-1, 1].forEach(function (side) {
-                    var frogKidneyX = cx + side * W * 0.052, frogKidneyY = cy + H * 0.115;
-                    var frogKidneyRX = W * 0.025, frogKidneyRY = H * 0.088;
-                    if (frogAccessible || highContrastEnabled) {
-                      ctx.beginPath(); ctx.ellipse(frogKidneyX, frogKidneyY, frogKidneyRX, frogKidneyRY, side * 0.08, 0, Math.PI * 2);
-                    } else {
-                      // Amphibian kidneys are elongated dorsal organs. Keep the medial margin
-                      // gently flattened rather than borrowing the deep mammalian bean notch.
-                      ctx.save(); ctx.translate(frogKidneyX, frogKidneyY); ctx.rotate(side * 0.08); ctx.scale(side, 1);
-                      ctx.beginPath(); ctx.moveTo(-frogKidneyRX * 0.08, -frogKidneyRY);
-                      ctx.bezierCurveTo(-frogKidneyRX * 0.62, -frogKidneyRY * 1.02, -frogKidneyRX * 0.78, -frogKidneyRY * 0.55, -frogKidneyRX * 0.75, -frogKidneyRY * 0.12);
-                      ctx.bezierCurveTo(-frogKidneyRX * 0.68, frogKidneyRY * 0.32, -frogKidneyRX * 0.79, frogKidneyRY * 0.75, -frogKidneyRX * 0.34, frogKidneyRY * 0.97);
-                      ctx.bezierCurveTo(frogKidneyRX * 0.15, frogKidneyRY * 1.06, frogKidneyRX * 0.72, frogKidneyRY * 0.73, frogKidneyRX * 0.87, frogKidneyRY * 0.25);
-                      ctx.bezierCurveTo(frogKidneyRX * 1.02, -frogKidneyRY * 0.24, frogKidneyRX * 0.81, -frogKidneyRY * 0.78, frogKidneyRX * 0.35, -frogKidneyRY * 0.96);
-                      ctx.bezierCurveTo(frogKidneyRX * 0.22, -frogKidneyRY, frogKidneyRX * 0.06, -frogKidneyRY, -frogKidneyRX * 0.08, -frogKidneyRY);
-                      ctx.closePath(); ctx.restore();
-                    }
-                    paintCurrentOrganContact(frogKidneyRX, frogKidneyRY);
-                    var frogKidneyVolume = ctx.createLinearGradient(frogKidneyX - frogKidneyRX, frogKidneyY - frogKidneyRY * 0.35,
-                      frogKidneyX + frogKidneyRX, frogKidneyY + frogKidneyRY * 0.20);
-                    frogKidneyVolume.addColorStop(0, '#8b6150'); frogKidneyVolume.addColorStop(0.35, '#684234'); frogKidneyVolume.addColorStop(1, '#34272a');
-                    ctx.fillStyle = frogAccessible || highContrastEnabled ? '#5b3429' : frogKidneyVolume;
-                    ctx.fill(); ctx.strokeStyle = '#3f241d'; ctx.lineWidth = 0.65; ctx.stroke();
-                    finishCurrentTissuePath(frogKidneyX, frogKidneyY, frogKidneyRX, frogKidneyRY, 'capsule', 'frog-kidney-' + side);
+                  // Dorsal renal surfaces retain their exact footprint behind the gut.
+                  drawFrogRenalComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    accessible: frogAccessible, highContrast: highContrastEnabled, lightDirection: lightDirection,
+                    contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
                   });
                   // Paired thin-walled sacs retain their authored centers and radius budget.
                   [-1, 1].forEach(function (side) {
@@ -12504,30 +13984,15 @@ var d = labToolData.dissection || {};
                     lightDirection: lightDirection, strokeTube: strokeAnatomicalTube,
                     contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
                   });
-                  function traceFrogPancreas() {
-                    // A flattened sliver follows the existing stomach/duodenal interval.
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.012, cy + H * 0.100);
-                    ctx.quadraticCurveTo(cx + W * 0.028, cy + H * 0.087, cx + W * 0.067, cy + H * 0.078);
-                    ctx.quadraticCurveTo(cx + W * 0.071, cy + H * 0.083, cx + W * 0.061, cy + H * 0.084);
-                    ctx.bezierCurveTo(cx + W * 0.047, cy + H * 0.090, cx + W * 0.011, cy + H * 0.104, cx - W * 0.012, cy + H * 0.100);
-                    ctx.closePath();
-                  }
-                  if (sceneDetail && !frogAccessible && !highContrastEnabled) {
-                    traceFrogPancreas(); paintCurrentOrganContact(W * 0.043, H * 0.004);
-                    var frogPancreasVolume = ctx.createLinearGradient(cx + W * 0.025, cy + H * 0.085, cx + W * 0.035, cy + H * 0.104);
-                    frogPancreasVolume.addColorStop(0, '#e2d4ad'); frogPancreasVolume.addColorStop(0.48, '#c4b28b'); frogPancreasVolume.addColorStop(1, '#8e7857');
-                    ctx.fillStyle = frogPancreasVolume; ctx.fill(); ctx.strokeStyle = 'rgba(115,92,62,0.70)'; ctx.lineWidth = 0.35; ctx.stroke();
-                    finishCurrentTissuePath(cx + W * 0.027, cy + H * 0.091, W * 0.043, H * 0.012, 'lobular', 'frog-pancreas');
-                  } else {
-                    ctx.beginPath();ctx.moveTo(cx-W*0.012,cy+H*0.10);ctx.quadraticCurveTo(cx+W*0.028,cy+H*0.092,cx+W*0.067,cy+H*0.078);ctx.strokeStyle='#e7b54d';ctx.lineWidth=1.4;ctx.stroke();
-                  }
-                  var frogSpleenX = cx - W * 0.092, frogSpleenY = cy + H * 0.115;
-                  ctx.beginPath(); ctx.ellipse(frogSpleenX, frogSpleenY, W * 0.012, H * 0.009, -0.2, 0, Math.PI * 2);
-                  var frogSpleenVolume = ctx.createRadialGradient(frogSpleenX - W * 0.004, frogSpleenY - H * 0.003, 0, frogSpleenX, frogSpleenY, W * 0.015);
-                  frogSpleenVolume.addColorStop(0, '#aa6461'); frogSpleenVolume.addColorStop(0.48, '#74363e'); frogSpleenVolume.addColorStop(1, '#3d222c');
-                  paintCurrentOrganContact(W * 0.012, H * 0.009);
-                  ctx.fillStyle = frogRealistic && sceneDetail && !highContrastEnabled ? frogSpleenVolume : '#7f1d1d'; ctx.fill();
-                  finishCurrentTissuePath(frogSpleenX, frogSpleenY, W * 0.013, H * 0.010, 'capsule', 'frog-spleen');
+                  drawFrogPancreaticSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  drawFrogSplenicSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+
                   // Translucent mesentery sits beneath the coiled gut; its folds do not cover the bowel.
                   if (!frogAccessible && sceneDetail) {
                     ctx.beginPath(); ctx.moveTo(cx + W * 0.045, cy + H * 0.10);
@@ -12579,8 +14044,12 @@ var d = labToolData.dissection || {};
 
                 if (activeLayer === 'nervous') {
                   ctx.save(); ctx.globalAlpha = frogAccessible ? 0.92 : 0.76;
-                  ctx.beginPath();ctx.ellipse(cx,cy-H*0.285,W*0.045,H*0.026,0,0,Math.PI*2);ctx.fillStyle='rgba(196,181,253,0.76)';ctx.fill();ctx.strokeStyle='#7c3aed';ctx.lineWidth=0.9;ctx.stroke();
-                  [-1,1].forEach(function(side){ctx.beginPath();ctx.ellipse(cx+side*W*0.025,cy-H*0.292,W*0.019,H*0.014,0,0,Math.PI*2);ctx.fillStyle='#a78bfa';ctx.fill();ctx.beginPath();ctx.moveTo(cx+side*W*0.027,cy-H*0.29);ctx.lineTo(cx+side*W*0.088,cy-H*0.275);ctx.strokeStyle='#c084fc';ctx.lineWidth=1;ctx.stroke();});
+                  drawFrogNeuralComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  // Existing projected cranial routes and continuous spinal cord remain unchanged.
+                  [-1,1].forEach(function(side){ctx.beginPath();ctx.moveTo(cx+side*W*0.027,cy-H*0.29);ctx.lineTo(cx+side*W*0.088,cy-H*0.275);ctx.strokeStyle='#c084fc';ctx.lineWidth=1;ctx.stroke();});
                   ctx.beginPath();ctx.moveTo(cx,cy-H*0.255);ctx.lineTo(cx,cy+H*0.19);ctx.strokeStyle='#a78bfa';ctx.lineWidth=2.2;ctx.stroke();
                   for(var frogNerve=0;frogNerve<9;frogNerve++){var nerveY=cy-H*0.19+frogNerve*H*0.046;ctx.beginPath();ctx.moveTo(cx,nerveY);ctx.lineTo(cx-W*0.085,nerveY+H*0.012);ctx.moveTo(cx,nerveY);ctx.lineTo(cx+W*0.085,nerveY+H*0.012);ctx.strokeStyle='rgba(192,132,252,0.58)';ctx.lineWidth=0.65;ctx.stroke();}
                   [-1,1].forEach(function(side){ctx.beginPath();ctx.moveTo(cx+side*W*0.035,cy+H*0.14);ctx.bezierCurveTo(cx+side*W*0.13,cy+H*0.18,cx+side*W*0.23,cy+H*0.24,cx+side*W*0.29,cy+H*0.34);ctx.strokeStyle='#c084fc';ctx.lineWidth=1.8;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+side*W*0.02,cy-H*0.12);ctx.quadraticCurveTo(cx+side*W*0.10,cy-H*0.09,cx+side*W*0.19,cy-H*0.025);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.1;ctx.stroke();});
@@ -13015,20 +14484,19 @@ var d = labToolData.dissection || {};
                 }
 
                 if (activeLayer === 'nervous') {
-                  ctx.globalAlpha = wormAccessible ? 0.88 : 0.72;
-                  // Ventral cord sits slightly off the digestive midline in this teaching view.
-                  traceEarthwormLine(0.28, 0.06, 0.97); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = wormAccessible ? 2 : 1.35; ctx.stroke();
-                  var cerebralFrame = earthwormFrame(0.065);
-                  [-1, 1].forEach(function (ganglionSide) {
-                    ctx.beginPath(); ctx.ellipse(cerebralFrame.point.x + cerebralFrame.nx * ganglionSide * W * 0.006, cerebralFrame.point.y + cerebralFrame.ny * ganglionSide * W * 0.006, W * 0.0065, H * 0.006, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fde047'; ctx.fill();
-                  });
-                  for (var ganglionIndex = 4; ganglionIndex < wormSegmentCount - 1; ganglionIndex += 3) {
-                    var ganglionFrame = earthwormFrame(ganglionIndex / wormSegmentCount);
-                    ctx.beginPath(); ctx.arc(ganglionFrame.point.x + ganglionFrame.nx * ganglionFrame.width * 0.28, ganglionFrame.point.y + ganglionFrame.ny * ganglionFrame.width * 0.28, wormAccessible ? 2.5 : 1.8, 0, Math.PI * 2);
-                    ctx.fillStyle = '#f59e0b'; ctx.fill();
-                  }
-                  ctx.globalAlpha = 1;
+                  ctx.save();
+                  try {
+                    traceEarthwormBody(); ctx.clip();
+                    ctx.globalAlpha = wormAccessible ? 0.88 : 0.72;
+                    // Ventral anatomy retains its slight teaching displacement from the digestive midline.
+                    drawEarthwormNeuralComplex(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !wormAccessible && !highContrastEnabled,
+                      accessible: wormAccessible || highContrastEnabled, highContrast: highContrastEnabled,
+                      lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                      lightIntensity: d.lightIntensity, condition: specimenCondition,
+                      contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
                 }
 
 
@@ -13227,12 +14695,11 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy - H * 0.068); ctx.bezierCurveTo(cx - W * 0.01, cy - H * 0.078, cx + W * 0.105, cy - H * 0.065, cx + W * 0.18, cy - H * 0.045);
                   ctx.strokeStyle = 'rgba(59,130,246,0.62)'; ctx.lineWidth = 1.2; ctx.stroke();
 
-                  // Large fetal thymus extends from the neck into the anterior mediastinum.
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.155, cy - H * 0.065);
-                  ctx.bezierCurveTo(cx - W * 0.135, cy - H * 0.10, cx - W * 0.10, cy - H * 0.095, cx - W * 0.088, cy - H * 0.055);
-                  ctx.bezierCurveTo(cx - W * 0.078, cy - H * 0.018, cx - W * 0.11, cy + H * 0.005, cx - W * 0.145, cy - H * 0.012);
-                  ctx.closePath(); ctx.fillStyle = '#d9a0a7'; ctx.fill(); ctx.strokeStyle = '#9f5e68'; ctx.lineWidth = 0.55; ctx.stroke();
-                  finishCurrentTissuePath(cx - W * 0.12, cy - H * 0.048, W * 0.042, H * 0.052, 'lobular', 'pig-thymus');
+                  // A connected thymic portion retains the established partial-exposure projection.
+                  drawPigThymicSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
                   // These three overlapping visible components retain the current teaching
                   // projection; their number is not a count of the pig's anatomical lung lobes.
@@ -13339,39 +14806,17 @@ var d = labToolData.dissection || {};
                   });
 
                   // Bean-shaped kidneys stay dorsal and posterior, one partly occluded by bowel.
-                  [-1, 1].forEach(function (kidneySide) {
-                    var kidneyX = cx + W * (0.115 + kidneySide * 0.028), kidneyY = cy - H * (0.06 - kidneySide * 0.008);
-                    var kidneyRX = W * 0.028, kidneyRY = H * 0.045;
-                    var hilumDirection = -kidneySide;
-                    ctx.save(); ctx.globalAlpha = kidneySide < 0 ? 0.52 : 0.84;
-                    if (pigAccessible || highContrastEnabled) {
-                      ctx.beginPath(); ctx.ellipse(kidneyX, kidneyY, kidneyRX, kidneyRY, 0.12, 0, Math.PI * 2);
-                    } else {
-                      // The two side-lying kidneys keep their current positions; each medial
-                      // concavity faces the space between them, not the outer body wall.
-                      ctx.save(); ctx.translate(kidneyX, kidneyY); ctx.rotate(0.12); ctx.scale(hilumDirection, 1);
-                      ctx.beginPath(); ctx.moveTo(-kidneyRX * 0.10, -kidneyRY);
-                      ctx.bezierCurveTo(kidneyRX * 0.60, -kidneyRY * 1.02, kidneyRX, -kidneyRY * 0.70, kidneyRX * 0.82, -kidneyRY * 0.36);
-                      ctx.bezierCurveTo(kidneyRX * 0.68, -kidneyRY * 0.19, kidneyRX * 0.30, -kidneyRY * 0.24, kidneyRX * 0.27, 0);
-                      ctx.bezierCurveTo(kidneyRX * 0.29, kidneyRY * 0.25, kidneyRX * 0.70, kidneyRY * 0.17, kidneyRX * 0.84, kidneyRY * 0.43);
-                      ctx.bezierCurveTo(kidneyRX * 0.97, kidneyRY * 0.78, kidneyRX * 0.48, kidneyRY * 1.04, -kidneyRX * 0.12, kidneyRY);
-                      ctx.bezierCurveTo(-kidneyRX * 0.80, kidneyRY * 0.98, -kidneyRX * 1.04, kidneyRY * 0.50, -kidneyRX, 0);
-                      ctx.bezierCurveTo(-kidneyRX, -kidneyRY * 0.65, -kidneyRX * 0.70, -kidneyRY * 1.04, -kidneyRX * 0.10, -kidneyRY);
-                      ctx.closePath(); ctx.restore();
-                    }
-                    paintCurrentOrganContact(kidneyRX, kidneyRY);
-                    var kidneyCapsuleVolume = ctx.createLinearGradient(kidneyX - kidneyRX * 0.8, kidneyY - kidneyRY * 0.7,
-                      kidneyX + kidneyRX, kidneyY + kidneyRY * 0.6);
-                    kidneyCapsuleVolume.addColorStop(0, '#a7735e'); kidneyCapsuleVolume.addColorStop(0.42, '#784a3e'); kidneyCapsuleVolume.addColorStop(1, '#442c30');
-                    ctx.fillStyle = pigAccessible || highContrastEnabled ? '#78463a' : kidneyCapsuleVolume;
-                    ctx.fill(); ctx.strokeStyle = '#4c2c26'; ctx.lineWidth = 0.7; ctx.stroke();
-                    finishCurrentTissuePath(kidneyX, kidneyY, kidneyRX, kidneyRY, 'capsule', 'pig-kidney-' + kidneySide);
-                    if (pigAccessible || highContrastEnabled) {
-                      ctx.beginPath(); ctx.arc(kidneyX - W * 0.008, kidneyY, W * 0.008, -1.2, 1.2);
-                      ctx.strokeStyle = 'rgba(248,190,150,0.42)'; ctx.lineWidth = 0.55; ctx.stroke();
-                    }
-                    ctx.restore();
-                  });
+                  ctx.save();
+                  try {
+                    // The cranial poles pass under the established abdominal wall opening.
+                    tracePigCoelom(ctx); ctx.clip();
+                    // Preserve the original absolute near/far kidney opacity.
+                    ctx.globalAlpha = 1;
+                    drawPigRenalComplex(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                      lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
 
                   // Monogastric stomach, spleen, and pancreas share a visible spatial relationship.
                   var pigStomachX = cx + W * 0.062; var pigStomachY = cy + H * 0.038;
@@ -13384,22 +14829,10 @@ var d = labToolData.dissection || {};
                     width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
                     lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
                   });
-                  function tracePigPancreas() {
-                    ctx.beginPath(); ctx.moveTo(pigStomachX - W * 0.008, pigStomachY + H * 0.048);
-                    ctx.bezierCurveTo(pigStomachX + W * 0.035, pigStomachY + H * 0.056, pigStomachX + W * 0.065, pigStomachY + H * 0.031, pigStomachX + W * 0.090, pigStomachY + H * 0.050);
-                    ctx.quadraticCurveTo(pigStomachX + W * 0.094, pigStomachY + H * 0.053, pigStomachX + W * 0.083, pigStomachY + H * 0.055);
-                    ctx.bezierCurveTo(pigStomachX + W * 0.065, pigStomachY + H * 0.038, pigStomachX + W * 0.035, pigStomachY + H * 0.064, pigStomachX - W * 0.008, pigStomachY + H * 0.048);
-                    ctx.closePath();
-                  }
-                  if (sceneDetail && !pigAccessible && !highContrastEnabled) {
-                    tracePigPancreas(); paintCurrentOrganContact(W * 0.052, H * 0.005);
-                    var pigPancreasVolume = ctx.createLinearGradient(cx + W * 0.10, cy + H * 0.075, cx + W * 0.11, cy + H * 0.100);
-                    pigPancreasVolume.addColorStop(0, '#e4d5b6'); pigPancreasVolume.addColorStop(0.48, '#c3ad88'); pigPancreasVolume.addColorStop(1, '#8b7357');
-                    ctx.fillStyle = pigPancreasVolume; ctx.fill(); ctx.strokeStyle = 'rgba(115,92,62,0.70)'; ctx.lineWidth = 0.35; ctx.stroke();
-                    finishCurrentTissuePath(cx + W * 0.103, cy + H * 0.086, W * 0.055, H * 0.013, 'lobular', 'pig-pancreas');
-                  } else {
-                    ctx.beginPath();ctx.moveTo(pigStomachX-W*0.008,pigStomachY+H*0.048);ctx.bezierCurveTo(pigStomachX+W*0.035,pigStomachY+H*0.06,pigStomachX+W*0.065,pigStomachY+H*0.035,pigStomachX+W*0.09,pigStomachY+H*0.05);ctx.strokeStyle='#eabf6a';ctx.lineWidth=2.1;ctx.stroke();
-                  }
+                  drawPigPancreaticSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
                   // Jejunal loops sit ventrally while the porcine spiral colon forms a watch-spring coil.
                   ctx.beginPath(); ctx.moveTo(cx + W * 0.067, cy + H * 0.064);
@@ -14254,18 +15687,11 @@ var d = labToolData.dissection || {};
                     finishCurrentTissuePath(perchLobeX, perchLobeY, W * liverLobe[2], H * liverLobe[3], 'capsule', 'perch-liver-' + liverLobe[0]);
                   });
 
-                  // J-shaped stomach passes posteriorly before turning into the pyloric region.
-                  ctx.beginPath();
-                  ctx.moveTo(cx - W * 0.070, cy + H * 0.027);
-                  ctx.bezierCurveTo(cx - W * 0.030, cy + H * 0.018, cx + W * 0.012, cy + H * 0.035, cx + W * 0.010, cy + H * 0.058);
-                  ctx.bezierCurveTo(cx + W * 0.008, cy + H * 0.080, cx - W * 0.022, cy + H * 0.086, cx - W * 0.038, cy + H * 0.070);
-                  ctx.bezierCurveTo(cx - W * 0.050, cy + H * 0.058, cx - W * 0.050, cy + H * 0.040, cx - W * 0.070, cy + H * 0.027);
-                  ctx.closePath();
-                  var perchStomachGradient = ctx.createLinearGradient(cx - W * 0.05, cy + H * 0.02, cx, cy + H * 0.085);
-                  perchStomachGradient.addColorStop(0, fishAccessible ? '#fed7aa' : 'rgba(253,186,116,0.90)');
-                  perchStomachGradient.addColorStop(1, fishAccessible ? '#fb923c' : 'rgba(194,65,12,0.86)');
-                  ctx.fillStyle = perchStomachGradient; ctx.fill(); ctx.strokeStyle = 'rgba(255,237,213,0.58)'; ctx.lineWidth = 0.9; ctx.stroke();
-                  finishCurrentTissuePath(cx - W * 0.028, cy + H * 0.051, W * 0.045, H * 0.035, 'serosa', 'perch-stomach');
+                  // The broad gastric sac narrows into a short outlet at the existing caecal inlet.
+                  drawPerchGastricSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !fishAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
                   // The pyloric outlet joins the proximal intestine; three blind caeca open along it.
                   ctx.lineCap = 'round';
@@ -14684,36 +16110,27 @@ var d = labToolData.dissection || {};
                       crayStomachX - W * 0.009, cy - H * 0.023); ctx.closePath();
                     ctx.fillStyle = '#e6d6b5'; ctx.fill(); ctx.strokeStyle = '#80694b'; ctx.lineWidth = 0.5; ctx.stroke();
                   } finally { ctx.restore(); }
-                  [-1,1].forEach(function (side) {
-                    ctx.beginPath(); ctx.arc(cx - W * 0.205, cy + side * H * 0.038, W * 0.012, 0, Math.PI * 2); ctx.fillStyle = '#86efac'; ctx.fill();
-                  });
+                  // The paired antennal complexes sit within the existing anterior opening.
+                  ctx.save();
+                  try {
+                    traceCrayfishVisceralWindow(ctx); ctx.clip();
+                    drawCrayfishAntennalGlands(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !crayAccessible && !highContrastEnabled,
+                      lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
                   // Hepatopancreas lobes, dorsal heart, gonad, and feathery gills.
                   var craySoftDetail = sceneDetail && !crayAccessible && !highContrastEnabled;
-                  [-1,1].forEach(function (side) {
-                    var crayGlandX = cx - W * 0.015, crayGlandY = cy + side * H * 0.034;
-                    var crayGlandRX = W * 0.057, crayGlandRY = H * 0.036;
-                    if (!craySoftDetail) {
-                      traceVisceralLobe(crayGlandX, crayGlandY, crayGlandRX, crayGlandRY, side * 0.12);
-                    } else {
-                      // Soft broad boundary lobulation replaces the generic bean silhouette.
-                      // These are whole-organ folds, not magnified digestive tubules or cells.
-                      ctx.save();
-                      try {
-                        ctx.translate(crayGlandX, crayGlandY); ctx.rotate(side * 0.12); ctx.scale(crayGlandRX, crayGlandRY * side);
-                        ctx.beginPath(); ctx.moveTo(-0.94, -0.08);
-                        ctx.bezierCurveTo(-0.97, -0.42, -0.73, -0.69, -0.48, -0.70);
-                        ctx.bezierCurveTo(-0.30, -0.94, 0.05, -0.91, 0.23, -0.75);
-                        ctx.bezierCurveTo(0.50, -0.83, 0.78, -0.57, 0.75, -0.33);
-                        ctx.bezierCurveTo(1.00, -0.17, 0.96, 0.20, 0.76, 0.32);
-                        ctx.bezierCurveTo(0.78, 0.57, 0.45, 0.83, 0.22, 0.73);
-                        ctx.bezierCurveTo(0.00, 0.98, -0.35, 0.85, -0.47, 0.64);
-                        ctx.bezierCurveTo(-0.77, 0.68, -0.97, 0.34, -0.94, -0.08); ctx.closePath();
-                      } finally { ctx.restore(); }
-                    }
-                    paintCurrentOrganContact(crayGlandRX, crayGlandRY);
-                    ctx.fillStyle = crayAccessible ? '#d97706' : '#b38a4c'; ctx.fill(); ctx.strokeStyle = '#765332'; ctx.lineWidth = 0.7; ctx.stroke();
-                    finishCurrentTissuePath(crayGlandX, crayGlandY, crayGlandRX, crayGlandRY, 'lobular', 'cray-digestive-' + side);
-                  });
+                  ctx.save();
+                  try {
+                    traceCrayfishVisceralWindow(ctx); ctx.clip();
+                    drawCrayfishHepatopancreas(ctx, {
+                      width: W, height: H, detailed: craySoftDetail, accessible: crayAccessible, highContrast: highContrastEnabled,
+                      lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                      lightIntensity: d.lightIntensity, condition: specimenCondition,
+                      contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
                   var crayHeartX = cx + W * 0.035, crayHeartY = cy - H * 0.035;
                   var crayHeartRX = W * 0.027, crayHeartRY = H * 0.022;
                   if (!craySoftDetail) {
@@ -14901,9 +16318,12 @@ var d = labToolData.dissection || {};
                 ctx.restore();
 
                 // Retina is a delicate translucent lining over the choroid and tapetum.
-                traceSheepEyeGlobe(0.89,0.865);
-                ctx.fillStyle = eyeAccessible ? 'rgba(254,249,195,0.92)' : 'rgba(244,230,183,0.72)'; ctx.fill();
-                ctx.strokeStyle = 'rgba(253,230,138,0.65)'; ctx.lineWidth = eyeAccessible ? 1.5 : 0.85; ctx.stroke();
+                drawSheepRetinalMembrane(ctx, {
+                  width: W, height: H, detailed: sceneDetail && !eyeAccessible && !highContrastEnabled,
+                  accessible: eyeAccessible, highContrast: highContrastEnabled, lightDirection: lightDirection,
+                  moisture: liveTissueState && liveTissueState.moisture,
+                  lightIntensity: d.lightIntensity, condition: specimenCondition
+                });
 
                 // Vitreous gel fills the posterior globe with soft depth and condition-aware clarity.
                 var vitreousGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.28, eyeCy - eyeRy * 0.30, 2, eyeCx + eyeRx * 0.05, eyeCy, eyeRx * 0.86);
@@ -15559,15 +16979,13 @@ var d = labToolData.dissection || {};
                   }
                   ctx.restore();
 
-                  // Semilunar cusps occupy the ventricular outflow tracts.
-                  function drawSemilunarValve(x, y, color) {
-                    [-1,0,1].forEach(function (cusp) {
-                      ctx.beginPath(); ctx.arc(x + cusp * W * 0.009, y, W * 0.011, 0, Math.PI);
-                      ctx.strokeStyle = color; ctx.lineWidth = heartCutawayAccessible ? 1.15 : 0.75; ctx.stroke();
-                    });
-                  }
-                  drawSemilunarValve(cx - W * 0.022, cy - H * 0.095, '#fde68a');
-                  drawSemilunarValve(cx + W * 0.052, cy - H * 0.085, '#bfdbfe');
+                  // Thin semilunar pockets retain the existing spread-out teaching projection.
+                  drawSheepSemilunarValves(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !heartCutawayAccessible && !highContrastEnabled,
+                    accessible: heartCutawayAccessible, highContrast: highContrastEnabled,
+                    lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                    lightIntensity: d.lightIntensity, condition: specimenCondition
+                  });
 
                   // Compact labels remain inside the specimen instead of covering the tissue margins.
                   if (!d.quizMode) {
@@ -15981,9 +17399,10 @@ var d = labToolData.dissection || {};
                 var conduit = /vessel|arter|vena|vein|aorta|cord|nerve|intestin|ureter|duct|esophagus|trachea|spinal|chordae/.test(structureKey);
                 var chambered = /heart|stomach|bladder|crop|gizzard|atrium|ventricle|cloaca|lens|humor/.test(structureKey);
                 var layered = /skin|integument|cuticle|scale|carapace|membrane|muscle|myomere|retina|cornea|sclera|choroid|conjunctiva|diaphragm|septum|pericardium|valve/.test(structureKey);
-                var lobed = /liver|lung|kidney|gonad|gill|pancreas|thymus|fat bod|gland/.test(structureKey);
+                // These intact surfaces stay smooth rather than displaying gross lobes.
+                var lobed = !(org && (org.id === 'green_gland' || org.id === 'kidneys_p' || org.id === 'kidneys')) && /liver|lung|kidney|gonad|gill|pancreas|thymus|fat bod|gland/.test(structureKey);
                 var morphology = conduit ? 'conduit' : (chambered ? 'chambered' : (layered ? 'layered' : (lobed ? 'lobed' : 'compact')));
-                var namedMorphologyLabels = { spleen_p: 'ELONGATE', pyloric_ceca: 'POUCHES', kidneys_f: 'RENAL', aortic_arches: 'VESSELS', gills: 'FILAMENTS', gills_c: 'FILAMENTS' };
+                var namedMorphologyLabels = { kidneys: 'RENAL', spleen_p: 'ELONGATE', pyloric_ceca: 'POUCHES', kidneys_p: 'RENAL', kidneys_f: 'RENAL', aortic_arches: 'VESSELS', gills: 'FILAMENTS', gills_c: 'FILAMENTS' };
                 var morphologyLabel = org && Object.prototype.hasOwnProperty.call(namedMorphologyLabels, org.id) ? namedMorphologyLabels[org.id] :
                   (morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase());
                 var horizontalSpecimen = /pig|fish|crayfish|eye|heart/.test(String(spec.bodyShape || specimen || '').toLowerCase());
@@ -16080,6 +17499,125 @@ var d = labToolData.dissection || {};
                     plannedMarkerBoxes.push(markerBox);
                   });
                 });
+                // Keep both semilunar leaflet groups clear when either valve is inspected.
+                if (spec.bodyShape === 'heart' && org && (org.id === 'aortic_v' || org.id === 'pulm_v')) {
+                  var captionSemilunarGeometry = sheepSemilunarGeometry(W, H);
+                  if (captionSemilunarGeometry) captionSemilunarGeometry.valves.forEach(function (valve) {
+                    var bounds = valve.bounds;
+                    var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                      (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                    if (!box) return;
+                    var padding = 3 * canvasUiScale;
+                    box.x -= padding; box.y -= padding; box.width += padding * 2; box.height += padding * 2;
+                    box.priority = 10; box.keepClear = true; plannedMarkerBoxes.push(box);
+                  });
+                }
+                // Reserve the exposed retinal band, leaving the central vitreous available.
+                if (spec.bodyShape === 'eye' && org && org.id === 'retina') {
+                  var captionRetinalGeometry = sheepRetinalGeometry(W, H);
+                  if (captionRetinalGeometry) captionRetinalGeometry.bandSectors.forEach(function (bounds) {
+                    var retinalBox = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                      (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                    if (!retinalBox) return;
+                    var retinalPadding = 3 * canvasUiScale;
+                    retinalBox.x -= retinalPadding; retinalBox.y -= retinalPadding;
+                    retinalBox.width += retinalPadding * 2; retinalBox.height += retinalPadding * 2;
+                    retinalBox.priority = 10; retinalBox.keepClear = true;
+                    plannedMarkerBoxes.push(retinalBox);
+                  });
+                }
+                // The digestive-gland caption leaves both intact masses unobscured.
+                if (spec.bodyShape === 'crayfish' && org && org.id === 'hepato') {
+                  var captionDigestiveGeometry = crayfishHepatopancreaticGeometry(W, H);
+                  if (captionDigestiveGeometry) captionDigestiveGeometry.masses.forEach(function (mass) {
+                    var digestiveBounds = mass.bounds;
+                    var digestiveBox = canvasScreenBox(digestiveBounds.minX * W, digestiveBounds.minY * H,
+                      (digestiveBounds.maxX - digestiveBounds.minX) * W, (digestiveBounds.maxY - digestiveBounds.minY) * H);
+                    if (!digestiveBox) return;
+                    var digestivePadding = 3 * canvasUiScale;
+                    digestiveBox.x -= digestivePadding; digestiveBox.y -= digestivePadding;
+                    digestiveBox.width += digestivePadding * 2; digestiveBox.height += digestivePadding * 2;
+                    digestiveBox.priority = 10; digestiveBox.keepClear = true;
+                    plannedMarkerBoxes.push(digestiveBox);
+                  });
+                }
+                // Keep the caption clear of both visible members of this paired organ.
+                if (spec.bodyShape === 'crayfish' && org && org.id === 'green_gland') {
+                  var pairedAntennalGeometry = crayfishAntennalGeometry(W, H);
+                  if (pairedAntennalGeometry) pairedAntennalGeometry.glands.forEach(function (gland) {
+                    var glandBounds = gland.bounds;
+                    var glandBox = canvasScreenBox(glandBounds.minX * W, glandBounds.minY * H,
+                      (glandBounds.maxX - glandBounds.minX) * W, (glandBounds.maxY - glandBounds.minY) * H);
+                    if (!glandBox) return;
+                    var glandPadding = 3 * canvasUiScale;
+                    glandBox.x -= glandPadding; glandBox.y -= glandPadding;
+                    glandBox.width += glandPadding * 2; glandBox.height += glandPadding * 2;
+                    glandBox.priority = 10; glandBox.keepClear = true;
+                    plannedMarkerBoxes.push(glandBox);
+                  });
+                }
+                // The depth caption also leaves the complete neural surface unobscured.
+                if (spec.bodyShape === 'frog' && activeLayer === 'nervous') {
+                  var captionNeuralGeometry = frogNeuralGeometry(W, H);
+                  if (captionNeuralGeometry) {
+                    var neuralBounds = captionNeuralGeometry.bounds;
+                    var neuralBox = canvasScreenBox(neuralBounds.minX * W, neuralBounds.minY * H,
+                      (neuralBounds.maxX - neuralBounds.minX) * W, (neuralBounds.maxY - neuralBounds.minY) * H);
+                    if (neuralBox) {
+                      var neuralPadding = 3 * canvasUiScale;
+                      neuralBox.x -= neuralPadding; neuralBox.y -= neuralPadding;
+                      neuralBox.width += neuralPadding * 2; neuralBox.height += neuralPadding * 2;
+                      neuralBox.priority = 10; neuralBox.keepClear = true;
+                      plannedMarkerBoxes.push(neuralBox);
+                    }
+                  }
+                }
+                // One renal label describes a pair; leave both frog kidneys unobscured.
+                if (spec.bodyShape === 'frog' && org && org.id === 'kidneys') {
+                  var captionFrogRenalGeometry = frogRenalGeometry(W, H);
+                  if (captionFrogRenalGeometry) captionFrogRenalGeometry.kidneys.forEach(function (kidney) {
+                    var frogRenalBounds = kidney.bounds;
+                    var frogRenalBox = canvasScreenBox(frogRenalBounds.minX * W, frogRenalBounds.minY * H,
+                      (frogRenalBounds.maxX - frogRenalBounds.minX) * W, (frogRenalBounds.maxY - frogRenalBounds.minY) * H);
+                    if (!frogRenalBox) return;
+                    var frogRenalPadding = 3 * canvasUiScale;
+                    frogRenalBox.x -= frogRenalPadding; frogRenalBox.y -= frogRenalPadding;
+                    frogRenalBox.width += frogRenalPadding * 2; frogRenalBox.height += frogRenalPadding * 2;
+                    frogRenalBox.priority = 10; frogRenalBox.keepClear = true;
+                    plannedMarkerBoxes.push(frogRenalBox);
+                  });
+                }
+                // One renal label describes a pair; keep its depth caption off both capsules.
+                if (spec.bodyShape === 'pig' && org && org.id === 'kidneys_p') {
+                  var captionRenalGeometry = pigRenalGeometry(W, H);
+                  if (captionRenalGeometry) captionRenalGeometry.kidneys.forEach(function (kidney) {
+                    var renalBounds = kidney.bounds;
+                    var renalBox = canvasScreenBox(renalBounds.minX * W, renalBounds.minY * H,
+                      (renalBounds.maxX - renalBounds.minX) * W, (renalBounds.maxY - renalBounds.minY) * H);
+                    if (!renalBox) return;
+                    var renalPadding = 3 * canvasUiScale;
+                    renalBox.x -= renalPadding; renalBox.y -= renalPadding;
+                    renalBox.width += renalPadding * 2; renalBox.height += renalPadding * 2;
+                    renalBox.priority = 10; renalBox.keepClear = true;
+                    plannedMarkerBoxes.push(renalBox);
+                  });
+                }
+                // Place neural depth text outside the continuous cord and ganglion course.
+                if (spec.bodyShape === 'worm' && activeLayer === 'nervous') {
+                  var captionWormGeometry = earthwormNeuralGeometry(W, H);
+                  if (captionWormGeometry) {
+                    var wormBounds = captionWormGeometry.bounds;
+                    var wormBox = canvasScreenBox(wormBounds.minX * W, wormBounds.minY * H,
+                      (wormBounds.maxX - wormBounds.minX) * W, (wormBounds.maxY - wormBounds.minY) * H);
+                    if (wormBox) {
+                      var wormPadding = 3 * canvasUiScale;
+                      wormBox.x -= wormPadding; wormBox.y -= wormPadding;
+                      wormBox.width += wormPadding * 2; wormBox.height += wormPadding * 2;
+                      wormBox.priority = 10; wormBox.keepClear = true;
+                      plannedMarkerBoxes.push(wormBox);
+                    }
+                  }
+                }
                 var footprintScale = selected ? 0.72 + focusEntryProgress * 0.28 : 1;
                 var backDash = visibility === 'visible' ? [] : (visibility === 'emerging' ? [5, 3] : (visibility === 'obscured' ? [2, 3] : [1, 4]));
                 ctx.save(); ctx.translate(x, y); ctx.scale(footprintScale, footprintScale); ctx.rotate(profile.rotation);
@@ -16130,6 +17668,11 @@ var d = labToolData.dissection || {};
                     { x: 0, y: 0, width: W, height: 74, priority: 9 },
                     { x: 0, y: labelScreenBottom, width: W, height: H - labelScreenBottom, priority: 9 }
                   ];
+                  // Plan the compact direction panel before placing the active caption,
+                  // so later fixed panels can preserve both its text and the organ name.
+                  if (hudCompassLayout.compact && hudCompassBox) captionReservations.push({
+                    x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 9
+                  });
                   if (plannedCallout) captionReservations.push(plannedCallout);
                   captionReservations = captionReservations.concat(plannedLeaderBoxes, plannedMarkerBoxes);
                   var captionPlacement = placeCanvasHudPanel(captionLeft, captionTop, captionBox.width, captionBox.height, captionReservations);
@@ -16145,7 +17688,7 @@ var d = labToolData.dissection || {};
                     ctx.translate(captionLocalX, captionLocalY);
                   }
                 }
-                rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
+                rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8, selected || hovered);
                 ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 4 * canvasUiScale);
@@ -16454,7 +17997,93 @@ var d = labToolData.dissection || {};
                   showCallout: !labelCameraMoved || anchorOnScreen || selected || hovered || guidedCallout,
                   displayLabel: displayLabel, labelLines: labelLines, visibility: visibility, depth: opticalDepth, selected: selected, hovered: hovered, related: related, guidedCallout: !!guidedCallout };
               }).filter(function (item) { return item.showCallout; });
-              var labelAnchorPoints = adaptiveHotspotLayout.slice().sort(function (a, b) { return a.pointY - b.pointY; });
+              var labelAnchorPoints = adaptiveHotspotLayout.slice();
+              // Reserve both complete valve groups in the fixed cutaway.
+              if (spec.bodyShape === 'heart' && ['organs', 'chambers', 'interior'].indexOf(activeLayer) >= 0) {
+                var semilunarLabelGeometry = sheepSemilunarGeometry(W, H);
+                if (semilunarLabelGeometry) semilunarLabelGeometry.valves.forEach(function (valve) {
+                  var bounds = valve.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (bounds.minX + bounds.maxX) * W / 2,
+                    pointY: (bounds.minY + bounds.maxY) * H / 2,
+                    clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Preserve the thin retinal surface without reserving the vitreous center.
+              if (spec.bodyShape === 'eye' && activeLayer === 'organs') {
+                var retinalLabelGeometry = sheepRetinalGeometry(W, H);
+                if (retinalLabelGeometry) retinalLabelGeometry.bandSectors.forEach(function (bounds) {
+                  labelAnchorPoints.push({
+                    pointX: (bounds.minX + bounds.maxX) * W / 2,
+                    pointY: (bounds.minY + bounds.maxY) * H / 2,
+                    clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Leave the paired digestive-gland surfaces clear beside the stomach.
+              if (spec.bodyShape === 'crayfish' && activeLayer === 'organs') {
+                var digestiveLabelGeometry = crayfishHepatopancreaticGeometry(W, H);
+                if (digestiveLabelGeometry) digestiveLabelGeometry.masses.forEach(function (mass) {
+                  var glandBounds = mass.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (glandBounds.minX + glandBounds.maxX) * W / 2,
+                    pointY: (glandBounds.minY + glandBounds.maxY) * H / 2,
+                    clearanceX: (glandBounds.maxX - glandBounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (glandBounds.maxY - glandBounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Keep neural callout cards outside the complete authored brain surface.
+              if (spec.bodyShape === 'frog' && activeLayer === 'nervous') {
+                var neuralLabelGeometry = frogNeuralGeometry(W, H);
+                if (neuralLabelGeometry) labelAnchorPoints.push({
+                  pointX: neuralLabelGeometry.center.x * W, pointY: neuralLabelGeometry.center.y * H,
+                  clearanceX: neuralLabelGeometry.extent.x * W + 3 * labelUiScale / specimenTextScaleX,
+                  clearanceY: neuralLabelGeometry.extent.y * H + 3 * labelUiScale / specimenTextScaleY
+                });
+              }
+              // Reserve both dorsal renal surfaces behind the frog's gut.
+              if (spec.bodyShape === 'frog' && activeLayer === 'organs') {
+                var frogRenalLabelGeometry = frogRenalGeometry(W, H);
+                if (frogRenalLabelGeometry) frogRenalLabelGeometry.kidneys.forEach(function (kidney) {
+                  var frogKidneyBounds = kidney.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (frogKidneyBounds.minX + frogKidneyBounds.maxX) * W / 2,
+                    pointY: (frogKidneyBounds.minY + frogKidneyBounds.maxY) * H / 2,
+                    clearanceX: (frogKidneyBounds.maxX - frogKidneyBounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (frogKidneyBounds.maxY - frogKidneyBounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Paired renal capsules remain clear even when a nearby callout is active.
+              if (spec.bodyShape === 'pig' && activeLayer === 'organs') {
+                var renalLabelGeometry = pigRenalGeometry(W, H);
+                if (renalLabelGeometry) renalLabelGeometry.kidneys.forEach(function (kidney) {
+                  labelAnchorPoints.push({
+                    pointX: kidney.body.center.x * W, pointY: kidney.body.center.y * H,
+                    clearanceX: kidney.extent.x * W + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: kidney.extent.y * H + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Keep neural cards clear of the anterior ring and representative ganglia.
+              if (spec.bodyShape === 'worm' && activeLayer === 'nervous') {
+                var wormLabelGeometry = earthwormNeuralGeometry(W, H);
+                if (wormLabelGeometry) {
+                  var wormLabelBounds = [wormLabelGeometry.anteriorBounds].concat(wormLabelGeometry.ganglia.slice(1).map(function (node) { return node.region.bounds; }));
+                  wormLabelBounds.forEach(function (bounds) {
+                    labelAnchorPoints.push({
+                      pointX: (bounds.minX + bounds.maxX) * W / 2, pointY: (bounds.minY + bounds.maxY) * H / 2,
+                      clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                      clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                    });
+                  });
+                }
+              }
+              labelAnchorPoints.sort(function (a, b) { return a.pointY - b.pointY; });
               function clearLabelAnchors(item, y, direction) {
                 // Match the constant-size hotspot symbols so labels can stay close
                 // to their anchors without covering the marker.
@@ -16462,13 +18091,71 @@ var d = labToolData.dissection || {};
                 var markerGapY = 12 * labelUiScale / specimenTextScaleY;
                 var anchors = direction > 0 ? labelAnchorPoints : labelAnchorPoints.slice().reverse();
                 anchors.forEach(function (anchor) {
-                  if (anchor.pointX + markerGapX < item.x || anchor.pointX - markerGapX > item.x + item.width) return;
-                  if (y < anchor.pointY + markerGapY && y + item.height > anchor.pointY - markerGapY) {
-                    y = direction > 0 ? anchor.pointY + markerGapY : anchor.pointY - markerGapY - item.height;
+                  var anchorGapX = anchor.clearanceX == null ? markerGapX : anchor.clearanceX;
+                  var anchorGapY = anchor.clearanceY == null ? markerGapY : anchor.clearanceY;
+                  if (anchor.pointX + anchorGapX < item.x || anchor.pointX - anchorGapX > item.x + item.width) return;
+                  if (y < anchor.pointY + anchorGapY && y + item.height > anchor.pointY - anchorGapY) {
+                    y = direction > 0 ? anchor.pointY + anchorGapY : anchor.pointY - anchorGapY - item.height;
                   }
                 });
                 return y;
               }
+              function placeDissectionCallout(card, viewport, obstacles) {
+                function finiteRect(rect) {
+                  return rect && [rect.x, rect.y, rect.width, rect.height].every(function (value) {
+                    return typeof value === 'number' && isFinite(value);
+                  }) && rect.width > 0 && rect.height > 0;
+                }
+                if (!finiteRect(card) || !finiteRect(viewport) || card.width > viewport.width || card.height > viewport.height) return null;
+                var boxes = (Array.isArray(obstacles) ? obstacles : []).filter(finiteRect);
+                var minX = viewport.x, maxX = viewport.x + viewport.width - card.width;
+                var minY = viewport.y, maxY = viewport.y + viewport.height - card.height;
+                function clearAt(x, y) {
+                  return !boxes.some(function (box) {
+                    return x < box.x + box.width && x + card.width > box.x && y < box.y + box.height && y + card.height > box.y;
+                  });
+                }
+                function result(x, y) { return { x: x, y: y, width: card.width, height: card.height }; }
+                if (card.x >= minX && card.x <= maxX && card.y >= minY && card.y <= maxY && clearAt(card.x, card.y)) return result(card.x, card.y);
+                var candidatesX = [Math.max(minX, Math.min(maxX, card.x)), minX, maxX];
+                boxes.forEach(function (box) {
+                  candidatesX.push(Math.max(minX, Math.min(maxX, box.x - card.width)),
+                    Math.max(minX, Math.min(maxX, box.x + box.width)));
+                });
+                var best = null, bestScore = Infinity, bestHorizontal = Infinity;
+                candidatesX.filter(function (x, index, values) { return values.indexOf(x) === index; }).forEach(function (x) {
+                  // For a fixed X, these are precisely the forbidden card-top intervals.
+                  // Keeping touching intervals separate retains a valid edge-touching slot.
+                  var blocked = boxes.filter(function (box) { return x < box.x + box.width && x + card.width > box.x; }).map(function (box) {
+                    return { start: box.y - card.height, end: box.y + box.height };
+                  }).sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+                  var merged = [];
+                  blocked.forEach(function (interval) {
+                    var previous = merged[merged.length - 1];
+                    if (previous && interval.start < previous.end) previous.end = Math.max(previous.end, interval.end);
+                    else merged.push({ start: interval.start, end: interval.end });
+                  });
+                  function consider(start, end) {
+                    if (end < start || end < minY || start > maxY) return;
+                    start = Math.max(minY, start); end = Math.min(maxY, end);
+                    var y = Math.max(start, Math.min(end, card.y));
+                    if (!clearAt(x, y)) return;
+                    var dx = x - card.x, dy = y - card.y, score = dx * dx + dy * dy;
+                    if (score < bestScore || (score === bestScore && Math.abs(dx) < bestHorizontal)) {
+                      best = result(x, y); bestScore = score; bestHorizontal = Math.abs(dx);
+                    }
+                  }
+                  var cursor = minY;
+                  merged.forEach(function (interval) {
+                    if (interval.end <= cursor || cursor > maxY) return;
+                    if (interval.start >= cursor) consider(cursor, interval.start);
+                    cursor = Math.max(cursor, interval.end);
+                  });
+                  consider(cursor, maxY);
+                });
+                return best;
+              }
+
               function clampDissectionCalloutCard(item, left, top, right, bottom) {
                 if (!item || ![item.x, item.y, item.width, item.height, left, top, right, bottom].every(function (value) { return typeof value === 'number' && isFinite(value); }) ||
                     item.width < 0 || item.height < 0 || right < left || bottom < top) return false;
@@ -16564,6 +18251,109 @@ var d = labToolData.dissection || {};
                   }
                 });
               }
+              // Column packing and viewport clamping can undo soft anchor clearance.
+              // Repair active eye cards against the complete exposed membrane last.
+              if (spec.bodyShape === 'eye' && activeLayer === 'organs' && retinalLabelGeometry) {
+                var retinalCardSectors = retinalLabelGeometry.bandSectors.map(function (bounds) {
+                  var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                    (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                  if (!box) return null;
+                  var padding = 3 * canvasUiScale;
+                  return { x: box.x - padding, y: box.y - padding,
+                    width: box.width + padding * 2, height: box.height + padding * 2 };
+                }).filter(Boolean);
+                var retinalCardViewport = { x: 16 * canvasUiScale, y: 82,
+                  width: W - 32 * canvasUiScale, height: labelScreenBottom - 82 };
+                adaptiveHotspotLayout.filter(function (item) {
+                  return item.showCallout && item.fullLabel && (item.selected || item.hovered || item.guidedCallout);
+                }).sort(function (a, b) { return Number(b.selected) - Number(a.selected) || a.index - b.index; }).forEach(function (item) {
+                  var card = canvasScreenBox(item.x, item.y, item.width, item.height);
+                  if (!card || !retinalCardSectors.some(function (box) {
+                    return card.x < box.x + box.width && card.x + card.width > box.x &&
+                      card.y < box.y + box.height && card.y + card.height > box.y;
+                  })) return;
+                  var obstacles = retinalCardSectors.slice();
+                  if (hudCompassBox) obstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y,
+                    width: hudCompassBox.w, height: hudCompassBox.h });
+                  adaptiveHotspotLayout.forEach(function (other) {
+                    if (other === item || !other.showCallout) return;
+                    var otherBox = canvasScreenBox(other.x, other.y, other.width, other.height);
+                    if (otherBox) obstacles.push(otherBox);
+                  });
+                  var placement = placeDissectionCallout(card, retinalCardViewport, obstacles);
+                  if (!placement) return;
+                  item.x = Math.min(labelSpecimenX(placement.x), labelSpecimenX(placement.x + card.width));
+                  item.y = labelSpecimenY(placement.y);
+                  item.side = item.x + item.width / 2 < item.pointX ? 'left' : 'right';
+                });
+              }
+              // Keep cards, compact badges, and their hit rectangles off both leaflet groups.
+              if (!d.quizMode && spec.bodyShape === 'heart' && semilunarLabelGeometry) {
+                var semilunarCardBoxes = semilunarLabelGeometry.valves.map(function (valve) {
+                  var bounds = valve.bounds;
+                  var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                    (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                  if (!box) return null;
+                  var padding = 3 * canvasUiScale;
+                  return { x: box.x - padding, y: box.y - padding,
+                    width: box.width + padding * 2, height: box.height + padding * 2 };
+                }).filter(Boolean);
+                var semilunarCardViewport = { x: 16 * canvasUiScale, y: 82,
+                  width: W - 32 * canvasUiScale, height: labelScreenBottom - 82 };
+                adaptiveHotspotLayout.filter(function (item) {
+                  return item.showCallout;
+                }).sort(function (a, b) {
+                  return Number(b.selected) - Number(a.selected) || Number(b.hovered) - Number(a.hovered) ||
+                    Number(b.guidedCallout) - Number(a.guidedCallout) || a.index - b.index;
+                }).forEach(function (item) {
+                  var card = canvasScreenBox(item.x, item.y, item.width, item.height);
+                  var badge = adaptiveHotspotMarkerGeometry(item).badge;
+                  if (card && badge) {
+                    var badgeStroke = 0.4 / zoom;
+                    var badgeBox = canvasScreenBox(badge.cx - badge.rx - badgeStroke, badge.cy - badge.ry - badgeStroke,
+                      (badge.rx + badgeStroke) * 2, (badge.ry + badgeStroke) * 2);
+                    if (badgeBox) {
+                      var cardRight = Math.max(card.x + card.width, badgeBox.x + badgeBox.width);
+                      var cardBottom = Math.max(card.y + card.height, badgeBox.y + badgeBox.height);
+                      card.x = Math.min(card.x, badgeBox.x); card.y = Math.min(card.y, badgeBox.y);
+                      card.width = cardRight - card.x; card.height = cardBottom - card.y;
+                    }
+                  }
+                  if (!card || !semilunarCardBoxes.some(function (box) {
+                    return card.x < box.x + box.width && card.x + card.width > box.x &&
+                      card.y < box.y + box.height && card.y + card.height > box.y;
+                  })) return;
+                  var obstacles = semilunarCardBoxes.slice();
+                  if (hudCompassBox) obstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y,
+                    width: hudCompassBox.w, height: hudCompassBox.h });
+                  adaptiveHotspotLayout.forEach(function (other) {
+                    if (other !== item && other.showCallout) {
+                      var otherBox = canvasScreenBox(other.x, other.y, other.width, other.height);
+                      if (otherBox) obstacles.push(otherBox);
+                    }
+                    var markers = adaptiveHotspotMarkerGeometry(other);
+                    [markers.badge, markers.point].forEach(function (point, markerIndex) {
+                      if (!point || (other === item && markerIndex === 0)) return;
+                      var markerBox = canvasScreenBox(point.cx - point.rx, point.cy - point.ry, point.rx * 2, point.ry * 2);
+                      if (!markerBox) return;
+                      var markerPadding = 2 * canvasUiScale;
+                      obstacles.push({ x: markerBox.x - markerPadding, y: markerBox.y - markerPadding,
+                        width: markerBox.width + markerPadding * 2, height: markerBox.height + markerPadding * 2 });
+                    });
+                  });
+                  var placement = placeDissectionCallout(card, semilunarCardViewport, obstacles);
+                  if (!placement) return;
+                  // Translate the existing card through the exact current affine inverse,
+                  // preserving its reading size under mirrored and parallax view transforms.
+                  var matrix = ctx.getTransform(), determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+                  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-10) return;
+                  var dx = (placement.x - card.x) * (canvas._dpr || 1);
+                  var dy = (placement.y - card.y) * (canvas._dpr || 1);
+                  item.x += (matrix.d * dx - matrix.c * dy) / determinant;
+                  item.y += (matrix.a * dy - matrix.b * dx) / determinant;
+                  item.side = item.x + item.width / 2 < item.pointX ? 'left' : 'right';
+                });
+              }
               var adaptiveHotspotById = {};
               adaptiveHotspotLayout.forEach(function (item) { adaptiveHotspotById[item.id] = item; });
               canvas._hotspotLabelBoxes = adaptiveHotspotLayout.filter(function (item) { return item.showCallout; }).map(function (item) {
@@ -16619,7 +18409,8 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.arc(0, 0, isSel ? 2.2 : 1.5, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); ctx.restore();
                 }
                 if (layout.fullLabel && layout.showCallout) {
-                  rememberCanvasGuidanceBox(lx, ly, layout.width, layout.height, isSel || isHov ? 8 : 2);
+                  // Fixed panels must preserve the complete active organ name as well as its reticle.
+                  rememberCanvasGuidanceBox(lx, ly, layout.width, layout.height, isSel || isHov ? 8 : 2, isSel || isHov);
                   ctx.fillStyle = isSel ? 'rgba(251,191,36,0.94)' : (isHov ? 'rgba(30,64,175,0.94)' : (isFocusRelated ? 'rgba(15,118,110,0.90)' : 'rgba(15,23,42,0.88)'));
                   ctx.strokeStyle = isSel ? '#f59e0b' : (isHov ? '#60a5fa' : (isFocusRelated ? '#2dd4bf' : 'rgba(148,163,184,0.48)')); ctx.lineWidth = (isSel || isHov ? 1.1 : 0.65) / zoom;
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx,ly,layout.width,layout.height,5 / zoom); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(lx,ly,layout.width,layout.height); ctx.strokeRect(lx,ly,layout.width,layout.height); }
@@ -22174,7 +23965,7 @@ var d = labToolData.dissection || {};
                 var previewStatus = queryDissectionNode('#diss-canvas-status');
                 if (previewStatus) {
                   previewStatus.setAttribute('data-tone', previewTone);
-                  previewStatus.textContent = previewMessage;
+                  setDissectionLiveText(previewStatus, previewMessage);
                 }
               }
             }

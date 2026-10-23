@@ -1949,7 +1949,16 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const menuRef = useRef(null);
   const conceptSortDialogRef = useRef(null);
   const conceptSortCloseRef = useRef(null);
+  const pendingConceptFocusRef = useRef(null);
   useGameDialogFocus(conceptSortDialogRef, conceptSortCloseRef, onClose);
+  React.useLayoutEffect(() => {
+    const pending = pendingConceptFocusRef.current;
+    if (!pending) return;
+    pendingConceptFocusRef.current = null;
+    const dialog = conceptSortDialogRef.current;
+    const target = pending.itemId != null ? Array.from(dialog?.querySelectorAll("[data-concept-sort-item-id]") || []).find((el) => el.getAttribute("data-concept-sort-item-id") === String(pending.itemId)) : dialog?.querySelector(pending.selector);
+    (target || conceptSortCloseRef.current || dialog)?.focus();
+  }, [items, isChecked, keyboardSelectedItemId]);
   const isWon = isChecked && items.length > 0 && items.every((i) => i.currentContainer === i.categoryId);
   const pastelColors = [
     "bg-blue-50 border-blue-200 hover:border-blue-300",
@@ -2044,6 +2053,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const handleKeyboardMove = (targetContainerId) => {
     if (!keyboardSelectedItemId) return;
     const movedItem = items.find((it) => it.id === keyboardSelectedItemId);
+    pendingConceptFocusRef.current = { itemId: keyboardSelectedItemId };
     setItems((prev) => prev.map(
       (item) => item.id === keyboardSelectedItemId ? { ...item, currentContainer: targetContainerId } : item
     ));
@@ -2112,6 +2122,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     });
     const earnedPoints = Math.max(0, score + delta);
     const total = items.length;
+    pendingConceptFocusRef.current = { selector: correctCount === total ? '[role="region"] h3' : '[data-help-key="concept_sort_retry_incorrect"]' };
     setScore(earnedPoints);
     setBestScore((prev) => Math.max(prev, earnedPoints));
     setIsChecked(true);
@@ -2197,6 +2208,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       const j = Math.floor(Math.random() * (i + 1));
       [resetItems[i], resetItems[j]] = [resetItems[j], resetItems[i]];
     }
+    pendingConceptFocusRef.current = { itemId: resetItems[0]?.id };
+    setIsDeckCollapsed(false);
     setItems(resetItems);
     setIsChecked(false);
     setScore(0);
@@ -2210,6 +2223,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const correctIds = new Set(items.filter((i) => i.currentContainer !== "deck" && i.currentContainer === i.categoryId).map((i) => i.id));
     const returned = items.filter((i) => i.currentContainer !== "deck" && i.currentContainer !== i.categoryId);
     if (!returned.length) return;
+    pendingConceptFocusRef.current = { itemId: returned[0].id };
+    setIsDeckCollapsed(false);
     const nextItems = items.map((i) => correctIds.has(i.id) ? i : { ...i, currentContainer: "deck" });
     setItems(nextItems);
     setLockedIds(correctIds);
@@ -2229,6 +2244,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   const incorrectPlacedCount = isChecked ? items.filter((i) => i.currentContainer !== "deck" && i.currentContainer !== i.categoryId).length : 0;
   const renderCard = (item) => {
+    const isLongTextCard = !item.image && String(item.content || "").length > 80;
     const imageDescription = item.image ? matchingImageDescription(item) : "";
     const cardDescription = imageDescription && imageDescription !== item.content ? `${item.content}. ${imageDescription}` : item.content;
     let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
@@ -2248,6 +2264,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       "div",
       {
         key: item.id,
+        "data-concept-sort-item-id": item.id,
         "data-locked": locked ? "true" : void 0,
         draggable: !isChecked && !locked,
         onDragStart: (e) => handleDragStart(e, item),
@@ -2283,7 +2300,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           style: { width: _imgPx + "px", height: _imgPx + "px" },
           decoding: "async"
         }
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-center leading-tight text-slate-800" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 }))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800 text-center leading-snug" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 })),
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-center leading-tight text-slate-800" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 }))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-1.5", style: isLongTextCard ? { flexDirection: "column" } : void 0 }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800 text-center leading-snug", style: isLongTextCard ? { textAlign: "start", overflowWrap: "anywhere", width: "100%" } : void 0 }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 })),
       isChecked && item.currentContainer !== "deck" && item.currentContainer !== item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(X, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-red-600 text-center leading-tight" }, "\u2717 \u2192 ", buckets.find((b) => b.id === item.categoryId)?.label), onExplainIncorrect && !studentAiOff && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2325,13 +2342,13 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       el.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
     };
-  }, [deckItems.length]);
+  }, [deckItems.length, isDeckCollapsed]);
   useEffect(() => {
     if (hasUsedKeyboardCard || hintAutoHidden) return;
     const id = setTimeout(() => setHintAutoHidden(true), 15e3);
     return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
-  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, gamePointsLabel(t, score))), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20", style: { flexWrap: "wrap", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, gamePointsLabel(t, score))), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "flex-grow overflow-y-auto p-6 relative",
@@ -2387,9 +2404,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         "data-help-key": "concept_sort_deck",
         onDragOver: handleDragOver,
         onDrop: (e) => handleDrop(e, "deck"),
-        className: `bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-colors duration-300 ${isChecked ? "" : "hover:bg-slate-50"}`
+        className: `bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-colors duration-300 ${isChecked ? "" : "hover:bg-slate-50"}`,
+        style: { maxHeight: "55vh", overflowY: "auto" }
       },
-      /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2", style: { flexWrap: "wrap", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -2401,7 +2419,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         },
         /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isDeckCollapsed ? "\u25B2" : "\u25BC"),
         isDeckCollapsed ? t("concept_sort.deck_expand") || "Show cards" : t("concept_sort.deck_collapse") || "Hide cards"
-      ), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, t("concept_sort.pick_category_hint") || "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, t("concept_sort.keyboard_tip") || "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, t("concept_sort.try_number", { n: attempts + 1 }) || `Try ${attempts + 1}`, bestScore > 0 ? ` \xB7 ${t("timeline.game.best") || "Best"}: ${gamePointsLabel(t, bestScore)}` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, t("concept_sort.visuals_missing", { count: imageFailCount }) || `${imageFailCount} card visual(s) couldn't load. Showing text only.`), orphanCount > 0 && !unplayable && /* @__PURE__ */ React.createElement("span", { "data-concept-sort-orphans": "true", className: "text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-full" }, t("concept_sort.orphans_left_out", { count: orphanCount }) || `${orphanCount} card(s) left out: no matching category.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, typeof onImageScaleChange === "function" && items.some((i) => i.image) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" }, t("concept_sort.image_size_word") || "Size"), /* @__PURE__ */ React.createElement(
+      ), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, t("concept_sort.pick_category_hint") || "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, t("concept_sort.keyboard_tip") || "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, t("concept_sort.try_number", { n: attempts + 1 }) || `Try ${attempts + 1}`, bestScore > 0 ? ` \xB7 ${t("timeline.game.best") || "Best"}: ${gamePointsLabel(t, bestScore)}` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, t("concept_sort.visuals_missing", { count: imageFailCount }) || `${imageFailCount} card visual(s) couldn't load. Showing text only.`), orphanCount > 0 && !unplayable && /* @__PURE__ */ React.createElement("span", { "data-concept-sort-orphans": "true", className: "text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-full" }, t("concept_sort.orphans_left_out", { count: orphanCount }) || `${orphanCount} card(s) left out: no matching category.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center", style: { flexWrap: "wrap" } }, typeof onImageScaleChange === "function" && items.some((i) => i.image) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" }, t("concept_sort.image_size_word") || "Size"), /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "range",
@@ -2450,6 +2468,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           id: "concept-sort-deck-cards",
           ref: deckScrollRef,
           hidden: isDeckCollapsed,
+          style: { display: isDeckCollapsed ? "none" : void 0, maxHeight: "min(32vh, 300px)", overflowY: "auto", alignItems: "flex-start" },
           className: "flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative"
         },
         allowAddItems && onGenerateItem && /* @__PURE__ */ React.createElement("div", { className: "min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group" }, isAdding ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-indigo-500 text-xs font-bold animate-pulse motion-reduce:animate-none" }, t("concept_sort.generating_item")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
@@ -2476,7 +2495,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           },
           /* @__PURE__ */ React.createElement(Plus, { size: 16 })
         ))),
-        deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]" }, renderCard(item))),
+        deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]", style: !item.image && String(item.content || "").length > 80 ? { width: "min(280px, calc(100vw - 48px))" } : void 0 }, renderCard(item))),
         deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))
       ), !isDeckCollapsed && deckCanScrollLeft && /* @__PURE__ */ React.createElement(
         "button",

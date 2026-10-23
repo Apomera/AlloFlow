@@ -20,6 +20,8 @@ function quadratic(curve, t) { const u = 1 - t; return {
 }; }
 function projected(p, m, dpr) { return { x: (m.a * p.x + m.c * p.y + m.e) / dpr, y: (m.b * p.x + m.d * p.y + m.f) / dpr }; }
 function inside(p, box, padding = 0) { return p.x >= box.x - padding && p.x <= box.x + box.width + padding && p.y >= box.y - padding && p.y <= box.y + box.height + padding; }
+function overlap(a, b, padding = 0) { return Math.max(0, Math.min(a.x + a.width + padding, b.x + b.width) - Math.max(a.x - padding, b.x)) *
+  Math.max(0, Math.min(a.y + a.height + padding, b.y + b.height) - Math.max(a.y - padding, b.y)); }
 const layout = { pointX: 212, pointY: 173, x: 38, y: 312, width: 124, height: 36, side: 'left', fullLabel: true, showCallout: true,
   visibility: 'visible', selected: false, hovered: true, related: false };
 const identity = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -48,13 +50,15 @@ class Context {
   measureText() { return { width: 108 }; }
   beginPath() {} moveTo() {} lineTo() {} setLineDash() {} stroke() {} roundRect() {} rect() {} fill() {} fillText() {}
 }
-function footprintFixture({ quizMode = false, showCallout = true, markerLayouts = [] } = {}) {
+function footprintFixture({ quizMode = false, showCallout = true, markerLayouts = [], compactCompass = false } = {}) {
   const ctx = new Context(), initialMatrix = ctx.getTransform(), canvas = { _dpr: 2, _guidanceBoxes: [], _canvasHudBoxes: [] }, observations = { screenCalls: [], placements: [] };
   const leader = production('dissectionCalloutLeader'), screenBoxes = production('dissectionLeaderScreenBoxes');
   const callout = { ...layout, showCallout }, uiScale = 1.4;
-  const bindings = { ctx, canvas, W: 360, H: 432, d: { visualRealism: 'realistic', quizMode }, visualRealism: 'realistic',
+  const bindings = { ctx, canvas, W: 360, H: 432, spec: { bodyShape: 'fish' },
+    d: { visualRealism: 'realistic', quizMode }, visualRealism: 'realistic',
     highContrastEnabled: false, focusEntryProgress: 1, specimenScale: { x: -1, y: 1 }, zoom: 2,
     canvasUiScale: uiScale, labelUiScale: 1.4, specimenTextScaleX: 2, specimenTextScaleY: 2, labelScreenBottom: 418,
+    hudCompassLayout: { compact: compactCompass }, hudCompassBox: compactCompass ? { x: 14, y: 14, w: 319.50171995603176, h: 165.54398188468907 } : null,
     canvasCoarsePointer: false, depthAtlasEnabled: true, organs: markerLayouts.map(l => ({ id: l.id })),
     adaptiveHotspotById: Object.fromEntries(markerLayouts.map(l => [l.id, l])),
     structureInspectionFootprint: () => ({ rx: 18.36, ry: 16.15, rotation: 0, depth: 'deep', depthOffset: 12, morphologyLabel: 'POUCHES' }),
@@ -153,6 +157,119 @@ describe('shared dissection callout leader and caption clearance', () => {
     const after = placement(500, 600, corridor, caption);
     expect({ x: after.x, y: after.y }).toEqual({ x: before.x, y: before.y });
     expect({ x: after.x, y: after.y }).toEqual({ x: caption.x, y: caption.y });
+  });
+
+  it.each([
+    ['ordinary DPR2', { a: 4, b: 0, c: 0, d: 4, e: -180, f: -120 }, 2],
+    ['mirrored fractional DPR with shear', { a: -3.6, b: .16, c: .24, d: 3.2, e: 940, f: -210 }, 1.43525],
+  ])('publishes only active callout cards as keep-clear guidance under %s', (_name, matrix, dpr) => {
+    const canvas = { _dpr: dpr, _guidanceBoxes: [] }, ctx = { getTransform: () => matrix };
+    const screenBox = production('canvasScreenBox', { ctx, canvas });
+    const remember = production('rememberCanvasGuidanceBox', { canvas, canvasScreenBox: screenBox });
+    const args = [134.3265695677696, 379.8341069127671, 51.709651465537156, 24.500464147660274];
+    const expected = screenBox(...args);
+    remember(...args, 8, true); remember(...args, 8, false); remember(...args, 2);
+    expect(canvas._guidanceBoxes).toHaveLength(3);
+    expect(canvas._guidanceBoxes[0]).toEqual({ ...expected, priority: 8, keepClear: true });
+    for (const box of canvas._guidanceBoxes.slice(1)) {
+      expect(box.keepClear).not.toBe(true);
+      expect({ x: box.x, y: box.y, width: box.width, height: box.height }).toEqual(expected);
+    }
+    expect(canvas._guidanceBoxes.slice(1).map(box => box.priority)).toEqual([8, 2]);
+  });
+
+  it('passes selected and hovered full-card state to the actual keep-clear publication call', () => {
+    const match = /rememberCanvasGuidanceBox\(lx,\s*ly,\s*layout\.width,\s*layout\.height,[^;]+;/.exec(source);
+    expect(match).not.toBeNull();
+    for (const [isSel, isHov] of [[true, false], [false, true], [false, false]]) {
+      const calls = [], l = { width: 52, height: 25 };
+      new Function('rememberCanvasGuidanceBox', 'lx', 'ly', 'layout', 'isSel', 'isHov', match[0])(
+        (...args) => calls.push(args), 134, 380, l, isSel, isHov);
+      expect(calls).toEqual([[134, 380, 52, 25, isSel || isHov ? 8 : 2, isSel || isHov]]);
+    }
+  });
+
+  it('reserves the planned compact compass only for phone caption placement and publishes its active caption as keep-clear', () => {
+    const f = footprintFixture({ compactCompass: true }); f.draw();
+    expect(f.observations.placements[0].reservations).toContainEqual({ x: 14, y: 14, width: 319.50171995603176, height: 165.54398188468907, priority: 9 });
+    const desktop = footprintFixture(); desktop.draw();
+    expect(desktop.observations.placements[0].reservations.some(box => box.width === 319.50171995603176)).toBe(false);
+    const match = /rememberCanvasGuidanceBox\(-footprintCaptionW[^;]+;/.exec(source); expect(match).not.toBeNull();
+    for (const [selected, hovered] of [[true, false], [false, true], [false, false]]) {
+      const calls = [];
+      new Function('rememberCanvasGuidanceBox', 'footprintCaptionW', 'canvasUiScale', 'selected', 'hovered', match[0])(
+        (...args) => calls.push(args), 172, 2, selected, hovered);
+      expect(calls).toEqual([[-86, 0, 172, 34, 8, selected || hovered]]);
+    }
+  });
+
+  it('coordinates the recorded phone Spleen caption and orientation HUD without trading the collision for another active or fixed panel', () => {
+    // Actual 390px/DPR2/large-text capture, converted to its 500x600 viewport.
+    // Keep the fixture self-contained: it must not depend on temporary QA files.
+    const W = 500, H = 600, ui = 2.0554507185367976;
+    const preferred = { x: 14, y: 82, width: 319.50171995603176, height: 97.54398188468907 };
+    const reticle = { x: 185.59511190068727, y: 239.26554658224723, width: 123.32704137478797, height: 123.32705234870853, priority: 10, keepClear: true };
+    const oldCaption = { x: 160.7899030739353, y: 124.8730203310027, width: 172.9374590282918, height: 34.942664681365414, priority: 8 };
+    const card = { x: 103.75957172392695, y: 383.14710765574046, width: 106.50094845171783, height: 49.3308209394836, priority: 8, keepClear: true };
+    const huds = [
+      { id: 'layer', x: 14, y: 543.2466250544346, width: 189.98890566870858, height: 42.7533749455654, priority: 9 },
+      { id: 'specimen', x: 14, y: 13, width: 240.3043762207031, height: 39, priority: 9 },
+      { id: 'scale', x: 249.21207722456091, y: 484.0496443605748, width: 236.78792277543909, height: 101.95035563942517, priority: 9 },
+    ];
+    const shared = [
+      { x: 358, y: 417.0496443605748, width: 122, height: 57, priority: 9 },
+      { id: 'procedure-handoff', x: 268, y: 10, width: 218, height: 95.37291334010742, priority: 9 },
+    ];
+    function placePanel(guidance, fixed = huds, initial = preferred, extra = shared) {
+      const canvas = { _guidanceBoxes: guidance, _canvasHudBoxes: fixed };
+      const p = production('placeCanvasHudPanel', { canvas, W, H })(initial.x, initial.y, initial.width, initial.height, extra);
+      return { ...initial, x: p.x, y: p.y };
+    }
+    const legacy = placePanel([reticle, oldCaption, { ...card, keepClear: false }]);
+    expect(overlap(legacy, card)).toBeGreaterThan(5000);
+    expect(overlap(placePanel([reticle, oldCaption, card]), oldCaption)).toBeGreaterThan(4000);
+    expect(overlap(placePanel([reticle, { ...oldCaption, keepClear: true }, card]), huds[2])).toBeGreaterThan(4000);
+    const markerBoxes = [
+      [181.66114340413202,183.05404462702373,58.35026252494622,58.38464974142961],
+      [339.7221277322408,30.648156470455866,31.849198990495513,31.863606252751907],
+      [176.54767826492633,321.1285897127736,58.35026252494622,58.38464974142961],
+      [245.26640744275144,21.238571455418338,31.849198990495513,31.863606252751907],
+      [368.1144413441621,200.85693050639398,58.35026252494622,58.38464974142961],
+      [325.8967897827497,167.8456079490769,31.849198990495513,31.863606252751907],
+      [411.5281230721152,145.5035191666177,58.35026252494622,58.38464974142961],
+      [369.310455448622,152.6911667333217,31.849198990495513,31.863606252751907],
+      [307.3881167688891,256.21034184617037,58.35026252494622,58.38464974142961],
+      [265.1704652074766,242.7595701967589,31.849198990495513,31.863606252751907],
+      [337.87993652384614,311.5637531859466,58.35026252494622,58.38464974142961],
+      [295.66228496243366,338.6675347476818,31.849198990495513,31.863606252751907],
+      [359.84018113545704,422.2705758654992,58.35026252494622,58.38464974142961],
+      [317.6225378262149,406.16667590941,31.849198990495513,31.863606252751907],
+      [379.60065066341946,366.9171645257229,58.35026252494622,58.38464974142961],
+      [337.3829867187258,378.66175873344355,31.849198990495513,31.863606252751907],
+      [409.2668286064298,216.1771806361562,31.849198990495513,31.863606252751907],
+      [354.7160624625404,255.44658344440813,31.849198990495513,31.863606252751907],
+      [312.7347790781009,475.934248009163,31.849198990495513,31.863606252751907],
+    ].map(([x, y, width, height]) => ({ x, y, width, height, priority: 9, keepClear: true }));
+    const localLeader = { start: { x: 198.0120736777689, y: 338.99999999999994 }, control: { x: 191.54511324975934, y: 338.99999999999994 },
+      end: { x: 186.03622103330676, y: 392.08433898659723 } };
+    const entry = { a: 2.956033969155669, b: 0, c: 0, d: 2.889825283581615, e: -248.15297728571295, f: -547.7423194602551 };
+    const leaderBoxes = production('dissectionLeaderScreenBoxes')(localLeader, entry, 1.43525, 2 * ui);
+    const initialCaption = { x: 160.78990380176282, y: 357.0544026850721, width: 172.93745757263687, height: 34.94266221512556 };
+    const bindings = { W, H, labelScreenBottom: 476.0496443605748, plannedCallout: { ...card, keepClear: false },
+      plannedLeaderBoxes: leaderBoxes, plannedMarkerBoxes: markerBoxes, hudCompassLayout: { compact: true },
+      hudCompassBox: { x: 14, y: 14, w: preferred.width, h: 82 + preferred.height - 14 }, selected: true, hovered: false };
+    const start = source.indexOf('var captionReservations = [', source.indexOf('function drawStructureInspectionFootprint('));
+    const end = source.indexOf('var captionPlacement =', start); expect(start).toBeGreaterThan(0); expect(end).toBeGreaterThan(start);
+    const reservations = new Function(...Object.keys(bindings), source.slice(start, end) + ';return captionReservations;')(...Object.values(bindings));
+    const moved = { ...placePanel([reticle], [], initialCaption, reservations), priority: 8, keepClear: true };
+    const orientation = placePanel([reticle, moved, card]);
+    for (const obstacle of [reticle, moved, card, ...huds, ...shared]) expect(overlap(orientation, obstacle, 6)).toBe(0);
+    for (const obstacle of [reticle, card, ...markerBoxes, ...huds, ...shared]) expect(overlap(moved, obstacle)).toBe(0);
+    for (const panel of [moved, orientation]) {
+      expect(panel.x).toBeGreaterThanOrEqual(14); expect(panel.y).toBeGreaterThanOrEqual(14);
+      expect(panel.x + panel.width).toBeLessThanOrEqual(W - 14); expect(panel.y + panel.height).toBeLessThanOrEqual(H - 14);
+    }
+    expect(reservations.some(box => box.width === preferred.width && box.height === 82 + preferred.height - 14)).toBe(true);
   });
 
   it('paints the actual adaptive leader from the shared helper output', () => {

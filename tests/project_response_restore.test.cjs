@@ -28,7 +28,7 @@ function harness(host, options = {}) {
   const window = { AlloModules: {}, dispatchEvent() {} };
   // Run the shipped importer, including its real per-file ownership/lifecycle manager.
   const importer = new Function('window', 'FileReader', 'AbortController', 'localStorage', 'CustomEvent',
-    section(read('misc_handlers_module.js'), 'function _createProjectLoadOperationManager', 'function handleRestoreView')
+    section(read(options.compiled === false ? 'misc_handlers_source.jsx' : 'misc_handlers_module.js'), 'function _createProjectLoadOperationManager', 'function handleRestoreView')
     + '\nreturn { handleLoadProject, cancelProjectLoad };')(
       window, ControlledReader, AbortController, { setItem() {} }, class CustomEvent {});
   window.AlloModules.MiscHandlers = importer;
@@ -54,6 +54,7 @@ function harness(host, options = {}) {
     invalidateLocalDataHydration() { state.invalidations++; },
     studentWorkLatestRef: { current: state.responses },
     setHistory(value) { state.history = value; },
+    setGeneratedContent(value) { state.content = value; },
     setStudentResponses(value) { assert.equal(typeof value, 'object'); state.responses = value; state.restores.push(value); },
     _alloAwaitModules: async () => {},
   });
@@ -112,6 +113,43 @@ for (const host of hosts) {
     assert.deepEqual(h.state.responses, {});
     assert.deepEqual(h.scope.studentWorkLatestRef.current, {});
   });
+  for (const compiled of [false, true]) {
+    test(host + (compiled ? ' compiled' : ' source') + ': cancelled restoration preserves coherent history, content, responses and workspace identity', async () => {
+      for (const cancellation of ['malformed replacement', 'explicit cancellation']) {
+        const waiting = deferred();
+        const previousResponses = { existing: { 0: 'Synthetic prior answer' } };
+        const h = harness(host, { initialResponses: previousResponses, restore: () => waiting.promise, compiled });
+        const previousContent = { id: 'existing', type: 'quiz', data: { title: 'Original workspace' } };
+        const previousHistory = [previousContent];
+        h.state.history = previousHistory;
+        h.state.content = previousContent;
+        const workspaceId = h.scope.canvasRecoveryCurrentIdRef.current;
+        const a = h.load(project(savedResponses));
+        const deliveringA = h.readers[0].deliver();
+        await nextTurn();
+        assert.equal(h.state.invalidations, 1, 'A reached awaited restoration');
+        if (cancellation === 'malformed replacement') {
+          const b = h.load({});
+          await h.readers[1].deliver('{malformed');
+          assert.equal((await b.completion).success, false);
+        } else h.importer.cancelProjectLoad({ notifyLifecycle: true });
+        assert.equal((await a.completion).cancelled, true);
+        const assertCoherent = () => {
+          assert.strictEqual(h.state.history, previousHistory, cancellation + ': history');
+          assert.strictEqual(h.state.content, previousContent, cancellation + ': content');
+          assert.strictEqual(h.state.responses, previousResponses, cancellation + ': responses');
+          assert.strictEqual(h.scope.studentWorkLatestRef.current, previousResponses);
+          assert.equal(h.scope.canvasRecoveryCurrentIdRef.current, workspaceId, cancellation + ': workspace identity');
+          assert.equal(h.scope.canvasRecoveryMutationInProgressRef.current, false);
+        };
+        assertCoherent();
+        waiting.resolve(true);
+        await deliveringA;
+        assertCoherent();
+        assert.equal(h.state.restores.length, 0, 'cancelled A never publishes responses');
+      }
+    });
+  }
   test(host + ': invalid maps and prototype keys fail before invalidating the current workspace', async () => {
     const invalid = [null, [], 'text', { notes: 'not a response record' },
       JSON.parse('{"__proto__":{"polluted":true}}'),

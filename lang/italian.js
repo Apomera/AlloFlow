@@ -55959,6 +55959,15 @@
       "sr_critique_ready": "Critica pronta."
     },
     "flightsim": {
+      "guided_inspect_angle": "Esamina il confronto degli angoli",
+      "guided_inspect_speed": "Esamina il confronto delle velocità",
+      "guided_export_scope": "L’esportazione include la bozza attuale e i tentativi precedenti. Esportare non completa l’indagine.",
+      "hint_t_stall_negative": "🚨 STALLO! L’angolo d’attacco è negativo: trascina delicatamente verso l’ALTO dal centro per avvicinarlo a zero. Usa il bordo destro per la potenza, se necessario.",
+      "hint_k_stall_negative": "🚨 STALLO! L’angolo d’attacco è negativo: premi delicatamente W per avvicinarlo a zero. Aggiungi potenza con Shift, se necessario.",
+      "hint_stall_direction_unknown": "🚨 STALLO! Porta l’angolo d’attacco verso zero. La sua direzione non è disponibile; controlla l’indicatore AoA prima di scegliere un comando di beccheggio.",
+      "announce_stall_warning_negative": "Avviso di stallo! L’angolo d’attacco è negativo. Alza delicatamente il muso per avvicinarlo a zero; aggiungi potenza se necessario.",
+      "announce_stall_warning_unknown": "Avviso di stallo! Porta l’angolo d’attacco verso zero. La sua direzione non è disponibile; controlla l’indicatore AoA prima di scegliere un comando di beccheggio.",
+      "hud_stall_warning": "⚠️ STALLO — PORTA AoA VERSO ZERO",
       "debrief_unavailable_title": "Riepilogo del volo salvato non disponibile",
       "debrief_unavailable_body": "Il riepilogo del volo più recente manca o non può essere letto. Torna al menu per iniziare un nuovo volo.",
       "guided_idea_before_trials": "Annotata prima delle prove",
