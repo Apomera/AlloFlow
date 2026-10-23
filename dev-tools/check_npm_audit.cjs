@@ -19,6 +19,7 @@ const SCOPES = Object.freeze({
   'services/alloflow-remote-mcp/runner': 'services/alloflow-remote-mcp/runner',
   'a11y-audit': 'a11y-audit',
   trailer: 'trailer',
+  'dev-tools/security': 'dev-tools/security',
 });
 const LEVELS = ['info', 'low', 'moderate', 'high', 'critical'];
 
