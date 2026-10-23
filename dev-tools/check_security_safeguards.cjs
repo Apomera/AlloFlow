@@ -48,9 +48,7 @@ function auditPlan(changed, full = false) {
     { directory: 'dev-tools/security', level: 'high' },
     { directory: 'desktop', level: 'high' },
     { directory: 'trailer', level: 'high' },
-    // Legacy web build tooling still has high findings tracked in RELEASE.md.
-    // Keep the existing full audit; this additional gate prevents critical findings.
-    { directory: 'desktop/web-app', level: 'critical' },
+    { directory: 'desktop/web-app', level: 'high' },
   ].filter(({ directory }) => full || changed.some((file) => file === directory + '/package.json' || file === directory + '/package-lock.json'));
 }
 

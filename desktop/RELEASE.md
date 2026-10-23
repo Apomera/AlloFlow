@@ -67,20 +67,28 @@ Electron 43.8.3 is now installed in the local desktop dependency tree and passed
 the release runtime, security-boundary, and Electron UI checks. Compatible web
 dependency patches, including patched gRPC and Underscore versions, are also
 installed. The complete lockfile audits report zero desktop findings. The web
-app's subsequent loader and serialization updates reduce its earlier 15 high
-findings to 4 high, with no critical findings (30 moderate and 9 low remain).
+app's subsequent loader, serialization and development-server updates reduce
+its earlier 15 high findings to zero high or critical findings (31 moderate and
+9 low remain in the complete lockfile audit).
 Scoped overrides update SVGR to 8.1.0 and resolve-url-loader to 5.0.0, and
-serialize-javascript to 7.0.5; React Scripts stays at 5.0.1. Node 20 or newer is
-required for the patched serializer. Real SVG URL/component imports, accessible
+serialize-javascript to 7.0.5; React Scripts stays at 5.0.1. Node 20.19 or newer is
+required by the complete toolchain, including the existing SWC CLI. Real SVG URL/component imports, accessible
 titles and refs, CSS source-map asset resolution, and the production minifier
 worker pass compatibility tests. The application compiles in production mode
 without recopying its unchanged static payload; postbuild packaging is not part
 of that compilation check.
 
-The four remaining high findings are webpack-dev-server, webpack-dev-middleware,
-selfsigned, and node-forge. The published node-forge release is still affected;
-replacing the development-server chain needs a separately validated migration.
-No forced React Scripts downgrade or audit suppression was used.
+The development server now uses webpack-dev-server 5.2.7, webpack-dev-middleware
+7.4.6, and selfsigned 5.5.0, removing the vulnerable node-forge certificate chain.
+A small launcher adapts CRA's compiler and proxy helpers to the current server
+API. It defaults to loopback, validates browser origins and preview hostnames,
+and keeps the public-path boundary intact. Real HTTP/WebSocket tests cover
+source maps, hostile origins, traversal attempts, SPA routing, hot reload,
+proxy forwarding, generated/custom HTTPS certificates, and clean React launcher
+startup/shutdown. A headless Edge check also preserved React component state
+across Fast Refresh with no page errors. See [web development settings](web-app/DEVELOPMENT.md) for
+explicit LAN access, trusted reverse proxies and HTTPS configuration. No forced
+React Scripts downgrade or audit suppression was used.
 
 Trailer dependencies now use matching Remotion 4.0.538 packages and ESLint 9.39.5,
 with compatible transitive patches. Its complete lockfile audit has zero findings,
@@ -93,11 +101,12 @@ Other checkouts should use npm ci when adopting the updated locks.
 
 The additional Security safeguards workflow checks pinned action commits,
 read-only default tokens, checkout credential cleanup, and signing-secret scope.
-It audits changed desktop, trailer, and policy-parser dependencies at high severity and
-changed web-app dependencies at critical severity. The existing full audit still
+It audits changed desktop, trailer, policy-parser and web-app dependencies at
+high severity. The existing full audit still
 reports all maintained scopes and remains failing on outstanding findings.
 Scheduled and manual safeguard runs audit all four scopes regardless of file
-changes. The required check also tests the updated loaders/minifier, builds and
+changes. The required check also tests development-server boundaries and
+compatibility plus the updated loaders/minifier, builds and
 type-checks the trailer, and compiles the web application; lint and the large
 unchanged public asset payload are outside that production compilation check.
 Dependabot alerts and security updates are enabled, with automatic MCP updates

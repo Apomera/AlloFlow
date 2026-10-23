@@ -36,6 +36,7 @@ jobs:
             /desktop/web-app/package.json
             /desktop/web-app/package-lock.json
             /desktop/web-app/src/
+            /desktop/web-app/scripts/
             /desktop/web-app/public/index.html
             /desktop/web-app/tailwind.config.js
             /trailer/
@@ -83,6 +84,8 @@ jobs:
           npm ci --prefix desktop/web-app --ignore-scripts --no-audit --no-fund
       - name: Test production loader and minifier compatibility
         run: node --test dev-tools/security/test-build-tooling.cjs
+      - name: Test development server boundaries and compatibility
+        run: node --test dev-tools/security/test-dev-server.cjs
       - name: Build and type-check the trailer
         working-directory: trailer
         run: |
