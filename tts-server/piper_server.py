@@ -23,6 +23,8 @@ import subprocess
 import os
 import sys
 import struct
+import math
+import re
 from urllib.parse import urlsplit
 
 
@@ -31,6 +33,9 @@ def is_allowed_origin(origin):
     if origin is None:
         return True
     if not isinstance(origin, str) or not origin or origin != origin.strip():
+        return False
+    # urlsplit removes CR/LF/TAB; reject them before validating or echoing headers.
+    if any(ord(char) <= 32 or ord(char) == 127 for char in origin):
         return False
     try:
         parsed = urlsplit(origin)
@@ -85,12 +90,36 @@ DEFAULT_VOICE = "en_US-amy-medium"
 # Cache of voice models we've already confirmed/downloaded this session
 _ready_voices = set()
 
+MODEL_ID = re.compile(r"[a-z]{2,3}_[a-z]{2}-[a-z0-9_]{1,80}-(?:x_low|low|medium|high)", re.IGNORECASE | re.ASCII)
+
+
+def validated_model_id(value):
+    """A catalog ID, never a path or an extra command-line option."""
+    if not isinstance(value, str) or not MODEL_ID.fullmatch(value):
+        raise ValueError("Invalid Piper voice model ID")
+    locale, speaker, quality = value.split("-")
+    language, region = locale.split("_")
+    return f"{language.lower()}_{region.upper()}-{speaker.lower()}-{quality.lower()}"
+
+
+def resolve_voice(value):
+    if not isinstance(value, str):
+        raise ValueError("Voice must be a string")
+    alias = value.lower()
+    if alias in VOICE_MAP:
+        return VOICE_MAP[alias]
+    # Preserve the existing fallback for unknown friendly voice names.
+    if re.fullmatch(r"[a-zA-Z0-9_]{0,80}", value):
+        return DEFAULT_VOICE
+    return validated_model_id(value)
+
 
 def ensure_voice(voice_name):
     """Ensure a voice model is present in VOICES_DIR, downloading if needed.
 
     Returns True on success, False on failure.
     """
+    voice_name = validated_model_id(voice_name)
     os.makedirs(VOICES_DIR, exist_ok=True)
 
     model_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx")
@@ -123,6 +152,7 @@ def ensure_voice(voice_name):
 
 def synthesize(text, voice_name, speed):
     """Run piper and return raw PCM bytes (16-bit mono 22050 Hz), or None."""
+    voice_name = validated_model_id(voice_name)
     cmd = [
         PIPER_PYTHON, "-m", "piper",
         "--model", voice_name,
@@ -176,21 +206,18 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length)) if length else {}
 
+            if not isinstance(body, dict):
+                return self._send_json(400, {"error": "Expected a JSON object"})
             text = body.get("input", "")
-            voice = str(body.get("voice", "alloy")).lower()
-            speed = body.get("speed", 1.0)
+            piper_voice = resolve_voice(body.get("voice", "alloy"))
+            speed = float(body.get("speed", 1.0))
+            if not math.isfinite(speed) or speed <= 0:
+                return self._send_json(400, {"error": "Speed must be a finite positive number"})
 
             if not text:
                 return self._send_json(400, {"error": "No input text"})
-
-            # Accept either an OpenAI alias (nova/alloy/…) or a raw Piper model
-            # name (en_US-amy-medium). Unknown → default voice.
-            if voice in VOICE_MAP:
-                piper_voice = VOICE_MAP[voice]
-            elif "-" in voice and "_" in voice:
-                piper_voice = voice  # looks like a Piper model id
-            else:
-                piper_voice = DEFAULT_VOICE
+            if not isinstance(text, str):
+                return self._send_json(400, {"error": "Input must be text"})
 
             if not ensure_voice(piper_voice):
                 # Fall back to the default voice if a specific one can't be fetched
@@ -213,10 +240,12 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             print(f"[Piper TTS] Generated {len(wav_audio)} bytes "
                   f"for voice={piper_voice}", flush=True)
 
+        except (ValueError, TypeError):
+            self._send_json(400, {"error": "Invalid speech request"})
         except Exception as e:
             print(f"[Piper TTS] Error: {e}", flush=True)
             try:
-                self._send_json(500, {"error": str(e)})
+                self._send_json(500, {"error": "Speech generation failed"})
             except Exception:
                 pass
 

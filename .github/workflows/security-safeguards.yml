@@ -26,6 +26,10 @@ jobs:
         run: npm ci --prefix dev-tools/security --ignore-scripts --no-audit --no-fund
       - name: Test security guard behavior
         run: node --test dev-tools/security/test-policy.cjs
+      - name: Test local speech input and language compatibility
+        run: |
+          python3 -m unittest discover -s tests -p test_piper_request_safety.py
+          python3 -m unittest discover -s tests -p test_edge_tts_language_review.py
       - name: Verify workflow policy and changed dependency scopes
         env:
           SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
