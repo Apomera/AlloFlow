@@ -19,6 +19,18 @@ jobs:
         with:
           fetch-depth: 2
           persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/
+            /dev-tools/check_security_safeguards.cjs
+            /dev-tools/security/
+            /desktop/package.json
+            /desktop/package-lock.json
+            /desktop/web-app/package.json
+            /desktop/web-app/package-lock.json
+            /tts-server/
+            /tests/test_piper_request_safety.py
+            /tests/test_edge_tts_language_review.py
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
