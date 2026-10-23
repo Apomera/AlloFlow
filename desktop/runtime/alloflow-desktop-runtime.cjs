@@ -11,7 +11,7 @@ const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
 const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
 const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { execFile, spawn, spawnSync } = require('child_process');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
@@ -2959,38 +2959,38 @@ function prepareSchoolBoxEnv(config) {
 }
 
 function getToolVersion(command, args) {
-  try {
-    const result = spawnSync(command, args, {
-      encoding: 'utf8',
-      timeout: 5000,
-      windowsHide: true,
+  return new Promise((resolve) => {
+    execFile(command, args, { encoding: 'utf8', timeout: 5000, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) resolve({ available: false, error: String(stderr || stdout || error.message).trim() });
+      else resolve({ available: true, version: String(stdout || stderr || '').trim() });
     });
-    if (result.error) {
-      return { available: false, error: result.error.message };
-    }
-    if (result.status !== 0) {
-      return {
-        available: false,
-        error: (result.stderr || result.stdout || `${command} exited with ${result.status}`).trim(),
-      };
-    }
-    return { available: true, version: (result.stdout || result.stderr || '').trim() };
-  } catch (error) {
-    return { available: false, error: error.message };
-  }
+  });
 }
 
-function getDockerStatus() {
-  const docker = getToolVersion('docker', ['--version']);
-  const compose = docker.available ? getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
-  return {
-    available: Boolean(docker.available && compose.available),
-    dockerAvailable: Boolean(docker.available),
-    composeAvailable: Boolean(compose.available),
-    dockerVersion: docker.version || null,
-    composeVersion: compose.version || null,
-    error: docker.error || compose.error || null,
-  };
+let dockerStatusCache = null;
+let dockerStatusExpiresAt = 0;
+let dockerStatusPending = null;
+async function getDockerStatus(force = false) {
+  if (dockerStatusPending) return dockerStatusPending;
+  if (!force && dockerStatusCache && Date.now() < dockerStatusExpiresAt) return dockerStatusCache;
+  // Health, readiness, and the command center request the same tool versions
+  // concurrently. Share the probe and avoid blocking Electron's main thread.
+  dockerStatusPending = (async () => {
+    const docker = await getToolVersion('docker', ['--version']);
+    const compose = docker.available ? await getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
+    dockerStatusCache = {
+      available: Boolean(docker.available && compose.available),
+      dockerAvailable: Boolean(docker.available),
+      composeAvailable: Boolean(compose.available),
+      dockerVersion: docker.version || null,
+      composeVersion: compose.version || null,
+      error: docker.error || compose.error || null,
+    };
+    dockerStatusExpiresAt = Date.now() + 15000;
+    return dockerStatusCache;
+  })();
+  try { return await dockerStatusPending; }
+  finally { dockerStatusPending = null; }
 }
 
 function probeTcp(host, port, timeoutMs = 1000) {
@@ -3050,7 +3050,7 @@ async function getSchoolBoxStatus(config = readConfig()) {
         composeVersion: null,
         error: 'District Server mode does not start local Docker services yet.',
       }
-    : getDockerStatus();
+    : await getDockerStatus();
   const services = isDistrictMode
     ? []
     : await Promise.all(SCHOOLBOX_SERVICE_DEFS.map((service) => (
@@ -3174,7 +3174,7 @@ function schoolBoxComposeArgs(action, config) {
 }
 
 async function runSchoolBoxCompose(action, config) {
-  const docker = getDockerStatus();
+  const docker = await getDockerStatus(true);
   if (!docker.available) {
     throw new Error(docker.error || 'Docker with Compose is not available.');
   }
@@ -5702,7 +5702,15 @@ async function runSmoke(args) {
   await new Promise((resolve) => server.listen(args.port, args.host, resolve));
   const address = server.address();
   const baseUrl = `http://${args.host}:${address.port}`;
+  let mediaFixtureDir;
   try {
+    // Exercise the real static-file transport without depending on large,
+    // gitignored introductory videos. Remove this test-only payload before
+    // packaging; it checks byte transport, not video decoding.
+    mediaFixtureDir = fs.mkdtempSync(path.join(STATIC_APP_DIR, 'alloflow-smoke-'));
+    const mediaFixtureBytes = Buffer.from(Array.from({ length: 4096 }, (_, index) => index % 251));
+    fs.writeFileSync(path.join(mediaFixtureDir, 'stream.mp4'), mediaFixtureBytes, { flag: 'wx' });
+    const mediaUrl = baseUrl + '/app/' + path.basename(mediaFixtureDir) + '/stream.mp4';
     const health = await fetch(baseUrl + '/api/health').then((response) => response.json());
     const commandOrigin = new URL(baseUrl).origin;
     const appOrigin = new URL(health.appUrl).origin;
@@ -5714,14 +5722,14 @@ async function runSmoke(args) {
     const commandCsp = commandResponse.headers.get('content-security-policy') || '';
     const commandNoSniff = commandResponse.headers.get('x-content-type-options') || '';
     await commandResponse.text();
-    const mediaResponse = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4');
+    const mediaResponse = await fetch(mediaUrl);
     const mediaType = mediaResponse.headers.get('content-type') || '';
     if (mediaResponse.body) await mediaResponse.body.cancel();
-    const mediaHead = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { method: 'HEAD' });
-    const mediaRange = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { headers: { Range: 'bytes=0-1023' } });
+    const mediaHead = await fetch(mediaUrl, { method: 'HEAD' });
+    const mediaRange = await fetch(mediaUrl, { headers: { Range: 'bytes=0-1023' } });
     const mediaRangeBytes = Buffer.from(await mediaRange.arrayBuffer());
     const mediaEtag = mediaRange.headers.get('etag') || '';
-    const mediaNotModified = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', {
+    const mediaNotModified = await fetch(mediaUrl, {
       headers: { 'If-None-Match': mediaEtag },
     });
 
@@ -5794,9 +5802,10 @@ async function runSmoke(args) {
     if (health.status !== 'ok') throw new Error('Health endpoint did not return ok.');
     if (!commandCsp.includes("script-src 'self'")) throw new Error('Command center CSP is missing or too permissive for scripts.');
     if (commandNoSniff !== 'nosniff') throw new Error('Static responses are missing nosniff protection.');
-    if (!mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong MIME type: ' + mediaType);
+    if (mediaResponse.status !== 200 || !mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong status or MIME type: ' + mediaResponse.status + ' ' + mediaType);
     if (mediaHead.status !== 200 || mediaHead.headers.get('accept-ranges') !== 'bytes') throw new Error('Bundled media HEAD/range metadata regressed.');
     if (mediaRange.status !== 206 || mediaRangeBytes.length !== 1024) throw new Error('Bundled media byte-range streaming regressed.');
+    if (!mediaRangeBytes.equals(mediaFixtureBytes.subarray(0, 1024))) throw new Error('Bundled media byte-range contents changed.');
     if (!String(mediaRange.headers.get('content-range') || '').startsWith('bytes 0-1023/')) throw new Error('Bundled media Content-Range is invalid.');
     if (!mediaEtag) throw new Error('Bundled media is missing an ETag.');
     if (mediaNotModified.status !== 304) throw new Error('Bundled media conditional request did not return 304.');
@@ -5948,6 +5957,10 @@ async function runSmoke(args) {
   } finally {
     await stopLanShare().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
+    if (mediaFixtureDir) {
+      fs.rmSync(path.join(mediaFixtureDir, 'stream.mp4'), { force: true });
+      fs.rmdirSync(mediaFixtureDir);
+    }
   }
 }
 

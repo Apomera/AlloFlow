@@ -97,6 +97,10 @@ config.appId = spec.appId;
 config.productName = spec.productName;
 config.extraMetadata = { ...(config.extraMetadata || {}), alloEdition: edition, name: spec.packageName };
 config.directories = { ...(config.directories || {}), output: spec.outputDir };
+// The GitHub provider does not infer a feed channel from the prerelease
+// version. Keep generated metadata aligned with the selected release channel.
+const updateChannel = String(process.env.ALLOFLOW_UPDATE_CHANNEL || 'latest').toLowerCase() === 'beta' ? 'beta' : 'latest';
+config.publish = config.publish.map((publisher) => ({ ...publisher, channel: updateChannel }));
 // Re-prefix every artifactName so installers are clearly flavored.
 const reprefix = (obj) => {
   if (!obj || typeof obj !== 'object') return;
