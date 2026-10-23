@@ -30,14 +30,18 @@ preview frontend needs cross-origin access, set an exact origin such as
 a TLS-terminating reverse proxy forwarding an HTTPS browser origin to HTTP.
 Include the hostname in `ALLOFLOW_DEV_ALLOWED_HOSTS` for WebSocket access, and
 forward the Host/Origin headers consistently. Approved HTTP origins receive an
-exact Access-Control-Allow-Origin value; wildcard CORS is not enabled. Custom
-API proxies remain responsible for any API-specific preflight headers.
+exact Access-Control-Allow-Origin value. The server handles their preflight
+requests for standard API methods and valid requested header names, including
+JSON content types and Authorization. Wildcard CORS and cross-origin cookies
+remain disabled. Ordinary OPTIONS requests still reach custom API handlers.
 
 `WDS_SOCKET_HOST`, `WDS_SOCKET_PORT` and `WDS_SOCKET_PATH` configure the hot-reload
 socket behind a reverse proxy. Forward WebSocket upgrades on that path. Normal
 same-origin API WebSocket requests are supported by the package.json proxy.
 Custom `src/setupProxy.js` code runs in the local Node process and remains trusted
-application code; its HTTP routes run after the host and browser-origin checks.
+application code. It receives an Express app with settings, locals, and routing
+methods. Its HTTP routes run after the host/origin checks and error-overlay
+source middleware, so catch-all proxies cannot intercept overlay source requests.
 
 ## HTTPS
 
@@ -59,6 +63,10 @@ npm audit --prefix desktop/web-app --package-lock-only --ignore-scripts --audit-
 The server tests use isolated fixtures in the dependency cache and ephemeral
 loopback ports. They check hostile hosts/origins, source maps, path traversal,
 SPA routes, stale service-worker reset, hot reload, HTTP/WebSocket proxying,
-generated/custom HTTPS certificates, and the actual React launcher and shutdown.
+generated/custom HTTPS certificates, the actual React launcher and shutdown,
+custom Express settings, catch-all proxies and trusted-origin preflight requests.
 The required CI check runs these tests and blocks new high or critical web
 dependency findings. Lower-severity findings remain visible in full audits.
+
+The preview rules follow the browser's [CORS preflight protocol](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
+and preserve the [Express application API](https://expressjs.com/en/4x/api/).

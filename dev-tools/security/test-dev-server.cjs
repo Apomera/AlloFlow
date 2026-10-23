@@ -187,6 +187,58 @@ test('CRA package proxy preserves API POST and WebSocket forwarding', { timeout:
   }
 });
 
+test('custom proxy setup retains Express settings and app locals', { timeout: 60000 }, async (t) => {
+  const paths = fixture();
+  fs.writeFileSync(paths.proxySetup, `module.exports = app => {
+    app.set('fixture-setting', 'configured');
+    app.locals.fixtureValue = 'local value';
+    app.get('/custom-settings', (req,res) => res.json({setting:req.app.get('fixture-setting'), local:req.app.locals.fixtureValue}));
+  };`);
+  const { port } = await serve(t, paths);
+  const response = await request(port, '/custom-settings');
+  assert.equal(response.status, 200);
+  assert.deepEqual(JSON.parse(response.body), { setting: 'configured', local: 'local value' });
+  assert.equal((await request(port, '/custom-settings', { headers: { origin: 'https://evil.example.test' } })).status, 403);
+});
+
+test('error-overlay sources stay ahead of catch-all custom proxies', { timeout: 60000 }, async (t) => {
+  const paths = fixture();
+  fs.writeFileSync(paths.proxySetup, 'module.exports = app => app.use((req,res) => res.json({customProxy:true}));');
+  const { port } = await serve(t, paths);
+  const source = await request(port, '/__get-internal-source?fileName=webpack-internal%3A%2F%2F%2F.%2Fsrc%2Fentry.js');
+  assert.equal(source.status, 200);
+  assert.match(source.body, /BEFORE_UPDATE/);
+  assert.deepEqual(JSON.parse((await request(port, '/custom-api')).body), { customProxy: true });
+  assert.equal((await request(port, '/__get-internal-source', { headers: { origin: 'https://evil.example.test' } })).status, 403);
+});
+
+test('explicitly trusted origins can preflight JSON API calls without opening other origins', { timeout: 60000 }, async (t) => {
+  const paths = fixture();
+  fs.writeFileSync(paths.proxySetup, `module.exports = app => {
+    app.post('/custom-api', (req,res) => res.json({received:true}));
+    app.options('/custom-api', (req,res) => res.status(502).end('Preflight reached the application'));
+  };`);
+  const trusted = 'https://preview.example.test';
+  const { port } = await serve(t, paths, { env: { ALLOFLOW_DEV_ALLOWED_ORIGINS: trusted } });
+  const headers = { origin: trusted, 'access-control-request-method': 'POST',
+    'access-control-request-headers': 'authorization, content-type, x-preview-client' };
+  const preflight = await request(port, '/custom-api', { method: 'OPTIONS', headers });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers['access-control-allow-origin'], trusted);
+  assert.match(preflight.headers['access-control-allow-methods'], /POST/);
+  assert.equal(preflight.headers['access-control-allow-headers'], headers['access-control-request-headers']);
+  assert.equal(preflight.headers['access-control-allow-credentials'], undefined);
+  const response = await request(port, '/custom-api', { method: 'POST', body: '{}',
+    headers: { origin: trusted, 'content-type': 'application/json', authorization: 'Bearer fixture-only' } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers['access-control-allow-origin'], trusted);
+  assert.equal((await request(port, '/custom-api', { method: 'OPTIONS', headers: { ...headers, origin: 'https://evil.example.test' } })).status, 403);
+  assert.equal((await request(port, '/custom-api', { method: 'OPTIONS', headers: { ...headers, 'access-control-request-method': 'TRACE' } })).status, 403);
+  assert.equal((await request(port, '/custom-api', { method: 'OPTIONS', headers: { ...headers, 'access-control-request-headers': 'bad header' } })).status, 403);
+  assert.match(preflight.headers.vary, /Origin/);
+  assert.match(preflight.headers.vary, /Access-Control-Request-Headers/);
+});
+
 test('HTTPS works with the replacement certificate generator and validates custom certificate settings', { timeout: 60000 }, async (t) => {
   const paths = fixture();
   const { server, port } = await serve(t, paths, { https: true });

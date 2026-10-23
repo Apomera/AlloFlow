@@ -90,6 +90,25 @@ across Fast Refresh with no page errors. See [web development settings](web-app/
 explicit LAN access, trusted reverse proxies and HTTPS configuration. No forced
 React Scripts downgrade or audit suppression was used.
 
+A follow-up removal/compatibility review compared the security PR with its base.
+No tracked files were deleted, and application source/assets and production
+build/postbuild commands were unchanged. Three custom-preview regressions were
+reproduced and repaired: setupProxy again receives an Express app with settings
+and locals; error-overlay source requests run before catch-all custom proxies;
+and explicitly trusted origins can complete JSON/Authorization preflights.
+The regression tests fail against the previous launcher and pass after the
+repairs. A real Edge browser confirmed trusted requests and rejected an untrusted
+origin before the API handler ran.
+
+Removed dependencies have replacement behavior: node-forge certificate creation
+is covered by generated/custom HTTPS tests; flask-cors was unused by the speech
+server, whose explicit CORS hooks retain local/trusted-origin support. Removing
+downloaded Python tokenizer code is covered by the prior three-tokenizer check.
+LAN binding and larger-workload limits are intentional opt-in/validation changes,
+documented in the web development and Docker guides. Full container builds and
+GPU/NPU inference remain outside this validation; endpoint tests use synthetic
+provider results and do not establish hardware/model compatibility.
+
 Trailer dependencies now use matching Remotion 4.0.538 packages and ESLint 9.39.5,
 with compatible transitive patches. Its complete lockfile audit has zero findings,
 down from 1 critical, 15 high, 2 moderate, and 2 low. The production bundle,

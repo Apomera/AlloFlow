@@ -67,6 +67,7 @@ function createDevServerConfig({ paths, proxy, https = false, env = process.env,
     historyApiFallback: { disableDotRule: true, index: publicPath + 'index.html' },
     setupMiddlewares(middlewares, server) {
       const guard = { name: 'alloflow-browser-origin', middleware(req, res, next) {
+        res.vary('Origin');
         if (!browserRequestAllowed(req, extraOrigins)) {
           res.statusCode = 403;
           res.end('Browser origin is not allowed');
@@ -75,22 +76,38 @@ function createDevServerConfig({ paths, proxy, https = false, env = process.env,
         res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
         if (extraOrigins.has(req.headers.origin)) {
           res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-          res.setHeader('Vary', 'Origin');
+          if (req.method === 'OPTIONS' && req.headers['access-control-request-method']) {
+            // Restore preflight support for explicitly trusted preview frontends.
+            // Validate header names before reflecting them, and keep cookies off.
+            const method = req.headers['access-control-request-method'];
+            const headers = list(req.headers['access-control-request-headers']);
+            if (!['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].includes(method)
+              || headers.some((name) => !/^[!#$%&'*+.^_`|~0-9a-z-]+$/i.test(name))) {
+              res.status(403).end('Preflight method or headers are not allowed');
+              return;
+            }
+            res.vary('Access-Control-Request-Method');
+            res.vary('Access-Control-Request-Headers');
+            res.setHeader('Access-Control-Allow-Methods', method);
+            if (headers.length) res.setHeader('Access-Control-Allow-Headers', headers.join(', '));
+            res.status(204).end();
+            return;
+          }
         }
         next();
       } };
       // Keep upstream host validation first, and run our guard before source,
       // editor, proxy and static middlewares (including src/setupProxy.js).
       const hostIndex = middlewares.findIndex((entry) => entry.name === 'host-header-check');
+      if (hostIndex < 0) throw new Error('The development server host check is missing.');
       middlewares.splice(hostIndex + 1, 0, guard);
-      const router = requireTool('express').Router();
-      if (fs.existsSync(paths.proxySetup)) require(paths.proxySetup)(router);
+      const customApp = requireTool('express')();
       // CRA's overlay expects the old _stats property. Track compiler results
       // through webpack's public hook instead of depending on server internals.
       let stats;
       server.compiler.hooks.done.tap('AlloFlowSourceMaps', (result) => { stats = result; });
       const evalSource = requireTool('react-dev-utils/evalSourceMapMiddleware')({ get _stats() { return stats; } });
-      router.use((req, res, next) => {
+      customApp.use((req, res, next) => {
         if (req.url.startsWith('/__get-internal-source')) {
           const id = typeof req.query.fileName === 'string' && /^webpack-internal:\/\/\/(.+)$/.exec(req.query.fileName)?.[1];
           const compilation = stats?.compilation;
@@ -103,7 +120,12 @@ function createDevServerConfig({ paths, proxy, https = false, env = process.env,
         }
         evalSource(req, res, next);
       });
-      middlewares.splice(hostIndex + 2, 0, { name: 'alloflow-source-and-custom-proxy', middleware: router });
+      if (fs.existsSync(paths.proxySetup)) {
+        // CRA gives setupProxy an Express app, including settings and locals.
+        // Register its routes after the overlay sources, behind the safety guards.
+        require(paths.proxySetup)(customApp);
+      }
+      middlewares.splice(hostIndex + 2, 0, { name: 'alloflow-source-and-custom-proxy', middleware: customApp });
       // Reset stale production service workers before the SPA history fallback.
       const historyIndex = middlewares.findIndex((entry) => entry.name === 'connect-history-api-fallback');
       middlewares.splice(historyIndex < 0 ? middlewares.length : historyIndex, 0,
