@@ -257,7 +257,21 @@
 .diss-directory-item__state[data-tone="hidden"] { border-color: #d3a35c; background: #fff6df; color: #78350f; }
 .diss-directory-item__state[data-tone="prior"] { border-color: #9db8d4; background: #eaf2fb; color: #234b73; }
 [data-dissection-root][data-text-size="large"] .diss-directory-browser :is(.diss-directory-item__name, .diss-directory-search-label) { font-size: 1rem !important; }
-.diss-directory-browser .diss-directory-item[aria-disabled="true"] { background: #f8fafc; cursor: help; }
+.diss-directory-browser .diss-directory-item[data-directory-action="recover"] { background: #f8fafc; cursor: help; }
+/* Keep control text and its authored surface together when the host changes theme. */
+[data-dissection-root][data-high-contrast] .diss-toolbar { background: #f8fafc !important; }
+[data-dissection-root][data-high-contrast] .diss-zoom-bar { background: #f3f7fc !important; }
+[data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item) { background: #fff !important; }
+[data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #203e52 !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact { background: linear-gradient(90deg, #fffbeb, #fff7ed) !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: #92400e !important; }
+[data-dissection-root][data-high-contrast="true"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact) { background: #fff !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #000 !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact :is(summary, p, span) { color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root][data-high-contrast] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-directory-browser .diss-directory-item, .diss-biology-fact) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title), [data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: CanvasText !important; }
+}
 .diss-directory-browser .diss-directory-item:hover { border-color: #1766d2; background: #eff6ff; }
 .diss-directory-browser .diss-directory-item:focus-visible { outline: 3px solid #1766d2; outline-offset: 1px; }
 .diss-directory-browser .diss-directory-empty { padding: .85rem; font-size: .875rem; line-height: 1.55; }
@@ -2494,12 +2508,13 @@
 [data-dissection-root] .diss-protocol > div[data-aligned="false"] .diss-protocol__state { color: #92400e; }
 [data-dissection-root] .diss-protocol__help { margin: .65rem 0 0; }
 [data-dissection-root] .diss-protocol .diss-protocol__align { min-height: 3rem !important; max-width: 100%; margin: 0; padding: .6rem .85rem; border: 2px solid #0f766e; border-radius: .55rem; background: #0f766e; color: #fff; white-space: normal; text-align: start; }
-[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
-[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
+[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { --diss-protocol-focus: #1766d2; border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
+[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid var(--diss-protocol-focus, #fff) !important; outline-offset: -5px !important; box-shadow: none !important; }
 [data-dissection-root] .diss-protocol__landmarks { margin: 0; padding-left: 1.25rem; list-style: disc; }
 [data-dissection-root] .diss-protocol__landmarks li + li { margin-top: .35rem; }
 [data-dissection-root][data-text-size="large"] .diss-protocol :is(dt, dd, p, span, strong, li, button) { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-protocol-align { --diss-protocol-focus: #111827; }
 @container dissection (max-width: 760px) { [data-dissection-root] .diss-protocol, [data-dissection-root] .diss-protocol__views { grid-template-columns: minmax(0, 1fr); } }
 @media (forced-colors: active) { [data-dissection-root] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline-color: Highlight !important; } }
 .diss-selection-header { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .55rem .75rem; margin-bottom: .5rem; }
@@ -23673,7 +23688,11 @@ var d = labToolData.dissection || {};
               if (cancelActiveCanvasGesture('Instrument gesture canceled with Escape; no action was recorded.', target, e)) return;
               if (d.resetConfirmPending) cancelSpecimenReset();
               else if (d.annotateMode || d.rulerMode) setObservationPointMode(null, !isCanvas);
-              else upd('selectedOrgan', null);
+              else {
+                var directoryReturnId = !isCanvas && d.selectedOrgan && target.closest('[data-dissection-selection]') ? d.selectedOrgan : null;
+                upd('selectedOrgan', null);
+                if (directoryReturnId) focusStructureDirectoryItem(directoryReturnId);
+              }
             } else if (e.key === '0' || e.key === 'r' || e.key === 'R') {
               e.preventDefault();
               applyCanvasZoom(target, 1, null, null, true);
@@ -24562,7 +24581,7 @@ var d = labToolData.dissection || {};
                 return false;
               }
               if (!target) return false;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
               return true;
             }
@@ -24616,7 +24635,7 @@ var d = labToolData.dissection || {};
                 return;
               }
               if (!target) return;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
             }
             setTimeout(focusWhenRendered, 0);
@@ -27995,8 +28014,8 @@ var d = labToolData.dissection || {};
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": __alloT('stem.dissection.a11y_compare_the_current_technique_with_the_previous', 'Compare the current technique with the previous saved attempt') }, '\u21C4 Compare attempts'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
-                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": "diss-layer-review", onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
+                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": layerReviewAvailable() ? "diss-layer-review" : undefined, onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
                       React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
@@ -28771,7 +28790,6 @@ var d = labToolData.dissection || {};
 
                         type: "button",
                         "aria-pressed": d.selectedOrgan === org.id,
-                        "aria-disabled": directoryVisible || isExplored ? undefined : true,
                         "data-exposure-state": directoryExposureState,
                         "aria-describedby": "diss-record-" + org.id + (directoryContextOrgan && directoryContextOrgan.id === org.id ? " diss-directory-context-detail" : ""),
                         "data-directory-action": directoryAction,
@@ -29001,12 +29019,12 @@ var d = labToolData.dissection || {};
                   var facts = SPECIMEN_TRIVIA[specimen] || [];
                   if (facts.length === 0) return null;
                   var factIdx = Math.floor((Date.now() / 8000)) % facts.length;
-                  return React.createElement("details", { className: "diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
+                  return React.createElement("details", { className: "diss-biology-fact diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
                     React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
                       React.createElement("span", { className: "text-sm" }, '\uD83D\uDCA1'),
                       React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, 'Did You Know?')
                     ),
-                    React.createElement("p", { className: "text-[11px] text-amber-600 leading-relaxed" }, facts[factIdx]),
+                    React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx]),
                     React.createElement("div", { className: "flex gap-0.5 mt-1.5 justify-center" },
                       facts.map(function (_, fi) {
                         return React.createElement("div", {
