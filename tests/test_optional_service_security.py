@@ -195,6 +195,33 @@ class OptionalServiceSecurity(unittest.TestCase):
             self.assertIs(NPU._tokenizer, old_tokenizer)
             self.assertEqual(NPU._active_id, "deepseek-r1-1.5b")
 
+    def test_npu_downloads_an_immutable_revision_and_never_trusts_model_code(self):
+        session = types.SimpleNamespace(get_providers=lambda: ["CPUExecutionProvider"], get_inputs=lambda: [])
+        ort = types.SimpleNamespace(SessionOptions=lambda: types.SimpleNamespace(),
+                                    GraphOptimizationLevel=types.SimpleNamespace(ORT_ENABLE_ALL=1),
+                                    InferenceSession=lambda *_args, **_kwargs: session)
+        snapshot = Mock(return_value="fake-model")
+        tokenizer = Mock(return_value=object())
+        modules = {"onnxruntime": ort, "huggingface_hub": types.SimpleNamespace(snapshot_download=snapshot),
+                   "transformers": types.SimpleNamespace(AutoTokenizer=types.SimpleNamespace(from_pretrained=tokenizer))}
+        with patch.dict(sys.modules, modules), patch.object(NPU, "_session", None), \
+                patch.object(NPU, "_tokenizer", None), patch.object(NPU, "_active_id", None), \
+                patch.object(NPU.os, "walk", return_value=[("fake-model", [], ["model.onnx"])]), \
+                patch.object(NPU.os.path, "getsize", return_value=1), contextlib.redirect_stdout(io.StringIO()):
+            for model_id, info in NPU.MODELS.items():
+                self.assertRegex(info["revision"], r"^[a-f0-9]{40}$")
+                NPU.load_model(model_id)
+                self.assertEqual(snapshot.call_args.kwargs["revision"], info["revision"])
+                self.assertEqual(pathlib.Path(snapshot.call_args.kwargs["local_dir"]).name, info["revision"])
+                self.assertIn("*.py", snapshot.call_args.kwargs["ignore_patterns"])
+                tokenizer.assert_called_with("fake-model", trust_remote_code=False, local_files_only=True)
+            tokenizer.reset_mock(side_effect=True)
+            tokenizer.side_effect = [ValueError("Try the model folder"), object()]
+            NPU.load_model("deepseek-r1-1.5b")
+            self.assertEqual(tokenizer.call_count, 2)
+            for call in tokenizer.call_args_list:
+                self.assertEqual(call.kwargs, {"trust_remote_code": False, "local_files_only": True})
+
     def test_busy_services_do_not_queue_engine_work(self):
         for server, route, engine, payload, lock, count in (
                 (SPEECH, "/v1/audio/speech", "_run_edge_tts", {"input": "Hello"}, SPEECH._speech_slots, 4),

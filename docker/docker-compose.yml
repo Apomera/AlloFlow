@@ -41,7 +41,7 @@ services:
 
   # ── Local Database (PocketBase — replaces Firebase) ────────────
   pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
+    image: ghcr.io/muchobien/pocketbase:latest@sha256:9a0be68a80ca1348ba8d15f217b3f983be4c094b3c571a09b3ebdeb357259338
     container_name: alloflow-pocketbase
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${PB_PORT:-8090}:8090"
@@ -58,7 +58,7 @@ services:
 
   # ── LLM Backend (Ollama) ───────────────────────────────────────
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:latest@sha256:4c5b27871a3239a717048f9b93057680a51b60c8119a7016aebb57f938e25e35
     container_name: alloflow-ollama
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434"
@@ -117,7 +117,7 @@ services:
       - ALLOFLOW_TTS_ALLOWED_ORIGINS=${ALLOFLOW_TTS_ALLOWED_ORIGINS:-}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health', timeout=3).close()"]
       interval: 30s
       timeout: 5s
       start_period: 10s
@@ -125,7 +125,7 @@ services:
 
   # ── Offline TTS (Piper — 40+ languages, no internet needed) ───
   piper:
-    image: rhasspy/wyoming-piper:latest
+    image: rhasspy/wyoming-piper:latest@sha256:7d39aafac409c2b6b09d999ed04d84c311d632e558b35baa60fad6aac722af7a
     container_name: alloflow-piper
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${PIPER_PORT:-10200}:10200"
@@ -139,7 +139,7 @@ services:
 
   # ── Web Search (SearXNG — privacy-first, no tracking) ─────────
   searxng:
-    image: searxng/searxng:latest
+    image: searxng/searxng:latest@sha256:5ed0323b5f5f8701264ef65e239a2bd83cb57098f2b971fa30bf79c06eeae271
     container_name: alloflow-searxng
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${SEARCH_PORT:-8888}:8080"

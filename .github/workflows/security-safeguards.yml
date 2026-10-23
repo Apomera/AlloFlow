@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '23 9 * * 2'
+
+concurrency:
+  group: security-safeguards-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -13,7 +19,7 @@ jobs:
   security:
     name: Security safeguards
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -22,6 +28,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/workflows/
+            /.github/dependabot.yml
             /dev-tools/check_security_safeguards.cjs
             /dev-tools/security/
             /desktop/package.json
@@ -35,6 +42,11 @@ jobs:
             /docker/docker-compose.yml
             /docker/npu_server.py
             /docker/edge-tts-server/server.py
+            /docker/edge-tts-server/requirements.txt
+            /docker/edge-tts-server/requirements.in
+            /docker/edge-tts-server/Dockerfile
+            /docker/Dockerfile
+            /docker/flux-server/Dockerfile
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
@@ -49,8 +61,14 @@ jobs:
       - name: Test optional service requests and Compose network defaults
         run: |
           python3 -m venv /tmp/alloflow-security-tests
-          /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: Flask==3.1.3
+          /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r dev-tools/security/requirements.txt
           /tmp/alloflow-security-tests/bin/python -m unittest discover -s tests -p test_optional_service_security.py
+      - name: Audit locked Python dependencies without executing package build scripts
+        run: |
+          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r dev-tools/security/requirements.txt
+          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r docker/edge-tts-server/requirements.txt
+      - name: Check image and Python dependency pins
+        run: node --test dev-tools/security/test-dependency-pins.cjs
       - name: Verify workflow policy and changed dependency scopes
         env:
           SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

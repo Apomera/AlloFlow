@@ -18,16 +18,19 @@ from flask import Flask, request, jsonify
 MODELS = {
     "deepseek-r1-1.5b": {
         "repo": "onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX",
+        "revision": "90c5edf28c2538b20f85a3c83e6413810b7579ee",
         "desc": "Best for math reasoning (1.5B, ~40 tok/s on NPU)",
         "ctx": 4096,
     },
     "phi-3.5-mini": {
         "repo": "microsoft/Phi-3.5-mini-instruct-onnx",
+        "revision": "7230dcd6c1dd28aab70f263ecc8734ec9d9bcb70",
         "desc": "Best for general content (3.8B, ~15 tok/s on NPU)",
         "ctx": 4096,
     },
     "qwen-2.5-1.5b": {
         "repo": "onnx-community/Qwen2.5-1.5B-Instruct",
+        "revision": "d54957e3af1be04546436e874a60fe386041b244",
         "desc": "Lightweight balanced model (1.5B params)",
         "ctx": 4096,
     },
@@ -144,12 +147,16 @@ def load_model(model_id):
     from huggingface_hub import snapshot_download
     from transformers import AutoTokenizer
 
-    cache = os.path.join(os.path.expanduser("~"), ".cache", "alloflow-npu", model_id)
+    # Separate revisions so removed upstream files cannot survive in a reused
+    # directory and accidentally be selected as the model/tokenizer.
+    cache = os.path.join(os.path.expanduser("~"), ".cache", "alloflow-npu", model_id, info["revision"])
     print(f"  Downloading to: {cache}")
     model_path = snapshot_download(
         info["repo"],
+        revision=info["revision"],
         local_dir=cache,
-        allow_patterns=["*.onnx", "*.onnx_data", "*.json", "*.txt", "*.model", "tokenizer*", "config*", "special*"],
+        allow_patterns=["*.onnx", "*.onnx_data", "*.json", "*.txt", "*.model", "*.tiktoken"],
+        ignore_patterns=["*.py", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.so"],
     )
     print(f"  Downloaded: {model_path}")
 
@@ -184,11 +191,11 @@ def load_model(model_id):
 
     # Load tokenizer from same directory (or parent)
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=False, local_files_only=True)
     except Exception:
         # Some repos have tokenizer in parent
         parent = os.path.dirname(onnx_path)
-        tokenizer = AutoTokenizer.from_pretrained(parent, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(parent, trust_remote_code=False, local_files_only=True)
 
     # Publish the replacement only after both parts loaded successfully.
     _session, _tokenizer = session, tokenizer

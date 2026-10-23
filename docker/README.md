@@ -80,6 +80,18 @@ Both optional Python APIs cap request bodies at 256 KiB. Docker speech accepts u
 
 NPU requests accept 1–128 text messages with at most 64,000 combined characters, integer `max_tokens` from 1 to 65536, and finite temperatures from 0 to 2. The requested output is a ceiling: actual generation is capped to the selected model's remaining context, preserving AlloFlow's normal 8192-token request even on these 4096-context models. A prompt that leaves no room for output is rejected. One inference/model swap runs at a time. Busy requests return 429 with `Retry-After: 1`; invalid requests return 400 and oversized bodies 413. Provider failures return a generic 500 message; diagnostics stay in the local server log. Split long passages or shorten chat history rather than bypassing the limits.
 
+### Reviewed downloads and security checks
+
+The main School Box Compose images and all three Dockerfiles use immutable SHA256 manifest digests, including their existing x64/ARM64 manifests. Tags remain as readable labels, but the digest determines the actual download. Digest pins provide reproducibility; they do not certify an image as vulnerability-free. Dependabot checks Dockerfiles, Compose references, and the optional services' Python requirements weekly, with updates delivered as pull requests.
+
+Docker speech installs the complete `edge-tts` and Flask dependency tree from `edge-tts-server/requirements.txt` with wheel hashes enforced and source builds disabled. The security tooling has its own hashed lock in `dev-tools/security/requirements.txt`. CI audits both using `pip-audit` without running dependency build scripts. The unused `flask-cors` dependency was removed; the server retains its explicit origin checks. The speech health check uses Python's standard library so it works in the slim image without curl.
+
+The required security workflow discovers new non-MCP workflows automatically. Its scheduled Tuesday run and manual runs audit all three maintained npm scopes (desktop runtime, web app, security parser), even when their lockfiles have not changed. Normal PR/push dependency checks stay scoped to changed manifests. The web app retains its existing critical-only blocking threshold while its legacy build-tool findings are addressed; desktop and the parser block high findings too. Registry failures are errors, not clean audit results. MCP workflows and dependencies remain independently maintained.
+
+The NPU model catalog pins full Hugging Face commit IDs, refuses custom tokenizer code, and loads tokenizer files locally after the pinned download. Tokenizers for all three catalog entries were checked with Transformers 5.3.0. Cached files are separated by revision, so stale files from another revision cannot be selected. Existing caches are preserved, but the first run of this update may download a fresh pinned model copy; provision it while online before an offline deployment. The NPU Python environment and GPU Flux dependency stack still require hardware-specific compatibility testing; the hashed speech lock does not cover those environments. No GPU/NPU inference or container vulnerability scan is implied by the pin checks.
+
+To update a Python lock, change its sibling `requirements.in`, then use `pip-compile --generate-hashes --allow-unsafe --output-file <requirements.txt> <requirements.in>` in an isolated environment. Verify wheel-only installation on the supported Python/platform targets, audit the resulting lock, and run the optional-service tests before merging. Review image digest changes and model commit changes in the same way; never replace a pin with an unreviewed moving reference just to make a check pass.
+
 ## How It Works
 
 1. **Nginx** serves the React SPA and reverse-proxies API calls:
