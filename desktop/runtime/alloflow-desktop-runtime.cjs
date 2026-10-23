@@ -5702,7 +5702,15 @@ async function runSmoke(args) {
   await new Promise((resolve) => server.listen(args.port, args.host, resolve));
   const address = server.address();
   const baseUrl = `http://${args.host}:${address.port}`;
+  let mediaFixtureDir;
   try {
+    // Exercise the real static-file transport without depending on large,
+    // gitignored introductory videos. Remove this test-only payload before
+    // packaging; it checks byte transport, not video decoding.
+    mediaFixtureDir = fs.mkdtempSync(path.join(STATIC_APP_DIR, 'alloflow-smoke-'));
+    const mediaFixtureBytes = Buffer.from(Array.from({ length: 4096 }, (_, index) => index % 251));
+    fs.writeFileSync(path.join(mediaFixtureDir, 'stream.mp4'), mediaFixtureBytes, { flag: 'wx' });
+    const mediaUrl = baseUrl + '/app/' + path.basename(mediaFixtureDir) + '/stream.mp4';
     const health = await fetch(baseUrl + '/api/health').then((response) => response.json());
     const commandOrigin = new URL(baseUrl).origin;
     const appOrigin = new URL(health.appUrl).origin;
@@ -5714,14 +5722,14 @@ async function runSmoke(args) {
     const commandCsp = commandResponse.headers.get('content-security-policy') || '';
     const commandNoSniff = commandResponse.headers.get('x-content-type-options') || '';
     await commandResponse.text();
-    const mediaResponse = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4');
+    const mediaResponse = await fetch(mediaUrl);
     const mediaType = mediaResponse.headers.get('content-type') || '';
     if (mediaResponse.body) await mediaResponse.body.cancel();
-    const mediaHead = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { method: 'HEAD' });
-    const mediaRange = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { headers: { Range: 'bytes=0-1023' } });
+    const mediaHead = await fetch(mediaUrl, { method: 'HEAD' });
+    const mediaRange = await fetch(mediaUrl, { headers: { Range: 'bytes=0-1023' } });
     const mediaRangeBytes = Buffer.from(await mediaRange.arrayBuffer());
     const mediaEtag = mediaRange.headers.get('etag') || '';
-    const mediaNotModified = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', {
+    const mediaNotModified = await fetch(mediaUrl, {
       headers: { 'If-None-Match': mediaEtag },
     });
 
@@ -5794,9 +5802,10 @@ async function runSmoke(args) {
     if (health.status !== 'ok') throw new Error('Health endpoint did not return ok.');
     if (!commandCsp.includes("script-src 'self'")) throw new Error('Command center CSP is missing or too permissive for scripts.');
     if (commandNoSniff !== 'nosniff') throw new Error('Static responses are missing nosniff protection.');
-    if (!mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong MIME type: ' + mediaType);
+    if (mediaResponse.status !== 200 || !mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong status or MIME type: ' + mediaResponse.status + ' ' + mediaType);
     if (mediaHead.status !== 200 || mediaHead.headers.get('accept-ranges') !== 'bytes') throw new Error('Bundled media HEAD/range metadata regressed.');
     if (mediaRange.status !== 206 || mediaRangeBytes.length !== 1024) throw new Error('Bundled media byte-range streaming regressed.');
+    if (!mediaRangeBytes.equals(mediaFixtureBytes.subarray(0, 1024))) throw new Error('Bundled media byte-range contents changed.');
     if (!String(mediaRange.headers.get('content-range') || '').startsWith('bytes 0-1023/')) throw new Error('Bundled media Content-Range is invalid.');
     if (!mediaEtag) throw new Error('Bundled media is missing an ETag.');
     if (mediaNotModified.status !== 304) throw new Error('Bundled media conditional request did not return 304.');
@@ -5948,6 +5957,10 @@ async function runSmoke(args) {
   } finally {
     await stopLanShare().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
+    if (mediaFixtureDir) {
+      fs.rmSync(path.join(mediaFixtureDir, 'stream.mp4'), { force: true });
+      fs.rmdirSync(mediaFixtureDir);
+    }
   }
 }
 
