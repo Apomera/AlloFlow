@@ -62,6 +62,9 @@ jobs:
         run: |
           $base = node -p "require('./package.json').version.replace(/-.*/, '')"
           npm version --no-git-tag-version "$base-beta.$env:GITHUB_RUN_NUMBER"
+      - name: Build desktop web assets for the UI smoke test
+        working-directory: desktop
+        run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release
@@ -162,6 +165,9 @@ jobs:
         run: |
           BASE="$(node -p "require('./package.json').version.replace(/-.*/, '')")"
           npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
+      - name: Build desktop web assets for the UI smoke test
+        working-directory: desktop
+        run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release

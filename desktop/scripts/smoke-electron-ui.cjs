@@ -112,10 +112,12 @@ function assert(condition, message) {
 
     await page.locator('.tab').first().waitFor({ state: 'visible', timeout: 30000 });
     await page.waitForFunction(() => document.querySelector('#runtime-pill')?.textContent.includes('ready'), null, { timeout: 45000 });
-    const setupLater = page.locator('#setup-later');
-    if (await setupLater.isVisible()) {
-      await setupLater.click();
-    }
+    // A fresh profile shows the current first-run wizard after config loads.
+    // Wait for its real control so an old selector cannot silently skip it.
+    const setupLater = page.locator('#wiz-later');
+    await setupLater.waitFor({ state: 'visible', timeout: 15000 });
+    await setupLater.click();
+    await page.locator('#api-key-setup').waitFor({ state: 'hidden' });
 
     const tabs = page.locator('.tab');
     assert(await tabs.count() >= 4, 'Command center did not render its navigation tabs.');

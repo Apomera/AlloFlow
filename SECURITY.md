@@ -32,6 +32,21 @@ lockfile update takes effect only after dependencies are installed and the
 affected application is rebuilt or redeployed. Never use a failed or skipped
 audit as evidence that a release is safe.
 
+The remote MCP verification workflow also audits its complete lockfile at the
+high/critical threshold. For desktop upgrades, run
+`npm --prefix desktop run verify:release` after installing the updated dependencies. For remote MCP
+upgrades, regenerate Wrangler types and run the service's full `check` and
+`runner:check` commands in Linux CI before deployment. Keep the previous signed
+desktop installer and Worker release available until the new release passes its
+installation and staging canary checks.
+
+Imported or AI-generated markup must be sanitized at each live preview boundary,
+even when it carries an AlloFlow-generated marker. The reconstructed-table preview
+uses the remediation sanitizer, removes document-wide style blocks, and preserves
+table semantics and review controls if a safe preview cannot be produced. Its
+regression tests cover malicious attributes, active elements, safe links, math,
+and accessible table headers.
+
 ## Architecture & Data Safety (FERPA-Aligned Design)
 
 AlloFlow is designed to support school-controlled, FERPA-aligned deployments. The everyday local-first path is **AlloFlow Desktop**, which can keep the bundled app, local settings, local engine options, and same-room LAN classroom sessions on the teacher machine without Docker. The **School Box Server** Docker stack remains optional infrastructure for schools that need a server/appliance path. Compliance still depends on district policy, contracts, access controls, retention, consent, and actual use.
