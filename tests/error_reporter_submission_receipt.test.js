@@ -270,6 +270,74 @@ describe('error report submission receipts', () => {
 });
 
 describe('optional error report description', () => {
+  it('repairs focus after the launching dialog closes without hijacking later navigation', async () => {
+    const { w, api } = boot();
+    // Match browsers' animation-frame path while retaining deterministic timers.
+    w.requestAnimationFrame = callback => w.setTimeout(callback, 16);
+    api.openManualReport();
+    element(w, 'trigger').focus();
+    await vi.advanceTimersByTimeAsync(16);
+    expect(w.document.activeElement).toBe(description(w));
+
+    api.openManualReport();
+    element(w, 'aer-close').focus();
+    await vi.advanceTimersByTimeAsync(16);
+    expect(w.document.activeElement).toBe(element(w, 'aer-close'));
+
+    api.openManualReport();
+    api.openReadAloudLog();
+    element(w, 'aer-tab-tts').focus();
+    await vi.advanceTimersByTimeAsync(16);
+    expect(w.document.activeElement).toBe(element(w, 'aer-tab-tts'));
+
+    api.openManualReport();
+    click(w, 'aer-close');
+    await vi.advanceTimersByTimeAsync(16);
+    expect(element(w, 'allo-err-panel')).toBeNull();
+    expect(w.document.activeElement).toBe(element(w, 'trigger'));
+    expect(w.fetch).not.toHaveBeenCalled();
+  });
+
+  it('opens a manual report on Errors with zero captured errors and focuses the description', () => {
+    const { w, api } = boot();
+    api.clearBuffer();
+    api.openReadAloudLog();
+    click(w, 'aer-close');
+    element(w, 'trigger').focus();
+    api.openManualReport();
+    expect(element(w, 'aer-tab-errors').getAttribute('aria-selected')).toBe('true');
+    expect(element(w, 'aer-tab-tts').getAttribute('aria-selected')).toBe('false');
+    expect(w.document.activeElement).toBe(description(w));
+    expect(api.getBuffer()).toHaveLength(0);
+    expect(w.fetch).not.toHaveBeenCalled();
+    click(w, 'aer-close');
+    expect(w.document.activeElement).toBe(element(w, 'trigger'));
+  });
+
+  it('keeps repeated manual entry open with its draft while preserving diagnostic tab and toggle behavior', () => {
+    const { w, api } = boot();
+    const draft = 'I expected the card to stay where I placed it.';
+    enterDescription(w, draft);
+    api.openReadAloudLog();
+    expect(element(w, 'aer-tab-tts').getAttribute('aria-selected')).toBe('true');
+    const panel = element(w, 'allo-err-panel');
+    api.openManualReport();
+    expect(element(w, 'allo-err-panel')).toBe(panel);
+    expect(description(w).value).toBe(draft);
+    expect(w.document.activeElement).toBe(description(w));
+    api.openManualReport();
+    expect(element(w, 'allo-err-panel')).toBe(panel);
+    expect(description(w).value).toBe(draft);
+    expect(w.document.activeElement).toBe(description(w));
+    api.openSearchLog();
+    expect(element(w, 'aer-tab-search').getAttribute('aria-selected')).toBe('true');
+    api.openPanel();
+    expect(element(w, 'allo-err-panel')).toBeNull();
+    api.openPanel();
+    expect(element(w, 'aer-tab-search').getAttribute('aria-selected')).toBe('true');
+    expect(w.fetch).not.toHaveBeenCalled();
+  });
+
   it('labels an optional bounded field and still allows a report without a description', async () => {
     const { w } = boot();
     const field = description(w);

@@ -1271,10 +1271,23 @@
     // captures no error, so the Search tab has to be reachable with an empty
     // error buffer. Grounded features link here when a search comes back dry.
     openSearchLog: function () { openPanel('search'); },
-    // Alias kept for API stability — just opens the panel. The form's "what
-    // happened?" field falls back to "(No errors captured. Sending a manual
-    // report.)" when the buffer is empty, so we don't need to inject anything.
-    openManualReport: openPanel
+    // Manual entry always opens the report form, even after visiting another
+    // diagnostics tab. Repeated entry must not toggle the dialog closed.
+    openManualReport: function () {
+      openPanel('errors');
+      var reportPanel = panel;
+      var description = reportPanel && reportPanel.querySelector('#aer-description');
+      if (description) description.focus();
+      // A settings dialog that launched us may restore its old focus as it
+      // closes. Repair that handoff without moving focus inside this dialog.
+      var restoreReportFocus = function () {
+        if (panel !== reportPanel || activeTab !== 'errors' || !reportPanel || reportPanel.contains(document.activeElement)) return;
+        var field = reportPanel.querySelector('#aer-description');
+        if (field) field.focus();
+      };
+      if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(restoreReportFocus);
+      else setTimeout(restoreReportFocus, 0);
+    }
   };
   // Generation modules can finish before this async reporter script arrives.
   // Drain their bounded hand-off queue so the first failed pack is not lost.

@@ -1436,7 +1436,11 @@ function buildAlloCommandContext(deps) {
       openProjectSettings: handleSetIsProjectSettingsOpenToTrue,
       // Report a problem — mirror the ErrorReporter public API with a graceful fallback:
       openErrorReporter: () => {
-        try { if (window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === 'function') { window.AlloModules.ErrorReporter.openPanel(); return; } } catch (_) {}
+          try {
+            const reporter = window.AlloModules && window.AlloModules.ErrorReporter;
+            if (reporter && typeof reporter.openManualReport === 'function') { reporter.openManualReport(); return; }
+            if (reporter && typeof reporter.openPanel === 'function') { reporter.openPanel('errors'); return; }
+          } catch (_) {}
         try { addToast((t('toasts.error_reporter_loading') || 'The problem reporter is still loading — try again in a moment.'), 'info'); } catch (_) {}
       },
       // ── Nested-tool launchers (2026-06-13) ── open a workspace that normally lives behind a

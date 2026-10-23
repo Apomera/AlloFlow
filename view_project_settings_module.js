@@ -804,8 +804,9 @@ function ProjectSettingsView(props) {
     type: "button",
     onClick: () => {
       try {
-        if (window.AlloModules && window.AlloModules.ErrorReporter && window.AlloModules.ErrorReporter.openPanel) {
-          window.AlloModules.ErrorReporter.openPanel();
+        var reporter = window.AlloModules && window.AlloModules.ErrorReporter;
+        if (reporter && (typeof reporter.openManualReport === 'function' || typeof reporter.openPanel === 'function')) {
+          if (typeof reporter.openManualReport === 'function') reporter.openManualReport();else reporter.openPanel('errors');
           handleSetIsProjectSettingsOpenToFalse();
         } else {
           window.open('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
