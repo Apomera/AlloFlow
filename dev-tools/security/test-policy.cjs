@@ -42,7 +42,7 @@ test('rejects signing secrets exposed to an entire build job', () => {
 });
 test('audits exact changed manifests and keeps MCP scopes untouched', () => {
   assert.deepEqual(auditPlan(['desktop/mcp/runtime/package-lock.json', 'services/alloflow-remote-mcp/package.json']), []);
-  assert.deepEqual(auditPlan(['desktop/web-app/package-lock.json']), [{ directory: 'desktop/web-app', level: 'high' }]);
+  assert.deepEqual(auditPlan(['desktop/web-app/package-lock.json']), [{ directory: 'desktop/web-app', level: 'low' }]);
   assert.deepEqual(auditPlan(['desktop/package.json']), [{ directory: 'desktop', level: 'high' }]);
   assert.deepEqual(auditPlan(['trailer/package-lock.json']), [{ directory: 'trailer', level: 'high' }]);
   assert.equal(auditPlan([], true).length, 4);

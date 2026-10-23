@@ -57,7 +57,8 @@ From the repository root, run:
 ```sh
 node --test dev-tools/security/test-dev-server.cjs
 node --test dev-tools/security/test-build-tooling.cjs
-npm audit --prefix desktop/web-app --package-lock-only --ignore-scripts --audit-level=high
+node --test dev-tools/security/test-web-dependencies.cjs
+npm audit --prefix desktop/web-app --package-lock-only --ignore-scripts --audit-level=low
 ```
 
 The server tests use isolated fixtures in the dependency cache and ephemeral
@@ -65,8 +66,24 @@ loopback ports. They check hostile hosts/origins, source maps, path traversal,
 SPA routes, stale service-worker reset, hot reload, HTTP/WebSocket proxying,
 generated/custom HTTPS certificates, the actual React launcher and shutdown,
 custom Express settings, catch-all proxies and trusted-origin preflight requests.
-The required CI check runs these tests and blocks new high or critical web
-dependency findings. Lower-severity findings remain visible in full audits.
+The required CI check runs these tests and blocks web dependency findings at all
+reported severities. The additional dependency tests exercise Tailwind variants,
+nesting and minification, YAML configuration loading, proxy connections and
+SockJS messaging as well as malformed-input handling.
+
+The security overrides keep the current React Scripts and Tailwind major versions.
+PostCSS selector parsing is pinned to 7.1.6; YAML v1 consumers receive 1.10.3,
+while a direct YAML 2.9.1 development dependency satisfies the optional peer used
+by Tailwind's PostCSS configuration loader. The proxy-agent 4.0.1 override uses
+once 2.0.1 only where the caller awaits connection completion and ignores the
+event result. SockJS 0.3.24 uses UUID 11.1.1 through its existing CommonJS v4 API.
+Keep these compatibility tests when revisiting or removing the overrides; avoid
+forcing an older React Scripts release to satisfy npm's suggested audit fix.
+
+Upstream advisories: [selector parsing](https://github.com/advisories/GHSA-rj75-hqrm-r3gf),
+[YAML error handling](https://github.com/advisories/GHSA-48c2-rrv3-qjmp),
+[aborted event waits](https://github.com/advisories/GHSA-vpq2-c234-7xj6), and
+[UUID buffer bounds](https://github.com/advisories/GHSA-w5hq-g745-h8pq).
 
 The preview rules follow the browser's [CORS preflight protocol](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
 and preserve the [Express application API](https://expressjs.com/en/4x/api/).

@@ -48,7 +48,7 @@ function auditPlan(changed, full = false) {
     { directory: 'dev-tools/security', level: 'high' },
     { directory: 'desktop', level: 'high' },
     { directory: 'trailer', level: 'high' },
-    { directory: 'desktop/web-app', level: 'high' },
+    { directory: 'desktop/web-app', level: 'low' },
   ].filter(({ directory }) => full || changed.some((file) => file === directory + '/package.json' || file === directory + '/package-lock.json'));
 }
 
