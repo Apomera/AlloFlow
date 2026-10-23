@@ -17,7 +17,24 @@ function actualBounds(h) { h.root.updateMatrixWorld(true); const box = new T.Box
 
 describe('Bennett’s feather star specimen', () => {
   it('registers a base-rooted example whose nominal measurement is crown spread', () => {
-    expect(S.ids.at(-1)).toBe(ID); expect(S.info(ID)).toMatchObject({ group: 'invertebrate', habit: 'bottom', lengthM: .32, depthM: [0, 50], origin: 'base', healthStates: ['healthy'] });
+    // Later additions may follow this stable registration prefix.
+    const registeredPrefix = [
+      'clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish',
+      'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper', 'humphead_wrasse',
+      'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray',
+      'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta',
+      'green_turtle', 'hawksbill_turtle', 'magnificent_anemone', 'giant_clam', 'crown_of_thorns',
+      'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm',
+      'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'brain_coral', 'staghorn_coral',
+      'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star',
+      'reef_ball', 'coral_tree_nursery', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel',
+      'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish',
+      'giant_triton', 'blue_velvet_headshield_slug', 'regal_angelfish', 'mandarin_dragonet',
+      'harlequin_shrimp', 'spotted_seahorse', 'bennetts_feather_star'
+    ];
+    expect(S.ids.slice(0, registeredPrefix.length)).toEqual(registeredPrefix);
+    expect(new Set(S.ids).size).toBe(S.ids.length);
+    expect(S.info(ID)).toMatchObject({ group: 'invertebrate', habit: 'bottom', lengthM: .32, depthM: [0, 50], origin: 'base', healthStates: ['healthy'] });
     expect(() => S.createSchool(T, ID, 2)).toThrow();
   });
   for (const quality of ['low', 'high']) {

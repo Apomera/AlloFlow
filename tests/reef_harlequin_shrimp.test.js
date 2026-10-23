@@ -16,7 +16,22 @@ function vertexColour(m,i){const g=m.geometry,c=g.attributes.color,uv=g.attribut
 function colours(m,e){const a=[];for(let i=e.first;i<e.first+e.count;i++)a.push(...vertexColour(m,i));return a;}
 describe('Pacific adult harlequin shrimp',()=>{
   it('appends an unsexed illustrative adult with substrate origin',()=>{
-    expect(S.ids).toHaveLength(59);expect(S.ids.at(-1)).toBe(ID);
+    // Later additions may follow this stable registration prefix.
+    const registeredPrefix = [
+      'clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish',
+      'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper', 'humphead_wrasse',
+      'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray',
+      'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta',
+      'green_turtle', 'hawksbill_turtle', 'magnificent_anemone', 'giant_clam', 'crown_of_thorns',
+      'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm',
+      'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'brain_coral', 'staghorn_coral',
+      'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star',
+      'reef_ball', 'coral_tree_nursery', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel',
+      'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish',
+      'giant_triton', 'blue_velvet_headshield_slug', 'regal_angelfish', 'mandarin_dragonet', 'harlequin_shrimp'
+    ];
+    expect(S.ids.slice(0, registeredPrefix.length)).toEqual(registeredPrefix);
+    expect(new Set(S.ids).size).toBe(S.ids.length);
     expect(S.info(ID)).toMatchObject({group:'invertebrate',habit:'bottom',lengthM:.045,depthM:[1,20],origin:'base',healthStates:['healthy']});
   });
   for(const quality of ['low','high']){

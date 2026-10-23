@@ -5,7 +5,9 @@ import { sliceBetween } from './helpers/anchored_slice.js';
 
 const { act } = React;
 const source = readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
-const componentSource = sliceBetween(source, '  function Birdlab3DObservatory(', '  // ── Reduced motion CSS', { file: 'stem_tool_birdlab.js' });
+// Keep the real resident studio and compass in the same lexical scope as the
+// observatory, matching the complete production module rather than stubbing them.
+const componentSource = sliceBetween(source, '  function BirdlabResidentStudio(', '  // ── Reduced motion CSS', { file: 'stem_tool_birdlab.js' });
 let root, host, previousMedia;
 const state = { ready: true, paused: false, camera: 'orbit', lighting: 'daylight', speed: 1, phase: 'gliding', label: 'Gliding through the clearing', altitude: 6, airspeed: 8.3, wingbeat: 0, time: 12 };
 
@@ -160,8 +162,10 @@ describe('BirdLab optional 3D view lifecycle', () => {
     window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;errorHandler=options.onError;publish({...state,camera:'robin',residentInspection:{part:'whole',view:'free',active:false,bounds:null}});return scene;})};
     await mount(()=>Promise.resolve());
     await act(async()=>errorHandler('Graphics interrupted'));
-    const choices=[...host.querySelectorAll('[data-resident-part-choice],[data-resident-view-choice]')];
-    expect(choices).toHaveLength(8);expect(choices.every(choice=>choice.disabled)).toBe(true);
+    const parts=[...host.querySelectorAll('[data-resident-part-choice]')],views=[...host.querySelectorAll('[data-resident-view-choice]')],choices=[...parts,...views];
+    expect(parts.map(choice=>choice.getAttribute('data-resident-part-choice'))).toEqual(['whole','head','wing','tail']);
+    expect(views.map(choice=>choice.getAttribute('data-resident-view-choice'))).toEqual(['free','side','opposite','front','rear','above']);
+    expect(choices).toHaveLength(10);expect(choices.every(choice=>choice.disabled)).toBe(true);
     await act(async()=>choices.forEach(choice=>choice.click()));
     expect(scene.setResidentPart).not.toHaveBeenCalled();expect(scene.setResidentView).not.toHaveBeenCalled();
   });

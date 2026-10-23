@@ -61,6 +61,9 @@ const KNOWN_GLOBALS = new Set([
   'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array',
   'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView', 'BigInt', 'Intl', 'performance', 'crypto',
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
+  // DOMPoint is a browser geometry constructor used by SVG pointer transforms.
+  // https://www.w3.org/TR/geometry-1/#DOMPoint
+  'DOMPoint',
   // Document and HTMLFormElement belong beside Node/Element/HTMLElement above: the
   // same standard DOM constructors, reached the same way. They were missing, so
   // doc_pipeline_source.jsx's named-control defence - which reads native getters off

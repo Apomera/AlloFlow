@@ -1307,7 +1307,14 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       const arches = contractFunction(source, 'earthwormAorticGeometry', { earthwormAnatomyFrame: anatomyFrame })(500, 600);
       expect(arches.pairs).toHaveLength(5); expect(arches.pairs.every(pair => pair.arms.length === 2)).toBe(true);
       expect(source.includes("stage: 'rear'") && source.includes("wormArchOptions.stage = 'front';"), 'paired vascular arms render behind and in front of the gut').toBe(true);
-      expect(source).toContain('Ventral cord sits slightly off the digestive midline');
+      const neural = contractFunction(source, 'earthwormNeuralGeometry', { earthwormAnatomyFrame: anatomyFrame })(500, 600);
+      expect(source.includes('drawEarthwormNeuralComplex(ctx, {')).toBe(true);
+      for (const sample of neural.originalCord) {
+        const f = anatomyFrame(sample.t, 500, 600);
+        const dx = sample.point.x * 500 - f.point.x, dy = sample.point.y * 600 - f.point.y;
+        expect(dx * f.nx + dy * f.ny).toBeCloseTo(f.width * .28, 10);
+        expect(dx * f.tx + dy * f.ty).toBeCloseTo(0, 10);
+      }
       expect(source).toContain("{ id: 'setae', name: 'Setae', x: 0.46, y: 0.55");
       expect(source).toContain("{ id: 'clitellum', name: 'Clitellum', x: 0.51, y: 0.33");
       expect(source).toContain("{ id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12");
@@ -1471,7 +1478,12 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('The interventricular septum is a muscular partition');
       expect(source).toContain('Papillary muscles rise from the wall and anchor multiple branching chordae.');
       expect(source).toContain('Trabeculae carneae follow each ventricular wall');
-      expect(source).toContain('function drawSemilunarValve(x, y, color)');
+      const semilunar = contractFunction(source, 'sheepSemilunarGeometry')(500, 600);
+      expect(semilunar.valves.map(valve => [valve.id, valve.cusps.length])).toEqual([
+        ['aortic_v', 3], ['pulm_v', 3],
+      ]);
+      expect(semilunar.valves.every(valve => valve.radius === 5.5 && valve.target.y > valve.center.y)).toBe(true);
+      expect(source.includes('drawSheepSemilunarValves(ctx, {')).toBe(true);
       expect(source).toContain("{ id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43");
       expect(source).toContain("{ id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53");
       expect(source).toContain('Side-lying visceral cavity with thoracic and abdominal organs registered to the torso.');

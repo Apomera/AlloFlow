@@ -28,8 +28,32 @@ async function mount(extra = {}, collection = 'saved') {
 
 describe('focused second-look candidate continuity', () => {
   it('retains the known confusion outside the saved target collection while leaving ordinary seeded choices unchanged', () => {
+    // Match the historical longnose/pajama registration prefix protected by
+    // reef_butterfly_cardinal_pair.test.js. The seeded fixture predates later additions.
+    const legacyIds = [
+      'clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish',
+      'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper', 'humphead_wrasse',
+      'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray',
+      'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta',
+      'green_turtle', 'hawksbill_turtle', 'magnificent_anemone', 'giant_clam', 'crown_of_thorns',
+      'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm',
+      'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'brain_coral', 'staghorn_coral',
+      'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star',
+      'reef_ball', 'coral_tree_nursery', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel',
+      'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish'
+    ];
+    const legacyMeta = X.SPECIES_META.slice(0, legacyIds.length);
+    expect(legacyMeta.map(m => m.id)).toEqual(legacyIds);
+    expect(X.buildMarinePracticeRound(legacyMeta, SEED + 2, ['clownfish'], ['clownfish']))
+      .toEqual([{ id: 'clownfish', choices: ['firefish', 'moorish_idol', 'clownfish'] }]);
+    // An expanded valid pool may yield different alternatives, with the same guarantees.
     const normal = build(SEED + 2, ['clownfish'], ['clownfish']);
-    expect(normal).toEqual([{ id: 'clownfish', choices: ['firefish', 'moorish_idol', 'clownfish'] }]);
+    expect(normal.map(q => q.id)).toEqual(['clownfish']);
+    expect(normal[0].choices).toContain('clownfish');
+    expect(normal[0].choices).toHaveLength(3);
+    expect(new Set(normal[0].choices).size).toBe(3);
+    expect(normal[0].choices.every(id => X.SPECIES_META.some(m => m.id === id && m.group === 'fish'))).toBe(true);
+    expect(normal).toEqual(build(SEED + 2, ['clownfish'], ['clownfish'], []));
     const focused = build(SEED + 2, ['clownfish'], ['clownfish'], [wrong('clownfish', 'lionfish')]);
     expect(focused.map(q => q.id)).toEqual(['clownfish']);
     expect(focused[0].choices).toContain('lionfish');

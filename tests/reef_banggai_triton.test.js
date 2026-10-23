@@ -15,7 +15,22 @@ function pixel(h, x, v) { const im = parts(h)[0].material.map.image, u = (.5 - x
 
 describe('Banggai cardinalfish and living giant triton specimens', () => {
   it('appends IDs and reports sourced adult-example metadata', () => {
-    expect(S.ids.slice(-2)).toEqual(ids); expect(S.ids).toHaveLength(55); expect(S.ids[0]).toBe('clownfish');
+    // Later additions may follow this stable registration prefix.
+    const registeredPrefix = [
+      'clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish',
+      'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper', 'humphead_wrasse',
+      'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray',
+      'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta',
+      'green_turtle', 'hawksbill_turtle', 'magnificent_anemone', 'giant_clam', 'crown_of_thorns',
+      'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm',
+      'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'brain_coral', 'staghorn_coral',
+      'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star',
+      'reef_ball', 'coral_tree_nursery', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel',
+      'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish',
+      'giant_triton'
+    ];
+    expect(S.ids.slice(0, registeredPrefix.length)).toEqual(registeredPrefix);
+    expect(new Set(S.ids).size).toBe(S.ids.length);
     expect(S.info(ids[0])).toMatchObject({ group: 'fish', habit: 'hover', lengthM: .075, depthM: [0, 16], origin: 'centre', healthStates: ['healthy'] });
     expect(S.info(ids[1])).toMatchObject({ group: 'invertebrate', habit: 'bottom', lengthM: .3, depthM: [1, 40], origin: 'base', healthStates: ['healthy'] });
   });

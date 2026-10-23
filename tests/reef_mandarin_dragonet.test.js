@@ -16,7 +16,22 @@ function region(g, first, count) { const b = new T.Box3(), a = g.attributes.posi
 function colorAt(g, i) { const a = g.attributes.color; return [a.getX(i), a.getY(i), a.getZ(i)]; }
 describe('Adult male mandarin dragonet specimen', () => {
   it('appends an illustrative six-centimetre substrate-associated adult', () => {
-    expect(S.ids).toHaveLength(58); expect(S.ids.at(-1)).toBe(ID);
+    // Later additions may follow this stable registration prefix.
+    const registeredPrefix = [
+      'clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish',
+      'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper', 'humphead_wrasse',
+      'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray',
+      'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta',
+      'green_turtle', 'hawksbill_turtle', 'magnificent_anemone', 'giant_clam', 'crown_of_thorns',
+      'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm',
+      'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'brain_coral', 'staghorn_coral',
+      'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star',
+      'reef_ball', 'coral_tree_nursery', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel',
+      'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish',
+      'giant_triton', 'blue_velvet_headshield_slug', 'regal_angelfish', 'mandarin_dragonet'
+    ];
+    expect(S.ids.slice(0, registeredPrefix.length)).toEqual(registeredPrefix);
+    expect(new Set(S.ids).size).toBe(S.ids.length);
     expect(S.info(ID)).toMatchObject({ group: 'fish', habit: 'bottom', lengthM: .06, depthM: [1,18], origin: 'centre', healthStates: ['healthy'], portrait: { dir: [.6,.58,2.7] } });
   });
   for (const quality of ['low','high']) {

@@ -356,9 +356,11 @@ describe('Mushroom turning reveals persistent surfaces without cooking during re
  it('preserves dark or scorched evidence when the learner turns the piece again',()=>{
   media.matches=true;motionChange();start('independent','mushroom-turning');choose('avatarPanHeat',3);assisted('setPanHeat');choose('avatarPanWait',60);assisted('waitPan');assisted('waitPan');assisted('turnMushroom');const first=brown().pieces[0].faces[0];expect(['dark','scorched']).toContain(first.color);assisted('turnMushroom');expect(brown().pieces[0].faces[0]).toEqual(first);expect($('avatarMushroomFace0').textContent.toLowerCase()).toContain(first.color+' when revealed');expect(get().guide.complete).toBe(false);expect($('avatarActivitySummary').textContent).toMatch(/damage remains|does not erase/);
  });
+ // Thirty full DOM-driven actions plus persistence/replay exceed the default
+ // five-second unit budget under two-worker load; retain every real checkpoint.
  it('attributes the complete Watch sequence to the demonstrator and replays its actual reveals',()=>{
   start('watch','mushroom-turning');for(let i=0;i<30&&!get().guide.complete;i++)watchAction();expect(get().record.intents).toHaveLength(30);expect(get().record.intents.every(i=>i.actor==='demonstrator')).toBe(true);expect(brown().targetMet).toBe(true);expect($('avatarMushroomFace0').dataset.actor).toBe('demonstrator');expect($('avatarWatchManual').disabled).toBe(true);const state=get().state;ui.dispose();mount();expect(get().activity).toBe('mushroom-turning');expect(get().state).toEqual(state);expect(brown().targetMet).toBe(true);expect($('avatarMushroomFace0').dataset.actor).toBe('demonstrator');
- });
+ },15000);
 });
 
 
