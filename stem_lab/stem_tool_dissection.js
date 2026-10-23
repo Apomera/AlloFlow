@@ -4574,7 +4574,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Plume-like gills lie in branchial chambers beneath the carapace. Each has a central axis bearing many fine, tubular filaments. Mouthpart gill bailers move water over these exchange surfaces, where gases pass between water and hemolymph.', clinical: 'Four representative gills are shown per side; count and spacing are simplified. Distinguish the gill exchange surface from the mouthpart gill bailer that moves water.' },
 
-                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
+                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: 'Three main cuticular grinding teeth, one median and two lateral, work inside the cardiac stomach. The mineralized teeth are supported by ossicles and grind swallowed food.', clinical: 'This opened-stomach teaching view separates the main grinding surfaces. Ridges are representative; their shape and number vary between species. Gastroliths are separate calcium stores associated with molting.' },
 
                   { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Paired antennal excretory organs near the bases of the antennae. They filter hemolymph and form urine, helping regulate water and salts.', clinical: 'Freshwater crayfish conserve salts while removing excess water in dilute urine. The gills also help excrete ammonia.' },
 
@@ -6327,6 +6327,135 @@ var d = labToolData.dissection || {};
                   });
                 } finally { context.restore(); }
               }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishGastricMillGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var x = width * 0.5 - width * 0.12, y = height * 0.45;
+            function point(dx, dy) { return { x: (x + width * dx) / width, y: (y + height * dy) / height }; }
+            function region(first, commands) {
+              var start = point(first[0], first[1]);
+              var segments = commands.map(function (command) {
+                var points = [];
+                for (var index = 1; index < command.length; index += 2) points.push(point(command[index], command[index + 1]));
+                return { kind: command[0], points: points };
+              });
+              var points = [start]; segments.forEach(function (segment) { points = points.concat(segment.points); });
+              var xs = points.map(function (p) { return p.x; }), ys = points.map(function (p) { return p.y; });
+              return { start: start, segments: segments, bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+            }
+            var teeth = [-1, 1].map(function (side) {
+              var tooth = region([side * 0.022, -0.006], [
+                ['C', side * 0.019, -0.012, side * 0.010, -0.009, side * 0.007, -0.003],
+                ['C', side * 0.004, 0.002, side * 0.006, 0.010, side * 0.011, 0.014],
+                ['C', side * 0.014, 0.017, side * 0.020, 0.015, side * 0.021, 0.010],
+                ['Q', side * 0.024, 0.002, side * 0.022, -0.006]
+              ]);
+              var ridges = [];
+              for (var index = 0; index < 3; index++) {
+                var ridgeY = -0.003 + index * 0.006;
+                ridges.push(region([side * 0.008, ridgeY], [['Q', side * 0.015, ridgeY + 0.002, side * 0.022, ridgeY - 0.001]]));
+              }
+              return { id: side < 0 ? 'lateral-left' : 'lateral-right', side: side, region: tooth, ridges: ridges,
+                color: '#d6c29a', center: point(side * 0.014, 0.003), radiusX: width * 0.010, radiusY: height * 0.015 };
+            });
+            teeth.push({ id: 'median', side: 0, color: '#e6d6b5', center: point(0, -0.015), radiusX: width * 0.011, radiusY: height * 0.012,
+              region: region([-0.009, -0.023], [
+                ['Q', 0, -0.026, 0.009, -0.023],
+                ['C', 0.011, -0.018, 0.008, -0.010, 0.006, -0.006],
+                ['Q', 0, -0.002, -0.006, -0.006],
+                ['C', -0.008, -0.010, -0.011, -0.018, -0.009, -0.023]
+              ]), ridges: [] });
+            return { width: width, height: height, center: point(0, 0), target: point(0, 0), radiusX: width * 0.025,
+              radiusY: height * 0.030, teeth: teeth,
+              bounds: { minX: (x - width * 0.025 - 0.35) / width, maxX: (x + width * 0.025 + 0.35) / width,
+                minY: (y - height * 0.030 - 0.35) / height, maxY: (y + height * 0.030 + 0.35) / height } };
+          }
+
+          function traceCrayfishGastricMillRegion(context, region, width, height, open) {
+            if (!context || !region || !region.start || !region.segments) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.segments.forEach(function (segment) {
+              var p = segment.points;
+              if (segment.kind === 'C') context.bezierCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height, p[2].x * width, p[2].y * height);
+              else context.quadraticCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height);
+            });
+            if (!open) context.closePath();
+            return true;
+          }
+
+          function drawCrayfishGastricMill(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishGastricMillGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(lamp[0], lamp[1]) || 1, lx = lamp[0] / length, ly = lamp[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = Number.isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = Number.isFinite(intensityValue) ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            var x = geometry.center.x * width, y = geometry.center.y * height;
+            context.save();
+            try {
+              context.beginPath(); context.ellipse(x, y, geometry.radiusX, geometry.radiusY, 0, 0, Math.PI * 2);
+              context.fillStyle = options.accessible ? '#78350f' : '#655346'; context.fill();
+              context.strokeStyle = '#a48b67'; context.lineWidth = 0.7; context.stroke();
+              context.save();
+              try {
+                context.clip();
+                if (typeof options.finishCavity === 'function') {
+                  context.save();
+                  try { options.finishCavity(x, y, geometry.radiusX, geometry.radiusY); } finally { context.restore(); }
+                }
+                geometry.teeth.forEach(function (tooth) {
+                  var tx = tooth.center.x * width, ty = tooth.center.y * height, fill = tooth.color;
+                  traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                  if (detailed) {
+                    // These are mineralized cuticular grinding surfaces. Color and gentle
+                    // edge relief are illustrative, without exposed microscopic layers.
+                    fill = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    fill.addColorStop(0, tooth.side ? '#eadbb9' : '#f0e5c9');
+                    fill.addColorStop(0.32, tooth.side ? '#d7c39c' : '#dfd0ad');
+                    fill.addColorStop(0.74, tooth.side ? '#b5a07c' : '#bfae89');
+                    fill.addColorStop(1, '#8e795a');
+                  }
+                  context.fillStyle = fill; context.fill(); context.strokeStyle = '#80694b'; context.lineWidth = 0.5; context.stroke();
+                  if (!detailed) return;
+                  context.save();
+                  try {
+                    context.clip(); context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+                    context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+                    // A thin light-facing rim stays clipped to the original tooth contour.
+                    var edge = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    edge.addColorStop(0, 'rgba(255,246,216,' + (0.30 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.40, 'rgba(244,226,187,' + (0.07 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.66, 'rgba(105,80,51,0.03)'); edge.addColorStop(1, 'rgba(82,60,37,0.20)');
+                    traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                    context.strokeStyle = edge; context.lineWidth = 1.35; context.stroke();
+                    tooth.ridges.forEach(function (ridge) {
+                      // Retain the established representative ridges. Their count is not
+                      // a species-specific cusp count or an additional set of teeth.
+                      traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                      context.strokeStyle = 'rgba(117,88,58,0.58)'; context.lineWidth = 0.35; context.stroke();
+                      context.save();
+                      try {
+                        context.translate(lx * 0.24, ly * 0.24);
+                        traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                        context.strokeStyle = 'rgba(255,242,207,' + (0.24 * gloss).toFixed(3) + ')';
+                        context.lineWidth = 0.22; context.stroke();
+                      } finally { context.restore(); }
+                    });
+                  } finally { context.restore(); }
+                });
+              } finally { context.restore(); }
               return true;
             } finally { context.restore(); }
           }
@@ -16068,48 +16197,12 @@ var d = labToolData.dissection || {};
                   paintCurrentOrganContact(crayStomachRX, crayStomachRY);
                   ctx.fillStyle = crayAccessible ? '#fcd34d' : '#c6b590'; ctx.fill();
                   finishCurrentTissuePath(crayStomachX, crayStomachY, crayStomachRX, crayStomachRY, 'serosa', 'cray-stomach');
-                  // The mill remains an opened cardiac-stomach view. All three grinding surfaces
-                  // fit the original window and remain short, rounded plates rather than fangs.
-                  ctx.beginPath(); ctx.ellipse(crayStomachX, crayStomachY, W * 0.025, H * 0.030, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = crayAccessible ? '#78350f' : '#655346'; ctx.fill(); ctx.strokeStyle = '#a48b67'; ctx.lineWidth = 0.7; ctx.stroke();
-                  ctx.save();
-                  try {
-                    ctx.clip();
-                    finishCurrentCavityPath(crayStomachX, crayStomachY, W * 0.025, H * 0.030);
-                    [-1, 1].forEach(function (toothSide) {
-                      ctx.beginPath(); ctx.moveTo(crayStomachX + toothSide * W * 0.022, cy - H * 0.006);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.019, cy - H * 0.012,
-                        crayStomachX + toothSide * W * 0.010, cy - H * 0.009, crayStomachX + toothSide * W * 0.007, cy - H * 0.003);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.004, cy + H * 0.002,
-                        crayStomachX + toothSide * W * 0.006, cy + H * 0.010, crayStomachX + toothSide * W * 0.011, cy + H * 0.014);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.014, cy + H * 0.017,
-                        crayStomachX + toothSide * W * 0.020, cy + H * 0.015, crayStomachX + toothSide * W * 0.021, cy + H * 0.010);
-                      ctx.quadraticCurveTo(crayStomachX + toothSide * W * 0.024, cy + H * 0.002,
-                        crayStomachX + toothSide * W * 0.022, cy - H * 0.006); ctx.closePath();
-                      ctx.fillStyle = '#d6c29a'; ctx.fill(); ctx.strokeStyle = '#80694b'; ctx.lineWidth = 0.5; ctx.stroke();
-                      if (crayStomachDetail) {
-                        ctx.save();
-                        try {
-                          ctx.clip(); ctx.strokeStyle = 'rgba(117,88,58,0.58)'; ctx.lineWidth = 0.35;
-                          // Representative gross grinding ridges, not a species-specific cusp count.
-                          for (var millRidge = 0; millRidge < 3; millRidge++) {
-                            var millRidgeY = cy + H * (-0.003 + millRidge * 0.006);
-                            ctx.beginPath(); ctx.moveTo(crayStomachX + toothSide * W * 0.008, millRidgeY);
-                            ctx.quadraticCurveTo(crayStomachX + toothSide * W * 0.015, millRidgeY + H * 0.002,
-                              crayStomachX + toothSide * W * 0.022, millRidgeY - H * 0.001); ctx.stroke();
-                          }
-                        } finally { ctx.restore(); }
-                      }
-                    });
-                    ctx.beginPath(); ctx.moveTo(crayStomachX - W * 0.009, cy - H * 0.023);
-                    ctx.quadraticCurveTo(crayStomachX, cy - H * 0.026, crayStomachX + W * 0.009, cy - H * 0.023);
-                    ctx.bezierCurveTo(crayStomachX + W * 0.011, cy - H * 0.018, crayStomachX + W * 0.008, cy - H * 0.010,
-                      crayStomachX + W * 0.006, cy - H * 0.006);
-                    ctx.quadraticCurveTo(crayStomachX, cy - H * 0.002, crayStomachX - W * 0.006, cy - H * 0.006);
-                    ctx.bezierCurveTo(crayStomachX - W * 0.008, cy - H * 0.010, crayStomachX - W * 0.011, cy - H * 0.018,
-                      crayStomachX - W * 0.009, cy - H * 0.023); ctx.closePath();
-                    ctx.fillStyle = '#e6d6b5'; ctx.fill(); ctx.strokeStyle = '#80694b'; ctx.lineWidth = 0.5; ctx.stroke();
-                  } finally { ctx.restore(); }
+                  // Opened cardiac-stomach teaching view, with the original three grinding surfaces.
+                  drawCrayfishGastricMill(ctx, {
+                    width: W, height: H, detailed: crayStomachDetail, accessible: crayAccessible, highContrast: highContrastEnabled,
+                    lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                    lightIntensity: d.lightIntensity, condition: specimenCondition, finishCavity: finishCurrentCavityPath
+                  });
                   // The paired antennal complexes sit within the existing anterior opening.
                   ctx.save();
                   try {
@@ -17526,6 +17619,22 @@ var d = labToolData.dissection || {};
                     plannedMarkerBoxes.push(retinalBox);
                   });
                 }
+                // Keep nearby depth captions off the complete opened gastric mill.
+                if (!d.quizMode && spec.bodyShape === 'crayfish' && activeLayer === 'organs') {
+                  var captionMillGeometry = crayfishGastricMillGeometry(W, H);
+                  if (captionMillGeometry) {
+                    var millBounds = captionMillGeometry.bounds;
+                    var millBox = canvasScreenBox(millBounds.minX * W, millBounds.minY * H,
+                      (millBounds.maxX - millBounds.minX) * W, (millBounds.maxY - millBounds.minY) * H);
+                    if (millBox) {
+                      var millPadding = 3 * canvasUiScale;
+                      millBox.x -= millPadding; millBox.y -= millPadding;
+                      millBox.width += millPadding * 2; millBox.height += millPadding * 2;
+                      millBox.priority = 10; millBox.keepClear = true;
+                      plannedMarkerBoxes.push(millBox);
+                    }
+                  }
+                }
                 // The digestive-gland caption leaves both intact masses unobscured.
                 if (spec.bodyShape === 'crayfish' && org && org.id === 'hepato') {
                   var captionDigestiveGeometry = crayfishHepatopancreaticGeometry(W, H);
@@ -18288,9 +18397,12 @@ var d = labToolData.dissection || {};
                 });
               }
               // Keep cards, compact badges, and their hit rectangles off both leaflet groups.
-              if (!d.quizMode && spec.bodyShape === 'heart' && semilunarLabelGeometry) {
-                var semilunarCardBoxes = semilunarLabelGeometry.valves.map(function (valve) {
-                  var bounds = valve.bounds;
+              // The gastric mill uses the same placement repair to expose its small grinding plates.
+              var protectedCalloutBounds = spec.bodyShape === 'heart' && semilunarLabelGeometry
+                ? semilunarLabelGeometry.valves.map(function (valve) { return valve.bounds; })
+                : (spec.bodyShape === 'crayfish' && activeLayer === 'organs' ? [crayfishGastricMillGeometry(W, H).bounds] : null);
+              if (!d.quizMode && protectedCalloutBounds) {
+                var semilunarCardBoxes = protectedCalloutBounds.map(function (bounds) {
                   var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
                     (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
                   if (!box) return null;
