@@ -263,13 +263,22 @@
 [data-dissection-root][data-high-contrast] .diss-zoom-bar { background: #f3f7fc !important; }
 [data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item) { background: #fff !important; }
 [data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #203e52 !important; }
-[data-dissection-root][data-high-contrast] .diss-biology-fact { background: linear-gradient(90deg, #fffbeb, #fff7ed) !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: #92400e; --diss-fact-button-surface: #fff; --diss-fact-button-focus: #1766d2; background: linear-gradient(90deg, #fffbeb, #fff7ed) !important; }
 [data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: #92400e !important; }
+[data-dissection-root] .diss-biology-fact__position { margin: 0 0 .35rem; font-weight: 700; }
+[data-dissection-root] .diss-biology-fact__nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button { flex: 1; min-width: 0; min-height: 2.75rem; padding: .5rem .65rem; border: 1px solid var(--diss-fact-button-ink); border-color: var(--diss-fact-button-ink) !important; border-radius: .5rem; background: var(--diss-fact-button-surface) !important; color: var(--diss-fact-button-ink) !important; font: inherit; font-weight: 700; line-height: 1.4; cursor: pointer; }
+[data-dissection-root] .diss-biology-fact__nav button:focus-visible { outline: 3px solid var(--diss-fact-button-focus); outline-offset: -5px; box-shadow: none !important; }
+[data-dissection-root] .diss-evidence-metric-heading { flex-wrap: wrap; }
+[data-dissection-root] .diss-evidence-metric-heading > span { min-width: 0; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-evidence-metric-heading > span:last-child { flex: 0 0 auto; }
 [data-dissection-root][data-high-contrast="true"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact) { background: #fff !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #000 !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact { --diss-fact-button-ink: #000; --diss-fact-button-focus: #111827; }
 [data-dissection-root][data-high-contrast="true"] .diss-biology-fact :is(summary, p, span) { color: #000 !important; }
 @media (forced-colors: active) {
   [data-dissection-root][data-high-contrast] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-directory-browser .diss-directory-item, .diss-biology-fact) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: CanvasText; --diss-fact-button-surface: Canvas; --diss-fact-button-focus: Highlight; }
   [data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title), [data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: CanvasText !important; }
 }
 .diss-directory-browser .diss-directory-item:hover { border-color: #1766d2; background: #eff6ff; }
@@ -29014,24 +29023,31 @@ var d = labToolData.dissection || {};
 
 
 
-                // "Did You Know?" rotating trivia panel
+                // Learner-controlled biology facts
                 (function () {
                   var facts = SPECIMEN_TRIVIA[specimen] || [];
                   if (facts.length === 0) return null;
-                  var factIdx = Math.floor((Date.now() / 8000)) % facts.length;
+                  var factIndices = d.biologyFactIndexBySpecimen && typeof d.biologyFactIndexBySpecimen === 'object' && !Array.isArray(d.biologyFactIndexBySpecimen) ? d.biologyFactIndexBySpecimen : {};
+                  var savedFactIndex = Object.prototype.hasOwnProperty.call(factIndices, specimen) ? factIndices[specimen] : 0;
+                  var factIdx = typeof savedFactIndex === 'number' && isFinite(savedFactIndex) && Math.floor(savedFactIndex) === savedFactIndex && savedFactIndex >= 0 && savedFactIndex < facts.length ? savedFactIndex : 0;
+                  var factReadingId = 'diss-biology-fact-reading-' + dissectionSaveOwner;
+                  function browseFact(direction) {
+                    var nextIndices = Object.assign({}, factIndices);
+                    nextIndices[specimen] = (factIdx + direction + facts.length) % facts.length;
+                    upd('biologyFactIndexBySpecimen', nextIndices);
+                  }
                   return React.createElement("details", { className: "diss-biology-fact diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
                     React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                      React.createElement("span", { className: "text-sm" }, '\uD83D\uDCA1'),
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, '\uD83D\uDCA1'),
                       React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, 'Did You Know?')
                     ),
-                    React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx]),
-                    React.createElement("div", { className: "flex gap-0.5 mt-1.5 justify-center" },
-                      facts.map(function (_, fi) {
-                        return React.createElement("div", {
-                          key: fi,
-                          className: "w-1 h-1 rounded-full " + (fi === factIdx ? 'bg-amber-500' : 'bg-amber-200')
-                        });
-                      })
+                    React.createElement("div", { id: factReadingId, role: "status", "aria-live": "polite", "aria-atomic": "true" },
+                      React.createElement("p", { className: "diss-biology-fact__position text-[11px]" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
+                      React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx])
+                    ),
+                    facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": "Biology fact navigation" },
+                      React.createElement("button", { type: "button", "aria-label": "Previous biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
+                      React.createElement("button", { type: "button", "aria-label": "Next biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(1); } }, 'Next')
                     )
                   );
                 })(),
@@ -29058,7 +29074,7 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": __alloT('stem.dissection.a11y_learning_evidence_dimensions', 'Learning evidence dimensions') },
                     masteryDimensions.map(function (dimension) {
                       return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
-                        React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px]" },
+                        React.createElement("div", { className: "diss-evidence-metric-heading flex items-center justify-between gap-2 text-[11px]" },
                           React.createElement("span", { className: "font-semibold text-slate-700" }, dimension.label),
                           React.createElement("span", { className: "font-bold text-blue-800" }, dimension.value + '%')
                         ),
