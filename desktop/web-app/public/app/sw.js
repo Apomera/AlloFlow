@@ -4,9 +4,9 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const RELEASE_ID = '953845b64e0ab6ffd73fb23b5abfb3982c84f97d1d9092b55e5cd6bd8f188d7e';
-const RELEASE_BUILT_AT = 1792661344349;
-const CACHE_NAME = 'alloflow-student-shell-v953845b64e0ab6ffd73fb23b5abfb3982c84f97d1d9092b55e5cd6bd8f188d7e-1792661344349';
+const RELEASE_ID = '3d4e23615f2a44ce8dfdaffaf064c54a5b9e4f0f6a34a6bf9cdfa48b71b792dd';
+const RELEASE_BUILT_AT = 1792714349537;
+const CACHE_NAME = 'alloflow-student-shell-v3d4e23615f2a44ce8dfdaffaf064c54a5b9e4f0f6a34a6bf9cdfa48b71b792dd-1792714349537';
 const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./alloflow_update.js","./static/js/main.374d2f59.js","./static/css/main.ec11f4ef.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');

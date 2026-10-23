@@ -2282,7 +2282,20 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const menuRef = useRef(null);
   const conceptSortDialogRef = useRef(null);
   const conceptSortCloseRef = useRef(null);
+  const pendingConceptFocusRef = useRef(null);
   useGameDialogFocus(conceptSortDialogRef, conceptSortCloseRef, onClose);
+  React.useLayoutEffect(() => {
+      const pending = pendingConceptFocusRef.current;
+      if (!pending) return;
+      pendingConceptFocusRef.current = null;
+      const dialog = conceptSortDialogRef.current;
+      // Placement/retry controls unmount and Check becomes disabled. Restore
+      // focus after that DOM update so the next key remains inside this game.
+      const target = pending.itemId != null
+          ? Array.from(dialog?.querySelectorAll('[data-concept-sort-item-id]') || []).find(el => el.getAttribute('data-concept-sort-item-id') === String(pending.itemId))
+          : dialog?.querySelector(pending.selector);
+      (target || conceptSortCloseRef.current || dialog)?.focus();
+  }, [items, isChecked, keyboardSelectedItemId]);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
     'bg-blue-50 border-blue-200 hover:border-blue-300',
@@ -2380,6 +2393,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const handleKeyboardMove = (targetContainerId) => {
       if (!keyboardSelectedItemId) return;
       const movedItem = items.find(it => it.id === keyboardSelectedItemId);
+      pendingConceptFocusRef.current = { itemId: keyboardSelectedItemId };
       setItems(prev => prev.map(item =>
         item.id === keyboardSelectedItemId ? { ...item, currentContainer: targetContainerId } : item
       ));
@@ -2451,6 +2465,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     // Locked cards were already awarded, so a retry earns only the fixes.
     const earnedPoints = Math.max(0, score + delta);
     const total = items.length;
+    pendingConceptFocusRef.current = { selector: correctCount === total ? '[role="region"] h3' : '[data-help-key="concept_sort_retry_incorrect"]' };
     setScore(earnedPoints);
     setBestScore(prev => Math.max(prev, earnedPoints));
     setIsChecked(true);
@@ -2544,6 +2559,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         const j = Math.floor(Math.random() * (i + 1));
         [resetItems[i], resetItems[j]] = [resetItems[j], resetItems[i]];
     }
+    pendingConceptFocusRef.current = { itemId: resetItems[0]?.id };
+    setIsDeckCollapsed(false);
     setItems(resetItems);
     setIsChecked(false);
     setScore(0);
@@ -2560,6 +2577,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const correctIds = new Set(items.filter(i => i.currentContainer !== 'deck' && i.currentContainer === i.categoryId).map(i => i.id));
     const returned = items.filter(i => i.currentContainer !== 'deck' && i.currentContainer !== i.categoryId);
     if (!returned.length) return;
+    pendingConceptFocusRef.current = { itemId: returned[0].id };
+    setIsDeckCollapsed(false);
     const nextItems = items.map(i => (correctIds.has(i.id) ? i : { ...i, currentContainer: 'deck' }));
     setItems(nextItems);
     setLockedIds(correctIds);
@@ -2575,6 +2594,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   const incorrectPlacedCount = isChecked ? items.filter(i => i.currentContainer !== 'deck' && i.currentContainer !== i.categoryId).length : 0;
   const renderCard = (item) => {
+    const isLongTextCard = !item.image && String(item.content || '').length > 80;
     const imageDescription = item.image ? matchingImageDescription(item) : '';
     const cardDescription = imageDescription && imageDescription !== item.content
       ? `${item.content}. ${imageDescription}` : item.content;
@@ -2594,6 +2614,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     return (
       <div
         key={item.id}
+        data-concept-sort-item-id={item.id}
         data-locked={locked ? 'true' : undefined}
         draggable={!isChecked && !locked}
         onDragStart={(e) => handleDragStart(e, item)}
@@ -2631,8 +2652,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 </div>
             </div>
         ) : (
-            <div className="flex items-center justify-center gap-1.5">
-                <p className="text-sm font-bold text-slate-800 text-center leading-snug">{item.content}</p>
+            <div className="flex items-center justify-center gap-1.5" style={isLongTextCard ? { flexDirection: 'column' } : undefined}>
+                <p className="text-sm font-bold text-slate-800 text-center leading-snug" style={isLongTextCard ? { textAlign: 'start', overflowWrap: 'anywhere', width: '100%' } : undefined}>{item.content}</p>
                 <SpeakButton text={item.content} size={11} />
             </div>
         )}
@@ -2692,7 +2713,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           el.removeEventListener('scroll', checkScroll);
           window.removeEventListener('resize', checkScroll);
       };
-  }, [deckItems.length]);
+  }, [deckItems.length, isDeckCollapsed]);
   // Auto-hide the keyboard tip after 15 seconds if user never engages with it.
   useEffect(() => {
       if (hasUsedKeyboardCard || hintAutoHidden) return;
@@ -2702,7 +2723,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   return (
     <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
-      <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
+      <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
             <h3 id="concept-sort-game-title" className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
                 <Filter size={20} className="text-yellow-300"/> {t('concept_sort.title')}
@@ -2783,9 +2804,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, 'deck')}
                 className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-colors duration-300 ${isChecked ? '' : 'hover:bg-slate-50'}`}
+                style={{ maxHeight: '55vh', overflowY: 'auto' }}
             >
                <div className="max-w-6xl mx-auto relative">
-                   <div className="flex justify-between items-start mb-2">
+                   <div className="flex justify-between items-start mb-2" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
                        <div className="flex items-center gap-3 flex-wrap">
                            <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
                            {/* Collapse hides the CARD ROW only - the heading, its count and the
@@ -2831,7 +2853,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                </span>
                            )}
                        </div>
-                       <div className="flex gap-2 items-center">
+                       <div className="flex gap-2 items-center" style={{ flexWrap: 'wrap' }}>
                            {/* Live image-size slider — visible during play so the
                                teacher (or a sensory-sensitive student) can dial
                                card visuals up/down without leaving the activity.
@@ -2883,6 +2905,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                        </div>
                    </div>
                    <div id="concept-sort-deck-cards" ref={deckScrollRef} hidden={isDeckCollapsed}
+                       style={{ display: isDeckCollapsed ? 'none' : undefined, maxHeight: 'min(32vh, 300px)', overflowY: 'auto', alignItems: 'flex-start' }}
                        className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
                        {allowAddItems && onGenerateItem && (<div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
                            {isAdding ? (
@@ -2911,7 +2934,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            )}
                        </div>)}
                        {deckItems.map(item => (
-                           <div key={item.id} className="shrink-0 w-[160px]">
+                           <div key={item.id} className="shrink-0 w-[160px]" style={!item.image && String(item.content || '').length > 80 ? { width: 'min(280px, calc(100vw - 48px))' } : undefined}>
                                {renderCard(item)}
                            </div>
                        ))}
