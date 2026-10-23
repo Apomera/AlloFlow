@@ -276,7 +276,7 @@ class ComposeNetworkDefaults(unittest.TestCase):
                     env["ALLOFLOW_BIND_ADDRESS"] = address
                     env["ALLOFLOW_TTS_ALLOWED_ORIGINS"] = "http://192.168.1.50:3000"
                     env["TTS_PORT"] = "15001"
-                result = subprocess.run(["docker", "compose", "--env-file", str(env_file), "-f",
+                result = subprocess.run(["docker", "compose", "--profile", "*", "--env-file", str(env_file), "-f",
                                          str(ROOT / "docker/docker-compose.yml"), "config", "--format", "json"],
                                         env=env, capture_output=True, text=True, check=True, timeout=30)
                 services = json.loads(result.stdout)["services"]
