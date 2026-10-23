@@ -38,6 +38,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ALLOFLOW_UPDATE_CHANNEL: ${{ inputs.channel || 'latest' }}
     steps:
+      - name: Enable long Windows paths before checkout
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
