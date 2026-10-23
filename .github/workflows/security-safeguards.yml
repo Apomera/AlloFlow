@@ -31,6 +31,10 @@ jobs:
             /tts-server/
             /tests/test_piper_request_safety.py
             /tests/test_edge_tts_language_review.py
+            /tests/test_optional_service_security.py
+            /docker/docker-compose.yml
+            /docker/npu_server.py
+            /docker/edge-tts-server/server.py
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
@@ -42,6 +46,11 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p test_piper_request_safety.py
           python3 -m unittest discover -s tests -p test_edge_tts_language_review.py
+      - name: Test optional service requests and Compose network defaults
+        run: |
+          python3 -m venv /tmp/alloflow-security-tests
+          /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: Flask==3.1.3
+          /tmp/alloflow-security-tests/bin/python -m unittest discover -s tests -p test_optional_service_security.py
       - name: Verify workflow policy and changed dependency scopes
         env:
           SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

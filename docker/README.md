@@ -4,12 +4,13 @@ This is the optional Docker-based School Box server stack. It is useful for scho
 
 For the normal AlloFlow Desktop package, use `desktop/README.md` instead. Desktop already serves the bundled app, manages local keys, can run the built-in AI engine, and supports Desktop LAN classroom sessions without Docker. Docker Desktop is needed only when you intentionally want this separate server stack.
 
-When you do use this stack, it runs AlloFlow entirely on local hardware with no cloud dependencies. All student data stays on-premise. All AI runs locally via Ollama.
+Ollama and the local database run on your hardware. Edge TTS sends speech text to Microsoft's online service; SearXNG searches online. Use the offline services below when network access is unavailable or text must stay on the box.
 
 ## Quick Start
 
 ```bash
-# From the project root:
+# From the project root, enter the stack directory first:
+cd docker
 docker compose up -d
 
 # Or with GPU image generation (Flux):
@@ -51,6 +52,33 @@ Key settings:
 - `REACT_APP_DATA_BACKEND=auto` — auto-detects PocketBase → Firebase → localStorage
 - `REACT_APP_POCKETBASE_URL=http://localhost:8090` — PocketBase endpoint
 - Ports are configurable via `WEB_PORT`, `OLLAMA_PORT`, etc.
+- `ALLOFLOW_BIND_ADDRESS=127.0.0.1` — publish ports only on this computer (the default even without `.env`). Container-to-container communication is unchanged.
+
+### Explicit classroom/LAN access
+
+For this optional Docker stack, set these values in `docker/.env`, replacing the sample address with the box's actual LAN IPv4 address:
+
+```dotenv
+ALLOFLOW_BIND_ADDRESS=192.168.1.50
+ALLOFLOW_TTS_ALLOWED_ORIGINS=http://192.168.1.50:3000
+REACT_APP_POCKETBASE_URL=http://192.168.1.50:8090
+```
+
+From `docker/`, run `docker compose up -d --build` to recreate containers and rebuild the frontend if its database URL changed. Open `http://192.168.1.50:3000` on classroom devices. Use your configured `WEB_PORT` in the allowed origin if it differs from 3000. Additional approved browser origins can be comma-separated; wildcards are not accepted.
+
+This explicitly publishes all listed service ports on that LAN interface. `0.0.0.0` can instead share all IPv4 interfaces. Restrict access with the host firewall to the trusted classroom network; these optional AI/speech APIs do not provide user authentication. Browser origin checks are an additional restriction, not authentication. Do not port-forward this stack onto the public internet. Use Docker Engine 28 or newer for localhost publishing isolation ([Docker port publishing guidance](https://docs.docker.com/engine/network/port-publishing/)).
+
+Existing Docker installations that relied on implicit LAN publishing must set `ALLOFLOW_BIND_ADDRESS` before their next recreation. AlloFlow Desktop's separate built-in LAN classroom mode is unchanged. Desktop's School Box preparation manages its own frontend/database URL for local use; use the commands above for a separately managed LAN Docker stack.
+
+### Optional NPU server
+
+`python docker/npu_server.py` now listens on `127.0.0.1:11435` by default. To share it intentionally, use `--host <box-LAN-address>` and set `ALLOFLOW_NPU_ALLOWED_ORIGINS` to the exact classroom app origin(s) for browser clients. Native local clients, loopback browser apps, and the shipped AlloFlow web origin remain supported. Apply the same trusted-network firewall restrictions as above.
+
+### Request limits and errors
+
+Both optional Python APIs cap request bodies at 256 KiB. Docker speech accepts up to 20,000 text characters, speeds from 0.25 to 4 (including existing numeric-string speeds), and four concurrent jobs. Audio output is capped at 32 MiB and each synthesis at five minutes. Existing voice aliases and the unknown-voice fallback are preserved.
+
+NPU requests accept 1–128 text messages with at most 64,000 combined characters, integer `max_tokens` from 1 to 4096, and finite temperatures from 0 to 2. The encoded prompt plus requested output must fit the selected model's context window. One inference/model swap runs at a time. Busy requests return 429 with `Retry-After: 1`; invalid requests return 400 and oversized bodies 413. Provider failures return a generic 500 message; diagnostics stay in the local server log. Split long passages or shorten chat history rather than bypassing the limits.
 
 ## How It Works
 

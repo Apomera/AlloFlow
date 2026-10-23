@@ -2,6 +2,7 @@
 #  AlloFlow "School Box" — Complete Local AI Stack
 #
 #  Run:  cd docker && docker compose up -d
+#  Ports default to this computer. Set ALLOFLOW_BIND_ADDRESS for trusted LAN use.
 #
 #  Services:
 #    Frontend (Nginx)  → port 3000  (AlloFlow React app)
@@ -32,7 +33,7 @@ services:
         REACT_APP_POCKETBASE_URL: ${REACT_APP_POCKETBASE_URL:-http://localhost:8090}
     container_name: alloflow-frontend
     ports:
-      - "${WEB_PORT:-3000}:80"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:80"
     depends_on:
       pocketbase:
         condition: service_healthy
@@ -43,7 +44,7 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-pocketbase
     ports:
-      - "${PB_PORT:-8090}:8090"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${PB_PORT:-8090}:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
@@ -60,7 +61,7 @@ services:
     image: ollama/ollama:latest
     container_name: alloflow-ollama
     ports:
-      - "${OLLAMA_PORT:-11434}:11434"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
     deploy:
@@ -79,7 +80,7 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-flux
     ports:
-      - "${FLUX_PORT:-7860}:7860"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${FLUX_PORT:-7860}:7860"
     environment:
       - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
       - PORT=7860
@@ -111,7 +112,9 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-edge-tts
     ports:
-      - "${TTS_PORT:-5001}:5001"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${TTS_PORT:-5001}:5001"
+    environment:
+      - ALLOFLOW_TTS_ALLOWED_ORIGINS=${ALLOFLOW_TTS_ALLOWED_ORIGINS:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
@@ -125,7 +128,7 @@ services:
     image: rhasspy/wyoming-piper:latest
     container_name: alloflow-piper
     ports:
-      - "${PIPER_PORT:-10200}:10200"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${PIPER_PORT:-10200}:10200"
     volumes:
       - piper_data:/data
     command: >
@@ -139,7 +142,7 @@ services:
     image: searxng/searxng:latest
     container_name: alloflow-searxng
     ports:
-      - "${SEARCH_PORT:-8888}:8080"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${SEARCH_PORT:-8888}:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:8888
     volumes:
