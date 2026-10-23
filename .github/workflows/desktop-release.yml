@@ -21,6 +21,15 @@ on:
         options:
           - latest
           - beta
+      platform:
+        description: 'Platforms to validate (tagged releases always build both)'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - windows
+          - mac
   push:
     tags:
       - 'desktop-v*'
@@ -31,6 +40,7 @@ permissions:
 jobs:
   windows:
     name: Windows installers
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'mac'
     runs-on: windows-latest
     env:
       CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
@@ -136,6 +146,7 @@ jobs:
 
   mac:
     name: macOS packages
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'windows'
     runs-on: macos-latest
     env:
       CSC_LINK: ${{ secrets.MAC_CSC_LINK }}

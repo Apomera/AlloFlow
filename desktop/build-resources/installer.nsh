@@ -1,4 +1,15 @@
-!ifndef BUILD_UNINSTALLER
+!ifdef BUILD_UNINSTALLER
+  ; The custom page creates the desktop shortcut while electron-builder's
+  ; createDesktopShortcut option is false. Its default uninstaller therefore
+  ; skips that link. Use the registered shortcut path and preserve the same
+  ; keep-shortcuts behavior used during updates.
+  !macro customUnInstall
+    ${ifNot} ${isKeepShortcuts}
+      WinShell::UninstShortcut "$oldDesktopLink"
+      Delete "$oldDesktopLink"
+    ${endIf}
+  !macroend
+!else
   !include LogicLib.nsh
   !include nsDialogs.nsh
   !include WinVer.nsh
