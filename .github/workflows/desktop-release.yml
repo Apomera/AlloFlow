@@ -66,6 +66,8 @@ jobs:
           npm version --no-git-tag-version "$base-beta.$env:GITHUB_RUN_NUMBER"
       - name: Build desktop web assets for the UI smoke test
         working-directory: desktop
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
@@ -169,6 +171,9 @@ jobs:
           npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
       - name: Build desktop web assets for the UI smoke test
         working-directory: desktop
+        env:
+          # Leave memory for macOS on the standard 7 GB Apple Silicon runner.
+          NODE_OPTIONS: --max-old-space-size=5120
         run: npm run web:build
       - name: Verify desktop sources and runtime
         working-directory: desktop
