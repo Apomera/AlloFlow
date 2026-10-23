@@ -37,7 +37,7 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
 MAX_MESSAGE_CHARS = 64000
 MAX_MESSAGES = 128
-MAX_TOKENS = 4096
+MAX_REQUESTED_TOKENS = 65536
 _generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
@@ -45,7 +45,7 @@ _active_id = None
 
 
 class ContextLimitError(ValueError):
-    """The submitted prompt and output budget do not fit the selected model."""
+    """The submitted prompt leaves no room for output in the selected model."""
 
 
 class RequestValidationError(ValueError):
@@ -119,8 +119,8 @@ def validate_chat_request(data):
     if sum(len(message["content"]) for message in messages) > MAX_MESSAGE_CHARS:
         raise RequestValidationError("Message text exceeds 64000 characters; shorten the conversation.")
     max_tokens = data.get("max_tokens", 512)
-    if type(max_tokens) is not int or not 1 <= max_tokens <= MAX_TOKENS:
-        raise RequestValidationError("max_tokens must be an integer between 1 and 4096.")
+    if type(max_tokens) is not int or not 1 <= max_tokens <= MAX_REQUESTED_TOKENS:
+        raise RequestValidationError("max_tokens must be an integer between 1 and 65536.")
     temperature = data.get("temperature", 0.7)
     if (type(temperature) not in (int, float) or not 0 <= temperature <= 2
             or not math.isfinite(temperature)):
@@ -220,8 +220,11 @@ def generate(messages, max_tokens=512, temperature=0.7):
 
     input_ids = _tokenizer.encode(text, return_tensors="np").astype("int64")
     context_limit = MODELS[_active_id]["ctx"]
-    if input_ids.shape[1] + max_tokens > context_limit:
-        raise ContextLimitError("Messages and max_tokens exceed the model context; shorten either one.")
+    # AlloFlow normally asks for 8192 output tokens even with a smaller local
+    # model. Treat this as a ceiling and fit actual work to the remaining context.
+    max_tokens = min(max_tokens, context_limit - input_ids.shape[1])
+    if max_tokens < 1:
+        raise ContextLimitError("Messages exceed the model context; shorten the conversation.")
 
     # Get model input names
     input_names = {i.name for i in _session.get_inputs()}
@@ -281,7 +284,7 @@ def chat_completions():
         reply = generate(msgs, max_tok, temp)
         response_model = _active_id
     except ContextLimitError:
-        return api_error("Messages and max_tokens exceed the model context; shorten either one.")
+        return api_error("Messages exceed the model context; shorten the conversation.")
     except Exception:
         app.logger.exception("AI generation failed")
         return api_error("AI generation failed; check the server log.", 500)

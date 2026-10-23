@@ -11,7 +11,7 @@ import sys
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -107,7 +107,7 @@ class OptionalServiceSecurity(unittest.TestCase):
                    {"messages": [{"role": "x" * 33, "content": "text"}]},
                    {"messages": [{"content": "x" * 64001}]},
                    {"messages": [{"content": "x"}] * 129}]
-        for field, values in (("max_tokens", [None, True, 0, -1, 4097, 1.2, "512"]),
+        for field, values in (("max_tokens", [None, True, 0, -1, 65537, 1.2, "512"]),
                               ("temperature", [None, True, "0.7", -0.1, 2.1, float("inf"), float("nan"), 10 ** 1000]),
                               ("model", [None, [], 3, "x" * 201])):
             invalid.extend({**CHAT, field: value} for value in values)
@@ -128,12 +128,13 @@ class OptionalServiceSecurity(unittest.TestCase):
             self.assertEqual(result["model"], "deepseek-r1-1.5b")
             NPU.generate.assert_called_once_with(CHAT["messages"], 512, 0.7)
             load.assert_not_called()
-            response = client.post("/v1/chat/completions", json={**CHAT, "model": "phi-3.5-mini", "temperature": 0, "max_tokens": 1})
+            response = client.post("/v1/chat/completions", json={**CHAT, "model": "phi-3.5-mini", "temperature": 0, "max_tokens": 8192})
             self.assertEqual(response.status_code, 200)
             load.assert_called_once_with("phi-3.5-mini")
+            NPU.generate.assert_called_with(CHAT["messages"], 8192, 0)
 
     def test_npu_actual_encoded_context_checked_before_inference(self):
-        ids = types.SimpleNamespace(shape=(1, 4090))
+        ids = types.SimpleNamespace(shape=(1, 4096))
         ids.astype = lambda _dtype: ids
         tokenizer = types.SimpleNamespace(apply_chat_template=lambda *_args, **_kwargs: "prompt",
                                           encode=lambda *_args, **_kwargs: ids)
@@ -146,6 +147,34 @@ class OptionalServiceSecurity(unittest.TestCase):
             response = client.post("/v1/chat/completions", json=CHAT)
             self.assertEqual(response.status_code, 400)
             self.assertNotIn(b"internal", response.data)
+
+    def test_npu_normal_alloflow_budget_is_capped_to_remaining_context(self):
+        # Fake tensor arithmetic exercises the real generation loop without a
+        # model, NumPy installation, downloads, or hardware-dependent inference.
+        class Tensor:
+            def __init__(self, length):
+                self.shape = (1, length)
+
+            def astype(self, _dtype):
+                return self
+
+            def __getitem__(self, _key):
+                return self
+
+        numpy = types.SimpleNamespace(argmax=lambda _value: 7, array=lambda _value, **_kw: Tensor(1),
+                                      concatenate=lambda items, **_kw: Tensor(sum(item.shape[1] for item in items)))
+        session = types.SimpleNamespace(get_inputs=lambda: [types.SimpleNamespace(name="input_ids")],
+                                        run=Mock(return_value=[Tensor(1)]))
+        tokenizer = types.SimpleNamespace(apply_chat_template=lambda *_args, **_kw: "prompt",
+                                          encode=lambda *_args, **_kw: Tensor(4093), eos_token_id=0,
+                                          decode=lambda tokens, **_kw: str(len(tokens)))
+        with patch.dict(sys.modules, {"numpy": numpy}), patch.object(NPU, "_session", session), \
+                patch.object(NPU, "_tokenizer", tokenizer), patch.object(NPU, "_active_id", "deepseek-r1-1.5b"):
+            self.assertEqual(NPU.generate(CHAT["messages"], max_tokens=8192, temperature=0), "3")
+            self.assertEqual(session.run.call_count, 3)
+            session.run.reset_mock()
+            self.assertEqual(NPU.generate(CHAT["messages"], max_tokens=1, temperature=0), "1")
+            self.assertEqual(session.run.call_count, 1)
 
     def test_failed_model_swap_preserves_previous_working_pair(self):
         old_session, old_tokenizer = object(), object()
