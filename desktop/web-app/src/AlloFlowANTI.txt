@@ -37623,7 +37623,12 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleImportCatalogLesson = async (lesson) => {
     const result = await loadProjectFromJson(lesson);
     if (communityCatalogLessonSlug && result && result.success === true) {
-      // Reveal the workspace only after the explicit import has completed.
+      // The linked lesson is already prepared. Finish its explicit handoff in
+      // Class & Materials instead of opening a new-resource setup wizard.
+      setShowWizard(false);
+      setWizardInitialMode(null);
+      setGuidedMode(false);
+      setActiveSidebarTab('history');
       setHasSelectedMode(true);
       setHasSelectedRole(true);
     }

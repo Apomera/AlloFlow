@@ -23,7 +23,8 @@ const gen = require(path.join(root, 'catalog', 'generate_index.js'));
 
 const published = fs.existsSync(gen.PUBLISHED_PATH) ? JSON.parse(fs.readFileSync(gen.PUBLISHED_PATH, 'utf8')) : [];
 const have = new Set(published.map((p) => p.path));
-const files = fs.readdirSync(path.join(root, 'allopacks')).filter((f) => f.endsWith('.allopack.json')).sort();
+const files = ['', 'illustrated/'].flatMap((folder) =>
+  fs.readdirSync(path.join(root, 'allopacks', folder)).filter((f) => f.endsWith('.allopack.json')).map((f) => folder + f)).sort();
 
 const additions = [];
 for (const f of files) {
@@ -32,15 +33,24 @@ for (const f of files) {
   const pack = readPack(root, rel);
   // A stable timestamp: the pack's own authoring date, never "now", so regenerating the
   // index later produces the same bytes.
-  additions.push({ path: rel, submitted_at: pack.allopack.createdAt || new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z' });
+  const slug = path.basename(f).replace(/\.allopack\.json$/, '') + (f.startsWith('illustrated/') ? '_illustrated' : '');
+  additions.push({ path: rel, slug, submitted_at: pack.allopack.createdAt || null });
 }
 
 const preview = additions.map((p) => entryFromPack(root, p));
+// Exercise the same import boundary as the app before indexing any new file.
+// This checks loadability, not accuracy, accessibility, or educator approval.
+const vm = require('vm');
+const runtime = { window: { React: { createElement() {} } }, console: { log() {}, error() {} } };
+vm.createContext(runtime);
+vm.runInContext(fs.readFileSync(path.join(root, 'catalog_module.js'), 'utf8'), runtime);
+for (const entry of preview) runtime.window.AlloModules.CommunityCatalog._parseCatalogLesson(readPack(root, entry.path), entry);
 
 if (process.argv.includes('--apply')) {
   fs.writeFileSync(gen.PUBLISHED_PATH, JSON.stringify([...published, ...additions], null, 2) + '\n');
   const manifest = gen.buildManifest();
   fs.writeFileSync(gen.INDEX_PATH, JSON.stringify(manifest, null, 2) + '\n');
+  require('./build_allopack_links.cjs').writeArtifacts(manifest);
   console.log('published', additions.length, 'pack(s): appended to catalog/published_allopacks.json and regenerated catalog/index.json (' + manifest.entries.length + ' entries; NOT committed, NOT pushed)');
 } else {
   console.log(JSON.stringify(preview, null, 2));

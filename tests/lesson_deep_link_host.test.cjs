@@ -107,7 +107,7 @@ test('closing the catalog clears the selected lesson and permits normal landing 
   assert.deepEqual(calls, [['open', false], ['select', null], ['dismiss', true]]);
 });
 
-test('only a completed successful import reveals the workspace', async () => {
+test('only a completed successful linked import opens Class & Materials without setup', async () => {
   const calls = [];
   const lesson = { title: 'Approved example', history: [{ id: 'new-resource' }] };
   let complete;
@@ -116,6 +116,10 @@ test('only a completed successful import reveals the workspace', async () => {
     loadProjectFromJson: value => { calls.push(['import', value]); return new Promise(resolve => { complete = resolve; }); },
     setHasSelectedMode: value => calls.push(['mode', value]),
     setHasSelectedRole: value => calls.push(['role', value]),
+    setShowWizard: value => calls.push(['wizard', value]),
+    setWizardInitialMode: value => calls.push(['wizardInitialMode', value]),
+    setGuidedMode: value => calls.push(['guided', value]),
+    setActiveSidebarTab: value => calls.push(['sidebar', value]),
   });
   vm.runInContext(section(source, 'IMPORT') + '\nthis.importLesson = handleImportCatalogLesson;', context);
   assert.deepEqual(calls, [], 'Defining the import callback must not invoke it');
@@ -123,7 +127,7 @@ test('only a completed successful import reveals the workspace', async () => {
   assert.deepEqual(calls, [['import', lesson]], 'Pending imports must leave the preview and role unchanged');
   complete({ success: true });
   assert.equal((await pending).success, true);
-  assert.deepEqual(calls, [['import', lesson], ['mode', true], ['role', true]]);
+  assert.deepEqual(calls, [['import', lesson], ['wizard', false], ['wizardInitialMode', null], ['guided', false], ['sidebar', 'history'], ['mode', true], ['role', true]]);
   context.communityCatalogLessonSlug = null;
   calls.length = 0;
   const ordinary = context.importLesson(lesson);

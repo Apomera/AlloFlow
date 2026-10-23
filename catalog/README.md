@@ -26,6 +26,38 @@ Resource capability tags (`memory-aid`, `applied-challenge`, `illustrated`, and 
 
 Raw `main` is the live catalog, so a push publishes within minutes.
 
+## Public directory and share links
+
+The Lesson Library at `https://alloflow.dev/packs` groups catalogued AlloPacks by
+topic and keeps base and illustrated editions together. Each version has its own
+Open, Copy link, and Download JSON actions. The three legacy sample projects remain below it.
+The directory, short URLs, and in-app catalog all use `catalog/index.json`.
+
+`share_slug` is a readable alias independent of the existing catalog `slug`.
+Katie's reading-space pack uses `https://alloflow.dev/p/reading-space`.
+Existing `/app/?lesson=<slug>` URLs remain valid. Relative Pages redirects preserve
+the origin when an existing user opens a `pages.dev/p/...` link; copied links use
+the current `alloflow.dev` domain. These origins keep separate browser storage.
+
+Run `node catalog/generate_index.js` after changing published metadata. It also
+regenerates the marked block in `library.html`, the AlloPack block in `_redirects`,
+and their desktop-public mirrors. `node dev-tools/build_allopack_links.cjs --check`
+detects drift. Duplicate aliases, invalid ids, missing files, and unsafe paths fail.
+The publication helper now checks both base and illustrated folders, preserves
+existing ids, and validates newly added files through the native catalog import boundary.
+Passing that check establishes loadability, not content review or teaching quality.
+
+A new or changed pack needs one reviewed repository publication (and a Pages
+deployment for changed short-link routes). Sharing an already published pack is
+just copying its URL; it does not require running `deploy.sh` again.
+The MCP validates, illustrates, and exports packs but does not publish them.
+
+Google's Gemini Canvas share URL identifies the complete shared app, not a selected
+AlloPack. No automatic per-pack query forwarding is implemented or assumed.
+In Canvas, find a pack in Community Catalog or use Download JSON then Load Project.
+The short pack URL opens the standalone browser app, previews first, and waits for
+the user to choose Load in AlloFlow.
+
 ## Approval workflow (maintainer)
 
 1. Pull latest: `git pull`
