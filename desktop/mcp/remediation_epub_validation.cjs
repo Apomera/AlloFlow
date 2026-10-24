@@ -53,7 +53,9 @@ function capabilities() {
 }
 function fingerprint() {
   const r=runtime(),parts=[__filename,path.join(__dirname,'remediation_ace_worker.cjs'),path.join(__dirname,'remediation_ace_browser.cjs'),path.join(__dirname,'remediation_epub_archive.cjs'),path.join(__dirname,'vendor','manifest.json')];
-  const lock=[path.join(__dirname,'runtime','package-lock.json'),path.join(__dirname,'..','package-lock.json')].find(p=>fs.existsSync(p));if(lock)parts.push(lock);
+  // The official MCPB packer omits conventional package-lock.json files; the
+  // builder preserves their exact bytes under this explicit evidence filename.
+  const lock=[path.join(__dirname,'runtime','package-lock.json'),path.join(__dirname,'..','runtime-dependencies.lock.json'),path.join(__dirname,'..','package-lock.json')].find(p=>fs.existsSync(p));if(lock)parts.push(lock);
   return digest(JSON.stringify({node:process.versions.node,files:parts.map(p=>fs.existsSync(p)?digest(fs.readFileSync(p)):null),jar:fs.existsSync(r.jar)?digest(fs.readFileSync(r.jar)):null,ace:r.ace?digest(fs.readFileSync(r.ace)):null}));
 }
 function parseEpubcheck(report) {

@@ -117,3 +117,27 @@ test('requires a packaged runtime manifest for distribution checks while keeping
   assert.deepEqual(assertSourceBytes(f.extraction, f.map), { checkedFiles: 1 });
   assert.throws(() => assertSourceBytes(f.extraction, f.map, { requirePlaywright: true }), /runtime manifest is missing or unsafe/);
 });
+
+test('packaged EPUB cache identity changes with the shipped runtime dependency-lock bytes', t => {
+  const f = fixture(t), server = path.join(f.extraction, 'server');
+  for (const name of ['remediation_epub_validation.cjs', 'remediation_epub_archive.cjs']) {
+    fs.copyFileSync(path.join(__dirname, '../desktop/mcp', name), path.join(server, name));
+  }
+  const evidence = path.join(f.extraction, 'runtime-dependencies.lock.json');
+  fs.writeFileSync(evidence, '{"fixtureDependencyVersion":1}\n');
+  // Match the official packer's layout: package-lock.json is excluded, while
+  // runtime-dependencies.lock.json is shipped byte-exact beside server/.
+  assert.equal(fs.existsSync(path.join(f.extraction, 'package-lock.json')), false);
+  const priorJava = process.env.ALLOFLOW_MCP_JAVA_BIN;
+  process.env.ALLOFLOW_MCP_JAVA_BIN = path.join(f.root, 'nonexistent-java');
+  try {
+    const validator = require(path.join(server, 'remediation_epub_validation.cjs'));
+    const before = validator.fingerprint();
+    assert.equal(validator.fingerprint(), before);
+    fs.writeFileSync(evidence, '{"fixtureDependencyVersion":2}\n');
+    assert.notEqual(validator.fingerprint(), before);
+  } finally {
+    if (priorJava === undefined) delete process.env.ALLOFLOW_MCP_JAVA_BIN;
+    else process.env.ALLOFLOW_MCP_JAVA_BIN = priorJava;
+  }
+});

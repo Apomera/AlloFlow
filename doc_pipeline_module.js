@@ -45470,7 +45470,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const instructionsHtml = `
               <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
-                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Write a category beside each item, or cut and sort the strips into the matching categories above.'}${hasAnyImage ? ' Some strips include pictures. Use the written information to decide where each belongs.' : ''}
+                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Write a category beside each item, or cut and sort the strips into the matching categories shown here.'}${hasAnyImage ? ' Some strips include pictures. Use the written information to decide where each belongs.' : ''}
               </div>
           `;
 
