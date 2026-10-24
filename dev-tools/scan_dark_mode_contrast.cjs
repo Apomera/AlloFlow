@@ -310,8 +310,11 @@ function scanJsxLike(file, src) {
   // div behind, so both the class-based remap and any `.theme-dark ...`
   // descendant rule stop applying.
   const portalRe = /createPortal\s*\(\s*([\s\S]{0,80}?),\s*document\.(body|documentElement)/g;
+  const themedPortals = portalRe.test(src) ? require('./portal_theme_scope.cjs').themedPortalCalls(src) : [];
+  portalRe.lastIndex = 0;
   let pm;
   while ((pm = portalRe.exec(src))) {
+    if (inRegions(themedPortals, pm.index)) continue;
     add(file, lineOf(src, pm.index), 'PORTAL-ESCAPE', 'document.' + pm[2],
       'content portalled to document.' + pm[2] + ' is outside the theme-${theme} div, so .theme-dark descendant rules and the generated remap do not reach it; every colour inside must be set by an explicit theme branch');
   }
@@ -350,7 +353,10 @@ function scanCssPayload(file, src) {
       if (!/color|background/i.test(decl)) continue;
       const line = lineOf(src, b.index + r.index);
 
-      if (EXTREME_COLOR.test(decl) && /var\(\s*--/.test(decl)) {
+      // Layout variables (height, safe-area offsets, etc.) cannot change a
+      // foreground/background pair. Inspect only colour-bearing declarations.
+      const colours = decl.split(';').filter(value => /^\s*(?:color|background(?:-color|-image)?|border(?:-(?:top|right|bottom|left))?(?:-color)?|outline(?:-color)?|(?:box|text)-shadow|fill|stroke)\s*:/i.test(value)).join(';');
+      if (EXTREME_COLOR.test(colours) && /var\(\s*--/.test(colours)) {
         add(file, line, 'CSS-LITERAL-VS-VAR', sel.slice(0, 60),
           `\`${sel.slice(0, 60)}\` mixes a hard-coded #fff/#000 with a var(--...) colour in one rule`);
       }

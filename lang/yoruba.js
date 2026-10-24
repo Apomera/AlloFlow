@@ -82712,7 +82712,8 @@
     "param_required": "{field} ṣe pàtàkì.",
     "param_invalid": "Tẹ {field} tó tọ́ sí i.",
     "unknown": "Àṣẹ àìmọ̀",
-    "plan_input_too_long": "Jọ̀wọ́ kúrú ìbéèrè yìí sí 12,000 àmì ìkọ tàbí kéré sí i. Kò sí ìgbésẹ̀ kankan tí a ti ṣe."
+    "plan_input_too_long": "Jọ̀wọ́ kúrú ìbéèrè yìí sí 12,000 àmì ìkọ tàbí kéré sí i. Kò sí ìgbésẹ̀ kankan tí a ti ṣe.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",

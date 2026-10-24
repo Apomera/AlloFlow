@@ -82519,7 +82519,8 @@
     "param_required": "{field}은(는) 필수입니다.",
     "param_invalid": "올바른 {field}을(를) 입력하세요.",
     "unknown": "알 수 없는 명령",
-    "plan_input_too_long": "이 요청을 12,000자 이하로 줄여 주세요. 아직 실행된 단계가 없습니다."
+    "plan_input_too_long": "이 요청을 12,000자 이하로 줄여 주세요. 아직 실행된 단계가 없습니다.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",

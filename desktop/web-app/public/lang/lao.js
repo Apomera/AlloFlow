@@ -82515,7 +82515,8 @@
     "param_required": "ຕ້ອງມີ {field}.",
     "param_invalid": "ໃສ່ {field} ທີ່ຖືກຕ້ອງ.",
     "unknown": "ຄຳສັ່ງທີ່ບໍ່ຮູ້ຈັກ",
-    "plan_input_too_long": "ກະລຸນາຫຍໍ້ຄຳຂໍນີ້ໃຫ້ເຫຼືອ 12,000 ຕົວອັກສອນ ຫຼື ໜ້ອຍກວ່າ. ຍັງບໍ່ໄດ້ດຳເນີນຂັ້ນຕອນໃດ."
+    "plan_input_too_long": "ກະລຸນາຫຍໍ້ຄຳຂໍນີ້ໃຫ້ເຫຼືອ 12,000 ຕົວອັກສອນ ຫຼື ໜ້ອຍກວ່າ. ຍັງບໍ່ໄດ້ດຳເນີນຂັ້ນຕອນໃດ.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "ແຜງຄຳສັ່ງ AlloFlow",

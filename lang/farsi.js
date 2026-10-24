@@ -83920,7 +83920,8 @@
     "param_required": "{field} الزامی است.",
     "param_invalid": "یک {field} معتبر وارد کن.",
     "unknown": "فرمان ناشناخته",
-    "plan_input_too_long": "لطفاً این درخواست را به ۱۲٬۰۰۰ کاراکتر یا کمتر کوتاه کن. هیچ مرحله‌ای اجرا نشده است."
+    "plan_input_too_long": "لطفاً این درخواست را به ۱۲٬۰۰۰ کاراکتر یا کمتر کوتاه کن. هیچ مرحله‌ای اجرا نشده است.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "پنل فرمان AlloFlow",

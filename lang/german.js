@@ -83778,7 +83778,8 @@
     "param_required": "{field} ist erforderlich.",
     "param_invalid": "Gib ein gültiges {field} ein.",
     "unknown": "Unbekannter Befehl",
-    "plan_input_too_long": "Bitte kürze diese Anfrage auf höchstens 12.000 Zeichen. Es wurden noch keine Schritte ausgeführt."
+    "plan_input_too_long": "Bitte kürze diese Anfrage auf höchstens 12.000 Zeichen. Es wurden noch keine Schritte ausgeführt.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",

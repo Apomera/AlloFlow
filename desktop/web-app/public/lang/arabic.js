@@ -87992,7 +87992,8 @@
     "param_required": "{field} مطلوب.",
     "param_invalid": "أدخل {field} صالحًا.",
     "unknown": "أمر غير معروف",
-    "plan_input_too_long": "يرجى اختصار هذا الطلب إلى 12,000 حرف أو أقل. لم يتم تنفيذ أي خطوة."
+    "plan_input_too_long": "يرجى اختصار هذا الطلب إلى 12,000 حرف أو أقل. لم يتم تنفيذ أي خطوة.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "لوحة أوامر AlloFlow",

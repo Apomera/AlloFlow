@@ -80717,7 +80717,8 @@
     "param_required": "{field} လိၣ်ဝဲ.",
     "param_invalid": "ထၢနုာ် {field} လၢအဘၣ်.",
     "unknown": "တၢ်မၤလိာ်လၢတသ့ၣ်ညါဘၣ်",
-    "plan_input_too_long": "ဝံသးစူၤမၤဖုၣ်လီၤတၢ်ဃ့ထီၣ်အံၤဆူလံာ်မဲာ်ဖျၢၣ် 12,000 မ့တမ့ၢ်စှၤန့ၢ်အန့ၣ်. တဆီတဘျီဒံးဘၣ်တၢ်မၤအီၤဘၣ်."
+    "plan_input_too_long": "ဝံသးစူၤမၤဖုၣ်လီၤတၢ်ဃ့ထီၣ်အံၤဆူလံာ်မဲာ်ဖျၢၣ် 12,000 မ့တမ့ၢ်စှၤန့ၢ်အန့ၣ်. တဆီတဘျီဒံးဘၣ်တၢ်မၤအီၤဘၣ်.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",

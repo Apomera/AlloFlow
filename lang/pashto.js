@@ -83885,7 +83885,8 @@
     "param_required": "{field} اړین دی.",
     "param_invalid": "یو سم {field} دننه کړئ.",
     "unknown": "ناڅرګنده کمانډ",
-    "plan_input_too_long": "مهرباني وکړئ دا غوښتنه ۱۲٬۰۰۰ تورو یا لږو ته لنډه کړئ. هیڅ مرحله نه ده پرمخ وړل شوې."
+    "plan_input_too_long": "مهرباني وکړئ دا غوښتنه ۱۲٬۰۰۰ تورو یا لږو ته لنډه کړئ. هیڅ مرحله نه ده پرمخ وړل شوې.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "د AlloFlow د امر پالیټ",

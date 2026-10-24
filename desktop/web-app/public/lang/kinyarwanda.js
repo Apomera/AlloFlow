@@ -82699,7 +82699,8 @@
     "param_required": "{field} irakenewe.",
     "param_invalid": "Andika {field} yemewe.",
     "unknown": "Itegeko ritazwi",
-    "plan_input_too_long": "Nyamuneka gabanya iyi nyandiko ugere ku nyuguti 12.000 cyangwa munsi. Nta ntambwe yakozwe."
+    "plan_input_too_long": "Nyamuneka gabanya iyi nyandiko ugere ku nyuguti 12.000 cyangwa munsi. Nta ntambwe yakozwe.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Urutonde rw’amategeko rwa AlloFlow",

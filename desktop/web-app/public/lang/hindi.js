@@ -82520,7 +82520,8 @@
     "param_required": "{field} आवश्यक है।",
     "param_invalid": "मान्य {field} दर्ज करें।",
     "unknown": "अज्ञात कमांड",
-    "plan_input_too_long": "कृपया इस अनुरोध को 12,000 वर्ण या उससे कम करें। कोई चरण नहीं चलाया गया।"
+    "plan_input_too_long": "कृपया इस अनुरोध को 12,000 वर्ण या उससे कम करें। कोई चरण नहीं चलाया गया।",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",

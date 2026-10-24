@@ -32,6 +32,11 @@ it('guards a queued old map inspection after the original ruler evidence is clea
  await client(async(host,current)=>{const p=plot(),stale=button(host,'Inspect pair path time '+(p.from/10).toFixed(1)),cursor=current().cursor;await React.act(async()=>{set(host,'Motion comparison choice','similar');stale.click();});expect(current().cursor).toBe(cursor);expect(current().fieldwork.measurement.motion).toMatchObject({checked:false,firstChoice:'actor',choice:'similar'});expect(host.querySelector('[data-efw-pair-path]')).toBeNull();expect(current().notebook).toEqual([]);});
  await client(async(host,current)=>{const p=plot(),stale=button(host,'Inspect pair path time '+(p.from/10).toFixed(1)),cursor=current().cursor;await React.act(async()=>{set(host,'Meadow scene data','baseline');stale.click();});expect(current().cursor).toBe(cursor);expect(current().fieldwork).toBeNull();expect(host.querySelector('[data-efw-pair-path]')).toBeNull();expect(current().notebook).toEqual([]);});
 });
-it('withholds the viewer and recorded-time controls for unchecked, interval-mismatched or stale submitted inputs',async()=>{
- for(const patch of [{motion:{...f.measurement.motion,checked:false}},{motion:{...f.measurement.motion,interval:1}},{motion:{...f.measurement.motion,sourceKey:'stale'}},{checked:false}])await client(async host=>{expect(host.querySelector('[data-efw-pair-path]')).toBeNull();expect(host.querySelector('[aria-label="Recorded pair path time"]')).toBeNull();},seed(patch));
+it.each([
+ ['unchecked motion',()=>({motion:{...f.measurement.motion,checked:false}})],
+ ['mismatched interval',()=>({motion:{...f.measurement.motion,interval:1}})],
+ ['stale source key',()=>({motion:{...f.measurement.motion,sourceKey:'stale'}})],
+ ['unchecked evidence',()=>({checked:false})],
+])('withholds the viewer and recorded-time controls for %s',async(_label,patch)=>{
+ await client(async host=>{expect(host.querySelector('[data-efw-pair-path]')).toBeNull();expect(host.querySelector('[aria-label="Recorded pair path time"]')).toBeNull();},seed(patch()));
 });

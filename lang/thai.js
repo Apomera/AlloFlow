@@ -83377,7 +83377,8 @@
     "param_required": "ต้องระบุ {field}",
     "param_invalid": "กรอก {field} ที่ถูกต้อง",
     "unknown": "คำสั่งที่ไม่รู้จัก",
-    "plan_input_too_long": "โปรดย่อคำขอนี้ให้เหลือไม่เกิน 12,000 ตัวอักษร ยังไม่มีขั้นตอนใดถูกดำเนินการ"
+    "plan_input_too_long": "โปรดย่อคำขอนี้ให้เหลือไม่เกิน 12,000 ตัวอักษร ยังไม่มีขั้นตอนใดถูกดำเนินการ",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "แผงคำสั่ง AlloFlow",

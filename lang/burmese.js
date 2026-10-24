@@ -82709,7 +82709,8 @@
     "param_required": "{field} လိုအပ်သည်။",
     "param_invalid": "မှန်ကန်သော {field} ကို ထည့်ပါ။",
     "unknown": "မသိသော command",
-    "plan_input_too_long": "ဤတောင်းဆိုချက်ကို စာလုံး 12,000 သို့မဟုတ် ထို့အောက် တိုအောင်ပြုလုပ်ပါ။ မည်သည့်အဆင့်မျှ မလုပ်ဆောင်ရသေးပါ။"
+    "plan_input_too_long": "ဤတောင်းဆိုချက်ကို စာလုံး 12,000 သို့မဟုတ် ထို့အောက် တိုအောင်ပြုလုပ်ပါ။ မည်သည့်အဆင့်မျှ မလုပ်ဆောင်ရသေးပါ။",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",

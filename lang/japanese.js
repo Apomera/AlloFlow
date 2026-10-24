@@ -83851,7 +83851,8 @@
     "param_required": "{field}は必須です。",
     "param_invalid": "有効な{field}を入力してください。",
     "unknown": "不明なコマンド",
-    "plan_input_too_long": "このリクエストを 12,000 文字以内に短縮してください。ステップはまだ実行されていません。"
+    "plan_input_too_long": "このリクエストを 12,000 文字以内に短縮してください。ステップはまだ実行されていません。",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",

@@ -82736,7 +82736,8 @@
     "param_required": "Το πεδίο {field} είναι υποχρεωτικό.",
     "param_invalid": "Εισαγάγετε έγκυρο {field}.",
     "unknown": "Άγνωστη εντολή",
-    "plan_input_too_long": "Συντομεύστε αυτό το αίτημα σε 12.000 χαρακτήρες ή λιγότερους. Δεν εκτελέστηκε κανένα βήμα."
+    "plan_input_too_long": "Συντομεύστε αυτό το αίτημα σε 12.000 χαρακτήρες ή λιγότερους. Δεν εκτελέστηκε κανένα βήμα.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Παλέτα εντολών AlloFlow",

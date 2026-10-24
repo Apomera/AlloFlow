@@ -84092,7 +84092,8 @@
     "param_required": "{field} estas deviga.",
     "param_invalid": "Enigu validan {field}.",
     "unknown": "Nekonata komando",
-    "plan_input_too_long": "Bonvolu mallongigi ĉi tiun peton al 12 000 signoj aŭ malpli. Neniu paŝo estis plenumita."
+    "plan_input_too_long": "Bonvolu mallongigi ĉi tiun peton al 12 000 signoj aŭ malpli. Neniu paŝo estis plenumita.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",

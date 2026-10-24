@@ -82703,7 +82703,8 @@
     "param_required": "{field} este obligatoriu.",
     "param_invalid": "Introdu un {field} valid.",
     "unknown": "Comandă necunoscută",
-    "plan_input_too_long": "Scurtează această solicitare la 12.000 de caractere sau mai puțin. Niciun pas nu a fost executat."
+    "plan_input_too_long": "Scurtează această solicitare la 12.000 de caractere sau mai puțin. Niciun pas nu a fost executat.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",

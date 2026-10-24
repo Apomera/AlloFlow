@@ -82895,7 +82895,8 @@
     "param_required": "{field} જરૂરી છે.",
     "param_invalid": "માન્ય {field} દાખલ કરો.",
     "unknown": "અજાણ્યો આદેશ",
-    "plan_input_too_long": "કૃપા કરીને આ વિનંતી 12,000 અક્ષર કે તેથી ઓછી કરો. કોઈ પગલું ચાલ્યું નથી."
+    "plan_input_too_long": "કૃપા કરીને આ વિનંતી 12,000 અક્ષર કે તેથી ઓછી કરો. કોઈ પગલું ચાલ્યું નથી.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",

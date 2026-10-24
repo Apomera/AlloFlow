@@ -82735,7 +82735,8 @@
     "param_required": "{field} wajib diisi.",
     "param_invalid": "Masukkan {field} yang valid.",
     "unknown": "Perintah tidak dikenal",
-    "plan_input_too_long": "Persingkat permintaan ini menjadi 12.000 karakter atau kurang. Belum ada langkah yang dijalankan."
+    "plan_input_too_long": "Persingkat permintaan ini menjadi 12.000 karakter atau kurang. Belum ada langkah yang dijalankan.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",

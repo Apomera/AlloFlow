@@ -83934,7 +83934,8 @@
     "param_required": "Pole {field} jest wymagane.",
     "param_invalid": "Wprowadź prawidłowe {field}.",
     "unknown": "Nieznane polecenie",
-    "plan_input_too_long": "Skróć to żądanie do 12 000 znaków lub mniej. Nie wykonano żadnego kroku."
+    "plan_input_too_long": "Skróć to żądanie do 12 000 znaków lub mniej. Nie wykonano żadnego kroku.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Paleta poleceń AlloFlow",

@@ -82701,7 +82701,8 @@
     "param_required": "{field} irakenewe.",
     "param_invalid": "Andika {field} yemewe.",
     "unknown": "Itegeko ritazwi",
-    "plan_input_too_long": "Turagusaba kugabanya iyi ndomo ngo igere ku ndome 12.000 canke munsi. Nta ntambwe yakozwe."
+    "plan_input_too_long": "Turagusaba kugabanya iyi ndomo ngo igere ku ndome 12.000 canke munsi. Nta ntambwe yakozwe.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Urutonde rw'amategeko rwa AlloFlow",

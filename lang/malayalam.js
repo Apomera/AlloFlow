@@ -82896,7 +82896,8 @@
     "param_required": "{field} ആവശ്യമാണ്.",
     "param_invalid": "സാധുവായ {field} നൽകുക.",
     "unknown": "അജ്ഞാത കമാൻഡ്",
-    "plan_input_too_long": "ഈ അഭ്യർത്ഥന 12,000 അക്ഷരങ്ങളോ അതിൽ കുറവോ ആക്കി ചുരുക്കുക. ഒരു ഘട്ടവും പ്രവർത്തിപ്പിച്ചിട്ടില്ല."
+    "plan_input_too_long": "ഈ അഭ്യർത്ഥന 12,000 അക്ഷരങ്ങളോ അതിൽ കുറവോ ആക്കി ചുരുക്കുക. ഒരു ഘട്ടവും പ്രവർത്തിപ്പിച്ചിട്ടില്ല.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow കമാൻഡ് പാലറ്റ്",

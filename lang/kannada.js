@@ -82892,7 +82892,8 @@
     "param_required": "{field} ಅಗತ್ಯವಿದೆ.",
     "param_invalid": "ಮಾನ್ಯವಾದ {field} ನಮೂದಿಸಿ.",
     "unknown": "ಅಪರಿಚಿತ ಆದೇಶ",
-    "plan_input_too_long": "ದಯವಿಟ್ಟು ಈ ವಿನಂತಿಯನ್ನು 12,000 ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಕಡಿಮೆಗೆ ಚಿಕ್ಕದಾಗಿಸಿ. ಯಾವುದೇ ಹಂತ ಚಲಾಯಿಸಲಾಗಿಲ್ಲ."
+    "plan_input_too_long": "ದಯವಿಟ್ಟು ಈ ವಿನಂತಿಯನ್ನು 12,000 ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಕಡಿಮೆಗೆ ಚಿಕ್ಕದಾಗಿಸಿ. ಯಾವುದೇ ಹಂತ ಚಲಾಯಿಸಲಾಗಿಲ್ಲ.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow ಆದೇಶ ಪ್ಯಾಲೆಟ್",

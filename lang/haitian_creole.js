@@ -85830,7 +85830,8 @@
     "param_required": "{field} obligatwa.",
     "param_invalid": "Antre yon {field} ki valab.",
     "unknown": "Kòmand enkoni",
-    "plan_input_too_long": "Tanpri rakousi demann sa a a 12,000 karaktè oswa mwens. Okenn etap pa t kouri."
+    "plan_input_too_long": "Tanpri rakousi demann sa a a 12,000 karaktè oswa mwens. Okenn etap pa t kouri.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",

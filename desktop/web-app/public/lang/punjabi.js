@@ -82709,7 +82709,8 @@
     "param_required": "{field} ਲੋੜੀਂਦਾ ਹੈ।",
     "param_invalid": "ਵੈਧ {field} ਦਰਜ ਕਰੋ।",
     "unknown": "ਅਣਜਾਣ ਕਮਾਂਡ",
-    "plan_input_too_long": "ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਬੇਨਤੀ ਨੂੰ 12,000 ਅੱਖਰਾਂ ਜਾਂ ਘੱਟ ਕਰੋ। ਕੋਈ ਕਦਮ ਨਹੀਂ ਚਲਾਇਆ ਗਿਆ।"
+    "plan_input_too_long": "ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਬੇਨਤੀ ਨੂੰ 12,000 ਅੱਖਰਾਂ ਜਾਂ ਘੱਟ ਕਰੋ। ਕੋਈ ਕਦਮ ਨਹੀਂ ਚਲਾਇਆ ਗਿਆ।",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow ਕਮਾਂਡ ਪੈਲੇਟ",

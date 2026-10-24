@@ -86591,7 +86591,8 @@
     "param_required": "Поле «{field}» обов’язкове.",
     "param_invalid": "Введіть коректне значення «{field}».",
     "unknown": "Невідома команда",
-    "plan_input_too_long": "Скоротіть цей запит до 12 000 символів або менше. Жоден крок не виконано."
+    "plan_input_too_long": "Скоротіть цей запит до 12 000 символів або менше. Жоден крок не виконано.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Командна палітра AlloFlow",

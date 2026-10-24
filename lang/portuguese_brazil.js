@@ -85573,7 +85573,8 @@
     "param_required": "{field} é obrigatório.",
     "param_invalid": "Informe um {field} válido.",
     "unknown": "Comando desconhecido",
-    "plan_input_too_long": "Encurte esta solicitação para 12.000 caracteres ou menos. Nenhuma etapa foi executada."
+    "plan_input_too_long": "Encurte esta solicitação para 12.000 caracteres ou menos. Nenhuma etapa foi executada.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",

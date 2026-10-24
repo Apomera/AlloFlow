@@ -82712,7 +82712,8 @@
     "param_required": "Ana buƙatar {field}.",
     "param_invalid": "Shigar da {field} mai inganci.",
     "unknown": "Umarni da ba a sani ba",
-    "plan_input_too_long": "Da fatan za a taƙaita wannan buƙata zuwa haruffa 12,000 ko ƙasa da haka. Ba a gudanar da wani mataki ba."
+    "plan_input_too_long": "Da fatan za a taƙaita wannan buƙata zuwa haruffa 12,000 ko ƙasa da haka. Ba a gudanar da wani mataki ba.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Panel ɗin umarni na AlloFlow",

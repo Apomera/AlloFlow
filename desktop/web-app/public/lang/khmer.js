@@ -82717,7 +82717,8 @@
     "param_required": "{field} គឺចាំបាច់។",
     "param_invalid": "បញ្ចូល {field} ដែលត្រឹមត្រូវ។",
     "unknown": "ពាក្យបញ្ជាមិនស្គាល់",
-    "plan_input_too_long": "សូមបង្រួមសំណើនេះឱ្យនៅត្រឹម 12,000 តួអក្សរ ឬតិចជាង។ មិនទាន់មានជំហានណាត្រូវបានដំណើរការទេ។"
+    "plan_input_too_long": "សូមបង្រួមសំណើនេះឱ្យនៅត្រឹម 12,000 តួអក្សរ ឬតិចជាង។ មិនទាន់មានជំហានណាត្រូវបានដំណើរការទេ។",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "ផ្ទាំងពាក្យបញ្ជា AlloFlow",

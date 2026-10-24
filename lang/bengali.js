@@ -82727,7 +82727,8 @@
     "param_required": "{field} আবশ্যক।",
     "param_invalid": "একটি বৈধ {field} লিখুন।",
     "unknown": "অজানা কমান্ড",
-    "plan_input_too_long": "অনুগ্রহ করে এই অনুরোধটি 12,000 অক্ষর বা তার কম করুন। কোনো ধাপ চালানো হয়নি।"
+    "plan_input_too_long": "অনুগ্রহ করে এই অনুরোধটি 12,000 অক্ষর বা তার কম করুন। কোনো ধাপ চালানো হয়নি।",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow কমান্ড প্যালেট",

@@ -83793,7 +83793,8 @@
     "param_required": "Поле «{field}» обязательно.",
     "param_invalid": "Введите корректное значение «{field}».",
     "unknown": "Неизвестная команда",
-    "plan_input_too_long": "Сократите этот запрос до 12 000 символов или меньше. Ни один шаг не был выполнен."
+    "plan_input_too_long": "Сократите этот запрос до 12 000 символов или меньше. Ни один шаг не был выполнен.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Командная палитра AlloFlow",

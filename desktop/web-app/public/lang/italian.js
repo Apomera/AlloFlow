@@ -83750,7 +83750,8 @@
     "param_required": "{field} è obbligatorio.",
     "param_invalid": "Inserisci un {field} valido.",
     "unknown": "Comando sconosciuto",
-    "plan_input_too_long": "Riduci questa richiesta a 12.000 caratteri o meno. Nessun passaggio è stato eseguito."
+    "plan_input_too_long": "Riduci questa richiesta a 12.000 caratteri o meno. Nessun passaggio è stato eseguito.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Tavolozza dei comandi di AlloFlow",

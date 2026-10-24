@@ -81284,7 +81284,8 @@
     "param_required": "{field} esengeli.",
     "param_invalid": "Koma {field} ya solo.",
     "unknown": "Motindo eyebani te",
-    "plan_input_too_long": "Svp kokitisa bosenga oyo tii na balɛtrɛ 12 000 to moke. Litambe moko te esalemi."
+    "plan_input_too_long": "Svp kokitisa bosenga oyo tii na balɛtrɛ 12 000 to moke. Litambe moko te esalemi.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",

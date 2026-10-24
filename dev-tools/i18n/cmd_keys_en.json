@@ -31,6 +31,7 @@
   "cmd.create_lesson_done2": " for grade ",
   "cmd.create_lesson_done3": " — AlloBot will guide the next steps.",
   "cmd.create_lesson_done_blank": "Starting the guided lesson flow — AlloBot will ask for your topic.",
+  "cmd.create_lesson_done_source": "Starting the guided lesson flow using your current source material.",
   "cmd.create_lesson_hint": "Starts the guided flow — say a topic and grade",
   "cmd.cycle_color_overlay": "Change the color overlay",
   "cmd.cycle_color_overlay_done": "Color overlay: ",

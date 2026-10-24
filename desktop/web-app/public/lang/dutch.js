@@ -84098,7 +84098,8 @@
     "param_required": "{field} is verplicht.",
     "param_invalid": "Voer een geldig {field} in.",
     "unknown": "Onbekende opdracht",
-    "plan_input_too_long": "Maak dit verzoek korter dan 12.000 tekens. Er zijn nog geen stappen uitgevoerd."
+    "plan_input_too_long": "Maak dit verzoek korter dan 12.000 tekens. Er zijn nog geen stappen uitgevoerd.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow-opdrachtenpalet",

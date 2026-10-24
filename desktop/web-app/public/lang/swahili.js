@@ -82729,7 +82729,8 @@
     "param_required": "{field} inahitajika.",
     "param_invalid": "Weka {field} sahihi.",
     "unknown": "Amri isiyojulikana",
-    "plan_input_too_long": "Tafadhali fupisha ombi hili hadi herufi 12,000 au chini. Hakuna hatua iliyotekelezwa."
+    "plan_input_too_long": "Tafadhali fupisha ombi hili hadi herufi 12,000 au chini. Hakuna hatua iliyotekelezwa.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",

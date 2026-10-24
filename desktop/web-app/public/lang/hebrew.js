@@ -82744,7 +82744,8 @@
     "param_required": "{field} הוא שדה חובה.",
     "param_invalid": "יש להזין {field} תקין.",
     "unknown": "פקודה לא מוכרת",
-    "plan_input_too_long": "יש לקצר את הבקשה ל־12,000 תווים או פחות. לא בוצע אף שלב."
+    "plan_input_too_long": "יש לקצר את הבקשה ל־12,000 תווים או פחות. לא בוצע אף שלב.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "לוח הפקודות של AlloFlow",

@@ -80727,7 +80727,8 @@
     "param_required": "{field} mite.",
     "param_invalid": "Ket {field} ma atir.",
     "unknown": "Cik ma pe ngene",
-    "plan_input_too_long": "Tim ber idwok kwayo man i nyig coc 12,000 onyo matidi. Pe gitiyo ki laa mo keken."
+    "plan_input_too_long": "Tim ber idwok kwayo man i nyig coc 12,000 onyo matidi. Pe gitiyo ki laa mo keken.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",

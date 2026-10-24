@@ -82713,7 +82713,8 @@
     "param_required": "{field} అవసరం.",
     "param_invalid": "చెల్లుబాటు అయ్యే {field} నమోదు చేయండి.",
     "unknown": "తెలియని ఆదేశం",
-    "plan_input_too_long": "దయచేసి ఈ అభ్యర్థనను 12,000 అక్షరాలకు లేదా అంతకంటే తక్కువకు కుదించండి. ఏ దశా అమలు కాలేదు."
+    "plan_input_too_long": "దయచేసి ఈ అభ్యర్థనను 12,000 అక్షరాలకు లేదా అంతకంటే తక్కువకు కుదించండి. ఏ దశా అమలు కాలేదు.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",

@@ -14,6 +14,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const { extractFromSource, SRC, OUT } = require('./extract_cmd_keys.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -118,6 +119,8 @@ let totalEnglishFallback = 0;
 let totalCatalogTranslation = 0;
 let totalWritten = 0;
 const report = [];
+const pending = [];
+const digest = (text) => createHash('sha256').update(text).digest('hex');
 
 for (const slug of slugs) {
   const rootFile = path.join(LANG_DIR, `${slug}.js`);
@@ -157,9 +160,14 @@ for (const slug of slugs) {
   totalEnglishFallback += englishFallback;
   totalCatalogTranslation += catalogTranslation;
   if (APPLY && missing.length) {
-    for (const item of missing) setDeep(pack, item.key, item.value);
-    writePair(rootFile, mirrorFile, pack);
-    totalWritten += missing.length;
+    // Validate the complete input set before writing any language. A stale
+    // manifest or a later pack's drift must not leave earlier packs changed.
+    try {
+      for (const item of missing) setDeep(pack, item.key, item.value);
+    } catch (error) {
+      errors.push(`${slug}: ${error.message}`);
+    }
+    pending.push({ rootFile, mirrorFile, missing, before: digest(rootText) });
   }
   report.push({ slug, missing: missing.length, englishFallback, catalogTranslation });
 }
@@ -169,6 +177,22 @@ if (errors.length) {
   for (const error of errors.slice(0, 80)) console.error(`  - ${error}`);
   if (errors.length > 80) console.error(`  ...and ${errors.length - 80} more`);
   process.exit(1);
+}
+
+// Recheck the planned inputs before applying; another editor may have changed
+// them during validation. Keep only hashes/plans in memory, not every large pack.
+for (const item of pending) {
+  if (digest(fs.readFileSync(item.rootFile, 'utf8')) !== item.before ||
+      digest(fs.readFileSync(item.mirrorFile, 'utf8')) !== item.before) {
+    console.error('reconcile_cmd_pack_coverage: pack changed during validation; nothing written.');
+    process.exit(1);
+  }
+}
+for (const item of pending) {
+  const pack = readJson(item.rootFile);
+  for (const leaf of item.missing) setDeep(pack, leaf.key, leaf.value);
+  writePair(item.rootFile, item.mirrorFile, pack);
+  totalWritten += item.missing.length;
 }
 
 const commandCount = canonicalKeys.filter((key) => key.startsWith('cmd.')).length;

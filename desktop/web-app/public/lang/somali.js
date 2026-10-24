@@ -82629,7 +82629,8 @@
     "param_required": "{field} waa loo baahan yahay.",
     "param_invalid": "Geli {field} sax ah.",
     "unknown": "Amar aan la aqoon",
-    "plan_input_too_long": "Fadlan codsigan u gaabi 12,000 xaraf ama ka yar. Tallaabo lama socodsiin."
+    "plan_input_too_long": "Fadlan codsigan u gaabi 12,000 xaraf ama ka yar. Tallaabo lama socodsiin.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",

@@ -82699,7 +82699,8 @@
     "param_required": "Yuav tsum muaj {field}.",
     "param_invalid": "Sau ib qho {field} raug.",
     "unknown": "Tsis paub cov lus txib",
-    "plan_input_too_long": "Thov txiav cov lus thov no kom tsawg dua 12,000 tus cim. Tsis tau khiav ib kauj ruam li."
+    "plan_input_too_long": "Thov txiav cov lus thov no kom tsawg dua 12,000 tus cim. Tsis tau khiav ib kauj ruam li.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",

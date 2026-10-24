@@ -80725,7 +80725,8 @@
     "param_required": "{field} a herh.",
     "param_invalid": "{field} a dikmi kha chiah.",
     "unknown": "Thupek hngalh lomi",
-    "plan_input_too_long": "Hi hlatlangmi hi cafang 12,000 ah asiloah a tlawmdeuh in tuah. Laa pakhat hman tuah a si lo."
+    "plan_input_too_long": "Hi hlatlangmi hi cafang 12,000 ah asiloah a tlawmdeuh in tuah. Laa pakhat hman tuah a si lo.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow command palette",

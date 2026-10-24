@@ -80727,7 +80727,8 @@
     "param_required": "Aikuj {field}.",
     "param_invalid": "Je juon {field} ejiṃwe.",
     "unknown": "Kien eo jaje kake",
-    "plan_input_too_long": "Jouj im kadikḷọk kajjitōk in ñan 12,000 leta ak dikḷọk. Ejjeḷọk step eṃōj an jerbal."
+    "plan_input_too_long": "Jouj im kadikḷọk kajjitōk in ñan 12,000 leta ak dikḷọk. Ejjeḷọk step eṃōj an jerbal.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow command palette",

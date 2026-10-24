@@ -82426,7 +82426,8 @@
     "param_required": "{field} là bắt buộc.",
     "param_invalid": "Nhập {field} hợp lệ.",
     "unknown": "Lệnh không xác định",
-    "plan_input_too_long": "Vui lòng rút ngắn yêu cầu này xuống còn 12.000 ký tự hoặc ít hơn. Chưa có bước nào được chạy."
+    "plan_input_too_long": "Vui lòng rút ngắn yêu cầu này xuống còn 12.000 ký tự hoặc ít hơn. Chưa có bước nào được chạy.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",

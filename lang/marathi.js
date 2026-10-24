@@ -82894,7 +82894,8 @@
     "param_required": "{field} आवश्यक आहे.",
     "param_invalid": "वैध {field} प्रविष्ट करा.",
     "unknown": "अज्ञात आदेश",
-    "plan_input_too_long": "कृपया ही विनंती 12,000 अक्षरे किंवा त्याहून कमी करा. कोणताही टप्पा चालवलेला नाही."
+    "plan_input_too_long": "कृपया ही विनंती 12,000 अक्षरे किंवा त्याहून कमी करा. कोणताही टप्पा चालवलेला नाही.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow कमांड पॅलेट",

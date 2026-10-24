@@ -83887,7 +83887,8 @@
     "param_required": "{field}为必填项。",
     "param_invalid": "请输入有效的{field}。",
     "unknown": "未知命令",
-    "plan_input_too_long": "请将此请求缩短至 12,000 个字符以内。尚未运行任何步骤。"
+    "plan_input_too_long": "请将此请求缩短至 12,000 个字符以内。尚未运行任何步骤。",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow 命令面板",

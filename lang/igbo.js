@@ -82712,7 +82712,8 @@
     "param_required": "Achọrọ {field}.",
     "param_invalid": "Tinye {field} ziri ezi.",
     "unknown": "Iwu a na-amaghị",
-    "plan_input_too_long": "Biko belata arịrịọ a ka ọ bụrụ mkpụrụedemede 12,000 ma ọ bụ ntakịrị. A gbaghị nzọụkwụ ọ bụla."
+    "plan_input_too_long": "Biko belata arịrịọ a ka ọ bụrụ mkpụrụedemede 12,000 ma ọ bụ ntakịrị. A gbaghị nzọụkwụ ọ bụla.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",

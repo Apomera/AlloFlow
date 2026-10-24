@@ -83700,7 +83700,8 @@
     "param_required": "{field}為必填項。",
     "param_invalid": "請輸入有效的{field}。",
     "unknown": "未知指令",
-    "plan_input_too_long": "請將此請求縮短至 12,000 個字元以內。尚未執行任何步驟。"
+    "plan_input_too_long": "請將此請求縮短至 12,000 個字元以內。尚未執行任何步驟。",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow 指令面板",

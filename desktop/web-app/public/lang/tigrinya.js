@@ -82708,7 +82708,8 @@
     "param_required": "{field} የድሊ።",
     "param_invalid": "ቅኑዕ {field} ኣእቱ።",
     "unknown": "ዘይፍለጥ ትእዛዝ",
-    "plan_input_too_long": "በጃኻ ነዚ ሕቶ ናብ 12,000 ፊደላት ወይ ካብኡ ዝወሓደ ኣሕጽሮ። ዝኾነ ስጉምቲ ኣይተሰርሐን።"
+    "plan_input_too_long": "በጃኻ ነዚ ሕቶ ናብ 12,000 ፊደላት ወይ ካብኡ ዝወሓደ ኣሕጽሮ። ዝኾነ ስጉምቲ ኣይተሰርሐን።",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",

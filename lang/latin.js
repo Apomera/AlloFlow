@@ -82455,7 +82455,8 @@
     "param_required": "{field} requiritur.",
     "param_invalid": "Insere {field} validum.",
     "unknown": "Mandatum ignotum",
-    "plan_input_too_long": "Quaeso hanc petitionem ad 12.000 litteras vel pauciores contrahe. Nullus gradus actus est."
+    "plan_input_too_long": "Quaeso hanc petitionem ad 12.000 litteras vel pauciores contrahe. Nullus gradus actus est.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",

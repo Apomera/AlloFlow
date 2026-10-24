@@ -82913,7 +82913,8 @@
     "param_required": "{field} zorunludur.",
     "param_invalid": "Geçerli bir {field} gir.",
     "unknown": "Bilinmeyen komut",
-    "plan_input_too_long": "Lütfen bu isteği 12.000 karaktere veya daha aza kısalt. Henüz hiçbir adım çalıştırılmadı."
+    "plan_input_too_long": "Lütfen bu isteği 12.000 karaktere veya daha aza kısalt. Henüz hiçbir adım çalıştırılmadı.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow komut paleti",

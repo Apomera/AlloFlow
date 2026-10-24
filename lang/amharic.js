@@ -82708,7 +82708,8 @@
     "param_required": "{field} ያስፈልጋል።",
     "param_invalid": "ትክክለኛ {field} ያስገቡ።",
     "unknown": "ያልታወቀ ትእዛዝ",
-    "plan_input_too_long": "እባክዎ ይህን ጥያቄ ወደ 12,000 ቁምፊ ወይም ከዚያ በታች ያሳጥሩ። ምንም ደረጃ አልተሠራም።"
+    "plan_input_too_long": "እባክዎ ይህን ጥያቄ ወደ 12,000 ቁምፊ ወይም ከዚያ በታች ያሳጥሩ። ምንም ደረጃ አልተሠራም።",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "የAlloFlow ትዕዛዝ ፓሌት",

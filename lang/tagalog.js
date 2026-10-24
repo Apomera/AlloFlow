@@ -82705,7 +82705,8 @@
     "param_required": "Kailangan ang {field}.",
     "param_invalid": "Maglagay ng wastong {field}.",
     "unknown": "Hindi kilalang utos",
-    "plan_input_too_long": "Paki-ikli ang kahilingang ito sa 12,000 karakter o mas kaunti. Wala pang hakbang na pinatakbo."
+    "plan_input_too_long": "Paki-ikli ang kahilingang ito sa 12,000 karakter o mas kaunti. Wala pang hakbang na pinatakbo.",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow command palette",

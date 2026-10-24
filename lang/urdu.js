@@ -82619,7 +82619,8 @@
     "param_required": "{field} درکار ہے۔",
     "param_invalid": "درست {field} درج کریں۔",
     "unknown": "نامعلوم کمانڈ",
-    "plan_input_too_long": "براہ کرم اس درخواست کو 12,000 حروف یا اس سے کم کر دیں۔ کوئی مرحلہ نہیں چلایا گیا۔"
+    "plan_input_too_long": "براہ کرم اس درخواست کو 12,000 حروف یا اس سے کم کر دیں۔ کوئی مرحلہ نہیں چلایا گیا۔",
+    "create_lesson_done_source": "Starting the guided lesson flow using your current source material."
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",
