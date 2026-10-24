@@ -103923,7 +103923,8 @@
     "a11y_published_lesson_preview": "Published lesson preview",
     "pd_responses_deleted_many": "Deleted saved responses for {count} PD modules.",
     "pd_responses_deleted_one": "Deleted saved responses for {count} PD module.",
-    "pd_responses_none_saved": "No saved PD responses were stored."
+    "pd_responses_none_saved": "No saved PD responses were stored.",
+    "lesson_link_copied": "Lesson link copied."
   },
   "lesson_script": {
     "edit_with_plan": "To change this script, press Edit at the top of the lesson plan.",

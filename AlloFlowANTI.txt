@@ -41007,7 +41007,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     const task = _alloBeginGlossaryTask(index, ['term', 'def'], 'translation:' + lang);
     if (!task) return { ok: false, reason: 'unavailable' };
     try {
-      const translated = await translateResourceItem({ type: 'glossary', title: 'Glossary', data: [{ term: item.term, def: item.def }] }, lang);
+      const translated = await translateResourceItem({ type: 'glossary', title: t('glossary.title'), data: [{ term: item.term, def: item.def }] }, lang);
       const row = Array.isArray(translated?.data) ? translated.data[0] : null;
       const map = row && row.translations && typeof row.translations === 'object' ? row.translations : {};
       const found = Object.keys(map).find(key => key.toLowerCase() === String(lang).toLowerCase());

@@ -153077,6 +153077,7 @@
     "pd_responses_none_saved": "No saved PD responses were stored.",
     "a11y_published_lesson_preview": "Published lesson preview",
     "a11y_e_g_3_6_8_k": "e.g., 3, 6-8, K",
-    "a11y_e_g_3_6_8_k_2": "e.g., 3, 6-8, K-2"
+    "a11y_e_g_3_6_8_k_2": "e.g., 3, 6-8, K-2",
+    "lesson_link_copied": "Lesson link copied."
   }
 }

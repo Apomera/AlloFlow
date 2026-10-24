@@ -1,5 +1,5 @@
 {
-  "totalStaleEntries": 12861,
+  "totalStaleEntries": 12648,
   "note": "High-water mark for check_lang_staleness --ratchet. Auto-lowers when the count drops; a count ABOVE it fails the gate. Do not raise by hand — re-translate or bless instead.",
   "debtRecord": "2026-10-16: raised 0 -> 12923 by owner decision (ratchet + debt list) after 473 English keys were reworded without re-translation since 2026-08-25. See docs/i18n_debt_2026-10-16.md."
 }

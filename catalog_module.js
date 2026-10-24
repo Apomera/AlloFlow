@@ -558,7 +558,7 @@
         if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(link);
         setManualLink('');
-        if (props.addToast) props.addToast('Lesson link copied.', 'success');
+        if (props.addToast) props.addToast(tr('catalog.lesson_link_copied', 'Lesson link copied.'), 'success');
       } catch (_) {
         try { setManualLink(catalogLessonPermalink(props.entry.slug, props.entry.share_slug)); } catch (error) { if (props.addToast) props.addToast(error.message, 'error'); }
       }
