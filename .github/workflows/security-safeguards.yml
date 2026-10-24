@@ -29,6 +29,11 @@ jobs:
           sparse-checkout: |
             /.github/workflows/
             /.github/dependabot.yml
+            /.npmrc
+            /package.json
+            /package-lock.json
+            /desktop/web-app/functions/package.json
+            /desktop/web-app/functions/package-lock.json
             /dev-tools/check_security_safeguards.cjs
             /dev-tools/security/
             /a11y-audit/package.json
@@ -116,3 +121,33 @@ jobs:
           DISABLE_ESLINT_PLUGIN: 'true'
           CI: 'false'
         run: node --max-old-space-size=8192 node_modules/react-scripts/scripts/build.js
+
+  root-firebase:
+    name: Root and Firebase dependency compatibility (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.npmrc
+            /package.json
+            /package-lock.json
+            /dev-tools/security/test-root-dependencies.cjs
+            /dev-tools/security/test-firebase-dependencies.cjs
+            /desktop/web-app/functions/
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies without lifecycle scripts
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/web-app/functions --ignore-scripts --no-audit --no-fund
+      - name: Reject reported vulnerabilities in root and Firebase dependencies
+        run: |
+          npm audit --package-lock-only --ignore-scripts --audit-level=low
+          npm audit --prefix desktop/web-app/functions --package-lock-only --ignore-scripts --audit-level=low
+      - name: Test parser, HTTP, browser tooling and Firebase SDK compatibility
+        run: node --test --test-concurrency=1 dev-tools/security/test-root-dependencies.cjs dev-tools/security/test-firebase-dependencies.cjs

@@ -50,7 +50,12 @@ function auditPlan(changed, full = false) {
     { directory: 'trailer', level: 'high' },
     { directory: 'desktop/web-app', level: 'low' },
     { directory: 'a11y-audit', level: 'low' },
-  ].filter(({ directory }) => full || changed.some((file) => file === directory + '/package.json' || file === directory + '/package-lock.json'));
+    { directory: '.', level: 'low' },
+    { directory: 'desktop/web-app/functions', level: 'low' },
+  ].filter(({ directory }) => {
+    const prefix = directory === '.' ? '' : directory + '/';
+    return full || changed.some((file) => file === prefix + 'package.json' || file === prefix + 'package-lock.json');
+  });
 }
 
 function changedFiles() {

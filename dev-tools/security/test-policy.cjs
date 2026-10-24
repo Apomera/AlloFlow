@@ -46,7 +46,10 @@ test('audits exact changed manifests and keeps MCP scopes untouched', () => {
   assert.deepEqual(auditPlan(['desktop/package.json']), [{ directory: 'desktop', level: 'high' }]);
   assert.deepEqual(auditPlan(['trailer/package-lock.json']), [{ directory: 'trailer', level: 'high' }]);
   assert.deepEqual(auditPlan(['a11y-audit/package-lock.json']), [{ directory: 'a11y-audit', level: 'low' }]);
-  assert.equal(auditPlan([], true).length, 5);
+  assert.deepEqual(auditPlan(['package.json', 'package-lock.json']), [{ directory: '.', level: 'low' }]);
+  assert.deepEqual(auditPlan(['desktop/web-app/functions/package-lock.json']), [{ directory: 'desktop/web-app/functions', level: 'low' }]);
+  assert.deepEqual(auditPlan(['unrelated/package.json', 'functions/package.json']), []);
+  assert.equal(auditPlan([], true).length, 7);
 });
 
 test('new non-MCP workflows are automatically checked while MCP remains independently maintained', () => {
@@ -59,7 +62,7 @@ test('new non-MCP workflows are automatically checked while MCP remains independ
 
 test('scheduled and manual runs audit unchanged scopes; ordinary pushes stay scoped', () => {
   for (const event of ['schedule', 'workflow_dispatch']) {
-    assert.equal(auditPlan([], auditsAllScopes(event)).length, 5);
+    assert.equal(auditPlan([], auditsAllScopes(event)).length, 7);
   }
   assert.deepEqual(auditPlan([], auditsAllScopes('push')), []);
   assert.deepEqual(auditPlan(['desktop/mcp/runtime/package-lock.json'], auditsAllScopes('pull_request')), []);
