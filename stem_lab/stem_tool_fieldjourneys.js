@@ -41,6 +41,7 @@
   // dev-tools/campaign-adventure-pilot/core.mjs
   var core_exports = {};
   __export(core_exports, {
+    MAX_COMMANDS: () => MAX_COMMANDS,
     PREFIX: () => PREFIX,
     addNote: () => addNote,
     dispatch: () => dispatch,
@@ -612,6 +613,8 @@
           return Object.assign({ id: c.id }, c.defaultState);
         }),
         yearActions: [],
+        yearStart: null,
+        decisionPreview: null,
         yearLog: [],
         lastEvent: null,
         cascadesFiredThisYear: [],
@@ -666,25 +669,27 @@
       fresh.difficulty = diff.id;
       fresh.hoursPerYear = diff.hoursPerYear;
       fresh.hoursLeft = diff.hoursPerYear;
+      fresh.yearStart = fresh.components.map(function(c) {
+        return Object.assign({}, c);
+      });
       if (opts.seed) fresh.seed = opts.seed;
       setSteward(fresh);
       if (addToast) addToast("\u{1F4A7} Watershed Steward begins. Year 1 of 10 on " + diff.label + ".", "success");
       awardStemXP && awardStemXP("steward_start", 10, "Watershed campaign begins");
       if (typeof announceToSR === "function") announceToSR("Watershed Steward started on " + diff.label + ". Year 1 of 10. " + diff.hoursPerYear + " hours.");
     }
-    function applyStewardTech(techId, componentId) {
+    function applyStewardTech(techId, componentId, previewOnly) {
       var tech = STEWARD_TECHNIQUES.find(function(t2) {
         return t2.id === techId;
       });
       if (!tech) return;
-      if (steward.hoursLeft < tech.hours) {
-        if (addToast) addToast("Not enough stewardship hours left.", "warn");
-        return;
-      }
+      var reason = steward.phase !== "year" ? t("stem.watercycle.steward_decision_begin_year", "Begin a campaign year to use this action.") : steward.hoursLeft < tech.hours ? t("stem.watercycle.steward_decision_insufficient", "Not enough stewardship hours left.") : "";
       if (tech.appliesTo !== "any" && componentId && tech.appliesTo.indexOf(componentId) < 0) {
-        if (addToast) addToast(tech.name + " does not apply to that component.", "info");
-        return;
+        reason = tech.name + " does not apply to that component.";
       }
+      if (tech.appliesTo !== "any" && (!componentId || !steward.components.some(function(c) {
+        return c.id === componentId;
+      }))) reason = t("stem.watercycle.steward_decision_choose_component", "Choose an eligible watershed component.");
       var newComps = steward.components.map(function(c) {
         if (componentId && c.id !== componentId && tech.appliesTo !== "any") return c;
         if (!componentId && tech.appliesTo !== "any") return c;
@@ -694,8 +699,21 @@
         if (tech.effects.support !== void 0) nc.support = stewardClamp(nc.support + tech.effects.support, 0, 100);
         return nc;
       });
-      var actionLog = { tech: tech.name, target: componentId ? getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId : "Watershed-wide", hours: tech.hours };
-      var patch = { components: newComps, hoursLeft: steward.hoursLeft - tech.hours, yearActions: steward.yearActions.concat([actionLog]) };
+      var targetName = componentId ? getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId : "Watershed-wide";
+      var before = steward.components.map(function(c) {
+        return Object.assign({}, c);
+      });
+      var decision = { tech, target: targetName, before, after: newComps, hoursAfter: steward.hoursLeft - tech.hours, canApply: !reason, reason };
+      if (previewOnly) return decision;
+      if (reason) {
+        if (addToast) addToast(reason, "warn");
+        return;
+      }
+      var actionLog = { tech: tech.name, techId, target: targetName, targetId: componentId || null, hours: tech.hours, before, after: newComps.map(function(c) {
+        return Object.assign({}, c);
+      }) };
+      var patch = { components: newComps, hoursLeft: decision.hoursAfter, yearActions: steward.yearActions.concat([actionLog]), decisionPreview: null };
+      if (!steward.yearStart && !steward.yearActions.length) patch.yearStart = before;
       if (techId === "damRemoval" || techId === "fishPassage") patch.connectivityBoosts = (steward.connectivityBoosts || 0) + 1;
       setSteward(patch);
       if (typeof announceToSR === "function") announceToSR(tech.name + " applied. " + (steward.hoursLeft - tech.hours) + " hours left.");
@@ -711,6 +729,9 @@
         nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
         return nc;
       });
+      var annualStages = [{ id: "actions", label: t("stem.watercycle.steward_decision_after_actions", "After your actions"), components: pre }, { id: "drift", label: t("stem.watercycle.steward_decision_routine", "Routine yearly change"), components: drifted.map(function(c) {
+        return Object.assign({}, c);
+      }) }];
       var diff = STEWARD_DIFFICULTIES[steward.difficulty || "coordinator"];
       var skipRng = stewardRng(steward.seed, steward.year, "skip");
       var pickRng = stewardRng(steward.seed, steward.year, "pick");
@@ -723,6 +744,9 @@
       }
       var eventState = { fundingBonusNextYear: steward.fundingBonusNextYear || 0, connectivityBoosts: steward.connectivityBoosts || 0 };
       ev.apply(drifted, eventState);
+      annualStages.push({ id: "event", label: ev.name || t("stem.watercycle.steward_decision_event", "Yearly event"), components: drifted.map(function(c) {
+        return Object.assign({}, c);
+      }) });
       var sev = diff.severity || 1;
       if (sev !== 1) {
         for (var di = 0; di < drifted.length; di++) {
@@ -733,6 +757,9 @@
           sp.support = stewardClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
         }
       }
+      annualStages.push({ id: "difficulty", label: t("stem.watercycle.steward_decision_difficulty", "Difficulty adjustment"), components: drifted.map(function(c) {
+        return Object.assign({}, c);
+      }) });
       var fired = [];
       STEWARD_FEEDBACK_RULES.forEach(function(rule) {
         if (rule.when(drifted)) {
@@ -740,6 +767,9 @@
           fired.push({ id: rule.id, msg: rule.msg });
         }
       });
+      annualStages.push({ id: "cascade", label: t("stem.watercycle.steward_decision_connected", "Connected watershed effects"), components: drifted.map(function(c) {
+        return Object.assign({}, c);
+      }) });
       var snap = {
         year: steward.year,
         eventId: ev.id,
@@ -750,11 +780,16 @@
         post: drifted.map(function(c) {
           return Object.assign({}, c);
         }),
+        yearStart: steward.yearStart ? steward.yearStart.map(function(c) {
+          return Object.assign({}, c);
+        }) : null,
+        stages: annualStages,
         actions: steward.yearActions.slice(),
         cascades: fired
       };
       setSteward({
         phase: "review",
+        decisionPreview: null,
         components: drifted,
         lastEvent: ev,
         cascadesFiredThisYear: fired,
@@ -793,7 +828,11 @@
           hoursLeft: steward.hoursPerYear + (steward.fundingBonusNextYear || 0),
           fundingBonusNextYear: 0,
           yearActions: [],
-          lastEvent: null
+          lastEvent: null,
+          decisionPreview: null,
+          yearStart: steward.components.map(function(c) {
+            return Object.assign({}, c);
+          })
         });
         if (typeof announceToSR === "function") announceToSR("Year " + (steward.year + 1) + " begins.");
       }
@@ -846,7 +885,7 @@
           responseTerms: tech.id === "bufferPlant" ? ["plant", "plant trees", "buffer", "riparian"] : [],
           cost: tech.hours,
           disabled: tech.hours > model.hoursLeft,
-          hint: (target ? water.components.find((c) => c.id === target).name : "Watershed-wide") + " \xB7 " + tech.hours + " hours",
+          hint: (target ? (water.components.find((c) => c.id === target) || { name: target }).name : "Watershed-wide") + " \xB7 " + tech.hours + " hours",
           tradeoff: Object.entries(tech.effects).map(([key, value]) => key + " " + delta(value)).join(" \xB7 ")
         }));
       }).concat([{ id: "end-year", label: "Observe the year", hint: "Finish fieldwork. See the annual event and downstream effects." }]);
@@ -876,7 +915,7 @@
         const ended = model.phase === "debrief", review = model.phase === "review";
         const latest = model.yearLog.at(-1);
         const weakest = [...model.components].sort((a, b) => a.quality - b.quality)[0];
-        const weakName = water.components.find((c) => c.id === weakest.id).name;
+        const weakName = (water.components.find((c) => c.id === weakest.id) || { name: weakest.id }).name;
         const start = latest?.pre || model.components;
         const resultText = latest ? latest.eventDesc + " " + (latest.cascades.map((c) => c.msg).filter(Boolean).join(" ") || "No downstream feedback rule activated this year.") : "";
         const title = ended ? model.finalOutcome.label : review ? "What the river carried forward" : model.year === 1 ? "Your first season on the river" : model.year < 4 ? "Look upstream" : model.year < 8 ? "Connections begin to matter" : "The river you leave behind";
@@ -893,13 +932,19 @@
           period: "Year " + model.year + " of 10",
           prompt: review ? "Read the changes before beginning the next year." : ended ? "What would you carry into another restoration effort?" : "Where will your stewardship hours make a difference?",
           metrics: [{ label: "Quality", value: avg(model, "quality"), unit: "/100" }, { label: "Connectivity", value: avg(model, "connectivity"), unit: "/100" }, { label: "Support", value: avg(model, "support"), unit: "/100" }, { label: "Hours left", value: model.hoursLeft, unit: "" }],
-          locations: water.components.map((c) => ({ id: c.id, name: c.name, description: c.desc, value: round(model.components.find((m) => m.id === c.id).quality), unit: "quality index", icon: c.icon })),
-          evidence: review || ended ? model.components.map((c) => ({
-            label: water.components.find((x) => x.id === c.id).name,
-            before: round(start.find((x) => x.id === c.id).quality),
-            after: round(c.quality),
-            detail: "quality; annual change " + delta(c.quality - start.find((x) => x.id === c.id).quality)
-          })) : [],
+          locations: water.components.flatMap((c) => {
+            const m = model.components.find((x) => x.id === c.id);
+            return m ? [{ id: c.id, name: c.name, description: c.desc, value: round(m.quality), unit: "quality index", icon: c.icon }] : [];
+          }),
+          evidence: review || ended ? model.components.map((c) => {
+            const info = water.components.find((x) => x.id === c.id), prev = start.find((x) => x.id === c.id);
+            return {
+              label: info ? info.name : c.id,
+              before: prev ? round(prev.quality) : null,
+              after: round(c.quality),
+              detail: prev ? "quality; annual change " + delta(c.quality - prev.quality) : "quality"
+            };
+          }) : [],
           receipts: model.yearLog.map((row) => ({
             title: "Year " + row.year + " \xB7 " + row.event,
             text: (row.actions.length ? row.actions.map((a) => a.tech + " (" + a.target + ", " + a.hours + "h)").join("; ") : "No fieldwork") + ". " + row.eventDesc,
@@ -1988,28 +2033,16 @@
   }
 
   // dev-tools/campaign-adventure-pilot/in-app.mjs
+  init_core();
+  init_response_records();
   window.StemLab.registerTool("fieldJourneys", {
     icon: "\u{1F33F}",
     label: "Field Journeys (Pilot)",
-    // Kept word-for-word with the tile entry in stem_lab_module.js. The two are
-    // separate sources — the tile feeds the picker, this feeds catalog search
-    // and the active-tool context label — and only the tile had a description,
-    // so this tool was findable by browsing but not by searching.
-    desc: "Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.",
     category: "Ecology & Environment",
+    desc: "Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.",
     lightBackground: true,
     render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
   });
-
-  // ── Test-only exports ──────────────────────────────────────
-  // Exposes the module-scope run model to the vitest suite
-  // (tests/fieldjourneys_run_model.test.js). INERT IN PRODUCTION: only runs
-  // when a harness pre-sets window.__RR_TEST_EXPORTS__ BEFORE this script
-  // loads — the app never does. Same pattern as stem_tool_flightsim.js.
-  //
-  // createWatershedRuntime stubs its own dependencies, so the watershed
-  // campaign is reachable without the Tree Life Lab engine that createAdapters
-  // otherwise requires.
   if (typeof window !== "undefined" && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.fieldJourneys = {
       makeRun,

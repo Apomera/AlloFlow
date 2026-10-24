@@ -14,16 +14,21 @@ beforeAll(() => {
 });
 
 describe('Praxis Audiology 5343 diagnostic bank', () => {
-  it('registers five ready 100-item batches with the exact ETS category proportions', () => {
+  it('registers five 100-item batches while retaining independent drafts with the exact ETS category proportions', () => {
     expect(pack).toBeTruthy();
+    // Draft source metadata remains pending; the hub normalizes it to review-required.
+    const sourceItems = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/audiology_5343_items.json'), 'utf8'));
+    const drafts = sourceItems.filter((item) => item.reviewStatus === 'assistant-reviewed-independent-draft');
+    expect(drafts).toHaveLength(100);
+    expect(drafts.every((item) => item.qaStatus === 'pending-integrated-qa')).toBe(true);
     expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 120, simulationTimeMinutes: 120 });
     expect(pack.items).toHaveLength(500);
     expect(pack.sections).toHaveLength(5);
     expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'independent-diagnostic-batch-3', 'guided-review-bank-1', 'guided-review-bank-2']);
     expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'independent-diagnostic', 'guided-review', 'guided-review']);
-    // Honest tiers: 200 source-reviewed, 100 assistant-authored independent, and 200 guided-review activities.
+    // Honest tiers: 200 source-reviewed, 100 assistant-authored independent drafts, and 200 guided-review activities.
     expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
-    expect(pack.items.filter((item) => item.qaStatus === 'qa-passed-independent-practice-item')).toHaveLength(100);
+    expect(pack.items.filter((item) => item.qaStatus === 'review-required')).toHaveLength(100);
     expect(pack.items.filter((item) => item.qaStatus === 'structural-qa-passed-guided-practice-only')).toHaveLength(200);
     expect(pack.items.filter((item) => item.qaStatus === 'structural-qa-passed-guided-practice-only').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({ 'foundations-audiology': 0.20, 'prevention-screening': 0.10, assessment: 0.35, intervention: 0.25, 'professional-ethical': 0.10 });
@@ -36,7 +41,7 @@ describe('Praxis Audiology 5343 diagnostic bank', () => {
     expect(Hub.batchMeta(pack, 100)).toMatchObject({ batchNumber: 2, batchCount: 5, position: 1, startIndex: 100, endIndex: 200, isFinalBatch: false });
   });
 
-  it('keeps every item original, fully explained, source-reviewed, and linked to one compatible chapter', () => {
+  it('keeps every item original, fully explained, candidly reviewed, and linked to one compatible chapter', () => {
     const prompts = pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim());
     expect(new Set(prompts).size).toBe(500);
     expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
@@ -48,7 +53,7 @@ describe('Praxis Audiology 5343 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references).toContain('https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf');
-      expect(['source-reviewed | qa-passed', 'assistant-reviewed-independent-practice-item | qa-passed-independent-practice-item', 'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-independent-draft | review-required', 'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     }

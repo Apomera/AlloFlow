@@ -3211,7 +3211,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 { id: 'reactions', icon: '\u2696\uFE0F', title: 'Explore reactions', cardTitle: 'React', body: 'Balance equations and inspect products.', tone: '#dc2626', darkTone: '#fda4af' }
               ];
               var selectedRoute = routes.find(function(route) { return route.id === mode; }) || routes[0];
-              // The command deck and progress pills keep a light surface in dark mode.
+              // Route cards keep a light surface; progress pills follow the active theme.
               var selectedTone = isContrast ? '#ffff00' : selectedRoute.tone;
               var summaryStats = [
                 ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857', '#6ee7b7'],
@@ -3257,9 +3257,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 ),
                 React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2", "aria-label": __alloT('stem.molecule.a11y_molecule_lab_progress_summary', 'Molecule Lab progress summary') },
                   summaryStats.map(function(stat) {
-                    return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.625rem] text-slate-600 shadow-sm" },
+                    return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.625rem] text-slate-600 shadow-sm", style: { backgroundColor: isContrast ? '#000000' : isDark ? '#162032' : '#ffffff', color: isContrast ? '#ffff00' : isDark ? '#cbd5e1' : '#475569' } },
                       React.createElement("span", { className: "font-bold" }, stat[0]),
-                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : stat[2], wordBreak: 'break-word' } }, stat[1])
+                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : isDark ? stat[3] : stat[2], wordBreak: 'break-word' } }, stat[1])
                     );
                   })
                 ),

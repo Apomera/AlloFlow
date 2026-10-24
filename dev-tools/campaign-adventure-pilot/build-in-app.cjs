@@ -3,7 +3,7 @@ const {root,build}=require('./build.cjs');
 async function buildInApp(check=false){
   build(true);
   for(const [entry,relative] of [['in-app.mjs','stem_lab/stem_tool_fieldjourneys.js'],['sel-app.mjs','sel_hub/sel_tool_practicejourneys.js']]){
-    const result=await esbuild.build({entryPoints:[path.join(__dirname,entry)],bundle:true,format:'iife',platform:'browser',target:['es2020'],loader:{'.css':'text'},write:false,
+    const result=await esbuild.build({absWorkingDir:root,entryPoints:[path.join(__dirname,entry)],bundle:true,format:'iife',platform:'browser',target:['es2020'],loader:{'.css':'text'},write:false,
       banner:{js:'// Generated journey pilot. Run dev-tools/campaign-adventure-pilot/build-in-app.cjs.'}});
     const output=result.outputFiles[0].text;
     for(const name of [relative,'desktop/web-app/public/'+relative]){

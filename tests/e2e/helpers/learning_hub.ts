@@ -22,3 +22,12 @@ export function learningToolsCard(page: Page): Locator {
 export function hubTile(page: Page, hubId: string): Locator {
   return page.locator(`[data-hub-id="${hubId}"] [data-hub-launch]`).first();
 }
+
+/** Enter the current role chooser using a private, local student codename. */
+export async function openLearningToolsFromStart(page: Page): Promise<void> {
+  await page.goto('./');
+  await page.locator('[data-pathway="student"]').click();
+  await page.locator('#launch-pad-student-panel button[type="button"]').click();
+  await page.getByRole('button', { name: /^Start new adventure$/i }).click();
+  await page.locator('[data-hub-id="stem-lab"] [data-hub-launch]').first().waitFor({ state: 'visible' });
+}

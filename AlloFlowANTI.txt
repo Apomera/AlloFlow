@@ -41948,19 +41948,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         }}
       />
       )}
-      {/* ── Voice model download indicator (V1, rebuilt 2026-08-16) ──
-          This used to be the app's BOOT SPLASH, reused: fixed inset-0 at
-          z-index 9999, AlloFlow logo, "Preparing your learning environment".
-          It covered the whole screen for a background voice download, it fired
-          for models that were already on the device, it fired with no user
-          action behind it, and a failed init could pin it open for the rest of
-          the session.
-
-          What replaces it is a small pill at the bottom of the screen. It is
-          pointer-events:none, so it can never intercept a click; it never
-          blocks the page; and it now appears only for a genuine download (the
-          two writers of kokoroLoadState both check the device cache first).
-          Bottom CENTRE deliberately: toasts live bottom-left. */}
+      {/* Show a non-interactive bottom-centre pill only during a real voice download. Both kokoroLoadState writers must check the device cache; never block the app with a boot splash. */}
       {/* Deep-link visitor banner: shows only after a /<tool-slug> entry has
           actually opened its tool. Bottom-centre like the download pill, but
           clickable (the pill is pointer-events:none). z-40 for the same reason
@@ -42121,17 +42109,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           </div>
         </div>
       )}
-      {/* D4 (2026-08-16): toasts moved from bottom-left back to top-centre.
-          Bottom-left is where the work is during generation: the sidebar's own Generate
-          buttons sit in that band, the "Saved on device" chip is pinned at bottom-4
-          left-4, and the take-home banner is bottom-centre. A toast landing there during
-          a run put a card under the cursor exactly while the teacher was clicking.
-          Every BOTTOM placement collides with something: bottom-right holds the
-          student-tools launcher and the DA and remediation pills. The top band is app
-          chrome the teacher is not clicking mid-generation, and centring it favours
-          neither the sidebar nor the preview pane. It is offset by the measured header
-          height (mainTopOffset) so it clears the header instead of sitting on it.
-          Slide-in direction flipped to match. */}
+      {/* Top-centre toasts clear the measured header (mainTopOffset) and avoid Generate buttons, saved-device/homework banners, and lower-right tools. Match the slide-in direction. */}
       <div
         className="fixed inset-x-4 z-[170] flex flex-col items-stretch gap-3 pointer-events-none sm:left-1/2 sm:right-auto sm:w-full sm:max-w-md sm:-translate-x-1/2"
         style={{ top: `calc(${Math.max(0, mainTopOffset)}px + 0.75rem)` }}
@@ -42717,16 +42695,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             <div className={`absolute bottom-[-18%] right-[-8%] h-[34vw] w-[34vw] rounded-full blur-[120px] ${theme === 'dark' ? 'bg-purple-600/5 mix-blend-screen' : 'bg-purple-200/15 mix-blend-multiply'}`}></div>
         </div>
         )}
-        {/* Reading tint (Irlen-style). Portalled to <body> and fixed to the
-            viewport ON PURPOSE. Rendered inline it was `absolute inset-0 z-[60]`
-            inside .allo-docsuite, which measured 1280x480 of a 720px-tall
-            viewport (67% — the header strip untinted), sat below every modal,
-            toast (z-400), FAB stack (z-180) and the Launch Pad, and could never
-            cover anything portalled to <body>. A reading support has to cover
-            the whole visual field, chrome included, or it silently stops
-            working exactly where the student is looking.
-            pointer-events:none keeps it from intercepting any interaction, and
-            aria-hidden keeps it out of the accessibility tree. */}
+        {/* Portal the fixed reading tint to body so it covers the viewport, chrome, and portalled dialogs. pointer-events:none preserves interaction; aria-hidden excludes it from assistive navigation. */}
         {colorOverlay !== 'none' && typeof document !== 'undefined' && document.body && ReactDOM.createPortal(
             <div
                 aria-hidden="true"
@@ -43562,17 +43531,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-700 shadow-sm">
                   <FileText size={26} aria-hidden="true" />
                 </div>
-                {/* A student reaching this empty state is not about to author
-                    anything — they joined a class or opened a homework link and
-                    nothing has arrived yet. "Source Material" plus "generate
-                    entry points for your curriculum" is the teacher's job
-                    description, and telling a waiting student to configure a
-                    curriculum reads as an instruction they cannot follow. The
-                    action buttons below were already teacher-gated; this is the
-                    copy above them catching up. Live and homework differ because
-                    the honest next step differs: a live student waits for the
-                    teacher, a homework student whose pack never lands needs a
-                    new link. */}
+                {/* Student empty states must explain the next available action: wait for a live teacher or request a fresh homework link. Authoring controls remain teacher-only. */}
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
                   {!isTeacherMode && !isIndependentMode
                     ? (t('input.empty_student_eyebrow') || 'Connected')
@@ -44811,12 +44770,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             />
         </ErrorBoundary>
       )}
-      {/* ── Fluency export helpers — recovered from word_sounds_module + student_analytics_module
-              closures (Round 7 follow-up). Both lived inside CDN module closures and were
-              referenced by the inline FluencyModePanel without being exposed → buttons threw
-              ReferenceError in production. Lifted to host scope so FluencyModePanel can pick
-              them up via shorthand props. Future cleanup: dedupe with the copies still inside
-              word_sounds_module.js and student_analytics_module.js. ── */}
+      {/* Host-scope fluency exports are required by inline FluencyModePanel; CDN closures previously caused ReferenceErrors. Keep compatible with word_sounds_module and student_analytics_module copies. */}
       {(() => { /* no-op IIFE marker */ })()}
       {/* ── FluencyModePanel extracted to view_misc_panels_module.js (CDN) ── */}
       {(isFluencyMode && generatedContent) && window.AlloModules && window.AlloModules.FluencyModePanel && React.createElement(window.AlloModules.FluencyModePanel, {
@@ -46773,19 +46727,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 )}
             </button>
         )}
-        {/* Floating "Return to remediation" pill (2026-06-16, user report: "if I
-            accidentally X out of the remediation modal I can't get back to it").
-            The remediated document is NOT lost — it survives in pdfFixResult (and
-            localStorage) — but the modal's render gate (pdfAuditResult) was nulled
-            on close, leaving the work unreachable in-session (the only door back was
-            re-importing a downloaded project file). This pill re-mounts the modal
-            against the still-in-memory result. Shown whenever a result exists but the
-            modal is closed. Mirrors the DA pill above; stacks above it when both show.
-
-            The dismiss control is deliberately on the LEFT and the group shifts inward on
-            wider screens. Gemini Canvas owns a floating toolbar at the lower-right edge and
-            can otherwise cover the X even though it is present in the DOM. Hiding persists
-            for this exact cached result; Manage Local Storage can resume or delete it. */}
+        {/* Reopen the cached pdfFixResult when pdfAuditResult closes. Stack above DA. Keep dismiss on the left and inset from Canvas's toolbar; hiding applies only to this cached result, which Manage Local Storage can resume or delete. */}
         {(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && !pdfReturnPillDismissed && (
             <div className={`fixed ${(generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen) ? 'bottom-20' : 'bottom-4'} right-3 sm:right-24 z-[1000] flex max-w-[calc(100vw-1.5rem)] items-stretch gap-px animate-in slide-in-from-bottom-2 duration-300`}>
             <button

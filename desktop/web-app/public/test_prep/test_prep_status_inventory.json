@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "purpose": "structural-inventory-not-content-approval",
+  "limitation": "Records existing labels and file hashes only. Draft and pending QA items still need educational review. The historical review does not certify the current files.",
+  "historicalReview": {
+    "file": "test_prep_assistant_review_2026-07-16.json",
+    "sha256": "ce3e2eef71273a88dee4ea6a9225ab8a13696581fada0abb5c2f8c97bfa906a5"
+  },
+  "perPack": [
+    {
+      "stem": "audiology_5343",
+      "packSha256": "320e0968b36766be49b95d238e28ebbdc08be6c294b850d05394c2f38459871d",
+      "itemsSha256": "56bd74a26108b5d5d28805c5c02a438d91e5ad256ebc6719de25f4e0aea742c0",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "early_childhood_5025",
+      "packSha256": "6ec17ffd98ff3cc892f78b574110d05da5e76357a6f5c0536f1bc7e6de881220",
+      "itemsSha256": "9ce78ed13f5e07197fde2805dfe5e277f328bb63c0220b1c46a845a596f1320f",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "educational_leadership_5412",
+      "packSha256": "2c9f6c9455907b1da4df926763639f35836f79ecba9cf0abbfb8643d3a55a13c",
+      "itemsSha256": "7039f5abf955ca55957d3fe52d6265730fae160549fac168f6cce963a502b441",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "esol_5362",
+      "packSha256": "4a8cf90d5e309f7229db2f247c0988445ce9defcfd6d9e23d484db106ac3c958",
+      "itemsSha256": "902f96d0f7f9939716fc7eca45017d0dca1d7092b443ae8b83d5286e1c3b4654",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "parapro",
+      "packSha256": "04096d9b8f622855a7e6d24f5dba18838a7dd25c6c94d685a7a6f87173c30725",
+      "itemsSha256": "a08c438b78306a181e322652d2d2dc0e1d716b00107f080568f4e7006d2b85e0",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-independent-draft": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 300,
+        "qa-passed": 200
+      }
+    },
+    {
+      "stem": "plt_5_9_5623",
+      "packSha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d",
+      "itemsSha256": "2d2edbb9ee1db17b8f610c99d712dd05cd36a24c2021b4ced7072e4c173d2d9d",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "plt_7_12_5624",
+      "packSha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57",
+      "itemsSha256": "14bbeecd01760246c6e7a086f55ab7387f31bf92f392f8d0b38e05361fd64e08",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "plt_early_childhood_5621",
+      "packSha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3",
+      "itemsSha256": "85ea466bae714cb43cbf466baacb4f300b6f76b9f151939da11772ae24ecc8b2",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "plt_k6_5622",
+      "packSha256": "28c76392c17616db5fb6a8f95cc388f630cf143f1dd632f3dfd91d0f26c2e35d",
+      "itemsSha256": "219c1abf2abcef3cfc9753e57de84862a07ab141e4bdf0a76bc4c3bc6411e2bf",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "praxis_core_5752",
+      "packSha256": "b7797b6cf81c3efc2dcdc7d7fc3613798f469f7e34a5be0267fbb3036b87a1fd",
+      "itemsSha256": "e123f7be99633d22441dc1668c38118e066c7bf862ebad696a8a523cd34120a3",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "reading_specialist_5302",
+      "packSha256": "79ad61921c4440b6eb992c14e8f19de232499f11d0ea037b9c04d963a036a793",
+      "itemsSha256": "0115468c2347e152e8d928b2d512c7b6c4a5614cb710bd5650c38b2297651c30",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "school_counselor_5422",
+      "packSha256": "344c0f31724977707ad192223b9b19fc8f624c220e8cf3ac0b2b5adf44729070",
+      "itemsSha256": "ee932323edeaa89bdfd349c57adabed44747f2ccd3f5907e02bffce1bfb37836",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "school_librarian_5312",
+      "packSha256": "9bc3969566046cbd95252a0ed701e616a68b6851c93e251cba4de921862ce919",
+      "itemsSha256": "39ff11c88a63665c0015031139a5cbe49a89cf08b955c01d845d38ed93cdbdfc",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "school_psychologist_5403",
+      "packSha256": "88f097b215019b00e1ccd13ebc0e12d6b6f77962823336cb30204e3b8e369d5a",
+      "itemsSha256": "7920288cd83c97235c6bdf2031a905146a9ea41dedac687c8b69420079d05d39",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 200,
+        "assistant-reviewed-independent-draft": 100,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "pending-integrated-qa": 100,
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 200
+      }
+    },
+    {
+      "stem": "special_education_5355",
+      "packSha256": "8b16179f9013151c41c145a1a72f05f0a35132cd1961844fe27c0dd1c0d264eb",
+      "itemsSha256": "a2969b5f51ca2e6d1bfb2e823760c63dd236f0c9af9df8396ca524e49cff2f4e",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "special_education_behavior_emotional_5372",
+      "packSha256": "d1a89bb8c7ec7016f2405e1db6c3286f7e65cc5e0c85b94d7b916554bbdd5255",
+      "itemsSha256": "c0f5f7a3aae7e12980b46ee526eaa96fe2fdc9f3e244c6194bd28dc8a6a1652b",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "special_education_early_childhood_5692",
+      "packSha256": "7482b2707af01c9366f07acc6928ffff05d7f86de8cc3530d1f0740b68401af3",
+      "itemsSha256": "ea30f3a9e42f05ae012de4677bd47c28de6dc1dc4ef814ffaf6346dc68da63a2",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "special_education_intellectual_disabilities_5322",
+      "packSha256": "6ce7366cb73e71b8eb8451ffe5bea263fa8b1415f52c115c53ffa008b4623ebc",
+      "itemsSha256": "16f065d2672f580757c2ffaf4e808a3c868ea2f1ac17abeaf140bd156130a91e",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "special_education_learning_disabilities_5383",
+      "packSha256": "a1a2d8ff7f8d6495a9033dddd2708f27b2809ca6c8deead21e7e7a4b06224980",
+      "itemsSha256": "1fc2c05caa7444a2be67bb795fae1a54a2fa69c71efe2a0a539c8a37bf06b3cb",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "special_education_severe_profound_5547",
+      "packSha256": "324f0793c0f713070deea7c5420839b31900d39abdec9f21cb02783b7745cfcc",
+      "itemsSha256": "c1c2df44c284b2af4e14c5bb3d1605566ba96f651c29f521c31bf8fef5572742",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "speech_language_pathology_5331",
+      "packSha256": "921dc998e892723bbdcf0a5581bf9ab51b28cf5a29617be43e64dcc97dbdbfe6",
+      "itemsSha256": "6025c0fc1c98880cc5098ea355d26167ae42735e5c0a6e3bb4b5774fd87de59d",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    },
+    {
+      "stem": "teaching_reading_5205",
+      "packSha256": "f2b4b59cba60964117d1bfb655d249728395590f952a914931f6329a1eb06e0d",
+      "itemsSha256": "4a19fb7e8d78e4d3d598c279a02b0cd83dde44c759437d615a4d803fe4180744",
+      "learningActivities": 500,
+      "reviewStatus": {
+        "assistant-reviewed-guided-practice-only": 300,
+        "source-reviewed": 200
+      },
+      "qaStatus": {
+        "qa-passed": 200,
+        "structural-qa-passed-guided-practice-only": 300
+      }
+    }
+  ]
+}

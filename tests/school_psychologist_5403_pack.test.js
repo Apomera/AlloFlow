@@ -22,8 +22,13 @@ beforeAll(() => {
 });
 
 describe('Praxis School Psychologist 5403 diagnostic bank', () => {
-  it('registers five ready 100-item batches with the exact ETS 32/23/20/25 diagnostic blueprint', () => {
+  it('registers five 100-item batches while retaining independent drafts with the exact ETS 32/23/20/25 diagnostic blueprint', () => {
     expect(pack).toBeTruthy();
+    // Draft source metadata remains pending; the hub normalizes it to review-required.
+    const sourceItems = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_psychologist_5403_items.json'), 'utf8'));
+    const drafts = sourceItems.filter((item) => item.reviewStatus === 'assistant-reviewed-independent-draft');
+    expect(drafts).toHaveLength(100);
+    expect(drafts.every((item) => item.qaStatus === 'pending-integrated-qa')).toBe(true);
     expect(pack).toMatchObject({
       status: 'ready',
       batchSize: 100,
@@ -56,7 +61,7 @@ describe('Praxis School Psychologist 5403 diagnostic bank', () => {
     // and reviewed items, and 200 guided transformations.
     expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
     expect(pack.items.filter(
-      (item) => item.qaStatus === 'qa-passed-independent-practice-item',
+      (item) => item.qaStatus === 'review-required',
     )).toHaveLength(100);
     expect(pack.items.filter(
       (item) => item.qaStatus === 'structural-qa-passed-guided-practice-only',
@@ -118,7 +123,7 @@ describe('Praxis School Psychologist 5403 diagnostic bank', () => {
       );
       expect([
         'source-reviewed | qa-passed',
-        'assistant-reviewed-independent-practice-item | qa-passed-independent-practice-item',
+        'assistant-reviewed-independent-draft | review-required',
         'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only',
       ]).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);

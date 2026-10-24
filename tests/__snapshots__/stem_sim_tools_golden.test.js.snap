@@ -252,10 +252,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for molec
   "buttons": 54,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 144,
+  "lengthBucket": 145,
   "paths": 0,
   "selects": 0,
-  "sha": "8c47956ff63089c2",
+  "sha": "11a20a99197f1965",
   "svgs": 1,
 }
 `;

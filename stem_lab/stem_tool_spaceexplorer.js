@@ -2946,7 +2946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         'data-spaceexplorer-test-prediction': predictionStrategy,
                         onClick: function() { tryInteriorTranslation(predictionStrategy); },
                         className: 'mt-2 w-full rounded-lg border border-purple-200 bg-purple-700 px-3 py-2 text-xs font-black text-white hover:bg-purple-600'
-                      }, predictionChoice ? 'Test prediction with ' + movementMethods.find(function(method) { return method.id === predictionStrategy; }).label : 'Choose a prediction to test')
+                      }, predictionChoice ? 'Test prediction with ' + (movementMethods.find(function(method) { return method.id === predictionStrategy; }) || { label: predictionStrategy }).label : 'Choose a prediction to test')
                     )
                   : h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_microgravity_movement_method', 'Microgravity movement method') },
                       movementMethods.map(function(method) {

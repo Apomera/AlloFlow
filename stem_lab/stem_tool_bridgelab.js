@@ -9682,7 +9682,9 @@
           [__alloT('stem.bridgelab.pedestrian_4_title', 'Damping removes mechanical energy'), __alloT('stem.bridgelab.pedestrian_4', 'The Millennium Bridge retrofit used damping to control its response to pedestrians. Investigate the role of damping below using a separate earthquake teaching model.')]
         ];
         var title = flutter ? __alloT('stem.bridgelab.flutter_illustration', 'How flutter feeds back on motion') : __alloT('stem.bridgelab.pedestrian_illustration', 'How pedestrians and a bridge interact');
-        var source = CASES.find(function(item) { return item.id === (flutter ? 'tacoma' : 'millennium'); }).source;
+        var sourceCase = CASES.find(function(item) { return item.id === (flutter ? 'tacoma' : 'millennium'); });
+        if (!sourceCase) return null;
+        var source = sourceCase.source;
         var angle = flutter ? [0, 8, -12, 0][step] : 0;
         var offset = flutter ? 0 : [0, 10, -14, 0][step];
         return h('section', { 'data-bridge-dynamics': kind, style: { padding: 14, marginTop: 12, border: '1px solid #64748b', borderRadius: 10, background: '#0f172a', color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },

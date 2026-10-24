@@ -20,6 +20,10 @@ const legacyPages = new Map([
 ]);
 const expectedPrimary = ['tools.html', 'features.html', 'remediation.html', 'ways-to-use.html', 'for-districts.html', 'manuals.html', 'launch.html'];
 const expectedImage = 'https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png';
+// The lesson library now publishes its catalog on the custom domain. Keep
+// checking exact URLs while the remaining promotional pages use GitHub Pages.
+const customCanonical = { 'library.html': 'https://alloflow.dev/packs' };
+const customImage = { 'library.html': 'https://alloflow.dev/assets/alloflow-social-preview.png' };
 const errors = [];
 
 function read(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }
@@ -52,11 +56,12 @@ shellPages.forEach(function (file) {
 
 socialPages.forEach(function (file) {
     const html = read(file);
-    const expectedCanonical = file === 'index.html' ? canonicalBase : canonicalBase + file;
+    const expectedCanonical = customCanonical[file] || (file === 'index.html' ? canonicalBase : canonicalBase + file);
+    const pageImage = customImage[file] || expectedImage;
     check(attribute(html, /<link\s+rel="canonical"[^>]*>/i, 'href') === expectedCanonical, `${file}: canonical URL drifted`);
     check(attribute(html, /<meta\s+name="robots"[^>]*>/i, 'content') === 'index, follow', `${file}: robots index directive drifted`);
-    check(attribute(html, /<meta\s+property="og:image"[^>]*>/i, 'content') === expectedImage, `${file}: social preview image is not canonical`);
-    check(attribute(html, /<meta\s+name="twitter:image"[^>]*>/i, 'content') === expectedImage, `${file}: Twitter image is not canonical`);
+    check(attribute(html, /<meta\s+property="og:image"[^>]*>/i, 'content') === pageImage, `${file}: social preview image is not canonical`);
+    check(attribute(html, /<meta\s+name="twitter:image"[^>]*>/i, 'content') === pageImage, `${file}: Twitter image is not canonical`);
     check(attribute(html, /<meta\s+property="og:image:width"[^>]*>/i, 'content') === '1200', `${file}: og:image width missing`);
     check(attribute(html, /<meta\s+property="og:image:height"[^>]*>/i, 'content') === '630', `${file}: og:image height missing`);
     check(attribute(html, /<meta\s+property="og:image:type"[^>]*>/i, 'content') === 'image/png', `${file}: og:image type missing`);

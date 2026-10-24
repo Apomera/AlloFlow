@@ -21,8 +21,13 @@ beforeAll(() => {
 });
 
 describe('ParaPro 1755 diagnostic bank', () => {
-  it('registers five ready 100-item batches that closely preserve the official content proportions', () => {
+  it('registers five 100-item batches while retaining independent drafts that closely preserve the official content proportions', () => {
     expect(pack).toBeTruthy();
+    // Draft source metadata remains pending; the hub normalizes it to review-required.
+    const sourceItems = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_items.json'), 'utf8'));
+    const drafts = sourceItems.filter((item) => item.reviewStatus === 'assistant-reviewed-independent-draft');
+    expect(drafts).toHaveLength(300);
+    expect(drafts.every((item) => item.qaStatus === 'pending-integrated-qa')).toBe(true);
     expect(pack.status).toBe('ready');
     expect(pack.items).toHaveLength(500);
     expect(pack.batchSize).toBe(100);
@@ -35,10 +40,10 @@ describe('ParaPro 1755 diagnostic bank', () => {
       independentDiagnosticBatchCount: 5,
       guidedReviewBatchCount: 0,
     });
-    // Honest tiers: 200 source-reviewed questions and 300 assistant-reviewed
-    // independent-practice questions, with no guided transformations counted as questions.
+    // Honest tiers: 200 source-reviewed questions and 300 assistant-authored
+    // independent draft questions pending integrated QA, with no guided transformations counted as questions.
     expect(pack.items.slice(0, 200).every((item) => item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed')).toBe(true);
-    expect(pack.items.slice(200).every((item) => item.reviewStatus === 'assistant-reviewed-independent-practice-item' && item.qaStatus === 'qa-passed-independent-practice-item')).toBe(true);
+    expect(pack.items.slice(200).every((item) => item.reviewStatus === 'assistant-reviewed-independent-draft' && item.qaStatus === 'review-required')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       reading: 1 / 3,
       mathematics: 1 / 3,
@@ -68,7 +73,7 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.description).toContain('official ParaPro Assessment currently has 90 questions');
   });
 
-  it('keeps every item explained and preserves its reviewed content tier', () => {
+  it('keeps every item explained and preserves its content review tier', () => {
     const sourceItems = pack.items.slice(0, 200);
     const authoredIndependentItems = pack.items.slice(200);
 
@@ -79,10 +84,10 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.items.every((item) => item.references.includes('https://www.ets.org/pdfs/parapro/1755.pdf'))).toBe(true);
     expect(sourceItems.every((item) => item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed')).toBe(true);
     expect(authoredIndependentItems.every((item) => item.authorship === 'assistant-authored-independent'
-      && item.assistantReviewStatus === 'reviewed-independent-practice-item'
-      && item.examItemStatus === 'assistant-approved-as-independent-practice-item'
-      && item.reviewStatus === 'assistant-reviewed-independent-practice-item'
-      && item.qaStatus === 'qa-passed-independent-practice-item'
+      && item.assistantReviewStatus === 'reviewed-independent-draft'
+      && item.examItemStatus === 'assistant-reviewed-independent-draft'
+      && item.reviewStatus === 'assistant-reviewed-independent-draft'
+      && item.qaStatus === 'review-required'
       && !item.sourceItemId
       && item.references.length > 0)).toBe(true);
     expect(pack.guidedReviewItems).toBe(0);

@@ -993,7 +993,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     });
     if (game.practice) {
       game.trainingMode = 'guided';
-      var seeds = ATC_PRACTICE_SCENARIOS.find(function(item) { return item.id === game.practice.id; }).aircraft;
+      var practiceScenario = ATC_PRACTICE_SCENARIOS.find(function(item) { return item.id === game.practice.id; });
+        if (!practiceScenario) return null;
+        var seeds = practiceScenario.aircraft;
       var roster = seeds.map(function(ac) { return ac.id; });
       if (game.aircraft.some(function(ac) { return !seeds.some(function(seed) { return seed.id === ac.id && seed.typeId === ac.type.id; }); }) || roster.some(function(id) {
         return !game.aircraft.some(function(ac) { return ac.id === id; }) && game.practice.landedIds.indexOf(id) === -1 && game.practice.lostIds.indexOf(id) === -1;
@@ -1954,7 +1956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               h('p', { className: 'atc-eyebrow' }, meta.skill), h('h4', null, entry.scenario.title), h('p', null, meta.goal),
               h('details', { className: 'atc-practice-preview', 'data-atctower-practice-preview': entry.id },
                 h('summary', null, t('stem.atctower.preview_exercise', 'Preview exercise')),
-                h('p', { className: 'atc-preview-airport' }, AIRPORTS.find(function(apt) { return apt.id === entry.scenario.airportId; }).name),
+                h('p', { className: 'atc-preview-airport' }, (AIRPORTS.find(function(apt) { return apt.id === entry.scenario.airportId; }) || { name: entry.scenario.airportId }).name),
                 h('p', null, t('stem.atctower.preview_fixed_roster', 'Begins paused with only the traffic below. Resume when your plan is ready.')),
                 h('p', null, entry.scenario.briefing),
                 h('ul', { className: 'atc-preview-traffic', 'aria-label': t('stem.atctower.starting_traffic', 'Starting traffic') }, entry.scenario.aircraft.map(function(seed) {

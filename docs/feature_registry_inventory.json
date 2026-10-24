@@ -7,13 +7,13 @@
     "sidebarControls": 18,
     "stemTools": 152,
     "selTools": 72,
-    "alloPacks": 62,
+    "alloPacks": 63,
     "hubCards": 73,
     "appsScripts": 6,
     "modules": 219,
     "langPacks": 63,
-    "unitTestFiles": 6604,
-    "e2eSpecs": 1310
+    "unitTestFiles": 7598,
+    "e2eSpecs": 1607
   },
   "commands": [
     {
@@ -3008,6 +3008,12 @@
   ],
   "packs": [
     {
+      "file": "academic_discourse_reading_space_grade6",
+      "title": "A Reading Space We Can Share: Discourse and Collaboration Learning Lab",
+      "grade": "6th Grade",
+      "standards": ""
+    },
+    {
       "file": "american_revolution_causes_grade5",
       "title": "Causes of the American Revolution — How a Fight Becomes a War",
       "grade": "5th Grade",
@@ -4109,7 +4115,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 6604,
-    "e2e": 1310
+    "unit": 7598,
+    "e2e": 1607
   }
 }

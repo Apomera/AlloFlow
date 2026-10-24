@@ -15,13 +15,13 @@ narrative lives in `FEATURE_INVENTORY.md`; this file is the count-and-name layer
 | sidebarControls | 18 |
 | stemTools | 152 |
 | selTools | 72 |
-| alloPacks | 62 |
+| alloPacks | 63 |
 | hubCards | 73 |
 | appsScripts | 6 |
 | modules | 219 |
 | langPacks | 63 |
-| unitTestFiles | 6604 |
-| e2eSpecs | 1310 |
+| unitTestFiles | 7598 |
+| e2eSpecs | 1607 |
 
 ## Command palette
 
@@ -528,10 +528,11 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | windowoftolerance | Window of Tolerance |
 | zones | Emotion Zones Plugin (Enhanced v2) |
 
-## AlloPacks (62)
+## AlloPacks (63)
 
 | file | title | grade | standards |
 | --- | --- | --- | --- |
+| academic_discourse_reading_space_grade6 | A Reading Space We Can Share: Discourse and Collaboration Learning Lab | 6th Grade |  |
 | american_revolution_causes_grade5 | Causes of the American Revolution — How a Fight Becomes a War | 5th Grade | C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); |
 | ancient_egypt_grade6 | Why Cities Grew on the Nile — Surplus, Specialists, and Writing | 6th Grade | C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of |
 | area_perimeter_grade4 | Area and Perimeter — The Fence and the Floor | 3rd-4th Grade | CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim |
@@ -645,5 +646,5 @@ accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controll
 
 ## Tests
 
-- Unit test files: 6604
-- End-to-end specs: 1310
+- Unit test files: 7598
+- End-to-end specs: 1607
