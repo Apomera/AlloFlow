@@ -127,7 +127,7 @@ describe('Northern cardinal independent woodland behavior', () => {
       }
       a.wildlife.setMode('guided'); a.wildlife.update(4.68); expect(transforms(a.model.root)).toEqual(guided);
     } finally { a.wildlife.dispose(); b.wildlife.dispose(); }
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
 
   it('settles both feet before a smooth outward escape and keeps them planted during wing folding', () => {
     const f = fixture(), observer = { position: new THREE.Vector3(-.32, 1.65, 2.45), speed: 0 };

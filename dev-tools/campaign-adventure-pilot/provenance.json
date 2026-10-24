@@ -1,6 +1,6 @@
 {
   "source": "stem_lab/stem_tool_watercycle.js",
-  "sourceSha256": "1a8881ac0cb9f033990ae4b3f5ca80f9414cd04f8ccfb7b069b224045c452b54",
+  "sourceSha256": "63e240b5b9819403f07c89b0e73a85ca7fba6ed57a1546477261bdf91d3933f7",
   "declarations": [
     {
       "name": "MAINE_WATERSHED_COMPONENTS",
@@ -99,22 +99,22 @@
     },
     {
       "name": "startStewardCampaign",
-      "line": 6217,
+      "line": 6508,
       "sha256": "9daa9fab30d4f1fc246fc476a1a569be87dab87042baee4c06677fd7372a8632"
     },
     {
       "name": "applyStewardTech",
-      "line": 6235,
+      "line": 6526,
       "sha256": "aba0f7987e30d7e169e4d2bbf57a27d900392456b3099e28c496249ee7820493"
     },
     {
       "name": "endStewardYear",
-      "line": 6265,
+      "line": 6556,
       "sha256": "e5d481f999f4e269dee447489e984e8fd0dcaca1d936f946f77782d4b2a36cba"
     },
     {
       "name": "advanceFromStewardReview",
-      "line": 6331,
+      "line": 6622,
       "sha256": "af3d29b439204da8cfc221da4152aed2c52b75cb5360de4b4c191c77b5309033"
     }
   ]

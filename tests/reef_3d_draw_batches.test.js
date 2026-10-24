@@ -18,7 +18,9 @@ const TIERS = ['low', 'high'];
 const MOTION = { speed: 0.3, turn: 0.25, current: { x: 0.05, z: -0.03, strength: 0.7 } };
 const RAYS = ['bluespotted_stingray', 'reef_manta'], TURTLES = ['green_turtle', 'hawksbill_turtle'];
 const SCHOOLS = ['anthias', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish'];
-const LOFTED = S.ids.filter((id) => S.info(id).group === 'fish' && !RAYS.includes(id));
+// These fish have their own rigs rather than the shared lofted-fish anatomy.
+const CUSTOM_FISH = ['spotted_garden_eel', 'banded_pipefish', 'spotted_seahorse', 'ribbon_eel'];
+const LOFTED = S.ids.filter((id) => S.info(id).group === 'fish' && !RAYS.includes(id) && !CUSTOM_FISH.includes(id));
 
 function visible(o) { for (; o; o = o.parent) if (!o.visible) return false; return true; }
 // Every object that is one draw call (a visible mesh, line or point cloud).
@@ -50,7 +52,10 @@ const CALLS = {
   bluespotted_stingray: 3, bluestripe_snapper: 2, oriental_sweetlips: 2, reef_manta: 3, green_turtle: 5, hawksbill_turtle: 5, magnificent_anemone: 2, giant_clam: 3,
   crown_of_thorns: 1, blue_sea_star: 1, long_spined_urchin: 2, nudibranch: 2, cleaner_shrimp: 2, christmas_tree_worm: 2, day_octopus: 2, sea_cucumber: 1, sea_fan: 2,
   barrel_sponge: 1, soft_coral: 2, brain_coral: 1, staghorn_coral: 1, table_coral: 1, mushroom_coral: 1, boulder_coral: 1, cauliflower_coral: 1, foliose_coral: 1,
-  reef_star: 2, reef_ball: 3, coral_tree_nursery: 2
+  reef_star: 2, reef_ball: 3, coral_tree_nursery: 2,
+  firefish: 2, copperband_butterflyfish: 2, spotted_garden_eel: 2, banded_pipefish: 2, yellow_longnose_butterflyfish: 2,
+  pajama_cardinalfish: 2, banggai_cardinalfish: 2, giant_triton: 2, blue_velvet_headshield_slug: 2, regal_angelfish: 2,
+  mandarin_dragonet: 2, harlequin_shrimp: 2, spotted_seahorse: 2, bennetts_feather_star: 2, peacock_mantis_shrimp: 2, ribbon_eel: 2
 };
 const EXACT = { reef_manta: 3, bluespotted_stingray: 3, green_turtle: 5, hawksbill_turtle: 5, day_octopus: 2 };
 
@@ -73,7 +78,8 @@ describe('J1 species batches: draw calls', () => {
         try { expect(n, id + ' school ' + quality + ': body, fins with eyes, tail, two pectorals').toBe(5); total += n; } finally { h.dispose(); }
       }
     }
-    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226);
+    // Sixteen added specimens each use two draws per tier; the original limits stay fixed.
+    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 16 * 2 * TIERS.length);
   });
 });
 
@@ -104,6 +110,27 @@ describe('J1 species batches: the part-name contract', () => {
     ['reef_star', 'frame', 'mesh'], ['reef_star', 'ties', 'range'], ['reef_star', 'corals', 'mesh'], ['reef_ball', 'shell', 'mesh'], ['reef_ball', 'rims', 'mesh'], ['reef_ball', 'corals', 'mesh'],
     ['coral_tree_nursery', 'tree', 'node'], ['coral_tree_nursery', 'fragments', 'mesh']);
   for (const id of ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral']) PARTS.push([id, 'colony', 'mesh']);
+
+  for (const [id, names] of Object.entries({
+    spotted_garden_eel: ['body','detail'],
+    banded_pipefish: ['body','fins'],
+    spotted_seahorse: ['body-tail-holdfast','fins'],
+    ribbon_eel: ['forebody-support','head-fin-detail'],
+    giant_triton: ['shell','animal'],
+    blue_velvet_headshield_slug: ['body-headshield','soft-margins'],
+    harlequin_shrimp: ['body-legs-tail','front-appendages'],
+    bennetts_feather_star: ['disc-cirri-perch','feathered-crown'],
+    peacock_mantis_shrimp: ['shell-fixed-appendages','eyes-antennules']
+  })) for (const name of names) PARTS.push([id, name, 'mesh']);
+  for (const [id, names] of Object.entries({
+    banded_pipefish: ['eyes-mouth','tail','dorsal','pectoral'],
+    spotted_seahorse: ['dorsal-fin','pectoral-left','pectoral-right'],
+    ribbon_eel: ['nostrils-gills-snout','eyes','lower-jaw-three-chin-projections','continuous-fin-margins'],
+    giant_triton: ['foot-head','tentacle-far','tentacle-near'],
+    blue_velvet_headshield_slug: ['parapodium-left','parapodium-right','posterior-lobe-left','posterior-lobe-right'],
+    harlequin_shrimp: ['claw-left','antennule-left','claw-right','antennule-right'],
+    peacock_mantis_shrimp: ['eye-left','antennule-left','eye-right','antennule-right']
+  })) for (const name of names) PARTS.push([id, name, 'range']);
 
   it('finds every named part as a mesh, a node or a batch range, on both tiers', () => {
     expect(new Set(PARTS.map((p) => p[0])).size, 'every model is covered').toBe(S.ids.length);
@@ -183,7 +210,12 @@ describe('J1 species batches: the rig contract', () => {
                 expect(Math.hypot(w[0] - pos.getX(i), w[1] - pos.getY(i), w[2] - pos.getZ(i)), tag + ' rest position = pose x own frame').toBeLessThan(1e-6);
               }
               const bend = rig[at + 16], rough = rig[at + 17], rays = rig[at + 18], eye = rig[at + 19], flexW = rig[at + 15];
-              if (r.part === 'tail' && LOFTED.includes(id) || r.part === 'pectoral') { expect(bend, tag + ' membrane on a pivot: no bend').toBe(0); expect(flexW, tag + ' membrane flex').toBeCloseTo(0.42, 6); }
+              if (LOFTED.includes(id) && (r.part === 'tail' || r.part === 'pectoral')) { expect(bend, tag + ' membrane on a pivot: no bend').toBe(0); expect(flexW, tag + ' membrane flex').toBeCloseTo(0.42, 6); }
+              // Pipefish fins use their authored pivot/bending rig, without the lofted membrane flex.
+              if (id === 'banded_pipefish' && ['tail', 'dorsal', 'pectoral'].includes(r.part)) {
+                expect(bend, tag).toBe(r.part === 'pectoral' ? 1 : 0); expect(flexW, tag).toBe(0);
+                expect(rays, tag).toBe(1); expect(eye, tag).toBe(0);
+              }
               if (r.part === 'detail' || r.part === 'jaw') { expect([bend, rough, rays, eye].map((x) => +x.toFixed(4)), tag + ' eyes and details: bend, own roughness, no rays, wet eye').toEqual([1, 0.57, 0, 1]); }
               if (id === 'day_octopus' && r.part === 'eyes') expect(rough, tag).toBeCloseTo(0.15, 6);
               if (TURTLES.includes(id) && r.part === 'eyes') expect(rough, tag).toBeCloseTo(0.2, 6);
@@ -227,17 +259,20 @@ describe('J1 species batches: one shader patch, the same programs', () => {
   // Every species material family today: [type, map, bumpMap, normalMap, roughnessMap, alphaMap,
   // vertexColors, side, alphaTest, transparent, instanced, instanceColor, cache key]. A family is
   // one shader program; a new one stalls the first frame that shows it on a school laptop.
+  // The cucumber roughness maps and pipefish flag-tail texture add two explicit families.
   const FAMILIES = [
-    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,true,true,reef3d-species-v6|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,true,true,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,false,false,false,false,false,2,0.42,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,false,true,false,false,true,0,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,false,true,false,false,true,2,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,true,false,false,false,true,2,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,false,false,reef3d-species-v6|d',
-    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,true,true,reef3d-species-v6|d'
+    'MeshStandardMaterial,false,true,false,true,false,true,0,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,true,false,true,false,true,2,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,true,true,reef3d-species-v7|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,false,false,false,false,false,true,2,0,false,true,true,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,false,false,false,false,false,2,0.42,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,false,true,false,false,true,0,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,false,true,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,true,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,true,false,true,false,false,0,0,false,true,true,reef3d-species-v7|d'
   ];
   const sig = (m) => { const t = m.material; return [t.type, !!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.alphaMap, !!t.vertexColors, t.side, t.alphaTest, !!t.transparent, !!m.isInstancedMesh, !!m.instanceColor, t.customProgramCacheKey()].join(); };
   it('draws every model and school with the fixed material families', () => {

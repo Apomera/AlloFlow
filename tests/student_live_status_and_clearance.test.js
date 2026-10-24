@@ -216,9 +216,29 @@ describe('header controls with a coloured fill clear 4.5:1 on white text (2026-0
   // 3.30, amber-600 3.19 — all below AA for white text. Their 600/700/800
   // counterparts pass (indigo-600 6.29, emerald-700 5.48, violet-600 5.70).
   const FAILING = ['bg-indigo-500', 'bg-emerald-500', 'bg-emerald-600', 'bg-violet-500', 'bg-sky-500', 'bg-sky-600', 'bg-teal-600', 'bg-green-600', 'bg-amber-600'];
+  // Match complete utilities: a translucent fill must be checked against its backdrop.
+  const solidFill = (line, cls) => new RegExp('(?:^|[\\s\\x22\\x27\\x60:])' + cls + '(?=$|[\\s\\x22\\x27\\x60}])').test(line);
+  it('distinguishes solid and translucent background utilities without missing hover fills', () => {
+    expect(solidFill('bg-emerald-500 text-white', 'bg-emerald-500')).toBe(true);
+    expect(solidFill('hover:bg-emerald-500 text-white', 'bg-emerald-500')).toBe(true);
+    expect(solidFill('bg-emerald-500/20 hover:bg-emerald-500/35 text-white', 'bg-emerald-500')).toBe(false);
+  });
+  it('keeps the translucent resume chip readable over every header gradient stop, including hover', () => {
+    expect(header).toContain('from-purple-900 via-indigo-950 to-slate-900 text-white');
+    expect(header).toContain('bg-emerald-500/20');
+    expect(header).toContain('hover:bg-emerald-500/35');
+    const luminance = rgb => rgb.map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2)
+      .reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0);
+    for (const ground of [[88, 28, 135], [30, 27, 75], [15, 23, 42], [0, 0, 0]]) {
+      for (const alpha of [.20, .35]) {
+        const composed = ground.map((v, i) => v * (1 - alpha) + [16, 185, 129][i] * alpha);
+        expect(1.05 / (luminance(composed) + .05)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
   it('no fill that fails with white text is paired with text-white', () => {
     for (const cls of FAILING) {
-      const hits = header.split('\n').filter((line) => line.includes(cls) && /text-white/.test(line));
+      const hits = header.split('\n').filter((line) => solidFill(line, cls) && /text-white/.test(line));
       expect(hits, `${cls} is used with text-white: ${hits[0]?.trim().slice(0, 120)}`).toEqual([]);
     }
   });

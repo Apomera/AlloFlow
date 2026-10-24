@@ -193,10 +193,12 @@ describe('First Response hand camera targets', () => {
     expect(matches).toBe(1);
   });
 
-  it.each(ages)('fits the near hand and enabled palm arrow at every recovery pose for %s', age => {
-    for (const recoveryGuides of [false, true]) for (let phase = 0; phase <= 8; phase++) {
+  // Each age, guide setting and pose has an independent scene and assertion budget.
+  it.each(ages.flatMap(age => [false, true].flatMap(recoveryGuides =>
+    Array.from({ length: 9 }, (_, phase) => ({ age, recoveryGuides, phase }))
+  )))('fits the near hand and enabled palm arrow: $age, guides $recoveryGuides, pose $phase', ({ age, recoveryGuides, phase }) => {
       const { scene, content } = model(age, 'recovery', phase, { recoveryGuides });
-      if (phase < 2) { expect(content.meshes.nearPalm).toBeUndefined(); continue; }
+      if (phase < 2) { expect(content.meshes.nearPalm).toBeUndefined(); return; }
       const target = content.meshes.nearPalm;
       expect(target).toBe(object(scene, 'fr-palm-focus'));
       expect(target.isGroup).toBe(true); expect(target.visible).toBe(false);
@@ -216,7 +218,6 @@ describe('First Response hand camera targets', () => {
       hand.traverse(mesh => {
         if (mesh.geometry) for (const point of vertices(mesh)) expect(before.clone().expandByScalar(1e-6).containsPoint(point), mesh.name).toBe(true);
       });
-    }
   });
 
   it('allows camera fitting to reach the new hand close-ups', () => {

@@ -97,6 +97,9 @@ describe('featured reef roles in the species guide', () => {
     expect(role(t).value).toBe('all'); expect(ids(t)).toContain(other);
     expect(document.activeElement).toBe(t.host.querySelector('[data-species="' + other + '"] .cr-sp-name'));
     await select(role(t), 'cleaners'); await click(t.host.querySelector('[data-start-practice]'));
+    expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
+    expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(featured.cleaners.length);
+    await select(t.host.querySelector('[data-practice-collection-select]'), 'all');
     const available = X.SPECIES_META.filter(m => m.group !== 'structure').length;
     expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(available);
     await click(t.host.querySelector('[data-practice-start]'));

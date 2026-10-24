@@ -6,8 +6,13 @@ import { chromium } from 'playwright';
 const root = process.cwd();
 let browser, css;
 
-async function mount(viewport, state = {}, theme = 'default', pageOptions = {}, prepare = null) {
+async function mount(viewport, state = {}, theme = 'default', pageOptions = {}, prepare = null, controlledClock = false) {
   const page = await browser.newPage({ viewport, reducedMotion: 'reduce', ...pageOptions });
+  if (controlledClock) {
+    // Install before application timers; runFor advances every animation frame, not just Date.
+    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+  }
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/*', route => route.abort());
@@ -30,6 +35,7 @@ async function mount(viewport, state = {}, theme = 'default', pageOptions = {}, 
     ReactDOM.createRoot(document.querySelector('#root')).render(React.createElement(React.Fragment, null,
       React.createElement(window.AlloModules.AppStyles.AppStyles), React.createElement(Lab)));
   }, { state, theme });
+  if (controlledClock) await page.clock.runFor(100);
   await page.waitForSelector('#particle-stage[aria-busy="false"]');
   await page.locator('#particle-stage').scrollIntoViewIfNeeded();
   await page.evaluate(() => { window.originalParticleCanvas = document.querySelector('#particle-viewport canvas'); });
@@ -831,21 +837,23 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
   it('keeps PV over NT constant across a Boyle trial pair recorded in the running chamber', async () => {
     // The whole point of the model's pressure: squeeze the running chamber with the heat bath on, record before and
     // after, and the ideal-gas ratio must come back to the same number (the check card says so in words).
-    const { page, errors } = await mount({ width: 1280, height: 900 }, { count: 72, boxSize: 13, temperature: 320, thermostat: true });
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { count: 72, boxSize: 13, temperature: 320, thermostat: true }, 'default', {}, null, true);
     try {
       const wallRate = () => page.evaluate(() => { const cell = Array.from(document.querySelectorAll('.rounded-xl.bg-slate-100')).find((el) => el.textContent.startsWith('Wall hits')); return Number(cell.textContent.match(/(\d+) \/ s/)[1]); });
       await page.locator('#particle-essential-controls button').first().click(); // Run
-      await page.waitForFunction(() => Number((document.querySelector('#particle-readouts').textContent.match(/P ([\d.]+)/) || [])[1]) > 0.3, null, { timeout: 30000 });
-      await page.waitForTimeout(2500); // let the gauge and the wall-hit window fill
+      // Six seconds of actual simulation steps, even when CI renders slowly.
+      await page.clock.runFor(6000);
+      expect(Number(((await page.locator('#particle-readouts').textContent()).match(/P ([\d.]+)/) || [])[1])).toBeGreaterThan(0.3);
       const rateBefore = await wallRate();
       await page.getByRole('button', { name: 'Record this trial', exact: true }).click();
       const slider = page.getByLabel('Container edge length and volume', { exact: true });
-      await slider.evaluate(async (el) => {
+      await slider.evaluate((el) => {
         const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-        for (const v of [12, 11, 10, 9]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
+        set.call(el, '9'); el.dispatchEvent(new Event('input', { bubbles: true }));
       });
-      await page.waitForFunction(() => window.savedParticleData.boxSize === 9, null, { timeout: 20000 });
-      await page.waitForTimeout(7000); // the piston travels 4 units at 1 unit per second, then the gas settles
+      // Four seconds for the physical piston, then eight for the heat bath and gauge.
+      await page.clock.runFor(12000);
+      expect(await page.evaluate(() => window.savedParticleData.boxSize)).toBe(9);
       await page.getByRole('button', { name: 'Record this trial', exact: true }).click();
       const check = page.locator('#particle-gas-law-check');
       await check.waitFor({ timeout: 10000 });

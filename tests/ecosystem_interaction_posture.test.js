@@ -70,5 +70,5 @@ describe('actual recorded vigilance, listening and interaction catalogs',()=>{
     const originalApi=api,source=readFileSync(toolSource,'utf8'),anchor='var interactionPosture=ecoMeadowInteractionPosture(sp.id,old,{active:active,state:action.state,huntStage:hunt.stage,listenCue:listening.cue,attention:attention,recoveryCue:recovering.cue});';expect(source.split(anchor)).toHaveLength(2);
     resetStemLab();new Function(source.replace(anchor,'var interactionPosture={headRaise:0,listenTilt:0};'))();const control=window.StemLab.ecosystemFoodWeb;
     for(const config of configurations){const rows=originalApi.compare(config).baseline,before=JSON.stringify(rows),f=originalApi.behaviorTimeline(config,rows),c=control.behaviorTimeline(config,rows);expect(withoutPosture(f)).toEqual(withoutPosture(c));expect(originalApi.encounters(f,config)).toEqual(control.encounters(c,config));expect(JSON.stringify(rows)).toBe(before);expect(originalApi.behaviorTimeline(config,rows)).toEqual(f);}
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 });

@@ -103,7 +103,7 @@ describe('BirdLab walking sole contact', () => {
         }
       } finally { wildlife.dispose(); }
     }
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
 
   it.each(['high', 'low'])('articulates only the lifted foot and restores the resting footprint at each course endpoint (%s)', quality => {
     const { scene, wildlife } = fixture(quality);

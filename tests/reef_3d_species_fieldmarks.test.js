@@ -83,8 +83,9 @@ describe('Lane D load cost', () => {
     for (const id of ['anthias', 'bumphead_parrotfish']) { const h = S.createSchool(THREE, id, 5, { seed: 3 }); add(h); h.dispose(); }
     expect([...keys]).toEqual(['reef3d-species-v7|d']);
     // The cucumber's existing roughness map adds the eleventh family. The new
-    // firefish and copperband reuse existing signatures and add no family.
-    expect(sigs.size, 'material families across the complete specimen collection').toBeLessThanOrEqual(11);
+    // firefish and copperband reuse existing signatures. The pipefish's textured
+    // fin batch adds the twelfth family (including instanced schools).
+    expect(sigs.size, 'material families across the complete specimen collection').toBeLessThanOrEqual(12);
   }, 120000);
 });
 
