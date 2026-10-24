@@ -96749,7 +96749,21 @@
       "a11y_time_slows_on_a_close_approach_to_prey_a_stand_in_for_fast_raptor_vision_peregrine_f": "Time slows on a close approach to prey, a stand-in for fast raptor vision: peregrine falcons see flicker at 129 Hz or more (Potier et al. 2020).",
       "a11y_swap_the_nose_up_and_nose_down_keys_and_reverse_vertical_drag_as_in_a_flight_simulat": "Swap the nose-up and nose-down keys and reverse vertical drag, as in a flight simulator: push forward to dive.",
       "a11y_recorded_height_above_terrain_against_elapsed_simulation_time_a_white_cursor_marks_t": "Recorded height above terrain against elapsed simulation time. A white cursor marks the selected sample.",
-      "a11y_recorded_flight_interval_comparison": "Recorded flight interval comparison"
+      "a11y_recorded_flight_interval_comparison": "Recorded flight interval comparison",
+      "study_region_right_wing": "Right wing feathers",
+      "study_explore_visible": "Explore visible parts",
+      "study_explore_part": "Inspect {region}",
+      "study_explore_habitat": "Choose Studio to explore visible parts. The habitat view keeps its usual controls.",
+      "study_explore_help": "Turn on to tap a visible part of the bird. Drag to orbit; Inspect also selects parts by keyboard.",
+      "study_explore_active": "Tap a visible surface or a numbered label to look closer. Labels hide behind other parts. Drag to orbit; Inspect reaches every part.",
+      "study_explore_close": "Explore this surface by orbiting. Choose Whole bird to see the part labels again, or use Inspect to choose another part.",
+      "study_fine_view": "Fine view · camera compass",
+      "study_compass_forward": "Forward",
+      "study_compass_aft": "Aft",
+      "study_camera_bearing": "Bearing from heading",
+      "study_camera_elevation": "Requested elevation",
+      "study_compass_help": "Top-down compass: the arrow follows horizontal flight heading; the gold dot shows the camera. Elevation is measured above the horizon. Terrain may lift the camera above the requested angle.",
+      "study_camera_actual": "Actual camera: {bearing} bearing · {elevation} elevation"
     },
     "renewables": {
       "a11y_trace": "Trace {value1}",
