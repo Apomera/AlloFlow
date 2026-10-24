@@ -69,6 +69,7 @@ describe('dissection authored assessment cues', () => {
     const bindings = {
       d, quizQ, specimen: 'sheepEye', quizKind: 'function', dissectionStructureCue: structureCue,
       updMany: patch => Object.assign(d, patch), addToast: null, awardStemXP: vi.fn(), setProcedureFeedback: vi.fn(),
+      preserveAssessmentFocus: vi.fn(),
     };
     if (mode === 'supported reveal') productionFunction('revealQuizAnswer', bindings)();
     else productionFunction('submitQuizAnswer', bindings)(quizQ.id);

@@ -11969,6 +11969,32 @@ var d = labToolData.dissection || {};
             ? 'Diagram location clue: which structure is in the ' + targetDiagramRegion + ' region of this view?'
             : 'Function clue: "' + dissectionStructureCue(quizQ, 'function') + '"') : '';
 
+          var assessmentPromptId = 'diss-quiz-prompt-' + dissectionSaveOwner;
+          var assessmentFeedbackId = 'diss-quiz-feedback-' + dissectionSaveOwner;
+          function preserveAssessmentFocus(panelId, targetId) {
+            var focusRoot = currentDissectionRootNode();
+            var panel = scopedDissectionQuery(focusRoot, '#' + panelId);
+            var origin = typeof document !== 'undefined' ? document.activeElement : null;
+            if (!panel || !origin || !panel.contains(origin) || origin.tagName !== 'BUTTON') return;
+            var attemptsRemaining = 2;
+            function focusAfterAssessmentUpdate() {
+              if (!focusRoot || !focusRoot.isConnected) return;
+              var active = document.activeElement;
+              if (active !== origin && active !== document.body && active !== document.documentElement) return;
+              if (origin.isConnected && !origin.disabled) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              var target = scopedDissectionQuery(focusRoot, '#' + targetId);
+              if (!target) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              if (!target.disabled && target.focus) target.focus();
+            }
+            setTimeout(focusAfterAssessmentUpdate, 0);
+          }
+
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
             if (d.practicalMode && (!Number(d.practicalEndsAt) || Date.now() >= Number(d.practicalEndsAt))) {
@@ -12017,6 +12043,7 @@ var d = labToolData.dissection || {};
             if (supported && !d.quizReviewMode) supportedCount += 1;
             var nextScore = d.practicalMode || d.quizReviewMode ? (Number(d.quizScore) || 0) + (correct ? 1 : 0) : firstAttemptScore;
             var nextTotal = (d.quizTotal || 0) + 1;
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: correct, chosen: answerId, supported: supported },
               quizScore: nextScore,
@@ -12040,6 +12067,7 @@ var d = labToolData.dissection || {};
             if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
             var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
             if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: false, chosen: d.quizRetry.chosen, supported: true },
               quizTotal: (Number(d.quizTotal) || 0) + 1,
@@ -26150,6 +26178,7 @@ var d = labToolData.dissection || {};
               return false;
             }
             clearAssessmentTeachingTimers();
+            preserveAssessmentFocus('diss-assessment-summary', 'diss-quiz-panel');
             updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
               quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
               quizFirstAttemptScore: reviewOnly ? assessmentRecordedScore : 0,
@@ -28850,7 +28879,7 @@ var d = labToolData.dissection || {};
 
                 // Quiz card
 
-                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title" },
+                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title", "aria-describedby": assessmentPromptId },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -28862,7 +28891,7 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, quizPrompt),
+                  React.createElement("p", { id: assessmentPromptId, className: "text-xs text-amber-700 mb-2" }, quizPrompt),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.dissection.a11y_answer_method', 'Answer method') },
                     React.createElement("button", { type: "button", "aria-pressed": effectiveQuizAnswerMode === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, d.practicalMode ? 'Accessible choices' : 'Multiple choice'),
                     React.createElement("button", { type: "button", disabled: !hotspotQuizAvailable, title: hotspotQuizAvailable ? 'Answer directly on the visible specimen' : 'The current question is not visible on the specimen; use multiple choice', "aria-pressed": effectiveQuizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, hotspotQuizAvailable ? 'Select on specimen' : 'Specimen answer unavailable')
@@ -28904,17 +28933,19 @@ var d = labToolData.dissection || {};
                   ),
 
                   !d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 p-2.5 rounded-lg border " + (d.quizFeedback.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'),
                     role: "status",
                     "aria-live": "assertive"
                   }, d.quizFeedback.correct ? ((d.quizFeedback.supported ? 'Correct with support — ' : 'Correct — ') + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
                   d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
                     role: "status",
                     "aria-live": "assertive"
                   }, 'Response recorded. Correctness and the running score stay hidden while the timed practical is active.'),
 
-                  d.quizFeedback && React.createElement("button", { type: "button", "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
+                  d.quizFeedback && React.createElement("button", { id: "diss-quiz-continue", type: "button", "aria-describedby": assessmentFeedbackId, "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
 
                     onClick: function () {
                       var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
