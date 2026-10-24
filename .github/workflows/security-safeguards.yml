@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '23 9 * * 2'
+
+concurrency:
+  group: security-safeguards-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -13,7 +19,7 @@ jobs:
   security:
     name: Security safeguards
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -22,15 +28,39 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/workflows/
+            /.github/dependabot.yml
+            /.npmrc
+            /package.json
+            /package-lock.json
+            /desktop/web-app/functions/package.json
+            /desktop/web-app/functions/package-lock.json
             /dev-tools/check_security_safeguards.cjs
             /dev-tools/security/
+            /a11y-audit/package.json
+            /a11y-audit/package-lock.json
+            /a11y-audit/runtime-audit.js
+            /a11y-audit/browser-policy.cjs
             /desktop/package.json
             /desktop/package-lock.json
             /desktop/web-app/package.json
             /desktop/web-app/package-lock.json
+            /desktop/web-app/src/
+            /desktop/web-app/scripts/
+            /desktop/web-app/public/index.html
+            /desktop/web-app/tailwind.config.js
+            /trailer/
             /tts-server/
             /tests/test_piper_request_safety.py
             /tests/test_edge_tts_language_review.py
+            /tests/test_optional_service_security.py
+            /docker/docker-compose.yml
+            /docker/npu_server.py
+            /docker/edge-tts-server/server.py
+            /docker/edge-tts-server/requirements.txt
+            /docker/edge-tts-server/requirements.in
+            /docker/edge-tts-server/Dockerfile
+            /docker/Dockerfile
+            /docker/flux-server/Dockerfile
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
@@ -42,7 +72,82 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p test_piper_request_safety.py
           python3 -m unittest discover -s tests -p test_edge_tts_language_review.py
+      - name: Test optional service requests and Compose network defaults
+        run: |
+          python3 -m venv /tmp/alloflow-security-tests
+          /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r dev-tools/security/requirements.txt
+          /tmp/alloflow-security-tests/bin/python -m unittest discover -s dev-tools/security -p test_python_lock_compatibility.py
+          /tmp/alloflow-security-tests/bin/python dev-tools/security/check_python_lock_compatibility.py
+          /tmp/alloflow-security-tests/bin/python -m unittest discover -s tests -p test_optional_service_security.py
+      - name: Audit locked Python dependencies without executing package build scripts
+        run: |
+          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r dev-tools/security/requirements.txt
+          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r docker/edge-tts-server/requirements.txt
+      - name: Check image and Python dependency pins
+        run: node --test dev-tools/security/test-dependency-pins.cjs
       - name: Verify workflow policy and changed dependency scopes
         env:
           SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node dev-tools/check_security_safeguards.cjs
+      - name: Install build tooling without lifecycle scripts
+        run: |
+          npm ci --prefix trailer --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/web-app --ignore-scripts --no-audit --no-fund
+          npm ci --prefix a11y-audit --ignore-scripts --no-audit --no-fund
+      - name: Test accessibility tooling boundaries and download compatibility
+        run: node --test dev-tools/security/test-a11y-tooling.cjs
+      - name: Test accessibility scans in the runner browser
+        env:
+          # Only synthetic localhost fixtures run without the sandbox in this
+          # isolated runner. The normal audit command keeps it enabled.
+          ALLOFLOW_AUDIT_NO_SANDBOX: '1'
+        run: |
+          export PUPPETEER_EXECUTABLE_PATH="$(command -v google-chrome)"
+          test -x "$PUPPETEER_EXECUTABLE_PATH"
+          node --test dev-tools/security/test-a11y-browser.cjs
+      - name: Test production loader and minifier compatibility
+        run: node --test --test-concurrency=1 dev-tools/security/test-build-tooling.cjs dev-tools/security/test-web-dependencies.cjs
+      - name: Test development server boundaries and compatibility
+        run: node --test dev-tools/security/test-dev-server.cjs
+      - name: Build and type-check the trailer
+        working-directory: trailer
+        run: |
+          npm run build
+          node node_modules/typescript/bin/tsc --noEmit --pretty false
+      - name: Compile the web application without copying unchanged static assets
+        working-directory: desktop/web-app
+        env:
+          GENERATE_SOURCEMAP: 'false'
+          DISABLE_ESLINT_PLUGIN: 'true'
+          CI: 'false'
+        run: node --max-old-space-size=8192 node_modules/react-scripts/scripts/build.js
+
+  root-firebase:
+    name: Root and Firebase dependency compatibility (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.npmrc
+            /package.json
+            /package-lock.json
+            /dev-tools/security/test-root-dependencies.cjs
+            /dev-tools/security/test-firebase-dependencies.cjs
+            /desktop/web-app/functions/
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies without lifecycle scripts
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/web-app/functions --ignore-scripts --no-audit --no-fund
+      - name: Reject reported vulnerabilities in root and Firebase dependencies
+        run: |
+          npm audit --package-lock-only --ignore-scripts --audit-level=low
+          npm audit --prefix desktop/web-app/functions --package-lock-only --ignore-scripts --audit-level=low
+      - name: Test parser, HTTP, browser tooling and Firebase SDK compatibility
+        run: node --test --test-concurrency=1 dev-tools/security/test-root-dependencies.cjs dev-tools/security/test-firebase-dependencies.cjs

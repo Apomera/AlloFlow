@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { inspectWorkflow, auditPlan } = require('../check_security_safeguards.cjs');
+const { inspectWorkflow, auditPlan, selectWorkflows, auditsAllScopes } = require('../check_security_safeguards.cjs');
 const valid = `permissions:
   contents: read
 jobs:
@@ -42,7 +42,28 @@ test('rejects signing secrets exposed to an entire build job', () => {
 });
 test('audits exact changed manifests and keeps MCP scopes untouched', () => {
   assert.deepEqual(auditPlan(['desktop/mcp/runtime/package-lock.json', 'services/alloflow-remote-mcp/package.json']), []);
-  assert.deepEqual(auditPlan(['desktop/web-app/package-lock.json']), [{ directory: 'desktop/web-app', level: 'critical' }]);
+  assert.deepEqual(auditPlan(['desktop/web-app/package-lock.json']), [{ directory: 'desktop/web-app', level: 'low' }]);
   assert.deepEqual(auditPlan(['desktop/package.json']), [{ directory: 'desktop', level: 'high' }]);
-  assert.equal(auditPlan([], true).length, 3);
+  assert.deepEqual(auditPlan(['trailer/package-lock.json']), [{ directory: 'trailer', level: 'high' }]);
+  assert.deepEqual(auditPlan(['a11y-audit/package-lock.json']), [{ directory: 'a11y-audit', level: 'low' }]);
+  assert.deepEqual(auditPlan(['package.json', 'package-lock.json']), [{ directory: '.', level: 'low' }]);
+  assert.deepEqual(auditPlan(['desktop/web-app/functions/package-lock.json']), [{ directory: 'desktop/web-app/functions', level: 'low' }]);
+  assert.deepEqual(auditPlan(['unrelated/package.json', 'functions/package.json']), []);
+  assert.equal(auditPlan([], true).length, 7);
+});
+
+test('new non-MCP workflows are automatically checked while MCP remains independently maintained', () => {
+  assert.deepEqual(selectWorkflows(['verify.yml', 'new-release.yaml', 'security-safeguards.yml', 'README.md',
+    'remote-mcp-verify.yml', 'mcp-registry-publish.yml', 'mcpb-release.yml', 'new-mcp-check.yaml']),
+  ['new-release.yaml', 'security-safeguards.yml', 'verify.yml']);
+  const future = selectWorkflows(['future-deploy.yml']);
+  assert.ok(inspectWorkflow(valid.replace(/@[a-f0-9]{40}/, '@main'), future[0]).length);
+});
+
+test('scheduled and manual runs audit unchanged scopes; ordinary pushes stay scoped', () => {
+  for (const event of ['schedule', 'workflow_dispatch']) {
+    assert.equal(auditPlan([], auditsAllScopes(event)).length, 7);
+  }
+  assert.deepEqual(auditPlan([], auditsAllScopes('push')), []);
+  assert.deepEqual(auditPlan(['desktop/mcp/runtime/package-lock.json'], auditsAllScopes('pull_request')), []);
 });

@@ -66,17 +66,76 @@ excluded while that development is active.
 Electron 43.8.3 is now installed in the local desktop dependency tree and passed
 the release runtime, security-boundary, and Electron UI checks. Compatible web
 dependency patches, including patched gRPC and Underscore versions, are also
-installed. The complete lockfile audits report zero desktop findings and reduce
-the web app from 2 critical / 29 high to 0 critical / 15 high. The remaining high
-findings run through the legacy React Scripts build toolchain (SVGO, PostCSS,
-webpack development server, certificate tooling, and serialization). They require
-a separately validated migration; no forced downgrade or audit suppression was used.
+installed. The complete lockfile audits report zero desktop findings. The web
+app's subsequent loader, serialization and development-server updates reduce
+its earlier 15 high findings to zero high or critical findings (31 moderate and
+9 low remain in the complete lockfile audit).
+Scoped overrides update SVGR to 8.1.0 and resolve-url-loader to 5.0.0, and
+serialize-javascript to 7.0.5; React Scripts stays at 5.0.1. Node 20.19 or newer is
+required by the complete toolchain, including the existing SWC CLI. Real SVG URL/component imports, accessible
+titles and refs, CSS source-map asset resolution, and the production minifier
+worker pass compatibility tests. The application compiles in production mode
+without recopying its unchanged static payload; postbuild packaging is not part
+of that compilation check.
+
+The development server now uses webpack-dev-server 5.2.7, webpack-dev-middleware
+7.4.6, and selfsigned 5.5.0, removing the vulnerable node-forge certificate chain.
+A small launcher adapts CRA's compiler and proxy helpers to the current server
+API. It defaults to loopback, validates browser origins and preview hostnames,
+and keeps the public-path boundary intact. Real HTTP/WebSocket tests cover
+source maps, hostile origins, traversal attempts, SPA routing, hot reload,
+proxy forwarding, generated/custom HTTPS certificates, and clean React launcher
+startup/shutdown. A headless Edge check also preserved React component state
+across Fast Refresh with no page errors. See [web development settings](web-app/DEVELOPMENT.md) for
+explicit LAN access, trusted reverse proxies and HTTPS configuration. No forced
+React Scripts downgrade or audit suppression was used.
+
+A follow-up removal/compatibility review compared the security PR with its base.
+No tracked files were deleted, and application source/assets and production
+build/postbuild commands were unchanged. Three custom-preview regressions were
+reproduced and repaired: setupProxy again receives an Express app with settings
+and locals; error-overlay source requests run before catch-all custom proxies;
+and explicitly trusted origins can complete JSON/Authorization preflights.
+The regression tests fail against the previous launcher and pass after the
+repairs. A real Edge browser confirmed trusted requests and rejected an untrusted
+origin before the API handler ran.
+
+Removed dependencies have replacement behavior: node-forge certificate creation
+is covered by generated/custom HTTPS tests; flask-cors was unused by the speech
+server, whose explicit CORS hooks retain local/trusted-origin support. Removing
+downloaded Python tokenizer code is covered by the prior three-tokenizer check.
+LAN binding and larger-workload limits are intentional opt-in/validation changes,
+documented in the web development and Docker guides. Full container builds and
+GPU/NPU inference remain outside this validation; endpoint tests use synthetic
+provider results and do not establish hardware/model compatibility.
+
+The first completed GitHub security run also exposed a Python-version-specific
+lock omission: CycloneDX requires typing-extensions below Python 3.13, while the
+lock had been generated on 3.14. The tool lock now includes typing-extensions
+4.16.0 with its verified wheel hash. A new dependency-metadata checker evaluates
+Python 3.11–3.14 on Linux/Windows, follows requested extras, and catches the
+previous lock's omission even on a 3.14 host. CI runs the checker and its three
+regression tests after the hash-enforced install; hash enforcement stays enabled.
+
+Trailer dependencies now use matching Remotion 4.0.538 packages and ESLint 9.39.5,
+with compatible transitive patches. Its complete lockfile audit has zero findings,
+down from 1 critical, 15 high, 2 moderate, and 2 low. The production bundle,
+TypeScript check, and a rendered frame passed in an isolated installation. The
+existing two lint errors and one warning reproduce with the old dependency set;
+this update does not claim a clean lint run. After isolated validation, both local
+build-tool installations were refreshed with npm ci and lifecycle scripts disabled.
+Other checkouts should use npm ci when adopting the updated locks.
 
 The additional Security safeguards workflow checks pinned action commits,
 read-only default tokens, checkout credential cleanup, and signing-secret scope.
-It audits changed desktop and policy-parser dependencies at high severity and
-changed web-app dependencies at critical severity. The existing full audit still
+It audits changed desktop, trailer, policy-parser and web-app dependencies at
+high severity. The existing full audit still
 reports all maintained scopes and remains failing on outstanding findings.
+Scheduled and manual safeguard runs audit all four scopes regardless of file
+changes. The required check also tests development-server boundaries and
+compatibility plus the updated loaders/minifier, builds and
+type-checks the trailer, and compiles the web application; lint and the large
+unchanged public asset payload are outside that production compilation check.
 Dependabot alerts and security updates are enabled, with automatic MCP updates
 explicitly paused. The passing Security safeguards check is required on `main`;
 the existing administrator bypass and other protection settings are preserved.

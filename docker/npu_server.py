@@ -10,31 +10,128 @@ Usage:
 Models auto-download from HuggingFace on first run (~0.5-2.5 GB each).
 """
 
-import argparse, json, os, time, uuid, traceback
+import argparse, math, os, time, uuid, traceback
+import threading
+from urllib.parse import urlsplit
 from flask import Flask, request, jsonify
 
 MODELS = {
     "deepseek-r1-1.5b": {
         "repo": "onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX",
+        "revision": "90c5edf28c2538b20f85a3c83e6413810b7579ee",
         "desc": "Best for math reasoning (1.5B, ~40 tok/s on NPU)",
         "ctx": 4096,
     },
     "phi-3.5-mini": {
         "repo": "microsoft/Phi-3.5-mini-instruct-onnx",
+        "revision": "7230dcd6c1dd28aab70f263ecc8734ec9d9bcb70",
         "desc": "Best for general content (3.8B, ~15 tok/s on NPU)",
         "ctx": 4096,
     },
     "qwen-2.5-1.5b": {
         "repo": "onnx-community/Qwen2.5-1.5B-Instruct",
+        "revision": "d54957e3af1be04546436e874a60fe386041b244",
         "desc": "Lightweight balanced model (1.5B params)",
         "ctx": 4096,
     },
 }
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
+MAX_MESSAGE_CHARS = 64000
+MAX_MESSAGES = 128
+MAX_REQUESTED_TOKENS = 65536
+_generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
 _active_id = None
+
+
+class ContextLimitError(ValueError):
+    """The submitted prompt leaves no room for output in the selected model."""
+
+
+class RequestValidationError(ValueError):
+    def __init__(self, public_message):
+        super().__init__(public_message)
+        self.public_message = public_message
+
+
+def is_allowed_origin(origin):
+    if origin is None:
+        return True
+    if (not isinstance(origin, str) or not origin
+            or any(ord(char) <= 32 or ord(char) == 127 for char in origin)):
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.path
+                or parsed.query or parsed.fragment
+                or (parsed.port is not None and not 0 < parsed.port <= 65535)):
+            return False
+    except ValueError:
+        return False
+    if parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+        return True
+    trusted = {"https://alloflow-cdn.pages.dev"}
+    trusted.update(value.strip() for value in
+                   os.environ.get("ALLOFLOW_NPU_ALLOWED_ORIGINS", "").split(","))
+    return origin in trusted
+
+
+def api_error(message, status=400):
+    return jsonify({"error": {"message": message,
+                             "type": "server_error" if status >= 500 else "invalid_request_error"}}), status
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return api_error("Request body exceeds 256 KiB.", 413)
+
+
+@app.before_request
+def guard_browser_origin():
+    if not is_allowed_origin(request.headers.get("Origin")):
+        return api_error("Browser origin is not allowed; configure ALLOFLOW_NPU_ALLOWED_ORIGINS for your school app.", 403)
+
+
+@app.after_request
+def add_cors_headers(response):
+    response.vary.add("Origin")
+    origin = request.headers.get("Origin")
+    if origin and is_allowed_origin(origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+
+def validate_chat_request(data):
+    if not isinstance(data, dict):
+        raise RequestValidationError("Request must be a JSON object.")
+    messages = data.get("messages")
+    if not isinstance(messages, list) or not 1 <= len(messages) <= MAX_MESSAGES:
+        raise RequestValidationError("Messages must contain between 1 and 128 text messages.")
+    for message in messages:
+        if (not isinstance(message, dict)
+                or not isinstance(message.get("role", "user"), str)
+                or not 1 <= len(message.get("role", "user")) <= 32
+                or not isinstance(message.get("content"), str)):
+            raise RequestValidationError("Each message must have a short role string and text content.")
+    if sum(len(message["content"]) for message in messages) > MAX_MESSAGE_CHARS:
+        raise RequestValidationError("Message text exceeds 64000 characters; shorten the conversation.")
+    max_tokens = data.get("max_tokens", 512)
+    if type(max_tokens) is not int or not 1 <= max_tokens <= MAX_REQUESTED_TOKENS:
+        raise RequestValidationError("max_tokens must be an integer between 1 and 65536.")
+    temperature = data.get("temperature", 0.7)
+    if (type(temperature) not in (int, float) or not 0 <= temperature <= 2
+            or not math.isfinite(temperature)):
+        raise RequestValidationError("Temperature must be a finite number between 0 and 2.")
+    model = data.get("model", "")
+    if not isinstance(model, str) or len(model) > 200:
+        raise RequestValidationError("Model must be a string of at most 200 characters.")
+    return messages, max_tokens, temperature, model
 
 
 def load_model(model_id):
@@ -50,12 +147,16 @@ def load_model(model_id):
     from huggingface_hub import snapshot_download
     from transformers import AutoTokenizer
 
-    cache = os.path.join(os.path.expanduser("~"), ".cache", "alloflow-npu", model_id)
+    # Separate revisions so removed upstream files cannot survive in a reused
+    # directory and accidentally be selected as the model/tokenizer.
+    cache = os.path.join(os.path.expanduser("~"), ".cache", "alloflow-npu", model_id, info["revision"])
     print(f"  Downloading to: {cache}")
     model_path = snapshot_download(
         info["repo"],
+        revision=info["revision"],
         local_dir=cache,
-        allow_patterns=["*.onnx", "*.onnx_data", "*.json", "*.txt", "*.model", "tokenizer*", "config*", "special*"],
+        allow_patterns=["*.onnx", "*.onnx_data", "*.json", "*.txt", "*.model", "*.tiktoken"],
+        ignore_patterns=["*.py", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.so"],
     )
     print(f"  Downloaded: {model_path}")
 
@@ -84,18 +185,20 @@ def load_model(model_id):
     # DirectML = NPU/GPU accel; CPU = fallback
     opts = ort.SessionOptions()
     opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-    _session = ort.InferenceSession(
+    session = ort.InferenceSession(
         onnx_path, opts, providers=["DmlExecutionProvider", "CPUExecutionProvider"]
     )
 
     # Load tokenizer from same directory (or parent)
     try:
-        _tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=False, local_files_only=True)
     except Exception:
         # Some repos have tokenizer in parent
         parent = os.path.dirname(onnx_path)
-        _tokenizer = AutoTokenizer.from_pretrained(parent, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(parent, trust_remote_code=False, local_files_only=True)
 
+    # Publish the replacement only after both parts loaded successfully.
+    _session, _tokenizer = session, tokenizer
     _active_id = model_id
     prov = _session.get_providers()[0]
     accel = "NPU/GPU (DirectML)" if "Dml" in prov else "CPU (fallback)"
@@ -123,6 +226,12 @@ def generate(messages, max_tokens=512, temperature=0.7):
         text = "\n".join(parts)
 
     input_ids = _tokenizer.encode(text, return_tensors="np").astype("int64")
+    context_limit = MODELS[_active_id]["ctx"]
+    # AlloFlow normally asks for 8192 output tokens even with a smaller local
+    # model. Treat this as a ceiling and fit actual work to the remaining context.
+    max_tokens = min(max_tokens, context_limit - input_ids.shape[1])
+    if max_tokens < 1:
+        raise ContextLimitError("Messages exceed the model context; shorten the conversation.")
 
     # Get model input names
     input_names = {i.name for i in _session.get_inputs()}
@@ -164,25 +273,30 @@ def generate(messages, max_tokens=512, temperature=0.7):
 
 @app.route("/v1/chat/completions", methods=["POST"])
 def chat_completions():
-    data = request.json or {}
-    msgs = data.get("messages", [])
-    max_tok = data.get("max_tokens", 512)
-    temp = data.get("temperature", 0.7)
+    try:
+        msgs, max_tok, temp, req_model = validate_chat_request(request.get_json(silent=True))
+    except RequestValidationError as error:
+        return api_error(error.public_message)
 
-    # Hot-swap model if requested
-    req_model = data.get("model", "")
-    if req_model and req_model in MODELS and req_model != _active_id:
-        try:
-            load_model(req_model)
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
+    # The model and tokenizer are shared; prevent overlapping swaps/inference.
+    if not _generation_lock.acquire(blocking=False):
+        response, status = api_error("AI service is busy; retry shortly.", 429)
+        response.headers["Retry-After"] = "1"
+        return response, status
     t0 = time.time()
     try:
+        # Unknown client aliases keep using the active model, as before.
+        if req_model and req_model in MODELS and req_model != _active_id:
+            load_model(req_model)
         reply = generate(msgs, max_tok, temp)
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": {"message": str(e), "type": "server_error"}}), 500
+        response_model = _active_id
+    except ContextLimitError:
+        return api_error("Messages exceed the model context; shorten the conversation.")
+    except Exception:
+        app.logger.exception("AI generation failed")
+        return api_error("AI generation failed; check the server log.", 500)
+    finally:
+        _generation_lock.release()
 
     elapsed = time.time() - t0
     tok_count = len(reply.split())
@@ -190,7 +304,7 @@ def chat_completions():
         "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
         "object": "chat.completion",
         "created": int(time.time()),
-        "model": _active_id,
+        "model": response_model,
         "choices": [{"index": 0, "message": {"role": "assistant", "content": reply}, "finish_reason": "stop"}],
         "usage": {"prompt_tokens": 0, "completion_tokens": tok_count, "total_tokens": tok_count},
         "_alloflow": {"elapsed_s": round(elapsed, 2), "tok_per_s": round(tok_count / elapsed, 1) if elapsed > 0 else 0},
@@ -210,11 +324,13 @@ def health():
     return jsonify({"status": "ok", "model": _active_id, "accelerator": _session.get_providers()[0] if _session else "none"})
 
 
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(description="AlloFlow NPU Server")
     parser.add_argument("--model", default="deepseek-r1-1.5b", choices=list(MODELS.keys()))
     parser.add_argument("--port", type=int, default=11435)
-    args = parser.parse_args()
+    parser.add_argument("--host", default="127.0.0.1",
+                        help="Bind address (default: this computer only; use a LAN address to share)")
+    args = parser.parse_args(argv)
 
     print("""
     ╔══════════════════════════════════════════╗
@@ -229,11 +345,15 @@ if __name__ == "__main__":
 
     try:
         load_model(args.model)
-        print(f"  🌐 Serving on http://localhost:{args.port}")
+        print(f"  🌐 Serving on http://{args.host}:{args.port}")
         print(f"  📡 API: POST /v1/chat/completions")
         print(f"  🔄 Switch models: {{\"model\": \"phi-3.5-mini\"}}\n")
-        app.run(host="0.0.0.0", port=args.port, debug=False)
+        app.run(host=args.host, port=args.port, debug=False)
     except Exception as e:
         traceback.print_exc()
         print(f"\n  ❌ {e}")
         print("  Install: pip install onnxruntime-directml flask huggingface_hub transformers\n")
+
+
+if __name__ == "__main__":
+    main()
