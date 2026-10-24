@@ -92,16 +92,18 @@ describe('Camera canopy draw lifecycle',()=>{
   it('refreshes subject and gating in production draws, including paused views and composer fallback',()=>{
     const shared=state(),group=new THREE.Group(),draws=[];let composeCalls=0;
     const api=Function('cameraFoliage','raptorGroup','draws',`
-      let studyActive=false,studyPresentation='habitat',camMode='chase';
+      let studyActive=false,flightPathActive=false,studyPresentation='habitat',camMode='chase';
       const scene={},camera={},renderer={render(s,c){draws.push([s===scene,c===camera,cameraFoliage.enabled.value,cameraFoliage.subject.value.toArray()]);}};
       let composer=null;
+      function paintMotionLens() {}
       ${body('renderFlightScene')}
-      return {render:renderFlightScene,study(v){studyActive=v;},mode(v){camMode=v;},composer(v){composer=v;}};
+      return {render:renderFlightScene,study(v){studyActive=v;},flightPath(v){flightPathActive=v;},mode(v){camMode=v;},composer(v){composer=v;}};
     `)(shared,group,draws);
     const subject=shared.subject.value;group.position.set(3,14,-8);api.render();expect(draws.at(-1)).toEqual([true,true,1,[3,14,-8]]);
     api.mode('fp');group.position.set(4,15,-9);api.render();expect(draws.at(-1)[2]).toBe(0);expect(draws.at(-1)[3]).toEqual([4,15,-9]);
     api.mode('chase');api.study(true);api.render();expect(draws.at(-1)[2]).toBe(0);
-    api.study(false);api.composer({render(){composeCalls++;throw Error('Postprocessing unavailable');}});api.render();expect(composeCalls).toBe(1);expect(draws.at(-1)[2]).toBe(1);
-    api.render();expect(composeCalls).toBe(1);expect(draws).toHaveLength(5);expect(shared.subject.value).toBe(subject);
+    api.study(false);api.flightPath(true);api.render();expect(draws.at(-1)[2]).toBe(0);
+    api.flightPath(false);api.composer({render(){composeCalls++;throw Error('Postprocessing unavailable');}});api.render();expect(composeCalls).toBe(1);expect(draws.at(-1)[2]).toBe(1);
+    api.render();expect(composeCalls).toBe(1);expect(draws).toHaveLength(6);expect(shared.subject.value).toBe(subject);
   });
 });

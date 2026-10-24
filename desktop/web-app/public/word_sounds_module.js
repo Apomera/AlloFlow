@@ -21385,10 +21385,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         if (!copied) throw new Error("copy blocked");
                       })
                       .then(() =>
-                        addToast?.("\uD83D\uDCCB " + (ts("word_sounds.parent_summary_copied") || "Summary copied! Paste it into a message for the teacher."), "success"),
+                        addToast?.("\uD83D\uDCCB " + printTr("word_sounds.parent_summary_copied", "Summary copied! Paste it into a message for the teacher."), "success"),
                       )
                       .catch(() =>
-                        addToast?.(ts("word_sounds.parent_summary_copy_failed_select") || "Copying is blocked here. The summary is shown below: select it and copy it.", "error"),
+                        addToast?.(printTr("word_sounds.parent_summary_copy_failed_select", "Copying is blocked here. The summary is shown below: select it and copy it."), "error"),
                       );
                   },
                   className:

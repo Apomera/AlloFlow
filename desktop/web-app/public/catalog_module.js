@@ -3779,7 +3779,7 @@
               onClick: function () {
                 var count = clearAllPdProgress();
                 setHistTick(function (n) { return n + 1; });
-                addToast && addToast(count ? ('Deleted saved responses for ' + count + ' PD module' + (count === 1 ? '.' : 's.')) : 'No saved PD responses were stored.', 'info');
+                addToast && addToast(count ? tr(count === 1 ? 'catalog.pd_responses_deleted_one' : 'catalog.pd_responses_deleted_many', count === 1 ? 'Deleted saved responses for {count} PD module.' : 'Deleted saved responses for {count} PD modules.').replace('{count}', String(count)) : tr('catalog.pd_responses_none_saved', 'No saved PD responses were stored.'), 'info');
               },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
             }, 'Delete all saved PD responses')

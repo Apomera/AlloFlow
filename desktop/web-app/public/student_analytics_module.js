@@ -8741,7 +8741,7 @@ try {
           form: qdProbeFormRef.current ? qdProbeFormRef.current.form : qdForm,
           formVersion: qdProbeFormRef.current ? qdProbeFormRef.current.formVersion : 1
         });
-        addToast(`QD results saved for ${mathProbeStudent}`, 'success');
+        addToast(screenerLabel('toasts.qd_results_saved_for', 'QD results saved for {student}').split('{student}').join(String(mathProbeStudent)), 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-800 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
@@ -9336,7 +9336,7 @@ try {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent),
     React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
-    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
+    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast(screenerLabel('toasts.report_writer_unavailable', 'Report Writer is not available in this build.'), 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
     renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
     }, /*#__PURE__*/React.createElement("h5", {

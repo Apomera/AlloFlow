@@ -3205,6 +3205,8 @@
     "text_condensing": "Condensing text..."
   },
   "toasts": {
+    "qd_results_saved_for": "QD results saved for {student}",
+    "report_writer_unavailable": "Report Writer is not available in this build.",
     "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
     "dictation_unavailable": "Voice dictation is unavailable right now.",
     "focus_streak": "{flames} {minutes}-minute focus streak! Keep it up!",
@@ -13627,6 +13629,7 @@
     "brainstorming_start": "Let's brainstorm some ideas!"
   },
   "help_mode": {
+    "guided_quick_route": "Use the quick route to review a plan for the whole resource pack before generating it, then continue to sharing or export. You can return to individual steps afterwards.",
     "header_rerun_wizard_title": "Start & setup",
     "header_quickstart_setup_title": "Setup Wizard",
     "header_guided_mode_start_title": "Start or resume Guided Mode",
@@ -61418,6 +61421,7 @@
       "hand_landmark_answer": "The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand."
     },
     "flightsim": {
+      "wing_area": "Wing area",
       "guided_inspect_angle": "Inspect angle comparison",
       "guided_inspect_speed": "Inspect speed comparison",
       "guided_export_scope": "Export includes your current draft and earlier attempts. Exporting does not complete the investigation.",
@@ -153068,6 +153072,9 @@
     "use_mine_help": "Prints with your font, text size and spacing."
   },
   "catalog": {
+    "pd_responses_deleted_one": "Deleted saved responses for {count} PD module.",
+    "pd_responses_deleted_many": "Deleted saved responses for {count} PD modules.",
+    "pd_responses_none_saved": "No saved PD responses were stored.",
     "a11y_published_lesson_preview": "Published lesson preview",
     "a11y_e_g_3_6_8_k": "e.g., 3, 6-8, K",
     "a11y_e_g_3_6_8_k_2": "e.g., 3, 6-8, K-2"
