@@ -58,10 +58,10 @@ describe('Cloudflare local ESM multipart upload', () => {
     const sourceRoot = resolve('catalog/cloudflare-worker/src');
     const before = JSON.stringify(metadata);
     const form = await transmitted(upload.createWorkerUpload(join(sourceRoot, 'index.js'), metadata));
-    expect([...form.keys()]).toEqual(['metadata', 'index.js', 'bug_inbox.js']);
+    expect([...form.keys()]).toEqual(['metadata', 'index.js', 'bug_inbox.js', 'bug_review.js']);
     expect(form.get('metadata').type).toBe('application/json');
     expect(JSON.parse(await form.get('metadata').text())).toEqual(metadata);
-    for (const name of ['index.js', 'bug_inbox.js']) {
+    for (const name of ['index.js', 'bug_inbox.js', 'bug_review.js']) {
       const part = form.get(name);
       expect(part.name).toBe(name);
       expect(part.type).toBe('application/javascript+module');

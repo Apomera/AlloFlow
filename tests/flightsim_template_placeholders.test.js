@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { parse } from 'acorn';
 
 /**
  * Every templated string must have its placeholders filled.
@@ -24,28 +25,54 @@ import { readFileSync } from 'node:fs';
 const SRC = 'stem_lab/stem_tool_flightsim.js';
 
 const findUnfilled = (src) => {
-  const statements = src.split(';');
-  const unfilled = [];
-  const callRe = /__alloT\(\s*'stem\.flightsim\.([A-Za-z0-9_]+)'\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g;
-  let checked = 0;
-  for (const stmt of statements) {
-    let m;
-    callRe.lastIndex = 0;
-    while ((m = callRe.exec(stmt))) {
-      let text;
-      // eslint-disable-next-line no-eval
-      try { text = eval(m[2]); } catch (e) { continue; }
-      if (typeof text !== 'string') continue;
-      const tokens = Array.from(new Set(text.match(/\{[A-Za-z0-9_]+\}/g) || []));
-      if (!tokens.length) continue;
-      checked++;
-      for (const tok of tokens) {
-        if (stmt.includes(`replace('${tok}'`) || stmt.includes(`replace("${tok}"`)) continue;
-        const assign = /(?:var\s+)?([A-Za-z_$][\w$]*)\s*=\s*(?:[^;=]*\?[\s\S]*)?$/.exec(stmt.slice(0, m.index));
-        if (assign && new RegExp(`${assign[1]}\\.replace\\(\\s*'${tok.replace(/[{}]/g, '\\$&')}'`).test(src)) continue;
-        unfilled.push(`${m[1]}  ${tok}`);
-      }
+  const tree = parse(src, { ecmaVersion: 'latest' }), parents = new Map(), scopes = new Map(), nodes = [];
+  const pending = [[tree, null, tree]];
+  while (pending.length) {
+    let [node, parent, scope] = pending.pop();
+    if (!node || typeof node.type !== 'string') continue;
+    if (/^(Function|ArrowFunction)/.test(node.type)) scope = node;
+    parents.set(node, parent); scopes.set(node, scope); nodes.push(node);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(child => pending.push([child, node, scope]));
+      else if (value && typeof value === 'object') pending.push([value, node, scope]);
     }
+  }
+  const replacementChain = start => {
+    const tokens = new Set();
+    let node = start;
+    for (;;) {
+      const parent = parents.get(node), call = parents.get(parent);
+      if (parent?.type === 'ConditionalExpression' && (parent.consequent === node || parent.alternate === node)) { node = parent; continue; }
+      if (parent?.type !== 'MemberExpression' || parent.object !== node || parent.property.name !== 'replace' || call?.type !== 'CallExpression' || call.callee !== parent) break;
+      const token = call.arguments[0]?.value;
+      if (typeof token === 'string') tokens.add(token);
+      node = call;
+    }
+    return { node, tokens };
+  };
+  const deferred = new Map();
+  for (const node of nodes.filter(node => node.type === 'Identifier')) {
+    const { tokens } = replacementChain(node);
+    if (!tokens.size) continue;
+    const scope = scopes.get(node);
+    if (!deferred.has(scope)) deferred.set(scope, new Map());
+    const identifiers = deferred.get(scope);
+    if (!identifiers.has(node.name)) identifiers.set(node.name, new Set());
+    tokens.forEach(token => identifiers.get(node.name).add(token));
+  }
+  const unfilled = [];
+  let checked = 0;
+  for (const call of nodes.filter(node => node.type === 'CallExpression' && node.callee.name === '__alloT')) {
+    const key = call.arguments[0]?.value, text = call.arguments[1]?.value;
+    if (typeof key !== 'string' || !key.startsWith('stem.flightsim.') || typeof text !== 'string') continue;
+    const tokens = [...new Set(text.match(/\{[A-Za-z0-9_]+\}/g) || [])];
+    if (!tokens.length) continue;
+    checked++;
+    const filled = replacementChain(call), parent = parents.get(filled.node);
+    const assigned = parent?.type === 'VariableDeclarator' && parent.init === filled.node ? parent.id
+      : parent?.type === 'AssignmentExpression' && parent.right === filled.node ? parent.left : null;
+    const later = assigned?.type === 'Identifier' ? deferred.get(scopes.get(call))?.get(assigned.name) : null;
+    for (const token of tokens) if (!filled.tokens.has(token) && !later?.has(token)) unfilled.push(`${key.slice('stem.flightsim.'.length)}  ${token}`);
   }
   return { checked, unfilled: Array.from(new Set(unfilled)) };
 };
@@ -79,5 +106,16 @@ describe('flightsim template placeholders', () => {
     const { unfilled } = findUnfilled(planted);
     expect(unfilled.some((u) => u.includes('{grade}')),
       'the scan did not react to a planted unfilled placeholder').toBe(true);
+  });
+
+  it('follows chained fills through callback semicolons and catches a missing second fill', () => {
+    const text = "__alloT('stem.flightsim.progress', '{done} of {total}').replace('{done}', rows.filter(function(row) { return row.done; }).length).replace('{total}', rows.length);";
+    expect(findUnfilled(text).unfilled).toEqual([]);
+    expect(findUnfilled(text.replace(".replace('{total}', rows.length)", '')).unfilled).toEqual(['progress  {total}']);
+  });
+
+  it('does not accept a fill belonging to a different function', () => {
+    const text = "function first() { var value = __alloT('stem.flightsim.progress', '{total}'); return value; } function second() { return value.replace('{total}', 2); }";
+    expect(findUnfilled(text).unfilled).toEqual(['progress  {total}']);
   });
 });

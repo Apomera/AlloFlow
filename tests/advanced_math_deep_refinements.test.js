@@ -36,7 +36,8 @@ describe('inequality grammar and empty sets',()=>{
   const parse=new Function(src.slice(oneStart,oneEnd)+';return parseIneq;')();
   const twoStart=src.indexOf('var parse2D = function'),twoEnd=src.indexOf('var W2 =',twoStart);
   const parse2=new Function(src.slice(twoStart,twoEnd)+';return parse2D;')();
-  it.each(['2x > 3','x > 3 nonsense','x > 3/4','x > 3 or x < 1'])('rejects partial parsing of %s',expr=>expect(parse(expr)).toBeNull());
+  it.each(['2x > 3','x > 3 nonsense','x > 3/4 nonsense','x > 3/4/5','x > 3/0','x > 3 or x < 1'])('rejects partial parsing of %s',expr=>expect(parse(expr)).toBeNull());
+  it('retains the exact fractional boundary sent by Graph It',()=>{expect(parse('x > 3/4')).toMatchObject({compound:false,v:'x',op:'>',val:0.75,valText:'3/4'});});
   it('rejects a nonlinear expression disguised by a linear prefix',()=>{expect(parse2('y > 2x^2 + 1')).toBeNull();expect(parse2('junk y < 2x + 1')).toBeNull();expect(parse2('y > 2x + 1')).toMatchObject({slope:2,intercept:1});});
   it('announces an empty compound set without drawing a negative-width band',async()=>{await mount('inequality','inequality',{inequality:{graphMode:'1d',expr:'3 < x < 2'}});expect(document.querySelector('[data-inequality-notice]').textContent).toContain('empty');for(const rect of document.querySelectorAll('svg rect[width]'))expect(Number(rect.getAttribute('width'))).toBeGreaterThanOrEqual(0);});
 });

@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
-const previous=require('../reports/kitchen-sauce-emulsion-2026-10-18/thermal-rescue-fixtures.json');
+const previous=require('./helpers/reference_fixture.cjs')('kitchen-sauce-emulsion-2026-10-18/thermal-rescue-fixtures.json.gz');
 const act=(s,steps)=>steps.reduce((state,[a,v])=>R.act(state,a,v),s);
 const start=()=>R.startRescue('fragile',2,'demonstrate');
 const wait=(s,seconds=120,step=60)=>{while(seconds>0){const dt=Math.min(step,seconds);s=R.act(s,'advance',dt);seconds-=dt;}return s;};

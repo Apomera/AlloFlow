@@ -265,6 +265,9 @@ describe('Accessible flight controls reference', () => {
   });
 
   it('opens the drone briefing at its heading and traps reverse Tab before returning to its launcher', async () => {
+    // Finish the active flight before returning to the mission menu; replacing
+    // its view directly now correctly triggers interrupted-flight recovery.
+    await act(async () => { button('✕ Exit').click(); });
     await act(async () => { setData(previous => ({ ...previous, flightSim: {
       ...previous.flightSim, view: 'menu', menuSections: { challenges: true },
     } })); });

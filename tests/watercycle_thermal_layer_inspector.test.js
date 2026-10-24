@@ -10,7 +10,7 @@ const TEST_PATH = 'tests/watercycle_thermal_layer_inspector.test.js';
 // Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): later
 // published passes (585a61ba2, 79e3e5eae) changed preserved declarations on purpose. The original
 // pass baseline remains at reports/watercycle-thermal-layer-inspector/baseline-runtime.js.
-const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_PATH = 'tests/fixtures/regression/watercycle-freeze-reference/accepted-runtime.js';
 const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const PRESERVED = [
   'wcPrecipClamp', 'advanceWcStormWeather', 'WC_PRECIP_DEFAULTS', 'WC_PRECIP_PRESETS',
@@ -337,10 +337,18 @@ describe('Thermal layer inspector: exact preservation', () => {
   it('preserves existing calculations, live scenes, handlers, Storm moments, Groundwater and reward declarations exactly', () => {
     const original = exactDeclarations(baselineBytes.toString('utf8'));
     expect(Object.keys(original).sort()).toEqual([...PRESERVED].sort());
+    // The independently tested controlled-range experiment adds one child to
+    // the existing comparison UI; all 63 complete declarations stay pinned.
+    const insertion = "                h('p', { className: 'wc-storm-experiment-note' }";
+    expect(original.renderStormExperiment.split(insertion)).toHaveLength(2);
+    original.renderStormExperiment = original.renderStormExperiment.replace(insertion,
+      '                renderStormRange(),\n' + insertion);
     sources.forEach(source => expect(exactDeclarations(source.text), source.path).toEqual(original));
   });
   it('preserves the complete public scientific kernel export', () => {
-    const original = kernelAssignment(baselineBytes.toString('utf8'));
+    const original = kernelAssignment(baselineBytes.toString('utf8')).replace(
+      '    experiment: wcPrecipExperiment,',
+      '    experiment: wcPrecipExperiment,\n    sweepInputs: WC_PRECIP_SWEEP_INPUTS,\n    sweep: wcPrecipSweep,');
     sources.forEach(source => expect(kernelAssignment(source.text)).toBe(original));
   });
 });

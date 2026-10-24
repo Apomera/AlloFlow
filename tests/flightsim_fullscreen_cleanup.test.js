@@ -133,10 +133,14 @@ describe('flight fullscreen cleanup', () => {
       else { await act(async () => root.unmount()); root = null; }
       if (leave === 'tool unmount') expect(stage.isConnected).toBe(false);
       else {
-        const menu = host.querySelector('#skyschool-menu');
-        expect(menu).toBeTruthy();
-        expect(menu.style.position).toBe('relative');
-        expect(menu.style.overflow).toBe('auto');
+        // Direct replacement interrupts the live flight. Recovery now presents
+        // its saved evidence before the menu, and must also release fullscreen.
+        expect(latest.view).toBe('debrief');
+        expect(latest.lastDebrief.interrupted).toBe(true);
+        const debrief = host.querySelector('#skyschool-debrief');
+        expect(debrief).toBeTruthy();
+        expect(debrief.style.position).not.toBe('fixed');
+        expect(debrief.style.overflow).toBe('auto');
       }
       expect(stage.__alloFsOn).toBe(false);
       expect(stage.hasAttribute('data-allo-fullscreen-active')).toBe(false);

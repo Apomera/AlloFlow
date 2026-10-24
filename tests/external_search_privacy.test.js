@@ -20,8 +20,7 @@ const denied = identifiers.map(([q]) => q);
 beforeAll(async()=>{
   loadAlloModule('ai_backend_module.js');loadAlloModule('udl_chat_module.js');
   provider=window.WebSearchProvider;chat=window.AlloModules.UdlChat;
-  const src=fs.readFileSync('catalog/cloudflare-worker/src/index.js','utf8');
-  worker=(await import(`data:text/javascript;base64,${Buffer.from(src).toString('base64')}`)).default;
+  worker=(await import('../catalog/cloudflare-worker/src/index.js')).default;
 });
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();localStorage.removeItem('alloflow_ai_config');window.__alloSearchTrace=[];});
 function canvasTransport(){

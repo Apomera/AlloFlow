@@ -22,8 +22,7 @@ let provider, worker;
 beforeAll(async () => {
   loadAlloModule('ai_backend_module.js');
   provider = window.WebSearchProvider;
-  const source = fs.readFileSync('catalog/cloudflare-worker/src/index.js', 'utf8');
-  worker = (await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)).default;
+  worker = (await import('../catalog/cloudflare-worker/src/index.js')).default;
 });
 
 afterEach(() => {
