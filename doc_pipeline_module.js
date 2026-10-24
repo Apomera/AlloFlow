@@ -45470,7 +45470,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const instructionsHtml = `
               <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
-                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Cut along the dashed lines to separate the strips. Mix them up and sort each strip into the matching category above.'}${hasAnyImage ? ' Strips with images give visual learners a non-text entry point.' : ''}
+                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Write a category beside each item, or cut and sort the strips into the matching categories above.'}${hasAnyImage ? ' Some strips include pictures. Use the written information to decide where each belongs.' : ''}
               </div>
           `;
 
@@ -46070,6 +46070,7 @@ function projectStudentGuideData(data, mode) {
           const feedbackCount = d.feedbackCount || 0;
           const feedbackScore = d.prevFeedbackScore || 0;
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const cornellWritingSpace = (kind) => `<div data-cornell-writing-space="${kind}" aria-hidden="true" style="height:96px; min-height:96px;">${'<div style="height:24px; box-sizing:border-box; border-bottom:1px solid #cbd5e1;"></div>'.repeat(4)}</div>`;
           const renderRows = () => {
               if (tt === 'cornell-notes') {
                   const cues = Array.isArray(d.cues) ? d.cues : [];
@@ -46078,11 +46079,15 @@ function projectStudentGuideData(data, mode) {
                   const rowsHtml = Array.from({ length: rowCount }).map((_, i) => {
                       const cue = (cues[i] && cues[i].text) || '';
                       const note = (notes[i] && notes[i].text) || '';
-                      if (!cue.trim() && !note.trim()) return '';
-                      return `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong></td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${escapeHtml(note)}</td></tr>`;
+                      const guidance = cues[i] && typeof cues[i].guidance === 'string' ? cues[i].guidance : '';
+                      if (!cue.trim() && !note.trim() && !guidance.trim() && !isWorksheet) return '';
+                      const guidanceHtml = guidance.trim() ? `<p data-cornell-print-guidance="true" style="margin:6px 0 0; font-size:0.85em; line-height:1.5; font-weight:normal; white-space:pre-wrap;">${escapeHtml(guidance)}</p>` : '';
+                      const noteHtml = isWorksheet && !note.trim() ? cornellWritingSpace('notes') : escapeHtml(note);
+                      return `<tr style="break-inside:avoid; page-break-inside:avoid;"><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong>${guidanceHtml}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; white-space:pre-wrap;">${noteHtml}</td></tr>`;
                   }).filter(Boolean).join('');
                   const summary = d.summary || '';
-                  return `<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Cues / Questions</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Notes</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No rows filled in yet.</td></tr>'}</tbody></table>${summary ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Summary</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5;">${escapeHtml(summary)}</div></div>` : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No summary written yet.</div>'}`;
+                  const summaryHtml = String(summary).trim() || (!isWorksheet && summary) ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Summary</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(summary)}</div></div>` : isWorksheet ? `<section data-cornell-summary-space="true" aria-label="Summary" style="margin-top:12px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; break-inside:avoid; page-break-inside:avoid;"><h3 style="margin:0 0 6px; font-size:0.85em;">Summary</h3>${cornellWritingSpace('summary')}</section>` : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No summary written yet.</div>';
+                  return `<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Cues / Questions</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Notes</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No rows filled in yet.</td></tr>'}</tbody></table>${summaryHtml}`;
               }
               if (tt === 'lab-report') {
                   const materials = (Array.isArray(d.materials) ? d.materials : []).map(m => (m && m.text || '').trim()).filter(Boolean);
@@ -46147,6 +46152,9 @@ function projectStudentGuideData(data, mode) {
           const feedbackBadge = feedbackCount > 0
               ? `<div style="margin-top:12px; padding:8px 12px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; font-size:0.85em; color:#5b21b6;"><strong>AI Feedback:</strong> Student requested feedback ${feedbackCount}× on this entry${feedbackScore > 0 ? ` (best score: ${feedbackScore}/28 internal rubric)` : ''}. Their last attempt earned XP.</div>`
               : `<div style="margin-top:12px; padding:8px 12px; background:#f1f5f9; border-left:4px solid #94a3b8; border-radius:4px; font-size:0.85em; color:#475569; font-style:italic;">Student has not requested AI feedback on this entry.</div>`;
+          const blankCornellWorksheet = tt === 'cornell-notes' && isWorksheet && !feedbackCount
+              && !(Array.isArray(d.notes) ? d.notes : []).some(note => note && typeof note.text === 'string' && note.text.trim())
+              && !(d.summary && String(d.summary).trim()) && !(d.connections && String(d.connections).trim());
           // Optional student-authored elaboration field (cross-template). Rendered
           // once here so it can't become a per-template export gap.
           const connectionsBlock = (d.connections && String(d.connections).trim())
@@ -46157,7 +46165,7 @@ function projectStudentGuideData(data, mode) {
                   <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${title} <span style="font-size:0.75em; font-weight:normal; color:#64748b; margin-left:8px;">(${ttLabel})</span></h2>
                   ${renderRows()}
                   ${connectionsBlock}
-                  ${feedbackBadge}
+                  ${blankCornellWorksheet ? '' : feedbackBadge}
               </div>
           `;
       } else if (item.type === 'memory-aid') {

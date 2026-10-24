@@ -2237,7 +2237,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
     }
 
+    _imagesAllowed() {
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) return window.AlloImageGeneration.isEnabled();
+        try { return localStorage.getItem('alloflow_ai_image_generation_enabled') !== 'false'; } catch (_) { return true; }
+    }
+
     async _trySdTurboImage(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
@@ -2246,6 +2252,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         try {
             if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
                 const localUrl = await win._sdTurbo.generate(prompt);
+                if (!this._imagesAllowed()) return null;
                 if (localUrl) {
                     this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
                     const optimized = await this._optimizeImage(localUrl, width, quality);
@@ -2254,6 +2261,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (err) {
+            if (!this._imagesAllowed()) return null;
             if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
             this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: provider-request-failed`);
         }
@@ -2261,6 +2269,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     _kickoffSdTurboLoad() {
+        if (!this._imagesAllowed()) return false;
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
@@ -2280,6 +2289,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _generateImageByBackend(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality, signal);
@@ -2297,7 +2307,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async generateImage(prompt, { width = 300, quality = 0.7, signal = null } = {}) {
+        if (!this._imagesAllowed()) return null;
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) signal = window.AlloImageGeneration.signalFor(signal);
         await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        if (!this._imagesAllowed()) return null;
         this._debugLog('[AIProvider] generateImage requested');
         if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
 
@@ -2317,14 +2330,17 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         const runPrimary = () => {
+            if (!this._imagesAllowed()) return null;
             if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality, signal);
             if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality, signal);
             return this._generateImageByBackend(prompt, width, quality, signal);
         };
 
         try {
-            return await runPrimary();
+            const result = await runPrimary();
+            return this._imagesAllowed() ? result : null;
         } catch (err) {
+            if (!this._imagesAllowed()) return null;
             if (this._isSdTurboEligibleImageError(err)) {
                 const local = await this._trySdTurboImage(prompt, width, quality, signal);
                 if (local) return local;
@@ -2335,6 +2351,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         const keyParam = '';
         const throwIfAborted = () => {
             if (!signal || !signal.aborted) return;
@@ -2519,22 +2536,18 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Edited image as data:image URL
      */
     async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null, signal = null } = {}) {
+        if (!this._imagesAllowed()) return null;
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) signal = window.AlloImageGeneration.signalFor(signal);
         await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        if (!this._imagesAllowed()) return null;
         this._debugLog('[AIProvider] editImage requested');
 
-        switch (this.backend) {
-            case 'gemini':
-                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
-            case 'openai':
-            case 'localai':
-            case 'lmstudio':
-            case 'ollama':
-            case 'claude':
-            case 'alloflow-local':
-            case 'custom':
-            default:
-                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
-        }
+        try {
+            const result = await (this.backend === 'gemini'
+                ? this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal)
+                : this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal));
+            return this._imagesAllowed() ? result : null;
+        } catch (error) { if (!this._imagesAllowed()) return null; throw error; }
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal = null) {

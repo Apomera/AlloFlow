@@ -774,7 +774,7 @@ extension and keep using the same tools (the registry and the MCPB manifest are 
 each other by `tests/mcp_remediation_stdio_smoke.test.js`, so the count lives there, not here). The installer may accept an optional Gemini API key
 (stored by Claude Desktop and injected as `GEMINI_API_KEY`; never embedded in the bundle).
 Install by dragging the `.mcpb` into Claude Desktop Settings > Extensions. Host machines
-still need Node 20+ on PATH, a local Java runtime (veraPDF and EPUBCheck) and a one-time
+still need Node 22.12+ on PATH, a local Java runtime (veraPDF and EPUBCheck) and a one-time
 `npx playwright install chromium`; capabilities report separately on Playwright, Chromium, Java,
 EPUBCheck/Ace runtimes, pipeline modules, and vendor hash integrity.
 `--lean` skips `node_modules` for personal development and verifies protocol, registry parity, and
@@ -861,6 +861,45 @@ remediation quality against human judgement; only the calibration corpus in
 `tests/fixtures/pdf_calibration/` does that, and it needs a human reviewer.
 
 ## Tests
+
+EPUB validation first checks the entire generated archive with the built-in
+`remediation_epub_archive.cjs` policy, before launching EPUBCheck or Ace. It rejects
+links and special files, unsafe or ambiguous paths, duplicate/case-colliding names,
+file/directory conflicts, inconsistent ZIP headers, and corrupt or oversized
+inflation. The supported subset is canonical STORE/DEFLATE ZIP, without ZIP64,
+encryption, streaming data descriptors, or unknown extra fields. Current bounds
+are 256 MiB compressed, 4,096 entries, 128 MiB per entry, 512 MiB expanded total,
+and a 200:1 expansion ratio for entries above 1 MiB, with a 60-second bound per
+inflation pass. A rejected archive fails validation; it is never repaired or
+passed to an alternate extractor.
+
+Ace receives a newly created, verified directory containing regular files only.
+This avoids both of its third-party ZIP extraction paths, including the
+`extract-zip` fallback. The archive policy participates in the validation cache
+fingerprint and is included in the MCPB. This is an archive containment boundary,
+not an operating-system sandbox for the validators.
+
+The remediation runtime dependency audit remains separate from the AlloPack
+authoring connector. The October 24, 2026 update uses a compatibility-tested
+Puppeteer 25 browser stack and Conf 10 configuration store, removing the old
+Zod 3, FTP and Ajv 7 dependency paths. The runtime requires Node 22.12 or newer.
+The unpatched upstream `extract-zip` implementation is removed. Its imports
+resolve to the explicit first-party `@alloflow/disabled-extract-zip` package,
+which rejects before file or network operations; supported EPUB input continues
+through the bounded extractor. This is a disabled fallback, not an upstream
+patch or a general ZIP API. Browser installation uses Playwright.
+
+Install the runtime with `npm ci --ignore-scripts --install-links` from
+`desktop/mcp/runtime`. The MCPB builder copies the replacement source and
+override configuration before installing normal package files, without symlinks.
+The packaged dependency gate accepts no advisories and rejects incomplete
+registry responses. Configuration behavior, browser startup, the disabled ZIP
+fallback and a real Ace EPUB audit are exercised by
+`node --test --test-concurrency=1 dev-tools/security/test-mcp-runtime-dependencies.cjs`.
+
+Run `npx vitest run tests/mcp_epub_archive_security.test.js tests/mcp_epub_validation.test.js`
+for the archive boundary and validator regressions. A release must also run the
+packaged-artifact and EPUB/Ace generated-document smoke checks.
 
 `npm run verify:mcp-parity` runs the capability regression gate plus protocol, validation, direct
 production-output parity, and clean staged-package launch tests. It uses no Gemini key or quota;

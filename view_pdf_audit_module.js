@@ -19210,7 +19210,15 @@ Return ONLY JSON:
         } else {
           addToast(t("toasts.downloaded") + blobs.length + "/" + segments.length, "success");
         }
-      }, className: "w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F3A7} Download Audio"), /* @__PURE__ */ React.createElement("button", { disabled: !!previewAuditBusy, onClick: () => _runOwnedPreviewAudit("axe"), className: "w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F52C} Re-audit (axe-core)"), /* @__PURE__ */ React.createElement("button", { disabled: !!previewAuditBusy, onClick: () => _runOwnedPreviewAudit("full"), className: "w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F916} Full Re-audit (AI + axe-core)"), extractedImagesList.length > 0 && (() => {
+      }, className: "w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F3A7} Download Audio"), /* @__PURE__ */ React.createElement("button", { disabled: !!previewAuditBusy, onClick: () => _runOwnedPreviewAudit("axe"), className: "w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F52C} Re-audit (axe-core)"), /* @__PURE__ */ React.createElement("button", { disabled: !!previewAuditBusy, onClick: () => _runOwnedPreviewAudit("full"), className: "w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F916} Full Re-audit (AI + axe-core)"), pdfFixResult?.accessibleHtml && window.AlloModules?.ResourceImagesPanel && React.createElement(window.AlloModules.ResourceImagesPanel, {
+        resource: { id: "document-images", type: "document", data: { html: pdfFixResult.accessibleHtml }, imageAssets: pdfFixResult.imageAssets },
+        onUpdateResource: (_id, updater) => setPdfFixResult((previous) => {
+          if (!previous?.accessibleHtml) return previous;
+          const before = { id: "document-images", type: "document", data: { html: previous.accessibleHtml }, imageAssets: previous.imageAssets };
+          const next = updater(before);
+          return next === before ? previous : { ...previous, accessibleHtml: next.data.html, imageAssets: next.imageAssets };
+        })
+      }), extractedImagesList.length > 0 && (() => {
         const _uniq = [];
         const _bySrc = /* @__PURE__ */ new Map();
         for (const img of extractedImagesList) {

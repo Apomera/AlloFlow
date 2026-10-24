@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto'),{spawn}=require('child_process');
+const archive=require('./remediation_epub_archive.cjs');
 const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
 const fileDigest=p=>new Promise((resolve,reject)=>{const hash=crypto.createHash('sha256'),stream=fs.createReadStream(p);stream.on('data',b=>hash.update(b));stream.on('error',reject);stream.on('end',()=>resolve(hash.digest('hex')));});
 const {spawnSync}=require('child_process');
@@ -37,17 +38,21 @@ function javaUnavailableMessage(probe,tool){
   if(p.timedOut)return 'Java did not respond in time (`'+(p.java||'java')+' -version` took longer than '+Math.round((p.timeoutMs||60000)/1000)+' s). Java may well be installed; the machine may be busy. '+what+' did not run. Retry when the machine is less busy, or raise ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS.';
   return 'Java runtime not found (`'+(p.java||'java')+' -version` failed: '+(p.error||'unknown error')+'). '+what+' needs Java 11 or newer. Install Java and rerun verification.';
 }
+function supportsAceNode(version=process.versions.node) {
+  const [major,minor]=String(version).split('.').map(Number);
+  return Number.isInteger(major)&&Number.isInteger(minor)&&(major>22||(major===22&&minor>=12));
+}
 function runtime() {
   const jar=process.env.ALLOFLOW_MCP_EPUBCHECK_JAR||path.join(__dirname,'vendor','epubcheck','epubcheck.jar');
   let ace=null;try{ace=require.resolve('@daisy/ace-cli/bin/ace.js',{paths:[__dirname,path.join(__dirname,'runtime')]});}catch(_){}
   const probe=javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN||null);
-  return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,javaProbe:probe,nodeSupported:Number(process.versions.node.split('.')[0])>=20};
+  return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,javaProbe:probe,nodeSupported:supportsAceNode()};
 }
 function capabilities() {
   const r=runtime();return {epubcheck:{installed:fs.existsSync(r.jar),version:'5.3.0',javaAvailable:r.javaPresent,javaVersion:r.javaVersion},ace:{installed:!!r.ace,version:'1.4.6',nodeSupported:r.nodeSupported},scope:'Automated EPUB format and accessibility checks; human review remains necessary.'};
 }
 function fingerprint() {
-  const r=runtime(),parts=[__filename,path.join(__dirname,'remediation_ace_worker.cjs'),path.join(__dirname,'vendor','manifest.json')];
+  const r=runtime(),parts=[__filename,path.join(__dirname,'remediation_ace_worker.cjs'),path.join(__dirname,'remediation_ace_browser.cjs'),path.join(__dirname,'remediation_epub_archive.cjs'),path.join(__dirname,'vendor','manifest.json')];
   const lock=[path.join(__dirname,'runtime','package-lock.json'),path.join(__dirname,'..','package-lock.json')].find(p=>fs.existsSync(p));if(lock)parts.push(lock);
   return digest(JSON.stringify({node:process.versions.node,files:parts.map(p=>fs.existsSync(p)?digest(fs.readFileSync(p)):null),jar:fs.existsSync(r.jar)?digest(fs.readFileSync(r.jar)):null,ace:r.ace?digest(fs.readFileSync(r.ace)):null}));
 }
@@ -99,7 +104,7 @@ function run(command,args,{signal,timeoutMs=180000,env,cwd,ipc=false}={}) {
   });
 }
 async function validate(filePath,options={}) {
-  const o=options,r=runtime(),scratch=fs.mkdtempSync(path.join(o.stateDir||os.tmpdir(),'epub-verify-'));
+  const o=options,scratch=fs.mkdtempSync(path.join(o.stateDir||os.tmpdir(),'epub-verify-'));
   // Each validator gets its own budget. The JVM and Ace's Chromium are slow on emulated or memory-starved hosts;
   // an exceeded budget is reported as `unavailable`, never as a pass.
   const envTimeout=Number(process.env.ALLOFLOW_MCP_EPUB_VALIDATION_TIMEOUT_MS);
@@ -111,8 +116,13 @@ async function validate(filePath,options={}) {
   const save=(role,name,source)=>{if(o.claimPath&&fs.existsSync(source)){const dest=o.claimPath(name);fs.copyFileSync(source,dest);files[role]=dest;}};
   const stage=async(name,fn)=>{try{checks[name]=await fn();}catch(e){if(signal?.aborted||e.code==='ALLOFLOW_VALIDATION_CANCELLED')throw e;checks[name]={status:'unavailable',error:String(e.message||e).slice(0,1000)+(/timed out/.test(String(e.message))?' (budget '+timeoutMs+' ms; raise ALLOFLOW_MCP_EPUB_VALIDATION_TIMEOUT_MS on a slow host)':'')};}log(name+': '+checks[name].status);};
   try{
-    const before=fs.statSync(filePath);fs.copyFileSync(filePath,snapshot);const after=fs.statSync(filePath);
+    const before=fs.lstatSync(filePath);
+    if(!before.isFile()||before.size>archive.LIMITS.archiveBytes)throw Object.assign(Error('EPUB archive rejected: input must be a bounded regular file.'),{code:'ALLOFLOW_EPUB_ARCHIVE_UNSAFE'});
+    archive.snapshot(filePath,snapshot);const after=fs.statSync(filePath);
     if(before.size!==after.size||before.mtimeMs!==after.mtimeMs)throw Error('EPUB changed during validation snapshot.');
+    // Fail closed before Java, Chromium, or any third-party archive reader runs.
+    checks.archive=await archive.inspect(snapshot,{signal});log('archive: '+checks.archive.status);
+    const r=runtime();
     const inputSha256=await fileDigest(snapshot),inputBytes=fs.statSync(snapshot).size;
     const stem=path.basename(filePath,'.epub');
     await stage('epubcheck',async()=>{
@@ -125,7 +135,7 @@ async function validate(filePath,options={}) {
     });
     await stage('ace',async()=>{
       if(checks.epubcheck.status==='failed')return {status:'not-run',reason:'Resolve EPUB format errors before accessibility checking.'};
-      if(!r.ace||!r.nodeSupported)throw Error('Ace is unavailable. Reinstall the full connector with Node.js 20 or newer.');
+      if(!r.ace||!r.nodeSupported)throw Error('Ace is unavailable. Reinstall the full connector with Node.js 22.12 or newer.');
       const chrome=o.resolveChromium?.();if(!chrome?.installed)throw Error('Chromium is unavailable. Run remediation_setup.');
       const executable=chrome.chromium.executablePath();
       const out=path.join(scratch,'ace-report');log('Checking EPUB accessibility with Ace by DAISY…');
@@ -149,4 +159,4 @@ async function validate(filePath,options={}) {
     }
   }
 }
-module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime,javaUnavailableMessage};
+module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime,javaUnavailableMessage,supportsAceNode};
