@@ -1,6 +1,10 @@
 'use strict';
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const YAML = require('./node_modules/yaml');
 const { inspectWorkflow, auditPlan, selectWorkflows, auditsAllScopes } = require('../check_security_safeguards.cjs');
 const valid = `permissions:
   contents: read
@@ -66,4 +70,102 @@ test('scheduled and manual runs audit unchanged scopes; ordinary pushes stay sco
   }
   assert.deepEqual(auditPlan([], auditsAllScopes('push')), []);
   assert.deepEqual(auditPlan(['desktop/mcp/runtime/package-lock.json'], auditsAllScopes('pull_request')), []);
+});
+
+test('rejects input, event, output and secret expressions in executable scripts', () => {
+  const expressions = [
+    'inputs.composition', "inputs['crf']", 'github.event.pull_request.title',
+    "github['event']['inputs']['crf']", 'github.head_ref', 'env.TITLE',
+    'vars.RENDER_FLAGS', 'steps.prepare.outputs.flags', 'needs.prepare.outputs.flags',
+    'secrets.SIGNING_KEY', "format('{0}', inputs.crf)",
+    "github.event_name == 'push' && github.ref || inputs.ref",
+  ];
+  for (const expression of expressions) {
+    for (const field of ['run', 'script']) {
+      const workflow = YAML.parse(valid);
+      const code = 'echo "${{ ' + expression + ' }}"';
+      workflow.jobs.check.steps.push(field === 'run' ? { run: code } : {
+        uses: 'actions/github-script@' + 'a'.repeat(40), with: { script: code },
+      });
+      assert.ok(inspectWorkflow(YAML.stringify(workflow), 'verify.yml')
+        .some((error) => error.includes('inline script interpolation')), expression + ' in ' + field);
+    }
+  }
+});
+
+test('permits environment inputs and action parameters without inserting them into code', () => {
+  const workflow = YAML.parse(valid);
+  workflow.jobs.check.steps.push({
+    env: { TITLE: '${{ github.event.pull_request.title }}' }, run: 'printf "%s" "$TITLE"',
+  }, {
+    uses: 'actions/github-script@' + 'a'.repeat(40),
+    env: { TITLE: '${{ inputs.title }}' }, with: { script: 'return process.env.TITLE;' },
+  });
+  assert.deepEqual(inspectWorkflow(YAML.stringify(workflow), 'verify.yml'), []);
+});
+
+test('retains static numeric sharding but rejects dynamic matrices and unsafe include overrides', () => {
+  const workflow = YAML.parse(valid);
+  const job = workflow.jobs.check;
+  job.steps.push({ run: 'npm run test:ci:shard -- --shard=${{ matrix.shard }}/8' });
+  job.strategy = { matrix: { shard: [1, 2, 3, 4, 5, 6, 7, 8] } };
+  assert.deepEqual(inspectWorkflow(YAML.stringify(workflow), 'verify.yml'), []);
+  job.strategy.matrix.include = [{ shard: 9 }];
+  assert.deepEqual(inspectWorkflow(YAML.stringify(workflow), 'verify.yml'), []);
+  for (const matrix of [
+    '${{ fromJSON(needs.prepare.outputs.matrix) }}',
+    { shard: ['1', '2$(printf INJECTED)'] },
+    { shard: [1, 2], include: [{ shard: '3; printf INJECTED' }] },
+    { shard: [1, 2], include: '${{ fromJSON(inputs.extra) }}' },
+  ]) {
+    job.strategy.matrix = matrix;
+    assert.ok(inspectWorkflow(YAML.stringify(workflow), 'verify.yml')
+      .some((error) => error.includes('inline script interpolation')));
+  }
+});
+
+const trailerWorkflow = () => YAML.parse(fs.readFileSync(path.resolve(__dirname, '../../.github/workflows/trailer-render.yml'), 'utf8'));
+const bash = process.platform === 'win32'
+  ? path.join(process.env.ProgramFiles || 'C:/Program Files', 'Git/bin/bash.exe') : '/bin/bash';
+const bashOptions = { skip: !fs.existsSync(bash) && process.platform === 'win32' ? 'Git Bash is not installed; Linux CI requires Bash' : false };
+
+function runRenderScript(script, composition, crf) {
+  const env = { ...process.env, TRAILER_COMPOSITION: composition, TRAILER_CRF: crf };
+  delete env.BASH_ENV;
+  delete env.ENV;
+  // Intercept the CLI at its argument boundary: no downloads, renders or network.
+  const result = spawnSync(bash, ['--noprofile', '--norc', '-eo', 'pipefail', '-s'], {
+    input: 'npx() { printf "%s\\0" "$@"; }\n' + script,
+    env, encoding: 'utf8', timeout: 10000, windowsHide: true,
+  });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.split('\0').slice(0, -1);
+}
+
+test('trailer render preserves normal arguments and treats shell syntax in inputs as literal data', bashOptions, () => {
+  const workflow = trailerWorkflow();
+  const step = workflow.jobs.render.steps.find((item) => item.name === 'Render');
+  assert.deepEqual(step.env, { TRAILER_COMPOSITION: '${{ inputs.composition }}', TRAILER_CRF: '${{ inputs.crf }}' });
+  const normal = [
+    [workflow.on.workflow_dispatch.inputs.composition.default, String(workflow.on.workflow_dispatch.inputs.crf.default)],
+    ['Another-Trailer', '18'], ['Trailer2', '23'],
+  ];
+  const payloads = ['$(printf INJECTED)', '`printf INJECTED`', '"; printf INJECTED; #', '20; printf INJECTED', '20\nprintf INJECTED', '20 --codec=vp9', '* ? [abc]'];
+  for (const [composition, crf] of [...normal,
+    ...payloads.map((value) => [value, '20']), ...payloads.map((value) => ['AlloFlowTrailer', value])]) {
+    assert.deepEqual(runRenderScript(step.run, composition, crf), [
+      'remotion', 'render', composition, 'out/alloflow-trailer-1080p.mp4',
+      '--codec=h264', '--crf=' + crf, '--log=info',
+    ]);
+  }
+});
+
+test('negative control reproduces command substitution in the former trailer workflow', bashOptions, () => {
+  const step = trailerWorkflow().jobs.render.steps.find((item) => item.name === 'Render');
+  const unsafe = step.run.replace('"$TRAILER_COMPOSITION"', '"Allo$(printf INJECTED)"')
+    .replace('--crf="$TRAILER_CRF"', '--crf=20$(printf INJECTED)');
+  const args = runRenderScript(unsafe, 'unused', 'unused');
+  assert.equal(args[2], 'AlloINJECTED');
+  assert.equal(args[5], '--crf=20INJECTED');
 });

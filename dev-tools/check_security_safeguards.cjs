@@ -16,6 +16,19 @@ function auditsAllScopes(event) {
   return event === 'workflow_dispatch' || event === 'schedule';
 }
 
+function isStaticNumericMatrix(expression, config) {
+  // Existing shard numbers are safe to interpolate. Dynamic matrices, string
+  // values and include overrides must use environment variables like inputs.
+  const match = /^\s*matrix\.([a-zA-Z_][\w-]*)\s*$/.exec(expression);
+  const matrix = config.strategy?.matrix;
+  if (!match || !matrix || typeof matrix !== 'object') return false;
+  const values = matrix[match[1]];
+  return Array.isArray(values) && values.length > 0 && values.every(Number.isSafeInteger)
+    && (!Object.hasOwn(matrix, 'include') || (Array.isArray(matrix.include)
+      && matrix.include.every((row) => row && typeof row === 'object'
+        && (!Object.hasOwn(row, match[1]) || Number.isSafeInteger(row[match[1]])))));
+}
+
 function inspectWorkflow(source, name) {
   const errors = [];
   let workflow;
@@ -37,7 +50,19 @@ function inspectWorkflow(source, name) {
       if (access === 'write' && !(name === 'desktop-release.yml' && job === 'draft-release' && scope === 'contents')) errors.push('Unexpected job write permission: ' + job);
     }
     inspectAction(config);
-    for (const step of config.steps || []) inspectAction(step);
+    for (const step of config.steps || []) {
+      inspectAction(step);
+      const scripts = [step.run];
+      if (step.uses?.startsWith('actions/github-script@')) scripts.push(step.with?.script);
+      for (const script of scripts) {
+        if (typeof script !== 'string') continue;
+        for (const [, expression] of script.matchAll(/\$\{\{([\s\S]*?)\}\}/g)) {
+          if (!isStaticNumericMatrix(expression, config)) {
+            errors.push('Pass expressions through environment variables instead of inline script interpolation: ' + job + '/' + (step.name || 'unnamed step'));
+          }
+        }
+      }
+    }
     if (name === 'desktop-release.yml' && [workflow.env, config.env].some((env) => Object.keys(env || {}).some((key) => /^(CSC_|APPLE_|GH_TOKEN$)/.test(key)))) errors.push('Release credentials must be scoped to the steps that need them');
   }
   return errors;

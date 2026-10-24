@@ -73,12 +73,17 @@ jobs:
         run: npx remotion browser ensure
 
       - name: Render
+        # Pass dispatch inputs as data; expression substitution inside run can
+        # turn quotes, newlines or command substitutions into shell commands.
+        env:
+          TRAILER_COMPOSITION: ${{ inputs.composition }}
+          TRAILER_CRF: ${{ inputs.crf }}
         run: |
           npx remotion render \
-            "${{ inputs.composition }}" \
+            "$TRAILER_COMPOSITION" \
             "out/alloflow-trailer-1080p.mp4" \
             --codec=h264 \
-            --crf=${{ inputs.crf }} \
+            --crf="$TRAILER_CRF" \
             --log=info
 
       - name: Report output size
